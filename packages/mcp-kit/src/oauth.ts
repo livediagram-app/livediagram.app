@@ -74,6 +74,12 @@ type AuthCode = {
 export const CLIENT_TTL = 60 * 60 * 24 * 200; // 200 days
 const SESSION_TTL = 60 * 10; // 10 minutes
 const CODE_TTL = 60 * 5; // 5 minutes
+// The ids of the tokens handed to one registered client, newest first, so its next connect can replace them
+// (docs/specs/015-api/mcp-server.md "Consent + mint": a reconnect replaces the client's earlier token). Ids only,
+// never a secret; kept as long as the registration, and cut to the last few, so an install that several accounts
+// connect through still finds its own.
+const GRANT_IDS_KEPT = 5;
+const TOKEN_ID_MAX = 64;
 // Client registrations per address.
 const REGISTER_LIMIT: RateWindow = { max: 20, windowS: 60 * 60 };
 // Claude registers a client for every new connection, and all of claude.ai calls from Anthropic's egress range
@@ -327,6 +333,7 @@ export function registerOauthRoutes<E extends OauthEnv>(
       session?: string;
       token?: string;
       expiresAt?: number;
+      tokenId?: unknown;
     };
     if (!body.session || !body.token)
       return c.json(oauthError('invalid_request', 'session and token are required'), 400);
@@ -352,7 +359,8 @@ export function registerOauthRoutes<E extends OauthEnv>(
     const url = new URL(session.redirectUri);
     url.searchParams.set('code', code);
     if (session.state) url.searchParams.set('state', session.state);
-    return c.json({ redirectTo: url.toString(), clientName: session.clientName });
+    const replaces = await recordGrant(c.env, server, session.clientId, body.tokenId);
+    return c.json({ redirectTo: url.toString(), clientName: session.clientName, replaces });
   });
 
   // --- Token: redeem code + PKCE verifier for the lwt_ access token ---
@@ -434,4 +442,28 @@ export function registerOauthRoutes<E extends OauthEnv>(
       : SIX_MONTHS;
     return c.json({ access_token: record.token, token_type: 'Bearer', expires_in: expiresIn });
   });
+}
+
+// Notes the token just handed to a registered client and answers the ids it was handed before, for the consent page
+// to revoke once it has seen this handover through (docs/specs/015-api/mcp-server.md "Consent + mint"). The built-in
+// CLI's id is every install's, so it records and replaces nothing, and so does a request that names no token. The
+// page revokes only ids still among the signed-in account's live tokens with the new token's name, so an id here
+// can never reach a token that isn't this client's.
+async function recordGrant<E extends OauthEnv>(
+  env: E,
+  server: OauthServer<E>,
+  clientId: string,
+  tokenId: unknown,
+): Promise<string[]> {
+  if (builtInClient(server.builtInClients, clientId)) return [];
+  if (typeof tokenId !== 'string' || !tokenId || tokenId.length > TOKEN_ID_MAX) return [];
+  const key = `grant:${clientId}`;
+  const kept = await env.OAUTH_KV.get<unknown>(key, 'json');
+  const earlier = Array.isArray(kept)
+    ? kept.filter((id): id is string => typeof id === 'string' && id !== tokenId)
+    : [];
+  await env.OAUTH_KV.put(key, JSON.stringify([tokenId, ...earlier].slice(0, GRANT_IDS_KEPT)), {
+    expirationTtl: CLIENT_TTL,
+  });
+  return earlier;
 }

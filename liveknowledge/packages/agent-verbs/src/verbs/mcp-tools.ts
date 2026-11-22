@@ -66,8 +66,9 @@ export type { McpToolVerb };
 export { mcpDeleteImage, mcpUploadImage };
 
 const TRUST =
-  'Each carries its trust: verified ("verified", "review-due" or "never-verified"), verified_at, review_due ' +
-  '(worked out from the knowledgebase’s one Review Period), stale and, when pages disagree, conflicts_with.';
+  'Each carries its trust: verified ("verified", "review-due", "never-verified", or "off" where the knowledgebase ' +
+  'does not verify pages), verified_at, review_due (worked out from the knowledgebase’s one Review Period), stale ' +
+  'and, when pages disagree, conflicts_with.';
 
 const HEALTH =
   'Each page also carries health: its Health Score (score 0 to 100, label "healthy", "fair" or "needs-work", ' +

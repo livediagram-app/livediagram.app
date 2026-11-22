@@ -1,6 +1,10 @@
 // API tokens (docs/specs/015-api/public-api-and-tokens.md): what the api lists of a token, and what it
 // says of the token a request presented. The token's own shape is @liveworkspace/api-kit/api-token's.
 
+// Live (unrevoked, unexpired) tokens one liveworkspace account can hold. The accounts Worker counts against it, and
+// every message about the cap says it from here (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens").
+export const MAX_API_TOKENS_PER_ACCOUNT = 20;
+
 // An external API credential, owner-scoped to an account. The wire
 // shape NEVER carries the secret or its hash — only the public id +
 // metadata shown in the management list. The plaintext is returned once,

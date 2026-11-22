@@ -63,6 +63,7 @@
     "@liveknowledge/tailwind-config": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/tailwind-config": "workspace:*",
+    "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

@@ -22,6 +22,20 @@ export function isLoopbackHostname(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
 }
 
+// Whether a `host` (a URL's `host`: hostname and any port, as the MCP's /oauth/session answers it) is a loopback one,
+// a tool taking its sign-in back on the person's own computer. Parsed, never matched by prefix, so
+// `localhost.evil.com` is a site; and the parse must give the same host back, so anything a URL would read as more
+// than a host (`evil.test@localhost`, `localhost/path`) is not one either.
+export function isLoopbackHost(host: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(`http://${host}`);
+  } catch {
+    return false;
+  }
+  return url.host === host.toLowerCase() && isLoopbackHostname(url.hostname);
+}
+
 // Where an OAuth flow may send a browser back with a code: https anywhere, or plain http on a loopback host (a
 // local client), and never with a fragment (RFC 6749 §3.1.2; checked on the raw string, since `new URL` drops a
 // bare `#`). The scheme is checked on its own: a loopback host must never let another scheme through, or

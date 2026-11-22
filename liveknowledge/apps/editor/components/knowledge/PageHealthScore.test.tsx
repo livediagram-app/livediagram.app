@@ -170,6 +170,17 @@ describe('the facts the editor reads', () => {
   });
 });
 
+describe('the facts under a Review Period of Never', () => {
+  it('score from the stored state, though no state shows', () => {
+    const shape = { band: 'brief' as const, headings: 0, brokenLinks: 0 };
+    const off = pageTrust({ verifiedAt: NOW - 400 * 86_400_000 }, 'never', NOW);
+    expect(off.state).toBe('off');
+    expect(pageHealthFacts(off, 'never', shape, undefined).state).toBe('verified');
+    const unverified = pageTrust(undefined, 'never', NOW);
+    expect(pageHealthFacts(unverified, 'never', shape, undefined).state).toBe('never-verified');
+  });
+});
+
 describe('the score elsewhere', () => {
   it('a chip says the figure and the word', () => {
     render(<HealthChip score={42} label="needs-work" prefix />);
@@ -208,6 +219,28 @@ describe('the score elsewhere', () => {
     fireEvent.click(screen.getByRole('button', { name: /Holidays/ }));
     expect(open).toHaveBeenCalledWith('h');
     expect(screen.getByText('2 broken links')).toBeTruthy();
+  });
+
+  it('under a Review Period of Never leads with the average, with no verified share, bar or Remind', () => {
+    render(
+      <HealthSection
+        health={{ verified: 0, reviewDue: 2, neverVerified: 1, total: 3, average: 71 }}
+        lowHealth={[]}
+        onOpenPage={vi.fn()}
+        canRemind
+        remindedAt={undefined}
+        reminding={false}
+        now={NOW}
+        onRemind={vi.fn()}
+        verificationOn={false}
+      />,
+    );
+    expect(document.querySelector('[data-health-average]')!.textContent).toBe(
+      '71average health across 3 pages',
+    );
+    expect(screen.queryByRole('button', { name: /Remind/ })).toBeNull();
+    expect(screen.queryByText(/verified/i)).toBeNull();
+    expect(screen.getByText('Every Page Is Healthy')).toBeTruthy();
   });
 
   it('says every page is healthy when none is low, and draws nothing from an older api', () => {
@@ -249,6 +282,13 @@ describe('the score elsewhere', () => {
         onAskOwners={vi.fn()}
       />,
     );
+
+  it('a conflict side says nothing of verification where it is off', () => {
+    const c = conflict(41, 86);
+    row({ ...c, a: { ...c.a, trust: 'off' as never }, b: { ...c.b, trust: 'off' as never } });
+    expect(screen.queryByText(/Verified/)).toBeNull();
+    expect(screen.getAllByText(/Health/).length).toBeGreaterThan(0);
+  });
 
   it('a conflict suggests the healthier page as the likelier right, leading with it', () => {
     const open = vi.fn();

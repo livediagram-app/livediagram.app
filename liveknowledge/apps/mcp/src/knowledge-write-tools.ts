@@ -25,7 +25,7 @@ import { deepLink, errorResult, textResult } from './tool-helpers';
 export function registerKnowledgeWriteTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpCreatePage, async (args, extra) => {
     const api = await knowledgeApi(server, env, extra);
-    const { page } = await api.json<CreatePageResponse>(
+    const { page, trust } = await api.json<CreatePageResponse>(
       knowledgePath(args.documentId, 'pages'),
       jsonBody('POST', {
         title: args.title,
@@ -37,9 +37,13 @@ export function registerKnowledgeWriteTools(server: McpServer, env: Env): void {
       page: page.tab,
       title: page.title,
       ...(page.parent ? { parent: page.parent } : {}),
-      verified: 'never-verified' as const,
+      verified: trust ?? 'never-verified',
       url: deepLink(env, args.documentId),
-      next: 'The page is a draft until a person verifies it: tell the user it is there to review. read_page reads it back; suggest_edit proposes a change to it.',
+      // Verification off (review_period "never"): nobody verifies it, so it is not called a draft.
+      next:
+        trust === 'off'
+          ? 'The page is there to read: this knowledgebase does not verify pages. read_page reads it back; suggest_edit proposes a change to it.'
+          : 'The page is a draft until a person verifies it: tell the user it is there to review. read_page reads it back; suggest_edit proposes a change to it.',
     });
   });
 

@@ -69,7 +69,8 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   cited** (owner, 2026-11-21: "shouldn't the source be number 1, given there is only one source?"), whatever number
   the passage was sent to the model under: the stream's pieces, the finished answer and its Sources all use the same
   numbers, and so does each follow-up's own answer; a **Sources** rail with each cited passage, its page
-  and who verified it when; a trust line ("Answered From 3 Verified Pages", or how many were unverified or due);
+  and who verified it when; a trust line ("Answered From 3 Verified Pages", or how many were unverified or due;
+  not drawn under a Review Period of Never);
   **Found but Not Used** for a passage set aside because it is stale and disagrees with a newer verified one. A
   set-aside carries its reason; a bare mark with none (a small model marks any passage it skipped) sets nothing
   aside, so a page is never called Stale without a why.
@@ -226,7 +227,8 @@ strangers.
   - the passage with the question's words softly marked;
   - its **trust**, in the badges and colours of the page's meta row and Page Health: **Verified** (a green tick),
     then "21 Nov by Roger Blake" on the line, wrapping to a second line rather than cutting a name; **Review Due**
-    (amber, "Last verified 8 Nov"); **Never Verified** (quiet slate, no tick, saying so). After it the page's
+    (amber, "Last verified 8 Nov"); **Never Verified** (quiet slate, no tick, saying so); none at all under a
+    Review Period of Never ([Verification](verification.md#under-a-review-period-of-never)). After it the page's
     **Health Score** and word ("Health 42, Needs Work", [Verification](verification.md#health-score)), in the word's
     colour, which an older answer kept in the browser without one leaves out.
     Pressing a card shows Pages at that page and passage. **Found but Not Used** follows, each card amber with a

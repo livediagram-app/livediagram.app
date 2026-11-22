@@ -128,13 +128,15 @@ const day = (isoDate: string) => isoDate.slice(0, 10);
 /** The trust fields as one line of a listing: "verified 2026-10-01 by Webber, review due 2026-12-30". */
 export function trustLine(trust: TrustFields): string {
   const parts =
-    trust.verified === 'never-verified'
-      ? ['never verified']
-      : [
-          `${trust.stale ? 'REVIEW DUE, last verified' : 'verified'} ${day(trust.verified_at!)}` +
-            (trust.verified_by ? ` by ${trust.verified_by}` : ''),
-          ...(trust.review_due && !trust.stale ? [`review due ${day(trust.review_due)}`] : []),
-        ];
+    trust.verified === 'off'
+      ? ['verification off']
+      : trust.verified === 'never-verified'
+        ? ['never verified']
+        : [
+            `${trust.stale ? 'REVIEW DUE, last verified' : 'verified'} ${day(trust.verified_at!)}` +
+              (trust.verified_by ? ` by ${trust.verified_by}` : ''),
+            ...(trust.review_due && !trust.stale ? [`review due ${day(trust.review_due)}`] : []),
+          ];
   if (trust.conflicts_with?.length)
     parts.push(`CONFLICTS WITH ${trust.conflicts_with.map((p) => `"${p.title}"`).join(', ')}`);
   if (trust.approval === 'pending') parts.push('PENDING APPROVAL');

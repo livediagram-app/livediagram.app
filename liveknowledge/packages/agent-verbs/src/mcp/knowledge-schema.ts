@@ -45,10 +45,11 @@ const pageRef = z.object({
 /** The trust fields every page and passage answer carries. Dates are ISO timestamps. */
 export const trustFields = {
   verified: z
-    .enum(['verified', 'review-due', 'never-verified'])
+    .enum(['verified', 'review-due', 'never-verified', 'off'])
     .describe(
       'How far to trust it: "verified" (a person vouched for it and its review is not yet due), "review-due" ' +
-        '(verified once, its review is due) or "never-verified" (a draft nobody vouched for).',
+        '(verified once, its review is due), "never-verified" (a draft nobody vouched for) or "off" (this ' +
+        'knowledgebase does not verify pages: its review_period is "never"; weigh the page by its health alone).',
     ),
   verified_at: z.string().optional().describe('When it was last verified.'),
   verified_by: z.string().optional().describe('Who verified it, where their name is known.'),
@@ -355,8 +356,10 @@ export const createPageOutput = {
   ...pageRef.shape,
   parent: z.string().optional().describe('The id of the page it sits under.'),
   verified: z
-    .literal('never-verified')
-    .describe('A new page is a draft until a person verifies it.'),
+    .enum(['never-verified', 'off'])
+    .describe(
+      'A new page is a draft until a person verifies it; "off" where the knowledgebase does not verify pages.',
+    ),
   url,
   next,
 };

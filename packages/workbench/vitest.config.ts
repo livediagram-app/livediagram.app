@@ -187,6 +187,12 @@ const HELD_AT_100 = [
   // The Sync gate a tool opens on an item kept Offline, every editor's one copy (each app's offline-mode.md, the
   // platform's automations.md "Who may do what").
   'src/components/dialogs/SyncGateDialog.tsx',
+  // The OAuth pages' handover, a reconnect's replaced token and the list at the token cap (each product's
+  // 015-api mcp-server.md "Consent + mint", Work Tracker 1350 and 1351).
+  'src/lib/oauth-handover.ts',
+  'src/lib/oauth-replaced-tokens.ts',
+  'src/components/oauth/TokenLimitList.tsx',
+  'src/components/oauth/TokenLimitListLazy.tsx',
 ];
 
 export default defineProject({

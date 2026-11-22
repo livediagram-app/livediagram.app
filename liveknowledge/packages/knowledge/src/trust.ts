@@ -95,6 +95,17 @@ export function trustState(fields: KnowledgeFields, every: ReviewEvery, now: num
   return { state: reviewAt <= now ? 'review-due' : 'verified', verifiedAt, reviewAt };
 }
 
+/** Whether a knowledgebase verifies its pages: every Review Period but Never (verification.md "Under a Review Period
+ *  of Never"). Off, no page is shown as Verified, Review Due or unverified, and nobody is offered Verify. */
+export const verificationOn = (every: ReviewEvery): boolean => every !== 'never';
+
+/** A page's state as a reader is shown it: its state, or `off` where the knowledgebase does not verify pages. */
+export type ShownTrust = TrustStateName | 'off';
+
+/** The state to hand a reader (a person or an agent). `trustState` stays the stored truth the score counts. */
+export const shownTrust = (state: TrustStateName, every: ReviewEvery): ShownTrust =>
+  verificationOn(every) ? state : 'off';
+
 /** The fields after Verify: verified now by `person`, who becomes the owner of a page that has none. */
 /** Who a guest's Verify is by (owner, 2026-11-21: "Guest users can verify, just say Guest"): never a guest's own id, and a
  *  guest never becomes a page's owner. */

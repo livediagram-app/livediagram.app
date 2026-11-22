@@ -186,25 +186,41 @@ export function FigureTiles({
         onPress={() => toggle('suggestions')}
         line={figures.suggestions === 0 ? 'None waiting' : 'Waiting for review'}
       />
-      <Tile
-        icon={<HealthIcon />}
-        label="Verified"
-        figure={figures.verifiedShare === null ? 'None' : `${figures.verifiedShare}%`}
-        hint="The share of pages someone vouches for. Shows Knowledge Health."
-        attention={figures.reviewDue > 0}
-        onPress={() => onGo({ card: 'health' })}
-        line={
-          (figures.verifiedShare === null
-            ? 'No pages to verify'
-            : figures.reviewDue > 0
-              ? `${count(figures.reviewDue)} due for review`
-              : figures.neverVerified > 0
-                ? `${count(figures.neverVerified)} never verified`
-                : 'Every page verified') +
-          // The average Health Score beside the verified share (ai-knowledge.md "The figures band").
-          (figures.averageHealth === undefined ? '' : `, health ${figures.averageHealth}`)
-        }
-      />
+      {figures.verificationOn ? (
+        <Tile
+          icon={<HealthIcon />}
+          label="Verified"
+          figure={figures.verifiedShare === null ? 'None' : `${figures.verifiedShare}%`}
+          hint="The share of pages someone vouches for. Shows Knowledge Health."
+          attention={figures.reviewDue > 0}
+          onPress={() => onGo({ card: 'health' })}
+          line={
+            (figures.verifiedShare === null
+              ? 'No pages to verify'
+              : figures.reviewDue > 0
+                ? `${count(figures.reviewDue)} due for review`
+                : figures.neverVerified > 0
+                  ? `${count(figures.neverVerified)} never verified`
+                  : 'Every page verified') +
+            // The average Health Score beside the verified share (ai-knowledge.md "The figures band").
+            (figures.averageHealth === undefined ? '' : `, health ${figures.averageHealth}`)
+          }
+        />
+      ) : (
+        // Verification off (a Review Period of Never): the average Health Score in Verified's place.
+        <Tile
+          icon={<HealthIcon />}
+          label="Average Health"
+          figure={figures.averageHealth === undefined ? 'None' : String(figures.averageHealth)}
+          hint="The average Health Score of every page. Shows Knowledge Health."
+          onPress={() => onGo({ card: 'health' })}
+          line={
+            figures.pages === 0
+              ? 'No pages yet'
+              : `Across ${count(figures.pages)} ${figures.pages === 1 ? 'page' : 'pages'}`
+          }
+        />
+      )}
     </div>
   );
 }

@@ -21,7 +21,8 @@ export function answerTrust(
   sources: readonly Pick<AskSource, 'tab' | 'trust'>[],
 ): AnswerTrust | null {
   const byPage = new Map(sources.map((source) => [source.tab, source.trust]));
-  if (byPage.size === 0) return null;
+  // Verification off (a Review Period of Never): the answer says nothing of it (search-and-ask.md).
+  if (byPage.size === 0 || [...byPage.values()].every((trust) => trust === 'off')) return null;
   let verified = 0;
   let reviewDue = 0;
   let neverVerified = 0;

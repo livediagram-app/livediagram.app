@@ -393,6 +393,22 @@ describe('PUT pages/<tab>', () => {
     expect((await put(who, { markdown: 'Changed.' })).status).toBe(status);
   });
 
+  it('still refuses an agent on a page verified before verification was turned off, saying so', async () => {
+    await verify('holidays');
+    expect(
+      (
+        await kit.call('editor', 'PUT', '/api/documents/kb/knowledge-settings', {
+          reviewEvery: 'never',
+        })
+      ).status,
+    ).toBe(200);
+    const res = await put('agent', { markdown: 'Changed.' });
+    expect(res.status).toBe(409);
+    const answer = await res.json<{ error: string; message: string }>();
+    expect(answer.error).toBe('page_verified');
+    expect(answer.message).toContain('before verification was turned off');
+  });
+
   it('refuses an agent on a verified page', async () => {
     await verify('holidays');
     const res = await put('agent', { markdown: 'Changed.' });

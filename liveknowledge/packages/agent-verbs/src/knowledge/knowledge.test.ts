@@ -92,6 +92,8 @@ describe('the trust fields', () => {
 describe('trustLine', () => {
   it('says each state in a line', () => {
     expect(trustLine({ verified: 'never-verified', stale: false })).toBe('never verified');
+    // verification.md "Under a Review Period of Never".
+    expect(trustLine({ verified: 'off', stale: false })).toBe('verification off');
     expect(
       trustLine({
         verified: 'verified',

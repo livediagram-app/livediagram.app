@@ -2,8 +2,14 @@
 // a token is only minted for a request that can still take it, and a token the MCP did not take is revoked, so a
 // failed Connect never leaves a live six-month token counting towards the per-account cap.
 import { describe, expect, it, vi } from 'vitest';
+import { MAX_API_TOKENS_PER_ACCOUNT } from '@liveworkspace/api-schema/api-tokens';
 import { ApiError } from './api/api-error';
-import { handoverFailureCopy, mintAndHandOver, type HandoverSteps } from './oauth-handover';
+import {
+  handoverFailureCopy,
+  mintAndHandOver,
+  RETIRE_WAIT_MS,
+  type HandoverSteps,
+} from './oauth-handover';
 
 const MINTED = { token: 'lwt_secret', id: 'tok-1', expiresAt: 1_800_000_000_000 };
 
@@ -24,7 +30,7 @@ describe('mintAndHandOver', () => {
       ok: true,
       value: 'https://client.example/cb?code=x',
     });
-    expect(s.complete).toHaveBeenCalledWith(MINTED.token, MINTED.expiresAt);
+    expect(s.complete).toHaveBeenCalledWith(MINTED.token, MINTED.expiresAt, MINTED.id);
     expect(s.revoke).not.toHaveBeenCalled();
   });
 
@@ -81,12 +87,66 @@ describe('mintAndHandOver', () => {
   });
 });
 
+describe('mintAndHandOver, retiring what a reconnect replaces', () => {
+  it('retires only after the handover went through, with its answer and the new id', async () => {
+    const order: string[] = [];
+    const s = steps({
+      complete: vi.fn(async () => {
+        order.push('complete');
+        return 'to';
+      }),
+      retire: vi.fn(async () => {
+        order.push('retire');
+      }),
+    });
+    expect(await mintAndHandOver(s)).toEqual({ ok: true, value: 'to' });
+    expect(s.retire).toHaveBeenCalledWith('to', MINTED.id);
+    expect(order).toEqual(['complete', 'retire']);
+  });
+
+  it('retires nothing when the handover fails, or before a mint', async () => {
+    const retire = vi.fn(async () => {});
+    await mintAndHandOver(steps({ complete: vi.fn(async () => null), retire }));
+    await mintAndHandOver(steps({ sessionLive: vi.fn(async () => false), retire }));
+    await mintAndHandOver(
+      steps({ mint: vi.fn(async () => Promise.reject(new Error('down'))), retire }),
+    );
+    expect(retire).not.toHaveBeenCalled();
+  });
+
+  it('still connects when the retire fails', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const s = steps({ retire: vi.fn(async () => Promise.reject(new Error('offline'))) });
+    expect(await mintAndHandOver(s)).toEqual({
+      ok: true,
+      value: 'https://client.example/cb?code=x',
+    });
+    expect(warn).toHaveBeenCalledWith('[oauth] replaced token revoke failed');
+    warn.mockRestore();
+  });
+
+  it('waits for a slow retire no longer than RETIRE_WAIT_MS', async () => {
+    vi.useFakeTimers();
+    try {
+      const s = steps({ retire: vi.fn(() => new Promise<void>(() => {})) });
+      const result = mintAndHandOver(s);
+      await vi.advanceTimersByTimeAsync(RETIRE_WAIT_MS);
+      expect(await result).toEqual({ ok: true, value: 'https://client.example/cb?code=x' });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe('handoverFailureCopy', () => {
   it('gives each failure its own line', () => {
     expect(handoverFailureCopy('expired', 'Start again.')).toBe(
       'This request has expired. Start again.',
     );
-    expect(handoverFailureCopy('token_limit', 'Start again.')).toMatch(/limit of API tokens/);
+    expect(handoverFailureCopy('token_limit', 'Start again.')).toBe(
+      `Your account has reached its limit of ${MAX_API_TOKENS_PER_ACCOUNT} API tokens. Revoke one below, then connect.`,
+    );
+    expect(MAX_API_TOKENS_PER_ACCOUNT).toBe(20);
     expect(handoverFailureCopy('failed', 'Start again.')).toBe(
       'Something went wrong. Please try again.',
     );

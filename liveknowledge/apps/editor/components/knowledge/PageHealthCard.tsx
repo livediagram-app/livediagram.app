@@ -11,7 +11,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { ReactNode } from 'react';
 import { reviewDays, type ReviewEvery } from '@liveknowledge/knowledge';
 import { Button, Select, Tooltip } from '@liveknowledge/ui';
-import { NO_REVIEW_PERIOD, reviewPeriodLabel } from '@/lib/knowledge-settings/review-period-words';
+import { reviewPeriodLabel } from '@/lib/knowledge-settings/review-period-words';
 import { shortDate, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
 import {
@@ -95,8 +95,11 @@ export function healthHeadline(
   return { title: 'Verified', line: `Fresh for ${left} more ${left === 1 ? 'day' : 'days'}` };
 }
 
+/** A state the status panel draws: every state but `off`, where verification is off and there is no panel. */
+type PanelState = Exclude<PageTrust['state'], 'off'>;
+
 // The state's tone: a soft wash behind the status panel, the ring's arc and the glyph's ink.
-const TONE: Record<PageTrust['state'], { wash: string; ink: string }> = {
+const TONE: Record<PanelState, { wash: string; ink: string }> = {
   verified: {
     wash: 'bg-gradient-to-br from-brand-50 via-brand-50/50 to-white ring-brand-100 dark:from-brand-950/60 dark:via-brand-950/25 dark:to-transparent dark:ring-brand-900/50',
     ink: 'text-brand-700 dark:text-brand-300',
@@ -113,7 +116,7 @@ const TONE: Record<PageTrust['state'], { wash: string; ink: string }> = {
 
 // The ring: the share of the Review Period left, in the state's colour over a faint track, around the state's glyph.
 // A page never verified shows an empty dashed ring.
-function FreshnessRing({ state, left }: { state: PageTrust['state']; left: number | undefined }) {
+function FreshnessRing({ state, left }: { state: PanelState; left: number | undefined }) {
   const r = 21;
   const c = 2 * Math.PI * r;
   const { ink } = TONE[state];
@@ -407,8 +410,10 @@ export function PageHealthCard({
     owner && !people.some((p) => p.id === owner)
       ? [...people, { id: owner, name: 'Someone Else' }]
       : people;
+  // Verification off (a Review Period of Never, verification.md): no state panel, no Last Verified, no Review Due,
+  // no Verify. Owner and the Review Period stay, so the period can be set again from here.
+  const panel = trust.state === 'off' ? undefined : trust.state;
   const head = healthHeadline(trust, reviewEvery, now);
-  const tone = TONE[trust.state];
   // Verify leads where the page needs it (never verified, or due); a fresh page offers it quietly.
   const urgent = trust.state !== 'verified';
   return (
@@ -419,31 +424,33 @@ export function PageHealthCard({
     >
       <h2 className={RAIL_LABEL}>Page Health</h2>
       {score}
-      <div className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${tone.wash}`}>
-        <div data-page-state={trust.state} className="flex items-center gap-3.5">
-          <FreshnessRing state={trust.state} left={freshness(trust, reviewEvery, now)} />
-          <div className="min-w-0">
-            <div className="flex min-w-0 items-center gap-1">
-              <p className="truncate text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-                {head.title}
-              </p>
-              <HelpArticleLink article="verifying" />
+      {panel ? (
+        <div className={`mt-3 rounded-2xl p-4 ring-1 ring-inset ${TONE[panel].wash}`}>
+          <div data-page-state={panel} className="flex items-center gap-3.5">
+            <FreshnessRing state={panel} left={freshness(trust, reviewEvery, now)} />
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-1">
+                <p className="truncate text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                  {head.title}
+                </p>
+                <HelpArticleLink article="verifying" />
+              </div>
+              <p className="truncate text-xs text-slate-600 dark:text-slate-400">{head.line}</p>
             </div>
-            <p className="truncate text-xs text-slate-600 dark:text-slate-400">{head.line}</p>
           </div>
+          {onVerify ? (
+            <Button
+              variant={urgent ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={onVerify}
+              className="mt-4 w-full cursor-pointer justify-center gap-1.5 phone:min-h-11"
+            >
+              <CheckIcon />
+              {verifiedAt === undefined ? 'Verify' : 'Verify Again'}
+            </Button>
+          ) : null}
         </div>
-        {onVerify ? (
-          <Button
-            variant={urgent ? 'primary' : 'secondary'}
-            size="sm"
-            onClick={onVerify}
-            className="mt-4 w-full cursor-pointer justify-center gap-1.5 phone:min-h-11"
-          >
-            <CheckIcon />
-            {verifiedAt === undefined ? 'Verify' : 'Verify Again'}
-          </Button>
-        ) : null}
-      </div>
+      ) : null}
       <dl className="mt-3 flex flex-col divide-y divide-slate-100 dark:divide-slate-800/70">
         <HealthRow icon={<OwnerIcon />} label="Owner">
           {onSetOwner ? (
@@ -469,37 +476,37 @@ export function PageHealthCard({
           )}
         </HealthRow>
         {/* One line (owner 2026-11-21): the date, and the verifier as their disc, named on hover. */}
-        <HealthRow icon={<VerifiedRowIcon />} label="Last Verified">
-          {verifiedAt === undefined ? (
-            'Never'
-          ) : (
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-              <span data-verified-date="">{shortDate(verifiedAt, now)}</span>
-              {verifier ? (
-                <Tooltip label={`Verified by ${verifier}`}>
-                  <span
-                    data-verified-by=""
-                    tabIndex={0}
-                    role="img"
-                    aria-label={`Verified by ${verifier}`}
-                    className="inline-flex cursor-default rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
-                  >
-                    <Disc name={verifier} size="size-5" />
-                  </span>
-                </Tooltip>
-              ) : null}
+        {panel ? (
+          <HealthRow icon={<VerifiedRowIcon />} label="Last Verified">
+            {verifiedAt === undefined ? (
+              'Never'
+            ) : (
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <span data-verified-date="">{shortDate(verifiedAt, now)}</span>
+                {verifier ? (
+                  <Tooltip label={`Verified by ${verifier}`}>
+                    <span
+                      data-verified-by=""
+                      tabIndex={0}
+                      role="img"
+                      aria-label={`Verified by ${verifier}`}
+                      className="inline-flex cursor-default rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
+                    >
+                      <Disc name={verifier} size="size-5" />
+                    </span>
+                  </Tooltip>
+                ) : null}
+              </span>
+            )}
+          </HealthRow>
+        ) : null}
+        {panel ? (
+          <HealthRow icon={<DueRowIcon />} label="Review Due">
+            <span data-review-due="">
+              {trust.reviewAt === undefined ? 'Not Verified' : shortDate(trust.reviewAt, now)}
             </span>
-          )}
-        </HealthRow>
-        <HealthRow icon={<DueRowIcon />} label="Review Due">
-          <span data-review-due="">
-            {reviewEvery === 'never'
-              ? NO_REVIEW_PERIOD
-              : trust.reviewAt === undefined
-                ? 'Not Verified'
-                : shortDate(trust.reviewAt, now)}
-          </span>
-        </HealthRow>
+          </HealthRow>
+        ) : null}
         {/* The knowledgebase's Review Period; an Editor changes it from the pencil before the value (owner 2026-11-21). */}
         <HealthRow icon={<PeriodIcon />} label="Review Period" whole={!!periodControl}>
           {periodControl ? (

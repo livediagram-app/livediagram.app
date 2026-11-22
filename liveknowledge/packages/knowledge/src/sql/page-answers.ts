@@ -66,15 +66,17 @@ export const prunePageAnswers = (now: number): SqlStatement[] => [
   },
 ];
 
-export type PageAnswerRow = { question: string; asked: number };
+/** `cited`: every ask of every group in the window (not only the listed ones), the same on each row. */
+export type PageAnswerRow = { question: string; asked: number; cited: number };
 
 /**
  * A page's questions of the last PAGE_ANSWERS_KEPT_DAYS days, like ones together: the most asked first, then the
- * most recently, PAGE_ANSWERS_LISTED at most. The words are the group's latest day's (SQLite gives a bare column
+ * most recently, PAGE_ANSWERS_LISTED at most, each row with how many times Ask cited the page in all (`cited`). The words are the group's latest day's (SQLite gives a bare column
  * from the row MAX picked).
  */
 export const listPageAnswers = (tab: string, now: number): SqlStatement => ({
-  sql: `SELECT question, times AS asked FROM (
+  // The window total runs before the LIMIT, so `cited` counts all of them: Page Insights' Cited by Ask rides here.
+  sql: `SELECT question, times AS asked, SUM(times) OVER () AS cited FROM (
       SELECT key, question, MAX(day) AS last, SUM(asked) AS times FROM page_answers
        WHERE tab = ? AND day > ? GROUP BY key
     ) ORDER BY times DESC, last DESC, key LIMIT ?`,

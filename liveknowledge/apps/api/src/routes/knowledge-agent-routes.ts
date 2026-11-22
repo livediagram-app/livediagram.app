@@ -51,6 +51,7 @@ import {
   markdownHeadings,
   markdownSection,
   parseKnowledgeFields,
+  verificationOn,
 } from '@liveknowledge/knowledge';
 import { readStoredTab } from '../changesets/stored-tab';
 import { isTabRevStale, reorderTabs, upsertTabAtRev } from '../db';
@@ -409,7 +410,11 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
     chars: markdown.length,
   });
   return json(
-    { page: { tab: id, title, ...(under ? { parent: under } : {}), rev } },
+    {
+      page: { tab: id, title, ...(under ? { parent: under } : {}), rev },
+      // A new page is never verified; under a Review Period of Never verification is off (verification.md).
+      trust: verificationOn(document.knowledgeSettings.reviewEvery) ? 'never-verified' : 'off',
+    },
     { status: 201 },
   );
 }

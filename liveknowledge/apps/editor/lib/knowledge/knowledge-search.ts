@@ -168,7 +168,9 @@ export function searchLoadedPages(
       tab: page.id,
       title: page.name,
       trust: trust.state,
-      ...(trust.fields.verifiedAt === undefined ? {} : { verifiedAt: trust.fields.verifiedAt }),
+      ...(trust.fields.verifiedAt === undefined || trust.state === 'off'
+        ? {}
+        : { verifiedAt: trust.fields.verifiedAt }),
     };
     if (has(page.name))
       titles.push({
