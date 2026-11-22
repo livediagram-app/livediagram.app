@@ -24,9 +24,8 @@ change reaches the workspaces whose dependencies moved. It then groups them by p
 A group the change never reached runs no jobs. A product forked in-tree before its launch can be **held**
 (`held: true` on its group in `ci-plan.mjs`): its group then runs only when a change touches its folder itself or
 everything runs, never because a shared package it uses changed (its E2E the same way), and none of its Workers
-deploy. liveknowledge is held today: the platform's lists name it, but its domain, KV namespaces and secrets are the
-owner's to make first (liveknowledge/docs/specs/016-platform/platform-registration.md). livehuddle was held until its
-launch (Work Tracker #189), and now runs, tests, runs its E2E and deploys like any product. The base is the pull request's base, or for a push to
+deploy. None is held today: livehuddle was held until its launch (Work Tracker #189) and liveknowledge until
+2026-11-22, and both now run, test, run their E2E and deploy like any product. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
 change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the

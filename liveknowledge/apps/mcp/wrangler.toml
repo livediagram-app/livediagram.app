@@ -58,7 +58,7 @@ service = "liveknowledge-api"
 # are liveworkspace accounts').
 [[kv_namespaces]]
 binding = "OAUTH_KV"
-id = "00000000000000000000000000000000"
+id = "87fcf499333c4c469fb221c88666a990"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `liveknowledge-mcp-staging` on its own host,
@@ -92,4 +92,4 @@ service = "liveknowledge-api-staging"
 # migrate across.
 [[env.staging.kv_namespaces]]
 binding = "OAUTH_KV"
-id = "00000000000000000000000000000000"
+id = "8bf5934d67314104b025db76efba0c8a"

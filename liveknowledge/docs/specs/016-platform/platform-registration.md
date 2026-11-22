@@ -1,6 +1,7 @@
 # Platform registration
 
-Status: **registered in code, not deployed** (2026-11-20). The owner-only steps at the end come first.
+Status: **deployed** (2026-11-22): the hold is lifted and its Workers deploy with every product's. The owner's
+secrets and settings at the end are set on the deployed Workers.
 
 What makes liveknowledge a liveworkspace app: one account, the One Explorer, media, telemetry, the site switcher, the
 Community, the Drive mirror, Download Your Data, status checks, CI, and its own domain. liveknowledge reuses every
@@ -9,8 +10,8 @@ word); what is inside one is a **page**; its API keeps `document` (`apiNoun: 'do
 fork's code does.
 
 liveknowledge was registered **listed, never held**: every list a person sees names it from the start (the site
-switcher, liveworkspace.app's front door, the Explorer, the Settings panel, the status page, the sign-in email). Only
-its CI group is held, so none of its Workers deploy before the owner's steps exist.
+switcher, liveworkspace.app's front door, the Explorer, the Settings panel, the status page, the sign-in email). Its
+CI group was held until 2026-11-22, when the owner had it deploy.
 
 **Specs first.** Registering an app changes platform code under `packages/` and `liveworkspace/`, which is a platform
 change: it updated [liveworkspace/docs/specs](../../../../liveworkspace/docs/specs/README.md) first, then the code
@@ -135,9 +136,8 @@ Wrangler's own ports sit outside the 36xx block, one range per product: liveknow
 
 - **A group** in `.github/scripts/ci-plan.mjs`: `liveknowledge`, folder `liveknowledge/`, editor
   `@liveknowledge/editor` (sharded), its CLI packed. The root-files pattern that reaches everything names it.
-- **Held** (`held: true`): the group runs only when a change touches `liveknowledge/` itself or everything runs, and
-  **none of its Workers deploy**. This is the one hold: a deploy before the owner's steps below would fail on a
-  domain, KV namespaces and secrets that do not exist. Lifting it is deleting that line.
+- **Not held** since 2026-11-22: it runs, tests and deploys like any product. Until then `held: true` kept its
+  Workers from deploying.
 - **The lists**: `coverage-report.mjs`, `coverage-floors.json` (livedocuments' floors, the fork's own at the fork),
   `cpu-budget-guard.mjs`, `duplicate-guard.mjs` with its baseline (the fork's byte-identical copies of livedocuments,
   the one time that list grows), `file-size-baseline.txt` (the fork's copies of files already listed), `e2e.yml`,
@@ -189,12 +189,12 @@ None of these can be done by an agent.
   a key in the settings accounts already stores, on by default.
 - **Google:** `application/vnd.liveknowledge+json` (`.liveknowledge`) added to the Google Cloud project's Drive UI
   MIME types, and the new domain among the Google sign-in origins.
-- **KV namespaces** for the MCP Worker's OAuth state, production and staging, replacing the ids the fork carries in
-  `apps/mcp/wrangler.toml`.
+- **KV namespaces** for the MCP Worker's OAuth state: made 2026-11-22 (`liveknowledge-mcp-oauth` and
+  `liveknowledge-mcp-oauth-staging`), their ids in `apps/mcp/wrangler.toml`.
 - **Any third-party keys** the fork carries over (Turnstile), added for the new domain.
 - **The MCP registry and the CLI's npm package**, when it is ready to be found.
-- **Then lift the hold** (`held: true` in `ci-plan.mjs`), so its Workers deploy and its suites run like any
-  product's.
+- **The hold**: lifted 2026-11-22, before the secrets, so the Workers exist to set them on. Until each secret is
+  set, its feature is off as its line above says (no sign-in without the accounts client, and so on).
 - **Billing:** Durable Object requests and duration, and KV, for a sixth product on the account's Workers paid plan.
 
 ## What the fork still has to change
