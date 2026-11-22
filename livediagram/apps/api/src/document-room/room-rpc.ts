@@ -6,7 +6,8 @@ import {
   type ExportResult,
   putAwayGate,
 } from '@liveworkspace/index-app';
-import type { ConnectedTabWrite } from '@liveworkspace/index-client';
+import type { ConnectedTabWrite, SourceChange } from '@liveworkspace/index-client';
+import { tellSourceChanged } from '@liveworkspace/index-app';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
 import { documentMayServeImage } from '../db/image-grants';
@@ -363,4 +364,13 @@ export async function receiveShares(
   }
   room.bindDocument(documentId);
   return documentShares.receive(room.requireEnv(), documentId, from, messages);
+}
+
+// A Sheet a linked chart reads changed: every open session hears the ids (document-room.ts sourceChanged).
+export function sourceChanged(room: DocumentRoom, documentId: string, change: SourceChange): void {
+  tellSourceChanged(
+    { bind: (id) => room.bindDocument(id), broadcast: (frame) => room.broadcast(frame) },
+    documentId,
+    change,
+  );
 }

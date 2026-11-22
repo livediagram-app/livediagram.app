@@ -33,6 +33,7 @@ import { getParticipants } from '../../person/profiles';
 import { planTabs } from '../../routes/plan-route';
 import { readPlanOutline } from '../plan-content';
 import type { PlanRoom } from '../plan-room';
+import { bindStoredPlan } from '../plan-room-content';
 import { cardUrl, readAutomationPlan } from './automation-plan';
 import { automationDeps } from './plan-room-automations';
 
@@ -149,8 +150,11 @@ async function createCardHere(
 
 export async function planAutomationStep(
   room: PlanRoom,
+  planId: string,
   call: AutomationStepDoorCall,
 ): Promise<AutomationStepAnswer> {
+  // An id nothing has written takes none.
+  if (!bindStoredPlan(room, planId)) return { ok: false, code: 'no_access', reason: '' };
   const step = readTargetStep(call.step);
   if (typeof step === 'string') return { ok: false, code: 'invalid', reason: step };
   if (step.kind !== 'plan_card')
@@ -162,7 +166,9 @@ export async function planAutomationStep(
 
 export async function planAutomationTarget(
   room: PlanRoom,
+  planId: string,
 ): Promise<Pick<AutomationTargetDescription, 'boards'>> {
+  if (!bindStoredPlan(room, planId)) return { boards: [] };
   const deps = automationDeps(room);
   if (!deps) return { boards: [] };
   const [head, tabs] = await Promise.all([
@@ -177,3 +183,8 @@ export async function planAutomationTarget(
     })),
   };
 }
+
+// The room's doors' shapes, so each of its methods stays a line or two (plan-room.ts stays under 800 lines).
+export type StepCall = AutomationStepDoorCall;
+export type StepAnswer = AutomationStepAnswer;
+export type TargetHere = Omit<AutomationTargetDescription, 'app' | 'title'>;

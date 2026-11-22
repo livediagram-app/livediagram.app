@@ -10,12 +10,8 @@ import {
   type PutAwayRefusal,
   type StandingGrant,
 } from '@liveworkspace/index-app';
-import { planAutomationStep, planAutomationTarget } from './automations/cross-app-door';
-import type {
-  AutomationStepAnswer,
-  AutomationStepDoorCall,
-  AutomationTargetDescription,
-} from '@liveworkspace/index-client';
+import * as crossApp from './automations/cross-app-door';
+import { roomFetch } from './plan-room-fetch';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveplanner/api-schema';
 import { RoomParticipantWrites } from '../room-participant';
@@ -30,8 +26,8 @@ import { type LoggedOp } from '../project-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import { spendPlanDraftIn } from '../plan-draft-count';
-import { answerInternal, type InternalRoom } from '../room-internal';
-import { readSessionAttachment, verifiedSessionOf, type SessionAttachment } from '../room-session';
+import type { InternalRoom } from '../room-internal';
+import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import { planHasTab } from '../db/tabs';
 import { readItem } from '../db/items';
 import type { Item } from '@liveplanner/items';
@@ -100,7 +96,7 @@ import {
   receiveShares,
   exportTables,
 } from './plan-room-doors';
-import { renewGrant, acceptSession, scopedTabShowsAll } from './plan-room-grants';
+import { renewGrant, acceptSession } from './plan-room-grants';
 import {
   ORDER_STATE_KEY,
   broadcast,
@@ -117,7 +113,6 @@ import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence
 import { purgedAt } from './plan-room-purged';
 import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
-import { notFound } from '../responses';
 import type { SheetWatches } from './sheet-watchers';
 import {
   listSheets,
@@ -593,22 +588,14 @@ export class PlanRoom extends DurableObject<Env> {
 
   // ---------- RPC: token doors (automation-incoming, automation-addresses, github-room, feed-room, roadmap-room) ---
 
-  // A rule's step from another app on this plan (automations/cross-app-door.ts), its author's grant checked by the
-  // internal door; an id nothing has written takes none.
-  async automationStep(
-    planId: string,
-    call: AutomationStepDoorCall,
-  ): Promise<AutomationStepAnswer> {
-    if (!bindStoredPlan(this, planId)) return { ok: false, code: 'no_access', reason: '' };
-    return planAutomationStep(this, call);
+  // A rule's step from another app on this plan (its author's grant checked by the internal door), and what its
+  // pickers may name here: the plan's boards and their columns (automations/cross-app-door.ts).
+  automationStep(planId: string, call: crossApp.StepCall): Promise<crossApp.StepAnswer> {
+    return crossApp.planAutomationStep(this, planId, call);
   }
 
-  // What a step's pickers may name here: the plan's boards and their columns.
-  async automationTarget(
-    planId: string,
-  ): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>> {
-    if (!bindStoredPlan(this, planId)) return { boards: [] };
-    return planAutomationTarget(this);
+  automationTarget(planId: string): Promise<crossApp.TargetHere> {
+    return crossApp.planAutomationTarget(this, planId);
   }
 
   // One call to a rule's address. An id nothing has written answers 401 and stays empty; a stored plan's schema is
@@ -672,48 +659,9 @@ export class PlanRoom extends DurableObject<Env> {
     return this.roomEnv;
   }
 
-  // The room's own doors: its internal endpoints (room-internal.ts) and the WebSocket upgrade. Takes what a
-  // stub's fetch takes, so the worker's relays (room-client.ts) call it the same way here as through a stub.
-  override async fetch(input: Request | string, init?: RequestInit): Promise<Response> {
-    const request = typeof input === 'string' || init ? new Request(input, init) : input;
-    const url = new URL(request.url);
-    const internal = await answerInternal(this.internal, request, url);
-    if (internal) return internal;
-    if (request.headers.get('Upgrade') !== 'websocket') {
-      return new Response('Expected WebSocket', { status: 426 });
-    }
-    // Server-resolved facts (set by the api worker before forwarding the upgrade): room-session.ts.
-    const v = verifiedSessionOf(request);
-    if (v.projectId) {
-      this.bindPlan(v.projectId);
-      // A purged plan takes no session (plan-room-purged.ts): its link answers as missing.
-      if ((await purgedAt(this)) !== null) return notFound();
-      if (v.head) await this.takeHead(v.head);
-    }
-    const pair = new WebSocketPair();
-    // WebSocketPair is a 2-property record keyed `0`/`1`. The "client" side is returned to the connecting peer; the
-    // "server" side is owned by this Durable Object.
-    const client = pair[0];
-    const server = pair[1];
-    const tabShowsAll = await scopedTabShowsAll(this, v.projectId, v.tabScope);
-    this.acceptSession(
-      server,
-      v.verifiedRole,
-      v.tabScope,
-      v.shareCode,
-      v.personTag,
-      v.workbenchPairing,
-      v.adderKey,
-      v.projectId,
-      v.grantExp ?? null,
-      v.account,
-      tabShowsAll,
-      v.collabKey ?? null,
-      v.reactionPerson ?? null,
-      v.apiToken ?? null,
-    );
-    this.armAlarm();
-    return new Response(null, { status: 101, webSocket: client });
+  // The room's own doors: its internal endpoints and the WebSocket upgrade (plan-room-fetch.ts).
+  override fetch(input: Request | string, init?: RequestInit): Promise<Response> {
+    return roomFetch(this, this.internal, input, init);
   }
 
   renewGrant(ws: WebSocket, ticket: unknown): Promise<void> {

@@ -1,11 +1,6 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
-import type {
-  AutomationStepAnswer,
-  AutomationStepDoorCall,
-  AutomationTargetDescription,
-} from '@liveworkspace/index-client';
-import { itemAutomationStep, itemAutomationTarget } from './automations/cross-app-door';
-import { type PutAwayRefusal, tellSourceChanged } from '@liveworkspace/index-app';
+import * as crossApp from './automations/cross-app-door';
+import type { PutAwayRefusal } from '@liveworkspace/index-app';
 import type { SourceChange } from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livediagram/api-schema';
@@ -22,7 +17,7 @@ import {
 } from '@livediagram/document';
 import { RoomLivePoll } from '../room-live-poll';
 import { RoomSelectionStore } from '../room-selections';
-import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
+import { RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
 import type { DocumentEnv, Env, ServerMessage } from '../types';
 import type { LoggedOp } from '../document-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
@@ -82,11 +77,10 @@ import {
   drainShares,
   ensureSchema,
   localNamespace,
-  MAINTENANCE_KEY,
   noteWrite,
-  restoreContentState,
   roomHeadSync,
 } from './room-content-state';
+import { ORDER_STATE_KEY, restoreRoom } from './room-restore';
 import * as rpc from './room-rpc';
 import { community, communityListing, communityPostTitle } from './room-community';
 import { renewGrant, roomFetch } from './room-grants';
@@ -173,10 +167,6 @@ import {
 // the log lives in memory (like opRates) and resets on hibernation, which
 // only ever forces the safe path (a resync), never data loss.
 const OP_LOG_LIMIT = 256;
-
-// DO storage key holding `{ epoch, seq }` so the room keeps its ordering
-// identity across a hibernation wake (docs/specs/012-collaboration/resync-without-reload.md).
-const ORDER_STATE_KEY = 'order-state';
 
 // How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
@@ -404,26 +394,8 @@ export class DocumentRoom extends DurableObject<Env> {
       () => Date.now(),
       () => crypto.randomUUID(),
     );
-    // Restore before any request can observe `epoch`/`seq`. A wake re-runs
-    // the constructor, so without this gate a socket could be handed the
-    // freshly-minted field values above and defeat the whole point.
-    void state.blockConcurrencyWhile(async () => {
-      const saved = await state.storage.get<{ epoch: string; seq: number }>(ORDER_STATE_KEY);
-      if (saved) {
-        this.epoch = saved.epoch;
-        this.seq = saved.seq;
-      } else {
-        // First instantiation for this document: adopt the random epoch above.
-        await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
-      }
-      await this.baton.restore();
-      await this.poll.restore();
-      for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
-      this.standing.restore(await state.storage.get(this.standing.key));
-      restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
-      await this.serviceStatus.restore();
-      this.armAlarm();
-    });
+    // Restore before any request can observe `epoch`/`seq` (room-restore.ts).
+    void state.blockConcurrencyWhile(() => restoreRoom(this));
   }
 
   // ---------- The document's content (room-content-state.ts) ----------------------------------------------------
@@ -585,18 +557,14 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // ---------- RPC: Automations' doors (@liveworkspace/automations/room doors.ts, standing.ts) --------------------
 
-  // A rule's step from another app on this item (automations/cross-app-door.ts), its author's grant checked by
-  // the internal door.
-  automationStep(documentId: string, call: AutomationStepDoorCall): Promise<AutomationStepAnswer> {
-    return itemAutomationStep(this, documentId, call);
+  // A rule's step from another app here (its author's grant checked by the internal door), and what its pickers may
+  // name here (automations/cross-app-door.ts).
+  automationStep(documentId: string, call: crossApp.StepCall): Promise<crossApp.StepAnswer> {
+    return crossApp.itemAutomationStep(this, documentId, call);
   }
 
-  // What a step's pickers may name here.
-  async automationTarget(
-    documentId: string,
-  ): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>> {
-    this.bindDocument(documentId);
-    return itemAutomationTarget(this, documentId);
+  automationTarget(documentId: string): Promise<crossApp.TargetHere> {
+    return crossApp.itemAutomationTarget(this, documentId);
   }
 
   // An Incoming Webhook call to one rule, proved by the rule's secret.
@@ -624,11 +592,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // A Sheet a linked chart reads changed (the index's source-changed door, @liveworkspace/index-app
   // tellSourceChanged): every open session hears the ids and reads it again with its own access.
   async sourceChanged(documentId: string, change: SourceChange): Promise<void> {
-    tellSourceChanged(
-      { bind: (id) => this.bindDocument(id), broadcast: (frame) => this.broadcast(frame) },
-      documentId,
-      change,
-    );
+    rpc.sourceChanged(this, documentId, change);
   }
 
   notifyAction(documentId: string, input: ActionNotice): Promise<boolean> {

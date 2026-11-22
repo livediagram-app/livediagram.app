@@ -142,3 +142,8 @@ export async function itemAutomationTarget(
       .map((t) => ({ id: t.id, name: t.name, parent: parents.get(t.id) ?? null })),
   };
 }
+
+// The room's doors' shapes, so each of its methods stays a line or two (document-room.ts stays under 800 lines).
+export type StepCall = AutomationStepDoorCall;
+export type StepAnswer = AutomationStepAnswer;
+export type TargetHere = Omit<AutomationTargetDescription, 'app' | 'title'>;

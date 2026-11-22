@@ -4,6 +4,7 @@
 // Split by Dashboard area under ./catalogue; this module is the one place
 // the views and tests import them from.
 
+export * from './catalogue/automations';
 export * from './catalogue/collaboration';
 export * from './catalogue/community';
 export * from './catalogue/cli-commands';

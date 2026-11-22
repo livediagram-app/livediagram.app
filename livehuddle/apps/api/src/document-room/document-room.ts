@@ -1,10 +1,5 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
-import type {
-  AutomationStepAnswer,
-  AutomationStepDoorCall,
-  AutomationTargetDescription,
-} from '@liveworkspace/index-client';
-import { itemAutomationStep, itemAutomationTarget } from './automations/cross-app-door';
+import * as crossApp from './automations/cross-app-door';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -588,18 +583,14 @@ export class DocumentRoom extends DurableObject<Env> {
 
   // ---------- RPC: Automations' doors (@liveworkspace/automations/room doors.ts, standing.ts) --------------------
 
-  // A rule's step from another app on this item (automations/cross-app-door.ts), its author's grant checked by
-  // the internal door.
-  automationStep(documentId: string, call: AutomationStepDoorCall): Promise<AutomationStepAnswer> {
-    return itemAutomationStep(this, documentId, call);
+  // A rule's step from another app here (its author's grant checked by the internal door), and what its pickers may
+  // name here (automations/cross-app-door.ts).
+  automationStep(documentId: string, call: crossApp.StepCall): Promise<crossApp.StepAnswer> {
+    return crossApp.itemAutomationStep(this, documentId, call);
   }
 
-  // What a step's pickers may name here.
-  async automationTarget(
-    documentId: string,
-  ): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>> {
-    this.bindDocument(documentId);
-    return itemAutomationTarget(this, documentId);
+  automationTarget(documentId: string): Promise<crossApp.TargetHere> {
+    return crossApp.itemAutomationTarget(this, documentId);
   }
 
   // An Incoming Webhook call to one rule, proved by the rule's secret.

@@ -115,6 +115,12 @@ export async function itemAutomationTarget(
   room: DocumentRoom,
   documentId: string,
 ): Promise<Pick<AutomationTargetDescription, 'tabs'>> {
+  room.bindDocument(documentId);
   const outline = await readDocumentOutline(room.requireEnv(), documentId);
   return { tabs: outline.tabs.map((t) => ({ id: t.id, name: t.name })) };
 }
+
+// The room's doors' shapes, so each of its methods stays a line or two (document-room.ts stays under 800 lines).
+export type StepCall = AutomationStepDoorCall;
+export type StepAnswer = AutomationStepAnswer;
+export type TargetHere = Omit<AutomationTargetDescription, 'app' | 'title'>;
