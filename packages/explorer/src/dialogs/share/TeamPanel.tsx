@@ -87,11 +87,7 @@ export function TeamPanel({
               className="h-9 w-full truncate rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-2 font-mono text-xs text-slate-700 outline-none transition duration-micro focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:ring-brand-500/20"
             />
           </div>
-          <Button
-            variant="solid"
-            onClick={() => void copy()}
-            className="h-9 shrink-0 whitespace-nowrap shadow-sm"
-          >
+          <Button onClick={() => void copy()} className="h-9 shrink-0 whitespace-nowrap shadow-sm">
             <span aria-hidden className="flex">
               {copied ? <CheckIcon size={13} /> : <CopyIcon size={13} />}
             </span>

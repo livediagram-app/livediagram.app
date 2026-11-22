@@ -199,7 +199,7 @@ describe('the Sign In card', () => {
       screen.getByText('On while email domains are set: only accounts can be at a domain.'),
     ).toBeTruthy();
     // Change opens the box with what is saved; Escape backs out and keeps the dialog.
-    fireEvent.click(screen.getByRole('button', { name: 'Change' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Change Email Domains' }));
     const again = screen.getByRole('textbox', { name: 'Email domains' }) as HTMLInputElement;
     expect(again.value).toBe('@acme.com @liveworkspace.app');
     fireEvent.keyDown(again, { key: 'Escape' });

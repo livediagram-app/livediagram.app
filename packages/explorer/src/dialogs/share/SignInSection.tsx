@@ -199,7 +199,13 @@ export function SignInSection({
                   </li>
                 ))}
               </ul>
-              <Button variant="secondary" size="xs" disabled={busy} onClick={openBox}>
+              <Button
+                variant="secondary"
+                size="xs"
+                disabled={busy}
+                onClick={openBox}
+                aria-label="Change Email Domains"
+              >
                 Change
               </Button>
             </div>
