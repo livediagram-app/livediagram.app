@@ -1,0 +1,6 @@
+# The e2e stacks' accounts Worker stand-in (../stack.mjs `accountsWorker`): registered under the accounts Worker's
+# name in the stack's own wrangler dev registry, so an api's ACCOUNTS service binding reaches it as it reaches
+# liveworkspace-accounts when deployed. Test-only: never deployed (no account_id, no routes).
+name = "liveworkspace-accounts"
+main = "index.mjs"
+compatibility_date = "2026-05-29"

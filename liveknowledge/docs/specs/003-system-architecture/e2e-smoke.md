@@ -291,6 +291,15 @@ answered citing the first, one sent with none comes back as a gap, a key contain
 the conflict check's request gets a reply that names no conflict. Under the same var only, `POST pages/<tab>/verify`
 takes an earlier moment from `X-E2E-Verified-At` (`verifyMoment`), so a spec can make a page due for review.
 
+### The accounts Worker stand-in
+
+A signed-in asker with no knowledgebase key asks accounts whose AI key applies, over the api's `ACCOUNTS` service
+binding only ([AI keys](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md)). With nothing behind that
+binding the answer is "unavailable", and Ask refuses rather than guess. So the stack runs a Worker under the
+accounts Worker's name (the root's `scripts/e2e-stack/accounts-worker`) in its own wrangler dev registry, one port
+above the api (`E2E_ACCOUNTS_WORKER_PORT`): it checks the api's client credentials and answers that no team or
+personal key applies, so Ask runs on built-in AI as it does deployed with none set.
+
 A new browser-risky feature adds one focused spec file here (or a case in the
 file of the feature it extends), linked from its own spec; depth stays in unit
 tests where it's cheap.
@@ -316,7 +325,8 @@ tests where it's cheap.
 - `scripts/e2e-stack.mjs`: this product's settings for the stack (its ports, canvas route, accounts client and
   the api's own vars); the root's `scripts/e2e-stack/stack.mjs` boots it and serves the static sites (live, help, marketing).
 - The root's `scripts/e2e-stack/` (shared with the other product stacks): `stack.mjs` (the boot and the static
-  server), `accounts-stand-in.mjs` (here without records: API tokens and profiles only), `processes.mjs`,
+  server), `accounts-stand-in.mjs` (here without records: API tokens and profiles only), `accounts-worker/` ("The accounts
+  Worker stand-in"), `processes.mjs`,
   `proxies.mjs` (the router's forwards and the WebSocket upgrade) and `static-serving.mjs` (caching, the Trusted Types
   header, the 404 page, the simulated deploy).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;
