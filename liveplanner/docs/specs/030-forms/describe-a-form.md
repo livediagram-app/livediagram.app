@@ -42,9 +42,11 @@ refusal words and no request or reply ever logged.
 
 - The line "Say what the form is for and what it should ask. You check the form before anything is made.", a text
   box ("An event RSVP asking for name, email, whether they’re coming, dietary needs and how many guests they’ll
-  bring"), its count ("120 / 500"), three example chips that fill the box (**Workshop Feedback**, **Volunteer
-  Sign-Up**, **Equipment Request**), the line "Uses AI: plans and forms share 10 drafts a day.", then **Cancel** and
-  **Draft Form** (also Ctrl or ⌘ Enter), disabled while the box is empty. While it drafts the button reads
+  bring") with **Try an Example** above it: three example chips that fill the box (**Workshop Feedback**,
+  **Volunteer Sign-Up**, **Equipment Request**). Under the box, its count ("120 / 500") and the source line, as
+  Describe a Plan's ([Which AI drafts it](../026-plan/describe-a-plan.md#which-ai-drafts-it)): the plan's team's key
+  for a joined member, else the person's own, else built-in AI. Then **Cancel** and **Draft Form** (also Ctrl or ⌘
+  Enter), disabled while the box is empty. While it drafts the button reads
   **Drafting…** and the box is read-only; Cancel stops waiting (the ask still counts).
 - These are Describe a Plan's own parts (the box, its count, the examples, the AI line, the sign-in nudge), shared,
   not copied.
@@ -125,7 +127,7 @@ The model's own words are never shown.
 
 ## Limits and cost
 
-- **One AI budget per account.** Describe a Form shares Describe a Plan's count: **10 drafts a day** (UTC), plans and
+- **One AI budget per account, on built-in AI.** On a key a draft counts toward nothing. On built-in AI, Describe a Form shares Describe a Plan's count: **10 drafts a day** (UTC), plans and
   forms together, counted per account on the server wherever they ask. A second count would double what one account
   can spend for no gain; one keeps the bill Describe a Plan's spec measured. Describe a Plan's cap words say so too.
 - An ask has **15 seconds** and answers at most **2,000 tokens**. The ask is about **4,400 characters** (about 1,100

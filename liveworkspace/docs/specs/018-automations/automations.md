@@ -275,6 +275,12 @@ As liveplanner's, the same numbers everywhere:
 - Summarise sends the item's text views (outline; pages and articles as Markdown), cut to the model's window, and
   nothing else. Its answer is text only: links it invents are dropped, as liveplanner's.
 - liveplanner keeps its three card AI steps (Summarise Card, Suggest Card Type, Triage).
+- **Which AI** ([ai-keys.md "In the apps"](../003-accounts/ai-keys.md#in-the-apps)). Describe a Rule runs on the
+  person's own key, or the item's team's, when one applies (a signed-in person in person; an API token gets built-in
+  AI), else on built-in AI. On a key it counts toward neither the item's AI asks a day nor its drafts a day. A rule's
+  AI steps always run on built-in AI: a run has no person's request behind it, so no key is fetched for it, even
+  for Run Rule. Describe a Rule's dialog and each AI step's panel show the source line (`AiSource`); an AI step's
+  reads "Built-in AI" with "Rules run on built-in AI, with this item's daily AI steps" and no action.
 
 ## Connections
 

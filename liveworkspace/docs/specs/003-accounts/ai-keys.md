@@ -136,8 +136,9 @@ provider }`, in the same batch as the change.
 - **A team key only for a member.** `teamId` (optional) names the item's team; accounts reads the person's membership
   itself, now. Not a joined member, and the team's key is not answered.
 - **A key only to an app that calls a model.** `want: 'key'` is answered only to the apps listed in
-  `AI_KEY_READERS` (liveknowledge today; an app that adopts the key is added in the same change), else
-  `403 not_a_key_reader`. Every registered app may ask `which`.
+  `AI_KEY_READERS` (every product: livediagram, liveplanner, livedocuments, livedesign, livehuddle and
+  liveknowledge, since [Every AI feature honours the choice](#every-ai-feature-honours-the-choice); an app that
+  adopts the key is added in the same change), else `403 not_a_key_reader`. Every registered app may ask `which`.
 - **`want`**: `key` answers `{ source: 'team' | 'account', provider, model, key }`; `which` answers the same without
   `key` (for a settings view saying which applies); none applies: `{ source: null }`. A key that will not open
   answers `409 ai_key_unreadable` `{ source }`, so the app says so rather than quietly using another.
@@ -147,7 +148,8 @@ provider }`, in the same batch as the change.
   when the call ends: never in KV, a Durable Object's storage, a module global, a log or telemetry. A key removed or
   replaced stops being answered at once, so it stops working at the next call.
 
-Unset `AI_KEY_SECRET`, the door answers `503 ai_keys_unavailable`. An app that cannot get an answer (accounts down,
+Unset `AI_KEY_SECRET`, the door answers `503 ai_keys_unavailable`, which `aiKeyFor` reads as no key (`none`): a
+deployment that keeps no keys has none to apply, and Settings already says "Built-in AI still works". An app that cannot get an answer (accounts down,
 slow, rate limited) for a signed-in person refuses the call in words ("Your AI key settings couldn't be reached just
 now"), never sending the person's words to built-in AI on a guess; an app with no accounts to ask (self-hosted) has
 no shared keys.
@@ -198,13 +200,71 @@ log line, error and email the code paths make for a planted key.
 
 ## In the apps
 
-- **liveknowledge** uses it first: Ask, Draft a Page and Describe to Set Up follow the order above (its own
-  knowledgebase key, the knowledgebase's team's, the person's, built-in AI); its background conflict check uses the
-  knowledgebase's key or built-in AI only. AI Settings and Ask's Answer With say which is in use ("Uses Your Key",
-  "Uses Your Team's Key", "Uses Built-In AI") and link to the shared setting
+### Every AI feature honours the choice
+
+Owner, 2026-11-22: every AI touchpoint "tells the user whether it uses the built in AI or their own key, and takes
+them to the settings page on the AI category so they can add their own key". So every model call an app makes for a
+person follows [Which key wins](#which-key-wins), and says which AI it runs on.
+
+- **Who has a key to use.** A request a signed-in person makes in person (their account's access token, sent as the
+  bearer). An API token, a workbench session, a guest and a link visitor have no key: their calls run on built-in
+  AI. So does work no person's request is behind (an Automation's AI steps, liveknowledge's conflict check), as
+  above.
+- **One door.** The app's server asks accounts `want: 'key'` (`aiKeyFor`) with the person's token and the item's
+  team (none before an item exists, as for Describe a Plan), then hands `@liveworkspace/ai`'s `ownKeyOf` the answer:
+  a key makes the call on the provider's own API through `callModel` (its address checked where it leaves,
+  `providerFetch`), anything else runs on built-in AI. Accounts could not answer: the call is refused in words, as
+  above. A key that is set but does not open: refused, `ai_key_unreadable`.
+- **Built-in AI's allowances are built-in AI's.** Daily caps and counts (Describe a Plan's and Describe a Form's
+  drafts a day, an item's AI asks a day, livediagram's photo reader's daily budget) are spent only by a call on
+  built-in AI. A call on a key counts toward none of them; the per-network rate limits that keep a server up still
+  apply.
+- **A key that fails says so.** A call on a key the provider refuses (`bad-key`, `no-credit`,
+  `model-unavailable`) or that will not open is answered `ai_key_failed` with `aiKey: { source, provider, kind }`
+  and the kind's fixed words, never the provider's. It never falls back to built-in AI. Other failures on a key (busy,
+  rate limited, declined) are said in the same fixed words and change nothing on the line.
+
+### The source line (AiSource)
+
+One shared component, `AiSource` (`@liveworkspace/settings-ui/ai-source`), drawn under the field of every AI feature:
+Describe a Plan, Describe a Form, Describe a Rule, the AI steps, livediagram's photo reader and liveknowledge's Ask,
+Describe to Set Up and Describe the Structure.
+
+- **Built-in AI**: a small sparkle mark, "Built-in AI", and the feature's own allowance as its quiet second line
+  ("Plans and forms share 20 drafts a day").
+- **Your Key** (or **Your Team's Key**, **This Knowledgebase's Key**): a mark in the provider's tone, the provider
+  and model ("Anthropic · Claude Sonnet 5.5"), never any part of the key, its hint included. "No daily limits" as the
+  second line.
+- **Key Needs Attention**: a warning mark and the failure's fixed words ("Claude did not accept the API key"), with
+  **Fix Key**. It shows after a call answered `ai_key_failed`, until the next answer or a change of key.
+- **Its action**, a quiet text button with a pointer cursor and a tooltip: **Use Your Own Key** on built-in AI,
+  **Change** on a key. It opens the Settings panel on the AI category over the open dialog, which stays open
+  underneath with what was typed. Escape closes Settings first.
+- **Who gets the action.** Anyone who can use the feature sees the line. The action is only for someone who can
+  change what applies: a signed-in account for their own key; for a team key, the team's admins (a member sees
+  "Your Team's Key" with the tooltip "Only the team's admins can change it"); for a knowledgebase's own key, its
+  Editors (opening its AI Settings). A guest sees no line: the features are for signed-in people.
+- **Closing Settings re-reads it, with no reload.** Settings › AI announces each change it makes
+  (`liveworkspace:ai-key-changed`, carrying no key), and every mounted line reads `GET /api/account/ai-key` again; the
+  next request follows the new answer by itself, since the server asks accounts on every call.
+- **Which line applies** is worked out in the page from the same `GET /api/account/ai-key` Settings reads: the item's
+  team's key for a joined member, else the person's own, else built-in AI. liveknowledge reads its own `GET ai`
+  instead, which knows the knowledgebase's key.
+- **Telemetry.** `UI Opened AiSourceSettings` when the action opens Settings, and `UI Added AiSourceKey` when a line
+  that opened Settings turns from built-in AI to a key. Neither carries a provider, model or key.
+
+### Each app
+
+- **liveknowledge**: Ask, Draft a Page and Describe to Set Up follow the order above (its own knowledgebase key, the
+  knowledgebase's team's, the person's, built-in AI); its background conflict check uses the knowledgebase's key or
+  built-in AI only. AI Settings and Ask's Answer With say which is in use and link to the shared setting
   ([search-and-ask.md](../../../../liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md#which-key-answers)).
-- **Every other app** shows the shared setting, and calls no model on it yet. livediagram's way in is
-  [Build with AI](../../../../livediagram/docs/specs/019-marketing/build-with-ai.md#your-own-ai-key).
+- **liveplanner**: Describe a Plan, Describe a Form and Describe a Rule
+  ([describe-a-plan.md](../../../../liveplanner/docs/specs/026-plan/describe-a-plan.md#which-ai-drafts-it)).
+- **Every app's Automations**: Describe a Rule runs on the person's key; the AI steps run on built-in AI
+  ([automations.md](../018-automations/automations.md#ai)).
+- **livediagram**: the photo reader ([note-reader.md](../../../../livediagram/docs/specs/021-event-storming/note-reader.md#on-your-own-key)).
+  Its way in is [Build with AI](../../../../livediagram/docs/specs/019-marketing/build-with-ai.md#your-own-ai-key).
 
 ## What it costs
 

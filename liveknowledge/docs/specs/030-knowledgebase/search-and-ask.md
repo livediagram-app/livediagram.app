@@ -41,7 +41,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   and no setup. A team that wants its own provider adds its **own key**, Claude's or OpenAI's
   ([Providers](#providers)), in **AI Settings**; once saved, everything that uses a model runs on it instead. A
   stored key that cannot be opened is refused ("Replace it in AI Settings"), never quietly swapped for built-in AI.
-  With no key, the Ask view says quietly under the field **Uses built-in AI**.
+  With no key, the Ask view shows the source line under the field: **Built-in AI**, with **Use Your Own Key**.
 - **Choosing which AI answers** (owner, 2026-11-21: "on Ask, I want to be able to choose whether to ask my configured
   AI, or the built in AI"). Once a key applies ([Which key answers](#which-key-answers)), the quiet line under Ask's field becomes a small choice of two, **Answer With**:
   **Built-In AI** and the team's key named by its model ("Claude Fable 5.2 (Team Key)"). The team's key is chosen
@@ -112,6 +112,12 @@ The knowledgebase's own key stays, and comes first.
   **Answer With**, whose second choice names the key's model and its source ("Claude Fable 5.2 (Team Key)", "(Your
   Key)", "(Knowledgebase Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
   `usesModel` and its name `usesModelLabel`, read for the asker; the AI Knowledge overview does not ask accounts.
+- **The source line** ([ai-keys.md "The source line"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#the-source-line-aisource)):
+  Ask, Describe to Set Up and Describe the Structure show the shared `AiSource` line in place of their own "Uses …"
+  words: the mark, which key ("This Knowledgebase's Key", "Your Team's Key", "Your Key", "Built-in AI") with the
+  model, and its action. On the knowledgebase's own key, **Change** is an Editor's and opens AI Settings; on the
+  team's, the person's or built-in AI it opens Settings › AI over the view, and closing it reads `GET ai` again, with
+  no reload. A key that fails says so on the line, with **Fix Key**.
 
 ## Built-in AI
 

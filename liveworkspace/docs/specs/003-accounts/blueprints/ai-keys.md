@@ -16,6 +16,9 @@ Scope, by file:
 | `packages/ai`                                             | `@liveworkspace/ai`: providers, models, `callModel`, `checkProviderKey`, `providerFetch`       |
 | `packages/auth-client/src/ai-key.ts`                      | `aiKeyFor`: an app's server asking over its binding                                            |
 | `packages/settings-ui/src/account-panels/ai/`             | The Settings panel's AI category                                                               |
+| `packages/ai/src/own-key.ts`                              | `ownKeyOf`: the accounts answer read into a caller, built-in AI, or a refusal                  |
+| `packages/ai/src/keyed-runner.ts`                         | `keyedRunner`: a Workers AI shaped `run` that calls the provider on a key instead              |
+| `packages/settings-ui/src/ai-source/`                     | `AiSource`, `useAiSource`, `aiSourceOf` and the `ai-key-changed` event                         |
 
 ## Domain and naming
 
@@ -186,3 +189,25 @@ body. `[ai-keys] saved|removed|model { kind, provider }`, `[ai-keys] check faile
 
 `AI_KEY_SECRET`, `AI_KEY_SECRET_PREVIOUS` (secrets, accounts, production and staging); `AI_KEY_LIMITER` (namespace
 1111, staging 2111) and `AI_KEY_WRITE_LIMITER` (1112, 2112) in `wrangler.toml`.
+
+## The apps' model calls
+
+Spec: [ai-keys.md "In the apps"](../ai-keys.md#in-the-apps).
+
+- **The route's order.** Read the request (its body, its gate) first, then ask accounts (`aiKeyFor`, `want: 'key'`),
+  then read `ownKeyOf(answer)`: `key` runs the call through `keyedRunner` (or `callModel` directly), `built-in` spends
+  the feature's allowance and runs on the `AI` binding as before, `refused` answers in words with nothing spent.
+  Accounts is asked only for a signed-in person's own bearer (never an API token, a workbench session or a guest),
+  and never on a page load.
+- **`keyedRunner`** takes the Workers AI request the drafts already build (`messages`, `response_format`,
+  `max_tokens`), puts the system message and the schema's instruction in the provider-neutral `ModelRequest`, and
+  answers `{ response: text }`, so `readAiReply` and every reader stay as they are. A failure throws the
+  `ModelCallError`; the bounded `ask` turns a key's (`bad-key`, `no-credit`, `model-unavailable`) into
+  `{ ok: false, keyFailure }`, which the route answers as `ai_key_failed`.
+- **Images.** `ModelMessage.content` may be a list of parts (`text`, `image` with a media type and base64 data), for
+  livediagram's photo reader; Claude gets `image` blocks with a base64 source, OpenAI `input_image` with a data URL,
+  built-in AI the text parts only.
+- **The page.** `useAiSource` reads `GET /api/account/ai-key` once per mount (no poll), and again on each
+  `liveworkspace:ai-key-changed` window event, which `AiKeyPanel` dispatches after every change it makes, with no
+  payload. `aiSourceOf(answer, teamId)` is pure: the team's key for a team the person has joined, else their own, else
+  built-in AI.

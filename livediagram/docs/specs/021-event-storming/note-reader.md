@@ -47,6 +47,24 @@ but unused`) rather than left as a dead secret nobody notices.
   times the speed (docs/research/vision/handwriting-readers.md). These models spend tokens on
   reasoning before the answer, so `max_tokens` must leave room for it.
 
+## On your own key
+
+The platform's rule ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)):
+a signed-in person with their own key (Settings › AI), or the canvas's team's, has the notes read by it, on the
+key's provider and model (Claude or OpenAI, both of which read pictures), in place of the deployment's model or the
+device.
+
+- **The route asks accounts first.** For a signed-in person in person (their own bearer), before the provider check:
+  a key reads the crops whether or not the deployment has a model, and spends neither the deployment's daily budget
+  (`AI_DAILY_CAP`) nor anything else built-in AI counts. The origin allow-list, the sign-in gate and the per-network
+  rate limiter still run first. No key: the deployment's model, as below.
+- **The editor knows from the source line.** On a key the server reads even where `aiEnabled` is false.
+- **A key that fails** (`ai_key_failed`: refused, out of credit, a model it can't use) is said in the review with
+  **Fix Key**, and the notes are not sent to the deployment's model or read on the device instead.
+- **The review shows the source line** (`AiSource`) under its reading progress: **Built-in AI** (the deployment's
+  model or this device, both included with livediagram) or **Your Key** with the provider and model, and **Use Your
+  Own Key** or **Change**, which opens Settings on its AI category over the review.
+
 ## The route
 
 - **Admission** (`routes/ai-gate.ts`), in this order: a provider resolves → origin allow-list

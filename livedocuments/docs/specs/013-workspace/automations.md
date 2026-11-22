@@ -120,6 +120,7 @@ over this app's kinds, with pictures of its own in the pickers:
 - **Add a Tab from a Template** offers the templates New Tab does.
 - The Templates gallery holds the table above in four sections: **Keep It Safe**, **Stay in the Loop**, **Versions
   and Reviews** and **Agents and Tools**.
+- Which AI ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)): Describe a Rule runs on the person's own key, or the document's team's, when one applies, else built-in AI, and its dialog shows the source line with Try an Example above the box; Summarise with AI always runs on built-in AI, and its panel says so.
 - Describe a Rule offers examples a document fits ("Every Friday at 5, name a version and email me", "Tell Slack
   when someone comments", "Restore my form letter every night").
 - The empty state's **How Rules Work** opens the help centre's Automations article (`/help/tools/automations`).
