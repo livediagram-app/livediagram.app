@@ -1,5 +1,5 @@
-// Approval, the comments at a page's foot and its reactions from the editor (docs/specs/030-knowledgebase/approval.md,
-// page-comments.md, page-reactions.md): one request each through the knowledge funnel (lib/api/knowledge.ts), the refusals the
+// Approval, the comments at a page's foot, its reactions and its watch from the editor (docs/specs/030-knowledgebase/
+// approval.md, page-comments.md, page-reactions.md, watching.md): one request each through the knowledge funnel (lib/api/knowledge.ts), the refusals the
 // interface words itself kept out of the failure report.
 import type {
   PageApprovalAction,
@@ -13,6 +13,8 @@ import type {
   PageThreadChange,
   PageThreadChangeResponse,
   PageThreadsResponse,
+  PageWatchResponse,
+  PageWatchScope,
 } from '@liveknowledge/api-schema';
 import { apiFetch, expectOk } from './core';
 import { knowledgeHeaders, knowledgeSignal, knowledgeUrl, type KnowledgeCaller } from './knowledge';
@@ -42,6 +44,12 @@ const EXPECTED = new Set([
   'reactions_full',
   'too_many_reactions',
   'reacting_too_fast',
+  // Watching (knowledge-watch-routes.ts).
+  'watch_needs_account',
+  'not_a_section',
+  'section_out_of_reach',
+  'watchers_full',
+  'watching_too_fast',
 ]);
 const expected = (code: string | null) => code !== null && EXPECTED.has(code);
 
@@ -120,4 +128,34 @@ export async function apiChangePageReaction(
 ): Promise<PageReactionChangeResponse> {
   const res = await post(who, pageUrl(documentId, tab, 'reactions'), change);
   return expectOk<PageReactionChangeResponse>(res, 'react to page', expected);
+}
+
+/** Whether the caller watches the page (or a section above it), and how many do. */
+export async function apiPageWatch(
+  who: KnowledgeCaller,
+  documentId: string,
+  tab: string,
+  signal?: AbortSignal,
+): Promise<PageWatchResponse> {
+  const res = await apiFetch(pageUrl(documentId, tab, 'watch'), {
+    headers: await knowledgeHeaders(who),
+    signal: knowledgeSignal(signal),
+  });
+  return expectOk<PageWatchResponse>(res, 'read page watch', expected);
+}
+
+/** Watch the page, its section, or neither. Answers the page's watch as stored. */
+export async function apiSetPageWatch(
+  who: KnowledgeCaller,
+  documentId: string,
+  tab: string,
+  scope: PageWatchScope | null,
+): Promise<PageWatchResponse> {
+  const res = await apiFetch(pageUrl(documentId, tab, 'watch'), {
+    method: 'PUT',
+    headers: await knowledgeHeaders(who, true),
+    body: JSON.stringify({ scope }),
+    signal: knowledgeSignal(),
+  });
+  return expectOk<PageWatchResponse>(res, 'watch page', expected);
 }

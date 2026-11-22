@@ -5,7 +5,8 @@
 // they have not written in themselves), Offline's rows included. At 0 the sidebar and the rail show no badge;
 // forms, threads they replied in and work they handed out are listed but not counted. An access request on an item
 // they manage (request-access.md "In the Inbox") asks something of them, so it counts, as does an agent's suggested
-// edit waiting on a page of theirs (one-explorer-contracts.md "Inbox", "Suggested edits").
+// edit waiting on a page of theirs (one-explorer-contracts.md "Inbox", "Suggested edits"). An update on a page they
+// watch (liveknowledge's Watching) asks nothing: it is listed under its own filter and never counted.
 
 import type {
   InboxAccessRequest,
@@ -13,6 +14,8 @@ import type {
   InboxForm,
   InboxSuggestion,
   InboxThread,
+  InboxUpdate,
+  UpdateKind,
 } from '@liveworkspace/index-client';
 import type { Located } from '../../types';
 
@@ -45,6 +48,22 @@ export const ACCESS_REASON: InboxReason = { kind: 'access', label: 'Wants access
 
 /** A suggested edit's reason. */
 export const SUGGESTION_REASON: InboxReason = { kind: 'suggestion', label: 'Suggested an edit' };
+/** Each update kind's word, as a row's status says it. */
+export const UPDATE_KIND_LABEL: Record<UpdateKind, string> = {
+  saved: 'Edited',
+  review_due: 'Verification Lapsed',
+  approved: 'Approved',
+  rejected: 'Rejected',
+  moved: 'Moved',
+  deleted: 'Deleted',
+};
+
+/** An update's reason: its first kind's word, and "+N" for the others ("Edited +1"). */
+export function updateReason(u: Pick<InboxUpdate, 'kinds'>): InboxReason {
+  const [first, ...rest] = u.kinds;
+  const word = first ? UPDATE_KIND_LABEL[first] : 'Changed';
+  return { kind: 'update', label: rest.length > 0 ? `${word} +${rest.length}` : word };
+}
 
 /** A form's reason: how many responses the person hasn't seen. */
 export const formReason = (unseen: number): InboxReason => ({
@@ -59,7 +78,14 @@ export const formReason = (unseen: number): InboxReason => ({
 
 /** What a row is, as the telemetry names it (`Activity·Selected`). */
 export type InboxEntryKind =
-  'Action' | 'Card' | 'Thread' | 'CardThread' | 'FormResponses' | 'AccessRequest' | 'Suggestion';
+  | 'Action'
+  | 'Card'
+  | 'Thread'
+  | 'CardThread'
+  | 'FormResponses'
+  | 'AccessRequest'
+  | 'Suggestion'
+  | 'Update';
 
 export type InboxActionEntry = {
   key: string;
@@ -97,13 +123,25 @@ export type InboxSuggestionEntry = {
   row: InboxSuggestion;
   at: number;
 };
+export type InboxUpdateEntry = {
+  key: string;
+  kind: 'Update';
+  forMe: false;
+  row: InboxUpdate;
+  at: number;
+};
 export type InboxEntry =
-  InboxActionEntry | InboxThreadEntry | InboxFormEntry | InboxAccessEntry | InboxSuggestionEntry;
+  | InboxActionEntry
+  | InboxThreadEntry
+  | InboxFormEntry
+  | InboxAccessEntry
+  | InboxSuggestionEntry
+  | InboxUpdateEntry;
 
 /** The filter bar's choices. `mine`: assigned to me; `waiting`: assigned by me; `comments`: threads (mentions, on my
  *  items, replies); `forms`: forms with new responses; `requests`: access requests on items I manage; `suggestions`:
- *  suggested edits waiting on my pages. The last two are offered only while there is one (or it is the choice:
- *  `shownFilters`). */
+ *  suggested edits waiting on my pages; `updates`: changes to pages I watch. The last three are offered only while
+ *  there is one (or it is the choice: `shownFilters`). */
 export const INBOX_FILTERS = [
   'all',
   'mine',
@@ -112,6 +150,7 @@ export const INBOX_FILTERS = [
   'forms',
   'requests',
   'suggestions',
+  'updates',
 ] as const;
 export type InboxFilter = (typeof INBOX_FILTERS)[number];
 
@@ -123,6 +162,7 @@ export const INBOX_FILTER_LABEL: Record<InboxFilter, string> = {
   forms: 'Form Responses',
   requests: 'Access Requests',
   suggestions: 'Suggested Edits',
+  updates: 'Updates',
 };
 
 /** The token a filter change reports (`Activity·Changed`). */
@@ -134,6 +174,7 @@ export const INBOX_FILTER_TELEMETRY: Record<InboxFilter, string> = {
   forms: 'FormResponses',
   requests: 'AccessRequests',
   suggestions: 'SuggestedEdits',
+  updates: 'Updates',
 };
 
 export function isInboxFilter(v: unknown): v is InboxFilter {
@@ -154,14 +195,16 @@ export function entryFilter(e: InboxEntry): Exclude<InboxFilter, 'all'> {
       return 'requests';
     case 'Suggestion':
       return 'suggestions';
+    case 'Update':
+      return 'updates';
   }
 }
 
 // The filters offered only while they hold a row (or are the choice).
-const WHILE_LISTED: readonly InboxFilter[] = ['requests', 'suggestions'];
+const WHILE_LISTED: readonly InboxFilter[] = ['requests', 'suggestions', 'updates'];
 
-/** The filters the dropdown offers: Access Requests and Suggested Edits only while there is one or it is the choice,
- *  so someone who never shares, or has no agent suggesting edits, never sees them. */
+/** The filters the dropdown offers: Access Requests, Suggested Edits and Updates only while there is one or it is the
+ *  choice, so someone who never shares, has no agent suggesting edits, or never watches a page, never sees them. */
 export function shownFilters(
   counts: Record<InboxFilter, number>,
   chosen: InboxFilter,
@@ -176,10 +219,11 @@ export {
   settledOf,
   suggestionKey,
   threadKey,
+  updateKey,
   withoutSettled,
   type InboxSettled,
 } from './inbox-keys';
-import { actionKey, formKey, requestKey, suggestionKey, threadKey } from './inbox-keys';
+import { actionKey, formKey, requestKey, suggestionKey, threadKey, updateKey } from './inbox-keys';
 
 /** Every row, newest first: one pass to build, one sort. */
 export function inboxEntries(s: InboxSections): InboxEntry[] {
@@ -243,6 +287,9 @@ export function inboxEntries(s: InboxSections): InboxEntry[] {
       at: r.createdAt,
     });
   }
+  for (const r of s.updates) {
+    out.push({ key: updateKey(r), kind: 'Update', forMe: false, row: r, at: r.latestAt });
+  }
   return out.sort((a, b) => b.at - a.at);
 }
 
@@ -256,6 +303,7 @@ export function inboxFilterCounts(entries: readonly InboxEntry[]): Record<InboxF
     forms: 0,
     requests: 0,
     suggestions: 0,
+    updates: 0,
   };
   for (const e of entries) c[entryFilter(e)]++;
   return c;

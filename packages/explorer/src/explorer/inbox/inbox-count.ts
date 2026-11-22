@@ -10,6 +10,7 @@ import type {
   InboxForm,
   InboxSuggestion,
   InboxThread,
+  InboxUpdate,
 } from '@liveworkspace/index-client';
 import type { Located } from '../../types';
 import type { InboxData } from '../../data/useInbox';
@@ -22,6 +23,7 @@ export type InboxSections = {
   threads: Located<InboxThread>[];
   requests: InboxAccessRequest[];
   suggestions: InboxSuggestion[];
+  updates: InboxUpdate[];
 };
 
 const NONE: InboxSections = {
@@ -31,6 +33,7 @@ const NONE: InboxSections = {
   threads: [],
   requests: [],
   suggestions: [],
+  updates: [],
 };
 
 // With no viewer id (signed out), every open action reads as theirs.
@@ -47,6 +50,7 @@ export function inboxSections(data: InboxData | null, viewerId: string | null): 
     // The reader's own request (a team member who once could not reach a team item) is never theirs to answer.
     requests: (data.accessRequests ?? []).filter((r) => !viewerId || r.requesterId !== viewerId),
     suggestions: data.suggestions ?? [],
+    updates: data.updates ?? [],
   };
 }
 
@@ -112,7 +116,8 @@ export type InboxReason =
   | { kind: 'agent'; label: 'Your agent wrote' }
   | { kind: 'responses'; label: string }
   | { kind: 'access'; label: 'Wants access' }
-  | { kind: 'suggestion'; label: 'Suggested an edit' };
+  | { kind: 'suggestion'; label: 'Suggested an edit' }
+  | { kind: 'update'; label: string };
 
 /** Why a thread is on the page: a mention is the most direct reason, so it wins; then the item being theirs, until
  *  they reply themselves; then that they are in it: someone else wrote last (Replied to you), or they did (You

@@ -5,6 +5,7 @@
 // the page's row in `page_approvals` are written in one transaction and told to every open editor, as Verify is
 // (saveFields). A rejection emails the page's owner.
 import { getParticipant } from '../person/profiles';
+import { noteWatched } from '../knowledge/watch-notes';
 import {
   APPROVAL_NOTE_MAX,
   applyApproval,
@@ -116,6 +117,13 @@ export async function handleApproval(
   );
   if (!response.ok) return response;
   console.info('[knowledge] approval', { documentId: document.id, tabId: tab, action });
+  // A decision is news to the page's watchers (watching.md "Approved, Rejected"); a request or a withdrawal is not.
+  if ((action === 'approve' || action === 'reject') && account)
+    await noteWatched(ctx.env, {
+      tabs: [tab],
+      kind: action === 'approve' ? 'approved' : 'rejected',
+      actor: () => ({ id: account, name: caller.name || 'Someone' }),
+    });
   if (action === 'reject' && account) {
     const title = document.tabs.find((t) => t.id === tab)?.name ?? '';
     const sending = sendPageRejected(

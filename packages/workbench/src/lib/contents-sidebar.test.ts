@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   contentsClusterLeft,
   contentsSidebarClearancePx,
@@ -48,6 +49,13 @@ describe('restingRect: the sidebar measured where it comes to rest', () => {
     expect(translateOf(undefined)).toEqual([0, 0]);
     expect(translateOf('640px')).toEqual([640, 0]);
     expect(translateOf('-12px 4px')).toEqual([-12, 4]);
+    expect(translateOf('calc(-50% + 4px) 2px', 200, 0)).toEqual([-96, 2]);
+    expect(translateOf('4px  ) 2px')).toEqual([4, 0]);
+    expect(translateOf('   ')).toEqual([0, 0]);
+    const ms = cpuMsOf(() =>
+      expect(translateOf(`${'1'.repeat(50_000)} ${' '.repeat(50_000)}(`)).toEqual([0, 0]),
+    );
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
     expect(translateOf('50% 0px')).toEqual([0, 0]);
   });
 

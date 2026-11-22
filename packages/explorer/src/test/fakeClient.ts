@@ -117,7 +117,13 @@ export function createFakeIndex(
   const fail = new Map<string, IndexError>();
   const hold = new Set<string>();
   let waiting: (() => void)[] = [];
-  const inbox: InboxResponse = { threads: [], actions: [], forms: [], accessRequests: [] };
+  const inbox: InboxResponse = {
+    threads: [],
+    actions: [],
+    forms: [],
+    accessRequests: [],
+    updates: [],
+  };
 
   function answer<T>(
     method: string,
@@ -353,6 +359,7 @@ export function createFakeIndex(
           (r) => !query.app || r.app === query.app,
         ),
         suggestions: (inbox.suggestions ?? []).filter((r) => !query.app || r.app === query.app),
+        updates: (inbox.updates ?? []).filter((u) => !query.app || u.app === query.app),
       })),
     // Request Access (request-access.md): a grant or a decline closes the open request.
     grantAccessRequest: (itemId: string, requestId: string, input: { level?: string } = {}) =>

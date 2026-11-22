@@ -9380,6 +9380,89 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PageWatchChange": {
+    "additionalProperties": false,
+    "description": "`PUT .../pages/<tab>/watch`: the caller's watch of this page; null removes it.",
+    "properties": {
+      "scope": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PageWatchScope"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "scope"
+    ],
+    "type": "object"
+  },
+  "PageWatchResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "section": {
+        "description": "Whether the page has subpages, so Watch This Section is offered.",
+        "type": "boolean"
+      },
+      "through": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "tab": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "tab",
+              "name"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "The nearest section above the page the caller watches, when that is what covers it and the page has no watch of its own."
+      },
+      "watchers": {
+        "description": "How many people's watches cover the page, once each.",
+        "type": "number"
+      },
+      "watching": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PageWatchScope"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "The caller's own watch of this page; null when they have none here (or are a guest, or an agent)."
+      }
+    },
+    "required": [
+      "watching",
+      "through",
+      "watchers",
+      "section"
+    ],
+    "type": "object"
+  },
+  "PageWatchScope": {
+    "description": "A page alone, or the page and every page under it.",
+    "enum": [
+      "page",
+      "section"
+    ],
+    "type": "string"
+  },
   "PagesAnswer": {
     "additionalProperties": false,
     "properties": {

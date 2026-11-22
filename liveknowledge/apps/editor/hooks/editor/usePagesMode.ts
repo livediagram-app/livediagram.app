@@ -50,6 +50,7 @@ import { lastPageKey } from '@/lib/last-page';
 import { currentPageIdNow, setCurrentPageKind } from '@/lib/current-page-kind';
 import { useLastPage } from './useLastPage';
 import { textHasCaretIn, usePageSnap } from './usePageSnap';
+import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
 import { getActiveArticle } from '@/lib/article/article-editor-store';
 import {
   cardInFrontOf,
@@ -320,9 +321,12 @@ export function usePagesMode(deps: {
     // oxlint-disable-next-line react/exhaustive-deps -- once per change of the card in front, drawn
   }, [flipTo?.id]);
   // The view rests on a page once a pan or a zoom lets go (docs/specs/007-editor/pages-mode.md
-  // "Getting around the pages").
+  // "Getting around the pages"). Not on a page read in its own scrolled column (the page surface, which has no zoom
+  // and no panning): its view moves down the page as the column scrolls, so a snap there would frame the page's top
+  // and scroll the reader back up at the next click, the moment after On This Page or a found passage scrolled to
+  // what they picked (WI-1372).
   usePageSnap({
-    on: true,
+    on: !pageViewportOf(deps.viewport),
     pages,
     viewport: deps.viewport,
     measure: () => {

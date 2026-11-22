@@ -448,6 +448,7 @@ Migrations, in order:
 - `0025_assistant_notices.sql` (a revoked AI tool's notices to the apps, Work Tracker 1294)
 - `0026_items_liveknowledge.sql`
 - `0027_collab_suggestions.sql` (a tab's suggested edits for the Inbox, Work Tracker 1362)
+- `0028_item_updates.sql` (updates on watched pages for the Inbox, Work Tracker 1340)
 
 | Table                  | Columns                                                                                                                                                                                                                                                                 | Created in                                       |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |

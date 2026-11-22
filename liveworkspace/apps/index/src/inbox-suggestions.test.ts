@@ -156,6 +156,6 @@ describe('Inbox suggested edits', () => {
     const spy = vi.spyOn(h.db.env.INDEX_DB, 'batch');
     await inbox(ada.auth);
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(spy.mock.calls[0]![0]).toHaveLength(7);
+    expect(spy.mock.calls[0]![0]).toHaveLength(8);
   });
 });

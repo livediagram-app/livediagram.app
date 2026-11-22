@@ -120,7 +120,7 @@ function list(el: Element, depth: number): string[] {
 function table(el: Element): string {
   const rows = [...el.querySelectorAll('tr')]
     .filter((row) => row.closest('table') === el)
-    .map((row) => [...row.children].map((cell) => squash(inline(cell)).replace(/\|/g, '\\|')));
+    .map((row) => [...row.children].map((cell) => squash(inline(cell)).replace(/[\\|]/g, '\\$&')));
   const width = Math.max(0, ...rows.map((row) => row.length));
   if (width === 0) return '';
   const line = (row: string[]): string =>

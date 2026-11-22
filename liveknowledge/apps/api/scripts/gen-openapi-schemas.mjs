@@ -34,6 +34,8 @@ export const ROOT_TYPES = [
   'PageHealthResponse',
   'PageKnowledgePatch',
   'PageApprovalRequest',
+  'PageWatchResponse',
+  'PageWatchChange',
   'PageThreadsResponse',
   'PageThreadChange',
   'PageThreadChangeResponse',

@@ -101,7 +101,9 @@ export function createPageViewportStore(options: {
   };
 }
 
-/** The page store behind a viewport store, or null when the store is the shared, unlocked one (a test's). */
-export function pageViewportOf(store: ViewportStore): PageViewportStore | null {
-  return 'lockTo' in store ? (store as PageViewportStore) : null;
+/** The page store behind a viewport store, or null when the store is the shared, unlocked one (a test's) or none. */
+export function pageViewportOf(
+  store: Pick<ViewportStore, 'get' | 'subscribe'> | undefined,
+): PageViewportStore | null {
+  return store && 'lockTo' in store ? (store as PageViewportStore) : null;
 }

@@ -43,6 +43,7 @@ const thread = (patch: Partial<InboxThread> = {}): InboxThread => ({
 const sections = (threads: InboxThread[]): InboxSections => ({
   forMe: [],
   byMe: [],
+  updates: [],
   forms: [],
   threads,
   requests: [],

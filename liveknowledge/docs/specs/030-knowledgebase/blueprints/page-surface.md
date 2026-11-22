@@ -92,7 +92,11 @@ shared `createViewportStore`.
 - **A scroll tells no reader** unless `followsScroll()`: then the view's subscribers are told once a frame, which
   only the multi-selection toolbar and the draw guides read. `Canvas` subscribes to the lock alone, so it never
   renders for a scroll.
-- `pageViewportOf(store)` answers the page store behind a `ViewportStore`, or null for the shared one (a test).
+- `pageViewportOf(store)` answers the page store behind a `ViewportStore`, or null for the shared one (a test) or none.
+- **No rest's snap.** Pages mode's snap (`usePageSnap`, which glides the view onto a page once a press lets go or
+  the view rests) is off on the page store (`usePagesMode`: `on: !pageViewportOf(viewport)`). The store's view moves
+  down the page with the scroll, so a snap framed the page's top and scrolled the reader back up at the next press,
+  just after On This Page or a found passage scrolled to what they picked (WI-1372).
 
 ## The scroll container (built)
 

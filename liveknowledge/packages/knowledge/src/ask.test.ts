@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { answerEvents, fakeFetch, streamResponse } from '@liveworkspace/ai/testing';
 import { knowledgeDb } from './__fixtures__/db';
 import { flowOf, para } from './__fixtures__/writing';
@@ -228,6 +229,20 @@ describe('the request Ask sends', () => {
       { role: 'user', content: askMessage('When do we deploy?', passages) },
     ]);
     expect(request.system).not.toContain('Tuesdays');
+  });
+
+  it('takes citations out of a long earlier answer in one pass', () => {
+    const answer = `Start${' '.repeat(100_000)}end [2]  [3].`;
+    let messages: ReturnType<typeof askRequest>['messages'] = [];
+    const ms = cpuMsOf(() => {
+      messages = askRequest({
+        question: 'And now?',
+        passages,
+        turns: [{ question: 'Q?', answer }],
+      }).messages;
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
+    expect(messages[1]!.content).toBe(`<answer>\nStart${' '.repeat(100_000)}end.\n</answer>`);
   });
 
   it('keeps the conversation: earlier turns without passages or their citation numbers, at most 10 turns', () => {

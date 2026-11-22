@@ -38,13 +38,7 @@ export function KnowledgebaseStyleScene() {
                   Heading
                 </Label>
                 <Lines x={cx + 9} y={80} widths={[70, 58]} gap={6} h={3} />
-                <rect
-                  x={cx + 9}
-                  y={96}
-                  width={2}
-                  height={10}
-                  className={look.head.replace('fill-', 'fill-')}
-                />
+                <rect x={cx + 9} y={96} width={2} height={10} className={look.head} />
                 <Lines x={cx + 14} y={98} widths={[54]} h={3} />
                 <rect
                   x={cx + 9}

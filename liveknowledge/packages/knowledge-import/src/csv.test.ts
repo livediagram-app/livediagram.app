@@ -24,6 +24,10 @@ describe('csvToMarkdownTable', () => {
     );
   });
 
+  it('escapes a backslash before a pipe, so a cell ending in one cannot open a column', () => {
+    expect(csvToMarkdownTable('a,b\nC:\\,x|y')).toContain('| C:\\\\ | x\\|y |');
+  });
+
   it('answers nothing for an empty file', () => {
     expect(csvToMarkdownTable('\n')).toBe('');
   });

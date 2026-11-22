@@ -31,6 +31,7 @@ import { sweep } from './purge';
 import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountEvents } from './event-push';
 import { sweepEvents } from './events';
+import { sweepUpdates } from './updates';
 import { sweepTeamAudit } from './team-audit';
 import { kickWebhooks, queuedCount } from './webhooks/outbox';
 import { handleItemWebhooks, handleWebhooks } from './webhooks/routes';
@@ -326,6 +327,11 @@ const worker = {
     await step('events', async () => {
       const { deleted, more } = await sweepEvents(env);
       console.info(`[index] events swept: ${deleted}${more ? ', more left for tomorrow' : ''}`);
+    });
+    // Inbox updates past their 14 days (updates.ts).
+    await step('updates', async () => {
+      const { deleted, more } = await sweepUpdates(env);
+      console.info(`[index] updates swept: ${deleted}${more ? ', more left for tomorrow' : ''}`);
     });
     // The team audit log's rows past the year (team-audit.ts).
     await step('team audit', async () => {

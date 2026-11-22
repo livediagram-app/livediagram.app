@@ -16,6 +16,7 @@ import type {
   ItemSummary,
   AppEvent,
 } from './types';
+import type { UpdatePush } from './updates';
 import type { AutomationSend, AutomationSendResult, CardMove } from './webhooks';
 import type { AutomationStepAnswer, AutomationStepPush } from './automation-steps';
 import { appConnectionPath } from './connections';
@@ -84,6 +85,9 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       put(`/items/${enc(itemId)}/summary`, { summary, updatedAt }),
     pushCollab: (itemId: string, tabId: string, push: CollabPush) =>
       put(`/items/${enc(itemId)}/collab/${enc(tabId)}`, push),
+    // The item's whole set of updates (pages someone watches), replacing what the index held; [] clears it.
+    pushUpdates: (itemId: string, updates: readonly UpdatePush[]) =>
+      put(`/items/${enc(itemId)}/updates`, { updates }),
     // A form's response count for the Inbox's Form Responses, or null to take it off.
     pushForm: (itemId: string, tabId: string, form: CollabFormInput | null) =>
       put(`/items/${enc(itemId)}/forms/${enc(tabId)}`, { form }),

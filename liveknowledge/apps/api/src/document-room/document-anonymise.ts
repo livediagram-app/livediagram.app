@@ -78,6 +78,19 @@ export async function anonymiseDocument(
     db.prepare(`DELETE FROM notify_claims WHERE ${isAnySql('sender')}`).bind(idList),
     // Their reactions on pages (docs/specs/030-knowledgebase/page-reactions.md): a tap, not content, so they go.
     db.prepare(`DELETE FROM page_reactions WHERE ${isAnySql('person')}`).bind(idList),
+    // Their watches (docs/specs/030-knowledgebase/watching.md): nobody is left to tell.
+    db.prepare(`DELETE FROM page_watchers WHERE ${isAnySql('person')}`).bind(idList),
+    // And who they were in what changed on watched pages: their ids and their names leave the updates.
+    db
+      .prepare(
+        `UPDATE watch_updates SET
+           actor_ids = (SELECT json_group_array(value) FROM json_each(watch_updates.actor_ids)
+                         WHERE value NOT IN (SELECT value FROM json_each(?1))),
+           actors = (SELECT json_group_array(json(value)) FROM json_each(watch_updates.actors)
+                      WHERE json_extract(value, '$.id') NOT IN (SELECT value FROM json_each(?1)))
+         WHERE EXISTS (SELECT 1 FROM json_each(watch_updates.actor_ids) WHERE value IN (SELECT value FROM json_each(?1)))`,
+      )
+      .bind(idList),
   );
   const results = await db.batch(writes);
   const versionWrites: D1PreparedStatement[] = [];

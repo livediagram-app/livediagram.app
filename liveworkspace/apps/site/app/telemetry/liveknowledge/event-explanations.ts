@@ -71,6 +71,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone filtered the Explorer's Inbox to Comments: mentions, threads on their items and replies.",
   'Activity|Changed|FormResponses':
     "Someone filtered the Explorer's Inbox to Form Responses: forms with responses they haven't seen.",
+  'Activity|Changed|Updates':
+    "Someone filtered the Explorer's Inbox to Updates: changes to the pages and sections they watch.",
+  'Activity|Selected|Update':
+    "Someone opened a page they watch from an update in the Explorer's Inbox, from its reading pane.",
   'Activity|Added|Reply':
     "Someone replied to a comment thread from the Explorer's Inbox reading pane, without opening the item.",
   'Activity|Resolved|Thread':
@@ -861,6 +865,15 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on the Knowledgebase Reviews emails in Settings: review due, pages that disagree, owner reminders.',
   'UI|Toggled|NotifyKnowledgeReviewsOff':
     'Someone switched off the Knowledgebase Reviews emails in Settings.',
+  'UI|Toggled|WatchPageOn': 'Someone started watching a page, to hear when it changes.',
+  'UI|Toggled|WatchPageOff': 'Someone stopped watching a page.',
+  'UI|Toggled|WatchSectionOn':
+    'Someone started watching a section: a page and every page under it, to hear when they change.',
+  'UI|Toggled|WatchSectionOff': 'Someone stopped watching a section.',
+  'UI|Toggled|NotifyWatchDigestOn':
+    'Someone switched on the Daily Digest of Watched Pages email in Settings.',
+  'UI|Toggled|NotifyWatchDigestOff':
+    'Someone switched off the Daily Digest of Watched Pages email in Settings.',
   'Tab|Deleted|': 'A tab was removed from a document.',
   'Tab|Duplicated|': 'A tab was duplicated.',
   'Tab|Linked|': 'A tab was linked into another document.',

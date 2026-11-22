@@ -61,6 +61,8 @@ export type PageHealthCardProps = {
   approval?: ReactNode;
   /** The Health Score and its breakdown (PageHealthScore), at the top (verification.md "In Page Health"). */
   score?: ReactNode;
+  /** The Watchers row, last in the list (watching.md "Where it shows"); it draws itself, or nothing. */
+  watch?: ReactNode;
 };
 
 /** The section label, as On This Page's. */
@@ -169,7 +171,8 @@ function FreshnessRing({ state, left }: { state: PanelState; left: number | unde
 // that are each read in full, on two lines, where a one-part value truncates. `whole`: a value never cut short (the
 // Review Period beside its pencil): it stays on the label's line when it fits, and takes a line of its own, at the
 // right, when it does not.
-function Row({
+/** One row of Page Health's list: its icon and label, and what it holds at the right. */
+export function HealthRow({
   icon,
   label,
   wrap = false,
@@ -430,6 +433,7 @@ export function PageHealthCard({
   approvalRow,
   approval,
   score,
+  watch,
 }: PageHealthCardProps) {
   // Page Details, closed by default as Score Breakdown is (owner 2026-11-22).
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -518,7 +522,7 @@ export function PageHealthCard({
           data-page-facts=""
           className="flex flex-col divide-y divide-slate-100 px-1 pt-3 dark:divide-slate-800/70"
         >
-          <Row icon={<OwnerIcon />} label="Owner">
+          <HealthRow icon={<OwnerIcon />} label="Owner">
             {onSetOwner ? (
               <Select
                 aria-label="Owner"
@@ -540,10 +544,10 @@ export function PageHealthCard({
                 <span className="truncate">{ownerName ?? (owner ? 'Someone Else' : 'Nobody')}</span>
               </span>
             )}
-          </Row>
+          </HealthRow>
           {/* One line (owner 2026-11-21): the date, and the verifier as their disc, named on hover. */}
           {panel ? (
-            <Row icon={<VerifiedRowIcon />} label="Last Verified">
+            <HealthRow icon={<VerifiedRowIcon />} label="Last Verified">
               {verifiedAt === undefined ? (
                 'Never'
               ) : (
@@ -564,26 +568,26 @@ export function PageHealthCard({
                   ) : null}
                 </span>
               )}
-            </Row>
+            </HealthRow>
           ) : null}
           {panel ? (
-            <Row icon={<DueRowIcon />} label="Review Due">
+            <HealthRow icon={<DueRowIcon />} label="Review Due">
               <span data-review-due="">
                 {trust.reviewAt === undefined ? 'Not Verified' : shortDate(trust.reviewAt, now)}
               </span>
-            </Row>
+            </HealthRow>
           ) : null}
           {/* The knowledgebase's Review Period; for an Editor the value itself is a link that changes it (owner
               2026-11-22, was a pencil before it). */}
-          <Row icon={<PeriodIcon />} label="Review Period">
+          <HealthRow icon={<PeriodIcon />} label="Review Period">
             {periodControl ? (
               periodControl(reviewPeriodLabel(reviewEvery))
             ) : (
               <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
             )}
-          </Row>
+          </HealthRow>
           {approvalRow ? (
-            <Row icon={<RequestIcon />} label="Approval" whole={!!approvalRow.onRequest}>
+            <HealthRow icon={<RequestIcon />} label="Approval" whole={!!approvalRow.onRequest}>
               {approvalRow.onRequest ? (
                 <Button
                   variant="secondary"
@@ -597,8 +601,9 @@ export function PageHealthCard({
               ) : (
                 <span data-approval-none="">Not Requested</span>
               )}
-            </Row>
+            </HealthRow>
           ) : null}
+          {watch}
         </dl>
       </Collapse>
     </section>

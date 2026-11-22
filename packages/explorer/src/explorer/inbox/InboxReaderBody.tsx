@@ -1,7 +1,9 @@
 'use client';
 
 // The reading pane's prose (InboxReader): the byline that says who and why, and the body under the verbs (the
-// thread and its comments, an action's or a card's note, a form's unseen responses, a suggested edit's change).
+// thread and its comments, an action's or a card's note, a form's unseen responses, a suggested edit's change, an
+// update's lines).
+import type { InboxUpdate, UpdateKind } from '@liveworkspace/index-client';
 import { lazy, Suspense } from 'react';
 import type { InboxComment } from '../../types';
 import { relativeSince, useNow } from '../../time';
@@ -49,6 +51,9 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
     case 'AccessRequest':
       sentence = `${who} wants access to ${f.item}`;
       break;
+    case 'Update':
+      sentence = updateSentence(entry.row, f.person?.id ?? null, who);
+      break;
     case 'Suggestion':
       sentence = `${f.who} suggested an edit`;
       break;
@@ -87,6 +92,39 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
 
 const siteKindLower = (e: InboxEntry) => kindWords(e.row.app).lowerOne;
 
+/** An update's byline: who changed the page and how many changes it folds ("Priya and 2 others changed this page ·
+ *  4 changes"); a review that came due, which nobody did, says so. `by` is the person the row names (never the
+ *  reader), counted once among the others. */
+export function updateSentence(
+  u: Pick<InboxUpdate, 'actorCount' | 'count' | 'kinds' | 'actors'>,
+  by: string | null,
+  who: string,
+): string {
+  const changes = u.count > 1 ? ` · ${u.count} changes` : '';
+  if (!by) {
+    return u.kinds.length === 1 && u.kinds[0] === 'review_due'
+      ? 'Its review came due'
+      : `This page changed${changes}`;
+  }
+  const others = Math.max(0, u.actorCount - 1);
+  const people = others === 0 ? who : `${who} and ${others} ${others === 1 ? 'other' : 'others'}`;
+  return `${people} changed this page${changes}`;
+}
+
+/** Each kind of an update, in plain words, as its pane lists them. */
+export function updateLines(u: Pick<InboxUpdate, 'kinds' | 'actors'>, viewerId: string | null) {
+  const decider = firstName(u.actors.find((a) => a.id !== viewerId)?.name) ?? 'a teammate';
+  const words: Record<UpdateKind, string> = {
+    saved: 'Edited and saved',
+    review_due: 'Its verification lapsed: it is due for review',
+    approved: `Approved by ${decider}`,
+    rejected: `Rejected by ${decider}`,
+    moved: 'Moved to another place in the tree',
+    deleted: 'Deleted: it is in the knowledgebase’s Trash',
+  };
+  return u.kinds.map((kind) => ({ kind, text: words[kind] }));
+}
+
 const SECTION_LABEL =
   'text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
 
@@ -95,11 +133,13 @@ export function Body({
   facts: f,
   comments,
   sent,
+  viewerId = null,
 }: {
   entry: InboxEntry;
   facts: EntryFacts;
   comments: InboxComment[] | null | undefined;
   sent: InboxComment[];
+  viewerId?: string | null;
 }) {
   switch (entry.kind) {
     case 'Thread':
@@ -182,6 +222,32 @@ export function Body({
           <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
             Sharing makes a pass for {name} in Share. Delete it there to take the access away.
             Declining tells them nothing.
+          </p>
+        </div>
+      );
+    }
+    case 'Update': {
+      const lines = updateLines(entry.row, viewerId);
+      return (
+        <div className="flex flex-col gap-2" data-inbox-update="">
+          <h3 className={SECTION_LABEL}>What changed</h3>
+          <ul className="flex flex-col gap-1.5">
+            {lines.map((line) => (
+              <li
+                key={line.kind}
+                data-inbox-update-kind={line.kind}
+                className="flex items-start gap-2 text-sm leading-6 text-slate-700 dark:text-slate-200"
+              >
+                <span
+                  aria-hidden
+                  className="mt-[0.6875rem] size-1.5 shrink-0 rounded-full bg-slate-400 dark:bg-slate-500"
+                />
+                {line.text}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+            You watch this page. Unwatch it from the page to stop hearing about it.
           </p>
         </div>
       );

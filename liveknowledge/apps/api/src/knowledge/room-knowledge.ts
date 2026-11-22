@@ -12,6 +12,7 @@ import {
 import { pruneAgentSeen } from './agent-seen';
 import { pruneEmailMarks } from './email-marks';
 import { pruneSuggestions } from './suggestions';
+import { pruneWatchUpdates } from './watch-work';
 import {
   hasQueuedPages,
   settleQueued,
@@ -103,6 +104,7 @@ export function pruneKnowledge(sql: ItemSql, now: number): void {
     ...pruneSuggestions(now),
     pruneAgentSeen(now, READS_KEPT_DAYS),
     ...pruneEmailMarks(),
+    ...pruneWatchUpdates(now),
   ])
     sql.exec(statement.sql, ...statement.params);
 }

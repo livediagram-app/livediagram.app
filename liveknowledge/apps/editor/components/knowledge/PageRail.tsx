@@ -24,6 +24,7 @@ import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
 import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
+import { PageWatchButton } from '@/components/page-watch/PageWatchButton';
 import { ReviewPeriodButton } from '@/components/knowledge-settings/ReviewPeriodButton';
 import { useSettingsOffered } from '@/components/knowledge-settings/useSettingsOffered';
 import { PageHealthApproval } from './approval/PageHealthApproval';
@@ -208,6 +209,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         score={
           <PageHealthScore health={score.health} fixes={score.fixes} offline={score.offline} />
         }
+        watch={<PageWatchButton />}
       />
       {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
       <OnThisPage headings={writing.headings} current={current} onGo={go} />

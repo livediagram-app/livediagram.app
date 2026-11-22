@@ -1,8 +1,9 @@
 // The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards
 // assigned to or by me, unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 // mentioned, forms with responses I haven't seen on items I own or reach through a team, limited to items I can
-// reach, open access requests on items I manage, my own requests granted lately (`shares`, inbox-notices.md), and
-// the suggested edits waiting on my pages (`suggestions`). Six queries, each starting from an index on the person.
+// reach, open access requests on items I manage, my own requests granted lately (`shares`, inbox-notices.md),
+// the suggested edits waiting on my pages (`suggestions`), and updates on pages I watch (updates.ts). Seven queries,
+// each starting from an index on the person.
 
 import { noticeOf, noticesQuery } from './automation-step-notices';
 import {
@@ -28,11 +29,13 @@ import { parseLimit } from './codec';
 import type { PersonContext } from './context';
 import { badRequest, json } from './http';
 import { LIVE_LINK } from './rows';
+import { inboxUpdateOf, updatesQuery, type UpdateRow } from './updates';
 
 // Reached as owner, through a scope, or through a live link the person opened, on the tab that link opens: a link
 // scoped to one tab reaches that tab's threads and actions alone, as it opens that tab alone, and the cards on that
 // tab's boards (pushed under COLLAB_CARDS_TAB, each naming its board's tab). `row` is the thread's or action's alias;
-// `cards` false for a table without cards (suggested edits), which reaches by tab alone.
+// `cards` false for a table without cards (suggested edits, updates), which reaches by tab alone: an update's tab is
+// always a page.
 const reachable = (
   row: string,
   cards = true,
@@ -267,7 +270,9 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       Math.min(limit, INBOX_SUGGESTIONS_MAX),
     ],
   };
-  return { threads, actions, forms, accessRequests, shares, suggestions };
+  // Updates on pages I watch (updates.ts): from my people index, on items I reach as a thread's.
+  const updates = updatesQuery(personId, app, limit, now, reachable('u', false), reachArgs);
+  return { threads, actions, forms, accessRequests, shares, suggestions, updates };
 }
 
 /** Who mentioned the reader, as the push said (checked when it was pushed); null when it said nothing. */
@@ -301,7 +306,7 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   const q = inboxQueries(person.id, scopesOf(person), app, limit);
   const db = env.INDEX_DB;
   const notices = noticesQuery(person.id, Date.now());
-  const [threadRes, actionRes, formRes, accessRes, shareRes, suggestionRes, noticeRes] =
+  const [threadRes, actionRes, formRes, accessRes, shareRes, suggestionRes, updateRes, noticeRes] =
     (await db.batch([
       db.prepare(q.threads.sql).bind(...q.threads.args),
       db.prepare(q.actions.sql).bind(...q.actions.args),
@@ -309,6 +314,7 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
       db.prepare(q.accessRequests.sql).bind(...q.accessRequests.args),
       db.prepare(q.shares.sql).bind(...q.shares.args),
       db.prepare(q.suggestions.sql).bind(...q.suggestions.args),
+      db.prepare(q.updates.sql).bind(...q.updates.args),
       // A Notify step's notices (automation-step-notices.ts), in every app's Inbox.
       db.prepare(notices.sql).bind(...notices.args),
     ])) as D1Result<Record<string, unknown>>[];
@@ -406,6 +412,7 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     after: r.after_text,
     createdAt: r.created_at,
   }));
+  const updates = (updateRes!.results as UpdateRow[]).map(inboxUpdateOf);
   return json({
     threads,
     actions,
@@ -413,6 +420,7 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     accessRequests,
     shares,
     suggestions,
+    updates,
     notices: noticeRes!.results.map(noticeOf),
   });
 }

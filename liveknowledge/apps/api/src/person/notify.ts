@@ -27,13 +27,17 @@ export type NotifySetting =
   | 'notifyDocumentJoin'
   | 'notifyActionAssigned'
   | 'notifyMentions'
-  | 'notifyKnowledgeReviews';
+  | 'notifyKnowledgeReviews'
+  // Off until turned on (docs/specs/030-knowledgebase/watching.md "The daily digest email"): read with `optIn`.
+  | 'notifyWatchDigest';
 
-// The verified addresses of these accounts who have not turned `setting` off, by id. Guests are dropped.
+// The verified addresses of these accounts who have not turned `setting` off, by id. Guests are dropped. `optIn`:
+// only those who turned it on (a switch off by default).
 export async function notifyRecipients(
   env: Env,
   ids: readonly string[],
   setting: NotifySetting,
+  { optIn = false }: { optIn?: boolean } = {},
 ): Promise<Map<string, string>> {
   const credentials = accountCredentials(env);
   const accounts = ids.filter(isAccountOwner);
@@ -44,6 +48,7 @@ export async function notifyRecipients(
       ids: accounts,
       setting,
       scope: isAllSetting(setting) ? 'all' : 'app',
+      ...(optIn ? { optIn } : {}),
     });
   } catch (error) {
     console.warn('[notify] recipients_failed', { setting, error: String(error) });

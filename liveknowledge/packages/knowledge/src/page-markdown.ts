@@ -6,7 +6,17 @@
 export type MarkdownHeading = { level: number; text: string; line: number };
 
 const FENCE = /^\s*(```|~~~)/;
-const HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
+const HEADING = /^(#{1,6})\s(.*)$/;
+
+// The heading's text: its line after the hashes, less the spaces around it and any closing hashes ("## Title ##").
+// Trimmed by hand, not by a regex, so a long line of spaces or hashes costs one pass.
+const headingText = (rest: string): string => {
+  let text = rest.trimEnd();
+  let end = text.length;
+  while (end > 0 && text[end - 1] === '#') end--;
+  text = text.slice(0, end);
+  return text.trim();
+};
 
 export function markdownHeadings(markdown: string): MarkdownHeading[] {
   const out: MarkdownHeading[] = [];
@@ -15,7 +25,7 @@ export function markdownHeadings(markdown: string): MarkdownHeading[] {
     if (FENCE.test(text)) fenced = !fenced;
     else if (!fenced) {
       const found = HEADING.exec(text);
-      if (found) out.push({ level: found[1]!.length, text: found[2]!, line });
+      if (found) out.push({ level: found[1]!.length, text: headingText(found[2]!), line });
     }
   });
   return out;
