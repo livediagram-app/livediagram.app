@@ -1463,8 +1463,8 @@ answers Done ("An open card already links to it") without making one. It never t
 does that.
 
 **Starter: Card Done, Write Release Note**: Card Moved to Done, then Write a Page in a Knowledgebase titled
-`{{card.title}}` under a chosen parent (Release Notes), its body the card's description, assignee and a link
-back.
+`{{card.title}}` under a chosen parent (Release Notes), its body the day it shipped, its assignee and a link
+back (a card's description is not a value yet). The knowledgebase is the person's to pick.
 
 ## Telemetry
 

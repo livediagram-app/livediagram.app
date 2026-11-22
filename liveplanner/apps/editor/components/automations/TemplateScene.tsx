@@ -46,6 +46,7 @@ import {
   BackOnClose,
   MergedToSlack,
 } from './template-scenes/github';
+import { ReleaseNote } from './template-scenes/cross-app';
 
 export type { SceneTone } from '@liveworkspace/automations-ui/scene-parts';
 
@@ -80,6 +81,7 @@ const SCENES: Readonly<Record<AutomationTemplateId, (p: { tone: ToneClasses }) =
   'tell-checks-pass': TellChecksPass,
   'back-on-close': BackOnClose,
   'merged-to-slack': MergedToSlack,
+  'release-note': ReleaseNote,
 };
 
 // Each template's colour.
@@ -114,6 +116,7 @@ const TONE: Readonly<Record<AutomationTemplateId, SceneTone>> = {
   'tell-checks-pass': 'emerald',
   'back-on-close': 'orange',
   'merged-to-slack': 'violet',
+  'release-note': 'blue',
 };
 
 /** The scene at the top of a template tile, in the template's colour (`tone`: another colour). */

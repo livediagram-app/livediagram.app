@@ -12,7 +12,18 @@ import type { ItemRefKind } from './names';
 import { refsOf } from './refs';
 import type { ItemIf, ItemOutline, ItemPart, ItemRuleBody } from './types';
 
-export type ItemPick = ItemRefKind;
+// A step in another app's target (cross-app/kinds.ts) is a pick too: the plan, knowledgebase, Space or document
+// it acts on is the person's, as only they know what they can edit.
+export type ItemPick = ItemRefKind | 'target';
+
+/** What a template leaves to pick of a step in another app: its target, while it names no item. */
+export const CROSS_APP_TARGET_PICK: ItemPick = 'target';
+const emptyTarget = (part: unknown): boolean => {
+  const target = (part as { target?: unknown } | null)?.target;
+  return (
+    typeof target === 'object' && target !== null && (target as { item?: unknown }).item === ''
+  );
+};
 
 // What a template reads of the item it opens in.
 export interface ItemTemplateItem {
@@ -33,10 +44,12 @@ export const itemStepLists: TemplateStepLists<ItemPart> = (step, list) =>
     ? (step as unknown as ItemIf)[list]
     : undefined;
 
-const empties = (part: unknown): ItemPick[] =>
-  refsOf(part)
+const empties = (part: unknown): ItemPick[] => [
+  ...refsOf(part)
     .filter((ref) => ref.id === '')
-    .map((ref) => ref.kind);
+    .map((ref) => ref.kind),
+  ...(emptyTarget(part) ? [CROSS_APP_TARGET_PICK] : []),
+];
 
 /** Every reference `body` leaves empty, by the path of the part that holds it: a template's picks, a draft's, a
  *  copy's. An If / Else's actions are named one by one; its conditions under the step itself. */

@@ -857,6 +857,27 @@ describe('templates', () => {
     expect(itemStepLists(body.steps[2]!, 'conditions')).toBeUndefined();
     expect(itemStepLists(body.steps[0]!, 'then')).toBeUndefined();
   });
+
+  it('names a step in another app with no target as the target to pick, and drops it once one is picked', () => {
+    const step = (item: string) =>
+      ({
+        kind: 'kb_page',
+        target: { app: 'liveknowledge', item, title: item ? 'Handbook' : '' },
+        title: 'x',
+        body: 'y',
+      }) as unknown as ItemRuleBody['steps'][number];
+    const body: ItemRuleBody = {
+      name: 'Write It Up',
+      trigger: { kind: 'comment_added' },
+      conditions: [],
+      steps: [step(''), { kind: 'take_snapshot', name: 'x' }],
+      chain: false,
+      timeZone: 'UTC',
+    };
+    const picks = itemPicks(body);
+    expect(picks).toEqual([{ path: 'steps.0', pick: 'target' }]);
+    expect(itemPicksLeft({ ...body, steps: [step('k1')] }, picks)).toEqual([]);
+  });
 });
 
 describe('rules in a file', () => {

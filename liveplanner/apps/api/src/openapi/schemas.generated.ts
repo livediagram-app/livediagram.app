@@ -1900,7 +1900,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "field",
           "label",
           "people",
-          "webhook"
+          "webhook",
+          "target"
         ],
         "type": "string"
       }

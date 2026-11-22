@@ -14,6 +14,8 @@ const ITEM = {
 // What each template leaves to the person, by template: the spec's "(pick one)" snapshot, and a connection for
 // each Slack post.
 const LEFT: Record<string, string[]> = {
+  // A step in another app: its target is the person's.
+  'actions-to-plan': ['steps.1:target'],
   'reset-nightly': ['steps.0:snapshot'],
   'tidy-up': ['steps.0:snapshot'],
   'office-open': ['steps.0:connection'],
@@ -36,6 +38,12 @@ function filled(
   const copy = structuredClone(body);
   for (const { path, pick } of picks) {
     const step = copy.steps[Number(path.split('.')[1])] as Record<string, unknown>;
+    if (pick === 'target') {
+      // The target picked, and what the step then picks from it (a board, a column).
+      step['target'] = { ...(step['target'] as object), item: 'x1', title: 'Picked' };
+      if ('board' in step) Object.assign(step, { board: 'b1', column: 'To Do' });
+      continue;
+    }
     const [field, id] = PICKED[pick as keyof typeof PICKED];
     step[field] = id;
   }
@@ -45,12 +53,13 @@ function filled(
 const byId = (id: string) => SPACE_TEMPLATES.find((t) => t.id === id)!.build(ITEM);
 
 describe('the Templates gallery', () => {
-  it('holds the spec’s ten, by name, the nightly reset first', () => {
+  it('holds the spec’s eleven, by name, the nightly reset first', () => {
     expect(SPACE_TEMPLATES.map((t) => t.name)).toEqual([
       'Reset Every Night',
       'Tidy Up When Everyone Leaves',
       'The Office Is Open',
       'Stand-Up in Fifteen',
+      'Meeting Ended, Send Actions to Plan',
       'Meeting Wrap-Up',
       'Suggestions to Slack',
       'Empty the Suggestion Box Weekly',

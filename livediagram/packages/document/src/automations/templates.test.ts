@@ -13,6 +13,8 @@ const ITEM = {
 
 // What each template leaves to the person, by template: the spec's "a snapshot, a connection, a template".
 const LEFT: Record<string, string[]> = {
+  // A step in another app: its target is the person's.
+  'session-to-kb': ['steps.1:target'],
   'reset-nightly': ['steps.0:snapshot'],
   'snapshot-friday': [],
   'slack-on-change': ['steps.0:connection'],
@@ -39,6 +41,12 @@ function filled(
   const copy = structuredClone(body);
   for (const { path, pick } of picks) {
     const step = copy.steps[Number(path.split('.')[1])] as Record<string, unknown>;
+    if (pick === 'target') {
+      // The target picked, and what the step then picks from it (a board, a column).
+      step['target'] = { ...(step['target'] as object), item: 'x1', title: 'Picked' };
+      if ('board' in step) Object.assign(step, { board: 'b1', column: 'To Do' });
+      continue;
+    }
     const [field, id] = PICKED[pick as keyof typeof PICKED];
     step[field] = id;
   }
@@ -46,11 +54,12 @@ function filled(
 }
 
 describe('the Templates gallery', () => {
-  it('holds the spec’s thirteen, by name', () => {
+  it('holds the spec’s fourteen, by name', () => {
     expect(DOCUMENT_TEMPLATES.map((t) => t.name)).toEqual([
       'Reset Every Night',
       'Snapshot Every Friday',
       'Tell Slack When This Changes',
+      'Session Ended, Summarise into Knowledgebase',
       'Comments to Slack',
       'Review Finished',
       'Is This Still Right?',

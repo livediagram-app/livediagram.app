@@ -97,6 +97,24 @@ export const DOCUMENT_TEMPLATES: readonly Template[] = [
     [toSlack('{{item.name}} changed: {{item.url}}')],
     SLACK_PICK,
   ),
+  // A step in another app (WI-1347): the session's end is the board going quiet; the knowledgebase is the person's.
+  template(
+    'session-to-kb',
+    'loop',
+    'Session Ended, Summarise into Knowledgebase',
+    'Half an hour after a session of edits stops, summarise it with AI and write it up as a page in a knowledgebase.',
+    { kind: 'edited', minutes: 30 },
+    [
+      { kind: 'ai', task: 'summarise' },
+      {
+        kind: 'kb_page',
+        target: { app: 'liveknowledge', item: '', title: '' },
+        title: '{{item.name}} Session, {{now.date}}',
+        body: '{{summary}}\n\nThe board: {{item.url}}',
+      },
+    ],
+    [{ path: 'steps.1', pick: 'target' }],
+  ),
   template(
     'comments-slack',
     'loop',

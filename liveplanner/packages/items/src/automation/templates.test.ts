@@ -74,6 +74,7 @@ describe('the templates', () => {
       'Assign on Start',
       'Overdue Nudge',
       'Share Out Form Responses',
+      'Card Done, Write Release Note',
       'Post Shipped Work to Slack',
       'Triage New Bugs',
       'Unblock the Next Card',
@@ -193,6 +194,7 @@ describe('the templates', () => {
         JSON.stringify(body)
           .replace('"rotate":[]', '"rotate":["p1","p2"]')
           .replace('"webhook":""', '"webhook":"w1"')
+          .replace('"item":"","title":""', '"item":"k1","title":"Handbook"')
           .replace('"op":"contains","value":""', '"op":"contains","value":"launch"'),
       ) as AutomationRuleBody;
     for (const t of AUTOMATION_TEMPLATES) {
@@ -321,6 +323,17 @@ describe('picksLeft', () => {
       steps: [people.body.steps[0]!, { kind: 'assign', to: { rotate: ['a', 'b'] } }],
     };
     expect(picksLeft(picked, people.picks)).toEqual([]);
+    // A step in another app's target is the person's to pick, and filled once picked.
+    const note = build('release-note', FULL);
+    expect(picksLeft(note.body, note.picks).map((p) => p.pick)).toEqual(['target']);
+    const step = note.body.steps[0]!;
+    const picked2: AutomationRuleBody = {
+      ...note.body,
+      steps: [
+        { ...step, target: { app: 'liveknowledge', item: 'k1', title: 'Handbook' } } as never,
+      ],
+    };
+    expect(picksLeft(picked2, note.picks)).toEqual([]);
     const field = build('stamp-finish', BARE);
     expect(picksLeft(field.body, field.picks).map((p) => p.pick)).toEqual(['column', 'field']);
   });

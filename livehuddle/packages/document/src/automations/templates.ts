@@ -108,6 +108,28 @@ export const SPACE_TEMPLATES: readonly Template[] = [
     [toSlack('Stand-up in 15 minutes: {{item.url}}')],
     SLACK_PICK,
   ),
+  // A step in another app: the plan and its board are the person's to pick.
+  template(
+    'actions-to-plan',
+    'rooms',
+    'Meeting Ended, Send Actions to Plan',
+    'Five minutes after everyone leaves a room, summarise what was said with AI and add it as a card in a plan.',
+    { kind: EVERYONE_LEFT_TRIGGER, minutes: 5 },
+    [
+      { kind: 'ai', task: 'summarise' },
+      {
+        kind: 'plan_card',
+        target: { app: 'liveplanner', item: '', title: '' },
+        board: '',
+        column: '',
+        title: 'Actions from {{tab.name}}, {{now.date}}',
+        description: '{{summary}}',
+        linkBack: true,
+        skipIfOpen: false,
+      },
+    ],
+    [{ path: 'steps.1', pick: 'target' }],
+  ),
   template(
     'meeting-wrap',
     'rooms',
