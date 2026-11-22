@@ -32,22 +32,6 @@ export const pruneReads = (now: number): SqlStatement => ({
   params: [daysBefore(now, READS_KEPT_DAYS)],
 });
 
-export type PageReadsRow = { readerKind: string; reads: number };
-
-/** A page's reads in the last `days` days, by reader kind (Page Health: "reads by people and by agents this
- *  week"). */
-export const countPageReads = (tab: string, now: number, days = 7): SqlStatement => ({
-  sql: `SELECT reader_kind AS readerKind, SUM(reads) AS reads FROM page_reads
-    WHERE tab = ? AND day > ? GROUP BY reader_kind`,
-  params: [tab, daysBefore(now, days)],
-});
-
-/** A page's reads by people and by agents, from `countPageReads`' rows. */
-export function pageReads(rows: readonly PageReadsRow[]): { people: number; agents: number } {
-  const of = (kind: string) => rows.find((r) => r.readerKind === kind)?.reads ?? 0;
-  return { people: of('person'), agents: of('agent') };
-}
-
 /** How many agents a page's AI Context names. */
 export const PAGE_AGENTS_LISTED = 3;
 
@@ -111,11 +95,16 @@ export const countDailyReads = (now: number): SqlStatement => ({
 
 export type DailyReads = { day: string; people: number; agents: number };
 
-/** READS_TREND_DAYS days ending today, oldest first, a day with no reads at nought, from `countDailyReads`' rows. */
-export function dailyReads(rows: readonly DailyReadsRow[], now: number): DailyReads[] {
+/** `count` days ending today (READS_TREND_DAYS unless said), oldest first, a day with no reads at nought, from
+ *  `countDailyReads`' or `countPageDailyReads`' rows. */
+export function dailyReads(
+  rows: readonly DailyReadsRow[],
+  now: number,
+  count = READS_TREND_DAYS,
+): DailyReads[] {
   const days: DailyReads[] = [];
   const byDay = new Map<string, DailyReads>();
-  for (let back = READS_TREND_DAYS - 1; back >= 0; back--) {
+  for (let back = count - 1; back >= 0; back--) {
     const day = { day: daysBefore(now, back), people: 0, agents: 0 };
     days.push(day);
     byDay.set(day.day, day);
@@ -128,6 +117,21 @@ export function dailyReads(rows: readonly DailyReadsRow[], now: number): DailyRe
   }
   return days;
 }
+
+/** How many days of one page's reads Page Insights shows, today among them (ai-knowledge.md "Page Insights"). */
+export const PAGE_INSIGHT_DAYS = 30;
+
+/** One page's reads by day and reader kind over the last `days` days: a range of `page_reads_tab` (tab, day), at
+ *  most two rows a day. Page Health's read: the bars of Page Insights, and Read This Week summed from them. */
+export const countPageDailyReads = (
+  tab: string,
+  now: number,
+  days = PAGE_INSIGHT_DAYS,
+): SqlStatement => ({
+  sql: `SELECT day, reader_kind AS readerKind, SUM(reads) AS reads FROM page_reads
+    WHERE tab = ? AND day > ? GROUP BY day, reader_kind`,
+  params: [tab, daysBefore(now, days)],
+});
 
 /** How many pages AI Knowledge's Most Read names. */
 export const MOST_READ_PAGES = 5;

@@ -13,7 +13,7 @@
 // (email-marks.ts). A knowledgebase kept Offline has no room, so none of this runs for one.
 import { isAccountId } from '@liveworkspace/auth-client';
 import type { KnowledgeEmailResult } from '@liveknowledge/api-schema';
-import { parseKnowledgeFields, trustState } from '@liveknowledge/knowledge';
+import { parseKnowledgeFields, trustState, verificationOn } from '@liveknowledge/knowledge';
 import { getDocument } from '../db';
 import { emailEnabled } from '../email/client';
 import { notifyKnowledgeReviews } from '../email/notifications';
@@ -214,6 +214,9 @@ export async function remindOwners(
   now: number,
 ): Promise<KnowledgeEmailOutcome> {
   if (!emailEnabled(env)) return { outcome: 'unavailable' };
+  // Verification off (a Review Period of Never, verification.md): there is nothing to review.
+  if (!verificationOn(document.knowledgeSettings.reviewEvery))
+    return { outcome: 'verification_off' };
   const pages = pagesOf(document, now).filter((p) => p.state !== 'verified');
   if (pages.length === 0) return { outcome: 'nothing_due' };
   const owned = pages.flatMap((p): OwnedPage[] =>

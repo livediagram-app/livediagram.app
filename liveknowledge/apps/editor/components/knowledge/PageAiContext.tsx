@@ -1,11 +1,12 @@
 'use client';
 
 // AI Context in the right rail (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"): whether every
-// agent is handed this page first, the questions Ask answered from it, the agents that read it this week (each
-// shown only when there is something: owner 2026-11-21). It reads nothing of its own: the questions and the agents ride Page Health's one read. Quiet, as
-// the rest of the rail is: small-capital headings, no card, no border.
+// agent is handed this page first, and the agents that read it this week (shown only when there are some: owner
+// 2026-11-21). The questions Ask answered from it are Page Insights' now (PageInsights.tsx). It reads nothing of its
+// own: the agents ride Page Health's one read. Quiet, as the rest of the rail is: small-capital headings, no card, no
+// border.
 import { useId } from 'react';
-import type { PageAgentReads, PageAnsweredQuestion } from '@liveknowledge/api-schema';
+import type { PageAgentReads } from '@liveknowledge/api-schema';
 import { Switch } from '@liveknowledge/ui';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -20,7 +21,6 @@ export type PageAiContextProps = {
   /** The page's size against the budget; undefined before Page Health is read. */
   tokens: number | undefined;
   /** Undefined before Page Health is read. */
-  answered: readonly PageAnsweredQuestion[] | undefined;
   agents: readonly PageAgentReads[] | undefined;
   /** Absent for anyone who may not change it: the state reads as words. */
   onSetContext: ((on: boolean) => void) | undefined;
@@ -29,35 +29,11 @@ export type PageAiContextProps = {
 const SUB_LABEL = 'text-xs font-medium text-slate-500 dark:text-slate-400';
 const QUIET = 'text-[13px] leading-5 text-slate-500 dark:text-slate-400';
 
-/** "Asked once", "Asked 6 times". */
-export const askedTimes = (n: number): string =>
-  n === 1 ? 'Asked once' : `Asked ${n.toLocaleString('en')} times`;
-
 /** "About 1,200 tokens". */
 export const aboutTokens = (n: number): string =>
   `About ${n.toLocaleString('en')} ${n === 1 ? 'token' : 'tokens'}`;
 
-// Before the read: quiet lines of the rows' own height, so nothing moves when the answer lands.
-function Placeholder() {
-  return (
-    <div aria-hidden data-ai-context-placeholder="" className="mt-2 flex flex-col gap-3">
-      {[0, 1].map((i) => (
-        <div key={i} className="flex flex-col gap-1.5">
-          <span className="h-3 w-11/12 rounded-full bg-slate-100 dark:bg-slate-800/80" />
-          <span className="h-2.5 w-16 rounded-full bg-slate-100 dark:bg-slate-800/80" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export function PageAiContext({
-  inContext,
-  tokens,
-  answered,
-  agents,
-  onSetContext,
-}: PageAiContextProps) {
+export function PageAiContext({ inContext, tokens, agents, onSetContext }: PageAiContextProps) {
   const labelId = useId();
   const sizeId = useId();
   return (
@@ -109,39 +85,6 @@ export function PageAiContext({
         ) : null}
       </div>
 
-      {/* Only when Ask has answered from the page (owner 2026-11-21: "if no questions or read by agents, don't show
-        it"); a placeholder while Page Health is read. */}
-      {answered?.length === 0 ? null : (
-        <div data-ai-context-answered="" className="mt-5">
-          <h3 className={SUB_LABEL}>Answered From This Page</h3>
-          {answered === undefined ? (
-            <Placeholder />
-          ) : (
-            <ul className="mt-2 flex flex-col gap-3">
-              {answered.map((q) => (
-                <li key={q.question} data-answered-question="" className="flex gap-2">
-                  <span
-                    aria-hidden
-                    className="-mt-0.5 select-none font-serif text-2xl leading-7 text-brand-600/70 dark:text-brand-400/70"
-                  >
-                    {'“'}
-                  </span>
-                  <div className="min-w-0">
-                    {/* Other people's words, drawn as text. Clamped to three lines; the whole stays for a reader. */}
-                    <p className="line-clamp-3 break-words text-slate-800 dark:text-slate-200">
-                      {q.question}
-                    </p>
-                    <p className="mt-0.5 text-[11px] tabular-nums text-slate-500 dark:text-slate-400">
-                      {askedTimes(q.asked)}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
       {agents === undefined || agents.length === 0 ? null : (
         <div data-ai-context-agents="" className="mt-5">
           <h3 className={SUB_LABEL}>Read by Agents</h3>
@@ -176,7 +119,6 @@ export function PageRailAiContext({ page }: { page: PageKnowledgeView }) {
     <PageAiContext
       inContext={page.trust.fields.context === true}
       tokens={health?.knowledge.tokens}
-      answered={health ? (health.answered ?? []) : undefined}
       agents={health ? (health.agents ?? []) : undefined}
       onSetContext={
         rights.editFields

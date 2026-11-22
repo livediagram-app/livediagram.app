@@ -3,10 +3,12 @@ import {
   lucideBell,
   lucideBookOpen,
   lucideChartColumn,
+  lucideChevronRight,
   lucideListChecks,
   lucideCircleHelp,
   lucideCpu,
   lucideEllipsis,
+  lucideEyeOff,
   lucideGitPullRequest,
   lucideHeartPulse,
   lucideKey,
@@ -33,6 +35,8 @@ export const HealthIcon = lucideGlyph(lucideHeartPulse, 18);
 export const ContextIcon = lucideGlyph(lucideLayers, 18);
 export const ReadsIcon = lucideGlyph(lucideBookOpen, 18);
 export const MostReadIcon = lucideGlyph(lucideChartColumn, 18);
+export const NotReadIcon = lucideGlyph(lucideEyeOff, 18);
+export const RowChevronIcon = lucideGlyph(lucideChevronRight, 14);
 export const AttentionIcon = lucideGlyph(lucideListChecks, 18);
 export const ConflictSmallIcon = lucideGlyph(lucideScale, 14);
 export const QuestionSmallIcon = lucideGlyph(lucideCircleHelp, 14);

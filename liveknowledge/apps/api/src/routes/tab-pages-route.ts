@@ -2,7 +2,7 @@
 // article write (docs/specs/024-agents/pages-for-agents.md "The route"), for the CLI, the MCP and
 // any script. Gated like a changeset: anyone who may edit the tab, a read-only token refused.
 import { parsePagesRequest } from '@liveknowledge/edit-operations';
-import { parseKnowledgeFields, trustState } from '@liveknowledge/knowledge';
+import { parseKnowledgeFields, trustState, verificationOn } from '@liveknowledge/knowledge';
 import { getDocument } from '../db';
 import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
@@ -77,12 +77,15 @@ export function agentRewriteRefusal(document: DocumentDTO, tabId: string): Respo
   const state = trustState(fields, document.knowledgeSettings.reviewEvery, Date.now()).state;
   if (state === 'never-verified') return null;
   const code = state === 'verified' ? 'page_verified' : 'page_review_due';
-  console.info('[pages-agent] refused', { documentId: document.id, tabId, code });
+  // Verification off (a Review Period of Never): a person still vouched for it, and the agent was told `off`.
+  const off = !verificationOn(document.knowledgeSettings.reviewEvery);
+  console.info('[pages-agent] refused', { documentId: document.id, tabId, code, off });
   return json(
     {
       error: code,
-      message:
-        state === 'verified'
+      message: off
+        ? 'A person verified this page before verification was turned off, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept.'
+        : state === 'verified'
           ? 'This page is verified, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept.'
           : 'This page is due for review, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept.',
     },

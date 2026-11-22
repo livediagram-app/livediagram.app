@@ -282,6 +282,16 @@ describe('POST knowledge/remind-owners', () => {
     expect(sent()).toHaveLength(4);
   });
 
+  // verification.md "Under a Review Period of Never": there is nothing to review, so nobody is reminded.
+  it('sends nothing under a Review Period of Never, and sends again once a period is set', async () => {
+    verifiedDaysAgo('deploys', OWNER, 100);
+    await setPeriod('never');
+    expect(await remind()).toEqual({ outcome: 'verification_off' });
+    expect(sent()).toHaveLength(0);
+    await setPeriod(90);
+    expect((await remind()).outcome).toBe('sent');
+  });
+
   it('says why nothing was sent, and keeps the week for when something can be', async () => {
     verifiedDaysAgo('deploys', OWNER, 10);
     verifiedDaysAgo('rollbacks', OWNER, 10);

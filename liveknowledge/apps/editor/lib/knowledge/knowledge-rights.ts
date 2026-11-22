@@ -16,7 +16,10 @@ export function knowledgeRights(input: {
   isStructureReadOnly: boolean;
   // A knowledgebase kept in this browser has no room to write the fields.
   offline: boolean;
+  // False under a Review Period of Never: nobody is offered Verify (verification.md "Under a Review Period of
+  // Never"). Absent reads as on.
+  verificationOn?: boolean;
 }): KnowledgeRights {
   const editor = input.can.editPages && !input.isStructureReadOnly && !input.offline;
-  return { editFields: editor, verify: editor };
+  return { editFields: editor, verify: editor && input.verificationOn !== false };
 }

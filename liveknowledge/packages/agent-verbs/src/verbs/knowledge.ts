@@ -287,7 +287,7 @@ export const newPage = defineVerb({
   run: async (ctx, input) => {
     const markdown = input.file === undefined ? '' : await ctx.readInput(input.file);
     const id = await knowledgebaseOf(ctx, input.doc);
-    const { page } = await ctx.api.json<CreatePageResponse>(
+    const { page, trust } = await ctx.api.json<CreatePageResponse>(
       knowledgePath(id, 'pages'),
       jsonBody('POST', {
         title: input.title,
@@ -299,10 +299,12 @@ export const newPage = defineVerb({
       page: page.tab,
       title: page.title,
       ...(page.parent ? { parent: page.parent } : {}),
-      verified: 'never-verified' as const,
+      verified: trust ?? 'never-verified',
     };
   },
-  text: (o) => [`+ page ${named(o)}${o.parent ? ` under ${o.parent}` : ''} · never verified`],
+  text: (o) => [
+    `+ page ${named(o)}${o.parent ? ` under ${o.parent}` : ''} · ${o.verified === 'off' ? 'verification off' : 'never verified'}`,
+  ],
   quiet: (o) => [o.page],
   cli: {
     positionals: ['doc', 'title', 'file'],

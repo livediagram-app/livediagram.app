@@ -86,8 +86,11 @@ export function HealthSection({
   now,
   onRemind,
   onOpenPage,
+  verificationOn = true,
 }: {
   health: KnowledgeHealthCounts;
+  /** False under a Review Period of Never: the average score leads, with no share, bar or Remind (verification.md). */
+  verificationOn?: boolean;
   /** Absent from an older api: the list is not drawn. */
   lowHealth: readonly KnowledgeLowHealthPage[] | undefined;
   onOpenPage: (tab: string) => void;
@@ -108,9 +111,16 @@ export function HealthSection({
       id="ai-health"
       title="Knowledge Health"
       icon={<HealthIcon />}
-      about="How much of this knowledgebase someone vouches for, from each page's review date."
+      about={
+        verificationOn
+          ? "How much of this knowledgebase someone vouches for, from each page's review date."
+          : 'How far each page can be relied on, from its Health Score. This knowledgebase does not verify pages.'
+      }
       action={
-        !canRemind || toReview === 0 ? undefined : remindedThisWeek(remindedAt, now) ? (
+        !verificationOn || !canRemind || toReview === 0 ? undefined : remindedThisWeek(
+            remindedAt,
+            now,
+          ) ? (
           <span className={`flex min-h-8 items-center gap-1.5 text-xs ${AI_MUTED}`}>
             <RemindIcon />
             {ownersEmailedText('remind', remindedAt!, now)}
@@ -133,8 +143,25 @@ export function HealthSection({
         <CompactEmptyState
           icon={<HealthIcon />}
           title="No Pages Yet"
-          description="Once there are pages, their verified share shows here."
+          description={
+            verificationOn
+              ? 'Once there are pages, their verified share shows here.'
+              : 'Once there are pages, their average health shows here.'
+          }
         />
+      ) : !verificationOn ? (
+        <>
+          <p data-health-average="" className="flex items-baseline gap-2">
+            <span className="text-3xl font-semibold tabular-nums tracking-tight text-slate-900 dark:text-white">
+              {health.average ?? 0}
+            </span>
+            <span className={`text-[13px] ${AI_MUTED}`}>
+              average health across {health.total.toLocaleString('en')}{' '}
+              {health.total === 1 ? 'page' : 'pages'}
+            </span>
+          </p>
+          {lowHealth ? <LowHealthPages pages={lowHealth} onOpenPage={onOpenPage} /> : null}
+        </>
       ) : (
         <>
           <p className="mb-3 flex items-baseline gap-2">

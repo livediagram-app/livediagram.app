@@ -120,6 +120,14 @@ describe('the trust line', () => {
   it('is nothing for an answer that cites nothing', () => {
     expect(answerTrust([])).toBeNull();
   });
+  it('is nothing where verification is off (a Review Period of Never)', () => {
+    expect(
+      answerTrust([
+        { tab: 'a', trust: 'off' },
+        { tab: 'b', trust: 'off' },
+      ]),
+    ).toBeNull();
+  });
 });
 
 describe('a failure in words', () => {

@@ -71,7 +71,9 @@ export function recentResults(
         titleMarked: page.name,
         isTitle: true,
         trust: trust.state,
-        ...(trust.fields.verifiedAt === undefined ? {} : { verifiedAt: trust.fields.verifiedAt }),
+        ...(trust.fields.verifiedAt === undefined || trust.state === 'off'
+          ? {}
+          : { verifiedAt: trust.fields.verifiedAt }),
         headings: [],
         snippet: '',
         firstBlock: '',

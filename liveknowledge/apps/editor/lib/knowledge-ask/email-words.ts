@@ -33,6 +33,8 @@ export function emailResultText(
         : 'None of the pages to review has an owner. Set one in Page Health.';
     case 'nothing_due':
       return 'Every page is verified, so there is nobody to remind.';
+    case 'verification_off':
+      return 'This knowledgebase has no Review Period, so there is nothing to review.';
     case 'no_recipients':
       return `No email was sent: the owners ${NOT_REACHED}.`;
     case 'daily_limit':

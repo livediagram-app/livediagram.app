@@ -83,6 +83,16 @@ function Breadcrumb({
 // The source's trust at a glance, in the page's own badges: Verified with its tick, Review Due amber, Never Verified
 // quiet with no tick. The words beside it wrap whole to a second line rather than cut a name.
 function SourceTrustLine({ trust, health }: { trust: SourceTrust; health: AskSource['health'] }) {
+  // Verification off (a Review Period of Never): the Health Score alone, or no line with none.
+  if (trust.mark === 'off')
+    return health ? (
+      <span
+        data-source-trust="off"
+        className="mt-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 border-t border-slate-100 pt-2 text-xs leading-5 text-slate-600 dark:border-slate-800 dark:text-slate-400"
+      >
+        <HealthChip score={health.score} label={health.label} prefix />
+      </span>
+    ) : null;
   return (
     <span
       data-source-trust={trust.mark}

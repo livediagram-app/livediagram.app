@@ -47,6 +47,9 @@ describe('what happened, in words', () => {
     expect(emailResultText({ outcome: 'no_owners' }, 'remind', NOW)).toBe(
       'None of the pages to review has an owner. Set one in Page Health.',
     );
+    expect(emailResultText({ outcome: 'verification_off' }, 'remind', NOW)).toBe(
+      'This knowledgebase has no Review Period, so there is nothing to review.',
+    );
     expect(emailResultText({ outcome: 'nothing_due' }, 'remind', NOW)).toBe(
       'Every page is verified, so there is nobody to remind.',
     );

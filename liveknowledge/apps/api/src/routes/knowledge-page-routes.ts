@@ -19,17 +19,17 @@ import {
   backlinkRows,
   backlinks,
   countPageAgentReads,
-  countPageReads,
+  countPageDailyReads,
   fitsContextBudget,
   listPageAnswers,
-  pageReads,
+  pageInsights,
   tokensOfChars,
   verified,
   guestVerifier,
   type KnowledgeFields,
   type PageAgentReadsRow,
+  type DailyReadsRow,
   type PageAnswerRow,
-  type PageReadsRow,
 } from '@liveknowledge/knowledge';
 import { isAccountIdShape, type PageKnowledgePatch } from '@liveknowledge/api-schema';
 import { accountOf } from '../knowledge/knowledge-caller';
@@ -93,9 +93,10 @@ export async function handlePageHealth(
   // AI Context (ai-knowledge.md "AI Context on a page") rides this read: the questions a range of their
   // table's key, the agents a range of `page_reads_tab` (schema step V19).
   // The Health Score's counts the editor cannot see itself (verification.md "Health Score"): one read of the page's
-  // facts row, on indexes its tables already have.
+  // facts row, on indexes its tables already have. Page Insights (ai-knowledge.md) rides the reads, 30 days by day
+  // (the week summed from them), and the questions, whose window total is how often Ask cited the page.
   const [readRows, authors, editors, answered, agents, [facts]] = await Promise.all([
-    rowsOf<PageReadsRow>(ctx.env, countPageReads(tab, now)),
+    rowsOf<DailyReadsRow>(ctx.env, countPageDailyReads(tab, now)),
     readPageAuthors(ctx.env, tab),
     readPageEditors(ctx.env, tab),
     rowsOf<PageAnswerRow>(ctx.env, listPageAnswers(tab, now)),
@@ -103,6 +104,9 @@ export async function handlePageHealth(
     pageHealthRows(ctx.env, document.id, now, [tab]),
   ]);
   const knowledge = pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now);
+  const use = pageInsights(readRows, now);
+  // The questions are the knowledgebase's Ask, which a link confined to one page has not (search-and-ask.md).
+  const wholeKnowledgebase = grant.tabScope === null;
   // A guest's stamp holds their owner id, a credential: it never leaves here. It reads as the name on their profile,
   // "Bright Marlin (Guest)" (owner 2026-11-21), the way a guest's Verify is stored (guestVerifier). The accounts the
   // page names (who made and changed it, its owner, who verified it) go with their names, so a reader outside the
@@ -115,14 +119,16 @@ export async function handlePageHealth(
   return json({
     knowledge,
     ...(Object.keys(names).length > 0 ? { names } : {}),
-    reads: pageReads(readRows),
+    reads: use.week,
     ...(authors ? { created: named(authors.created), updated: named(authors.updated) } : {}),
     ...(editors.length > 0 ? { editors: editors.map(named) } : {}),
-    // The questions are the knowledgebase's Ask, which a link confined to one page has not (search-and-ask.md).
-    answered:
-      grant.tabScope === null
-        ? answered.map((r) => ({ question: r.question, asked: r.asked }))
-        : [],
+    answered: wholeKnowledgebase
+      ? answered.map((r) => ({ question: r.question, asked: r.asked }))
+      : [],
+    insights: {
+      days: use.days,
+      ...(wholeKnowledgebase ? { cited: answered[0]?.cited ?? 0 } : {}),
+    },
     agents: agents.map((r) => ({ agent: r.agent, reads: r.reads })),
     ...(facts
       ? {

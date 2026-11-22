@@ -146,7 +146,7 @@ describe('search', () => {
       );
     expect(trustOf(90)).toMatchObject({ verified: 'verified', due: 'review-due' });
     expect(trustOf(365)).toMatchObject({ verified: 'verified', due: 'verified' });
-    expect(trustOf('never')).toMatchObject({ due: 'verified', never: 'never-verified' });
+    expect(trustOf('never')).toEqual({ verified: 'off', due: 'off', ageless: 'off', never: 'off' });
     // To the millisecond: a page verified exactly a period ago is due.
     expect(search('tuesdays', { reviewEvery: 30, now: NOW + 29 * DAY })![0]!.trust).toBe(
       'review-due',
@@ -155,6 +155,15 @@ describe('search', () => {
       'verified',
     );
     expect(rows()).toEqual(before);
+  });
+
+  // verification.md "Under a Review Period of Never": no result is marked, dated or ranked first for it.
+  it('under Never, marks no result, drops its date and ranks by match alone', () => {
+    const { search } = seeded();
+    const never = search('deploy', { reviewEvery: 'never', passagesOnly: true })!;
+    expect(never.every((f) => f.trust === 'off' && !('verifiedAt' in f))).toBe(true);
+    const byRank = [...never].sort((a, b) => a.rank - b.rank).map((f) => f.tab);
+    expect(never.map((f) => f.tab)).toEqual(byRank);
   });
 
   it('needs every word, the last as a prefix', () => {

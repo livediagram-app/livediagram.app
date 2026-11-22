@@ -233,6 +233,15 @@ CREATE TABLE IF NOT EXISTS knowledge_settings (name TEXT PRIMARY KEY, value TEXT
   only moved do not count. One pass over each version. Bounded at `CHANGED_SINCE_MAX_CHARS` (400,000): what is past
   it is compared by its length alone.
 - `knowledgeHealth(pages, every, now)`: the counts of each state and the total.
+- **Verification off** ([Verification](../verification.md#under-a-review-period-of-never)):
+  `verificationOn(every)` is `every !== 'never'`. `ShownTrust` is `TrustStateName | 'off'`, the state a reader is
+  shown, and `shownTrust(state, every)` answers `off` under Never and the state otherwise. `trustState` itself is
+  unchanged (the Health Score and the counts read it); every place that hands a state to a reader goes through
+  `shownTrust`. The search statement (`searchByTerms`) answers `3 AS trust` in place of its `CASE` under Never
+  (`TRUST_OF_RANK[3]` is `off`), so its `(trust = 2) DESC` ranks nothing first and each result carries `off`; Ask's
+  `choosePassages` then orders by rank alone, and `askMessage` sends an `off` passage with no `trust` and no
+  `verified_on` attribute. The system prompt says a passage with no trust attribute is from a knowledgebase that
+  does not verify pages.
 
 ## Page Health
 
@@ -258,8 +267,16 @@ tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound v
   knowledgebase or the given tabs, joining `tabs`, `document_tabs`, `page_trust`, `knowledge_pages` (`words`,
   `headings`, `owned`, schema step 38) and `page_authors`, with correlated counts over `page_links` (both ways, a
   broken link being a target not in `document_tabs`), `page_threads` (unresolved), `page_approvals` (pending),
-  `conflicts` (open, either side), `suggestions` and `page_reads` (the last 7 days, on `page_reads_tab`). Each count
-  is on an index the table already has. No page's writing is read.
+  `conflicts` (open, either side), `suggestions` and `page_reads` (the last 7 days, on `page_reads_tab`), and
+  `lastRead`, the page's latest read day (`SELECT MAX(day)` on `page_reads_tab`, one index seek; NULL for a page with
+  no read kept), which Not Read in 90 Days reads. Each count is on an index the table already has. No page's
+  writing is read.
+- **`notReadPages(pages, now)`** (Not Read in 90 Days, [AI Knowledge](../ai-knowledge.md#not-read-in-90-days)):
+  each page `{ tab, title, lastRead, createdAt, updatedAt, order }`; keeps a page whose `lastRead` is NULL or on or
+  before `daysBefore(now, NOT_READ_DAYS)` (90, `READS_KEPT_DAYS`) and whose `createdAt` is NULL or at least 90 days
+  back; sorts by `updatedAt ?? createdAt` ascending (none first), then `order`; answers `{ pages: first
+NOT_READ_LISTED (10), total }`, each page `{ tab, title, touchedAt? }`. One pass and one sort, O(n log n) in the
+  pages.
 - **Schema step 38** adds `words`, `headings` and `owned` to `knowledge_pages` (asking before each ALTER) and queues
   every indexed page for the backfill. `settlePage` writes them on every settle; a settle whose hashes match but whose
   shape or owner moved writes those three alone (an owner change is a write of the tab, so it settles).
@@ -270,6 +287,20 @@ tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound v
 - **The editor** (`components/knowledge/PageHealthScore.tsx`, `usePageHealthScore.ts`): the facts are read from the
   chrome store as primitives (the band, the heading count, the broken link count, against the editor's tab ids), so
   a typing commit that crosses no band renders nothing; `pageHealth` runs in a `useMemo` over them and the clock.
+
+## Page Insights
+
+[AI Knowledge](../ai-knowledge.md#page-insights). In `sql/reads.ts` and `sql/page-answers.ts`:
+
+- `countPageDailyReads(tab, now, days = PAGE_INSIGHT_DAYS)`: `SELECT day, reader_kind, SUM(reads) FROM page_reads
+WHERE tab = ? AND day > ? GROUP BY day, reader_kind`, a range of `page_reads_tab`, at most 2 rows a day (60).
+  It replaces `countPageReads` in Page Health's read: `pageInsights(rows, now)` answers `days` (30 `{ day, people,
+agents }`, oldest first, through `dailyReads(rows, now, days)`) and `week` (the last 7 days summed, what Read This
+  Week showed), so the read runs no statement more.
+- `listPageAnswers(tab, now)` gains `SUM(times) OVER () AS cited`, the window total of every group's asks in 30
+  days, computed before the `LIMIT`: Cited by Ask rides the statement AI Context already ran. No rows is 0.
+- Constants: `PAGE_INSIGHT_DAYS` 30 (the citations' own window, `PAGE_ANSWERS_KEPT_DAYS`, is 30 too),
+  `NEW_PAGE_INSIGHT_DAYS` 7 (the Health Score's first week).
 
 ## Links
 

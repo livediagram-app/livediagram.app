@@ -60,7 +60,13 @@ export function pageHealthFacts(
   const { fields } = trust;
   const signals = health?.signals;
   return {
-    state: trust.state,
+    // Off (a Review Period of Never), the score leaves verification out whatever the state says: the stored one.
+    state:
+      trust.state !== 'off'
+        ? trust.state
+        : fields.verifiedAt === undefined
+          ? 'never-verified'
+          : 'verified',
     verifiedAt: fields.verifiedAt,
     reviewAt: trust.reviewAt,
     reviewDays: reviewDays(every),
