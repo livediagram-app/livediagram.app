@@ -79,7 +79,8 @@ describe('TokenList', () => {
     expect(list.className).toContain('overflow-y-auto');
     const rows = [...list.querySelectorAll('li')];
     expect(rows[0]!.querySelector('section')).toBeNull();
-    expect(rows[0]!.textContent).toMatch(/Last used .+ · Made /);
+    expect(rows[0]!.textContent).toMatch(/Last used \S+/);
+    expect(rows[0]!.textContent).not.toContain('Made');
     expect(rows[0]!.textContent).not.toContain('Expires');
     expect(rows[1]!.textContent).toMatch(/Not used yet · Made /);
   });

@@ -59,11 +59,11 @@ function TokenRow({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p
-            className={`truncate font-semibold text-slate-900 dark:text-white ${compact ? 'text-sm' : ''}`}
+            className={`flex min-w-0 items-center gap-2 font-semibold text-slate-900 dark:text-white ${compact ? 'text-sm' : ''}`}
           >
-            <bdi>{token.name}</bdi>
+            <bdi className="truncate">{token.name}</bdi>
             {token.readOnly && (
-              <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 Read only
               </span>
             )}
@@ -76,7 +76,9 @@ function TokenRow({
             }
           >
             {compact
-              ? `${used} · Made ${formatDate(token.createdAt)}`
+              ? token.lastUsedAt
+                ? used
+                : `${used} · Made ${formatDate(token.createdAt)}`
               : `Made ${formatDate(token.createdAt)} · ${used} · Expires ${formatDate(token.expiresAt)}`}
           </p>
         </div>

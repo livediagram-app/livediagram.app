@@ -225,7 +225,7 @@ function Device({ config, device }: { config: OauthPagesConfig; device: DeviceSe
           </OauthWarning>
           <ReadOnlyAccessToggle noun={noun} readOnly={readOnly} onChange={setReadOnly} />
           {failed ? (
-            <p role="alert" className="mt-3 text-xs text-rose-600 dark:text-rose-400">
+            <p role="alert" className="mt-3 text-xs text-rose-700 dark:text-rose-400">
               {handoverFailureCopy(failed, 'Run the sign-in again from your terminal.')}
             </p>
           ) : null}

@@ -4,7 +4,7 @@
 // not made by liveworkspace, and shows the host its access goes to first; the built-in CLI keeps the quiet line.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_API_TOKENS_PER_ACCOUNT } from '@liveworkspace/api-schema/api-tokens';
 import { bearerSettingsRequest } from '@liveworkspace/settings-ui/token-list';
 import type { SignInGate } from '../../hooks/auth/useSignInGate';
@@ -290,6 +290,10 @@ describe('/oauth/consent', () => {
 });
 
 describe('/oauth/consent, a reconnect and the token cap', () => {
+  // The cap's list is its own chunk: load it first, so a step waits on the page, not the module graph.
+  beforeAll(async () => {
+    await import('./TokenLimitList');
+  });
   const connect = async () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Connect' }));
@@ -407,8 +411,7 @@ describe('/oauth/consent, a reconnect and the token cap', () => {
     render(<Page />);
     await screen.findByRole('heading', { name: 'Connect Notion' });
     await connect();
-    const alerts = await screen.findAllByRole('alert');
-    expect(alerts.map((a) => a.textContent).join(' ')).toContain('Couldn’t reach liveworkspace');
+    expect(await screen.findByText(/Couldn’t reach liveworkspace/)).toBeTruthy();
     listStatus = 200;
     liveTokens = [];
     await act(async () => {

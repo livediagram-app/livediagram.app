@@ -43,10 +43,13 @@ import {
 import { Callout } from '@liveworkspace/ui/callout';
 import { TokenLimitListLazy } from './TokenLimitListLazy';
 
-// The host, as the line says it: a loopback one in mono, after "back to the app on this computer".
-function Host({ host }: { host: string }) {
+// The host, as the line says it, in mono. A site's may be long, so it breaks anywhere; a loopback one is short
+// (`localhost:55884`) and is kept whole.
+function Host({ host, whole = false }: { host: string; whole?: boolean }) {
   return (
-    <span className="font-mono text-sm font-semibold break-all text-slate-900 dark:text-white">
+    <span
+      className={`font-mono text-sm font-semibold text-slate-900 dark:text-white ${whole ? 'whitespace-nowrap' : 'break-all'}`}
+    >
       {host}
     </span>
   );
@@ -78,8 +81,11 @@ function UnverifiedDestination({ client, host }: { client: string; host: string 
     <OauthWarning title={`${client} is not made by liveworkspace, and we can’t check who made it.`}>
       {host && isLoopbackHost(host) ? (
         <p>
-          Access will be sent back to the app on this computer (<Host host={host} />
-          ). Only continue if you started this connection yourself.
+          Access will be sent back to the app on this computer{' '}
+          <span className="whitespace-nowrap">
+            (<Host host={host} whole />)
+          </span>
+          . Only continue if you started this connection yourself.
         </p>
       ) : host ? (
         <p>
@@ -274,7 +280,7 @@ function Consent({ config }: { config: OauthPagesConfig }) {
         <VerifiedDestination host={resolved.redirectHost} />
       ) : null}
       {status === 'error' ? (
-        <p role="alert" className="mt-3 text-xs text-rose-600 dark:text-rose-400">
+        <p role="alert" className="mt-3 text-xs text-rose-700 dark:text-rose-400">
           {handoverFailureCopy(failure, 'Start the connection again from your app.')}
         </p>
       ) : null}

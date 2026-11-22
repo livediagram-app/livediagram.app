@@ -144,6 +144,8 @@ describe('/oauth/device', () => {
   });
 
   it('at the cap, lists the tokens to revoke one, then connects', async () => {
+    // The list is its own chunk: load it first, so the step waits on the page, not the module graph.
+    await import('./TokenLimitList');
     exchange.mockRejectedValueOnce(new ApiError('oauth exchange', 409, 'token_limit_reached'));
     render(<Page />);
     await typeCode('BCDF-GHJK');
