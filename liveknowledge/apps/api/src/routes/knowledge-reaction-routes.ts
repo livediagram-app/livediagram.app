@@ -54,8 +54,12 @@ export function parseReactionChange(body: unknown): PageReactionChange | null {
   if (!body || typeof body !== 'object') return null;
   const b = body as Record<string, unknown>;
   if (typeof b.emoji !== 'string' || typeof b.on !== 'boolean') return null;
-  return { emoji: b.emoji, on: b.on };
+  const name = typeof b.name === 'string' ? b.name.trim().slice(0, NAME_MAX) : '';
+  return { emoji: b.emoji, on: b.on, ...(name ? { name } : {}) };
 }
+
+// The longest name a reaction takes from the caller's cursor (a presence name's bound, as the comment routes').
+const NAME_MAX = 80;
 
 // The most people the rate limit remembers in one room; the oldest goes first past it.
 const RATE_PEOPLE_MAX = 1000;
@@ -106,7 +110,8 @@ export async function handlePageReactions(
     ctx.env,
     tab,
     change,
-    { person, by: await collabKeyFor(person), name: profile?.name || 'Someone' },
+    // The profile's name; the cursor's only when the profile has none to give.
+    { person, by: await collabKeyFor(person), name: profile?.name || change.name || 'Someone' },
     now,
   );
   if ('refusal' in outcome) return refused(outcome.refusal);

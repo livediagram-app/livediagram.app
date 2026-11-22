@@ -8499,9 +8499,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "PageReactionChange": {
     "additionalProperties": false,
-    "description": "`POST .../pages/<tab>/reactions`: add (`on`) or take back the caller's own.",
+    "description": "`POST .../pages/<tab>/reactions`: add (`on`) or take back the caller's own. `name`, the name on the caller's cursor, is used only when their account has no profile name to give.",
     "properties": {
       "emoji": {
+        "type": "string"
+      },
+      "name": {
         "type": "string"
       },
       "on": {

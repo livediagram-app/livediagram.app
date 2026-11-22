@@ -18,8 +18,9 @@ export type PageReaction = { emoji: string; by: string; name: string };
 /** `GET .../pages/<tab>/reactions`: every reaction on the page, oldest first. */
 export type PageReactionsResponse = { reactions: PageReaction[] };
 
-/** `POST .../pages/<tab>/reactions`: add (`on`) or take back the caller's own. */
-export type PageReactionChange = { emoji: string; on: boolean };
+/** `POST .../pages/<tab>/reactions`: add (`on`) or take back the caller's own. `name`, the name on the caller's
+ *  cursor, is used only when their account has no profile name to give. */
+export type PageReactionChange = { emoji: string; on: boolean; name?: string };
 
 /** The reaction as asked, and whether a row moved (false when it already stood so). */
 export type PageReactionChangeResponse = { reaction: PageReaction; on: boolean; changed: boolean };

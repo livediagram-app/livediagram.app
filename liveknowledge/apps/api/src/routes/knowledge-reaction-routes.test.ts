@@ -150,6 +150,11 @@ describe('pages/:tab/reactions', () => {
     expect((await react(kit, 'viewer', { emoji: '👏👏', on: true })).status).toBe(400);
     expect((await kit.call('viewer', 'DELETE', PATH)).status).toBe(405);
     expect(parseReactionChange(null)).toBeNull();
+    expect(parseReactionChange({ emoji: '👏', on: true, name: `  ${'n'.repeat(90)} ` })).toEqual({
+      emoji: '👏',
+      on: true,
+      name: 'n'.repeat(80),
+    });
     expect(parseReactionChange('x')).toBeNull();
   });
 
@@ -177,6 +182,21 @@ describe('pages/:tab/reactions', () => {
     expect((await list(kit)).map((r) => r.name)).toEqual(['Priya']);
     kit.db.sql.exec("DELETE FROM tabs WHERE id = 'deploys'");
     expect(kit.db.sql.prepare('SELECT COUNT(*) AS n FROM page_reactions').get()).toEqual({ n: 0 });
+  });
+
+  it('names a person by their profile, and by their cursor only when the profile has no name', async () => {
+    const kit = await knowledgeKit();
+    const named = await react(kit, 'viewer', { emoji: '👏', on: true, name: 'Not Vic' });
+    expect((await named.json<{ reaction: PageReaction }>()).reaction.name).toBe('Vic');
+    delete NAMES.user_p;
+    try {
+      const cursor = await react(kit, 'participant', { emoji: '👏', on: true, name: 'Priya P' });
+      expect((await cursor.json<{ reaction: PageReaction }>()).reaction.name).toBe('Priya P');
+      const none = await react(kit, 'participant', { emoji: '🎉', on: true });
+      expect((await none.json<{ reaction: PageReaction }>()).reaction.name).toBe('Someone');
+    } finally {
+      NAMES.user_p = 'Priya';
+    }
   });
 
   it('holds a person to the reactions a page takes', async () => {
