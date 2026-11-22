@@ -256,6 +256,14 @@ export const PAGES_REJECTED = chart(
   { types: ['Rejected', 'RejectedWithNote'], rising: 'neutral' },
 );
 
+export const HEADINGS_ADDED_FROM_HEALTH = chart(
+  'UI',
+  'Used',
+  'Headings Added From Health',
+  "Add a Heading pressed in the Health Score's breakdown, to give a long page some structure.",
+  { types: ['HealthAddHeading'] },
+);
+
 export const VERIFICATION: MetricStack = {
   stack: true,
   title: 'Verification',
@@ -269,6 +277,7 @@ export const VERIFICATION: MetricStack = {
     APPROVALS_WITHDRAWN,
     PAGES_APPROVED,
     PAGES_REJECTED,
+    HEADINGS_ADDED_FROM_HEALTH,
   ],
   headline: [PAGES_VERIFIED, STILL_RIGHT_FROM_HOME],
 };

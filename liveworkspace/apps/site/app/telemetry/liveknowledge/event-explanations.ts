@@ -792,6 +792,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Added|ContextPage':
     'Someone added a page to Always in Context, the pages every agent reads first.',
   'UI|Removed|ContextPage': 'Someone took a page out of Always in Context.',
+  'UI|Used|HealthAddHeading':
+    "Add a Heading pressed in a page's Health Score breakdown, putting the page in edit mode with a heading to fill in.",
   'UI|Used|VerifyPage': 'An Editor verified a page, marking it as right until its review is due.',
   'UI|Used|HomeStillRight':
     'Someone confirmed a page due for review with Still Right on Home, verifying it again.',
