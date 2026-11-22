@@ -280,6 +280,13 @@ canvas overrides; the model then personalises labels via `update_document`'s
    or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
 
+**Where a new tab's first page sits.** `create_document`'s description names the starting templates and gives each
+one's first page as a rectangle on the canvas, so a host that loads that one tool alone can place `elements` without a
+read: the page is centred on (0, 0), `blank-infographic` (an infographic or poster) and `blank-article` an A4 page
+794 x 1123 from (-397, -561.5), `blank-slide-deck` a slide 1920 x 1080 from (-960, -540), `blank-flashcards` a card
+900 x 540 from (-450, -270). The numbers are typed into the description (building the templates when a Worker starts would cost its first request) and a test (`first-page.test.ts` in `packages/agent-verbs`) builds each named template and holds the numbers to its first page, so a template's change fails it. An
+eval run that knew only `create_document` had to guess both the template's name and where its page was.
+
 ### 4.3a `add_tab`
 
 Add a **new tab** (its own canvas) to an existing document. The motivating case:
@@ -1099,7 +1106,7 @@ as they can be without saying less.
 - **A byte budget.** `apps/mcp/src/tool-list-budget.test.ts` lists the tools through a real MCP client, compacts the
   answer as `/mcp` does and holds it to `TOOL_LIST_BUDGET_BYTES` (105,000); a tool that grows past it fails CI,
   where it can be trimmed or the budget raised on purpose. Measured on the compacted answer, in characters of its JSON: 136,821 before
-  the element format moved and output schemas went shallow (2026-11-21), 96,162 after.
+  the element format moved and output schemas went shallow (2026-11-21), 96,528 after.
 - **A tab by its name.** Where a tool reads a tab (`read_document`, `update_document` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
   (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was

@@ -5,6 +5,7 @@
 
 import { TRASH_RETENTION_DAYS } from '@livedesign/api-schema';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
+import { firstPagesBrief } from '../mcp/first-page';
 import { mcpChangeThreads, mcpListThreads } from '../mcp/thread-tools';
 import { mcpChangeRules, mcpListRules } from '../mcp/rule-tools';
 import { mcpViewLive, mcpViewTab } from '../mcp/view-tool';
@@ -99,7 +100,10 @@ export const mcpCreateDesign = mcpTool('create_design', {
   title: 'Create a design',
   description:
     'Create a new design of pages: a logo (a tab from the "blank-logo" template, then change_pages adds its ' +
-    'artboards) or a wireframe of an app or a website. Each tab holds pages; a tab may start from a "template" (a ' +
+    'artboards) or a wireframe of an app or a website (a tab from a "blank-wireframe-" template, ' +
+    'one per device). ' +
+    firstPagesBrief() +
+    ' Each tab holds pages; a tab may start from a "template" (a ' +
     'kind from list_templates: ready-made pages with sample text) or take "elements" for its first page (the ' +
     'format in brief on the "tabs" argument below). Pass one tab, or several to build a ' +
     'multi-tab design in one call. The server validates, lays ' +

@@ -294,6 +294,12 @@ rather than taken silently as the Default scheme. The MCP:
    or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
 
+**Where a new tab's first page sits.** `create_design`'s description names the starting templates and gives each
+one's first page as a rectangle on the canvas, so a host that loads that one tool alone can place `elements` without a
+read: the page is centred on (0, 0), `blank-logo` a 1024 x 1024 artboard from (-512, -512), and a wireframe screen
+framed as its device: `blank-wireframe-phone` 423 x 876 from (-211.5, -438), `blank-wireframe-tablet`,
+`blank-wireframe-laptop`, `blank-wireframe-browser` and `blank-wireframe-watch` likewise. The numbers are typed into the description (building the templates when a Worker starts would cost its first request) and a test (`first-page.test.ts` in `packages/agent-verbs`) builds each named template and holds the numbers to its first page, so a template's change fails it.
+
 ### 4.3a `add_tab`
 
 Add a **new tab** (its own canvas) to an existing design. The motivating case:
@@ -1114,7 +1120,7 @@ as they can be without saying less.
 - **A byte budget.** `apps/mcp/src/tool-list-budget.test.ts` lists the tools through a real MCP client, compacts the
   answer as `/mcp` does and holds it to `TOOL_LIST_BUDGET_BYTES` (100,000); a tool that grows past it fails CI,
   where it can be trimmed or the budget raised on purpose. Measured on the compacted answer, in characters of its JSON: 129,584 before
-  the element format moved and output schemas went shallow (2026-11-21), 92,534 after.
+  the element format moved and output schemas went shallow (2026-11-21), 93,104 after.
 - **A tab by its name.** Where a tool reads a tab (`read_design`, `update_design` and the tools that load a tab the same
   way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
   (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was
