@@ -366,6 +366,8 @@ export const INDEX_ERRORS = [
   'invalid_key',
   'invalid_summary',
   'invalid_collab',
+  // An updates push (one-explorer-contracts.md "What an item pushes") that is malformed or past its bounds.
+  'invalid_updates',
   'invalid_form',
   'invalid_form_seen',
   'invalid_events',

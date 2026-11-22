@@ -9,6 +9,7 @@ import { calendarFeedByToken } from './calendar-feeds';
 import { handleAppConnection } from './connection-doors';
 import { handleSheetChanged } from './sheet-sources';
 import { formByCode, formSeen, pushCollab, pushForm, pushFormSeen } from './collab-push';
+import { pushUpdates } from './updates';
 import { isId, isPartId } from './codec';
 import { handleDriveFlag, sendDriveSignals } from './drive';
 import type { Env } from './env';
@@ -78,10 +79,16 @@ export async function handleApp(
   if (request.method !== 'PUT' && !seenRead && !automationSends) return notFound();
   const itemId = segments[2];
   const item = await env.INDEX_DB.prepare(
-    'SELECT app, owner_id, team_id, updated_at FROM items WHERE id = ?',
+    'SELECT app, owner_id, team_id, updated_at, scope FROM items WHERE id = ?',
   )
     .bind(itemId)
-    .first<{ app: App; owner_id: string; team_id: string | null; updated_at: number }>();
+    .first<{
+      app: App;
+      owner_id: string;
+      team_id: string | null;
+      updated_at: number;
+      scope: string;
+    }>();
   if (!item) return notFound();
   if (item.app !== app) return fail(403, 'wrong_app');
   if (seenRead) return formSeen(env, itemId, segments[4]!, segments[6]!);
@@ -129,6 +136,11 @@ export async function handleApp(
   // A plan's card moves, once sent to its webhooks: connections hear no events (webhooks.md "No event
   // subscriptions"), so the push is taken and dropped until liveplanner stops sending it.
   if (segments.length === 4 && segments[3] === 'card-moves') return noContent();
+
+  // The item's whole set of updates, on pages someone watches (updates.ts).
+  if (segments.length === 4 && segments[3] === 'updates') {
+    return pushUpdates(request, env, app, itemId, item.scope);
+  }
 
   if (segments.length === 5 && segments[3] === 'collab' && isPartId(segments[4])) {
     return pushCollab(request, env, app, itemId, segments[4]);

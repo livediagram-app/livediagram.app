@@ -39,6 +39,7 @@ import { pageThreadsSchemaStep } from '../knowledge/page-threads';
 import { publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
+import { pageWatchSchemaStep } from '../knowledge/page-watch';
 import { suggestionsOutboxStep } from '../knowledge/suggestions-outbox';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -452,6 +453,10 @@ const V39 = pageReactionsSchemaStep;
 // IF NOT EXISTS; the pages with a suggestion already waiting are owed a push.
 const V40 = suggestionsOutboxStep;
 
+// Step 41: who watches which page, and what changed on watched pages within its hour (knowledge/page-watch.ts;
+// docs/specs/030-knowledgebase/watching.md). Additive, IF NOT EXISTS.
+const V41 = pageWatchSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -485,6 +490,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V38,
   V39,
   V40,
+  V41,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

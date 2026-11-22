@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Watching a Page',
+  description:
+    'Watch a Knowledgebase page or section to hear when it is edited, moved, deleted, approved or due for review, in your Inbox and a daily email.',
+  path: '/help/knowledgebase/watching-a-page/',
+});
+
+<ArticleLayout path="knowledgebase/watching-a-page" title="Watching a Page" description="Hear when a page, or a section of pages, changes: in your Inbox, and in a daily email if you want one." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Watch a page you rely on and you hear when it changes, without opening it to check. Anyone signed in who can read the page can watch it, Viewers included.
+
+## Watch a Page
+
+- In the page tree, open the page's menu (the three dots, or a right-click) and choose **Watch**.
+- Or, beside the page, press **Watch** in the **Watchers** row of **Page Health**.
+
+The button then reads **Watching**. Press it again, or choose **Unwatch** in the menu, to stop.
+
+## Watch a Section
+
+A page with subpages is a section. Choose **Watch This Section** in its menu, or under **Watch** beside it, and you hear about the page and every page under it, including pages added later.
+
+A page under a section you watch shows **Watching Through** and the section's name. To stop, unwatch the section from its own page.
+
+## What You Hear About
+
+| Change                   | When                                                         |
+| ------------------------ | ------------------------------------------------------------ |
+| **Edited**               | Someone saves a change to the page (not while they type)     |
+| **Verification Lapsed**  | The page's review comes due                                  |
+| **Approved**, **Rejected** | Someone decides a request to approve the page              |
+| **Moved**                | The page goes somewhere else in the page tree                |
+| **Deleted**              | The page goes to the Knowledgebase's Trash                   |
+
+Your own changes never tell you. Reactions, comments and verifying a page don't either.
+
+## Where You Hear
+
+- **Your Inbox.** Changes to a page come as one row an hour at most, under the Inbox's **Updates** filter, and stay for 14 days. They never add to the Inbox's count. Open the row to go to the page.
+- **A daily email, if you want one.** Turn on **Daily Digest of Watched Pages** in Settings, under Notifications. It is off until you turn it on, and every email has a link to turn it off again.
+
+## Who Watches
+
+Beside **Watch**, the **Watchers** row shows how many people watch the page. It never says who. Someone who can no longer open the Knowledgebase stops hearing about it and stops being counted.
+
+Watching needs an account: a guest, a share link without signing in, and an agent can't watch. A Knowledgebase kept Offline, in this browser only, has no watching.
+
+</ArticleLayout>

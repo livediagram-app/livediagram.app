@@ -8,6 +8,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'writing-on-a-page': '#4d7c0f',
   'linking-pages': '#0d9488',
   'embedding-from-other-apps': '#6366f1',
+  'watching-a-page': '#2563eb',
   // ---- Trust ----
   'owners-and-verifying': '#16a34a',
   'review-due-and-the-review-period': '#d97706',

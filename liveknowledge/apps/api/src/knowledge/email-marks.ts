@@ -7,6 +7,10 @@
 //   kind `ask`,          key the conflict:  when both owners were asked (once a conflict)
 //   kind `rule-review`,  key the page:      the verification a Review Due rule was last started for (key '': when
 //                                           the first check was), document-room/automations/review-events.ts
+//   kind `watch-review`, key the page:      the verification whose lapse its watchers were last told of
+//                                           (watching.md; key '': when the first check was), watch-work.ts
+//   kind `watch-digest`, key the person:    when that watcher was last sent their daily digest
+//   kind `watch-reach`,  key the person:    when the daily check last asked whether that watcher still reaches it
 //
 // Ids and times only: no address and no words. The day's total of emails is a `usage_counters` row (the scope
 // `emails`), pruned with the other counters. Written through `knowledgeDb`: none of it is an edit.
@@ -19,7 +23,15 @@ import { knowledgeDb, runAll } from './knowledge-db';
 export const KNOWLEDGE_EMAILS_PER_DAY = 50;
 const EMAILS_SCOPE = 'emails';
 
-export type MarkKind = 'review-page' | 'review-owner' | 'remind' | 'ask' | 'rule-review';
+export type MarkKind =
+  | 'review-page'
+  | 'review-owner'
+  | 'remind'
+  | 'ask'
+  | 'rule-review'
+  | 'watch-review'
+  | 'watch-digest'
+  | 'watch-reach';
 type Exec = (query: string) => unknown;
 
 /** The schema step (document-schema.ts STEPS). A knowledgebase that already holds verified pages is owed its first
@@ -97,6 +109,16 @@ export const pruneEmailMarks = () => [
     sql: `DELETE FROM knowledge_email_marks WHERE kind = 'ask' AND key NOT IN (SELECT id FROM conflicts)`,
     params: [],
   },
+  // A watcher's marks once they watch nothing here.
+  {
+    sql: `DELETE FROM knowledge_email_marks WHERE kind IN ('watch-digest', 'watch-reach')
+            AND key NOT IN (SELECT person FROM page_watchers)`,
+    params: [],
+  },
+  {
+    sql: `DELETE FROM knowledge_email_marks WHERE kind = 'watch-review' AND key != '' AND key NOT IN (SELECT id FROM tabs)`,
+    params: [],
+  },
 ];
 
 /** Take up to `wanted` of what is left of today's emails; answers how many may go. Read and write are one
@@ -106,21 +128,21 @@ export async function reserveEmails(
   env: DocumentEnv,
   wanted: number,
   now: number,
+  // Another kind's own day (the watch digests, watching.md): its counter and its ceiling.
+  { scope = EMAILS_SCOPE, cap = KNOWLEDGE_EMAILS_PER_DAY }: { scope?: string; cap?: number } = {},
 ): Promise<number> {
   if (wanted <= 0) return 0;
   const db = knowledgeDb(env);
   const day = dayOf(now);
   const [before] = await db.batch<{ used: number }>([
-    db
-      .prepare('SELECT used FROM usage_counters WHERE scope = ? AND period = ?')
-      .bind(EMAILS_SCOPE, day),
+    db.prepare('SELECT used FROM usage_counters WHERE scope = ? AND period = ?').bind(scope, day),
     db
       .prepare(
         `INSERT INTO usage_counters (scope, period, used) VALUES (?, ?, MIN(?, ?))
            ON CONFLICT (scope, period) DO UPDATE SET used = MIN(?, used + excluded.used)`,
       )
-      .bind(EMAILS_SCOPE, day, wanted, KNOWLEDGE_EMAILS_PER_DAY, KNOWLEDGE_EMAILS_PER_DAY),
+      .bind(scope, day, wanted, cap, cap),
   ]);
   const used = before?.results?.[0]?.used ?? 0;
-  return Math.max(0, Math.min(wanted, KNOWLEDGE_EMAILS_PER_DAY - used));
+  return Math.max(0, Math.min(wanted, cap - used));
 }

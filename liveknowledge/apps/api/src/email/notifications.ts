@@ -106,6 +106,24 @@ export const notifyKnowledgeReviews = (
   emails: ReadonlyMap<string, RenderedEmail>,
 ): Promise<string[]> => notifier.notifyAccounts(env, { setting: 'notifyKnowledgeReviews', emails });
 
+// The Daily Digest of Watched Pages (docs/specs/030-knowledgebase/watching.md "The daily digest email"): each account
+// its own email, at its verified address, only when it turned the digest on (a switch off by default: `optIn`).
+// Answers the ids emailed.
+export async function notifyWatchDigests(
+  env: Env,
+  emails: ReadonlyMap<string, RenderedEmail>,
+): Promise<string[]> {
+  if (!emailEnabled(env)) return [];
+  const ids = [...emails.keys()].filter(isAccountOwner);
+  if (ids.length === 0) return [];
+  const addresses = await notifyRecipients(env, ids, 'notifyWatchDigest', { optIn: true });
+  const sent = ids.filter((id) => addresses.has(id));
+  await Promise.all(
+    sent.map((id) => sendEmail(env, { ...emails.get(id)!, to: addresses.get(id)! })),
+  );
+  return sent;
+}
+
 // The owner just made a document: the tenth celebrates, once (docs/specs/014-identity/transactional-email.md #6).
 export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
   notifier.notifyMilestone(env, ownerId);

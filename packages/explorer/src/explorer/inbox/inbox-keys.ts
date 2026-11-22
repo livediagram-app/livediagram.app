@@ -8,6 +8,7 @@ import type {
   InboxForm,
   InboxSuggestion,
   InboxThread,
+  InboxUpdate,
 } from '@liveworkspace/index-client';
 import type { InboxData } from '../../data/useInbox';
 import type { InboxEntry } from './sections';
@@ -25,6 +26,9 @@ export const requestKey = (r: Pick<InboxAccessRequest, 'id'>) => `r:${r.id}`;
 export const suggestionKey = (
   r: Pick<InboxSuggestion, 'app' | 'itemId' | 'tabId' | 'suggestionId'>,
 ) => `g:${r.app}:${r.itemId}:${r.tabId}:${r.suggestionId}`;
+/** An update's: its app, item and id, the key its notice opens the Inbox at. */
+export const updateKey = (r: Pick<InboxUpdate, 'app' | 'itemId' | 'id'>) =>
+  `u:${r.app}:${r.itemId}:${r.id}`;
 
 /** What holds a row done from the pane out of the Inbox (`useInbox`'s `settle`): its key, a card thread by its own id
  *  (whichever plan lists it, as the list shows it once), and its time then, so a row that changes after comes back. */
@@ -46,6 +50,8 @@ export function settledOf(e: InboxEntry): InboxSettled {
       return { key: requestKey(e.row), at: e.row.askedAt };
     case 'Suggestion':
       return { key: suggestionKey(e.row), at: e.row.createdAt };
+    case 'Update':
+      return { key: updateKey(e.row), at: e.row.latestAt };
   }
 }
 
@@ -63,6 +69,9 @@ export function withoutSettled(data: InboxData, settled: ReadonlyMap<string, num
       : {}),
     ...(data.suggestions
       ? { suggestions: data.suggestions.filter((r) => kept(suggestionKey(r), r.createdAt)) }
+      : {}),
+    ...(data.updates
+      ? { updates: data.updates.filter((u) => kept(updateKey(u), u.latestAt)) }
       : {}),
   };
 }

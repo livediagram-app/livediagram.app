@@ -7,7 +7,7 @@
 // used (a key or pointer press in the last 10 minutes), so a browser left open overnight soon reads nothing.
 
 import type { InboxResponse, IndexClient } from '@liveworkspace/index-client';
-import { actionKey, suggestionKey, threadKey } from '../explorer/inbox/sections';
+import { actionKey, suggestionKey, threadKey, updateKey } from '../explorer/inbox/sections';
 
 /** A turn: the most often one browser reads the Inbox for one address. */
 export const INBOX_WATCH_POLL_MS = 30_000;
@@ -265,5 +265,6 @@ export function inboxSignature(data: InboxResponse, app: string | null = null): 
   for (const r of mine(data.accessRequests)) parts.push(`r:${r.id}@${r.askedAt}`);
   for (const s of mine(data.shares)) parts.push(`s:${s.id}@${s.sharedAt}`);
   for (const g of mine(data.suggestions)) parts.push(`${suggestionKey(g)}@${g.createdAt}`);
+  for (const u of mine(data.updates)) parts.push(`${updateKey(u)}@${u.latestAt}`);
   return parts.sort().join('|');
 }

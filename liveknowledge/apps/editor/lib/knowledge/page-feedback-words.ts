@@ -1,7 +1,7 @@
 // What a refused approval or comment request says, in words (docs/specs/030-knowledgebase/approval.md,
 // page-comments.md): never a status or a code.
 import { APPROVAL_NOTE_MAX, type ApprovalAction } from '@liveknowledge/knowledge';
-import { PAGE_THREADS_MAX } from '@liveknowledge/api-schema';
+import { PAGE_THREADS_MAX, WATCHES_PER_KNOWLEDGEBASE_MAX } from '@liveknowledge/api-schema';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 
 const APPROVAL_FALLBACK: Record<ApprovalAction, string> = {
@@ -73,4 +73,21 @@ export function reactionFailureText(err: unknown, on: boolean): string {
   return on
     ? 'The reaction could not be added. Try again.'
     : 'The reaction could not be taken back. Try again.';
+}
+
+const WATCH_REFUSED: Record<string, string> = {
+  watch_needs_account: 'Sign in to watch a page.',
+  not_a_section: 'This page has no subpages to watch with it.',
+  section_out_of_reach: 'Your link opens this page alone, so you can watch only this page.',
+  watchers_full: `This knowledgebase holds as many watches as it can (${WATCHES_PER_KNOWLEDGEBASE_MAX.toLocaleString('en')}).`,
+  watching_too_fast: 'That was a lot of changes at once. Try again in a moment.',
+};
+
+/** A refused watch (docs/specs/030-knowledgebase/watching.md), in words. */
+export function watchFailureText(err: unknown, on: boolean): string {
+  if (err instanceof ApiError && err.code && WATCH_REFUSED[err.code])
+    return WATCH_REFUSED[err.code]!;
+  return on
+    ? 'The page could not be watched. Try again.'
+    : 'The watch could not be stopped. Try again.';
 }

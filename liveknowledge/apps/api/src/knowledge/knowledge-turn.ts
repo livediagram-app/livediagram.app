@@ -5,6 +5,7 @@ import type { DocumentEnv } from '../types';
 import { runConflictCheck } from './conflict-check';
 import { deferWork, doneWork, dueWork, knowledgeWorkDueAt } from './knowledge-work';
 import { runKnowledgeEmail } from './knowledge-emails';
+import { runWatchWork } from './watch-work';
 
 /** Pieces of work one turn does: each may be a model call of some seconds. */
 export const WORK_PER_TURN = 3;
@@ -22,7 +23,9 @@ export async function runKnowledgeWork(
       again =
         work.kind === 'conflict'
           ? await runConflictCheck(env, documentId, work, now)
-          : await runKnowledgeEmail(env, documentId, work, now);
+          : work.kind === 'watch'
+            ? await runWatchWork(env, documentId, work, now)
+            : await runKnowledgeEmail(env, documentId, work, now);
     } catch (error) {
       console.warn('[knowledge] work failed', {
         documentId,

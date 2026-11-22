@@ -16,6 +16,7 @@ import type {
   TeamAuditEventType,
 } from './constants';
 import type { InboxAccessRequest, InboxShare } from './access-requests';
+import type { InboxUpdate } from './updates';
 
 export type ItemSummary = {
   elements?: number;
@@ -320,6 +321,8 @@ export type InboxResponse = {
   shares?: InboxShare[];
   // Suggested edits waiting on the reader's pages (Work Tracker 1362); absent from an index before them.
   suggestions?: InboxSuggestion[];
+  // Updates on pages the reader watches (one-explorer-contracts.md "Inbox"); absent from an index before them.
+  updates?: InboxUpdate[];
 };
 
 // A person's calendar feed in one app (one-explorer-contracts.md "Calendar feeds"): when its link was made. The token

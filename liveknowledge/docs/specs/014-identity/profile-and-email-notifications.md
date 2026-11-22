@@ -98,14 +98,19 @@ notifyMentions?: boolean;        // a teammate @-mentions me in a comment (docs/
 notifyActionAssigned?: boolean;  // a teammate assigns me an action (docs/specs/012-collaboration/assigned-actions.md)
 notifyMilestones?: boolean;      // my tenth document, and my first share link (transactional-email.md #6)
 notifyKnowledgeReviews?: boolean; // a page I own is due for review, disagrees with another, or an Editor reminds the owners
+notifyWatchDigest?: boolean;     // once a day, what changed in the pages I watch (default OFF)
 ```
+
+`notifyWatchDigest` (**Daily Digest of Watched Pages**, [Watching a page](../030-knowledgebase/watching.md)) is the
+one opt-**in** switch: sent only when it is explicitly `true` (`notifyRecipients(..., { optIn: true })`), so a
+missing value sends nothing.
 
 `notifyKnowledgeReviews` (**Knowledgebase Reviews**) is liveknowledge's own, kept in its own scope like
 `notifyDocumentJoin`: one switch for the three review emails
 ([Verification](../030-knowledgebase/verification.md#reminders)), sent through the notifier's `notifyAccounts`
 (`notifyKnowledgeReviews`, `apps/api/src/email/notifications.ts`).
 
-All **default on** (undefined === true): the user asked to be told, so the
+All the rest are **default on** (undefined === true): the user asked to be told, so the
 toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-preferences.md)'s `notificationsEnabled`. The
 profile page reads/writes them through the existing
 `readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so

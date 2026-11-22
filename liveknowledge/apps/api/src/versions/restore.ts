@@ -30,6 +30,7 @@ import {
   type VersionWho,
 } from '../document-room/automations/version-events';
 import { parseVersionBody, restoredTab, restoreRoomOps, sameContent } from './restore-tab';
+import { noteWatched } from '../knowledge/watch-notes';
 
 export type RestoreResult =
   | { status: 200; body: VersionRestoreResponse }
@@ -117,6 +118,15 @@ export async function restoreVersion(args: RestoreArgs): Promise<RestoreResult> 
       version: version.summary.id,
       name: version.summary.name,
       who: args.who ?? personWho(args.author, args.tokenId ? { name: args.tokenName } : null),
+    });
+    // The page's watchers hear of it as a save (watching.md "Edited"); never throws.
+    await noteWatched(env, {
+      tabs: [tabId],
+      kind: 'saved',
+      actor: () => ({
+        id: args.author.id,
+        name: args.tokenId ? args.tokenName || 'An agent' : args.author.name,
+      }),
     });
     // Awaited, bounded per op; a room that misses one is logged and never fails the restore.
     await relayPages(env, document.id, restoreRoomOps(stored.tab, next), '[versions]');

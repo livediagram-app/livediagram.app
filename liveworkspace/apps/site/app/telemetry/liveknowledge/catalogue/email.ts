@@ -183,6 +183,13 @@ export const PAGE_REJECTED_EMAILS = email(
   'neutral',
 );
 
+export const WATCH_DIGEST_EMAILS = email(
+  'WatchDigest',
+  'Watched Pages Digest Emails',
+  'A daily email listing what changed on the pages someone watches, sent only to those who turned it on.',
+  'neutral',
+);
+
 export const EMAIL_KIND_METRICS: readonly Metric[] = [
   WELCOME_EMAILS,
   WEEK1_EMAILS,
@@ -209,6 +216,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   PAGES_DISAGREE_EMAILS,
   OWNERS_REMINDED_EMAILS,
   PAGE_REJECTED_EMAILS,
+  WATCH_DIGEST_EMAILS,
 ];
 
 export const EMAILS_SENT: MetricStack = {

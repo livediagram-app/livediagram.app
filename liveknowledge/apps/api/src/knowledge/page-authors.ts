@@ -8,6 +8,7 @@ import type { DocumentEnv } from '../types';
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
 import { personWriter, stampOf, type PageWriter } from './page-writer';
 import { pageEditorStatement } from './page-editors';
+import { noteWatched, writerActor } from './watch-notes';
 
 type Exec = (query: string) => unknown;
 
@@ -73,6 +74,9 @@ export async function notePageWrite(
       pageEditorStatement(env, tab, w, at),
       ...also,
     ]);
+    // The page's watchers hear of the save (watching.md "Edited"): every write that reaches here changed the saved
+    // page. Never throws.
+    await noteWatched(env, { tabs: [tab], kind: 'saved', actor: writerActor(env, w), now: at });
   } catch (err) {
     console.warn('[knowledge] page author not noted', { tabId: tab, err: String(err) });
   }

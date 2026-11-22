@@ -1,7 +1,7 @@
 // Which Inbox rows notify, and what each says (inbox-notices.md "What notifies"): a mention, a comment on the
 // reader's item or a reply in a thread they are in, an action or card handed to them, an access request on an item
-// they manage, and their own request granted. Never their own move: a thread whose latest comment is theirs, work
-// they assigned, a self-assignment. Every row comes from the reader's own Inbox read, which lists only items they
+// they manage, their own request granted, and a change to a page they watch. Never their own move: a thread whose
+// latest comment is theirs, work they assigned, a self-assignment. Every row comes from the reader's own Inbox read, which lists only items they
 // reach, so a notice says nothing the Inbox row does not.
 
 import {
@@ -13,13 +13,19 @@ import {
 import { mentionHandle } from '@liveworkspace/model-core/comment-mentions';
 import { APP_ITEMS, PLATFORM_SITE, siteOfApp } from '@liveworkspace/sites';
 import { appHasInbox } from '../inbox-apps';
-import { actionKey, requestKey, threadKey } from '../explorer/inbox/sections';
+import {
+  actionKey,
+  requestKey,
+  threadKey,
+  updateKey,
+  updateReason,
+} from '../explorer/inbox/sections';
 import type { SeenStore } from './seen';
 
 /** A row older than this never notifies: it waits in the Inbox and its count. */
 export const NOTICE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-export type NoticeKind = 'mention' | 'comment' | 'assigned' | 'access' | 'share';
+export type NoticeKind = 'mention' | 'comment' | 'assigned' | 'access' | 'share' | 'update';
 
 export type NoticeRow = {
   key: string;
@@ -213,6 +219,26 @@ export function noticeRows(
       place: s.itemTitle,
       detail: null,
       href: itemHref(s.app, s.itemId, here),
+    });
+  }
+  // An update on a page the reader watches: once per row, so its time is when it opened (`firstAt`), never its
+  // latest change: the hour of changes it folds tells the reader once. The app never lists anyone whose own change is
+  // all it holds, so who is the newest other person, or nobody for a review that came due.
+  for (const u of data.updates ?? []) {
+    const key = updateKey(u);
+    const by = u.actors.find((a) => a.id !== viewerId) ?? null;
+    const lapsed = u.kinds.length === 1 && u.kinds[0] === 'review_due';
+    out.push({
+      key,
+      at: u.firstAt,
+      kind: 'update',
+      app: u.app,
+      who: lapsed ? 'A page you watch' : by?.name || SOMEONE,
+      verb: lapsed ? 'is due for review' : 'changed a page you watch',
+      quote: null,
+      place: u.itemTitle,
+      detail: [u.tabName, updateReason(u).label].filter(Boolean).join(' · '),
+      href: inboxRowHref(u.app, key, here),
     });
   }
   return out.sort((a, b) => b.at - a.at);
