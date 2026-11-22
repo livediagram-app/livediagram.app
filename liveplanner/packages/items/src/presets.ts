@@ -2,6 +2,7 @@
 // (docs/specs/026-plan/plan-mode.md "The palette", "Templates").
 
 import { statusNamed } from './status-names';
+import { PRESET_STATUS_NAMES } from './preset-status-names';
 import { settleDoneColumns } from './done-columns';
 import type { CardField, PlanBoardSetup, PlanColumn } from './board';
 
@@ -117,7 +118,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
         statusColumn('confirmed', 'Confirmed'),
         statusColumn('fixing', 'Fixing', { wipLimit: 4 }),
         statusColumn('fixed', 'Fixed', { done: true }),
-        statusColumn('wont-fix', 'Won’t Fix', { done: true }),
+        statusColumn('wont-fix', PRESET_STATUS_NAMES['wont-fix']!, { done: true }),
       ],
       doneColumnId: 'fixed',
       swimlaneBy: 'priority',
@@ -219,15 +220,6 @@ export function isPlanBoardPresetId(id: unknown): id is PlanBoardPresetId {
 // A palette tile's preset, or the blank board for anything else.
 export function presetSetupOrBlank(id: unknown): PlanBoardSetup {
   return presetSetup(isPlanBoardPresetId(id) ? id : 'blank');
-}
-
-// The name a preset's column gives a status id (its own or one made from it, "wont-fix~ab12"), or undefined: a status
-// no board names any more keeps the name it was made with ("Won’t Fix"), which its id can't spell back.
-export function presetColumnName(status: string): string | undefined {
-  const base = status.split('~')[0]!;
-  for (const preset of Object.values(PLAN_BOARD_PRESETS))
-    for (const c of preset.setup.columns) if (c.status === base) return c.name;
-  return undefined;
 }
 
 // A board placed on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): a column whose name a status the

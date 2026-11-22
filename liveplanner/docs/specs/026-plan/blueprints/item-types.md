@@ -1259,9 +1259,9 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
 - A form starter's type (`planFormStart`, `packages/templates/src/form-start.ts`): a type new to the catalogue with
   neither `statuses` nor `excludedStatuses` is returned with `statuses` = the new Responses board's column statuses,
   or `boardTypeStatuses([target.setup], [id])` when the starter's responses go to a board of the project. A type
-  already in the catalogue is untouched. `typeResponsesBoardSetup` names a column whose status no board names from
-  `presetColumnName(status)` (`presets.ts`: the preset column of that id, so `wont-fix~ab12` is "Won’t Fix") before
-  `statusLabel`.
+  already in the catalogue is untouched. `statusLabel` (`board-lanes.ts`) names a status no board names from `presetStatusName(status)`
+  (`preset-status-names.ts`, a leaf module `presets.ts` also reads: `wont-fix~ab12` is "Won’t Fix") before Title Casing
+  its id, and `typeResponsesBoardSetup` names its columns through it.
 - Editor joins (`hooks/plan/useTypeStatusJoins.ts`, wired in `useEditorState` with `enabled` = hydrated, not
   structure read-only, catalogue chosen): per loaded tab, `boardTypeStatuses` of its boards. A tab first seen
   (loaded) that was in the project when the hook started only seeds the session's `seen` sets; a tab that appears

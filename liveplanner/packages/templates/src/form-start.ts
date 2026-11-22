@@ -33,7 +33,6 @@ import {
   type ItemTypeDef,
   type PlanBoardSetup,
   type PlanColumn,
-  presetColumnName,
   statusLabel,
 } from '@liveplanner/items';
 
@@ -137,14 +136,10 @@ export function typeResponsesBoardSetup(
   const kanban = freshBoardSetup('kanban', random, names);
   const columns = forType.statuses.map((status) => {
     const known = forType.columns?.find((c) => c.status === status);
-    return statusColumn(
-      status,
-      names.get(status) ?? presetColumnName(status) ?? statusLabel(status),
-      {
-        ...(known?.color ? { color: known.color } : {}),
-        ...(known?.done !== undefined ? { done: known.done } : {}),
-      },
-    );
+    return statusColumn(status, statusLabel(status, names), {
+      ...(known?.color ? { color: known.color } : {}),
+      ...(known?.done !== undefined ? { done: known.done } : {}),
+    });
   });
   const { doneColumnId: _done, ...rest } = kanban;
   // Done columns flagged as the project's are, else by their names, as every board written now is.
