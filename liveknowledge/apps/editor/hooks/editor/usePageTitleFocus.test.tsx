@@ -39,7 +39,7 @@ describe('usePageTitleFocus', () => {
     expect(s.focusTitle).not.toHaveBeenCalled();
     wantTitleFocus('made');
     s.hook.rerender({ tab: made, editable: true, up: true });
-    expect(s.focusTitle).toHaveBeenCalledExactlyOnceWith(flowOf(made));
+    expect(s.focusTitle).toHaveBeenCalledExactlyOnceWith(flowOf(made), document.body);
   });
 
   it('asks once: the page opened again later takes no caret', () => {
@@ -62,7 +62,7 @@ describe('usePageTitleFocus', () => {
     const first = page('first');
     wantTitleFocus('first');
     const s = setup(first);
-    expect(s.focusTitle).toHaveBeenCalledExactlyOnceWith(flowOf(first));
+    expect(s.focusTitle).toHaveBeenCalledExactlyOnceWith(flowOf(first), document.body);
   });
 
   it('waits for the writing: a page still loading keeps its ask until it has landed', () => {
@@ -72,7 +72,7 @@ describe('usePageTitleFocus', () => {
     expect(s.focusTitle).not.toHaveBeenCalled();
     const landed = { ...page('made') };
     s.hook.rerender({ tab: landed, editable: true, up: true });
-    expect(s.focusTitle).toHaveBeenCalledExactlyOnceWith(flowOf(landed));
+    expect(s.focusTitle).toHaveBeenCalledExactlyOnceWith(flowOf(landed), document.body);
   });
 
   it('waits for the articles and for a session that may write', () => {

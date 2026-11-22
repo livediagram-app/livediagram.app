@@ -26,7 +26,9 @@ export type FlowLayout = {
   local: boolean;
 };
 
-export type FocusRequest = { flow: string; at: FocusAt; seq: number } | null;
+// `from`, when set, is what had focus when the caret was asked for: the editor leaves focus the person has moved
+// since (lib/page-title-focus.ts focusMovedSince). Unset, the request takes focus wherever it is.
+export type FocusRequest = { flow: string; at: FocusAt; seq: number; from?: Element | null } | null;
 
 export type ArticleEditorProps = {
   flow: string;
