@@ -6,6 +6,7 @@
 // rules stay as they are (blueprint SND2). The room then forgets its ledger and closes every socket.
 
 import type { Tab } from '@liveplanner/project';
+import { ruleSnapshotIds } from '@liveworkspace/automations/item';
 import {
   serveSnapshots,
   type SnapshotCaller,
@@ -128,6 +129,8 @@ export function planSnapshotDoor(env: PlanEnv, planId: string): SnapshotDoor {
       return 'ok';
     },
     afterRevert: (generation) => env.SNAPSHOT_REVERTED?.(generation),
+    // The snapshots the plan's rules revert to (automations.md "Snapshot steps"): kept, never removed or deleted.
+    kept: () => (env.AUTOMATIONS ? ruleSnapshotIds(env.AUTOMATIONS.store.list()) : []),
   };
 }
 
