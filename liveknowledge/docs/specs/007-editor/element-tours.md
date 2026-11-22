@@ -11,7 +11,10 @@ inside a drawing zone, and the tours taught a free canvas's gestures. They are g
 
 What went with them: `ElementTourHost.tsx`, `element-tour-defs.ts`, every `<kind>-tour-steps.ts` of an element
 (`sankey-element-`, `layer-stack-`, `pyramid-`, `funnel-`, `cycle-`, `hub-`, `onion-`, `timeline-`, `chevrons-`,
-`chart-`, `stack-`, `concept-element-`), `menu-tour-step.ts`, `lib/element-tours.ts` and their tests. Their
+`chart-`, `stack-`, `concept-element-`), `menu-tour-step.ts`, `lib/element-tours.ts` and their tests. The canvas
+faces' tour hooks went too: a concept graphic's and a chart's previewed animation (`useConceptTourPreview`,
+`useChartAnim`), a chevron's held bar, a Sankey's lifted part (`useSankeyTourFocus`, `onCanvas`), the Chart and Flows
+dialogs' hand-off handles and their Escape guard, and the Chart dialog's `chart-data-*` anchors. Their
 preferences, `elementTourKinds` and `elementToursSeen`, are read by nothing and kept as stored. Their events
 (`<Kind>Tour*`, `<Kind>TourSeen*`, `ElementToursSeen*`) are retired on the dashboard
 ([Telemetry](../017-telemetry/telemetry.md) "Retired features").

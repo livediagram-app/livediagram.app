@@ -33,7 +33,6 @@ import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/Canvas
 import { ChevronStageControls } from '@/components/canvas/ConceptRowBar';
 import { ConceptRowLayer } from '@liveworkspace/workbench/components/canvas/concept-row-layer';
 import { ConceptTimelineBody } from './ConceptTimelineBody';
-import { useConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 
 type Props = {
   element: ShapeElement & { shape: ConceptShape };
@@ -70,14 +69,8 @@ export function ConceptFace({
   const noun = CONCEPT_ROWS[element.shape].noun;
   const write = (i: number, patch: Partial<ConceptRow>) =>
     onSetRows({ conceptRows: rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) });
-  // An element tour previews an animation on the element it is on, played once and never stored
-  // (docs/specs/007-editor/element-tours.md); otherwise the element's own.
-  const preview = useConceptTourPreview(element.id);
-  // A chart's Grow is never previewed on a concept graphic.
-  const previewAnim = preview?.anim === 'grow' ? undefined : preview?.anim;
-  const anim = previewAnim ?? conceptAnimOf(element);
-  // A previewed Build plays once; a previewed loop (Pulse, Flow) keeps going while its step is up.
-  const repeats = previewAnim ? previewAnim !== 'build' : conceptAnimRepeats(element);
+  const anim = conceptAnimOf(element);
+  const repeats = conceptAnimRepeats(element);
   const animClass = !anim
     ? ''
     : anim === 'build'
@@ -329,7 +322,6 @@ export function ConceptFace({
         notes={hasNotes}
         invScale={1 / zoom}
         onSetRows={onSetRows}
-        tourBar={preview?.bar}
       >
         {stages}
       </ChevronStageControls>
@@ -390,12 +382,7 @@ export function ConceptFace({
     );
   }
   return (
-    // A preview's run keys the layer, so pressing a step again replays it from the start.
-    <div
-      key={preview?.anim ? preview.run : 'own'}
-      className={`absolute inset-0 ${animClass}`}
-      style={vars}
-    >
+    <div className={`absolute inset-0 ${animClass}`} style={vars}>
       {body}
     </div>
   );
