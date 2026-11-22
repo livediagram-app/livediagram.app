@@ -5,7 +5,7 @@
 // top (apps/editor/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
-import { settleChips, type Element } from '@livediagram/document';
+import { fitTextWidths, settleChips, type Element } from '@livediagram/document';
 import type { TemplateKind } from './templates';
 import {
   buildComicStrip,
@@ -101,11 +101,12 @@ import { buildInterviewSynthesis } from './template-builders-interview-synthesis
 // The output lands settled (docs/specs/009-elements/blueprints/badge.md "Settling"): a builder sizes a step
 // after making it, so its number is set to half the disc here, as a stored board reads back, and a
 // preview or an agent's create shows what the editor will. Every template then carries its note, and a Workshop
-// board missing them its session kit (docs/specs/008-canvas/canvas-and-palette.md "What a template shows").
+// board missing them its session kit (docs/specs/008-canvas/canvas-and-palette.md "What a template shows"). Last,
+// every title, caption and hint is as wide as its words ("Text sized to its words"), so Zoom to Fit frames the content.
 export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Element[] {
-  return settleChips([], withTemplateNote(kind, buildUnsettled(kind, cx, cy)), {
-    attachLoose: false,
-  });
+  return fitTextWidths(
+    settleChips([], withTemplateNote(kind, buildUnsettled(kind, cx, cy)), { attachLoose: false }),
+  );
 }
 
 function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
