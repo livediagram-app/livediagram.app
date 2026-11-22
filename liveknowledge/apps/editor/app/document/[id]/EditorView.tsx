@@ -1,5 +1,6 @@
 'use client';
 
+import { AiSourceScope } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import { usePublishDocumentVisibility } from '@/hooks/editor/document-visibility-store';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
@@ -410,6 +411,7 @@ export function EditorView() {
     // menus, so a swatch in a menu can't disagree with the shape it describes.
     // Subscribing to the appearance is what re-renders this on a mode switch:
     // a Default tab's paper is the viewer's, not the tab's.
+    <AiSourceScope teamId={ctx.documentTeamId ?? null} signedIn={!!ctx.accountUserId}>
     <DocumentAutomationsHost {...automations}>
       <SnapshotsDoorProvider door={snapshotsDoor}>
         <ApprovalDoorProvider door={approvalDoor}>
@@ -599,5 +601,6 @@ export function EditorView() {
         </ApprovalDoorProvider>
       </SnapshotsDoorProvider>
     </DocumentAutomationsHost>
+    </AiSourceScope>
   );
 }

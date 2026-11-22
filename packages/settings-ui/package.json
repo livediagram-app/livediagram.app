@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./profile-events": "./src/profile/profile-events.ts",
     "./connections": "./src/connections/index.ts",
-    "./token-list": "./src/token-list.ts"
+    "./token-list": "./src/token-list.ts",
+    "./ai-source": "./src/ai-source/index.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -33,6 +34,7 @@
   },
   "dependencies": {
     "@liveworkspace/account-menu": "workspace:^",
+    "@liveworkspace/ai": "workspace:^",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/brand": "workspace:^",
     "@liveworkspace/data-export": "workspace:^",

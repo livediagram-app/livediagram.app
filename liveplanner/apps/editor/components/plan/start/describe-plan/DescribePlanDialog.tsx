@@ -24,7 +24,9 @@ import {
   DialogHeader,
   SparkleIcon,
 } from '@liveplanner/ui';
+import type { AiKeyFailure } from '@liveworkspace/ai';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import {
   DescribePrompt,
   DescribeSignIn,
@@ -86,6 +88,8 @@ export function DescribePlanDialog({
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
+  // A key that failed on the last ask, for the source line to say so and offer to fix it.
+  const [keyFailure, setKeyFailure] = useState<AiKeyFailure | null>(null);
   // The draft being checked: the preview shows while there is one.
   const [checking, setChecking] = useState<PlanDraft | null>(null);
   const [makeSaid, setMakeSaid] = useState<string | null>(null);
@@ -119,6 +123,7 @@ export function DescribePlanDialog({
     const mine = ++asking.current;
     setBusy(true);
     setSaid(null);
+    setKeyFailure(null);
     try {
       const drafted = await draft(prompt);
       if (mine !== asking.current) return;
@@ -129,6 +134,7 @@ export function DescribePlanDialog({
     } catch (error) {
       if (mine !== asking.current) return;
       setSaid(error instanceof PlanDraftRefusal ? error.message : DESCRIBE_PLAN_FAILED);
+      setKeyFailure(error instanceof PlanDraftRefusal ? error.aiKey : null);
       box.current?.focus();
     } finally {
       if (mine === asking.current) setBusy(false);
@@ -201,7 +207,14 @@ export function DescribePlanDialog({
           examples={DESCRIBE_PLAN_EXAMPLES}
           busy={busy}
           said={said}
-          note={<>Uses AI: plans and forms share {PLAN_DRAFT_PER_DAY} drafts a day.</>}
+          source={(id) => (
+            <WorkbenchAiSource
+              id={id}
+              failure={keyFailure}
+              signedIn={signedIn}
+              allowance={`Plans and forms share ${PLAN_DRAFT_PER_DAY} drafts a day.`}
+            />
+          )}
           onSubmit={() => void submit()}
         />
       )}

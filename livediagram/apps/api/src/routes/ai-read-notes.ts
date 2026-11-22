@@ -6,6 +6,18 @@ import {
   type ReadNotesRequest,
   type ReadNotesResponse,
 } from '@livediagram/api-schema';
+import {
+  AI_KEY_FAILED,
+  ModelCallError,
+  callModel,
+  isKeyFailureKind,
+  ownKeyOf,
+  type KeyCaller,
+  type ModelPart,
+  type OwnKey,
+} from '@liveworkspace/ai';
+import { personAiKey } from '@liveworkspace/auth-client/ai-key';
+import { accountCredentials } from '../auth/accounts';
 import { aiError, CORS_HEADERS, json } from '../responses';
 import { chatCompletions, providerOf } from '../ai-client';
 import { aiGate } from './ai-gate';
@@ -26,7 +38,18 @@ const MAX_TEXT_CHARS = 200;
 export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   const { request, env } = ctx;
 
-  const refused = await aiGate(ctx);
+  // The person's own key reads the notes when they have one (note-reader.md "On your own key"): asked of accounts only
+  // for a signed-in person in person, after the cheap checks below have run. The request names no canvas, so only
+  // their own key applies.
+  const ask = () => personAiKey(accountCredentials(env), ctx, null);
+  const own: OwnKey =
+    request.method === 'POST' && ctx.accountUserId ? ownKeyOf(await ask()) : { status: 'built-in' };
+  if (own.status === 'refused')
+    return own.reason === 'unreadable'
+      ? json({ error: AI_KEY_FAILED, message: own.words, aiKey: own.failure }, { status: 422 })
+      : json({ error: 'ai_error', message: own.words }, { status: 503 });
+
+  const refused = await aiGate(ctx, own.status === 'key');
   if (refused) return refused;
 
   let body: ReadNotesRequest;
@@ -52,6 +75,8 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
       return json({ error: 'crops_too_large' }, { status: 413 });
     }
   }
+
+  if (own.status === 'key') return readOnKey(own, crops);
 
   // The gate has already refused a deployment with no usable provider.
   const provider = providerOf(env)!;
@@ -216,3 +241,55 @@ function collate(payload: unknown, ids: number[]): ReadNotesResponse {
     texts: ids.map((id) => byId.get(id) ?? { id, text: '', legible: false }),
   };
 }
+
+// The crops read on the person's own key (Claude or OpenAI, both of which read pictures), through `callModel`: the
+// same prompt and the same checks of the answer as the deployment's model. A key the provider refuses is said as
+// `ai_key_failed`, and the notes never go to the deployment's model instead. Nothing about an image or the key reaches
+// a log line.
+async function readOnKey(
+  own: Extract<OwnKey, { status: 'key' }>,
+  crops: ReadNotesRequest['crops'],
+): Promise<Response> {
+  const content: ModelPart[] = [{ type: 'text', text: `Read these ${crops.length} sticky notes.` }];
+  for (const crop of crops) {
+    const comma = crop.image.indexOf(',');
+    const mediaType = crop.image.slice('data:'.length, crop.image.indexOf(';'));
+    content.push({ type: 'text', text: `Crop ${crop.id}:` });
+    content.push({ type: 'image', mediaType, data: crop.image.slice(comma + 1) });
+  }
+  const caller: KeyCaller = own.caller;
+  let text: string;
+  try {
+    const reply = await callModel({
+      ...caller,
+      request: {
+        system: `${buildReadNotesPrompt()}\n\nReply with one JSON object only, matching this JSON Schema:\n${JSON.stringify(READ_NOTES_SCHEMA.schema)}`,
+        messages: [{ role: 'user', content }],
+        maxTokens: KEYED_MAX_TOKENS,
+        effort: 'low',
+      },
+    });
+    text = reply.text;
+  } catch (err) {
+    if (err instanceof ModelCallError && err.provider !== 'built-in' && isKeyFailureKind(err.kind)) {
+      const aiKey = { source: own.source, provider: err.provider, kind: err.kind };
+      return json({ error: AI_KEY_FAILED, message: err.message, aiKey }, { status: 422 });
+    }
+    console.error('[ai/read-notes] key call failed', { provider: own.provider, crops: crops.length });
+    return aiError();
+  }
+  const payload = extractJson(text);
+  if (payload === null) {
+    console.error('[ai/read-notes] key answer unparseable', { provider: own.provider });
+    return aiError();
+  }
+  const answer = collate(
+    payload,
+    crops.map((c) => c.id),
+  );
+  console.info(`[ai/read-notes] ok key=${own.provider} crops=${crops.length}`);
+  return json(answer, { headers: CORS_HEADERS });
+}
+
+// The providers' models think before they answer, and the thinking counts.
+const KEYED_MAX_TOKENS = 8000;

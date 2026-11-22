@@ -1,5 +1,6 @@
 'use client';
 
+import { AiSourceScope } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import dynamic from 'next/dynamic';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
@@ -367,6 +368,7 @@ export function EditorView() {
     // menus, so a swatch in a menu can't disagree with the shape it describes.
     // Subscribing to the appearance is what re-renders this on a mode switch:
     // a Default tab's paper is the viewer's, not the tab's.
+    <AiSourceScope teamId={documentTeamId ?? null} signedIn={!!accountUserId}>
     <SpaceAutomationsHost {...automations}>
       <SnapshotsDoorProvider door={snapshotsDoor}>
         <SelectionStoreProvider store={ctx.selectionStore}>
@@ -505,5 +507,6 @@ export function EditorView() {
         </SelectionStoreProvider>
       </SnapshotsDoorProvider>
     </SpaceAutomationsHost>
+    </AiSourceScope>
   );
 }

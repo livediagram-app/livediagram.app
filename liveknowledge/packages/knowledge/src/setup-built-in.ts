@@ -3,7 +3,7 @@
 // model liveplanner's Describe a Plan uses. This module writes the request in Workers AI's chat shape and reads the
 // binding's answer into the text `parseSetupSuggestion` reads; the api makes the call and keeps the count
 // (apps/api/src/knowledge/setup-built-in-ai.ts). Pure.
-import { BUILT_IN_MODEL, fenced } from '@liveworkspace/ai';
+import { BUILT_IN_MODEL, fenced, messageText } from '@liveworkspace/ai';
 import { SETUP_MAX_PAGES } from './setup-limits';
 import { setupRequest, type SetupExistingPage } from './setup-request';
 
@@ -67,7 +67,7 @@ export function setupBuiltInInput(
   refused?: string,
 ): SetupBuiltInInput {
   const request = setupRequest(options);
-  const message = request.messages[0]!.content;
+  const message = messageText(request.messages[0]!.content);
   const content = refused
     ? `${message}\n<previous_reply>\nYour previous reply could not be used: ${fenced(refused)}. Reply again with the one JSON object only.\n</previous_reply>`
     : message;

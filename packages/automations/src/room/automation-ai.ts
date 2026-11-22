@@ -3,6 +3,7 @@
 // secret), bounded by a timeout. An item asks at most AUTOMATION_AI_PER_DAY a day, counted as each call is asked
 // (`automation_ai_days`, one row a day, bumped by markAiAsked) and from Describe a Rule's asks: two indexed reads. No binding, a model that errs or takes too long: the
 // ask answers its reason and never throws. What is asked and what an answer writes are each app's.
+import { ModelCallError, isKeyFailureKind, type AiKeyFailureKind, type KeyProviderId } from '@liveworkspace/ai';
 import { AI_FAILED, AI_SLOW, type AiRequest } from '../ai';
 import type { Sql } from './sql';
 
@@ -19,6 +20,9 @@ export interface AutomationsAi {
 // list, its thinking mode turned off so an answer costs only its own tokens.
 export const AUTOMATION_AI_MODEL = '@cf/google/gemma-4-26b-a4b-it';
 export const AUTOMATION_AI_TIMEOUT_MS = 15_000;
+// An ask on a person's own key (Describe a Rule): the providers' models think before they answer, so it may take
+// longer than built-in AI's small model.
+export const AUTOMATION_KEYED_TIMEOUT_MS = 60_000;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -77,17 +81,24 @@ export function countDraftAsk(sql: Sql, now: number, retry: boolean): void {
 
 const SLOW = Symbol('slow');
 
-export type Asked = { ok: true; raw: unknown } | { ok: false; reason: string };
+// A failure on a person's key that they fix in Settings: the provider and the kind, never any part of the key.
+export type AskKeyFailure = { provider: KeyProviderId; kind: AiKeyFailureKind };
+
+export type Asked =
+  | { ok: true; raw: unknown }
+  | { ok: false; reason: string; keyFailure?: AskKeyFailure };
 
 // One call, bounded by the timeout; the model's own error and a gateway's refusal are the same failure to a rule.
+// A call on a key fails in the provider's fixed words (model-failure.ts), and says which failure a person fixes.
 export async function ask(
   client: AutomationsAi,
   request: AiRequest,
   gateway: string | undefined,
+  timeoutMs: number = AUTOMATION_AI_TIMEOUT_MS,
 ): Promise<Asked> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const slow = new Promise<typeof SLOW>((resolve) => {
-    timer = setTimeout(() => resolve(SLOW), AUTOMATION_AI_TIMEOUT_MS);
+    timer = setTimeout(() => resolve(SLOW), timeoutMs);
   });
   try {
     const raw = await Promise.race([
@@ -101,6 +112,14 @@ export async function ask(
     return raw === SLOW ? { ok: false, reason: AI_SLOW } : { ok: true, raw };
   } catch (error) {
     console.warn('[automations] ai.failed', { error: String(error) });
+    if (error instanceof ModelCallError && error.provider !== 'built-in') {
+      const { provider, kind } = error;
+      return {
+        ok: false,
+        reason: error.message,
+        ...(isKeyFailureKind(kind) ? { keyFailure: { provider, kind } } : {}),
+      };
+    }
     return { ok: false, reason: AI_FAILED };
   } finally {
     clearTimeout(timer);

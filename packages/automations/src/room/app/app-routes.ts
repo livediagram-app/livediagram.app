@@ -1,6 +1,7 @@
 // An app's `…/<items>/:id/automations[/…]` routes (blueprint item-engine.md "Routes", "An app's bindings"). The
 // routes themselves are the engine's (item/routes.ts); an app's route file names the path by its own literal
 // segments, says who is calling by its own gates, and hands both here.
+import type { KeyAnswer } from '@liveworkspace/ai';
 import type { AutomationPerson } from '../../types';
 import type { ItemEngine } from '../item/engine';
 import { json, type ItemCaller } from '../item/route-kit';
@@ -32,6 +33,9 @@ export interface ItemCallerFacts {
   person: () => Promise<AutomationPerson>;
   // Holds any grant on the item, for a rule's summary.
   reader: boolean;
+  // Which AI key applies to the caller, with the key: the app asks accounts (`aiKeyFor`, `want: 'key'`, the item's
+  // team) for a signed-in person in person, and answers null for anyone else (an API token, a workbench session).
+  aiKey?: () => Promise<KeyAnswer | null>;
 }
 
 /** The engine's caller. Anyone but a signed-in Editor is "Someone" (never stored: they are refused). */
@@ -45,6 +49,7 @@ export async function itemCallerOf(facts: ItemCallerFacts): Promise<ItemCaller> 
         ? await facts.person()
         : { ...SOMEONE, id: facts.callerId ?? '' },
     reader: facts.reader,
+    ...(facts.aiKey ? { aiKey: facts.aiKey } : {}),
   };
 }
 

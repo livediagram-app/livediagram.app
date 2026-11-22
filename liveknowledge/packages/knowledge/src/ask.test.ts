@@ -15,7 +15,7 @@ import {
 } from './ask-limits';
 import { askSearch, chooseAskPassages, type AskPassage } from './ask-passages';
 import { ASK_SYSTEM, askMessage, askRequest } from './ask-request';
-import { callModel } from '@liveworkspace/ai';
+import { callModel, messageText } from '@liveworkspace/ai';
 import { pagePassages } from './passages';
 import { replacePageIndex } from './sql/page-index';
 import { foundPassage, type FoundPassage, type SearchRow } from './sql/search';
@@ -261,7 +261,7 @@ describe('the request Ask sends', () => {
       content: '<answer>\nAnswer 5. More.\n</answer>',
     });
     expect(messages.at(-1)!.content).toContain('<passages>');
-    expect(messages.slice(0, -1).every((m) => !m.content.includes('<passages>'))).toBe(true);
+    expect(messages.slice(0, -1).every((m) => !messageText(m.content).includes('<passages>'))).toBe(true);
     expect(messages.map((m) => m.role).join(' ')).toMatch(/^(user assistant )+user$/);
   });
 });

@@ -7,7 +7,7 @@
 // text-generation shape) or chat-completion chunks (`choices[0].delta.content`), then `[DONE]`; an ask it does not
 // stream answers one object (`builtInReplyText`). Both are read.
 import { ModelCallError } from './model-failure';
-import type { ModelRequest } from './model-request';
+import { messageText, type ModelRequest } from './model-request';
 import { eventData, parseEvent } from './sse';
 
 /** The model built-in AI answers with: liveplanner's Describe a Plan model, its thinking turned off. */
@@ -37,7 +37,7 @@ export function builtInInput(request: ModelRequest): BuiltInInput {
   return {
     messages: [
       { role: 'system', content: request.system },
-      ...request.messages.map(({ role, content }) => ({ role, content })),
+      ...request.messages.map(({ role, content }) => ({ role, content: messageText(content) })),
     ],
     max_tokens: Math.min(request.maxTokens, BUILT_IN_MAX_TOKENS),
     temperature: 0.2,

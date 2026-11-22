@@ -7,7 +7,12 @@ import type { Auth } from '../auth.ts';
 import { __setBearerVerifier } from '../bearer.ts';
 import type { Env } from '../env.ts';
 import { addClient, addUser, testD1 } from '../test-d1.ts';
-import { AI_KEY_INTERNAL_PATH, fromBinding, handleAiKeyInternal } from './internal.ts';
+import {
+  AI_KEY_INTERNAL_PATH,
+  AI_KEY_READERS,
+  fromBinding,
+  handleAiKeyInternal,
+} from './internal.ts';
 import { aiKeySecrets, sealAiKey } from './seal.ts';
 import { leaveAllTeams, removeMember } from '../teams/members.ts';
 import { readAiKey, resealAiKeys } from './store.ts';
@@ -692,9 +697,20 @@ describe('the internal door', () => {
   });
 
   // Security review L4: only an app that calls a model is handed a key; any app may ask which applies.
+  it('names every product as a key reader, and nothing else', () => {
+    expect([...AI_KEY_READERS].sort()).toEqual([
+      'livedesign.app',
+      'livediagram.app',
+      'livedocuments.app',
+      'livehuddle.app',
+      'liveknowledge.app',
+      'liveplanner.app',
+    ]);
+  });
+
   it('hands a key only to an app that calls a model', async () => {
     sql
-      .prepare(`UPDATE oauth_client_app SET app = 'livediagram.app' WHERE clientId = 'liveplanner'`)
+      .prepare(`UPDATE oauth_client_app SET app = 'liveworkspace.app' WHERE clientId = 'liveplanner'`)
       .run();
     const key = await door({ token: 'jwt-ada-planner', want: 'key' }, {}, OTHER_CLIENT);
     expect([key.status, await key.clone().json()]).toEqual([403, { error: 'not_a_key_reader' }]);

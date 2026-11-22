@@ -26,7 +26,9 @@ import {
   DialogHeader,
   SparkleIcon,
 } from '@liveplanner/ui';
+import type { AiKeyFailure } from '@liveworkspace/ai';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import {
   DescribePrompt,
   DescribeSignIn,
@@ -87,6 +89,8 @@ export function DescribeFormDialog({
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
+  // A key that failed on the last ask, for the source line to say so and offer to fix it.
+  const [keyFailure, setKeyFailure] = useState<AiKeyFailure | null>(null);
   const [checking, setChecking] = useState<FormDraft | null>(null);
   const [chosen, setChosen] = useState<string>('new-board');
   const [createSaid, setCreateSaid] = useState<string | null>(null);
@@ -108,6 +112,7 @@ export function DescribeFormDialog({
     const mine = ++asking.current;
     setBusy(true);
     setSaid(null);
+    setKeyFailure(null);
     try {
       const drafted = await draft(prompt);
       if (mine !== asking.current) return;
@@ -118,6 +123,7 @@ export function DescribeFormDialog({
     } catch (error) {
       if (mine !== asking.current) return;
       setSaid(error instanceof FormDraftRefusal ? error.message : DESCRIBE_FORM_FAILED);
+      setKeyFailure(error instanceof FormDraftRefusal ? error.aiKey : null);
       box.current?.focus();
     } finally {
       if (mine === asking.current) setBusy(false);
@@ -192,7 +198,14 @@ export function DescribeFormDialog({
           examples={DESCRIBE_FORM_EXAMPLES}
           busy={busy}
           said={said}
-          note={<>Uses AI: plans and forms share {FORM_DRAFT_PER_DAY} drafts a day.</>}
+          source={(id) => (
+            <WorkbenchAiSource
+              id={id}
+              failure={keyFailure}
+              signedIn={signedIn}
+              allowance={`Plans and forms share ${FORM_DRAFT_PER_DAY} drafts a day.`}
+            />
+          )}
           onSubmit={() => void submit()}
         />
       )}

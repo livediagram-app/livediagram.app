@@ -2,6 +2,7 @@
 // docs/specs/030-forms/describe-a-form.md): the first, and one more with the check's words when the reply doesn't
 // read, never the model's own earlier text. Shared by plan-drafts.ts and form-drafts.ts, so both read a reply alike.
 import { readAiReply, type AiRequest } from '@liveplanner/items';
+import type { AskKeyFailure } from '@liveworkspace/automations/room';
 import { ask, type AutomationsAi } from '../plan-room/automations/automation-ai';
 
 // The asks one draft may make: the first, and one more with the check's words.
@@ -13,7 +14,8 @@ type Read = { off: true } | { draft: unknown } | { refused: Refused };
 export type DraftAsked<D> =
   | { answer: 'drafted'; asks: number; out: D }
   | { answer: 'off_topic'; asks: number }
-  | { answer: 'failed'; asks: number }
+  // `reason`: the ask's fixed words; `keyFailure`: on a person's key, a failure they fix in Settings.
+  | { answer: 'failed'; asks: number; reason: string; keyFailure?: AskKeyFailure }
   | { answer: 'unreadable'; asks: number; refused: Refused | undefined };
 
 /** Asks for a draft until one reads or the asks are spent. `onAsk` runs before each ask (its telemetry). */
@@ -23,14 +25,22 @@ export async function askForDraft<O extends Read>(input: {
   request: (previous?: Refused) => AiRequest;
   read: (reply: Record<string, unknown>) => O;
   onAsk?: () => void;
+  // How long one ask may take (a call on a person's key, whose model thinks, is given longer).
+  timeoutMs?: number;
 }): Promise<DraftAsked<Extract<O, { draft: unknown }>>> {
   let previous: Refused | undefined;
   let asks = 0;
   for (let n = 0; n < DRAFT_ASKS_MAX; n++) {
     asks += 1;
     input.onAsk?.();
-    const asked = await ask(input.client, input.request(previous), input.gateway);
-    if (!asked.ok) return { answer: 'failed', asks };
+    const asked = await ask(input.client, input.request(previous), input.gateway, input.timeoutMs);
+    if (!asked.ok)
+      return {
+        answer: 'failed',
+        asks,
+        reason: asked.reason,
+        ...(asked.keyFailure ? { keyFailure: asked.keyFailure } : {}),
+      };
     const reply = readAiReply(asked.raw);
     if (!reply) {
       previous = { path: 'reply', message: 'the reply must be one JSON object' };
