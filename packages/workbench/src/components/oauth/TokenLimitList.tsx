@@ -43,6 +43,7 @@ function Tokens({ onFreed }: { onFreed: () => void }) {
       </p>
       {load.state === 'loading' && (
         <div
+          role="status"
           aria-busy
           aria-label="Loading your tokens"
           className="h-28 animate-pulse rounded-lg bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-800/70"
