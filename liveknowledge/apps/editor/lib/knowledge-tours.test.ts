@@ -73,9 +73,16 @@ describe('the step plan', () => {
     expect(offeredTours({ ...EDITOR, phone: true })).not.toContain('connect');
   });
 
-  it('leaves out a control not drawn as a tour starts on Pages, on a computer only', () => {
+  it('leaves out a control not drawn as a tour starts on Pages, a phone’s tree steps aside', () => {
     expect(judgesOnScreen(EDITOR)).toBe(true);
-    expect(judgesOnScreen({ ...EDITOR, phone: true })).toBe(false);
+    const phone = { ...EDITOR, phone: true };
+    expect(shownPlan('organise', phone, true, () => false).map((s) => s.id)).toEqual([
+      'tree',
+      'options',
+      'search',
+      'trash',
+    ]);
+    expect(ids('first-page', phone)).toEqual(['edit', 'blocks', 'new-page']);
     window.history.replaceState(null, '', '/?view=ask');
     expect(judgesOnScreen(EDITOR)).toBe(false);
     const none = () => false;

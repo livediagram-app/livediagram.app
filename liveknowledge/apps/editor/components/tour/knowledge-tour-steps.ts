@@ -43,7 +43,8 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       id: 'blocks',
       title: 'Type / for Blocks',
       body: 'In the writing, type / for headings, lists, tables, pictures, charts and links to other pages.',
-      selector: () => '[data-page-title-row]',
+      // The writing's first block, its Title: the card stands under it, clear of the rest of the page.
+      selector: () => '[data-article-flow] > [data-block-id]',
       prepare: onPages,
     }),
     'new-page': () => ({

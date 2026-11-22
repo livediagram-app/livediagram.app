@@ -146,7 +146,7 @@ const KNOWLEDGE_TOURS_SRC = read('editor/lib/knowledge-tours.ts');
 const planOf = (id: string): string[] => {
   const block =
     KNOWLEDGE_TOURS_SRC.match(new RegExp(`\\n  '?${id}'?: \\[\\n([\\s\\S]*?)\\n  \\],`))?.[1] ?? '';
-  return [...block.matchAll(/\{ id: '([a-z-]+)'/g)].map((m) => m[1]!);
+  return [...block.matchAll(/\{\s*id: '([a-z-]+)'/g)].map((m) => m[1]!);
 };
 const KNOWLEDGE_TOUR_IDS = [
   ...(KNOWLEDGE_TOURS_SRC.match(/KNOWLEDGE_TOURS = \[([^\]]+)\]/)?.[1] ?? '').matchAll(

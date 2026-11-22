@@ -4,18 +4,18 @@ Derived from [Get Started tours](../knowledge-tours.md). Paths are under `apps/e
 
 ## Domain and naming
 
-| Spec term                 | Identifier                                                                                                      |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Get Started tour          | `KnowledgeTourId`: `'first-page' \| 'organise' \| 'trust' \| 'ask' \| 'connect' \| 'share'`                     |
-| The six, in list order    | `KNOWLEDGE_TOURS` (`lib/knowledge-tours.ts`)                                                                    |
-| Step plan                 | `KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]>`, `PlannedStep = { id, needs, present? }` |
-| What a step needs         | `TourNeed`: `'write' \| 'share' \| 'signedIn' \| 'online' \| 'desktop'`                                         |
-| Who is looking            | `TourWho = { write, share, signedIn, online, phone }` (booleans)                                                |
-| Taken record              | `knowledgeTours?: KnowledgeTourId[]`, `knowledgeToursSeen?: boolean` on `UserPreferences`                       |
-| A tour's words            | `KNOWLEDGE_TOUR_COPY: Record<KnowledgeTourId, { title, line, eyebrow, help, token }>`                           |
-| The host                  | `KnowledgeToursHost` (`components/tour/KnowledgeToursHost.tsx`), offer id `'knowledge'`                         |
-| Steps, built at the press | `knowledgeTourSteps(id, who, api)` (`components/tour/knowledge-tour-steps.ts`)                                  |
-| Step api                  | `KnowledgeTourApi` (`components/tour/knowledge-tour-dom.ts`)                                                    |
+| Spec term                 | Identifier                                                                                                             |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Get Started tour          | `KnowledgeTourId`: `'first-page' \| 'organise' \| 'trust' \| 'ask' \| 'connect' \| 'share'`                            |
+| The six, in list order    | `KNOWLEDGE_TOURS` (`lib/knowledge-tours.ts`)                                                                           |
+| Step plan                 | `KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]>`, `PlannedStep = { id, needs, present?, tree? }` |
+| What a step needs         | `TourNeed`: `'write' \| 'share' \| 'signedIn' \| 'online' \| 'desktop'`                                                |
+| Who is looking            | `TourWho = { write, share, signedIn, online, phone }` (booleans)                                                       |
+| Taken record              | `knowledgeTours?: KnowledgeTourId[]`, `knowledgeToursSeen?: boolean` on `UserPreferences`                              |
+| A tour's words            | `KNOWLEDGE_TOUR_COPY: Record<KnowledgeTourId, { title, line, eyebrow, help, token }>`                                  |
+| The host                  | `KnowledgeToursHost` (`components/tour/KnowledgeToursHost.tsx`), offer id `'knowledge'`                                |
+| Steps, built at the press | `knowledgeTourSteps(id, who, api)` (`components/tour/knowledge-tour-steps.ts`)                                         |
+| Step api                  | `KnowledgeTourApi` (`components/tour/knowledge-tour-dom.ts`)                                                           |
 
 The telemetry token of a tour (`KNOWLEDGE_TOUR_COPY[id].token`): `FirstPage`, `Organise`, `Trust`, `Ask`,
 `Connect`, `WorkTogether`.
@@ -39,8 +39,8 @@ Tours', rank: TOUR_OFFER_RANK.mode, ownPanel: true, seen: offered.every(taken), 
   rerun begins the first newly-on tour instead of opening the list.
 - **Begin(id).** Refused while `engine.active`, another tour is active (`useActiveTour()` not null and not
   `'pages'`), or a load is in flight. Imports `./knowledge-tour-steps`, builds `knowledgeTourSteps(id, who)` (the
-  plan filtered by `who`, then `shownPlan`: on a computer with the Pages view showing, each step whose plan entry
-  names a `present` selector that is not on screen is dropped), sets a fresh run api and the subject in refs (the
+  plan filtered by `who`, then `shownPlan`: with the Pages view showing, each step whose plan entry names a
+  `present` selector that is not on screen is dropped, except a `tree` step on a phone, whose sheet is shut), sets a fresh run api and the subject in refs (the
   engine's callbacks read them in the same tick), `steps`, `engine.start()`, and records the tour taken when it was
   not.
 - **Taken.** `markKnowledgeTourTaken(prefs, id)` adds `id` (each once, in order); `knowledgeTourTaken(prefs, id)` reads
@@ -79,7 +79,7 @@ Step anchors (all existing attributes; no new markup):
 | first-page/new-page                 | `[data-new-page]`, else the rail's `[data-page-tree="rail"] button[aria-label="New Page"]`          |
 | first-page/add-subpage              | `[data-page-row][data-current] [data-row-action="add"]`                                             |
 | first-page/edit                     | `[data-page-edit]`                                                                                  |
-| first-page/blocks                   | `[data-page-title-row]`                                                                             |
+| first-page/blocks                   | `[data-article-flow] > [data-block-id]`                                                             |
 | organise/tree                       | `[data-page-tree-list]`                                                                             |
 | organise/options                    | the menu opened from `[data-page-row][data-current] [data-row-action="menu"]` (`opensFrom`)         |
 | organise/search                     | `[data-knowledge-search-door]`                                                                      |

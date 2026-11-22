@@ -96,10 +96,11 @@ For whoever may write pages (an Editor or a Participant). Help: **Writing on a P
 
 1. **Edit** (the page's Edit button): opens the page to write, or press E. Everyone editing shares one live draft
    until Save.
-2. **Type / for Blocks** (the page's title row, where the writing starts): headings, lists, tables, pictures, charts
+2. **Type / for Blocks** (the writing's first block, its Title): headings, lists, tables, pictures, charts
    and links to other pages.
 3. **New Page** (the page tree's New Page): adds a page at the top level, ready to name and write.
-4. **Add a Subpage** (the + on the open page's row in the tree): adds a page inside this one.
+4. **Add a Subpage** (the + on the open page's row in the tree): adds a page inside this one. Not on a phone,
+   whose row has only its ⋯ (Add Subpage is in that menu).
 5. Closing card: **Your page is ready** "Write something, then Save. Cancel puts the page back as it was."
 
 ### Organise Your Knowledgebase
@@ -178,10 +179,11 @@ person was going, never pointing at nothing:
   Viewer's own words where a step reads differently for one (The Page Tree).
 - **Offline** (`online`): Ask, AI Knowledge, Connect, Verify, Request Approval, Who Made It, Reactions and Comments
   need the room on the server (found in the browser check: an Offline page draws none of them). Page Health stays.
-- **On a phone** (`desktop`): Connect is not on offer. The page tree is the **Pages** sheet: a tree step opens it and
+- **On a phone** (`desktop`): Connect and Add a Subpage are not on offer. The page tree is the **Pages** sheet: a tree step opens it and
   closes it again as it ends. Page Info is its button's sheet. The other steps are the same.
 - **On screen at the start:** a step on the Pages view whose control is not drawn when the tour starts (the Trash with
-  nothing in it, the breadcrumb, Who Made It on a page nobody has saved yet) is left out.
+  nothing in it, the breadcrumb, Who Made It on a page nobody has saved yet) is left out. On a phone the Trash is
+  judged only once its Pages sheet is open: the engine skips it there if it is not drawn.
 - **Gone mid-tour:** edit rights going, the knowledgebase closing or another knowledgebase opening ends the tour as
   skipped, closing whatever it opened.
 

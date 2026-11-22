@@ -33,6 +33,9 @@ export type TourWho = {
 export type PlannedStep = {
   id: string;
   needs: readonly TourNeed[];
+  // In the page tree: a phone's tree is in its Pages sheet, not on screen as the tour starts, so `present` is not
+  // judged there.
+  tree?: true;
   // A control on the Pages view that may simply not be drawn here (an empty Trash, a top-level page's breadcrumb, a
   // page nobody has saved): the step is left out when the tour starts on Pages on a computer and it is not on screen.
   present?: string;
@@ -51,14 +54,20 @@ export const KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]
     { id: 'edit', needs: ['write'] },
     { id: 'blocks', needs: ['write'] },
     { id: 'new-page', needs: ['write'] },
-    { id: 'add-subpage', needs: ['write'] },
+    // A touch screen's row has only its ⋯ (Add Subpage is in that menu): the + is a computer's.
+    { id: 'add-subpage', needs: ['write', 'desktop'] },
   ],
   organise: [
     { id: 'breadcrumb', needs: [], present: '[data-page-breadcrumb]' },
     { id: 'tree', needs: [] },
     { id: 'options', needs: ['write'] },
     { id: 'search', needs: [] },
-    { id: 'trash', needs: ['write'], present: '[data-page-trash-row], [data-page-trash-rail]' },
+    {
+      id: 'trash',
+      needs: ['write'],
+      present: '[data-page-trash-row], [data-page-trash-rail]',
+      tree: true,
+    },
   ],
   trust: [
     { id: 'meta', needs: [] },
@@ -145,8 +154,8 @@ export function plannedFor(id: KnowledgeTourId, who: TourWho): readonly PlannedS
 
 /**
  * The steps a run shows: the plan for `who`, less a step whose control is not drawn as the tour starts. That is judged
- * only on a computer with the Pages view showing (`judge`): elsewhere the page is not on screen yet, and a phone's tree
- * is in its sheet, so such a step is left to the engine, which skips it if it never appears.
+ * only with the Pages view showing (`judge`), as elsewhere the page is not on screen yet, and never for a tree step on
+ * a phone, whose tree is in its sheet: such a step is left to the engine, which skips it if it never appears.
  */
 export function shownPlan(
   id: KnowledgeTourId,
@@ -154,12 +163,13 @@ export function shownPlan(
   judge: boolean,
   onScreen: (selector: string) => boolean,
 ): readonly PlannedStep[] {
-  return plannedFor(id, who).filter((s) => !judge || !s.present || onScreen(s.present));
+  return plannedFor(id, who).filter(
+    (s) => !judge || !s.present || (who.phone && s.tree) || onScreen(s.present),
+  );
 }
 
-/** Whether a run starting now may judge what is on screen: a computer, on the Pages view (shownPlan). */
-export const judgesOnScreen = (who: TourWho): boolean =>
-  !who.phone && currentKnowledgeView() === 'pages';
+/** Whether a run starting now may judge what is on screen: the Pages view is showing (shownPlan). */
+export const judgesOnScreen = (_who: TourWho): boolean => currentKnowledgeView() === 'pages';
 
 /** The tours on offer to this person: each with at least MIN_TOUR_STEPS steps they can see. */
 export function offeredTours(who: TourWho): KnowledgeTourId[] {
