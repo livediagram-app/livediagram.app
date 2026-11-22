@@ -42,7 +42,7 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
   - `useModalGuard(true)`: the editor's window-level shortcut and paste listeners stand down, as behind a dialog.
   - `KnowledgeViewHeader` is the top row every view shares (`KnowledgeTopRow`, rank `view`): the view's name with
     its one line under it from `lg` up, in one column with one left edge (`data-view-heading`, `flex-col
-    justify-center`: 20 px and 16 px lines, 36 px in the 48 px row), its buttons centred in the row after it, then
+justify-center`: 20 px and 16 px lines, 36 px in the 48 px row), its buttons centred in the row after it, then
     Share and the account button in the row's slot. The line once stood beside the name, each centred on its own
     line height, so its baseline sat a pixel off the name's (WI-1337, `KnowledgeViewHeader.test.tsx`).
 - **Loading:** each view is `next/dynamic` with `ssr: false`, fetched when first shown, and so is the AI Settings
