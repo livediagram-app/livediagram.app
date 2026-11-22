@@ -6,6 +6,7 @@
 // asked), an Email Received rule's sender, a GitHub trigger's repositories, and a Set Field value that reads as an
 // address. No id but the rule's own leaves. Pure.
 
+import { crossAppChip } from '@liveworkspace/automations/cross-app';
 import {
   SUMMARY_AI_STEP,
   looksLikeAddress,
@@ -89,6 +90,12 @@ function stepSummary(step: AutomationStep, outline: RuleSentenceOutline): Automa
       return { kind: 'ai', words: SUMMARY_AI_STEP };
     case 'wait':
       return { kind: 'wait', words: waitWords(step.hours) };
+    case 'plan_card':
+    case 'kb_page':
+    case 'space_post':
+    case 'doc_tab':
+    case 'inbox_notice':
+      return { kind: step.kind, words: crossAppChip(step) };
     default:
       return actionLine(step, outline);
   }

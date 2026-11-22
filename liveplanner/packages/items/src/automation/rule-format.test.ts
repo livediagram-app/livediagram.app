@@ -31,6 +31,11 @@ const STEP_KINDS: Record<AutomationStep['kind'], true> = {
   for: true,
   ai: true,
   wait: true,
+  plan_card: true,
+  kb_page: true,
+  space_post: true,
+  doc_tab: true,
+  inbox_notice: true,
 };
 const CONDITION_KINDS: Record<AutomationCondition['kind'], true> = {
   type: true,

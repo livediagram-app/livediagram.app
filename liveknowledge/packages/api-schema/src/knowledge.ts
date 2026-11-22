@@ -149,8 +149,9 @@ export type PageAnsweredQuestion = { question: string; asked: number };
 export type PageAgentReads = { agent: string; reads: number };
 /** What kind of writer made a stamp (verification.md "Made by a person or an agent"). */
 export type PageAuthorKind = 'human' | 'ai';
-/** The door an agent's write came through; `suggestion` is an agent's suggestion a person accepted. */
-export type PageAuthorVia = 'mcp' | 'cli' | 'api' | 'suggestion';
+/** The door an agent's write came through; `suggestion` is an agent's suggestion a person accepted; `automation` a
+ *  rule's step from another app, its `agent` the rule and the item it came from. */
+export type PageAuthorVia = 'mcp' | 'cli' | 'api' | 'suggestion' | 'automation';
 /** One stamp: the person (an agent's is its token's maker, or the Editor who accepted its suggestion), when, the
  *  kind, and an agent's name and door where they are known. */
 export type PageAuthorStamp = {

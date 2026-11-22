@@ -4,6 +4,7 @@ import { defineItemKinds, itemRuleSentence, readItemRule, type ItemNames } from 
 import {
   CROSS_APP_GROUP,
   crossAppActions,
+  crossAppChip,
   CROSS_APP_READERS,
   readTarget,
   recipientsWords,
@@ -256,5 +257,26 @@ describe('the words', () => {
     expect(refusalWords('unavailable', '', target)).toBe(CROSS_APP_UNREACHED);
     expect(refusalWords('target_gone', 'The board is gone', target)).toBe('The board is gone');
     expect(refusalWords('failed', '', target)).toBe("Couldn't do it in the other app");
+  });
+});
+
+describe('a step’s chip for an app whose sentence is its own', () => {
+  it('words each kind as the registry does', () => {
+    const t = (app: string) => ({ app, item: 'i1', title: 'Launch' }) as never;
+    expect(crossAppChip({ kind: 'plan_card', target: t('liveplanner') } as never)).toBe(
+      'Create a Card in “Launch”',
+    );
+    expect(crossAppChip({ kind: 'kb_page', target: t('liveknowledge') } as never)).toBe(
+      'Write a Page in “Launch”',
+    );
+    expect(crossAppChip({ kind: 'space_post', target: t('livehuddle') } as never)).toBe(
+      'Post in “Launch”',
+    );
+    expect(
+      crossAppChip({ kind: 'doc_tab', target: t('livedocuments'), name: 'Notes' } as never),
+    ).toBe('Add a Tab “Notes” to “Launch”');
+    expect(
+      crossAppChip({ kind: 'inbox_notice', to: [{ value: 'a' }, { value: 'b' }] } as never),
+    ).toBe('Notify 2 People');
   });
 });

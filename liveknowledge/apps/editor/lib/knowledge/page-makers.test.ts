@@ -87,3 +87,35 @@ describe('makerPills', () => {
     expect(makerPills({}, nameOf, NOW_)).toEqual([]);
   });
 });
+
+describe('a page a rule in another app wrote', () => {
+  const stamp = {
+    by: 'u1',
+    at: Date.UTC(2026, 10, 12),
+    kind: 'human' as const,
+    agent: 'Release Note in Launch',
+    via: 'automation' as const,
+  };
+
+  it('names the rule and the item it came from, never the person', () => {
+    expect(makerWords(stamp, 'created', nameOf, NOW)).toEqual({
+      kind: 'human',
+      label: 'Written by Automation',
+      description: 'Written by the rule Release Note in Launch on 12 Nov',
+    });
+    expect(
+      makerWords({ ...stamp, agent: undefined, at: NOW - HOUR }, 'updated', nameOf, NOW),
+    ).toMatchObject({
+      label: 'Edited by Automation',
+      description: expect.stringMatching(/^Last edited by the rule a rule, /),
+    });
+  });
+
+  it('keeps its own pill beside a person’s edit, and two of its own apart too', () => {
+    const person = { by: 'u1', at: NOW, kind: 'human' as const };
+    expect(
+      makerPills({ created: stamp, updated: person }, nameOf, NOW).map((p) => p.label),
+    ).toEqual(['Written by Automation', 'Human Edited']);
+    expect(makerPills({ created: stamp, updated: stamp }, nameOf, NOW)).toHaveLength(2);
+  });
+});

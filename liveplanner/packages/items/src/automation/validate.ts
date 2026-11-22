@@ -4,6 +4,11 @@
 // plan lacks is not a refusal: it needs attention (attention.ts). Also the rule's name rules. Pure.
 
 import {
+  CROSS_APP_KINDS,
+  CROSS_APP_READERS,
+  isCrossAppKind,
+} from '@liveworkspace/automations/cross-app';
+import {
   checkActionsCap,
   checkStepCaps,
   readActions as readActionList,
@@ -62,8 +67,18 @@ export { AUTOMATION_SUBJECT_MAX, freeRuleName, ruleNameTaken } from '@liveworksp
 
 const COPIES = new Set(['assignee', 'labels', 'due']);
 // The steps a branch may not hold, and an If / Else's actions neither.
-const NOT_IN_BRANCH = new Set(['if', 'for', 'create_card', 'copy_card', 'notify', 'ai', 'wait']);
-const NOT_IN_IF = new Set(['if', 'for', 'notify', 'ai', 'wait']);
+// A step in another app is the rule's top level's alone.
+const NOT_IN_BRANCH = new Set([
+  'if',
+  'for',
+  'create_card',
+  'copy_card',
+  'notify',
+  'ai',
+  'wait',
+  ...CROSS_APP_KINDS,
+]);
+const NOT_IN_IF = new Set(['if', 'for', 'notify', 'ai', 'wait', ...CROSS_APP_KINDS]);
 
 function readSetValue(v: unknown, path: string, place: ValuePlace): AutomationSetValue {
   const o = obj(v, path);
@@ -344,6 +359,10 @@ function readStep(v: unknown, path: string, place: ValuePlace): AutomationStep {
   if (s['kind'] === 'notify')
     return readNotify(s, path, { unknownValue: (t) => unknownValueIn(t, place) });
   if (s['kind'] === 'for') return readBranch(s, path, place);
+  if (isCrossAppKind(s['kind']))
+    return CROSS_APP_READERS[s['kind']]!(s, path, {
+      unknownValue: (t) => unknownValueIn(t, place),
+    });
   if (s['kind'] === 'wait') return readWait(s, path);
   if (s['kind'] === 'ai') {
     const read = readAiStep(s);

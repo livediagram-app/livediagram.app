@@ -35,7 +35,7 @@ import { closeTokenSessions, closeWorkbenchSessions } from '../room-access-clien
 import { reportServerEvent } from '../server-telemetry';
 import { importProjectFileFor } from './internal-file';
 import { projectFromTemplate } from './internal-template';
-import { indexAppClient } from '../index-service';
+import { indexAppClient, indexService } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
 
@@ -54,6 +54,7 @@ export function handleInternalItems(
     // The Community's sweep calls its door with the same key this api publishes with (liveworkspace community.md).
     communityKey: env.COMMUNITY_KEY,
     waitUntil,
+    verifyGrant: (grant, id) => indexService.verifyGrant(env, grant, id),
     handlers: {
       // Where Community posts' items stand, as the index reads them, for the Community's sweep.
       communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
@@ -128,6 +129,10 @@ export function handleInternalItems(
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the plan's tab bar.
       connectedTab: (id, write) => planRoom(env, id).addConnectedTab(write),
+      // A rule's step from another app on this plan, and what its pickers may name here: the author's grant is
+      // checked first (`verifyGrant` below), then the room makes the card in the step's chain.
+      automationStep: (id, call) => planRoom(env, id).automationStep(call),
+      automationTarget: (id) => planRoom(env, id).automationTarget(),
       // A workbench pairing's access ended at liveworkspace: its sockets in this plan's room close.
       // An old livediagram.app document's liveplanner part, into its plan's room (plan-room/plan-migration.ts). A tab
       // over the tab cap refuses the whole part (413) before the room is called.

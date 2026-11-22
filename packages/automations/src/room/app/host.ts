@@ -9,7 +9,8 @@ import type { AutomationPerson } from '../../types';
 import type { ItemEngine } from '../item/engine';
 import { queueItemEvent } from '../item/intake';
 import { keptSnapshotIds } from '../item/kept';
-import { withItemWriter } from '../item/writer';
+import { openChain, withItemWriter } from '../item/writer';
+import type { CrossAppChain } from '@liveworkspace/index-client';
 import type { CollabWatch } from './collab-watch';
 
 // What an app's room adds to the env its content code runs with. Both absent outside a room (a test's env, a route
@@ -36,7 +37,27 @@ export const hearsEvent = (host: Host, kind: string): boolean =>
 export function queueEvent(host: Host, event: ItemEvent): boolean {
   const engine = host.AUTOMATIONS;
   if (!engine || !engine.kinds.has(event.kind)) return false;
-  return queueItemEvent(engine.sql(), engine, event);
+  const sql = engine.sql();
+  // Inside a step from another app: the event is that step's, in its chain.
+  const cross = event.cross ? undefined : openChain(sql)?.cross;
+  return queueItemEvent(sql, engine, cross ? { ...event, role: 'automation', cross } : event);
+}
+
+/** `write` (a target app's own route, run for a rule's step in another app: cross-app.md "The door") inside the
+ *  step's window: every event it queues carries the chain, as the automation's, and none is an edit. `write` alone
+ *  outside a room. */
+export function asCrossAppStep<T>(
+  host: Host,
+  step: { author: AutomationPerson; chain: CrossAppChain },
+  write: () => Promise<T>,
+): Promise<T> {
+  const engine = host.AUTOMATIONS;
+  if (!engine) return write();
+  return withItemWriter(
+    engine.sql(),
+    { who: { by: step.author, role: 'automation', cross: step.chain }, own: true },
+    write,
+  );
 }
 
 // A token with no name of its own, as a rule's run names it.

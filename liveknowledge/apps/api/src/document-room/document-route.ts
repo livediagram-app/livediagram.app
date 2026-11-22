@@ -24,6 +24,9 @@ export type RouteIdentity = {
   bearer: string | null;
   // The index's grant on this document, checked by the worker (routes/document-grant.ts).
   grant: DocumentGrant | null;
+  // A rule's step from another app (automations/cross-app-door.ts): the rule and the item it came from. Set only by
+  // the room itself, never from a request.
+  automation?: { rule: string; from: string } | null;
 };
 
 export function identityOf(ctx: RouteContext): RouteIdentity {
@@ -71,6 +74,7 @@ export async function answerDocumentRequest(
     teams: identity.teams,
     bearer: identity.bearer,
     grant: identity.grant,
+    automation: identity.automation ?? null,
     community,
     waitUntil,
   };

@@ -13,6 +13,7 @@ import {
   type PullRequestValues,
 } from './github-triggers';
 import { senderHeard, type WebhookValues } from '@liveworkspace/automations';
+import type { CrossAppChain } from '@liveworkspace/automations/cross-app';
 import type { AutomationRole } from './conditions';
 
 export type AutomationEventKind =
@@ -58,6 +59,9 @@ export interface AutomationEvent {
   // Set when a rule made the change: that rule, and how many rules the chain has run so far.
   rule?: string;
   chain?: number;
+  // Set when a rule's step in another app made the change (liveworkspace automations.md "Loops across apps"): the
+  // chain across apps so far, which a step of a rule here carries on.
+  cross?: CrossAppChain;
   // A manual run or a time trigger's: the one rule to run.
   ruleId?: string;
   // An Incoming Webhook call's: the values its body gave that the rule names, and how many cards it named (its
@@ -117,7 +121,7 @@ export const TRIGGER_EVENT_KINDS: Readonly<
 // Who and why a write was made, as the event carries it.
 export type EventSource = Pick<
   AutomationEvent,
-  'role' | 'rule' | 'chain' | 'form' | 'answers' | 'email'
+  'role' | 'rule' | 'chain' | 'cross' | 'form' | 'answers' | 'email'
 >;
 
 // Changes that start nothing: the Trash both ways. The Archive both ways starts Card Archived and Card Restored alone.
@@ -149,6 +153,7 @@ export function eventOfWrite(
     role: source.role,
     at: after.updatedAt,
     ...(source.rule !== undefined ? { rule: source.rule, chain: source.chain ?? 0 } : {}),
+    ...(source.cross !== undefined ? { cross: source.cross } : {}),
   };
   if (archive)
     return before ? { ...base, kind: archive.kind === 'archived' ? 'archived' : 'restored' } : null;

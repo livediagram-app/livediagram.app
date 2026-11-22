@@ -19,14 +19,19 @@ import {
 } from '@liveworkspace/index-client';
 import { badRequest, bodyOf, json } from './internal-doors';
 
+// The handler gets the author's grant, checked: an app runs the step through its own route as them with it.
 export type AutomationStepHandler = (
   itemId: string,
   call: AutomationStepDoorCall,
+  claims: GrantClaims,
+  // The grant itself, for an app that hands it on to its own route (itemGrantOf).
+  grant: string,
 ) => Promise<AutomationStepAnswer>;
 
 export type AutomationTargetHandler = (
   itemId: string,
   author: string,
+  grant: GrantClaims,
 ) => Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
 
 export type AutomationDoorGrants = (
@@ -41,7 +46,11 @@ const text = (v: unknown, max: number): v is string => typeof v === 'string' && 
 
 /** Whether the grant lets its author write here as an automation: theirs, an Editor's, the whole item, out of the
  *  Trash. */
-export const grantWrites = (claims: GrantClaims | null, author: string, itemId: string): boolean =>
+export const grantWrites = (
+  claims: GrantClaims | null,
+  author: string,
+  itemId: string,
+): claims is GrantClaims =>
   !!claims &&
   claims.sub === author &&
   claims.item === itemId &&
@@ -72,10 +81,12 @@ export async function automationStepDoor(
 ): Promise<Response> {
   const call = readDoorCall(await bodyOf(request));
   if (!call) return badRequest('invalid automation step');
-  const claims = await grants(request.headers.get(ITEM_GRANT_HEADER), itemId);
-  if (!grantWrites(claims, call.author, itemId)) return json({ error: 'grant_refused' }, 403);
+  const grant = request.headers.get(ITEM_GRANT_HEADER);
+  const claims = await grants(grant, itemId);
+  if (!grant || !grantWrites(claims, call.author, itemId))
+    return json({ error: 'grant_refused' }, 403);
   try {
-    return json(await run(itemId, call));
+    return json(await run(itemId, call, claims, grant));
   } catch (err) {
     console.warn('[internal] automation step failed', { kind: call.step.kind, error: String(err) });
     return json({ ok: false, code: 'failed', reason: '' } satisfies AutomationStepAnswer);
@@ -94,7 +105,7 @@ export async function automationTargetDoor(
   const claims = await grants(request.headers.get(ITEM_GRANT_HEADER), itemId);
   if (!grantWrites(claims, author, itemId)) return json({ error: 'grant_refused' }, 403);
   try {
-    return json(await run(itemId, author));
+    return json(await run(itemId, author, claims));
   } catch (err) {
     console.warn('[internal] automation target failed', { error: String(err) });
     return json({ error: 'unavailable' }, 503);

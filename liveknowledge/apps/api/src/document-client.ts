@@ -5,6 +5,12 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
+import type { DocumentGrant } from './index-service';
+import type {
+  AutomationStepAnswer,
+  AutomationStepDoorCall,
+  AutomationTargetDescription,
+} from '@liveworkspace/index-client';
 import type { ItemStanding, SourceChange } from '@liveworkspace/index-client';
 import type { HookAnswer, HookCall } from '@liveworkspace/automations/room';
 import type { AccessLevel, CommunityShareInfo } from '@liveknowledge/api-schema';
@@ -81,6 +87,10 @@ export type DocumentRoomClient = {
   // Automations' doors (@liveworkspace/automations/room doors.ts): an Incoming Webhook call to one rule, and a
   // rule email's unsubscribe (false for a token the document never made).
   incomingHook(ruleId: string, call: HookCall): Promise<HookAnswer>;
+  // A rule's step from another app on this item, its author's grant checked (cross-app-door.ts), and what
+  // the step's pickers may name here.
+  automationStep(call: AutomationStepDoorCall, grant: DocumentGrant): Promise<AutomationStepAnswer>;
+  automationTarget(): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
   emailOptOut(token: string): Promise<boolean>;
   // Where the document stands at the index (@liveworkspace/automations/room standing.ts): put away, its rules run
   // nothing.
@@ -126,6 +136,8 @@ export function documentRoom(
     joined: (personId, level) => room.joined(documentId, personId, level),
     accessRequested: (requester) => room.accessRequested(documentId, requester),
     incomingHook: (ruleId, call) => room.incomingHook(documentId, ruleId, call),
+    automationStep: (call, grant) => room.automationStep(documentId, call, grant),
+    automationTarget: () => room.automationTarget(documentId),
     emailOptOut: (token) => room.emailOptOut(documentId, token),
     takeStanding: (standing) => room.takeStanding(documentId, standing),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
@@ -166,6 +178,12 @@ export type DocumentRoomRpc = {
   joined(documentId: string, personId: string, level?: AccessLevel): Promise<void>;
   accessRequested(documentId: string, requester: AccessRequester): Promise<void>;
   incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
+  automationStep(
+    documentId: string,
+    call: AutomationStepDoorCall,
+    grant: DocumentGrant,
+  ): Promise<AutomationStepAnswer>;
+  automationTarget(documentId: string): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
   emailOptOut(documentId: string, token: string): Promise<boolean>;
   takeStanding(documentId: string, standing: ItemStanding): Promise<void>;
   sourceChanged(documentId: string, change: SourceChange): Promise<void>;

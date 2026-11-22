@@ -258,6 +258,22 @@ const inboxNotice = defineAction<Part<InboxNoticeStep>>({
   summary: (a) => `Notify ${recipientsWords(a.to)}`,
 });
 
+/** A step's chip, for an app whose sentence is its own (liveplanner's): as the registry's words say it. */
+export function crossAppChip(step: CrossAppTargetedStep | InboxNoticeStep): string {
+  switch (step.kind) {
+    case 'plan_card':
+      return `Create a Card in ${targetWords(step.target, 'a Plan')}`;
+    case 'kb_page':
+      return `Write a Page in ${targetWords(step.target, 'a Knowledgebase')}`;
+    case 'space_post':
+      return `Post in ${targetWords(step.target, 'a Space')}`;
+    case 'doc_tab':
+      return `Add a Tab “${step.name}” to ${targetWords(step.target, `a ${appWord(step.target.app)} Document`)}`;
+    case 'inbox_notice':
+      return `Notify ${recipientsWords(step.to)}`;
+  }
+}
+
 /** The five steps in other apps, as every app's registry holds them. */
 export const crossAppActions = (): ActionKind[] => [
   planCard,

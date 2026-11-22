@@ -10,6 +10,12 @@ import {
   type PutAwayRefusal,
   type StandingGrant,
 } from '@liveworkspace/index-app';
+import { planAutomationStep, planAutomationTarget } from './automations/cross-app-door';
+import type {
+  AutomationStepAnswer,
+  AutomationStepDoorCall,
+  AutomationTargetDescription,
+} from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveplanner/api-schema';
 import { RoomParticipantWrites } from '../room-participant';
@@ -586,6 +592,24 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // ---------- RPC: token doors (automation-incoming, automation-addresses, github-room, feed-room, roadmap-room) ---
+
+  // A rule's step from another app on this plan (automations/cross-app-door.ts), its author's grant checked by the
+  // internal door; an id nothing has written takes none.
+  async automationStep(
+    planId: string,
+    call: AutomationStepDoorCall,
+  ): Promise<AutomationStepAnswer> {
+    if (!bindStoredPlan(this, planId)) return { ok: false, code: 'no_access', reason: '' };
+    return planAutomationStep(this, call);
+  }
+
+  // What a step's pickers may name here: the plan's boards and their columns.
+  async automationTarget(
+    planId: string,
+  ): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>> {
+    if (!bindStoredPlan(this, planId)) return { boards: [] };
+    return planAutomationTarget(this);
+  }
 
   // One call to a rule's address. An id nothing has written answers 401 and stays empty; a stored plan's schema is
   // brought up to date first (V20 holds the secrets).

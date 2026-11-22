@@ -23,6 +23,18 @@ export function makerWords(
   nameOf: (id: string | undefined) => string | undefined,
   now: number,
 ): MakerWords {
+  // A rule's step from another app: the author's own rule, named with the item it came from.
+  if (stamp.via === 'automation') {
+    const rule = stamp.agent ?? 'a rule';
+    return {
+      kind: 'human',
+      label: which === 'created' ? 'Written by Automation' : 'Edited by Automation',
+      description:
+        which === 'created'
+          ? `Written by the rule ${rule} on ${shortDate(stamp.at, now)}`
+          : `Last edited by the rule ${rule}, ${relativeSince(stamp.at, now)}`,
+    };
+  }
   const ai = stamp.kind === 'ai';
   const label = `${ai ? 'AI' : 'Human'} ${which === 'created' ? 'Generated' : 'Edited'}`;
   const person = nameOf(stamp.by);
@@ -47,7 +59,14 @@ export function makerPills(
 ): (MakerWords & { key: string })[] {
   const created = makers.created ? makerWords(makers.created, 'created', nameOf, now) : null;
   const updated = makers.updated ? makerWords(makers.updated, 'updated', nameOf, now) : null;
-  if (created && updated && created.kind === updated.kind)
+  const automated = (stamp?: PageAuthorStamp) => stamp?.via === 'automation';
+  if (
+    created &&
+    updated &&
+    created.kind === updated.kind &&
+    automated(makers.created) === automated(makers.updated) &&
+    !automated(makers.created)
+  )
     return [
       {
         key: 'both',

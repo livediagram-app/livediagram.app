@@ -3,6 +3,7 @@
 // (lines, actions so far, turns taken, messages, related cards), and one card's patch as the steps build it.
 // plan-actions.ts walks the steps over it. Pure.
 
+import type { CrossAppStep } from '@liveworkspace/automations/cross-app';
 import type { Item, ItemFieldValue, ItemFields, ItemPatch, ItemPerson } from '../item';
 import type { ItemTypeDef } from '../item-types';
 import { isEmptyFieldValue } from '../required-fields';
@@ -73,6 +74,15 @@ export interface PlannedSend {
   line: number;
 }
 
+// A step in another app (liveworkspace automations.md "Steps in other apps"): the step it came from (its key with the
+// run's), its texts filled from the card (null when a text it needs came out empty), and the line the run settles once
+// the index answers.
+export interface PlannedCross {
+  step: number;
+  filled: CrossAppStep | null;
+  line: number;
+}
+
 // A branch's related card: its one patch, its threads and emails, and why it failed (what came before still lands).
 export interface PlannedRelated {
   card: Item;
@@ -105,6 +115,8 @@ export interface PlannedWrites extends PlannedSegment {
   // A Wait reached: how long, and the step the rest of the rule goes on from.
   wait?: { hours: number; from: number };
   sends: PlannedSend[];
+  // Present only when the run has one.
+  cross?: PlannedCross[];
   turns: number;
   ai?: PlannedAi[];
 }
@@ -122,6 +134,7 @@ const same = (a: ItemFieldValue | undefined, b: ItemFieldValue | undefined) =>
 export class Run {
   readonly lines: AutomationStepLine[] = [];
   readonly sends: PlannedSend[] = [];
+  readonly cross: PlannedCross[] = [];
   readonly related: PlannedRelated[] = [];
   readonly ai: PlannedAi[] = [];
   actions: number;

@@ -2,6 +2,7 @@
 // trigger, condition and step kind with its fields and limits. The one description of a rule that an agent's tools
 // (the MCP's change_rules) and Describe a Rule's model are given; readRuleBody checks what comes back. A kind added to
 // types.ts is described here too (rule-format.test.ts fails until it is).
+import { CROSS_APP_STEPS_MAX, crossAppActions } from '@liveworkspace/automations/cross-app';
 import { ITEM_TITLE_MAX } from '../limits';
 import { AUTOMATION_ACTIONS_MAX, AUTOMATION_CONDITIONS_MAX } from './types';
 
@@ -99,6 +100,12 @@ export const RULE_STEPS_FORMAT =
   '{"kind":"ai","task":"card_type","set":true (set it)|false (comment the suggestion)} or ' +
   '{"kind":"ai","task":"triage","priority":true|false,"labels":true|false (at least one true)} (the AI actions: ' +
   'top level only, up to 3 a rule, each one of the plan’s 100 AI steps a day); ' +
+  // Steps in other apps: the shared kinds' own formats (liveworkspace automations.md "Steps in other apps").
+  `${crossAppActions()
+    .map((a) => a.format)
+    .join(
+      '; ',
+    )} (steps in other apps: up to ${CROSS_APP_STEPS_MAX} a rule, each run as you, only on items you can edit); ` +
   '{"kind":"if","conditions":[conditions],"then":[actions],"else":[actions]} (actions only inside: no if, for, ' +
   'notify, ai or wait); ' +
   '{"kind":"for","related":{"kind":"linked","field"?:a Card field}|{"kind":"blocked_by"}|{"kind":"blocking"}|' +

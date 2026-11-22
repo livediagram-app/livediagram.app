@@ -6,6 +6,11 @@
 // then one reads as the step panels' gone picks do ("a column no longer here", "Someone No Longer Here"). Pure.
 
 import {
+  crossAppChip,
+  isCrossAppKind,
+  type CrossAppStep,
+} from '@liveworkspace/automations/cross-app';
+import {
   AUTOMATION_NOTIFY_NAMES,
   addressWords,
   notifyChip as notifyWords,
@@ -388,7 +393,8 @@ export function stepChip(step: AutomationStep, outline: RuleSentenceOutline): st
   if (step.kind === 'notify') return notifyChip(step, outline);
   if (step.kind === 'ai') return aiStepChip(step, (id) => outlineFieldName(id, outline));
   if (step.kind === 'wait') return waitWords(step.hours);
-  return actionChip(step, outline);
+  if (isCrossAppKind(step.kind)) return crossAppChip(step as CrossAppStep);
+  return actionChip(step as AutomationAction, outline);
 }
 
 // Chips for several names, "or" between them.

@@ -8,7 +8,13 @@ import {
   KINDS,
   VERSION_REF,
 } from '@livedocuments/document/automations';
-import { aiClient, itemHookUrl, kitSends, type ItemRoomKit } from '@liveworkspace/automations/room';
+import {
+  aiClient,
+  itemHookUrl,
+  kitCrossApp,
+  kitSends,
+  type ItemRoomKit,
+} from '@liveworkspace/automations/room';
 import { appBaseUrl } from '../../email/client';
 import { indexAppClient } from '../../index-service';
 import { reportServerEvents } from '../../server-telemetry';
@@ -36,6 +42,8 @@ export function documentKit(room: DocumentRoom): ItemRoomKit | null {
     addTab: (template, name) => addTemplateTab(room, env, documentId, template, name),
     mail: kitMail(env, documentId),
     sends: kitSends(indexAppClient(env)),
+    // Steps in other apps (liveworkspace automations.md "Steps in other apps"): through the index, as the author.
+    crossApp: { client: kitCrossApp(indexAppClient(env)), app: 'livedocuments' },
     ai: { client: aiClient(env), ...(env.AI_GATEWAY ? { gateway: env.AI_GATEWAY } : {}) },
     // Name This Version and Restore a Version; Add a Tab from a Template is the shared step (`addTab` above).
     run: versionRunners(env, documentId),

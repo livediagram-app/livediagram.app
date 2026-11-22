@@ -70,6 +70,9 @@ export type RouteContext = {
   // (docs/specs/024-agents/agent-changesets.md). Optional so unit tests can leave it out.
   // Its name and expiry are liveworkspace's answer when it was checked (the CLI's auth status, the workbench).
   token?: { id: string; readOnly?: boolean; name?: string | null; expiresAt?: number } | null;
+  // A rule's step from another app writing here as its author (document-room/automations/cross-app-door.ts): the rule
+  // and the item it came from. Only the room sets it. Optional so unit tests can leave it out.
+  automation?: { rule: string; from: string } | null;
   // The presenting workbench session (docs/specs/013-workspace/workbench-embeds.md), or null for every other
   // caller. Under one, `accountUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
   // one document, never a token and never an administrator. Optional so unit tests can leave it out.

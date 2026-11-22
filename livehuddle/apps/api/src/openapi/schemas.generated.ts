@@ -607,6 +607,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationStamp": {
     "additionalProperties": false,
     "properties": {
+      "account": {
+        "type": "string"
+      },
       "ai": {
         "const": true,
         "type": "boolean"

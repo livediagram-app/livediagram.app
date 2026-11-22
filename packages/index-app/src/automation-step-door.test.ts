@@ -67,7 +67,7 @@ describe('a step in another app at its target', () => {
     const res = await send('automation-step', CALL, { automationStep });
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, text: 'Wrote “T” in Docs' });
-    expect(automationStep).toHaveBeenCalledWith('A', CALL);
+    expect(automationStep).toHaveBeenCalledWith('A', CALL, CLAIMS, 'g');
   });
 
   it('refuses any grant short of the author’s Editor one on the whole item', async () => {
@@ -137,7 +137,7 @@ describe('what a target offers the pickers', () => {
     }));
     const res = await send('automation-target', { author: 'user_ada' }, { automationTarget });
     expect(await res.json()).toEqual({ pages: [{ id: 'p', name: 'Home', parent: null }] });
-    expect(automationTarget).toHaveBeenCalledWith('A', 'user_ada');
+    expect(automationTarget).toHaveBeenCalledWith('A', 'user_ada', CLAIMS);
     expect(
       (await send('automation-target', { author: 'user_ben' }, { automationTarget })).status,
     ).toBe(403);

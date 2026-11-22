@@ -864,6 +864,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "App": {
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign",
+      "livehuddle",
+      "liveknowledge"
+    ],
+    "type": "string"
+  },
   "ArrowElement": {
     "additionalProperties": false,
     "properties": {
@@ -2814,6 +2825,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationStamp": {
     "additionalProperties": false,
     "properties": {
+      "account": {
+        "type": "string"
+      },
       "ai": {
         "const": true,
         "type": "boolean"
@@ -2850,6 +2864,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/AutomationWait"
+      },
+      {
+        "$ref": "#/components/schemas/CrossAppStep"
       }
     ]
   },
@@ -2988,7 +3005,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "if",
           "for",
           "ai",
-          "wait"
+          "wait",
+          "plan_card",
+          "kb_page",
+          "space_post",
+          "doc_tab",
+          "inbox_notice"
         ],
         "type": "string"
       },
@@ -3059,7 +3081,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "if",
           "for",
           "ai",
-          "wait"
+          "wait",
+          "plan_card",
+          "kb_page",
+          "space_post",
+          "doc_tab",
+          "inbox_notice"
         ],
         "type": "string"
       },
@@ -5786,6 +5813,45 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "CrossAppStep": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/PlanCardStep"
+      },
+      {
+        "$ref": "#/components/schemas/KbPageStep"
+      },
+      {
+        "$ref": "#/components/schemas/SpacePostStep"
+      },
+      {
+        "$ref": "#/components/schemas/DocTabStep"
+      },
+      {
+        "$ref": "#/components/schemas/InboxNoticeStep"
+      }
+    ]
+  },
+  "CrossAppTarget": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/App"
+      },
+      "item": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "item",
+      "title"
+    ],
+    "type": "object"
+  },
   "CurrentTokenResponse": {
     "additionalProperties": false,
     "properties": {
@@ -6441,6 +6507,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "since",
       "changes",
       "elision"
+    ],
+    "type": "object"
+  },
+  "DocTabStep": {
+    "additionalProperties": false,
+    "properties": {
+      "docTemplate": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "doc_tab",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "target": {
+        "$ref": "#/components/schemas/CrossAppTarget"
+      }
+    },
+    "required": [
+      "kind",
+      "target",
+      "docTemplate",
+      "name"
     ],
     "type": "object"
   },
@@ -8770,6 +8861,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "InboxNoticeStep": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "const": "inbox_notice",
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "to": {
+        "items": {
+          "$ref": "#/components/schemas/NoticeRecipient"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "kind",
+      "to",
+      "text"
+    ],
+    "type": "object"
+  },
   "Item": {
     "additionalProperties": false,
     "properties": {
@@ -10175,6 +10290,34 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "KbPageStep": {
+    "additionalProperties": false,
+    "properties": {
+      "body": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "kb_page",
+        "type": "string"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "target": {
+        "$ref": "#/components/schemas/CrossAppTarget"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "target",
+      "title",
+      "body"
+    ],
+    "type": "object"
+  },
   "KeyRow": {
     "additionalProperties": false,
     "properties": {
@@ -10947,6 +11090,34 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "NoticeRecipient": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "person": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "person"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "NumOp": {
     "enum": [
       "between",
@@ -11648,6 +11819,53 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "itemId"
+    ],
+    "type": "object"
+  },
+  "PlanCardStep": {
+    "additionalProperties": false,
+    "properties": {
+      "assignee": {
+        "type": "string"
+      },
+      "board": {
+        "type": "string"
+      },
+      "column": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "dueDays": {
+        "type": "number"
+      },
+      "kind": {
+        "const": "plan_card",
+        "type": "string"
+      },
+      "linkBack": {
+        "type": "boolean"
+      },
+      "skipIfOpen": {
+        "type": "boolean"
+      },
+      "target": {
+        "$ref": "#/components/schemas/CrossAppTarget"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "target",
+      "board",
+      "column",
+      "title",
+      "description",
+      "linkBack",
+      "skipIfOpen"
     ],
     "type": "object"
   },
@@ -14954,6 +15172,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "incoming",
       "outgoing",
       "omitted"
+    ],
+    "type": "object"
+  },
+  "SpacePostStep": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "const": "space_post",
+        "type": "string"
+      },
+      "spaceTab": {
+        "type": "string"
+      },
+      "target": {
+        "$ref": "#/components/schemas/CrossAppTarget"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "target",
+      "spaceTab",
+      "text"
     ],
     "type": "object"
   },

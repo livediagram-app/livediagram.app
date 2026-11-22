@@ -4,7 +4,13 @@
 // AI. Each binding is its own module beside this one. Null while the room holds no Space (no env, no id), so the
 // engine has nothing to run with.
 import { AUTOMATIONS_TELEMETRY_CATEGORY, KINDS } from '@livehuddle/document/automations';
-import { aiClient, itemHookUrl, kitSends, type ItemRoomKit } from '@liveworkspace/automations/room';
+import {
+  aiClient,
+  itemHookUrl,
+  kitCrossApp,
+  kitSends,
+  type ItemRoomKit,
+} from '@liveworkspace/automations/room';
 import { appBaseUrl } from '../../email/client';
 import { indexAppClient } from '../../index-service';
 import { reportServerEvents } from '../../server-telemetry';
@@ -32,6 +38,8 @@ export function spaceKit(room: DocumentRoom): ItemRoomKit | null {
     addTab: (template, name) => addTemplateTab(room, env, documentId, template, name),
     mail: kitMail(env, documentId),
     sends: kitSends(indexAppClient(env)),
+    // Steps in other apps (liveworkspace automations.md "Steps in other apps"): through the index, as the author.
+    crossApp: { client: kitCrossApp(indexAppClient(env)), app: 'livehuddle' },
     ai: { client: aiClient(env), ...(env.AI_GATEWAY ? { gateway: env.AI_GATEWAY } : {}) },
     // Clear the Suggestion Box; Add a Tab from a Template is the shared step (`addTab` above).
     run: suggestionRunners(env, documentId),

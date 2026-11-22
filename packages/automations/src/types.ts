@@ -82,6 +82,9 @@ export interface AutomationStamp<Person = AutomationPerson> {
   at: number;
   // Made through an API token (an agent), for "Edited by Ana Costa (Agent)".
   ai?: true;
+  // The account behind `by`, where `by` is a person id an app made of it (liveplanner's): the author a step in another
+  // app acts as (automations.md "Steps in other apps").
+  account?: string;
 }
 
 // What a failed step or an unheld condition names that the item lacks, as data: its kind and its stored id.

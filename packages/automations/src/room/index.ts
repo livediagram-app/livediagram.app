@@ -18,3 +18,4 @@ export * from './automation-telemetry';
 export * from './cross-app';
 export * from './item';
 export * from './app';
+export * from './cross-app-target';

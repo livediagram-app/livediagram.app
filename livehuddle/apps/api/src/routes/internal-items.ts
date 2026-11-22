@@ -14,6 +14,7 @@
 // threads for liveworkspace's data export, which calls with DATA_EXPORT_KEY
 // (liveworkspace/docs/specs/003-accounts/data-export.md). The migration's two doors
 // take MIGRATION_KEY (docs/migration.md "Tooling"): a document's part into its room, and a person's shape libraries.
+import { indexService } from '../index-service';
 import {
   askIndexCommunityStates,
   JOINED_TELEMETRY_TYPE,
@@ -66,6 +67,7 @@ export function handleInternalItems(
     // The Community's sweep calls its door with the same key this api publishes with (liveworkspace community.md).
     communityKey: env.COMMUNITY_KEY,
     waitUntil,
+    verifyGrant: (grant, id) => indexService.verifyGrant(env, grant, id),
     handlers: {
       // Where the document stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
       // editors"): trashed anywhere (the api, MCP delete_document, the Explorer), its room tells every editor and
@@ -179,6 +181,10 @@ export function handleInternalItems(
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the canvas's tab bar.
       connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
+      // A rule's step from another app on this item, and what its pickers may name here: the author's grant is
+      // checked first (`verifyGrant` below), then the room runs it in the step's chain.
+      automationStep: (id, call) => documentRoom(env, id).automationStep(call),
+      automationTarget: (id) => documentRoom(env, id).automationTarget(),
     },
   });
 }

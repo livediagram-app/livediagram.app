@@ -66,9 +66,14 @@ export const personWriter = (by: string): PageWriter => ({ by, kind: 'human' });
 /** The writer of a request: an agent when it bears an API token, named as its reads are (its client's name from its
  *  front door, else the token's own name) with the door it came through; else the person. */
 export function writerOf(
-  ctx: { token?: { name?: string | null } | null; request: Request },
+  ctx: {
+    token?: { name?: string | null } | null;
+    request: Request;
+    automation?: { rule: string; from: string } | null;
+  },
   by: string,
 ): PageWriter {
+  if (ctx.automation) return automationWriter(by, ctx.automation);
   if (!ctx.token) return personWriter(by);
   const header = ctx.request.headers.get(AGENT_NAME_HEADER)?.trim();
   const named = header ? cleanAgentName(header) : null;
@@ -80,6 +85,15 @@ export function writerOf(
   };
 }
 
+/** A rule's step from another app (Write a Page in a Knowledgebase): the author's stamp, named by the rule and the
+ *  item it came from ("Release Note in Launch"). */
+export const automationWriter = (by: string, step: { rule: string; from: string }): PageWriter => ({
+  by,
+  kind: 'human',
+  agent: agentName(`${step.rule.trim() || 'Untitled'} in ${step.from.trim() || 'Untitled'}`),
+  via: 'automation',
+});
+
 /** A person accepting an agent's suggestion: the words are the agent's, the stamp is the person's. */
 export const acceptedSuggestionWriter = (by: string, agent: string): PageWriter => ({
   by,
@@ -89,7 +103,7 @@ export const acceptedSuggestionWriter = (by: string, agent: string): PageWriter 
 });
 
 const KINDS: readonly PageAuthorKind[] = ['human', 'ai'];
-const VIAS: readonly PageAuthorVia[] = ['mcp', 'cli', 'api', 'suggestion'];
+const VIAS: readonly PageAuthorVia[] = ['mcp', 'cli', 'api', 'suggestion', 'automation'];
 
 /** One stamp as read: an unknown kind reads as a person's, an unknown door as none. */
 export function stampOf(

@@ -7,6 +7,12 @@
 // that would change nothing is "Already so"; one the card refuses fails the run there, with the lines so far. The api
 // applies the plan (automation-writes.ts); Test on a Card shows it. Pure.
 
+import {
+  crossAppChip,
+  fillCrossAppStep,
+  isCrossAppKind,
+  type CrossAppStep,
+} from '@liveworkspace/automations/cross-app';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   itemAssignee,
@@ -76,6 +82,7 @@ import {
 export type {
   PlanActionsContext,
   PlannedCard,
+  PlannedCross,
   PlannedEmail,
   PlannedMention,
   PlannedRelated,
@@ -404,6 +411,18 @@ function notify(s: AutomationOutgoing, index: number, w: Walk) {
   w.plan.line(notifyChip(s));
 }
 
+// A step in another app: its texts filled from the card now, sent once the run's card writes land (the runner's), its
+// line settled by the index's answer.
+function crossStep(s: CrossAppStep, index: number, w: Walk) {
+  const run = w.plan.run;
+  run.cross.push({
+    step: index,
+    filled: fillCrossAppStep(s, (t) => fillValues(t, { ...w.values, card: w.plan.card })),
+    line: run.lines.length,
+  });
+  w.plan.line(crossAppChip(s));
+}
+
 // A branch: each related card's conditions, then its actions as one patch; a card that refuses one fails alone.
 function branch(s: AutomationBranch, top: Walk) {
   const run = top.plan.run;
@@ -501,6 +520,7 @@ export function planActions(
     return {
       ...all[0]!,
       sends: run.sends,
+      ...(run.cross.length ? { cross: run.cross } : {}),
       turns: run.turns,
       ...(run.ai.length ? { ai: run.ai } : {}),
     };
@@ -527,6 +547,11 @@ export function planActions(
         notify(s, index, w);
         continue;
       }
+      if (isCrossAppKind(s.kind)) {
+        count(run);
+        crossStep(s as CrossAppStep, index, w);
+        continue;
+      }
       if (s.kind === 'ai') {
         count(run);
         planAi(s, index, w);
@@ -535,7 +560,7 @@ export function planActions(
       }
       if (s.kind !== 'if') {
         count(run);
-        apply(s, w);
+        apply(s as AutomationAction, w);
         continue;
       }
       const held = allHold(s.conditions, { ...ctx, card: w.plan.card });

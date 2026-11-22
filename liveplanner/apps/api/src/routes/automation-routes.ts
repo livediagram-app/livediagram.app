@@ -61,7 +61,14 @@ import { readConnection } from '../plan-room/github/github-store';
 import { gateEdit, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
 
 // `ai`: the caller is an API token (an agent), whose stamps and Run Rule say so.
-export type Gated = { projectId: string; hook: PlanAutomations; by: ItemPerson; ai: boolean };
+// `account`: the signed-in account behind `by`, kept on the stamp so a step in another app acts as it.
+export type Gated = {
+  projectId: string;
+  hook: PlanAutomations;
+  by: ItemPerson;
+  ai: boolean;
+  account: string;
+};
 
 const refuse = (
   status: number,
@@ -98,7 +105,7 @@ async function gate(ctx: PlanRouteContext, projectId: string): Promise<Gated | R
     });
     return refuse(403, 'automations_need_editor');
   }
-  return { projectId, hook, by: await writer(ctx, owner), ai: !!ctx.token };
+  return { projectId, hook, by: await writer(ctx, owner), ai: !!ctx.token, account: owner };
 }
 
 // A stamp of the caller now: an agent's says so (spec "Agents and the CLI", "Who it was").
@@ -106,6 +113,7 @@ const stampOf = (g: Gated) => ({
   by: g.by,
   at: Date.now(),
   ...(g.ai ? { ai: true as const } : {}),
+  account: g.account,
 });
 
 // The plan's GitHub connection as Needs Attention reads it: false for none, else the names of the repositories it
