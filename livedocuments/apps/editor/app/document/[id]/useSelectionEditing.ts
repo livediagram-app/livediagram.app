@@ -13,6 +13,7 @@ import {
   type TextRun,
   type TablePatch,
   withTablePatch,
+  growTextToLabel,
 } from '@livedocuments/document';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
@@ -187,7 +188,8 @@ export function useSelectionEditing(opts: {
         if (isBoxed(el)) {
           const { richText: _prev, ...base } = el as typeof el & { richText?: TextRun[] };
           const next = keepRich ? { ...base, label, richText } : { ...base, label };
-          if (!hugsText(next)) return [next];
+          // A fixed text sized to its one line of words widens to hold longer ones (canvas "Text sized to its words").
+          if (!hugsText(next)) return [growTextToLabel(el, next)];
           // An edit that changed nothing leaves the box as it was, so an existing box keeps its
           // size until it is edited.
           const unchanged =

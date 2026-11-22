@@ -618,6 +618,10 @@ edge. Text that wraps keeps its width, which is no wider than the content it hea
   sit on one line on the canvas, in an export and in an agent's preview.
 - A text it cannot estimate keeps its box: rich text, arched text, a box with a fill or a border, a face other than
   the default, Inter or Caveat, a box that already hugs its text (`sizing`), and a turned text that is not centred.
+- **Typed words, too.** When a person commits longer words into a fixed text whose words sat on one line, the box
+  re-hugs them on one line, up to 1,200 px, kept where its words sit (its left edge, centre or right edge), in
+  every editor's `useSelectionEditing` through the shared `growTextToLabel`, as an agent's edit does (EO22a). Text
+  that already wrapped keeps its width.
 - A test holds every template to it (`template-text-widths.test.ts`): every text box is already fitted, and a
   wrapping one is no wider than the rest of the template.
 

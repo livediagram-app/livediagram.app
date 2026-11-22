@@ -1,9 +1,16 @@
 // Labels (docs/specs/024-agents/blueprints/edit-operations.md "Fields and values", EO18, EO22): a
 // shape's label over LABEL_CAP_MAX keeps its heading and the rest is cut, with nothing moved into a note (livehuddle
 // shows none, Work Tracker 737); any other element's label is its content and stays whole. A shape whose label no
-// longer fits grows around its centre, never shrinking.
+// longer fits grows around its centre, never shrinking, and a text sized to its one
+// line of words widens to hold its new ones on one line (EO22a).
 
-import { LABEL_CAP_MAX, capLabel, labelBoxSize, type Element } from '@livehuddle/document';
+import {
+  LABEL_CAP_MAX,
+  capLabel,
+  growTextToLabel,
+  labelBoxSize,
+  type Element,
+} from '@livehuddle/document';
 
 type LabelWrite = { label: string; capped: boolean };
 
@@ -24,6 +31,12 @@ export type Fit = { widened?: [number, number]; taller?: [number, number] };
 // old label's need grows by the difference between the two needs, so a label no longer than the last
 // leaves it be. Unchanged when fixed-size or scaling its text to the box; it never shrinks.
 export function fitToLabel(before: Element, el: Element): { el: Element; fit: Fit } {
+  if (el.type === 'text') {
+    const grown = growTextToLabel(before, el);
+    return grown === el
+      ? { el, fit: {} }
+      : { el: grown, fit: { widened: [el.width, grown.width] } };
+  }
   if (el.type !== 'shape' || before.type !== 'shape' || el.fixedSize || el.textSize === 'scale')
     return { el, fit: {} };
   // A retired kind never gets here: `set` refuses one (Work Tracker 639), and `shape=` takes only kinds livehuddle has.

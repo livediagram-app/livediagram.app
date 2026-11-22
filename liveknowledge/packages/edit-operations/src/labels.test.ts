@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { labelBoxSize, type Element } from '@liveknowledge/document';
+import { labelBoxSize, textWordsWidth, type Element } from '@liveknowledge/document';
 import { applyLabel, fitToLabel } from './labels';
 
 const square = {
@@ -84,5 +84,32 @@ describe('fitToLabel (EO22)', () => {
     expect(fitToLabel(square, { ...square, label: longer, textSize: 'scale' }).fit).toEqual({});
     expect(fitToLabel(sticky, { ...sticky, label: longer }).fit).toEqual({});
     expect(fitToLabel(arrow, square).fit).toEqual({});
+  });
+});
+
+describe('fitToLabel (EO22a): a text sized to its words', () => {
+  const title = {
+    id: 't',
+    type: 'text',
+    x: 0,
+    y: 0,
+    width: 320,
+    height: 44,
+    label: 'Sprint 14 retro',
+    textSize: 'lg',
+    textBold: true,
+    textAlignX: 'left',
+  } as Element;
+
+  it('widens to hold longer words on one line, and says so', () => {
+    const longer = { ...title, label: 'Sprint 14 retro, the platform team' } as Element;
+    const { el, fit } = fitToLabel(title, longer);
+    expect(el.type === 'text' && el.width).toBe(textWordsWidth(longer as never));
+    expect(fit.widened?.[0]).toBe(320);
+  });
+
+  it('leaves a text whose new words still fit', () => {
+    const shorter = { ...title, label: 'Retro' } as Element;
+    expect(fitToLabel(title, shorter)).toEqual({ el: shorter, fit: {} });
   });
 });
