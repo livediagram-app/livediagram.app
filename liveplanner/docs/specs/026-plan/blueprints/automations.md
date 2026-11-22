@@ -1671,17 +1671,17 @@ planning and run loop around them (as its steps in other apps).
 
 ### Shared (packages/automations, packages/automations-ui)
 
-- `item/actions.ts`: `SNAPSHOT_KINDS` (`take_snapshot`, `revert_snapshot`), `isSnapshotKind`, `readSnapshotStep(v,
+- `packages/automations/src/item/actions.ts`: `SNAPSHOT_KINDS` (`take_snapshot`, `revert_snapshot`), `isSnapshotKind`, `readSnapshotStep(v,
 path, check)` (the defineAction reads, for an app whose check is its own), `snapshotStepChip(step, name?)` (the
   sentence chip: `Take Snapshot “name”`, `Revert to “name”`, `Revert to Snapshot (pick one)`), `snapshotStepWould`,
   `snapshotActions()` (the two kinds, whose `format` rule-format.ts lists) and `snapshotStepSummary`. The item kinds'
   `words`, `would`, `read` and `summary` call them.
-- `room/item/actions.ts`: `runTakeSnapshot(filledName, snapshots, author)` and `runRevertSnapshot(step, words,
+- `packages/automations/src/room/item/actions.ts`: `runTakeSnapshot(filledName, snapshots, author)` and `runRevertSnapshot(step, words,
 revert)`, the bodies SHARED_RUNNERS ran, over a `kitSnapshots` binding (room/app/kit-snapshots.ts). The
   item engine wraps the revert in `withItemWriter({ silent })` as before.
-- `automations-ui/src/item/snapshot-kit.tsx`: `snapshotKitActions<Step, Outline>(itemWord)` (each kind's name, line,
+- `packages/automations-ui/src/item/snapshot-kit.tsx`: `snapshotKitActions<Step, Outline>(itemWord)` (each kind's name, line,
   glyph, picture in the Snapshots tone, first form, the shared panel, `top`, revert `last`) and `snapshotGroup()`;
-  `item/snapshot-list.ts`: `snapshotListStore()` and `useSnapshotList(store, itemId, read, wanted)` (the read-once
+  `packages/automations-ui/src/item/snapshot-list.ts`: `snapshotListStore()` and `useSnapshotList(store, itemId, read, wanted)` (the read-once
   list, `ItemSnapshots`), which item/outline.ts uses too.
 
 ### Shapes (packages/items/src/automation)

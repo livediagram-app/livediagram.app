@@ -117,7 +117,8 @@ const revertSnapshot = defineAction<ItemRevertSnapshot & ItemPart>({
   words: (a, names) => [
     { chip: snapshotStepChip(a, a.snapshot ? snapshotWords(a, names) : undefined) },
   ],
-  would: (a, ctx) => snapshotStepWould(a, (t) => ctx.fill(t), snapshotWords(a, ctx.names)),
+  // A revert fills nothing: its words are the snapshot's name.
+  would: (a, ctx) => snapshotStepWould(a, String, snapshotWords(a, ctx.names)),
   summary: snapshotStepSummary,
 });
 
