@@ -389,7 +389,7 @@ When the new editor finds the old id in a browser, livediagram's api forwards it
 - **Re-keyed ids.** `rekeyedLegacyGuestOwner(legacyId, secret)` (`@liveworkspace/migration`) is
   `guest_<uuid>`, the uuid being the first 16 bytes of HMAC-SHA-256 of the UTF-8 bare id under
   `LEGACY_GUEST_REKEY_SECRET` (a new, random secret, never the old site's), shaped as a v4 UUID. The re-key (below)
-  moves a guest's work under that id and marks its row (`rekeyedAt`, migration `0024_legacy_guest_rekeyed.sql`). A
+  moves a guest's work under that id and marks its row (`rekeyedAt`, migration `0026_legacy_guest_rekeyed.sql`). A
   claim reads both candidate rows in one query (`id IN (guest_<legacyId>, <re-keyed id>)`) and takes the re-keyed
   row when it is marked, else the plain row when it is not marked. So the id a share link's visitor now sees,
   `guest_<re-keyed uuid>`, sent as a `legacyId`, finds no row it can claim: its own re-keyed form names nothing, and

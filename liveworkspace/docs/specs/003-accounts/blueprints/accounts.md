@@ -463,7 +463,7 @@ Migrations, in order:
   index now `index_events_outbox_order`) and drops `api_token.expiryNotedAt` and `api_token_expiry_note_idx`, both
   left from the Timeline (`api_token` rebuilt with its rows and other indexes: SQLite's `DROP COLUMN` fails on the
   comments in its `CREATE`)
-- `0024_legacy_guest_rekeyed.sql`: `legacy_guest.rekeyedAt`, when a guest from before signing had its id re-keyed
+- `0026_legacy_guest_rekeyed.sql`: `legacy_guest.rekeyedAt`, when a guest from before signing had its id re-keyed
   (sessions-and-guests.md "Re-keying the guests from before signing")
 
 Better Auth's runtime schema check is off (`advanced.database.validateSchema: false`, `src/auth-options.ts`): it would
