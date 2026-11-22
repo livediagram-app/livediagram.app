@@ -56,7 +56,7 @@ export type AutomationPick =
   | 'label'
   | 'people'
   | 'webhook'
-  // A step in another app's target: the plan, knowledgebase, Space or document it acts on.
+  // A step in another app's target: the plan, knowledgebase, Space or other item it acts on.
   | 'target';
 export const AUTOMATION_PICK_WORDS: Readonly<Record<AutomationPick, string>> = {
   column: 'Pick a column',

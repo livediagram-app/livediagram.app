@@ -6,26 +6,14 @@
 // Decoration only.
 
 import { lucideGlyph } from '@liveworkspace/ui';
-import {
-  lucideBell,
-  lucideBookOpenText,
-  lucideFilePlus,
-  lucideSquareKanban,
-  lucideStickyNote,
-} from '@liveworkspace/icons/lucide';
+import { lucideBell } from '@liveworkspace/icons/lucide';
 import type { CrossAppKind } from '@liveworkspace/automations/cross-app';
-import type { GlyphType } from '../kit';
 import { Avatar, Pill, ZapGlyph } from '../scene-parts';
 import { PANEL, at, type ToneClasses } from '../tile-picker/tile-scene';
 import { FlowLine, INK_SOFT, Page, Tab, TabStrip } from '../item/scenes/scene-bits';
 
-export const CROSS_APP_GLYPHS: Readonly<Record<CrossAppKind, GlyphType>> = {
-  plan_card: lucideGlyph(lucideSquareKanban, 16),
-  kb_page: lucideGlyph(lucideBookOpenText, 16),
-  space_post: lucideGlyph(lucideStickyNote, 16),
-  doc_tab: lucideGlyph(lucideFilePlus, 16),
-  inbox_notice: lucideGlyph(lucideBell, 16),
-};
+// The icons live apart (cross-app-glyphs.ts), so an editor's eager step icons never pull these pictures in.
+export { CROSS_APP_GLYPHS } from './cross-app-glyphs';
 
 const BellGlyph = lucideGlyph(lucideBell, 11);
 

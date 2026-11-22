@@ -36,7 +36,7 @@ import {
   type StepTone,
 } from '@liveworkspace/automations-ui/glyphs';
 import type { GlyphType } from '@liveworkspace/automations-ui/kit';
-import { CROSS_APP_GLYPHS } from '@liveworkspace/automations-ui/cross-app/cross-app-art';
+import { CROSS_APP_GLYPHS } from '@liveworkspace/automations-ui/cross-app/cross-app-glyphs';
 
 export {
   AutomationDisc,

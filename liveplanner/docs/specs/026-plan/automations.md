@@ -1449,7 +1449,7 @@ part at fault, the words, and the command to run next).
 ## Steps in other apps
 
 Every step of the platform's [Steps in other apps](../../../../liveworkspace/docs/specs/018-automations/automations.md#steps-in-other-apps) is in a plan's Add Action, under **In Other Apps**: Create a
-Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a Tab to a Document and Notify. Each acts as the
+Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a Tab (to a livedocuments or livediagram item) and Notify. Each acts as the
 rule's author, with their rights alone, through the target app's own door; lost access pauses the rule, and a chain
 stops after 3 hops or on a rule it already ran. Their values are the card's (`{{card.title}}`, `{{card.url}}`,
 `{{card.assignee}}`), as every card step's. They run after the card's own writes, beside the messages, and never

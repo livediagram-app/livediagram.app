@@ -53,9 +53,9 @@ src/cross-app/
 
 | Kind           | Fields                                                                                               |
 | -------------- | ---------------------------------------------------------------------------------------------------- |
-| `plan_card`    | `target`, `board`, `column` (a column's name), `title`, `description`, `assignee?` (a person id or a  |
+| `plan_card`    | `target`, `board`, `column` (a column's name), `title`, `description`, `assignee?` (a person id or a |
 |                | value naming one), `dueDays?` (0 to 365), `linkBack` (bool), `skipIfOpen` (bool)                     |
-| `kb_page`      | `target`, `parent?` (a page id), `title`, `body` (Markdown)                                         |
+| `kb_page`      | `target`, `parent?` (a page id), `title`, `body` (Markdown)                                          |
 | `space_post`   | `target`, `tab` (a tab id), `text`                                                                   |
 | `doc_tab`      | `target` (livedocuments or livediagram), `template`, `name`                                          |
 | `inbox_notice` | `to` (1 to 10 of `{ person }` or `{ value }`), `text`                                                |
@@ -87,10 +87,10 @@ src/automation-step-notices.ts  inbox_notice: the notices written, the Inbox rea
 migrations/0028_automation_steps.sql
 ```
 
-| Table                     | Holds                                                                             |
-| ------------------------- | --------------------------------------------------------------------------------- |
-| `automation_step_days`    | `(person_id, day)` → `count`: an author's steps in other apps a UTC day           |
-| `automation_notices`      | `id`, `person_id`, `app`, `item_id`, `rule`, `text`, `at`: the Notify step's rows |
+| Table                  | Holds                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `automation_step_days` | `(person_id, day)` → `count`: an author's steps in other apps a UTC day           |
+| `automation_notices`   | `id`, `person_id`, `app`, `item_id`, `rule`, `text`, `at`: the Notify step's rows |
 
 - The day's count is one statement, `INSERT … ON CONFLICT DO UPDATE SET count = count + 1 … RETURNING count`, taken
   only after a target answered Done; rows before yesterday go on the day's first write. A step past 500 is refused
@@ -117,13 +117,13 @@ automationStep?: (itemId: string, call: VerifiedStepCall) => Promise<AutomationS
 automationTarget?: (itemId: string, grant: GrantClaims) => Promise<AutomationTargetDescription>;
 ```
 
-| App           | Serves         | Writes through                                                                     |
-| ------------- | -------------- | ---------------------------------------------------------------------------------- |
-| liveplanner   | `plan_card`    | the room's card create (as Email to Board makes one): one op, the author's stamp   |
-| liveknowledge | `kb_page`      | create_page's path (`newPageFromMarkdown`, `upsertTabAtRev`, `notePageWrite`)      |
-| livehuddle    | `space_post`   | an agent changeset's element add: one sticky on the tab                            |
-| livedocuments | `doc_tab`      | `addTemplateTab` (Add a Tab from a Template's own)                                 |
-| livediagram   | `doc_tab`      | `addTemplateTab`                                                                   |
+| App           | Serves       | Writes through                                                                   |
+| ------------- | ------------ | -------------------------------------------------------------------------------- |
+| liveplanner   | `plan_card`  | the room's card create (as Email to Board makes one): one op, the author's stamp |
+| liveknowledge | `kb_page`    | create_page's path (`newPageFromMarkdown`, `upsertTabAtRev`, `notePageWrite`)    |
+| livehuddle    | `space_post` | an agent changeset's element add: one sticky on the tab                          |
+| livedocuments | `doc_tab`    | `addTemplateTab` (Add a Tab from a Template's own)                               |
+| livediagram   | `doc_tab`    | `addTemplateTab`                                                                 |
 
 Each write runs inside the room's writer window `{ who: { by: author, role: 'automation', cross: chain }, own: true }`
 (item apps) or with liveplanner's source `{ role: 'automation', cross: chain }`, so the events it queues carry the
@@ -133,15 +133,23 @@ chain and none is an edit.
 
 ```
 src/cross-app/
-  cross-app-tiles.tsx     the five tiles (glyph, scene, panel, first form), merged into every kit's actions
-  TargetPicker.tsx        the Connect picker for a step: Recent across apps by kind, Shared with Me, View Only rows
-  TargetDetails.tsx       a target's board and column, parent page, template or tab, read from automationTarget
-  CrossAppPanels.tsx      the five panels: pickers, field chips (ValueInsert), the live preview
-  RunsAsPanel.tsx         the side panel: Runs As, Reaches, Limits
-  cross-app-words.ts      the eyebrow ("Then · liveknowledge"), app colours, the panel words
+  cross-app-kit.tsx       the five tiles (name, line, glyph, scene, first form, panel), merged into every kit's actions
+  cross-app-group.ts      Add a Step's In Other Apps group: badged New, "Every step acts as you, …" under the tiles
+  cross-app-art.tsx       each tile's glyph and scene
+  TargetPicker.tsx        the Connect picker for a step: Recent across apps by kind, View Only rows with a lock
+  TargetField.tsx         the target row (Pick, Change), then its lists once read; a failed read offers Try Again
+  use-cross-target.ts     a target's boards, pages, tabs or templates, read once (automationTarget), the newest 10 kept
+  cross-app-panels.tsx    the five panels: pickers, field chips (Insert a Field), the live preview
+  CrossAppPreview.tsx     the preview: each text as it lands, its values as chips
+  CrossAppRuleCard.tsx    beside the steps: Runs As, Reaches, Limits, Last Runs in the Audit Trail
 ```
 
-liveplanner's kit (apps/editor/components/automations) merges the same tiles and panels.
+liveplanner's kit (apps/editor/components/automations) merges the same tiles, group and panels.
+
+A rule paused on lost access (`isAccessPause`: `Stopped: no access …` or no author) offers **Take Over Rule** on its
+row and in a banner over its Audit Trail runs: the screen saves the rule as it stands (the save stamps the person as
+its author) and turns it on. A template's empty target is a pick (`target`, "Pick where it goes"), so the builder
+marks it until it is picked.
 
 ## Tests
 
@@ -155,6 +163,6 @@ liveplanner's kit (apps/editor/components/automations) merges the same tiles and
 
 ## Cost
 
-Measured in `src/room/cross-app.perf.test.ts` and the index's route test, Apple-silicon laptop, 2026-11-22: see the
+Measured in `src/cross-app/cross-app.perf.test.ts` and the index's route test, Apple-silicon laptop, 2026-11-22: see the
 PR's Performance section. A rule with no step in other apps pays nothing: the kinds are read only where a step names
 them, and the per-rule day is read only before such a step.
