@@ -88,13 +88,32 @@ export function replacePassage(
   return { markdown: markdown.slice(0, at) + after.trim() + markdown.slice(at + length) };
 }
 
-const TABLE_LINE = /^\s*\|.*\|\s*$/;
-const TABLE_RULE = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
+// Table lines are read trimmed, cell by cell, never with one regex over the line: an agent writes these lines, and a
+// pattern of `\s*` runs around optional pipes backtracks polynomially on a long run of spaces or tabs.
+
+/** A table row: `| … |`, two pipes at least. */
+function isTableLine(line: string): boolean {
+  const t = line.trim();
+  return t.length >= 2 && t.startsWith('|') && t.endsWith('|');
+}
+
+const RULE_CELL = /^:?-{3,}:?$/;
+
+/** A table's header rule: `| --- | :---: |`, its outer pipes optional, every cell three dashes or more. */
+function isTableRule(line: string): boolean {
+  const t = line.trim();
+  if (!t.includes('-')) return false;
+  const inner = t.slice(
+    t.startsWith('|') ? 1 : 0,
+    t.endsWith('|') && t.length > 1 ? -1 : undefined,
+  );
+  return inner.split('|').every((cell) => RULE_CELL.test(cell.trim()));
+}
 
 /** Whether `text` is nothing but table rows, with no header rule: rows meant for a table already on the page. */
 export function isBareTableRows(text: string): boolean {
   const lines = text.split('\n').filter((line) => line.trim() !== '');
-  return lines.length > 0 && lines.every((line) => TABLE_LINE.test(line) && !TABLE_RULE.test(line));
+  return lines.length > 0 && lines.every((line) => isTableLine(line) && !isTableRule(line));
 }
 
 /** The Markdown with bare table `rows` added under the last row of its last table (outside code fences); null when
@@ -107,9 +126,9 @@ export function appendTableRows(markdown: string, rows: string): string | null {
   let lastRow = -1;
   lines.forEach((line, at) => {
     if (FENCE.test(line)) fenced = !fenced;
-    else if (!fenced && TABLE_RULE.test(line) && at > 0 && TABLE_LINE.test(lines[at - 1]!)) {
+    else if (!fenced && isTableRule(line) && at > 0 && isTableLine(lines[at - 1]!)) {
       let end = at;
-      while (end + 1 < lines.length && TABLE_LINE.test(lines[end + 1]!)) end++;
+      while (end + 1 < lines.length && isTableLine(lines[end + 1]!)) end++;
       lastRow = end;
     }
   });

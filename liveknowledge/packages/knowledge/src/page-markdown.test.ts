@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   appendTableRows,
   cutMarkdown,
@@ -97,6 +98,27 @@ describe('replacePassage', () => {
 });
 
 describe('appendTableRows', () => {
+  it('reads rows and rules trimmed, with spaces and tabs around them and their cells', () => {
+    const page = '| Team | Lead |\n\t|  :--- |\t---:  |  \n| Ops | Ana |';
+    expect(appendTableRows(page, '  | Sales | Bo |\t')).toBe(`${page}\n| Sales | Bo |`);
+    // A rule with no outer pipes, and a lone pipe that is no row.
+    expect(appendTableRows('| A |\n--- \n| x |', '| y |')).toBe('| A |\n--- \n| x |\n| y |');
+    expect(isBareTableRows('|')).toBe(false);
+    expect(isBareTableRows('| -- |')).toBe(true);
+  });
+
+  it('stays linear on a long run of tabs and spaces from an agent', () => {
+    const run = '\t '.repeat(25_000);
+    const rows = `|${run}|${run}-`;
+    const rule = `|${run}---${run}|${run}:---${run}`;
+    const ms = cpuMsOf(() => {
+      expect(isBareTableRows(rows)).toBe(false);
+      expect(appendTableRows(`| a |\n${rule}\n| b |`, `|${run}|`)).not.toBeNull();
+      expect(appendTableRows(`| a |\n${rule}x\n| b |`, '| c |')).toBeNull();
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
+  });
+
   const page = [
     'When a ticket needs more:',
     '',
