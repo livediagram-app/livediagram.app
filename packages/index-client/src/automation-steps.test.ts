@@ -52,7 +52,12 @@ describe('steps in other apps: the wire', () => {
         body: 'It shipped.',
       },
     };
-    const app = createIndexAppClient({ app: 'liveplanner', key: 'k', baseUrl: '/i', fetch: doFetch });
+    const app = createIndexAppClient({
+      app: 'liveplanner',
+      key: 'k',
+      baseUrl: '/i',
+      fetch: doFetch,
+    });
     expect(await app.pushAutomationStep('p1', push)).toEqual({ ok: true, text: 'Wrote a page' });
     expect(seen[0]).toMatchObject({
       url: '/i/app/items/p1/automation-steps',

@@ -1,6 +1,11 @@
 // The contract of the index's internal doors into an app's items (./internal): the handlers an app supplies, what
 // they are given and answer, and the export door's formats and ETags. Re-exported from ./internal.
 import type {
+  AutomationDoorGrants,
+  AutomationStepHandler,
+  AutomationTargetHandler,
+} from './automation-step-door';
+import type {
   AccessGrantedNotice,
   AccessRequestedNotice,
   ApprovalNotice,
@@ -159,6 +164,11 @@ export type InternalItemHandlers = {
   // The index's reverse write of a connected tab (connected-tabs.ts appendConnectedTab): one tab, loose, at the end of
   // the item's tab bar, the same connection id again answering the tab it made. An app without it answers 404.
   connectedTab?: (itemId: string, write: ConnectedTabWrite) => Promise<ConnectedTabOutcome>;
+  // A rule's step in another app acting on this item as its author (automation-step-door.ts), called once the
+  // author's grant is checked. An app that is no target answers 404, as does one without `verifyGrant`.
+  automationStep?: AutomationStepHandler;
+  // What this item offers a step's pickers (its boards, pages, templates or tabs), the author's grant checked.
+  automationTarget?: AutomationTargetHandler;
   // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
   // Community's sweep. An app without it answers 404.
   communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;
@@ -208,5 +218,7 @@ export type InternalItemsOptions = {
   // The app's COMMUNITY_KEY, which the Community service's sweep calls with: the community-states door alone.
   communityKey?: string | undefined;
   handlers: InternalItemHandlers;
+  // The app's grant check (its index service's `verifyGrant`, bound to its env): the automation doors alone.
+  verifyGrant?: AutomationDoorGrants;
   waitUntil?: (promise: Promise<unknown>) => void;
 };

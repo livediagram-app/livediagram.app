@@ -20,6 +20,7 @@ import { recordOpen } from './opens';
 import { insertItem, itemFor, optionalId } from './create';
 import { clientIpOf } from './shared';
 import { tellStanding } from '../standing';
+import { readAutomationTarget } from '../automation-steps';
 
 export async function handleItem(ctx: RouteContext, id: string): Promise<Response> {
   const { request, segments } = ctx;
@@ -32,6 +33,9 @@ export async function handleItem(ctx: RouteContext, id: string): Promise<Respons
     if (method === 'DELETE') return deleteItem(ctx, id);
   }
   if (segments.length === 3 && method === 'GET' && sub === 'history') return itemHistory(ctx, id);
+  // What the item offers a rule's step in another app, for its pickers (automation-steps.ts).
+  if (segments.length === 3 && method === 'GET' && sub === 'automation-target')
+    return readAutomationTarget(ctx.env, id, ctx.caller);
   if (segments.length === 3 && method === 'POST') {
     if (sub === 'restore') return restoreItem(ctx, id);
     if (sub === 'copy') return copyItem(ctx, id);

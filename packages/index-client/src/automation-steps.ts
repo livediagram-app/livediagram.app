@@ -147,8 +147,7 @@ export const isCrossAppRefusal = (code: unknown): code is CrossAppRefusal =>
   typeof code === 'string' && (CROSS_APP_REFUSALS as readonly string[]).includes(code);
 
 export type AutomationStepAnswer =
-  | { ok: true; text: string; link?: string }
-  | { ok: false; code: CrossAppRefusal; reason: string };
+  { ok: true; text: string; link?: string } | { ok: false; code: CrossAppRefusal; reason: string };
 
 // What a target offers the step's pickers (POST …/automation-target): a plan's boards and their columns, a
 // knowledgebase's pages, a document's templates, a Space's tabs. Each list is the target app's; the rest are absent.

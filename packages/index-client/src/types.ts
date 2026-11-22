@@ -320,6 +320,20 @@ export type InboxResponse = {
   shares?: InboxShare[];
   // Suggested edits waiting on the reader's pages (Work Tracker 1362); absent from an index before them.
   suggestions?: InboxSuggestion[];
+  // A rule's Notify steps to the reader, newest first (automations.md "Steps in other apps"); absent from an index
+  // before them.
+  notices?: InboxAutomationNotice[];
+};
+
+// One Notify step's notice: the item whose rule sent it, the rule's name and its text.
+export type InboxAutomationNotice = {
+  id: string;
+  app: App;
+  itemId: string;
+  itemTitle: string;
+  rule: string;
+  text: string;
+  at: number;
 };
 
 // A person's calendar feed in one app (one-explorer-contracts.md "Calendar feeds"): when its link was made. The token
