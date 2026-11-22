@@ -262,14 +262,15 @@ Teams are run here, but their audit log is the index's, beside its event log for
 ([one-explorer-contracts.md "The event log"](../004-index/one-explorer-contracts.md#the-event-log)). So this Worker
 tells the index what happened to a team, marked as liveworkspace's:
 
-| Event                 | When                                                    |
-| --------------------- | ------------------------------------------------------- |
-| `team_invite_sent`    | An admin invites an address                             |
-| `team_joined`         | An invitation is accepted, or someone joins by the link |
-| `team_declined`       | An invitation is turned down, on the site or from email |
-| `team_role_changed`   | An admin makes a member an admin, or an admin a member  |
-| `team_member_removed` | An admin removes a member, or a member leaves           |
-| `team_renamed`        | The team's name changes                                 |
+| Event                 | When                                                                                                  |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| `team_invite_sent`    | An admin invites an address                                                                           |
+| `team_joined`         | An invitation is accepted, or someone joins by the link                                               |
+| `team_declined`       | An invitation is turned down, on the site or from email                                               |
+| `team_role_changed`   | An admin makes a member an admin, or an admin a member                                                |
+| `team_member_removed` | An admin removes a member, or a member leaves                                                         |
+| `team_renamed`        | The team's name changes                                                                               |
+| `team_ai_key_changed` | An admin sets, replaces or removes the team's AI key, or changes its model ([ai-keys.md](ai-keys.md)) |
 
 A team deleted, a withdrawn invitation, a cleared refusal, an account closing and anything about an API token
 send nothing: none of them is in a team's audit log.
@@ -372,8 +373,8 @@ The migration ([docs/migration.md](../../../../docs/migration.md) step 6) copies
 `guest_<old uuid>`. That id is not a secret: the index hands an item's owner id to everyone who can read the item,
 a share link's visitor included, so knowing it proves nothing. The migrate tool also writes one `legacy_guest` row per
 migrated guest (migration `0011_legacy_guest.sql`): `id` (`guest_<old uuid>`, the key), `firstSeenAt` (when the
-old site first saw it, epoch ms), and `claimedAt` and `claimedBy`, null until it is claimed. This Worker only reads
-and stamps the rows; it never makes one.
+old site first saw it, epoch ms), and `claimedAt` and `claimedBy`, null until it is claimed. This Worker never
+makes a row: it stamps them, and re-keys the ones from before signing (below).
 
 When the new editor finds the old id in a browser, livediagram's api forwards it here with its client credentials:
 `POST /api/account/internal/legacy-guests/claim` `{ legacyId, signature, into }` (`src/legacy-guests.ts`).
@@ -388,18 +389,44 @@ When the new editor finds the old id in a browser, livediagram's api forwards it
   `invalid_signature`, `invalid_into`).
 - **Possession.** With a signature: HMAC-SHA-256 of the UTF-8 bare `legacyId` under the secret (its UTF-8
   bytes), written as base64url without padding (43 characters), checked with `crypto.subtle.verify` (constant
-  time) before anything is read. A wrong one is 403 `bad_signature`. Without one nothing is ever merged: the bare id is all
-  an unsigned claim holds, and it is not a secret (above). An unsigned id first seen at or after
+  time) before anything is read. A wrong one is 403 `bad_signature`. An unsigned id first seen at or after
   `LEGACY_GUEST_SIGNING_LIVE_AT` (`@liveworkspace/migration`, 2026-09-25 12:00 UTC) is 403 `signature_required`,
-  as the old site had it. An earlier one, from before signing, is **paused**: 503 `unsigned_claims_paused` while
-  its row is unclaimed, so livediagram's editor keeps the old keys (a 403 would make it forget them) until those
-  guests' ids are re-keyed to something only their browser can derive. An unsigned claim on a row already claimed
-  answers as below.
+  as the old site had it. An earlier one, from before signing, proves possession only once its guest is
+  **re-keyed** (below): the bare id is all such a browser holds, and `guest_<old uuid>` is not a secret, so a claim
+  is merged only under an id that only the bare id can lead to. While its row is unclaimed and not re-keyed (or
+  `LEGACY_GUEST_REKEY_SECRET` is unset) an unsigned claim is **paused**: 503 `unsigned_claims_paused`, nothing held
+  or merged, so livediagram's editor keeps the old keys (a 403 would make it forget them) for a later load. An
+  unsigned claim on a row already claimed answers as below.
+- **Re-keyed ids.** `rekeyedLegacyGuestOwner(legacyId, secret)` (`@liveworkspace/migration`) is
+  `guest_<uuid>`, the uuid being the first 16 bytes of HMAC-SHA-256 of the UTF-8 bare id under
+  `LEGACY_GUEST_REKEY_SECRET` (a new, random secret, never the old site's), shaped as a v4 UUID. The re-key (below)
+  moves a guest's work under that id and marks its row (`rekeyedAt`, migration `0026_legacy_guest_rekeyed.sql`). A
+  claim reads both candidate rows in one query (`id IN (guest_<legacyId>, <re-keyed id>)`) and takes the re-keyed
+  row when it is marked, else the plain row when it is not marked. So the id a share link's visitor now sees,
+  `guest_<re-keyed uuid>`, sent as a `legacyId`, finds no row it can claim: its own re-keyed form names nothing, and
+  its plain form is a marked row, which is never claimed by its stored id (`unknown`). A signed claim takes a
+  re-keyed row too. A signed claim of a row from before signing that is not re-keyed while the secret is set also
+  merges the re-keyed id after the plain one (nothing, unless a re-key stopped between the index and here), so no
+  half-done re-key strands a guest's work.
+- **Re-keying** (`POST /api/auth/internal/legacy-guests/rekey`, `src/legacy-guest-rekey.ts`). Behind `ADMIN_TOKEN`
+  (401 otherwise) and a plain 404 until `LEGACY_GUEST_REKEY_SECRET` is set. Body `{ dryRun?: boolean, limit?: 1..50
+}` (default 25). It reads every row that is unclaimed, unmarked and first seen before signing. A dry run changes
+  nothing and answers the counts (`rows`, `claimed`, `unclaimed`, `signedOnly` (from after signing, never
+  re-keyed), `rekeyed`, `toRekey`, `held`: rows held by a claim under way, left for a later run) and a `sample` of
+  up to five, each `{ from: 'guest_<first 8 characters>…', to: <re-keyed id> }`. Otherwise, one row at a time, up to
+  `limit`: the row is held exactly as a claim holds it (a minute, by `rekey:<run id>`, only when no live hold is
+  there and it is still unclaimed and unmarked); the index merges `guest_<old uuid>` into the re-keyed id
+  (`legacy: true`, so the apps move what they keep too, and the old id becomes the new one's alias); then one batch
+  moves the guest's `settings` and `profile` rows to the re-keyed id and renames the row (`id`, `rekeyedAt`, the hold
+  cleared) while it still holds the run's hold. A row a claim holds is skipped; a failed merge lets the hold go and
+  is counted `failed`. The answer is `{ rekeyed, skipped, failed, remaining }`. Each step is idempotent, so a run
+  that stops anywhere is finished by the next. The migrate tool's `rekey-guests` command runs it (docs/migration.md
+  step 6). Logged `[accounts] legacy guests re-keyed { rekeyed, skipped, failed }`, no ids.
 - **The answers** (`LegacyGuestClaimAnswer`). No row: `{ merged: false, reason: 'unknown' }`. A row already
   claimed by someone else: `{ merged: false, reason: 'claimed' }`; claimed by `into` itself: `{ merged: true }`,
   so a retry is harmless. Otherwise the guest is merged into `into` exactly as a guest signing in is (above):
   when `into` is an account its settings and profile move first, then the index is sent
-  `POST ${INDEX_URL}/internal/merge` `{ guestId: 'guest_<legacyId>', userId: into, legacy: true }` with
+  `POST ${INDEX_URL}/internal/merge` `{ guestId: <the row's id>, userId: into, legacy: true }` with
   `INDEX_MERGE_KEY` (the `legacy` form lets the target be a guest, [one-explorer-contracts.md](../004-index/one-explorer-contracts.md#guests)).
   Before the merge the claim holds the row (`claimingBy`, `claimingUntil`, migration `0013_legacy_guest_claiming.sql`)
   in one conditional update that needs no stamp and no live hold but the caller's own, so of two claims at once only
@@ -413,8 +440,8 @@ When the new editor finds the old id in a browser, livediagram's api forwards it
   `claimedBy` reads `deleted`, so the id stays claimed (by no one) and a later claim is `claimed`; a hold it had is
   let go (`claimingBy` and `claimingUntil` null).
 
-The route costs one primary-key read of `legacy_guest`, the hold (one primary-key update), the merge, and one
-primary-key update.
+The route costs one read of two `legacy_guest` rows by primary key, an HMAC for the re-keyed id, the hold (one
+primary-key update), the merge, and one primary-key update.
 
 ### liveworkspace.app's own token
 
@@ -779,7 +806,7 @@ own cookies go; and a browser whose liveworkspace session is another account's t
 The Settings panel shows every account setting in place wherever it opens, so nothing in an app's Settings sends the
 person to liveworkspace.app. Over the app's bearer (the access token the accounts Worker minted for one of the app
 APIs, through the app's router at `/api/workspace/account/…`, [The API](#the-api)) the account API answers, beside
-teams, settings, the profile and phone devices: API tokens, Download Your Data, Where You're Signed In and Sign-in
+teams, settings, the profile and phone devices: API tokens, AI keys ([ai-keys.md](ai-keys.md)), Download Your Data, Where You're Signed In and Sign-in
 Methods. API tokens and Download Your Data are the session door's own handlers on both doors; the sessions and
 sign-in methods routes are the bearer's (liveworkspace.app's Settings uses Better Auth's own endpoints for those).
 
@@ -1553,7 +1580,7 @@ nothing happens: the code is sent and checked first, by the same app's server
    (`legacy_guest.claimedBy`), read `deleted` (`ANONYMISED_PERSON` from `@liveworkspace/index-client`, the index's
    word for a closed account), and a claim it held part way (`claimingBy`) is let go. The change feed doesn't carry
    `invitedBy`, so these rows don't move on in it.
-2. Its settings rows and its profile are deleted, and its workbench store is emptied: every pairing ends and the
+2. Its settings rows, its profile and its personal AI key ([ai-keys.md](ai-keys.md#deletion-and-export)) are deleted, and its workbench store is emptied: every pairing ends and the
    rooms its sessions had open are closed ([workbench.md](../011-workbench/workbench.md)).
 3. A purge request for the index is in `pending_purges` (`migrations/0004_pending_purges.sql`), naming the teams
    deleted in step 1: it is written in step 1's own batch, and a request already there (an earlier try that stopped
@@ -1578,7 +1605,7 @@ go: its `pending_purges` row (cleared once the index takes it, step 5), team eve
 (cleared once the index takes them), and its deletion code in `verification` (spent by the close itself). Every
 other row naming it either has a foreign key that cascades or sets null with the user (sessions and, through them,
 `sign_in_handoff`; linked sign-ins; OAuth tokens, consents and clients; API tokens; push devices; `account_app`;
-`email_lifecycle`; `team_member.userId`, set null), is deleted in step 2 (settings, the profile), or is rewritten in
+`email_lifecycle`; `team_member.userId`, set null), is deleted in step 2 (settings, the profile, the personal AI key), or is rewritten in
 step 1 (`team_member.email` and `invitedBy`, `legacy_guest.claimedBy` and `claimingBy`).
 
 The account is closed whatever the index answers. A request it doesn't take (an error, a timeout, or
@@ -1662,6 +1689,8 @@ sessions and connects Google, a trade-off accepted on purpose
 | `DELETE /api/account/settings`                                 | resets every setting, every scope, keeping `RESET_KEEPS`; answers `{ all, updatedAt }`; bearer too                   |
 | `GET` / `POST /api/account/push/devices`                       | their phone devices and the VAPID public key / registers this browser ([push.md](push.md)); bearer too               |
 | `DELETE /api/account/push/devices/:id`                         | removes one of their devices; bearer too                                                                             |
+| `GET` / `PUT` / `PATCH` / `DELETE /api/account/ai-key`         | their AI key and their teams' state / saves, re-models, removes theirs ([ai-keys.md](ai-keys.md)); bearer too        |
+| `PUT` / `PATCH` / `DELETE /api/account/teams/:id/ai-key`       | the team's AI key (admins; [ai-keys.md](ai-keys.md)); bearer too                                                     |
 
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
@@ -1691,6 +1720,9 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/workbench/rooms`     | `{ ownerId, sessionId, itemId }` → 204: a workspace session joined that item's room                                              |
 | `POST /api/account/internal/allowance`           | `{ personId, kind, max, windowMs, count }` → `{ taken }`, per the client's app                                                   |
 | `POST /api/account/internal/legacy-guests/claim` | `{ legacyId, signature, into }` → `{ merged }` ([above](#returning-guests-of-the-old-livediagramapp)); livediagram's client only |
+
+An app's server reads the AI key that applies to the person it serves through `POST /internal/ai-key`, over its
+`ACCOUNTS` service binding only, with the person's own access token ([ai-keys.md](ai-keys.md#how-an-apps-server-gets-the-key)).
 
 The workbench routes (`/api/account/workbench/*`: tickets, sessions, pairing requests and pairings, for API tokens,
 workbench sessions and the signed-in person) are in [workbench.md](../011-workbench/workbench.md).

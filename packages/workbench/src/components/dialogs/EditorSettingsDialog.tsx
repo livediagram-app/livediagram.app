@@ -34,8 +34,11 @@ export type EditorSettingsBinding<C, P> = {
   kit: SettingsUiKit;
   // The bearer request to liveworkspace's account API through this app's router.
   request: SettingsRequest;
-  // Sign-in and devices, the API tokens and Download Your Data, for an account.
-  accountPanels: Pick<AccountSection, 'security' | 'renderTokens' | 'renderDataExport'>;
+  // Sign-in and devices, the AI keys, the API tokens and Download Your Data, for an account.
+  accountPanels: Pick<
+    AccountSection,
+    'security' | 'renderAi' | 'renderTokens' | 'renderDataExport'
+  >;
   cloudSyncHost: () => CloudSyncHost;
   renderLogo: (id: SettingsAppId | 'all') => ReactNode;
   // This editor's catalogue bound to the live preferences (its settings-model.tsx).

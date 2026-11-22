@@ -13,31 +13,28 @@ import {
   ASK_MAX_TURNS,
   ASK_PER_KNOWLEDGEBASE_PER_DAY,
   ASK_PER_PERSON_PER_HOUR,
-  ModelCallError,
   askAnswerStream,
   askCounters,
   askRefusal,
   askRequest,
   askSearch,
   bumpCounter,
-  callModel,
   chooseAskPassages,
   dayOf,
   dismissQuestion,
   foundPassage,
-  modelFailureWords,
   questionKey,
   readCounter,
   recordPageAnswers,
   upsertQuestion,
   type AskPassage,
   type AskRefusal,
-  type ModelCaller,
   type SearchRow,
   type SqlStatement,
 } from '@liveknowledge/knowledge';
+import { ModelCallError, callModel, modelFailureWords, type ModelCaller } from '@liveworkspace/ai';
 import type { AskEvent, AskSource, AskTurn } from '@liveknowledge/api-schema';
-import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
+import { ASK_UNAVAILABLE_WORDS, applyingAi, askerOf, isAiRefusal } from '../knowledge/ai-settings';
 import { modelDoorFor } from '../knowledge/model-door';
 import { builtInAi } from '../knowledge/setup-built-in-ai';
 import { spendSetupDraft } from '../knowledge/setup-draft-count';
@@ -143,9 +140,14 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
   });
   if (refusal) return refused(REFUSAL[refusal].status, refusal, REFUSAL[refusal].message);
   // Built-in AI when the person chose it, whatever key is kept (search-and-ask.md "Choosing which AI answers").
-  const ai = body?.ai === 'built-in' ? 'chosen' : await openAi(env, document.id);
-  // A key that is kept but does not open is refused, never swapped quietly for built-in AI.
-  if (ai === 'unreadable') return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
+  // Else the knowledgebase's key, its team's, the asker's own, or built-in AI (search-and-ask.md "Which key answers").
+  const ai =
+    body?.ai === 'built-in'
+      ? 'chosen'
+      : await applyingAi(env, document.id, askerOf(ctx, document.teamId));
+  // A key that is kept but does not open, or accounts that could not say whose key applies, is refused, never swapped
+  // quietly for the next in line or built-in AI.
+  if (isAiRefusal(ai)) return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
   let caller: ModelCaller;
   if (typeof ai === 'string') {
     // Chosen, or no key (or no secret to keep one under): built-in AI, under its own caps.

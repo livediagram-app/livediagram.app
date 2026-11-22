@@ -49,6 +49,10 @@ are, the panel draws them.
   to the card before and after (across a section's end into the next), Up and Down to the nearest card in the row
   above and below; Up from the first row goes back to the search box while there is a search. Home and End reach the
   first and last card.
+- **The search chords reach the editor from the start's search.** The start's search takes focus as a new tab opens,
+  and Cmd/Ctrl+K and Cmd/Ctrl+. there did nothing, so the editor's search could not be opened from the keyboard until
+  something else was clicked. They are the editor's whatever the box holds, since it has no use of its own for them
+  (`passesSearchChords` in `../packages/workbench/src/lib/typing-target.ts`).
 - **Undo and redo reach the editor through an empty search.** An undo that takes a tab back to empty (a template
   picked, then undone) brings the start back with its search focused, where Cmd/Ctrl+Z and redo were the text box's
   own and did nothing, so the template could not be redone from the keyboard. While the search is empty those chords

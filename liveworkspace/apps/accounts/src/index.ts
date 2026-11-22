@@ -8,6 +8,7 @@ import { getAuth, getGoogleAuthFor } from './auth.ts';
 import { appOriginOfProxy, signInOnAppAddress } from './handoff.ts';
 import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
+import { REKEY_PATH, rekeyLegacyGuests } from './legacy-guest-rekey.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import {
   checkDeletionCodeRoute,
@@ -62,6 +63,9 @@ import {
 import { flushServerEvents, flushServerEventsAfter } from './telemetry.ts';
 import { WORKSPACE_TOKEN_PATH, workspaceToken } from './workspace-token.ts';
 import { closeAccountWorkbench } from './workbench/revoke.ts';
+import { AI_KEY_INTERNAL_PATH, handleAiKeyInternal } from './ai-keys/internal.ts';
+import { resealAiKeys } from './ai-keys/store.ts';
+import { aiKeySecrets } from './ai-keys/seal.ts';
 
 // The workbench store's Durable Object class, bound as WORKBENCH (wrangler.toml).
 export { WorkbenchStore } from './workbench/durable-object.ts';
@@ -120,6 +124,7 @@ const routeLabel = createApiRouteLabel(
     'data-export',
     'download',
     'ready',
+    'ai-key',
   ]),
 );
 
@@ -204,6 +209,11 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
 
   if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
     return benchAccounts(request, env);
+  }
+
+  // Re-keying the old livediagram.app's guests from before signing, by the owner (legacy-guest-rekey.ts).
+  if (request.method === 'POST' && pathname === REKEY_PATH) {
+    return rekeyLegacyGuests(request, env);
   }
 
   // Closing an account, and the code emailed first that it needs (deletion-code.ts).
@@ -292,6 +302,10 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
     return response;
   }
 
+  // An app's server reading the AI key that applies to the person it serves, over its service binding only: on no
+  // route of the zone, and refused for anything from outside (ai-keys/internal.ts).
+  if (pathname === AI_KEY_INTERNAL_PATH) return handleAiKeyInternal(request, env, getAuth(env));
+
   return new Response('Not found', { status: 404 });
 }
 
@@ -318,6 +332,14 @@ export default {
       const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
       if (purges.sent + purges.failed + purges.dropped > 0)
         console.info('[accounts] index purges', JSON.stringify(purges));
+    });
+    // Every run, while a rotation of the AI keys' secret is under way: rows sealed under the previous one are sealed
+    // again under the current one (ai-keys/store.ts resealAiKeys).
+    await step('ai keys', async () => {
+      const secrets = aiKeySecrets(env);
+      if (!secrets?.previous) return;
+      const resealed = await resealAiKeys(env.AUTH_DB, secrets);
+      console.info('[ai-keys] resealed', JSON.stringify(resealed));
     });
     // Every run: team events the index hasn't taken yet go again (index-events.ts), the oldest beyond
     // EVENTS_OUTBOX_MAX dropped first, so the outbox stays bounded with no index or one that is down.

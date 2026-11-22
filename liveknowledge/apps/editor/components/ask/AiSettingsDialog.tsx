@@ -18,12 +18,14 @@ import {
   apiSetKnowledgeAiKey,
   apiSetKnowledgeAiModel,
 } from '@/lib/api/knowledge';
+import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import {
   BUILT_IN_NOTE,
   KEY_ENCRYPTED_NOTE,
   TEAM_PAYS_ANY_NOTE,
+  aiInUseTitle,
   aiSettingsFailureText,
   keyStateText,
   teamPaysNote,
@@ -79,6 +81,7 @@ export function AiSettingsDialog({
 }) {
   const { documentId, who, rights } = session;
   const state = useAiSettingsState(documentId);
+  const chrome = useEditorChromeStore();
   const titleId = useId();
   const [busy, setBusy] = useState<AiSettingsAction | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -191,6 +194,31 @@ export function AiSettingsDialog({
             >
               The AI settings could not be read. Check your connection.
             </Callout>
+          ) : null}
+
+          {/* Which key answers you here (search-and-ask.md "Which key answers"): this knowledgebase's, else your
+              team's or your own from Settings › AI, else built-in AI. */}
+          {settings ? (
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800/60">
+              <p
+                className="text-sm font-medium text-slate-900 dark:text-slate-100"
+                data-ai-in-use=""
+              >
+                {aiInUseTitle(settings) ?? 'No AI Here Yet'}
+              </p>
+              <Button
+                variant="ghost"
+                size="xs"
+                data-ai-your-keys=""
+                onClick={() => {
+                  track('UI', 'Opened', 'AiKeysSettings');
+                  onClose();
+                  chrome.get().openSettingsOn('ai');
+                }}
+              >
+                Your AI Keys
+              </Button>
+            </div>
           ) : null}
 
           <section aria-labelledby={`${titleId}-source`} className="flex flex-col gap-2">

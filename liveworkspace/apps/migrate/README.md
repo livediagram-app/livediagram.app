@@ -13,6 +13,8 @@ corepack pnpm migrate apply <bundle-dir> --env staging|production --ledger <ledg
 corepack pnpm migrate verify <bundle-dir> --env staging|production [--out verify.json]
 ```
 
+A fifth, `rekey-guests`, runs once the move is done (Runbook step 7).
+
 `snapshot` and `plan` only ever read local files. `apply` is the only command that writes anywhere, and `verify` only
 runs single `SELECT`s.
 
@@ -77,6 +79,7 @@ wrote, and `apply` prints the parts whose tabs were edited on the new side and l
 | `MIGRATE_SOURCE_ACCOUNT_ID`, `MIGRATE_SOURCE_API_TOKEN`                              | Reading the old `livediagram-images` bucket. A read-only R2 token is enough.                                                                       |
 | `MIGRATE_ORIGIN_<APP>` (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`) | Each app api's origin for `PUT /api/internal/items/:id/migration` (and livediagram's for `PUT /api/internal/people/:id/migration`).                |
 | `MIGRATION_KEY_<APP>`                                                                | The `MIGRATION_KEY` secret set on that api for the migration.                                                                                      |
+| `MIGRATE_ADMIN_TOKEN`                                                                | `rekey-guests` only: the accounts Worker's `ADMIN_TOKEN` in that environment.                                                                      |
 | `MIGRATE_WRANGLER` (optional)                                                        | Another wrangler command; the default is the repository's own.                                                                                     |
 
 ## Runbook
@@ -93,6 +96,12 @@ wrote, and `apply` prints the parts whose tabs were edited on the new side and l
 6. **Catch-up.** Up to the switch, each new export is planned with `--ledger production-ledger.sqlite` into a new
    bundle folder, then applied with the same ledger. A bundle applies only on the ledger generation it was planned
    at, so plan again if another bundle was applied in between.
+7. **Re-key the guests from before signing.** Once `LEGACY_GUEST_REKEY_SECRET` is set on the accounts Worker and the
+   code that reads it is deployed: `MIGRATE_ADMIN_TOKEN=… corepack pnpm migrate rekey-guests --env staging --dry-run`,
+   then without `--dry-run`, then the same with `--env production`. The dry run prints the counts and a sample and
+   changes nothing. A run asks the accounts Worker (`POST /api/auth/internal/legacy-guests/rekey`) for batches of 25
+   until none are left, and exits 1 when some are (held by a claim under way, or a merge failed): run it again a
+   minute later. Run again once finished, it finds nothing to do.
 
 A stopped `apply` (a failed file, a door down) resumes where it stopped when run again with the same bundle and
 ledger. It never repeats a finished file, object or room. It won't start another bundle until that one has

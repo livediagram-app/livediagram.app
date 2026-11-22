@@ -18,6 +18,7 @@ const FOLDED: Readonly<Record<string, AccountCategoryId>> = {
   data: 'data',
   privacy: 'privacy',
   accessibility: 'accessibility',
+  ai: 'ai',
 };
 
 // The account's categories that are one whole panel (the token manager, Download Your Data): an app's

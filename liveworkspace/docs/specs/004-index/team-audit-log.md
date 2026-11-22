@@ -24,6 +24,7 @@ History and the app's (liveplanner's no-activity-log rule for content stands). A
 | `team_role_changed`          | A member is made an admin, or an admin a member                                                                   | accounts  |
 | `team_member_removed`        | An admin removes a member, or a member leaves (`left`)                                                            | accounts  |
 | `team_renamed`               | The team's name changes                                                                                           | accounts  |
+| `team_ai_key_changed`        | An admin sets, replaces, re-models or removes the team's AI key (`change`, `provider`; never any of the key)      | accounts  |
 | `shared`                     | A share link is made on a team document (`level`; `public` for a Community post's)                                | the index |
 | `unshared`                   | A team document's share link is deleted, or all of them                                                           | the index |
 | `moved`                      | A document moves into the team, out of it, or between teams (`fromTeamId`, `teamId`)                              | the index |

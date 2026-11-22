@@ -1,4 +1,4 @@
-// The one call to the Claude API (docs/specs/030-knowledgebase/search-and-ask.md "Ask"), streamed. `fetch` and the
+// The one call to the Claude API (liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md "Ask"), streamed. `fetch` and the
 // team's key are handed in: this package reads no environment, and the key appears in the request's `x-api-key`
 // header and nowhere else: never in a log, a thrown error or a result. A failure is one of a few kinds a person
 // can be told in words; the API's own message is not passed on.

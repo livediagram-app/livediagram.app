@@ -1,4 +1,4 @@
-// The one call to built-in AI (docs/specs/030-knowledgebase/search-and-ask.md "Built-in AI"; owner, 2026-11-21):
+// The one call to built-in AI (liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md "Built-in AI"; owner, 2026-11-21):
 // Cloudflare Workers AI through the api's `AI` binding, asked with the same provider-neutral request Ask and the
 // conflict check hand the providers' clients, and streamed. The binding is handed in: nothing here reads an
 // environment or logs. A failure is a ModelCallError of provider `built-in`, whose words never hold the binding's.

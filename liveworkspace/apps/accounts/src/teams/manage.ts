@@ -1,5 +1,7 @@
 // Making, renaming and deleting a team (teams.ts).
 
+import { deleteTeamAiKeyStatement } from '../ai-keys/store.ts';
+
 import {
   type Actor,
   BUMP,
@@ -121,6 +123,8 @@ export function deleteTeamRows(db: D1Database, teamId: string, now: number): D1P
          WHERE teamId = ? AND status IN ('invited', 'joined')`,
       )
       .bind(now, teamId),
+    // Its AI key goes with it (ai-keys.md "Deletion and export").
+    deleteTeamAiKeyStatement(db, teamId),
   ];
 }
 

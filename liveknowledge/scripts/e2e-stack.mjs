@@ -38,6 +38,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3602);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 9287);
 const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8319);
+// The accounts Worker stand-in the api's ACCOUNTS binding reaches for the AI key door (../../scripts/e2e-stack/
+// accounts-worker): one above the api, unless the environment names another.
+const ACCOUNTS_WORKER_PORT = Number(process.env.E2E_ACCOUNTS_WORKER_PORT ?? API_PORT + 1);
 // No request of this stack reaches Anthropic: the api's door to the model opens on the stand-in instead
 // (e2e-claude-stand-in.mjs), on a free loopback port. Not started beside an api that is already up.
 const claude = process.env.E2E_EDITOR_ONLY === '1' ? null : await startClaudeStandIn();
@@ -56,6 +59,15 @@ runE2EStack({
     index: INDEX_PORT,
     indexInspector: inspectorPortOf(process.env.E2E_INDEX_INSPECTOR_PORT, INDEX_PORT),
     marketing: Number(process.env.E2E_MARKETING_PORT ?? 3613),
+  },
+  // A signed-in asker with no knowledgebase key asks accounts whose AI key applies (docs/specs/030-knowledgebase/
+  // search-and-ask.md "Which key answers"); the stand-in answers none, so Ask runs on built-in AI as deployed.
+  accountsWorker: {
+    port: ACCOUNTS_WORKER_PORT,
+    inspectorPort: inspectorPortOf(
+      process.env.E2E_ACCOUNTS_WORKER_INSPECTOR_PORT,
+      ACCOUNTS_WORKER_PORT,
+    ),
   },
   apiResource: 'https://e2e.liveknowledge.test/api',
   // The client id and secret only turn the guest handoff on; the stand-in checks neither.

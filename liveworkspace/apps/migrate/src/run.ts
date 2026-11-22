@@ -2,6 +2,7 @@
 // only the environment it was given, and fetch.
 import { spawn } from 'node:child_process';
 import type { Command, Http, HttpRequest, HttpResponse, Runner, RunResult } from './apply.ts';
+import type { Post } from './rekey-guests.ts';
 
 export const processRunner: Runner = {
   run(command: Command): Promise<RunResult> {
@@ -24,6 +25,17 @@ export const processRunner: Runner = {
 
 // A door slower than this is taken as failed; the unit is retried on the next run.
 const DOOR_TIMEOUT_MS = 120_000;
+
+// The re-key's calls to the accounts Worker (rekey-guests.ts): one batch each, well under a minute.
+export const fetchPost: Post = async (request) => {
+  const response = await fetch(request.url, {
+    method: 'POST',
+    headers: request.headers,
+    body: request.body,
+    signal: AbortSignal.timeout(DOOR_TIMEOUT_MS),
+  });
+  return { status: response.status, body: await response.text() };
+};
 
 export const fetchHttp: Http = {
   async send(request: HttpRequest): Promise<HttpResponse> {

@@ -3,9 +3,9 @@ import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import {
   ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY,
   ASK_BUILT_IN_PER_PERSON_PER_DAY,
-  BUILT_IN_MODEL,
   CONFLICT_BUILT_IN_CHECKS_PER_DAY,
 } from '@liveknowledge/knowledge';
+import { BUILT_IN_MODEL } from '@liveworkspace/ai';
 import { oweConflictChecks, runConflictCheck } from '../knowledge/conflict-check';
 import { fakeClaude, knowledgeKit, page, type Kit, type Who } from './knowledge-test-kit';
 

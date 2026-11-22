@@ -3,13 +3,12 @@
 // model liveplanner's Describe a Plan uses. This module writes the request in Workers AI's chat shape and reads the
 // binding's answer into the text `parseSetupSuggestion` reads; the api makes the call and keeps the count
 // (apps/api/src/knowledge/setup-built-in-ai.ts). Pure.
-import { BUILT_IN_MODEL } from './built-in-client';
-import { fenced } from './model-request';
+import { BUILT_IN_MODEL, fenced } from '@liveworkspace/ai';
 import { SETUP_MAX_PAGES } from './setup-limits';
 import { setupRequest, type SetupExistingPage } from './setup-request';
 
 /** liveplanner's Describe a Plan model (its automation-ai.ts): small, cheap, with JSON mode, thinking off. The one
- *  model built-in AI answers everything with (built-in-client.ts). */
+ *  model built-in AI answers everything with (@liveworkspace/ai built-in-client.ts). */
 export const SETUP_BUILT_IN_MODEL = BUILT_IN_MODEL;
 /** The asks one suggestion may make: the first, and one more with what was wrong with the first reply. */
 export const SETUP_BUILT_IN_ASKS = 2;

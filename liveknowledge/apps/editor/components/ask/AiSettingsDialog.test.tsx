@@ -409,3 +409,25 @@ describe('other states', () => {
     expect(api.apiKnowledgeAi).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('which key answers you', () => {
+  it.each([
+    [
+      { hasKey: true, keyHint: '4f2a', uses: 'knowledgebase' as const },
+      "Uses This Knowledgebase's Key",
+    ],
+    [{ uses: 'team' as const, builtIn: true }, "Uses Your Team's Key"],
+    [{ uses: 'personal' as const, builtIn: true }, 'Uses Your Key'],
+    [{ uses: 'built-in' as const, builtIn: true }, 'Uses Built-In AI'],
+    [{ uses: 'built-in' as const }, 'No AI Here Yet'],
+  ])('says it (%o), and links to Settings › AI', async (over, words) => {
+    api.apiKnowledgeAi.mockResolvedValue(settings(over));
+    const openSettingsOn = vi.fn();
+    await open('view', { openSettingsOn });
+    expect(document.querySelector('[data-ai-in-use]')?.textContent).toBe(words);
+    fireEvent.click(screen.getByRole('button', { name: 'Your AI Keys' }));
+    expect(openSettingsOn).toHaveBeenCalledWith('ai');
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AiKeysSettings');
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'AI Settings' })).toBeNull());
+  });
+});

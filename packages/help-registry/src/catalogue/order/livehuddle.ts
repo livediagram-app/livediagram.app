@@ -35,6 +35,7 @@ export const ORDER: readonly string[] = [
   'account-and-data/deleting-your-data',
   'account-and-data/trash',
   'account-and-data/api-tokens',
+  'account-and-data/ai-keys',
   'account-and-data/google-drive',
   'account-and-data/email-notifications',
   'developers/api-overview',

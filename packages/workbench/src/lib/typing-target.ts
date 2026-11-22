@@ -25,6 +25,20 @@ export function passesHistoryChords(target: EventTarget | null): boolean {
   );
 }
 
+// The search chords (Cmd/Ctrl+K and Cmd/Ctrl+.) pass a start search on to the editor whatever it holds (each product's
+// start spec, "The search chords reach the editor from the start's search"): the box has no chord of its own for them,
+// and it takes focus as a new tab's start opens, where they once did nothing.
+export function passesSearchChords(
+  e: Pick<KeyboardEvent, 'key'>,
+  target: EventTarget | null,
+): boolean {
+  return (
+    (e.key === '.' || e.key.toLowerCase() === 'k') &&
+    target instanceof HTMLInputElement &&
+    target.dataset.editorHistory !== undefined
+  );
+}
+
 // Controls Enter acts on itself: a button or link, a widget role, and anything inside a menu, a popover or the tour's
 // card. A shortcut claiming Enter stands aside for these, or the control under the focus would never fire.
 const ENTER_ACTIVATED = [
