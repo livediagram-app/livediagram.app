@@ -25,7 +25,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **The buttons** (owner, 2026-11-21: "look rubbish"): Edit is a solid accent button with a pencil and its key, E.
   While editing, one capsule holds the draft's status only when there is one (an amber dot and "Unsaved changes
   since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save, floating 24 px inside the bottom right corner of the document's white area (left of the rail, above the footer;
-  owner 2026-11-21), where Edit floats too while reading. Edit, Cancel (with an X) and Save are one size, each standing
+  owner 2026-11-21), where Edit floats too while reading. The page's reactions stand left of Edit while reading, and in
+  Edit's place for a Viewer ([Reactions on a page](page-reactions.md)); the draft bar replaces them while editing. Edit, Cancel (with an X) and Save are one size, each standing
   on its own, no capsule round them. No tooltips on them (owner 2026-11-21). Each says it happened: Edit, Save and
   Cancel make the white area glow once round its edge (brand for Edit and Save, slate for Cancel) and the buttons that
   take over pop in; a double-click to edit sends a ring out from the pointer. Reduced motion turns them off. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
