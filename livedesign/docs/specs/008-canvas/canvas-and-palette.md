@@ -602,6 +602,25 @@ Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships 
 | Wireframe flows   | One wireframe page per screen of the flow, at its device's size, each laid out from a wireframe layout, linked ([Wireframe pages](../007-editor/wireframe-pages.md)). |
 | Photo edit        | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                                                                |
 
+### Text sized to its words
+
+A template's titles, subtitles, captions, hints and labels are **as wide as their words**, never laid at the
+content's width with empty space beside the words (Work Tracker 1373): Zoom to Fit, the minimap and the selection
+outline then frame the content, not a box far wider than it. Each keeps its alignment where it was: a left-aligned
+text keeps its left edge, a centred one its centre (and so the point it turns about), a right-aligned one its right
+edge. Text that wraps keeps its width, which is no wider than the content it heads.
+
+- `buildTemplate` runs its output through `fitTextWidths` (`@liveworkspace/element-model/text-fit`, one copy for
+  every product), the last step, so every path that makes a template (the editor, the api, the MCP worker) lands the
+  same boxes.
+- The width is an estimate, with no DOM to measure: the wider of Inter's advances (`textAdvanceEm`, bold widened)
+  and the flat share a headless render wraps by, plus a tenth, 8 px and the box's padding both sides, so the words
+  sit on one line on the canvas, in an export and in an agent's preview.
+- A text it cannot estimate keeps its box: rich text, arched text, a box with a fill or a border, a face other than
+  the default, Inter or Caveat, a box that already hugs its text (`sizing`), and a turned text that is not centred.
+- A test holds every template to it (`template-text-widths.test.ts`): every text box is already fitted, and a
+  wrapping one is no wider than the rest of the template.
+
 ### Template categories
 
 livedesign's categories are its own: they need not match the other products'. They are grouped by **what the
