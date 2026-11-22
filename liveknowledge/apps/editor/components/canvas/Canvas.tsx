@@ -14,6 +14,7 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { PageSurfaceSheet } from '@/components/page-surface/PageSurfaceSheet';
 import { useDrawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
 import { WORLD_HEIGHT_CSS } from '@/lib/page-surface/page-lock';
+import { releaseReadSelection } from '@/lib/page-surface/read-selection';
 import { usePageSurface } from './usePageSurface';
 import { PageCoverBand } from '@/components/page-cover/PageCoverBand';
 import { usePageHasCover } from '@/components/page-cover/page-cover-state';
@@ -400,6 +401,8 @@ function CanvasView(props: CanvasProps) {
             <div
               ref={scrollerRef}
               data-page-scroller=""
+              // A press off the writing lets go of a reader's selection in it (lib/page-surface/read-selection.ts).
+              onPointerDownCapture={(e) => releaseReadSelection(e.target)}
               // A page is shown at 100% and re-wraps to a narrow window (the narrow view), so nothing scrolls sideways.
               className="absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain [scrollbar-gutter:stable]"
             >

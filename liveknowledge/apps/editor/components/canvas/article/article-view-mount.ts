@@ -54,6 +54,7 @@ import {
 import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
 import { commitWritingOnLeave } from '@/lib/article/article-open-edit';
 import type { ArticleEditorProps, SlashState } from './article-editor-types';
+import { articleFlowClass } from './read-mode-selection';
 
 // The writing's paste, tables composed over it.
 const pasteProps = articleTablePasteProps(articlePasteProps);
@@ -250,7 +251,8 @@ export function mountArticleView({
         )
         .join('; ');
       return {
-        class: 'article-flow',
+        // Read, a reader selects and copies the writing (read-mode-selection.ts).
+        class: articleFlowClass(p.editable),
         style: continuous
           ? css
           : `${css}; column-count: ${frame.count}; column-gap: ${frame.gap}px`,
