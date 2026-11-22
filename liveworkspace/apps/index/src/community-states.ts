@@ -55,7 +55,9 @@ export async function communityStatesOf(
     db
       .prepare(
         `SELECT i.id, i.app, i.owner_id, i.team_id, i.trashed_at, i.archived_at,
-                EXISTS (SELECT 1 FROM share_passwords sp WHERE sp.item_id = i.id) AS password
+                -- Behind a password or a sign-in rule, a post's public link opens nothing (access.ts linkAccess).
+                (EXISTS (SELECT 1 FROM share_passwords sp WHERE sp.item_id = i.id)
+                  OR EXISTS (SELECT 1 FROM share_sign_in ss WHERE ss.item_id = i.id)) AS password
            FROM items i WHERE i.id IN (SELECT value FROM json_each(?))`,
       )
       .bind(ids),

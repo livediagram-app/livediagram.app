@@ -31,9 +31,16 @@ import {
 // The headers every app's editor sends (@liveworkspace/index-client), for the apps' servers.
 export { ITEM_GRANT_HEADER, SHARE_CODE_HEADER, SHARE_PASSWORD_HEADER };
 
-// The refusals the caller can act on, answered as the index's: the item's password, and an archived item (its owner
-// moves it out of Archived first, one-explorer-contracts.md "Archived").
-const ACTIONABLE_REFUSALS = new Set(['password_required', 'password_invalid', 'archived']);
+// The refusals the caller can act on, answered as the index's: the item's password, an archived item (its owner
+// moves it out of Archived first, one-explorer-contracts.md "Archived"), and a share's sign-in rule (sign in, or with
+// an account at one of its domains, one-explorer-contracts.md "Sharing and access").
+const ACTIONABLE_REFUSALS = new Set([
+  'password_required',
+  'password_invalid',
+  'archived',
+  'sign_in_required',
+  'domain_not_allowed',
+]);
 
 // The share code a link visitor's request carries. The grant's `link` claim is the signal an app relies on (a person
 // who opened the link before may send no header); the header only adds to it, for a grant signed without the claim.

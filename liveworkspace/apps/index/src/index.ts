@@ -100,7 +100,11 @@ async function route(ctx: RouteContext): Promise<Response> {
       if (!person) return unauthorized();
       return handleItemLookup({ ...ctx, person });
     }
-    if (segments[2] === 'share' || segments[2] === 'share-password') {
+    if (
+      segments[2] === 'share' ||
+      segments[2] === 'share-password' ||
+      segments[2] === 'share-sign-in'
+    ) {
       return segments.length === 3 ? handleItemShare(ctx, id) : notFound();
     }
     if (segments[2] === 'connections') {
@@ -149,6 +153,7 @@ const routeLabel = createApiRouteLabel(
     'items',
     'share',
     'share-password',
+    'share-sign-in',
     'folders',
     'spaces',
     'recent-hidden',
@@ -245,7 +250,10 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
     url.searchParams.set('app', delegate);
   }
   if (caller.person?.drive) {
-    const share = segments[2] === 'share' || segments[2] === 'share-password';
+    const share =
+      segments[2] === 'share' ||
+      segments[2] === 'share-password' ||
+      segments[2] === 'share-sign-in';
     if (!DRIVE_ROUTES.has(segments[0] ?? '') || (segments[0] === 'items' && share)) {
       return notFound();
     }

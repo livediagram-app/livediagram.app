@@ -61,6 +61,7 @@ export function archiveStatements(
     byItem('shared_with'),
     byItem('share_links'),
     byItem('share_passwords'),
+    byItem('share_sign_in'),
     // Every person's Recent and Most Used rows, so moving it out starts fresh.
     byItem('opens'),
     byItem('use_days'),

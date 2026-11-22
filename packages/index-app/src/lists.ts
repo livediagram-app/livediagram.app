@@ -15,8 +15,13 @@ import {
 export const LIST_PAGES = 5;
 
 // The index's refusal as an app answers it: its status and code.
-export function indexRefusal(err: unknown): { status: number; error: string } {
-  if (err instanceof IndexError) return { status: err.status, error: err.code };
+export function indexRefusal(err: unknown): { status: number; error: string; domains?: string[] } {
+  // A share's sign-in refusal names its domains, for the visitor's restricted page.
+  if (err instanceof IndexError) {
+    return err.domains
+      ? { status: err.status, error: err.code, domains: err.domains }
+      : { status: err.status, error: err.code };
+  }
   console.error('[index] unreachable', { error: String(err) });
   return { status: 503, error: 'index_unavailable' };
 }

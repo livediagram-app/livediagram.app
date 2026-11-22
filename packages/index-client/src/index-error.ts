@@ -13,11 +13,15 @@ export class IndexError extends Error {
   // The share code a `password_required` refusal names, or null: a person reopening an item with no code, whose
   // editor asks for the link's password (one-explorer-contracts.md "Reopened without the code").
   readonly link: string | null;
+  // The domains a `sign_in_required` or `domain_not_allowed` refusal names (a share's sign-in rule), or null: what the
+  // visitor's restricted page says the item is restricted to.
+  readonly domains: string[] | null;
   constructor(
     status: number,
     code: string,
     retryAfterMs: number | null = null,
     link: string | null = null,
+    domains: string[] | null = null,
   ) {
     super(`index: ${status} ${code}`);
     this.name = 'IndexError';
@@ -25,11 +29,24 @@ export class IndexError extends Error {
     this.code = code;
     this.retryAfterMs = retryAfterMs;
     this.link = link;
+    this.domains = domains;
   }
 }
 
 // The longest share code a refusal's `link` is read as: codes are 14 characters, so anything longer is not one.
 const REFUSAL_LINK_MAX = 64;
+
+// The most domains a refusal's `domains` is read as (SHARE_DOMAINS_MAX), and the longest one (SHARE_DOMAIN_MAX).
+const REFUSAL_DOMAINS_MAX = 20;
+const REFUSAL_DOMAIN_MAX = 253;
+
+/** A refusal's `domains`, kept only as a short list of short strings; null otherwise. */
+export function refusalDomainsOf(value: unknown): string[] | null {
+  if (!Array.isArray(value) || value.length > REFUSAL_DOMAINS_MAX) return null;
+  return value.every((d) => typeof d === 'string' && d !== '' && d.length <= REFUSAL_DOMAIN_MAX)
+    ? (value as string[])
+    : null;
+}
 
 // The longest `Retry-After` text read: ten digits of seconds is three centuries, and an HTTP date is 29 characters.
 const RETRY_AFTER_TEXT_MAX = 40;
@@ -55,13 +72,15 @@ export type Query = Record<string, string | number | boolean | null | undefined>
 
 // A refusal's `{ error }` as an IndexError; `unknown` when the body names none. `res` gives its Retry-After.
 export function refusal(res: Response, parsed: unknown): IndexError {
-  const { error, link } = (parsed as { error?: unknown; link?: unknown } | null) ?? {};
+  const { error, link, domains } =
+    (parsed as { error?: unknown; link?: unknown; domains?: unknown } | null) ?? {};
   return new IndexError(
     res.status,
     typeof error === 'string' ? error : 'unknown',
     // A stand-in response without headers (a test's, a polyfill's) has no Retry-After.
     retryAfterMsOf(res.headers?.get('Retry-After')),
     typeof link === 'string' && link !== '' && link.length <= REFUSAL_LINK_MAX ? link : null,
+    refusalDomainsOf(domains),
   );
 }
 

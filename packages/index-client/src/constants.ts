@@ -392,6 +392,13 @@ export const INDEX_ERRORS = [
   'access_requests_need_a_person',
   'access_request_not_found',
   'invalid_password',
+  // A share's sign-in rule (one-explorer-contracts.md "Sharing and access"): an account at another domain opening a
+  // link; a malformed rule, a typed name that is no domain, more than SHARE_DOMAINS_MAX. A guest or nobody opening
+  // one is `sign_in_required` (below).
+  'domain_not_allowed',
+  'invalid_sign_in',
+  'invalid_domain',
+  'too_many_domains',
   // A new share password shorter than SHARE_PASSWORD_MIN.
   'password_too_short',
   'not_team_member',

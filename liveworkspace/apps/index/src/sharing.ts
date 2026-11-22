@@ -39,6 +39,14 @@ import { filterClauses } from './lists';
 import { firstVisitStatement, tellApp, wasFirstVisit } from './notices';
 import { hashSharePassword, verifySharePassword } from './password-hash';
 import { guessVisitorOf } from './share-guesses';
+import {
+  putSignIn,
+  ruleOf,
+  SIGN_IN_COLUMNS,
+  SIGN_IN_JOIN,
+  suggestedDomainOf,
+  type SignInColumns,
+} from './share-sign-in';
 import { eventStatements } from './events';
 import {
   decorate,
@@ -140,6 +148,25 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
   // Archived, it has no links and takes none (blueprints/archive.md); reading or clearing them still answers.
   if (isArchived(row) && (method === 'POST' || method === 'PUT')) return archivedRefusal();
 
+  // Who may open the item's links (share-sign-in.ts): the whole rule at once.
+  if (segments[2] === 'share-sign-in') {
+    if (method !== 'PUT') return notFound();
+    const body = await readObject(request);
+    if (!body) return badRequest();
+    return putSignIn(ctx, row, body, async () => {
+      const { results } = await db
+        .prepare('SELECT code FROM share_links WHERE item_id = ? ORDER BY created_at LIMIT ?')
+        .bind(id, SHARE_LINKS_PER_ITEM)
+        .all<{ code: string }>();
+      tellRevoked(
+        ctx,
+        row,
+        results.map((r) => r.code),
+        'rescoped',
+      );
+    });
+  }
+
   if (segments[2] === 'share-password') {
     if (method !== 'PUT') return notFound();
     const body = await readObject(request);
@@ -189,7 +216,7 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
 
   if (method === 'GET') {
     // A connected tab's pass names the item whose tab it was made for: "Connected from <host>" (connected-tabs.md).
-    const [links, password] = (await db.batch([
+    const [links, password, signIn] = (await db.batch([
       db
         .prepare(
           `SELECT ${LINK_COLUMNS_SL}, c.host_item_id, h.app AS host_app, h.title AS host_title
@@ -200,10 +227,13 @@ export async function handleItemShare(ctx: RouteContext, id: string): Promise<Re
         )
         .bind(id, SHARE_LINKS_PER_ITEM),
       db.prepare('SELECT 1 AS set_ FROM share_passwords WHERE item_id = ?').bind(id),
+      db.prepare('SELECT require_account, domains FROM share_sign_in WHERE item_id = ?').bind(id),
     ])) as D1Result<Record<string, unknown>>[];
     return json({
       links: (links!.results as PassRow[]).map(toListedLink),
       passwordSet: password!.results.length > 0,
+      signIn: ruleOf(signIn!.results[0] as SignInColumns | undefined),
+      suggestedDomain: suggestedDomainOf(row, caller.person),
     });
   }
 
@@ -380,19 +410,23 @@ export async function handleShareCode(ctx: RouteContext): Promise<Response> {
 async function resolveShare(ctx: RouteContext, code: string): Promise<Response> {
   const { env, caller } = ctx;
   const link = await env.INDEX_DB.prepare(
-    `SELECT sl.code, sl.item_id, sl.level, sl.tab_id, sl.public, sp.hash FROM share_links sl
+    `SELECT sl.code, sl.item_id, sl.level, sl.tab_id, sl.public, sp.hash, ${SIGN_IN_COLUMNS}
+     FROM share_links sl
      LEFT JOIN share_passwords sp ON sp.item_id = sl.item_id
+     ${SIGN_IN_JOIN('sl')}
      WHERE sl.code = ? AND ${LIVE_LINK('sl')}`,
   )
     .bind(code, Date.now())
-    .first<{
-      code: string;
-      item_id: string;
-      level: Level;
-      tab_id: string | null;
-      hash: string | null;
-      public: number;
-    }>();
+    .first<
+      {
+        code: string;
+        item_id: string;
+        level: Level;
+        tab_id: string | null;
+        hash: string | null;
+        public: number;
+      } & SignInColumns
+    >();
   if (!link) return notFound();
   const row = await getItemRow(env, link.item_id);
   if (!row || row.trashed_at !== null) return notFound();
@@ -404,7 +438,15 @@ async function resolveShare(ctx: RouteContext, code: string): Promise<Response> 
   if (!access) {
     // The code is in the path, so the password header may come alone.
     const password = ctx.request.headers.get(SHARE_PASSWORD_HEADER) || null;
-    access = await linkAccess(env, row.id, link, password, guessVisitorOf(ctx.request, env));
+    access = await linkAccess(
+      env,
+      row.id,
+      link,
+      password,
+      guessVisitorOf(ctx.request, env),
+      false,
+      person,
+    );
     if (access instanceof Response) return access;
     // A public link (a Community post's) is not kept under Shared, and its author is not told of the visit.
     if (person && !link.public) {

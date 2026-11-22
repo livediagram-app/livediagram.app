@@ -146,6 +146,24 @@ describe('resolveItemGrant', () => {
     expect(await (res as Response).json()).toEqual({ error: 'archived' });
   });
 
+  it('answers a share’s sign-in refusals as the index’s, for the visitor to sign in', async () => {
+    for (const [error, status] of [
+      ['sign_in_required', 401],
+      ['domain_not_allowed', 403],
+    ] as const) {
+      answer = () => Response.json({ error, domains: ['acme.com'] }, { status });
+      const res = await resolveItemGrant(
+        service,
+        ENV,
+        req({ 'X-Share-Code': 'c' }),
+        { kind: 'bearer', token: null },
+        `S${status}`,
+      );
+      expect((res as Response).status).toBe(status);
+      expect(await (res as Response).json()).toEqual({ error });
+    }
+  });
+
   it('never keeps a grant on an item in the Trash, so a restore is seen at once', async () => {
     answer = () =>
       Response.json({

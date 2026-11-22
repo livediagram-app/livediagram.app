@@ -11,6 +11,7 @@ import type { PersonContext } from './context';
 import type { Env } from './env';
 import { inTeamNow } from './fresh-teams';
 import { badRequest, json, readObject } from './http';
+import { passesSignIn, SIGN_IN_COLUMNS, SIGN_IN_JOIN, type SignInColumns } from './share-sign-in';
 import { decorate, directAccess, ITEM_COLUMNS, LIVE_LINK, type Access, type ItemRow } from './rows';
 
 type LinkRow = {
@@ -19,7 +20,7 @@ type LinkRow = {
   level: Access['level'];
   tab_id: string | null;
   hash: string | null;
-};
+} & SignInColumns;
 
 export async function lookupItems(env: Env, person: Person, ids: string[]): Promise<Item[]> {
   const unique = [...new Set(ids)];
@@ -47,9 +48,10 @@ export async function lookupItems(env: Env, person: Person, ids: string[]): Prom
   if (viaLink.length > 0) {
     const { results: links } = await db
       .prepare(
-        `SELECT sw.item_id, sl.code, sl.level, sl.tab_id, sp.hash FROM shared_with sw
+        `SELECT sw.item_id, sl.code, sl.level, sl.tab_id, sp.hash, ${SIGN_IN_COLUMNS} FROM shared_with sw
          JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
          LEFT JOIN share_passwords sp ON sp.item_id = sl.item_id
+         ${SIGN_IN_JOIN('sl')}
          WHERE sw.person_id = ? AND sw.item_id IN (SELECT value FROM json_each(?)) AND ${LIVE_LINK('sl')}`,
       )
       .bind(person.id, JSON.stringify(viaLink.map((r) => r.id)), Date.now())
@@ -57,6 +59,8 @@ export async function lookupItems(env: Env, person: Person, ids: string[]): Prom
     for (const link of links) {
       // Behind a password the item needs it, which a lookup does not carry: `GET /items/:id` refuses it too.
       if (link.hash) continue;
+      // Behind a sign-in rule the person must pass it, as `GET /items/:id` asks (share-sign-in.ts).
+      if (!passesSignIn(link, person)) continue;
       known.set(link.item_id, {
         level: link.level,
         tabId: link.tab_id,

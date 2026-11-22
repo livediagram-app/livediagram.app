@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   createFolderFor,
   createFolderInputOf,
+  indexRefusal,
   listAllItems,
   listAskedOf,
   listItemsAsked,
@@ -156,5 +157,21 @@ describe('listItemsAsked', () => {
       limit: LIST_LIMIT_MAX,
       cursor: 'c1',
     });
+  });
+});
+
+describe('indexRefusal', () => {
+  it('answers the index’s refusal, with a sign-in refusal’s domains, and an unreachable index as 503', () => {
+    expect(indexRefusal(new IndexError(404, 'not_found'))).toEqual({
+      status: 404,
+      error: 'not_found',
+    });
+    expect(indexRefusal(new IndexError(403, 'domain_not_allowed', null, null, ['acme.com']))).toEqual({
+      status: 403,
+      error: 'domain_not_allowed',
+      domains: ['acme.com'],
+    });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(indexRefusal(new Error('down'))).toEqual({ status: 503, error: 'index_unavailable' });
   });
 });
