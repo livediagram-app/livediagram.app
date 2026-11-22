@@ -62,6 +62,7 @@ const RIGHTS: AskRights = {
   manageAi: true,
   makePages: true,
   resolve: true,
+  acceptSuggestions: true,
   context: true,
   grantAgents: true,
   emailOwners: true,
@@ -131,8 +132,8 @@ describe('the figures band', () => {
   it('says the reads apart and describes the sparkline in words', () => {
     draw();
     const reads = tile(/^Reads This Week/);
-    expect(reads.textContent).toContain('21 people');
-    expect(reads.textContent).toContain('7 agents');
+    expect(reads.textContent).toContain('21 by people');
+    expect(reads.textContent).toContain('7 by agents');
     // Its line and the sparkline's words describe it (beside the hover card's own line).
     const about = reads
       .getAttribute('aria-describedby')!
@@ -249,8 +250,8 @@ describe('the cards', () => {
     const card = within(screen.getByRole('region', { name: 'Most Read' }));
     const rows = card.getAllByRole('listitem').filter((li) => li.dataset.mostRead);
     expect(rows.map((li) => li.textContent)).toEqual([
-      'Release Process2420 people, 4 agents',
-      'Untitled Page11 person, 0 agents',
+      'Release Process2420 reads by people, 4 by agents',
+      'Untitled Page11 read by people, 0 by agents',
     ]);
     fireEvent.click(within(rows[0]!).getByRole('button'));
     expect(actions.openPage).toHaveBeenCalledWith('p1');

@@ -33,6 +33,8 @@ export type ItemPlace = {
   cardId?: string | null;
   // One of the card's comment threads, opened on the card.
   threadId?: string | null;
+  // A suggested edit on the tab's page, opened with its popover (liveknowledge): `#t=<tab>&suggestion=<id>`.
+  suggestionId?: string | null;
 };
 
 /** Where New should file the item, from the view it was pressed in. */
@@ -106,11 +108,11 @@ export type InboxTelemetry = (
   type?: string,
 ) => void;
 
-/** A row the reading pane acts on, as the host finds it in its app: an action, a card, an element's thread or a
- *  card's thread (`elementId` is the card's id for a card or a card's thread). `local` for an item only this
- *  browser holds. */
+/** A row the reading pane acts on, as the host finds it in its app: an action, a card, an element's thread, a
+ *  card's thread (`elementId` is the card's id for a card or a card's thread) or a suggested edit (`elementId` is the
+ *  suggestion's id, `tabId` its page). `local` for an item only this browser holds. */
 export type InboxTarget = {
-  kind: 'Action' | 'Card' | 'Thread' | 'CardThread';
+  kind: 'Action' | 'Card' | 'Thread' | 'CardThread' | 'Suggestion';
   app: App;
   itemId: string;
   tabId: string;
@@ -119,8 +121,9 @@ export type InboxTarget = {
   local: boolean;
 };
 
-/** A verb the reading pane can offer: reply to a thread, resolve a thread, mark an action or a card done. */
-export type InboxVerb = 'reply' | 'resolve' | 'done';
+/** A verb the reading pane can offer: reply to a thread, resolve a thread, mark an action or a card done, accept or
+ *  dismiss a suggested edit. */
+export type InboxVerb = 'reply' | 'resolve' | 'done' | 'accept' | 'dismiss';
 
 /** One comment of a thread, for the reading pane. */
 export type InboxComment = {
@@ -146,6 +149,10 @@ export type InboxActions = {
   reply?: (row: InboxTarget, text: string) => Promise<void>;
   resolve?: (row: InboxTarget) => Promise<void>;
   done?: (row: InboxTarget) => Promise<void>;
+  /** A suggested edit accepted or dismissed through its app's suggestion routes. A refusal throws `InboxActionError`
+   *  (`./inbox-actions`) with the answer's status and code, so the pane can say why (403, 409 `suggestion_stale`). */
+  accept?: (row: InboxTarget) => Promise<void>;
+  dismiss?: (row: InboxTarget) => Promise<void>;
   /** The thread's comments, oldest first, when this page can read them; the pane asks once per thread, after the
    *  selection settles, and keeps the answer. Null (or no function) shows the latest comment the index holds. */
   loadThread?: (row: InboxTarget, signal: AbortSignal) => Promise<InboxComment[] | null>;

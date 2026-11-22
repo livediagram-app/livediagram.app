@@ -42,6 +42,39 @@ export const listSuggestions = (env: DocumentEnv, now: number): Promise<StoredSu
     ),
   );
 
+/** One page's pending suggestions, newest first, for its Page Health read (ai-knowledge.md "On the page"): on the
+ *  `suggestions_tab` index, at most the knowledgebase's cap. */
+export const listPageSuggestions = (
+  env: DocumentEnv,
+  tab: string,
+  now: number,
+): Promise<StoredSuggestion[]> =>
+  rowsOf<StoredSuggestion>(
+    env,
+    sqlOf(
+      `SELECT ${COLUMNS} FROM suggestions WHERE tab = ? AND created_at > ? ORDER BY created_at DESC, id LIMIT ?`,
+      tab,
+      freshSince(now),
+      SUGGESTIONS_MAX_PENDING,
+    ),
+  );
+
+/** How many suggestions wait on each page, for the page tree's dots: one grouped read of a table of at most the cap's
+ *  rows. Pages with none are not listed. */
+export async function countSuggestionsByPage(
+  env: DocumentEnv,
+  now: number,
+): Promise<Map<string, number>> {
+  const rows = await rowsOf<{ tab: string; pending: number }>(
+    env,
+    sqlOf(
+      'SELECT tab, COUNT(*) AS pending FROM suggestions WHERE created_at > ? GROUP BY tab',
+      freshSince(now),
+    ),
+  );
+  return new Map(rows.map((r) => [r.tab, r.pending]));
+}
+
 export async function countSuggestions(env: DocumentEnv, now: number): Promise<number> {
   const [row] = await rowsOf<{ pending: number }>(
     env,

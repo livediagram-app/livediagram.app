@@ -129,6 +129,9 @@ export const SYSTEM_OP_KINDS = [
   // A reaction on a page was added or taken back (docs/specs/030-knowledgebase/page-reactions.md "Live"): the api
   // wrote it and sends it through /mutation. A forged one would show a reaction nobody made.
   'page-reaction',
+  // A suggested edit was made, accepted or dismissed (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"):
+  // the pages' ids only, each session reads its open page's health again. A forged one costs a read, nothing more.
+  'page-suggestions',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -227,6 +230,9 @@ export type ServerMessage =
   | CollabKeyMessage
   | OpRefusedMessage
   | PageTreeRefusedMessage;
+
+/** The pages whose suggested edits changed: each open editor reads its open page's health again, once. */
+export type PageSuggestionsOp = { kind: 'page-suggestions'; tabIds: string[] };
 
 // The room's answer to an Editor's op that would break the page tree
 // (docs/specs/030-knowledgebase/blueprints/page-tree.md "The room's check"): the same frame an element refusal is,
@@ -494,6 +500,9 @@ export type RoomOp =
   // A reaction on a page, added or taken back (docs/specs/030-knowledgebase/page-reactions.md "Live").
   // Worker-originated through /mutation.
   | PageReactionOp
+  // A page's suggested edits changed (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"): ids only.
+  // Worker-originated through /mutation.
+  | PageSuggestionsOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

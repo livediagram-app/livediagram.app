@@ -14,11 +14,11 @@ Knowledge's **Connect an Agent** buttons open this view.
 
 ## The tab
 
-- **Connect**, with a plug icon, the fourth tab in the footer: **Pages | Ask | AI Knowledge | Connect**
+- **Connect MCP**, with a plug icon, the fourth tab in the footer: **Pages | Ask | AI Knowledge | Connect MCP**
   ([Search and Ask](search-and-ask.md) "The views"). Its address is `?view=connect`. Its hover card: "Connect an AI
   App", "Connect Claude, ChatGPT, Cursor or another AI app so it can read and write these pages."
-- "Connect", not "MCP Connect": the other tabs are plain words, and the view itself says MCP where it matters. On a
-  phone it keeps "Connect" (the others are Pages, Ask, AI).
+- "Connect MCP" (owner 2026-11-22, was "Connect"): the tab and the view's heading say what it connects. On a phone
+  it keeps "Connect" (the others are Pages, Ask, AI).
 - **Signed out** (a share link's visitor included): a press opens a dialog over the knowledgebase, a sheet on a
   phone, as Ask's gate does: "Sign In to Connect an AI App", why (connecting makes a token for your account), and
   **Sign In**. The address followed from a link shows the same words in the view.

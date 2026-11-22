@@ -14,8 +14,11 @@ export type AskRights = {
   manageAi: boolean;
   /** Save an answer as a page; draft a page from a gap or an unanswered question. */
   makePages: boolean;
-  /** Dismiss a question, a conflict or a suggestion; accept a suggestion. */
+  /** Dismiss a question or a conflict. */
   resolve: boolean;
+  /** Accept or dismiss a suggested edit: an Editor of the whole knowledgebase's alone (ai-knowledge.md "Share
+   *  roles", Work Tracker 1362). */
+  acceptSuggestions: boolean;
   /** Add a page to Always in Context, or take one out. */
   context: boolean;
   /** Allow a connected agent to write here, or stop it. */
@@ -38,6 +41,7 @@ export function askRights(input: {
     manageAi: manager,
     makePages: writer,
     resolve: writer,
+    acceptSuggestions: manager,
     context: writer,
     grantAgents: manager,
     emailOwners: writer && !!input.accountUserId,

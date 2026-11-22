@@ -14,4 +14,9 @@ describe('placeHash', () => {
     expect(placeHash({ cardId: 'c1', threadId: 'th-1' })).toBe('#item=c1&thread=th-1');
     expect(placeHash({ threadId: 'th-1' })).toBe('');
   });
+
+  it('opens a suggested edit beside its tab, and names none without one', () => {
+    expect(placeHash({ tabId: 'p1', suggestionId: 'sg-1' })).toBe('#t=p1&suggestion=sg-1');
+    expect(placeHash({ suggestionId: 'sg-1' })).toBe('');
+  });
 });

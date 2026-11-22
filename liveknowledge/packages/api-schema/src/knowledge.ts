@@ -133,6 +133,12 @@ export type PageHealthResponse = PageKnowledgeResponse & {
   signals?: PageHealthSignals;
   /** Page Insights (ai-knowledge.md "Page Insights"); absent from an older api. */
   insights?: PageInsightsWire;
+  /** The page's suggested edits waiting, newest first, the knowledgebase's cap at most (ai-knowledge.md "On the
+   *  page"); absent from an older api. */
+  suggestions?: KnowledgeSuggestion[];
+  /** How many suggested edits wait on each page the reader may see, by page id, none at 0 (the tree's dots); absent
+   *  from an older api. */
+  suggestionCounts?: Record<string, number>;
 };
 /** A page's use: its reads by day over the last 30 days, oldest first, and how many times Ask cited it in that time
  *  (absent through a link confined to one page, which has no Ask). */

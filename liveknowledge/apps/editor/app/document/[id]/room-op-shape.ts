@@ -68,6 +68,8 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
         isText(op.reaction.by) &&
         isText(op.reaction.name)
       );
+    case 'page-suggestions':
+      return Array.isArray(op.tabIds) && op.tabIds.every(isText);
     case 'article':
       return isText(op.tabId) && isText(op.flow);
     case 'document-meta':

@@ -8,6 +8,7 @@ import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
 import { announceArticleCap, articleCapsPlugin } from '@/lib/article/article-caps';
 import { findHighlightPlugin } from '@/lib/article/article-find-plugin';
+import { suggestionMarksPlugin } from '@/lib/article/article-suggestion-plugin';
 import {
   clearActiveArticle,
   registerArticleHandle,
@@ -204,6 +205,8 @@ export function mountArticleView({
       articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
       // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
       findHighlightPlugin(() => latest.current.flow),
+      // Agents' suggested edits on the page (docs/specs/030-knowledgebase/ai-knowledge.md "On the page").
+      suggestionMarksPlugin(() => latest.current.flow),
       // The footnotes' numbers and the breaks above their notes; a press on a reference puts the caret in its note.
       footnotesPlugin((n) => {
         if (latest.current.editable) notesRef.current?.focus(n);

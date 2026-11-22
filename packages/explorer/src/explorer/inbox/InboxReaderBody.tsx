@@ -1,13 +1,14 @@
 'use client';
 
 // The reading pane's prose (InboxReader): the byline that says who and why, and the body under the verbs (the
-// thread and its comments, an action's or a card's note, a form's unseen responses).
+// thread and its comments, an action's or a card's note, a form's unseen responses, a suggested edit's change).
 import type { InboxComment } from '../../types';
 import { relativeSince, useNow } from '../../time';
 import { CommentIcon } from '../../ui/icons';
 import { kindWords, siteOf } from '../../words';
 import { CardStatusChip } from '../badges';
-import { CardGlyph, Lead, reasonIcon, type EntryFacts } from './InboxRows';
+import { CardGlyph, Lead, reasonIcon, reasonTone, type EntryFacts } from './InboxRows';
+import { SuggestionBody } from './SuggestionPane';
 import { firstName, type InboxEntry } from './sections';
 
 /** Who and why, in a sentence: "Priya mentioned you · 25 mins ago · Task". */
@@ -43,6 +44,9 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
     case 'AccessRequest':
       sentence = `${who} wants access to ${f.item}`;
       break;
+    case 'Suggestion':
+      sentence = `${f.who} suggested an edit`;
+      break;
   }
   return (
     <p
@@ -50,7 +54,7 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
       className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-slate-600 dark:text-slate-300"
     >
       {f.reason ? (
-        <span aria-hidden className="text-slate-500 dark:text-slate-400">
+        <span aria-hidden className={reasonTone(f.reason.kind)}>
           {reasonIcon(f.reason.kind, 14)}
         </span>
       ) : null}
@@ -177,6 +181,8 @@ export function Body({
         </div>
       );
     }
+    case 'Suggestion':
+      return <SuggestionBody entry={entry} />;
     case 'FormResponses': {
       const r = entry.row;
       return (

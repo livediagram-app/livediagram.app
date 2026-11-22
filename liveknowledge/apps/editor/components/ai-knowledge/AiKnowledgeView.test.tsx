@@ -413,8 +413,9 @@ describe.each(ROLES)('as %s', (role) => {
     expect(has(questions, 'Draft a Page')).toBe(writer);
     expect(has(questions, 'Dismiss: Who approves a release?')).toBe(writer);
     const suggestions = section('Needs Attention');
-    expect(has(suggestions, 'Accept')).toBe(writer);
-    expect(has(suggestions, 'Dismiss')).toBe(writer);
+    // Accepting or dismissing a suggested edit is an Editor's alone (as the api's); a Participant opens the page.
+    expect(has(suggestions, 'Accept')).toBe(editor);
+    expect(has(suggestions, 'Dismiss')).toBe(editor);
     expect(has(suggestions, 'Open the Page')).toBe(true);
     const context = section('Always in Context');
     expect(has(context, 'Add a Page')).toBe(writer);

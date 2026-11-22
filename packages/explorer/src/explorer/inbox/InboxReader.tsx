@@ -3,8 +3,9 @@
 // The Inbox's reading pane (one-explorer-contracts.md "Inbox"): the row chosen in the list, read in full. Top to
 // bottom: where it is (the app's Living Prism, the team glyph, the item › the tab › the element or board), what it
 // is as a large title, who and why ("Priya mentioned you · 25 mins ago · Task"), the verbs (Reply, Resolve or Mark
-// Done where this page can carry them out, Open in the app always), the item's thumbnail where the host draws one,
-// then the thread, the action's note or the form's responses, and a reply field where replying is offered.
+// Done, or Accept and Dismiss on a suggested edit, where this page can carry them out, Open in the app always), the
+// item's thumbnail where the host draws one, then the thread, the action's note, the form's responses or the
+// suggested change, and a reply field where replying is offered.
 //
 // Its verbs come from the host (`InboxHost.actions`), asked per row; nothing is offered that the page can't do. On a
 // phone and in the editor's panel the pane takes the list's place, with Back.
@@ -32,6 +33,8 @@ import { firstName, type InboxEntry } from './sections';
 import { entryPlace, entryTarget, offeredVerbs } from './inbox-entry-place';
 import { Body, Byline } from './InboxReaderBody';
 import { AccessRequestFailure, AccessRequestVerbs, useAccessAnswer } from './AccessRequestPane';
+import { KBD, PRIMARY, SECONDARY } from './pane-buttons';
+import { SuggestionFailure, SuggestionVerbs, useSuggestionAnswer } from './SuggestionPane';
 
 // Where a row leads lives in ./inbox-entry-place; re-exported so callers' imports stay as they were.
 export { entryPlace, entryTarget, offeredVerbs } from './inbox-entry-place';
@@ -43,14 +46,6 @@ export type ReaderHandle = {
   open: () => void;
   focusTitle: () => void;
 };
-
-const KBD =
-  'ml-1 inline-flex min-w-[1.25rem] [@media(pointer:coarse)]:hidden items-center justify-center rounded border border-current/25 px-1 font-sans text-[10px] font-medium leading-4 opacity-70';
-
-const PANE_BUTTON =
-  'inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors duration-micro motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-60 max-md:min-h-11';
-const PRIMARY = `${PANE_BUTTON} bg-brand-700 text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-500`;
-const SECONDARY = `${PANE_BUTTON} border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700`;
 
 const threadCaches = new WeakMap<object, BoundedCache<InboxComment[] | null>>();
 function threadCache(host: object): BoundedCache<InboxComment[] | null> {
@@ -147,6 +142,16 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
     announce,
     onTelemetry: inboxHost?.onTelemetry,
   });
+  // A suggested edit's Accept and Dismiss, the app's own (./SuggestionPane).
+  const suggestion = entry.kind === 'Suggestion' ? entry : null;
+  const suggestionAnswer = useSuggestionAnswer({
+    entry,
+    actions,
+    onGone,
+    announce,
+    onTelemetry: inboxHost?.onTelemetry,
+  });
+  const suggestionVerbs = suggestion !== null && suggestionAnswer.offered;
 
   const run = useCallback(
     async (verb: 'resolve' | 'done') => {
@@ -208,6 +213,10 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           void answer.share();
           return true;
         }
+        if (suggestionVerbs) {
+          void suggestionAnswer.accept();
+          return true;
+        }
         if (!primaryVerb) return false;
         void run(primaryVerb);
         return true;
@@ -215,7 +224,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
       open: () => openRef.current?.closest('a')?.click(),
       focusTitle: () => titleRef.current?.focus(),
     }),
-    [canReply, primaryVerb, run, access, answer],
+    [canReply, primaryVerb, run, access, answer, suggestionVerbs, suggestionAnswer],
   );
 
   const team = entry.row.itemTeamId ? teamName(entry.row.itemTeamId) : null;
@@ -306,10 +315,11 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           </Button>
         ) : null}
         {access ? <AccessRequestVerbs entry={access} answer={answer} /> : null}
+        {suggestion ? <SuggestionVerbs entry={suggestion} answer={suggestionAnswer} /> : null}
         <Link
           href={href}
           onClick={() => inboxHost?.onTelemetry?.('Selected', entry.kind)}
-          className={canReply || primaryVerb || access ? SECONDARY : PRIMARY}
+          className={canReply || primaryVerb || access || suggestionVerbs ? SECONDARY : PRIMARY}
         >
           <span ref={openRef} data-inbox-open="" className="inline-flex items-center gap-1.5">
             <OpenIcon size={14} />
@@ -321,6 +331,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         </Link>
       </div>
       {access ? <AccessRequestFailure entry={access} answer={answer} /> : null}
+      {suggestion ? <SuggestionFailure answer={suggestionAnswer} /> : null}
       {failed && failed !== 'reply' ? (
         <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
           {failed === 'resolve' ? 'Couldn’t resolve this thread.' : 'Couldn’t mark this done.'} Try

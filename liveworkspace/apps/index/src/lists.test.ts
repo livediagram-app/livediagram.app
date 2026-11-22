@@ -548,11 +548,11 @@ describe('query plans', () => {
   it('the Inbox walks indexes', () => {
     for (const app of [null, 'liveplanner' as const]) {
       const q = inboxQueries('user_a', ['p:user_a', 't:team1'], app, 100);
-      for (const query of [q.threads, q.actions, q.forms, q.accessRequests]) {
+      for (const query of [q.threads, q.actions, q.forms, q.accessRequests, q.suggestions]) {
         const lines = plan(query.sql, query.args);
         expect(
           lines.filter((l) =>
-            /\bSCAN (i|items|t|a|f|r|sw|sl|collab_\w+|access_requests|p)\b(?! USING)/.test(l),
+            /\bSCAN (i|items|t|a|f|r|s|sw|sl|collab_\w+|access_requests|p)\b(?! USING)/.test(l),
           ),
           lines.join('\n'),
         ).toEqual([]);

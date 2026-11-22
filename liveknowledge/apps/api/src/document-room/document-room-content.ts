@@ -92,6 +92,12 @@ export function noteWrite(room: DocumentRoom): void {
   }
   // A shared tab's holders get their copy on idle (tab-shares.ts).
   if (room.shares.noteWrite()) room.armAlarm();
+  noteOutboxOwed(room);
+}
+
+// The outbox holds a new key: drain on idle, at most once a minute, as after a content write. A quiet write's
+// trigger (a suggested edit's, knowledge/suggestions-changed.ts) comes here alone: it is no edit of the document.
+export function noteOutboxOwed(room: DocumentRoom): void {
   // A drain set far off, for a key in backoff, gives way to the key just written.
   const at = flushAfterWrite(room.state.storage.sql, room.flushAt, Date.now(), room.lastFlushAt);
   if (at === null) return;

@@ -88,12 +88,13 @@ every page. The route writes the field and the row in one transaction; a deleted
   may take.
 - **The page tree row:** nothing (owner 2026-11-21: no approval mark in the sidebar).
 - **Page Health's Approval row** (owner 2026-11-21): under Review Period, for a page never sent for approval, an
-  **Approval** row whose value is a **Request Approval** button for whoever may ask (it opens the request form in
-  the Approval section below), and "Not Requested" for the rest. Once a request exists, or while its form is open,
+  **Approval** row whose value is a **Request Approval** button for whoever may ask (it opens the request's confirmation in
+  a centred modal, never in the rail, owner 2026-11-22; the page menu's Request Approval opens the same modal), and "Not Requested" for the rest. Once a request exists, or while its form is open,
   the row is gone: the Approval section holds it, never both.
-- **Page Health:** an **Approval** section after Page Health in the Page Info rail, shown when the page has an
-  approval or the person may ask for one: the state with its glyph in a ring, who asked and when, who decided and
-  when, the note, and the actions (the meta row popover's own body, so the two never differ).
+- **Page Health:** an **Approval** panel inside Page Health, above the Verified panel (owner 2026-11-22), shown when
+  the page has an approval: the state with its glyph in a ring, who asked and when, who decided and when, the note,
+  and the actions (the meta row popover's own body, so the two never differ). Pending, it says only who asked and
+  when, on one line (owner 2026-11-22). Asking for the first time confirms in a centred modal, never in the rail.
 - **Knowledgebase Home:** **Waiting for Your Approval**, after Yours to Review: the pages Pending Approval that you
   did not ask for, in the knowledgebases you may write, oldest request first, ten a knowledgebase, each with its
   knowledgebase, who asked and when, and **Review** (opens the page). Nothing at all when there are none.

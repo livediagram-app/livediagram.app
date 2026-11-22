@@ -16,6 +16,9 @@ import {
   lucideFileText,
   lucideLayers,
   lucideMessagesSquare,
+  lucideScale,
+  lucideGitPullRequest,
+  lucideMessageSquare,
   lucidePanelRight,
   lucideSearch,
   lucideSparkles,
@@ -28,6 +31,9 @@ import { lucideGlyph } from '@liveknowledge/ui';
 
 export const TickIcon = lucideGlyph(lucideCircleCheck, 16);
 export const CheckIcon = lucideGlyph(lucideCheck, 16);
+export const ConflictFixIcon = lucideGlyph(lucideScale, 16);
+export const SuggestionFixIcon = lucideGlyph(lucideGitPullRequest, 16);
+export const CommentFixIcon = lucideGlyph(lucideMessageSquare, 16);
 export const ContextIcon = lucideGlyph(lucideLayers, 16);
 export const PageInfoIcon = lucideGlyph(lucidePanelRight, 16);
 export const CloseIcon = lucideGlyph(lucideX, 16);

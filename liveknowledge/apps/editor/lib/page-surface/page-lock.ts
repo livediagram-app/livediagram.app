@@ -18,6 +18,10 @@ export const COVER_HEIGHT_PHONE = 140;
 /** Screen px between a cover's band and the page's first line (owner, 2026-11-21: "too much space between cover and
  *  title"): the page's blank top margin tucks under the band, so the Title stands this far below it. */
 export const COVER_TITLE_GAP = 36;
+/** The same under a cover on a page with a breadcrumb (owner 2026-11-22: "breadcrumb is a bit too close to the
+ *  cover"): the breadcrumb's row stands 16px below the band and 10px above the Title (PageSurfaceSheet's
+ *  BREADCRUMB_ROW 28 and BREADCRUMB_GAP 10). No breadcrumb shows on a phone. */
+export const COVER_CRUMB_TITLE_GAP = 16 + 28 + 10;
 /** The band's height for a page with a cover or none. */
 export const coverHeightOf = (hasCover: boolean, phone: boolean): number =>
   hasCover ? (phone ? COVER_HEIGHT_PHONE : COVER_HEIGHT) : 0;
@@ -41,6 +45,8 @@ export type PageLockInput = {
   phone: boolean;
   /** Screen px of cover band over the page's top room (coverHeightOf); none by default. */
   cover?: number;
+  /** Whether the page shows a breadcrumb above its Title (a page with a parent): under a cover it needs room. */
+  crumbs?: boolean;
 };
 
 export type PageLock = {
@@ -73,7 +79,7 @@ export function roomColumnOf(input: Pick<PageLockInput, 'width' | 'sides' | 'pho
  * the page's corner.
  */
 export function computePageLock(input: PageLockInput): PageLock {
-  const { sides, page, margin, topMargin = margin, phone, cover = 0 } = input;
+  const { sides, page, margin, topMargin = margin, phone, cover = 0, crumbs = false } = input;
   const room = sideRoomOf(phone);
   const available = Math.max(1, input.width - sides.left - sides.right);
   const columnWidth = Math.max(1, page.width - 2 * margin);
@@ -82,7 +88,8 @@ export function computePageLock(input: PageLockInput): PageLock {
   const left = columnLeft - margin;
   // Under a cover, the page's blank top room and top margin tuck under the band (which stands over the world), leaving
   // COVER_TITLE_GAP between the band and the first line.
-  const tuck = cover > 0 ? Math.max(0, PAGE_TOP_ROOM + topMargin - COVER_TITLE_GAP) : 0;
+  const gap = crumbs && !phone ? COVER_CRUMB_TITLE_GAP : COVER_TITLE_GAP;
+  const tuck = cover > 0 ? Math.max(0, PAGE_TOP_ROOM + topMargin - gap) : 0;
   const top = PAGE_TOP_ROOM + cover - tuck;
   return {
     view: { zoom: 1, offset: { x: left - page.x, y: top - page.y } },

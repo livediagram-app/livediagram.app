@@ -1,13 +1,17 @@
-// Reading an item's collab push (./collab-push): each card, column, thread and action an app sends, checked and
+// Reading an item's collab push (./collab-push): each card, column, thread, action and suggested edit an app sends, checked and
 // clipped to its limits before anything is written. Re-exported from ./collab-push.
 import {
   cardRefFor,
   COLLAB_PEOPLE_MAX,
+  COLLAB_SUGGESTION_AGENT_MAX,
+  COLLAB_SUGGESTION_REASON_MAX,
+  COLLAB_SUGGESTION_TEXT_MAX,
   COLLAB_TEXT_MAX,
   type CardColumn,
   type CollabActionInput,
   type CollabCard,
   type CollabMentioner,
+  type CollabSuggestionInput,
   type CollabThreadInput,
 } from '@liveworkspace/index-client';
 import { isId, isPartId } from './codec';
@@ -222,3 +226,41 @@ export function parseAction(value: unknown): CollabActionInput | null {
 
 /** Makes one tab's threads and actions match the push in one batch. Rows go in through json_each, a statement per
  *  table whatever the count. */
+
+const SUGGESTION_KINDS = new Set(['replace', 'append']);
+
+/** A suggested edit waiting on a page (one-explorer-contracts.md "What an item pushes"), or null when malformed: its
+ *  id, kind and time must be well formed and its owner an id or null; its texts are cut, never refused (`before` and
+ *  `after` to COLLAB_SUGGESTION_TEXT_MAX, `reason` to COLLAB_SUGGESTION_REASON_MAX, `agent` to
+ *  COLLAB_SUGGESTION_AGENT_MAX). A missing `reason` or `before` is ''. */
+export function parseSuggestion(value: unknown): CollabSuggestionInput | null {
+  const s = value as Record<string, unknown> | null;
+  if (!s || typeof s !== 'object' || Array.isArray(s)) return null;
+  const agent = clip(s.agent, COLLAB_SUGGESTION_AGENT_MAX);
+  const reason = s.reason === undefined ? '' : clip(s.reason, COLLAB_SUGGESTION_REASON_MAX);
+  const before = s.before === undefined ? '' : clip(s.before, COLLAB_SUGGESTION_TEXT_MAX);
+  const after = clip(s.after, COLLAB_SUGGESTION_TEXT_MAX);
+  if (
+    !isPartId(s.id) ||
+    !nullableId(s.ownerId ?? null) ||
+    agent === null ||
+    reason === null ||
+    before === null ||
+    after === null ||
+    typeof s.kind !== 'string' ||
+    !SUGGESTION_KINDS.has(s.kind) ||
+    !isTime(s.createdAt)
+  ) {
+    return null;
+  }
+  return {
+    id: s.id,
+    ownerId: (s.ownerId as string | null | undefined) ?? null,
+    agent,
+    reason,
+    kind: s.kind as CollabSuggestionInput['kind'],
+    before,
+    after,
+    createdAt: s.createdAt,
+  };
+}

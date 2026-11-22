@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { cutMarkdown, markdownHeadings, markdownSection, replacePassage } from './page-markdown';
+import {
+  appendTableRows,
+  cutMarkdown,
+  isBareTableRows,
+  markdownHeadings,
+  markdownSection,
+  replacePassage,
+} from './page-markdown';
 
 const PAGE = [
   '# Deploys',
@@ -86,5 +93,34 @@ describe('replacePassage', () => {
     expect(replacePassage(PAGE, '  ', 'x')).toEqual({ refusal: 'passage_not_found' });
     expect(replacePassage('a b a', 'a', 'x')).toEqual({ refusal: 'passage_ambiguous' });
     expect(replacePassage('a  b a\nb', 'a b', 'x')).toEqual({ refusal: 'passage_ambiguous' });
+  });
+});
+
+describe('appendTableRows', () => {
+  const page = [
+    'When a ticket needs more:',
+    '',
+    '| Problem | Escalate to |',
+    '| --- | --- |',
+    '| A bug | Engineering |',
+    '',
+    'Tell the customer.',
+  ].join('\n');
+
+  it('adds bare rows under the last row of the last table', () => {
+    expect(appendTableRows(page, '| A security report | Security |')).toBe(
+      page.replace(
+        '| A bug | Engineering |',
+        '| A bug | Engineering |\n| A security report | Security |',
+      ),
+    );
+  });
+
+  it('leaves anything else to an ordinary append', () => {
+    expect(appendTableRows(page, 'A new paragraph.')).toBeNull();
+    expect(appendTableRows(page, '| A | B |\n| --- | --- |\n| 1 | 2 |')).toBeNull();
+    expect(appendTableRows('No table here.', '| A | B |')).toBeNull();
+    expect(appendTableRows('```\n| a | b |\n| --- | --- |\n```', '| c | d |')).toBeNull();
+    expect(isBareTableRows('| a | b |\n\n| c | d |')).toBe(true);
   });
 });

@@ -203,6 +203,28 @@ export type CollabPush = {
   tabName?: string;
   threads: CollabThreadInput[];
   actions: CollabActionInput[];
+  // The tab's pending suggested edits (at most COLLAB_MAX_SUGGESTIONS), replacing its suggestion rows as `threads`
+  // replace its threads; absent is none, so an app without suggestions never sends it.
+  suggestions?: CollabSuggestionInput[];
+};
+
+/** How a suggested edit changes its page: `replace` swaps the passage `before` for `after`; `append` adds `after` at
+ *  the page's end (`before` empty). */
+export type CollabSuggestionKind = 'replace' | 'append';
+
+/** A suggested edit waiting on a page (one-explorer-contracts.md "What an item pushes"): an agent's change a person
+ *  accepts or dismisses in the app. `ownerId` is the person it waits on, null for the item's owner; `agent` who
+ *  suggested it as the app names them ("Claude"); `before` and `after` cut to COLLAB_SUGGESTION_TEXT_MAX, `reason` to
+ *  COLLAB_SUGGESTION_REASON_MAX. */
+export type CollabSuggestionInput = {
+  id: string;
+  ownerId: string | null;
+  agent: string;
+  reason: string;
+  kind: CollabSuggestionKind;
+  before: string;
+  after: string;
+  createdAt: number;
 };
 
 /** A form on one tab of an item and how many responses it has taken (`PUT /app/items/:id/forms/:tabId`); `form:
@@ -276,6 +298,18 @@ export type FolderPreview = { folderId: string; itemCount: number; items: Item[]
 // FOLDER_PREVIEW_COUNT_CAP: the person's own (`teamId: null`) or a team's.
 export type SpacePreview = { teamId: string | null; itemCount: number; items: Item[] };
 
+/** A pending suggested edit on a page the reader owns (one-explorer-contracts.md "Inbox"), on a live item they reach.
+ *  `tabName` is the page's name. */
+export type InboxSuggestion = InboxPlace & {
+  suggestionId: string;
+  agent: string;
+  reason: string;
+  kind: CollabSuggestionKind;
+  before: string;
+  after: string;
+  createdAt: number;
+};
+
 export type InboxResponse = {
   threads: InboxThread[];
   actions: InboxAction[];
@@ -284,6 +318,8 @@ export type InboxResponse = {
   accessRequests?: InboxAccessRequest[];
   // The reader's own requests granted lately (inbox-notices.md); absent from an index before them.
   shares?: InboxShare[];
+  // Suggested edits waiting on the reader's pages (Work Tracker 1362); absent from an index before them.
+  suggestions?: InboxSuggestion[];
 };
 
 // A person's calendar feed in one app (one-explorer-contracts.md "Calendar feeds"): when its link was made. The token

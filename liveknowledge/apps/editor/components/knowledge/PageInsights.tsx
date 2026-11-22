@@ -1,17 +1,14 @@
 'use client';
 
 // Page Insights in the right rail (docs/specs/030-knowledgebase/ai-knowledge.md "Page Insights"): the page's reads over
-// the last 30 days, a bar a day with people under agents in AI Knowledge's two tones, how many times Ask cited it and
-// agents read it, and the questions it answered most. It reads nothing of its own: everything rides Page Health's one
-// read. Quiet, as the rest of the rail is: a small-capitals heading, no card, no border.
-import type { ReactNode } from 'react';
+// the last 30 days, drawn inside Read This Week (owner 2026-11-22), and the questions it answered most. It reads
+// nothing of its own: everything rides Page Health's one read.
 import type { PageAnsweredQuestion, PageInsightsWire } from '@liveknowledge/api-schema';
 import { isNewPage } from '@liveknowledge/knowledge';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { AGENT_BG, PEOPLE_BG, ReadsSparkline } from '@/components/ai-knowledge/ReadsSparkline';
-import { AgentsIcon, CitedIcon, NewPageSproutIcon } from './knowledge-icons';
-import { RAIL_LABEL } from './PageHealthCard';
+import { ReadsSparkline } from '@/components/ai-knowledge/ReadsSparkline';
+import { NewPageSproutIcon } from './knowledge-icons';
 import type { PageKnowledgeView } from './usePageKnowledge';
 
 export type PageInsightsProps = {
@@ -41,14 +38,10 @@ export const readsSoFarText = (people: number, agents: number): string => {
   return `${count(total)} ${total === 1 ? 'read' : 'reads'} so far: ${parts.join(', ')}`;
 };
 
-/** "Not yet", "Once", "12 times". */
-export const timesText = (n: number): string =>
-  n === 0 ? 'Not yet' : n === 1 ? 'Once' : `${count(n)} times`;
-
 /** The questions Ask answered from the page, most asked first (ai-knowledge.md "AI Context on a page"). */
 export function AnsweredQuestions({ answered }: { answered: readonly PageAnsweredQuestion[] }) {
   return (
-    <div data-answered-from-page="" className="mt-5">
+    <div data-answered-from-page="">
       <h3 className={SUB_LABEL}>Answered From This Page</h3>
       <ul className="mt-2 flex flex-col gap-3">
         {answered.map((q) => (
@@ -75,140 +68,63 @@ export function AnsweredQuestions({ answered }: { answered: readonly PageAnswere
   );
 }
 
-// Before the read: bars and figures of their own height, so nothing moves when the answer lands.
-function Placeholder() {
-  return (
-    <div aria-hidden data-page-insights-placeholder="" className="mt-3">
-      <span className="block h-7 w-24 rounded-md bg-slate-100 dark:bg-slate-800/80" />
-      <span className="mt-3 block h-10 w-full rounded-md bg-slate-100 dark:bg-slate-800/80" />
-      <span className="mt-4 block h-9 w-full rounded-md bg-slate-100 dark:bg-slate-800/80" />
-    </div>
-  );
-}
-
-function Figure({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className={`flex items-center gap-1.5 text-[11px] ${QUIET}`}>
-        <span aria-hidden className="flex text-slate-400 dark:text-slate-400/60">
-          {icon}
-        </span>
-        {label}
-      </dt>
-      <dd className="mt-0.5 truncate font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-        {value}
-      </dd>
-    </div>
-  );
-}
-
-export function PageInsights({ insights, answered, createdAt, now }: PageInsightsProps) {
-  const days = insights?.days ?? [];
+/** Read This Week's trend (owner 2026-11-22: Page Insights merged into Read This Week): the page's reads over the
+ *  last 30 days, a bar a day with people under agents in AI Knowledge's two tones. A page in its first week has no
+ *  history to show, so it says its reads so far instead. */
+export function ReadsTrend({ insights, createdAt, now }: Omit<PageInsightsProps, 'answered'>) {
+  if (insights === undefined)
+    return (
+      <span
+        aria-hidden
+        data-page-insights-placeholder=""
+        className="mt-2.5 block h-10 w-full rounded-md bg-white/60 dark:bg-slate-800/60"
+      />
+    );
+  const days = insights.days;
   const people = days.reduce((sum, d) => sum + d.people, 0);
   const agents = days.reduce((sum, d) => sum + d.agents, 0);
-  const total = people + agents;
-  // A page in its first week has no history to show: never 30 days of bars mostly from before it was made (its
-  // maker's own opening is a read, so "no reads" alone would almost never hold).
-  const fresh = insights !== undefined && isNewPage(createdAt, now);
+  if (isNewPage(createdAt, now))
+    return (
+      <p data-page-insights-new="" className={`mt-2.5 flex items-center gap-1.5 text-xs ${QUIET}`}>
+        <span aria-hidden className="flex text-brand-700 dark:text-brand-300">
+          <NewPageSproutIcon />
+        </span>
+        {people + agents === 0
+          ? 'New this week: reads show here as people and agents open it.'
+          : `New this week, ${readsSoFarText(people, agents)}`}
+      </p>
+    );
   return (
-    <section
-      aria-label="Page Insights"
-      data-page-insights=""
-      className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
-    >
-      <h2 className={RAIL_LABEL}>Page Insights</h2>
-      {insights === undefined ? (
-        <Placeholder />
-      ) : fresh ? (
-        <div
-          data-page-insights-new=""
-          className="mt-3 flex items-start gap-3 rounded-2xl bg-gradient-to-br from-brand-50 via-brand-50/40 to-white p-3.5 ring-1 ring-inset ring-brand-100 dark:from-brand-950/50 dark:via-brand-950/20 dark:to-transparent dark:ring-brand-900/40"
-        >
-          <span aria-hidden className="mt-0.5 flex text-brand-700 dark:text-brand-300">
-            <NewPageSproutIcon />
-          </span>
-          <div className="min-w-0">
-            <p className="font-semibold text-slate-900 dark:text-slate-50">New This Week</p>
-            <p data-page-insights-so-far="" className={`text-xs ${QUIET}`}>
-              {total === 0
-                ? 'Reads show here as people and agents open it.'
-                : readsSoFarText(people, agents)}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <>
-          <p className="mt-3 flex items-baseline gap-1.5">
-            <span
-              data-page-insights-total=""
-              className="text-2xl font-semibold tabular-nums tracking-tight text-slate-900 dark:text-white"
-            >
-              {count(total)}
-            </span>
-            <span className={QUIET}>
-              {total === 0 ? 'No reads in 30 days' : `${total === 1 ? 'read' : 'reads'} in 30 days`}
-            </span>
-          </p>
-          <div className="mt-2">
-            <ReadsSparkline days={days} tall />
-            <div aria-hidden className={`mt-1 flex justify-between text-[11px] ${QUIET}`}>
-              <span>30 days ago</span>
-              <span>Today</span>
-            </div>
-          </div>
-          {/* The key, which also says the split for anyone who reads the bars' label instead. */}
-          <ul aria-label="Key" className={`mt-2 flex gap-4 text-xs ${QUIET}`}>
-            <li className="flex items-center gap-1.5">
-              <span aria-hidden className={`h-2 w-2 rounded-sm ${PEOPLE_BG}`} />
-              People{' '}
-              <span className="tabular-nums text-slate-700 dark:text-slate-300">
-                {count(people)}
-              </span>
-            </li>
-            <li className="flex items-center gap-1.5">
-              <span aria-hidden className={`h-2 w-2 rounded-sm ${AGENT_BG}`} />
-              Agents{' '}
-              <span className="tabular-nums text-slate-700 dark:text-slate-300">
-                {count(agents)}
-              </span>
-            </li>
-          </ul>
-        </>
-      )}
-      {/* The counts, in the first week too once there is one to say: a new page cited by Ask says so, but never a
-        row of "Not yet". */}
-      {insights !== undefined && (!fresh || agents > 0 || (insights.cited ?? 0) > 0) ? (
-        <dl
-          className={`mt-4 grid gap-3 border-t border-slate-100 pt-3 dark:border-slate-800/70 ${
-            insights.cited === undefined ? 'grid-cols-1' : 'grid-cols-2'
-          }`}
-        >
-          {/* A link confined to one page has no Ask: nothing cited is said. */}
-          {insights.cited === undefined ? null : (
-            <Figure icon={<CitedIcon />} label="Cited by Ask" value={timesText(insights.cited)} />
-          )}
-          <Figure icon={<AgentsIcon />} label="Read by Agents" value={timesText(agents)} />
-        </dl>
-      ) : null}
-      {answered && answered.length > 0 ? <AnsweredQuestions answered={answered} /> : null}
-    </section>
+    <div data-page-insights="" className="mt-2.5">
+      <ReadsSparkline days={days} tall />
+      <div aria-hidden className={`mt-1 flex justify-between text-[11px] ${QUIET}`}>
+        <span>30 days ago</span>
+        <span>Today</span>
+      </div>
+    </div>
   );
 }
 
-/** The section for the page open, from what the rail already holds; nothing for a knowledgebase kept Offline. */
-export function PageRailInsights({ page }: { page: PageKnowledgeView }) {
+/** Read This Week's trend for the page open, from what the rail already holds; nothing Offline or from an api before
+ *  Page Insights. */
+export function PageReadsTrend({ page }: { page: PageKnowledgeView }) {
   const documentId = useEditorChrome((s) => s.documentId);
   const offline = useIsOfflineDocument(documentId);
-  if (offline || !documentId) return null;
   const { health } = page;
-  // An api from before Page Insights answers none: nothing to draw.
-  if (health && !health.insights) return null;
+  if (offline || !documentId || (health && !health.insights)) return null;
+  return <ReadsTrend insights={health?.insights} createdAt={health?.created?.at} now={page.now} />;
+}
+
+/** Answered From This Page, under On This Page's sections, for the page open. */
+export function PageRailAnswered({ page }: { page: PageKnowledgeView }) {
+  const answered = page.health?.answered;
+  if (!answered || answered.length === 0) return null;
   return (
-    <PageInsights
-      insights={health?.insights}
-      answered={health?.answered}
-      createdAt={health?.created?.at}
-      now={page.now}
-    />
+    <section
+      aria-label="Answered From This Page"
+      className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
+    >
+      <AnsweredQuestions answered={answered} />
+    </section>
   );
 }

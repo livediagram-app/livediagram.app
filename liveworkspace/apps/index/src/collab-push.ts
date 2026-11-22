@@ -1,6 +1,7 @@
 // What an item pushes for the Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"), from its app's server
 // with the app's key: each tab's comment threads and actions, its cards and their threads (under COLLAB_CARDS_TAB),
-// and each form's response count and who has seen how many. Shown text is cut rather than refused; ids and times
+// its suggested edits (liveknowledge; no event, email or webhook of their own), and each form's response count and
+// who has seen how many. Shown text is cut rather than refused; ids and times
 // must be well formed.
 //
 // The event log's collaboration events come from the same push (collabEvents): the index compares what a tab
@@ -15,17 +16,26 @@ import { personEventKeys } from './event-key';
 import {
   COLLAB_EVENTS_MAX,
   COLLAB_MAX_ACTIONS,
+  COLLAB_MAX_SUGGESTIONS,
   COLLAB_MAX_THREADS,
   type App,
   type CollabActionInput,
+  type CollabSuggestionInput,
   type CollabThreadInput,
 } from '@liveworkspace/index-client';
 import type { Env } from './env';
 import { badRequest, noContent, readObject } from './http';
 import { bulkEventStatements, type BulkEvent } from './events';
-import { LABEL_MAX, clip, nullableId, parseAction, parseThread } from './collab-parse';
+import {
+  LABEL_MAX,
+  clip,
+  nullableId,
+  parseAction,
+  parseSuggestion,
+  parseThread,
+} from './collab-parse';
 
-export { parseAction, parseCard, parseColumn, parseThread } from './collab-parse';
+export { parseAction, parseCard, parseColumn, parseSuggestion, parseThread } from './collab-parse';
 export { formByCode, formSeen, parseForm, pushForm, pushFormSeen } from './collab-forms';
 
 export async function pushCollab(
@@ -40,6 +50,11 @@ export async function pushCollab(
     return badRequest('invalid_collab');
   }
   if (body.threads.length > COLLAB_MAX_THREADS || body.actions.length > COLLAB_MAX_ACTIONS) {
+    return badRequest('invalid_collab');
+  }
+  // Suggested edits: optional, absent is none (the tab's rows are cleared).
+  const suggestionBody = body.suggestions ?? [];
+  if (!Array.isArray(suggestionBody) || suggestionBody.length > COLLAB_MAX_SUGGESTIONS) {
     return badRequest('invalid_collab');
   }
   const tabName = body.tabName === undefined ? '' : clip(body.tabName, LABEL_MAX);
@@ -65,6 +80,13 @@ export async function pushCollab(
     const action = parseAction(value);
     if (!action) return badRequest('invalid_collab');
     actions.set(`${action.elementId}\u0000${action.actionId}`, action);
+  }
+  // Keyed by id: a repeated one keeps its last entry.
+  const suggestions = new Map<string, CollabSuggestionInput>();
+  for (const value of suggestionBody) {
+    const suggestion = parseSuggestion(value);
+    if (!suggestion) return badRequest('invalid_collab');
+    suggestions.set(suggestion.id, suggestion);
   }
   // Who is in each open thread, for the Inbox's "where I commented or am mentioned".
   const people: [string, string][] = [];
@@ -117,6 +139,7 @@ export async function pushCollab(
     ...bulkEventStatements(db, events),
     ...(retracted.length > 0 ? [retractStatement(db, itemId, retracted)] : []),
     ...collabRowStatements(db, key, tabName, threads, actions, people),
+    ...suggestionRowStatements(db, key, tabName, suggestions),
   ]);
   return noContent();
 }
@@ -236,6 +259,55 @@ export function collabRowStatements(
          ON CONFLICT (app, item_id, tab_id, element_id, action_id) ${updateIfChanged('collab_actions', ACTION_COLUMNS)}`,
       )
       .bind(...key, tabName, actionRows),
+  ];
+}
+
+const SUGGESTION_COLUMNS = [
+  'tab_name',
+  'owner_id',
+  'agent',
+  'reason',
+  'kind',
+  'before_text',
+  'after_text',
+  'created_at',
+] as const;
+
+/** The statements that make one tab's suggested edits match a push, as collabRowStatements does its threads: one
+ *  delete of the rows the push no longer holds (the whole tab's when it holds none), then, when it holds any, one
+ *  upsert through json_each that writes only a row whose columns differ. Both are a range of the primary key. */
+export function suggestionRowStatements(
+  db: D1Database,
+  key: readonly [App, string, string],
+  tabName: string,
+  suggestions: ReadonlyMap<string, CollabSuggestionInput>,
+): D1PreparedStatement[] {
+  const rows = JSON.stringify([...suggestions.values()]);
+  const remove =
+    suggestions.size === 0
+      ? db
+          .prepare('DELETE FROM collab_suggestions WHERE app = ?1 AND item_id = ?2 AND tab_id = ?3')
+          .bind(...key)
+      : db
+          .prepare(
+            `DELETE FROM collab_suggestions WHERE app = ?1 AND item_id = ?2 AND tab_id = ?3
+             AND suggestion_id NOT IN (SELECT json_extract(value, '$.id') FROM json_each(?4))`,
+          )
+          .bind(...key, rows);
+  if (suggestions.size === 0) return [remove];
+  return [
+    remove,
+    db
+      .prepare(
+        `INSERT INTO collab_suggestions (app, item_id, tab_id, tab_name, suggestion_id, owner_id, agent, reason,
+           kind, before_text, after_text, created_at)
+         SELECT ?, ?, ?, ?, json_extract(value, '$.id'), json_extract(value, '$.ownerId'),
+           json_extract(value, '$.agent'), json_extract(value, '$.reason'), json_extract(value, '$.kind'),
+           json_extract(value, '$.before'), json_extract(value, '$.after'), json_extract(value, '$.createdAt')
+         FROM json_each(?) WHERE true
+         ON CONFLICT (app, item_id, tab_id, suggestion_id) ${updateIfChanged('collab_suggestions', SUGGESTION_COLUMNS)}`,
+      )
+      .bind(...key, tabName, rows),
   ];
 }
 

@@ -63,9 +63,10 @@ export function readsSparkLabel(days: readonly KnowledgeReadsDay[]): string {
   return `Reads by day over the last ${days.length} days: ${count(people)} by people, ${count(agents)} by agents.`;
 }
 
-/** "12 people, 4 agents", "1 person, 0 agents". */
+/** "12 reads by people, 4 by agents", "1 read by people, 0 by agents": reads, never readers (no reader's
+ *  identity is kept, ai-knowledge.md "Reads"). */
 export const readersText = (people: number, agents: number): string =>
-  `${count(people)} ${people === 1 ? 'person' : 'people'}, ${count(agents)} ${agents === 1 ? 'agent' : 'agents'}`;
+  `${count(people)} ${people === 1 ? 'read' : 'reads'} by people, ${count(agents)} by agents`;
 
 export type AttentionFilter = 'all' | 'questions' | 'conflicts' | 'suggestions';
 

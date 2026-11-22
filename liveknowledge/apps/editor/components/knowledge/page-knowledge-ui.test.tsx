@@ -2,7 +2,7 @@
 
 // The page's verification UI (docs/specs/030-knowledgebase/verification.md): the meta row, the Page Health card,
 // On This Page and the badge, each from plain props, a share role at a time.
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -138,6 +138,17 @@ describe('Page Health', () => {
     </>
   );
 
+  // Page Details opens from the Verified panel (folded at first, owner 2026-11-22); with no panel it shows open.
+  const openDetails = () => {
+    const toggle = screen.queryByRole('button', { name: 'Page Details' });
+    if (toggle?.getAttribute('aria-expanded') === 'false') fireEvent.click(toggle);
+  };
+  const renderRail = (ui: React.ReactElement) => {
+    const result = render(ui);
+    openDetails();
+    return result;
+  };
+
   const props = (over: Partial<RailProps> = {}): RailProps => ({
     trust: verified,
     reviewEvery: 90,
@@ -150,13 +161,17 @@ describe('Page Health', () => {
     nameOf: (id) => ({ u1: 'Priya Nair', u2: 'Marcus Oyelaran' })[id ?? ''],
     onSetOwner: vi.fn(),
     onVerify: vi.fn(),
-    periodControl: <button type="button" aria-label="Change Review Period" />,
+    periodControl: (label: string) => (
+      <button type="button" aria-label={`Change Review Period: ${label}`}>
+        <span data-review-period="">{label}</span>
+      </button>
+    ),
     ...over,
   });
 
-  it('an Editor changes the owner, verifies again, and has the pencil beside the Review Period', () => {
+  it('an Editor changes the owner, verifies again, and has the Review Period as a link', () => {
     const p = props();
-    render(<Rail {...p} />);
+    renderRail(<Rail {...p} />);
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: 'u2' } });
     expect(p.onSetOwner).toHaveBeenCalledWith('u2');
     fireEvent.change(screen.getByLabelText('Owner'), { target: { value: '' } });
@@ -164,12 +179,9 @@ describe('Page Health', () => {
     // The Review Period is the knowledgebase's: the card says it, with the control it is given beside it.
     expect(screen.queryByLabelText('Review Interval')).toBeNull();
     expect(screen.getAllByRole('combobox')).toHaveLength(1);
-    expect(screen.getByText('Every 90 Days').closest('dd')!.textContent).toBe('Every 90 Days');
     expect(
-      within(screen.getByText('Every 90 Days').closest('dd')!).getByRole('button', {
-        name: 'Change Review Period',
-      }),
-    ).toBeTruthy();
+      screen.getByRole('button', { name: 'Change Review Period: Every 90 Days' }).textContent,
+    ).toBe('Every 90 Days');
     fireEvent.click(screen.getByRole('button', { name: 'Verify Again' }));
     expect(p.onVerify).toHaveBeenCalledTimes(1);
     expect(screen.getByText('12')).toBeTruthy();
@@ -180,7 +192,7 @@ describe('Page Health', () => {
   // nothing there once one is asked for (the Approval section holds it).
   it('shows Approval under Review Period: Request Approval, Not Requested, or nothing', () => {
     const onRequest = vi.fn();
-    const { rerender } = render(<Rail {...props({ approvalRow: { onRequest } })} />);
+    const { rerender } = renderRail(<Rail {...props({ approvalRow: { onRequest } })} />);
     const rows = [...document.querySelectorAll('dt')].map((d) => d.textContent);
     expect(rows.indexOf('Approval')).toBe(rows.indexOf('Review Period') + 1);
     fireEvent.click(screen.getByRole('button', { name: 'Request Approval' }));
@@ -193,7 +205,7 @@ describe('Page Health', () => {
   });
 
   it.each(['Participant', 'Viewer'])('a %s reads the card and changes nothing', () => {
-    render(
+    renderRail(
       <Rail
         {...props({
           onSetOwner: undefined,
@@ -203,7 +215,10 @@ describe('Page Health', () => {
       />,
     );
     expect(screen.queryByRole('combobox')).toBeNull();
-    expect(screen.queryByRole('button')).toBeNull();
+    // Only the fold of Page Details: nothing that changes the page.
+    expect(screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Page Details',
+    ]);
     expect(screen.getByText('Priya Nair')).toBeTruthy();
     expect(screen.getByText('Every 90 Days')).toBeTruthy();
     expect(screen.getByLabelText('Verified by Priya Nair')).toBeTruthy();
@@ -212,7 +227,9 @@ describe('Page Health', () => {
   // One line (owner 2026-11-21): the date, then the verifier's disc, its name whole on hover and to a screen reader.
   it('shows when it was last verified on one line, and who by their disc, named in full', () => {
     const long = 'Priyamvada Nair-Oyelaran of Platform Reliability';
-    const { container } = render(<Rail {...props({ nameOf: (id) => (id ? long : undefined) })} />);
+    const { container } = renderRail(
+      <Rail {...props({ nameOf: (id) => (id ? long : undefined) })} />,
+    );
     const date = container.querySelector('[data-verified-date]')!;
     const by = container.querySelector('[data-verified-by]')!;
     expect(date.textContent).not.toBe('');
@@ -221,20 +238,20 @@ describe('Page Health', () => {
   });
 
   it('keeps every row while the reads load, and names a page never verified', () => {
-    const { container } = render(<Rail {...props({ trust: never, reads: undefined })} />);
-    expect(container.querySelectorAll('dt')).toHaveLength(6);
+    const { container } = renderRail(<Rail {...props({ trust: never, reads: undefined })} />);
+    expect(container.querySelectorAll('dt')).toHaveLength(4);
     expect(container.querySelector('[data-review-due]')!.textContent).toBe('Not Verified');
     // Reads not in yet count as none, never a dash.
     expect(screen.queryByText('–')).toBeNull();
-    expect(screen.getByText('People').parentElement!.textContent).toBe('0 People');
-    expect(screen.getByText('Agents').parentElement!.textContent).toBe('0 Agents');
+    expect(screen.getByText('by People').parentElement!.textContent).toBe('0 by People');
+    expect(screen.getByText('by Agents').parentElement!.textContent).toBe('0 by Agents');
     expect(screen.getByText('Never', { selector: 'dd' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Verify' })).toBeTruthy();
   });
 
   it('says when the review is due under the knowledgebase’s period, and draws no verification under Never', () => {
     const dueOf = (over: Partial<RailProps>) => {
-      const { container, unmount } = render(<Rail {...props(over)} />);
+      const { container, unmount } = renderRail(<Rail {...props(over)} />);
       const shown = [
         container.querySelector('[data-review-due]')?.textContent ?? null,
         container.querySelector('[data-review-period]')!.textContent,
@@ -253,12 +270,12 @@ describe('Page Health', () => {
     const yearly = dueOf({ trust: pageTrust(fields, 365, NOW), reviewEvery: 365 });
     expect(yearly.shown).toEqual([expect.stringContaining('2027'), 'Every Year']);
     // The same rows whatever period is set: nothing in the card moves when it changes.
-    expect(new Set([dueOf({}).rows, yearly.rows])).toEqual(new Set([6]));
+    expect(new Set([dueOf({}).rows, yearly.rows])).toEqual(new Set([4]));
     // Never (verification.md "Under a Review Period of Never"): Last Verified and Review Due go; Owner and the Review
     // Period, reading Never, stay so the period can be set again from here.
     const never = dueOf({ trust: pageTrust(fields, 'never', NOW), reviewEvery: 'never' });
     expect(never.shown).toEqual([null, 'Never']);
-    expect(never.rows).toBe(4);
+    expect(never.rows).toBe(2);
   });
 
   it.each([
@@ -269,7 +286,7 @@ describe('Page Health', () => {
     'under Never, %s sees no state, no Last Verified, no Review Due and no Verify',
     (_who, edits) => {
       const fields = { verifiedAt: NOW - 10 * DAY, verifiedBy: 'u1', owner: 'u1' };
-      const { container } = render(
+      const { container } = renderRail(
         <Rail
           {...props({
             trust: pageTrust(fields, 'never', NOW),
@@ -288,7 +305,7 @@ describe('Page Health', () => {
       expect(screen.queryByText(/Verified|Not Verified/)).toBeNull();
       // Set a period again and the same stored date shows, with its state.
       cleanup();
-      const back = render(<Rail {...props({ trust: pageTrust(fields, 90, NOW) })} />);
+      const back = renderRail(<Rail {...props({ trust: pageTrust(fields, 90, NOW) })} />);
       expect(
         back.container.querySelector('[data-page-state]')!.getAttribute('data-page-state'),
       ).toBe('verified');
@@ -297,13 +314,13 @@ describe('Page Health', () => {
   );
 
   it('keeps an owner it cannot name as the chosen one', () => {
-    render(<Rail {...props({ trust: pageTrust({ owner: 'u9' }, 90, NOW) })} />);
+    renderRail(<Rail {...props({ trust: pageTrust({ owner: 'u9' }, 90, NOW) })} />);
     expect(screen.getByLabelText<HTMLSelectElement>('Owner').value).toBe('u9');
     expect(screen.getByRole('option', { name: 'Someone Else' })).toBeTruthy();
   });
 
   it('leads with the state and how long the page stays fresh, its ring filled by the share of the period left', () => {
-    const { container } = render(<Rail {...props()} />);
+    const { container } = renderRail(<Rail {...props()} />);
     const state = container.querySelector('[data-page-state]')!;
     expect(state.getAttribute('data-page-state')).toBe('verified');
     expect(state.querySelector('p')!.textContent).toBe('Verified');
@@ -325,7 +342,7 @@ describe('Page Health', () => {
   });
 
   it('says who created the page and who last updated it, at its foot, and nothing when unknown', () => {
-    const { container, rerender } = render(
+    const { container, rerender } = renderRail(
       <Rail
         {...props({
           created: { at: NOW - 3 * DAY, by: 'Priya Nair' },

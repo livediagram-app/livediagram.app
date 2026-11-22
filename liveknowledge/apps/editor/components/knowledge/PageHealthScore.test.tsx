@@ -36,19 +36,20 @@ const facts = (over: Partial<PageHealthFacts> = {}): PageHealthFacts => ({
 describe('the score at the top of Page Health', () => {
   it('shows the figure, the word and the reason, the breakdown closed', () => {
     render(<PageHealthScore health={pageHealth(facts(), NOW)} fixes={{}} />);
-    const score = screen.getByRole('img', {
-      name: /^Health Score \d+ of 100, Needs Work: Never verified$/,
+    // The whole score is the breakdown's toggle, its name the score said in words.
+    const toggle = screen.getByRole('button', {
+      name: /^Health Score \d+ of 100, Needs Work: Never verified\. Score Breakdown$/,
     });
-    expect(score.textContent).toContain('Needs Work');
+    expect(toggle.textContent).toContain('Needs Work');
     expect(screen.getByText('Never verified')).toBeTruthy();
-    const toggle = screen.getByRole('button', { name: 'Score Breakdown' });
+    expect(screen.queryByText('Health Score')).toBeNull();
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(screen.queryByRole('list', { name: 'Score Breakdown' })).toBeNull();
   });
 
   it('opens to each factor with its points and what would raise it', () => {
     render(<PageHealthScore health={pageHealth(facts(), NOW)} fixes={{}} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Score Breakdown' }));
+    fireEvent.click(screen.getByRole('button', { name: /Score Breakdown$/ }));
     const list = screen.getByRole('list', { name: 'Score Breakdown' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(8);
     expect(within(list).getByText('Verify this page: +30')).toBeTruthy();
@@ -64,7 +65,7 @@ describe('the score at the top of Page Health', () => {
     const { rerender } = render(
       <PageHealthScore health={pageHealth(facts(), NOW)} fixes={{ verify, owner, heading }} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Score Breakdown' }));
+    fireEvent.click(screen.getByRole('button', { name: /Score Breakdown$/ }));
     const list = screen.getByRole('list', { name: 'Score Breakdown' });
     // Verification and Freshness both offer Verify.
     const verifies = within(list).getAllByRole('button', { name: 'Verify' });
@@ -82,14 +83,14 @@ describe('the score at the top of Page Health', () => {
   it('under a Review Period of Never shows no verification factor and no Verify', () => {
     const health = pageHealth(facts({ reviewDays: undefined }), NOW);
     render(<PageHealthScore health={health} fixes={{ verify: vi.fn() }} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Score Breakdown' }));
+    fireEvent.click(screen.getByRole('button', { name: /Score Breakdown$/ }));
     expect(screen.queryByText('Verification')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Verify' })).toBeNull();
   });
 
   it('says what it leaves out for a knowledgebase kept Offline', () => {
     render(<PageHealthScore health={pageHealth(facts(), NOW)} fixes={{}} offline />);
-    fireEvent.click(screen.getByRole('button', { name: 'Score Breakdown' }));
+    fireEvent.click(screen.getByRole('button', { name: /Score Breakdown$/ }));
     expect(
       screen.getByText('Kept in this browser: reads and open issues are not counted.'),
     ).toBeTruthy();

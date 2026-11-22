@@ -39,6 +39,9 @@ export const PageSurfaceSheet = memo(function PageSurfaceSheet({
       data-page-id={page.id}
       data-page-kind="article"
       data-page-surface=""
+      // Toasts stand at the page's left, over the document, never over the page tree beside it (owner 2026-11-22;
+      // the scroller runs under the tree, so its edge was the window's).
+      data-toast-start=""
       // Over the writing's paper (ArticleFlows, which takes a press anywhere on the page), so the breadcrumb in the
       // top margin is pressable; the box itself takes no press.
       className="pointer-events-none absolute z-[1]"

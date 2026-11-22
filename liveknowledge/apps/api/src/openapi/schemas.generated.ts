@@ -8521,6 +8521,20 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/PageHealthSignals",
         "description": "What the Health Score counts that the editor cannot see itself; absent from an older api."
       },
+      "suggestionCounts": {
+        "additionalProperties": {
+          "type": "number"
+        },
+        "description": "How many suggested edits wait on each page the reader may see, by page id, none at 0 (the tree's dots); absent from an older api.",
+        "type": "object"
+      },
+      "suggestions": {
+        "description": "The page's suggested edits waiting, newest first, the knowledgebase's cap at most (ai-knowledge.md \"On the page\"); absent from an older api.",
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeSuggestion"
+        },
+        "type": "array"
+      },
       "updated": {
         "$ref": "#/components/schemas/PageAuthorStamp"
       }

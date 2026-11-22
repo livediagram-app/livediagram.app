@@ -55,6 +55,7 @@ import {
   restoreContentState,
   ensureSchema,
   noteWrite,
+  noteOutboxOwed,
   drain,
   drainShares,
   drainIndex,
@@ -357,6 +358,7 @@ export class DocumentRoom extends DurableObject<Env> {
           ROOM_PEOPLE: () => roomPeople(this),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
           REVIEW_PERIOD_CHANGED: oweReviewCheck,
+          OUTBOX_OWED: () => noteOutboxOwed(this),
         }
       : undefined;
     this.drainEnv = this.roomEnv ? { ...this.roomEnv, DOCUMENT_DB: quiet } : undefined;

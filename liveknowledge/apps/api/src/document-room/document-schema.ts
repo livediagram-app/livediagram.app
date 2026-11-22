@@ -39,6 +39,7 @@ import { pageThreadsSchemaStep } from '../knowledge/page-threads';
 import { publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
+import { suggestionsOutboxStep } from '../knowledge/suggestions-outbox';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -446,6 +447,11 @@ const V38 = knowledgeShapeStep;
 // Additive, IF NOT EXISTS.
 const V39 = pageReactionsSchemaStep;
 
+// Step 40: a suggested edit writes its page's outbox key, so its owner's Inbox follows it
+// (knowledge/suggestions-outbox.ts; docs/specs/030-knowledgebase/ai-knowledge.md "In the owner's Inbox"). Additive,
+// IF NOT EXISTS; the pages with a suggestion already waiting are owed a push.
+const V40 = suggestionsOutboxStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -478,6 +484,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V37,
   V38,
   V39,
+  V40,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

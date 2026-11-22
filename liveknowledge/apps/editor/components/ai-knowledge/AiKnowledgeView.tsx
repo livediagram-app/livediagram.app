@@ -196,7 +196,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
                     );
                   },
                   accept: (suggestion) => {
-                    if (!rights.resolve) return;
+                    if (!rights.acceptSuggestions) return;
                     track('UI', 'Used', 'SuggestionAccepted');
                     void run(
                       `accept:${suggestion.id}`,
@@ -205,7 +205,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
                     );
                   },
                   dismissSuggestion: (suggestion) => {
-                    if (!rights.resolve) return;
+                    if (!rights.acceptSuggestions) return;
                     track('UI', 'Used', 'SuggestionDismissed');
                     void run(
                       `dismiss:${suggestion.id}`,

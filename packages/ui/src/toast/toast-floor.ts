@@ -12,7 +12,11 @@ export const BOTTOM_CHROME_SELECTOR =
 
 /** Bottom chrome the stack clears: the editor's, a template start's foot row (the Save switch, on a phone sheet), plus
  *  anything that opts in with `data-toast-floor` (the Explorer's bottom bar, a popover opened up from the bottom chrome). */
-export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], [data-toast-side], ${BOTTOM_CHROME_SELECTOR}`;
+export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], [data-toast-side], [data-toast-start], ${BOTTOM_CHROME_SELECTOR}`;
+
+/** A column whose left edge the stack aligns to, from 640px, while it stands on a side's line (liveknowledge's page
+ *  column: its toasts sit at the page's left, level with Edit and Zen, owner 2026-11-22). Never a floor. */
+export const TOAST_START_SELECTOR = '[data-toast-start]';
 
 /** The stack's distance from the bottom edge with nothing beneath it, and from the screen's sides on a phone. */
 export const TOAST_EDGE_PX = 16;
@@ -91,6 +95,8 @@ export type ToastPlacement = {
   bottom: number;
   /** The stack's CSS `right`, in px, when it stands beside a side (its toasts aligned to that edge); null: centred. */
   right: number | null;
+  /** The stack's CSS `left`, in px, when it aligns to a start column's left edge (its toasts aligned to it). */
+  left?: number | null;
 };
 
 /**
@@ -103,8 +109,10 @@ export function toastPlacement(input: {
   viewportHeight: number;
   floors: readonly FloorRect[];
   sides: readonly FloorRect[];
+  /** The column the stack aligns left to while it stands on a side's line (TOAST_START_SELECTOR). */
+  start?: FloorRect | null;
 }): ToastPlacement {
-  const { viewportWidth: w, viewportHeight: h, floors, sides } = input;
+  const { viewportWidth: w, viewportHeight: h, floors, sides, start = null } = input;
   if (w <= TOAST_PHONE_MAX_PX) {
     return {
       bottom: toastFloor({ viewportWidth: w, viewportHeight: h, obstacles: [...floors, ...sides] }),
@@ -120,13 +128,22 @@ export function toastPlacement(input: {
   const left = w / 2 - half;
   const right = w / 2 + half;
   let edge: number | null = null;
+  let onLine = false;
   for (const r of sides) {
     if (r.width <= 0 || r.height <= 0) continue;
     if (r.top >= h || r.top < h / 2) continue;
     // On the cluster's line wherever it is: a centred toast 8px lower than Undo read as out of line.
     bottom = Math.max(bottom, h - (r.top + r.height));
+    onLine = true;
     if (r.right <= left || r.left >= right) continue;
     edge = Math.max(edge ?? 0, w - r.left + TOAST_FLOOR_GAP_PX);
   }
+  // A start column: on the side's line, at the column's left edge instead of beside the side.
+  if (onLine && start && start.width > 0)
+    return {
+      bottom: Math.round(bottom),
+      right: null,
+      left: Math.round(start.left + TOAST_EDGE_PX),
+    };
   return { bottom: Math.round(bottom), right: edge === null ? null : Math.round(edge) };
 }

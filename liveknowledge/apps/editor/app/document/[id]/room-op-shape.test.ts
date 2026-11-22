@@ -39,6 +39,7 @@ const WELL_FORMED: Record<string, unknown>[] = [
     reaction: { emoji: '👏', by: 'k', name: 'Priya' },
     on: true,
   },
+  { kind: 'page-suggestions', tabIds: ['t1'] },
   // Presence, and a kind this build does not know, pass as they always have.
   { kind: 'cursor', x: 1, y: 2 },
   { kind: 'from-a-newer-build', anything: true },
@@ -78,6 +79,8 @@ describe('roomOpIsWellFormed', () => {
       'a page-reaction without on',
       { kind: 'page-reaction', tabId: 't1', reaction: { emoji: '👏', by: 'k', name: 'P' } },
     ],
+    ['a page-suggestions without its pages', { kind: 'page-suggestions' }],
+    ['a page-suggestions naming a page by number', { kind: 'page-suggestions', tabIds: [1] }],
     ['no kind at all', { tabId: 't1' }],
     ['not an object', 'el'],
   ])('refuses %s', (_why, op) => {

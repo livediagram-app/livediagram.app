@@ -24,7 +24,6 @@ import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import {
   BUILT_IN_NOTE,
   KEY_ENCRYPTED_NOTE,
-  TEAM_PAYS_ANY_NOTE,
   aiInUseTitle,
   aiSettingsFailureText,
   keyStateText,
@@ -42,7 +41,7 @@ import { AiProviderPicker, AiSourcePicker, type AiSource } from './AiProviderPic
 import { KeyIcon } from './ask-icons';
 import { useAiSettingsState, useAskSession, type AskSession } from './useAskSession';
 
-const SECTION_TITLE = 'text-sm font-semibold text-slate-900 dark:text-slate-100';
+const SECTION_TITLE = 'text-[13px] font-semibold text-slate-900 dark:text-slate-100';
 const NOTE = 'text-xs leading-relaxed text-slate-600 dark:text-slate-400';
 
 /** The dialog, drawn by the views' host: nothing until opened. */
@@ -179,9 +178,7 @@ export function AiSettingsDialog({
         >
           <DialogCloseButton onClick={onClose} />
         </DialogHeader>
-        {/* One height whatever is showing (loading, a key or none, an Editor or not), so nothing jumps when the
-            settings arrive or a key is saved. */}
-        <div className="flex min-h-[23rem] flex-col gap-5 px-6 py-5" data-ai-settings="">
+        <div className="flex flex-col gap-6 px-6 py-5" data-ai-settings="">
           {state.status === 'failed' ? (
             <Callout
               tone="error"
@@ -196,32 +193,7 @@ export function AiSettingsDialog({
             </Callout>
           ) : null}
 
-          {/* Which key answers you here (search-and-ask.md "Which key answers"): this knowledgebase's, else your
-              team's or your own from Settings › AI, else built-in AI. */}
-          {settings ? (
-            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-800/60">
-              <p
-                className="text-sm font-medium text-slate-900 dark:text-slate-100"
-                data-ai-in-use=""
-              >
-                {aiInUseTitle(settings) ?? 'No AI Here Yet'}
-              </p>
-              <Button
-                variant="ghost"
-                size="xs"
-                data-ai-your-keys=""
-                onClick={() => {
-                  track('UI', 'Opened', 'AiKeysSettings');
-                  onClose();
-                  chrome.get().openSettingsOn('ai');
-                }}
-              >
-                Your AI Keys
-              </Button>
-            </div>
-          ) : null}
-
-          <section aria-labelledby={`${titleId}-source`} className="flex flex-col gap-2">
+          <section aria-labelledby={`${titleId}-source`} className="flex flex-col gap-2.5">
             <h3 id={`${titleId}-source`} className={SECTION_TITLE}>
               Which AI
             </h3>
@@ -249,12 +221,16 @@ export function AiSettingsDialog({
           </section>
 
           {settings && source === 'own-key' ? (
-            <>
-              <section aria-labelledby={`${titleId}-provider`} className="flex flex-col gap-2">
+            // The key's three settings in one card, a hairline between each (owner 2026-11-22).
+            <div className="flex flex-col divide-y divide-slate-200/80 rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
+              <section
+                aria-labelledby={`${titleId}-provider`}
+                className="flex flex-col gap-2.5 p-4"
+              >
                 <h3 id={`${titleId}-provider`} className={SECTION_TITLE}>
                   Provider
                 </h3>
-                {settings && rights.manageAi ? (
+                {rights.manageAi ? (
                   <AiProviderPicker
                     providers={settings.providers}
                     chosen={provider}
@@ -264,56 +240,58 @@ export function AiSettingsDialog({
                   />
                 ) : (
                   <p
-                    className="min-h-12 text-sm text-slate-900 dark:text-slate-100"
+                    className="text-sm text-slate-900 dark:text-slate-100"
                     data-ai-provider-name=""
                   >
-                    {settings ? providerWords(stored).name : ''}
+                    {providerWords(stored).name}
                   </p>
                 )}
               </section>
 
-              <section aria-labelledby={`${titleId}-key`} className="flex flex-col gap-3">
-                <h3 id={`${titleId}-key`} className={SECTION_TITLE}>
-                  {settings ? `${providerWords(provider).spoken} API Key` : 'API Key'}
-                </h3>
-                <div className="flex min-h-12 items-center gap-3 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700">
-                  <span
-                    aria-hidden
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${
-                      settings?.hasKey
-                        ? 'bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-200'
-                        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-                    }`}
-                  >
-                    <KeyIcon />
-                  </span>
-                  <p
-                    role="status"
-                    data-ai-key-state=""
-                    className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900 dark:text-slate-100"
-                  >
-                    {settings
-                      ? replacing
-                        ? `${providerWords(stored).spoken} ${keyStateText(settings)}, in Use Until This One Is Saved`
-                        : switching
-                          ? 'No Key Yet'
-                          : keyStateText(settings)
-                      : state.status === 'failed'
-                        ? 'Not Known'
-                        : ''}
-                  </p>
-                  {settings?.hasKey && rights.manageAi ? (
-                    <Button
-                      variant="secondary"
-                      size="xs"
-                      disabled={busy !== null}
-                      onClick={() => setConfirmingRemove(true)}
+              <section aria-labelledby={`${titleId}-key`} className="flex flex-col gap-2.5 p-4">
+                <div className="flex min-h-7 items-center justify-between gap-3">
+                  <h3 id={`${titleId}-key`} className={SECTION_TITLE}>
+                    {`${providerWords(provider).spoken} API Key`}
+                  </h3>
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span
+                      role="status"
+                      data-ai-key-state=""
+                      className={`inline-flex min-w-0 items-center gap-1.5 truncate rounded-full px-2 py-0.5 text-xs font-medium ${
+                        settings.hasKey && !switching
+                          ? 'bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
                     >
-                      Remove
-                    </Button>
-                  ) : null}
+                      <span aria-hidden className="flex shrink-0">
+                        <KeyIcon />
+                      </span>
+                      <span className="truncate">
+                        {settings
+                          ? replacing
+                            ? `${providerWords(stored).spoken} ${keyStateText(settings)}, in Use Until This One Is Saved`
+                            : switching
+                              ? 'No Key Yet'
+                              : keyStateText(settings)
+                          : state.status === 'failed'
+                            ? 'Not Known'
+                            : ''}
+                      </span>
+                    </span>
+                    {settings.hasKey && rights.manageAi ? (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        disabled={busy !== null}
+                        onClick={() => setConfirmingRemove(true)}
+                        className="text-rose-700 dark:text-rose-300"
+                      >
+                        Remove
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
-                {rights.manageAi && settings ? (
+                {rights.manageAi ? (
                   <AiKeyForm
                     // A field of its own for each provider: nothing typed for one is ever sent as the other's.
                     key={provider}
@@ -324,47 +302,42 @@ export function AiSettingsDialog({
                   />
                 ) : null}
                 <p className={NOTE}>
-                  {KEY_ENCRYPTED_NOTE} {settings ? teamPaysNote(provider) : TEAM_PAYS_ANY_NOTE}
+                  {KEY_ENCRYPTED_NOTE} {teamPaysNote(provider)}
                 </p>
               </section>
 
-              <section aria-labelledby={`${titleId}-model`} className="flex flex-col gap-2">
-                <h3 id={`${titleId}-model`} className={SECTION_TITLE}>
-                  Model
-                </h3>
-                {switching ? (
-                  <p
-                    className="min-h-[30px] text-sm text-slate-900 dark:text-slate-100"
-                    data-ai-model-pending=""
-                  >
-                    {providerWords(provider).spoken}&apos;s most capable model, until you choose
-                    another once the key is saved.
-                  </p>
-                ) : settings && rights.manageAi ? (
-                  <Select
-                    aria-labelledby={`${titleId}-model`}
-                    value={settings.model}
-                    disabled={busy !== null}
-                    className="self-start"
-                    selectClassName="min-w-[14rem]"
-                    onChange={(event) => setModel(event.target.value)}
-                  >
-                    {settings.models.map((model) => (
-                      <option key={model.id} value={model.id}>
-                        {model.label}
-                      </option>
-                    ))}
-                  </Select>
-                ) : (
-                  <p className="min-h-[30px] text-sm text-slate-900 dark:text-slate-100">
-                    {modelLabel}
-                  </p>
-                )}
-                <p className={NOTE}>
-                  The model that writes each answer. A larger model costs more.
+              <section aria-labelledby={`${titleId}-model`} className="flex flex-col gap-2 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                  <h3 id={`${titleId}-model`} className={SECTION_TITLE}>
+                    Model
+                  </h3>
+                  {switching ? null : rights.manageAi ? (
+                    <Select
+                      aria-labelledby={`${titleId}-model`}
+                      value={settings.model}
+                      disabled={busy !== null}
+                      selectClassName="min-w-[13rem]"
+                      onChange={(event) => setModel(event.target.value)}
+                    >
+                      {settings.models.map((model) => (
+                        <option key={model.id} value={model.id}>
+                          {model.label}
+                        </option>
+                      ))}
+                    </Select>
+                  ) : (
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {modelLabel}
+                    </p>
+                  )}
+                </div>
+                <p className={NOTE} {...(switching ? { 'data-ai-model-pending': '' } : {})}>
+                  {switching
+                    ? `${providerWords(provider).spoken}'s most capable model, until you choose another once the key is saved.`
+                    : 'The model that writes each answer. A larger model costs more.'}
                 </p>
               </section>
-            </>
+            </div>
           ) : null}
 
           {failure ? (
@@ -373,7 +346,7 @@ export function AiSettingsDialog({
             </Callout>
           ) : null}
           {!rights.manageAi ? (
-            <p className={`${NOTE} mt-auto`} data-ai-settings-read-only="">
+            <p className={NOTE} data-ai-settings-read-only="">
               {rights.askOff === 'offline'
                 ? 'A knowledgebase kept Offline has no Ask: there is no server to ask.'
                 : 'Only an Editor of this knowledgebase can change these.'}
@@ -381,6 +354,33 @@ export function AiSettingsDialog({
           ) : null}
         </div>
         <DialogFooter>
+          {/* Which key answers you here (search-and-ask.md "Which key answers"), and the way to your own keys. */}
+          <div className="mr-auto flex min-w-0 items-center gap-2">
+            {settings ? (
+              <span
+                data-ai-in-use=""
+                className="inline-flex min-w-0 items-center gap-1.5 truncate text-xs font-medium text-slate-600 dark:text-slate-300"
+              >
+                <span
+                  aria-hidden
+                  className={`size-2 shrink-0 rounded-full ${aiInUseTitle(settings) ? 'bg-brand-500' : 'bg-slate-300'}`}
+                />
+                {aiInUseTitle(settings) ?? 'No AI Here Yet'}
+              </span>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="xs"
+              data-ai-your-keys=""
+              onClick={() => {
+                track('UI', 'Opened', 'AiKeysSettings');
+                onClose();
+                chrome.get().openSettingsOn('ai');
+              }}
+            >
+              Your AI Keys
+            </Button>
+          </div>
           <Button variant="primary" onClick={onClose}>
             Done
           </Button>

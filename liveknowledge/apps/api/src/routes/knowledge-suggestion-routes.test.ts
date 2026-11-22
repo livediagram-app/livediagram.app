@@ -129,8 +129,9 @@ describe('accepting a suggestion', () => {
   const accept = (who: Who, id: string) =>
     kit.call(who, 'POST', `/api/documents/kb/suggestions/${id}/accept`);
 
+  // An Editor's alone (ai-knowledge.md "Share roles", Work Tracker 1362): a Participant's agent suggests, never decides.
   it.each<[Who, number]>([
-    ['participant', 200],
+    ['participant', 403],
     ['viewer', 403],
     ['link', 403],
     ['participant-agent', 403],
@@ -233,13 +234,16 @@ describe('accepting a suggestion', () => {
   });
 
   it('answers 404 for a suggestion that is not waiting', async () => {
-    expect((await accept('editor', 'sg_0000000000')).status).toBe(404);
+    const res = await accept('editor', 'sg_0000000000');
+    expect(res.status).toBe(404);
+    // The Inbox reads this code as already answered (one-explorer-contracts.md "Suggested edits").
+    expect((await res.json<{ error: string }>()).error).toBe('suggestion_not_found');
   });
 });
 
 describe('dismissing a suggestion', () => {
   it.each<[Who, number]>([
-    ['participant', 204],
+    ['participant', 403],
     ['viewer', 403],
     ['agent-stored', 403],
     ['agent', 403],
@@ -256,6 +260,35 @@ describe('dismissing a suggestion', () => {
     expect((await kit.call('editor', 'GET', '/api/documents/kb/suggestions/x/accept')).status).toBe(
       405,
     );
+  });
+});
+
+describe("a page's suggestions on its Page Health read", () => {
+  const health = async (who: Who, tab = 'deploys') =>
+    (
+      await kit.call(who, 'GET', `/api/documents/kb/pages/${tab}/health`)
+    ).json<PageHealthResponse>();
+
+  it("carries the page's suggestions and every page's count, to every role", async () => {
+    const { id } = await made();
+    for (const who of ['editor', 'participant', 'viewer'] as const) {
+      const read = await health(who);
+      expect(read.suggestions?.map((s) => s.id)).toEqual([id]);
+      expect(read.suggestions?.[0]).toMatchObject({
+        before: BEFORE,
+        after: AFTER,
+        kind: 'replace',
+      });
+      expect(read.suggestionCounts).toEqual({ deploys: 1 });
+    }
+  });
+
+  it('says none once the suggestion is decided', async () => {
+    const { id } = await made();
+    await kit.call('editor', 'POST', `/api/documents/kb/suggestions/${id}/dismiss`);
+    const read = await health('editor');
+    expect(read.suggestions).toEqual([]);
+    expect(read.suggestionCounts).toEqual({});
   });
 });
 

@@ -28,6 +28,7 @@ const INBOX_TABLES = [
   'collab_actions',
   'collab_form_reads',
   'collab_forms',
+  'collab_suggestions',
 ] as const;
 
 /** The statements that archive `row` at `now`, in the order blueprints/archive.md lists them. */

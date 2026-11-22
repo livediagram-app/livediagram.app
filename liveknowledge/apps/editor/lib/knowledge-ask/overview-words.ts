@@ -1,4 +1,5 @@
 // What AI Knowledge says of what the room counted (docs/specs/030-knowledgebase/ai-knowledge.md). Pure.
+import { HEALTH_LABEL_WORDS } from '@liveknowledge/knowledge';
 import type {
   AgentScope,
   KnowledgeAgent,
@@ -148,14 +149,20 @@ export function agentSample(overview: KnowledgeOverviewResponse | null, now: num
             ? 'review due (stale)'
             : 'never verified'
         : 'verified';
+  // Every result carries its page's Health Score too (search-and-ask.md "Sources"; owner 2026-11-22: the sample left it
+  // out, so it read as if agents never see it).
+  const health = side ? side.health : { score: 92, label: 'healthy' as const };
   return [
     `search_knowledge("${page.toLowerCase()}")`,
     '',
     `1. ${page}`,
     `   trust: ${trust}`,
+    ...(health
+      ? [`   health: ${health.score} (${HEALTH_LABEL_WORDS[health.label].toLowerCase()})`]
+      : []),
     `   "${text}"`,
     '',
-    'An agent is handed the passage, its page and how far to trust it,',
+    'An agent is handed the passage, its page, how far to trust it and its health,',
     'so it can say where an answer came from.',
   ].join('\n');
 }

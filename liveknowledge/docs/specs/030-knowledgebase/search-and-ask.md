@@ -252,6 +252,7 @@ strangers.
   or, on a deployment with no built-in AI, no key ("Built-In AI Is Not Set Up Here": an Editor gets **Open AI
   Settings**; anyone else is told to ask an Editor). A knowledgebase with no key is not off: built-in AI answers.
   Each says why, and each offers **Search the Pages**.
+  Ask's own header has no Search the Pages button (owner 2026-11-22): only these states offer it.
 - **The Ask gate** (owner 2026-11-21: "couldn't that have been a modal / drawer on mobile rather than another screen
   entirely"): pressing the Ask tab when Ask is off for not being signed in (or, with no built-in AI, for no key) stays on the knowledgebase
   and opens those same words in a dialog over it, a sheet on a phone. Its actions close it first (Open AI Settings
@@ -278,20 +279,22 @@ strangers.
   category of the Settings panel: Settings holds a person's own preferences on a device and an account, and has a
   copy on liveworkspace.app where no knowledgebase is open; the key and the model belong to one knowledgebase and
   are the same for everyone in it.
-- It opens with **Which AI**: two bordered rows, **Built-In AI** ("No key to add. Daily limits apply.", an "Included" pill)
+- It opens with **Which AI**: two stacked rows, each with a radio mark at its end (owner 2026-11-22: the dialog
+  looked heavy), **Built-In AI** ("No key to add. Daily limits apply.", an "Included" pill)
   and **Your Own Key** ("Anthropic or OpenAI, billed to your team"). With no key saved Built-In AI is chosen;
-  with one, Your Own Key. Choosing Your Own Key shows the **Provider** ([Providers](#providers)), the key and the
-  **Model**; until a key is saved built-in AI stays in use. Choosing Built-In AI with a key saved asks first
+  with one, Your Own Key. Choosing Your Own Key shows one card, a hairline between its parts: the **Provider** (a
+  compact two-way switch, [Providers](#providers)), the key and the **Model**; until a key is saved built-in AI stays in use. Choosing Built-In AI with a key saved asks first
   ("Use Built-In AI Instead?") and removes the key. On a deployment with no built-in AI its row says "Not set up
   on this server" and cannot be chosen.
-- For a key it shows the key's state ("No Key Yet", "Key Ending 4f2a"; "Key Added" to someone the ending is not
-  told), a password field to add or **Replace** it, **Remove** (asked first), the **Model** and two sentences: the
+- For a key it shows the key's state as a small pill beside its heading ("No Key Yet", "Key Ending 4f2a"; "Key
+  Added" to someone the ending is not told), a password field to add or **Replace** it, **Remove** (asked first), the **Model** and two sentences: the
   key is encrypted and never shown again, and the team pays its provider (named: Anthropic or OpenAI) for what it
   uses. On built-in AI: one line, that questions, conflict checks and drafts run on built-in AI with daily limits.
 - The typed key is held only in the field. It is read once when sent and the field is cleared in the same turn,
   whatever the answer. It is never kept in the page's state, a browser store, a log, telemetry or an error message.
 - An Editor has the controls; a Participant and a Viewer see the state and the model with none.
-- Under Which AI, one line says which AI answers this person now, and **Your AI Keys** opens the shared Settings
+- On a phone it is a bottom sheet with a grab handle (a drawer), as every working dialog is.
+- In the footer, left of **Done**, one line with a dot says which AI answers this person now, and **Your AI Keys** opens the shared Settings
   category ([Which key answers](#which-key-answers)): with no knowledgebase key, a team's or the person's own key
   answers before built-in AI.
 
