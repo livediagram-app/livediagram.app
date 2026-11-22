@@ -84,7 +84,7 @@ src/cross-app/
 ```
 src/automation-steps.ts         POST /app/items/:id/automation-steps (app-routes.ts), GET /items/:id/automation-target
 src/automation-step-notices.ts  inbox_notice: the notices written, the Inbox read of them
-migrations/0028_automation_steps.sql
+migrations/0029_automation_steps.sql
 ```
 
 | Table                  | Holds                                                                             |
