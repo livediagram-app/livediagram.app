@@ -276,6 +276,17 @@ export const articles: Article[] = [
     group: 'Trust',
     ...APPS,
   },
+  {
+    slug: 'required-reading',
+    title: 'Required Reading',
+    description:
+      'Ask everyone, or chosen people, to confirm they read a page, see who has, and remind the rest.',
+    keywords:
+      'required reading read confirm confirmation acknowledge acknowledgement attest policy compliance code of conduct security handbook mandatory must read remind reminder read again',
+    ...KNOWLEDGEBASE,
+    group: 'Trust',
+    ...APPS,
+  },
   // ---- Knowledgebase: Finding Things ----
   {
     slug: 'searching-a-knowledgebase',

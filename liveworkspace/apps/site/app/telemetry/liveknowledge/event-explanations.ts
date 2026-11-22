@@ -870,6 +870,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|WatchSectionOn':
     'Someone started watching a section: a page and every page under it, to hear when they change.',
   'UI|Toggled|WatchSectionOff': 'Someone stopped watching a section.',
+  'UI|Used|RequiredReadingSet':
+    'An Editor made a page Required Reading, for everyone or chosen people, or changed who it asks.',
+  'UI|Used|RequiredReadingStopped': 'An Editor stopped a page being Required Reading.',
+  'UI|Used|ReadConfirmed': "Someone pressed I've Read This on a Required Reading page.",
+  'UI|Used|ReadingReminded':
+    'An Editor or the page owner pressed Remind, emailing those who have not confirmed a Required Reading page.',
+  'UI|Used|ReadingAskedAgain':
+    'An Editor saved a Required Reading page asking everyone to read it again, clearing its confirmations.',
   'UI|Toggled|NotifyWatchDigestOn':
     'Someone switched on the Daily Digest of Watched Pages email in Settings.',
   'UI|Toggled|NotifyWatchDigestOff':
