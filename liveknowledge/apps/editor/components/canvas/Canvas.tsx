@@ -1,3 +1,4 @@
+import { usePageHasAncestors } from '@/components/page-tree/PageBreadcrumb';
 import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
@@ -112,12 +113,14 @@ function CanvasView(props: CanvasProps) {
   // A knowledgebase page's cover band (page-surface.md "The cover") stands over its top room.
   const continuousPage = !!leadPage && isContinuousPage(leadPage);
   const hasCover = usePageHasCover() && continuousPage;
+  const hasCrumbs = usePageHasAncestors();
   const { view: lockedView, scrollerRef } = usePageSurface({
     mainRef,
     page: leadPage?.rect,
     margin: pageMargin,
     topMargin: articleTopMarginPx(leadStyle),
     hasCover,
+    crumbs: hasCrumbs,
   });
   const phone = useIsMobileViewport();
   const { zoom: viewportZoom, offset: viewportOffset } = lockedView;

@@ -43,6 +43,7 @@ export function usePageSurface({
   margin,
   topMargin = margin,
   hasCover = false,
+  crumbs = false,
 }: {
   mainRef: Ref<HTMLElement>;
   /** The open page's sheet in canvas px; absent while the tab has no page yet. */
@@ -52,6 +53,8 @@ export function usePageSurface({
   topMargin?: number;
   /** The open page has a cover (page-surface.md "The cover"): its band stands over the page's top room. */
   hasCover?: boolean;
+  /** The open page shows a breadcrumb (it has a parent): under a cover, its row needs room. */
+  crumbs?: boolean;
 }): PageSurface {
   const store = useViewportStore();
   const pageStore = pageViewportOf(store);
@@ -93,6 +96,7 @@ export function usePageSurface({
         topMargin,
         phone,
         cover,
+        crumbs,
       });
       pageStore.lockTo(lock.view);
       // How tall the window lets a page be: the writing fills it, however short the stored page is.
@@ -128,7 +132,7 @@ export function usePageSurface({
       sizes.disconnect();
       chrome.disconnect();
     };
-  }, [mainRef, pageStore, x, y, pageWidth, margin, topMargin, phone, hasCover]);
+  }, [mainRef, pageStore, x, y, pageWidth, margin, topMargin, phone, hasCover, crumbs]);
   // The page's own scroll keys, while the focus is on the page and not in its writing or a field.
   useEffect(() => {
     if (!pageStore) return;

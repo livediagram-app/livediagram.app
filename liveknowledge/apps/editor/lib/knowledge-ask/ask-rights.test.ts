@@ -19,6 +19,7 @@ describe('who may do what in Ask and AI Knowledge', () => {
       manageAi: true,
       makePages: true,
       resolve: true,
+      acceptSuggestions: true,
       context: true,
       grantAgents: true,
       emailOwners: true,
@@ -31,10 +32,18 @@ describe('who may do what in Ask and AI Knowledge', () => {
       manageAi: false,
       makePages: false,
       resolve: false,
+      acceptSuggestions: false,
       context: false,
       grantAgents: false,
       emailOwners: false,
     });
+  });
+
+  it('keeps accepting and dismissing a suggested edit for an Editor (Work Tracker 1362)', () => {
+    const participant = session('participate', { isStructureReadOnly: false });
+    expect(participant.resolve).toBe(true);
+    expect(participant.acceptSuggestions).toBe(false);
+    expect(session('edit').acceptSuggestions).toBe(true);
   });
 
   it('turns Ask off for anyone not signed in, whatever their role', () => {
@@ -48,6 +57,7 @@ describe('who may do what in Ask and AI Knowledge', () => {
       manageAi: false,
       makePages: false,
       resolve: false,
+      acceptSuggestions: false,
       context: false,
       grantAgents: false,
       emailOwners: false,

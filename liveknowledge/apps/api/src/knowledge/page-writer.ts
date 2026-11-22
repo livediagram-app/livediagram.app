@@ -111,6 +111,15 @@ export function stampOf(
 // A guest's owner id (`guest_…`, never an account's `user_…`) on a stamp, and not one already naming a guest.
 const isGuestOwner = (by: string): boolean => !!by && !isAccountIdShape(by) && !isGuestVerifier(by);
 
+/** Who a save by `owner` is stamped as: a guest by the name they edit under (`guest:<name> (Guest)`, guestVerifier),
+ *  as their Verify is, since a guest has no profile to name them from later (owner 2026-11-22: Updated read "Guest");
+ *  a guest with no name, an account and an agent as they are. */
+export function savedBy(owner: string, name: string | null | undefined): string {
+  if (!isGuestOwner(owner)) return owner;
+  const named = guestVerifier(name);
+  return isGuestVerifier(named) && named.includes(':') ? named : owner;
+}
+
 /** The guests' owner ids among stamps, once each: whose names to read. */
 export const guestOwnersOf = (stamps: readonly { by: string }[]): string[] => [
   ...new Set(stamps.map((s) => s.by).filter(isGuestOwner)),

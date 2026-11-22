@@ -29,6 +29,9 @@ export function entryPlace(e: InboxEntry): ItemPlace {
     case 'AccessRequest':
       // The item itself, where its Share dialog is.
       return {};
+    case 'Suggestion':
+      // The page, with the suggestion's popover open.
+      return { tabId: e.row.tabId, suggestionId: e.row.suggestionId };
   }
 }
 
@@ -36,6 +39,18 @@ export function entryPlace(e: InboxEntry): ItemPlace {
  *  index's own (./AccessRequestPane). */
 export function entryTarget(e: InboxEntry): InboxTarget | null {
   if (e.kind === 'FormResponses' || e.kind === 'AccessRequest') return null;
+  if (e.kind === 'Suggestion') {
+    const r = e.row;
+    return {
+      kind: 'Suggestion',
+      app: r.app,
+      itemId: r.itemId,
+      tabId: r.tabId,
+      elementId: r.suggestionId,
+      actionId: null,
+      local: false,
+    };
+  }
   const r = e.row;
   return {
     kind: e.kind,
@@ -49,7 +64,8 @@ export function entryTarget(e: InboxEntry): InboxTarget | null {
 }
 
 /** The verbs the pane offers for a row on this page: the host's say, kept to the ones that make sense for the
- *  row's kind (a thread replies and resolves, an action or a card is marked done). */
+ *  row's kind (a thread replies and resolves, an action or a card is marked done, a suggested edit is accepted or
+ *  dismissed). */
 export function offeredVerbs(
   e: InboxEntry,
   offers: ((t: InboxTarget) => readonly InboxVerb[]) | undefined,
@@ -58,6 +74,10 @@ export function offeredVerbs(
   if (!target || !offers) return [];
   const said = offers(target);
   const fits: readonly InboxVerb[] =
-    e.kind === 'Thread' || e.kind === 'CardThread' ? ['reply', 'resolve'] : ['done'];
+    e.kind === 'Thread' || e.kind === 'CardThread'
+      ? ['reply', 'resolve']
+      : e.kind === 'Suggestion'
+        ? ['accept', 'dismiss']
+        : ['done'];
   return fits.filter((v) => said.includes(v));
 }

@@ -27,7 +27,7 @@ import { useShowAll } from './useShowAll';
 export const CONTEXT_CAP = 5;
 
 // Light theme: dark, mid, light. Dark theme: light, mid, dark. Each neighbour is a clear step of lightness apart.
-const HEALTH_FILL: Record<HealthPart['key'], string> = {
+export const HEALTH_FILL: Record<HealthPart['key'], string> = {
   verified: 'bg-brand-700 dark:bg-brand-300',
   reviewDue: 'bg-amber-400 dark:bg-amber-500',
   neverVerified: 'bg-slate-300 dark:bg-slate-600',

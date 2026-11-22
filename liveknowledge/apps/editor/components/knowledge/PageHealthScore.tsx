@@ -12,7 +12,16 @@ import {
   type PageHealthLabel,
   type PageHealthScore as Score,
 } from '@liveknowledge/knowledge';
-import { CheckIcon, DisclosureIcon, HeadingIcon, OwnerIcon } from './knowledge-icons';
+import { Collapse } from './Collapse';
+import {
+  CheckIcon,
+  CommentFixIcon,
+  ConflictFixIcon,
+  DisclosureIcon,
+  HeadingIcon,
+  OwnerIcon,
+  SuggestionFixIcon,
+} from './knowledge-icons';
 
 /** The fixes this person may make, each absent where they may not. */
 export type PageHealthFixes = Partial<Record<PageHealthFix, () => void>>;
@@ -40,11 +49,17 @@ const FIX_WORDS: Record<PageHealthFix, string> = {
   verify: 'Verify',
   owner: 'Set an Owner',
   heading: 'Add a Heading',
+  conflicts: 'Show Conflicts',
+  comments: 'Show Comments',
+  suggestions: 'Show Suggested Edits',
 };
 const FIX_ICONS: Record<PageHealthFix, () => React.JSX.Element> = {
   verify: CheckIcon,
   owner: OwnerIcon,
   heading: HeadingIcon,
+  conflicts: ConflictFixIcon,
+  comments: CommentFixIcon,
+  suggestions: SuggestionFixIcon,
 };
 
 // The ring: the score's share of 100 in the word's colour over a faint track, the figure inside.
@@ -100,10 +115,15 @@ export function PageHealthScore({
   const word = HEALTH_LABEL_WORDS[health.label];
   return (
     <div data-health-score={health.label} className="mt-3">
-      <div
-        role="img"
-        aria-label={`Health Score ${health.score} of 100, ${word}: ${health.reason}`}
-        className="flex items-center gap-3.5"
+      {/* The whole score is the disclosure: pressing it opens and closes the breakdown (owner 2026-11-22). */}
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panel}
+        aria-label={`Health Score ${health.score} of 100, ${word}: ${health.reason}. Score Breakdown`}
+        data-health-toggle=""
+        onClick={() => setOpen((was) => !was)}
+        className="group -mx-1 flex w-[calc(100%+0.5rem)] cursor-pointer items-center gap-3.5 rounded-xl px-1 py-1 text-left motion-safe:transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800/50"
       >
         <ScoreRing score={health.score} label={health.label} />
         <div className="min-w-0">
@@ -114,32 +134,21 @@ export function PageHealthScore({
             >
               {word}
             </span>
-            <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-              Health Score
-            </span>
           </p>
           <p data-health-reason="" className="truncate text-xs text-slate-600 dark:text-slate-400">
             {health.reason}
           </p>
         </div>
-      </div>
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={panel}
-        onClick={() => setOpen((was) => !was)}
-        className="mt-2 flex min-h-8 w-full cursor-pointer items-center justify-between rounded-md px-1 text-xs font-medium text-slate-600 transition hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        Score Breakdown
         <span
-          className={`flex text-slate-400 motion-safe:transition-transform motion-safe:duration-200 ${open ? 'rotate-180' : ''}`}
+          aria-hidden
+          className={`ml-auto flex shrink-0 text-slate-400 motion-safe:transition-transform motion-safe:duration-micro group-hover:text-slate-600 dark:group-hover:text-slate-300 ${open ? 'rotate-180' : ''}`}
         >
           <DisclosureIcon />
         </span>
       </button>
-      {open ? (
-        <div id={panel}>
-          <ul className="flex flex-col gap-2.5 pt-1" aria-label="Score Breakdown">
+      <Collapse open={open} id={panel}>
+        <div>
+          <ul className="flex flex-col gap-2.5 pt-3" aria-label="Score Breakdown">
             {health.factors.map((f) => {
               const fix = f.fix ? fixes[f.fix] : undefined;
               const Icon = f.fix ? FIX_ICONS[f.fix] : null;
@@ -190,7 +199,7 @@ export function PageHealthScore({
             </p>
           ) : null}
         </div>
-      ) : null}
+      </Collapse>
     </div>
   );
 }

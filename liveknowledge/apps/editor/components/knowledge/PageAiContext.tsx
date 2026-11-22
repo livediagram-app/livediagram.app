@@ -1,18 +1,17 @@
 'use client';
 
 // AI Context in the right rail (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"): whether every
-// agent is handed this page first, and the agents that read it this week (shown only when there are some: owner
-// 2026-11-21). The questions Ask answered from it are Page Insights' now (PageInsights.tsx). It reads nothing of its
+// agent is handed this page first. The agents that read it this week are Read This Week's popover now (ReadByAgents.tsx,
+// owner 2026-11-22). The questions Ask answered from it are Page Insights' now (PageInsights.tsx). It reads nothing of its
 // own: the agents ride Page Health's one read. Quiet, as the rest of the rail is: small-capital headings, no card, no
 // border.
 import { useId } from 'react';
-import type { PageAgentReads } from '@liveknowledge/api-schema';
 import { Switch } from '@liveknowledge/ui';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { AgentsIcon, ContextIcon } from './knowledge-icons';
+import { ContextIcon } from './knowledge-icons';
 import { RAIL_LABEL } from './PageHealthCard';
 import type { PageKnowledgeView } from './usePageKnowledge';
 
@@ -20,20 +19,17 @@ export type PageAiContextProps = {
   inContext: boolean;
   /** The page's size against the budget; undefined before Page Health is read. */
   tokens: number | undefined;
-  /** Undefined before Page Health is read. */
-  agents: readonly PageAgentReads[] | undefined;
   /** Absent for anyone who may not change it: the state reads as words. */
   onSetContext: ((on: boolean) => void) | undefined;
 };
 
-const SUB_LABEL = 'text-xs font-medium text-slate-500 dark:text-slate-400';
 const QUIET = 'text-[13px] leading-5 text-slate-500 dark:text-slate-400';
 
 /** "About 1,200 tokens". */
 export const aboutTokens = (n: number): string =>
   `About ${n.toLocaleString('en')} ${n === 1 ? 'token' : 'tokens'}`;
 
-export function PageAiContext({ inContext, tokens, agents, onSetContext }: PageAiContextProps) {
+export function PageAiContext({ inContext, tokens, onSetContext }: PageAiContextProps) {
   const labelId = useId();
   const sizeId = useId();
   return (
@@ -84,27 +80,6 @@ export function PageAiContext({ inContext, tokens, agents, onSetContext }: PageA
           />
         ) : null}
       </div>
-
-      {agents === undefined || agents.length === 0 ? null : (
-        <div data-ai-context-agents="" className="mt-5">
-          <h3 className={SUB_LABEL}>Read by Agents</h3>
-          <ul className="mt-1.5 flex flex-col">
-            {agents.map((a) => (
-              <li key={a.agent} data-page-agent="" className="flex min-h-8 items-center gap-2">
-                <span className="flex text-slate-400 dark:text-slate-400/60" aria-hidden>
-                  <AgentsIcon />
-                </span>
-                <span className="min-w-0 flex-1 truncate font-medium text-slate-800 dark:text-slate-200">
-                  {a.agent}
-                </span>
-                <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">
-                  {a.reads.toLocaleString('en')} {a.reads === 1 ? 'read' : 'reads'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </section>
   );
 }
@@ -119,7 +94,6 @@ export function PageRailAiContext({ page }: { page: PageKnowledgeView }) {
     <PageAiContext
       inContext={page.trust.fields.context === true}
       tokens={health?.knowledge.tokens}
-      agents={health ? (health.agents ?? []) : undefined}
       onSetContext={
         rights.editFields
           ? (on) => {

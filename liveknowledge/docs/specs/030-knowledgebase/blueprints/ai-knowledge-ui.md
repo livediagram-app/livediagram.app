@@ -5,21 +5,21 @@ its actions call ([api.md](../../015-api/api.md) "Knowledge"). It is drawn on th
 [Ask UI blueprint](ask-ui.md) "The views" describes and shares its session, rights, page picker, Draft a Page
 and AI Settings. The dashboard was seen in a browser on 2026-11-21; a conflict's row only through a stubbed read.
 
-| Piece                                     | File                                                                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| the read and the actions' runner          | `components/ai-knowledge/useKnowledgeOverview.ts`                                                            |
-| the view: its states, actions and dialogs | `components/ai-knowledge/AiKnowledgeView.tsx`                                                                |
-| the dashboard's layout and its loading    | `components/ai-knowledge/AiDashboard.tsx`, `DashboardLoading.tsx`                                            |
-| the figures band and its sparkline        | `components/ai-knowledge/FigureTiles.tsx`, `ReadsSparkline.tsx`                                              |
-| Needs Attention and its rows              | `NeedsAttention.tsx`, `ConflictRow.tsx`, `QuestionRow.tsx`, `SuggestionRow.tsx`                              |
-| a card, its cap and Show All              | `components/ai-knowledge/AiSection.tsx`, `useShowAll.tsx`                                                    |
-| the other cards                           | `AgentsSection.tsx`, `HealthAndContext.tsx`, `MostReadCard.tsx`                                              |
-| an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                   |
-| Connect an Agent                          | the Connect view ([its blueprint](mcp-connect-ui.md))                                                        |
-| the owner emails' requests and words      | `lib/api/knowledge-emails.ts`, `lib/knowledge-ask/email-words.ts`                                            |
-| the words and the figures                 | `lib/knowledge-ask/overview-words.ts`, `lib/knowledge-ask/dashboard-figures.ts`                              |
-| accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                       |
-| the reads by day and Most Read (api)      | `countDailyReads` + `dailyReads`, `countMostRead` in `packages/knowledge/src/sql/reads.ts`; `handleOverview` |
+| Piece                                     | File                                                                                                                    |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| the read and the actions' runner          | `components/ai-knowledge/useKnowledgeOverview.ts`                                                                       |
+| the view: its states, actions and dialogs | `components/ai-knowledge/AiKnowledgeView.tsx`                                                                           |
+| the dashboard's layout and its loading    | `components/ai-knowledge/AiDashboard.tsx`, `DashboardLoading.tsx`                                                       |
+| the figures band and its pictures         | `components/ai-knowledge/FigureTiles.tsx`, `ReadsSparkline.tsx`, `TileVisuals.tsx`, `lib/knowledge-ask/tile-visuals.ts` |
+| Needs Attention and its rows              | `NeedsAttention.tsx`, `ConflictRow.tsx`, `QuestionRow.tsx`, `SuggestionRow.tsx`                                         |
+| a card, its cap and Show All              | `components/ai-knowledge/AiSection.tsx`, `useShowAll.tsx`                                                               |
+| the other cards                           | `AgentsSection.tsx`, `HealthAndContext.tsx`, `MostReadCard.tsx`                                                         |
+| an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                              |
+| Connect an Agent                          | the Connect view ([its blueprint](mcp-connect-ui.md))                                                                   |
+| the owner emails' requests and words      | `lib/api/knowledge-emails.ts`, `lib/knowledge-ask/email-words.ts`                                                       |
+| the words and the figures                 | `lib/knowledge-ask/overview-words.ts`, `lib/knowledge-ask/dashboard-figures.ts`                                         |
+| accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                                  |
+| the reads by day and Most Read (api)      | `countDailyReads` + `dailyReads`, `countMostRead` in `packages/knowledge/src/sql/reads.ts`; `handleOverview`            |
 
 ## The read
 
@@ -65,6 +65,13 @@ Below `lg` they are one column. The content is at most `max-w-7xl`, centred, `px
   day, a 1px hairline for a day with none, `preserveAspectRatio="none"`, 28px high, the tile's width. Inside the
   tile's button it is hidden from screen readers; its words (`readsSparkLabel(days)`) are part of the tile's
   description instead, since a button's content is not read as its own image.
+- **The other tiles' pictures** (`TileVisuals.tsx`, from the pure `tile-visuals.ts`): each a 28px strip in the
+  tile's `children` slot, `aria-hidden`, its words passed as the tile's `spoken` text. `agentShares` (the 4 agents
+  reading most this week and an "others" piece, shares of agent reads), `questionBars` (asks per open question, most
+  first, 12 at most, people and agents apart), `oldestConflict` (the open conflict with the lowest `foundAt`, and how
+  many others), `waitingDots` (each suggestion's whole days waited, capped at 13, stacked per day, `old` from 7) and
+  `verifiedParts` (verified, Review Due and never verified, as shares of `total`). `now` is read once per render
+  of the band. Bars are HTML flex pieces (no SVG scaling), so a thin share keeps a 2px minimum and rounds cleanly.
 - **Needs Attention** (`NeedsAttention`): an `AiSection` "Needs Attention" with a `SegmentedToggle` ("Show": All,
   Questions, Disagreements, Edits) as its action (under its heading on a phone). `attentionItems(overview,
 filter)` orders the rows: conflicts by `foundAt` newest first, suggestions by `createdAt` newest first, questions

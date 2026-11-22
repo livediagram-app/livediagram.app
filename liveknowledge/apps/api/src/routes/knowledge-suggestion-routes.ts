@@ -3,18 +3,22 @@
 //   POST /api/documents/<id>/pages/<tab>/suggestions   { reason, after, before? }: a Participant or an Editor, or
 //                                                      an agent of one holding `suggest`
 //   GET  /api/documents/<id>/suggestions               every role
-//   POST /api/documents/<id>/suggestions/<sid>/accept  Editor: applied through the article write, in their name
-//   POST /api/documents/<id>/suggestions/<sid>/dismiss Editor
-// A suggestion changes nothing until it is accepted, and accepting never verifies the page.
+//   POST /api/documents/<id>/suggestions/<sid>/accept  an Editor of the whole knowledgebase, in person: applied
+//                                                      through the article write, in their name
+//   POST /api/documents/<id>/suggestions/<sid>/dismiss the same
+// A suggestion changes nothing until it is accepted, and accepting never verifies the page (nor unverifies it). Each
+// of the three tells the open editors and arms the outbox (suggestions-changed.ts), so the page's marks and the
+// owner's Inbox row follow (ai-knowledge.md "On the page", "In the owner's Inbox").
 import { SUGGESTION_ADDED_EVENT } from '@liveknowledge/document/automations';
 import { hearsKnowledge, queueSuggestion } from '../document-room/automations/knowledge-events';
 import { routeWho } from '../document-room/automations/knowledge-who';
 import { levelAtLeast, type SuggestEditRequest } from '@liveknowledge/api-schema';
-import { replacePassage } from '@liveknowledge/knowledge';
+import { appendTableRows, replacePassage } from '@liveknowledge/knowledge';
 import { readStoredTab } from '../changesets/stored-tab';
 import { notePageWrite } from '../knowledge/page-authors';
 import { acceptedSuggestionWriter } from '../knowledge/page-writer';
 import { submitPages } from '../changesets/pages';
+import { noteSuggestionsChanged } from '../knowledge/suggestions-changed';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { pageFlowOf, pageMarkdownOf } from '../knowledge/page-read';
 import {
@@ -34,11 +38,16 @@ import { getParticipant } from '../person/profiles';
 import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import type { DocumentDTO } from '../types';
 import { authorOf } from './changesets';
-import { requireOwner, writesPages } from './context';
+import { requireOwner } from './context';
 import type { KnowledgeRoute } from './knowledge-routes';
 
 const refused = (status: number, error: string, message: string) =>
   json({ error, message }, { status });
+
+// A suggestion already accepted, dismissed or pruned: its own code, so the Inbox reads it as already answered
+// (one-explorer-contracts.md "Suggested edits").
+const gone = () =>
+  refused(404, 'suggestion_not_found', 'This suggestion was already accepted or dismissed.');
 
 const PASSAGE_WORDS = {
   passage_not_found:
@@ -122,6 +131,7 @@ export async function handleSuggest(route: KnowledgeRoute, tab: string): Promise
       reason,
       who: await routeWho(ctx),
     });
+  await noteSuggestionsChanged(ctx.env, document.id, [tab]);
   console.info('[knowledge] suggested', {
     documentId: document.id,
     tabId: tab,
@@ -143,7 +153,7 @@ async function handleAccept(route: KnowledgeRoute, id: string): Promise<Response
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
   const suggestion = await readSuggestion(ctx.env, id, Date.now());
-  if (!suggestion) return notFound();
+  if (!suggestion) return gone();
   const stale = (message: string) => {
     console.info('[knowledge] suggestion stale', { documentId: document.id, suggestionId: id });
     return refused(409, 'suggestion_stale', message);
@@ -152,7 +162,14 @@ async function handleAccept(route: KnowledgeRoute, id: string): Promise<Response
   if (!stored) return stale('The page this suggestion was for is gone. Dismiss it.');
   const flow = pageFlowOf(stored.tab);
   let article: { article?: string; markdown: string; mode: 'replace' | 'append' };
-  if (suggestion.kind === 'append') {
+  // Rows for a table already on the page join it: appended alone, rows with no header read as a line of pipes.
+  const withRows =
+    suggestion.kind === 'append'
+      ? appendTableRows(pageMarkdownOf(stored.tab, document.tabs), suggestion.after)
+      : null;
+  if (withRows !== null) {
+    article = { ...(flow ? { article: flow } : {}), markdown: withRows, mode: 'replace' };
+  } else if (suggestion.kind === 'append') {
     article = { ...(flow ? { article: flow } : {}), markdown: suggestion.after, mode: 'append' };
   } else {
     const next = replacePassage(
@@ -181,6 +198,7 @@ async function handleAccept(route: KnowledgeRoute, id: string): Promise<Response
   // The words are the agent's, the acceptance the Editor's (verification.md "Made by a person or an agent").
   await notePageWrite(ctx.env, suggestion.tab, acceptedSuggestionWriter(owner, suggestion.agent));
   await removeSuggestion(ctx.env, id);
+  await noteSuggestionsChanged(ctx.env, document.id, [suggestion.tab]);
   console.info('[knowledge] suggestion accepted', {
     documentId: document.id,
     tabId: suggestion.tab,
@@ -203,7 +221,9 @@ export async function handleSuggestionRoutes(route: KnowledgeRoute): Promise<Res
   if (segments.length !== 6 || !id) return null;
   if (segments[5] !== 'accept' && segments[5] !== 'dismiss') return null;
   if (request.method !== 'POST') return methodNotAllowed();
-  if (!writesPages(grant)) return forbidden();
+  // An Editor of the whole knowledgebase (ai-knowledge.md "Share roles", Work Tracker 1362): a Participant's agent
+  // suggests, and someone who may change every page decides; never a link confined to one page.
+  if (grant.role !== 'edit' || grant.tabScope !== null) return forbidden();
   // A suggestion is for a person to accept or dismiss (knowledgebase-for-agents.md `suggest_edit`): an agent that
   // accepted one would rewrite a page it may not, a Verified one included.
   if (ctx.token)
@@ -213,7 +233,9 @@ export async function handleSuggestionRoutes(route: KnowledgeRoute): Promise<Res
       'A person accepts or dismisses a suggestion, never an agent.',
     );
   if (segments[5] === 'accept') return handleAccept(route, id);
+  const dismissed = await readSuggestion(ctx.env, id, Date.now());
   await removeSuggestion(ctx.env, id);
+  if (dismissed) await noteSuggestionsChanged(ctx.env, route.document.id, [dismissed.tab]);
   console.info('[knowledge] suggestion dismissed', {
     documentId: route.document.id,
     suggestionId: id,

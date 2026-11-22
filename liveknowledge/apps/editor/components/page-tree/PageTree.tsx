@@ -83,6 +83,8 @@ export type PageTreeKnowledge = {
   marks: ReadonlyMap<string, TrustMark>;
   // A page Pending Approval or Rejected: a dot after its title (approval.md "Where it shows").
   approvalMarks?: ReadonlyMap<string, ApprovalMark>;
+  // Suggested edits waiting, by page (ai-knowledge.md "On the page"), from the newest Page Health read.
+  suggestionCounts?: Readonly<Record<string, number>> | undefined;
   inContext: ReadonlySet<string>;
   // Verify: an Editor with an account. The fields: an Editor.
   canVerify: boolean;
@@ -237,6 +239,9 @@ export function PageTree({
     const id = row?.dataset.pageRow;
     if (!row || !id) return;
     const control = actionOf(e.target)?.dataset.rowAction;
+    // A connected file's row is a link: a press on one of its buttons (its "…") is the button's alone, never the
+    // link's, so the file does not open under the menu (owner 2026-11-22).
+    if (control && row instanceof HTMLAnchorElement) e.preventDefault();
     // A menu a right-click hung on this row takes no outside press from it: any other press on the row closes it.
     if (control !== 'menu') setMenu(null);
     const { rows: now, actions: act, onSetOpen: setOpen, isOutOfScope: outside } = latest.current;
@@ -448,6 +453,8 @@ export function PageTree({
               // Only Review Due shows in the sidebar: no Verified tick and no approval dot (owner 2026-11-21); the page's
               // own meta row and Page Health carry those.
               trust={knowledge?.marks.get(row.id) === 'review-due' ? 'review-due' : undefined}
+              // Suggested edits do show (Work Tracker 1362): something waits for an Editor there.
+              suggestions={knowledge?.suggestionCounts?.[row.id]}
               onRename={onRename}
               onRenameDone={onRenameDone}
             />

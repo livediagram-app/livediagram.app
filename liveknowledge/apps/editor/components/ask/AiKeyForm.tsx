@@ -42,7 +42,8 @@ export function AiKeyForm({
 
   return (
     <form onSubmit={submit} autoComplete="off" className="flex flex-col gap-1.5">
-      <label htmlFor={fieldId} className="text-xs font-medium text-slate-700 dark:text-slate-200">
+      {/* Said aloud only: the section's heading names the key above it. */}
+      <label htmlFor={fieldId} className="sr-only">
         {hasKey ? 'Replace the Key' : addKeyLabel(provider)}
       </label>
       <div className="flex gap-2">

@@ -7,7 +7,7 @@
 import { rosterName, usePageSaves } from '@/lib/page-edit/page-edit-store';
 
 // How long after a save Page Health is read again: the save's write to the api lands first.
-const HEALTH_AFTER_SAVE_MS = 1500;
+const HEALTH_AFTER_SAVE_MS = [1500, 5000] as const;
 import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { PageHealthResponse, PageKnowledgePatch } from '@liveknowledge/api-schema';
 import {
@@ -180,7 +180,7 @@ export function usePageKnowledge(): PageKnowledgeView {
   const saves = usePageSaves(pageId);
   useEffect(() => {
     if (!documentId || offline || saves === 0) return;
-    const handle = window.setTimeout(() => {
+    const read = () => {
       const editor = chrome.get();
       void pageKnowledgeStore.load(
         { ownerId: editor.selfParticipant.id, shareCode: editor.sessionShareCode },
@@ -188,8 +188,11 @@ export function usePageKnowledge(): PageKnowledgeView {
         pageId,
         true,
       );
-    }, HEALTH_AFTER_SAVE_MS);
-    return () => window.clearTimeout(handle);
+    };
+    // Twice: a peer's save is told the moment it is pressed, and its write can land after the first read (owner
+    // 2026-11-22: Updated stayed until a reload).
+    const handles = HEALTH_AFTER_SAVE_MS.map((ms) => window.setTimeout(read, ms));
+    return () => handles.forEach((handle) => window.clearTimeout(handle));
   }, [chrome, documentId, pageId, offline, saves]);
   const fields = pageKnowledgeStore.fieldsOf({ id: pageId, knowledge: stored }, at);
   // The knowledgebase's Review Period: a change of it moves the state and the due date at once.

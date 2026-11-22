@@ -182,4 +182,7 @@ export type DocumentEnv = Env &
     // The knowledgebase's Review Period changed (document-content.ts setKnowledgeSettings): the room owes its
     // review check, since the next review to wait for moved.
     REVIEW_PERIOD_CHANGED?: () => void;
+    // The outbox holds a key a quiet write's trigger wrote (a suggested edit's, knowledge/suggestions-changed.ts):
+    // the room arms its drain as after a content write, without counting an edit.
+    OUTBOX_OWED?: () => void;
   };

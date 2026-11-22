@@ -11,6 +11,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/app-routes.ts`                    | `/app/…` dispatch; the summary push                                                                                                                             |
 | `liveworkspace/apps/index/src/collab-push.ts`                   | `parseCard`, `parseThread`, `parseAction`, `pushCollab`, `collabEvents`, `retractedComments`, `parseForm`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen` |
 | `liveworkspace/apps/index/src/inbox.ts`                         | `inboxQueries`, `handleInbox`                                                                                                                                   |
+| `liveworkspace/apps/index/src/collab-parse.ts`                  | `parseSuggestion` (and the other row parsers); `suggestionRowStatements` is in `collab-push.ts`                                                                 |
 | `liveworkspace/apps/index/src/calendar-feeds.ts`                | `handleCalendarFeed`, `calendarFeedByToken`, `calendarCardsQuery`: a person's calendar feed and its cards                                                       |
 | `packages/explorer/src/inbox-apps.ts`                           | `APPS_WITHOUT_INBOX` (livehuddle), `appHasInbox`: the per-app switch that hides the Inbox and skips its fetch                                                   |
 | `packages/explorer/src/data/inbox-settled.ts`                   | `createSettledStore`, `settledStoreFor`: the rows done from the pane, held for the reader across a reload until the index catches up                            |
@@ -22,26 +23,27 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term    | Identifier                                                              | Meaning                                                                                                                                                     |
-| ------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Summary | `items.summary`, JSON ≤ 2,048 bytes                                     | What the item last said of its content (counts, mode, `hasContent`)                                                                                         |
-| Thread  | `collab_threads (app, item, tab, element)`                              | A comment thread's facts; the comments stay in the item                                                                                                     |
-| Action  | `collab_actions (app, item, tab, element, action)`                      | An element's action, or an open card assigned to someone                                                                                                    |
-| Card    | `CollabCard { id?, key, ref?, type, typeLabel, title, board, column? }` | A Plan card's facts, pushed under the tab `~cards`; `id` on a thread's row; `ref` its prefixed number (`WI-100`), read as `ref ?? '#' + key` (`cardNumber`) |
-| Form    | `collab_forms (item, tab)`; `collab_form_reads (person, item, tab)`     | Responses taken and seen                                                                                                                                    |
+| Term       | Identifier                                                              | Meaning                                                                                                                                                     |
+| ---------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Summary    | `items.summary`, JSON ≤ 2,048 bytes                                     | What the item last said of its content (counts, mode, `hasContent`)                                                                                         |
+| Thread     | `collab_threads (app, item, tab, element)`                              | A comment thread's facts; the comments stay in the item                                                                                                     |
+| Action     | `collab_actions (app, item, tab, element, action)`                      | An element's action, or an open card assigned to someone                                                                                                    |
+| Card       | `CollabCard { id?, key, ref?, type, typeLabel, title, board, column? }` | A Plan card's facts, pushed under the tab `~cards`; `id` on a thread's row; `ref` its prefixed number (`WI-100`), read as `ref ?? '#' + key` (`cardNumber`) |
+| Form       | `collab_forms (item, tab)`; `collab_form_reads (person, item, tab)`     | Responses taken and seen                                                                                                                                    |
+| Suggestion | `collab_suggestions (app, item, tab, suggestion)`                       | An agent's suggested edit waiting on a page (liveknowledge): its reason and change, cut; the whole suggestion stays in the app                              |
 
 ## Behaviour and state
 
 ### The pushes (an app's key; only the item's own app: `403 wrong_app`; unknown item `404`)
 
-| Route                                          | Body                                                                     | Effect                                                                                                                                                                                                                                                                                                                  |
-| ---------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PUT /app/items/:id/summary`                   | `{ summary: object, updatedAt }`                                         | ≤ 2,048 bytes (`400 invalid_summary`); `updated_at = MAX(updated_at, min(updatedAt, now + 5 min))`; Drive signalled when a personal item's time moved on; `204`                                                                                                                                                         |
-| `PUT /app/items/:id/collab/:tabId`             | `{ threads (≤ 500), actions (≤ 500), tabName? }`                         | the tab's rows made to match in one batch (one statement per table through `json_each`): a row the push no longer holds deleted, the rest upserted only where a column differs, so a push that changes one row writes one; its events written ([events.md](events.md)); `204`; any malformed entry `400 invalid_collab` |
-| `PUT /app/items/:id/forms/:tabId`              | `{ form: { heading, responses, latestAt, boardTabId?, code? } \| null }` | upsert (a push without `code` keeps the old one); `null` deletes the form and every read; `400 invalid_form`                                                                                                                                                                                                            |
-| `PUT /app/items/:id/forms/:tabId/seen`         | `{ personId, seen }`                                                     | `seen = MAX(seen, new)` (never goes back); `400 invalid_form_seen`                                                                                                                                                                                                                                                      |
-| `GET /app/forms/:code`                         |                                                                          | `{ itemId, tabId }` for a live code of this app's; else `404`                                                                                                                                                                                                                                                           |
-| `GET /app/items/:id/forms/:tabId/seen/:person` |                                                                          | `{ seen }` (0 when none)                                                                                                                                                                                                                                                                                                |
+| Route                                          | Body                                                                     | Effect                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ---------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUT /app/items/:id/summary`                   | `{ summary: object, updatedAt }`                                         | ≤ 2,048 bytes (`400 invalid_summary`); `updated_at = MAX(updated_at, min(updatedAt, now + 5 min))`; Drive signalled when a personal item's time moved on; `204`                                                                                                                                                                                                                                                                                                                                       |
+| `PUT /app/items/:id/collab/:tabId`             | `{ threads (≤ 500), actions (≤ 500), tabName?, suggestions? (≤ 50) }`    | the tab's rows made to match in one batch (one statement per table through `json_each`): a row the push no longer holds deleted, the rest upserted only where a column differs, so a push that changes one row writes one; its events written ([events.md](events.md)); `204`; any malformed entry `400 invalid_collab` Its `suggestions` (absent is none) replace the tab's `collab_suggestions` rows the same way (`suggestionRowStatements`: one delete, then one upsert when any), with no event. |
+| `PUT /app/items/:id/forms/:tabId`              | `{ form: { heading, responses, latestAt, boardTabId?, code? } \| null }` | upsert (a push without `code` keeps the old one); `null` deletes the form and every read; `400 invalid_form`                                                                                                                                                                                                                                                                                                                                                                                          |
+| `PUT /app/items/:id/forms/:tabId/seen`         | `{ personId, seen }`                                                     | `seen = MAX(seen, new)` (never goes back); `400 invalid_form_seen`                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `GET /app/forms/:code`                         |                                                                          | `{ itemId, tabId }` for a live code of this app's; else `404`                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `GET /app/items/:id/forms/:tabId/seen/:person` |                                                                          | `{ seen }` (0 when none)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 Parsing. A card's `start` and `due` are kept only as `YYYY-MM-DD` strings; anything else is dropped from the card,
 never the push refused. Its `ref` is kept only when it matches `^[A-Z][A-Z0-9]{0,5}-(\d+)$` with that number the card's
@@ -57,7 +59,11 @@ malformed, is dropped, never the push refused), `card` (whose optional `id`, 1 t
 or null; a malformed `column` is dropped from the card, never the push refused). An action needs `elementId`, `actionId`,
 `elementLabel`, `name`, `status` (`open`, `done`, `wont-do`), `assignerId`, `createdAt`, `updatedAt`, and may carry
 `description`, `assigneeId`, `assigneeName`, `assignerName`, `teamId`, `doneById`, `card`. A repeated key keeps its
-last entry. A form's `code` is `^[A-Za-z0-9_-]{1,64}$`; `responses` at most 10,000,000.
+last entry. A form's `code` is `^[A-Za-z0-9_-]{1,64}$`; `responses` at most 10,000,000. A suggested edit
+(`parseSuggestion`) needs `id` (1 to 128 characters), `agent`, `kind` (`replace`, `append`), `after`, `createdAt`, and may
+carry `ownerId` (an id or null, null meaning the item's owner), `reason` and `before` (`''` when absent); `before` and
+`after` are cut to 2,000 (`COLLAB_SUGGESTION_TEXT_MAX`), `reason` to 500, `agent` to 200. More than 50 is
+`400 invalid_collab`; a repeated `id` keeps its last entry.
 
 ### The item's outbox (`@liveworkspace/index-app` `outbox.ts`)
 
@@ -66,12 +72,14 @@ Keys written in the item's own SQLite in the transaction of the change: `summary
 drains, retried after 60 s on failure; up to 50 tabs and `APP_EVENTS_MAX` (100) editors a drain, 6 pushes in flight,
 `more` drained straight after. A key written again meanwhile stays for the next drain. An item the index doesn't hold
 takes no push (the key is done). Each `tab` key's push is `capCollabPush` of the tab's rows, one request whatever
-its size (never paged, Work Tracker 870); one that left rows out logs `[outbox] collab capped` `{ itemId, tabId,
-threads, threadsKept, actions, actionsKept }`.
+its size (never paged, Work Tracker 870): its suggested edits are cut as the index cuts them, the newest 50 kept
+(`createdAt` then `id`), and counted in the push's bytes with the threads and actions, all three taken newest first;
+a push without `suggestions` sends none. One that left rows out logs `[outbox] collab capped` `{ itemId, tabId,
+threads, threadsKept, actions, actionsKept }` (with `suggestions, suggestionsKept` when it had any).
 
 ### The Inbox (`GET /inbox?app=&limit=`)
 
-`limit` default 100, at most 200. One batch of five statements:
+`limit` default 100, at most 200. One batch of six statements:
 
 1. **Threads**: candidates are unresolved threads on items the person owns, unioned with threads they are in
    (`collab_thread_people`); then unresolved, item live, in the app asked, reachable; with `mentionsYou`,
@@ -85,11 +93,19 @@ threads, threadsKept, actions, actionsKept }`.
 4. **Access requests**: open requests on items in the person's scopes ([request-access.md](request-access.md)).
 5. **Shares**: the person's own requests granted in the last `INBOX_SHARES_MS` (7 days), still reached through a
    live link, with the grant's `shared` event's actor and name ([inbox-notices.md](inbox-notices.md#data)).
+6. **Suggestions**: candidates are the suggested edits naming the person (`collab_suggestions_owner`, a range on
+   `owner_id`) unioned (`UNION ALL`, two terms) with those naming no one on items the person owns (`items_owner`, then
+   `collab_suggestions_item`'s `(item_id, owner_id IS NULL)` range); then item live, in the app asked, reachable (the
+   threads' reach without its card clause: a page owner on a team item reaches it through the team scope); newest
+   `created_at` first, then `suggestion_id`; at most `min(limit, INBOX_SUGGESTIONS_MAX)` (100). `lists.test.ts` "the
+   Inbox walks indexes" pins that no table is scanned.
 
 Reachable: owner of a personal item, one of their scopes, or a live link they opened whose tab is the row's tab (or
 every tab), or for a card the tab of its board (`json_extract(card, '$.board.tabId')`).
 
-Answer: `{ threads: InboxThread[], actions: InboxAction[], forms: InboxForm[], accessRequests: InboxAccessRequest[], shares: InboxShare[] }`.
+Answer: `{ threads: InboxThread[], actions: InboxAction[], forms: InboxForm[], accessRequests: InboxAccessRequest[], shares: InboxShare[], suggestions: InboxSuggestion[] }`
+(`InboxSuggestion`: `{ app, itemId, itemTitle, itemTeamId, tabId, tabName, suggestionId, agent, reason, kind, before,
+after, createdAt }`).
 
 The Explorer (`packages/explorer/src/explorer/inbox/sections.ts` `inboxEntries`) keeps one row per card thread: two
 rows of one app whose `card.id` is set and whose `elementId` is the same (a thread shared between two plans) are one,
@@ -159,13 +175,19 @@ ORDER BY a.updated_at DESC LIMIT 1000
 | `calendar_feeds`       | `(person_id, app)`                              | `calendar_feeds_token` UNIQUE `(token_hash)` (0018)                                                                    | calendar feed routes; purge   | feed routes         |
 | `collab_forms`         | `(item_id, tab_id)`                             | `collab_forms_code` UNIQUE `(code) WHERE code IS NOT NULL` (0004)                                                      | form push                     | Inbox, `formByCode` |
 | `collab_form_reads`    | `(person_id, item_id, tab_id)`                  | `collab_form_reads_item (item_id)`                                                                                     | seen push; merge; purge       | Inbox, `formSeen`   |
+| `collab_suggestions`   | `(app, item_id, tab_id, suggestion_id)`         | `collab_suggestions_owner (owner_id, created_at DESC)`; `collab_suggestions_item (item_id, owner_id, created_at DESC)` | collab push; merge; purge     | Inbox               |
 
 `collab_threads` also holds `latest_author_id` (null when the app did not say) and `mentioned_by` (`'{}'`), added by
 `0020_thread_mentioned_by.sql`. The purge anonymises them with the rest: `latest_author_id` becomes the anonymised id,
 and `mentioned_by` drops the entries keyed by the person or naming them.
 
-Defaults: `tab_name ''`, `participant_ids '[]'`, `mentioned_ids '[]'`, `mentioned_by '{}'`, `latest_author_color ''`, `description ''`;
-`status` CHECK the three. Every table cascades from `items`.
+`collab_suggestions` (`0027_collab_suggestions.sql`, Work Tracker 1362) holds `tab_name`, `owner_id` (null: the item's
+owner), `agent`, `reason`, `kind` (CHECK `replace`, `append`), `before_text`, `after_text`, `created_at`. Archiving
+deletes an item's rows with its other Inbox rows; a guest's merge moves `owner_id` to the account; closing an account
+deletes the rows naming it (`account-purge.ts`, through `collab_suggestions_owner`, chunked).
+
+Defaults: `tab_name ''`, `participant_ids '[]'`, `mentioned_ids '[]'`, `mentioned_by '{}'`, `latest_author_color ''`, `description ''`,
+`reason ''`, `before_text ''`; `status` CHECK the three. Every table cascades from `items`.
 
 **livehuddle's old rows** (Work Tracker 736). livehuddle stopped pushing (#1612), but what it pushed before stays.
 Every row a push writes carries the pushing app in `app` (it is in each key), so `app = 'livehuddle'` selects them
@@ -185,6 +207,7 @@ on production with `--remote`.
 | A summary over 2 KB              | `400 invalid_summary`                          |
 | A push from a clock running fast | its time taken as now + 5 min at most          |
 | More than 500 threads or actions | `400 invalid_collab`                           |
+| More than 50 suggestions         | `400 invalid_collab`                           |
 | A form link deleted or suspended | pushed `null`: off the Inbox, its code with it |
 
 ## Testing
@@ -194,7 +217,10 @@ on production with `--remote`.
 | `liveworkspace/apps/index/src/inbox.test.ts` (11)               | Inbox threads, cards, forms; the Inbox at scale                                     |
 | `liveworkspace/apps/index/src/calendar-feeds.test.ts`           | feed make, reset, read, turn off, token lookup, the cards read's reach and refusals |
 | `liveworkspace/apps/index/src/app.test.ts` (15)                 | app pushes and the Inbox among the rest                                             |
+| `liveworkspace/apps/index/src/inbox-suggestions.test.ts`        | suggested edits: pushed, replaced, cut, refused, whose, trashed, one batch          |
 | `packages/index-app/src/outbox.test.ts`                         | the outbox's keys, drain, caps and retries                                          |
+| `packages/index-app/src/outbox-suggestions-cap.test.ts`         | `capCollabPush`'s suggestions: cut, newest 50, fixed order, counted in the bytes    |
+| `packages/explorer/src/explorer/inbox/suggestions.test.tsx`     | the suggestion row, its count, filter, pane, Accept and Dismiss, their errors       |
 | `packages/index-app/src/cards.test.ts`, `forms.test.ts`         | cards under `~cards`; a form's code lookup                                          |
 | `packages/explorer/src/inbox-apps.test.tsx`                     | no Inbox for livehuddle; the other four keep it                                     |
 | `packages/explorer/src/data/inbox-settled.test.ts`              | the hold across a reload, its cap and hour, broken storage, other tabs              |
@@ -204,7 +230,8 @@ on production with `--remote`.
 ## Constants and configuration
 
 `SUMMARY_MAX_BYTES` 2048, `COLLAB_MAX_THREADS` 500, `COLLAB_MAX_ACTIONS` 500, `COLLAB_CARDS_TAB` `'~cards'`,
-`COLLAB_EVENTS_MAX` 100, `INDEX_BODY_MAX_BYTES` 512 KiB (the index's `MAX_BODY_BYTES`, and the most a collab push
+`COLLAB_EVENTS_MAX` 100, `COLLAB_MAX_SUGGESTIONS` 50, `COLLAB_SUGGESTION_TEXT_MAX` 2,000,
+`COLLAB_SUGGESTION_REASON_MAX` 500, `COLLAB_SUGGESTION_AGENT_MAX` 200, `INBOX_SUGGESTIONS_MAX` 100, `INDEX_BODY_MAX_BYTES` 512 KiB (the index's `MAX_BODY_BYTES`, and the most a collab push
 `capCollabPush` sends), `COLLAB_TEXT_MAX` 500, `COLLAB_PEOPLE_MAX` 100 (`packages/index-client`); `LABEL_MAX` 200,
 `TEXT_MAX` 500 (`COLLAB_TEXT_MAX`), `COLOR_MAX` 32, `CALENDAR_CARDS_MAX` 1,000 (`calendar-feeds.ts`), `PEOPLE_MAX` 100 (`COLLAB_PEOPLE_MAX`),
 `RESPONSES_MAX` 10,000,000 (`collab-push.ts`); `INBOX_LIMIT_DEFAULT` 100 (`config.ts`); `FUTURE_SLACK_MS` 5 min

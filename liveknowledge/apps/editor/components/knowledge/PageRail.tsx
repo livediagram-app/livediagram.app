@@ -3,6 +3,7 @@
 // The right rail of a knowledgebase page (docs/specs/030-knowledgebase/verification.md "Page Health"): On This Page
 // and the Page Health card. Docked down the canvas's right on a window at least 1,280 px wide; below that the same
 // two sections open from a Page Info button, in a card on a desktop and in the shared bottom sheet on a phone.
+import { PageRailSuggestions } from './suggestions/PageRailSuggestions';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
@@ -16,6 +17,8 @@ import {
 } from '@/lib/knowledge/page-headings';
 import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
 import { track } from '@/lib/telemetry';
+import { scrollToHeading } from '@/lib/knowledge/scroll-to-heading';
+import { flashBlock } from '@/lib/knowledge/go-to-block';
 import { useSlideOut } from '@/lib/ui/use-slide-out';
 import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
@@ -27,7 +30,7 @@ import { PageHealthApproval } from './approval/PageHealthApproval';
 import { usePageApproval } from './approval/usePageApproval';
 import { askApproval, useApprovalAsked } from '@/lib/knowledge/approval-asked';
 import { PageRailAiContext } from './PageAiContext';
-import { PageRailInsights } from './PageInsights';
+import { PageRailAnswered, PageReadsTrend } from './PageInsights';
 import { PageHealthScore } from './PageHealthScore';
 import { usePageHealthScore } from './usePageHealthScore';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
@@ -117,12 +120,38 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
   const page = usePageKnowledge();
   const { people, nameOf } = useKnowledgePeople();
   const score = usePageHealthScore(page);
-  const current = useCurrentHeading(writing.headings);
+  const reading = useCurrentHeading(writing.headings);
+  // The heading picked in On This Page is current at once and stays so through its scroll, until the reader scrolls
+  // the page themselves (WI-1359).
+  const [picked, setPicked] = useState<string | undefined>(undefined);
+  const pageViewport = useEditorChrome((s) => s.viewport);
+  useEffect(() => {
+    if (!picked) return;
+    const scroller = pageViewportOf(pageViewport)?.scroller();
+    if (!scroller) return;
+    const release = () => setPicked(undefined);
+    const events = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
+    for (const e of events) scroller.addEventListener(e, release, { passive: true });
+    return () => {
+      for (const e of events) scroller.removeEventListener(e, release);
+    };
+  }, [picked, pageViewport]);
+  const current = picked ?? reading;
   const go = useCallback(
     (id: string) => {
       track('UI', 'Used', 'OnThisPage');
+      // The page reads in its own scrolled column: scroll that (WI-1359, panning the canvas moved nothing). A
+      // surface without one (the canvas) still pans to the heading.
+      const now = chrome.get();
+      const heading = blockEl(id);
+      if (scrollToHeading(pageViewportOf(now.viewport)?.scroller() ?? null, heading)) {
+        setPicked(id);
+        // Lit for a moment where it lands, so the eye goes to it (owner 2026-11-22).
+        if (heading) flashBlock(heading);
+        return;
+      }
       const rect = articleHandleOf(writing.flow)?.rangeRect(id, 0, 0);
-      if (rect) chrome.get().scrollIntoView(rect.x, rect.y, rect.w, rect.h);
+      if (rect) now.scrollIntoView(rect.x, rect.y, rect.w, rect.h);
     },
     [chrome, writing.flow],
   );
@@ -145,6 +174,8 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
       reads={page.health?.reads}
       created={stampOf(page.health?.created, nameOf)}
       updated={stampOf(page.health?.updated, nameOf)}
+      trend={<PageReadsTrend page={page} />}
+      agentReads={page.health?.agents}
     />
   );
   const fillActivity = (
@@ -153,11 +184,14 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
       reads={page.health?.reads}
       created={stampOf(page.health?.created, nameOf)}
       updated={stampOf(page.health?.updated, nameOf)}
+      trend={<PageReadsTrend page={page} />}
+      agentReads={page.health?.agents}
       fill
     />
   );
   const sections = (
-    <div className="flex flex-col gap-8">
+    // A hairline between the sections (owner 2026-11-22), with even room either side.
+    <div className="flex flex-col divide-y divide-slate-200/70 dark:divide-slate-800/70 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0 [&>*]:py-6">
       <PageHealthCard
         trust={page.trust}
         reviewEvery={page.reviewEvery}
@@ -168,17 +202,19 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
           rights.editFields ? (owner) => page.setFields(pageId, { owner }, 'owner') : undefined
         }
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
-        periodControl={changesPeriod ? <ReviewPeriodButton /> : undefined}
+        periodControl={changesPeriod ? (label) => <ReviewPeriodButton label={label} /> : undefined}
         approvalRow={approvalRow}
+        approval={<PageHealthApproval />}
         score={
           <PageHealthScore health={score.health} fixes={score.fixes} offline={score.offline} />
         }
       />
       {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
       <OnThisPage headings={writing.headings} current={current} onGo={go} />
-      <PageHealthApproval />
-      {/* Page Insights, the page's use over time, just before AI Context (ai-knowledge.md "Page Insights"). */}
-      <PageRailInsights page={page} />
+      {/* The questions Ask answered from the page; its reads over time are in Read This Week (owner 2026-11-22). */}
+      <PageRailAnswered page={page} />
+      {/* Suggested Edits while any wait, before AI Context (ai-knowledge.md "On the page"). */}
+      <PageRailSuggestions />
       <PageRailAiContext page={page} />
       {docked ? null : activity}
     </div>

@@ -37,7 +37,7 @@ export function ConnectView() {
   if (!session) return null;
   return (
     <>
-      <KnowledgeViewHeader title="Connect" about={CONNECT_ABOUT} />
+      <KnowledgeViewHeader title="Connect MCP" about={CONNECT_ABOUT} />
       {session.rights.askOff === 'offline' ? (
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-xl px-4 py-10">

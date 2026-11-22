@@ -62,7 +62,7 @@ const status = () => document.querySelector<HTMLElement>('[data-connect-status]'
 describe('the steps', () => {
   it('are four, numbered, under a header that says what the view is for', async () => {
     await open();
-    expect(screen.getByRole('heading', { level: 1, name: 'Connect' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'Connect MCP' })).toBeTruthy();
     expect(
       screen.getByText('Connect an AI app over MCP so it can read and write this knowledgebase.'),
     ).toBeTruthy();

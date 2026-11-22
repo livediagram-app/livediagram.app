@@ -87,3 +87,55 @@ export function replacePassage(
   const { at, length } = found[0]!;
   return { markdown: markdown.slice(0, at) + after.trim() + markdown.slice(at + length) };
 }
+
+// Table lines are read trimmed, cell by cell, never with one regex over the line: an agent writes these lines, and a
+// pattern of `\s*` runs around optional pipes backtracks polynomially on a long run of spaces or tabs.
+
+/** A table row: `| … |`, two pipes at least. */
+function isTableLine(line: string): boolean {
+  const t = line.trim();
+  return t.length >= 2 && t.startsWith('|') && t.endsWith('|');
+}
+
+const RULE_CELL = /^:?-{3,}:?$/;
+
+/** A table's header rule: `| --- | :---: |`, its outer pipes optional, every cell three dashes or more. */
+function isTableRule(line: string): boolean {
+  const t = line.trim();
+  if (!t.includes('-')) return false;
+  const inner = t.slice(
+    t.startsWith('|') ? 1 : 0,
+    t.endsWith('|') && t.length > 1 ? -1 : undefined,
+  );
+  return inner.split('|').every((cell) => RULE_CELL.test(cell.trim()));
+}
+
+/** Whether `text` is nothing but table rows, with no header rule: rows meant for a table already on the page. */
+export function isBareTableRows(text: string): boolean {
+  const lines = text.split('\n').filter((line) => line.trim() !== '');
+  return lines.length > 0 && lines.every((line) => isTableLine(line) && !isTableRule(line));
+}
+
+/** The Markdown with bare table `rows` added under the last row of its last table (outside code fences); null when
+ *  `rows` are not bare rows, or the Markdown holds no table. Appended on their own, rows with no header are not a
+ *  table, and read as a paragraph of pipes (owner 2026-11-22, an accepted suggestion). */
+export function appendTableRows(markdown: string, rows: string): string | null {
+  if (!isBareTableRows(rows)) return null;
+  const lines = markdown.split('\n');
+  let fenced = false;
+  let lastRow = -1;
+  lines.forEach((line, at) => {
+    if (FENCE.test(line)) fenced = !fenced;
+    else if (!fenced && isTableRule(line) && at > 0 && isTableLine(lines[at - 1]!)) {
+      let end = at;
+      while (end + 1 < lines.length && isTableLine(lines[end + 1]!)) end++;
+      lastRow = end;
+    }
+  });
+  if (lastRow < 0) return null;
+  const added = rows
+    .split('\n')
+    .filter((line) => line.trim() !== '')
+    .map((line) => line.trim());
+  return [...lines.slice(0, lastRow + 1), ...added, ...lines.slice(lastRow + 1)].join('\n');
+}

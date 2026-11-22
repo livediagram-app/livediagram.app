@@ -1,8 +1,8 @@
 'use client';
 
 // Which AI and whose key, in AI Settings (docs/specs/030-knowledgebase/search-and-ask.md "AI Settings",
-// "Providers"): built-in AI or the team's own key, and for a key, Anthropic's or OpenAI's. Two bordered rows, each a generic mark and the provider's name as
-// text (never a company's logo). Native radios, so the arrow keys move between them and a screen reader says which
+// "Providers"): built-in AI or the team's own key, stacked rows with a radio mark, and for a key, Anthropic's or
+// OpenAI's, a compact two-way switch. Each a generic mark and the name as text (never a company's logo). Native radios, so the arrow keys move between them and a screen reader says which
 // of two. Choosing is the dialog's to act on: with a key saved it asks before the key is replaced.
 import { useId, type ReactNode } from 'react';
 import type { KnowledgeAiProvider, KnowledgeAiSettings } from '@liveknowledge/api-schema';
@@ -15,7 +15,7 @@ const ICONS: Record<KnowledgeAiProvider, ReactNode> = {
 };
 
 const OPTION =
-  'flex min-h-12 min-w-0 flex-1 basis-0 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors duration-short motion-reduce:transition-none pointer-coarse:min-h-11 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500 has-[:focus-visible]:ring-offset-1 dark:has-[:focus-visible]:ring-offset-slate-900 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60';
+  'flex min-h-14 min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-3.5 py-3 transition-colors duration-short motion-reduce:transition-none pointer-coarse:min-h-11 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500 has-[:focus-visible]:ring-offset-1 dark:has-[:focus-visible]:ring-offset-slate-900 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60';
 const OPTION_ON = 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/10';
 const OPTION_OFF =
   'border-slate-200 hover:border-brand-300 dark:border-slate-700 dark:hover:border-brand-500/60';
@@ -32,7 +32,8 @@ export type AiChoice<Id extends string> = {
   unavailable?: boolean;
 };
 
-/** Bordered rows of native radios, one chosen: the provider, or which AI. */
+/** Native radios, one chosen: the provider, or which AI. `rows` stacks bordered rows, each with a radio mark at its
+ *  end; `segmented` is a compact two-way switch (owner 2026-11-22: AI Settings looked heavy). */
 export function AiChoiceRows<Id extends string>({
   choices,
   chosen,
@@ -40,6 +41,7 @@ export function AiChoiceRows<Id extends string>({
   labelledBy,
   onChoose,
   data,
+  variant = 'rows',
 }: {
   choices: readonly AiChoice<Id>[];
   chosen: Id;
@@ -48,37 +50,64 @@ export function AiChoiceRows<Id extends string>({
   onChoose: (id: Id) => void;
   /** The group's data attribute, for tests and the sweep. */
   data: 'providers' | 'source';
+  variant?: 'rows' | 'segmented';
 }) {
   const name = useId();
+  const segmented = variant === 'segmented';
   return (
     <div
       role="radiogroup"
       aria-labelledby={labelledBy}
-      className="flex flex-col gap-2 sm:flex-row"
+      className={
+        segmented
+          ? 'inline-flex w-full rounded-lg bg-slate-100 p-1 dark:bg-slate-800/80'
+          : 'flex flex-col gap-2'
+      }
       {...{ [`data-ai-${data}`]: '' }}
     >
       {choices.map(({ id, label, about, icon, pill, unavailable }) => {
         const on = id === chosen;
+        const input = (
+          <input
+            type="radio"
+            name={name}
+            value={id}
+            className="sr-only"
+            checked={on}
+            disabled={disabled || unavailable}
+            // A controlled radio: it moves only when the dialog takes the choice (after its question, with a key
+            // saved).
+            onChange={() => onChoose(id)}
+          />
+        );
+        const marker = { [`data-ai-${data === 'providers' ? 'provider' : 'source-choice'}`]: id };
+        if (segmented)
+          return (
+            <label
+              key={id}
+              className={`flex min-h-9 min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-md px-2.5 text-sm font-medium transition-colors duration-micro motion-reduce:transition-none pointer-coarse:min-h-11 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60 ${
+                on
+                  ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-50 dark:ring-slate-700'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
+              }`}
+              {...marker}
+            >
+              {input}
+              <span
+                aria-hidden
+                className={`flex ${on ? 'text-brand-700 dark:text-brand-300' : ''}`}
+              >
+                {icon}
+              </span>
+              <span className="truncate whitespace-nowrap">{label}</span>
+            </label>
+          );
         return (
-          <label
-            key={id}
-            className={`${OPTION} ${on ? OPTION_ON : OPTION_OFF}`}
-            {...{ [`data-ai-${data === 'providers' ? 'provider' : 'source-choice'}`]: id }}
-          >
-            <input
-              type="radio"
-              name={name}
-              value={id}
-              className="sr-only"
-              checked={on}
-              disabled={disabled || unavailable}
-              // A controlled radio: it moves only when the dialog takes the choice (after its question, with a key
-              // saved).
-              onChange={() => onChoose(id)}
-            />
+          <label key={id} className={`${OPTION} ${on ? OPTION_ON : OPTION_OFF}`} {...marker}>
+            {input}
             <span
               aria-hidden
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
                 on
                   ? 'bg-brand-100 text-brand-800 dark:bg-brand-500/20 dark:text-brand-200'
                   : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
@@ -86,9 +115,9 @@ export function AiChoiceRows<Id extends string>({
             >
               {icon}
             </span>
-            <span className="min-w-0">
+            <span className="min-w-0 flex-1">
               <span className="flex items-center gap-1.5">
-                <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+                <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {label}
                 </span>
                 {pill ? (
@@ -97,7 +126,20 @@ export function AiChoiceRows<Id extends string>({
                   </span>
                 ) : null}
               </span>
-              <span className="block text-xs text-slate-600 dark:text-slate-400">{about}</span>
+              <span className="block text-xs leading-5 text-slate-600 dark:text-slate-400">
+                {about}
+              </span>
+            </span>
+            {/* The radio's mark: a ring, filled when chosen. */}
+            <span
+              aria-hidden
+              className={`flex size-[18px] shrink-0 items-center justify-center rounded-full border-2 ${
+                on
+                  ? 'border-brand-600 dark:border-brand-400'
+                  : 'border-slate-300 dark:border-slate-600'
+              }`}
+            >
+              {on ? <span className="size-2 rounded-full bg-brand-600 dark:bg-brand-400" /> : null}
             </span>
           </label>
         );
@@ -123,6 +165,7 @@ export function AiProviderPicker({
   return (
     <AiChoiceRows
       data="providers"
+      variant="segmented"
       choices={providers.map(({ id, label }) => ({
         id,
         label,

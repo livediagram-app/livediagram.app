@@ -25,6 +25,7 @@ import { AddIconButton } from '@/components/page-icon/AddIconButton';
 import { usePageIcon } from '@/components/page-icon/page-icon-state';
 import { PageMakersBadges, type PageMakers } from './PageMakersBadges';
 import { useCurrentApprovalMeta } from './approval/PageApprovalMeta';
+import { SuggestedEditsPill } from './suggestions/SuggestedEditsPill';
 
 const NO_EDITORS: readonly PageEditor[] = [];
 
@@ -53,6 +54,8 @@ export type PageMetaRowProps = {
   verify?: VerifyPageButtonProps | undefined;
   // Approval after Verify: its pill, or Request Approval (approval.md "Where it shows").
   approval?: ReactNode;
+  // The page's suggested edits, right beside the trust badge (ai-knowledge.md "On the page").
+  suggestions?: ReactNode;
 };
 
 export function PageMetaRowView({
@@ -69,6 +72,7 @@ export function PageMetaRowView({
   nameOf = () => undefined,
   verify,
   approval,
+  suggestions,
 }: PageMetaRowProps) {
   const mark = trustMark(trust.state);
   const notes: { key: string; node: ReactNode }[] = [];
@@ -128,7 +132,7 @@ export function PageMetaRowView({
     <div
       data-page-meta=""
       // Nothing to say (a page never verified, no edit known): no row, so the writing sits right under the title.
-      className={`${mark || notes.length ? 'flex min-h-7' : 'hidden'} flex-wrap items-center gap-x-[0.8rem] gap-y-1 [clip-path:inset(-1rem_-1rem_-1rem_0)] font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-600 dark:text-slate-400`}
+      className={`${mark || notes.length || suggestions ? 'flex min-h-7' : 'hidden'} flex-wrap items-center gap-x-[0.8rem] gap-y-1 [clip-path:inset(-1rem_-1rem_-1rem_0)] font-sans text-[13px] font-normal leading-5 tracking-normal text-slate-600 dark:text-slate-400`}
     >
       {/* When the review is due rides the badge's hover, so the row stays one line (owner 2026-11-21: "why is the bar
           under the title wrapping?"); Page Health says it too. */}
@@ -152,6 +156,7 @@ export function PageMetaRowView({
           <TrustBadge mark={mark} {...(verifiedBy ? { label: `Verified by ${verifiedBy}` } : {})} />
         )
       ) : null}
+      {suggestions}
       {/* Each note's dot leads it, in the gap before it: a note that wraps to start a line has its dot clipped by the
           row's left edge, so no line ends or starts on a stray dot (owner 2026-11-21). */}
       {notes.map((note, i) => (
@@ -201,6 +206,7 @@ export function PageMetaRow() {
   const addIcon = coverEditable && !hasIcon;
   const health = page.health;
   const approval = useCurrentApprovalMeta();
+  const suggestionCount = page.health?.suggestions?.length ?? 0;
   return (
     <PageMetaRowView
       minutes={minutes}
@@ -214,6 +220,7 @@ export function PageMetaRow() {
       {...(health ? { makers: makersOf(health) } : {})}
       nameOf={nameOf}
       approval={approval}
+      suggestions={suggestionCount > 0 ? <SuggestedEditsPill /> : undefined}
       verify={
         page.rights.verify
           ? {

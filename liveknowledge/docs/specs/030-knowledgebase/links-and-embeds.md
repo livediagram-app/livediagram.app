@@ -49,7 +49,8 @@ opens that in a new tab". (This replaces the earlier ask that connected files sh
   and moved by drag as pages are, but it holds no subpages.
 - **Pressing it opens the file in its own app in a new browser tab** (`target="_blank"`, `noopener`). It never opens
   inside the knowledgebase: there is no connected tab, no host view and no footer tab for it.
-- Its row menu: Open (new tab), Copy Link, Move To, Remove from Sidebar (the file itself is untouched). A file that
+- Its row menu: Open (new tab), Copy Link, Move To, Remove from Sidebar (the file itself is untouched). Pressing the
+  row's "…" opens only that menu, never the file (owner 2026-11-22). A file that
   can no longer be opened (deleted, or access lost) shows an amber dot and "Can't Open" with Connect Again and Remove.
 - Search, Ask and agents do not read connected files; page links and embeds are unchanged.
 - Editors and Participants add, move and remove connected rows; Viewers and link visitors see and open them only

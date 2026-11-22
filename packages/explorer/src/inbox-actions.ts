@@ -13,6 +13,10 @@
 //   place. Anywhere else an element's action is marked done through the app's action route
 //   (`POST /<items>/:id/tabs/:tabId/actions/:actionId/status`, livediagram's), which the open editors hear live.
 //
+// - A suggested edit (liveknowledge) is accepted or dismissed through the app's suggestion routes,
+//   `POST /<items>/:id/suggestions/:suggestionId/accept` and `…/dismiss`, with the same `api(app)`. A refusal throws
+//   `InboxActionError` with the status and the body's code, so the pane can say why (403, 409 `suggestion_stale`).
+//
 // Rows from items only this browser holds are never acted on here: nothing on these pages reaches that store. A
 // Plan card is never marked done here either: done is a board's column, which the Inbox doesn't know.
 
@@ -54,6 +58,7 @@ type ListedThread = {
 const NONE: readonly InboxVerb[] = [];
 const THREAD_VERBS: readonly InboxVerb[] = ['reply', 'resolve'];
 const DONE: readonly InboxVerb[] = ['done'];
+const SUGGESTION_VERBS: readonly InboxVerb[] = ['accept', 'dismiss'];
 
 // An item's threads, read once and kept briefly: the pane's thread and Resolve's first comment share one read.
 const LIST_TTL_MS = 30_000;
@@ -116,6 +121,17 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
 
   const forget = (t: InboxTarget) => lists.delete(`${t.app}:${t.itemId}`);
 
+  // A suggested edit (`elementId` its id) accepted or dismissed; a refusal says its status and code.
+  const answerSuggestion = async (t: InboxTarget, verb: 'accept' | 'dismiss') => {
+    const c = caller(t);
+    if (!c || t.kind !== 'Suggestion') throw new Error('inbox action: not here');
+    const res = await c.call(`${c.base}/suggestions/${enc(t.elementId)}/${verb}`, {
+      method: 'POST',
+    });
+    // Why it was refused is read only then, from a file of its own (off the Explorer's first load).
+    if (!res.ok) throw await (await import('./inbox-refusal')).refusalOf(res);
+  };
+
   return {
     offers: (t) => {
       if (t.local) return NONE;
@@ -127,6 +143,8 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
           return isOpenHere(t) || (caller(t) && actionRoutes(t.app)) ? DONE : NONE;
         case 'Card':
           return NONE;
+        case 'Suggestion':
+          return caller(t) ? SUGGESTION_VERBS : NONE;
       }
     },
     reply: async (t, text) => {
@@ -186,6 +204,8 @@ export function createInboxActions({ api, openAction }: InboxActionsOptions): In
         })
         .then(ok);
     },
+    accept: (t) => answerSuggestion(t, 'accept'),
+    dismiss: (t) => answerSuggestion(t, 'dismiss'),
     loadThread: async (t, signal) => {
       // A card's comments come with the plan's whole card list: too much to read for one pane.
       if (t.kind !== 'Thread' || !caller(t)) return null;

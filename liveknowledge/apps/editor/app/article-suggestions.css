@@ -1,0 +1,70 @@
+/* Agents' suggested edits in a page's writing (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"; the
+   decorations are lib/article/article-suggestion-plugin.ts's). The AI Knowledge violet: a pale wash with a dashed
+   underline over the passage a suggestion replaces, a margin marker before it, and in Show in Page the words that go
+   struck on rose and the words that arrive underlined on blue. Background and underline only, so the writing's own
+   ink stays as it is; a removed and an added word differ by their strike and underline as well as their colour. */
+.article-flow .suggestion-wash {
+  position: relative;
+  background-color: rgb(245 243 255);
+  box-shadow:
+    -10px 0 0 rgb(245 243 255),
+    10px 0 0 rgb(245 243 255);
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: rgb(167 139 250);
+  text-underline-offset: 6px;
+}
+.article-flow .suggestion-marker-host {
+  position: relative;
+  height: 0;
+  user-select: none;
+}
+.article-flow .suggestion-del {
+  background-color: rgb(254 242 242);
+  color: rgb(153 27 27);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 2px;
+  border-radius: 3px;
+}
+.article-flow .suggestion-ins {
+  margin-left: 0.25em;
+  padding: 0 0.2em;
+  background-color: rgb(239 246 255);
+  color: rgb(30 64 175);
+  text-decoration-line: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  border-radius: 3px;
+}
+.article-flow .suggestion-ins-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin-top: 0.75em;
+}
+.article-flow .suggestion-ins-block .suggestion-ins {
+  margin-left: 0;
+  align-self: flex-start;
+}
+
+:where(.dark, .dark *):not(:where(.light, .light *)) .article-flow .suggestion-wash {
+  background-color: rgb(139 92 246 / 0.15);
+  box-shadow:
+    -10px 0 0 rgb(139 92 246 / 0.15),
+    10px 0 0 rgb(139 92 246 / 0.15);
+  text-decoration-color: rgb(167 139 250 / 0.7);
+}
+:where(.dark, .dark *):not(:where(.light, .light *)) .article-flow .suggestion-del {
+  background-color: rgb(244 63 94 / 0.15);
+  color: rgb(254 205 211);
+}
+:where(.dark, .dark *):not(:where(.light, .light *)) .article-flow .suggestion-ins {
+  background-color: rgb(59 130 246 / 0.15);
+  color: rgb(191 219 254);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .article-flow .suggestion-wash {
+    transition: background-color 150ms ease-out;
+  }
+}

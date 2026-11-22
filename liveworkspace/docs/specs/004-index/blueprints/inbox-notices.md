@@ -49,7 +49,7 @@ with its last. State: `data` (the last answer, or null), `at` (its time).
   `touch()`, which counts as this page's last read so the watch's next turn waits 30 s from it.
 
 `inboxSignature(data, app)`: each row's key and time (threads `latestAt`, actions `updatedAt`, access requests
-`askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`), sorted, joined; with `app`, that app's rows only. Two
+`askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`, suggested edits `createdAt`), sorted, joined; with `app`, that app's rows only. Two
 answers with one signature list the same Inbox.
 
 ### Which rows notify (`rows.ts`)
@@ -66,6 +66,8 @@ answers with one signature list the same Inbox.
 - Actions, open, `assigneeId` the reader, `assignerId` not the reader: `assigned` (**assigned you a card** with
   the card's key and title, or **assigned you an action** with its name).
 - `accessRequests`: `access` (**asked for access**). `shares`: `share` (**shared it with you**, the item named on the place line).
+- `suggestions` (an agent's suggested edit on the reader's page) make no notice: the badge counts them and the Inbox
+  lists them, as a suggestion makes no event, email or webhook either (one-explorer-contracts.md "Inbox").
 
 Keys are the Inbox list's (`threadKey`, `actionKey`), `r:<id>` for a request, `s:<id>` for a share. A row's `href`:
 a thread or action, `<app's address>/explorer/inbox?at=<key>` (this app's own path when it is this app); a request or

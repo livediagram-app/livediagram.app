@@ -99,7 +99,9 @@ describe('the meta row', () => {
     const rail = render(view(false));
     expect(rail.container.innerHTML).toBe('');
     rail.rerender(view(true));
-    const panel = rail.container.querySelector('[data-health-approval]')!;
+    // A first request asks in a centred dialog, never inside the rail (owner 2026-11-22).
+    expect(rail.container.querySelector('[data-health-approval]')).toBeNull();
+    const panel = screen.getByRole('dialog');
     expect(panel.textContent).toContain('Request Approval?');
     const confirm = [...panel.querySelectorAll('button')].find(
       (b) => b.textContent === 'Request Approval',

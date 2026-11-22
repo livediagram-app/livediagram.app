@@ -2,7 +2,7 @@
 
 // Who made the page, in the top row's left while it is read (docs/specs/030-knowledgebase/page-surface.md "Who made
 // the page"; owner, 2026-11-21: "the avatars of everybody who has created or edited that page, creator first, then all
-// the editors, hovering the avatar shows their name"): overlapping discs in Page Health's order (the first writer
+// the editors, hovering the avatar shows their name"): discs side by side in Page Health's order (owner 2026-11-22: not stacked) (the first writer
 // first), an agent as a sparkle, a person by their initials in a colour of their name. Hovering or focusing one
 // names them. Edit mode gives the row to the formatting controls, so it shows only while reading.
 import { GUEST_DISC_TINT, GUEST_NAME, isGuestName } from './guest-disc';
@@ -49,16 +49,20 @@ export function makersOf(
 }
 
 const DISC =
-  'flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ring-2 ring-white motion-safe:transition-transform motion-safe:duration-150 hover:z-10 hover:-translate-y-0.5 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 dark:ring-slate-900';
+  'flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold motion-safe:transition-transform motion-safe:duration-150 hover:z-10 hover:-translate-y-0.5 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700';
 
 export function PageMakersStackView({ makers }: { makers: readonly Maker[] }) {
   if (makers.length === 0) return null;
   const shown = makers.slice(0, makers.length > STACK_MAX ? STACK_MAX - 1 : STACK_MAX);
   const rest = makers.length - shown.length;
   return (
-    <ul aria-label="Created and Edited By" data-page-makers="" className="flex items-center pl-1">
-      {shown.map((m, i) => (
-        <li key={m.key} className={i > 0 ? '-ml-1.5' : ''} style={{ zIndex: shown.length - i }}>
+    <ul
+      aria-label="Created and Edited By"
+      data-page-makers=""
+      className="flex items-center gap-1 pl-1"
+    >
+      {shown.map((m) => (
+        <li key={m.key}>
           <Tooltip label={`${m.name}, ${m.role}`}>
             <span
               tabIndex={0}
@@ -78,7 +82,7 @@ export function PageMakersStackView({ makers }: { makers: readonly Maker[] }) {
         </li>
       ))}
       {rest > 0 ? (
-        <li className="-ml-1.5">
+        <li>
           <Tooltip
             label={makers
               .slice(shown.length)

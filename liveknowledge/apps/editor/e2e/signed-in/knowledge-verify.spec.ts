@@ -19,6 +19,13 @@ test.use({ viewport: { width: 1440, height: 860 } });
 const meta = (page: import('@playwright/test').Page) => page.locator('[data-page-meta]');
 const health = (page: import('@playwright/test').Page) =>
   page.getByRole('region', { name: 'Page Health' });
+// Page Details (Owner down to Approval) folds under the state's panel, closed at first and after a reload (owner
+// 2026-11-22). Under a Review Period of Never there is no panel and the details stand open.
+async function openDetails(page: import('@playwright/test').Page) {
+  const toggle = health(page).getByRole('button', { name: 'Page Details' });
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+}
 
 test('a new knowledgebase is saved to the account, and Verify shows who vouches for the page', async ({
   page,
@@ -58,6 +65,7 @@ test('a new knowledgebase is saved to the account, and Verify shows who vouches 
   await expect(meta(page).locator('[data-trust="verified"]')).toBeVisible();
   await expect(pageRow(page, 'Runbook').getByRole('img')).toHaveCount(0);
   // A page with no owner takes its verifier.
+  await openDetails(page);
   await expect(health(page).getByRole('combobox', { name: 'Owner' })).toHaveValue(who.id);
   // Last Verified is one line: the date and the verifier's disc, named for them.
   await expect(health(page).locator('[data-verified-by]')).toHaveAccessibleName(
@@ -79,6 +87,7 @@ test('Page Health changes the owner and says the Review Period, and Always in Co
   const { who } = await signedInKnowledgebase(page);
   await nameOpenPage(page, 'Runbook');
   await health(page).getByRole('button', { name: 'Verify', exact: true }).click();
+  await openDetails(page);
   const owner = health(page).getByRole('combobox', { name: 'Owner' });
   await expect(owner).toHaveValue(who.id);
   // The Review Period is the knowledgebase's: the card says it and when this page comes due, with no control.
@@ -109,6 +118,7 @@ test('Page Health changes the owner and says the Review Period, and Always in Co
 
   await page.reload();
   await titleOf(page).waitFor();
+  await openDetails(page);
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 90 Days');
   await expect(health(page).getByRole('combobox', { name: 'Owner' })).toHaveValue('');
   menu = await openRowMenu(page, 'Runbook');
@@ -143,6 +153,7 @@ test('Page Health’s pencil changes the Review Period, and a page comes due at 
   await titleOf(page).waitFor();
   await expect(pageRow(page, 'Runbook')).toBeVisible();
   await expect(meta(page)).toContainText(/Review due /);
+  await openDetails(page);
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 90 Days');
 
   // The pencil, beside the period in Page Health, opens it under the button: it says it applies to every page, with five
@@ -204,6 +215,7 @@ test('Page Health’s pencil changes the Review Period, and a page comes due at 
   await page.reload();
   await titleOf(page).waitFor();
   await expect(pageRow(page, 'Runbook, Review Due')).toBeVisible();
+  await openDetails(page);
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 30 Days');
 
   // Never applies at once, with no question, and turns verification off (verification.md "Under a Review Period of
