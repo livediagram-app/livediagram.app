@@ -61,7 +61,8 @@ test('typing the Title renames the page, not the knowledgebase, and the writing 
   await expect(pageRow(page, 'Release Process')).toBeVisible();
   expect(await treeShape(page)).toEqual(['1 Release Process']);
   await expect(page.locator('[data-knowledgebase-name]')).toHaveText('Untitled Knowledgebase');
-  await expect(page).toHaveTitle(/^Untitled Knowledgebase \| Release Process \| /);
+  // The browser tab names the page first, from the Title as it is typed (editing.md "The page's name while editing").
+  await expect(page).toHaveTitle(/^Release Process \| Untitled Knowledgebase \| liveknowledge$/);
 
   // Enter leaves the Title for the first paragraph.
   await page.keyboard.press('Enter');
@@ -150,6 +151,10 @@ test.describe('mobile', () => {
 
   test('the top row keeps its buttons on screen in one row', async ({ page, pageErrors }) => {
     await openStartBlank(page);
+    // A new knowledgebase opens with the caret in its Title, and while it is in the writing the phone's writing bar
+    // takes the top row (docs/specs/030-knowledgebase/page-surface.md); the keyboard put away, the row's buttons are back.
+    await expectCaretInTitle(page);
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
 
     // Every button of the row is inside the viewport: nothing pushed off either edge.
     const row = page.locator('[data-knowledge-top-row]');

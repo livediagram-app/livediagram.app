@@ -55,7 +55,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - The page title is part of the draft: a renamed title reaches the page tree when the draft is saved.
 - The top of the page shows the draft bar: who is editing (discs), "Unsaved changes" once the draft differs from the
   saved page, then **Cancel** and **Save** (primary). `Mod-S` saves; `Escape` with the caret not in a menu asks to
-  Cancel; while a menu, a dialog or the drawing palette's flyout is open, Escape only closes that. Save and Cancel
+  Cancel; while a menu, a dialog or the drawing palette's flyout is open, Escape only closes that, and with a drawing's
+  element selected (or its label being typed) Escape lets go of that first. Save and Cancel
   let go of whatever was selected in a drawing: reading shows no selection outline and no drawing tools.
 - **The Title is always there** (owner, 2026-11-21): Backspace at its start does nothing, and an edit that would remove
   it (a selection across it deleted, a paste over it) leaves it in place, empty if its words went.
@@ -63,7 +64,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   words or all the writing under it, never both; Tab in the Title puts the caret at the start of the writing (a body
   line is made there on a page with none).
 - **The page's name while editing** (owner, 2026-11-21): the sidebar shows the draft's Title as it is typed, before
-  Save, for the one editing; Save makes it the stored name, and Cancel (or discarding) puts the saved name back.
+  Save, for the one editing, and so does the browser tab's title ("<page> | <knowledgebase> | liveknowledge"); Save
+  makes it the stored name, and Cancel (or discarding) puts the saved name back.
 - **Save** makes the draft the saved page for everyone: readers see it at once, search and agents read it, the
   Updated stamp (verification.md "Created and Updated") moves to the person who pressed Save, "Changed since
   verified" is worked out against it, and the draft is gone. Everyone else still in edit mode stays in edit mode on

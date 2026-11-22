@@ -1,11 +1,14 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from './fixtures';
 import {
+  ensureEditing,
   expectCaretInTitle,
   expectNoSidewaysScroll,
   newKnowledgebase,
   paragraphs,
+  saveAndGoOn,
   titleOf,
+  writing,
 } from './knowledgebase';
 
 // A knowledgebase on a phone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree": "On a phone
@@ -20,6 +23,17 @@ test.use({
   deviceScaleFactor: 3,
 });
 
+// A finger held on a control past the hint's long press (packages/ui hint/useHint.ts), then lifted.
+async function longPress(page: Page, target: Locator): Promise<void> {
+  const box = (await target.boundingBox())!;
+  const point = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
+  await page.waitForTimeout(800);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await cdp.detach();
+}
+
 // The phone's keyboard put away (its Done key): the writing lets go of the caret, as it does on a phone.
 const putKeyboardAway = (page: Page) =>
   page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
@@ -30,6 +44,9 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({
 }) => {
   await newKnowledgebase(page);
   await page.keyboard.type('Handbook');
+  // The name is the draft's until Save (docs/specs/030-knowledgebase/editing.md); back in the writing after it.
+  await saveAndGoOn(page);
+  await writing(page).focus();
   // No sidebar on a phone: the tree is a sheet.
   await expect(page.getByRole('complementary', { name: 'Pages' })).toHaveCount(0);
   // While the caret is in the writing its bar has the top row; with the caret gone the row's own buttons are back.
@@ -50,6 +67,7 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({
   await page.keyboard.press('Enter');
   await page.keyboard.type('File receipts by Friday.');
   await expect(paragraphs(page).first()).toHaveText('File receipts by Friday.');
+  await saveAndGoOn(page);
 
   // A row opens its page, and the sheet gets out of the way.
   if (!(await sheet.isVisible())) {
@@ -64,7 +82,8 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({
   await expect(titleOf(page)).toHaveText('Handbook');
   await expect(sheet).toBeHidden();
 
-  // A tap in the writing puts the caret there, and typing lands there.
+  // A page opens to read (editing.md "Read mode"): Edit, then a tap in the writing puts the caret there, and typing lands there.
+  await ensureEditing(page);
   const first = paragraphs(page).first();
   const box = (await first.boundingBox())!;
   await page.touchscreen.tap(box.x + 8, box.y + box.height / 2);
@@ -89,17 +108,27 @@ test('the view switch is within reach, and no view scrolls sideways', async ({
   }
   await expectNoSidewaysScroll(page, 'Pages');
 
-  await views.getByRole('link', { name: 'Ask', exact: true }).tap();
-  await expect(
-    page.getByRole('heading', { name: 'No Ask in an Offline Knowledgebase' }),
-  ).toBeVisible();
-  await expectNoSidewaysScroll(page, 'Ask');
-
-  await views.getByRole('link', { name: 'AI Knowledge', exact: true }).tap();
-  await expect(
-    page.getByRole('heading', { name: 'No AI Knowledge in an Offline Knowledgebase' }),
-  ).toBeVisible();
-  await expectNoSidewaysScroll(page, 'AI Knowledge');
+  // Kept Offline, Ask and AI Knowledge stay in the footer going nowhere; a long press says why and offers the sync
+  // (docs/specs/030-knowledgebase/search-and-ask.md "Offline, in the footer").
+  for (const view of ['Ask', 'AI Knowledge']) {
+    const link = views.getByRole('link', { name: view, exact: true });
+    await expect(link).toHaveAttribute('aria-disabled', 'true');
+    // A tap goes nowhere: the page stays. (Playwright's tap() waits for an aria-disabled control to be enabled.)
+    const at = (await link.boundingBox())!;
+    await page.touchscreen.tap(at.x + at.width / 2, at.y + at.height / 2);
+    await expect(titleOf(page)).toBeVisible();
+    await expect(views.getByRole('link', { name: 'Pages', exact: true })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await longPress(page, link);
+    const card = page.getByRole('tooltip');
+    await expect(card).toContainText(`${view} Needs Syncing`);
+    await expect(card.getByRole('button', { name: 'Sync Knowledgebase' })).toBeVisible();
+    await expectNoSidewaysScroll(page, view);
+    await page.touchscreen.tap(195, 300);
+    await expect(card).toHaveCount(0);
+  }
 
   await views.getByRole('link', { name: 'Pages', exact: true }).tap();
   await expect(titleOf(page)).toBeVisible();

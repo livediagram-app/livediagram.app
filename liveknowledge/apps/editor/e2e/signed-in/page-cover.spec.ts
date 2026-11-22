@@ -67,7 +67,8 @@ test('an Editor adds a cover, repositions its picture and removes it', async ({
   const tab = openPageId(page);
   const titleTop = (await titleOf(page).boundingBox())!.y;
 
-  // A gradient from Add Cover, after the reading time: the band stands 220 px tall, and the page moves under it.
+  // A gradient from Add Cover, after the reading time: the band stands 220 px tall, and the page moves under it, its
+  // blank top margin tucked under the band so the Title stands 36 px below it (page-surface.md "Under the band").
   await expect(addCover(page)).toBeVisible();
   const gradientSaved = savedWith(page, '"cover"');
   await addCover(page).click();
@@ -80,8 +81,12 @@ test('an Editor adds a cover, repositions its picture and removes it', async ({
   expect((await band(page).boundingBox())!.height).toBe(220);
   await expect(addCover(page)).toHaveCount(0);
   await expect
-    .poll(async () => Math.round((await titleOf(page).boundingBox())!.y - titleTop))
-    .toBe(220);
+    .poll(async () => {
+      const cover = (await band(page).boundingBox())!;
+      return Math.round((await titleOf(page).boundingBox())!.y - (cover.y + cover.height));
+    })
+    .toBe(36);
+  expect((await titleOf(page).boundingBox())!.y).toBeGreaterThan(titleTop);
 
   // A picture from an agent reaches the open page as it lands.
   const picture = await tallPicture(page);
@@ -160,11 +165,13 @@ test('an animated cover moves in the theme, stands still under Reduce Motion, an
 
   // The Knowledgebase Style recolours it, with nothing written to the page.
   const lime = await band(page).evaluate((el) => el.style.background);
-  await page.locator('[data-knowledgebase-menu]').click();
-  await page.getByRole('menuitem', { name: 'Knowledgebase Style' }).click();
+  // Knowledgebase Style opens from the footer's Style (page-surface.md "Knowledgebase Style").
+  await page.getByRole('button', { name: 'Style', exact: true }).click();
   const style = page.getByRole('dialog', { name: 'Knowledgebase Style' });
   await style.getByRole('button', { name: /^Boardroom/ }).click();
+  // Closing with a change asks first: the style is the whole knowledgebase's (page-surface.md "Confirming").
   await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Apply to Knowledgebase', exact: true }).click();
   await expect(style).toHaveCount(0);
   await expect.poll(() => band(page).evaluate((el) => el.style.background)).not.toBe(lime);
   await expect(band(page)).toHaveAttribute('data-page-cover', 'animated');

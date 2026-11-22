@@ -158,9 +158,10 @@ function AskReady({ session }: { session: AskSession }) {
       data-ask-layout=""
       className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden"
     >
+      {/* slate-50, so the empty state's slate-500 line under it holds 4.5:1 (it read 4.43 on slate-100/60). */}
       <aside
         aria-label="Your Questions"
-        className="shrink-0 border-b border-slate-200 bg-slate-100/60 dark:border-slate-800 dark:bg-slate-900/50 lg:w-64 lg:overflow-y-auto lg:border-b-0 lg:border-r"
+        className="shrink-0 border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 lg:w-64 lg:overflow-y-auto lg:border-b-0 lg:border-r"
       >
         <RecentQuestions
           questions={recent}

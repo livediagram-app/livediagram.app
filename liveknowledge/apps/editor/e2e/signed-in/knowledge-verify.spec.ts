@@ -54,20 +54,21 @@ test('a new knowledgebase is saved to the account, and Verify shows who vouches 
   await expect(health(page).getByRole('button', { name: 'Verify Again' })).toBeVisible();
   // The row now offers Verify Again (asking first), never a one-press verify.
   await expect(meta(page).getByRole('button', { name: 'Verify Again' })).toBeVisible();
-  const row = pageRow(page, 'Runbook, Verified');
-  await expect(row.getByRole('img', { name: 'Verified' })).toBeVisible();
+  // The tick is the meta row's; the tree row carries no Verified tick (knowledgebases-and-pages.md "Row menu").
+  await expect(meta(page).locator('[data-trust="verified"]')).toBeVisible();
+  await expect(pageRow(page, 'Runbook').getByRole('img')).toHaveCount(0);
   // A page with no owner takes its verifier.
   await expect(health(page).getByRole('combobox', { name: 'Owner' })).toHaveValue(who.id);
-  await expect(health(page).locator('[data-verified-by]')).toHaveText(
-    `by ${who.firstName} ${who.lastName}`,
+  // Last Verified is one line: the date and the verifier's disc, named for them.
+  await expect(health(page).locator('[data-verified-by]')).toHaveAccessibleName(
+    `Verified by ${who.firstName} ${who.lastName}`,
   );
 
   await page.reload();
   await titleOf(page).waitFor();
   await expect(meta(page)).toContainText(`Verified by ${who.firstName} ${who.lastName}`);
-  await expect(
-    pageRow(page, 'Runbook, Verified').getByRole('img', { name: 'Verified' }),
-  ).toBeVisible();
+  await expect(meta(page).locator('[data-trust="verified"]')).toBeVisible();
+  await expect(pageRow(page, 'Runbook').getByRole('img')).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 
@@ -140,7 +141,7 @@ test('Page Health’s pencil changes the Review Period, and a page comes due at 
   expect(verify.ok(), `verify: ${verify.status()}`).toBe(true);
   await page.reload();
   await titleOf(page).waitFor();
-  await expect(pageRow(page, 'Runbook, Verified')).toBeVisible();
+  await expect(pageRow(page, 'Runbook')).toBeVisible();
   await expect(meta(page)).toContainText(/Review due /);
   await expect(health(page).locator('[data-review-period]')).toHaveText('Every 90 Days');
 
@@ -176,7 +177,7 @@ test('Page Health’s pencil changes the Review Period, and a page comes due at 
   await expect(settings).toContainText('1 page will be due for review');
   expect((await body.boundingBox())!.height, 'the popover keeps its height').toBe(height);
   await expect(period('Every 90 Days')).toHaveAttribute('aria-checked', 'true');
-  await expect(pageRow(page, 'Runbook, Verified')).toBeVisible();
+  await expect(pageRow(page, 'Runbook')).toBeVisible();
   await settings.getByRole('button', { name: 'Cancel' }).click();
   await expect(settings).not.toContainText('will be due for review');
 
@@ -212,7 +213,7 @@ test('Page Health’s pencil changes the Review Period, and a page comes due at 
   expect((await done).ok()).toBe(true);
   await page.keyboard.press('Escape');
   await expect(settings).toHaveCount(0);
-  await expect(pageRow(page, 'Runbook, Verified')).toBeVisible();
+  await expect(pageRow(page, 'Runbook')).toBeVisible();
   await expect(health(page).locator('[data-review-due]')).toHaveText('No Review Period');
   await expect(meta(page)).not.toContainText(/Review (was )?due/);
   expectNoPageErrors(pageErrors);

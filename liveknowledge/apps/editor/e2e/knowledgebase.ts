@@ -99,6 +99,13 @@ export async function ensureEditing(page: Page): Promise<void> {
   await expect(writing(page)).toHaveAttribute('contenteditable', 'true');
 }
 
+/** Edit mode on a page with no writing (a canvas-only page): Edit pressed when the page is being read, then Save shows
+ *  (docs/specs/030-knowledgebase/editing.md). */
+export async function ensureEditMode(page: Page): Promise<void> {
+  if (await editButton(page).isVisible()) await editButton(page).click();
+  await expect(saveButton(page)).toBeVisible();
+}
+
 /** Saves the open page's draft and goes on editing it, as a person pressing Save and then Edit would: readers, the
  *  tree and the index see what was written (docs/specs/030-knowledgebase/editing.md "Save"). */
 export async function saveAndGoOn(page: Page): Promise<void> {
@@ -171,9 +178,20 @@ export async function openRowMenu(page: Page, name: string): Promise<Locator> {
   return menu;
 }
 
-/** Presses a verb of a row's menu. */
+/** The verbs a row's menu keeps in its closed Move section (knowledgebases-and-pages.md "Row menu"). */
+const MOVE_VERBS = new Set(['Move Up', 'Move Down', 'Indent', 'Outdent']);
+
+/** Opens a row menu's Move section, so its verbs can be pressed or read. */
+export async function openMoveSection(menu: Locator): Promise<void> {
+  const move = menu.getByRole('menuitem', { name: 'Move', exact: true });
+  if ((await move.getAttribute('aria-expanded')) !== 'true') await move.click();
+  await expect(move).toHaveAttribute('aria-expanded', 'true');
+}
+
+/** Presses a verb of a row's menu, opening its Move section first for a move. */
 export async function rowVerb(page: Page, name: string, verb: string): Promise<void> {
   const menu = await openRowMenu(page, name);
+  if (MOVE_VERBS.has(verb)) await openMoveSection(menu);
   await menu.getByRole('menuitem', { name: verb, exact: true }).click();
   await expect(menu).toBeHidden();
 }

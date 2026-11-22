@@ -344,10 +344,18 @@ export function useEditorPageEditing({
       });
       overlayAtKeyDown = false;
       if (!action) return;
+      if (action === 'cancel') {
+        // Escape is Cancel only when nothing else takes it: the canvas's own Escape (a drawing's selection let go, a
+        // label edit closed) listens on the window too, after this listener, and marks the key as taken. So Cancel
+        // waits for the key's dispatch to end and checks then.
+        setTimeout(() => {
+          if (!e.defaultPrevented) void latest.current.cancel();
+        }, 0);
+        return;
+      }
       e.preventDefault();
       if (action === 'edit') l.start();
-      else if (action === 'save') l.save();
-      else void l.cancel();
+      else l.save();
     };
     window.addEventListener('keydown', onKeyCapture, true);
     window.addEventListener('keydown', onKey);

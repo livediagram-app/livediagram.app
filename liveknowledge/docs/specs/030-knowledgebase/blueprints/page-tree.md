@@ -244,7 +244,9 @@ Title leaves the name empty, which every surface shows as "Untitled Page".
 transaction changed the Title (`titleTextOf`, the first top-level Title paragraph, so a keystroke costs a look at
 the first block), and keeps a set value current through any other change (a peer, an undo, a rename from the tree).
 `usePageNameFromTitle` clears it in a layout effect when another page opens, so a row never shows the last page's
-title. Rows that are not the open page read null and never render for it.
+title. Rows that are not the open page read null and never render for it. The browser tab follows the same value:
+`LivePageTabTitle` (`lib/knowledge-tab-title.ts`), its own component under the editor page so a keystroke renders it
+alone, holds `knowledgeTabTitle(live, ...)` while a live title is set and nothing otherwise.
 
 **One model, every way in.** The Title is the page's name; `Tab.name` is the copy kept so a page lists without its
 writing. `pageFlowOf`, `pageTitleOf`, `withPageTitle` and `withNameFromTitle` live in `@liveknowledge/document`
