@@ -30,7 +30,7 @@ const items = (upserts: unknown[], removed: string[] = []) => ({
 function cards(planId: string | null = 'P', places = true) {
   const told = vi.fn(async (_plan: string, _cards: readonly PlanCardChange[]) => ({ told: 1 }));
   const store = new SentCards(
-    nodeItemSql(db),
+    () => nodeItemSql(db),
     () => planId,
     async () =>
       places
@@ -93,5 +93,18 @@ describe('sent cards', () => {
     await vi.runAllTimersAsync();
     expect(console.warn).toHaveBeenCalled();
     await failing.store.flush();
+  });
+
+  it('keeps nothing where the storage has no SQL', async () => {
+    const told = vi.fn();
+    const store = new SentCards(
+      () => undefined,
+      () => 'P',
+      async () => null,
+      () => ({ planCardsChanged: told }),
+    );
+    store.changed(items([card('a', 'todo')], ['b']));
+    await vi.runAllTimersAsync();
+    expect(told).not.toHaveBeenCalled();
   });
 });

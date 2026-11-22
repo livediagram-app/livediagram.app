@@ -420,7 +420,7 @@ export function roomSheetWatches(room: PlanRoom): SheetWatches {
 // Send to Plan's chips (sent-cards.ts): a sent card's column by name and whether it is done, read once a burst.
 export function roomSentCards(room: PlanRoom): SentCards {
   return new SentCards(
-    room.state.storage.sql,
+    () => room.state.storage.sql,
     () => room.planId,
     async () => {
       const env = room.roomEnv;

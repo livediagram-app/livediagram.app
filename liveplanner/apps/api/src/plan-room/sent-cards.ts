@@ -32,14 +32,15 @@ export class SentCards {
   private readonly pending = new Map<string, Item | null>();
   private timer: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly sql: Sql;
+  // The room's SQL, read when used: a storage with none (a test's) keeps no sent cards.
+  private readonly sql: () => Sql | undefined;
   private readonly planId: () => string | null;
   private readonly places: () => Promise<CardPlaces | null>;
   private readonly signal: () => Signal | null;
   private readonly settleMs: number;
 
   constructor(
-    sql: Sql,
+    sql: () => Sql | undefined,
     planId: () => string | null,
     places: () => Promise<CardPlaces | null>,
     signal: () => Signal | null,
@@ -53,26 +54,27 @@ export class SentCards {
   }
 
   // Made on every use (cheap), so a purge's deleteAll never leaves a stale "made" mark behind.
-  private table(): void {
-    this.sql.exec(SCHEMA);
+  private table(sql: Sql): Sql {
+    sql.exec(SCHEMA);
+    return sql;
   }
 
   // An op the room relayed: the sent cards it touches are gathered.
   changed(op: unknown): void {
-    if (!isItemsOp(op)) return;
+    const sql = this.sql();
+    if (!sql || !isItemsOp(op)) return;
     let any = false;
     const upserts = op.upserts;
     for (const item of upserts) {
       if (typeof item?.fields?.[SENT_FROM_FIELD] !== 'string') continue;
-      if (!any) this.table();
+      if (!any) this.table(sql);
       any = true;
-      this.sql.exec('INSERT OR IGNORE INTO sent_cards (card_id) VALUES (?)', item.id);
+      sql.exec('INSERT OR IGNORE INTO sent_cards (card_id) VALUES (?)', item.id);
       this.pending.set(item.id, item);
     }
     const removed = (op.removed as unknown[]).filter((id): id is string => typeof id === 'string');
     if (removed.length > 0) {
-      this.table();
-      const known = this.sql
+      const known = this.table(sql)
         .exec(
           'SELECT card_id FROM sent_cards WHERE card_id IN (SELECT value FROM json_each(?))',
           JSON.stringify(removed),
@@ -110,9 +112,9 @@ export class SentCards {
         };
       });
       const gone = cards.filter((c) => c.gone && !entries.find(([id, i]) => id === c.id && i));
-      if (gone.length > 0) {
-        this.table();
-        this.sql.exec(
+      const sql = this.sql();
+      if (gone.length > 0 && sql) {
+        this.table(sql).exec(
           'DELETE FROM sent_cards WHERE card_id IN (SELECT value FROM json_each(?))',
           JSON.stringify(gone.map((c) => c.id)),
         );
