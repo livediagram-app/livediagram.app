@@ -104,7 +104,9 @@ async function treeOf(env: DocumentEnv, documentId: string) {
   ]);
   const pages: TreePage[] = [
     ...stored,
-    ...(trashed.results ?? []).map((t) => (t.parent ? { id: t.id, parent: t.parent } : { id: t.id })),
+    ...(trashed.results ?? []).map((t) =>
+      t.parent ? { id: t.id, parent: t.parent } : { id: t.id },
+    ),
   ];
   return pageParents(pages);
 }

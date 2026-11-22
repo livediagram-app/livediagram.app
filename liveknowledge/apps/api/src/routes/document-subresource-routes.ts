@@ -227,7 +227,9 @@ export async function handleDocumentSubresources(
           tabs: [tabId],
           kind: 'deleted',
           actor: () =>
-            owner ? { id: owner, name: ctx.token ? ctx.token.name || 'An agent' : author.name } : null,
+            owner
+              ? { id: owner, name: ctx.token ? ctx.token.name || 'An agent' : author.name }
+              : null,
         });
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();

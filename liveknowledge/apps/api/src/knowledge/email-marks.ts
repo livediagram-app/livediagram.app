@@ -135,9 +135,7 @@ export async function reserveEmails(
   const db = knowledgeDb(env);
   const day = dayOf(now);
   const [before] = await db.batch<{ used: number }>([
-    db
-      .prepare('SELECT used FROM usage_counters WHERE scope = ? AND period = ?')
-      .bind(scope, day),
+    db.prepare('SELECT used FROM usage_counters WHERE scope = ? AND period = ?').bind(scope, day),
     db
       .prepare(
         `INSERT INTO usage_counters (scope, period, used) VALUES (?, ?, MIN(?, ?))

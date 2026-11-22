@@ -118,7 +118,9 @@ export async function notifyWatchDigests(
   if (ids.length === 0) return [];
   const addresses = await notifyRecipients(env, ids, 'notifyWatchDigest', { optIn: true });
   const sent = ids.filter((id) => addresses.has(id));
-  await Promise.all(sent.map((id) => sendEmail(env, { ...emails.get(id)!, to: addresses.get(id)! })));
+  await Promise.all(
+    sent.map((id) => sendEmail(env, { ...emails.get(id)!, to: addresses.get(id)! })),
+  );
   return sent;
 }
 

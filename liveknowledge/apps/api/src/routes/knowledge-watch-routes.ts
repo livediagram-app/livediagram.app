@@ -12,12 +12,7 @@ import {
 } from '@liveknowledge/api-schema';
 import { pageParents } from '@liveknowledge/document';
 import { pageCreatorOf, readerOf } from '../knowledge/knowledge-caller';
-import {
-  setPageWatch,
-  watcherCount,
-  watchesOf,
-  watchOf,
-} from '../knowledge/page-watch';
+import { setPageWatch, watcherCount, watchesOf, watchOf } from '../knowledge/page-watch';
 import { WATCH_PUSH_DELAY_MS } from '../knowledge/watch-notes';
 import { DAY_MS } from '../knowledge/watch-work';
 import { json, methodNotAllowed } from '../responses';
@@ -48,7 +43,10 @@ const REFUSALS: Record<Refusal, { status: number; message: string }> = {
     message: 'Sign in to watch a page. Guests and agents do not watch.',
   },
   watchers_full: { status: 409, message: 'This knowledgebase holds as many watches as it can.' },
-  watching_too_fast: { status: 429, message: 'Too many watch changes in a minute. Try again shortly.' },
+  watching_too_fast: {
+    status: 429,
+    message: 'Too many watch changes in a minute. Try again shortly.',
+  },
 };
 
 const refused = (code: Refusal) =>

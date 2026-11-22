@@ -53,7 +53,9 @@ const errorOf = async (res: Response) => (await res.json<{ error: string }>()).e
 type UpdateRow = { tab: string; kinds: string; actors: string; actor_ids: string; count: number };
 const updates = (kit: Kit): UpdateRow[] =>
   kit.db.sql
-    .prepare('SELECT tab, kinds, actors, actor_ids, count FROM watch_updates ORDER BY first_at, tab')
+    .prepare(
+      'SELECT tab, kinds, actors, actor_ids, count FROM watch_updates ORDER BY first_at, tab',
+    )
     .all() as UpdateRow[];
 const kindsOf = (kit: Kit, tab: string) =>
   updates(kit)
@@ -183,7 +185,9 @@ describe('pages/:tab/watch', () => {
     kit.db.sql.exec("DELETE FROM page_watchers WHERE person = 'user_n0'");
     expect((await watch(kit, 'viewer', 'page')).status).toBe(200);
     // A held row changes its scope past the bound.
-    kit.db.sql.exec("INSERT INTO page_watchers (tab, person, scope, at) VALUES ('rollbacks', 'user_n0', 'page', 1)");
+    kit.db.sql.exec(
+      "INSERT INTO page_watchers (tab, person, scope, at) VALUES ('rollbacks', 'user_n0', 'page', 1)",
+    );
     expect((await watch(kit, 'viewer', 'section')).status).toBe(200);
     // The rate: a minute's worth, then refused.
     for (let i = 2; i < WATCH_CHANGES_PER_MINUTE; i++)
@@ -244,7 +248,9 @@ describe('what watchers hear of', () => {
     await watch(kit, 'viewer', 'section');
     await watch(kit, 'viewer', 'page', 'holidays');
     // Asking and Verify are no news.
-    await kit.call('participant', 'POST', path().replace('watch', 'approval'), { action: 'request' });
+    await kit.call('participant', 'POST', path().replace('watch', 'approval'), {
+      action: 'request',
+    });
     await kit.call('editor', 'POST', '/api/documents/kb/pages/holidays/verify');
     await kit.call('viewer', 'POST', '/api/documents/kb/pages/holidays/reactions', {
       emoji: '👏',
@@ -268,10 +274,14 @@ describe('what watchers hear of', () => {
     expect(moved.status).toBe(200);
     expect(kindsOf(kit, 'holidays')).toEqual([['moved']]);
     // Moving it to where it is, is no move.
-    await kit.call('editor', 'POST', '/api/documents/kb/pages/holidays/move', { parent: 'deploys' });
+    await kit.call('editor', 'POST', '/api/documents/kb/pages/holidays/move', {
+      parent: 'deploys',
+    });
     expect(updates(kit).find((u) => u.tab === 'holidays')?.count).toBe(1);
     // Deleted: to the Trash.
-    expect((await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/rollbacks')).status).toBe(204);
+    expect((await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/rollbacks')).status).toBe(
+      204,
+    );
     expect(kindsOf(kit, 'rollbacks')).toEqual([['deleted']]);
     const deleted = updates(kit).find((u) => u.tab === 'rollbacks');
     expect(JSON.parse(deleted!.actors)).toEqual([{ id: 'user_o', name: 'Olu' }]);

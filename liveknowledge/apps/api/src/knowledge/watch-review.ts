@@ -16,7 +16,12 @@ const REVIEW_BASELINE = '';
  */
 export async function noteReviewsLapsed(
   env: DocumentEnv,
-  pages: readonly { tab: string; state: string; verifiedAt?: number | undefined; reviewAt?: number | undefined }[],
+  pages: readonly {
+    tab: string;
+    state: string;
+    verifiedAt?: number | undefined;
+    reviewAt?: number | undefined;
+  }[],
   now: number,
 ): Promise<number | null> {
   const watches = await allWatches(env);
@@ -24,10 +29,16 @@ export async function noteReviewsLapsed(
   const told = await marksOf(env, 'watch-review');
   const baseline = !told.has(REVIEW_BASELINE);
   const fresh = pages.filter(
-    (p) => p.state === 'review-due' && p.verifiedAt !== undefined && told.get(p.tab) !== p.verifiedAt,
+    (p) =>
+      p.state === 'review-due' && p.verifiedAt !== undefined && told.get(p.tab) !== p.verifiedAt,
   );
   if (!baseline && fresh.length > 0)
-    await noteWatched(env, { tabs: fresh.map((p) => p.tab), kind: 'review_due', actor: () => null, now });
+    await noteWatched(env, {
+      tabs: fresh.map((p) => p.tab),
+      kind: 'review_due',
+      actor: () => null,
+      now,
+    });
   await putMarks(env, 'watch-review', [
     ...(baseline ? [{ key: REVIEW_BASELINE, at: now }] : []),
     ...fresh.map((p) => ({ key: p.tab, at: p.verifiedAt ?? 0 })),

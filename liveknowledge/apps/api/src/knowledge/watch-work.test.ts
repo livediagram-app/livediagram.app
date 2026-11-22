@@ -125,12 +125,15 @@ describe('peopleOf', () => {
 
 describe('foldChange', () => {
   it('keeps kinds in the order they came, the newest actor first, and nobody for a review', () => {
-    const one = foldChange(
-      { kinds: [], actors: [], actorIds: [] },
-      'saved',
-      { id: 'a', name: '  ' },
-    );
-    expect(one).toEqual({ kinds: ['saved'], actors: [{ id: 'a', name: 'Someone' }], actorIds: ['a'] });
+    const one = foldChange({ kinds: [], actors: [], actorIds: [] }, 'saved', {
+      id: 'a',
+      name: '  ',
+    });
+    expect(one).toEqual({
+      kinds: ['saved'],
+      actors: [{ id: 'a', name: 'Someone' }],
+      actorIds: ['a'],
+    });
     const two = foldChange(one, 'moved', { id: 'b', name: 'Bo' });
     const three = foldChange(two, 'saved', { id: 'a', name: 'Ada' });
     expect(three).toEqual({
@@ -170,7 +173,14 @@ describe('the push', () => {
       actor: () => ({ id: 'user_p', name: 'Priya' }),
       now: NOW + 1,
     });
-    expect(await runWatchWork(env(kit), 'kb', { kind: 'watch', key: 'inbox', dueAt: 0, payload: '' }, NOW)).toBeNull();
+    expect(
+      await runWatchWork(
+        env(kit),
+        'kb',
+        { kind: 'watch', key: 'inbox', dueAt: 0, payload: '' },
+        NOW,
+      ),
+    ).toBeNull();
     const sent = pushed.fn.mock.calls[0]!;
     expect(sent[0]).toBe('kb');
     expect(sent[1].map((u) => [u.tabId, u.people, u.kinds, u.count])).toEqual([
@@ -203,7 +213,9 @@ describe('the push', () => {
 describe('the daily check', () => {
   it('removes a watcher who left, then emails each digest once a day', async () => {
     const { kit, owed } = await watchedKit();
-    kit.db.sql.exec("INSERT INTO page_watchers (tab, person, scope, at) VALUES ('holidays', 'user_x', 'page', 0)");
+    kit.db.sql.exec(
+      "INSERT INTO page_watchers (tab, person, scope, at) VALUES ('holidays', 'user_x', 'page', 0)",
+    );
     reach.left = new Set(['user_x']);
     await noteWatched(env(kit), {
       tabs: ['rollbacks', 'holidays'],
@@ -211,9 +223,14 @@ describe('the daily check', () => {
       actor: () => ({ id: 'user_o', name: 'Olu' }),
     });
     expect(await runWatchDaily(env(kit, owed), 'kb', NOW)).toBe(NOW + DAY_MS);
-    expect(kit.db.sql.prepare("SELECT COUNT(*) AS n FROM page_watchers WHERE person = 'user_x'").get()).toEqual({ n: 0 });
+    expect(
+      kit.db.sql.prepare("SELECT COUNT(*) AS n FROM page_watchers WHERE person = 'user_x'").get(),
+    ).toEqual({ n: 0 });
     expect(owed).toHaveBeenCalledWith('inbox', expect.any(Number));
-    const emails = digests.fn.mock.calls[0]![1] as ReadonlyMap<string, { kind: string; html: string }>;
+    const emails = digests.fn.mock.calls[0]![1] as ReadonlyMap<
+      string,
+      { kind: string; html: string }
+    >;
     expect([...emails.keys()].sort()).toEqual(['user_p', 'user_v']);
     expect(emails.get('user_v')!.html).toContain('Rollbacks');
     expect(emails.get('user_v')!.kind).toBe('WatchDigest');
@@ -223,7 +240,14 @@ describe('the daily check', () => {
     expect(digests.fn).not.toHaveBeenCalled();
     // With no watch left, the check stops.
     kit.db.sql.exec('DELETE FROM page_watchers');
-    expect(await runWatchWork(env(kit), 'kb', { kind: 'watch', key: 'daily', dueAt: 0, payload: '' }, NOW)).toBeNull();
+    expect(
+      await runWatchWork(
+        env(kit),
+        'kb',
+        { kind: 'watch', key: 'daily', dueAt: 0, payload: '' },
+        NOW,
+      ),
+    ).toBeNull();
   });
 
   it('stops for a knowledgebase that is gone', async () => {
@@ -267,9 +291,16 @@ describe('noteWatched', () => {
     const { kit } = await watchedKit();
     const broken = {
       ...kit.db.env,
-      KNOWLEDGE_DB: { prepare: () => ({ first: async () => ({ one: 1 }) }), batch: async () => { throw new Error('boom'); } },
+      KNOWLEDGE_DB: {
+        prepare: () => ({ first: async () => ({ one: 1 }) }),
+        batch: async () => {
+          throw new Error('boom');
+        },
+      },
     } as never;
-    expect(await noteWatched(broken, { tabs: ['holidays'], kind: 'saved', actor: () => null })).toBe(false);
+    expect(
+      await noteWatched(broken, { tabs: ['holidays'], kind: 'saved', actor: () => null }),
+    ).toBe(false);
     expect(await noteWatched(env(kit), { tabs: [], kind: 'saved', actor: () => null })).toBe(false);
   });
 });

@@ -123,7 +123,10 @@ export async function restoreVersion(args: RestoreArgs): Promise<RestoreResult> 
     await noteWatched(env, {
       tabs: [tabId],
       kind: 'saved',
-      actor: () => ({ id: args.author.id, name: args.tokenId ? args.tokenName || 'An agent' : args.author.name }),
+      actor: () => ({
+        id: args.author.id,
+        name: args.tokenId ? args.tokenName || 'An agent' : args.author.name,
+      }),
     });
     // Awaited, bounded per op; a room that misses one is logged and never fails the restore.
     await relayPages(env, document.id, restoreRoomOps(stored.tab, next), '[versions]');

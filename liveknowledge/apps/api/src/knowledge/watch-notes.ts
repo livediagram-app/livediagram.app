@@ -64,7 +64,11 @@ const parsed = <T>(text: string, fallback: T): T => {
 
 /** The update's fields with one more change folded in. Pure, for the note and its tests. */
 export function foldChange(
-  held: { kinds: readonly UpdateKind[]; actors: readonly UpdateActor[]; actorIds: readonly string[] },
+  held: {
+    kinds: readonly UpdateKind[];
+    actors: readonly UpdateActor[];
+    actorIds: readonly string[];
+  },
   kind: UpdateKind,
   actor: WatchActor,
 ): { kinds: UpdateKind[]; actors: UpdateActor[]; actorIds: string[] } {
@@ -98,7 +102,10 @@ export async function noteWatched(env: DocumentEnv, note: WatchNote): Promise<bo
         db.prepare('SELECT name FROM tabs WHERE id = ?').bind(tab),
       ]);
       const row = open?.results?.[0] as OpenUpdate | undefined;
-      const name = ((named?.results?.[0] as { name?: string } | undefined)?.name ?? '').slice(0, 200);
+      const name = ((named?.results?.[0] as { name?: string } | undefined)?.name ?? '').slice(
+        0,
+        200,
+      );
       const next = foldChange(
         row
           ? {
