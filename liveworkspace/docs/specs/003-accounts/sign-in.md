@@ -74,7 +74,14 @@ The ID token carries `name`, `given_name`, `family_name`, `email` and `email_ver
 Auth's provider normally sends these only from `/userinfo`, so `customIdTokenClaims` adds them.
 
 Access tokens last 15 minutes (refresh renews them) and name the app's API as their audience, so a livediagram token is
-refused by liveplanner. They carry `sub` (the account id), `email` and `email_verified`.
+refused by liveplanner. They carry `sub` (the account id), `email` and `email_verified`. The index reads the two
+email claims for a share link restricted to email domains, and counts an address only while `email_verified` is
+true, so an account made with an address it never proved cannot pass for someone at that domain
+([one-explorer-contracts.md](../004-index/one-explorer-contracts.md) "Sharing and access").
+
+An app's "Use Another Account" (a share link's restricted page, for someone signed in at the wrong domain) sends
+`prompt=login` to the authorize endpoint (`/api/auth/sign-in?screen=switch`), so the accounts site asks who is signing
+in rather than handing back the session it already holds.
 
 ## Closing an account
 
