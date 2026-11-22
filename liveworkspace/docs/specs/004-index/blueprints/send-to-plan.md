@@ -29,18 +29,18 @@ liveplanner room: an `items` op touching a card with sentFrom ── 1.5 s ─�
 
 ## Wire (`@liveworkspace/index-client`, src/plan-sends.ts)
 
-| Shape                 | Fields                                                                                                     |
-| --------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `PlanSendKind`        | `'element' \| 'text' \| 'thread' \| 'action'`                                                              |
-| `PlanSendPlace`       | `app`, `itemId`, `kind`, `tabId`, `elementId`, `part` (each `string \| null`), `label` (a tab's or page's name), `text` |
-| `PlanSendCardInput`   | `title`, `assignee?` (a plan person's name), `due?` (`YYYY-MM-DD`), `checklist?` (row texts), `places` (1 to 50) |
-| `PlanSendAsk`         | `board` (an element id), `column` (a column's name), `cards` (1 to 20), `again?`                           |
-| `PlanSend`            | `id`, `ref`, `kind`, `plan: {id, title}`, `card: {id, title, column, done}`, `link` (the card), `at`       |
-| `PlanSendsRead`       | `{sends: PlanSend[]}`, newest first, only those whose plan the reader can open                            |
-| `PlanCardChange`      | `id`, `title`, `column`, `done`, `gone` (in the Trash or deleted)                                          |
-| `PlanSendDoorCall`    | `person`, `board`, `column`, `cards: {title, description, assignee?, due?, checklist?, sentFrom}[]`       |
-| `PlanSendDoorAnswer`  | `{ok: true, cards: {id, title, column, done}[]}` or `{ok: false, code, reason}`                            |
-| `SentFrom`            | `app`, `itemId`, `title`, `kind`, `label`, `text`, `link`: the card's `sentFrom` field                     |
+| Shape                | Fields                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `PlanSendKind`       | `'element' \| 'text' \| 'thread' \| 'action'`                                                                           |
+| `PlanSendPlace`      | `app`, `itemId`, `kind`, `tabId`, `elementId`, `part` (each `string \| null`), `label` (a tab's or page's name), `text` |
+| `PlanSendCardInput`  | `title`, `assignee?` (a plan person's name), `due?` (`YYYY-MM-DD`), `checklist?` (row texts), `places` (1 to 50)        |
+| `PlanSendAsk`        | `board` (an element id), `column` (a column's name), `cards` (1 to 20), `again?`                                        |
+| `PlanSend`           | `id`, `ref`, `kind`, `plan: {id, title}`, `card: {id, title, column, done}`, `link` (the card), `at`                    |
+| `PlanSendsRead`      | `{sends: PlanSend[]}`, newest first, only those whose plan the reader can open                                          |
+| `PlanCardChange`     | `id`, `title`, `column`, `done`, `gone` (in the Trash or deleted)                                                       |
+| `PlanSendDoorCall`   | `person`, `board`, `column`, `cards: {title, description, assignee?, due?, checklist?, sentFrom}[]`                     |
+| `PlanSendDoorAnswer` | `{ok: true, cards: {id, title, column, done}[]}` or `{ok: false, code, reason}`                                         |
+| `SentFrom`           | `app`, `itemId`, `title`, `kind`, `label`, `text`, `link`: the card's `sentFrom` field                                  |
 
 - `planSendRef(place)` is `kind:tab:element:part`, each empty when null. `textPart(words)` is the first 12 hex
   characters of a 32-bit FNV-1a of the words, lower-cased and spaces folded.
@@ -62,18 +62,18 @@ src/plan-send-rows.ts     the rows: insert, the source's read, the changes, the 
 migrations/0030_plan_sends.sql
 ```
 
-| Column          | Holds                                                                  |
-| --------------- | ---------------------------------------------------------------------- |
-| `id`            | `ps_` and 20 random letters                                            |
-| `source_id`     | the source item (`REFERENCES items (id) ON DELETE CASCADE`)            |
-| `ref`           | the place (`planSendRef`)                                              |
-| `kind`          | the place's kind                                                       |
-| `plan_id`       | the plan (`REFERENCES items (id) ON DELETE CASCADE`)                   |
-| `card_id`       | the card                                                               |
-| `card_title`    | as the plan last said, cut to 200                                       |
-| `column_name`   | as the plan last said, cut to 120                                       |
-| `done`, `gone`  | 0 or 1                                                                 |
-| `at`, `updated_at` | epoch ms                                                            |
+| Column             | Holds                                                       |
+| ------------------ | ----------------------------------------------------------- |
+| `id`               | `ps_` and 20 random letters                                 |
+| `source_id`        | the source item (`REFERENCES items (id) ON DELETE CASCADE`) |
+| `ref`              | the place (`planSendRef`)                                   |
+| `kind`             | the place's kind                                            |
+| `plan_id`          | the plan (`REFERENCES items (id) ON DELETE CASCADE`)        |
+| `card_id`          | the card                                                    |
+| `card_title`       | as the plan last said, cut to 200                           |
+| `column_name`      | as the plan last said, cut to 120                           |
+| `done`, `gone`     | 0 or 1                                                      |
+| `at`, `updated_at` | epoch ms                                                    |
 
 Indexes: `(source_id, at DESC)` for a source's read, `(plan_id, card_id)` for the changes and a send's duplicate check.
 
@@ -82,7 +82,7 @@ Indexes: `(source_id, at DESC)` for a source's read, `(plan_id, card_id)` for th
   `loadItem(…, 'view')` (each distinct source once); a source holding `PLAN_SENDS_PER_SOURCE_MAX` is refused
   (`source_full`); a place with a live send to this plan and no `again` is 409 `already_sent` with `{send}`. The grant
   as automation-steps.ts mints one; the call `callAppForJson(env, 'liveplanner', '/items/:id/plan-send', call,
-  APP_CALL_TIMEOUT_MS, {X-Index-Grant})`. A 403 or 404 is `no_access`; a refusal answer is 422 with its code.
+APP_CALL_TIMEOUT_MS, {X-Index-Grant})`. A 403 or 404 is `no_access`; a refusal answer is 422 with its code.
 - **A source's read**: `loadItem(source, 'view')` with the caller's share; the newest `PLAN_SEND_READ_MAX` rows not
   gone; each distinct plan (at most `PLAN_SEND_PLANS_CHECKED_MAX`, newest first) checked with `loadItem(plan, 'view')`
   for the caller without a share code; rows of a plan that refuses, or past the cap, are left out. A guest reads none.
@@ -91,7 +91,7 @@ Indexes: `(source_id, at DESC)` for a source's read, `(plan_id, card_id)` for th
   changed sources' apps read in one statement; each told through `callApp(…, '/items/:source/source-changed', …)`,
   `SOURCE_SIGNAL_CONCURRENCY` at a time, at most `PLAN_SEND_SOURCES_SIGNAL_MAX`.
 - **The agents' record**: `POST /app/items/:id/plan-sends`, liveplanner's key, `{person, cards: [{id, title, column,
-  done, sentFrom}]}`: each source checked as the person (`view`); recorded only where they can read it.
+done, sentFrom}]}`: each source checked as the person (`view`); recorded only where they can read it.
 - **New Plan**: `POST /plan-sends/plans {name}`: an account in person, the limiter, then liveplanner's template door
   (`kanban`, `folderId` null) as a kit part is made; answers `{item}`.
 
@@ -104,13 +104,13 @@ Indexes: `(source_id, at DESC)` for a source's read, `(plan_id, card_id)` for th
 
 ## liveplanner
 
-| File                                              | Role                                                                                        |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `packages/items/src/sent-from.ts`                 | `SENT_FROM_FIELD` (`sentFrom`), `readSentFrom`; the store keeps it as any unknown field     |
-| `apps/api/src/plan-room/plan-send-door.ts`        | The door's handler: the cards made as the person, in one insert, history theirs             |
-| `apps/api/src/plan-room/sent-cards.ts`            | The room's watch on sent cards and the gathered change call (as sheet-watchers.ts)           |
-| `apps/api/src/routes/item-routes.ts`              | A create carrying `sentFrom` (an agent's) recorded through `recordPlanSends`                |
-| `apps/editor/components/plan/ItemPanelLayout.tsx` | The Sent From row in the card's footer                                                      |
+| File                                              | Role                                                                                    |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `packages/items/src/sent-from.ts`                 | `SENT_FROM_FIELD` (`sentFrom`), `readSentFrom`; the store keeps it as any unknown field |
+| `apps/api/src/plan-room/plan-send-door.ts`        | The door's handler: the cards made as the person, in one insert, history theirs         |
+| `apps/api/src/plan-room/sent-cards.ts`            | The room's watch on sent cards and the gathered change call (as sheet-watchers.ts)      |
+| `apps/api/src/routes/item-routes.ts`              | A create carrying `sentFrom` (an agent's) recorded through `recordPlanSends`            |
+| `apps/editor/components/plan/ItemPanelLayout.tsx` | The Sent From row in the card's footer                                                  |
 
 The room's `broadcastOrderedSystemOp` hands every `items` op to `SentCards.changed(op)`: a card upserted with
 `sentFrom` is noted (`sent_cards (card_id)` in the room's SQL), and any noted card upserted or removed is gathered; one

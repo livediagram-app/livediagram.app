@@ -77,7 +77,13 @@ export type PlanSendsRead = { sends: PlanSend[] };
 export type PlanSendAnswer = { sends: PlanSend[] };
 
 /** One sent card's state, as liveplanner tells the index. */
-export type PlanCardChange = { id: string; title: string; column: string; done: boolean; gone: boolean };
+export type PlanCardChange = {
+  id: string;
+  title: string;
+  column: string;
+  done: boolean;
+  gone: boolean;
+};
 
 /** A card's Sent From field (`sentFrom`): where it came from, as the platform filled it in. */
 export type SentFrom = {
@@ -124,8 +130,9 @@ export const planSendDoorPath = (itemId: string): string =>
   `/api/internal/items/${encodeURIComponent(itemId)}/plan-send`;
 
 /** A place's ref, `kind:tab:element:part`, each empty when null: what a chip and a duplicate are matched by. */
-export const planSendRef = (p: Pick<PlanSendPlace, 'kind' | 'tabId' | 'elementId' | 'part'>): string =>
-  [p.kind, p.tabId ?? '', p.elementId ?? '', p.part ?? ''].join(':');
+export const planSendRef = (
+  p: Pick<PlanSendPlace, 'kind' | 'tabId' | 'elementId' | 'part'>,
+): string => [p.kind, p.tabId ?? '', p.elementId ?? '', p.part ?? ''].join(':');
 
 /** Picked words' key: a 32-bit FNV-1a of them, lower-cased with runs of white space folded, as 8 hex characters. */
 export function textPart(words: string): string {
@@ -178,7 +185,10 @@ function readCard(v: unknown): PlanSendCardInput | null {
   if (!isRecord(v) || !text(v.title, PLAN_SEND_TITLE_MAX) || v.title.trim() === '') return null;
   if (v.assignee !== undefined && !text(v.assignee, PLAN_SEND_NAME_MAX)) return null;
   if (v.due !== undefined && !isPlanDay(v.due)) return null;
-  if (v.checklist !== undefined && !isTextList(v.checklist, PLAN_SEND_CHECKLIST_MAX, PLAN_SEND_TITLE_MAX))
+  if (
+    v.checklist !== undefined &&
+    !isTextList(v.checklist, PLAN_SEND_CHECKLIST_MAX, PLAN_SEND_TITLE_MAX)
+  )
     return null;
   const places = Array.isArray(v.places) ? v.places.map(readPlace) : [];
   if (places.length === 0 || places.length > PLAN_SEND_PLACES_MAX || places.some((p) => !p))

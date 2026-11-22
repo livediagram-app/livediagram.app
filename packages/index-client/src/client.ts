@@ -360,10 +360,7 @@ export function createIndexClient({
     // (only those whose plan the reader can open); and New Plan, an empty Kanban plan of the person's own.
     sendToPlan: (planId: string, ask: PlanSendAsk) =>
       call<PlanSendAnswer>(`/items/${enc(planId)}/plan-sends`, { method: 'POST', body: ask }),
-    planSends: (
-      sourceId: string,
-      options: RequestOptions & { share?: ShareAccess | null } = {},
-    ) =>
+    planSends: (sourceId: string, options: RequestOptions & { share?: ShareAccess | null } = {}) =>
       call<PlanSendsRead>(`/items/${enc(sourceId)}/plan-sends`, {
         share: options.share ?? null,
         signal: options.signal,
