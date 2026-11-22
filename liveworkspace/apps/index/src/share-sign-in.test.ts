@@ -67,7 +67,10 @@ describe('the sign-in rule: setting it', () => {
     const read = await body<{ signIn: ShareSignInRule }>(
       await call(`/items/${item.id}/share`, { auth: ada.auth }),
     );
-    expect(read.signIn).toEqual({ requireAccount: true, domains: ['acme.com', 'liveworkspace.app'] });
+    expect(read.signIn).toEqual({
+      requireAccount: true,
+      domains: ['acme.com', 'liveworkspace.app'],
+    });
     // Someone else can't see it or set it.
     expect((await setRule(eve.auth, item.id, { requireAccount: false })).status).toBe(404);
     // Off removes it.
@@ -145,9 +148,9 @@ describe('the sign-in rule: setting it', () => {
     const ada = await person('user_a');
     const item = await makeItem(ada.auth);
     await rule(ada.auth, item.id, { requireAccount: true });
-    expect((await call(`/items/${item.id}/archive`, { method: 'POST', auth: ada.auth })).status).toBe(
-      200,
-    );
+    expect(
+      (await call(`/items/${item.id}/archive`, { method: 'POST', auth: ada.auth })).status,
+    ).toBe(200);
     expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM share_sign_in').get()).toEqual({ n: 0 });
   });
 });
@@ -175,9 +178,9 @@ describe('the sign-in rule: opening a link, for every level', () => {
         expect((await grant(item.id, link.code, auth)).body.error).toBe('sign_in_required');
       }
       // The owner reaches their item as ever.
-      expect((await call(`/items/${item.id}/grant`, { method: 'POST', auth: ada.auth })).status).toBe(
-        200,
-      );
+      expect(
+        (await call(`/items/${item.id}/grant`, { method: 'POST', auth: ada.auth })).status,
+      ).toBe(200);
     });
 
     it(`email domains: a verified address at a listed domain opens a ${level} link; anyone else is refused`, async () => {
@@ -251,7 +254,9 @@ describe('the sign-in rule: opening a link, for every level', () => {
       body: { requireAccount: true, domains: ['other.org'] },
     });
     h.db.sql
-      .prepare('INSERT INTO shared_with (person_id, item_id, share_code, last_seen) VALUES (?, ?, ?, ?)')
+      .prepare(
+        'INSERT INTO shared_with (person_id, item_id, share_code, last_seen) VALUES (?, ?, ?, ?)',
+      )
       .run('user_b', item.id, link.code, Date.now());
     expect((await call(`/items/${item.id}`, { auth: bob.auth })).status).toBe(403);
     expect(await looked()).toEqual([]);

@@ -45,7 +45,9 @@ describe('normaliseShareDomain', () => {
 
 describe('parseShareDomains', () => {
   it('splits typed text at spaces, tabs, new lines and commas, keeping the order and dropping repeats', () => {
-    expect(parseShareDomains(' @tommcclean.me  @liveworkspace.app,acme.com\n\tACME.com ,, ')).toEqual({
+    expect(
+      parseShareDomains(' @tommcclean.me  @liveworkspace.app,acme.com\n\tACME.com ,, '),
+    ).toEqual({
       ok: true,
       domains: ['tommcclean.me', 'liveworkspace.app', 'acme.com'],
     });

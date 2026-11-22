@@ -166,7 +166,9 @@ describe('indexRefusal', () => {
       status: 404,
       error: 'not_found',
     });
-    expect(indexRefusal(new IndexError(403, 'domain_not_allowed', null, null, ['acme.com']))).toEqual({
+    expect(
+      indexRefusal(new IndexError(403, 'domain_not_allowed', null, null, ['acme.com'])),
+    ).toEqual({
       status: 403,
       error: 'domain_not_allowed',
       domains: ['acme.com'],

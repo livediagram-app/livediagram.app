@@ -273,8 +273,7 @@ export function createIndexClient({
       call<void>(`/placement-defaults/${enc(key)}`, { method: 'DELETE' }),
 
     // Sharing
-    listShareLinks: (itemId: string) =>
-      call<ShareLinksAnswer>(`/items/${enc(itemId)}/share`),
+    listShareLinks: (itemId: string) => call<ShareLinksAnswer>(`/items/${enc(itemId)}/share`),
     createShareLink: (itemId: string, input: CreateShareLinkInput = {}) =>
       call<{ link: ShareLink }>(`/items/${enc(itemId)}/share`, { method: 'POST', body: input }),
     revokeAllShareLinks: (itemId: string) =>

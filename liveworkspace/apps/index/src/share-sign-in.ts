@@ -58,8 +58,10 @@ export function signInRefusal(
 }
 
 /** Whether this person passes the rule, for a read that leaves out what it can't open (lookup.ts). */
-export const passesSignIn = (columns: Partial<SignInColumns> | null | undefined, person: Person | null) =>
-  signInRefusal(columns, person) === null;
+export const passesSignIn = (
+  columns: Partial<SignInColumns> | null | undefined,
+  person: Person | null,
+) => signInRefusal(columns, person) === null;
 
 /** The domain a team item's domain box starts with: the asker's own, unless a public mail provider's. */
 export function suggestedDomainOf(row: ItemRow, person: Person | null): string | null {
@@ -68,7 +70,9 @@ export function suggestedDomainOf(row: ItemRow, person: Person | null): string |
 
 /** The item's rule, for its share list. */
 export async function readSignIn(env: Env, itemId: string): Promise<SignInColumns | null> {
-  return env.INDEX_DB.prepare('SELECT require_account, domains FROM share_sign_in WHERE item_id = ?')
+  return env.INDEX_DB.prepare(
+    'SELECT require_account, domains FROM share_sign_in WHERE item_id = ?',
+  )
     .bind(itemId)
     .first<SignInColumns>();
 }

@@ -119,7 +119,8 @@ export const PUBLIC_MAIL_DOMAINS: readonly string[] = [
 const PUBLIC_MAIL = new Set(PUBLIC_MAIL_DOMAINS);
 
 /** Whether a domain is a public mail provider's. */
-export const isPublicMailDomain = (domain: string): boolean => PUBLIC_MAIL.has(domain.toLowerCase());
+export const isPublicMailDomain = (domain: string): boolean =>
+  PUBLIC_MAIL.has(domain.toLowerCase());
 
 /** The domain a team item's domain box starts with: the sharer's own, unless it is a public mail provider's. */
 export function suggestedShareDomain(email: string | null | undefined): string | null {

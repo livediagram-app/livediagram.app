@@ -528,7 +528,7 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   listed. A changed rule holds for everyone already in (any change but turning it off): the
   item's Shared with me rows go and the app reloads every link's sessions (`revoke`, `reason: "rescoped"`), so a guest
   already inside is sent to the restricted page; turning it off, or saving it unchanged, sends no one away. `GET
-  /items/:id/share` answers the rule as `signIn {requireAccount, domains}` and, for a team item, `suggestedDomain`:
+/items/:id/share` answers the rule as `signIn {requireAccount, domains}` and, for a team item, `suggestedDomain`:
   the domain of the asker's own verified email, unless it is a public mail provider's (`PUBLIC_MAIL_DOMAINS`: gmail.com,
   outlook.com, icloud.com and the like), where it is null; the dialog starts its domain box with it.
 - **The Share dialog's Sign In card** (`packages/explorer` `SignInSection`), under Password Protection, in the same
