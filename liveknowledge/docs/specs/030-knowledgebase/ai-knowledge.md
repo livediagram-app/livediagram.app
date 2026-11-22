@@ -328,7 +328,7 @@ rows and actions, long lists capped so the page never grows with the data.
   its title and when it was last edited, a chevron, opening the page.
 - **What an Agent Sees:** the dark sample card, last.
 - On a wide screen the cards fill two equal columns (owner 2026-11-21): Needs Attention, Connected Agents, Most
-  Read and Not Read in 90 Days on the left; Knowledge Health, Always in Context and What an Agent Sees on the right, so neither column runs
+  Read and Not Read in 90 Days on the left; Knowledge Health, Required Reading ([Required Reading](required-reading.md): each page asked to be read, least read first, with how many have), Always in Context and What an Agent Sees on the right, so neither column runs
   long beside an empty one. Each column is its own stack, so a card's height in one never moves a card in the other,
   and Knowledge Health heads its column on a whole pixel (CSS columns put it half a pixel off, and its glyph with it).
   Below a laptop's width (1024px) they are one column, the left column's cards then the right's, the order focus
