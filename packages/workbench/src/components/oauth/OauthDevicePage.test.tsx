@@ -6,7 +6,9 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { bearerSettingsRequest } from '@liveworkspace/settings-ui/token-list';
 import type { SignInGate } from '../../hooks/auth/useSignInGate';
+import { ApiError } from '../../lib/api/api-error';
 import type { OauthPagesConfig } from './oauth-chrome';
 import { createOauthDevicePage, startedLine } from './OauthDevicePage';
 
@@ -17,6 +19,12 @@ vi.mock('../../lib/api/oauth', () => ({
 }));
 vi.mock('../../lib/api/tokens', () => ({
   apiRevokeTokenAsItself: (...args: unknown[]) => revoke(...args),
+}));
+// The account API's bearer door, with a signed-in person's token, over the fetch each test stubs.
+vi.mock('../../lib/oauth-replaced-tokens', async (real) => ({
+  ...(await real<typeof import('../../lib/oauth-replaced-tokens')>()),
+  accountTokensRequest: () =>
+    bearerSettingsRequest({ baseUrl: '/api/workspace/account', token: async () => 'at_1' }),
 }));
 
 const MCP = 'https://mcp.example.app';
@@ -54,6 +62,20 @@ beforeEach(() => {
   vi.spyOn(Date, 'now').mockReturnValue(NOW);
   vi.stubGlobal('fetch', async (url: string, init?: RequestInit) => {
     const path = url.replace(MCP, '');
+    if (path === '/api/workspace/account/tokens')
+      return Response.json({
+        tokens: [
+          {
+            id: 'cli1',
+            name: 'example CLI',
+            readOnly: false,
+            createdAt: 1,
+            lastUsedAt: 5,
+            expiresAt: 9e12,
+          },
+        ],
+      });
+    if (path === '/api/workspace/account/tokens/cli1') return Response.json({ id: 'cli1' });
     if (path.startsWith('/oauth/device/session/'))
       return session && path.endsWith('/BCDF-GHJK')
         ? Response.json(session)
@@ -119,6 +141,29 @@ describe('/oauth/device', () => {
     render(<Page />);
     await typeCode('BCDF-GHJK');
     expect(screen.getByRole('note').textContent).not.toContain('Started');
+  });
+
+  it('at the cap, lists the tokens to revoke one, then connects', async () => {
+    exchange.mockRejectedValueOnce(new ApiError('oauth exchange', 409, 'token_limit_reached'));
+    render(<Page />);
+    await typeCode('BCDF-GHJK');
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Connect' }));
+    });
+    expect(screen.getByRole('alert').textContent).toContain('limit of 20 API tokens');
+    await act(async () => {
+      fireEvent.click(await screen.findByRole('button', { name: 'Revoke' }));
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Revoke now' }));
+    });
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('There’s room for one more token now.');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Connect' }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Connect' }));
+    });
+    expect(screen.getByRole('heading', { name: 'You’re connected' })).toBeTruthy();
   });
 
   it('says so when the MCP refuses the token, and revokes it', async () => {

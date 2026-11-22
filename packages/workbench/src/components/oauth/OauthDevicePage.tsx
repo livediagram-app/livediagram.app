@@ -10,7 +10,7 @@
 // id and send a link, so a code that arrived in a link would need only one click to hand them a six-month token. The
 // approval step says when, and roughly where, the request started, under "Only connect if you started this in your
 // own terminal just now."
-import { Suspense, use, useState } from 'react';
+import { Suspense, use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { Button, formatRelativeTime } from '@liveworkspace/ui';
 import { apiExchangeOauthToken } from '../../lib/api/oauth';
@@ -36,6 +36,8 @@ import {
   ReadOnlyAccessToggle,
   type OauthPagesConfig,
 } from './oauth-chrome';
+import { Callout } from '@liveworkspace/ui/callout';
+import { TokenLimitList } from './TokenLimitList';
 
 type Consent = {
   kind: 'consent';
@@ -91,6 +93,10 @@ function Device({ config, device }: { config: OauthPagesConfig; device: DeviceSe
   const [typed, setTyped] = useState('');
   const [step, setStep] = useState<Step>({ kind: 'enter' });
   const [readOnly, setReadOnly] = useState(false);
+  // At the token cap, as on the consent page: the tokens are listed to revoke one, then there's room (`freed`).
+  const [atLimit, setAtLimit] = useState(false);
+  const [freed, setFreed] = useState(false);
+  const connectRef = useRef<HTMLButtonElement>(null);
 
   // Cancel refuses the code when there is one, so the terminal stops waiting.
   const cancel = async () => {
@@ -157,6 +163,7 @@ function Device({ config, device }: { config: OauthPagesConfig; device: DeviceSe
   const approve = async (consent: Consent) => {
     const { userCode, clientName } = consent;
     setStep({ ...consent, working: true, failed: null });
+    setFreed(false);
     // Checks the code is still waiting before minting, and revokes a token the MCP did not take, so a failed
     // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
     const result = await mintAndHandOver({
@@ -167,6 +174,7 @@ function Device({ config, device }: { config: OauthPagesConfig; device: DeviceSe
       revoke: (token) => apiRevokeTokenAsItself(token),
     });
     if (!result.ok) {
+      if (result.reason === 'token_limit') setAtLimit(true);
       setStep({ ...consent, working: false, failed: result.reason });
       return;
     }
@@ -221,9 +229,24 @@ function Device({ config, device }: { config: OauthPagesConfig; device: DeviceSe
               {handoverFailureCopy(failed, 'Run the sign-in again from your terminal.')}
             </p>
           ) : null}
+          {freed && !failed ? (
+            <Callout tone="success" role="status" className="mt-3">
+              There’s room for one more token now.
+            </Callout>
+          ) : null}
+          {atLimit ? (
+            <TokenLimitList
+              onFreed={() => {
+                setFreed(true);
+                setStep({ ...step, failed: null });
+                connectRef.current?.focus();
+              }}
+            />
+          ) : null}
           <div className="mt-5 flex items-center gap-2">
             {/* Keeps the keyboard while it connects (busy-buttons.md). */}
             <Button
+              ref={connectRef}
               variant="none"
               onClick={() => void approve(step)}
               busy={working}
