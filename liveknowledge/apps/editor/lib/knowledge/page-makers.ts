@@ -16,6 +16,10 @@ export type MakerWords = {
 
 const DOOR: Record<string, string> = { mcp: 'MCP', cli: 'the CLI', api: 'the API' };
 
+/** A rule's step's writer, as the page's banner and its pills both say it: "the rule Release Note in Launch". */
+export const automationRuleWords = (stamp: Pick<PageAuthorStamp, 'agent'>): string =>
+  stamp.agent ? `the rule ${stamp.agent}` : 'a rule in another app';
+
 /** The pill and hover card of one stamp: `which` is the page's making or its last change. */
 export function makerWords(
   stamp: PageAuthorStamp,
@@ -23,16 +27,19 @@ export function makerWords(
   nameOf: (id: string | undefined) => string | undefined,
   now: number,
 ): MakerWords {
-  // A rule's step from another app: the author's own rule, named with the item it came from.
+  // A rule's step from another app: the rule, named with the item it came from, as the banner names it
+  // (AutomationWrittenBanner.tsx), writing as its author.
   if (stamp.via === 'automation') {
-    const rule = stamp.agent ?? 'a rule';
+    const rule = automationRuleWords(stamp);
+    const author = nameOf(stamp.by);
+    const as = author ? ` as ${author}` : '';
     return {
       kind: 'human',
-      label: which === 'created' ? 'Written by Automation' : 'Edited by Automation',
+      label: which === 'created' ? 'Written by a Rule' : 'Edited by a Rule',
       description:
         which === 'created'
-          ? `Written by the rule ${rule} on ${shortDate(stamp.at, now)}`
-          : `Last edited by the rule ${rule}, ${relativeSince(stamp.at, now)}`,
+          ? `Written by ${rule}${as} on ${shortDate(stamp.at, now)}`
+          : `Last edited by ${rule}${as}, ${relativeSince(stamp.at, now)}`,
     };
   }
   const ai = stamp.kind === 'ai';
