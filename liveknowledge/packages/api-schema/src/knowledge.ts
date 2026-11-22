@@ -15,6 +15,9 @@ export type KnowledgeStyleWrite = Partial<Omit<KnowledgeStyle, 'accent'>> & {
 
 /** A page's verified state, worked out when read (verification.md "States"). */
 export type KnowledgeTrustState = 'verified' | 'review-due' | 'never-verified';
+/** A page's trust as a reader is shown it: its state, or `off` where the knowledgebase's Review Period is Never and
+ *  verification is off (verification.md "Under a Review Period of Never"): then no date and no `stale`. */
+export type KnowledgeTrustShown = KnowledgeTrustState | 'off';
 export type KnowledgeReviewEvery = 30 | 90 | 180 | 365 | 'never';
 /** What a knowledgebase decides for every page (verification.md "The Review Period"): how long after it was last
  *  verified a page comes due for review. In a document read, the `document-meta` op and the routes below. */
@@ -42,7 +45,7 @@ export type KnowledgeSearchResult = {
   snippet: string;
   firstBlock: string;
   lastBlock: string;
-  trust: KnowledgeTrustState;
+  trust: KnowledgeTrustShown;
   verifiedAt?: number;
   /** For an agent (an API token, the MCP, the CLI): the passage whole, when its page's review is or was due, and
    *  the pages an open conflict sets this passage against. */
@@ -128,7 +131,12 @@ export type PageHealthResponse = PageKnowledgeResponse & {
   agents?: PageAgentReads[];
   /** What the Health Score counts that the editor cannot see itself; absent from an older api. */
   signals?: PageHealthSignals;
+  /** Page Insights (ai-knowledge.md "Page Insights"); absent from an older api. */
+  insights?: PageInsightsWire;
 };
+/** A page's use: its reads by day over the last 30 days, oldest first, and how many times Ask cited it in that time
+ *  (absent through a link confined to one page, which has no Ask). */
+export type PageInsightsWire = { days: KnowledgeReadsDay[]; cited?: number };
 /** One question answered from a page: the asker's words (the latest day's of like questions) and how many times. */
 export type PageAnsweredQuestion = { question: string; asked: number };
 /** One agent's reads of a page this week, by the agent's name. */
@@ -220,7 +228,7 @@ export type AskSource = {
   title: string;
   headings: string[];
   text: string;
-  trust: KnowledgeTrustState;
+  trust: KnowledgeTrustShown;
   verifiedAt?: number;
   firstBlock: string;
   lastBlock: string;
@@ -332,7 +340,7 @@ export type KnowledgeConflictSide = {
   firstBlock: string;
   title: string;
   text: string;
-  trust: KnowledgeTrustState;
+  trust: KnowledgeTrustShown;
   verifiedAt?: number;
   /** The page's Health Score: the higher side is the likelier right (ai-knowledge.md "Pages that disagree"). */
   health?: { score: number; label: KnowledgeHealthLabel };
@@ -353,7 +361,16 @@ export type KnowledgeConflict = {
 export type KnowledgeEmailResult =
   | { outcome: 'sent'; sent: number; owners: number }
   | { outcome: 'already_sent'; sentAt: number; nextAt?: number }
-  | { outcome: 'no_owners' | 'nothing_due' | 'unavailable' | 'daily_limit' | 'no_recipients' };
+  | {
+      outcome:
+        | 'no_owners'
+        | 'nothing_due'
+        | 'unavailable'
+        | 'daily_limit'
+        | 'no_recipients'
+        // Remind the Owners under a Review Period of Never: nothing is verified, so nobody is reminded.
+        | 'verification_off';
+    };
 /** An agent's edit waiting for an Editor (ai-knowledge.md "Edits suggested by agents"): a passage of the page's
  *  Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty). */
 export type KnowledgeSuggestion = {
@@ -381,7 +398,7 @@ export type AgentScope = 'read' | 'suggest' | 'write';
 
 /** How far a page or passage can be trusted, as every agent answer carries it. `stale` is review due. */
 export type KnowledgePageTrust = {
-  state: KnowledgeTrustState;
+  state: KnowledgeTrustShown;
   verifiedAt?: number;
   /** The verifier's name, where the api has one. */
   verifiedBy?: string;
@@ -476,7 +493,11 @@ export type CreatePageRequest = {
    *  an import's pages, some not written yet. */
   pageIds?: Record<string, string>;
 };
-export type CreatePageResponse = { page: KnowledgePageRef & { parent?: string; rev: number } };
+/** `trust`: a new page is `never-verified`, or `off` where verification is off; absent from an older api. */
+export type CreatePageResponse = {
+  page: KnowledgePageRef & { parent?: string; rev: number };
+  trust?: 'never-verified' | 'off';
+};
 /** `PUT .../pages/<tab>`: the page's writing replaced by the Markdown, or the Markdown added after it. Answers as
  *  the article write does (`PagesAnswer`). */
 export type WritePageRequest = { markdown: string; mode?: 'replace' | 'append' };
@@ -512,6 +533,11 @@ export type KnowledgeOverviewResponse = {
   reads: { days: KnowledgeReadsDay[]; mostRead: KnowledgeMostRead[] };
   /** Pages With Low Health: the 5 lowest under the Healthy line; absent from an older api. */
   lowHealth?: KnowledgeLowHealthPage[];
+  /** Not Read in 90 Days (ai-knowledge.md): the first 10, touched longest ago first, and how many; absent from an
+   *  older api. */
+  notRead?: { pages: KnowledgeNotReadPage[]; total: number };
 };
+/** A page nobody read in 90 days: `touchedAt` is its last edit, else when it was made, where either was kept. */
+export type KnowledgeNotReadPage = { tab: string; title: string; touchedAt?: number };
 /** `POST .../questions`: an agent's `report_gap`. */
 export type ReportGapRequest = { question: string };

@@ -316,6 +316,15 @@ describe('new', () => {
     expect(sent[0]!.body).toEqual({ title: 'Later' });
     expect(newPage.text!(out)).toEqual(['+ page "Later" (n) · never verified']);
   });
+
+  it('says verification is off where the knowledgebase does not verify pages', async () => {
+    const { ctx } = setup({
+      [`${base}/pages`]: { page: { tab: 'n', title: 'Later', rev: 1 }, trust: 'off' },
+    });
+    const out = await run(newPage, ctx, { doc: DOC_A, title: 'Later' });
+    expect(out).toMatchObject({ verified: 'off' });
+    expect(newPage.text!(out)).toEqual(['+ page "Later" (n) · verification off']);
+  });
 });
 
 describe('suggest', () => {

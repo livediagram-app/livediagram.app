@@ -73,9 +73,10 @@ describe('listPageAnswers', () => {
     d.run(answer('Is it elsewhere?', ['rollbacks'], NOW));
     expect(d.all<PageAnswerRow>(listPageAnswers('deploys', NOW))).toEqual([
       // The words of the group's latest day.
-      { question: 'Who approves deploys', asked: 4 },
-      { question: 'When do we deploy?', asked: 2 },
-      { question: 'Where are the logs?', asked: 1 },
+      // `cited` is every ask in the window, the unlisted rollback's too (Page Insights' Cited by Ask).
+      { question: 'Who approves deploys', asked: 4, cited: 8 },
+      { question: 'When do we deploy?', asked: 2, cited: 8 },
+      { question: 'Where are the logs?', asked: 1, cited: 8 },
     ]);
     expect(d.all(listPageAnswers('nothing', NOW))).toEqual([]);
   });

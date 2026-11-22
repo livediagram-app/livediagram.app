@@ -13,6 +13,7 @@ import {
   listConflicts,
   parseKnowledgeFields,
   trustState,
+  verificationOn,
   type ConflictRow,
   type ReviewEvery,
 } from '@liveknowledge/knowledge';
@@ -124,12 +125,16 @@ export function pageTrustOf(
   } = {},
 ): KnowledgePageTrust {
   const fields = parseKnowledgeFields(knowledge);
-  const state = trustState(fields, every, now);
+  // Verification off (a Review Period of Never, verification.md): the fields keep their shape, saying `off`, with no
+  // date, no verifier and never stale.
+  const state = verificationOn(every)
+    ? trustState(fields, every, now)
+    : ({ state: 'off' } as const);
   const approval = fields.approval;
   return {
     state: state.state,
     ...('verifiedAt' in state ? { verifiedAt: state.verifiedAt } : {}),
-    ...(extra.verifiedBy ? { verifiedBy: extra.verifiedBy } : {}),
+    ...(extra.verifiedBy && state.state !== 'off' ? { verifiedBy: extra.verifiedBy } : {}),
     ...('reviewAt' in state && state.reviewAt !== undefined ? { reviewAt: state.reviewAt } : {}),
     stale: state.state === 'review-due',
     ...(extra.conflictsWith?.length ? { conflictsWith: extra.conflictsWith } : {}),

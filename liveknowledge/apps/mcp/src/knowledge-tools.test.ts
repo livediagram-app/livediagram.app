@@ -516,6 +516,14 @@ describe('the writing tools', () => {
     const made = await top.call('create_page', { title: 'T', markdown: 'x' });
     expect(top.sent[0]!.body).toEqual({ title: 'T', markdown: 'x' });
     expect(made.out).not.toHaveProperty('parent');
+    // Verification off (a Review Period of Never): the new page says off, and is not called a draft.
+    const off = await connect({
+      'POST /pages': () =>
+        Response.json({ page: { tab: 'n', title: 'T', rev: 1 }, trust: 'off' }, { status: 201 }),
+    });
+    const unverifiable = await off.call('create_page', { title: 'T', markdown: 'x' });
+    expect(unverifiable.out).toMatchObject({ verified: 'off' });
+    expect(String((unverifiable.out as { next: string }).next)).toContain('does not verify pages');
   });
 
   it('suggest_edit sends a passage replaced, or text appended', async () => {

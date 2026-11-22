@@ -44,16 +44,15 @@ import {
   countAgentReads,
   countDailyReads,
   countMostRead,
-  countPageReads,
+  countPageDailyReads,
   dailyReads,
-  pageReads,
   pruneReads,
   recordRead,
   type AgentReadsRow,
   type DailyReadsRow,
   type MostReadRow,
-  type PageReadsRow,
 } from './reads';
+import { pageInsights } from '../page-insights';
 import {
   SETTING_AI_KEY,
   SETTING_AI_KEY_HINT,
@@ -82,18 +81,15 @@ describe('page reads', () => {
       recordRead('tab-2', { kind: 'person' }, NOW),
     ]);
     expect(db.rows('SELECT COUNT(*) AS n FROM page_reads')).toEqual([{ n: 5 }]);
-    expect(pageReads(db.all<PageReadsRow>(countPageReads('tab-1', NOW)))).toEqual({
-      people: 2,
-      agents: 2,
-    });
-    expect(pageReads(db.all<PageReadsRow>(countPageReads('tab-1', NOW, 30)))).toEqual({
-      people: 3,
-      agents: 2,
-    });
-    expect(pageReads(db.all<PageReadsRow>(countPageReads('tab-9', NOW)))).toEqual({
-      people: 0,
-      agents: 0,
-    });
+    const use = (tab: string, days?: number) =>
+      pageInsights(db.all<DailyReadsRow>(countPageDailyReads(tab, NOW, days)), NOW);
+    // The week is the last 7 days of the 30 (Read This Week); the eighth day back is in the 30 only.
+    expect(use('tab-1').week).toEqual({ people: 2, agents: 2 });
+    const total = (days: { people: number; agents: number }[]) =>
+      days.reduce((sum, d) => sum + d.people + d.agents, 0);
+    expect(total(use('tab-1').days)).toBe(5);
+    expect(total(use('tab-1', 7).days)).toBe(4);
+    expect(use('tab-9').week).toEqual({ people: 0, agents: 0 });
   });
 
   it('names an agent in one short line', () => {
