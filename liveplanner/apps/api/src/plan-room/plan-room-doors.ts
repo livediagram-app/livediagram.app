@@ -41,6 +41,10 @@ import type { SheetListResult, SheetRangeResult } from '@liveworkspace/index-app
 import type { SheetRangeAsk } from '@liveworkspace/index-client';
 import { indexAppClient } from '../index-service';
 import { SheetWatches } from './sheet-watchers';
+import { SentCards } from './sent-cards';
+import { planOutline } from '@liveplanner/items';
+import { planTabs } from '../routes/plan-route';
+import { readAutomationPlan } from './automations/automation-plan';
 import { listPlanSheets, readPlanSheetRange } from './sheet-source';
 
 export type { SheetRangeAsk };
@@ -410,6 +414,32 @@ export async function exportTables(room: PlanRoom, planId: string): Promise<Expo
 export function roomSheetWatches(room: PlanRoom): SheetWatches {
   return new SheetWatches(room.state.storage.sql, () =>
     room.roomEnv ? indexAppClient(room.roomEnv) : null,
+  );
+}
+
+// Send to Plan's chips (sent-cards.ts): a sent card's column by name and whether it is done, read once a burst.
+export function roomSentCards(room: PlanRoom): SentCards {
+  return new SentCards(
+    room.state.storage.sql,
+    () => room.planId,
+    async () => {
+      const env = room.roomEnv;
+      const planId = room.planId;
+      if (!env || !planId) return null;
+      const [head, tabs, plan] = await Promise.all([
+        readPlanOutline(env, planId),
+        planTabs({ env }, planId, null),
+        readAutomationPlan(env, planId),
+      ]);
+      const names = new Map<string, string>();
+      for (const board of planOutline(tabs, head.itemTypes).boards)
+        for (const c of board.columns) if (!names.has(c.status)) names.set(c.status, c.name);
+      return {
+        columnOf: (status) => (status !== undefined ? (names.get(status) ?? '') : ''),
+        isDone: plan.isDone,
+      };
+    },
+    () => (room.roomEnv ? indexAppClient(room.roomEnv) : null),
   );
 }
 

@@ -103,6 +103,9 @@ export function handleInternalItems(
             ]),
       // A closed account, wherever it was closed: what liveplanner keeps for them beside their plans, and their name
       // off each plan of someone else's that names them.
+      // Cards this plan sent to another plan changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"):
+      // the room tells every open session, which reads its chips again with its own access.
+      sourceChanged: (id, change) => planRoom(env, id).sourceChanged(change),
       personClosed: (personId) => deleteAccount(env, personId),
       // A guest who became an account (accounts merged them; the index tells each app): the pictures they uploaded
       // for Image fields, in liveworkspace's media service, become the account's. A guest is named there by a hash
@@ -133,6 +136,8 @@ export function handleInternalItems(
       // checked first (`verifyGrant` below), then the room makes the card in the step's chain.
       automationStep: (id, call) => planRoom(env, id).automationStep(call),
       automationTarget: (id) => planRoom(env, id).automationTarget(),
+      // Send to Plan (plan-room/plan-send-door.ts): the person's Editor grant checked first, as a step's is.
+      planSend: (id, call) => planRoom(env, id).planSend(call),
       // A workbench pairing's access ended at liveworkspace: its sockets in this plan's room close.
       // An old livediagram.app document's liveplanner part, into its plan's room (plan-room/plan-migration.ts). A tab
       // over the tab cap refuses the whole part (413) before the room is called.

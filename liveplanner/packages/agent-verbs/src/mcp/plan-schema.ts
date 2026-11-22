@@ -172,6 +172,32 @@ const itemChange = z.discriminatedUnion('op', [
           'it takes the template’s title, description, checklist, labels and field values, and title and fields ' +
           'given here win over them, field by field.',
       ),
+    sentFrom: z
+      .strictObject({
+        app: z.enum([
+          'livediagram',
+          'livedocuments',
+          'livedesign',
+          'livehuddle',
+          'liveknowledge',
+          'liveplanner',
+        ]),
+        itemId: z.string().min(1).max(200).describe('The source item’s id (its URL’s last part)'),
+        tabId: z.string().min(1).max(200).optional().describe('Its tab, when the place is on one'),
+        elementId: z
+          .string()
+          .min(1)
+          .max(200)
+          .optional()
+          .describe('The exact sticky, shape, block or thread, as read_document lists it'),
+        text: z.string().max(2000).describe('The words the card was made from'),
+      })
+      .optional()
+      .describe(
+        'Where in another app the card came from (Send to Plan): the card shows a Sent From link to the exact ' +
+          'place and the source shows a live chip for it, where your person can read the source. Needs Editor on ' +
+          'the whole plan. The source itself is never changed.',
+      ),
   }),
   z.strictObject({
     op: z.literal('set'),
