@@ -54,7 +54,8 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Help', 'View', 'tab-windows')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'tab-windows')).toBe(true);
     expect(isRetiredEvent('Element', 'Added', 'Stack')).toBe(false);
-    expect(isRetiredEvent('UI', 'Opened', 'StackTourOffer')).toBe(false);
+    // Its Show Me went with the element tours (element-tours.md); the Stack element stays.
+    expect(isRetiredEvent('UI', 'Opened', 'StackTourOffer')).toBe(true);
   });
 
   it('retires the Slide Deck panel and its tour steps', () => {
@@ -172,6 +173,12 @@ describe('isRetiredEvent', () => {
     // The Pages tour and the Show Me tours of cut surfaces.
     expect(isRetiredEvent('UI', 'Opened', 'PagesTourOffer')).toBe(true);
     expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideContents')).toBe(true);
+    // The element tours went for the Get Started tours; the Flows dialog's Show Me and the new tours stay.
+    expect(isRetiredEvent('UI', 'Started', 'SankeyTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'StackTourStepOutro')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'SankeyFlowsTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'TrustTour')).toBe(false);
     expect(isRetiredEvent('UI', 'Started', 'SlideTour')).toBe(true);
     expect(isRetiredEvent('UI', 'Ended', 'TabStyleTourCompleted')).toBe(true);
     // What carries on: the knowledgebase's style, the writing, the other tours, the format painter.
@@ -179,7 +186,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Tab', 'Changed', 'Text')).toBe(false);
     expect(isRetiredEvent('Element', 'Added', 'ArticleEmbed')).toBe(false);
     expect(isRetiredEvent('UI', 'Started', 'ShareTour')).toBe(false);
-    expect(isRetiredEvent('UI', 'Started', 'FunnelTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'AskTour')).toBe(false);
     expect(isRetiredEvent('Canvas', 'Used', 'FormatPainter')).toBe(false);
     expect(isRetiredEvent('UI', 'Changed', 'FormatCopies')).toBe(false);
     expect(isRetiredEvent('Tab', 'Created', 'FromAnswer')).toBe(false);

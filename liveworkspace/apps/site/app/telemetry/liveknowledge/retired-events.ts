@@ -290,6 +290,13 @@ const CUT_FROM_FORK_PREFIXES: readonly [string, RegExp][] = [
     'UI|*',
     /^(?:PagesTour|SlidesTour|SlideTour|InfographicTour|ArticleTour|FlashcardTour|FlashcardsTour|TabStyleTour)/,
   ],
+  // The canvas element tours (docs/specs/007-editor/element-tours.md, retired for the Get Started tours): each
+  // element's offer, start, steps, ends and switch, and the switch over them all. The Flows dialog's own Show Me
+  // (SankeyFlowsTour) stays.
+  [
+    'UI|*',
+    /^(?:SankeyTour|LayerStackTour|PyramidTour|FunnelTour|CycleTour|HubTour|OnionTour|ChevronsTour|TimelineTour|ChartTour|StackTour|ElementTours)/,
+  ],
 ];
 
 function isCutFromFork(category: string, action: string, type: string | null): boolean {
