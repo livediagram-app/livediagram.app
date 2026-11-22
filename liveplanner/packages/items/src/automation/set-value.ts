@@ -50,6 +50,7 @@ const GONE_WORDS: Readonly<Record<AutomationGone['kind'], string>> = {
   field: 'Field',
   person: 'Person',
   filter: 'Saved filter',
+  snapshot: 'Snapshot',
 };
 
 /** A gone thing as agents read it, by its stored id: "Column done is gone". */
