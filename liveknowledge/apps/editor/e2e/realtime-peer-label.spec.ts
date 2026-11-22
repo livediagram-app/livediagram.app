@@ -8,6 +8,7 @@ import {
   seedDocumentItem,
   test,
 } from './fixtures';
+import { ensureEditMode } from './knowledgebase';
 import type { StoredTab } from './stored';
 
 // Work Tracker 862: a peer's label typed just after the owner moves a box must stay
@@ -57,19 +58,21 @@ for (const gap of WINDOWS) {
     const owner = await mintGuest(page.request);
     const id = crypto.randomUUID();
     const tabId = crypto.randomUUID();
+    // Both squares sit high and left on the board: a page opens with the board's origin mid-page, and at y 200 the
+    // squares sat under the floating Edit / Save bar and the right rail.
     const square = (elId: string, x: number) => ({
       id: elId,
       type: 'shape',
       shape: 'square',
       x,
-      y: 200,
+      y: -300,
       width: 160,
       height: 100,
     });
     const seeded = await seedDocumentItem(page.request, owner, {
       id,
       name: 'Room',
-      tabs: [{ id: tabId, name: 'Board', elements: [square('box', 500), square('still', 1000)] }],
+      tabs: [{ id: tabId, name: 'Board', elements: [square('box', -250), square('still', 150)] }],
     });
     expect(seeded.ok()).toBe(true);
     const headers = await documentHeaders(page.request, owner, id, {
@@ -89,10 +92,16 @@ for (const gap of WINDOWS) {
     for (const p of [a, b]) {
       await dismissQuickTour(p);
       await p.keyboard.press('Escape');
-      await p.keyboard.press('v');
     }
+    // A drawing changes in edit mode (docs/specs/030-knowledgebase/editing.md); the peer, who may edit too, joins the
+    // draft on their own ("Everyone joins").
+    await ensureEditMode(a);
+    await expect(b.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
+    for (const p of [a, b]) await p.keyboard.press('v');
 
-    // 1. The owner drags the square 150 px down; it stays selected on the owner's screen.
+    // 1. The owner drags the square 150 px down; it stays selected on the owner's screen. hover() fails loudly if
+    // anything (the floating edit bar, a panel) covers the square's middle, where the drag starts.
+    await elementOf(a, 'box').hover();
     const start = (await elementOf(a, 'box').boundingBox())!;
     const [x, y] = [start.x + start.width / 2, start.y + start.height / 2];
     await a.mouse.move(x, y);

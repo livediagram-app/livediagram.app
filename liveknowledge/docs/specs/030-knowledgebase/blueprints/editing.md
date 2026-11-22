@@ -196,7 +196,9 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
   "Nobody else is editing it, so your changes go for good.", **Discard Changes** and **Keep Editing**.
 - **Toasts**: "<name> saved the page" (info) to everyone else editing it; "Page saved" to the saver.
 - **Keys**: `E` while reading (not in a field, no modifier) is Edit; `Mod-S` while editing is Save (and never the
-  browser's Save Page); `Escape` while editing with the caret not in a menu or dialog is Cancel.
+  browser's Save Page); `Escape` while editing with the caret not in a menu or dialog is Cancel, unless something
+  else takes that Escape (the canvas letting go of a drawing's selection or closing a label edit, which mark the key
+  taken): Cancel waits for the key's dispatch to end and checks then, so one Escape does one thing.
 
 ## Accessibility
 

@@ -8,10 +8,12 @@ import {
   newKnowledgebase,
   nameOpenPage,
   openPage,
+  openMoveSection,
   openRowMenu,
   pageRow,
   pageTree,
   rowVerb,
+  saveAndGoOn,
   titleOf,
   treeShape,
 } from './knowledgebase';
@@ -49,6 +51,8 @@ test('New Page and Add Subpage take the caret in the new Title, and a subpage sh
   await expectCaretInTitle(page);
   await page.keyboard.type('Notes');
   await expect(pageRow(page, 'Notes')).toBeVisible();
+  // The name is the draft's until Save (docs/specs/030-knowledgebase/editing.md "The page's name while editing").
+  await saveAndGoOn(page);
   // A top-level page has no breadcrumb.
   await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toHaveCount(0);
 
@@ -60,6 +64,7 @@ test('New Page and Add Subpage take the caret in the new Title, and a subpage sh
   await expectCaretInTitle(page);
   await page.keyboard.type('Setup');
   await expect(pageRow(page, 'Setup')).toBeVisible();
+  await saveAndGoOn(page);
   expect(await treeShape(page)).toEqual(['1 Guides', '2 Setup', '1 Notes']);
   await expect(guides).toHaveAttribute('aria-expanded', 'true');
 
@@ -91,6 +96,7 @@ test('the row menu moves a page up and down, indents and outdents it', async ({
 
   // A verb that cannot run stays in the menu, disabled: the first of its siblings has nothing above it.
   const menu = await openRowMenu(page, 'Setup');
+  await openMoveSection(menu);
   await expect(menu.getByRole('menuitem', { name: 'Move Up', exact: true })).toBeDisabled();
   await expect(menu.getByRole('menuitem', { name: 'Indent', exact: true })).toBeDisabled();
   await expect(menu.getByRole('menuitem', { name: 'Move Down', exact: true })).toBeEnabled();
