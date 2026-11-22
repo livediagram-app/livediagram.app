@@ -23,6 +23,7 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import type { MenuPoint } from '@liveworkspace/workbench/components/primitives/usePortalMenuPlacement';
 import type { ConnectedRowState } from '@/lib/knowledge/connected-row-store';
 import { canConnectAgain, cantOpenWords } from './connected-rows';
 import {
@@ -65,6 +66,7 @@ export function connectedMenuRefusals(
 
 export function ConnectedRowMenu({
   anchor,
+  point = null,
   tabs,
   id,
   app,
@@ -74,6 +76,8 @@ export function ConnectedRowMenu({
   onClose,
 }: {
   anchor: HTMLElement | null;
+  // Where a right-click or a long press was: the menu opens there.
+  point?: MenuPoint | null;
   tabs: readonly TreeTab[];
   id: string;
   app: App;
@@ -109,7 +113,14 @@ export function ConnectedRowMenu({
     );
   };
   return (
-    <PortalMenu anchor={anchor} placement="below" onClose={onClose} label="File Options">
+    <PortalMenu
+      anchor={anchor}
+      // A right-click or a long press opens it at the pointer (menus.md "Opening at the pointer").
+      point={point}
+      placement={point ? 'below-start' : 'below'}
+      onClose={onClose}
+      label="File Options"
+    >
       <MenuHeader
         title={row.name || 'Untitled File'}
         aside={<AppMark app={app} className="size-4" />}

@@ -25,6 +25,7 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import type { MenuPoint } from '@liveworkspace/workbench/components/primitives/usePortalMenuPlacement';
 import {
   MenuToolButton,
   MenuToolbar,
@@ -98,6 +99,7 @@ export function pageMenuRefusals(
 
 export function PageTreeRowMenu({
   anchor,
+  point = null,
   tabs,
   id,
   canEdit,
@@ -107,6 +109,8 @@ export function PageTreeRowMenu({
   onClose,
 }: {
   anchor: HTMLElement | null;
+  // Where a right-click or a long press was: the menu opens there.
+  point?: MenuPoint | null;
   tabs: readonly TreeTab[];
   id: string;
   canEdit: boolean;
@@ -164,7 +168,14 @@ export function PageTreeRowMenu({
     );
   };
   return (
-    <PortalMenu anchor={anchor} placement="below" onClose={onClose} label="Page Options">
+    <PortalMenu
+      anchor={anchor}
+      // A right-click or a long press opens it at the pointer (menus.md "Opening at the pointer").
+      point={point}
+      placement={point ? 'below-start' : 'below'}
+      onClose={onClose}
+      label="Page Options"
+    >
       <MenuHeader title={page.name || 'Untitled Page'} />
       <MenuToolbar>
         {canEdit ? tool('rename', 'Rename', <RenameIcon />, 'Rename this page.') : null}

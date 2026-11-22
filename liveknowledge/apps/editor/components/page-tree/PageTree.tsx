@@ -24,12 +24,19 @@ import type { TrustMark } from '@/lib/knowledge/page-trust';
 import type { ApprovalMark } from '@/lib/knowledge/approval-view';
 import { PageTreeRowMenu, type PageMenuVerb } from './PageTreeRowMenu';
 import { createPageTreeUi } from './page-tree-ui';
+import { runConnectedVerb, runPageVerb } from './page-tree-verbs';
+import { useRowLongPress } from './useRowLongPress';
+import type { MenuPoint } from '@liveworkspace/workbench/components/primitives/usePortalMenuPlacement';
 import {
   dropMove,
   dropZoneOf,
+  isTypeAheadKey,
   treeKeyAction,
+  typeAheadMatch,
   visiblePageRows,
+  TYPE_AHEAD_RESET_MS,
   type DropZone,
+  type PageRow,
   type TreeTab,
 } from './page-tree-view';
 
@@ -115,7 +122,13 @@ export function PageTree({
   const [ui] = useState(createPageTreeUi);
   const tree = useRef<HTMLDivElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [menu, setMenu] = useState<{ id: string; anchor: HTMLElement } | null>(null);
+  // The open menu: its row, its trigger (the row's ... button), and the point a right-click or a long press opened it
+  // at (none from the button or a key, when it hangs from the button).
+  const [menu, setMenu] = useState<{
+    id: string;
+    anchor: HTMLElement;
+    point?: MenuPoint | undefined;
+  } | null>(null);
   // The row the Tab key lands on: the last one focused while it is on screen, else the current page, else the first.
   const [stopId, setStopId] = useState<string | null>(null);
   const tabStop =
@@ -171,76 +184,61 @@ export function PageTree({
   }, []);
   const onRenameDone = useCallback(() => setEditingId(null), []);
 
-  const openMenu = (id: string) => {
+  const openMenu = (id: string, point?: MenuPoint) => {
     const row = tree.current?.querySelector<HTMLElement>(`[data-page-row="${CSS.escape(id)}"]`);
     if (!row) return;
-    setMenu({ id, anchor: row.querySelector<HTMLElement>('[data-row-action="menu"]') ?? row });
+    // At a point, the row itself is the trigger: a row is never re-mounted, while its buttons are as their hover cards
+    // come and go, so a press outside it and the focus coming back always find it.
+    const button = row.querySelector<HTMLElement>('[data-row-action="menu"]');
+    setMenu({ id, anchor: point ? row : (button ?? row), point });
   };
+  // A row that may open its menu from a right-click or a long press: on screen, not being renamed, not out of scope.
+  const menuable = (id: string) => id !== editingId && !latest.current.isOutOfScope?.(id);
 
-  const onVerb = (verb: PageMenuVerb, id: string) => {
-    const { actions: act, onSetOpen: setOpen, knowledge: know, connected: link } = latest.current;
-    switch (verb) {
-      case 'connect-here':
-        // The new row shows: its page opens.
-        setOpen(id, true);
-        return link?.onConnect(id);
-      case 'verify':
-        return know?.onVerify(id);
-      case 'approval':
-        return know?.onRequestApproval?.(id);
-      case 'context':
-        return know?.onSetContext(id, !know.inContext.has(id));
-      case 'rename':
-        return setEditingId(id);
-      case 'add':
-        // The new subpage shows: its parent opens.
-        setOpen(id, true);
-        return act.onAdd(id);
-      case 'duplicate':
-        return act.onDuplicate(id);
-      case 'copy-link':
-        return act.onCopyLink(id);
-      case 'up':
-        return act.onStep(id, -1);
-      case 'down':
-        return act.onStep(id, 1);
-      case 'indent':
-        return act.onIndent(id);
-      case 'outdent':
-        return act.onOutdent(id);
-      case 'delete':
-        return act.onDelete(id);
-    }
-  };
+  const onVerb = (verb: PageMenuVerb, id: string) =>
+    runPageVerb(verb, id, { ...latest.current, rename: setEditingId });
+  const onConnectedVerb = (verb: ConnectedMenuVerb, id: string) =>
+    runConnectedVerb(verb, id, latest.current);
 
-  const onConnectedVerb = (verb: ConnectedMenuVerb, id: string) => {
-    const { actions: act, connected: link } = latest.current;
-    switch (verb) {
-      case 'open':
-        return link?.onOpen(id);
-      case 'copy-link':
-        return link?.onCopyLink(id);
-      case 'connect-again':
-        return link?.onConnectAgain(id);
-      case 'remove':
-        return link?.onRemove(id);
-      case 'up':
-        return act.onStep(id, -1);
-      case 'down':
-        return act.onStep(id, 1);
-      case 'indent':
-        return act.onIndent(id);
-      case 'outdent':
-        return act.onOutdent(id);
-    }
+  // A long press on a row (a touch screen's right-click) opens its menu at the finger; the click its release sends
+  // is the press's, not a tap.
+  const longPress = useRowLongPress(
+    (target) => rowOf(target) !== null && !actionOf(target) && !inField(target),
+    (target, point) => {
+      const id = rowOf(target)?.dataset.pageRow;
+      if (id && menuable(id)) openMenu(id, point);
+    },
+  );
+  // The row whose menu a key opened: the contextmenu event some browsers send after the menu key or Shift+F10 is
+  // that key's, not a right-click at the pointer. Any press clears it.
+  const keyMenu = useRef<string | null>(null);
+  // Type-ahead: the letters typed on the tree, and when the last one was.
+  const typed = useRef({ text: '', at: 0 });
+  const shownName = (r: PageRow) =>
+    latest.current.isOutOfScope?.(r.id)
+      ? 'Not Shared'
+      : r.name || (r.connectionId ? 'Untitled File' : 'Untitled Page');
+
+  const onContextMenu = (e: MouseEvent<HTMLDivElement>) => {
+    // The rename field keeps its own menu (paste); empty space is the sidebar's, as before.
+    if (inField(e.target)) return;
+    const id = rowOf(e.target)?.dataset.pageRow;
+    if (!id) return;
+    e.preventDefault();
+    longPress.cancel();
+    if (keyMenu.current === id) return;
+    if (menuable(id)) openMenu(id, { x: e.clientX, y: e.clientY });
   };
 
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
+    if (longPress.takeClick()) return e.preventDefault();
     if (inField(e.target)) return;
     const row = rowOf(e.target);
     const id = row?.dataset.pageRow;
     if (!row || !id) return;
     const control = actionOf(e.target)?.dataset.rowAction;
+    // A menu a right-click hung on this row takes no outside press from it: any other press on the row closes it.
+    if (control !== 'menu') setMenu(null);
     const { rows: now, actions: act, onSetOpen: setOpen, isOutOfScope: outside } = latest.current;
     if (control === 'toggle') {
       const at = now.find((r) => r.id === id);
@@ -285,7 +283,18 @@ export function PageTree({
       isOutOfScope: outside,
     } = latest.current;
     const action = treeKeyAction(now, id, e.key, e.shiftKey);
-    if (!action) return;
+    if (!action) {
+      const at = Date.now();
+      const held = at - typed.current.at > TYPE_AHEAD_RESET_MS ? '' : typed.current.text;
+      if (!isTypeAheadKey(e.key, held !== '')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const text = held + e.key;
+      typed.current = { text, at };
+      const next = typeAheadMatch(now, id, text, shownName);
+      if (next && next !== id) focusRow(next);
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     switch (action.kind) {
@@ -306,6 +315,7 @@ export function PageTree({
         if (may && !outside?.(action.id)) setEditingId(action.id);
         return;
       case 'menu':
+        keyMenu.current = action.id;
         return openMenu(action.id);
     }
   };
@@ -320,6 +330,9 @@ export function PageTree({
     ui.drop(null);
   };
   const onDragStart = (e: DragEvent<HTMLDivElement>) => {
+    // A drag is not a long press: the hold ends, and a menu it already opened closes for the drag.
+    longPress.cancel();
+    if (longPress.fired()) setMenu(null);
     const id = rowOf(e.target)?.dataset.pageRow;
     if (!id || !latest.current.canEdit) return e.preventDefault();
     e.dataTransfer.setData('text/plain', id);
@@ -381,6 +394,14 @@ export function PageTree({
         onClick={onClick}
         onDoubleClick={onDoubleClick}
         onKeyDown={onKeyDown}
+        onContextMenu={onContextMenu}
+        onPointerDown={(e) => {
+          keyMenu.current = null;
+          longPress.onPointerDown(e);
+        }}
+        onPointerMove={longPress.onPointerMove}
+        onPointerUp={longPress.cancel}
+        onPointerCancel={longPress.cancel}
         onPointerOver={(e) => ui.hover(rowOf(e.target)?.dataset.pageRow ?? null)}
         onPointerLeave={() => ui.hover(null)}
         onFocus={(e) => {
@@ -436,6 +457,7 @@ export function PageTree({
       {menu && connected && menuRow?.connectionId && menuRow.app ? (
         <ConnectedRowMenu
           anchor={menu.anchor}
+          point={menu.point}
           tabs={tabs}
           id={menu.id}
           app={menuRow.app}
@@ -447,6 +469,7 @@ export function PageTree({
       ) : menu ? (
         <PageTreeRowMenu
           anchor={menu.anchor}
+          point={menu.point}
           tabs={tabs}
           id={menu.id}
           canEdit={canEdit}
