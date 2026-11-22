@@ -53,8 +53,8 @@ const CARD_OF: Record<'reads' | 'agents' | 'health', string> = {
   health: 'ai-health',
 };
 
-// One card in the dashboard's flowing columns: never split across two, spaced as the band above.
-const CARD_SLOT = 'mb-4 min-w-0 break-inside-avoid sm:mb-5';
+// One column of cards: a stack of its own, spaced as the band above.
+const COLUMN = 'flex min-w-0 flex-col gap-4 sm:gap-5';
 
 export function AiDashboard({
   overview,
@@ -93,10 +93,11 @@ export function AiDashboard({
         filter={filter}
         onGo={go}
       />
-      {/* The cards fill two columns as tiles do (owner 2026-11-21): each takes the next free slot, in reading order,
-          so no column runs long beside an empty one. One column below lg. */}
-      <div className="lg:columns-2 lg:gap-5">
-        <div className={CARD_SLOT}>
+      {/* Two equal columns on a wide screen (owner 2026-11-21; ai-knowledge.md "The view, as built"), each its own
+          stack, so Knowledge Health heads the right one on a whole pixel. One column below lg, in the same order as
+          the page reads and focus moves: the left column, then the right. */}
+      <div className="flex flex-col gap-4 sm:gap-5 lg:grid lg:grid-cols-2 lg:items-start">
+        <div className={COLUMN}>
           <NeedsAttention
             overview={overview}
             filter={filter}
@@ -117,8 +118,18 @@ export function AiDashboard({
             onDismissSuggestion={actions.dismissSuggestion}
             onOpenAiSettings={actions.openAiSettings}
           />
+          <AgentsSection
+            agents={agents}
+            canGrant={rights.grantAgents}
+            busy={agentsBusy}
+            now={now}
+            onConnect={actions.connect}
+            onOpenPage={actions.openPage}
+            onAskWrite={actions.askWrite}
+          />
+          <MostReadCard pages={overview.reads.mostRead} onOpenPage={actions.openPage} />
         </div>
-        <div className={CARD_SLOT}>
+        <div className={COLUMN}>
           <HealthSection
             health={overview.health}
             lowHealth={overview.lowHealth}
@@ -129,19 +140,6 @@ export function AiDashboard({
             now={now}
             onRemind={actions.remindOwners}
           />
-        </div>
-        <div className={CARD_SLOT}>
-          <AgentsSection
-            agents={agents}
-            canGrant={rights.grantAgents}
-            busy={agentsBusy}
-            now={now}
-            onConnect={actions.connect}
-            onOpenPage={actions.openPage}
-            onAskWrite={actions.askWrite}
-          />
-        </div>
-        <div className={CARD_SLOT}>
           <ContextSection
             context={overview.context}
             canEdit={rights.context}
@@ -150,11 +148,6 @@ export function AiDashboard({
             onAdd={actions.addContext}
             onRemove={actions.removeContext}
           />
-        </div>
-        <div className={CARD_SLOT}>
-          <MostReadCard pages={overview.reads.mostRead} onOpenPage={actions.openPage} />
-        </div>
-        <div className={CARD_SLOT}>
           <AgentSampleCard sample={agentSample(overview, now)} />
         </div>
       </div>

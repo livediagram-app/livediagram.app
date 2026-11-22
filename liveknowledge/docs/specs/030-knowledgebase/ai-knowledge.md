@@ -187,10 +187,12 @@ rows and actions, long lists capped so the page never grows with the data.
 - **Most Read:** the 5 pages read most in the last 7 days, each with a bar of its reads, people and agents in the
   same two tones as the sparkline, and its figures. A row opens its page. A deleted page is left out.
 - **What an Agent Sees:** the dark sample card, last.
-- On a wide screen the cards flow through two equal columns as tiles do, in the order Needs Attention, Knowledge
-  Health, Connected Agents, Always in Context, Most Read, What an Agent Sees: each takes the next free slot, so no
-  column runs long beside an empty one (owner 2026-11-21). Below a laptop's width (1024px) they are one column in that
-  order. Nothing scrolls sideways at any width.
+- On a wide screen the cards fill two equal columns (owner 2026-11-21): Needs Attention, Connected Agents and Most
+  Read on the left; Knowledge Health, Always in Context and What an Agent Sees on the right, so neither column runs
+  long beside an empty one. Each column is its own stack, so a card's height in one never moves a card in the other,
+  and Knowledge Health heads its column on a whole pixel (CSS columns put it half a pixel off, and its glyph with it).
+  Below a laptop's width (1024px) they are one column, the left column's cards then the right's, the order focus
+  moves in. Nothing scrolls sideways at any width.
 - **Empty states** teach how each card fills:
   - Needs Attention with nothing waiting: "Nothing Needs Attention", saying what lands here and how (an
     unanswered Ask, an agent's empty search or `report_gap`, a page that disagrees with another, an agent's
