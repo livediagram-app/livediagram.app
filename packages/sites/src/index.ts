@@ -8,7 +8,8 @@ export type SiteId =
   | 'liveplanner.app'
   | 'livedocuments.app'
   | 'livedesign.app'
-  | 'livehuddle.app';
+  | 'livehuddle.app'
+  | 'liveknowledge.app';
 
 export type Site = {
   id: SiteId;
@@ -36,6 +37,7 @@ export const LOCAL_PORTS: Record<SiteId, number> = {
   'livedocuments.app': 3300,
   'livedesign.app': 3400,
   'livehuddle.app': 3500,
+  'liveknowledge.app': 3600,
 };
 
 // Declared here rather than through @types/node: the apps that compile this source don't all load
@@ -150,6 +152,15 @@ export const APP_SITES: readonly Site[] = [
     deep: '#047857',
     light: '#34d399',
   },
+  {
+    id: 'liveknowledge.app',
+    name: 'liveknowledge',
+    url: siteUrl('liveknowledge.app', 'https://www.liveknowledge.app'),
+    pitch: 'A team knowledgebase, for people and for AI',
+    accent: '#84cc16',
+    deep: '#3f6212',
+    light: '#a3e635',
+  },
 ];
 
 // Apps registered with every platform service but not launched (liveworkspace/docs/specs/002-architecture/
@@ -168,7 +179,8 @@ export const SITES: readonly Site[] = [PLATFORM_SITE, ...APP_SITES];
 // items, so it needs each app's word for one item, where the app opens one, where it makes one, and where its own
 // offline view is. Keyed by the app's name as the index knows it (`@liveworkspace/index-client` APPS).
 
-export type AppName = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
+export type AppName =
+  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle' | 'liveknowledge';
 
 export type AppItems = {
   // The site, for its name, address and colours.
@@ -370,6 +382,26 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     imports: [],
     importPath: null,
     share: shareOf(itemTabsPath('documents'), 'livehuddle tab', itemCommunityPath('documents')),
+  },
+  // Forked from livedocuments, so its addresses are livedocuments'; a person reads "Knowledgebase", and what is inside one is a
+  // page (liveknowledge/docs/specs/016-platform/platform-registration.md).
+  liveknowledge: {
+    site: 'liveknowledge.app',
+    noun: 'Knowledgebase',
+    nouns: 'Knowledgebases',
+    apiNoun: 'document',
+    itemPath: '/document/',
+    newPath: '/new',
+    offlinePath: '/explorer/offline',
+    offlineConversions: true,
+    offlineStore: { db: 'liveknowledge-offline', store: 'documents' },
+    sharePath: '/document/shared?s=',
+    imagesPath: '/api/images',
+    shapeLibrariesPath: null,
+    walkthroughsPath: '/api/walkthroughs',
+    imports: [],
+    importPath: null,
+    share: shareOf(itemTabsPath('documents'), 'liveknowledge tab', itemCommunityPath('documents')),
   },
 };
 

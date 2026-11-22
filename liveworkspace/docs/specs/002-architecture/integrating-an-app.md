@@ -254,6 +254,14 @@ person sees lists it.
   A list that draws something per app (the front door's window onto its work, the Explorer hero's pictures) carries
   the app's own drawing; until it has one, the Explorer hero leaves it out.
 
+**liveknowledge** (`liveknowledge.app`, port block 3600, its item a **Knowledgebase**, its index kind
+`knowledgebase`) was registered listed, never held, by
+[liveknowledge's platform registration](../../../../liveknowledge/docs/specs/016-platform/platform-registration.md):
+its row went straight into `APP_SITES`, `TELEMETRY_APPS` and every other list, with its telemetry dashboard, its
+front-door window and its Explorer hero pictures in the same change. What waits is the owner's (its domain, client,
+keys and KV namespaces), so its CI group is `held: true` until they exist and none of its Workers deploy. It is not a
+help scope yet ([help-centre.md](../017-help/help-centre.md#liveknowledge)).
+
 No app is held today. **livehuddle** (`livehuddle.app`, port block 3500, its item a **Space**, its index kind
 `space`) was registered this way, by
 [livehuddle's platform registration](../../../../livehuddle/docs/specs/016-platform/platform-registration.md), and

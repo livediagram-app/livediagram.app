@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { load } from 'js-yaml';
 import { composePart } from './compose';
+import { YAML_SCHEMA } from './parse';
 import { composeIcon, imageName } from './compose-icons';
 
 const partOf = (yaml: string) => {
-  const built = composePart(load(yaml) as Record<string, unknown>, 'fallback');
+  const built = composePart(
+    load(yaml, { schema: YAML_SCHEMA }) as Record<string, unknown>,
+    'fallback',
+  );
   if (!built.ok) throw new Error(built.error.message);
   return built.part;
 };

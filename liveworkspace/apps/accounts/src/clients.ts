@@ -66,7 +66,7 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
     return Response.json(
       {
         error: 'invalid_request',
-        message: `Needs name, redirectUris, an app (livediagram.app, liveplanner.app, livedocuments.app, livedesign.app or livehuddle.app) and a resource from: ${RESOURCES[env.ENVIRONMENT].join(', ')}`,
+        message: `Needs name, redirectUris, an app (livediagram.app, liveplanner.app, livedocuments.app, livedesign.app, livehuddle.app or liveknowledge.app) and a resource from: ${RESOURCES[env.ENVIRONMENT].join(', ')}`,
       },
       { status: 400 },
     );
@@ -128,7 +128,7 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
       );
     if (!recorded) {
       // The table's CHECK doesn't take this app: a database behind on its migrations (a local one built before
-      // 0018_livehuddle.sql). Take the client back, so nothing is left half-registered, and say what to do.
+      // 0024_liveknowledge.sql). Take the client back, so nothing is left half-registered, and say what to do.
       await env.AUTH_DB.prepare('DELETE FROM oauthClient WHERE clientId = ?')
         .bind(client.client_id)
         .run();

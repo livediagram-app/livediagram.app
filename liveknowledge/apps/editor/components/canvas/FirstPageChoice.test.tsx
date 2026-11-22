@@ -1,0 +1,51 @@
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { FirstPageChoice } from './FirstPageChoice';
+import { kindCardIsWide } from './page-kind-cards';
+
+// docs/specs/007-editor/pages-mode.md "Page kinds": the first page's own choice.
+afterEach(() => cleanup());
+
+describe('FirstPageChoice', () => {
+  it('moves between the three cards with the arrow keys, as the Add a Page popover does', () => {
+    const onChoose = vi.fn();
+    render(<FirstPageChoice zoom={1} onChoose={onChoose} />);
+    const cards = screen.getAllByRole('button');
+    expect(cards).toHaveLength(3);
+    cards[0]!.focus();
+    fireEvent.keyDown(cards[0]!, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(cards[1]);
+    fireEvent.keyDown(cards[1]!, { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(cards[0]);
+    fireEvent.keyDown(cards[0]!, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(cards[2]);
+    fireEvent.keyDown(cards[2]!, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(cards[0]);
+    fireEvent.keyDown(cards[0]!, { key: 'ArrowLeft' });
+    expect(document.activeElement).toBe(cards[2]);
+    fireEvent.click(cards[2]!);
+    expect(onChoose).toHaveBeenCalledWith('slide');
+  });
+
+  it('puts an odd last card across both columns, never an even one', () => {
+    expect(kindCardIsWide(3)).toBe(false);
+    expect(kindCardIsWide(2, 3)).toBe(true);
+    expect(kindCardIsWide(1, 3)).toBe(false);
+  });
+
+  // A 375 px phone cut both edges off a fixed 420 px card: it keeps a 16 px gutter a side.
+  it('is never wider than the screen less a 16 px gutter a side', () => {
+    render(<FirstPageChoice zoom={0.4} onChoose={vi.fn()} />);
+    const card = document.querySelector('[data-first-page-choice]')!;
+    expect(card.className).toContain('w-[min(420px,calc(100vw-32px))]');
+    expect(card.className).not.toMatch(/(^|\s)w-\[420px\]/);
+  });
+
+  // On a phone the page is narrower than the card and the canvas's + after it sat over the Article card.
+  it('sits above the canvas layer it shares with the + after the page', () => {
+    render(<FirstPageChoice zoom={0.4} onChoose={vi.fn()} />);
+    const layer = document.querySelector('[data-first-page-choice]')!.parentElement!;
+    expect(layer.className.split(/\s+/)).toContain('z-10');
+  });
+});

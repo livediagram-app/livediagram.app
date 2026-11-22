@@ -43,4 +43,12 @@ export const COMMUNITY_APP_WORDS: Record<CommunityApp, CommunityWords> = {
     showcase: 'space',
     showcases: 'spaces',
   },
+  'liveknowledge.app': {
+    product: 'liveknowledge',
+    noun: 'knowledgebase',
+    nouns: 'knowledgebases',
+    showcase: 'knowledgebase',
+    showcases: 'knowledgebases',
+    cover: 'first page',
+  },
 };

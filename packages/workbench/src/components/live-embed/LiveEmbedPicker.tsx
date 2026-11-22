@@ -6,6 +6,7 @@
 // Connect list's (ConnectRow), in its ink.
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { IndexClient, Item } from '@liveworkspace/index-client';
+import { isLiveEmbedApp } from '@liveworkspace/element-model/live-item';
 import {
   Button,
   CompactEmptyState,
@@ -72,9 +73,14 @@ export function LiveEmbedPicker({
   const recent = useMemo(() => {
     if (files.state !== 'ready') return [];
     const shown = new Set(connected.map((item) => item.id));
-    return files.items.filter((item) => !shown.has(item.id) && titleMatches(item.title, query));
+    return files.items.filter(
+      (item) => isLiveEmbedApp(item.app) && !shown.has(item.id) && titleMatches(item.title, query),
+    );
   }, [files, connected, query]);
-  const connectedShown = connected.filter((item) => titleMatches(item.title, query));
+  // Only files a live embed can show are listed: another app's (a knowledgebase, a huddle) would sit there unpickable.
+  const connectedShown = connected.filter(
+    (item) => isLiveEmbedApp(item.app) && titleMatches(item.title, query),
+  );
 
   const choose = async (item: Item) => {
     setFailure(null);

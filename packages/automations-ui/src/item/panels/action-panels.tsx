@@ -4,7 +4,9 @@
 // every app has"). Send Email is stage 3's EmailPanel with an item's To: the owner, whoever started the rule (where
 // someone did), a person, or typed-in addresses.
 
+import { useTabWords } from '../tab-words';
 import {
+  inTabWords,
   RUN_TAB,
   STEP_NAME_MAX,
   type ItemAddTab,
@@ -101,13 +103,17 @@ export function ItemEmailPanel({
 
 export function AddTabPanel({ action, onChange, outline, invalidPath }: Props<ItemAddTab>) {
   const { item } = useAutomationsKit().plumbing.words;
+  const words = useTabWords();
   const { templates } = outline;
   const picked = templates.find((t) => t.id === action.template);
   if (templates.length === 0 && !action.template)
-    return <PanelNote>This {item} has no templates to add a tab from.</PanelNote>;
+    return <PanelNote>{words(`This ${item} has no templates to add a tab from.`)}</PanelNote>;
   return (
     <div className="flex flex-col gap-4">
-      <PanelField label="Template" hint="The new tab is made as New Tab makes it, last in order.">
+      <PanelField
+        label="Template"
+        hint={words('The new tab is made as New Tab makes it, last in order.')}
+      >
         {(id, hintId) => (
           <PanelSelect
             id={id}
@@ -143,7 +149,7 @@ export function AddTabPanel({ action, onChange, outline, invalidPath }: Props<It
         maxLength={STEP_NAME_MAX}
         value={action.name}
         invalid={invalidPath === 'name'}
-        hint="The new tab’s name. Values are filled in when the rule runs."
+        hint={words('The new tab’s name. Values are filled in when the rule runs.')}
         onChange={(name) => onChange({ ...action, name })}
       />
     </div>
@@ -159,12 +165,13 @@ export function summarisePanel(kinds: ItemKinds): ComponentType<Props<ItemSummar
     const tabbed = kinds.trigger(trigger)?.tabbed === true;
     const { tabs } = outline.item;
     const value = action.tab ?? WHOLE;
+    const words = (text: string) => inTabWords(text, kinds.itemWord);
     const gone = value !== WHOLE && value !== RUN_TAB && !tabs.some((t) => t.id === value);
     return (
       <div className="flex flex-col gap-4">
         <PanelField
           label="Read"
-          hint={`The text it summarises: this ${kinds.itemWord}’s, or one tab’s.`}
+          hint={words(`The text it summarises: this ${kinds.itemWord}’s, or one tab’s.`)}
         >
           {(id, hintId) => (
             <PanelSelect
@@ -179,11 +186,13 @@ export function summarisePanel(kinds: ItemKinds): ComponentType<Props<ItemSummar
               <option value={WHOLE}>The Whole {itemTitle(kinds.itemWord)}</option>
               {/* The run's tab only where a run has one; kept while the rule still says so. */}
               {tabbed || value === RUN_TAB ? (
-                <option value={RUN_TAB}>The Tab the Rule Runs On</option>
+                <option value={RUN_TAB}>{words('The Tab the Rule Runs On')}</option>
               ) : null}
               {tabs.length > 0 || gone ? (
-                <optgroup label="One Tab">
-                  {gone ? <option value={value}>{goneLabel('tab')}</option> : null}
+                <optgroup label={words('One Tab')}>
+                  {gone ? (
+                    <option value={value}>{goneLabel('tab', null, kinds.itemWord)}</option>
+                  ) : null}
                   {tabs.map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.name}

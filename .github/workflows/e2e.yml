@@ -182,10 +182,29 @@ jobs:
       signed-in-explorer: true
       signed-in-cache: editor-signed-in
 
+  # Held (ci-plan.mjs): planned only when a change touches liveknowledge/ itself or everything runs.
+  liveknowledge:
+    name: liveknowledge
+    needs: plan
+    if: contains(fromJSON(needs.plan.outputs.e2e), 'liveknowledge')
+    # A called workflow gets at most what its caller grants: actions: write, to fail fast.
+    permissions:
+      contents: read
+      actions: write
+    uses: ./.github/workflows/e2e-product.yml
+    with:
+      product: liveknowledge
+      editor: '@liveknowledge/editor'
+      editor-dir: apps/editor
+      sites-cache: |
+        apps/editor/.next/cache
+        ../liveworkspace/apps/help/.next/cache
+        apps/marketing/.next/cache
+
   # One check to require, whatever ran.
   e2e:
     name: E2E
-    needs: [plan, livediagram, liveplanner, livedesign, livedocuments, livehuddle]
+    needs: [plan, livediagram, liveplanner, livedesign, livedocuments, livehuddle, liveknowledge]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2

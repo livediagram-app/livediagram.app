@@ -37,7 +37,7 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
   landmark, so every dialog wearing the hero would give the page it opens over a second banner. The `<h2>` is what
   names it.
 - **Height.** The header is exactly 100px tall in every dialog, at every width, its row centred in it. Nothing in it
-  can make it taller: from `sm` the title is one line, truncated, and its line at most two.
+  can make it taller: the title is at most two lines at every width (a long kind, "Share This Knowledgebase" beside Show Me and Help, wraps rather than cuts), and its line at most two; both at two still fit (88px).
 - **On a phone** (below `sm`) it keeps the desktop look, so a dialog is as pretty there: the same 100px, the 36px
   mark, the 20px title and its visible line, with 16px at either side rather than 24px. A long title may wrap to a
   second line rather than lose words, and so may the line under it (Work Tracker 1092: the Export panel's "Copy this tab

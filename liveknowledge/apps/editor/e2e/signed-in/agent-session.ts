@@ -1,0 +1,81 @@
+import type { Page } from '@playwright/test';
+import { expect } from '../fixtures';
+import type { StubUser } from './session';
+
+// What the agent specs share (docs/specs/024-agents/): Webber, signed in, with his own unshared document holding one
+// square, his participant row, and an API token for his agent; and opening that document until its room greets the
+// editor.
+
+export const CANVAS = '[data-canvas-a11y-root]';
+export const WEBBER: StubUser = {
+  firstName: 'Webber',
+  lastName: 'Takken',
+  email: 'webber@example.com',
+};
+
+export type Setup = { id: string; tabId: string; token: string; session: Record<string, string> };
+
+// Webber's personal document with one square, his participant row, and an API token for his agent.
+export async function arrange(page: Page, baseURL: string, userId: string): Promise<Setup> {
+  const jwt = await (await page.request.get(`/e2e/token?sub=${userId}`)).text();
+  const session = { Authorization: `Bearer ${jwt}`, Origin: new URL(baseURL).origin };
+  await page.request.put(`/api/participants/${userId}`, {
+    headers: session,
+    data: { name: 'Webber Takken', color: '#f59e0b' },
+  });
+  const id = crypto.randomUUID();
+  const tabId = crypto.randomUUID();
+  const created = await page.request.post('/api/documents', {
+    headers: session,
+    data: {
+      id,
+      name: 'Payments',
+      tabs: [
+        {
+          id: tabId,
+          name: 'Board',
+          elements: [
+            {
+              id: 'api',
+              type: 'shape',
+              shape: 'square',
+              x: 200,
+              y: 200,
+              width: 180,
+              height: 80,
+              label: 'API',
+            },
+          ],
+        },
+      ],
+    },
+  });
+  expect(created.ok()).toBe(true);
+  // The agent's API token, made on liveworkspace.app: the stack's accounts stand-in keeps it
+  // (scripts/e2e-stack.mjs, packages/auth-client e2e-token-stand-in.ts).
+  const minted = await page.request.post('/e2e/accounts/__seed/token', {
+    data: { userId, email: WEBBER.email, name: 'agent' },
+  });
+  expect(minted.ok()).toBe(true);
+  const { secret: token } = (await minted.json()) as { secret: string };
+  return { id, tabId, token, session };
+}
+
+// Opens the document and waits for its room to greet the editor: from then on a changeset is relayed
+// live (one that lands before is caught up by the join check, without a toast).
+export async function open(page: Page, s: Setup) {
+  await page.addInitScript(() => {
+    localStorage.setItem('liveknowledge:v2:name-confirmed', '1');
+    localStorage.setItem(
+      'liveknowledge:user-preferences:v1',
+      JSON.stringify({ pagesTourSeen: true }),
+    );
+  });
+  const socket = page.waitForEvent('websocket', (ws) => ws.url().includes(`/documents/${s.id}/ws`));
+  await page.goto(`/document/${s.id}`);
+  const ws = await socket;
+  await ws.waitForEvent('framereceived', (f) => String(f.payload).includes('"kind":"presence"'));
+  await page.locator(CANVAS).waitFor();
+  // The square on the canvas: the Pages list draws each page's content too, so the bare text is there twice.
+  await expect(page.getByRole('img', { name: 'Square "API"' })).toBeVisible();
+}

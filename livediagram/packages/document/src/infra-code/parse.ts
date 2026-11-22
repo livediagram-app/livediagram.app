@@ -2,7 +2,17 @@
 // parsers; the result is walked only along known paths, so a YAML alias shared a thousand times costs nothing.
 // Terraform's HCL has its own reader (hcl.ts), which meets the same size and empty checks first.
 
-import { load, loadAll } from 'js-yaml';
+import {
+  binaryTag,
+  CORE_SCHEMA,
+  load,
+  loadAll,
+  mergeTag,
+  omapTag,
+  pairsTag,
+  setTag,
+  timestampTag,
+} from 'js-yaml';
 import { parse } from 'smol-toml';
 import { INFRA_MAX_FILE_BYTES } from './limits';
 import type { InfraError, InfraFormat } from './types';
@@ -18,6 +28,17 @@ const LANGUAGE: Record<InfraFormat, string> = {
   kubernetes: 'YAML',
   terraform: 'HCL',
 };
+
+// js-yaml 4's default schema: the YAML 1.2 core schema plus merge keys (`<<: *base`, common in Compose), timestamps
+// and the binary, omap, pairs and set tags. js-yaml 5's default is the bare core schema, which reads `<<` as a key.
+export const YAML_SCHEMA = CORE_SCHEMA.withTags(
+  mergeTag,
+  timestampTag,
+  binaryTag,
+  omapTag,
+  pairsTag,
+  setTag,
+);
 
 const isYaml = (format: InfraFormat) => format === 'compose' || format === 'kubernetes';
 
@@ -59,7 +80,7 @@ export function parseInfraText(
   let value: unknown;
   try {
     // `json: true`: a key given twice keeps the later value, as Compose reads it (I3).
-    value = format === 'wrangler' ? parse(text) : load(text, { json: true });
+    value = format === 'wrangler' ? parse(text) : load(text, { json: true, schema: YAML_SCHEMA });
   } catch (err) {
     return { ok: false, error: parseError(format, err, lineCount(text)) };
   }
@@ -81,7 +102,7 @@ export function parseKubernetesText(
   const refused = checkInfraText(text);
   if (refused) return { ok: false, error: refused };
   try {
-    return { ok: true, docs: loadAll(text, undefined, { json: true }) };
+    return { ok: true, docs: loadAll(text, { json: true, schema: YAML_SCHEMA }) };
   } catch (err) {
     return { ok: false, error: parseError('kubernetes', err, lineCount(text)) };
   }

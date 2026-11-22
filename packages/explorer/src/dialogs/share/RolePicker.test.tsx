@@ -57,7 +57,13 @@ describe('RolePicker', () => {
     expect(screen.getAllByText('Walks, talks and uses the pieces; adds nothing.').length).toBe(1);
     expect(screen.getByText('Works with you in real time.')).toBeTruthy();
     unmount();
-    render(<RolePicker level="participate" onChange={() => {}} app="livediagram" />);
+    const diagram = render(
+      <RolePicker level="participate" onChange={() => {}} app="livediagram" />,
+    );
     expect(screen.getAllByText(LEVEL_PASS.participate.blurb).length).toBe(1);
+    diagram.unmount();
+    // liveknowledge has nothing to vote on: its Participant writes and verifies.
+    render(<RolePicker level="participate" onChange={() => {}} app="liveknowledge" />);
+    expect(screen.getAllByText(/^Writes and verifies pages/).length).toBe(1);
   });
 });

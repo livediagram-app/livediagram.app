@@ -62,9 +62,10 @@ const PAGE_SEARCH_WORDS = /^\s*page: '[^']*\bdocument\b[^']*',$/;
 // "documentation" are taken out.
 const DOM_WORDS =
   /ownerDocument|contentDocument|documentElement|compareDocumentPosition|DOCUMENT_POSITION_\w+|createDocumentFragment|DocumentFragment|DocumentTimeline|DocumentOrShadowRoot|[Dd]ocumentation|[Uu]ndocumented|[Dd]ocumented|[Dd]ocumenting/g;
-// Another liveworkspace app's own address for its items (livediagram's, livedocuments' and livehuddle's `/document/`), which the
+// Another liveworkspace app's own address for its items (livediagram's, livedocuments', livehuddle's and liveknowledge's `/document/`), which the
 // shared Explorer opens on that app's site.
-const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments|livehuddle): '\/document\/',$/;
+const OTHER_APP_PATHS =
+  /^\s*(livediagram|livedocuments|livehuddle|liveknowledge): '\/document\/',$/;
 // livedocuments, the liveworkspace app whose items are Documents, named as the app it is.
 const OTHER_APP_NAME = /\blivedocuments(\.app)?\b/g;
 // A link into another app's own spec folder for its items (the shared warm open's livediagram blueprint).

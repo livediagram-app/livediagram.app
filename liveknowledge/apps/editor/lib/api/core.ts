@@ -1,0 +1,214 @@
+// HTTP/WS plumbing shared by every api-client domain module, bound to this editor: the shared core
+// (@liveworkspace/workbench/lib/api/core: the request funnel, identity headers, response helpers, the DELETE shape,
+// the token and share-password state) with this editor's guest token, error telemetry, grants, release signal and
+// share-password cache prefix, plus the envelope types only this editor's calls read. The per-domain call
+// collections import from here; callers go through the lib/api-client.ts barrel.
+import type { CommunityShareInfo, LiveDoc, ShareRole } from '@liveknowledge/api-schema';
+import { DOCUMENT_FORMAT_HEADER, BUILD_ID_HEADER } from '@liveknowledge/api-schema';
+import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
+import type { Tab } from '@liveknowledge/document';
+import { readGuestToken } from '../guest-token';
+import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
+import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
+import {
+  createApiCore,
+  stripUiTabFields,
+  type ApiDeleteOptions,
+  type ApiHeadersOptions,
+  type TokenProvider,
+} from '@liveworkspace/workbench/lib/api/core';
+import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
+import { withDocumentGrant } from './document-grants';
+// A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
+export {
+  getWorkbenchConfinement,
+  setWorkbenchConfinement,
+  subscribeWorkbenchSessionRefused,
+  WorkbenchConfinedError,
+} from './workbench-confinement';
+// Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
+// apiFetch, is reported through here (docs/specs/017-telemetry/telemetry.md 'Error').
+import {
+  markReported,
+  reportApiError,
+  reportApiWarning,
+  reportNetworkError,
+  reportNoSessionToken,
+} from './error-report';
+
+// Where the api lives (@liveworkspace/workbench/lib/api/base.ts): `NEXT_PUBLIC_API_BASE` when the build set it (local
+// development), else same-origin `/api`, served by the router worker in production.
+export { API_BASE };
+// The error every non-2xx response throws (@liveworkspace/workbench/lib/api/api-error.ts).
+export { ApiError };
+export {
+  SAVE_TIMEOUT_BASE_MS,
+  SESSION_TOKEN_TIMEOUT_MS,
+  SessionTokenUnavailableError,
+  saveTimeoutMs,
+  saveTimeoutSignal,
+  stripUiTabFields,
+  wsUrl,
+} from '@liveworkspace/workbench/lib/api/core';
+import { createSnapshotFence } from '@liveworkspace/snapshots/client';
+
+// Hard cap on how long the Explorer's document-list spinner spins before
+// we give up and show whatever we have. Both mount paths that load the
+// list (the editor and the new-document screen) arm this same safety
+// timeout, so it lives here next to the list-load calls.
+export const DOCUMENT_LIST_LOAD_SAFETY_MS = 10_000;
+
+// The share-password cache's localStorage prefix (share-password.md): one entry per share code, so a returning
+// visitor on a protected document doesn't retype the password every load.
+export const SHARE_PASSWORD_CACHE_PREFIX = 'liveknowledge:share-password:';
+
+// Each callback reads its module at call time, so a test's mock of one is the one called.
+const core = createApiCore({
+  readGuestToken: () => readGuestToken(),
+  report: {
+    apiError: (status, action, code) => reportApiError(status, action, code),
+    apiWarning: (type) => reportApiWarning(type),
+    networkError: (method, url, err) => reportNetworkError(method, url, err),
+    noSessionToken: () => reportNoSessionToken(),
+    markReported: (err) => markReported(err),
+  },
+  // A request about one document carries the index's grant on it (document-grants.ts), fetched once per ten minutes.
+  withGrant: (apiBase, input, init) => withDocumentGrant(apiBase, input, init),
+  // The server release signal rides every response: the format number and the live build id
+  // (docs/specs/016-platform/new-version-prompt.md, docs/specs/016-platform/stale-builds.md).
+  noteResponse: (res) => {
+    noteServerDocumentFormat(res.headers?.get(DOCUMENT_FORMAT_HEADER));
+    noteServerBuild(res.headers?.get(BUILD_ID_HEADER));
+  },
+  // A workbench session's request outside its allow-list is refused unsent; every response passes it.
+  confinement: {
+    refusal: (url, init) => confinementRefusal(url, init),
+    noteResponse: (init, res) => noteWorkbenchResponse(init, res),
+  },
+  // The snapshot generation fence (liveworkspace/docs/specs/014-snapshots/snapshots.md "The generation fence"): every
+  // request names the generation this page last saw, and a write refused as from before a revert reloads the page.
+  fence: createSnapshotFence('documents'),
+  sharePasswordCachePrefix: SHARE_PASSWORD_CACHE_PREFIX,
+});
+
+// Every api request goes through here rather than bare `fetch` (the shared core's funnel).
+// `documentGrant: false` sends the request as it is, at once: the unload flush, which adds the grant it holds itself
+// and cannot wait for one (a beforeunload handler runs to its end before anything it awaits). `uploadProgress` is
+// told the bytes sent as they go (a walkthrough's save): the request then goes by XMLHttpRequest, with the same
+// headers, grant, failure report and release signal.
+export function apiFetch(
+  input: string,
+  init?: RequestInit,
+  opts: { documentGrant?: boolean; uploadProgress?: (sent: number, total: number) => void } = {},
+): Promise<Response> {
+  return core.apiFetch(input, init, {
+    grant: opts.documentGrant,
+    uploadProgress: opts.uploadProgress,
+  });
+}
+
+// Declared as functions, as they were before the core was shared, so a module that reaches one while an import cycle
+// is still loading this one gets the function (the core is read only when one is called).
+export function registerTokenProvider(provider: TokenProvider): () => void {
+  return core.registerTokenProvider(provider);
+}
+// Set / clear the provider outright, dropping every registration (tests, and callers that own the whole identity).
+export function setTokenProvider(provider: TokenProvider | null): void {
+  core.setTokenProvider(provider);
+}
+// Synchronous read of the last token apiHeaders fetched: for the unload beacon only.
+export function getLastKnownToken(): string | null {
+  return core.getLastKnownToken();
+}
+// Share password for the current visitor session (docs/specs/013-workspace/share-password.md).
+export function setSessionSharePassword(password: string | null): void {
+  core.setSessionSharePassword(password);
+}
+export function getSessionSharePassword(): string | null {
+  return core.getSessionSharePassword();
+}
+export function readCachedSharePassword(shareCode: string): string | null {
+  return core.readCachedSharePassword(shareCode);
+}
+export function writeCachedSharePassword(shareCode: string, password: string | null): void {
+  core.writeCachedSharePassword(shareCode, password);
+}
+// The identity half of every request: the account's token, else the guest's, else nothing (a link visitor).
+export function identityHeaders(ownerId: string, token: string | null): Record<string, string> {
+  return core.identityHeaders(ownerId, token);
+}
+// The Bearer this page sends, for a request that goes outside apiHeaders: the account's, else the guest's.
+export function currentBearer(): Promise<string | null> {
+  return core.currentBearer();
+}
+export function apiHeaders(ownerId: string, opts?: ApiHeadersOptions): Promise<HeadersInit> {
+  return core.apiHeaders(ownerId, opts);
+}
+// Throws an ApiError on a non-2xx, else parses the JSON.
+export function expectOk<T>(
+  res: Response,
+  action: string,
+  expected?: (code: string | null) => boolean,
+): Promise<T> {
+  return core.expectOk<T>(res, action, expected);
+}
+// As expectOk, but a 404 answers null.
+export function expectOkOrNull<T>(
+  res: Response,
+  action: string,
+  expected?: (code: string | null) => boolean,
+): Promise<T | null> {
+  return core.expectOkOrNull<T>(res, action, expected);
+}
+// For endpoints with no response body.
+export function expectOkVoid(res: Response, action: string): Promise<void> {
+  return core.expectOkVoid(res, action);
+}
+// The shared DELETE shape: a 404 tolerated unless `allow404: false`.
+export function apiDelete(url: string, ownerId: string, opts: ApiDeleteOptions): Promise<void> {
+  return core.apiDelete(url, ownerId, opts);
+}
+
+// Envelope shapes the API wraps payloads in. The canonical inner
+// types come from `@liveknowledge/api-schema`, as do the envelopes the
+// MCP server reads too (DocumentResponse, TabResponse, ...); the ones
+// below are the editor-only glue for `expectOk` to destructure.
+// GET /api/participants/<id>. `null` when you ask for your own id before you have saved a profile
+// (docs/specs/015-api/api.md); another absent id is a 404.
+export type ParticipantResponse = {
+  participant: {
+    id: string;
+    name: string;
+    color: string;
+    createdAt: number;
+  } | null;
+};
+
+// Result of resolving a share code (docs/specs/013-workspace/share-password.md). A protected document
+// returns `passwordRequired` instead of the document until the visitor
+// supplies the matching password; `invalid` is true only when a wrong
+// password was submitted (vs none yet), so the gate can show an error.
+export type SharedDocumentResolution =
+  // `tabId`: the tab a tab-scoped link opens (docs/specs/013-workspace/tab-scoped-share-links.md); null = All tabs.
+  // `community`: set only when the code is a Community post's link (docs/specs/025-community/community.md).
+  | {
+      document: LiveDoc;
+      role: ShareRole;
+      tabId: string | null;
+      community: CommunityShareInfo | null;
+    }
+  | { passwordRequired: true; invalid: boolean };
+
+// Strip fields that ride on the Tab type for the editor's convenience
+// but must never enter the persisted tab body (`tabs.data`):
+//   - `templateChosen`: UI-only (have we dismissed the per-tab
+//     template picker yet?); a pure frontend concern.
+//   - `folder`: per-document membership (docs/specs/006-document/tab-folders.md) that lives on the
+//     document_tabs link, carried via the meta/reorder path. Leaking it
+//     into the shared body would make a folder follow the tab into
+//     every document it's shared into, breaking per-document scope.
+// Shared by apiCreateDocument + apiSaveTab.
+// The single normalisation every tab passes through on its way to the wire: strip the UI-only fields.
+export function tabForWire(tab: Tab): Tab {
+  return stripUiTabFields(tab);
+}

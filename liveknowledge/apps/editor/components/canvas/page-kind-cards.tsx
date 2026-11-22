@@ -1,0 +1,216 @@
+'use client';
+
+// The kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
+// miniature of the page above its name and a line on what it is for: the first page's own choice,
+// which sets the tab's kind ("One kind a tab").
+import type { PageKind } from '@liveknowledge/document';
+import type { KeyboardEvent, Ref } from 'react';
+
+type PageKindChoice = { kind: PageKind; name: string; line: string };
+
+// The cards sit two by two; an odd last card goes across both columns.
+const KIND_COLUMNS = 2;
+
+/** Arrow keys between the cards (the popover and the first page's choice alike): Left / Right
+ *  step one card, Up / Down a row of the two-by-two grid, wrapping. */
+export function moveBetweenKindCards(
+  e: KeyboardEvent<HTMLElement>,
+  cards: readonly (HTMLButtonElement | null)[],
+) {
+  const step = (
+    { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -KIND_COLUMNS, ArrowDown: KIND_COLUMNS } as Record<
+      string,
+      number
+    >
+  )[e.key];
+  if (step === undefined) return;
+  e.preventDefault();
+  const at = cards.findIndex((c) => c === document.activeElement);
+  cards[(at + step + PAGE_KINDS.length) % PAGE_KINDS.length]?.focus();
+}
+
+export const PAGE_KINDS: readonly PageKindChoice[] = [
+  {
+    kind: 'infographic',
+    name: 'Infographic',
+    line: 'A page to lay out: layouts, icons, charts and media.',
+  },
+  {
+    kind: 'article',
+    name: 'Article',
+    line: 'A page to write on, flowing onto new pages as it grows.',
+  },
+  {
+    kind: 'slide',
+    name: 'Slide',
+    line: 'A slide for a deck: widescreen, ready to present.',
+  },
+];
+
+/** Whether the card at `i` goes across both columns: the last of an odd number. */
+export function kindCardIsWide(i: number, count = PAGE_KINDS.length): boolean {
+  return count % 2 === 1 && i === count - 1;
+}
+
+export function PageKindCard({
+  choice,
+  onChoose,
+  wide = false,
+  ref,
+}: {
+  choice: PageKindChoice;
+  onChoose: () => void;
+  // Across both columns, its miniature beside its words (an odd last card).
+  wide?: boolean;
+  ref?: Ref<HTMLButtonElement>;
+}) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      onClick={onChoose}
+      className={`group relative flex items-stretch gap-2 rounded-lg border p-2 text-left transition ${
+        wide ? 'col-span-2 flex-row items-center' : 'flex-col'
+      } hover:border-brand-400 hover:bg-brand-50/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:hover:border-brand-400 dark:hover:bg-brand-500/10 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900`}
+    >
+      <span
+        className={`flex h-24 shrink-0 items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800/70 ${
+          wide ? 'w-[calc(50%-0.25rem)]' : ''
+        }`}
+      >
+        {choice.kind === 'article' ? (
+          <ArticleMiniature />
+        ) : choice.kind === 'slide' ? (
+          <SlideMiniature />
+        ) : (
+          <InfographicMiniature />
+        )}
+      </span>
+      <span className="px-0.5">
+        <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
+          {choice.name}
+        </span>
+        <span className="mt-0.5 block text-xs leading-snug text-slate-500 dark:text-slate-400">
+          {choice.line}
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function InfographicMiniature() {
+  return (
+    <svg width="58" height="78" viewBox="0 0 58 78" aria-hidden className="drop-shadow-sm">
+      <rect width="58" height="78" rx="3" className="fill-white dark:fill-slate-700" />
+      <rect
+        x="8"
+        y="8"
+        width="30"
+        height="5"
+        rx="2"
+        className="fill-slate-700 dark:fill-slate-200"
+      />
+      <rect
+        x="8"
+        y="16"
+        width="20"
+        height="3"
+        rx="1.5"
+        className="fill-slate-300 dark:fill-slate-500"
+      />
+      <rect
+        x="8"
+        y="26"
+        width="42"
+        height="22"
+        rx="3"
+        className="fill-brand-100 dark:fill-brand-500/25"
+      />
+      <rect x="13" y="38" width="5" height="7" rx="1" className="fill-brand-500" />
+      <rect x="21" y="33" width="5" height="12" rx="1" className="fill-brand-500" />
+      <rect x="29" y="30" width="5" height="15" rx="1" className="fill-brand-500" />
+      <rect x="37" y="35" width="5" height="10" rx="1" className="fill-brand-500" />
+      <circle cx="14" cy="60" r="5" className="fill-amber-400" />
+      <circle cx="29" cy="60" r="5" className="fill-emerald-400" />
+      <circle cx="44" cy="60" r="5" className="fill-rose-400" />
+      <rect
+        x="8"
+        y="69"
+        width="42"
+        height="2.5"
+        rx="1.25"
+        className="fill-slate-200 dark:fill-slate-500"
+      />
+    </svg>
+  );
+}
+
+// A sheet of writing: a title, paragraphs, a list and a picture with text wrapping beside it.
+function ArticleMiniature() {
+  const line = 'fill-slate-300 dark:fill-slate-500';
+  return (
+    <svg width="58" height="78" viewBox="0 0 58 78" aria-hidden className="drop-shadow-sm">
+      <rect width="58" height="78" rx="3" className="fill-white dark:fill-slate-700" />
+      <rect
+        x="8"
+        y="8"
+        width="28"
+        height="5"
+        rx="2"
+        className="fill-slate-700 dark:fill-slate-200"
+      />
+      <rect x="8" y="18" width="42" height="2.5" rx="1.25" className={line} />
+      <rect x="8" y="23" width="40" height="2.5" rx="1.25" className={line} />
+      <rect x="8" y="28" width="30" height="2.5" rx="1.25" className={line} />
+      <rect
+        x="8"
+        y="36"
+        width="17"
+        height="14"
+        rx="2"
+        className="fill-brand-100 dark:fill-brand-500/25"
+      />
+      <rect x="28" y="36" width="22" height="2.5" rx="1.25" className={line} />
+      <rect x="28" y="41" width="20" height="2.5" rx="1.25" className={line} />
+      <rect x="28" y="46" width="22" height="2.5" rx="1.25" className={line} />
+      <circle cx="10" cy="57" r="1.5" className="fill-brand-500" />
+      <rect x="14" y="56" width="30" height="2.5" rx="1.25" className={line} />
+      <circle cx="10" cy="62" r="1.5" className="fill-brand-500" />
+      <rect x="14" y="61" width="26" height="2.5" rx="1.25" className={line} />
+      <rect x="8" y="68" width="38" height="2.5" rx="1.25" className={line} />
+    </svg>
+  );
+}
+
+// A widescreen slide: a title, an accent rule and bullet points beside a picture.
+function SlideMiniature() {
+  const line = 'fill-slate-300 dark:fill-slate-500';
+  return (
+    <svg width="78" height="44" viewBox="0 0 78 44" aria-hidden className="drop-shadow-sm">
+      <rect width="78" height="44" rx="3" className="fill-white dark:fill-slate-700" />
+      <rect
+        x="6"
+        y="6"
+        width="30"
+        height="5"
+        rx="2"
+        className="fill-slate-700 dark:fill-slate-200"
+      />
+      <rect x="6" y="14" width="9" height="1.6" rx="0.8" className="fill-brand-500" />
+      <circle cx="7.5" cy="21" r="1.3" className="fill-brand-500" />
+      <rect x="11" y="20" width="24" height="2.2" rx="1.1" className={line} />
+      <circle cx="7.5" cy="27" r="1.3" className="fill-brand-500" />
+      <rect x="11" y="26" width="20" height="2.2" rx="1.1" className={line} />
+      <circle cx="7.5" cy="33" r="1.3" className="fill-brand-500" />
+      <rect x="11" y="32" width="22" height="2.2" rx="1.1" className={line} />
+      <rect
+        x="42"
+        y="6"
+        width="30"
+        height="32"
+        rx="2"
+        className="fill-brand-100 dark:fill-brand-500/25"
+      />
+    </svg>
+  );
+}

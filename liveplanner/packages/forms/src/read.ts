@@ -2,7 +2,7 @@
 // never refuses a form for one bad part: the part is dropped or capped, so a form from an older or newer editor, an
 // agent or a hand-edited file still opens.
 import { CUSTOM_FIELD_ID_PATTERN, ITEM_TYPE_PATTERN } from '@liveplanner/items';
-import { parseColourBackground } from '@liveworkspace/page-background';
+import { COVER_CREDIT_MAX, parsePageCover } from '@liveworkspace/page-background/cover';
 import { AXIS_ID_PATTERN, SHEET_ID_PATTERN } from '@liveplanner/sheets';
 import {
   FORM_DESCRIPTION_MAX,
@@ -60,7 +60,7 @@ export const CONTENT_TEXT_MAX = 2000;
 export const LINK_URL_MAX = 2048;
 export const LINK_LABEL_MAX = 60;
 export const CHECK_LABEL_MAX = 120;
-export const CREDIT_MAX = 300;
+export const CREDIT_MAX = COVER_CREDIT_MAX;
 
 // A sheet form's remembered columns (forms.md "Linked by column, not by heading"): `#`, `at` or a question id, each to
 // a column id; anything else dropped, at most SHEET_COLUMNS_MAX kept, absent when none is left.
@@ -221,18 +221,10 @@ function readContent(q: FormQuestion, v: Obj): FormQuestion {
   return q;
 }
 
-// The cover: a colour background (@liveworkspace/page-background), nothing kept when it is not one.
+// The cover: a colour background and/or a picture of the plan's (@liveworkspace/page-background/cover), nothing kept
+// when it is neither.
 function readCover(v: unknown): FormCover | undefined {
-  const cover: FormCover = { ...parseColourBackground(v) };
-  if (isObj(v) && typeof v['imageId'] === 'string' && FORM_IMAGE_ID.test(v['imageId'])) {
-    cover.imageId = v['imageId'];
-    const focus = v['focus'];
-    if (Number.isInteger(focus) && (focus as number) >= 0 && (focus as number) <= 100)
-      cover.focus = focus as number;
-    const credit = text(v['credit'], CREDIT_MAX);
-    if (credit) cover.credit = credit;
-  }
-  return cover.fill || cover.pattern || cover.imageId ? cover : undefined;
+  return parsePageCover(v, (id) => typeof id === 'string' && FORM_IMAGE_ID.test(id));
 }
 
 // A time zone as Intl names one ("Europe/London", "UTC", "Etc/GMT+5"); an unknown one reads as UTC when used.

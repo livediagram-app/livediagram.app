@@ -10,7 +10,7 @@ import {
   SameIn,
 } from './AppNote';
 import { cardAppsLabel } from './CategoryCard';
-import { AppName, appliesToLine, Noun } from './ScopeWords';
+import { AppName, appliesToLine, Noun, TabWord } from './ScopeWords';
 import { rowOrder } from './AppMarks';
 
 // liveworkspace/docs/specs/017-help/help-centre.md "Articles and the apps they apply to".
@@ -68,10 +68,15 @@ describe('scope words', () => {
   it("names the scope's work and app", () => {
     expect(renderToStaticMarkup(<Noun scope="livedesign" plural capital />)).toBe('Designs');
     expect(renderToStaticMarkup(<Noun scope="all" />)).toBe('file');
+    // A knowledgebase's tabs are pages (automations.md "Naming"); every other scope's are tabs.
+    expect(renderToStaticMarkup(<TabWord scope="liveknowledge" plural capital />)).toBe('Pages');
+    expect(renderToStaticMarkup(<TabWord scope="liveknowledge" />)).toBe('page');
+    expect(renderToStaticMarkup(<TabWord scope="livedocuments" />)).toBe('tab');
+    expect(renderToStaticMarkup(<TabWord scope="all" capital />)).toBe('Tab');
     expect(renderToStaticMarkup(<AppName scope="livehuddle" />)).toBe('livehuddle');
   });
 
-  it('puts the current app first and says every app for all five', () => {
+  it('puts the current app first and says every app for all six', () => {
     expect(rowOrder(['livediagram', 'livedesign'], 'livedesign')).toEqual([
       'livedesign',
       'livediagram',
@@ -81,12 +86,20 @@ describe('scope words', () => {
     );
     expect(
       appliesToLine(
-        ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+        [
+          'livediagram',
+          'liveplanner',
+          'livedocuments',
+          'livedesign',
+          'livehuddle',
+          'liveknowledge',
+        ],
         'all',
       ),
     ).toBe('Every liveworkspace app');
     expect(cardAppsLabel([1, 2])).toBe('2 apps');
     expect(cardAppsLabel([1, 2, 3, 4])).toBe('+1');
-    expect(cardAppsLabel([1, 2, 3, 4, 5])).toBe('All apps');
+    expect(cardAppsLabel([1, 2, 3, 4, 5])).toBe('+2');
+    expect(cardAppsLabel([1, 2, 3, 4, 5, 6])).toBe('All apps');
   });
 });

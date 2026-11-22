@@ -1,0 +1,23 @@
+# Local values only, for `corepack pnpm dev`: its dev script copies this to .dev.vars when there is none (never over
+# one), once the checkout's liveworkspace accounts Worker has its own .dev.vars, that is once `corepack pnpm dev:workspace`
+# has run (liveworkspace/docs/specs/003-accounts/sign-in.md "Local clients"). Every value is a local one: the client is
+# the fixed local client the accounts Worker's dev script writes into its local database
+# (liveworkspace/apps/accounts/scripts/local-clients.ts), and the index key is the index's dev key. .env.example lists
+# every other variable this worker reads.
+#
+# Sign-in and guests through the local accounts Worker, behind the liveworkspace site on 3000.
+ACCOUNTS_URL=http://localhost:3000
+API_RESOURCE=http://localhost/api
+ACCOUNTS_CLIENT_ID=local-liveknowledge
+ACCOUNTS_CLIENT_SECRET=local-liveknowledge-client-secret
+# The router, where the browser comes back to after signing in.
+AUTH_ORIGIN=http://localhost:3600
+# The local index (liveworkspace/apps/index, its dev key for liveknowledge).
+INDEX_ORIGIN=http://127.0.0.1:8793
+INDEX_KEY=dev-liveknowledge-index-key
+# Images, through the local media Worker (liveworkspace/apps/media): its MEDIA_KEY_LIVEKNOWLEDGE.
+MEDIA_URL=http://localhost:8792/api/media
+MEDIA_KEY=dev-liveknowledge-media-key
+# What the knowledgebases' own AI keys (Claude's or OpenAI's) are sealed under (AI Settings). Unset, no key can be stored and Ask
+# answers ask_unavailable; search and everything else work.
+AI_KEY_SECRET=dev-liveknowledge-ai-key-secret

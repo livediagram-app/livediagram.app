@@ -34,13 +34,15 @@ the app's `brand-*` Tailwind ramp, so the accent is the app's; each app's `globa
 | livedocuments | Google Slides                                                              | [marketing-site.md](../../livedocuments/docs/specs/019-marketing/marketing-site.md) |
 | livedesign    | Figma                                                                      | [marketing-site.md](../../livedesign/docs/specs/019-marketing/marketing-site.md)    |
 | livehuddle    | Gather, Kumospace                                                          | [marketing-site.md](../../livehuddle/docs/specs/019-marketing/marketing-site.md)    |
+| liveknowledge | Notion, Confluence, Slite, Guru, GitBook, Outline                          | [marketing-site.md](../../liveknowledge/docs/specs/019-marketing/marketing-site.md) |
 
 liveworkspace.app keeps none. Its old `/alternatives/<slug>` addresses redirect permanently (301) to the
 same slug on the app that answers it, and its `/alternatives` to `/compare`, a small page that points at
 each app's comparisons ([site.md](../../liveworkspace/docs/specs/010-site/site.md)).
 
 In the rules below, "us" is the app, and "document" is whatever that app calls the thing a person
-makes: a document (livediagram, livedocuments), a plan (liveplanner) or a design (livedesign).
+makes: a document (livediagram, livedocuments), a plan (liveplanner), a design (livedesign) or a knowledgebase
+(liveknowledge).
 
 ## Why they exist
 
@@ -177,6 +179,38 @@ livehuddle.app addresses redirect permanently to the hub, pinned by livehuddle's
 Miro and FigJam remain livediagram's comparisons.
 
 **Candidates** for later: Wonder, SpatialChat and oVice, each needing an honest angle first.
+
+## liveknowledge
+
+- **Compete on their ground**: each is compared as a team knowledge tool, the job it does. Notion as a workspace whose
+  wikis hold a team's knowledge, Confluence as the team wiki beside Jira, Slite and Guru as knowledge tools built on
+  verification and cited answers, GitBook as a documentation platform, Outline as an open team knowledge tool. "They
+  are not an AI tool" is never a selling point: most of them have AI of their own, and the pages say so.
+- **Where liveknowledge differs** (each a shipped feature, its
+  [marketing-site spec](../../liveknowledge/docs/specs/019-marketing/marketing-site.md)): an owner, a verified date
+  and a review that comes due on every page; agents as readers, with trust fields on every passage and edits as
+  suggestions; Ask with a citation on every claim, on the team's own Claude API key; free and MIT-licensed; part of a
+  workspace.
+- **Where liveknowledge is behind**, said on the pages it bears on: databases (Notion), page-level permissions
+  (Notion, Confluence), integrations (all of them), a native mobile app, semantic search (Slite, Guru) and public
+  sites (GitBook, Notion, Outline).
+- **Shared ground is said to be shared.** Notion's wikis verify pages, Slite verifies documents and answers with
+  sources, Guru verifies cards on an interval. A page never claims verification or cited answers as ours alone.
+- **Competitor facts are category and well-known capabilities only**: no prices, limits, plan contents or numbers
+  (the app's `lib/alternatives.test.ts` fails a digit or a currency sign in a competitor's cell), and no superlatives.
+- **Outline's source is public and it runs on a team's own servers**; the page says so plainly, never implies it is
+  closed, and says liveknowledge is offered as a hosted service only.
+- **Words**: **knowledgebase** is one word, and liveknowledge is never called a wiki or a "knowledge base"; "wiki"
+  names the category a competitor is in. Notion's page is `notion-wiki`, since `notion` is liveplanner's.
+- **Migration answers are honest.** Notion and Confluence have a direct import (their own exports, in the editor's
+  Import dialog: [Knowledgebase import](../../liveknowledge/docs/specs/020-import-export/knowledgebase-import.md)).
+  For Slite, Guru, GitBook and Outline there is no importer: the route is the Markdown Folder import, where the tool
+  can export Markdown, and each FAQ says so.
+- **CTA** reads "Start a Knowledgebase".
+
+**The set**: Notion (`/alternatives/notion-wiki`), Confluence, Slite, Guru, GitBook and Outline. **Retired**: Google
+Slides, which the fork brought from livedocuments and liveknowledge never answered (it has no slides); it is
+livedocuments' page.
 
 ## Comparing several apps at once
 

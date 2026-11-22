@@ -255,8 +255,9 @@ export function DeleteAccountDialog({
                   </p>
                   <ul className="list-disc space-y-1 pl-5">
                     <li>
-                      every canvas, plan, document, design and space in livediagram, liveplanner,
-                      livedocuments, livedesign and livehuddle, including the Trash
+                      every canvas, plan, document, design, space and knowledgebase in livediagram,
+                      liveplanner, livedocuments, livedesign, livehuddle and liveknowledge,
+                      including the Trash
                     </li>
                     <li>your folders, settings and API tokens</li>
                     <li>any team you run on your own</li>

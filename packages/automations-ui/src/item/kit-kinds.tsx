@@ -10,6 +10,7 @@ import {
   type AutomationVia,
 } from '@liveworkspace/automations';
 import {
+  inTabWords,
   sharedActions,
   sharedConditions,
   sharedTriggers,
@@ -240,7 +241,7 @@ export function buildItemKinds(
     add_tab: (outline, fresh) => ({
       ...fresh,
       template: outline.templates[0]?.id ?? '',
-      name: outline.templates[0]?.name ?? 'New Tab',
+      name: outline.templates[0]?.name ?? inTabWords('New Tab', item),
     }),
   };
   const actionScenes = new Map<string, ItemVignette>();
@@ -281,7 +282,7 @@ export function buildItemKinds(
   return {
     kinds: {
       triggerGroups,
-      triggerHint: 'Try another word, such as “edited”, “tab” or “snapshot”.',
+      triggerHint: inTabWords('Try another word, such as “edited”, “tab” or “snapshot”.', item),
       triggers,
       triggerOrder: triggerGroups.flatMap((g) => [...g.kinds]),
       firstTrigger: input.firstTrigger ?? 'edited',

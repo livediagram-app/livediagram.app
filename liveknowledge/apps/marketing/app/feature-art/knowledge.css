@@ -1,0 +1,197 @@
+/* The knowledgebase art's timeline (docs/specs/019-marketing/marketing-site.md "Feature sections", "Feature pages"
+   and "Hero"): the landing sections' drawings, the feature pages' card drawings and the hero's backdrop. Every piece
+   rides one 8s loop and takes its own delay through --d, so a drawing assembles in order, holds, and starts again:
+   lines of writing type in, ticks and pills pop, arrows and links draw, a caret blinks, a bar fills.
+
+   Content motion, paced as content: listed for the motion budget (motion-budget.test.ts reads this folder). Every
+   frame these sit in is content-visibility: auto, so nothing here animates off screen. Under reduced motion every
+   class settles to its finished, fully visible frame (the block at the foot). Transform and opacity only, plus the
+   dash offset of a drawn line. */
+
+.kb-in,
+.kb-pop,
+.kb-type,
+.kb-draw,
+.kb-fill {
+  transform-box: fill-box;
+  animation-duration: 8s;
+  animation-iteration-count: infinite;
+  animation-delay: var(--d, 0s);
+  animation-fill-mode: both;
+  animation-timing-function: ease-out;
+}
+
+/* A piece fades and rises into place, holds, and fades out before the loop starts again. */
+.kb-in {
+  animation-name: kb-in;
+}
+@keyframes kb-in {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  8%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+/* A tick, a pill or a dot pops in with a little overshoot. */
+.kb-pop {
+  transform-origin: center;
+  animation-name: kb-pop;
+  animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes kb-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  7% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  11%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* A line of writing types in from its left edge. */
+.kb-type {
+  transform-origin: left center;
+  animation-name: kb-type;
+}
+@keyframes kb-type {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  2% {
+    opacity: 1;
+  }
+  10%,
+  90% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+/* A bar fills to its length from the left (a budget, a progress). */
+.kb-fill {
+  transform-origin: left center;
+  animation-name: kb-fill;
+  animation-timing-function: cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+@keyframes kb-fill {
+  0%,
+  6% {
+    transform: scaleX(0);
+  }
+  26%,
+  92% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+/* A stroke draws itself along its length (--len, the path's length or more). */
+.kb-draw {
+  stroke-dasharray: var(--len, 160);
+  animation-name: kb-draw;
+  animation-timing-function: ease-in-out;
+}
+@keyframes kb-draw {
+  0% {
+    stroke-dashoffset: var(--len, 160);
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  16%,
+  90% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  97%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* A caret: on, then off, a second each. */
+.kb-caret {
+  animation: kb-caret 1.1s steps(1, end) infinite;
+}
+@keyframes kb-caret {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* A slow float for a page sheet in the hero's backdrop: a few pixels up and back over 9s, each sheet its own delay. */
+.kb-float {
+  animation: kb-float 9s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes kb-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Dashes running along a page link, slowly. */
+.kb-link {
+  animation: kb-link 3s linear infinite;
+}
+@keyframes kb-link {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-in,
+  .kb-pop,
+  .kb-type,
+  .kb-draw,
+  .kb-fill,
+  .kb-caret,
+  .kb-float,
+  .kb-link {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

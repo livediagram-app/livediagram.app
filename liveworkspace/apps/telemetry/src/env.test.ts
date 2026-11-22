@@ -15,7 +15,12 @@ describe('appKey', () => {
     expect(appKey(env, 'livedesign.app')).toBeUndefined();
     const keys = TELEMETRY_APPS.map((app) =>
       appKey(
-        { ...env, TELEMETRY_KEY_LIVEDOCUMENTS: 'docs', TELEMETRY_KEY_LIVEDESIGN: 'design' },
+        {
+          ...env,
+          TELEMETRY_KEY_LIVEDOCUMENTS: 'docs',
+          TELEMETRY_KEY_LIVEDESIGN: 'design',
+          TELEMETRY_KEY_LIVEHUDDLE: 'huddle',
+        },
         app,
       ),
     );

@@ -174,6 +174,7 @@ const EXPLORER_ITEMS: Partial<Record<SiteId, { name: string; kind: string }>> = 
   'livedocuments.app': { name: 'Launch announcement', kind: 'Document' },
   'livedesign.app': { name: 'Launch logo', kind: 'Design' },
   'livehuddle.app': { name: 'Launch party', kind: 'Space' },
+  'liveknowledge.app': { name: 'Launch handbook', kind: 'Knowledgebase' },
 };
 
 function ExplorerArt() {

@@ -20,6 +20,8 @@ import { noteSaveFailing, noteTabTooLarge } from '../../lib/save-health';
 // (AutosaveDeps), under its own names for the item.
 
 type TabBase = { id: string; name: string; folder?: string; folderColor?: string };
+// What `metaTabFields` adds to a tab's entry in the metadata save.
+type MetaTabFields = Record<string, unknown>;
 
 type SaveDiff<Tab> = {
   changedTabs: Tab[];
@@ -81,12 +83,15 @@ export type AutosaveDeps<Tab, Prepared, R, J extends Journal, Writes, S> = {
     meta: {
       id: string;
       name: string;
-      tabs: { id: string; folder?: string; folderColor?: string | null }[];
+      tabs: ({ id: string; folder?: string; folderColor?: string | null } & MetaTabFields)[];
     },
     shareCode: string | null,
   ) => Promise<unknown>;
   // The op an editor's own rename sends: `document-meta`, `design-meta`, `project-meta`.
   metaKind: string;
+  // More of a tab that rides the metadata save and its op beside the id and folder (liveknowledge: a page's
+  // `parent`), so it is stored and relayed for a tab whose body this editor never loaded. Absent: nothing more.
+  metaTabFields?: (tab: Tab) => Record<string, unknown>;
   reportSaveFailure: (err: unknown) => void;
   saveFailureStatus: (err: unknown) => S;
   isItemDeleted: (id: string) => boolean;
@@ -495,6 +500,7 @@ export function useAutosaveCore<
                   // A foldered tab's colour too, null for Automatic (tab-folders.md "Persistence & realtime"); a loose
                   // tab has none to send.
                   tabs: tabs.map((t) => ({
+                    ...deps.metaTabFields?.(t),
                     id: t.id,
                     folder: t.folder,
                     ...(t.folder ? { folderColor: t.folderColor ?? null } : {}),
@@ -510,6 +516,7 @@ export function useAutosaveCore<
                   kind: deps.metaKind,
                   name: itemName,
                   tabs: tabs.map((t, i) => ({
+                    ...deps.metaTabFields?.(t),
                     id: t.id,
                     name: t.name,
                     orderIndex: i,

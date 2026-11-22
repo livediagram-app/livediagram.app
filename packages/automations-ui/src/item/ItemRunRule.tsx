@@ -5,6 +5,7 @@
 // runs as it mounts. What happened is a toast: "Ran “<rule>”", the run's own reason when it failed or was skipped,
 // or the refusal in words (the day's runs spent).
 
+import { inTabWords, type ItemWord } from '@liveworkspace/automations/item';
 import { useEffect, useRef } from 'react';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useToast } from '@liveworkspace/workbench/hooks/ui/useToast';
@@ -60,7 +61,7 @@ export function ItemRunRule({ rule, outline, run, onClose }: Props) {
   return (
     <TabAskDialog
       title="Run Rule"
-      line={`Pick the tab “${rule.name}” runs on. It runs for real.`}
+      line={`${inTabWords('Pick the tab', item as ItemWord)} “${rule.name}” runs on. It runs for real.`}
       action="Run Rule"
       tabs={outline.item.tabs}
       current={outline.item.currentTabId}

@@ -1,0 +1,179 @@
+// /api/internal/items/**: the One Explorer index's doors into a document's content (docs/specs/015-api/api.md
+// "Internal"), served by @liveworkspace/index-app's handleInternalItems with the app's key (INDEX_KEY). See it for
+// the doors: a purge (one document, or up to a hundred for a closed account), revoked links, notices for the emails,
+// a copy into a new document, and a workbench pairing's sessions closed in a document's room
+// (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access").
+//
+// Each is a call to the document's Durable Object (document-client.ts). Where the document is filed, its sharing and its
+// Trash are the index's; a purge also tells the media service the document places nothing now and drops its previews
+// there (liveworkspace/docs/specs/006-media/previews.md "Purging"). A notice is worked out off the index's path: a share link made
+// (the first-share milestone), or someone's first time in through a link (the owner's "someone joined" email). The
+// export door draws the document for liveworkspace's previews, which call it with MEDIA_KEY, and answers its whole
+// file for liveworkspace's Drive mirror, which calls it and the import door with DRIVE_KEY
+// (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps", routes/internal-file.ts), and its comment threads
+// for liveworkspace's data export, which calls with DATA_EXPORT_KEY (liveworkspace/docs/specs/003-accounts/data-export.md).
+import {
+  askIndexCommunityStates,
+  JOINED_TELEMETRY_TYPE,
+  handleInternalItems as handle,
+} from '@liveworkspace/index-app';
+import { communityService } from '../community-service';
+import {
+  notifyAccessGranted,
+  notifyAccessRequested,
+  notifyApprovalRequested,
+  notifyFirstShare,
+} from '../email/notifications';
+import { deleteAccount } from '../db/account';
+import { purgeDocumentPreviews } from '../db/documents';
+import { forgetImageRefs } from '../document-room/document-outbox';
+import { mediaClient, mediaOwner } from '../media';
+import { documentRoom } from '../document-client';
+import {
+  closeArchivedSessions,
+  closeTokenSessions,
+  closeWorkbenchSessions,
+  tellTrashed,
+} from '../room-access-client';
+import { reportServerEvent } from '../server-telemetry';
+import { importDocumentFileFor } from './internal-file';
+import { documentFromTemplate } from './internal-template';
+import { indexAppClient } from '../index-service';
+import { capStoredName } from '../names';
+import type { Env } from '../types';
+
+export function handleInternalItems(
+  request: Request,
+  env: Env,
+  waitUntil: (promise: Promise<unknown>) => void = (p) => void p,
+): Promise<Response> {
+  return handle(request, {
+    key: env.INDEX_KEY,
+    exportKey: env.MEDIA_KEY,
+    driveKey: env.DRIVE_KEY,
+    dataExportKey: env.DATA_EXPORT_KEY,
+    // The Community's sweep calls its door with the same key this api publishes with (liveworkspace community.md).
+    communityKey: env.COMMUNITY_KEY,
+    waitUntil,
+    handlers: {
+      // Where Community posts' items stand, as the index reads them, for the Community's sweep.
+      communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
+      purge: async (id) => {
+        await documentRoom(env, id).purge();
+        // The media service hears the document places nothing now, so an image only it placed can be swept.
+        await Promise.all([purgeDocumentPreviews(env, id), forgetImageRefs(env, id)]);
+      },
+      // A rescoped link (another level or tab) reloads its visitors into what it now opens; a revoked one sends
+      // them away.
+      revoke: (id, codes, reason) => documentRoom(env, id).revokeCodes(codes, reason),
+      // An approval request (liveworkspace approvals.md): the approvers' email.
+      approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
+      // Request Access (liveworkspace request-access.md "The emails"): a manager's email when someone asks, and the
+      // requester's when a manager shares it.
+      // And Access Requested, for the document's rules that hear it (docs/specs/013-workspace/automations.md).
+      accessRequested: async (id, notice) => {
+        await Promise.all([
+          notifyAccessRequested(env, id, notice),
+          documentRoom(env, id)
+            .accessRequested({
+              id: notice.requesterId,
+              name: notice.requesterName,
+              requestId: notice.requestId,
+            })
+            .catch((err: unknown) =>
+              console.warn('[automations] access request not heard', { error: String(err) }),
+            ),
+        ]);
+      },
+      accessGranted: (id, notice) => notifyAccessGranted(env, id, notice),
+      notice: (id, notice) =>
+        notice.type === 'shared'
+          ? notifyFirstShare(env, notice.actorId)
+          : // Someone's first time in through a link: the owner's email, and Document·Joined by the link's level.
+            Promise.all([
+              documentRoom(env, id).joined(notice.personId, notice.level),
+              reportServerEvent(env, 'Document', 'Joined', JOINED_TELEMETRY_TYPE[notice.level]),
+            ]),
+      // A Sheet a chart in the document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md): the
+      // room tells every open session, which reads it again with its own access.
+      sourceChanged: (id, change) => documentRoom(env, id).sourceChanged(change),
+      // A closed account, wherever it was closed: what liveknowledge keeps for them beside their documents (their
+      // images), and their name off each document of someone else's that names them.
+      personClosed: async (personId) => void (await deleteAccount(env, personId)),
+      // A guest who became an account (accounts merged them; the index tells each app): their images in
+      // liveworkspace's media service and their Community copies become the account's. A guest has no workbench
+      // (it needs a token).
+      personMerged: async (guestId, userId) => {
+        const media = mediaClient(env);
+        if (media) {
+          const merged = await media.mergeOwner(
+            await mediaOwner(guestId),
+            await mediaOwner(userId),
+          );
+          if (!merged.ok)
+            throw new Error(`media: merging the guest's images answered ${merged.status}`);
+        }
+        await communityService.mergeCopier(env, guestId, userId);
+      },
+      anonymise: (id, personId, guestIds) => documentRoom(env, id).anonymise(personId, guestIds),
+      // The document drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for
+      // the Drive mirror (`exportFile`).
+      export: (id, query) =>
+        query.format === 'file'
+          ? documentRoom(env, id).exportFile(query)
+          : documentRoom(env, id).exportImage(query),
+      // Every comment thread in the document with its real authors, for the data export (document-room.ts
+      // `exportComments`). It has no boards or sheets, so the door's `csv` format is a 404.
+      exportComments: (id) => documentRoom(env, id).exportComments(),
+      // A new document from a Drive file, as its owner's (routes/internal-file.ts).
+      import: (input) => importDocumentFileFor(env, input),
+      // A new item from one of this app's templates, a project kit's part (internal-template.ts).
+      fromTemplate: (input) => documentFromTemplate(env, input),
+      // A workbench pairing's access ended at liveworkspace: its sockets in this document's room close.
+      workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
+      // A revoked API token: the sockets its room tickets opened (public-api-and-tokens.md "Revoking a token").
+      tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),
+      // Where the document stands after an archive, move, trash or restore (docs/specs/013-workspace/trash.md "Open
+      // editors"): trashed anywhere (the api, MCP delete_document, the Explorer), its room tells every editor and
+      // closes. Nothing is kept, so a restore reopens as before.
+      // The room keeps where it stands first (@liveworkspace/automations/room standing.ts): put away, its rules run
+      // nothing.
+      standing: async (id, standing) => {
+        await documentRoom(env, id).takeStanding(standing);
+        if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
+        // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): every session ends with 4010,
+        // and each editor leaves for the Explorer. A move or a restore (neither flag) closes nothing.
+        else if (standing.archived) await closeArchivedSessions(env, id);
+      },
+      // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
+      // connected tab at the end of the document's tab bar.
+      connectedTab: (id, write) => documentRoom(env, id).addConnectedTab(write),
+      copy: async (from, to, tabId, copier, title) => {
+        // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
+        // to them, other people's authors redacted; through the document's Community post's link, without its
+        // comments or the people on its actions.
+        const source = await documentRoom(env, from).exportCopy(tabId, copier);
+        // No such document, or no such tab in it.
+        if (!source || (tabId && source.copy.tabs.length === 0)) return 'not_found';
+        const { copy } = source;
+        // The target is a new document: a copy into one that already holds this content fails its keys, and nothing
+        // is written (importCopy is one transaction); the kit answers that as a conflict. The copy carries a grant for
+        // each image its source could serve, so it serves them too (docs/specs/009-elements/images.md).
+        // Named as the index titled the copy (an older index sends none), so its first open starts it with the
+        // name the Explorer lists, never as Untitled.
+        const name = title ? capStoredName(title, null, 'document') : '';
+        await documentRoom(env, to).importCopy(name ? { ...copy, name } : copy);
+        // A copy through a Community post's link counts toward the post (docs/specs/025-community/community.md
+        // "Likes, reports and moderation"), once per copier and at most a few from one network: the copier's address
+        // as the index saw it (an Explorer's copy). The api's own copy door counted it first
+        // (routes/document-index-routes.ts), so this adds nothing then. An index that names no address counts the
+        // copier as their own network.
+        if (source.community && copier.by)
+          waitUntil(
+            communityService.countCopy(env, from, copier.by, copier.ip ?? `copier:${copier.by}`),
+          );
+        return { tabs: copy.tabs.length, items: 0 };
+      },
+    },
+  });
+}

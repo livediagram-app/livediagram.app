@@ -148,13 +148,14 @@ test('a folder without an lcov.info is a missing shard', () => {
   ]);
 });
 
-test('the committed floors name the five editors, each a number with one decimal at most', () => {
+test('the committed floors name the six editors, each a number with one decimal at most', () => {
   const floors = JSON.parse(readFileSync(FLOORS_FILE, 'utf8'));
   assert.deepEqual(Object.keys(floors).sort(), [
     'livedesign',
     'livediagram',
     'livedocuments',
     'livehuddle',
+    'liveknowledge',
     'liveplanner',
   ]);
   for (const f of Object.values(floors))

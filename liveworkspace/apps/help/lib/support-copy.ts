@@ -288,6 +288,50 @@ const APP_COPY: Record<Exclude<HelpScope, 'all'>, AppCopy> = {
       lede: 'Something not working? Start here.',
     },
   },
+  // liveknowledge has no Tips and Tricks or Supported Devices landing: neither category holds an article for it yet.
+  liveknowledge: {
+    about: {
+      title: 'About liveknowledge',
+      description: 'What liveknowledge is, who it is for, and why it is free and open source.',
+      lede: 'What liveknowledge is, who it is for, and why it is free and open source.',
+    },
+    'account-and-data': {
+      title: 'Account and Data',
+      description:
+        'Guest access, signing in, syncing, the Trash, API tokens and deleting your data.',
+      lede: 'How identity works, what an account adds, and how to manage your data.',
+    },
+    developers: {
+      title: 'Developers',
+      description:
+        'Read and write a Knowledgebase from an AI agent, the command line or your own scripts: the MCP tools, the CLI and the knowledge API.',
+      lede: 'A Knowledgebase is for agents as much as for people. Connect one over the MCP server, drive it from a terminal with the liveknowledge CLI, or call the same REST API the editor uses.',
+    },
+    'getting-started': {
+      title: 'Getting Started',
+      description:
+        'New to liveknowledge? Make your first Knowledgebase, set up its pages, and share it with your team.',
+      lede: 'New here? These guides get you up and running quickly.',
+    },
+    policies: {
+      title: 'Policies',
+      description:
+        "How to report a vulnerability. The terms and privacy policy are liveworkspace's, on liveworkspace.app.",
+      lede: "How to report a security issue privately. The terms and privacy policy for liveknowledge.app are liveworkspace's, at liveworkspace.app/terms and liveworkspace.app/privacy.",
+    },
+    'privacy-and-security': {
+      title: 'Privacy and Security',
+      description:
+        'How your data is handled, what liveknowledge collects, and how share links are protected.',
+      lede: 'How your data is handled and how to keep your knowledgebases safe.',
+    },
+    troubleshooting: {
+      title: 'Troubleshooting',
+      description:
+        'Solutions to common problems with Ask, reviews, imports, agents, sign-in and collaboration.',
+      lede: 'Something not working? Start here.',
+    },
+  },
 };
 
 /** A support landing's copy in `scope`, or undefined when the scope has no such landing. */

@@ -11,6 +11,7 @@ export const RESOURCES: Record<Env['ENVIRONMENT'], string[]> = {
     'https://livedocuments.app/api',
     'https://livedesign.app/api',
     'https://livehuddle.app/api',
+    'https://liveknowledge.app/api',
   ],
   staging: [
     'https://staging.livediagram.app/api',
@@ -18,6 +19,7 @@ export const RESOURCES: Record<Env['ENVIRONMENT'], string[]> = {
     'https://staging.livedocuments.app/api',
     'https://staging.livedesign.app/api',
     'https://staging.livehuddle.app/api',
+    'https://staging.liveknowledge.app/api',
   ],
   development: ['http://localhost/api'],
 };

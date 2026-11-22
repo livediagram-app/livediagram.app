@@ -1,0 +1,270 @@
+// Slide decks (docs/specs/012-collaboration/presentation-mode.md): the data model and the pure helpers a presentation
+// is built from.
+//
+// A slide is an explicit, ordered set of elements you chose, FROM ONE TAB. The
+// DECK is what spans tabs: slide 1 can come from Tab A, slide 2 from Tab C,
+// slide 3 from Tab A again. Keeping a slide inside one tab is what makes it
+// well-defined, because elements on different tabs share no coordinate space
+// and no backdrop, so "fit this slide" would have no meaning across them.
+//
+// Slides reference elements, they never copy them. That is what keeps a deck
+// in step with the canvas it presents: edit a shape and every slide it is on
+// shows the new version, because no slide ever held the old one. It also makes
+// the delete case correct for free (see resolveSlide).
+//
+// Everything here is pure — `(Deck, Tab[]) -> ...` with no React — so the
+// editor, the api and the MCP worker can all reach for the same answers.
+
+import { contentBounds } from './svg-render';
+import { pagesOf, layOutPages } from './page';
+import { elementIdsOnPage } from './page-content';
+import type { Element, ElementId, Tab, TabId } from './index';
+import { parseNoteCards, type NoteCard } from './slide-notes';
+
+export type Slide = {
+  id: string;
+  /** Shown in the panel and the presenter HUD. Absent = "Slide N". */
+  name?: string;
+  /** The one tab this slide draws from: its backdrop, theme and coordinates. */
+  tabId: TabId;
+  elementIds: ElementId[];
+  /**
+   * A page slide (docs/specs/007-editor/pages-mode.md "Slides"): the slide IS this
+   * Page of the tab, resolved live: whatever is on the page, framed to the page.
+   * `elementIds` is empty and ignored. Added from the slide panel's page picker.
+   */
+  pageId?: string;
+  /**
+   * What you mean to SAY over this slide, as note cards in order (docs/specs/012-collaboration/speaker-note-cards.md).
+   * The slide's own, not any element's. Read through `slideNoteCards`, never directly.
+   */
+  noteCards?: NoteCard[];
+  /** The cards' text joined by a blank line, kept for older readers; a slide written before note cards has only this,
+   *  which reads as one card. Written by `withNoteCards`. */
+  notes?: string;
+  /**
+   * Left out of the presentation without being deleted. Absent = shown, so a
+   * deck written before this existed reads as all-visible.
+   *
+   * A separate idea from deleting: a slide you might want next week, a backup
+   * detail for a question you may not get, a section you cut for time. Losing
+   * the slide to get it out of the run is the wrong trade.
+   */
+  hidden?: boolean;
+  /**
+   * How long you MEAN to spend here, in minutes. Optional, and only ever a
+   * target: nothing advances on it.
+   *
+   * The deck deliberately does not enforce a budget — a slide that moved on
+   * because its four minutes were up would cut off the answer you were giving.
+   */
+  minutes?: number;
+};
+
+export type Deck = { slides: Slide[] };
+
+// The stored envelope. An array from day one even though v1 ships exactly one
+// deck: "the deck for the exec review" and "the deck for the team walkthrough"
+// are an obvious want over one document, and shipping `{ slides }` would make
+// the second one a data migration.
+export type StoredPresentation = { decks: Deck[] };
+
+/** A slide's display name: its own, or its 1-based position. */
+export function slideName(slide: Slide, index: number): string {
+  const trimmed = slide.name?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : `Slide ${index + 1}`;
+}
+
+/**
+ * The elements a slide shows, in the tab's own paint order.
+ *
+ * Unknown ids are SKIPPED rather than treated as an error, the same policy
+ * docs/specs/006-document/layers.md applies to an unknown `layerId`. That is what makes deleting an
+ * element behave: the slide quietly shows the rest, and because the slide was
+ * never rewritten, undoing the delete puts the element back on it. Cleaning up
+ * references at delete time would look tidier and would lose deck structure to
+ * a keystroke the user took back.
+ *
+ * Paint order comes from the TAB, not from `elementIds`: the slide decides
+ * what is on it, the canvas decides what sits in front of what. Ordering by
+ * the slide's list would let the order you happened to click things in
+ * restack the drawing.
+ */
+export function resolveSlide(slide: Slide, tab: Tab | undefined): Element[] {
+  if (!tab) return [];
+  if (slide.pageId) {
+    const pages = layOutPages(pagesOf(tab));
+    const on = elementIdsOnPage(tab.elements, pages, slide.pageId);
+    return tab.elements.filter((el) => on.has(el.id));
+  }
+  const wanted = new Set(slide.elementIds);
+  if (wanted.size === 0) return [];
+  const chosen = tab.elements.filter((el) => wanted.has(el.id));
+  const present = new Set(chosen.map((el) => el.id));
+
+  // Arrows come along. An arrow whose endpoints are both on the slide is
+  // included even when it was not picked, so building a slide by marquee over
+  // a cluster of boxes does not need every connector hand-added. An arrow
+  // picked explicitly is already in `chosen` and stays whatever its ends do,
+  // because the author asked for it.
+  const implied = tab.elements.filter(
+    (el) => el.type === 'arrow' && !present.has(el.id) && endpointsWithin(el, present),
+  );
+  if (implied.length === 0) return chosen;
+  const all = new Set([...present, ...implied.map((el) => el.id)]);
+  return tab.elements.filter((el) => all.has(el.id));
+}
+
+function endpointOn(end: { kind: string; elementId?: string; arrowId?: string }, ids: Set<string>) {
+  if (end.kind === 'pinned') return end.elementId !== undefined && ids.has(end.elementId);
+  if (end.kind === 'on-arrow') return end.arrowId !== undefined && ids.has(end.arrowId);
+  // A free endpoint pins to nothing, so it can never tie an arrow to a slide.
+  return false;
+}
+
+function endpointsWithin(arrow: Element, ids: Set<string>): boolean {
+  if (arrow.type !== 'arrow') return false;
+  return endpointOn(arrow.from, ids) && endpointOn(arrow.to, ids);
+}
+
+/**
+ * The rectangle a slide should be framed to (the bounds of what is on it), or null when it has
+ * nothing on it.
+ */
+export function slideBounds(
+  elements: Element[],
+): { x: number; y: number; w: number; h: number } | null {
+  if (elements.length === 0) return null;
+  return contentBounds(elements);
+}
+
+/**
+ * The rectangle a slide is framed to: a page slide's page, exactly (when the page is still there),
+ * else slideBounds of what it shows.
+ */
+export function slideFrame(
+  slide: Slide,
+  tab: Tab | undefined,
+): { x: number; y: number; w: number; h: number } | null {
+  if (slide.pageId && tab) {
+    const page = layOutPages(pagesOf(tab)).find((p) => p.id === slide.pageId);
+    if (page) return { x: page.rect.x, y: page.rect.y, w: page.rect.width, h: page.rect.height };
+  }
+  return slideBounds(resolveSlide(slide, tab));
+}
+
+/**
+ * The slides a tab's show runs, paired with the tab, in order (docs/specs/012-collaboration/presentation-mode.md
+ * "One tab, one show").
+ *
+ * A presentation is a tab's, never the document's: Present runs the open tab's slides alone, in their deck order,
+ * which for a tab's page slides is its page order (deckFollowingPages), the order Contents lists them. Another tab's
+ * slides are never in it, so slides added across tabs never interleave in a show nobody can reorder. A deck stored
+ * across tabs (A, C, A) gives A's show A's slides and C's show C's; the stored order is never rewritten. O(slides).
+ *
+ * Slides the author has HIDDEN are left out, which is the ONE place the run is decided, so the count on the Present
+ * button, the `7 / 23` in the HUD and what advancing lands on can never disagree about the show's length. No tab (it
+ * is gone, or not yet known), no show. A slide whose ELEMENTS have all gone is kept, because an empty slide you can
+ * see and fix beats a slide that silently deleted itself when you cleared its contents.
+ */
+export function presentableSlides(
+  deck: Deck,
+  tab: Tab | undefined,
+): { slide: Slide; tab: Tab; index: number }[] {
+  if (!tab) return [];
+  const run: { slide: Slide; tab: Tab; index: number }[] = [];
+  deck.slides.forEach((slide, index) => {
+    if (!slide.hidden && slide.tabId === tab.id) run.push({ slide, tab, index });
+  });
+  return run;
+}
+
+/**
+ * Re-point every slide on a re-minted tab (old → new in `tabIdMap`), the deck's
+ * half of what remapTabLinks does for element links.
+ */
+export function remapPresentationTabs(
+  stored: StoredPresentation,
+  tabIdMap: Map<TabId, TabId>,
+): StoredPresentation {
+  return {
+    decks: stored.decks.map((deck) => ({
+      slides: deck.slides.map((s) => {
+        const next = tabIdMap.get(s.tabId);
+        return next ? { ...s, tabId: next } : s;
+      }),
+    })),
+  };
+}
+
+export const EMPTY_DECK: Deck = { slides: [] };
+
+// --- Reading what was stored ------------------------------------------------
+//
+// The stored blob comes back from the api as text the client did not write in
+// this session, so it is parsed defensively for the same reason the clipboard
+// payload is: never throw, and drop what cannot be understood rather than
+// failing the whole document load. A document whose deck is unreadable must
+// still open.
+
+function isSlide(value: unknown): value is Slide {
+  if (typeof value !== 'object' || value === null) return false;
+  const s = value as Partial<Slide>;
+  if (typeof s.id !== 'string' || s.id.length === 0) return false;
+  if (typeof s.tabId !== 'string' || s.tabId.length === 0) return false;
+  if (!Array.isArray(s.elementIds)) return false;
+  if (!s.elementIds.every((id) => typeof id === 'string')) return false;
+  if (s.name !== undefined && typeof s.name !== 'string') return false;
+  if (s.notes !== undefined && typeof s.notes !== 'string') return false;
+  if (s.hidden !== undefined && typeof s.hidden !== 'boolean') return false;
+  if (s.pageId !== undefined && (typeof s.pageId !== 'string' || s.pageId.length === 0)) {
+    return false;
+  }
+  return true;
+}
+
+// A slide's stored cards, cleaned (parseNoteCards): a field that is not a list of cards goes, the slide stays.
+function withCleanNoteCards(slide: Slide): Slide {
+  if (!('noteCards' in slide)) return slide;
+  const { noteCards: raw, ...rest } = slide;
+  const noteCards = parseNoteCards(raw);
+  return noteCards ? { ...rest, noteCards } : rest;
+}
+
+/** Parse a stored presentation blob. Null when absent or unreadable. */
+export function parseStoredPresentation(raw: unknown): StoredPresentation | null {
+  if (raw === null || raw === undefined) return null;
+  let value: unknown = raw;
+  if (typeof raw === 'string') {
+    if (raw.trim().length === 0) return null;
+    try {
+      value = JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  if (typeof value !== 'object' || value === null) return null;
+  const decks = (value as Partial<StoredPresentation>).decks;
+  if (!Array.isArray(decks)) return null;
+  const parsed: Deck[] = [];
+  for (const deck of decks) {
+    if (typeof deck !== 'object' || deck === null) continue;
+    const slides = (deck as Partial<Deck>).slides;
+    if (!Array.isArray(slides)) continue;
+    parsed.push({ slides: slides.filter(isSlide).map(withCleanNoteCards) });
+  }
+  return { decks: parsed };
+}
+
+/**
+ * The one deck v1 works with. The envelope holds an array so a second deck is
+ * not a migration, but every surface today reads and writes the first.
+ */
+export function firstDeck(stored: StoredPresentation | null): Deck {
+  return stored?.decks[0] ?? EMPTY_DECK;
+}
+
+/** The envelope to store for a single deck. Null when there is nothing to keep. */
+export function storePresentation(deck: Deck): StoredPresentation | null {
+  return deck.slides.length === 0 ? null : { decks: [deck] };
+}

@@ -10,7 +10,15 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // livediagram, the checked-in scope. An edition's .tsx suites (livehuddle's scene and figure checks) render with
 // react-dom/server, so node stays their environment too.
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
-const SCOPES = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle', 'all'];
+const SCOPES = [
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+  'livehuddle',
+  'liveknowledge',
+  'all',
+];
 
 const scoped = (scope: string) => [
   { find: '@/lib/scope.generated', replacement: here(`./lib/scopes/${scope}.ts`) },

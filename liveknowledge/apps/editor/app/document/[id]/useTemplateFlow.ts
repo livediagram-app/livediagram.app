@@ -1,0 +1,192 @@
+import type { Dispatch, SetStateAction } from 'react';
+import { track, titleCaseType } from '@/lib/telemetry';
+import { getTheme, recolourElementsForTheme } from '@/lib/themes';
+import { withBlankPageThemed, type TemplateKind } from '@liveknowledge/templates';
+import { templateTabName } from '@/lib/template-tab-name';
+import type { Participant } from '@/lib/identity';
+import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
+import {
+  clearTabExamples,
+  keepTabExamples,
+  markTemplateExamples,
+  type Tab,
+} from '@liveknowledge/document';
+import { announce } from '@liveworkspace/workbench/lib/announcer';
+
+type SetState<T> = Dispatch<SetStateAction<T>>;
+// Template and identity actions, lifted out of editor-page.tsx: choose a template from a start (mint the scaffold via
+// the lazily-imported builders, recolour to the tab's theme, apply canvas overrides), and answer the visitor name prompt
+// (docs/specs/007-editor/new-document-route.md). `confirmName` stays in the page (it's also wired into useShareLinks)
+// and is passed in.
+export function useTemplateFlow(opts: {
+  activeId: string;
+  // The live tab list, read only to check whether the tab a template is
+  // about to land on is genuinely empty (see chooseTemplate's backstop).
+  tabs: Tab[];
+  selfParticipant: Participant;
+  // The document's name, and naming it: a template picked on the first tab names a still-untitled
+  // document after itself.
+  documentName: string;
+  nameDocument: (name: string) => void;
+  getViewportCenter: () => { x: number; y: number };
+  commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
+  confirmName: () => void;
+  setSelectedId: SetState<string | null>;
+  setEditingId: SetState<string | null>;
+  setSelfParticipant: SetState<Participant>;
+  // The visitor name prompt (IdentityPrompt).
+  setIdentityPromptOpen: SetState<boolean>;
+  // Frames the tab once the template's elements have rendered (useTabEntryEffects).
+  requestFit: () => void;
+  // Puts down whatever tool is in hand, for Select: a template's content makes the tab one with content,
+  // and such a tab opens on Select.
+  putToolDown: () => void;
+  // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
+  markTabLoaded: (id: string) => void;
+}) {
+  const {
+    activeId,
+    tabs,
+    selfParticipant,
+    documentName,
+    nameDocument,
+    getViewportCenter,
+    commitTabs,
+    confirmName,
+    setSelectedId,
+    setEditingId,
+    setSelfParticipant,
+    setIdentityPromptOpen,
+    requestFit,
+    putToolDown,
+    markTabLoaded,
+  } = opts;
+
+  // The visitor name prompt: Join keeps the name typed (or the one they had), Cancel the one they had.
+  const confirmIdentity = (name: string) => {
+    if (name && name !== selfParticipant.name) setSelfParticipant((p) => ({ ...p, name }));
+    confirmName();
+    setIdentityPromptOpen(false);
+  };
+  const cancelIdentity = () => {
+    confirmName();
+    setIdentityPromptOpen(false);
+  };
+
+  const chooseTemplate = async (kind: TemplateKind) => {
+    // Applying a template REPLACES the tab's elements, and a start only shows on an empty tab, so a pick landing on a
+    // tab with work on it (a collaborator drew first) touches nothing rather than wipe the tab.
+    if ((tabs.find((t) => t.id === activeId)?.elements.length ?? 0) > 0) return;
+    // Telemetry (docs/specs/017-telemetry/telemetry.md): a template was applied; `type` is the kind.
+    track('Template', 'Used', titleCaseType(kind));
+    confirmName();
+    // Dynamic-import the heavy builders module only when the user
+    // actually picks a template. The ~1700 lines of build* code stays
+    // out of the editor's initial chunk; returning users opening an
+    // existing document never download it.
+    const {
+      templateTabs,
+      templateCanvasOverrides,
+      isDefaultDocumentName,
+      templateExampleText,
+      untitledNameForTemplate,
+    } = await import('@/lib/template-builders');
+    // The first tab's template names a document still on a default name ("Untitled Flowchart"); a
+    // name someone gave it stays.
+    if (tabs[0]?.id === activeId && isDefaultDocumentName(documentName)) {
+      const named = untitledNameForTemplate(kind);
+      if (named !== documentName) nameDocument(named);
+    }
+    const centre = getViewportCenter();
+    // A template may make several tabs: the first lands here.
+    const [first, ...rest] = templateTabs(kind);
+    const rawElements = first!.build(centre.x, centre.y);
+    // Painted in the tab's own theme: a start picks no theme, so the template lands in the colours the tab already
+    // wears (docs/specs/007-editor/start-diagramming.md "The panel"), and the tab's backdrop is left as it is. Sticky
+    // notes keep their own colour, as `addBoxed` does; multi-colour themes tint each branch a different hue
+    // (recolourElementsForTheme, docs/specs/011-theme/multicolour-themes.md), the same helper /new's create uses.
+    const theme = getTheme(tabs.find((t) => t.id === activeId)?.theme);
+    // Its example values are marked as they land (docs/specs/006-document/template-examples.md), so Clear Example
+    // Content can empty them and nothing a person writes.
+    const exampleText = templateExampleText(kind);
+    const elements = markTemplateExamples(
+      recolourElementsForTheme(rawElements, theme),
+      exampleText,
+    );
+    const overrides = templateCanvasOverrides(kind);
+    // The template's later tabs: built at the origin (a fresh tab frames itself), recoloured as the
+    // first, named by the template.
+    // Every tab's id in order.
+    const ids = [activeId, ...rest.map(() => crypto.randomUUID())];
+    const followers = rest.map((def, i) => {
+      const raw = def.build(0, 0);
+      return {
+        id: ids[i + 1]!,
+        name: def.name ?? '',
+        elements: markTemplateExamples(recolourElementsForTheme(raw, theme), exampleText),
+      };
+    });
+    // Re-checked inside the commit (landTemplateOnTab): the tab may have gained a collaborator's
+    // element while the builders loaded, and the scaffold must never replace it.
+    commitTabs((ts) =>
+      landTemplateOnTab(ts, activeId, (active) => {
+        const landed: Tab = {
+          ...active,
+          elements,
+          templateChosen: true,
+          // Any template but a blank one names the tab after itself: its own name for the tab, else the
+          // template's title. A blank one leaves the name as it was.
+          ...(first!.name
+            ? { name: first!.name }
+            : (() => {
+                const name = templateTabName(kind);
+                return name ? { name } : {};
+              })()),
+          ...overrides,
+        };
+        // A blank infographic's page starts on the theme's default background, as an added page.
+        const themed = withBlankPageThemed(landed, kind, theme);
+        return { landed: themed, followers: templateFollowerTabs(themed, followers, overrides) };
+      }),
+    );
+    for (const f of followers) markTabLoaded(f.id);
+    // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
+    // It also turns the tab into one with content, which opens on Select: a pen picked up for the empty tab is
+    // put down, so its style panel doesn't sit over the board and the first click selects.
+    if (elements.length > 0) {
+      requestFit();
+      putToolDown();
+    } else if (overrides.pages) {
+      // A blank of a page kind brings no elements but its own page (a 16:9 slide over the unchosen A4 page): framed
+      // as it lands, or a slide on a phone opens wider than the screen (pages-mode.md "Centred in the viewport").
+      requestFit();
+    }
+    // Auto-select when a template produces a single element so the user can
+    // immediately rename or edit it. Multi-element templates — and the now
+    // truly-empty Blank template (zero elements) — leave the selection cleared, as does a written template: its
+    // writing is what it is for, and its one chart (Work Tracker 1177) is part of it.
+    setSelectedId(elements.length === 1 && !overrides.articles ? elements[0]!.id : null);
+    setEditingId(null);
+  };
+
+  // A template's example content (docs/specs/006-document/template-examples.md): Clear Example Content empties the
+  // active tab's untouched example values, Keep It makes them the person's own. Each is one commit, one undo step.
+  const clearExampleContent = () => {
+    track('Template', 'Changed', 'ExampleCleared');
+    commitTabs((ts) => clearTabExamples(ts, activeId));
+    announce('Example content cleared');
+  };
+  const keepExampleContent = () => {
+    track('Template', 'Changed', 'ExampleKept');
+    commitTabs((ts) => keepTabExamples(ts, activeId));
+    announce('Example content kept as your own');
+  };
+
+  return {
+    chooseTemplate,
+    confirmIdentity,
+    cancelIdentity,
+    clearExampleContent,
+    keepExampleContent,
+  };
+}

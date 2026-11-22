@@ -51,6 +51,7 @@ export const DEV_ORIGINS = [
   'livedocuments.app',
   'livedesign.app',
   'livehuddle.app',
+  'liveknowledge.app',
   'liveworkspace.app',
 ]
   .flatMap((host) => [host, `*.${host}`])

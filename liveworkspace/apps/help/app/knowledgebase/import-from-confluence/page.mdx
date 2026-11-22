@@ -1,0 +1,78 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ImportSourcesScene } from '@/editions/liveknowledge/components/illustrations/import-export';
+
+export const metadata = helpMetadata({
+  title: 'Import From Confluence',
+  description:
+    "Bring a Confluence space into liveknowledge from its HTML export: pages keep the space's order and nesting, macros become quotes and code blocks.",
+  path: '/help/knowledgebase/import-from-confluence/',
+});
+
+<ArticleLayout path="knowledgebase/import-from-confluence" title="Import From Confluence" description="Bring a Confluence space's HTML export in as pages: what comes across, what changes and what is left out." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Moving a Confluence space? Export it as HTML, and liveknowledge reads the export as a page tree in the space's own order.
+
+## Export From Confluence
+
+<Step n={1}>
+  In Confluence, open the space and go to **Space Settings**, then **Export Space**.
+</Step>
+
+<Step n={2}>
+  Choose **HTML** and export. Confluence gives you a `.zip`. Keep it zipped.
+</Step>
+
+## Import It
+
+<Step n={1}>
+  In liveknowledge, press the Knowledgebase's name at the top of the sidebar and choose **Import**.
+</Step>
+
+<Step n={2}>
+  Choose **A Whole Knowledgebase**, then **Confluence**.
+</Step>
+
+<Step n={3}>
+  Drop the `.zip` on the drop area, or press **Choose a .zip**.
+</Step>
+
+<Step n={4}>
+  Review what was found, choose where it lands, and press the Import button, which counts the pages (such as **Import 320 Pages**). The review and
+  the choices are the same for every source: see [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/#import-a-folder).
+</Step>
+
+<Figure caption="Import, A Whole Knowledgebase: Confluence is one of the three sources.">
+  <ImportSourcesScene />
+</Figure>
+
+## What Comes Across
+
+| In Confluence                      | In liveknowledge                                                  |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| The space's pages and nesting      | Pages and subpages, in the order of the space's index             |
+| A page's title                     | Its first heading, else the file name without its number          |
+| Links between pages                | Page links                                                        |
+| Info, note and warning macros      | Quotes, with a bold first word                                    |
+| Code macros                        | Code blocks                                                       |
+| A user mention                     | The person's name, as plain text                                  |
+| Pictures in the export             | Pictures in the writing                                           |
+| Other attachments                  | Named at the foot of the page under **Attachments**               |
+| Any other macro                    | Its text                                                          |
+
+## Good to Know
+
+- The page tree comes from the export's index page. Where there is none, each page's breadcrumb is used.
+- An export with no HTML pages is refused: "This archive holds no HTML pages. Export the space as HTML and try again."
+- Nothing in the export is shown as HTML: it is read as text and rebuilt as pages.
+- Imported pages are Never Verified, owned by nobody.
+- The limits are the same for every source: see [Import From a Markdown Folder](/help/knowledgebase/import-a-markdown-folder/#limits).
+- A Confluence export is imported in the app only. The CLI's `import` refuses one.
+
+## Who Can Do What
+
+| Action                          | Editor | Participant | Viewer |
+| ------------------------------- | ------ | ----------- | ------ |
+| Import from Confluence          | Yes    | No          | No     |
+
+</ArticleLayout>

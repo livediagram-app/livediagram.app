@@ -81,6 +81,7 @@ describe('a tap on the logo', () => {
       'https://www.livedocuments.app',
       'https://www.livedesign.app',
       'https://www.livehuddle.app',
+      'https://www.liveknowledge.app',
     ]);
   });
 

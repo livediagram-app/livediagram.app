@@ -33,7 +33,13 @@ and the index's connections.
 | **Automation**  | Who a rule's changes are by, with the rule's name beside it                        | bot, system       |
 
 In copy the tool is **Automations**, a rule is a **rule**, and the item is called what its app calls it (plan,
-document, design, Space).
+document, design, Space, knowledgebase).
+
+**A tab is called what its app calls it too.** liveknowledge's interface never says "tab": a knowledgebase holds
+**pages** (owner, 2026-11-21: "the interface never says tab"). Every shared trigger, condition, step, value and line
+of the screen that names a tab reads "page" there ("Page Added", "Any Page", "Add a Page from a Template", "Page
+Name"), from the item's word alone (`knowledgebase`), and every other app keeps "tab". The words change, never the
+rule: the JSON a rule is saved as, and the `tab` field an agent writes, are the same in every app.
 
 ## Where rules live and run
 

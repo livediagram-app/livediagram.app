@@ -5,6 +5,7 @@
 // `@liveworkspace/automations/room`.
 export * from './types';
 export * from './names';
+export * from './tab-word';
 export * from './refs';
 export * from './kinds';
 export * from './define';

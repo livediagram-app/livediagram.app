@@ -13,7 +13,8 @@ export interface LocalClient {
     | 'liveplanner.app'
     | 'livedocuments.app'
     | 'livedesign.app'
-    | 'livehuddle.app';
+    | 'livehuddle.app'
+    | 'liveknowledge.app';
   clientId: string;
   clientSecret: string;
   // The app's router, its first port (AGENTS.md's port blocks): where the browser comes back to.
@@ -33,6 +34,7 @@ export const LOCAL_CLIENTS: readonly LocalClient[] = [
   local('livedocuments', 3300),
   local('livedesign', 3400),
   local('livehuddle', 3500),
+  local('liveknowledge', 3600),
 ];
 
 // A loopback http origin and nothing else: these become redirect URIs, so a typo must not widen them.

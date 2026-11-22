@@ -4,6 +4,7 @@
 // optional and a tab the item no longer has kept as "(No Longer Here)" until another is picked. Built on
 // step-panels/panel-parts.
 
+import { useTabWords } from '../tab-words';
 import type { ReactNode } from 'react';
 import { PanelField, PanelSelect } from '../../step-panels/panel-parts';
 import { goneLabel } from '../words';
@@ -28,8 +29,10 @@ export function TabSelect({
   invalid?: boolean;
 }) {
   const known = tabs.some((t) => t.id === value);
+  // The panels' fixed words, in the item's word for a tab: a knowledgebase's "Any Page".
+  const words = useTabWords();
   return (
-    <PanelField label={label} hint={hint}>
+    <PanelField label={words(label)} hint={typeof hint === 'string' ? words(hint) : hint}>
       {(id, hintId) => (
         <PanelSelect
           id={id}
@@ -38,9 +41,9 @@ export function TabSelect({
           aria-invalid={invalid || undefined}
           onChange={(e) => onChange(e.target.value)}
         >
-          {any ? <option value="">{any}</option> : null}
-          {!any && !value ? <option value="">Pick a tab</option> : null}
-          {value && !known ? <option value={value}>{goneLabel('tab')}</option> : null}
+          {any ? <option value="">{words(any)}</option> : null}
+          {!any && !value ? <option value="">{words('Pick a tab')}</option> : null}
+          {value && !known ? <option value={value}>{words(goneLabel('tab'))}</option> : null}
           {tabs.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}

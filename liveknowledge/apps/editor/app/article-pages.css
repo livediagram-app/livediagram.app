@@ -1,0 +1,705 @@
+/* The writing of an article page (docs/specs/007-editor/article-pages.md "Blocks", "Type",
+   "Article style"). One element per article, laid over its pages in columns, one column a page
+   (ArticleFlows): the browser breaks lines between pages and wraps text round floated zones. Every
+   value comes from the CSS variables ArticleFlows sets from the article's resolved style
+   (articleStyleVars), so a style change is a variable change. Sizes are canvas px: the writing zooms
+   with the canvas. */
+
+.article-flow {
+  position: absolute;
+  column-fill: auto;
+  font-family: var(--article-body-font);
+  font-size: var(--article-size);
+  line-height: var(--article-leading);
+  color: var(--article-ink);
+  caret-color: var(--article-accent);
+  /* The canvas turns iOS's callout off; selected writing gets it back (Copy, Paste). */
+  -webkit-touch-callout: default;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-variant-ligatures: none;
+  orphans: 2;
+  widows: 2;
+  outline: none;
+  cursor: text;
+  /* The space between columns is not the writing's: presses there reach the canvas. */
+  pointer-events: none;
+  --article-line: calc(var(--article-size) * var(--article-leading));
+}
+
+.article-flow > * {
+  pointer-events: auto;
+}
+
+.article-flow[data-readonly] {
+  cursor: default;
+}
+
+/* A drawing tool in hand: presses go through the writing to the canvas. */
+.article-flow[data-inert] > * {
+  pointer-events: none;
+}
+
+.article-flow ::selection {
+  background: color-mix(in srgb, var(--article-accent) 28%, transparent);
+}
+
+.article-flow .article-block {
+  margin: 0;
+  padding: 0;
+}
+
+/* Body text */
+.article-flow .article-body {
+  margin-bottom: calc(var(--article-para) * var(--article-line));
+}
+
+/* Title, subtitle, headings */
+.article-flow .article-title,
+.article-flow .article-h1,
+.article-flow .article-h2,
+.article-flow .article-h3 {
+  font-family: var(--article-heading-font);
+  color: var(--article-heading-color);
+  line-height: 1.25;
+  break-after: avoid;
+  break-inside: avoid;
+}
+.article-flow .article-title {
+  /* 40 px at the Medium text size, bold, tight tracking (docs/specs/030-knowledgebase/page-surface.md). */
+  font-size: calc(var(--article-size) * 40 / 16);
+  font-weight: 700;
+  margin-bottom: calc(0.5 * var(--article-line));
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  /* The page's name stays in the ink in every Knowledgebase Style; the headings under it take the accent. */
+  color: var(--article-ink);
+}
+.article-flow .article-subtitle {
+  font-size: calc(var(--article-size) * 20 / 16);
+  color: var(--article-muted);
+  margin-bottom: var(--article-line);
+}
+.article-flow .article-h1 {
+  font-size: calc(var(--article-size) * 28 / 16);
+  font-weight: 700;
+  margin-top: calc(1.2 * var(--article-line));
+  margin-bottom: calc(0.4 * var(--article-line));
+}
+.article-flow .article-h2 {
+  font-size: calc(var(--article-size) * 22 / 16);
+  font-weight: 650;
+  margin-top: var(--article-line);
+  margin-bottom: calc(0.3 * var(--article-line));
+}
+.article-flow .article-h3 {
+  font-size: calc(var(--article-size) * 18 / 16);
+  font-weight: 650;
+  margin-top: calc(0.8 * var(--article-line));
+  margin-bottom: calc(0.2 * var(--article-line));
+}
+.article-flow > .article-block:first-child {
+  margin-top: 0;
+}
+
+/* Lines under text */
+.article-flow[data-rules='title'] .article-title,
+.article-flow[data-rules='headings'] .article-title,
+.article-flow[data-rules='headings'] .article-h1,
+.article-flow[data-rules='headings'] .article-h2,
+.article-flow[data-rules='headings'] .article-h3 {
+  padding-bottom: 0.18em;
+  border-bottom: 1.5px solid var(--article-accent);
+}
+
+/* Quote */
+.article-flow .article-quote {
+  font-size: calc(var(--article-size) * 18 / 16);
+  font-style: italic;
+  margin: calc(0.5 * var(--article-line)) 0 calc(0.75 * var(--article-line));
+  padding-left: 16px;
+  border-left: 3px solid var(--article-accent);
+  color: var(--article-ink);
+}
+
+/* Alignment */
+.article-flow [data-align='center'] {
+  text-align: center;
+}
+.article-flow [data-align='right'] {
+  text-align: right;
+}
+.article-flow [data-align='justify'] {
+  text-align: justify;
+}
+
+/* Lists: a flat run of items, each indented by its level, its marker in the gutter before it. */
+.article-flow .article-list {
+  list-style: none;
+  position: relative;
+  padding-left: calc(28px * (var(--article-level) + 1));
+  margin-bottom: calc(0.25 * var(--article-line));
+}
+/* The last item of a run keeps a paragraph's space after it, so the writing after a list stands as clear of it as the
+   writing before it (article-pages.md "Blocks"). */
+.article-flow .article-list:has(+ .article-block:not(.article-list)) {
+  margin-bottom: calc(var(--article-para) * var(--article-line));
+}
+.article-flow .article-list::before {
+  position: absolute;
+  left: calc(28px * var(--article-level));
+  width: 22px;
+  text-align: right;
+  color: var(--article-accent);
+  font-variant-numeric: tabular-nums;
+  content: attr(data-marker);
+}
+.article-flow .article-list-todo::before {
+  content: '';
+  top: calc((var(--article-line) - 16px) / 2);
+  left: calc(28px * var(--article-level) + 4px);
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--article-accent);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+.article-flow .article-list-todo.article-done::before {
+  background: var(--article-accent);
+}
+.article-flow .article-list-todo.article-done::after {
+  content: '';
+  position: absolute;
+  top: calc((var(--article-line) - 16px) / 2 + 3px);
+  left: calc(28px * var(--article-level) + 9.5px);
+  width: 5px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.article-flow .article-done {
+  text-decoration: line-through;
+  color: var(--article-muted);
+}
+
+/* Code */
+.article-flow .article-code {
+  font-family: var(--article-mono-font);
+  font-size: calc(var(--article-size) * 14 / 16);
+  line-height: 1.55;
+  margin: calc(0.5 * var(--article-line)) 0 calc(0.75 * var(--article-line));
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--article-code-bg);
+  white-space: pre-wrap;
+}
+.article-flow code.article-inline-code {
+  font-family: var(--article-mono-font);
+  font-size: 0.88em;
+  padding: 0.1em 0.32em;
+  border-radius: 4px;
+  background: var(--article-code-bg);
+}
+
+/* Divider and page break */
+.article-flow .article-divider {
+  padding: calc(0.6 * var(--article-line)) 0;
+}
+.article-flow .article-divider hr {
+  border: 0;
+  border-top: 1px solid var(--article-rule);
+  margin: 0;
+}
+.article-flow .article-page-break {
+  break-after: column;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--article-line);
+  color: var(--article-muted);
+  font: 500 11px/1 var(--article-body-font);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  user-select: none;
+}
+.article-flow .article-page-break::before,
+.article-flow .article-page-break::after {
+  content: '';
+  flex: 1;
+  border-top: 1px dashed var(--article-rule);
+}
+.article-flow[data-readonly] .article-page-break span,
+.article-flow[data-readonly] .article-page-break::before,
+.article-flow[data-readonly] .article-page-break::after {
+  visibility: hidden;
+}
+
+/* Zones: a box the writing leaves room for; the elements in it are drawn by the canvas above. */
+.article-flow .article-zone {
+  display: block;
+  box-sizing: border-box;
+  break-inside: avoid;
+  margin-top: calc(0.4 * var(--article-line));
+  margin-bottom: calc(0.6 * var(--article-line));
+  border-radius: 6px;
+  outline: 1px dashed transparent;
+  outline-offset: 2px;
+  transition: outline-color 120ms ease;
+}
+.article-flow .article-zone-inline.article-zone-align-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+.article-flow .article-zone-inline.article-zone-align-right {
+  margin-left: auto;
+}
+.article-flow .article-zone-left {
+  float: left;
+  margin-right: 14px;
+}
+.article-flow .article-zone-right {
+  float: right;
+  margin-left: 14px;
+}
+.article-flow:not([data-readonly]) .article-zone:hover {
+  outline-color: color-mix(in srgb, var(--article-accent) 45%, transparent);
+}
+.article-flow .article-zone.article-zone-lifted {
+  opacity: 0.35;
+}
+.article-flow .article-zone.ProseMirror-selectednode {
+  outline: 2px solid var(--article-accent);
+}
+.article-flow .article-zone[data-zone='drawing'] {
+  background: color-mix(in srgb, var(--article-accent) 4%, transparent);
+}
+.article-flow[data-readonly] .article-zone[data-zone='drawing'] {
+  background: none;
+}
+/* Reading: a zone still selected as edit mode ended shows no outline. */
+.article-flow[data-readonly] .article-zone.ProseMirror-selectednode {
+  outline-color: transparent;
+}
+
+/* Inline formats */
+.article-flow .article-link {
+  color: var(--article-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.article-flow .article-color {
+  color: var(--article-text-color);
+}
+.article-flow mark.article-highlight {
+  background: var(--article-highlight);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+  box-decoration-break: clone;
+}
+
+/* Placeholders on empty blocks, for someone writing. A list item's ::before is its marker (above), so
+   its placeholder is the ::after instead, set at the start of the text column: the bullet, number or
+   box stays, and the word is whole after it (docs/specs/007-editor/article-pages.md "Blocks"). */
+.article-flow .article-empty:not(.article-list)::before,
+.article-flow .article-list.article-empty:not(.article-done)::after {
+  content: attr(data-placeholder);
+  color: var(--article-muted);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.article-flow .article-empty:not(.article-list)::before {
+  float: left;
+  height: 0;
+}
+.article-flow .article-list.article-empty:not(.article-done)::after {
+  position: absolute;
+  top: 0;
+  left: calc(28px * (var(--article-level) + 1));
+  white-space: nowrap;
+}
+
+/* Another person's caret (docs/specs/007-editor/article-pages.md "Collaboration", article-peers.ts):
+   a bar in their colour, taking no room; a few px either side of it answer a hover with their
+   name. */
+.article-flow .article-peer-caret {
+  position: relative;
+  margin-left: -1px;
+  margin-right: -5px;
+  padding-right: 4px;
+  border-left: 2px solid var(--article-peer);
+}
+/* The block a collaborator is in: a thin bar in the margin beside it, in their colour, drawn as a
+   shadow so it moves nothing. */
+.article-flow > [data-peer] {
+  box-shadow: -6px 0 0 -3px var(--article-peer-bar);
+}
+.article-flow .article-peer-caret::after {
+  content: attr(data-name);
+  position: absolute;
+  bottom: 100%;
+  left: -2px;
+  padding: 1px 4px;
+  border-radius: 3px 3px 3px 0;
+  background: var(--article-peer);
+  color: white;
+  font: 600 10px/1.3 var(--article-body-font);
+  font-style: normal;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.article-flow .article-peer-caret:hover::after,
+.article-flow .article-peer-caret[data-fresh]::after {
+  opacity: 1;
+}
+
+/* A paragraph (or table cell) another person holds while writing (docs/specs/007-editor/article-pages.md "Holding
+   a paragraph", article-holds.ts): outlined in their colour, drawn as an outline so it moves nothing, with a chip
+   above its top left corner naming them. The chip is a zero-width span at the block's start, like a caret. */
+.article-flow [data-held] {
+  outline: 2px solid var(--article-held);
+  outline-offset: 3px;
+  border-radius: 2px;
+  transition: outline-color 150ms ease;
+}
+/* The writer's name chip hangs off the held block itself, so it never covers the writing around it: a top-level
+   block's chip sits in the page's left margin beside its first line, joined to the outline by a short tick and cut
+   with an ellipsis to the margin (the page clips anything past its edge); a cell's chip sits on the cell's top right
+   corner, over the padding (6 px) either side of the rule. */
+.article-flow > [data-held],
+.article-flow td[data-held],
+.article-flow th[data-held] {
+  position: relative;
+}
+.article-flow td[data-held],
+.article-flow th[data-held] {
+  outline-offset: -2px;
+}
+.article-flow .article-held-chip {
+  display: inline;
+  user-select: none;
+  pointer-events: none;
+}
+.article-flow .article-held-chip::after,
+.article-flow .article-held-chip::before {
+  position: absolute;
+  background: var(--article-held);
+}
+.article-flow .article-held-chip::after {
+  content: attr(data-name);
+  top: 2px;
+  right: calc(100% + 12px);
+  max-width: calc(var(--article-margin, 48px) - 16px);
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: white;
+  font: 600 10px/14px var(--article-body-font);
+  font-style: normal;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  text-align: left;
+  text-indent: 0;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.18);
+}
+.article-flow .article-held-chip::before {
+  content: '';
+  top: 9px;
+  right: calc(100% + 5px);
+  width: 7px;
+  height: 2px;
+}
+.article-flow td[data-held] .article-held-chip::after,
+.article-flow th[data-held] .article-held-chip::after {
+  top: 0;
+  right: 6px;
+  max-width: calc(100% - 12px);
+  padding: 0 5px;
+  font-size: 9px;
+  line-height: 12px;
+  transform: translateY(-50%);
+}
+.article-flow td[data-held] .article-held-chip::before,
+.article-flow th[data-held] .article-held-chip::before {
+  content: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-flow .article-zone,
+  .article-flow .article-list-todo::before,
+  .article-flow .article-peer-caret::after,
+  .article-flow [data-held] {
+    transition: none;
+  }
+}
+
+/* Margin notes (docs/specs/007-editor/article-pages.md "Comments and actions"): the text a comment
+   or an action is on, tinted in its note's colour (indigo, emerald; never the amber chrome), tied
+   to its marker in the margin. The underline's style parts them without colour: solid for a
+   comment, dashed for an action. */
+.article-flow .article-note {
+  border-bottom: 2px solid rgb(99 102 241 / 0.7);
+  /* Translucent, so it reads on a dark page as on paper. */
+  background: rgb(129 140 248 / 0.22);
+}
+.article-flow .article-note-action {
+  border-bottom-style: dashed;
+  border-bottom-color: rgb(16 185 129 / 0.7);
+  background: rgb(52 211 153 / 0.22);
+}
+
+/* A marker's press area on a touch screen: 44 x 38 at full size, half the 6 px stacking gap above
+   and below, so stacked markers never take each other's presses. */
+@media (pointer: coarse) {
+  [data-article-note]::before {
+    content: '';
+    position: absolute;
+    inset: -3px -6px;
+  }
+}
+
+/* Never presented: while a deck runs the markers hide and the tint goes. */
+html[data-presenting] [data-article-note] {
+  visibility: hidden;
+}
+html[data-presenting] .article-flow .article-note {
+  background: none;
+  border-bottom-color: transparent;
+}
+
+/* On a phone the page toolbar takes the Toolbar strip's place at the top of the canvas
+   (docs/specs/007-editor/article-pages.md "On a phone"): the strip stands aside while it shows.
+   The attribute is TOOLBAR_TOP_ATTR (page-toolbar-placement.ts). */
+:root[data-article-toolbar-top] [data-toolbar-palette] {
+  visibility: hidden;
+}
+
+/* The Find bar's matches (docs/specs/007-editor/find-and-replace.md "Highlights", article-find-plugin.ts): a soft
+   find yellow under every match, a strong orange with an outline under the one in hand, slate under one this person
+   may not replace. Background only, so the text's own ink and marks are untouched on a light or a dark page. */
+.article-flow .find-match {
+  background-color: rgb(253 224 71 / 0.45);
+  border-radius: 2px;
+}
+.article-flow .find-match-current {
+  background-color: rgb(251 146 60 / 0.7);
+  border-radius: 2px;
+  outline: 1px solid #ea580c;
+}
+.article-flow .find-match-held {
+  background-color: rgb(148 163 184 / 0.35);
+  border-radius: 2px;
+}
+
+/* Footnotes (docs/specs/007-editor/article-pages.md "Footnotes"): a reference's raised number, the break that ends
+   a page's text above its notes, and the notes at the page's foot (article-footnote-notes.ts), laid beside the
+   writing in canvas space with its variables. */
+.article-flow .article-footnote-ref {
+  font-size: 0.68em;
+  font-weight: 600;
+  line-height: 0;
+  vertical-align: super;
+  padding: 0 0.06em;
+  color: var(--article-accent);
+  cursor: pointer;
+}
+/* ProseMirror puts a zero-width image after an uneditable inline (a reference) that ends a block; preflight makes
+   every img a block, which opened an empty line under a paragraph ending in a footnote. */
+.article-flow img.ProseMirror-separator {
+  display: inline;
+}
+.article-flow .article-footnote-ref.ProseMirror-selectednode {
+  border-radius: 2px;
+  outline: 2px solid color-mix(in srgb, var(--article-accent) 45%, transparent);
+}
+.article-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.article-flow .article-foot-break {
+  display: block;
+  height: 0;
+  break-before: column;
+}
+.article-flow .article-foot-break-before {
+  break-before: column;
+}
+/* A repeated header row already starts the page a row moves to above the notes: the row's own break would leave the
+   copy alone on a page. */
+.article-flow .article-table-repeat + .article-foot-break-before {
+  break-before: auto;
+}
+.article-footnotes-host {
+  display: contents;
+  --article-line: calc(var(--article-size) * var(--article-leading));
+}
+.article-footnotes {
+  position: absolute;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding-top: calc(0.5 * var(--article-line));
+  transform: translateY(-100%);
+  font-family: var(--article-body-font);
+  font-size: calc(var(--article-size) * 13 / 16);
+  line-height: var(--article-leading);
+  color: var(--article-muted);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+.article-footnotes-probe {
+  left: -100000px;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.article-footnotes-rule {
+  width: 33.333%;
+  margin: 0 0 0.4em;
+  border: 0;
+  border-top: 1px solid var(--article-rule);
+}
+.article-footnotes-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.article-footnote {
+  display: flex;
+  gap: 0.45em;
+  padding-bottom: 0.2em;
+}
+.article-footnote-n {
+  flex: none;
+  min-width: 1.1em;
+  font-weight: 600;
+}
+.article-footnote-text {
+  flex: 1;
+  min-width: 0;
+  border-radius: 2px;
+  outline: none;
+  cursor: text;
+}
+.article-footnote-text[contenteditable='false'] {
+  cursor: default;
+}
+.article-footnote-text:not([contenteditable='false']):empty::before {
+  content: attr(data-placeholder);
+  opacity: 0.6;
+}
+.article-footnote-text:focus {
+  background: color-mix(in srgb, var(--article-accent) 8%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--article-accent) 8%, transparent);
+}
+/* A note's Remove button (article-footnote-notes.ts): holds its place always, so a note's height never changes with
+   it, and is seen by a writer on hover or with the caret in the note. */
+.article-footnote-remove {
+  flex: none;
+  align-self: flex-start;
+  box-sizing: border-box;
+  width: 1.35em;
+  height: 1.35em;
+  margin-top: calc((var(--article-leading) - 1.35) * 0.5em);
+  padding: 0.22em;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--article-muted);
+  cursor: pointer;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.article-footnotes[data-editable] .article-footnote:hover .article-footnote-remove,
+.article-footnotes[data-editable] .article-footnote:focus-within .article-footnote-remove {
+  visibility: visible;
+  opacity: 1;
+}
+.article-footnote-remove:hover {
+  background: color-mix(in srgb, var(--article-ink) 8%, transparent);
+  color: var(--article-ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .article-footnote-remove {
+    transition: none;
+  }
+}
+
+/* A knowledgebase page's slots in its writing (lib/knowledge/page-slots-plugin.ts): the meta row under the title
+   and Linked From at the foot. Their own type, whatever the article's look; never selected with the writing. */
+.article-flow .article-page-slot {
+  user-select: none;
+  cursor: default;
+}
+.article-flow .article-page-slot-meta {
+  margin: 0.5rem 0 1.25rem;
+  min-height: 1.75rem;
+}
+/* A meta row with nothing to say is not drawn (verification.md "The meta row"), and its slot takes no room either, so
+   a page never verified has its writing right under the title. */
+.article-flow .article-page-slot-meta:not(:has([data-page-meta]:not(.hidden))) {
+  margin: 0;
+  min-height: 0;
+}
+/* A continuous page's notes sit after the writing (lib/article/article-footnote-layout.ts continuousNotes): the foot
+   keeps their room above it, so Linked From and the comments start under the notes, never over them. */
+.article-flow .article-page-slot-foot {
+  margin-top: var(--article-notes-room, 0px);
+}
+.article-flow .article-page-slot-foot:not(:empty) {
+  margin-top: calc(3rem + var(--article-notes-room, 0px));
+}
+/* The page's icon to the left of its Title (page-surface.md "The page icon"): 48 px of the page's, floated so the
+   Title starts beside it on its first line and a long one wraps beside it; the meta row clears it. A page with none
+   has an empty slot, which takes no room. */
+.article-flow .article-page-slot-head:not(:empty) {
+  display: flex;
+  float: left;
+  align-items: center;
+  margin: 0 0.75rem 0 0;
+  min-height: 1lh;
+  line-height: 1;
+}
+.article-flow .article-page-slot-meta {
+  clear: left;
+}
+
+/* A page link (docs/specs/030-knowledgebase/links-and-embeds.md "Page links"). Its stored words take no room: what
+   shows is the page's current title, written as a rule a page by lib/knowledge/page-link-titles.ts. A link no rule
+   names goes to a page that is gone: struck through, "Deleted Page", and inert. */
+.article-flow .article-page-link {
+  color: inherit;
+  opacity: 0.65;
+  text-decoration: line-through;
+  cursor: default;
+}
+.article-flow .article-page-link::before {
+  content: 'Deleted Page';
+}
+.article-flow .article-page-link-text {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* A block a search result opened at (lib/knowledge/go-to-block.ts): tinted while the script holds the class on it
+   (1.6 s), then as it was. No animation of its own, so it is the same under reduced motion. */
+.article-flow .article-search-hit {
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--article-accent) 18%, transparent);
+}

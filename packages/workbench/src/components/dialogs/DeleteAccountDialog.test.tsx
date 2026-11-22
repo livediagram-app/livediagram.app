@@ -81,7 +81,7 @@ describe('DeleteAccountDialog', () => {
     // Every app's work goes, so every app is named: the five that share the account today.
     expect(
       screen.getByText(
-        /every canvas, plan, document, design and space in livediagram, liveplanner, livedocuments, livedesign and livehuddle/,
+        /every canvas, plan, document, design, space and knowledgebase in livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge/,
       ),
     ).toBeTruthy();
   });

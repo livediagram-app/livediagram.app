@@ -78,6 +78,12 @@ export function tabShapeClass({ active, editing, dragging = false }: TabShapeSta
   return `${BASE} ${active ? ACTIVE : INACTIVE} ${pad}${dragging ? ' opacity-50' : ''}`;
 }
 
+// A fixed tab with no menu, close or rename (liveknowledge's three views in its footer): the same standing shape,
+// padded evenly, since no menu button follows its name.
+export function fixedTabShapeClass(active: boolean): string {
+  return `${BASE} ${active ? ACTIVE : INACTIVE} px-3.5`;
+}
+
 // The tab's name: one line, truncated past 14rem, trimmed to its cap band so it centres on its letters.
 export const TAB_NAME_CLASS = 'text-optical-line max-w-[14rem] truncate';
 
