@@ -3,6 +3,7 @@
 // Pure: the editor commits it.
 import { SHAPE_DEFAULT_SIZE, createShape, type Element, type Tab } from '@liveplanner/project';
 import {
+  PRESET_STATUS_NAMES,
   freshSetup,
   planBoardHeightFor,
   planBoardWidthFor,
@@ -22,7 +23,7 @@ export function actionsBoardSetup(
       columns: [
         statusColumn('new', 'New'),
         statusColumn('done', 'Done'),
-        statusColumn('wont-do', 'Won’t Do'),
+        statusColumn('wont-do', PRESET_STATUS_NAMES['wont-do']!),
       ],
       doneColumnId: 'done',
       swimlaneBy: 'none',

@@ -5,6 +5,7 @@ import type { CardSearchFilter } from './card-search';
 import type { Item } from './item';
 import { itemAssignee, itemStatus } from './item';
 import { statusTitleCase } from './status-title-case';
+import { presetStatusName } from './preset-status-names';
 import type { IsDoneStatus } from './calculated-fields';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { PRIORITIES, PRIORITY_LABELS, isPriority } from './fields';
@@ -39,7 +40,10 @@ export function namedStatus(item: Item, names?: ReadonlyMap<string, string>): st
 export function statusLabel(status: string, names?: ReadonlyMap<string, string>): string {
   const named = names?.get(status);
   if (named) return named;
-  // An unnamed status reads as its id in Title Case ("in-review~ab12" is "In Review").
+  // An unnamed status keeps the name a preset spelled for it ("wont-fix~ab12" is "Won’t Fix"), else reads as its id in
+  // Title Case ("in-review~ab12" is "In Review").
+  const preset = presetStatusName(status);
+  if (preset) return preset;
   const words = statusTitleCase(status.split('~')[0]!.replace(/[-_]+/g, ' '));
   return words || status;
 }

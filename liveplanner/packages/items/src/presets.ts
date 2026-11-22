@@ -2,6 +2,7 @@
 // (docs/specs/026-plan/plan-mode.md "The palette", "Templates").
 
 import { statusNamed } from './status-names';
+import { PRESET_STATUS_NAMES } from './preset-status-names';
 import { settleDoneColumns } from './done-columns';
 import type { CardField, PlanBoardSetup, PlanColumn } from './board';
 
@@ -117,7 +118,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
         statusColumn('confirmed', 'Confirmed'),
         statusColumn('fixing', 'Fixing', { wipLimit: 4 }),
         statusColumn('fixed', 'Fixed', { done: true }),
-        statusColumn('wont-fix', 'Won’t Fix', { done: true }),
+        statusColumn('wont-fix', PRESET_STATUS_NAMES['wont-fix']!, { done: true }),
       ],
       doneColumnId: 'fixed',
       swimlaneBy: 'priority',

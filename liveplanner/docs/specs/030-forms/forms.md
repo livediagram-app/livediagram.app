@@ -368,7 +368,7 @@ What a Response Makes, Set Automatically) stays closed until opened.
   is a {Type} state. Add one to the board, or choose another card type."; no second line beside the empty chips), and
   **Problems with this Form** lists it.
   - **Add a Board for {Type}** (and the connect box's Cards on a Board) for a type with its own statuses makes the responses board from them: one column per status, in
-    the type's order, each named (and coloured) as the project's boards name it, the board taking that type alone. A
+    the type's order, each named (and coloured) as the project's boards name it (a status no board names keeps its preset column's name, "Won't Fix", never "Wont Fix"), the board taking that type alone. A
     type without its own list (a legacy one) gets New, In Progress and Done, as before, and takes that type alone too.
     A form starter's new board (its own columns) takes the form's type alone as well. A responses board never names the
     Kanban board's Task and Action:
