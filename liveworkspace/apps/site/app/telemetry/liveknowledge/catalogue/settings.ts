@@ -197,6 +197,13 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
+      'NotifyWatchDigestOn',
+      'NotifyWatchDigestOff',
+      'Daily Digest of Watched Pages',
+      'The once-a-day email of what changed on the pages you watch. Off until turned on.',
+    ),
+    toggle(
+      'UI',
       'NotifyTipsOn',
       'NotifyTipsOff',
       'Tips and Check-Ins',

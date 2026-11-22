@@ -264,11 +264,28 @@ export const HEADINGS_ADDED_FROM_HEALTH = chart(
   { types: ['HealthAddHeading'] },
 );
 
+// Watching (watching.md): a page or a section watched from its menu or the Page Info rail, and a watch stopped.
+export const PAGES_WATCHED = chart(
+  'UI',
+  'Toggled',
+  'Pages Watched',
+  'A page, or a section with every page under it, watched to hear when it changes.',
+  { types: ['WatchPageOn', 'WatchSectionOn'] },
+);
+
+export const WATCHES_STOPPED = chart(
+  'UI',
+  'Toggled',
+  'Watches Stopped',
+  'A watch on a page or a section stopped.',
+  { types: ['WatchPageOff', 'WatchSectionOff'], rising: 'neutral' },
+);
+
 export const VERIFICATION: MetricStack = {
   stack: true,
   title: 'Verification',
   blurb:
-    'Pages checked and marked right, from the page or from Home, how long a knowledgebase lets a page stay verified, and approvals asked for, taken back, given and refused. Headed by the pages verified.',
+    'Pages checked and marked right, from the page or from Home, how long a knowledgebase lets a page stay verified, approvals asked for, taken back, given and refused, and pages watched for changes. Headed by the pages verified.',
   members: [
     PAGES_VERIFIED,
     STILL_RIGHT_FROM_HOME,
@@ -278,6 +295,8 @@ export const VERIFICATION: MetricStack = {
     PAGES_APPROVED,
     PAGES_REJECTED,
     HEADINGS_ADDED_FROM_HEALTH,
+    PAGES_WATCHED,
+    WATCHES_STOPPED,
   ],
   headline: [PAGES_VERIFIED, STILL_RIGHT_FROM_HOME],
 };

@@ -57,7 +57,7 @@ export function PageWatchControl({
               data-watchers=""
               className="flex h-6 min-w-6 cursor-default items-center justify-center rounded-full bg-slate-100 px-1.5 text-xs font-semibold tabular-nums text-slate-600 focus-visible:outline-2 focus-visible:outline-brand-600 dark:bg-slate-800 dark:text-slate-300"
             >
-              {watch.watchers.toLocaleString('en')}
+              <span className="text-optical-centre">{watch.watchers.toLocaleString('en')}</span>
             </span>
           </HoverCard>
         ) : null}

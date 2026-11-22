@@ -330,6 +330,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/knowledge/approval/usePageApproval.ts Tab·Changed': {
     values: ['RejectedWithNote'],
   },
+  // A watch started or stopped on a page or a section (docs/specs/030-knowledgebase/watching.md).
+  'apps/editor/components/page-watch/usePageWatch.ts UI·Toggled': {
+    values: ['WatchPageOn', 'WatchPageOff', 'WatchSectionOn', 'WatchSectionOff'],
+  },
   'apps/editor/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
