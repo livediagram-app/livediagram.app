@@ -57,7 +57,7 @@ export function SentChip({
         <span className="shrink-0" aria-hidden>
           {done ? <DoneGlyph /> : <CardGlyph />}
         </span>
-        <span className="min-w-0 truncate">{words}</span>
+        <span className="min-w-0 truncate text-optical-centre">{words}</span>
         {more > 0 ? <span className="shrink-0 tabular-nums opacity-70">+{more}</span> : null}
       </button>
     </HoverCard>

@@ -1,4 +1,6 @@
 'use client';
+import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
+import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 
 import dynamic from 'next/dynamic';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
@@ -370,6 +372,20 @@ export function EditorView() {
     <SpaceAutomationsHost {...automations}>
       <SnapshotsDoorProvider door={snapshotsDoor}>
         <SelectionStoreProvider store={ctx.selectionStore}>
+          {/* Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): the chips' sends and the picker. */}
+          <SendToPlanHost
+            app="livehuddle"
+            itemId={ctx.authLoaded && hydrated ? documentId : null}
+            tabId={activeId}
+            title={spaceName}
+            share={sessionShareCode ? { code: sessionShareCode } : null}
+            enabled={canSendToPlan({
+              signedIn: !!accountUserId,
+              offline: isOffline,
+              embed: !appChrome,
+              community: sessionCommunity !== null,
+            })}
+          />
           <ViewportStoreProvider store={ctx.viewport}>
             <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
               {/* The active tab's finish (docs/specs/008-canvas/finish.md), for the menus and panels; each

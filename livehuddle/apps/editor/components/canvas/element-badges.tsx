@@ -13,6 +13,10 @@ import { initialsOf } from '@/lib/identity';
 import { HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import type { RemoteSelector } from '@/lib/presence-rows';
+import {
+  SENT_CARD_GLYPHS,
+  useSentCardIndicator,
+} from '@liveworkspace/workbench/components/send-to-plan/sent-card-indicator';
 
 // Below this canvas zoom the on-element adornments (badge pill,
 // badge, remote-selector avatars) disappear entirely.
@@ -67,6 +71,38 @@ export function RemoteSelectorsStrip({ selectors }: { selectors: RemoteSelector[
           </HoverCard>
         </div>
       ))}
+    </div>
+  );
+}
+
+// A sticky's sent card (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"; docs/specs/013-workspace/
+// send-to-plan.md): a disc at its top right corner, the plan glyph or a tick once the card is done, opening the card in
+// liveplanner. Never takes the canvas's selection or drag.
+export function SentCardBadge({ elementId }: { elementId: string }) {
+  const zoom = useCanvasZoom();
+  const card = useSentCardIndicator(elementId);
+  if (!card || zoom < ADORNMENT_MIN_ZOOM) return null;
+  const Glyph = SENT_CARD_GLYPHS[card.done ? 'card-done' : 'card'];
+  return (
+    <div className="absolute -right-2 -top-2" data-sent-card="">
+      <HoverCard title={card.title} description={`${card.where}. Opens in liveplanner.`}>
+        <button
+          type="button"
+          aria-label={`Open the card “${card.title}”${card.done ? ', done' : ''}, in liveplanner`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            card.onOpen();
+          }}
+          className={`flex size-6 cursor-pointer items-center justify-center rounded-full border shadow-sm transition ${
+            card.done
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-900 dark:text-emerald-200'
+              : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+          }`}
+        >
+          <Glyph size={13} />
+        </button>
+      </HoverCard>
     </div>
   );
 }

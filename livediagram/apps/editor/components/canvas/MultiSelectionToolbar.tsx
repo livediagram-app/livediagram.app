@@ -1,4 +1,5 @@
 import type { Element } from '@livediagram/document';
+import { SendToPlanButton } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanButton';
 import {
   DuplicateIcon,
   EllipsisIcon,
@@ -111,6 +112,7 @@ export function MultiSelectionToolbar({
           decide whether these elements can still be touched, and locking is
           what makes the Delete beside it refuse. A divider between them read
           as Lock belonging with Export, which it does not. */}
+      <SendToPlanButton elements={selectedElements} className={TOOLBAR_BTN} />
       <HoverCard title="Export" description="Export just these elements.">
         <button
           type="button"

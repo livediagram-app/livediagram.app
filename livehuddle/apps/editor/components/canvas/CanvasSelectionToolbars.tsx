@@ -1,4 +1,8 @@
 import { useCallback, useMemo } from 'react';
+import {
+  canSendElements,
+  sendElements,
+} from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import {
@@ -152,6 +156,10 @@ export function CanvasSelectionToolbars({
             // band. The element menu's Bring to Front moves LAYERS; these
             // are the missing nudge for two things on the same one.
             onBringToFront={editable ? props.onBringSelectedToFront : undefined}
+            // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a sticky's way in (livehuddle has no element menu row).
+            onSendToPlan={
+              selected && canSendElements([selected]) ? () => sendElements([selected]) : undefined
+            }
             onSendToBack={editable ? props.onSendSelectedToBack : undefined}
             onDelete={readOnly ? undefined : onDeleteSelected}
             onOpenContextMenu={

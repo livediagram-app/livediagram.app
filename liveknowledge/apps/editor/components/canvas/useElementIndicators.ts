@@ -20,7 +20,9 @@ import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inli
 import {
   buildIndicatorItems,
   type IndicatorItem,
+  type SentCardIndicator,
 } from '@liveworkspace/workbench/components/canvas/indicator-items';
+import { useSentCardIndicator } from '@liveworkspace/workbench/components/send-to-plan/sent-card-indicator';
 import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
@@ -33,6 +35,8 @@ export function elementIndicatorItems(
   // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md): no
   // comment indicator.
   showComments = true,
+  // The card Send to Plan made from the element (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
+  card?: SentCardIndicator,
 ): IndicatorItem[] {
   // A margin note shows its count and action on its own face.
   if (element.type === 'article-note') return [];
@@ -51,6 +55,7 @@ export function elementIndicatorItems(
           color: presenceColourOf(assigneeName, assignee.color),
         }
       : undefined,
+    card,
     comments: {
       count: showComments ? activeCommentCount(element.commentThread) : 0,
       onOpen: () => onOpenComments(element.id),
@@ -73,7 +78,12 @@ export function useElementIndicators(
   // The element's drawn corner radius.
   cornerPx: number,
 ): { items: IndicatorItem[]; layout: IndicatorLayout | null; cornerPx: number } {
-  const items = elementIndicatorItems(element, handlers, useCommentBadges());
+  const items = elementIndicatorItems(
+    element,
+    handlers,
+    useCommentBadges(),
+    useSentCardIndicator(element.id),
+  );
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A circle or a pill is fully round however its corner preset reads.
   const indicatorCornerPx = shape === 'circle' || shape === 'stadium' ? Infinity : cornerPx;
