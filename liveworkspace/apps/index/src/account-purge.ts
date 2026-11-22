@@ -240,6 +240,19 @@ function personalStatements(db: Db, person: string): (() => D1PreparedStatement)
     byPerson('access_request_tries'),
     byPerson('placement_defaults'),
     byPerson('collab_form_reads'),
+    // The updates on watched pages told to them (updates.ts), and their name on the updates they made.
+    byPerson('item_update_people'),
+    () =>
+      db
+        .prepare(
+          `UPDATE item_updates SET actors = (
+             SELECT json_group_array(CASE WHEN json_extract(value, '$.id') = ?1
+               THEN json_object('id', ?2, 'name', 'Someone') ELSE json(value) END)
+             FROM json_each(item_updates.actors))
+           WHERE rowid IN (SELECT rowid FROM item_updates WHERE EXISTS (
+             SELECT 1 FROM json_each(item_updates.actors) WHERE json_extract(value, '$.id') = ?1) LIMIT ?3)`,
+        )
+        .bind(person, ANONYMISED_PERSON, CHUNK),
     // The guests merged into them (person-aliases.ts): with the account gone, no grant names their keys again.
     byPerson('person_aliases'),
     // Their Drive mirror's flag (liveworkspace/docs/specs/005-drive/drive.md): accounts tells the service itself.

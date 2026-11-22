@@ -372,10 +372,13 @@ describe('createIndexAppClient', () => {
     });
     await app.pushSummary('i1', { elements: 3 }, 1000);
     await app.pushCollab('i1', 'tab 1', { threads: [], actions: [] });
+    await app.pushUpdates('i1', []);
     expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
       'PUT http://localhost:8793/api/index/app/items/i1/summary',
       'PUT http://localhost:8793/api/index/app/items/i1/collab/tab%201',
+      'PUT http://localhost:8793/api/index/app/items/i1/updates',
     ]);
+    expect(seen[2]!.body).toEqual({ updates: [] });
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer k');
     expect(seen[0]!.headers.get('X-Index-App')).toBe('liveplanner');
     expect(seen[0]!.body).toEqual({ summary: { elements: 3 }, updatedAt: 1000 });

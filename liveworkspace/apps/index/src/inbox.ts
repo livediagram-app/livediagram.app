@@ -1,8 +1,8 @@
 // The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards
 // assigned to or by me, unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 // mentioned, forms with responses I haven't seen on items I own or reach through a team, limited to items I can
-// reach, open access requests on items I manage, and my own requests granted lately (`shares`, inbox-notices.md). Five
-// queries, each starting from an index on the person.
+// reach, open access requests on items I manage, my own requests granted lately (`shares`, inbox-notices.md), and
+// updates on pages I watch (updates.ts). Six queries, each starting from an index on the person.
 
 import {
   COLLAB_CARDS_TAB,
@@ -25,16 +25,23 @@ import { parseLimit } from './codec';
 import type { PersonContext } from './context';
 import { badRequest, json } from './http';
 import { LIVE_LINK } from './rows';
+import { inboxUpdateOf, updatesQuery, type UpdateRow } from './updates';
 
 // Reached as owner, through a scope, or through a live link the person opened, on the tab that link opens: a link
 // scoped to one tab reaches that tab's threads and actions alone, as it opens that tab alone, and the cards on that
 // tab's boards (pushed under COLLAB_CARDS_TAB, each naming its board's tab). `row` is the thread's or action's alias.
+// An update's row (`cards` false) has no card: its tab is always a page.
 const reachable = (
   row: string,
+  cards = true,
 ) => `((i.owner_id = ? AND i.team_id IS NULL) OR i.scope IN (SELECT value FROM json_each(?)) OR EXISTS (
   SELECT 1 FROM shared_with sw JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
-  WHERE sw.person_id = ? AND sw.item_id = i.id AND (sl.tab_id IS NULL OR sl.tab_id = ${row}.tab_id
-    OR (${row}.tab_id = '${COLLAB_CARDS_TAB}' AND json_extract(${row}.card, '$.board.tabId') = sl.tab_id))
+  WHERE sw.person_id = ? AND sw.item_id = i.id AND (sl.tab_id IS NULL OR sl.tab_id = ${row}.tab_id${
+    cards
+      ? `
+    OR (${row}.tab_id = '${COLLAB_CARDS_TAB}' AND json_extract(${row}.card, '$.board.tabId') = sl.tab_id)`
+      : ''
+  })
     AND ${LIVE_LINK('sl')}))`;
 
 type ThreadRow = {
@@ -215,7 +222,9 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       ORDER BY r.closed_at DESC LIMIT ?`,
     args: [personId, now - INBOX_SHARES_MS, ...(app ? [app] : []), now, limit],
   };
-  return { threads, actions, forms, accessRequests, shares };
+  // Updates on pages I watch (updates.ts): from my people index, on items I reach as a thread's.
+  const updates = updatesQuery(personId, app, limit, now, reachable('u', false), reachArgs);
+  return { threads, actions, forms, accessRequests, shares, updates };
 }
 
 /** Who mentioned the reader, as the push said (checked when it was pushed); null when it said nothing. */
@@ -248,12 +257,13 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   if (limit === null) return badRequest('invalid_query');
   const q = inboxQueries(person.id, scopesOf(person), app, limit);
   const db = env.INDEX_DB;
-  const [threadRes, actionRes, formRes, accessRes, shareRes] = (await db.batch([
+  const [threadRes, actionRes, formRes, accessRes, shareRes, updateRes] = (await db.batch([
     db.prepare(q.threads.sql).bind(...q.threads.args),
     db.prepare(q.actions.sql).bind(...q.actions.args),
     db.prepare(q.forms.sql).bind(...q.forms.args),
     db.prepare(q.accessRequests.sql).bind(...q.accessRequests.args),
     db.prepare(q.shares.sql).bind(...q.shares.args),
+    db.prepare(q.updates.sql).bind(...q.updates.args),
   ])) as D1Result<Record<string, unknown>>[];
   const threads: InboxThread[] = (threadRes!.results as ThreadRow[]).map((r) => ({
     app: r.app,
@@ -334,5 +344,6 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     sharedByName: r.shared_by_name,
     sharedAt: r.shared_at,
   }));
-  return json({ threads, actions, forms, accessRequests, shares });
+  const updates = (updateRes!.results as UpdateRow[]).map(inboxUpdateOf);
+  return json({ threads, actions, forms, accessRequests, shares, updates });
 }

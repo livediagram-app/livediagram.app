@@ -192,7 +192,14 @@ describe('the Inbox', () => {
 
     // Cat is mentioned and assigned, but cannot reach the item: nothing shows.
     const forCat = await body<InboxResponse>(await call('/inbox', { auth: cat.auth }));
-    expect(forCat).toEqual({ threads: [], actions: [], forms: [], accessRequests: [], shares: [] });
+    expect(forCat).toEqual({
+      threads: [],
+      actions: [],
+      forms: [],
+      accessRequests: [],
+      shares: [],
+      updates: [],
+    });
     // Given a link and having opened it, Cat sees them.
     const { link } = await body<{ link: { code: string } }>(
       await call(`/items/${teamItem.id}/share`, {
