@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   bearerTokenOf,
   isAccountIdShape,
+  isLoopbackHost,
   isLoopbackHostname,
   oauthRedirectUrl,
 } from './request-auth';
@@ -30,6 +31,39 @@ describe('isLoopbackHostname', () => {
       expect(isLoopbackHostname(new URL(u).hostname)).toBe(true);
     }
     expect(isLoopbackHostname('example.app')).toBe(false);
+  });
+});
+
+describe('isLoopbackHost', () => {
+  it('takes localhost, 127.0.0.1 and [::1], on any port or none', () => {
+    for (const host of [
+      'localhost:55884',
+      'localhost',
+      'LOCALHOST:8080',
+      '127.0.0.1:33418',
+      '127.0.0.1',
+      '[::1]:3000',
+      '[::1]',
+    ])
+      expect(isLoopbackHost(host), host).toBe(true);
+  });
+
+  it('keeps lookalikes, other loopbacks and anything more than a host a site', () => {
+    for (const host of [
+      'localhost.evil.com',
+      'localhost.evil.com:55884',
+      'evil-localhost',
+      'mylocalhost:80',
+      '127.0.0.1.evil.com',
+      '127.0.0.2',
+      'evil.test@localhost',
+      'localhost/path',
+      'localhost:99999',
+      '[::2]',
+      'claude.ai',
+      '',
+    ])
+      expect(isLoopbackHost(host), host).toBe(false);
   });
 });
 

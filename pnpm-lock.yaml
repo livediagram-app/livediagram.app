@@ -7087,6 +7087,9 @@ importers:
       '@liveplanner/tailwind-config':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/tailwind-config
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../../../packages/api-schema
       '@liveworkspace/next-config':
         specifier: workspace:*
         version: link:../../../packages/next-config
@@ -8833,6 +8836,9 @@ importers:
 
   packages/marketing-site:
     dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
       '@liveworkspace/auth-client':
         specifier: workspace:^
         version: link:../auth-client

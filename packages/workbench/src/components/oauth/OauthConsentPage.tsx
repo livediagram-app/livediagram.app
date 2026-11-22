@@ -6,14 +6,24 @@
 // PKCE code, then bounces the browser to the client's redirect. Signed-in only.
 //
 // Registration is open, so a client's name is whatever it sent: every client that is not built in wears an
-// Unverified App badge, says it is not made by liveworkspace, and shows the host its access goes to first.
-import { Suspense, use, useEffect, useState } from 'react';
+// Unverified App badge, says it is not made by liveworkspace, and shows the host its access goes to first. A loopback
+// host is a tool on the person's own computer (Claude Code, Cursor), so it says that rather than naming a site.
+//
+// A reconnect replaces the client's earlier token once the new one is handed over, and at the token cap the page
+// lists the account's tokens to revoke one in place (lib/oauth-replaced-tokens.ts, TokenLimitList).
+import { Suspense, use, useEffect, useRef, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
+import { isLoopbackHost } from '@liveworkspace/api-kit/request-auth';
 import { Button } from '@liveworkspace/ui';
 import { apiExchangeOauthToken } from '../../lib/api/oauth';
 import { apiRevokeTokenAsItself } from '../../lib/api/tokens';
 import { fetchConsentSession, type McpConsentSession } from '../../lib/mcp-consent-session';
+import {
+  accountTokensRequest,
+  replacedIds,
+  revokeReplacedTokens,
+} from '../../lib/oauth-replaced-tokens';
 import {
   handoverFailureCopy,
   mintAndHandOver,
@@ -31,13 +41,36 @@ import {
   type OauthPagesConfig,
 } from './oauth-chrome';
 import { Callout } from '@liveworkspace/ui/callout';
+import { TokenLimitListLazy } from './TokenLimitListLazy';
+
+// The host, as the line says it, in mono. A site's may be long, so it breaks anywhere; a loopback one is short
+// (`localhost:55884`) and is kept whole.
+function Host({ host, whole = false }: { host: string; whole?: boolean }) {
+  return (
+    <span
+      className={`font-mono text-sm font-semibold text-slate-900 dark:text-white ${whole ? 'whitespace-nowrap' : 'break-all'}`}
+    >
+      {host}
+    </span>
+  );
+}
 
 // Where the access goes, for a client the server vouches for (the product's CLI): the quiet line.
 function VerifiedDestination({ host }: { host: string }) {
   return (
     <Callout tone="info" className="mt-3">
-      Access will be sent to <span className="font-semibold">{host}</span>. Only continue if you
-      recognise this.
+      {isLoopbackHost(host) ? (
+        <>
+          Access will be sent back to the app on this computer (
+          <span className="font-semibold">{host}</span>). Only continue if you started this
+          connection yourself.
+        </>
+      ) : (
+        <>
+          Access will be sent to <span className="font-semibold">{host}</span>. Only continue if you
+          recognise this.
+        </>
+      )}
     </Callout>
   );
 }
@@ -46,13 +79,18 @@ function VerifiedDestination({ host }: { host: string }) {
 function UnverifiedDestination({ client, host }: { client: string; host: string }) {
   return (
     <OauthWarning title={`${client} is not made by liveworkspace, and we can’t check who made it.`}>
-      {host ? (
+      {host && isLoopbackHost(host) ? (
         <p>
-          Access will be sent to{' '}
-          <span className="font-mono text-sm font-semibold break-all text-slate-900 dark:text-white">
-            {host}
+          Access will be sent back to the app on this computer{' '}
+          <span className="whitespace-nowrap">
+            (<Host host={host} whole />)
           </span>
-          . Only continue if you recognise this site and started this connection yourself.
+          . Only continue if you started this connection yourself.
+        </p>
+      ) : host ? (
+        <p>
+          Access will be sent to <Host host={host} />. Only continue if you recognise this site and
+          started this connection yourself.
         </p>
       ) : (
         <p>Only continue if you started this connection yourself.</p>
@@ -69,6 +107,11 @@ function Consent({ config }: { config: OauthPagesConfig }) {
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
   // Why the last Connect failed, for the line under the buttons.
   const [failure, setFailure] = useState<HandoverFailure>('failed');
+  // At the token cap: the account's tokens are listed to revoke one (`atLimit`), and once one is, the page says
+  // there is room and the keyboard goes to Connect (`freed`).
+  const [atLimit, setAtLimit] = useState(false);
+  const [freed, setFreed] = useState(false);
+  const connectRef = useRef<HTMLButtonElement>(null);
   // Read-only opt-in (docs/specs/015-api/mcp-server.md §4.11): grant the tool view-only access.
   const [readOnly, setReadOnly] = useState(false);
   // The SERVER's account of this authorize request. Deliberately not the `client` / `to` query params the redirect
@@ -170,25 +213,30 @@ function Consent({ config }: { config: OauthPagesConfig }) {
 
   const approve = async () => {
     setStatus('connecting');
+    setFreed(false);
+    const tokens = accountTokensRequest();
     // Checks the session is still live before minting, and revokes a token the MCP did not take, so a failed
     // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
     const result = await mintAndHandOver({
       sessionLive: async () => (await fetchConsentSession(mcpOrigin, session)) !== null,
       mint: () => apiExchangeOauthToken(accountUserId, client, readOnly),
-      complete: async (token, expiresAt) => {
+      complete: async (token, expiresAt, tokenId) => {
         const res = await fetch(`${mcpOrigin}/oauth/complete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session, token, expiresAt }),
+          body: JSON.stringify({ session, token, expiresAt, tokenId }),
         });
         if (!res.ok) return null;
-        const { redirectTo } = (await res.json()) as { redirectTo: string };
-        return redirectTo;
+        const body = (await res.json()) as { redirectTo: string; replaces?: unknown };
+        return { redirectTo: body.redirectTo, replaces: replacedIds(body.replaces) };
       },
       revoke: (token) => apiRevokeTokenAsItself(token),
+      // A reconnect: the token this client held before goes, now the new one has been handed over.
+      retire: ({ replaces }, tokenId) => revokeReplacedTokens(tokens, tokenId, replaces),
     });
     if (!result.ok) {
       setFailure(result.reason);
+      if (result.reason === 'token_limit') setAtLimit(true);
       setStatus('error');
       return;
     }
@@ -198,7 +246,7 @@ function Consent({ config }: { config: OauthPagesConfig }) {
     try {
       // Only ever navigate to an http(s) URL: a `javascript:` target would run as script on this origin with the
       // signed-in session.
-      const target = new URL(result.value);
+      const target = new URL(result.value.redirectTo);
       if (target.protocol !== 'https:' && target.protocol !== 'http:') {
         throw new Error('unsafe redirect');
       }
@@ -232,13 +280,28 @@ function Consent({ config }: { config: OauthPagesConfig }) {
         <VerifiedDestination host={resolved.redirectHost} />
       ) : null}
       {status === 'error' ? (
-        <p role="alert" className="mt-3 text-xs text-rose-600 dark:text-rose-400">
+        <p role="alert" className="mt-3 text-xs text-rose-700 dark:text-rose-400">
           {handoverFailureCopy(failure, 'Start the connection again from your app.')}
         </p>
+      ) : null}
+      {freed && status !== 'error' ? (
+        <Callout tone="success" role="status" className="mt-3">
+          There’s room for one more token now.
+        </Callout>
+      ) : null}
+      {atLimit ? (
+        <TokenLimitListLazy
+          onFreed={() => {
+            setFreed(true);
+            setStatus('idle');
+            connectRef.current?.focus();
+          }}
+        />
       ) : null}
       <div className="mt-5 flex items-center gap-2">
         {/* Keeps the keyboard while it connects (busy-buttons.md); a failure's alert is then beside it. */}
         <Button
+          ref={connectRef}
           variant="none"
           onClick={() => void approve()}
           busy={status === 'connecting'}

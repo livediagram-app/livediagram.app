@@ -40,7 +40,7 @@ Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](
 
 ## Connecting
 
-In your AI tool, add a connector (an MCP server) pointing at **<code>https://mcp.<AppName />.app/mcp</code>**. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. The first time, your tool opens a <AppName /> page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It says which site the access will be sent to: only continue if you recognise it. Anyone can register a tool under any name, so every tool but the CLI shows **Unverified App** beside its name. Choose **Connect** to approve, or **Cancel**.
+In your AI tool, add a connector (an MCP server) pointing at **<code>https://mcp.<AppName />.app/mcp</code>**. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. The first time, your tool opens a <AppName /> page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It says which site the access will be sent to: only continue if you recognise it. A tool running on your own computer, such as Claude Code or Cursor, takes its sign-in back on your own computer, so for one of those the page says the access goes back to the app on this computer, with an address such as `localhost:55884`: continue if you started the connection yourself. Anyone can register a tool under any name, so every tool but the CLI shows **Unverified App** beside its name. Choose **Connect** to approve, or **Cancel**.
 
 <AppNote app="livediagram">
 
@@ -292,7 +292,7 @@ By default the token behind a connection has full read and write access to your 
 
 Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than <Noun plural /> stay with you, signed in. It can never delete a <Noun /> for good either; that stays with you, in the Trash. (A tab it deletes is gone for good.)
 
-Approving a connection creates a token, so it fails if you already have 20 tokens that haven't expired; revoke one in **Settings**, **Developers**, **API Tokens** first.
+Approving a connection creates a token, and connecting the same tool to <AppName /> again replaces the token it had, so reconnecting never adds up. You can have 20 tokens that haven't expired; at 20, the approval page lists them with **Revoke**, so you can free one and choose **Connect** straight away.
 
 <Tip>
   Connected a tool you no longer use? Revoke its token in **Settings**, **Developers**, **API

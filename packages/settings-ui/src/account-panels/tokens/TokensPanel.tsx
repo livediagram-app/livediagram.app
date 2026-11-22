@@ -3,12 +3,12 @@
 import { useRef, useState, type FormEvent, type RefObject } from 'react';
 import { Button } from '@liveworkspace/ui';
 import { BUTTON, ErrorNote, INPUT, Panel } from '../account-ui';
-import { ConfirmAction } from '../ConfirmAction';
-import { accountErrorMessage as errorMessage, formatAccountDate as formatDate } from '../errors';
+import { accountErrorMessage as errorMessage } from '../errors';
 import { useAccountPanelsHost } from '../host';
 import { SecretReveal } from '../SecretReveal';
 import type { ApiToken } from '../types';
 import { useAccountData } from '../useAccountData';
+import { TokenList } from './TokenList';
 
 // The Settings panel's API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): making a token, seeing it once,
 // and revoking it. A token is the account's, so it works on every app's API and MCP server; the AI
@@ -64,18 +64,13 @@ export function TokensPanel() {
               No tokens yet. Make one above, or connect an AI tool from any app.
             </p>
           ) : (
-            <ul className="mt-4 space-y-3">
-              {load.data.tokens.map((token) => (
-                <TokenRow
-                  key={token.id}
-                  token={token}
-                  onRevoked={async () => {
-                    await refresh();
-                    headingRef.current?.focus();
-                  }}
-                />
-              ))}
-            </ul>
+            <TokenList
+              tokens={load.data.tokens}
+              onRevoked={async () => {
+                await refresh();
+                headingRef.current?.focus();
+              }}
+            />
           ))}
       </section>
     </div>
@@ -146,42 +141,5 @@ function CreateToken({
         {error && <ErrorNote>{errorMessage(error)}</ErrorNote>}
       </form>
     </Panel>
-  );
-}
-
-function TokenRow({ token, onRevoked }: { token: ApiToken; onRevoked: () => Promise<void> }) {
-  const { request } = useAccountPanelsHost();
-  const [error, setError] = useState<string | null>(null);
-
-  async function revoke() {
-    const result = await request(`/tokens/${token.id}`, 'DELETE');
-    if (result.ok) await onRevoked();
-    else setError(result.error);
-  }
-
-  return (
-    <li>
-      <Panel>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-slate-900 dark:text-white">
-              <bdi>{token.name}</bdi>
-              {token.readOnly && (
-                <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  Read only
-                </span>
-              )}
-            </p>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Made {formatDate(token.createdAt)} ·{' '}
-              {token.lastUsedAt ? `Last used ${formatDate(token.lastUsedAt)}` : 'Not used yet'} ·
-              Expires {formatDate(token.expiresAt)}
-            </p>
-          </div>
-          <ConfirmAction label="Revoke" confirmLabel="Revoke now" onConfirm={revoke} />
-        </div>
-        {error && <ErrorNote>{errorMessage(error)}</ErrorNote>}
-      </Panel>
-    </li>
   );
 }

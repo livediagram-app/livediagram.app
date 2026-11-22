@@ -587,7 +587,7 @@ redo it (or drop it once upstream batches the lookup) and keep that test passing
 | `TOKEN_EXPIRY_SWEEP_LIMIT`           | `100`                                                                    | `token-expiry.ts`    |
 | `API_TOKEN_PREFIX`                   | `'lwt_'`                                                                 | `tokens.ts`          |
 | `LEGACY_API_TOKEN_PREFIX`            | `'lvd_'`                                                                 | `tokens.ts`          |
-| `MAX_API_TOKENS_PER_ACCOUNT`         | `20`                                                                     | `tokens.ts`          |
+| `MAX_API_TOKENS_PER_ACCOUNT`         | `20` (`@liveworkspace/api-schema/api-tokens`, re-exported)               | `tokens.ts`          |
 | `TOKEN_NAME_MAX_LENGTH`              | `80`                                                                     | `tokens.ts`          |
 | `LAST_USED_STAMP_WINDOW_MS`          | `60_000`                                                                 | `tokens.ts`          |
 | `MAX_LIVE_TOKEN_IDS`                 | `100`                                                                    | `tokens.ts`          |

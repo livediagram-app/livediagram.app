@@ -1,3 +1,4 @@
+import { MAX_API_TOKENS_PER_ACCOUNT } from '@liveworkspace/api-schema/api-tokens';
 import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 
 // The accounts API's refusals in words, as every account panel (and liveworkspace.app's own account pages) says
@@ -8,7 +9,7 @@ const MESSAGES: Record<string, string> = {
   already_invited: 'That address is already in the team, or invited.',
   member_limit_reached: 'A team can have up to 200 members and invitations.',
   team_limit_reached: 'You can be in up to 50 teams.',
-  token_limit_reached: 'You can have up to 20 tokens. Revoke one to make another.',
+  token_limit_reached: `You can have up to ${MAX_API_TOKENS_PER_ACCOUNT} tokens. Revoke one to make another.`,
   last_admin: 'A team needs an admin. Make someone else an admin first.',
   admin_only: 'Only the team’s admins can do that.',
   email_unverified: 'Sign in with the invited address to answer this.',
