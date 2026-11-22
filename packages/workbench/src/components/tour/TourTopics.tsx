@@ -74,19 +74,20 @@ export function TourTopics<Id extends string>({
               ) : null}
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-2">
-                  <span className="text-[14px] font-semibold leading-tight text-slate-900 dark:text-white">
+                  {/* The name wraps if it must; its length and Done pills stay whole on one line beside it. */}
+                  <span className="min-w-0 text-[14px] font-semibold leading-tight text-slate-900 dark:text-white">
                     {t.title}
                   </span>
                   {t.meta ? (
                     <span
                       data-tour-topic-meta=""
-                      className="rounded-full bg-slate-100 px-1.5 py-px text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                      className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-1.5 py-px text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                     >
                       {t.meta}
                     </span>
                   ) : null}
                   {t.taken ? (
-                    <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-px text-[11px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
+                    <span className="inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-full bg-emerald-50 px-1.5 py-px text-[11px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
                       <TickIcon />
                       Done
                     </span>

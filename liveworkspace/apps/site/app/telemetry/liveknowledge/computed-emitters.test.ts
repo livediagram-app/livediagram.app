@@ -1,19 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_TOUR_STEP_SOURCE, ELEMENT_TOUR_TOKENS } from './computed-emitters';
-import { ELEMENT_TOUR_KINDS } from './element-tour-kinds';
+import { KNOWLEDGE_TOUR_STEP_SOURCE } from './computed-emitters';
 
-// Element tours (docs/specs/007-editor/element-tours.md): the dashboard charts every tour the editor registers, and
-// reads every tour's steps.
-describe('element tour tokens', () => {
-  it('match the editor registry, kind for kind', () => {
-    expect(ELEMENT_TOUR_KINDS.map((k) => k.token)).toEqual(ELEMENT_TOUR_TOKENS);
-  });
-
-  it('read steps for every tour', () => {
-    for (const token of ELEMENT_TOUR_TOKENS)
-      expect(
-        ELEMENT_TOUR_STEP_SOURCE.some((s) => s.startsWith(`${token}Step`)),
-        token,
-      ).toBe(true);
+// The Get Started tours (docs/specs/007-editor/knowledge-tours.md "Telemetry"): the dashboard reads every tour's steps
+// from the editor's step plan, each tour ending on its closing card.
+describe('Get Started tour steps', () => {
+  it('reads every step of every tour', () => {
+    for (const token of ['FirstPage', 'Organise', 'Trust', 'Ask', 'Connect', 'WorkTogether'])
+      expect(KNOWLEDGE_TOUR_STEP_SOURCE, token).toContain(`KnowledgeTourStep${token}Done`);
+    expect(KNOWLEDGE_TOUR_STEP_SOURCE).toContain('KnowledgeTourStepFirstPageNewPage');
+    expect(KNOWLEDGE_TOUR_STEP_SOURCE).toContain('KnowledgeTourStepTrustVerify');
+    expect(KNOWLEDGE_TOUR_STEP_SOURCE).toContain('KnowledgeTourStepConnectStatus');
+    // 26 steps across the six tours, and a closing card each.
+    expect(KNOWLEDGE_TOUR_STEP_SOURCE).toHaveLength(26 + 6);
   });
 });

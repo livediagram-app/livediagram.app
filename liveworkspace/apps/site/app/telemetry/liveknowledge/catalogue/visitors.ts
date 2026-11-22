@@ -3,9 +3,13 @@
 
 import { pageViewApp, type PageViewApp } from '@liveknowledge/api-schema';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
-import { ACTION_SIGN_IN_NUDGE, ELEMENT_TOURS_OFFERED, NEW_VERSION_OFFERED } from './features';
+import {
+  ACTION_SIGN_IN_NUDGE,
+  KNOWLEDGE_TOURS_LISTED,
+  KNOWLEDGE_TOURS_OFFERED,
+  NEW_VERSION_OFFERED,
+} from './features';
 import { chart } from '../../_shared/catalogue-helpers';
-import { ELEMENT_TOUR_KINDS, elementTourTokens } from '../element-tour-kinds';
 
 export const NEW_VISITORS: Metric = {
   category: 'Participant',
@@ -119,61 +123,73 @@ export const WELCOME_DIALOG_CLOSED = chart(
   { types: ['Welcome'] },
 );
 
-// Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
-// One stack for them all, as Show Me's: offered, started (and started per element), steps, how they end. The Pages
-// tour went with the slides and infographics it walked (docs/specs/002-project-scope/not-in-liveknowledge.md).
-export const ELEMENT_TOURS_STARTED = chart(
+// The Get Started tours (docs/specs/007-editor/knowledge-tours.md "Telemetry"): six tours of liveknowledge itself, picked
+// from the Get Started list in the footer. One stack for them all: offered, the list opened, started (and started per
+// tour), steps, how they end. The element tours and the Pages tour are retired (element-tours.md, pages-tour.md).
+const KNOWLEDGE_TOURS = [
+  { token: 'FirstPage', title: 'Your First Page' },
+  { token: 'Organise', title: 'Organise Your Knowledgebase' },
+  { token: 'Trust', title: 'Trust a Page' },
+  { token: 'Ask', title: 'Ask Your Knowledgebase' },
+  { token: 'Connect', title: 'Connect an AI Agent' },
+  { token: 'WorkTogether', title: 'Share and Work Together' },
+] as const;
+const knowledgeTourTokens = (suffix = ''): string[] =>
+  KNOWLEDGE_TOURS.map((t) => `${t.token}Tour${suffix}`);
+
+export const KNOWLEDGE_TOURS_STARTED = chart(
   'UI',
   'Started',
-  'Element Tours Started',
-  'Play pressed on the Tour toolbar beside a selected element.',
-  { types: elementTourTokens() },
+  'Get Started Tours Started',
+  'A tour picked from the Get Started list, or rerun from Settings.',
+  { types: knowledgeTourTokens() },
 );
 
-export const ELEMENT_TOURS_BY_KIND: Metric[] = ELEMENT_TOUR_KINDS.map((k) =>
-  chart('UI', 'Started', `${k.title} Tours Started`, `Play pressed beside a selected ${k.title}.`, {
-    types: [k.token],
+export const KNOWLEDGE_TOURS_BY_TOUR: Metric[] = KNOWLEDGE_TOURS.map((t) =>
+  chart('UI', 'Started', `${t.title} Tours Started`, `The ${t.title} tour started.`, {
+    types: [`${t.token}Tour`],
   }),
 );
 
-export const ELEMENT_TOUR_STEPS_VIEWED = chart(
+export const KNOWLEDGE_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
-  'Element Tour Steps Viewed',
-  'A step of an element tour shown.',
-  { typeIn: (t) => ELEMENT_TOUR_KINDS.some((k) => (t ?? '').startsWith(`${k.token}Step`)) },
+  'Get Started Tour Steps Viewed',
+  'A step of a Get Started tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('KnowledgeTourStep') },
 );
 
-export const ELEMENT_TOURS_COMPLETED = chart(
+export const KNOWLEDGE_TOURS_COMPLETED = chart(
   'UI',
   'Ended',
-  'Element Tours Completed',
-  'An element tour run to its last card.',
-  { types: elementTourTokens('Completed') },
+  'Get Started Tours Completed',
+  'A Get Started tour run to its closing card and Done.',
+  { types: knowledgeTourTokens('Completed') },
 );
 
-export const ELEMENT_TOURS_SKIPPED = chart(
+export const KNOWLEDGE_TOURS_SKIPPED = chart(
   'UI',
   'Ended',
-  'Element Tours Skipped',
-  'An element tour closed before its end.',
-  { types: elementTourTokens('Skipped'), rising: 'neutral' },
+  'Get Started Tours Skipped',
+  'A Get Started tour closed before its end.',
+  { types: knowledgeTourTokens('Skipped'), rising: 'neutral' },
 );
 
-export const ELEMENT_TOURS: MetricStack = {
+export const KNOWLEDGE_TOURS_STACK: MetricStack = {
   stack: true,
-  title: 'Element Tours',
+  title: 'Get Started Tours',
   blurb:
-    'Tours of one element type, offered beside a selected one: offered, started, stepped through, finished or skipped.',
+    'The six tours of liveknowledge, from the Get Started list in the footer: offered, opened, started, stepped through, finished or skipped.',
   members: [
-    ELEMENT_TOURS_OFFERED,
-    ELEMENT_TOURS_STARTED,
-    ...ELEMENT_TOURS_BY_KIND,
-    ELEMENT_TOUR_STEPS_VIEWED,
-    ELEMENT_TOURS_COMPLETED,
-    ELEMENT_TOURS_SKIPPED,
+    KNOWLEDGE_TOURS_OFFERED,
+    KNOWLEDGE_TOURS_LISTED,
+    KNOWLEDGE_TOURS_STARTED,
+    ...KNOWLEDGE_TOURS_BY_TOUR,
+    KNOWLEDGE_TOUR_STEPS_VIEWED,
+    KNOWLEDGE_TOURS_COMPLETED,
+    KNOWLEDGE_TOURS_SKIPPED,
   ],
-  headline: ELEMENT_TOURS_STARTED,
+  headline: KNOWLEDGE_TOURS_STARTED,
 };
 
 // Show Me (docs/specs/007-editor/show-me.md): the on-demand tours of one surface each. Never offered, so each starts
@@ -234,7 +250,7 @@ export const ONBOARDING_TOURS: MetricStack = {
   title: 'Onboarding Tours',
   blurb:
     'Every guided tour started, one line per tour. How far people get through each one is in Pages & Help.',
-  members: [ELEMENT_TOURS_STARTED, SHOW_ME_TOURS_STARTED],
+  members: [KNOWLEDGE_TOURS_STARTED, SHOW_ME_TOURS_STARTED],
   seeAlso: { tab: 'tours', label: 'See Each Tour on the Tours & Prompts Tab' },
 };
 

@@ -68,7 +68,7 @@ import {
   EDITOR_TIMING_CHARTS,
   ELEMENTS_ADDED,
   ELEMENT_EDITING,
-  ELEMENT_TOURS,
+  KNOWLEDGE_TOURS_STACK,
   EMAILS_SENT,
   EXCEPTIONS,
   EXPORT_AND_IMPORT,
@@ -373,7 +373,7 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
     groups: [
       {
         title: 'Tours',
-        metrics: [ELEMENT_TOURS, SHOW_ME_TOURS],
+        metrics: [KNOWLEDGE_TOURS_STACK, SHOW_ME_TOURS],
       },
       { title: 'Prompts', metrics: [WELCOME_DIALOG_CLOSED, NEW_VERSION_PROMPT] },
     ],

@@ -10,7 +10,6 @@
 
 import type { CSSProperties } from 'react';
 import { animLoops, PIE_LOOPING_ANIMS, type ShapeElement } from '@liveknowledge/document';
-import { useConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import { animClass, animSpeedVars } from './icons';
 
 export { chartFrame } from '@liveknowledge/document';
@@ -32,17 +31,4 @@ export function chartAnim(
       ? { transformOrigin, ...animSpeedVars('pie', element.pieAnimSpeed, loops) }
       : undefined,
   };
-}
-
-// chartAnim for a chart on screen: while the Chart tour previews Grow on it (docs/specs/007-editor/element-tours.md
-// "The Chart tour"), its marks grow over and over, never stored, whatever animation the chart has of its own.
-export function useChartAnim(
-  element: ShapeElement,
-  transformOrigin: string,
-): ReturnType<typeof chartAnim> {
-  const preview = useConceptTourPreview(element.id);
-  return chartAnim(
-    preview?.anim === 'grow' ? { ...element, pieAnim: 'grow', pieAnimRepeat: true } : element,
-    transformOrigin,
-  );
 }

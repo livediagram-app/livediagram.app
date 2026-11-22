@@ -12,12 +12,13 @@ import type {
 import type { TelemetryCategory } from '@liveknowledge/api-schema';
 import type { UserPreferences } from '@/lib/user-preferences';
 import {
-  ELEMENT_TOUR_KINDS,
-  elementTourSeen,
-  markElementTourSeen,
-  offerElementTourAgain,
-  type ElementTourKind,
-} from '@/lib/element-tours';
+  KNOWLEDGE_TOURS,
+  KNOWLEDGE_TOUR_COPY,
+  knowledgeTourTaken,
+  markKnowledgeTourTaken,
+  offerKnowledgeTourAgain,
+  type KnowledgeTourId,
+} from '@/lib/knowledge-tours';
 import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,
@@ -312,67 +313,46 @@ function uiScalePartRow(
   };
 }
 
-// A tour's switch (docs/specs/007-editor/user-preferences.md "Getting Started"). INVERTED against its stored
-// preference: the switch asks "offer me this tour?", the preference records "already seen". The
-// telemetry tokens still track the PREFERENCE, not the switch, so each dashboard series keeps
-// meaning what it always has: switching ON sets `<tour>Seen` false, which is '<Tour>SeenOff'.
-function tourSwitch(
-  key: TourSeenKey,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-  section = 'Offer Again',
-): SettingsToggleRowSpec {
+// The Get Started tours' switches (docs/specs/007-editor/knowledge-tours.md "Settings"): one over them all, on while any
+// is untaken (off takes every one, on forgets every record), and one per tour nested under it (off takes it, on
+// forgets it). Each is INVERTED against its stored preference: the switch asks "offer me this tour?", the preference
+// records "taken". The telemetry tokens track the PREFERENCE, not the switch: switching ON is '<Tour>SeenOff'.
+const KNOWLEDGE_TOURS_SECTION = 'Offer Again';
+
+function knowledgeToursSwitch(): SettingsToggleRowSpec {
   return {
     kind: 'toggle',
-    key,
-    section,
-    ...row,
-    read: (p) => p[key] !== true,
-    write: (p, v) => ({ ...p, [key]: !v }),
-  };
-}
-
-// A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
-// forgets those answered. Its telemetry tokens are its seen flag's, as above.
-// One element tour's switch (docs/specs/007-editor/element-tours.md "Settings"), nested under Element Tours: on while
-// its kind is still offered; on forgets its answer, off answers it.
-function elementTourSwitch(
-  kind: ElementTourKind,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key: `elementTour-${kind}`,
-    section: ELEMENT_TOURS_SECTION,
-    parent: 'elementToursSeen',
-    ...row,
-    read: (p) => !elementTourSeen(p, kind),
-    write: (p, v) => (v ? offerElementTourAgain(p, kind) : markElementTourSeen(p, kind)),
-  };
-}
-
-// Element tours are called Show Me wherever a person sees them (docs/specs/007-editor/element-tours.md "Naming").
-const ELEMENT_TOURS_SECTION = 'Show Me';
-
-function tourTracksSwitch(
-  key: 'pagesTourSeen' | 'elementToursSeen',
-  tracksKey: 'pagesTourKinds' | 'elementTourKinds',
-  tracks: readonly string[],
-  owed: (p: UserPreferences) => boolean,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-  section?: string,
-): SettingsToggleRowSpec {
-  return {
-    ...tourSwitch(key, row, section),
-    read: owed,
+    key: 'knowledgeToursSeen',
+    section: KNOWLEDGE_TOURS_SECTION,
+    label: 'Get Started Tours',
+    description: 'All six tours at once.',
+    keywords: 'tour tours walkthrough tutorial get started onboarding learn replay show me',
+    event: { category: 'UI', on: 'KnowledgeToursSeenOff', off: 'KnowledgeToursSeenOn' },
+    read: (p) => KNOWLEDGE_TOURS.some((id) => !knowledgeTourTaken(p, id)),
     write: (p, v) => {
-      if (!v) return { ...p, [key]: true, [tracksKey]: [...tracks] };
-      const { [tracksKey]: _answered, ...rest } = p;
-      return { ...rest, [key]: false };
+      if (!v) return { ...p, knowledgeToursSeen: true, knowledgeTours: [...KNOWLEDGE_TOURS] };
+      const { knowledgeTours: _taken, ...rest } = p;
+      return { ...rest, knowledgeToursSeen: false };
     },
   };
 }
 
-type TourSeenKey = 'pagesTourSeen' | 'elementToursSeen';
+function knowledgeTourSwitch(
+  id: KnowledgeTourId,
+  row: Pick<SettingsToggleRowSpec, 'description' | 'keywords' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    kind: 'toggle',
+    key: `knowledgeTour-${id}`,
+    section: KNOWLEDGE_TOURS_SECTION,
+    parent: 'knowledgeToursSeen',
+    label: KNOWLEDGE_TOUR_COPY[id].title,
+    helpArticle: KNOWLEDGE_TOUR_COPY[id].help,
+    ...row,
+    read: (p) => !knowledgeTourTaken(p, id),
+    write: (p, v) => (v ? offerKnowledgeTourAgain(p, id) : markKnowledgeTourTaken(p, id)),
+  };
+}
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   // No Editor category: its rows (Alignment Guides, Auto-Attach Arrows, Element Indicators, Quick-Add on Hover,
@@ -533,118 +513,49 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    // The guided tours (docs/specs/007-editor/user-preferences.md "Getting Started"), a tour of several tracks one switch per
-    // track ("Slides Tour"). A tour starts from the footer's Start Tour button
-    // (docs/specs/007-editor/pages-tour.md "Where it appears"), and its switch turns itself off once taken.
+    // The Get Started tours (docs/specs/007-editor/knowledge-tours.md "Settings"): started from the footer's Get Started
+    // button, each switch on until its tour is taken. Nothing else lives here: the element tours and the Pages tour are
+    // retired (element-tours.md, pages-tour.md).
     id: 'tours',
     label: 'Getting Started',
     // Was named Tours: its old place in the panel still lands here.
     aliases: ['/tours'],
-    collapsedSections: [ELEMENT_TOURS_SECTION],
     sectionNotes: {
-      [ELEMENT_TOURS_SECTION]: {
-        note: 'Select a complex element and press Start Tour in the bottom bar to see how it works. A switch is on until you have taken its tour.',
+      [KNOWLEDGE_TOURS_SECTION]: {
+        note: 'Start a tour from Get Started in the bottom bar. A switch is on until you have taken its tour.',
       },
     },
     rows: [
-      // No Pages tours rows: a knowledgebase has one kind of page and no Pages tour
-      // (docs/specs/002-project-scope/not-in-liveknowledge.md).
-      // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
-      // them all over one per toured kind.
-      tourTracksSwitch(
-        'elementToursSeen',
-        'elementTourKinds',
-        ELEMENT_TOUR_KINDS,
-        (p) => ELEMENT_TOUR_KINDS.some((k) => !elementTourSeen(p, k)),
-        {
-          label: 'Show Me on Every Element',
-          event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
-          keywords: 'tour walkthrough tutorial element sankey how to use learn replay',
-          description: 'Every element’s Show Me at once.',
-        },
-        ELEMENT_TOURS_SECTION,
-      ),
-      elementTourSwitch('sankey', {
-        label: 'Sankey Diagram',
-        event: { category: 'UI', on: 'SankeyTourSeenOff', off: 'SankeyTourSeenOn' },
-        keywords: 'tour walkthrough tutorial sankey flows bands nodes leftover replay',
-        description: 'With a Sankey diagram selected.',
-        helpArticle: 'sankeyDiagram',
+      knowledgeToursSwitch(),
+      knowledgeTourSwitch('first-page', {
+        description: 'Add a page, write on it, and the blocks you can type.',
+        keywords: 'tour first page new page subpage edit write blocks slash',
+        event: { category: 'UI', on: 'FirstPageTourSeenOff', off: 'FirstPageTourSeenOn' },
       }),
-      elementTourSwitch('layer-stack', {
-        label: 'Layer Stack',
-        event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
-        keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
-        description: 'With a layer stack selected.',
-        helpArticle: 'conceptGraphics',
+      knowledgeTourSwitch('organise', {
+        description: 'The page tree, page options, search, the breadcrumb and the Trash.',
+        keywords: 'tour organise organize page tree nest move rename search breadcrumb trash',
+        event: { category: 'UI', on: 'OrganiseTourSeenOff', off: 'OrganiseTourSeenOn' },
       }),
-      elementTourSwitch('pyramid', {
-        label: 'Pyramid',
-        event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
-        keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
-        description: 'With a pyramid selected.',
-        helpArticle: 'conceptGraphics',
+      knowledgeTourSwitch('trust', {
+        description: 'Who wrote a page, verifying it, Page Health and approval.',
+        keywords: 'tour trust verify verified review due page health owner approval',
+        event: { category: 'UI', on: 'TrustTourSeenOff', off: 'TrustTourSeenOn' },
       }),
-      elementTourSwitch('funnel', {
-        label: 'Funnel',
-        event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
-        description: 'With a funnel selected.',
-        helpArticle: 'conceptGraphics',
+      knowledgeTourSwitch('ask', {
+        description: 'Ask a question, your questions, and AI Knowledge.',
+        keywords: 'tour ask question answer sources ai knowledge',
+        event: { category: 'UI', on: 'AskTourSeenOff', off: 'AskTourSeenOn' },
       }),
-      elementTourSwitch('cycle', {
-        label: 'Cycle',
-        event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
-        description: 'With a cycle selected.',
-        helpArticle: 'conceptGraphics',
+      knowledgeTourSwitch('connect', {
+        description: 'Connect Claude, ChatGPT or Cursor to this knowledgebase.',
+        keywords: 'tour connect ai agent claude chatgpt cursor mcp',
+        event: { category: 'UI', on: 'ConnectTourSeenOff', off: 'ConnectTourSeenOn' },
       }),
-      elementTourSwitch('hub', {
-        label: 'Hub and Spoke',
-        event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
-        keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
-        description: 'With a hub and spoke selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('onion', {
-        label: 'Onion',
-        event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
-        description: 'With an onion selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('chevrons', {
-        label: 'Chevrons',
-        event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
-        description: 'With a chevron process selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('timeline', {
-        label: 'Timeline',
-        event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
-        description: 'With a timeline selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('chart', {
-        label: 'Chart',
-        event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
-        keywords: 'chart pie bar column line area scatter doughnut data graph tour',
-        description: 'With a chart selected.',
-        helpArticle: 'dataElements',
-      }),
-      elementTourSwitch('stack', {
-        label: 'Stack',
-        event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
-        keywords: 'stack row column grid layout container reflow tour',
-        description: 'With a stack selected.',
-        helpArticle: 'stacks',
+      knowledgeTourSwitch('share', {
+        description: 'Share, who made a page, reactions and comments.',
+        keywords: 'tour share invite people reactions comments makers work together',
+        event: { category: 'UI', on: 'WorkTogetherTourSeenOff', off: 'WorkTogetherTourSeenOn' },
       }),
     ],
   },

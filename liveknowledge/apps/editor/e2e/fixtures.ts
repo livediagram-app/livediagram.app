@@ -55,37 +55,15 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Pages and element tours (docs/specs/007-editor/pages-tour.md) offer themselves 800 ms into a tab and their
-// overlays would take the presses of every spec there; they have their own unit tests. Marked seen for every page of
-// the context.
+// The Get Started tours (docs/specs/007-editor/knowledge-tours.md) put a Get Started button in the footer while any is
+// untaken; they have their own unit tests. Marked taken for every page of the context, so the footer is as specs expect.
 export async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
     const key = 'liveknowledge:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
-      if (!Array.isArray(prefs.pagesTourKinds) || !Array.isArray(prefs.elementTourKinds))
-        localStorage.setItem(
-          key,
-          JSON.stringify({
-            ...prefs,
-            pagesTourSeen: true,
-            pagesTourKinds: ['slide', 'infographic', 'article'],
-            // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
-            elementTourKinds: [
-              'sankey',
-              'layer-stack',
-              'pyramid',
-              'funnel',
-              'cycle',
-              'hub',
-              'onion',
-              'chevrons',
-              'chart',
-              'stack',
-            ],
-          }),
-        );
+      if (prefs.knowledgeToursSeen === undefined)
+        localStorage.setItem(key, JSON.stringify({ ...prefs, knowledgeToursSeen: true }));
     } catch {
       // No storage: nothing to mark.
     }
@@ -139,8 +117,8 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// Tours never start or offer themselves (docs/specs/007-editor/pages-tour.md "Where it appears": the footer's
-// Start Tour button is the one way in), so there is nothing to dismiss: kept so the specs that call it need not change.
+// Tours never start or offer themselves (docs/specs/007-editor/knowledge-tours.md "Where it appears": the footer's
+// Get Started button is the one way in), so there is nothing to dismiss: kept so the specs that call it need not change.
 export async function dismissQuickTour(_page: Page): Promise<void> {}
 
 // A blank document straight away: /new?blank=1, the document Start Blank links to

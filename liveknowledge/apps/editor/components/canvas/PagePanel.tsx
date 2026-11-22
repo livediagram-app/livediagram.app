@@ -31,12 +31,10 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
 import { OrientationSection, SizeSection } from './page-panel-sections';
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { Callout } from '@liveworkspace/ui/callout';
 
 const LockIcon = lucideGlyph(lucideLock, 16);
 const UnlockIcon = lucideGlyph(lucideLockOpen, 16);
-import type { HelpArticleKey } from '@/lib/help-articles';
 
 const WIDTH = 304;
 const GAP = 6;
@@ -59,12 +57,8 @@ export function PagePanel({
   titleName,
   edit,
   onClose,
-  showMe,
 }: {
   page: LaidOutPage;
-  // The page's Show Me, which heads the panel beside Help on its kind's article (docs/specs/007-editor/show-me.md,
-  // pages-tour.md "Where it appears").
-  showMe?: { button: ReactNode; article: HelpArticleKey } | undefined;
   count: number;
   // Another page of this page's article is locked (isArticleLocked): its shared edits are held.
   heldByLock?: boolean;
@@ -162,12 +156,6 @@ export function PagePanel({
               : 'This page is locked. Unlock it beside the cog to change it.'
             : "A page of this article is locked. Unlock it to change the article's pages."}
         </Callout>
-      ) : null}
-      {showMe ? (
-        <div className="flex items-center justify-end gap-0.5 px-2 pt-1.5">
-          {showMe.button}
-          <HelpArticleLink article={showMe.article} variant="labelled" />
-        </div>
       ) : null}
       <div inert={selfLocked} className={selfLocked ? 'opacity-50' : undefined}>
         <NameField

@@ -251,7 +251,7 @@ shown templates. Its telemetry token is `JustDraw` (`UI / Used / JustDraw`).
 - The placement context params compose with it (`/new?blank=1&folder=<id>`, `/new?blank=1&team=<id>`), so a
   caller can Start Blank straight into a folder or team library.
 - No tour is queued on this path or any other: no tour offers itself, and the
-  [Pages tour](pages-tour.md) waits on the footer's Start Pages Tour button.
+  [Get Started tours](knowledge-tours.md) wait on the footer's Get Started button.
 
 ### The other parameters
 
@@ -307,8 +307,8 @@ it cannot tell the difference from a direct visit.
 - **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the
   editor URL takes its history entry. Reload and Back behave exactly as they
   do after a direct `/document/<id>` visit.
-- **Nothing crosses the handoff but the URL.** No tour is queued (the [Pages tour](pages-tour.md) waits on its
-  button).
+- **Nothing crosses the handoff but the URL.** No tour is queued (the [Get Started tours](knowledge-tours.md) wait on
+  their button).
 - A failed create never hands off: the retryable error card shows instead.
 
 ### The opening screen

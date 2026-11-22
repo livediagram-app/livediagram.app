@@ -48,7 +48,7 @@ describe('the document page’s first load', () => {
   it.each([
     ['app/document/[id]/EditorView.tsx', '@/components/panels/EditorSearchPanel'],
     ['components/tour/EditorTours.tsx', '@/components/tour/PlanTourHost'],
-    ['components/tour/EditorTours.tsx', '@/components/tour/ElementTourHost'],
+    ['components/tour/EditorTours.tsx', '@/components/tour/KnowledgeToursHost'],
     ['app/document/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/CanvasPages'],
@@ -69,6 +69,19 @@ describe('the document page’s first load', () => {
   it('takes the template overrides from the builders loaded at the press', () => {
     const src = read('app/document/[id]/useTemplateFlow.ts');
     expect(src).not.toMatch(/^import\s+\{[^}]*\btemplateCanvasOverrides\b/m);
+  });
+
+  // The Get Started tours (docs/specs/007-editor/knowledge-tours.md "Performance"): the host is its own chunk, in after the
+  // first paint, and the steps' words load only at a press, so neither is in the document page's first load.
+  it('keeps the Get Started tours out of the first load', () => {
+    const page = staticClosure('app/document/[id]/editor-page.tsx');
+    expect(page.has('components/tour/KnowledgeToursHost.tsx')).toBe(false);
+    expect(page.has('components/tour/knowledge-tour-steps.ts')).toBe(false);
+    const host = staticClosure('components/tour/KnowledgeToursHost.tsx');
+    expect(host.has('components/tour/knowledge-tour-steps.ts')).toBe(false);
+    expect(read('components/tour/KnowledgeToursHost.tsx')).toContain(
+      "import('./knowledge-tour-steps')",
+    );
   });
 
   // The article editor's ProseMirror (about 26 KiB gzipped) loads with the first article: a one-symbol import of the

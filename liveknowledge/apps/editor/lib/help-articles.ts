@@ -38,6 +38,10 @@ export const HELP_ARTICLES = {
   formatPainter: 'knowledgebase/writing-on-a-page',
   // AI
   connectAiTool: 'knowledgebase/connecting-an-agent',
+  // The Get Started tours' closing cards and Settings rows (docs/specs/007-editor/knowledge-tours.md).
+  firstPage: 'knowledgebase/writing-on-a-page',
+  pageTree: 'knowledgebase/the-page-tree',
+  ask: 'knowledgebase/ask',
   // The page rail's `?`s (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md "AI Context on a page").
   verifying: 'knowledgebase/owners-and-verifying',
   aiContext: 'knowledgebase/always-in-context',
@@ -79,19 +83,12 @@ export const HELP_ARTICLES = {
   dataElements: 'knowledgebase/writing-on-a-page',
   sankeyDiagram: 'knowledgebase/writing-on-a-page',
   maps: 'knowledgebase/writing-on-a-page',
-  // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
-  stacks: 'knowledgebase/writing-on-a-page',
-  conceptGraphics: 'knowledgebase/writing-on-a-page',
   palette: 'knowledgebase',
   // Settings
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
   templates: 'getting-started/your-first-knowledgebase',
-  // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
-  slidePages: 'knowledgebase/writing-on-a-page',
-  infographicLayouts: 'knowledgebase/writing-on-a-page',
-  articlePages: 'knowledgebase/writing-on-a-page',
   keyboardShortcuts: 'knowledgebase/writing-on-a-page',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -164,6 +161,18 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
+  },
+  firstPage: {
+    title: 'Learn about writing a page',
+    description: 'Edit and Save, the blocks you can type with /, and pages inside pages.',
+  },
+  pageTree: {
+    title: 'Learn about the page tree',
+    description: 'Nest, move, rename and delete pages, and find them again.',
+  },
+  ask: {
+    title: 'Learn about Ask',
+    description: 'Ask your knowledgebase a question and get an answer with its sources.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
@@ -273,15 +282,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about maps',
     description: 'Regions and countries, highlighting places and pinning cities.',
   },
-  stacks: {
-    title: 'Learn about stacks',
-    description: 'Rows, columns and grids that lay out what you drop in them.',
-  },
-  conceptGraphics: {
-    title: 'Learn about concept graphics',
-    description:
-      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
-  },
   palette: {
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
@@ -297,18 +297,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   templates: {
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
-  },
-  slidePages: {
-    title: 'Learn about slide pages',
-    description: 'Slide layouts, backgrounds, the deck and presenting.',
-  },
-  infographicLayouts: {
-    title: 'Learn about infographic layouts',
-    description: 'Starting a page from a layout, its theme, and making it your own.',
-  },
-  articlePages: {
-    title: 'Learn about articles',
-    description: 'Writing, the page toolbar, article style and how pages flow.',
   },
   livePresence: {
     title: 'Learn about live presence',

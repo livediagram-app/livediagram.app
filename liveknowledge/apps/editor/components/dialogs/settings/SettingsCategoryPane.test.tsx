@@ -60,9 +60,9 @@ describe('SettingsCategoryPane desktop-only rows', () => {
 describe('SettingsCategoryPane tours', () => {
   const TOURS = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
 
-  // docs/specs/030-knowledgebase/page-surface.md "What a page no longer has": a knowledgebase has one kind of page
-  // and no Pages tour, so Getting Started holds Show Me alone.
-  it('offers no Pages tour switch, only Show Me', () => {
+  // docs/specs/007-editor/knowledge-tours.md "Settings": Getting Started holds the Get Started tours alone, under
+  // Offer Again, each tour nested under the switch over them all. No Pages tour and no element's Show Me.
+  it('offers the Get Started tours alone', () => {
     render(
       <SettingsCategoryPane
         category={TOURS}
@@ -70,9 +70,17 @@ describe('SettingsCategoryPane tours', () => {
         onChange={vi.fn()}
       />,
     );
-    for (const gone of ['Pages Tours', 'Slides Tour', 'Infographic Tour', 'Article Tour'])
+    for (const gone of ['Pages Tours', 'Slides Tour', 'Article Tour', 'Sankey Diagram', 'Pyramid'])
       expect(screen.queryByRole('switch', { name: gone })).toBeNull();
-    expect(screen.queryByRole('heading', { name: 'Offer Again' })).toBeNull();
-    expect(screen.getByRole('button', { name: /^Show Me/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^Show Me/ })).toBeNull();
+    expect(screen.getByRole('switch', { name: 'Get Started Tours' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Trust a Page' })).toBeTruthy();
+  });
+
+  it('takes one tour when its switch is turned off', () => {
+    const onChange = vi.fn();
+    render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('switch', { name: 'Ask Your Knowledgebase' }));
+    expect(onChange).toHaveBeenCalledWith({ knowledgeTours: ['ask'] });
   });
 });

@@ -35,8 +35,8 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   controls, and the add, copy, remove, split, size, turn and kind verbs in `hooks/editor/page-edits.ts`.
 - **Editor, slides and presenting:** `app/document/[id]/useSlideDeck.ts`, `useDeckFollowsPages.ts`, `deck-save.ts`,
   `lib/page-deck-controls.ts`, `lib/presentation-config.ts`, `components/slide-notes/`, `PresentationHud.tsx`,
-  `PresentationSettings.tsx`, `PageNotesButton.tsx`, the header's Present button, and the Slide and Infographic tours
-  (`components/tour/slide-tour-steps.ts`, `infographic-tour-steps.ts`).
+  `PresentationSettings.tsx`, `PageNotesButton.tsx` and the header's Present button. (The Slide and Infographic tours
+  are deleted, with the Pages tour: [Pages tour](../007-editor/pages-tour.md).)
 - **Editor, PowerPoint:** `lib/office-export/pptx-*.ts`, `lib/office-import/pptx*.ts` and `build-deck.ts`, and the
   `powerpoint` and `pptx` keys of the Import and Export dialogs.
 - **Editor, the palette:** the `design` and `slide` palette kinds (`lib/palette-kind.ts`) and the tiles only they show.
@@ -89,9 +89,8 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   (`components/dialogs/CanvasThemeDialog.tsx`, `tab-style-profile.tsx`, `tab-style-pages.ts`,
   `NewPageBackgroundPanel.tsx`, `TabStylePreview.tsx`, `ArticleStyleRow.tsx`, `lib/tab-style-opener.ts`,
   `lib/tab-looks.ts`, `lib/new-page-background.ts`, `components/canvas/ThemeStrip.tsx`,
-  `components/tour/TabStyleTour.tsx`), the Pages tours (`components/tour/PageTour.tsx`, `article-tour-steps.ts`,
-  `lib/pages-tour.ts`), and in Settings the Map rows (`showMinimap`, `mapDimOutside`, `mapSize`), Middle-Mouse Pan,
-  the Pages tours' rows, the Editor category's canvas rows (Alignment Guides, Auto-Attach Arrows, Element Indicators,
+  `components/tour/TabStyleTour.tsx`), and in Settings the Map rows (`showMinimap`, `mapDimOutside`, `mapSize`), Middle-Mouse Pan,
+  the Editor category's canvas rows (Alignment Guides, Auto-Attach Arrows, Element Indicators,
   Quick-Add on Hover) and the Quick Style and Collaborate panel switches
   ([User preferences](../007-editor/user-preferences.md) "What liveknowledge offers"), with their copy on liveworkspace.app's settings page and their help articles.
 - **Editor, the knowledgebase's own search dialog:** deleted (`components/knowledge/SearchDialog.tsx`); the

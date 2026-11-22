@@ -134,73 +134,32 @@ const IMAGE_SEARCH_WARNINGS = [
   ),
 ];
 
-// The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
-// it runs inside the dialog (each `flows-` prefixed), then its closing card.
+// The Get Started tours' steps, as knowledgeTourStepType makes them (apps/editor KnowledgeToursHost.tsx,
+// docs/specs/007-editor/knowledge-tours.md "Telemetry"): each tour's token, then each step of its plan, then its
+// closing card (`done`).
 const pascal = (id: string) =>
   id
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-const SANKEY_TOUR_STEP_SOURCE: string[] = [
-  ...[
-    ...read('editor/components/tour/sankey-element-tour-steps.ts').matchAll(
-      /canvasStep\(\s*'([a-z-]+)'/g,
-    ),
-  ].map((m) => m[1]!),
-  // The flows steps are shared by every editor (@liveworkspace/workbench).
-  ...[
-    ...read('../../packages/workbench/src/components/tour/sankey-flows-tour-steps.ts').matchAll(
-      /step\(\s*'([a-z-]+)'/g,
-    ),
-  ].map((m) => `flows-${m[1]!}`),
-  'outro',
-].map((id) => `SankeyTourStep${pascal(id)}`);
-
-// A concept graphic's tour (docs/specs/007-editor/element-tours.md): its steps file's builders and any step of its own
-// (`id: '…'`), then its closing card.
-const conceptTourSteps = (token: string, file: string): string[] =>
-  [
-    ...[
-      ...read(`editor/components/tour/${file}`).matchAll(
-        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|menuStep\(\s*\w+,\s*|\bid: )'([a-z-]+)'/g,
-      ),
-    ].map((m) => m[1]!),
-    'outro',
-  ].map((id) => `${token}Step${pascal(id)}`);
-
-// Every element tour (ElementTourHost runs them all): its token, from the registry, and its steps.
-export const ELEMENT_TOUR_TOKENS: string[] = [
-  ...read('editor/components/tour/element-tour-defs.ts').matchAll(/token: '(\w+)'/g),
+const KNOWLEDGE_TOURS_SRC = read('editor/lib/knowledge-tours.ts');
+const planOf = (id: string): string[] => {
+  const block =
+    KNOWLEDGE_TOURS_SRC.match(new RegExp(`\\n  '?${id}'?: \\[\\n([\\s\\S]*?)\\n  \\],`))?.[1] ?? '';
+  return [...block.matchAll(/\{\s*id: '([a-z-]+)'/g)].map((m) => m[1]!);
+};
+const KNOWLEDGE_TOUR_IDS = [
+  ...(KNOWLEDGE_TOURS_SRC.match(/KNOWLEDGE_TOURS = \[([^\]]+)\]/)?.[1] ?? '').matchAll(
+    /'([a-z-]+)'/g,
+  ),
 ].map((m) => m[1]!);
-
-export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
-  ...SANKEY_TOUR_STEP_SOURCE,
-  ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
-  ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
-  ...conceptTourSteps('FunnelTour', 'funnel-tour-steps.ts'),
-  ...conceptTourSteps('CycleTour', 'cycle-tour-steps.ts'),
-  ...conceptTourSteps('HubTour', 'hub-tour-steps.ts'),
-  ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
-  ...conceptTourSteps('TimelineTour', 'timeline-tour-steps.ts'),
-  ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
-  ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
-  ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
-];
-
-// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/editor PagesTourHost.tsx,
-// docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
-// sends no step view.
-const camel = (id: string) =>
-  id
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-const PAGES_TOUR_STEP_SOURCE: string[] = (['slide', 'infographic', 'article'] as const).flatMap(
-  (kind) =>
-    [...read(`editor/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
-      .map((m) => m[1]!)
-      .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-      .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
+const KNOWLEDGE_TOUR_TOKENS = [...KNOWLEDGE_TOURS_SRC.matchAll(/token: '(\w+)'/g)].map(
+  (m) => m[1]!,
+);
+export const KNOWLEDGE_TOUR_STEP_SOURCE: string[] = KNOWLEDGE_TOUR_IDS.flatMap((id, i) =>
+  [...planOf(id), 'done'].map(
+    (step) => `KnowledgeTourStep${KNOWLEDGE_TOUR_TOKENS[i]}${pascal(step)}`,
+  ),
 );
 
 const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
@@ -432,16 +391,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
-  'apps/editor/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
-  'apps/editor/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
-  'apps/editor/components/tour/ElementTourHost.tsx UI·Ended': {
-    values: ELEMENT_TOUR_TOKENS.flatMap((t) => [`${t}Completed`, `${t}Skipped`]),
-  },
-  'apps/editor/components/tour/ElementTourHost.tsx UI·Opened': {
-    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
-  },
-  'apps/editor/components/tour/PagesTourHost.tsx UI·View': {
-    values: PAGES_TOUR_STEP_SOURCE,
+  'apps/editor/components/tour/KnowledgeToursHost.tsx UI·View': {
+    values: KNOWLEDGE_TOUR_STEP_SOURCE,
   },
   // The shared hook's flush on page hide sends what was scheduled: every canvas-panel slider.
   // The laser and eraser settings each editor's tool configs name (hooks/canvas/use*Config.ts).

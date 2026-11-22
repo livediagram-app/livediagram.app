@@ -179,17 +179,8 @@ rows, and the **Flywheel** template's ring is one Cycle. Templates that sit besi
 
 ## Element tours
 
-While an Editor has a concept graphic of a toured kind selected, the footer's Get Started button offers its
-[element tour](../007-editor/element-tours.md) (**Start Pyramid Tour**, **Start Hub and Spoke Tour**, ...): on the graphic itself, its rows, typing in place,
-the "+" ring's add, the Rows section, the colour ramp and its animation previewed on it. Toured: the
-[layer stack](../007-editor/element-tours.md#the-layer-stack-tour), the
-[pyramid](../007-editor/element-tours.md#the-pyramid-tour), the
-[funnel](../007-editor/element-tours.md#the-funnel-tour), the
-[cycle](../007-editor/element-tours.md#the-cycle-tour), the
-[hub and spoke](../007-editor/element-tours.md#the-hub-and-spoke-tour), the
-[onion](../007-editor/element-tours.md#the-onion-tour) and the
-[chevron process](../007-editor/element-tours.md#the-chevrons-tour), whose tour holds a stage's bar open as if pointed
-at.
+A concept graphic has no element tour in liveknowledge: the ones the fork brought are retired
+([Element tours](../007-editor/element-tours.md)).
 
 ## Share roles
 

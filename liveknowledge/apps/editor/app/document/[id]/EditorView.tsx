@@ -141,8 +141,7 @@ const MODALS = (
     </AreaErrorBoundary>
   </>
 );
-// The editor's tours, the Pages tour and the element tours (docs/specs/007-editor/pages-tour.md, element-tours.md):
-// each renders nothing until its offer is due.
+// The editor's Get Started tours (docs/specs/007-editor/knowledge-tours.md): nothing on screen until one is picked.
 const TOURS = (
   <AreaErrorBoundary area="Tour">
     <EditorTours />

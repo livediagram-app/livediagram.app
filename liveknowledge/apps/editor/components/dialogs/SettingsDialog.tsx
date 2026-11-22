@@ -8,7 +8,7 @@ import {
 import { useCursorsDrawn } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
-import { PAGES_TOUR_KINDS, pagesKindSeen, requestPagesTourRelaunch } from '@/lib/pages-tour';
+import { newlyOffered, requestKnowledgeToursRelaunch } from '@/lib/knowledge-tours';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { track } from '@/lib/telemetry';
 import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';
@@ -57,12 +57,10 @@ const BINDING: EditorSettingsBinding<ReturnType<typeof visibleCategories>, UserP
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`),
 };
 
-// Tours › "Slides Tour", "Infographic Tour", "Article Tour" (docs/specs/007-editor/pages-tour.md): turning a kind's row
-// on from off reruns the Pages tour in place when it is on the footer's Start Tour button.
+// Get Started › each tour's row (docs/specs/007-editor/knowledge-tours.md "Settings"): closing Settings with tours newly
+// switched on reruns them, one by starting it, several by opening the Get Started list.
 export function relaunchTours(opened: UserPreferences, now: UserPreferences): void {
-  const owed = (prefs: UserPreferences) => PAGES_TOUR_KINDS.filter((k) => !pagesKindSeen(prefs, k));
-  const owedAtOpen = owed(opened);
-  if (owed(now).some((k) => !owedAtOpen.includes(k))) requestPagesTourRelaunch();
+  requestKnowledgeToursRelaunch(newlyOffered(opened, now));
 }
 
 // The Settings dialog: this editor's door to the shared host, handing in only what is its own (its catalogue's

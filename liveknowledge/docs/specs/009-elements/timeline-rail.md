@@ -8,7 +8,7 @@ how a stored rail reads, and the pattern its kind set for self-drawing elements.
 
 - The Timeline's kind is `shape: 'timeline-rail'`. It lives in **Concepts**, as a concept graphic: rows
   (`conceptRows`, a name and a when each), edited in place, Add Milestone on the "+" ring, the Rows section in the menu,
-  Build and Pulse, the theme's ramp and its own [element tour](../007-editor/element-tours.md).
+  Build and Pulse, and the theme's ramp (its element tour is retired, [Element tours](../007-editor/element-tours.md)).
 - A rail stored with `railCount` and `railLabels` (from livediagram's evenly spaced rail) reads as milestones on load,
   and those fields are never written (`element-normalise.ts` `railToTimeline`).
 - There is no Points stepper and no Add Point of the rail's own: milestones are rows.
