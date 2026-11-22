@@ -1,7 +1,8 @@
 // A returning guest of the old livediagram.app (docs/specs/014-identity/auth-and-guest-access.md "Returning guests
-// from the old site"): its bare UUID and signature, left in this browser by the old editor on the same address,
-// are claimed once the page has an identity of its own, so the work copied under `guest_<old uuid>` becomes the
-// caller's. At most one attempt per page load; only an answer from the api forgets the keys.
+// from the old site"): its bare UUID and signature (none for a guest from before signing), left in this browser by
+// the old editor on the same address, are claimed once the page has an identity of its own, so the work copied for
+// the old guest becomes the caller's. At most one attempt per page load; only an answer from the api forgets the
+// keys, so an unsigned claim accounts still pauses (503) keeps them for a later load.
 
 import {
   readLocalStorageSafe,
@@ -41,13 +42,8 @@ export async function claimLegacyGuest(ownerId: string): Promise<LegacyGuestClai
   if (attempted || !hasLegacyGuest()) return 'none';
   attempted = true;
   const legacyId = readLocalStorageSafe(LEGACY_GUEST_ID_KEY)!.toLowerCase();
-  const signature = readLocalStorageSafe(LEGACY_GUEST_SIG_KEY);
-  // A guest from before signing: unsigned claims are paused (the bare id is no proof of who holds it), so nothing
-  // is sent and both keys stay for when they can be claimed.
-  if (!signature) {
-    debugLog('[legacy-guest] unsigned, kept for a later load');
-    return 'kept';
-  }
+  // Null for a guest from before signing: accounts merges it once their id is re-keyed, and pauses it until then.
+  const signature = readLocalStorageSafe(LEGACY_GUEST_SIG_KEY) || null;
   try {
     const answer = await apiClaimLegacyGuest(ownerId, { legacyId, signature });
     removeLocalStorageSafe(LEGACY_GUEST_ID_KEY);

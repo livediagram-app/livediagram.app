@@ -23,6 +23,27 @@ export function legacyGuestOwner(oldGuestId: string): string {
   return `guest_${oldGuestId}`;
 }
 
+/** A guest of the old site from before signing, once re-keyed (liveworkspace/docs/specs/003-accounts/accounts.md
+ *  "Re-keyed ids"): `guest_<uuid>`, the uuid being the first 16 bytes of HMAC-SHA-256 of the UTF-8 bare id under the
+ *  UTF-8 `secret` (accounts' LEGACY_GUEST_REKEY_SECRET), shaped as a v4 UUID. Only someone holding the bare id can
+ *  reach it, and it does not reveal the bare id, so the owner id the index shows is no longer a way in. */
+export async function rekeyedLegacyGuestOwner(oldGuestId: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, encoder.encode(oldGuestId)));
+  const bytes = mac.slice(0, 16);
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+  return `guest_${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 /** Whether an old owner id is an account's (a Clerk id) rather than a guest's. */
 export function isOldAccountId(ownerId: string): boolean {
   return ownerId.startsWith('user_');
@@ -232,14 +253,15 @@ export type HandoffRequest = {
 //
 // `POST /api/legacy-guest/claim` on livediagram's api, as the browser's guest or account, forwarded with the api's
 // client credentials to the accounts Worker's `POST /api/account/internal/legacy-guests/claim`, which checks the old
-// signature (HMAC-SHA-256 of the bare id under LEGACY_GUEST_ID_HMAC_SECRET, base64url, no padding), then
-// merges `legacyGuestOwner(id)` into the caller through the index's `POST /internal/merge` with `legacy: true`.
+// signature (HMAC-SHA-256 of the bare id under LEGACY_GUEST_ID_HMAC_SECRET, base64url, no padding) or, for an
+// unsigned id from before signing, that its guest was re-keyed to `rekeyedLegacyGuestOwner(id)`, then merges that
+// owner (or `legacyGuestOwner(id)`) into the caller through the index's `POST /internal/merge` with `legacy: true`.
 
 export type LegacyGuestClaim = {
   /** The old bare UUID from `localStorage['livediagram:v2:self-id']`. */
   legacyId: string;
-  /** `localStorage['livediagram:v2:self-sig']`, or null for an id from before signing, which is never merged
-   *  (unsigned claims are paused: the bare id is not a secret). */
+  /** `localStorage['livediagram:v2:self-sig']`, or null for an id from before signing, which is merged only once
+   *  its guest is re-keyed (until then accounts answers 503 `unsigned_claims_paused`). */
   signature: string | null;
 };
 

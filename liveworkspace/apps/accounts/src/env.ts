@@ -84,5 +84,8 @@ export interface Env {
   // checks their signatures (unset, the claim route is a plain 404), and the claims' limit per caller (absent, as in
   // tests, not limited).
   LEGACY_GUEST_ID_HMAC_SECRET?: string;
+  // The key the ids of guests from before signing are re-keyed under (legacy-guest-rekey.ts): a new random secret,
+  // never the old site's. Unset, the re-key route is a plain 404 and their unsigned claims stay paused.
+  LEGACY_GUEST_REKEY_SECRET?: string;
   LEGACY_GUEST_LIMITER?: RateLimit;
 }

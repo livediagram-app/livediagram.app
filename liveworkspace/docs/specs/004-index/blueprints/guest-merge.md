@@ -46,6 +46,9 @@ differ. Then one batch, in order:
    on); the guest's own row is upserted with `merged_at` now; a row naming the user as its own alias (a chain that
    came back on itself) goes; past `PERSON_ALIASES_MAX` rows for the user, the oldest by `merged_at` (then
    `guest_id`) go. Nothing outside the index is rewritten.
+7. `redirectPersonMerges`: a row of the user's own merge into the guest goes (a chain back on itself), and the other
+   `person_app_merges` rows whose `user_id` is the guest name the user, so a chain's earlier merge reaches the apps'
+   final owner even if it is sent after the later one.
 
 Answer `200 { items }` (items moved). After it: Drive signalled when items or folders moved; `drainPersonMerges` run
 off the request's path; logged `[index] merged a guest { items, legacy, into }`. Run again, it finds nothing to move.
