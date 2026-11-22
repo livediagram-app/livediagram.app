@@ -39,7 +39,9 @@ replaces what the fork still shows around the writing.
   liveknowledge. The browser's own zoom is the zoom. A wide table or a wide drawing scrolls sideways inside its own
   box. On the page itself the canvas's bare-ground gestures do not exist: held Space scrolls the page, the middle
   button is the browser's, a drag on the ground draws no marquee (selecting text is the browser's own), the ground's
-  cursor is the plain one, and a letter typed outside the writing adds no shape.
+  cursor is the plain one, and a letter typed outside the writing adds no shape. Nothing moves the page by itself
+  once it is scrolled: a press anywhere leaves it where it stands, so a jump from On This Page, Search or an Ask
+  source stays where it lands (WI-1372).
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
   has one ("The page icon") to the left of the Title, the Title (40 px,
   bold, tight tracking), then the meta row ([Verification](verification.md); a **Suggested Edits** pill after its
