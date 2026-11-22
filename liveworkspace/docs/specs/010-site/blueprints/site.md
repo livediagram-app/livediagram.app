@@ -233,6 +233,12 @@ suggestion's verbs, failure line and body load only when one is opened (`Suggest
 needs first in `suggestion-answer.ts`). Measured the same way: 389,116 bytes (380.0 KiB), the same 19 scripts, 4 bytes
 under. The budget stays at 380 KiB; the next addition to the Explorer's first load needs its own saving.
 
+**The Inbox's count leaves its list model (2026-11-22).** The sidebar's badge, the rail's and Home's pill imported
+`packages/explorer/src/explorer/inbox/sections.ts`, and with it the whole list model (filters, labels, entries), into
+every first load. The count and its sections are now `inbox/inbox-count.ts`, and the row keys and settling
+`inbox/inbox-keys.ts`; `sections.ts` re-exports both for the Inbox itself. Measured the same way: 389,116 to 387,795
+bytes (378.7 KiB), 18 scripts, 1,325 bytes under. The budget stays at 380 KiB.
+
 **Closing a toast stays inside the budget (2026-11-20, #2058).** Closing a toast now dismisses it (it fades in place
 and leaves the notification list) and a popover risen from the bottom chrome is a toast floor. The toast provider,
 stack and floor hook are in `/explorer`'s first load, and the first cut added 135 bytes gzipped (389,052 to 389,187,

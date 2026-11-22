@@ -33,7 +33,7 @@ import {
   TrashIcon,
   ArchiveIcon,
 } from '../ui/icons';
-import { inboxBadge } from './inbox/sections';
+import { inboxBadge } from './inbox/inbox-count';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { explorerPath, sameView, SIDEBAR_LABELS, withLens, type ExplorerView } from '../views';
 import { useExplorer } from './context';
