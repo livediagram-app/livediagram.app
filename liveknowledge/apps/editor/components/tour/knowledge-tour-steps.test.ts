@@ -133,6 +133,19 @@ describe('a run', () => {
     expect(a.openPageInfo).toHaveBeenCalled();
   });
 
+  // Ask and Connect are drawn as a modal frame (KnowledgeViewFrame's modal guard): a step inside one not on the modal
+  // layer makes the engine step aside, and the card vanished after the first step (PR #2129's browser check).
+  it('draws every step inside the Ask or Connect view over it, as the tour’s own dialog', () => {
+    for (const id of ['ask', 'connect'] as const) {
+      for (const step of allKnowledgeTourSteps(id, editor)) {
+        const a = api();
+        void step.prepare?.(a);
+        const opensView = vi.mocked(a.showView).mock.calls.some(([v]) => v !== 'pages');
+        expect(step.layer === 'modal', `${id}/${step.id}`).toBe(opensView);
+      }
+    }
+  });
+
   it('words the tree for a reader as a reader', () => {
     const viewer = allKnowledgeTourSteps('organise', ROLES.Viewer!).find((s) => s.id === 'tree')!;
     expect(viewer.body).not.toMatch(/Drag/);

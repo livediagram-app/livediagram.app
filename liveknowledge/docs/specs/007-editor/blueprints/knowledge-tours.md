@@ -94,13 +94,15 @@ Step anchors (all existing attributes; no new markup):
 | connect/tab                         | `[data-knowledge-view-link="connect"]`                                                              |
 | connect/apps, steps, access, status | `[data-connect-apps]`, `[data-connect-app-steps]`, `[data-connect-access]`, `[data-connect-status]` |
 | share/share                         | `[data-tour-id="share"]` (the shared Share button)                                                  |
-| share/makers                        | `[data-page-makers]`                                                                                |
+| share/makers                        | `ul[data-page-makers]` (the top row's avatars, not the meta row's pills)                            |
 | share/reactions                     | `[data-page-reactions]`                                                                             |
 | share/comments                      | `[data-page-comments]`                                                                              |
 
 Each step's `prepare` first calls `showView` for its view, then what it opens (`openTree` for the tree steps,
 `openPageInfo` for health and approval); its `cleanup` closes what the step alone opened (the phone's tree sheet, the
-Page Info popover), so the next step starts from a quiet page.
+Page Info popover), so the next step starts from a quiet page. A step inside the Ask, AI Knowledge or Connect view
+carries `layer: 'modal'`: those views are drawn over the editor as a modal frame (KnowledgeViewFrame's modal guard),
+and without it the engine takes the view for someone else's dialog and steps aside, hiding the card.
 
 ## Data and persistence
 

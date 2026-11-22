@@ -90,7 +90,8 @@ export const KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]
   ],
   share: [
     { id: 'share', needs: ['share'] },
-    { id: 'makers', needs: ['online'], present: '[data-page-makers]' },
+    // The top row's avatars (PageMakersStack), not the meta row's maker pills, which carry the same mark.
+    { id: 'makers', needs: ['online'], present: 'ul[data-page-makers]' },
     { id: 'reactions', needs: ['signedIn', 'online'] },
     { id: 'comments', needs: ['write', 'online'] },
   ],

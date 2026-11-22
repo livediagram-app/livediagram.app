@@ -27,6 +27,9 @@ const inTree = (api: KnowledgeTourApi) => {
   api.openTree();
 };
 const onView = (view: 'ask' | 'ai' | 'connect') => (api: KnowledgeTourApi) => api.showView(view);
+// Ask, AI Knowledge and Connect are drawn over the editor as a modal frame (KnowledgeViewFrame's modal guard). A step
+// inside one is the tour's own dialog: without the modal layer the engine steps aside for it and the card vanishes.
+const IN_VIEW = { layer: 'modal' } as const;
 
 type StepBuilder = (who: TourWho) => KnowledgeTourStep;
 
@@ -157,6 +160,7 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       body: 'Type a question and press Enter. A follow-up keeps the conversation going.',
       selector: () => '[data-ask-composer]',
       prepare: onView('ask'),
+      ...IN_VIEW,
     }),
     questions: () => ({
       id: 'questions',
@@ -164,6 +168,7 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       body: 'Every question you ask here is kept, to open again.',
       selector: () => 'aside[aria-label="Your Questions"]',
       prepare: onView('ask'),
+      ...IN_VIEW,
     }),
     ai: () => ({
       id: 'ai',
@@ -185,6 +190,7 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       body: 'Pick the app you use. The steps below follow your pick.',
       selector: () => '[data-connect-apps]',
       prepare: onView('connect'),
+      ...IN_VIEW,
     }),
     steps: () => ({
       id: 'steps',
@@ -192,6 +198,7 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       body: 'Copy the address, or press the button that opens your app’s settings.',
       selector: () => '[data-connect-app-steps]',
       prepare: onView('connect'),
+      ...IN_VIEW,
     }),
     access: () => ({
       id: 'access',
@@ -199,6 +206,7 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       body: 'Every connection reads. Suggesting edits and writing follow your role here.',
       selector: () => '[data-connect-access]',
       prepare: onView('connect'),
+      ...IN_VIEW,
     }),
     status: () => ({
       id: 'status',
@@ -206,6 +214,7 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       body: 'This turns to Connected once your app reads a page. Try the prompt it gives you.',
       selector: () => '[data-connect-status]',
       prepare: onView('connect'),
+      ...IN_VIEW,
     }),
   },
   share: {
@@ -220,7 +229,8 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       id: 'makers',
       title: 'Who Made It',
       body: 'Everyone who wrote this page, its creator first.',
-      selector: () => '[data-page-makers]',
+      // The top row's avatars (spec "Who Made It"), not the meta row's maker pills, which carry the same mark first.
+      selector: () => 'ul[data-page-makers]',
       prepare: onPages,
     }),
     reactions: () => ({
