@@ -105,6 +105,10 @@ Trash shows no chip, and the place may be sent again. A place sent to several ca
   that item's room tells its open sessions, and each reads its item's sends again with its own access. The signal names
   ids, never titles or columns.
 - A missed signal costs only freshness: every open of the source reads its sends again.
+- **Where it sits.** On a canvas, the chip is one of the element's own indicators (each app's
+  `docs/specs/008-canvas/element-indicators.md`): the plan glyph, a tick once done, its title and where it stands on
+  hover. In a thread's header it is the chip with its words. livehuddle, which has no element indicators, draws it as a
+  disc on the sticky's top right corner.
 
 ## Agents
 
@@ -115,16 +119,16 @@ an item its person could not open. Agents read a card's Sent From with the card.
 
 ## Limits
 
-| Limit                          | Value | What it bounds                                          |
-| ------------------------------ | ----- | ------------------------------------------------------- |
-| `PLAN_SEND_CARDS_MAX`          | 20    | Cards one send makes (Send All on a huddle's actions)   |
-| `PLAN_SEND_CHECKLIST_MAX`      | 50    | Checklist rows on one card                              |
-| `PLAN_SENDS_PER_SOURCE_MAX`    | 500   | Sends one source item holds; the next is refused        |
-| `PLAN_SEND_READ_MAX`           | 200   | Sends a source's read answers, newest first             |
-| `PLAN_SEND_PLANS_CHECKED_MAX`  | 20    | Plans a read checks the reader's access to              |
-| `PLAN_CARDS_CHANGED_MAX`       | 100   | Cards in one of liveplanner's change calls              |
-| `PLAN_SEND_SOURCES_SIGNAL_MAX` | 50    | Source items one change call tells                      |
-| Sends a person                 | 10/m  | The kit run limiter (`KIT_RUN_LIMITER`), its own key     |
+| Limit                          | Value | What it bounds                                        |
+| ------------------------------ | ----- | ----------------------------------------------------- |
+| `PLAN_SEND_CARDS_MAX`          | 20    | Cards one send makes (Send All on a huddle's actions) |
+| `PLAN_SEND_CHECKLIST_MAX`      | 50    | Checklist rows on one card                            |
+| `PLAN_SENDS_PER_SOURCE_MAX`    | 500   | Sends one source item holds; the next is refused      |
+| `PLAN_SEND_READ_MAX`           | 200   | Sends a source's read answers, newest first           |
+| `PLAN_SEND_PLANS_CHECKED_MAX`  | 20    | Plans a read checks the reader's access to            |
+| `PLAN_CARDS_CHANGED_MAX`       | 100   | Cards in one of liveplanner's change calls            |
+| `PLAN_SEND_SOURCES_SIGNAL_MAX` | 50    | Source items one change call tells                    |
+| Sends a person                 | 10/m  | The kit run limiter (`KIT_RUN_LIMITER`), its own key  |
 
 ## Security
 
@@ -138,6 +142,8 @@ an item its person could not open. Agents read a card's Sent From with the card.
 
 ## Telemetry
 
-`send_to_plan_opened` (the picker opened, by app and place kind), `send_to_plan_sent` (cards made, by app, kind, how
-many and whether one card with a checklist), `send_to_plan_refused` (by reason), `send_to_plan_chip_opened` (a chip
-clicked). Charted on the site's telemetry page under Send to Plan.
+Each app sends Send to Plan's events under its own name through the workbench's `track`, in the UI category, typed by
+the feature and never by a plan, an element or any words: `UI·Opened·SendToPlan` (the picker opened),
+`UI·Created·SendToPlan` (a send made its cards), `UI·Refused·SendToPlan` (a send turned away or unable to reach the
+plan) and `UI·Opened·SentCard` (a chip clicked). Charted on the site's telemetry page as the Send to Plan stack in every
+app (`apps/site/app/telemetry/_shared/send-to-plan-metrics.ts`).

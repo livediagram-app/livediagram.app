@@ -25,6 +25,24 @@ export const articles: Article[] = [
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'liveknowledge'],
   },
   {
+    slug: 'send-to-plan',
+    title: 'Send to Plan',
+    description:
+      'Turn a sticky, a shape, some words or a thread into a card in one of your plans, linked back to the place.',
+    keywords:
+      'send to plan card liveplanner kanban board task todo action items follow up turn into card ticket track chip sent from checklist assignee due',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
+  },
+  {
     slug: 'facilitator',
     title: 'Facilitator',
     description: 'Give one person the tools that run a live session, and hand the role on.',

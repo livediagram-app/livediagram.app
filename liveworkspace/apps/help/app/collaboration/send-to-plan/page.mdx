@@ -1,0 +1,73 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Send to Plan',
+  description:
+    'Turn a sticky, a shape, picked words or a comment thread into a liveplanner card, linked back to the exact place, with a chip that shows where the card stands.',
+  path: '/help/collaboration/send-to-plan/',
+});
+
+<ArticleLayout path="collaboration/send-to-plan" title="Send to Plan" description="Turn a sticky, a shape, some words or a thread into a card in one of your plans, and watch it move without leaving the page." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("send-to-plan")}>
+
+A workshop's stickies, a review's comments and a meeting's actions are work someone has to do. **Send to Plan** makes a card for it in one of your liveplanner plans, in the board and column you pick, and links the card back to the exact place it came from. The place stays as it is; a small chip on it shows the card's column and plan, and ticks once the card is done.
+
+You need to be signed in, and able to add cards to the plan you pick. Reading the <Noun /> is enough to send from it: a Viewer can send too. Sending is not offered in an embed, for a <Noun /> saved only in this browser (Offline), or on Community.
+
+## Sending
+
+<Step n={1}>
+  Pick what to send:
+
+- **A sticky or a shape**: right-click it (long-press on a touch screen), open **Resources** and press **Send to Plan…**. Without an element menu (a Participant or a Viewer), select it and press the **Send to Plan** button on its toolbar.
+- **Several at once**: select them and press **Send to Plan** on the selection's toolbar. Elements without words are left out.
+- **A comment thread**: press the plan button in the thread's header, beside Resolve.
+
+</Step>
+
+<AppNote app="livedocuments,liveknowledge">
+  While you edit text, the text toolbar's **Send to Plan** sends the words you picked (a sentence, a
+  list item, a checklist item, several lines), or the whole text when nothing is picked.
+</AppNote>
+
+<AppNote app="livehuddle">
+  A Space's stickies are its meeting's actions. The tab menu's **Send Stickies to Plan** sends every
+  sticky on the tab with words, top to bottom, one card each, at most 20 at a time.
+</AppNote>
+
+<Step n={2}>
+  Pick a **Plan**. Your most recent plans across every app come first, and the search finds the
+  rest. **New Plan** makes one on the spot. A plan you can only view is listed but locked. The
+  picker opens on the plan, board and column you last sent to from this <Noun />.
+</Step>
+
+<Step n={3}>
+  Check the **Card**: its **Board** and **Column**, its **Title** (the first line of the words), its
+  **Assignee** (a name written as `@Name`, when someone in the plan has it) and its **Due** day (a
+  day written in the words: "by Friday", "tomorrow", "12 Dec" or `2026-12-12`). Change anything
+  before you send.
+</Step>
+
+<Step n={4}>
+  With several picked, choose **one card each** or **One Card with a Checklist**, then press **Send
+  to Plan**. A message says where the cards went, with **Open Card**.
+</Step>
+
+## The chip
+
+Once sent, the place shows a chip: the plan glyph on the element (a tick once the card is done), and the card's column and plan in a thread's header. Hover it for the card's title; click it to open the card in liveplanner in a new browser tab. It updates by itself when someone moves the card, within a couple of seconds, and it is never drawn in an export or a thumbnail.
+
+You see a chip only for a plan you can open. Send the same place again and the picker shows the card it already made first, with **Open Card**; **Send Again** makes another card only when you mean it.
+
+## In liveplanner
+
+The card's footer says **Sent from**, with a link back to the place: the <Noun />, its tab and the element, opened and selected. A copy of the card keeps the link; a Community copy leaves it out.
+
+<Tip>
+  Agents can send too: an MCP client's `change_items` add takes a `sentFrom` with the place (its
+  app, item, tab and element) and its words, and the card links back and gets its chip the same
+  way.
+</Tip>
+
+</ArticleLayout>

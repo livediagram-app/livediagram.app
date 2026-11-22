@@ -18,8 +18,7 @@ an Inbox row does (lib/collab-deep-link.ts). The words are what the person sees,
 
 ## The chip
 
-- **On the page**, a chip at the top right corner of the block the words were sent from, at a steady size; not in
-  an export, a thumbnail or an agent's read.
+- **On the page**, one of the element's own indicators ([element-indicators.md](../008-canvas/element-indicators.md)): the plan glyph, a tick once the card is done, the card's title and where it stands on hover. Like every indicator it is never drawn in an export or a thumbnail.
 - **On a thread**, the thread's own chip in place of the button.
 
 Clicking a chip opens the card in liveplanner in a new browser tab; a chip never takes the canvas's selection, drag or
@@ -27,16 +26,16 @@ keys.
 
 ## Who sees it
 
-| Role                             | Entry                                | Chips |
-| -------------------------------- | ------------------------------------ | ----- |
+| Role                             | Entry                                                     | Chips |
+| -------------------------------- | --------------------------------------------------------- | ----- |
 | Editor                           | Text toolbar, element menu (Resources), a thread's header | Yes   |
-| Participant                      | Selection toolbar, a thread's header | Yes   |
-| Viewer                           | Selection toolbar, a thread's header | Yes   |
-| Guest, Offline, embed, Community | None (the platform's "Who may send") | No    |
+| Participant                      | Selection toolbar, a thread's header                      | Yes   |
+| Viewer                           | Selection toolbar, a thread's header                      | Yes   |
+| Guest, Offline, embed, Community | None (the platform's "Who may send")                      | No    |
 
 A send needs only read access here: what decides is the person's Edit on the plan they pick, which the picker and the
 index check. A chip shows only to a reader who can open its plan.
 
 ## Telemetry
 
-The platform's `send_to_plan_*` events, with `app: liveknowledge`.
+The platform's Send to Plan events (`UI·Opened·SendToPlan`, `UI·Created·SendToPlan`, `UI·Refused·SendToPlan`, `UI·Opened·SentCard`), sent under this app's name.

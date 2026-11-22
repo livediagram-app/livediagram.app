@@ -46,6 +46,7 @@ export const ORDER: readonly string[] = [
   'collaboration/sharing/community',
   'collaboration/sharing/finding-community-documents',
   'collaboration/comments',
+  'collaboration/send-to-plan',
   'collaboration/live-presence',
   'collaboration/snapshots',
   'collaboration/teams',

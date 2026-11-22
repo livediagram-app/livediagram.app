@@ -573,6 +573,9 @@ export const LOOKS_FILTERED = chart(
   { types: ['LooksFinishFilter', 'LooksSeasonal'], rising: 'neutral' },
 );
 
+// Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
+OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard');
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
