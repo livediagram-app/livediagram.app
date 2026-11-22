@@ -21,15 +21,22 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **An empty page** (owner, 2026-11-21), read: a page with nothing under its title shows a drawing of a blank page,
   "Nothing Written Yet", and for whoever may edit **Start Writing** (opens edit mode, the caret in the Title on a
   desktop); a reader is told it has no
-  writing yet. Never while editing.
+  writing yet. Never while editing. Beside Edit, for a signed-in person who may edit, **Describe Structure** drafts the
+  page's headings with AI ([Describe to set up](describe-to-set-up.md#describe-structure-on-a-page)); while editing a
+  page with nothing under its Title it stands to the left of Cancel.
 - **The buttons** (owner, 2026-11-21: "look rubbish"): Edit is a solid accent button with a pencil and its key, E.
+  To its right, while the page is read, a square **Zen Mode** button (owner 2026-11-21), white like Cancel and the
+  same height as Edit, for Editors and Participants alike; it is not there while editing, nor in an embed or once zen
+  is on (zen's way out stands at the page's foot).
   While editing, one capsule holds the draft's status only when there is one (an amber dot and "Unsaved changes
   since ...", or an agent's change; no "Editing" label, owner 2026-11-21), then Cancel and Save, floating 24 px inside the bottom right corner of the document's white area (left of the rail, above the footer;
   owner 2026-11-21), where Edit floats too while reading. The page's reactions stand left of Edit while reading, and left
   of Zen for a Viewer ([Reactions on a page](page-reactions.md)); the draft bar replaces them while editing. Edit, Cancel (with an X) and Save are one size, each standing
   on its own, no capsule round them. No tooltips on them (owner 2026-11-21). Each says it happened: Edit, Save and
-  Cancel make the white area glow once round its edge (brand for Edit and Save, slate for Cancel) and the buttons that
-  take over pop in; a double-click to edit sends a ring out from the pointer. Reduced motion turns them off. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
+  Cancel ripple inward round the document area a person sees, clear of the page tree and the Page Info rail (owner
+  2026-11-21): its edge glows and three rings travel in from the edge and fade, one after another, in about 0.9 s
+  (brand for Edit and Save, slate for Cancel), and the buttons that take over pop in; a double-click to edit sends a
+  96 px ring out from the pointer. Reduced motion turns them off. Save carries the accent, a tick and its keys. The key hints are hidden from assistive technology so
   the buttons are named Edit and Save.
 - A page made here (New Page, Add Subpage) opens straight into edit mode with the caret in its Title: it was made
   to be written. So does a new blank knowledgebase's first page. The caret comes once the page's writing is on screen,
@@ -68,7 +75,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **Save** makes the draft the saved page for everyone: readers see it at once, search and agents read it, the
   Updated stamp (verification.md "Created and Updated") moves to the person who pressed Save, "Changed since
   verified" is worked out against it, and the draft is gone. Everyone else still in edit mode stays in edit mode on
-  the new saved page, with a toast "Priya saved the page".
+  the new saved page, with a toast "Priya saved the page". The person who saved sees a toast naming the page, "Release Process
+  Saved" (owner 2026-11-21; a title past 60 characters is cut, "Page Saved" with none).
 - **Cancel** leaves edit mode. If others are still editing, the draft stays theirs and nothing is lost. If you are the
   last one editing and the draft has unsaved changes, Cancel asks first: "Discard your changes to this page?" with
   **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away, with any comment or action started on words only the draft held (its margin marker goes too).

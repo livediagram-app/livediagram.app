@@ -154,6 +154,22 @@ export const OWNERS_REMINDED = chart(
   { types: ['OwnersReminded'] },
 );
 
+// ---- Connect (mcp-connect.md) ----------------------------------------------------------------------------------
+
+export const CONNECT_OPENED = openedChart(
+  'Connect Opened',
+  'The Connect view opened, from the footer or Connect an Agent: the steps to connect an AI app over MCP.',
+  (t) => t === 'ConnectView' || t === 'ConnectAgent',
+);
+
+export const CONNECT_COPIED = chart(
+  'UI',
+  'Copied',
+  'Connect Steps Copied',
+  'An MCP address, command, config or first prompt copied from the Connect view.',
+  { types: ['McpSetup', 'ConnectPrompt'] },
+);
+
 export const AI_KNOWLEDGE: MetricStack = {
   stack: true,
   title: 'AI Knowledge',
@@ -161,6 +177,8 @@ export const AI_KNOWLEDGE: MetricStack = {
     'Keeping the knowledgebase right: agent suggestions accepted or dismissed, conflicts and unanswered questions settled, and owners emailed.',
   members: [
     AI_KNOWLEDGE_OPENED,
+    CONNECT_OPENED,
+    CONNECT_COPIED,
     SUGGESTIONS_ACCEPTED,
     SUGGESTIONS_DISMISSED,
     CONFLICTS_DISMISSED,
@@ -238,6 +256,14 @@ export const PAGES_REJECTED = chart(
   { types: ['Rejected', 'RejectedWithNote'], rising: 'neutral' },
 );
 
+export const HEADINGS_ADDED_FROM_HEALTH = chart(
+  'UI',
+  'Used',
+  'Headings Added From Health',
+  "Add a Heading pressed in the Health Score's breakdown, to give a long page some structure.",
+  { types: ['HealthAddHeading'] },
+);
+
 export const VERIFICATION: MetricStack = {
   stack: true,
   title: 'Verification',
@@ -251,6 +277,7 @@ export const VERIFICATION: MetricStack = {
     APPROVALS_WITHDRAWN,
     PAGES_APPROVED,
     PAGES_REJECTED,
+    HEADINGS_ADDED_FROM_HEALTH,
   ],
   headline: [PAGES_VERIFIED, STILL_RIGHT_FROM_HOME],
 };
@@ -335,6 +362,22 @@ export const PAGE_LINKS_COPIED = chart(
   { types: ['CopyPageLink'] },
 );
 
+export const PAGES_RESTORED = chart(
+  'UI',
+  'Used',
+  'Pages Restored From the Trash',
+  "A page brought back from the knowledgebase's page Trash to where it was.",
+  { types: ['RestorePage'] },
+);
+
+export const PAGES_DELETED_FOREVER = chart(
+  'UI',
+  'Used',
+  'Pages Deleted Forever',
+  'A page removed for good from the page Trash, one at a time or the whole Trash emptied, by an Editor.',
+  { types: ['DeletePageForever', 'EmptyPageTrash'], rising: 'neutral' },
+);
+
 export const PAGE_TREE_FOLDED = chart(
   'UI',
   'Changed',
@@ -353,6 +396,8 @@ export const PAGE_NAVIGATION: MetricStack = {
     BACKLINKS_FOLLOWED,
     ON_THIS_PAGE_JUMPS,
     PAGE_LINKS_COPIED,
+    PAGES_RESTORED,
+    PAGES_DELETED_FOREVER,
     PAGE_TREE_FOLDED,
   ],
   headline: [PAGE_LINKS_FOLLOWED, BACKLINKS_FOLLOWED, ON_THIS_PAGE_JUMPS],
@@ -467,6 +512,14 @@ export const SETUPS_SUGGESTED = chart(
   { types: ['SetupSuggested', 'SetupSuggestedBuiltIn'] },
 );
 
+export const STRUCTURES_DRAFTED = chart(
+  'UI',
+  'Used',
+  'Page Structures Drafted',
+  "Describe Structure drafted an empty page's headings into its draft, on the team's own key or on built-in AI.",
+  { types: ['DescribeStructure'] },
+);
+
 export const AI_KEYS_ADDED = chart(
   'UI',
   'Added',
@@ -530,6 +583,7 @@ export const AI_SETUP: MetricStack = {
     "Getting a knowledgebase going: Describe to Set Up's suggestions, and the team's own AI key added, removed or pointed at another provider or model.",
   members: [
     SETUPS_SUGGESTED,
+    STRUCTURES_DRAFTED,
     AI_KEYS_ADDED,
     AI_KEYS_REMOVED,
     AI_PROVIDERS_CHANGED,

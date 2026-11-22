@@ -25,7 +25,7 @@ have seen this". It says nothing a comment would say, asks nothing of the author
 - **Who reacted** is shown by name: a person's profile name, or the name on their cursor when the account has no
   profile name to give. Every reaction is public to whoever reads the page.
 - **Stored** in the knowledgebase's Durable Object, its own table `page_reactions` (one row a person a page an emoji,
-  schema step after the published snapshot's), never in the page's body and never in D1. A reaction is not an edit:
+  schema step after the Health Score shape's), never in the page's body and never in D1. A reaction is not an edit:
   it moves no revision, no Updated stamp, no version, no History entry and no Most Used day, so previews, Recent and
   the page tree never reorder on a clap. A deleted page takes its reactions with it; a closed account's reactions
   are removed.

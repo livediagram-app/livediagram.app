@@ -11,6 +11,7 @@ import { markedParts } from '@/lib/knowledge-ask/answer-parts';
 import type { AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
 import { pagePath, sourceTrust, type SourceTrust } from '@/lib/knowledge-ask/source-meta';
 import { TrustBadge } from '@/components/knowledge/TrustBadge';
+import { HealthChip } from '@/components/knowledge/HealthChip';
 import { SourcesIcon } from './ask-icons';
 import { NUMBER_CHIP } from './CitationChip';
 
@@ -81,7 +82,7 @@ function Breadcrumb({
 
 // The source's trust at a glance, in the page's own badges: Verified with its tick, Review Due amber, Never Verified
 // quiet with no tick. The words beside it wrap whole to a second line rather than cut a name.
-function SourceTrustLine({ trust }: { trust: SourceTrust }) {
+function SourceTrustLine({ trust, health }: { trust: SourceTrust; health: AskSource['health'] }) {
   return (
     <span
       data-source-trust={trust.mark}
@@ -101,6 +102,8 @@ function SourceTrustLine({ trust }: { trust: SourceTrust }) {
           {piece}
         </span>
       ))}
+      {/* The page's Health Score after its trust (search-and-ask.md "Sources"); an older answer has none. */}
+      {health ? <HealthChip score={health.score} label={health.label} prefix /> : null}
     </span>
   );
 }
@@ -176,7 +179,10 @@ function SourceCard({
             {source.reason}
           </span>
         ) : null}
-        <SourceTrustLine trust={sourceTrust(source.trust, source.verifiedAt, verifier, now)} />
+        <SourceTrustLine
+          trust={sourceTrust(source.trust, source.verifiedAt, verifier, now)}
+          health={source.health}
+        />
       </button>
     </li>
   );

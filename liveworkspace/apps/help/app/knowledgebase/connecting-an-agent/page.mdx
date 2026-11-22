@@ -16,44 +16,42 @@ export const metadata = helpMetadata({
 
 A Knowledgebase is written for agents as much as for people. Connect Claude, a coding agent or your own script, and it can search the pages, read them with how far each can be trusted, and suggest edits for a person to accept.
 
-There are three ways in. Each is listed in the **Connect an Agent** dialog, with the address and the commands to copy.
+There are three ways in: the MCP server, the command line and an API token. The **Connect** tab walks you through each, with the address and the commands to copy.
 
-<Figure caption="Connect an Agent: what a new connection may do, then the MCP server's address, the command line and API tokens.">
+<Figure caption="Connect: pick your AI app, follow its steps with the address to copy, and watch for it to connect.">
   <ConnectAgentScene />
 </Figure>
 
-## Open Connect an Agent
+## Open Connect
 
 <Step n={1}>
-  Press the **AI Knowledge** tab in the footer.
+  Sign in, then press the **Connect** tab in the footer, after AI Knowledge. **Connect an Agent** in AI Knowledge opens it too.
 </Step>
 
 <Step n={2}>
-  Press **Connect an Agent** at the top of the view.
+  Follow its four steps: **Pick Your AI App**, **Add liveknowledge** to it, **Approve and Choose Access**, and **Check It Worked**.
 </Step>
 
-Anyone who can open the Knowledgebase can read the dialog. What a connection can then do depends on who it acts for (see [What Agents Can Do](/help/knowledgebase/what-agents-can-do/)).
+Every role can follow the steps. What a connection can then do depends on who it acts for (see [What Agents Can Do](/help/knowledgebase/what-agents-can-do/)). Signed out, Connect asks you to sign in first: connecting makes a token for your account.
 
 ## Through the MCP Server
 
 This is the way for Claude and any other AI tool that speaks the Model Context Protocol.
 
 <Step n={1}>
-  Copy the address under **MCP Server**: `https://mcp.liveknowledge.app/mcp`.
+  In **Connect**, pick your AI app: Claude, Claude Code, ChatGPT, Cursor, VS Code or Other App.
 </Step>
 
 <Step n={2}>
-  Add it as a connector or a remote MCP server in your AI tool: in Claude, open Settings, then Connectors, and add a custom connector with this address as its URL. Other tools take it wherever they ask for a remote MCP server or a server URL.
+  Follow its steps. Each gives you the address, `https://mcp.liveknowledge.app/mcp`, or the command or config that holds it, with **Copy**. In Claude, for example, open Settings, then Connectors, and add a custom connector with the address as its URL. For every app, see [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/).
 </Step>
 
 <Step n={3}>
-  Your AI tool opens a liveknowledge page asking you to approve the connection. Approve it. The
-  tool makes its own token, so there is nothing to paste.
+  Your AI tool opens a liveknowledge page asking you to approve the connection. Check the site it names, switch on **Read-only access** if it should only read, and choose **Connect**. The tool makes its own token, so there is nothing to paste.
 </Step>
 
 <Step n={4}>
-  Ask it something about your pages. It calls `get_context` first, then `search_pages`,
-  `read_page` and `suggest_edit`. Every tool is listed in [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/).
+  Ask it something about your pages, naming the Knowledgebase: Connect gives you a first prompt to copy. **Check It Worked** says **Connected** with the app's name once it reads a page here; it checks every 10 seconds for 5 minutes, and **Check Again** starts again. The app calls `get_context` first, then `search_pages`, `read_page` and `suggest_edit`. Every tool is listed in [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/).
 </Step>
 
 ## Through the Command Line
@@ -71,7 +69,7 @@ liveknowledge search Handbook when do we deploy
 ## With an API Token
 
 <Step n={1}>
-  Press **Open API Tokens** in the dialog. It opens the Tokens page in Settings.
+  Press **Open API Tokens** under **Other Ways In** in Connect. It opens the Tokens page in Settings.
 </Step>
 
 <Step n={2}>
@@ -103,13 +101,14 @@ A card stays for 30 days after the agent last read or wrote here.
 
 - An agent acts for the person or token that connected it, and can open only what they can. A share role applies to an agent exactly as it does to a person.
 - A new connection reads and suggests. Writing is allowed one connection at a time, by an Editor. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
-- A Knowledgebase kept Offline is in your browser only, so no agent can reach it.
+- A Knowledgebase kept Offline is in your browser only, so no agent can reach it, and its Connect tab waits for it to be synced.
+- A connection reaches every Knowledgebase you can open. Name this one when you ask, so the app reads here.
 
 ## Who Can Do What
 
 | Action                                   | Editor | Participant | Viewer |
 | ---------------------------------------- | ------ | ----------- | ------ |
-| Open Connect an Agent, see Connected Agents | Yes | Yes         | Yes    |
+| Open Connect, see Connected Agents       | Yes    | Yes         | Yes    |
 | Connect an agent that reads              | Yes    | Yes         | Yes    |
 | Connect an agent that suggests edits     | Yes    | Yes         | No     |
 | Allow an agent to write, or stop it      | Yes    | No          | No     |

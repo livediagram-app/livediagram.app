@@ -170,6 +170,9 @@ export type TabStyleSurface<Look extends TabStyleLook, Pattern extends string> =
   renderPanel?: (panel: TabStylePanel) => ReactNode;
   // A Fine-tune row's line of the product's own, per panel; the shared line when unset.
   panelValues?: Partial<Record<TabStylePanel, string>>;
+  // The typeface the home's Text row draws its "Aa" in, a font id of the product's own (a knowledgebase's heading
+  // font); the tab font when unset.
+  textFont?: string;
 };
 
 /** A surface's changes to the base: any setting, and only the copy lines it words differently. */

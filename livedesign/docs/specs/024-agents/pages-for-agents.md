@@ -10,11 +10,12 @@ is never told a change worked when it shows on no page.
 
 ## Domain language
 
-| Term            | Means                                                                                                |
-| --------------- | ---------------------------------------------------------------------------------------------------- |
-| **page**        | One `Page` of a tab, as [Pages](../007-editor/pages-mode.md) defines it                              |
-| **page place**  | A page's 1-based position in the tab's row (`2` is the second page): what agents and people count by |
-| **page change** | One entry of a `change_pages` call: `add`, `set`, `layout`, `move`, `duplicate` or `delete`          |
+| Term            | Means                                                                                                       |
+| --------------- | ----------------------------------------------------------------------------------------------------------- |
+| **page**        | One `Page` of a tab, as [Pages](../007-editor/pages-mode.md) defines it                                     |
+| **page place**  | A page's 1-based position in the tab's row (`2` is the second page): what agents and people count by        |
+| **page change** | One entry of a `change_pages` call: `add`, `set`, `layout`, `move`, `duplicate` or `delete`                 |
+| **text slot**   | A named place for words in a layout (`title`, `subtitle`, `bullets`, `body`), read from the layout as built |
 
 ## The front doors
 
@@ -46,15 +47,15 @@ Up to **50** page changes, applied in order, each to the tab as the ones before 
 edit. A refused change stops the batch and nothing is written; the answer names the change and why, and what the
 changes before it would have done.
 
-| Change                    | Fields                                                                                             | Does                                                                                                                                                                          |
-| ------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `add`                     | `kind` (logo, wireframe, photo), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                     |
-| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                 | The page panel's edits                                                                                                                                                        |
-| `layout`                  | `page`, `layout`                                                                                   | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                           |
-| `move`                    | `page`, `to`                                                                                       | Moves the page to place `to`, its content with it                                                                                                                             |
-| `duplicate`               | `page`                                                                                             | A copy after it, content and all                                                                                                                                              |
-| `delete`                  | `page`                                                                                             | Removes the page and everything on it; never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
-| `apply_background_to_all` | `page`                                                                                             | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                       |
+| Change                    | Fields                                                                                                      | Does                                                                                                                                                                          |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add`                     | `kind` (logo, wireframe, photo), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `text?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                     |
+| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                          | The page panel's edits                                                                                                                                                        |
+| `layout`                  | `page`, `layout`, `text?`                                                                                   | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                           |
+| `move`                    | `page`, `to`                                                                                                | Moves the page to place `to`, its content with it                                                                                                                             |
+| `duplicate`               | `page`                                                                                                      | A copy after it, content and all                                                                                                                                              |
+| `delete`                  | `page`                                                                                                      | Removes the page and everything on it; never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
+| `apply_background_to_all` | `page`                                                                                                      | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                       |
 
 - **One kind a tab** ([Pages](../007-editor/pages-mode.md#one-kind-a-tab)): an `add` of a kind other than the tab's
   (its first page's) is refused (`kind_not_offered`), naming the tab's kind and pointing to a tab of its own
@@ -91,6 +92,31 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   `layoutNamed`, `../packages/edit-operations/src/layout-named.ts`). Any other is refused (`layout_unknown`)
   naming what was asked, the closest ids when some are near, and the kind's layouts. Laid out in the page's content
   box, in the tab's theme.
+- **Text slots** ([Layout text slots](layout-slots.md) lists every layout's): an `add` with a `layout`, and a
+  `layout` change, take `text`, the words for the layout's sample text by slot, so a set of app screens or a logo is
+  laid out and written in one call: `{"op": "add", "kind": "wireframe", "layout": "wf-sign-in", "text": {"title":
+"Welcome to Acme", "subtitle": "Sign in to your team"}}`. Screens used to take four calls (create, lay out, read
+  the refs, write them by ref); they now take two. The slots are **read from the layout as built**, never marked by
+  hand, by the same code livedocuments' slides use (`layoutSlots`, `@liveworkspace/edit-operations/layout-slots`):
+  - `title`: the largest words on the page (a screen's heading, a logo's name);
+  - `subtitle`: the text straight after the title, when it is smaller, not bold, not a bullet and has words (a
+    screen's lead line, a logo's tagline);
+  - `bullets`: each line set beside a bullet dot (an empty circle just left of it, level with it), in order;
+  - `body`: every other text with words, a button's and a field's label among them, in the order the layout builds
+    them (top to bottom, then the next column);
+  - `figures`: each figure (a time, a price), in the same order.
+
+  A **figure**, a text with no letter or a number with a unit or two (`9:41`, `$49.00`, `73%`, `3.2M`, `01`), is
+  one of `figures`. Slots are read from the layout's sample before any words go in, so words written into a
+  figure's slot keep that slot. A slot left out keeps its sample. `bullets` given fewer
+  items than the layout has drops the rest, each with its dot; `body` given fewer keeps the rest's sample and says
+  so; a list given more, or a slot the layout lacks, places what fits and says what was not placed. Nothing given is
+  dropped in silence. `text` without a `layout` is refused (`invalid_value`), and so is a key other than the four, a
+  slot that is not text, or a list past 60 items or a text past 2,000 characters.
+
+  Slot names are a contract assistants learn: a layout's slots change only when its texts do, and the
+  [table](layout-slots.md) is checked against the layouts by a test, so a change to one shows in review.
+
 - **Locks**: a locked page refuses every change but `set { locked: false }` (`page_locked`).
 - **Limit**: a tab holds at most 100 pages (`MAX_PAGES`); an `add` or `duplicate` past it is refused
   (`page_limit`).
@@ -98,6 +124,12 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   elements on it"), then the tab's pages as they now are: place, id, name, kind, size and orientation, the page's
   rectangle on the canvas (`x, y, width, height`) and how many elements are on it. Elements are put onto a page with
   `update_design`, at coordinates inside its rectangle.
+- **A laid-out page's texts**: each page this call laid out (an `add` with a `layout`, or a `layout` change) also
+  lists its `texts`, `{ ref, slot, text, sample? }` for every text on it (`sample: true` on one still holding the layout's sample, given no words; an eval run of the pitch deck asked for it, to tell leftovers from its own words) in the layout's order: the ref `update_design` and the
+  views take, its slot (`title`, `subtitle`, `bullets[0]`, `body[2]`, `figures[0]`, a list's by its index), and its words, cut to 80 characters with an ellipsis. So the sample
+  text left to replace, and its ref, come back in the answer rather than from a `read_design` call. Bounded for the
+  150,000-character tool result: texts are listed page by page while they fit 60,000 characters; a page past it has
+  none, and one line says which pages those are and that the `pages` view lists them.
 
 ## Reading: the `pages` view
 

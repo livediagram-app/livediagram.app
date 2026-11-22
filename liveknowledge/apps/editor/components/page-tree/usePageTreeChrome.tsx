@@ -17,6 +17,8 @@ import { PageTreeSidebar } from './PageTreeSidebar';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
 import { usePageTreeModel } from './usePageTreeModel';
 import { KnowledgebaseMenu } from '@/components/knowledge-menu/KnowledgebaseMenu';
+import { usePageTrashSync } from '@/components/page-trash/usePageTrash';
+import { PageTrashHost } from '@/components/page-trash/PageTrashDialog';
 
 const noSubscribe = () => () => {};
 
@@ -27,24 +29,30 @@ function PageTreeSidebarHost(props: {
   joined: boolean;
 }) {
   const { connectDialog, ...model } = usePageTreeModel();
+  // The knowledgebase's page Trash (knowledgebases-and-pages.md "The page Trash"): its row in the tree, its dialog.
+  const trash = usePageTrashSync();
   return (
     <>
       <PageTreeSidebar
         {...model}
         {...props}
+        trash={trash.see}
         menu={(head) => <KnowledgebaseMenu name={head.name} onRename={head.onRename} />}
       />
       {connectDialog}
+      <PageTrashHost rights={trash} />
     </>
   );
 }
 
 function PageTreeSheetHost() {
   const { connectDialog, ...model } = usePageTreeModel();
+  const trash = usePageTrashSync();
   return (
     <>
       <PageTreeSheet
         {...model}
+        trash={trash.see}
         menu={(head) => (
           <KnowledgebaseMenu
             touch
@@ -58,6 +66,7 @@ function PageTreeSheetHost() {
         )}
       />
       {connectDialog}
+      <PageTrashHost rights={trash} />
     </>
   );
 }

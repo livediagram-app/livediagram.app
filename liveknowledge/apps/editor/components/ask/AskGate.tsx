@@ -10,8 +10,16 @@ import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import type { AskSession } from './useAskSession';
 import { AskNoAi, AskSignedOut } from './AskStates';
 import { hasAnyAi } from '@/lib/knowledge-ask/ai-settings-words';
+import { ConnectSignedOut } from '@/components/connect/ConnectSignedOut';
 
-export type AskGate = 'no-ai' | 'signed-out';
+// Connect's one gate shares this store and dialog (docs/specs/030-knowledgebase/mcp-connect.md "The tab").
+export type AskGate = 'no-ai' | 'signed-out' | 'connect-signed-out';
+
+const GATE_NAME: Record<AskGate, string> = {
+  'signed-out': 'Sign In to Ask',
+  'no-ai': 'Built-In AI Is Not Set Up Here',
+  'connect-signed-out': 'Sign In to Connect an AI App',
+};
 
 let open: AskGate | null = null;
 const listeners = new Set<() => void>();
@@ -52,7 +60,7 @@ export function AskGateDialog({ manageAi }: { manageAi: boolean }) {
     <Dialog
       open={gate !== null}
       onClose={askGate.close}
-      ariaLabel={gate === 'signed-out' ? 'Sign In to Ask' : 'Built-In AI Is Not Set Up Here'}
+      ariaLabel={gate ? GATE_NAME[gate] : GATE_NAME['signed-out']}
       size="sm"
       phoneSheet
     >
@@ -60,6 +68,8 @@ export function AskGateDialog({ manageAi }: { manageAi: boolean }) {
         <AskSignedOut bare before={askGate.close} />
       ) : gate === 'no-ai' ? (
         <AskNoAi bare manageAi={manageAi} before={askGate.close} />
+      ) : gate === 'connect-signed-out' ? (
+        <ConnectSignedOut bare />
       ) : null}
     </Dialog>
   );

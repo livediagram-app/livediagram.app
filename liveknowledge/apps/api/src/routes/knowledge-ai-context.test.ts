@@ -115,7 +115,12 @@ describe('Answered From This Page', () => {
       { tab: 'deploys', key: 'deploy', question: 'When do we deploy?', asked: 1 },
     ]);
 
+    // A page in the Trash keeps its rows; deleted forever, it takes them with it.
     expect((await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/deploys')).status).toBe(204);
+    expect(rows(kit)).toHaveLength(1);
+    expect((await kit.call('editor', 'DELETE', '/api/documents/kb/trash/deploys')).status).toBe(
+      204,
+    );
     expect(rows(kit)).toEqual([]);
   });
 });

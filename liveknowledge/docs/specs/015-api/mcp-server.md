@@ -187,7 +187,8 @@ browser. A token minted for the CLI is named "liveknowledge CLI".
 > **The tools are the knowledgebase's** since build-plan step 13: twelve page tools (`get_context`, `list_pages`,
 > `search_pages`, `read_page`, `report_gap`, `create_page`, `suggest_edit`, `write_page`, `move_page`,
 > `request_approval`, `list_page_comments`, `change_page_comments`) and the ones every app has, listed with their scopes in
-> [Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md) and its
+> [Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md) (whose `get_context`, `search_pages` and
+> `read_page` carry each page's Health Score, `health`, for the agent to judge how far to rely on it) and its
 > [blueprint](../024-agents/blueprints/knowledgebase-for-agents.md#mcp-tools). The sections below that describe
 > `read_document`, `add_tab`, `update_document`, `search_icons`, the schema resource, element kinds, version
 > history, the Pages tools, the inline image render (§5) and the interactive view (§5a) are livedocuments' and no
@@ -598,8 +599,10 @@ assistant to "rename that" or "delete the old one":
   There is no permanent option: an AI tool can only ever bin a document, never
   destroy it. A permanent delete stays with the person (the Explorer's Trash) or
   the REST API's `?permanent=true` ([Public API and API tokens](public-api-and-tokens.md)).
-  With `tabId` it deletes one tab (`DELETE …/tabs/<tabId>`) outright: tabs have
-  no Trash. Still destructive, so the description tells the model to confirm
+  With a page (`page`, or `tabId`) it moves that one page (`DELETE …/tabs/<tabId>`)
+  to the knowledgebase's page Trash ([The page Trash](../030-knowledgebase/knowledgebases-and-pages.md#the-page-trash)),
+  restorable for 30 days by a person in the editor, and says so (`trashed: true`,
+  `restorableForDays`); an agent never lists, restores or empties the page Trash. Still destructive, so the description tells the model to confirm
   with the user first; the api refuses deleting a document's last remaining tab,
   and a document already in the Trash answers 410, which the tool reports as
   already in the Trash, pointing at `list_trash`.

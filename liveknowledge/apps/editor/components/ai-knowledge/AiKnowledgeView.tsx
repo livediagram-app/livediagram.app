@@ -36,12 +36,12 @@ import {
   overviewFailureText,
 } from '@/lib/knowledge-ask/suggestions-api';
 import { knowledgeFailureText } from '@/lib/knowledge/knowledge-words';
+import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
 import { useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
 import { AiDashboard } from './AiDashboard';
 import { AgentWriteDialog } from './AgentWriteDialog';
 import { DashboardLoading } from './DashboardLoading';
-import { ConnectAgentDialog } from './ConnectAgentDialog';
 import { useAgentWrite } from './useAgentWrite';
 import { useKnowledgeOverview } from './useKnowledgeOverview';
 
@@ -62,7 +62,6 @@ function AiKnowledge({ session }: { session: AskSession }) {
   const overview = state.status === 'ready' ? state.overview : null;
   const { drafting, draft } = useDraftPage(session, overview?.hasAi ?? false);
   const [adding, setAdding] = useState(false);
-  const [connecting, setConnecting] = useState(false);
   const agentWrite = useAgentWrite({
     who,
     documentId,
@@ -72,10 +71,10 @@ function AiKnowledge({ session }: { session: AskSession }) {
     onFailure: toast.error,
   });
 
-  // What a new connection may do, how writing is allowed, and the three ways in (ConnectAgentDialog).
+  // The Connect view: the steps for each AI app, what a connection may do and the other ways in (mcp-connect.md).
   const connect = () => {
     track('UI', 'Opened', 'ConnectAgent');
-    setConnecting(true);
+    showKnowledgeView('connect');
   };
   // A page, at a passage's first block when one is named (a conflict's side): brought into view and lit, as a
   // search result's is (openPassage).
@@ -182,7 +181,10 @@ function AiKnowledge({ session }: { session: AskSession }) {
                     emailOwners('ask', `ask:${id}`, () =>
                       apiAskConflictOwners(who, documentId, id),
                     ),
-                  draft: (question) => void draft(question.question),
+                  draft: (question) =>
+                    void draft(question.question).then((made) => {
+                      if (made) refresh();
+                    }),
                   dismissQuestion: (key) => {
                     if (!rights.resolve) return;
                     track('UI', 'Used', 'QuestionDismissed');
@@ -224,16 +226,6 @@ function AiKnowledge({ session }: { session: AskSession }) {
           )}
         </div>
       </div>
-      {connecting ? (
-        <ConnectAgentDialog
-          canGrant={rights.grantAgents}
-          onClose={() => setConnecting(false)}
-          onOpenTokens={() => {
-            setConnecting(false);
-            chrome.get().openSettingsOn('tokens');
-          }}
-        />
-      ) : null}
       <AgentWriteDialog
         ask={agentWrite.asking}
         onConfirm={() => void agentWrite.confirm()}

@@ -44,6 +44,7 @@
     "@liveworkspace/explorer": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/index-client": "workspace:*",
+    "@liveworkspace/marketing-site": "workspace:^",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/page-background": "workspace:*",

@@ -96,12 +96,12 @@ describe('an object zone fitted to a tall object', () => {
     expect(plan.scale).toBeCloseTo(ARTICLE_ZONE_MAX / 6000);
   });
 
-  // docs/specs/030-knowledgebase/links-and-embeds.md "Embeds from other apps": a new embed sits aligned left, level
-  // with the text; any other object keeps the zone's default, centre (no align on the plan).
-  it('plans an embed aligned left and other objects with the default', () => {
+  // docs/specs/007-editor/article-pages.md "Wrap": every new object (an embed, a picture ...) sits aligned left, level
+  // with the text; a drawing zone is the text's width, with no align to set.
+  it('plans every new object aligned left, a drawing zone with none', () => {
     const embed = { ...tall(480, 270), id: 'emb', type: 'video' } as unknown as Element;
     expect(zonePlanFor([embed], [], 640).align).toBe('left');
-    expect(zonePlanFor([tall(300, 200)], [], 640)).not.toHaveProperty('align');
+    expect(zonePlanFor([tall(300, 200)], [], 640).align).toBe('left');
     expect(zonePlanFor([embed, tall(100, 50)], [], 640)).not.toHaveProperty('align');
   });
 });

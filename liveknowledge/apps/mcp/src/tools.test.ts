@@ -223,7 +223,13 @@ describe('delete_document', () => {
       path: '/documents/kb/tabs/holidays',
       body: null,
     });
-    expect(out).toEqual({ deleted: 'page', documentId: 'kb', page: 'holidays' });
+    expect(out).toEqual({
+      deleted: 'page',
+      documentId: 'kb',
+      page: 'holidays',
+      trashed: true,
+      restorableForDays: 30,
+    });
   });
 
   it.each([

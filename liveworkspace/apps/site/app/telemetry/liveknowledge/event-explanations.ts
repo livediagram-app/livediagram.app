@@ -792,6 +792,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Added|ContextPage':
     'Someone added a page to Always in Context, the pages every agent reads first.',
   'UI|Removed|ContextPage': 'Someone took a page out of Always in Context.',
+  'UI|Used|HealthAddHeading':
+    "Add a Heading pressed in a page's Health Score breakdown, putting the page in edit mode with a heading to fill in.",
   'UI|Used|VerifyPage': 'An Editor verified a page, marking it as right until its review is due.',
   'UI|Used|HomeStillRight':
     'Someone confirmed a page due for review with Still Right on Home, verifying it again.',
@@ -810,12 +812,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|AskAboutPage': "Someone opened Ask from a page's AI Context, asking about that page.",
   'UI|Used|OnThisPage': 'Someone jumped to a heading from the On This Page list.',
   'UI|Used|CopyPageLink': "Someone copied a page's link from its menu in the page tree.",
+  'UI|Used|RestorePage': "Someone restored a page from the knowledgebase's page Trash.",
+  'UI|Used|DeletePageForever': 'An Editor deleted a page in the page Trash forever.',
+  'UI|Used|EmptyPageTrash': "An Editor emptied the knowledgebase's page Trash.",
+  'UI|Opened|PageTrash': "Someone opened the knowledgebase's page Trash.",
   'UI|Changed|PageTreeCollapsed': 'Someone folded the page tree away.',
   'UI|Changed|PageTreeExpanded': 'Someone opened the page tree out again.',
   'UI|Used|SetupSuggested':
     "Describe to Set Up suggested a page tree from what someone described, on the team's own AI key.",
   'UI|Used|SetupSuggestedBuiltIn':
     'Describe to Set Up suggested a page tree from what someone described, on built-in AI (no team key set).',
+  'UI|Used|DescribeStructure':
+    "Describe Structure put AI-drafted headings into an empty page's draft (nothing saved until Save).",
+  'UI|Opened|DescribeStructure': 'Someone opened Describe Structure on an empty page.',
   'UI|Added|AiKey':
     "Someone added the team's own Claude or OpenAI key to a knowledgebase. Never the key.",
   'UI|Removed|AiKey': "Someone removed a knowledgebase's AI key.",
@@ -828,6 +837,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|AskAiKey': "Someone chose the team's key to answer their questions on Ask.",
   'UI|Opened|AskView': 'Someone opened the Ask view, to ask the knowledgebase a question.',
   'UI|Opened|AiKnowledgeView': 'Someone opened the AI Knowledge view.',
+  'UI|Opened|ConnectView': 'Someone opened the Connect view, to connect an AI app over MCP.',
+  'UI|Opened|ConnectAgent':
+    'Someone pressed Connect an Agent in AI Knowledge, which opens the Connect view.',
+  'UI|Copied|McpSetup':
+    'Someone copied the MCP address, a command or a config from the Connect view. Never what was copied.',
+  'UI|Copied|ConnectPrompt': 'Someone copied the first prompt to try from the Connect view.',
   'UI|Opened|KnowledgeSearch': 'Someone opened the search panel to search this knowledgebase.',
   'Element|Added|ArticleEmbed': 'Someone put an embed into the writing of a page.',
   'UI|Toggled|NotifyKnowledgeReviewsOn':

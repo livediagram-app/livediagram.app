@@ -1,7 +1,7 @@
 'use client';
 
-// The knowledgebase's three views as tabs at the footer's left (docs/specs/030-knowledgebase/page-surface.md "The
-// footer"): Pages | Ask | AI Knowledge, drawn as the other liveworkspace editors draw the tabs of their footer tab
+// The knowledgebase's four views as tabs at the footer's left (docs/specs/030-knowledgebase/page-surface.md "The
+// footer"): Pages | Ask | AI Knowledge | Connect, drawn as the other liveworkspace editors draw the tabs of their footer tab
 // bar (the shared tab shape, @liveworkspace/workbench tab-shape). They are views, not a person's tabs: no add,
 // close, drag or menu. Each is a real link to the view's address (so it opens in a new tab, and Back returns),
 // marked `aria-current` when it is the view showing; a plain press moves in place, as a new history entry.
@@ -14,7 +14,12 @@ import {
   fixedTabShapeClass,
 } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
-import { AiViewIcon, AskViewIcon, PagesViewIcon } from '@/components/ask/ask-icons';
+import {
+  AiViewIcon,
+  AskViewIcon,
+  ConnectViewIcon,
+  PagesViewIcon,
+} from '@/components/ask/ask-icons';
 import { AskGateDialog, askGate, askGateFor } from '@/components/ask/AskGate';
 import { useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { SyncKnowledgebaseButton } from '@/components/ask/SyncKnowledgebaseButton';
@@ -32,12 +37,14 @@ const ICONS: Record<KnowledgeView, ReactNode> = {
   pages: <PagesViewIcon />,
   ask: <AskViewIcon />,
   ai: <AiViewIcon />,
+  connect: <ConnectViewIcon />,
 };
 
 // Each view's own telemetry call, so the pair and its type stay literal (telemetry-coverage.test.ts).
 function trackView(view: KnowledgeView): void {
   if (view === 'ask') track('UI', 'Opened', 'AskView');
   else if (view === 'ai') track('UI', 'Opened', 'AiKnowledgeView');
+  else if (view === 'connect') track('UI', 'Opened', 'ConnectView');
   else track('UI', 'Opened', 'PagesView');
 }
 
@@ -63,6 +70,11 @@ function pressed(
     });
     return;
   }
+  // Connecting makes a token for an account: signed out, the gate says so over the knowledgebase (mcp-connect.md).
+  if (view === 'connect' && session?.rights.askOff === 'signed-out') {
+    askGate.open('connect-signed-out');
+    return;
+  }
   trackView(view);
   showKnowledgeView(view);
 }
@@ -72,15 +84,15 @@ const OPEN_INK = 'text-slate-900 dark:text-white';
 // A view an Offline knowledgebase can't open: the tab stays, quieter, and says why (owner 2026-11-21).
 const OFF_INK = 'text-slate-400 dark:text-slate-400/60';
 
-// Why Ask and AI Knowledge are off in a knowledgebase kept Offline: both answer on the server, from the team's key.
+// Why Ask, AI Knowledge and Connect are off in a knowledgebase kept Offline: each needs the room on the server.
 export const OFFLINE_VIEW_WHY =
-  'This knowledgebase is kept in this browser. Ask and AI Knowledge require your content to be synced to our servers.';
+  'This knowledgebase is kept in this browser. Ask, AI Knowledge and Connect require your content to be synced to our servers.';
 
 // A view this knowledgebase can't open while it is kept Offline: everything but Pages.
 export const offlineOff = (view: KnowledgeView, offline: boolean): boolean =>
   offline && view !== 'pages';
 
-/** The three tabs, or nothing for a session that is not offered the views (useKnowledgeViewsOffered). */
+/** The four tabs, or nothing for a session that is not offered the views (useKnowledgeViewsOffered). */
 export function KnowledgeViewTabs() {
   const offered = useKnowledgeViewsOffered();
   const current = useKnowledgeView();
@@ -94,16 +106,16 @@ export function KnowledgeViewTabs() {
       <nav
         aria-label="Knowledgebase Views"
         data-knowledge-view-tabs=""
-        // The bar's full height, the tabs standing on its foot; a phone's three tabs share the row.
+        // The bar's full height, the tabs standing on its foot; a phone's four tabs share the row.
         className={`${TAB_LIST_CLASS} self-stretch phone:min-w-0 phone:flex-1 phone:shrink`}
       >
-        {KNOWLEDGE_VIEWS.map(({ view, label, short, about }) => {
+        {KNOWLEDGE_VIEWS.map(({ view, label, short, hoverTitle, about }) => {
           const open = view === current;
           const off = offlineOff(view, offline);
           return (
             <HoverCard
               key={view}
-              title={off ? `${label} Needs Syncing` : label}
+              title={off ? `${label} Needs Syncing` : (hoverTitle ?? label)}
               description={off ? OFFLINE_VIEW_WHY : about}
               {...(off ? { action: <SyncKnowledgebaseButton />, pressWithText: true } : {})}
               className="self-end phone:min-w-0"

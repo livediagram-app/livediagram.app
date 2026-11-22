@@ -11,6 +11,9 @@ export const ASK_KNOWLEDGEBASE_SCOPE = 'ask:knowledgebase';
 /** The scope of one person's Describe to Set Up suggestions, and of the knowledgebase's (setup-limits.ts). */
 export const setupPersonScope = (person: string): string => `setup:person:${person}`;
 export const SETUP_KNOWLEDGEBASE_SCOPE = 'setup:knowledgebase';
+/** The scope of one person's Describe Structure drafts, and of the knowledgebase's (page-structure.ts). */
+export const structurePersonScope = (person: string): string => `structure:person:${person}`;
+export const STRUCTURE_KNOWLEDGEBASE_SCOPE = 'structure:knowledgebase';
 /** The scope of the knowledgebase's questions answered on built-in AI (built-in-limits.ts), beside its every-AI one. */
 export const ASK_BUILT_IN_SCOPE = 'ask:built-in';
 /** The scope of the knowledgebase's conflict checks. */
@@ -54,3 +57,7 @@ export const askCounters = (person: string, now: number) =>
 /** The same for one Describe to Set Up suggestion, counted apart from Ask's questions. */
 export const setupCounters = (person: string, now: number) =>
   hourAndDayCounters(setupPersonScope(person), SETUP_KNOWLEDGEBASE_SCOPE, now);
+
+/** The same for one Describe Structure draft, counted apart from both. */
+export const structureCounters = (person: string, now: number) =>
+  hourAndDayCounters(structurePersonScope(person), STRUCTURE_KNOWLEDGEBASE_SCOPE, now);

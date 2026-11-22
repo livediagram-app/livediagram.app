@@ -383,6 +383,33 @@ describe('POST ask', () => {
     },
   );
 
+  // ai-knowledge.md "Questions nobody could answer": a question answered in full later leaves the list.
+  it('takes a question off the unanswered list once Ask answers it in full from pages', async () => {
+    vi.stubGlobal('fetch', fakeClaude(ANSWER).fetch);
+    const kit = await knowledgeKit(withSecret);
+    await setKey(kit);
+    await events(
+      await kit.call('editor', 'POST', '/api/documents/kb/ask', { question: 'When do we deploy?' }),
+    );
+    const logged = () => kit.db.sql.prepare('SELECT question FROM questions').all();
+    expect(logged()).toEqual([{ question: 'Who approves a deploy?' }]);
+    // Answered with a gap: it stays. Answered with no source: it stays too.
+    vi.stubGlobal('fetch', fakeClaude('<answer>No page says.</answer>').fetch);
+    await events(
+      await kit.call('viewer', 'POST', '/api/documents/kb/ask', {
+        question: 'Who approves a deploy?',
+      }),
+    );
+    expect(logged()).toEqual([{ question: 'Who approves a deploy?' }]);
+    vi.stubGlobal('fetch', fakeClaude('<answer>The release lead approves it [1].</answer>').fetch);
+    await events(
+      await kit.call('viewer', 'POST', '/api/documents/kb/ask', {
+        question: 'Who approves a deploy?',
+      }),
+    );
+    expect(logged()).toEqual([]);
+  });
+
   it.each(['link', 'page-link', 'stranger'] as const)(
     'is refused for %s, with no call made',
     async (who) => {
@@ -550,7 +577,24 @@ describe('AI Knowledge', () => {
           used: 20,
           pages: [{ tab: 'holidays', title: 'Holidays', tokens: 20 }],
         },
-        health: { verified: 1, reviewDue: 0, neverVerified: 2, total: 3 },
+        // Every page scored by the Health Score (verification.md "Health Score"): the two never verified are low.
+        health: { verified: 1, reviewDue: 0, neverVerified: 2, total: 3, average: 60 },
+        lowHealth: [
+          {
+            tab: 'holidays',
+            title: 'Holidays',
+            score: 42,
+            label: 'needs-work',
+            reason: 'Never verified',
+          },
+          {
+            tab: 'rollbacks',
+            title: 'Rollbacks',
+            score: 43,
+            label: 'needs-work',
+            reason: 'Never verified',
+          },
+        ],
         reviewEvery: 90,
         hasKey: false,
         // No key, and this deployment has no built-in AI.

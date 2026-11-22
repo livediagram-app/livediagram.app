@@ -3,7 +3,13 @@
 // an agent's edit is a person's. In order, each against the tab as the ones before it left it; the
 // first refusal stops them all and nothing is written.
 import { layoutNamed } from '@liveworkspace/edit-operations/layout-named';
-import type { PagesRefusal, PageBackgroundInput, PageChange } from '@livedesign/api-schema';
+import type {
+  LayoutText,
+  LayoutTextSlot,
+  PagesRefusal,
+  PageBackgroundInput,
+  PageChange,
+} from '@livedesign/api-schema';
 import {
   elementIdsOnPage,
   pagesOf,
@@ -44,9 +50,13 @@ import {
 } from '@livedesign/design';
 import { buildPageLayout, layoutCatalogueFor } from '@livedesign/templates';
 import { enterPages, type PagesIds } from './enter';
+import { layoutTextOf } from './layout-text';
 import { pageLabel, pageSummaries, resolvePage, sizeLabel } from './summary';
 
-export type PageChangesOutcome = { tab: Tab; lines: string[] } | { refusal: PagesRefusal };
+// `laid`: the texts of each page a change laid out, by page id, the last layout each took (pages-for-agents.md "A
+// laid-out page's texts").
+export type PageChangesOutcome =
+  { tab: Tab; lines: string[]; laid: Map<string, LayoutTextSlot[]> } | { refusal: PagesRefusal };
 
 const CODE: Record<PageEditRefusal, PagesRefusal['code']> = {
   unknown_page: 'page_unknown',
@@ -140,6 +150,7 @@ export function applyPageChanges(
   // The pages an earlier delete in this change took, as they were, so a later delete
   // naming one by its id or its name is answered rather than refused.
   const removed: Page[] = [];
+  const laidOut = new Map<string, LayoutTextSlot[]>();
   try {
     // The pages this call has added, which a later add never takes as a blank.
     const madeHere = new Set<string>();
@@ -170,7 +181,12 @@ export function applyPageChanges(
         const target = ps[Math.min(to, ps.length) - 1]!;
         return pageUnits(ps).findIndex((u) => u.pageIds.includes(target.id));
       };
-      const layOut = (page: Page, layout: string): string => {
+      // The layout's label, and the lines its text slots said (prefixed with the page's place).
+      const layOut = (
+        page: Page,
+        layout: string,
+        text?: LayoutText,
+      ): { label: string; said: string[] } => {
         const kind = pageKindOf(page);
         const offered = layoutCatalogueFor(kind, pageDeviceClass(page)).layouts;
         const named = layoutNamed(offered, layout);
@@ -187,17 +203,22 @@ export function applyPageChanges(
           );
         const laid = layOutPages(pages()).find((p) => p.id === page.id)!;
         const replaced = onPage(page.id);
+        const filled = layoutTextOf(buildPageLayout(found!.id, laid), text);
         current = take(
           pageLaidOut(
             current,
             page.id,
-            themedForTab(buildPageLayout(found!.id, laid), current.theme, {
+            themedForTab(filled.elements, current.theme, {
               dark: pageIsDark(laid),
             }),
           ),
           page,
         );
-        return `${found!.label}${replaced ? ` (replaced ${plural(replaced, 'element')})` : ''}`;
+        laidOut.set(page.id, filled.slots);
+        return {
+          label: `${found!.label}${replaced ? ` (replaced ${plural(replaced, 'element')})` : ''}`,
+          said: filled.lines.map((line) => `Page ${placeOf(page.id)}: ${line}`),
+        };
       };
       // name, size, orientation and background in that order, as the panel would make them.
       const setFields = (page: Page, c: Extract<PageChange, { op: 'add' | 'set' }>) => {
@@ -282,9 +303,12 @@ export function applyPageChanges(
           if (change.at !== undefined)
             current = take(pageMovedTo(current, page.id, unitAt(change.at)), page);
           const now = pages().find((p) => p.id === page.id)!;
-          const laid = change.layout ? ` from layout ${layOut(now, change.layout)}` : '';
+          if (change.text !== undefined && !change.layout)
+            stop('invalid_value', '"text" fills a layout\u2019s slots: give a layout with it.');
+          const laid = change.layout ? layOut(now, change.layout, change.text) : null;
           lines.push(
-            `Added page ${placeOf(page.id)} (${change.kind}, ${sizeLabel(now)})${laid}${said.length ? `: ${said.join(', ')}` : ''}.`,
+            `Added page ${placeOf(page.id)} (${change.kind}, ${sizeLabel(now)})${laid ? ` from layout ${laid.label}` : ''}${said.length ? `: ${said.join(', ')}` : ''}.`,
+            ...(laid?.said ?? []),
           );
           return;
         }
@@ -300,7 +324,8 @@ export function applyPageChanges(
         }
         case 'layout': {
           const page = pageOf(change);
-          lines.push(`Laid out page ${placeOf(page.id)} as ${layOut(page, change.layout)}.`);
+          const laid = layOut(page, change.layout, change.text);
+          lines.push(`Laid out page ${placeOf(page.id)} as ${laid.label}.`, ...laid.said);
           return;
         }
         case 'move': {
@@ -366,5 +391,8 @@ export function applyPageChanges(
     if (err instanceof Stop) return { refusal: err.refusal };
     throw err;
   }
-  return { tab: current, lines };
+  // A page laid out and then deleted in the same call lists no texts.
+  const kept = new Set(pagesOf(current).map((p) => p.id));
+  const laid = new Map([...laidOut].filter(([id]) => kept.has(id)));
+  return { tab: current, lines, laid };
 }

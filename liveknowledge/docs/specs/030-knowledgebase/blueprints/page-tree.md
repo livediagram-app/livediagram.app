@@ -247,15 +247,15 @@ All of it is in `apps/editor/components/page-tree/`.
 
 `hooks/persistence/useTabActions.ts`, over the pure list edits in `hooks/persistence/page-tree-edits.ts`:
 
-| Action                                  | Edit                                                                                                                                                                                     |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `addTab(parent?)`                       | `withPageAddedTo`; refused at a limit with a toast (`pageTreeRefusalText`)                                                                                                               |
-| `duplicateTab(id)`                      | `withPageDuplicated`: beside the original, same parent, no subpages; its Title says its name                                                                                             |
-| `deleteTab(id)`                         | one `confirm` naming the count (`deletePageTitle`), then `withPageAndSubpagesDeleted` in one commit (links to the deleted pages stripped); the page after them opens (`pageAfterDelete`) |
-| `movePage(id, to)`                      | `withPageMoved` (the drop)                                                                                                                                                               |
-| `stepPage`, `indentPage`, `outdentPage` | `withPageStepped`, `withPageIndented`, `withPageOutdented` (the menu)                                                                                                                    |
-| `renameTab(id, name)`                   | the name and the Title together (`withPageTitle`); a page not loaded is opened and renamed once it has loaded                                                                            |
-| `renameTabFromTitle`                    | the name alone, by `tickTabs` (no undo step of its own)                                                                                                                                  |
+| Action                                  | Edit                                                                                                                                                                                                                                                                                                                |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addTab(parent?)`                       | `withPageAddedTo`; refused at a limit with a toast (`pageTreeRefusalText`)                                                                                                                                                                                                                                          |
+| `duplicateTab(id)`                      | `withPageDuplicated`: beside the original, same parent, no subpages; its Title says its name                                                                                                                                                                                                                        |
+| `deleteTab(id)`                         | one `confirm` naming the count (`deletePageTitle`, Move to Trash; Delete for an Offline knowledgebase), then `withPageAndSubpagesDeleted` in one commit (links to the deleted pages stripped); the page after them opens (`pageAfterDelete`); the autosave's DELETEs move them to [the page Trash](#the-page-trash) |
+| `movePage(id, to)`                      | `withPageMoved` (the drop)                                                                                                                                                                                                                                                                                          |
+| `stepPage`, `indentPage`, `outdentPage` | `withPageStepped`, `withPageIndented`, `withPageOutdented` (the menu)                                                                                                                                                                                                                                               |
+| `renameTab(id, name)`                   | the name and the Title together (`withPageTitle`); a page not loaded is opened and renamed once it has loaded                                                                                                                                                                                                       |
+| `renameTabFromTitle`                    | the name alone, by `tickTabs` (no undo step of its own)                                                                                                                                                                                                                                                             |
 
 **Nothing names the knowledgebase but a person.** The fork named a still untitled document after the Title typed on
 its first tab (`articleTitleName`, deleted) and after its first label (`commitLabel` in `useSelectionEditing.ts`);
@@ -346,6 +346,106 @@ as every tab is, with `parent` placing it.
   `PageTree.connected.test.tsx` and `connected-row-store.test.ts`, and end to end by
   `e2e/signed-in/connected-rows.spec.ts`.
 
+## The page Trash
+
+[Knowledgebases and pages](../knowledgebases-and-pages.md) "The page Trash". A page leaves the tree by losing its
+link row (`document_tabs`) and keeps its `tabs` row, so every table keyed on the tab (its threads, approval,
+editors, authors, answers, versions, image references, changesets) keeps its rows, and every read that places tabs
+in the knowledgebase (they all join `document_tabs`) no longer sees it.
+
+### Domain and naming
+
+| Term                | Identifier                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- |
+| the Trash's table   | `page_trash` (room schema step 37, `pageTrashSchemaStep` in `document-room/page-trash.ts`)                  |
+| a trashed page      | a `page_trash` row: `tab_id`, `parent`, `order_index`, `trashed_at`, `trashed_by`, `trashed_by_name`        |
+| a Trash row (shown) | `TrashedPage` (`packages/api-schema/src/page-trash.ts`): `id`, `name`, `trashedAt`, `trashedBy`, `subpages` |
+| retention, cap      | `PAGE_TRASH_DAYS` (30), `MAX_TRASHED_PAGES` (500), in `page-trash.ts`                                       |
+| the room's code     | `apps/api/src/document-room/page-trash.ts` (SQL), `routes/page-trash-routes.ts` (the doors)                 |
+| the editor's        | `lib/api/page-trash.ts`, `lib/knowledge/page-trash-store.ts`, `components/page-trash/`                      |
+
+### Data and persistence
+
+- **Schema (step 37, additive, IF NOT EXISTS):** `page_trash (tab_id TEXT PRIMARY KEY REFERENCES tabs (id) ON DELETE
+CASCADE, parent TEXT NULL, order_index INTEGER NOT NULL, trashed_at INTEGER NOT NULL, trashed_by TEXT NOT NULL
+DEFAULT '', trashed_by_name TEXT NOT NULL DEFAULT '')`, `page_trash_at` on `trashed_at`; three triggers:
+  `page_trash_relinked` (AFTER INSERT ON `document_tabs`: the tab's trash row goes, so an Undo's save, a restore,
+  a snapshot's seed or an import that links the tab again takes it out of the Trash), `knowledge_tab_linked` and
+  `knowledge_tab_unlinked` (AFTER INSERT and DELETE ON `document_tabs`: the page is marked in `knowledge_dirty`).
+- **Trash** (`trashPage`, one batch, inside the DELETE's `asTabWriter`): the `page_trash` row from the link and
+  the body (`json_extract(data, '$.parent')`, the link's `order_index`), guarded by the token's last-page count as
+  `deleteTabRow` guards it; the link's delete, only where that row now exists; then the purge below. A tab that
+  is a connected row (`tabs.connection`) or shared with another item (`tab_shares`) is deleted by `deleteTabRow`
+  as before.
+- **Settle:** `settlePage` reads a tab only while it is linked (`EXISTS` on `document_tabs`), so the unlink's mark
+  settles as `removed` in the same transaction: the page's passages, links, trust and conflict work go, and search,
+  Ask, AI Knowledge, Home and backlinks stop seeing it at once. A restore's link marks it again and it is indexed anew.
+- **Restore** (`restorePages`): the root and every trashed page under it (walked over `page_trash.parent`), in their
+  old order; the links at or after the root's old `order_index` shift by the count, and each comes back at its old
+  index. A root whose parent is not linked (or whose old place would pass `MAX_PAGE_DEPTH`) has `$.parent` removed
+  (`json_remove`, `rev + 1`) and answers `topLevel: true`. Refused `page_limit` when the linked pages and the
+  restored ones pass `MAX_KNOWLEDGEBASE_PAGES`. Then `relayDocumentTree(env, id, '[trash]')` tells every open editor,
+  whose `document-meta` adds each page as a placeholder its lazy load fills.
+- **Purge** (`purgeStatements`, run by every Trash read and write): `DELETE FROM tabs` for rows past `PAGE_TRASH_DAYS`
+  and for every row past the newest `MAX_TRASHED_PAGES`, never one linked again. The `tabs` delete takes the rest
+  by its foreign keys and triggers, as a delete always has.
+- **Delete Forever / Empty Trash:** `DELETE FROM tabs WHERE id IN (...) AND NOT EXISTS (link)`.
+
+### Interfaces and contracts
+
+| Route (under `/api/documents/<id>/`) | Who                                  | Answers                                                                               |
+| ------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------------- |
+| `DELETE tabs/<page>`                 | a Writer (`gateWrite`), a token too  | 204; the page is in the Trash                                                         |
+| `GET trash`                          | a Writer of the whole knowledgebase  | `{ pages: TrashedPage[] }`, newest root first; a subpage is a root's `subpages` entry |
+| `POST trash/<page>/restore`          | a Writer of the whole knowledgebase  | `{ restored: string[], topLevel: boolean }`; 404 `not_in_trash`; 409 `page_limit`     |
+| `DELETE trash/<page>`                | an Editor of the whole knowledgebase | 204; 404 `not_in_trash`                                                               |
+| `DELETE trash`                       | an Editor of the whole knowledgebase | 204                                                                                   |
+
+A token (an agent) is refused `403 trash_is_a_persons` on the four Trash routes; a link confined to one page, a
+Viewer and a Community visitor `403 forbidden`. A Trash row's `subpages` are the names of the trashed pages under it,
+in tree order. A trashed page whose parent is also trashed is never a root; a connected row in the Trash is never
+listed.
+
+### Presentation and UX (editor)
+
+- `pageTrashStore` (`lib/knowledge/page-trash-store.ts`): one knowledgebase's Trash as last read, `refresh()`, and
+  `scheduleRefresh()` (`TRASH_REFRESH_MS`, 1.5 s, after the page list's count changes, which is after the autosave's
+  DELETEs land); a read a session may not make is never sent. `openPageTrash(focus?)` opens the dialog.
+- `PageTrashRow` (`components/page-trash/PageTrashRow.tsx`): after the `PageTree` inside the list's scroll area in
+  `PageTreeSidebar` and `PageTreeSheet`, a 32 px row (44 on touch) with the tree's `DeleteIcon`, "Trash" and the
+  count's `CountBadge`; renders nothing while the Trash is empty; named "Trash, 3 pages". On the rail, an icon button
+  under New Page with a dot, also only while it holds pages. Hover card: "Trash", "Deleted pages wait here for 30 days." Opening it from the sheet closes
+  the sheet first. Shown where `pageTrashRightsOf` sees it: a writer of the whole saved knowledgebase (no
+  `sessionTabScope`), outside an embed, a workbench pane, a Community visit and an Offline knowledgebase.
+- `PageTrashDialog` (`components/page-trash/PageTrashDialog.tsx`): the shared `Dialog` (`md`, `phoneSheet`), the
+  `Callout` note, the rows (on a phone the buttons wrap under the words), `useConfirm` for Delete Forever and Empty
+  Trash, Empty Trash alone in the foot, `CompactEmptyState` when empty and when the read failed (Try Again), a pulse
+  while loading. A focused page's row is tinted and scrolled to. Each button is named with the page ("Restore Release Process").
+- `trashedLinkCss` (`page-link-titles.ts`) writes a rule for each trashed page: `content: "In the Trash"`, struck through, `cursor: pointer`
+  for a session that may open the Trash; `usePageLinks.onOpen` opens the Trash at a trashed page.
+- Telemetry: `UI·Opened·PageTrash`, `UI·Used·RestorePage`, `UI·Used·DeletePageForever`, `UI·Used·EmptyPageTrash`.
+
+### Performance and limits
+
+- No read of the knowledgebase scans the Trash: every placing read joins `document_tabs`, which holds no trashed
+  page, and the index has none of their rows. The Trash costs only its own routes.
+- `GET trash` reads at most 500 rows by `page_trash_at`; the sidebar reads it once as a knowledgebase opens and once
+  after each change of the page count, never per render. Measured: listing a full Trash of 500 takes 2 to 4 ms of
+  CPU in the room (the 500-cap test, held under `cpuBudgetMs(200)`); its answer is about 38 KB. In the editor the
+  count is about 2.4 µs over 500 rows and the In the Trash stylesheet about 0.1 ms and 56 KB, rebuilt only when the
+  Trash read changes.
+- Undo's relink costs nothing on an ordinary save: the tab PUT tries it only for a tab that is not linked, and the
+  metadata PUT adds one indexed `page_trash` read over `json_each` of the listed ids.
+
+### Testing
+
+`routes/page-trash-routes.test.ts` (trash, settle out of search, restore with subpages and place, top level when the
+parent is gone, the page limit, purge at 30 days and the 500 cap under a CPU budget, Undo's save and list relinking,
+Delete Forever, Empty, each route a role at a time, tokens refused, an agent's DELETE trashed),
+`components/page-trash/PageTrash.test.tsx` (the store, the row, the dialog, who sees it, the In the Trash rule),
+`page-tree-edits.test.ts` and `useTabActions.pages.test.tsx` (the confirmation's words), and the signed-in
+`e2e/signed-in/page-trash.spec.ts` (delete, the count across a reload, restore in place).
+
 ## Performance and limits
 
 `pageParents` is O(pages x depth); every other function is one pass over the list after it. A full knowledgebase
@@ -405,3 +505,6 @@ seen in a browser since.
 | `TYPE_AHEAD_RESET_MS`                  | 500    | `page-tree-view.ts`       | WAI-ARIA's type-ahead pause; a slower typist starts a new search      |
 | `LONG_PRESS_MS`                        | 500    | `useRowLongPress.ts`      | iOS and Android's own long press; shorter fights a scroll or drag     |
 | `LONG_PRESS_SLOP_PX`                   | 8      | `useRowLongPress.ts`      | A finger's tremble; past it the press is a scroll or a drag           |
+| `PAGE_TRASH_DAYS`                      | 30     | `page-trash.ts`           | The spec's retention, the platform Trash's 30 days                    |
+| `MAX_TRASHED_PAGES`                    | 500    | `page-trash.ts`           | The knowledgebase's own page limit: the Trash never outgrows the tree |
+| `TRASH_REFRESH_MS`                     | 1500   | `page-trash-store.ts`     | After the autosave's 600 ms and its DELETEs, before a person looks    |

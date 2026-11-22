@@ -22,9 +22,7 @@ The pages of a Knowledgebase are arranged in a tree in the sidebar on the left. 
 
 ## Add a Page
 
-<Step n={1}>
-  Press **New Page** at the foot of the sidebar to add a page at the top level.
-</Step>
+<Step n={1}>Press **New Page** at the foot of the sidebar to add a page at the top level.</Step>
 
 <Step n={2}>
   To add a page under another, hover the parent's row and press its **+**, or open its menu and
@@ -57,20 +55,32 @@ A page is never dropped inside its own subpages. A verb that cannot run stays in
 
 ## Delete a Page, and Undo It
 
-<Step n={1}>
-  Open the row's menu and choose **Delete**, the last row.
-</Step>
+<Step n={1}>Open the row's menu and choose **Delete**, the last row.</Step>
 
 <Step n={2}>
-  Confirm. The dialog names the page and counts its subpages ("Delete Runbooks and 3 Subpages?"):
-  deleting a page deletes the pages under it.
+  Confirm. The dialog names the page and counts its subpages ("Move Runbooks and 3 Subpages to the
+  Trash?"): deleting a page moves the pages under it to the Trash with it.
 </Step>
 
-<Figure caption="Deleting a page with subpages asks once, names the count, and says how to bring them back." width="narrow">
+<Figure
+  caption="Deleting a page with subpages asks once, names the count, and says the Trash keeps them."
+  width="narrow"
+>
   <DeletePageConfirm />
 </Figure>
 
-There is no Trash for pages. **Undo** (`Cmd+Z`, or `Ctrl+Z` on Windows and Linux) brings the page and its subpages back. A link to a deleted page stays in the writing, struck through and reading "Deleted Page". See [Linking Pages](/help/knowledgebase/linking-pages/).
+**Undo** (`Cmd+Z`, or `Ctrl+Z` on Windows and Linux) brings the page and its subpages straight back. Later, restore them from the Trash. A link to a page in the Trash stays in the writing, struck through and reading "In the Trash"; pressing it opens the Trash at that page. See [Linking Pages](/help/knowledgebase/linking-pages/).
+
+## The Trash
+
+**Trash** sits at the foot of the page tree, directly above **New Page**, with a count of the pages it holds. Press it to open the Trash.
+
+- Each page you deleted is one row, with the subpages it took, who deleted it and when, and the days it has left.
+- **Restore** puts the page and its subpages back where they were, with their writing, cover, icon, owner, comments and versions. If the page it sat under is gone, it comes back at the top level and says so.
+- **Delete Forever** removes one page and its subpages for good; **Empty Trash** removes them all. Both ask first and cannot be undone.
+- A page waits **30 days** in the Trash, then it is removed for good. The Trash holds 500 pages at most: past that the oldest go first.
+
+A page in the Trash is left out of search, Ask, AI Knowledge, exports and the Community, and agents cannot read it. A Knowledgebase kept Offline has no Trash: there, Undo is what brings a deleted page back.
 
 The last page of a Knowledgebase cannot be deleted: **Delete** is greyed and says "A knowledgebase always has a page." To delete the whole Knowledgebase, see [Trash](/help/account-and-data/trash/).
 
@@ -82,14 +92,14 @@ On a phone the tree is a sheet: press **Pages** in the top row to open it.
 
 ## Keyboard
 
-| Key        | Does                                             |
-| ---------- | ------------------------------------------------ |
-| Up, Down   | Move through the rows                            |
-| Right      | Open a page's subpages, then step into them      |
-| Left       | Close a page's subpages, or go to its parent     |
-| Enter      | Open the page                                    |
-| F2         | Rename the page                                  |
-| Menu key   | Open the row's menu                              |
+| Key      | Does                                         |
+| -------- | -------------------------------------------- |
+| Up, Down | Move through the rows                        |
+| Right    | Open a page's subpages, then step into them  |
+| Left     | Close a page's subpages, or go to its parent |
+| Enter    | Open the page                                |
+| F2       | Rename the page                              |
+| Menu key | Open the row's menu                          |
 
 ## What a Row Shows
 
@@ -105,10 +115,12 @@ Both limits are checked again on the server, so an import or an agent cannot pas
 
 ## Who Can Do What
 
-| Action                                           | Editor | Participant | Viewer |
-| ------------------------------------------------ | ------ | ----------- | ------ |
-| Open pages, fold the tree, copy a page's link    | Yes    | Yes         | Yes    |
-| Add, rename, move, duplicate and delete pages    | Yes    | No          | No     |
+| Action                                        | Editor | Participant | Viewer |
+| --------------------------------------------- | ------ | ----------- | ------ |
+| Open pages, fold the tree, copy a page's link | Yes    | Yes         | Yes    |
+| Add, rename, move, duplicate and delete pages | Yes    | Yes         | No     |
+| Open the Trash and restore pages              | Yes    | Yes         | No     |
+| Delete a page forever, empty the Trash        | Yes    | No          | No     |
 
 For someone who cannot edit, a row's menu holds **Copy Link** alone, and **New Page** is not shown.
 

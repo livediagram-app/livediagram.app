@@ -17,10 +17,13 @@ dialog shows by changing its profile, never by forking the dialog.
   four panels, swapped through an easing height and a short slide, each panel under the shared breadcrumb back home
   (`BackBar`, "Tab Style" > the panel's name).
 - **The Looks carousel.** Pages of six, led by the Mashup card, with the Seasonal toggle and the Finish filter; each
-  card a preview drawn by the product's renderer. Its telemetry (`UI / Changed / LooksSeasonal`,
+  card a preview drawn by the product's renderer, its name set in the look's own typeface (the app's face for a
+  look that names none), so the carousel shows each look's type before it is picked. Its telemetry (`UI / Changed / LooksSeasonal`,
   `UI / Changed / LooksFinishFilter`) goes through the workbench's `track` binding, the product's own `track`.
 - **The Finish and Text panels.** Four finish tiles; the typeface carousel (six to a page, "Editor default" first),
-  the Size of New Text control; each over the product's preview.
+  the Size of New Text control; each over the product's preview. The home's Text row draws its "Aa" in the
+  typeface worn now (the tab font, or the face the product names for it), so it changes as a look or a font is
+  picked.
 - **Apply to All Tabs** at the foot of the home, for an Editor of the whole item (`ApplyToAllTabsRow`). It copies
   `TAB_STYLE_KEYS` (`lib/tab-style-to-all.ts`): the canvas, the text defaults, the finish and the background new pages
   start on (`newPageBackground`, a Pages editor's) and the tab's Element Colours choice (`keepElementColours`,

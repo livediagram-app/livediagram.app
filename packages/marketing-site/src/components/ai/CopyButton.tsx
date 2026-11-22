@@ -18,6 +18,7 @@ export function CopyButton({
   tone = 'light',
   size = 'sm',
   className = '',
+  onCopied,
 }: {
   text: string;
   label?: string;
@@ -26,6 +27,8 @@ export function CopyButton({
   tone?: 'light' | 'dark' | 'brand';
   size?: 'sm' | 'xs';
   className?: string;
+  /** Told once the text is on the clipboard (an app's telemetry); not when the clipboard refused. */
+  onCopied?: () => void;
 }) {
   const { copied, flash } = useCopiedFlash(2000);
 
@@ -33,6 +36,7 @@ export function CopyButton({
     try {
       await navigator.clipboard.writeText(text);
       flash();
+      onCopied?.();
     } catch {
       // Clipboard blocked (insecure context / permissions): the text stays selectable.
     }

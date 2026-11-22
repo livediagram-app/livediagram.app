@@ -5,7 +5,7 @@
 import type { PageRef, PageSummary } from '@livedesign/api-schema';
 import { pageHasOrientation, pageSizeLabel, PAGE_SIZES, type Page } from '@livedesign/design';
 
-export { describeBackground, pageSummaries } from '@livedesign/api-schema';
+export { describeBackground, pageSummaries, pagesTextsLeftOut } from '@livedesign/api-schema';
 
 /** A page's label in lines and lists: `2 Cover (wireframe)`, `3 (logo)`. */
 export function pageLabel(page: PageSummary): string {

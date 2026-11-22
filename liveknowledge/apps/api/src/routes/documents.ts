@@ -41,6 +41,7 @@ import {
   type CreationIntent,
 } from '@liveknowledge/api-schema';
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
+import { relinkListedPages } from '../document-room/page-trash';
 import { scopeRefusalOf, withAgentGrant } from '../knowledge/agent-grants';
 import {
   badRequest,
@@ -513,6 +514,16 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
           ? readReorderEntries(body.tabIds)
           : undefined;
       if (order === null) return badRequest('invalid tabs');
+      // Undo of a delete reaches the server as the list that names the pages again: a page this person put in the
+      // knowledgebase's Trash is linked back where the list puts it (page-trash.ts relinkListedPages), so one that
+      // was never opened, whose body the editor does not hold to save, comes back too.
+      if (order && !ctx.token)
+        await relinkListedPages(
+          env,
+          id,
+          order.map((entry) => (typeof entry === 'string' ? entry : entry.id)),
+          owner,
+        );
       // A rename meets the name cap (docs/specs/006-document/name-length.md); a
       // name echoed back unchanged (a reorder) is kept even if it predates it.
       const name =

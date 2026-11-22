@@ -29,7 +29,12 @@ function recordMotion(): void {
   w.__motion = [];
   const record = (event: Event) => {
     const el = event.target;
-    if (!(el instanceof Element) || el.closest('[data-element-id]')) return;
+    // The Edit, Save and Cancel ripple is page motion with its own budget (app/mode-ripple.css), not chrome.
+    if (
+      !(el instanceof Element) ||
+      el.closest('[data-element-id], .lk-mode-ripple, .lk-click-ring')
+    )
+      return;
     for (const anim of el.getAnimations()) {
       const timing = anim.effect?.getComputedTiming();
       if (!timing) continue;

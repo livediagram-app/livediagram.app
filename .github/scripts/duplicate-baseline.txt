@@ -306,7 +306,6 @@ livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/sr
 livedocuments/packages/template-previews/src/article-preview-parts.tsx	liveknowledge/packages/template-previews/src/article-preview-parts.tsx
 livedocuments/packages/templates/src/article-templates-2.ts	liveknowledge/packages/templates/src/article-templates-2.ts
 livedocuments/packages/templates/src/beside-offers.ts	liveknowledge/packages/templates/src/beside-offers.ts
-livedocuments/packages/templates/src/index.ts	liveknowledge/packages/templates/src/index.ts
 livedocuments/packages/templates/src/page-layouts-set-compare.ts	liveknowledge/packages/templates/src/page-layouts-set-compare.ts
 livedocuments/packages/templates/src/page-layouts-set-covers.ts	liveknowledge/packages/templates/src/page-layouts-set-covers.ts
 livedocuments/packages/templates/src/page-layouts-set-explainers.ts	liveknowledge/packages/templates/src/page-layouts-set-explainers.ts

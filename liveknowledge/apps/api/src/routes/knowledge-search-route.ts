@@ -18,6 +18,7 @@ import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { openConflictPages, pageTrustOf } from '../knowledge/page-read';
+import { pageHealthWires } from '../knowledge/page-health-read';
 import { json, rateLimited } from '../responses';
 import type { DocumentRouteContext } from './context';
 import type { KnowledgeRoute } from './knowledge-routes';
@@ -68,6 +69,15 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
     const { document } = route;
     const knowledge = new Map(document.tabs.map((t) => [t.id, t.knowledge]));
     const conflicts = results.length > 0 ? await openConflictPages(ctx.env, document.tabs) : null;
+    // Each result's page's Health Score (verification.md "For agents and Ask"): one read for the results' pages,
+    // never one a result.
+    const health = await pageHealthWires(
+      ctx.env,
+      document.id,
+      reviewEvery,
+      now,
+      results.map((r) => r.tab),
+    );
     const answered = results.map((found) => {
       const trust = pageTrustOf(knowledge.get(found.tab), reviewEvery, now);
       const against = conflicts?.byPassage.get(found.id);
@@ -76,6 +86,7 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
         ...(found.isTitle ? {} : { text: found.text }),
         ...(trust.reviewAt === undefined ? {} : { reviewAt: trust.reviewAt }),
         ...(against?.length ? { conflictsWith: against } : {}),
+        ...(health.has(found.tab) ? { health: health.get(found.tab)! } : {}),
       };
     });
     // Each result served to an agent is a read of its page; a search that found nothing is a question nobody

@@ -196,6 +196,63 @@ One event when a structure is suggested, saying which AI answered (`UI·Used·Se
 titles or the key, and **no count** (how many pages were suggested, ticked or created is not sent). An event has
 no number field, and adding one is a change to the platform's telemetry, which this feature does not make.
 
+## Describe Structure on a page
+
+Owner, 2026-11-21: "When I create a new page It goes into edit mode, id expect to see a button to the left of cancel
+for Describe Structure which uses our built in AI or connected AI to define an initial structure for that page. Id
+also expect to see it to the left of edit on a page with nothing written yet."
+
+Describe to Set Up shapes a whole knowledgebase; **Describe Structure** shapes one empty page: the headings its writing
+will sit under, a line under each on what goes there, and where it helps a list, a table or a callout to fill in.
+
+- **Where it is.** A calm secondary button with the sparkle icon, named **Describe Structure**, standing on its own
+  beside the floating page buttons (editing.md "The buttons"):
+  - **while editing**, to the left of Cancel, while the draft has nothing under its Title (a page just made with New
+    Page or Add Subpage opens here);
+  - **while reading**, to the left of Edit, on a page with nothing written yet (the page "Nothing Written Yet" shows).
+    Pressing it opens edit mode first, then the dialog.
+  - Once the page has writing it is gone, in either mode. "Nothing written" is the test the empty page and Describe
+    to Set Up use: nothing but the Title (and empty lines) in the page's writing, no drawing on it.
+- **Who sees it:** a signed-in person who may edit the page (an Editor or a Participant of the knowledgebase, or a
+  signed-in person with an edit link to that one page), never a Viewer, a link visitor without an account, an agent,
+  or anyone in a knowledgebase kept **Offline** (there is no server to ask). It shows on Pages alone: not over Version
+  History, Ask, AI Knowledge or a new knowledgebase's start screen.
+- **The dialog**, centred (on a phone a sheet from the foot): titled **Describe Structure**, the line "Say what this
+  page is for and AI drafts its headings. Nothing is saved until you press Save." One field, **What Is This Page For?**
+  (up to 500 characters, optional when the page has a title), its placeholder built from the title ("What goes on
+  Deploys, in your own words."), and under it the quiet line saying which AI answers, as Ask and Describe to Set Up say
+  it (**Uses built-in AI** / **Uses your team's key**; where a key is set and built-in AI is here, the person's choice
+  in Ask's picker applies here too). Buttons: Cancel and **Describe** (primary; `Mod-Enter` in the field). While it
+  works the field is locked and Describe reads "Drafting..."; Cancel stops the request.
+- **What it writes.** The structure lands in the page's **draft** at the top, under the Title: never saved, so it is the
+  person's to change, Save or Cancel as any edit (Cancel on the bar asks before throwing it away, as it does for any
+  unsaved change). It is one undo step. It holds at most 12 headings (Heading 2, with Heading 3 under them), each
+  followed by one short italic line on what belongs there; where it helps, a bulleted, numbered or to-do list of
+  placeholders, a table (its header row and one empty row) or a callout (a quote paragraph). At most 4,000 characters
+  in all. It is plain text: no links, no pictures, nothing the app runs.
+- **What the AI is told:** the page's title, the person's words, the knowledgebase's name and the titles of the pages
+  in its tree (at most 200, with their depth), so the headings fit what is around them. Never any page's writing. A
+  link to one page sends that page's title alone. All of it is fenced as material, never instructions, and the reply is
+  read as JSON of blocks in one fixed shape, every field checked and cut to its bound; anything else is dropped.
+- **The route:** `POST .../pages/<tab>/describe-structure` with `{ purpose, ai? }` (`ai: "built-in"` when the person
+  chose built-in AI over the team's key) answers `{ blocks, provider }`; it writes nothing. A signed-in person in
+  person who may edit pages; an API token is refused with 403 `needs_a_person`; a person without an account, 403.
+- **Limits.** 10 a person an hour and 50 a knowledgebase a day, whichever AI answers (`STRUCTURE_*`, the room's
+  counters). On built-in AI also **10 a person a UTC day** across every knowledgebase, counted apart from Describe to
+  Set Up's suggestions; that count guards a bill, so a fault reaching it refuses rather than lifts the cap. On
+  built-in AI a reply that does not read is asked once more, counted once. 2,000 output tokens at most.
+- **Failures in words**, in a callout in the dialog: "Built-In AI Is Not Set Up Here", "You Have Used Today's 10
+  Built-In Drafts", "You Have Asked for 10 Structures This Hour", "The AI Could Not Draft This Page" (a reply with no
+  heading that reads, or built-in AI not answering), and on the team's key the words Ask uses for a bad key, no credit,
+  a rate limit or a busy provider.
+
+| Action                         | Editor          | Participant     | Viewer | Link visitor                                  | Agent                     |
+| ------------------------------ | --------------- | --------------- | ------ | --------------------------------------------- | ------------------------- |
+| See and use Describe Structure | yes (signed in) | yes (signed in) | no     | no (an edit link to one page: signed in only) | no (403 `needs_a_person`) |
+
+- **Telemetry:** `UI·Opened·DescribeStructure` when the dialog opens, `UI·Used·DescribeStructure` when a structure
+  lands in the draft. Three fixed words: never the words, the title or how many headings.
+
 ## Not built
 
 - **Describe to Add Pages** in the knowledgebase menu (the menu itself is not built); it is in the command palette.

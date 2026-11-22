@@ -7,6 +7,7 @@ import {
   isToolListCall,
   REPEAT_MIN_CHARS,
   sayDescriptionsOnce,
+  shallowOutputSchema,
 } from './tool-list-compact';
 
 const LONG = 'How a rule starts. '.repeat(20);
@@ -164,6 +165,55 @@ describe('compactToolList', () => {
       expect(listed.outputSchema.properties.d.description).toBe('Same as "c" above.');
     }
     expect(tools[2]).toBe(7);
+  });
+
+  it('lists an output schema shallow: its top level whole, nothing under a property’s own fields', () => {
+    const outputSchema = {
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      type: 'object',
+      additionalProperties: false,
+      required: ['pages'],
+      $defs: { page: { type: 'object' } },
+      properties: {
+        pages: {
+          type: 'array',
+          description: 'Every page.',
+          items: {
+            type: 'object',
+            properties: { id: { type: 'string', description: 'The page id.' } },
+            required: ['id'],
+          },
+        },
+        kind: { type: 'string', enum: ['a', 'b'], description: 'Its kind.' },
+        rev: { anyOf: [{ type: 'number' }, { type: 'null' }], description: 'The revision.' },
+        each: { oneOf: [{ $ref: '#/$defs/page' }, { const: 'none' }] },
+        page: { $ref: '#/$defs/page', description: 'A page.' },
+        odd: 3,
+        any: { type: 'array', items: true },
+      },
+    };
+    const out = compactToolList({
+      result: { tools: [{ name: 't', outputSchema }] },
+    }) as unknown as {
+      result: { tools: { outputSchema: unknown }[] };
+    };
+    expect(out.result.tools[0]!.outputSchema).toEqual({
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      type: 'object',
+      additionalProperties: false,
+      required: ['pages'],
+      properties: {
+        pages: { type: 'array', description: 'Every page.', items: { type: 'object' } },
+        kind: { type: 'string', enum: ['a', 'b'], description: 'Its kind.' },
+        rev: { anyOf: [{ type: 'number' }, { type: 'null' }], description: 'The revision.' },
+        each: { oneOf: [{}, { const: 'none' }] },
+        page: { description: 'A page.' },
+        odd: 3,
+        any: { type: 'array', items: {} },
+      },
+    });
+    expect(shallowOutputSchema('not a schema')).toBe('not a schema');
+    expect(shallowOutputSchema({ properties: 'odd' })).toEqual({ properties: 'odd' });
   });
 
   it('hands back a tool with no schemas, and any other answer, untouched', () => {

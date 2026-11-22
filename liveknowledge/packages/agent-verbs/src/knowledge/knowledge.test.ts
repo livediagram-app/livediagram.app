@@ -8,6 +8,7 @@ import {
   treeRowOf,
   trustFieldsOf,
   trustLine,
+  healthLine,
 } from '.';
 
 const AT = Date.UTC(2026, 9, 1);
@@ -115,6 +116,55 @@ describe('trustLine', () => {
         ],
       }),
     ).toBe('REVIEW DUE, last verified 2026-10-01, CONFLICTS WITH "Holidays", "Rollbacks"');
+  });
+});
+
+// The Health Score (verification.md "Health Score"): carried whole, and said on the trust line.
+describe('health', () => {
+  const health = (score: number, label: 'healthy' | 'fair' | 'needs-work', reason: string) => ({
+    score,
+    label,
+    reason,
+    factors: [
+      { factor: 'verification' as const, points: 0, max: 30, raise: 'Verify this page: +30' },
+    ],
+  });
+
+  it('rides the trust fields of a page and a search result', () => {
+    const low = health(42, 'needs-work', 'Never verified');
+    expect(trustFieldsOf({ state: 'never-verified', stale: false, health: low }).health).toEqual(
+      low,
+    );
+    expect(
+      resultTrustOf({
+        id: 'p',
+        tab: 't',
+        isTitle: false,
+        title: 'T',
+        titleMarked: 'T',
+        headings: [],
+        snippet: '',
+        firstBlock: 'b',
+        lastBlock: 'b',
+        trust: 'never-verified',
+        health: low,
+      }).health,
+    ).toEqual(low);
+  });
+
+  it('says the score, the word and, below Healthy, why', () => {
+    expect(healthLine(health(42, 'needs-work', 'Never verified'))).toBe(
+      'health 42 (needs work: never verified)',
+    );
+    expect(healthLine(health(60, 'fair', 'No owner'))).toBe('health 60 (fair: no owner)');
+    expect(healthLine(health(96, 'healthy', 'No page links here'))).toBe('health 96 (healthy)');
+    expect(
+      trustLine({
+        verified: 'never-verified',
+        stale: false,
+        health: health(42, 'needs-work', 'Never verified'),
+      }),
+    ).toBe('never verified, health 42 (needs work: never verified)');
   });
 });
 

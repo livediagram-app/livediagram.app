@@ -1,17 +1,20 @@
-// The knowledgebase's three views (docs/specs/030-knowledgebase/search-and-ask.md "The three views"): Pages (the
-// editor), Ask and AI Knowledge. Which one shows lives in the address, as `?view=ask` or `?view=ai`, so a reload
+// The knowledgebase's four views (docs/specs/030-knowledgebase/search-and-ask.md "The views"): Pages (the editor),
+// Ask, AI Knowledge and Connect (mcp-connect.md). Which one shows lives in the address, as `?view=ask`, `?view=ai`
+// or `?view=connect`, so a reload
 // keeps it and the browser's Back returns to the view before. Pages is the address with no `view`. Not in the hash:
 // the hash is the open page's (`#t=<id>`), and the editor rewrites it whole on every page switch.
 
-export type KnowledgeView = 'pages' | 'ask' | 'ai';
+export type KnowledgeView = 'pages' | 'ask' | 'ai' | 'connect';
 
 export const KNOWLEDGE_VIEW_PARAM = 'view';
 
 export const KNOWLEDGE_VIEWS: readonly {
   view: KnowledgeView;
   label: string;
-  // The name a phone's footer tab shows, where three full names do not fit.
+  // The name a phone's footer tab shows, where four full names do not fit.
   short: string;
+  // The hover card's title, where it says more than the tab's name.
+  hoverTitle?: string;
   about: string;
 }[] = [
   {
@@ -32,12 +35,22 @@ export const KNOWLEDGE_VIEWS: readonly {
     short: 'AI',
     about: 'What agents know, read and could not find.',
   },
+  {
+    view: 'connect',
+    label: 'Connect',
+    short: 'Connect',
+    hoverTitle: 'Connect an AI App',
+    about:
+      'Connect Claude, ChatGPT, Cursor or another AI app so it can read and write these pages.',
+  },
 ];
+
+const NAMED: ReadonlySet<string> = new Set(['ask', 'ai', 'connect']);
 
 /** The view an address names; anything it does not know is Pages. */
 export function knowledgeViewOf(search: string): KnowledgeView {
   const named = new URLSearchParams(search).get(KNOWLEDGE_VIEW_PARAM);
-  return named === 'ask' || named === 'ai' ? named : 'pages';
+  return named !== null && NAMED.has(named) ? (named as KnowledgeView) : 'pages';
 }
 
 /** The address of a view: `href` with its `view` set, or taken out for Pages. The path, the rest of the query and

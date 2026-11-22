@@ -194,13 +194,15 @@ export function FigureTiles({
         attention={figures.reviewDue > 0}
         onPress={() => onGo({ card: 'health' })}
         line={
-          figures.verifiedShare === null
+          (figures.verifiedShare === null
             ? 'No pages to verify'
             : figures.reviewDue > 0
               ? `${count(figures.reviewDue)} due for review`
               : figures.neverVerified > 0
                 ? `${count(figures.neverVerified)} never verified`
-                : 'Every page verified'
+                : 'Every page verified') +
+          // The average Health Score beside the verified share (ai-knowledge.md "The figures band").
+          (figures.averageHealth === undefined ? '' : `, health ${figures.averageHealth}`)
         }
       />
     </div>

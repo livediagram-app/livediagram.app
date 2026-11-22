@@ -5,6 +5,7 @@
 // fields, so an agent reads a page the same way through either door.
 import {
   isKnowledgePageRow,
+  type KnowledgePageHealth,
   type KnowledgePageRef,
   type KnowledgePageTrust,
   type KnowledgeReviewEvery,
@@ -39,6 +40,8 @@ export type TrustFields = {
   approval?: 'pending' | 'approved' | 'rejected';
   approval_requested_at?: string;
   approval_note?: string;
+  /** The page's Health Score (verification.md "Health Score"): on get_context, search_pages and read_page. */
+  health?: KnowledgePageHealth;
 };
 
 const iso = (ms: number) => new Date(ms).toISOString();
@@ -61,6 +64,7 @@ export function trustFieldsOf(trust: KnowledgePageTrust): TrustFields {
           ...(trust.approval.note ? { approval_note: trust.approval.note } : {}),
         }
       : {}),
+    ...(trust.health ? { health: trust.health } : {}),
   };
 }
 
@@ -116,6 +120,7 @@ export const resultTrustOf = (result: KnowledgeSearchResult): TrustFields =>
     ...(result.reviewAt === undefined ? {} : { reviewAt: result.reviewAt }),
     stale: result.trust === 'review-due',
     ...(result.conflictsWith ? { conflictsWith: result.conflictsWith } : {}),
+    ...(result.health ? { health: result.health } : {}),
   });
 
 const day = (isoDate: string) => isoDate.slice(0, 10);
@@ -135,5 +140,14 @@ export function trustLine(trust: TrustFields): string {
   if (trust.approval === 'pending') parts.push('PENDING APPROVAL');
   if (trust.approval === 'rejected')
     parts.push(`REJECTED${trust.approval_note ? `: ${trust.approval_note}` : ''}`);
+  if (trust.health) parts.push(healthLine(trust.health));
   return parts.join(', ');
+}
+
+/** The Health Score as a listing says it: "health 42 (needs work: never verified)", or "health 96 (healthy)". */
+export function healthLine(health: KnowledgePageHealth): string {
+  const word = health.label === 'needs-work' ? 'needs work' : health.label;
+  const why =
+    health.score < 100 && health.label !== 'healthy' ? `: ${health.reason.toLowerCase()}` : '';
+  return `health ${health.score} (${word}${why})`;
 }

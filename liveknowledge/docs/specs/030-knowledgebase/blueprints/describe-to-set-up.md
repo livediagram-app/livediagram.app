@@ -267,6 +267,46 @@ description, the titles and the key are never sent.
 | In a browser: the start screen's Describe to Set Up, describe to tree, built-in AI with no key, an OpenAI key   | `e2e/signed-in/knowledge-setup.spec.ts`                                                  |
 | The start screen: shown by `/new`, Blank Knowledgebase, a structure's whole tree, Import; skipped by `?blank=1` | `e2e/knowledge-start.spec.ts`; `components/start/*.test.ts*`; `setup-structures.test.ts` |
 
+## Describe Structure on a page
+
+Derived from [Describe to set up](../describe-to-set-up.md) "Describe Structure on a page"; the request and its
+reading are the [knowledge package blueprint](knowledge-package.md)'s ("Describe Structure").
+
+| Piece                                 | File                                                                                     |
+| ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| whether it is open, for which page    | `lib/describe-structure/structure-open.ts`                                               |
+| the route's client                    | `lib/describe-structure/structure-api.ts`                                                |
+| every word, the AI line, the failures | `lib/describe-structure/structure-words.ts`                                              |
+| the structure into the draft          | `lib/describe-structure/structure-draft.ts`                                              |
+| who is offered it, and where          | `components/describe-structure/useDescribeStructureOffered.ts`                           |
+| the button                            | `components/describe-structure/DescribeStructureButton.tsx`                              |
+| the dialog, and its host              | `components/describe-structure/DescribeStructureDialog.tsx`, `DescribeStructureHost.tsx` |
+
+- **Offered** (`describeStructureOf`, one short string from the chrome store): `'read'` or `'edit'` for a signed-in,
+  hydrated, plain session (no embed, workbench or Community view) whose `pageEditing.mayEdit` is true, on a page
+  `pageIsUntouched` calls untouched (no element, every flow only a Title and empty lines, at most 24 blocks: bounded
+  and remembered per page object, so a keystroke costs a WeakMap read). Reading it looks at the stored page with any
+  draft beside it; editing, at `pageEditLens(pageTab)`, the draft as it is edited. Offline answers null.
+- **The button** (`PageEditBarView`'s `onDescribe`): drawn first in the read row (left of Edit) or before Cancel in the
+  draft bar, the floating buttons' 40 px shape in Cancel's white with the brand's sparkle. Pressing it sends
+  `UI·Opened·DescribeStructure`, starts edit mode when reading, and opens the dialog for the page.
+- **The dialog** is fetched on its first open (`next/dynamic`, in its own error area) from `EditorTabDialogs`, beside
+  Describe to Set Up's host, and closes when its page is no longer the one open or may no longer be edited. The title
+  it sends is the draft's Title block's text, else the saved name. It reads AI Settings (`aiSettingsStore`) and the
+  person's Ask choice (`useAskAiChoice`): with a key and built-in AI both here and built-in chosen it sends
+  `ai: "built-in"` and says "Uses built-in AI"; otherwise the line is `aiInUseLine`.
+- **Into the draft** (`putStructureInDraft`): enters edit mode if it ended meanwhile, flushes the writing's handle and
+  takes its blocks, then one `commitTabs` (through the edit lens, so the draft) that writes the page's saved flow as
+  `withStructureAtTop`: the Title (and subtitle), the structure's blocks (`pageStructureArticleBlocks`, fresh ids
+  that never meet the page's), whatever was typed meanwhile (empty lines dropped on an empty page) and one empty line
+  for the caret. The article editor merges the commit as it merges any host edit. One undo step.
+- **Telemetry:** `UI·Opened·DescribeStructure`, `UI·Used·DescribeStructure`.
+- **Tests:** `components/describe-structure/DescribeStructure.test.tsx` (offer per role and state, Offline, both
+  button places, the dialog, the AI line and choice, what is sent, failures, the commit), and
+  `lib/describe-structure/structure-lib.test.ts` (`withStructureAtTop`, the words).
+- **Not known:** how good a real model's structure is; built-in AI answered locally through wrangler's `AI` binding
+  once in the browser check, nothing more.
+
 ## Not built, or not known
 
 - The knowledgebase menu's **Describe to Add Pages** item (the menu does not exist; the hook for it does).
