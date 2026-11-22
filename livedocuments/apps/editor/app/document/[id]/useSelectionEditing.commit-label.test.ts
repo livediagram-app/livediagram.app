@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, createText, type Element, type Tab } from '@livedocuments/document';
+import {
+  textWordsWidth,
+  createShape,
+  createText,
+  type Element,
+  type Tab,
+} from '@livedocuments/document';
 import { useSelectionEditing } from './useSelectionEditing';
 
 vi.mock('@/components/canvas/text-hug-measure', () => ({
@@ -152,5 +158,49 @@ describe('Escape on a text box', () => {
     const s = setup(fixed, false, 'fixed');
     s.editing.cancelEdit();
     expect(s.all()).toEqual([fixed]);
+  });
+});
+
+// A template's title sized to its words takes longer typed words on one line, as an agent's do (EO22a, canvas
+// "Text sized to its words"): a fixed box whose words sat on one line re-hugs them, up to 1,200 px, kept where its
+// words sit. Wrapping text keeps its width.
+describe('commitLabel: a fixed text sized to its one line of words', () => {
+  const title = (textAlignX: 'left' | 'center' | 'right', width = 320) =>
+    ({
+      ...createText(100, 0),
+      id: 'title',
+      width,
+      height: 44,
+      label: 'Sprint 14 retro',
+      textSize: 'lg',
+      textBold: true,
+      textAlignX,
+    }) as Element & { x: number; width: number };
+  const longer = 'Sprint 14 retro, the platform team';
+
+  it('widens a left-aligned title at its left edge', () => {
+    const s = setup(title('left'));
+    s.editing.commitLabel('title', longer);
+    const saved = s.saved() as Element & { x: number; width: number };
+    expect(saved.width).toBe(textWordsWidth(saved as never));
+    expect(saved.x).toBe(100);
+  });
+
+  it('keeps a centred title centred, and a right-aligned one at its right edge', () => {
+    const centred = setup(title('center'));
+    centred.editing.commitLabel('title', longer);
+    const c = centred.saved() as Element & { x: number; width: number };
+    expect(c.x + c.width / 2).toBe(260);
+    const right = setup(title('right'));
+    right.editing.commitLabel('title', longer);
+    const r = right.saved() as Element & { x: number; width: number };
+    expect(r.x + r.width).toBe(420);
+    expect(r.width).toBeGreaterThan(320);
+  });
+
+  it('leaves text that already wrapped at its width', () => {
+    const s = setup(title('left', 60));
+    s.editing.commitLabel('title', longer);
+    expect((s.saved() as Element & { width: number }).width).toBe(60);
   });
 });

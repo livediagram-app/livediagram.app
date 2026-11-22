@@ -47,6 +47,9 @@ export const noAccessWords = (target: CrossAppTarget | null): string =>
 export const isAccessPause = (reason: string): boolean =>
   reason.startsWith('Stopped: no access') || reason === CROSS_APP_NO_AUTHOR;
 
+/** An access pause's reason after "Paused: ", its own "Stopped: " dropped: "no access to “Notes”". */
+export const accessPauseWords = (reason: string): string => reason.replace(/^Stopped: /, '');
+
 /** A refusal's words for the step's line: the index's or the target's reason where it gave one. */
 export function refusalWords(
   code: CrossAppRefusal,

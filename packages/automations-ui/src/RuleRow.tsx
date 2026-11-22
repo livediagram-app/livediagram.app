@@ -9,7 +9,7 @@
 // the builder. On a phone the row stacks: the name, the sentence's trigger, "4 min ago · 38 runs this week", and the
 // switch at the right. A rule the app runs from the list (kit.runRule) shows Run Rule beside its name, and in its menu.
 
-import { isAccessPause } from '@liveworkspace/automations/cross-app';
+import { accessPauseWords, isAccessPause } from '@liveworkspace/automations/cross-app';
 import { AUTOMATION_FAILURES_TO_PAUSE } from '@liveworkspace/automations';
 import { Button, Switch, lucideGlyph } from '@liveworkspace/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
@@ -64,7 +64,8 @@ function PausedNote({
         data-rule-paused-reason="access"
         className="relative z-[1] text-[12px] text-amber-800 dark:text-amber-300"
       >
-        Paused: {rule.paused.reason}. Its steps in other apps act as {rule.edited.by.name}.{' '}
+        Paused: {accessPauseWords(rule.paused.reason)}. Its steps in other apps act as{' '}
+        {rule.edited.by.name}.{' '}
         {onTakeOver ? (
           <>
             <span aria-hidden>·</span>{' '}

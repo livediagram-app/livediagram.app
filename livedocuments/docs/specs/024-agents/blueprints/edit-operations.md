@@ -234,6 +234,11 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
   `fixedSize`, its `textSize` is not `scale`, and `labelBoxSize(label, shape)` exceeds its box, the box grows to
   the larger of each side around its centre (`x -= dw / 2`, `y -= dh / 2`, rounded), annotated `widened w→w'` and
   `taller h→h'` (EO22). It never shrinks.
+- **Fit to label, text.** After a `set` that changes a text's `label`, when its old words sat on one line in its box
+  and its new ones do not, the box widens to hold them on one line (`textWordsWidth`, at most `TEXT_GROW_MAX`,
+  1200 px), kept where its words sit (its left edge, centre or right edge, by its alignment), annotated
+  `widened w→w'` (EO22a). It never narrows. So a template's title, sized to its sample words, takes an agent's longer
+  ones without wrapping onto the caption below it.
 
 ### Placement
 

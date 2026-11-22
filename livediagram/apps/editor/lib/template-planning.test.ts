@@ -31,12 +31,15 @@ describe('gantt template', () => {
   const els = buildTemplate('gantt', 0, 0);
   const bars = shapesOf(els, 'progress-bar');
   const jan = text(els, 'January 2027');
-  const weekW = text(els, '4').width;
+  // A week column's pitch, from its dates' left edges: each date is as wide as its words, at its column's left.
+  const weekW = text(els, '11').x - text(els, '4').x;
 
   it('lays a month band over week-commencing dates beside a Task / Owner table', () => {
     for (const m of ['January 2027', 'February 2027', 'March 2027'])
       expect(text(els, m)).toBeTruthy();
-    const weeks = textsOf(els).filter((t) => /^\d{1,2}$/.test(t.label ?? '') && t.width === weekW);
+    const weeks = textsOf(els).filter(
+      (t) => /^\d{1,2}$/.test(t.label ?? '') && t.y === text(els, '4').y,
+    );
     expect(weeks.map((w) => w.label)).toEqual([
       '4',
       '11',

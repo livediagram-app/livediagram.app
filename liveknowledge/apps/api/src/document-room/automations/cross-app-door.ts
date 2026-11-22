@@ -2,7 +2,7 @@
 // apps"; liveworkspace blueprint cross-app.md "The door"): Write a Page in a Knowledgebase, as the rule's author,
 // through the knowledgebase's own create_page route (routes/knowledge-agent-routes.ts) with the author's grant, so the
 // page is made, placed and told to everyone with the knowledgebase open exactly as an Editor's is. The request says
-// it is a rule's (`automation` on its identity): the page is stamped Written by Automation with the rule and the item
+// it is a rule's (`automation` on its identity): the page is stamped Written by a Rule with the rule and the item
 // it came from, its Owner is the author, and it is never verified. The pickers' read is the page tree.
 import type { DocumentGrant } from '../../index-service';
 import type {

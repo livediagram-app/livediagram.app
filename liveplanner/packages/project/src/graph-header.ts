@@ -4,7 +4,14 @@
 
 import { unionRects } from '@liveworkspace/model-core/geometry-primitives';
 import { glyphWidth } from './glyph-width';
-import { isBoxed, type BoxedElement, type Element, type ShapeElement } from './index';
+import { fitTextWidth } from '@liveworkspace/element-model/text-fit';
+import {
+  isBoxed,
+  type BoxedElement,
+  type Element,
+  type ShapeElement,
+  type TextElement,
+} from './index';
 
 // The template's muted caption grey (template-builders-flowchart.ts MUTED).
 export const GRAPH_MUTED = '#64748b';
@@ -52,7 +59,8 @@ const idOf = (makeId: (() => string) | undefined, base: string) =>
   makeId ? makeId() : `${base}-${(nextId++).toString(36)}`;
 
 // The title and caption above the drawing, and the key beside it when asked. `elements` are laid out; the header
-// sits above their top-left corner, so nothing moves.
+// sits above their top-left corner, so nothing moves. Each is as wide as its words, or the header's width when they
+// wrap (a template's "Text sized to its words").
 export function withHeaderAndKey(
   elements: Element[],
   opts: {
@@ -83,32 +91,36 @@ export function withHeaderAndKey(
     const captionH = captionLines * CAPTION_LINE_H + (captionLines ? 6 : 0);
     const top = block.y - HEADER_GAP - captionH - (title ? TITLE_H : 0);
     if (title)
-      added.push({
-        id: idOf(opts.makeId, 'title'),
-        type: 'text',
-        x: block.x,
-        y: top,
-        width,
-        height: TITLE_H,
-        label: title,
-        textSize: 'lg',
-        textBold: true,
-        textAlignX: 'left',
-      });
+      added.push(
+        fitTextWidth<TextElement>({
+          id: idOf(opts.makeId, 'title'),
+          type: 'text',
+          x: block.x,
+          y: top,
+          width,
+          height: TITLE_H,
+          label: title,
+          textSize: 'lg',
+          textBold: true,
+          textAlignX: 'left',
+        }),
+      );
     if (subtitle)
-      added.push({
-        id: idOf(opts.makeId, 'caption'),
-        type: 'text',
-        x: block.x,
-        y: top + (title ? TITLE_H : 0),
-        width,
-        height: captionH,
-        label: subtitle,
-        textSize: 'sm',
-        textColor: GRAPH_MUTED,
-        textAlignX: 'left',
-        textAlignY: 'top',
-      });
+      added.push(
+        fitTextWidth<TextElement>({
+          id: idOf(opts.makeId, 'caption'),
+          type: 'text',
+          x: block.x,
+          y: top + (title ? TITLE_H : 0),
+          width,
+          height: captionH,
+          label: subtitle,
+          textSize: 'sm',
+          textColor: GRAPH_MUTED,
+          textAlignX: 'left',
+          textAlignY: 'top',
+        }),
+      );
   }
   return [...added, ...elements];
 }

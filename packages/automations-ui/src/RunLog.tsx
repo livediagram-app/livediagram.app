@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { AutomationResult } from '@liveworkspace/automations';
-import { isAccessPause } from '@liveworkspace/automations/cross-app';
+import { accessPauseWords, isAccessPause } from '@liveworkspace/automations/cross-app';
 import { Button, CompactEmptyState, NoMatches, Select } from '@liveworkspace/ui';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { BoltIcon } from './glyphs';
@@ -152,8 +152,9 @@ export function RunLog({
           className={`flex flex-wrap items-center justify-between gap-2 bg-amber-50 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-200 ${phone ? 'px-4 py-2.5' : 'px-5 py-3'}`}
         >
           <span>
-            <span className="font-semibold">Paused.</span> {pausedOn.paused.reason}. Its steps in
-            other apps act as {pausedOn.edited.by.name}.
+            <span className="font-semibold">Paused:</span>{' '}
+            {accessPauseWords(pausedOn.paused.reason)}. Its steps in other apps act as{' '}
+            {pausedOn.edited.by.name}.
           </span>
           {onTakeOver ? (
             <Button variant="secondary" size="xs" onClick={() => onTakeOver(pausedOn)}>

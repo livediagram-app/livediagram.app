@@ -14,7 +14,7 @@ const stamp = {
   via: 'automation' as const,
 };
 
-describe('the Written by Automation line', () => {
+describe('the Written by a Rule line', () => {
   it('names the rule and verifies on Mark Verified', () => {
     const onVerify = vi.fn();
     render(<AutomationWrittenBanner stamp={stamp} verified={false} onVerify={onVerify} />);
@@ -29,7 +29,7 @@ describe('the Written by Automation line', () => {
     const { container, rerender } = render(
       <AutomationWrittenBanner stamp={{ ...stamp, agent: undefined }} verified={false} />,
     );
-    expect(container.textContent).toBe('Written by the rule in another app. Never verified.');
+    expect(container.textContent).toBe('Written by a rule in another app. Never verified.');
     rerender(<AutomationWrittenBanner stamp={stamp} verified onVerify={() => {}} />);
     expect(container.innerHTML).toBe('');
     rerender(<AutomationWrittenBanner stamp={{ ...stamp, via: 'mcp' }} verified={false} />);

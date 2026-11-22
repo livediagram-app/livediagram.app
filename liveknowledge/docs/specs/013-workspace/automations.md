@@ -141,7 +141,7 @@ Create a Card in a Plan, Write a Page in a Knowledgebase, Post in a Space, Add a
 acts as the rule's author, with their rights alone, through the target app's own door; lost access pauses the rule,
 and a chain stops after 3 hops or on a rule it already ran. Their values are this knowledgebase's own, as every step's.
 
-**As a target**, a knowledgebase takes **Write a Page in a Knowledgebase**: a page under a chosen parent (or at the top), its title and Markdown body the rule's, its Owner the author, Never Verified, marked **Written by Automation** with the rule and its item. The page's banner says "Written by the rule <rule> in <item>. Never verified." with **Mark Verified**.
+**As a target**, a knowledgebase takes **Write a Page in a Knowledgebase**: a page under a chosen parent (or at the top), its title and Markdown body the rule's, its Owner the author, Never Verified, marked **Written by a Rule** (its hover card: the rule and its item, as the author). The page's banner says "Written by the rule <rule> in <item>. Never verified." with **Mark Verified**.
 
 **Starter: Review Due, Add a Card for the Owner**: Review Due, then Create a Card in a Plan titled `Review {{tab.name}}`, assigned to the Page Owner, due in 7 days, linked back to the page, skipped while an open card already links to it.
 

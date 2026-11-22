@@ -265,6 +265,8 @@ export * from '@liveworkspace/model-core/icon-weight';
 export * from '@liveworkspace/model-core/rich-text';
 
 export * from './factories';
+// A template's text sized to its words, one copy for every product.
+export * from '@liveworkspace/element-model/text-fit';
 export * from './text-presets';
 export * from './segment-geometry';
 export * from './duplicate';
