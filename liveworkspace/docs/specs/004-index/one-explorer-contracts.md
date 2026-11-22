@@ -835,17 +835,17 @@ due?}` (`ref` the card's number as its plan shows it, its card type's prefix and
 
 - `PUT /app/items/:id/updates`: `{updates: [{id, tabId, tabName, kinds, actors, actorCount, count, firstAt,
 latestAt, people}]}`, the item's whole set of **updates** (what changed on a page someone watches, within its hour:
-liveknowledge's [Watching](../../../../liveknowledge/docs/specs/030-knowledgebase/watching.md)), replacing what the
-index held for the item; an empty list clears it. At most `UPDATES_PUSH_MAX` (50) updates, each: `id` (1 to 128
-characters, unique in the push), `tabId` and `tabName` (the page, its name cut to 200 characters), `kinds` (1 to 6
-distinct of `saved`, `review_due`, `approved`, `rejected`, `moved`, `deleted`, in the order they first happened),
-`actors` (who did it, newest first, at most `UPDATE_ACTORS_MAX` (5) `{id, name}`, a name cut to 80 characters; empty
-for a review that came due, which nobody did), `actorCount` (how many people in all, at least `actors.length`),
-`count` (how many changes it folds, at least 1), `firstAt` and `latestAt` (epoch ms, `firstAt` <= `latestAt`), and
-`people` (whom it is for: 1 to `UPDATE_PEOPLE_MAX` (200) distinct account ids; the app leaves out anyone whose own
-change is all it holds, and anyone who started watching after it). 204; 400 `invalid_updates` naming the first
-fault; 403 `wrong_app`; 404 for an item the index does not hold. One batch replaces the item's `item_updates` and
-`item_update_people` rows. A push asks nothing of the event log and of the item's connections.
+  liveknowledge's [Watching](../../../../liveknowledge/docs/specs/030-knowledgebase/watching.md)), replacing what the
+  index held for the item; an empty list clears it. At most `UPDATES_PUSH_MAX` (50) updates, each: `id` (1 to 128
+  characters, unique in the push), `tabId` and `tabName` (the page, its name cut to 200 characters), `kinds` (1 to 6
+  distinct of `saved`, `review_due`, `approved`, `rejected`, `moved`, `deleted`, in the order they first happened),
+  `actors` (who did it, newest first, at most `UPDATE_ACTORS_MAX` (5) `{id, name}`, a name cut to 80 characters; empty
+  for a review that came due, which nobody did), `actorCount` (how many people in all, at least `actors.length`),
+  `count` (how many changes it folds, at least 1), `firstAt` and `latestAt` (epoch ms, `firstAt` <= `latestAt`), and
+  `people` (whom it is for: 1 to `UPDATE_PEOPLE_MAX` (200) distinct account ids; the app leaves out anyone whose own
+  change is all it holds, and anyone who started watching after it). 204; 400 `invalid_updates` naming the first
+  fault; 403 `wrong_app`; 404 for an item the index does not hold. One batch replaces the item's `item_updates` and
+  `item_update_people` rows. A push asks nothing of the event log and of the item's connections.
 - `PUT /app/items/:id/events`: `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
   wrote to the item and when, for its History and Most Used. Each person's `edited` lands on one event per
   item and UTC day (a later report moves its time on), and counts that day as one of their use days (one open
@@ -1115,8 +1115,8 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   `updates` answers the rows pushed for me (`people` holds me) in the last `INBOX_UPDATES_MS` (14 days), on items I
   reach (as a thread: owner, scope or a live link, a link scoped to one tab reaching that tab's rows alone) and not in
   the Trash, newest first, at most the read's limit, each `{id, app, itemId, itemTitle, itemTeamId, tabId, tabName,
-  kinds, actors, actorCount, count, firstAt, latestAt}`. One indexed query, from `item_update_people (person_id,
-  latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a review come due), its age; **what**
+kinds, actors, actorCount, count, firstAt, latestAt}`. One indexed query, from `item_update_people (person_id,
+latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a review come due), its age; **what**
   (the page's name); and **why** as an eye icon and words: **Edited**, **Verification Lapsed**, **Approved**,
   **Rejected**, **Moved** or **Deleted** for one kind, the first and **+N** past it ("Edited +1"), then the app's
   Living Prism and the item. It asks nothing of me, so it is never semibold and never counted in the badge. The
@@ -1124,8 +1124,11 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   where it is, the page's name, a sentence ("Priya and 2 others changed this page · 4 changes · 25 mins ago"), a line
   per kind in plain words ("Edited and saved", "Its verification lapsed: it is due for review", "Approved by Bo",
   "Rejected by Bo", "Moved to another place in the tree", "Deleted: it is in the knowledgebase's Trash"), and **Open
-  in the app** (↵) at the page (`itemHref` with the tab; a deleted page's opens the item). No other verb, and no read
-  state: the row leaves the Inbox when the app's next push no longer holds it, or after 14 days.
+  in the app** (↵) at the page (`itemHref` with the tab; a deleted page's opens the item). A row nobody is behind (a
+  review come due) shows an eye in place of a face, and its sentence reads "Its review came due". Under the lines:
+  "You watch this page. Unwatch it from the page to stop hearing about it." No other verb, and no read state: the
+  row leaves the Inbox when the app's next push no longer holds it, or after 14 days. An index from before updates
+  answers no `updates`, read as none.
   `Activity·Selected` (`Update`), `Activity·Changed` (`Updates`).
 - **The reading pane**, labelled by its title: where it is (the Living Prism, the team glyph, the item › the tab ›
   the element or board), the title, who and why in a sentence ("Priya mentioned you · 25 mins ago · Task"), the verbs

@@ -341,7 +341,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           </figcaption>
         </figure>
       ) : null}
-      <Body entry={entry} facts={f} comments={comments} sent={sent} />
+      <Body entry={entry} facts={f} comments={comments} sent={sent} viewerId={viewerId} />
       {canReply ? (
         <form
           className="flex flex-col gap-2"

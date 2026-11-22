@@ -16,6 +16,7 @@ import {
   InboxIcon,
   LockIcon,
   ShareIcon,
+  EyeIcon,
 } from '../ui/icons';
 import { NOTICE_LINES_MAX, type Notice } from './center';
 import { noticeHeadline, type NoticeKind, type NoticeRow } from './rows';
@@ -32,6 +33,7 @@ function kindIcon(row: NoticeRow, size = 14): ReactNode {
     assigned: row.verb.includes('card') ? <CardIcon size={size} /> : <ActionIcon size={size} />,
     access: <LockIcon size={size} />,
     share: <ShareIcon size={size} />,
+    update: <EyeIcon size={size} />,
   };
   return icons[row.kind];
 }

@@ -26,6 +26,7 @@ import {
   ActionIcon,
   AtSignIcon,
   ClockIcon,
+  EyeIcon,
   FileTextIcon,
   FormIcon,
   KeyIcon,
@@ -44,6 +45,7 @@ import {
   formReason,
   threadNeedsYou,
   threadReason,
+  updateReason,
   type InboxEntry,
   type InboxReason,
 } from './sections';
@@ -191,6 +193,27 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         latest: null,
       };
     }
+    case 'Update': {
+      // A page the reader watches changed (liveknowledge's Watching): who is the newest person behind it who is not
+      // the reader; a review that came due has nobody, Someone. It asks nothing, so it is never semibold.
+      const r = e.row;
+      const by = r.actors.find((a) => a.id !== viewerId) ?? null;
+      const name = nameOf(by?.name);
+      return {
+        person: by ? { id: by.id, name } : null,
+        who: name ?? 'Someone',
+        needsYou: false,
+        cardNumber: null,
+        title: r.tabName || 'Untitled Page',
+        reason: updateReason(r),
+        item,
+        where: [],
+        cardType: null,
+        column: null,
+        local: false,
+        latest: null,
+      };
+    }
   }
 }
 
@@ -229,6 +252,8 @@ export function reasonIcon(kind: InboxReason['kind'], size = 12): ReactNode {
       return <FormIcon size={size} />;
     case 'access':
       return <KeyIcon size={size} />;
+    case 'update':
+      return <EyeIcon size={size} />;
   }
 }
 
@@ -290,7 +315,7 @@ export const InboxRow = memo(function InboxRow({
       onClick={() => onPick(entry.key)}
       className={`${ROW} ${ROW_DENSITY[density]} ${selected ? `${ROW_CHOSEN} ${ROW_ACTIVE}` : ROW_IDLE} [contain-intrinsic-size:auto_4.75rem] [content-visibility:auto]`}
     >
-      <Lead person={f.person} compact={compact} />
+      <Lead person={f.person} compact={compact} glyph={leadGlyph(entry)} />
       <span className="min-w-0 flex-1">
         <span className="flex min-w-0 items-baseline gap-2">
           <span
@@ -390,19 +415,35 @@ function InboxTime({ at }: { at: number }) {
   );
 }
 
+export type LeadGlyph = 'form' | 'watch';
+
+/** The glyph a row with nobody behind it shows. */
+export const leadGlyph = (e: InboxEntry): LeadGlyph => (e.kind === 'Update' ? 'watch' : 'form');
+
 /** The person behind the row on a disc (their Google picture where they have one, over their colour darkened until
  *  white reads at AA; a quiet disc without one), or a form's glyph on a tile. Decorative: the row says who in words. */
-export function Lead({ person, compact }: { person: Person | null; compact: boolean }) {
+export function Lead({
+  person,
+  compact,
+  glyph = 'form',
+}: {
+  person: Person | null;
+  compact: boolean;
+  /** The tile's glyph when nobody is behind the row: a form's, or an update's eye (a review that came due). */
+  glyph?: LeadGlyph;
+}) {
   const { people } = useExtras();
   const known = usePersonPicture(people, person && !person.picture ? person.id : null);
   const size = compact ? 'size-8 text-[11px]' : 'size-9 text-xs';
   if (!person) {
+    const iconSize = compact ? 16 : 18;
     return (
       <span
         aria-hidden
+        data-inbox-glyph={glyph}
         className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-700/60 dark:text-slate-300 dark:ring-slate-600 ${size}`}
       >
-        <FormIcon size={compact ? 16 : 18} />
+        {glyph === 'watch' ? <EyeIcon size={iconSize} /> : <FormIcon size={iconSize} />}
       </span>
     );
   }

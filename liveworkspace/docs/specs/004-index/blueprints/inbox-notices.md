@@ -49,7 +49,7 @@ with its last. State: `data` (the last answer, or null), `at` (its time).
   `touch()`, which counts as this page's last read so the watch's next turn waits 30 s from it.
 
 `inboxSignature(data, app)`: each row's key and time (threads `latestAt`, actions `updatedAt`, access requests
-`askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`), sorted, joined; with `app`, that app's rows only. Two
+`askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`, updates `updateKey` and `latestAt`), sorted, joined; with `app`, that app's rows only. Two
 answers with one signature list the same Inbox.
 
 ### Which rows notify (`rows.ts`)
@@ -66,9 +66,14 @@ answers with one signature list the same Inbox.
 - Actions, open, `assigneeId` the reader, `assignerId` not the reader: `assigned` (**assigned you a card** with
   the card's key and title, or **assigned you an action** with its name).
 - `accessRequests`: `access` (**asked for access**). `shares`: `share` (**shared it with you**, the item named on the place line).
+- `updates`: `update` (**changed a page you watch**), who the newest actor who is not the reader (**Someone** when
+  none is named); a row whose kinds are only `review_due` reads **A page you watch** **is due for review**. Its `at`
+  is the row's `firstAt`, which never moves, so the row's key is seen once and later changes folded into it never
+  notify again. The place line is the item, then the page's name and `updateReason`'s label (`Expenses · Edited`).
+  The card's icon is the eye.
 
-Keys are the Inbox list's (`threadKey`, `actionKey`), `r:<id>` for a request, `s:<id>` for a share. A row's `href`:
-a thread or action, `<app's address>/explorer/inbox?at=<key>` (this app's own path when it is this app); a request or
+Keys are the Inbox list's (`threadKey`, `actionKey`, `updateKey`), `r:<id>` for a request, `s:<id>` for a share. A
+row's `href`: a thread, action or update, `<app's address>/explorer/inbox?at=<key>` (this app's own path when it is this app); a request or
 a share, the item in its app (`APP_ITEMS[app].itemPath`).
 
 `freshRows(rows, seen, now)`: those whose `at` is after `seen.since`, within `NOTICE_MAX_AGE_MS` (24 h), and whose
@@ -152,6 +157,7 @@ past the first quiet ten minutes.
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
 | `packages/explorer/src/inbox-notices/watch.test.ts`                | one read across tabs, turns, hidden and idle pauses, coming back, the hour budget   |
 | `packages/explorer/src/inbox-notices/rows.test.ts`                 | each kind, own moves never, the 24 h cut, the first watch, card threads once        |
+| `packages/explorer/src/explorer/inbox/updates.test.tsx`            | an update's notice once at `firstAt`, its words, a review come due, the signature   |
 | `packages/explorer/src/inbox-notices/seen-center.test.ts`          | marks, pruning, the cap, other tabs hearing; grouping, the timer, holding, forget   |
 | `packages/explorer/src/inbox-notices/notices-ui.test.tsx`          | the card for one row and a group, links, Dismiss, Escape, reduced motion, the badge |
 | `packages/explorer/src/data/useInbox-watch.test.tsx`               | the list taking the watch's answers                                                 |

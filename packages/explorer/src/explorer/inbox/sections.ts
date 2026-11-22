@@ -4,7 +4,8 @@
 // person: what is assigned to them, and the threads that ask something of them (a mention, a thread on their item
 // they have not written in themselves), Offline's rows included. At 0 the sidebar and the rail show no badge;
 // forms, threads they replied in and work they handed out are listed but not counted. An access request on an item
-// they manage (request-access.md "In the Inbox") asks something of them, so it counts.
+// they manage (request-access.md "In the Inbox") asks something of them, so it counts. An update on a page they watch
+// (liveknowledge's Watching) asks nothing: it is listed under its own filter and never counted.
 
 import type {
   App,
@@ -12,6 +13,8 @@ import type {
   InboxAction,
   InboxForm,
   InboxThread,
+  InboxUpdate,
+  UpdateKind,
 } from '@liveworkspace/index-client';
 import type { Located } from '../../types';
 import type { InboxData } from '../../data/useInbox';
@@ -23,9 +26,17 @@ export type InboxSections = {
   forms: InboxForm[];
   threads: Located<InboxThread>[];
   requests: InboxAccessRequest[];
+  updates: InboxUpdate[];
 };
 
-const NONE: InboxSections = { forMe: [], byMe: [], forms: [], threads: [], requests: [] };
+const NONE: InboxSections = {
+  forMe: [],
+  byMe: [],
+  forms: [],
+  threads: [],
+  requests: [],
+  updates: [],
+};
 
 // With no viewer id (signed out), every open action reads as theirs.
 export function inboxSections(data: InboxData | null, viewerId: string | null): InboxSections {
@@ -40,6 +51,7 @@ export function inboxSections(data: InboxData | null, viewerId: string | null): 
     threads: data.threads.filter((t) => !t.resolved),
     // The reader's own request (a team member who once could not reach a team item) is never theirs to answer.
     requests: (data.accessRequests ?? []).filter((r) => !viewerId || r.requesterId !== viewerId),
+    updates: data.updates ?? [],
   };
 }
 
@@ -90,7 +102,14 @@ export function inboxBadge(
 export function inboxTotal(data: InboxData | null, viewerId: string | null): number | undefined {
   if (!data) return undefined;
   const s = inboxSections(data, viewerId);
-  return s.forMe.length + s.byMe.length + s.forms.length + s.threads.length + s.requests.length;
+  return (
+    s.forMe.length +
+    s.byMe.length +
+    s.forms.length +
+    s.threads.length +
+    s.requests.length +
+    s.updates.length
+  );
 }
 
 // ---------- Why a row is here ----------------------------------------------------------------------------------
@@ -105,7 +124,8 @@ export type InboxReason =
   | { kind: 'replied'; label: 'Replied to you' | 'You replied' }
   | { kind: 'agent'; label: 'Your agent wrote' }
   | { kind: 'responses'; label: string }
-  | { kind: 'access'; label: 'Wants access' };
+  | { kind: 'access'; label: 'Wants access' }
+  | { kind: 'update'; label: string };
 
 /** Why a thread is on the page: a mention is the most direct reason, so it wins; then the item being theirs, until
  *  they reply themselves; then that they are in it: someone else wrote last (Replied to you), or they did (You
@@ -139,6 +159,23 @@ export function actionReason(a: Pick<InboxAction, 'assigneeName'>, forMe: boolea
 /** An access request's reason. */
 export const ACCESS_REASON: InboxReason = { kind: 'access', label: 'Wants access' };
 
+/** Each update kind's word, as a row's status says it. */
+export const UPDATE_KIND_LABEL: Record<UpdateKind, string> = {
+  saved: 'Edited',
+  review_due: 'Verification Lapsed',
+  approved: 'Approved',
+  rejected: 'Rejected',
+  moved: 'Moved',
+  deleted: 'Deleted',
+};
+
+/** An update's reason: its first kind's word, and "+N" for the others ("Edited +1"). */
+export function updateReason(u: Pick<InboxUpdate, 'kinds'>): InboxReason {
+  const [first, ...rest] = u.kinds;
+  const word = first ? UPDATE_KIND_LABEL[first] : 'Changed';
+  return { kind: 'update', label: rest.length > 0 ? `${word} +${rest.length}` : word };
+}
+
 /** A form's reason: how many responses the person hasn't seen. */
 export const formReason = (unseen: number): InboxReason => ({
   kind: 'responses',
@@ -152,7 +189,7 @@ export const formReason = (unseen: number): InboxReason => ({
 
 /** What a row is, as the telemetry names it (`Activity·Selected`). */
 export type InboxEntryKind =
-  'Action' | 'Card' | 'Thread' | 'CardThread' | 'FormResponses' | 'AccessRequest';
+  'Action' | 'Card' | 'Thread' | 'CardThread' | 'FormResponses' | 'AccessRequest' | 'Update';
 
 export type InboxActionEntry = {
   key: string;
@@ -183,12 +220,28 @@ export type InboxAccessEntry = {
   row: InboxAccessRequest;
   at: number;
 };
-export type InboxEntry = InboxActionEntry | InboxThreadEntry | InboxFormEntry | InboxAccessEntry;
+export type InboxUpdateEntry = {
+  key: string;
+  kind: 'Update';
+  forMe: false;
+  row: InboxUpdate;
+  at: number;
+};
+export type InboxEntry =
+  InboxActionEntry | InboxThreadEntry | InboxFormEntry | InboxAccessEntry | InboxUpdateEntry;
 
 /** The filter bar's choices. `mine`: assigned to me; `waiting`: assigned by me; `comments`: threads (mentions, on my
  *  items, replies); `forms`: forms with new responses; `requests`: access requests on items I manage, offered only
- *  while there is one (or it is the choice: `shownFilters`). */
-export const INBOX_FILTERS = ['all', 'mine', 'waiting', 'comments', 'forms', 'requests'] as const;
+ *  while there is one (or it is the choice: `shownFilters`); `updates`: changes to pages I watch, offered the same way. */
+export const INBOX_FILTERS = [
+  'all',
+  'mine',
+  'waiting',
+  'comments',
+  'forms',
+  'requests',
+  'updates',
+] as const;
 export type InboxFilter = (typeof INBOX_FILTERS)[number];
 
 export const INBOX_FILTER_LABEL: Record<InboxFilter, string> = {
@@ -198,6 +251,7 @@ export const INBOX_FILTER_LABEL: Record<InboxFilter, string> = {
   comments: 'Comments',
   forms: 'Form Responses',
   requests: 'Access Requests',
+  updates: 'Updates',
 };
 
 /** The token a filter change reports (`Activity·Changed`). */
@@ -208,6 +262,7 @@ export const INBOX_FILTER_TELEMETRY: Record<InboxFilter, string> = {
   comments: 'Comments',
   forms: 'FormResponses',
   requests: 'AccessRequests',
+  updates: 'Updates',
 };
 
 export function isInboxFilter(v: unknown): v is InboxFilter {
@@ -226,17 +281,19 @@ export function entryFilter(e: InboxEntry): Exclude<InboxFilter, 'all'> {
       return 'forms';
     case 'AccessRequest':
       return 'requests';
+    case 'Update':
+      return 'updates';
   }
 }
 
-/** The filters the dropdown offers: Access Requests only while there is one or it is the choice, so someone who never
- *  shares never sees it. */
+/** The filters the dropdown offers: Access Requests and Updates only while there is one or it is the choice, so
+ *  someone who never shares, or never watches a page, never sees them. */
 export function shownFilters(
   counts: Record<InboxFilter, number>,
   chosen: InboxFilter,
 ): readonly InboxFilter[] {
   return INBOX_FILTERS.filter(
-    (f) => f !== 'requests' || counts.requests > 0 || chosen === 'requests',
+    (f) => (f !== 'requests' && f !== 'updates') || counts[f] > 0 || chosen === f,
   );
 }
 
@@ -249,6 +306,9 @@ export const formKey = (r: Pick<InboxForm, 'app' | 'itemId' | 'tabId'>) =>
   `f:${r.app}:${r.itemId}:${r.tabId}`;
 /** An access request's: `r:<id>`, the key its notice and its email open the Inbox at (`?at=`). */
 export const requestKey = (r: Pick<InboxAccessRequest, 'id'>) => `r:${r.id}`;
+/** An update's: its app, item and id, the key its notice opens the Inbox at. */
+export const updateKey = (r: Pick<InboxUpdate, 'app' | 'itemId' | 'id'>) =>
+  `u:${r.app}:${r.itemId}:${r.id}`;
 
 /** What holds a row done from the pane out of the Inbox (`useInbox`'s `settle`): its key, a card thread by its own id
  *  (whichever plan lists it, as the list shows it once), and its time then, so a row that changes after comes back. */
@@ -268,6 +328,8 @@ export function settledOf(e: InboxEntry): InboxSettled {
       return { key: formKey(e.row), at: e.row.latestAt };
     case 'AccessRequest':
       return { key: requestKey(e.row), at: e.row.askedAt };
+    case 'Update':
+      return { key: updateKey(e.row), at: e.row.latestAt };
   }
 }
 
@@ -282,6 +344,9 @@ export function withoutSettled(data: InboxData, settled: ReadonlyMap<string, num
     forms: data.forms.filter((f) => kept(formKey(f), f.latestAt)),
     ...(data.accessRequests
       ? { accessRequests: data.accessRequests.filter((r) => kept(requestKey(r), r.askedAt)) }
+      : {}),
+    ...(data.updates
+      ? { updates: data.updates.filter((u) => kept(updateKey(u), u.latestAt)) }
       : {}),
   };
 }
@@ -339,6 +404,9 @@ export function inboxEntries(s: InboxSections): InboxEntry[] {
   for (const r of s.requests) {
     out.push({ key: requestKey(r), kind: 'AccessRequest', forMe: false, row: r, at: r.askedAt });
   }
+  for (const r of s.updates) {
+    out.push({ key: updateKey(r), kind: 'Update', forMe: false, row: r, at: r.latestAt });
+  }
   return out.sort((a, b) => b.at - a.at);
 }
 
@@ -351,6 +419,7 @@ export function inboxFilterCounts(entries: readonly InboxEntry[]): Record<InboxF
     comments: 0,
     forms: 0,
     requests: 0,
+    updates: 0,
   };
   for (const e of entries) c[entryFilter(e)]++;
   return c;

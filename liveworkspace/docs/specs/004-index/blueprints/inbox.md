@@ -18,7 +18,9 @@ Scope, by file:
 | `packages/index-app/src/outbox.ts`                              | The item's outbox in its Durable Object: what it owes the index, drained on idle                                                                                |
 | `packages/index-app/src/cards.ts`, `forms.ts`                   | Cards and their threads under `~cards`; a form's code lookup, cached                                                                                            |
 | `packages/index-client/src/card-ref.ts`                         | `cardNumber(card)`: a card's number as every cross-item reader shows it, `ref` (`WI-100`), else `#key`, null for none                                           |
-| `packages/index-client/src/app-client.ts`                       | `createIndexAppClient`: `pushSummary`, `pushCollab`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen`, `pushEvents`, `pushPersonEvents`                     |
+| `packages/index-client/src/app-client.ts`                       | `createIndexAppClient`: `pushSummary`, `pushCollab`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen`, `pushEvents`, `pushPersonEvents`, `pushUpdates`      |
+| `packages/index-client/src/updates.ts`                          | `UPDATE_KINDS`, `isUpdateKind`, `UpdatePush`, `UpdateActor`, `InboxUpdate` and the updates' caps                                                                |
+| `liveworkspace/apps/index/src/updates.ts`                       | `parseUpdate`, `parseUpdates`, `pushUpdates`, `updatesQuery`, `inboxUpdateOf`, `sweepUpdates`: updates on watched pages                                         |
 
 ## Domain and naming
 
@@ -34,14 +36,15 @@ Scope, by file:
 
 ### The pushes (an app's key; only the item's own app: `403 wrong_app`; unknown item `404`)
 
-| Route                                          | Body                                                                     | Effect                                                                                                                                                                                                                                                                                                                  |
-| ---------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PUT /app/items/:id/summary`                   | `{ summary: object, updatedAt }`                                         | ≤ 2,048 bytes (`400 invalid_summary`); `updated_at = MAX(updated_at, min(updatedAt, now + 5 min))`; Drive signalled when a personal item's time moved on; `204`                                                                                                                                                         |
-| `PUT /app/items/:id/collab/:tabId`             | `{ threads (≤ 500), actions (≤ 500), tabName? }`                         | the tab's rows made to match in one batch (one statement per table through `json_each`): a row the push no longer holds deleted, the rest upserted only where a column differs, so a push that changes one row writes one; its events written ([events.md](events.md)); `204`; any malformed entry `400 invalid_collab` |
-| `PUT /app/items/:id/forms/:tabId`              | `{ form: { heading, responses, latestAt, boardTabId?, code? } \| null }` | upsert (a push without `code` keeps the old one); `null` deletes the form and every read; `400 invalid_form`                                                                                                                                                                                                            |
-| `PUT /app/items/:id/forms/:tabId/seen`         | `{ personId, seen }`                                                     | `seen = MAX(seen, new)` (never goes back); `400 invalid_form_seen`                                                                                                                                                                                                                                                      |
-| `GET /app/forms/:code`                         |                                                                          | `{ itemId, tabId }` for a live code of this app's; else `404`                                                                                                                                                                                                                                                           |
-| `GET /app/items/:id/forms/:tabId/seen/:person` |                                                                          | `{ seen }` (0 when none)                                                                                                                                                                                                                                                                                                |
+| Route                                          | Body                                                                     | Effect                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PUT /app/items/:id/summary`                   | `{ summary: object, updatedAt }`                                         | ≤ 2,048 bytes (`400 invalid_summary`); `updated_at = MAX(updated_at, min(updatedAt, now + 5 min))`; Drive signalled when a personal item's time moved on; `204`                                                                                                                                                                                                     |
+| `PUT /app/items/:id/collab/:tabId`             | `{ threads (≤ 500), actions (≤ 500), tabName? }`                         | the tab's rows made to match in one batch (one statement per table through `json_each`): a row the push no longer holds deleted, the rest upserted only where a column differs, so a push that changes one row writes one; its events written ([events.md](events.md)); `204`; any malformed entry `400 invalid_collab`                                             |
+| `PUT /app/items/:id/forms/:tabId`              | `{ form: { heading, responses, latestAt, boardTabId?, code? } \| null }` | upsert (a push without `code` keeps the old one); `null` deletes the form and every read; `400 invalid_form`                                                                                                                                                                                                                                                        |
+| `PUT /app/items/:id/forms/:tabId/seen`         | `{ personId, seen }`                                                     | `seen = MAX(seen, new)` (never goes back); `400 invalid_form_seen`                                                                                                                                                                                                                                                                                                  |
+| `GET /app/forms/:code`                         |                                                                          | `{ itemId, tabId }` for a live code of this app's; else `404`                                                                                                                                                                                                                                                                                                       |
+| `GET /app/items/:id/forms/:tabId/seen/:person` |                                                                          | `{ seen }` (0 when none)                                                                                                                                                                                                                                                                                                                                            |
+| `PUT /app/items/:id/updates`                   | `{ updates: UpdatePush[] }` (≤ 50)                                       | the item's whole set replaced in one batch: `DELETE` of its `item_updates` (cascading to `item_update_people`), then one `INSERT … SELECT … FROM json_each(?)` per table, so a push of 50 updates for 200 people each binds two JSON parameters; `204`; any malformed entry `400 invalid_updates`; an archived item's push (`a:` scope) is taken and dropped, `204` |
 
 Parsing. A card's `start` and `due` are kept only as `YYYY-MM-DD` strings; anything else is dropped from the card,
 never the push refused. Its `ref` is kept only when it matches `^[A-Z][A-Z0-9]{0,5}-(\d+)$` with that number the card's
@@ -59,6 +62,13 @@ or null; a malformed `column` is dropped from the card, never the push refused).
 `description`, `assigneeId`, `assigneeName`, `assignerName`, `teamId`, `doneById`, `card`. A repeated key keeps its
 last entry. A form's `code` is `^[A-Za-z0-9_-]{1,64}$`; `responses` at most 10,000,000.
 
+An update (`parseUpdate`) is refused, naming the first fault, for: an `id` not 1 to 128 characters or repeated in the
+push; a `tabId` not an id; `kinds` empty, unknown or repeated; more than `UPDATE_ACTORS_MAX` (5) actors or one without
+an id; `actorCount` below `actors.length`; `count` below 1; `firstAt` after `latestAt`, or either not a time; `people`
+outside 1 to `UPDATE_PEOPLE_MAX` (200), repeated or not ids. `tabName` is cut to 200 characters and an actor's name to
+80, never refused. Account-ness of `people` is not checked: the app names its watchers, and a row for someone who never
+reads the Inbox costs a few bytes for 14 days.
+
 ### The item's outbox (`@liveworkspace/index-app` `outbox.ts`)
 
 Keys written in the item's own SQLite in the transaction of the change: `summary` (key `''`), `tab` (the tab id),
@@ -71,7 +81,7 @@ threads, threadsKept, actions, actionsKept }`.
 
 ### The Inbox (`GET /inbox?app=&limit=`)
 
-`limit` default 100, at most 200. One batch of five statements:
+`limit` default 100, at most 200. One batch of six statements:
 
 1. **Threads**: candidates are unresolved threads on items the person owns, unioned with threads they are in
    (`collab_thread_people`); then unresolved, item live, in the app asked, reachable; with `mentionsYou`,
@@ -85,11 +95,24 @@ threads, threadsKept, actions, actionsKept }`.
 4. **Access requests**: open requests on items in the person's scopes ([request-access.md](request-access.md)).
 5. **Shares**: the person's own requests granted in the last `INBOX_SHARES_MS` (7 days), still reached through a
    live link, with the grant's `shared` event's actor and name ([inbox-notices.md](inbox-notices.md#data)).
+6. **Updates** (`updatesQuery`): from `item_update_people (person_id, latest_at DESC)` for the person, newer than
+   `INBOX_UPDATES_MS` (14 days), joined to `item_updates` and `items`; item live and not in the Trash, in the app asked,
+   reachable by `reachable('u', false)` (the card clause left out: an update has no `card` column); newest first, at
+   most `limit`. A row's corrupt `kinds` or `actors` JSON reads as none (`inboxUpdateOf`), never failing the read.
 
 Reachable: owner of a personal item, one of their scopes, or a live link they opened whose tab is the row's tab (or
 every tab), or for a card the tab of its board (`json_extract(card, '$.board.tabId')`).
 
-Answer: `{ threads: InboxThread[], actions: InboxAction[], forms: InboxForm[], accessRequests: InboxAccessRequest[], shares: InboxShare[] }`.
+Answer: `{ threads: InboxThread[], actions: InboxAction[], forms: InboxForm[], accessRequests: InboxAccessRequest[], shares: InboxShare[], updates: InboxUpdate[] }`.
+`InboxResponse.updates` is optional in `@liveworkspace/index-client`: a reader of an index from before reads none.
+
+The Explorer's update rows (`sections.ts`): kind `Update`, key `updateKey` (`u:<app>:<itemId>:<id>`), time `latestAt`,
+reason `updateReason` (`{kind: 'update', label}`, `UPDATE_KIND_LABEL` of the first kind, `+N` past it), the filter
+`updates` (label **Updates**, telemetry `Updates`) shown by `shownFilters` like `requests`. `inboxTotal` counts them;
+`inboxCount` does not. `entryFacts` (`InboxRows.tsx`) names the newest actor who is not the viewer, else **Someone**,
+with `needsYou` false; `Lead` draws the eye (`leadGlyph`) when nobody is behind it. The pane (`InboxReaderBody.tsx`
+`updateSentence`, `updateLines`) and `entryPlace` (`{tabId}`, `{}` for a deleted page); `entryTarget` is null, so no
+host verb is offered.
 
 The Explorer (`packages/explorer/src/explorer/inbox/sections.ts` `inboxEntries`) keeps one row per card thread: two
 rows of one app whose `card.id` is set and whose `elementId` is the same (a thread shared between two plans) are one,
@@ -159,6 +182,14 @@ ORDER BY a.updated_at DESC LIMIT 1000
 | `calendar_feeds`       | `(person_id, app)`                              | `calendar_feeds_token` UNIQUE `(token_hash)` (0018)                                                                    | calendar feed routes; purge   | feed routes         |
 | `collab_forms`         | `(item_id, tab_id)`                             | `collab_forms_code` UNIQUE `(code) WHERE code IS NOT NULL` (0004)                                                      | form push                     | Inbox, `formByCode` |
 | `collab_form_reads`    | `(person_id, item_id, tab_id)`                  | `collab_form_reads_item (item_id)`                                                                                     | seen push; merge; purge       | Inbox, `formSeen`   |
+| `item_updates`         | `(item_id, update_id)`                          | `item_updates_latest (latest_at)` (0027)                                                                               | updates push; sweep; purge    | Inbox               |
+| `item_update_people`   | `(person_id, item_id, update_id)`               | `item_update_people_latest (person_id, latest_at DESC)`; `item_update_people_update (item_id, update_id)` (0027)       | updates push; sweep; purge    | Inbox               |
+
+`0027_item_updates.sql`: `item_updates` holds `app`, `tab_id`, `tab_name`, `kinds` and `actors` (JSON), `actor_count`,
+`count`, `first_at`, `latest_at`, cascading from `items`; `item_update_people` cascades from `item_updates` by
+`(item_id, update_id)` and copies `latest_at` for its index. The daily cron's `updates` step (`sweepUpdates`) deletes
+`item_updates` older than 14 days, 500 a statement, up to 20 rounds a run. An account's purge deletes its
+`item_update_people` rows and rewrites its entry in `item_updates.actors` as `{id: <anonymised>, name: 'Someone'}`.
 
 `collab_threads` also holds `latest_author_id` (null when the app did not say) and `mentioned_by` (`'{}'`), added by
 `0020_thread_mentioned_by.sql`. The purge anonymises them with the rest: `latest_author_id` becomes the anonymised id,
@@ -179,34 +210,40 @@ on production with `--remote`.
 
 ## Errors and edge cases
 
-| Case                             | Answer                                         |
-| -------------------------------- | ---------------------------------------------- |
-| Another app pushing              | `403 wrong_app`                                |
-| A summary over 2 KB              | `400 invalid_summary`                          |
-| A push from a clock running fast | its time taken as now + 5 min at most          |
-| More than 500 threads or actions | `400 invalid_collab`                           |
-| A form link deleted or suspended | pushed `null`: off the Inbox, its code with it |
+| Case                               | Answer                                         |
+| ---------------------------------- | ---------------------------------------------- |
+| Another app pushing                | `403 wrong_app`                                |
+| A summary over 2 KB                | `400 invalid_summary`                          |
+| A push from a clock running fast   | its time taken as now + 5 min at most          |
+| More than 500 threads or actions   | `400 invalid_collab`                           |
+| More than 50 updates, or a bad one | `400 invalid_updates`, naming the first fault  |
+| An archived item's updates         | taken and dropped, `204`                       |
+| A form link deleted or suspended   | pushed `null`: off the Inbox, its code with it |
 
 ## Testing
 
-| Test                                                            | Pins                                                                                |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/inbox.test.ts` (11)               | Inbox threads, cards, forms; the Inbox at scale                                     |
-| `liveworkspace/apps/index/src/calendar-feeds.test.ts`           | feed make, reset, read, turn off, token lookup, the cards read's reach and refusals |
-| `liveworkspace/apps/index/src/app.test.ts` (15)                 | app pushes and the Inbox among the rest                                             |
-| `packages/index-app/src/outbox.test.ts`                         | the outbox's keys, drain, caps and retries                                          |
-| `packages/index-app/src/cards.test.ts`, `forms.test.ts`         | cards under `~cards`; a form's code lookup                                          |
-| `packages/explorer/src/inbox-apps.test.tsx`                     | no Inbox for livehuddle; the other four keep it                                     |
-| `packages/explorer/src/data/inbox-settled.test.ts`              | the hold across a reload, its cap and hour, broken storage, other tabs              |
-| `packages/explorer/src/data/useInbox.test.tsx`                  | a row done from the pane stays out after a reload, back once it changes             |
-| `liveworkspace/apps/index/src/livehuddle-inbox-cleanup.test.ts` | the cleanup deletes livehuddle's thread, people and action rows only, twice safely  |
+| Test                                                            | Pins                                                                                        |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/inbox.test.ts` (11)               | Inbox threads, cards, forms; the Inbox at scale                                             |
+| `liveworkspace/apps/index/src/updates.test.ts`                  | the updates push and read: replace, reach, Trash, 14 days, refusals, 50 × 200, sweep, purge |
+| `packages/explorer/src/explorer/inbox/updates.test.tsx`         | update rows: never counted, the filter, words, the pane, Open at the page, the notice       |
+| `liveworkspace/apps/index/src/calendar-feeds.test.ts`           | feed make, reset, read, turn off, token lookup, the cards read's reach and refusals         |
+| `liveworkspace/apps/index/src/app.test.ts` (15)                 | app pushes and the Inbox among the rest                                                     |
+| `packages/index-app/src/outbox.test.ts`                         | the outbox's keys, drain, caps and retries                                                  |
+| `packages/index-app/src/cards.test.ts`, `forms.test.ts`         | cards under `~cards`; a form's code lookup                                                  |
+| `packages/explorer/src/inbox-apps.test.tsx`                     | no Inbox for livehuddle; the other four keep it                                             |
+| `packages/explorer/src/data/inbox-settled.test.ts`              | the hold across a reload, its cap and hour, broken storage, other tabs                      |
+| `packages/explorer/src/data/useInbox.test.tsx`                  | a row done from the pane stays out after a reload, back once it changes                     |
+| `liveworkspace/apps/index/src/livehuddle-inbox-cleanup.test.ts` | the cleanup deletes livehuddle's thread, people and action rows only, twice safely          |
 
 ## Constants and configuration
 
 `SUMMARY_MAX_BYTES` 2048, `COLLAB_MAX_THREADS` 500, `COLLAB_MAX_ACTIONS` 500, `COLLAB_CARDS_TAB` `'~cards'`,
 `COLLAB_EVENTS_MAX` 100, `INDEX_BODY_MAX_BYTES` 512 KiB (the index's `MAX_BODY_BYTES`, and the most a collab push
 `capCollabPush` sends), `COLLAB_TEXT_MAX` 500, `COLLAB_PEOPLE_MAX` 100 (`packages/index-client`); `LABEL_MAX` 200,
-`TEXT_MAX` 500 (`COLLAB_TEXT_MAX`), `COLOR_MAX` 32, `CALENDAR_CARDS_MAX` 1,000 (`calendar-feeds.ts`), `PEOPLE_MAX` 100 (`COLLAB_PEOPLE_MAX`),
+`TEXT_MAX` 500 (`COLLAB_TEXT_MAX`), `UPDATES_PUSH_MAX` 50, `UPDATE_ACTORS_MAX` 5, `UPDATE_PEOPLE_MAX` 200,
+`UPDATE_TAB_NAME_MAX` 200, `UPDATE_ACTOR_NAME_MAX` 80, `INBOX_UPDATES_MS` 14 days (`packages/index-client` `updates.ts`),
+`COLOR_MAX` 32, `CALENDAR_CARDS_MAX` 1,000 (`calendar-feeds.ts`), `PEOPLE_MAX` 100 (`COLLAB_PEOPLE_MAX`),
 `RESPONSES_MAX` 10,000,000 (`collab-push.ts`); `INBOX_LIMIT_DEFAULT` 100 (`config.ts`); `FUTURE_SLACK_MS` 5 min
 (`events.ts`); `FLUSH_IDLE_MS` 2 s, `FLUSH_MIN_GAP_MS` 60 s, `FLUSH_RETRY_MS` 60 s (a key's first wait after a
 failure, doubling to `RETRY_MAX_MS` 1 h), `OUTBOX_MAX_ATTEMPTS` 12, `FINAL_STATUSES` 400, 403, 413, 422, `DRAIN_TABS`
