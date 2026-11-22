@@ -27,7 +27,7 @@ const ROW =
 const ROW_IDLE = 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/70';
 const ROW_ON =
   'bg-brand-50 text-brand-800 ring-1 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-100 dark:ring-brand-500/30';
-const ROW_LOCKED = 'cursor-not-allowed text-slate-400 dark:text-slate-500';
+const ROW_LOCKED = 'cursor-not-allowed text-slate-400 dark:text-slate-400';
 
 // Arrow keys between the list's buttons.
 function moveFocus(e: KeyboardEvent<HTMLElement>) {
