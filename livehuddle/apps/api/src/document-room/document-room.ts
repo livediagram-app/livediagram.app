@@ -64,7 +64,6 @@ import {
 } from './tab-shares';
 import type { RouteIdentity } from './document-route';
 import type { ItemStanding, SourceChange } from '@liveworkspace/index-client';
-import { tellSourceChanged } from '@liveworkspace/index-app';
 import {
   incomingItemHook,
   itemEmailOptOut,
@@ -652,14 +651,9 @@ export class DocumentRoom extends DurableObject<Env> {
     return rpc.receiveShares(this, documentId, from, messages);
   }
 
-  // A plan's sent cards changed (the index's source-changed door, @liveworkspace/index-client send-to-plan.md "The
-  // chip"): every open session hears the ids and reads its chips again with its own access.
+  // A plan's sent cards changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"): room-rpc.ts.
   async sourceChanged(documentId: string, change: SourceChange): Promise<void> {
-    tellSourceChanged(
-      { bind: (id) => this.bindDocument(id), broadcast: (frame) => this.broadcast(frame) },
-      documentId,
-      change,
-    );
+    rpc.sourceChanged(this, documentId, change);
   }
 
   requireEnv(): DocumentEnv {
