@@ -257,19 +257,16 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Pages tour's older single seen-guard (docs/specs/007-editor/pages-tour.md): written with every kind by
-  // Settings' Pages Tours switch, off; on its own it counts no kind.
+  // The Get Started tours (docs/specs/007-editor/knowledge-tours.md): the tours taken (started, then finished or
+  // skipped), in the order taken. Feeds the Get Started list's Done ticks, whether the button is drawn, and Settings'
+  // row per tour (inverted: on means not in it). Read through lib/knowledge-tours.
+  knowledgeTours?: KnowledgeTourId[];
+  // Counts every Get Started tour as taken: Settings' Get Started Tours switch, off, writes it with every tour listed.
+  knowledgeToursSeen?: boolean;
+  // Retired with their tours (pages-tour.md, element-tours.md): read by nothing, kept as stored.
   pagesTourSeen?: boolean;
-  // The page kinds whose Pages tour track has been taken (completed or skipped). Feeds Settings' row per kind
-  // (Slides Tour, ...), which adds or removes its own kind, and which page a Start Pages Tour press prefers; the
-  // button offers the tour only while a kind on the tab is not in it.
-  pagesTourKinds?: PageKind[];
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been taken.
-  // Surfaced in Settings as Tours › Show Me, one switch
-  // per kind (inverted); a kind in it is off the Get Started button.
-  elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as taken: Settings' Show Me on Every Element, switched off, writes it (as did the
-  // retired Power user mode's preset).
+  pagesTourKinds?: string[];
+  elementTourKinds?: string[];
   elementToursSeen?: boolean;
   // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Presenter settings"), as one object,
   // read through lib/presentation-config. Surfaced in Settings as Presenting. Missing === what this
@@ -709,30 +706,20 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So is Appearance's Button Labels: a phone always draws those buttons as icons. (liveknowledge has
   no Mouse section: Quick-Add on Hover and Middle-Mouse Pan are not offered.)
 
-  **Getting Started** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour** and **Article
-  Tour**), with a line saying where it runs and a **Learn More** to its article, under
-  one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
-  **Get Started** button, left of Tools, and leaves it once taken until its switch here is turned back on ([Pages tour](pages-tour.md)).
-  These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages
-  tour when it is on offer right now. The section note says so: "Start a tour from the Get Started button in the bottom bar, left of Settings: it
-  offers the tour for what you are working on." Tours are not an accessibility setting, so they are not under
-  Accessibility. Every switch is inverted: on means "not taken yet", the
-  preference records "already seen", and its telemetry tokens describe the PREFERENCE (switching on is
-  `...SeenOff`), so each dashboard series keeps its meaning.
-
-  The Pages tour is a tour of several tracks (`../packages/workbench/src/lib/tour-tracks.ts`), one per page kind
-  ([Pages tour](pages-tour.md)): **Pages Tours** is one switch over all of them (`tourTracksSwitch`, key
-  `pagesTourSeen`: on while any track is untaken, off marks every track taken, on forgets every record), and each track
-  has its own row nested beneath it, named for itself (`pagesTourTrackSwitch`). A track's row is on while its track is
-  untaken; off adds its kind to `pagesTourKinds`, on removes it alone, and both clear the single `pagesTourSeen`,
-  so only the list speaks for the tracks. The single flag `pagesTourSeen` counts no track on its own.
-
-  Below the Pages tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
-  accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
-  as Pages Tours is (`tourTracksSwitch`) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
-  kind nested under it, named for the element (**Sankey Diagram**). Element tours
-  need no relaunch: switched back on, the Get Started button offers one whenever its element is selected. A category may mark any section
-  closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
+  **Getting Started** is a category of its own: the six [Get Started tours](knowledge-tours.md#settings), under one
+  **Offer Again** section note ("Start a tour from Get Started in the bottom bar. A switch is on until you have taken
+  its tour."). **Get Started Tours** is one switch over them all (`tourTracksSwitch`, key `knowledgeToursSeen`: on
+  while any tour is untaken, off marks every tour taken, on forgets every record), and each tour has its own row nested
+  beneath it, named for the tour (**Your First Page**, ...), with a **Learn More** to its help article. A tour's row is
+  on while it is untaken; off adds it to `knowledgeTours`, on removes it alone and clears `knowledgeToursSeen`, keeping
+  the others as they were (`lib/knowledge-tours.ts`). No tour offers itself: every tour is started from the footer's
+  **Get Started** button, which leaves once every tour on offer is taken until a switch here is turned back on.
+  Closing Settings with one tour newly on starts it when it is on offer right now, with several opens the Get Started
+  list, and otherwise does nothing. Tours are not an accessibility setting, so they are not under Accessibility.
+  Every switch is inverted: on means "not taken yet", the preference records "already seen", and its telemetry tokens
+  describe the PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its meaning. The Pages tours'
+  rows and the element tours' **Show Me** section went with those tours ([Pages tour](pages-tour.md),
+  [Element tours](element-tours.md)).
 
   **Toggle groups.** Several related switches that share one description can be
   one `toggleGroup` row: the label and description over a row of **chips**, one
@@ -839,8 +826,8 @@ and the dialog stays as the one complete, browsable index of them.
   out entirely rather than becoming a row that pushes a blank pane.
 
   A row may have a **parent** row: its children render directly beneath it,
-  indented, as one group named "<parent label> settings" (Show Me on Every
-  Element's switch per kind). A child whose parent is not
+  indented, as one group named "<parent label> settings" (Get Started Tours'
+  switch per tour). A child whose parent is not
   among the rows shown (a search match) renders on its own.
 
   (Element add is a single always-on tap-or-drag gesture with no setting, see
@@ -872,8 +859,7 @@ tree, comments, Ask, AI Knowledge and the account:
 - **Keyboard:** Keyboard Shortcuts and All Shortcuts.
 - **Panels:** Panel Opacity, and Collaborate's Hide Cursors.
 - **Accessibility:** Reduce Motion.
-- **Getting Started:** Show Me, the element tours. They stay: a drawing zone's Concepts and charts offer them from the
-  footer's Get Started button.
+- **Getting Started:** the six [Get Started tours](knowledge-tours.md), one switch over them all and one per tour.
 - **Explorer**, **Account** (with Notifications, API Tokens and Your Data) and **Privacy**.
 
 **Not offered** (owner, 2026-11-21: canvas-only rows "do nothing visible on a knowledgebase page"):
@@ -882,7 +868,8 @@ tree, comments, Ask, AI Knowledge and the account:
   Hover** (and Middle-Mouse Pan, cut earlier). They act on shapes and arrows moved about a free canvas.
 - **Panels › Quick Style › Enable Quick Style Bar** and **Panels › Collaborate › Enable Collaborate Panel**: switches for
   canvas panels a page does not lean on.
-- The Map's rows, Presenting and the Pages tours ([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md)).
+- The Map's rows, Presenting, the Pages tours and the element tours' Show Me section
+  ([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md)).
 
 Their preference keys stay in `UserPreferences` and the code that reads them is unchanged: a stored value is kept,
 and with no row to change it each one keeps its default (alignment guides and auto-attach arrows on, quick-add on

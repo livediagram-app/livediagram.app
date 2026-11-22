@@ -28,7 +28,6 @@ Scope, by file:
 | `apps/editor/components/palette/sankey-menu-glyphs.tsx`                               | The Display option glyphs (on the raw-SVG art allowlist)                                                              |
 | `apps/editor/components/dialogs/SankeyNodeStrip.tsx`                                  | Node chips and rename                                                                                                 |
 | `apps/editor/components/tour/SankeyFlowsTour.tsx`, `sankey-flows-tour-steps.ts`       | Show Me on the Flows dialog, binding the workbench's `createSankeyFlowsTour`: button, stage, steps fixed at the press |
-| `apps/editor/components/tour/sankey-element-tour-steps.ts`, `ElementTourHost.tsx`     | The Sankey element tour ([Element tours](../../007-editor/element-tours.md)): steps, the parts lifted, the host       |
 | `../packages/workbench/src/lib/sankey-tour-focus.ts`, `sankey-flows-dialog-handle.ts` | The band or node a tour step lifts (`data-sankey-band` / `data-sankey-node`); the open dialog's tab switches          |
 | `apps/editor/lib/sankey-flow-rows.ts`                                                 | Draft rows, reasons copy, balance notes, paste, `rowFrom`, `withTrailingBlank`                                        |
 | `apps/editor/lib/sankey-edit.ts`                                                      | `canEditSankey`                                                                                                       |

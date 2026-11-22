@@ -28,11 +28,10 @@ the three-step Appearance control, and More plus the bin in the multi-selection 
 ## What happens to stored preferences
 
 - **Everything the preset wrote stays.** A person who had the mode on keeps their alignment guides, auto-attach
-  arrows and tours seen, exactly as they are now. Nothing is reverted. The element tours' seen flag
-  (`elementToursSeen`) counts every Show Me tour as answered whoever wrote it ([Element tours](element-tours.md)).
-  The Pages tour's single flag (`pagesTourSeen`) counted every kind only while the mode was on, and counts none on its
-  own (an answer from before the tour split stands for no kind), so for a blob that had the mode on, every page kind
-  joins `pagesTourKinds` as it is read ([Pages tour](pages-tour.md)).
+  arrows and tours seen, exactly as they are now. Nothing is reverted. The tours' seen flags it wrote
+  (`elementToursSeen`, `pagesTourSeen`, `pagesTourKinds`) belong to tours since retired ([Element tours](element-tours.md),
+  [Pages tour](pages-tour.md)) and are read by nothing; `upgradeLegacyPreferences` still folds the mode's flag into
+  `pagesTourKinds` as it drops the mode's keys.
 - **Minimal chrome turns off.** Nothing reads it any more.
 - **The mode's keys are retired.** `powerUserMode`, `powerUserBaseline`, `minimalChrome` and `powerUserOfferShown` are
   dropped on read by `upgradeLegacyPreferences` (`packages/api-schema/src/legacy-preferences.ts`), from the browser's
