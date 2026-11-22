@@ -55,6 +55,7 @@ import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
 import { commitWritingOnLeave } from '@/lib/article/article-open-edit';
 import type { ArticleEditorProps, SlashState } from './article-editor-types';
 import { articleFlowClass } from './read-mode-selection';
+import { articleClipboardSerializer } from '@/lib/article/article-clipboard-lists';
 
 // The writing's paste, tables composed over it.
 const pasteProps = articleTablePasteProps(articlePasteProps);
@@ -282,6 +283,8 @@ export function mountArticleView({
     // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
     handleScrollToSelection: () => true,
     ...pasteProps,
+    // Copied list items keep their <ul> or <ol>, so a rich editor pastes them as a list.
+    clipboardSerializer: articleClipboardSerializer,
     nodeViews: {
       footnote: footnoteNodeView,
       ...tableNodeViews(rights, (v, id) =>

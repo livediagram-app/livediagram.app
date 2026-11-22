@@ -16,7 +16,8 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **Selecting and copying** (owner, 2026-11-22): every reader (Viewer, Participant, Editor, a link visitor) can
   select the page's writing as on any web page: drag across it, double-click a word, triple-click a paragraph,
   long-press on a phone, and copy it with Cmd/Ctrl+C or the context menu. What is copied keeps its paragraph breaks
-  and list items as plain text. Only the writing selects: the meta row, Linked From, the margins and the canvas round
+  and list items as plain text, and as rich text its lists stay lists (bullets, numbers and nesting) when pasted
+  into another editor. Only the writing selects: the meta row, Linked From, the margins and the canvas round
   the page do not, so a drag there never starts a selection; a press there lets go of a selection, as on any page.
   Selecting never enters edit mode.
 - **Double-click to edit** (owner, 2026-11-21; label removed 2026-11-22): while an Editor or Participant reads, a
