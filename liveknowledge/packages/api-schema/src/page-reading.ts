@@ -41,7 +41,7 @@ export type PageReadingResponse = {
 /** `PUT .../pages/<tab>/reading`: require the page for an audience, change it, or stop (null). */
 export type PageReadingChange = { audience: ReadingAudience | null; people?: string[] };
 
-/** `POST .../pages/<tab>/reading/remind`: what was sent, or why nothing was. */
+/** `POST .../pages/<tab>/remind-readers`: what was sent, or why nothing was. */
 export type ReadingRemindResult =
   | { outcome: 'sent'; sent: number }
   | { outcome: 'already_sent'; nextAt: number }

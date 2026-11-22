@@ -10441,7 +10441,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       }
     ],
-    "description": "`POST .../pages/<tab>/reading/remind`: what was sent, or why nothing was."
+    "description": "`POST .../pages/<tab>/remind-readers`: what was sent, or why nothing was."
   },
   "RefCandidate": {
     "additionalProperties": false,

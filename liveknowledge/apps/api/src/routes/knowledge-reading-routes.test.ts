@@ -342,7 +342,7 @@ describe('pages/:tab/reading', () => {
   });
 });
 
-describe('pages/:tab/reading/remind', () => {
+describe('pages/:tab/remind-readers', () => {
   it('emails each person not yet read once, and holds them for a week', async () => {
     await require('editor', { audience: 'everyone' });
     await act('editor', 'confirm');
