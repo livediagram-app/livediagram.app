@@ -20,6 +20,7 @@ import {
   ExportIcon,
   ImportIcon,
   MenuChevronIcon,
+  PublishIcon,
   RenameIcon,
 } from './knowledge-menu-icons';
 import { useKnowledgebaseMenu, type KnowledgeMenuVerb } from './useKnowledgebaseMenu';
@@ -29,6 +30,7 @@ const ICONS: Record<KnowledgeMenuVerb, ReactNode> = {
   describe: <DescribeIcon />,
   import: <ImportIcon />,
   export: <ExportIcon />,
+  publish: <PublishIcon />,
   ai: <AiIcon />,
   delete: <DeleteIcon />,
 };

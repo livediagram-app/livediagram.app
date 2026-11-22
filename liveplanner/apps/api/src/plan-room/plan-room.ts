@@ -7,6 +7,8 @@ import {
   type ExportQuery,
   type ExportResult,
   type ExportTablesResult,
+  type PutAwayRefusal,
+  type StandingGrant,
 } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveplanner/api-schema';
@@ -507,7 +509,7 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // What a grant handed to the room says of where the plan stands, when it is newer than the last word.
-  takeGrantStanding(grant: { iat?: number; trashed?: boolean }): Promise<void> {
+  takeGrantStanding(grant: StandingGrant): Promise<PutAwayRefusal | null> {
     return takeGrantStanding(this, grant);
   }
 

@@ -1,6 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
-import { createItemGrant, ITEM_GRANT_HEADER, itemSourceOf, resolveItemGrant } from './request';
+import {
+  createItemGrant,
+  forgetPutAwayGrant,
+  ITEM_GRANT_HEADER,
+  ITEM_PUT_AWAY_HEADER,
+  itemSourceOf,
+  putAwayAnswer,
+  putAwayGate,
+  resolveItemGrant,
+  standingOfGrant,
+  ticketPutAwayGate,
+} from './request';
 import { createIndexService, GRANT_CACHE_MAX } from './service';
 
 const NOW_S = Math.floor(Date.now() / 1000);
@@ -275,5 +286,101 @@ describe('createItemGrant', () => {
     expect(itemSourceOf('cli')).toBe('import');
     expect(itemSourceOf('drive')).toBeNull();
     expect(itemSourceOf(undefined)).toBeNull();
+  });
+});
+
+// Work Tracker 1323: a room refuses a grant from before its item was put away, and the worker drops the one it keeps,
+// so the next call asks the index again.
+describe('a put-away refusal', () => {
+  const token = { kind: 'delegate', personId: 'user_a', teams: [] } as const;
+
+  it("marks the room's answer, keeping its status and body", async () => {
+    const marked = putAwayAnswer(Response.json({ error: 'archived' }, { status: 409 }), 'archived');
+    expect(marked.status).toBe(409);
+    expect(marked.headers.get(ITEM_PUT_AWAY_HEADER)).toBe('archived');
+    expect(await marked.json()).toEqual({ error: 'archived' });
+  });
+
+  it('drops the cached grant on a marked answer, and only then', async () => {
+    const ask = () => resolveItemGrant(service, ENV, req(), token, 'I');
+    await ask();
+    await ask();
+    expect(calls).toHaveLength(1);
+    // An answer the room did not mark keeps the grant.
+    forgetPutAwayGrant(service, req(), token, 'I', new Response('{}'));
+    await ask();
+    expect(calls).toHaveLength(1);
+    forgetPutAwayGrant(
+      service,
+      req(),
+      token,
+      'I',
+      putAwayAnswer(new Response(null, { status: 410 }), 'trashed'),
+    );
+    await ask();
+    expect(calls).toHaveLength(2);
+  });
+
+  it("drops only that share code's grant", async () => {
+    const linked = req({ 'X-Share-Code': 'CODE1' });
+    await resolveItemGrant(service, ENV, linked, token, 'I');
+    await resolveItemGrant(service, ENV, req(), token, 'I');
+    expect(calls).toHaveLength(2);
+    forgetPutAwayGrant(service, linked, token, 'I', putAwayAnswer(new Response(), 'archived'));
+    await resolveItemGrant(service, ENV, req(), token, 'I');
+    expect(calls).toHaveLength(2);
+    await resolveItemGrant(service, ENV, linked, token, 'I');
+    expect(calls).toHaveLength(3);
+  });
+
+  const answers = {
+    archived: () => Response.json({ error: 'archived' }, { status: 409 }),
+    trashed: () => Response.json({ error: 'document_trashed' }, { status: 410 }),
+  };
+
+  it('answers each refusal as the app does, and nothing else', async () => {
+    expect(putAwayGate(null, answers)).toBeNull();
+    const archived = putAwayGate('archived', answers)!;
+    expect([archived.status, archived.headers.get(ITEM_PUT_AWAY_HEADER)]).toEqual([
+      409,
+      'archived',
+    ]);
+    const trashed = putAwayGate('trashed', answers)!;
+    expect([trashed.status, trashed.headers.get(ITEM_PUT_AWAY_HEADER)]).toEqual([410, 'trashed']);
+  });
+
+  it('asks the room at the ticket door for a fetched grant alone, and drops a refused one', async () => {
+    const held = await resolveItemGrant(service, ENV, req(), token, 'I');
+    if (!held || held instanceof Response) throw new Error('no grant');
+    const asked: unknown[] = [];
+    const ask = (refusal: 'archived' | null) => async (grant: unknown) => {
+      asked.push(grant);
+      return refusal;
+    };
+    // The editor's own grant is never asked about.
+    const sent = req({ [ITEM_GRANT_HEADER]: held.token });
+    expect(
+      await ticketPutAwayGate(service, sent, token, held, ask('archived'), answers),
+    ).toBeNull();
+    expect(asked).toEqual([]);
+    expect(await ticketPutAwayGate(service, req(), token, held, ask(null), answers)).toBeNull();
+    await resolveItemGrant(service, ENV, req(), token, 'I');
+    expect(calls).toHaveLength(1);
+    const refused = await ticketPutAwayGate(service, req(), token, held, ask('archived'), answers);
+    expect(refused?.status).toBe(409);
+    // Only what says where the item stands goes to the room.
+    expect(asked).toEqual([standingOfGrant(held), standingOfGrant(held)]);
+    await resolveItemGrant(service, ENV, req(), token, 'I');
+    expect(calls).toHaveLength(2);
+  });
+
+  it('sends the room only when the grant was signed and whether it is trashed', () => {
+    expect(standingOfGrant({})).toEqual({});
+    expect(standingOfGrant({ iat: 1, iatMs: 1_500, trashed: true })).toEqual({
+      iat: 1,
+      iatMs: 1_500,
+      trashed: true,
+    });
+    expect(standingOfGrant({ iat: 1, trashed: false })).toEqual({ iat: 1 });
   });
 });

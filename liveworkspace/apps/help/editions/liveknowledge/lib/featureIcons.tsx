@@ -6,6 +6,7 @@ import {
   lucideFileDown,
   lucideFolder,
   lucideFolderRoot,
+  lucideGlobe,
   lucideGitMerge,
   lucideGitPullRequest,
   lucideHeartPulse,
@@ -97,6 +98,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'import-from-notion': lucide(lucideBookOpenText),
   'import-from-confluence': lucide(lucideLibrary),
   'exporting-a-knowledgebase': lucide(lucideFileDown),
+  'publishing-to-the-web': lucide(lucideGlobe),
   // ---- Roles ----
   'knowledgebase-roles': lucide(lucideTable),
   sharing: (

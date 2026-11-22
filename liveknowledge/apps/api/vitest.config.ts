@@ -29,6 +29,12 @@ const GATE_KEEPERS = [
   // Which documents may serve an image they don't own ("Placement grants").
   'src/db/image-grants.ts',
   'src/db/document-removal.ts',
+  // The public site's doors (docs/specs/030-knowledgebase/publishing.md): what a reader with no identity is
+  // served, who may publish, and who holds an address. A gap here can put private writing on the web.
+  'src/publishing/public-site.ts',
+  'src/publishing/published-reads.ts',
+  'src/publishing/publishing-routes.ts',
+  'src/publishing/site-addresses.ts',
 ];
 
 export default defineProject({

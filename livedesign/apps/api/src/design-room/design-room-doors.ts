@@ -1,6 +1,6 @@
 // The bodies of the room's RPC doors (design-room.ts) that do more than one read: what the worker asks of a design
 // (its routes, the Community post, the export door, copies, share links, a closed account). Each takes the room.
-import { openRoomSockets, recordItemEditor } from '@liveworkspace/index-app';
+import { openRoomSockets, recordItemEditor, putAwayGate } from '@liveworkspace/index-app';
 import { designServesImage } from '../db/image-grants';
 import { designHasTab } from '../db/tabs';
 import { drawDesign } from '../thumbnail';
@@ -33,6 +33,7 @@ import { getParticipant } from '../accounts/profiles';
 import { SOMEONE, hearsEvent, queueEvent, roleOfLevel } from '@liveworkspace/automations/room';
 import { closeSessionsOfChangedLink, sequenceMutation } from './design-room-sockets';
 import { clearAgentsFor } from './design-room-presence';
+import { PUT_AWAY_ANSWERS } from '../responses';
 
 // What the export door answers a drawing as.
 const SVG_CONTENT_TYPE = 'image/svg+xml; charset=utf-8';
@@ -50,7 +51,10 @@ export async function route(
     await room.takeHead(identity.grant);
     // A grant signed since the design was last put away says it is back (@liveworkspace/automations/room
     // standing.ts).
-    await room.takeGrantStanding(identity.grant);
+    // A grant from before the design was archived or trashed (an API token's, kept by its worker until it
+    // lapses) is refused here, where every isolate's requests meet (Work Tracker 1323).
+    const away = putAwayGate(await room.takeGrantStanding(identity.grant), PUT_AWAY_ANSWERS);
+    if (away) return away;
   }
   const community = await communityOf(room, designId);
   const writesBefore = room.writes;

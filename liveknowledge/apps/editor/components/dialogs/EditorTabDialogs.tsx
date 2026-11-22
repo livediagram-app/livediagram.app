@@ -19,6 +19,7 @@ import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
 import { useKnowledgeImportProps } from '@/components/dialogs/knowledge-import/useKnowledgeImportProps';
 import { SetupWhenOpen } from '@/components/setup/SetupHost';
+import { usePublishingOpen } from '@/lib/publishing/publish-open';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -37,6 +38,14 @@ const ShareDialog = dynamic(
     ),
   { ssr: false },
 );
+// Publish to the Web (docs/specs/030-knowledgebase/publishing.md): its code is fetched the first time it is opened.
+const PublishHost = dynamic(
+  () => import('@/components/publishing/PublishDialog').then((m) => m.PublishHost),
+  { ssr: false },
+);
+function PublishWhenOpen() {
+  return usePublishingOpen() ? <PublishHost /> : null;
+}
 const ShareOfflineGate = dynamic(
   () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
@@ -58,6 +67,7 @@ export function EditorTabDialogs() {
       {/* Describe to Set Up (describe-to-set-up.md): it reads its own open state, and its code is fetched when it
           is first opened. */}
       <SetupWhenOpen />
+      <PublishWhenOpen />
     </>
   );
 }
