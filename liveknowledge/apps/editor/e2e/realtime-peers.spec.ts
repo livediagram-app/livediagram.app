@@ -9,6 +9,7 @@ import {
   documentHeaders,
   seedDocumentItem,
 } from './fixtures';
+import { ensureEditMode } from './knowledgebase';
 
 // Two people on one shared document (docs/specs/012-collaboration/realtime-conflict-resolution.md): each sees
 // the other online, an edit reaches the other side live, the autosave keeps everyone's edits (a peer's is
@@ -85,16 +86,23 @@ test('two peers see each other, edit live, and every edit is kept', async ({
   const online = ownerPage.locator('[role="img"][aria-label$="(Online)"]');
   await expect.poll(() => online.count()).toBeGreaterThanOrEqual(2);
 
+  // A drawing changes in edit mode (docs/specs/030-knowledgebase/editing.md): the peer presses Edit, and the owner,
+  // who may edit too, joins the draft on their own ("Everyone joins").
+  await ensureEditMode(peerPage);
+  await expect(ownerPage.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
+
   // A peer's edit reaches the owner live: the peer duplicates the square.
   await squares(peerPage).first().click();
   await peerPage.keyboard.press('ControlOrMeta+d');
   await peerPage.keyboard.press('Escape');
   await expect(squares(ownerPage)).toHaveCount(2);
 
-  // The owner edits too (another duplicate); the autosave keeps both, and a reload shows both.
+  // The owner edits too (another duplicate); the autosave keeps both, and a reload shows both. Escape lets go of the
+  // selection and leaves edit mode alone (editing.md).
   await squares(ownerPage).last().click();
   await ownerPage.keyboard.press('ControlOrMeta+d');
   await ownerPage.keyboard.press('Escape');
+  await expect(ownerPage.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
   await expect
     .poll(async () => {
       const res = await ownerPage.request.get(`${apiBase}/documents/${id}/tabs/${tabId}`, {

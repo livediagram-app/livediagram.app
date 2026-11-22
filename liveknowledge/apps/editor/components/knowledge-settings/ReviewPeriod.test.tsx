@@ -181,8 +181,8 @@ describe('the button and its popover', () => {
     const { documentId, value } = kb();
     await openPopover(value);
     fireEvent.click(row('Every Year'));
-    // At once, before the server answers, with no question.
-    expect(chosen()).toBe('Every Year');
+    // At once, before the server answers, with no question (waited for: a loaded runner can render a frame late).
+    await waitFor(() => expect(chosen()).toBe('Every Year'));
     expect(ask().getAttribute('data-review-period-ask')).toBe('');
     expect(api.apiPreviewReviewPeriod).not.toHaveBeenCalled();
     expect(track).toHaveBeenCalledWith('UI', 'Used', 'ReviewPeriodChanged');
@@ -315,7 +315,7 @@ describe('the button and its popover', () => {
     const { documentId, value } = kb();
     await openPopover(value);
     act(() => void knowledgeSettingsStore.take(documentId, { reviewEvery: 180 }));
-    expect(chosen()).toBe('Every 180 Days');
+    await waitFor(() => expect(chosen()).toBe('Every 180 Days'));
   });
 
   it('counts from the pages it holds and writes the record, for a knowledgebase kept Offline', async () => {

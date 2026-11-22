@@ -1,3 +1,4 @@
+import type { Locator, Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
 import { nameOpenPage, openPageId, paragraphs, writeLines } from '../knowledgebase';
 import { asPerson, openView, savedWith, signedInKnowledgebase } from './knowledge-session';
@@ -8,18 +9,37 @@ import { asPerson, openView, savedWith, signedInKnowledgebase } from './knowledg
 
 test.use({ viewport: { width: 1440, height: 860 } });
 
+// Needs Attention holds the questions, disagreements and suggested edits in one list; its switch shows one kind
+// (ai-knowledge.md "The view, as built").
+const attention = (page: Page): Locator => page.getByRole('region', { name: 'Needs Attention' });
+async function showAttention(page: Page, kind: string): Promise<void> {
+  const option = attention(page)
+    .getByRole('group', { name: 'Show' })
+    .getByRole('button', { name: kind, exact: true });
+  await option.click();
+  await expect(option).toHaveAttribute('aria-pressed', 'true');
+}
+
 test('every section shows, each with its empty state', async ({ page, pageErrors }) => {
   await signedInKnowledgebase(page);
   await openView(page, 'AI Knowledge');
   const empty: [string, string][] = [
     ['Connected Agents', 'No Agents Yet'],
-    ['Pages That Disagree', "This Needs Your Team's AI Key"],
-    ['Questions Nobody Could Answer', 'No Unanswered Questions Yet'],
-    ['Edits Suggested by Agents', 'No Suggested Edits Yet'],
+    ['Needs Attention', 'Nothing Needs Attention'],
     ['Always in Context', 'No Pages in Context Yet'],
   ];
   for (const [section, words] of empty)
     await expect(page.getByRole('region', { name: section })).toContainText(words);
+  // Needs Attention's switch shows one kind at a time, each with its own empty state.
+  const kinds: [string, string][] = [
+    ['Questions', 'No Unanswered Questions Yet'],
+    ['Disagreements', 'No Disagreements Yet'],
+    ['Edits', 'No Suggested Edits Yet'],
+  ];
+  for (const [kind, words] of kinds) {
+    await showAttention(page, kind);
+    await expect(attention(page)).toContainText(words);
+  }
   await expect(
     page.getByRole('region', { name: 'Knowledge Health' }).getByRole('img'),
   ).toHaveAccessibleName('Of 1 page: 0 verified, 0 review due, 1 never verified.');
@@ -76,7 +96,8 @@ test('an edit suggested through the api waits for an Editor, and Accept changes 
   expect(suggested.status(), await suggested.text()).toBeLessThan(300);
 
   await openView(page, 'AI Knowledge');
-  const suggestions = page.getByRole('region', { name: 'Edits Suggested by Agents' });
+  await showAttention(page, 'Edits');
+  const suggestions = attention(page);
   const card = suggestions.locator('[data-suggestion]');
   await expect(card).toHaveCount(1);
   await expect(card).toContainText('Runbook');

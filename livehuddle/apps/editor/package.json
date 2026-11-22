@@ -75,7 +75,7 @@
     "@vitest/coverage-v8": "^5.1.1",
     "fake-indexeddb": "^6.2.8",
     "jsdom": "^31.0.1",
-    "oxlint": "^1.93.0",
+    "oxlint": "^1.94.0",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2",
     "vitest": "^5.1.1"

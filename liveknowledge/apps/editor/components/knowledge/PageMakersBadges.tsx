@@ -12,6 +12,8 @@ import { MakerAgentIcon, MakerPersonIcon } from './knowledge-icons';
 const PILL =
   'inline-flex h-5 shrink-0 cursor-default items-center gap-1 rounded-full bg-slate-100 px-2 text-[12px] font-medium leading-none text-slate-700 dark:bg-slate-800 dark:text-slate-200';
 
+const MAKER_ICON = 'text-slate-500 dark:text-slate-400';
+
 export type PageMakers = { created?: PageAuthorStamp; updated?: PageAuthorStamp };
 
 export function PageMakersBadges({
@@ -35,11 +37,16 @@ export function PageMakersBadges({
               tabIndex={0}
               data-page-maker={words.key}
               data-maker-kind={words.kind}
-              className={`${PILL} focus-visible:outline-2 focus-visible:outline-brand-600`}
+              // `optical-edges`: the leading icon is drawn inside its box with blank space before it, so even padding to
+              // the box set the pill's contents 0.9 px right of its centre (optical-alignment.md).
+              className={`${PILL} optical-edges focus-visible:outline-2 focus-visible:outline-brand-600`}
             >
-              <span aria-hidden className="text-slate-500 dark:text-slate-400">
-                {words.kind === 'ai' ? <MakerAgentIcon /> : <MakerPersonIcon />}
-              </span>
+              {/* The glyph is the pill's first child, so optical-edges reaches it. */}
+              {words.kind === 'ai' ? (
+                <MakerAgentIcon className={MAKER_ICON} />
+              ) : (
+                <MakerPersonIcon className={MAKER_ICON} />
+              )}
               {words.label}
             </span>
           </HoverCard>

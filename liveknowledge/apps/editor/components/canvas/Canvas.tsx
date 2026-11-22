@@ -116,6 +116,7 @@ function CanvasView(props: CanvasProps) {
     mainRef,
     page: leadPage?.rect,
     margin: pageMargin,
+    topMargin: articleTopMarginPx(leadStyle),
     hasCover,
   });
   const phone = useIsMobileViewport();

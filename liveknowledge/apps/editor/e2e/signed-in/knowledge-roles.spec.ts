@@ -67,7 +67,9 @@ async function expectReadOnly(visitor: Page): Promise<void> {
   await visitor.keyboard.press('F2');
   await expect(sidebar.getByRole('textbox', { name: 'Page name' })).toHaveCount(0);
   const menu = await openRowMenu(visitor, 'Expenses');
-  await expect(menu.getByRole('menuitem')).toHaveText(['Copy Link']);
+  // Copy Link is a button of the menu's toolbar: named, with no words of its own.
+  await expect(menu.getByRole('menuitem')).toHaveCount(1);
+  await expect(menu.getByRole('menuitem')).toHaveAccessibleName('Copy Link');
   await visitor.keyboard.press('Escape');
 
   // Search is every role's: the sidebar's field opens the search panel, this knowledgebase's results first.

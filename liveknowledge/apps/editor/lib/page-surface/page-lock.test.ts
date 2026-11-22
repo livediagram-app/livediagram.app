@@ -217,4 +217,21 @@ describe('a page with a cover', () => {
       );
     },
   );
+
+  it('tucks the page top margin, deeper than its side margin, so the Title still stands the gap below', () => {
+    // An article's top margin is never less than 72 px (articleTopMarginPx), deeper than a 48 px side margin.
+    const topMargin = 72;
+    const cover = coverHeightOf(true, false);
+    const lock = computePageLock({
+      width: 1440,
+      height: worldHeight(852, cover),
+      sides: NO_SIDES,
+      page: { x: -428, y: 0, width: 856 },
+      margin: MARGIN,
+      topMargin,
+      phone: false,
+      cover,
+    });
+    expect(lock.top + topMargin).toBeCloseTo(cover + COVER_TITLE_GAP, 6);
+  });
 });

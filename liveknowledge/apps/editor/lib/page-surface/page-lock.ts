@@ -35,6 +35,9 @@ export type PageLockInput = {
   /** The page's sheet in canvas px, and its side margin (the room its writing keeps inside it). */
   page: { x: number; y: number; width: number };
   margin: number;
+  /** The page's top margin, canvas px (articleTopMarginPx: never less than ARTICLE_TOP_MIN_PX, so often deeper than
+   *  the side margin); the side margin by default. A cover tucks this much under its band. */
+  topMargin?: number;
   phone: boolean;
   /** Screen px of cover band over the page's top room (coverHeightOf); none by default. */
   cover?: number;
@@ -70,16 +73,16 @@ export function roomColumnOf(input: Pick<PageLockInput, 'width' | 'sides' | 'pho
  * the page's corner.
  */
 export function computePageLock(input: PageLockInput): PageLock {
-  const { sides, page, margin, phone, cover = 0 } = input;
+  const { sides, page, margin, topMargin = margin, phone, cover = 0 } = input;
   const room = sideRoomOf(phone);
   const available = Math.max(1, input.width - sides.left - sides.right);
   const columnWidth = Math.max(1, page.width - 2 * margin);
   // Whole px, so the writing's glyphs land on the pixel grid.
   const columnLeft = Math.round(sides.left + Math.max(room, (available - columnWidth) / 2));
   const left = columnLeft - margin;
-  // Under a cover, the page's blank top room and margin tuck under the band (which stands over the world), leaving
+  // Under a cover, the page's blank top room and top margin tuck under the band (which stands over the world), leaving
   // COVER_TITLE_GAP between the band and the first line.
-  const tuck = cover > 0 ? Math.max(0, PAGE_TOP_ROOM + margin - COVER_TITLE_GAP) : 0;
+  const tuck = cover > 0 ? Math.max(0, PAGE_TOP_ROOM + topMargin - COVER_TITLE_GAP) : 0;
   const top = PAGE_TOP_ROOM + cover - tuck;
   return {
     view: { zoom: 1, offset: { x: left - page.x, y: top - page.y } },

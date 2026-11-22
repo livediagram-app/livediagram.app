@@ -201,40 +201,45 @@ export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
 
 export type Seed = Record<string, unknown>[];
 
-// Write the seed into the new document's first tab through the api, reload.
+// Write the seed into the new document's first tab through the api, then open the document again. The editor is
+// closed first and its last write waited out: a new knowledgebase opens Start Here in edit mode, and a save of that
+// page landing after the seed wrote the tab back without it (CI, under load).
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  const documentId = new URL(page.url()).pathname.split('/').filter(Boolean).pop()!;
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, documentId);
-  await page.evaluate(
-    async ({ base, elements, headers }) => {
-      const id = location.pathname.split('/').filter(Boolean).pop()!;
-      let tab: Record<string, unknown> | null = null;
-      let tabId = '';
-      for (let i = 0; i < 50 && !tab; i += 1) {
-        const liveDoc = (await (
-          await fetch(`${base}/documents/${id}`, { headers })
-        ).json()) as StoredDocument;
-        tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
-        if (tabId) {
-          const got = (await (
-            await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
-          ).json()) as StoredTab;
-          tab = got.tab ?? null;
-        }
-        if (!tab) await new Promise((r) => setTimeout(r, 100));
-      }
-      if (!tab) throw new Error('the new document never saved its first tab');
-      const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ ...tab, elements }),
-      });
-      if (!res.ok) throw new Error(`seeding failed: ${res.status}`);
-    },
-    { base: apiBase, elements, headers },
-  );
-  await page.reload();
+  const address = page.url();
+  const id = new URL(address).pathname.split('/').filter(Boolean).pop()!;
+  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' }, id);
+  await page.goto('about:blank');
+  const read = async (): Promise<{ tabId: string; tab: StoredTab['tab'] | null }> => {
+    const doc = await page.request.get(`${apiBase}/documents/${id}`, { headers });
+    const tabId = doc.ok()
+      ? (((await doc.json()) as StoredDocument).document?.tabs?.[0]?.id ?? '')
+      : '';
+    if (!tabId) return { tabId, tab: null };
+    const got = await page.request.get(`${apiBase}/documents/${id}/tabs/${tabId}`, { headers });
+    return { tabId, tab: got.ok() ? (((await got.json()) as StoredTab).tab ?? null) : null };
+  };
+  // The first tab saved, and no write still on its way: the same tab read twice, half a second apart.
+  let last = '';
+  let seen: { tabId: string; tab: StoredTab['tab'] | null } = { tabId: '', tab: null };
+  await expect
+    .poll(
+      async () => {
+        seen = await read();
+        const now = JSON.stringify(seen.tab);
+        const settled = seen.tab !== null && now === last;
+        last = now;
+        return settled;
+      },
+      { message: 'the new document saved its first tab', timeout: 15_000, intervals: [500] },
+    )
+    .toBe(true);
+  const res = await page.request.put(`${apiBase}/documents/${id}/tabs/${seen.tabId}`, {
+    headers,
+    data: { ...seen.tab, elements },
+  });
+  expect(res.ok(), `seeding: ${res.status()}`).toBe(true);
+  await page.goto(address);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
   // The seeded elements pop in (a short scale animation) after the canvas mounts: a test that

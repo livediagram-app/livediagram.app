@@ -159,7 +159,7 @@ export function HelpArticleLink({
       <a
         {...common}
         aria-label={title}
-        className={`inline-flex ${box} shrink-0 items-center justify-center rounded font-semibold leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100${
+        className={`inline-flex ${box} shrink-0 items-center justify-center rounded font-semibold leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100${
           className ? ` ${className}` : ''
         }`}
       >

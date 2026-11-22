@@ -13,9 +13,9 @@ import { addPage, newServerKnowledgebase, pageTree } from './knowledgebase';
 // the other pages in any response or realtime frame; rescoping to All tabs reloads the visitor into every page.
 //
 // The Share dialog is the shared one, `@liveworkspace/explorer`'s ShareDialog (its roles and labels are pinned by
-// packages/explorer/src/dialogs/ShareDialog.test.tsx): the composer's "Tabs this link opens" select and Create
+// packages/explorer/src/dialogs/ShareDialog.test.tsx): the composer's "Pages this link opens" select and Create
 // Pass, then each pass in the "Passes" region (an `li[data-share-link]`) with its "<Level> pass link" field and
-// its "Tabs this pass opens" select, whose every-tab option reads "All tabs".
+// its "Pages this pass opens" select, whose every-page option reads "All Pages".
 
 const SECRET = 'TOP SECRET PRICING';
 
@@ -56,14 +56,14 @@ test('a link scoped to one page opens that page and nothing else', async ({ page
   const dialog = page.getByRole('dialog', { name: 'Share Launch document' });
   await dialog
     .getByRole('region', { name: 'Issue a pass' })
-    .getByRole('combobox', { name: 'Tabs this link opens' })
+    .getByRole('combobox', { name: 'Pages this link opens' })
     .selectOption({ label: 'Roadmap' });
   await dialog.getByRole('button', { name: 'Create Pass' }).click();
   const link = dialog
     .getByRole('region', { name: /^Passes/ })
     .locator('[data-share-link]')
     .first();
-  const scopeSelect = link.getByRole('combobox', { name: 'Tabs this pass opens' });
+  const scopeSelect = link.getByRole('combobox', { name: 'Pages this pass opens' });
   await expect(scopeSelect).toHaveValue(roadmap);
   const url = (await link.getByRole('textbox', { name: /pass link$/ }).inputValue()).trim();
 
@@ -98,7 +98,7 @@ test('a link scoped to one page opens that page and nothing else', async ({ page
   expect(leaks).toEqual([]);
 
   // Widening the link reloads the visitor into every page.
-  await scopeSelect.selectOption({ label: 'All tabs' });
+  await scopeSelect.selectOption({ label: 'All Pages' });
   await expect(tree.getByRole('treeitem', { name: 'Pricing', exact: true })).toBeVisible({
     timeout: 15_000,
   });

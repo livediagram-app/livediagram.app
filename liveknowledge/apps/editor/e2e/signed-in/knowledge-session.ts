@@ -99,16 +99,20 @@ export async function openView(page: Page, view: 'Pages' | 'Ask' | 'AI Knowledge
   await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBe(param);
 }
 
-/** The AI Settings dialog, opened from the Ask view's head. */
+/** The AI Settings dialog, opened from the Ask view's head, once its settings have loaded: an Editor's Which AI choice
+ *  is made, or anyone else's line says which AI is in use. */
 export async function openAiSettings(page: Page): Promise<Locator> {
   await page
     .getByRole('region', { name: 'Ask' })
     .getByRole('button', { name: 'AI Settings', exact: true })
     .click();
   const dialog = page.getByRole('dialog', { name: 'AI Settings' });
+  const which = dialog.getByRole('region', { name: 'Which AI' });
   await expect(
-    dialog.getByRole('region', { name: 'Claude API Key' }).getByRole('status'),
-  ).toBeVisible();
+    which
+      .getByRole('radio', { checked: true })
+      .or(which.locator('[data-ai-source-name]:not(:empty)')),
+  ).toHaveCount(1);
   return dialog;
 }
 
