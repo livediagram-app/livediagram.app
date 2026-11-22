@@ -252,14 +252,15 @@ Teams are run here, but their audit log is the index's, beside its event log for
 ([one-explorer-contracts.md "The event log"](../004-index/one-explorer-contracts.md#the-event-log)). So this Worker
 tells the index what happened to a team, marked as liveworkspace's:
 
-| Event                 | When                                                    |
-| --------------------- | ------------------------------------------------------- |
-| `team_invite_sent`    | An admin invites an address                             |
-| `team_joined`         | An invitation is accepted, or someone joins by the link |
-| `team_declined`       | An invitation is turned down, on the site or from email |
-| `team_role_changed`   | An admin makes a member an admin, or an admin a member  |
-| `team_member_removed` | An admin removes a member, or a member leaves           |
-| `team_renamed`        | The team's name changes                                 |
+| Event                 | When                                                                                                  |
+| --------------------- | ----------------------------------------------------------------------------------------------------- |
+| `team_invite_sent`    | An admin invites an address                                                                           |
+| `team_joined`         | An invitation is accepted, or someone joins by the link                                               |
+| `team_declined`       | An invitation is turned down, on the site or from email                                               |
+| `team_role_changed`   | An admin makes a member an admin, or an admin a member                                                |
+| `team_member_removed` | An admin removes a member, or a member leaves                                                         |
+| `team_renamed`        | The team's name changes                                                                               |
+| `team_ai_key_changed` | An admin sets, replaces or removes the team's AI key, or changes its model ([ai-keys.md](ai-keys.md)) |
 
 A team deleted, a withdrawn invitation, a cleared refusal, an account closing and anything about an API token
 send nothing: none of them is in a team's audit log.
@@ -795,7 +796,7 @@ own cookies go; and a browser whose liveworkspace session is another account's t
 The Settings panel shows every account setting in place wherever it opens, so nothing in an app's Settings sends the
 person to liveworkspace.app. Over the app's bearer (the access token the accounts Worker minted for one of the app
 APIs, through the app's router at `/api/workspace/account/…`, [The API](#the-api)) the account API answers, beside
-teams, settings, the profile and phone devices: API tokens, Download Your Data, Where You're Signed In and Sign-in
+teams, settings, the profile and phone devices: API tokens, AI keys ([ai-keys.md](ai-keys.md)), Download Your Data, Where You're Signed In and Sign-in
 Methods. API tokens and Download Your Data are the session door's own handlers on both doors; the sessions and
 sign-in methods routes are the bearer's (liveworkspace.app's Settings uses Better Auth's own endpoints for those).
 
@@ -1569,7 +1570,7 @@ nothing happens: the code is sent and checked first, by the same app's server
    (`legacy_guest.claimedBy`), read `deleted` (`ANONYMISED_PERSON` from `@liveworkspace/index-client`, the index's
    word for a closed account), and a claim it held part way (`claimingBy`) is let go. The change feed doesn't carry
    `invitedBy`, so these rows don't move on in it.
-2. Its settings rows and its profile are deleted, and its workbench store is emptied: every pairing ends and the
+2. Its settings rows, its profile and its personal AI key ([ai-keys.md](ai-keys.md#deletion-and-export)) are deleted, and its workbench store is emptied: every pairing ends and the
    rooms its sessions had open are closed ([workbench.md](../011-workbench/workbench.md)).
 3. A purge request for the index is in `pending_purges` (`migrations/0004_pending_purges.sql`), naming the teams
    deleted in step 1: it is written in step 1's own batch, and a request already there (an earlier try that stopped
@@ -1594,7 +1595,7 @@ go: its `pending_purges` row (cleared once the index takes it, step 5), team eve
 (cleared once the index takes them), and its deletion code in `verification` (spent by the close itself). Every
 other row naming it either has a foreign key that cascades or sets null with the user (sessions and, through them,
 `sign_in_handoff`; linked sign-ins; OAuth tokens, consents and clients; API tokens; push devices; `account_app`;
-`email_lifecycle`; `team_member.userId`, set null), is deleted in step 2 (settings, the profile), or is rewritten in
+`email_lifecycle`; `team_member.userId`, set null), is deleted in step 2 (settings, the profile, the personal AI key), or is rewritten in
 step 1 (`team_member.email` and `invitedBy`, `legacy_guest.claimedBy` and `claimingBy`).
 
 The account is closed whatever the index answers. A request it doesn't take (an error, a timeout, or
@@ -1678,6 +1679,8 @@ sessions and connects Google, a trade-off accepted on purpose
 | `DELETE /api/account/settings`                                 | resets every setting, every scope, keeping `RESET_KEEPS`; answers `{ all, updatedAt }`; bearer too                   |
 | `GET` / `POST /api/account/push/devices`                       | their phone devices and the VAPID public key / registers this browser ([push.md](push.md)); bearer too               |
 | `DELETE /api/account/push/devices/:id`                         | removes one of their devices; bearer too                                                                             |
+| `GET` / `PUT` / `PATCH` / `DELETE /api/account/ai-key`         | their AI key and their teams' state / saves, re-models, removes theirs ([ai-keys.md](ai-keys.md)); bearer too        |
+| `PUT` / `PATCH` / `DELETE /api/account/teams/:id/ai-key`       | the team's AI key (admins; [ai-keys.md](ai-keys.md)); bearer too                                                     |
 
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
@@ -1707,6 +1710,9 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/workbench/rooms`     | `{ ownerId, sessionId, itemId }` → 204: a workspace session joined that item's room                                              |
 | `POST /api/account/internal/allowance`           | `{ personId, kind, max, windowMs, count }` → `{ taken }`, per the client's app                                                   |
 | `POST /api/account/internal/legacy-guests/claim` | `{ legacyId, signature, into }` → `{ merged }` ([above](#returning-guests-of-the-old-livediagramapp)); livediagram's client only |
+
+An app's server reads the AI key that applies to the person it serves through `POST /internal/ai-key`, over its
+`ACCOUNTS` service binding only, with the person's own access token ([ai-keys.md](ai-keys.md#how-an-apps-server-gets-the-key)).
 
 The workbench routes (`/api/account/workbench/*`: tickets, sessions, pairing requests and pairings, for API tokens,
 workbench sessions and the signed-in person) are in [workbench.md](../011-workbench/workbench.md).

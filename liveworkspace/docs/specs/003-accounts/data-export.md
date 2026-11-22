@@ -216,6 +216,10 @@ until the link lapses, as the Drive mirror passes content through on its way to 
 ([platform.md "Out of scope"](../001-platform-scope/platform.md#out-of-scope)). Nothing of the content is logged: the
 service logs counts, sizes, ids and phases only.
 
+An export never holds an AI key, a personal or a team's, sealed or not, nor its hint: the keys are credentials, not
+the person's content ([ai-keys.md](ai-keys.md#deletion-and-export)). A knowledgebase's own key stays in its room and
+is never in its export either.
+
 ## Before deploy
 
 - Create the R2 buckets `liveworkspace-exports` and `liveworkspace-exports-staging`, each with a lifecycle rule that

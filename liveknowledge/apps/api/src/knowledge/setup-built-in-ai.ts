@@ -9,12 +9,12 @@ import {
   SETUP_BUILT_IN_TIMEOUT_MS,
   SETUP_REFUSED_NOT_JSON,
   SETUP_REFUSED_NO_PAGE,
-  builtInReplyText,
   parseSetupSuggestion,
   setupBuiltInInput,
   type SetupExistingPage,
   type SetupSuggestion,
 } from '@liveknowledge/knowledge';
+import { builtInReplyText } from '@liveworkspace/ai';
 import type { Env } from '../types';
 import { e2eStandInOrigin } from './model-door';
 

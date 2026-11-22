@@ -23,6 +23,7 @@
     "@liveknowledge/edit-operations": "workspace:*",
     "@liveknowledge/knowledge": "workspace:^",
     "@liveknowledge/templates": "workspace:*",
+    "@liveworkspace/ai": "workspace:^",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",

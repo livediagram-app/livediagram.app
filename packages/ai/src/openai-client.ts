@@ -1,4 +1,4 @@
-// The one call to the OpenAI Responses API (docs/specs/030-knowledgebase/search-and-ask.md "Providers"), streamed.
+// The one call to the OpenAI Responses API (liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md "Providers"), streamed.
 // As with the Claude client, `fetch` and the team's key are handed in: the key appears in the request's
 // `Authorization` header and nowhere else, and a failure is one of the kinds a person can be told in words.
 // Shapes read on 2026-11-20 from https://developers.openai.com/api/docs/guides/streaming-responses,

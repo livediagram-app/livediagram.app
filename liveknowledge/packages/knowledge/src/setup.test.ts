@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { answerEvents, fakeFetch, streamResponse } from './__fixtures__/claude';
-import { openAiEvents } from './__fixtures__/openai';
+import { answerEvents, fakeFetch, openAiEvents, streamResponse } from '@liveworkspace/ai/testing';
 import { knowledgeDb } from './__fixtures__/db';
 import { dayOf, hourOf } from './days';
-import { callModel } from './model-providers';
+import { callModel } from '@liveworkspace/ai';
 import {
   SETUP_MAX_DEPTH,
   SETUP_MAX_PAGES,

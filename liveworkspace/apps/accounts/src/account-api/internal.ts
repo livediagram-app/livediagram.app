@@ -69,7 +69,7 @@ async function digest(value: string): Promise<string> {
 // An app's client id, and the app it is, when the request carries its client credentials. The
 // OAuth provider checks them, through token introspection: it answers 401 for a wrong secret and 200
 // otherwise.
-async function verifiedClient(
+export async function verifiedClient(
   request: Request,
   auth: Auth,
   db: D1Database,
@@ -104,7 +104,7 @@ async function verifiedClient(
 
 // The account an access token belongs to, when it was minted for this very client and is still
 // live (the provider's introspection checks both): how an app vouches for the person it acts for.
-async function vouchedPerson(
+export async function vouchedPerson(
   request: Request,
   auth: Auth,
   clientId: string,

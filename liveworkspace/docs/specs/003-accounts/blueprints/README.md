@@ -11,6 +11,7 @@ Follow the references below only as needed; never upfront.
 - ./tokens.md - when working on API tokens or their expiry warnings
 - ./oauth.md - when working on the OAuth provider, registering clients, token claims or the device grant
 - ./settings-and-profiles.md - when working on settings or profiles
+- ./ai-keys.md - when working on AI keys: the table, sealing, the routes, the internal door, the threat model
 - ./data-export.md - when working on Download All My Data: the export service, its job and zip, the doors, the link
   and the Settings category
 - ./push.md - when working on phone notifications: devices, Web Push and VAPID, the pusher, the Phone settings and the service worker

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { fakeFetch, streamResponse } from './__fixtures__/claude';
+import { fakeFetch, streamResponse } from './testing/claude';
 import {
   openAiErrorEvent,
   openAiErrorResponse,
   openAiEvents,
   openAiOpening,
   openAiRefusal,
-} from './__fixtures__/openai';
+} from './testing/openai';
 import type { ModelFailureKind } from './model-failure';
 import type { ModelRequest } from './model-request';
 import { OpenAiCallError, callOpenAi, openAiFailureKind, openAiHeaders } from './openai-client';

@@ -1,4 +1,4 @@
-// The OpenAI models a team may choose in AI Settings (docs/specs/030-knowledgebase/search-and-ask.md "Providers"):
+// The OpenAI models a team may choose in AI Settings (liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md "Providers"):
 // the general models OpenAI's model page listed under "Flagship models" on 2026-11-20
 // (https://developers.openai.com/api/docs/models). The ids are complete as written.
 

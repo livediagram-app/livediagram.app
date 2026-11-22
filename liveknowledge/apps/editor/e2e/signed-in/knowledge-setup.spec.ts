@@ -71,7 +71,7 @@ test('a new knowledgebase opens on its start screen, whose Describe to Set Up tu
   const suggested = page.waitForResponse(
     (r) => r.request().method() === 'POST' && /\/setup\/suggest$/.test(new URL(r.url()).pathname),
   );
-  await expect(dialog.locator('[data-setup-ai]')).toHaveText("Uses your team's key");
+  await expect(dialog.locator('[data-setup-ai]')).toHaveText("Uses this knowledgebase's key");
   await describeAndSuggest(dialog);
   expect((await suggested).ok()).toBe(true);
   expect(((await (await suggested).json()) as { provider: string }).provider).toBe('anthropic');
@@ -149,7 +149,7 @@ test('with no key it runs on built-in AI at once, and on an OpenAI key once one 
   await saveKey(page, who, id, OPENAI_KEY, 'openai');
   await page.reload();
   await setupButton(page).click();
-  await expect(dialog.locator('[data-setup-ai]')).toHaveText("Uses your team's key");
+  await expect(dialog.locator('[data-setup-ai]')).toHaveText("Uses this knowledgebase's key");
   const onKey = page.waitForResponse(
     (r) => r.request().method() === 'POST' && /\/setup\/suggest$/.test(new URL(r.url()).pathname),
   );

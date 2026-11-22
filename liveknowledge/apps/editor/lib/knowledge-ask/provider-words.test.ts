@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
-import { MODEL_PROVIDERS } from '@liveknowledge/knowledge';
+import { MODEL_PROVIDERS } from '@liveworkspace/ai';
 import { TEAM_PAYS_ANY_NOTE, aiSettingsFailureText, teamPaysNote } from './ai-settings-words';
 import { askFailureWords } from './ask-failure-words';
 import {
