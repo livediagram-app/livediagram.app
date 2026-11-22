@@ -9,7 +9,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import type { ItemCount } from '../data/useItemCount';
-import { inboxTotal } from './inbox/sections';
+import { inboxTotal } from './inbox/inbox-count';
 import { CloseIcon, HelpMarkIcon, PlusIcon } from '../ui/icons';
 import { NewItemButton } from './NewChoices';
 import { FOCUS_RING } from '../ui/classes';

@@ -25,9 +25,9 @@ vi.mock('@/components/providers/workbench-session-context', async (importOrigina
   useWorkbenchSession: () => session.value,
 }));
 
-vi.mock('@/lib/pages-tour', async (importOriginal) => ({
+vi.mock('@/lib/knowledge-tours', async (importOriginal) => ({
   ...(await importOriginal<object>()),
-  requestPagesTourRelaunch: vi.fn(),
+  requestKnowledgeToursRelaunch: vi.fn(),
 }));
 const { SettingsDialog } = await import('./SettingsDialog');
 
@@ -80,15 +80,26 @@ describe('SettingsDialog This app or All', () => {
   });
 });
 
-// The Pages tour (docs/specs/007-editor/pages-tour.md): a kind's row turned on from off reruns it on close.
+// The Get Started tours (docs/specs/007-editor/knowledge-tours.md "Settings"): rows turned on from off rerun on close.
 describe('SettingsDialog tours on close', () => {
-  it('reruns the Pages tour only when a kind is owed again', async () => {
-    const { requestPagesTourRelaunch } = await import('@/lib/pages-tour');
+  it('reruns only the tours newly offered again', async () => {
+    const { requestKnowledgeToursRelaunch } = await import('@/lib/knowledge-tours');
     const { relaunchTours } = await import('./SettingsDialog');
-    const all = { pagesTourKinds: ['slide', 'infographic', 'article'] } as never;
+    const all = { knowledgeToursSeen: true } as never;
     relaunchTours(all, all);
-    expect(requestPagesTourRelaunch).not.toHaveBeenCalled();
-    relaunchTours(all, { pagesTourKinds: ['slide'] } as never);
-    expect(requestPagesTourRelaunch).toHaveBeenCalledOnce();
+    expect(requestKnowledgeToursRelaunch).toHaveBeenLastCalledWith([]);
+    relaunchTours(all, {
+      knowledgeTours: ['first-page', 'organise', 'ask', 'connect', 'share'],
+    } as never);
+    expect(requestKnowledgeToursRelaunch).toHaveBeenLastCalledWith(['trust']);
+    relaunchTours(all, {});
+    expect(requestKnowledgeToursRelaunch).toHaveBeenLastCalledWith([
+      'first-page',
+      'organise',
+      'trust',
+      'ask',
+      'connect',
+      'share',
+    ]);
   });
 });

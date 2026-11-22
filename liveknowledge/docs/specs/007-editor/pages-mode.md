@@ -237,8 +237,7 @@ The **Project Brief** template (kind `article`) in /new starts a tab with one ar
 - Opens beside the page, to the right of its cog, so the sheet stays in view; where the window has
   no room there, it opens under the cog. Screen-space, one size at any zoom; it scrolls when taller
   than the window.
-- Top to bottom: on every unlocked page, **Show Me** and **Help** (its kind's article), Show Me running the page kind's
-  track of the [Pages tour](pages-tour.md) on this page; the **name** field (placeholder `Page n`, or `Untitled page` while there is one
+- Top to bottom: on every unlocked page, **Help** (its kind's article; its Show Me went with the [Pages tour](pages-tour.md)); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; on an unnamed article page or card, its article's title, drawn in the name's own ink so it
   reads as the name it goes by, and a name typed over it still wins; renamed on Enter, on leaving the
   field, or on closing the panel), then its **Page** section while it has a size or orientation to

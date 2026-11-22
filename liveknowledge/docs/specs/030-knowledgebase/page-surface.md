@@ -239,7 +239,8 @@ Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs 
   behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
   Share, so nothing stands over the reading column at any width.
 - On a phone the four tabs are the footer's row, icons with short labels (Pages, Ask, AI, Connect), 44 px targets; the
-  notification list stays beside them and the footer's other items go behind one **More** button. The top row
+  notification list stays beside them and the footer's other items go behind one **More** button. Its card opens above the Ask, AI Knowledge and Connect
+  views too (at the popover layer), so Get Started, Tools and Settings stay in reach on every view. The top row
   there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's
   writing bar takes the row and the row's own buttons step aside until the caret leaves.
 - With the page tree collapsed to its rail, the menu button leads the top row, which then runs the window's width.

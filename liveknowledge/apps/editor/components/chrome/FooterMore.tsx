@@ -45,13 +45,15 @@ export function FooterMore({ children }: { children: ReactNode }) {
           </Glyph>
         </button>
       </HoverCard>
-      {/* Kept mounted while closed, so a control inside (Tools' own menu, the tour's offer) keeps its state. */}
+      {/* Kept mounted while closed, so a control inside (Tools' own menu, the tour's offer) keeps its state. At the
+          popover layer, as a menu is: the Ask, AI Knowledge and Connect views (a canvas modal) stop at the footer, and
+          the card rising above it was drawn under them, so Get Started, Tools and Settings were out of reach there. */}
       <div
         id={panelId}
         role="group"
         aria-label="More"
         hidden={!open}
-        className="absolute bottom-full right-0 z-[var(--z-panel)] mb-2 flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 [&[hidden]]:hidden"
+        className="absolute bottom-full right-0 z-[var(--z-popover)] mb-2 flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 [&[hidden]]:hidden"
       >
         {children}
       </div>

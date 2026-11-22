@@ -1333,6 +1333,30 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
   'UI|Started|ShareTour':
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
+  // The Get Started tours (liveknowledge/docs/specs/007-editor/knowledge-tours.md).
+  'UI|Opened|KnowledgeToursOffer':
+    'The Get Started button showed in the footer while a tour was still untaken, once per visit.',
+  'UI|Opened|KnowledgeTours': 'Someone pressed Get Started and opened the list of tours.',
+  'UI|Started|FirstPageTour': 'Someone started the Your First Page tour.',
+  'UI|Ended|FirstPageTourCompleted': 'Someone finished the Your First Page tour.',
+  'UI|Ended|FirstPageTourSkipped': 'Someone closed the Your First Page tour before its end.',
+  'UI|Started|OrganiseTour': 'Someone started the Organise Your Knowledgebase tour.',
+  'UI|Ended|OrganiseTourCompleted': 'Someone finished the Organise Your Knowledgebase tour.',
+  'UI|Ended|OrganiseTourSkipped':
+    'Someone closed the Organise Your Knowledgebase tour before its end.',
+  'UI|Started|TrustTour': 'Someone started the Trust a Page tour.',
+  'UI|Ended|TrustTourCompleted': 'Someone finished the Trust a Page tour.',
+  'UI|Ended|TrustTourSkipped': 'Someone closed the Trust a Page tour before its end.',
+  'UI|Started|AskTour': 'Someone started the Ask Your Knowledgebase tour.',
+  'UI|Ended|AskTourCompleted': 'Someone finished the Ask Your Knowledgebase tour.',
+  'UI|Ended|AskTourSkipped': 'Someone closed the Ask Your Knowledgebase tour before its end.',
+  'UI|Started|ConnectTour': 'Someone started the Connect an AI Agent tour.',
+  'UI|Ended|ConnectTourCompleted': 'Someone finished the Connect an AI Agent tour.',
+  'UI|Ended|ConnectTourSkipped': 'Someone closed the Connect an AI Agent tour before its end.',
+  'UI|Started|WorkTogetherTour': 'Someone started the Share and Work Together tour.',
+  'UI|Ended|WorkTogetherTourCompleted': 'Someone finished the Share and Work Together tour.',
+  'UI|Ended|WorkTogetherTourSkipped':
+    'Someone closed the Share and Work Together tour before its end.',
   'UI|Started|PagesTour':
     "Someone pressed Yes on the Pages tour's first card, beginning its walkthrough of the pages.",
   'UI|Toggled|ActivityRevertPreviewOff':

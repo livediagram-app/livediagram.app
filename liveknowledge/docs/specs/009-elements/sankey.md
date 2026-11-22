@@ -192,11 +192,8 @@ sees Show Me. Telemetry: `UI` · `Started` · `SankeyFlowsTour`, and `UI` · `En
 
 ## Element tour
 
-While an Editor has a Sankey selected, the footer's **Start Sankey Tour** button offers the
-[Sankey tour](../007-editor/element-tours.md#the-sankey-tour): it lifts the diagram's widest band and a leftover with
-their readouts, points at the menu's styling and at double-clicking, then opens the Flows dialog, runs its
-[Show Me](#show-me) steps there and closes it on Done. It stays on the button after it has been
-taken, so a press reruns it.
+A Sankey has no element tour in liveknowledge: the Sankey tour the fork brought is retired
+([Element tours](../007-editor/element-tours.md)). The Flows dialog keeps its own [Show Me](#show-me).
 
 ## Who may do what
 

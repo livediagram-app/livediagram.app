@@ -20,12 +20,6 @@ import { useCurrentPageFollow } from '@/hooks/canvas/useCurrentPageFollow';
 import { usePageImageSources } from './page-image-access';
 import { PagePanel, type PagePanelTab } from './PagePanel';
 import { articleTitlesOf, shownPageName } from '@/lib/article-page-name';
-import {
-  PAGE_TOUR_HELP,
-  PageShowMeButton,
-  PageTourStage,
-  usePageTour,
-} from '@/components/tour/PageTour';
 import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { AddPageButton } from './AddPageButton';
 import { FlashcardStackSheets, PageStackNav } from './FlashcardStack';
@@ -146,10 +140,6 @@ export function CanvasPages({
     [opened],
   );
   const toggle = (id: string) => setOpened((o) => (o?.id === id ? null : { id, tab: 'page' }));
-  // Show Me on a page (pages-tour.md, show-me.md): its kind's track, ended with its page (gone or locked).
-  const pageTour = usePageTour(
-    (id) => !!edit && pages.some((p) => p.id === id && p.locked !== true),
-  );
   // A tour opens a page's panel on the tab a step is about, afresh, or closes it (lib/page-panel-request.ts).
   useFollowPagePanelRequests(setOpened);
   // The page toolbar's Article Style button opens the page's panel on Style.
@@ -287,24 +277,8 @@ export function CanvasPages({
           titleName={open.flow ? flowTitles.get(open.flow) : undefined}
           edit={edit}
           onClose={close}
-          // A locked page has nothing to show: its controls are held (pages-mode.md "Locking a page").
-          showMe={
-            open.locked === true
-              ? undefined
-              : {
-                  button: (
-                    <PageShowMeButton
-                      tour={pageTour.tour}
-                      kind={pageKindOf(open)}
-                      onStart={() => pageTour.freeze(open.id, pageKindOf(open))}
-                    />
-                  ),
-                  article: PAGE_TOUR_HELP[pageKindOf(open)].article,
-                }
-          }
         />
       ) : null}
-      <PageTourStage tour={pageTour.tour} kind={pageTour.kind} />
     </>
   );
 }

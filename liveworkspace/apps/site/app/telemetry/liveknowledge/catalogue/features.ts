@@ -6,7 +6,6 @@ import { NON_PATTERN_CANVAS_TYPES } from '../../_shared/look-feel-types';
 import { isNonThemePick } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
-import { elementTourTokens } from '../element-tour-kinds';
 import { OPENED_HOMES, openedChart } from './opened';
 
 // The one layer event still sent since the Layers panel went (2026-11-08, docs/specs/006-document/layers.md
@@ -497,12 +496,18 @@ export const SHORTCUTS_OPENED = openedChart(
   (t) => t === 'Shortcuts',
 );
 
-// The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
-// the Visitors tab, which names the kinds.
-export const ELEMENT_TOURS_OFFERED = openedChart(
-  'Element Tours Offered',
-  'An element tour offered beside a selected element, once per kind per visit. Since 25 October 2026, the Start Tour button in the footer showing it.',
-  (t) => elementTourTokens('Offer').includes(t ?? ''),
+// The Get Started button drawn (docs/specs/007-editor/knowledge-tours.md "Telemetry"), once a visit while a tour is
+// untaken; charted in the Get Started tours' funnel on the Visitors tab.
+export const KNOWLEDGE_TOURS_OFFERED = openedChart(
+  'Get Started Offered',
+  'The Get Started button drawn in the footer while a tour is untaken, once per visit.',
+  (t) => t === 'KnowledgeToursOffer',
+);
+
+export const KNOWLEDGE_TOURS_LISTED = openedChart(
+  'Get Started Lists Opened',
+  'The Get Started button pressed, opening the list of tours.',
+  (t) => t === 'KnowledgeTours',
 );
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md); charted with its reloads

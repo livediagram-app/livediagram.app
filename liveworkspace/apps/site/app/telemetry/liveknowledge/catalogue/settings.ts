@@ -104,18 +104,18 @@ export const ACCESSIBILITY_SETTINGS = settingsStack('Accessibility Settings', 'M
   toggle('UI', 'ReduceMotionOn', 'ReduceMotionOff', 'Reduce Motion', 'Turning animation down.'),
 ]);
 
-// Getting Started: the Show Me tours' switches, one over them all and one per toured element. Each switch's tokens
-// track its PREFERENCE, so switching a tour on is `…SeenOff`.
+// Getting Started: the Get Started tours' switches, one over them all and one per tour (knowledge-tours.md "Settings").
+// Each switch's tokens track its PREFERENCE, so switching a tour on is `…SeenOff`.
 export const TOURS_SETTINGS = settingsStack(
   'Getting Started Settings',
-  'The Show Me tours switched back on or off.',
+  'The Get Started tours switched back on or off.',
   [
     {
       category: 'UI',
       action: 'Toggled',
       typeIn: (type) => /^[A-Z][A-Za-z]*Tours?Seen(On|Off)$/.test(type ?? ''),
-      title: 'Show Me Tours',
-      blurb: 'The Show Me tours switched back on or off, all at once or one element’s.',
+      title: 'Get Started Tours',
+      blurb: 'The Get Started tours switched back on or off, all at once or one tour’s.',
       rising: 'neutral',
     },
   ],

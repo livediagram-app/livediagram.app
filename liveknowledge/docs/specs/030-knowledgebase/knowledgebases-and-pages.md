@@ -85,7 +85,8 @@ Web](publishing.md)): its "public site", never its "Public".
   in the page link picker) is not opened; the first time it is, the caret is at the end of its title.
 - A key typed outside the writing opens nothing: the editor has no element search (the fork's Search Elements, on
   S and at the end of the palette). Cmd or Ctrl K, the page search, is the knowledgebase's search, and the command
-  search (Cmd or Ctrl `.`) reads the pages already open in this browser and loads no other.
+  search (Cmd or Ctrl `.`) reads the pages already open in this browser and loads no other. Cmd or Ctrl `.` opens it
+  from the writing and from a field too, a new page's title caret included: the chord types nothing there.
 - **Name:** a page's name and its Title are one thing: the Title is what the page is called, and its name (what the
   tree, the breadcrumb, page links and backlinks, search, Home and AI Knowledge show) follows it. The name is kept
   beside the writing only so a page can be listed without loading its writing; every way in keeps the two the same.

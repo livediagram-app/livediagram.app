@@ -148,7 +148,7 @@ export const articles: Article[] = [
     description:
       'From a new Knowledgebase to a few linked pages your team can read, in a couple of minutes.',
     keywords:
-      'start begin new create tutorial beginner basics quickstart onboarding start here untitled knowledgebase first page subpage share',
+      'start begin new create tutorial beginner basics quickstart onboarding start here untitled knowledgebase first page subpage share get started tour tours',
     category: 'Getting Started',
     categorySlug: 'getting-started',
     ...APPS,

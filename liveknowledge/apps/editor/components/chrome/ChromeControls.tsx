@@ -77,7 +77,7 @@ export function ChromeControls({
   return (
     <>
       {/* The Get Started button, first in the cluster and left of Tools: the one way into a tour,
-          drawn only while one is on offer (docs/specs/007-editor/pages-tour.md "Where it appears"). Leading the cluster, it comes and
+          drawn only while one is on offer (docs/specs/007-editor/knowledge-tours.md "Where it appears"). Leading the cluster, it comes and
           goes without moving the controls beside it. */}
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the

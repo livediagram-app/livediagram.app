@@ -30,12 +30,10 @@ export const loadEditorSearchPanel = () =>
 export const loadQuickStyleBar = () =>
   import('@/components/canvas/QuickStyleBar').then((m) => m.QuickStyleBar);
 export const QuickStyleBar = lazyPanel('QuickStyleBar', loadQuickStyleBar);
-// The tours (docs/specs/007-editor/pages-tour.md, element-tours.md), mounted with the editor.
-export const PagesTourHost = lazyPanel('PagesTourHost', () =>
-  import('@/components/tour/PagesTourHost').then((m) => m.PagesTourHost),
-);
-export const ElementTourHost = lazyPanel('ElementTourHost', () =>
-  import('@/components/tour/ElementTourHost').then((m) => m.ElementTourHost),
+// The Get Started tours (docs/specs/007-editor/knowledge-tours.md), mounted with the editor; their steps load at a
+// press.
+export const KnowledgeToursHost = lazyPanel('KnowledgeToursHost', () =>
+  import('@/components/tour/KnowledgeToursHost').then((m) => m.KnowledgeToursHost),
 );
 // The presentation overlay holds the deck's keys (the arrows, Escape), so a deck must not start before it
 // can listen: starting one waits for this load (useSlideDeck), and the host draws the loaded component
@@ -70,6 +68,5 @@ export const WARM_PAINT_CODE = [
   ArticleFlows.preload,
   PageContentsSidebar.preload,
   QuickStyleBar.preload,
-  PagesTourHost.preload,
-  ElementTourHost.preload,
+  KnowledgeToursHost.preload,
 ] as const;

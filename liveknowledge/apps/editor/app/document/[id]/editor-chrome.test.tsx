@@ -55,17 +55,11 @@ vi.mock('@liveworkspace/workbench/components/tour/tour-offer', async (original) 
   return {
     ...real,
     useOfferTour: (...args: Parameters<typeof real.useOfferTour>) => {
-      hit('PagesTourHost');
+      hit('KnowledgeToursHost');
       return real.useOfferTour(...args);
     },
   };
 });
-vi.mock('@liveworkspace/workbench/hooks/ui/useCoarsePointer', () => ({
-  useCoarsePointer: () => {
-    hit('ElementTourHost');
-    return false;
-  },
-}));
 vi.mock('@liveworkspace/workbench/hooks/ui/useShiftHeld', () => ({
   useShiftHeld: () => {
     hit('ModifierHint');
@@ -134,8 +128,7 @@ const { EditorContextMenuHost } = await import('@/components/palette/EditorConte
 const { EditorStartPanels } = await import('@/components/start/EditorStartPanels');
 const { QuickStyleHost } = await import('@/components/canvas/QuickStyleHost');
 const { EditorFindHost } = await import('@/components/find/FindHost');
-const { PagesTourHost } = await import('@/components/tour/PagesTourHost');
-const { ElementTourHost } = await import('@/components/tour/ElementTourHost');
+const { KnowledgeToursHost } = await import('@/components/tour/KnowledgeToursHost');
 const { ModifierHint } =
   await import('@liveworkspace/workbench/components/chrome/ModifierHintBanner');
 const { EditorNewVersionPrompt } = await import('@/components/chrome/NewVersionPrompt');
@@ -377,12 +370,7 @@ describe('sameTabsForBar', () => {
 // What the editor view places each render, as it places it: props rebuilt from the view-model, new handlers each time.
 // Made once, as EditorView makes them (`NEW_VERSION_PROMPT`, `TOURS`).
 const NEW_VERSION = <EditorNewVersionPrompt />;
-const TOURS = (
-  <>
-    <PagesTourHost />
-    <ElementTourHost />
-  </>
-);
+const TOURS = <KnowledgeToursHost />;
 const opener = { current: () => {} };
 const canvasMain = { current: null };
 const selection = createSelectionStore();
@@ -416,12 +404,11 @@ describe('the rest of the chrome (Work Tracker 907)', () => {
     const ids = Object.keys(chromeRenders).sort();
     expect(ids).toEqual(
       [
-        'ElementTourHost',
         'FindHost',
+        'KnowledgeToursHost',
         'LandscapeBarsHandle',
         'ModifierHint',
         'NewVersionPrompt',
-        'PagesTourHost',
         'QuickStyleHost',
       ].sort(),
     );
@@ -459,7 +446,7 @@ describe('the rest of the chrome (Work Tracker 907)', () => {
     });
     expect(chromeRenders.QuickStyleHost).toBeGreaterThan(0);
     expect(chromeRenders.FindHost).toBeGreaterThan(0);
-    expect(chromeRenders.PagesTourHost).toBe(0);
+    expect(chromeRenders.KnowledgeToursHost).toBe(0);
   });
 });
 

@@ -220,6 +220,37 @@ describe('Escape with a selection', () => {
 });
 
 // docs/specs/007-editor/start-diagramming.md "Undo and redo reach the editor through an empty search".
+// docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Add": a new page opens with the caret in its title, and
+// Cmd or Ctrl . still opens the command search from there.
+describe('the command search from the writing', () => {
+  it('opens on Cmd or Ctrl . with the caret in the writing or a field, and leaves Cmd K to the text', () => {
+    const onOpenSearch = vi.fn();
+    renderHook(() => useEditorKeyboardShortcuts(deps({ onOpenSearch }).bag));
+    const writing = document.createElement('div');
+    writing.contentEditable = 'true';
+    const field = document.createElement('input');
+    document.body.append(writing, field);
+    for (const [el, init] of [
+      [writing, { metaKey: true }],
+      [field, { ctrlKey: true }],
+    ] as const) {
+      const e = new KeyboardEvent('keydown', {
+        key: '.',
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      el.dispatchEvent(e);
+      expect(e.defaultPrevented).toBe(true);
+    }
+    // jsdom has no isContentEditable, so the field stands in for the writing's own Cmd K.
+    field.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
+    expect(onOpenSearch).toHaveBeenCalledTimes(2);
+    writing.remove();
+    field.remove();
+  });
+});
+
 describe('undo and redo from the start search', () => {
   function pressIn(input: HTMLInputElement, key: string, init: KeyboardEventInit = {}) {
     const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });

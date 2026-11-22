@@ -360,7 +360,6 @@ panels in their corners, the bottom-row popovers over their buttons. What change
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
-- The [Pages tour](pages-tour.md) follows the layout: its palette step rings the strip's card.
 - No tour is started from the strip: every tour's way in is the **Get Started** button in the bottom bar,
   left of Tools ([Editor app](editor-app.md) "Tab bar").
 

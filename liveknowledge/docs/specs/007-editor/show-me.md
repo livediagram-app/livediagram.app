@@ -1,7 +1,7 @@
 # Show Me
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
-the **Show Me** button. It is the on-the-spot cousin of the [Pages tour](pages-tour.md) and the [element tours](element-tours.md), which
+the **Show Me** button. It is the on-the-spot cousin of the [Get Started tours](knowledge-tours.md), which
 are started from the footer's Get Started button; Show Me is started from its own button on the surface it
 teaches, and no tour offers itself. It exists for surfaces where people make something real in
 several steps whose ideas are not visible at a glance.
@@ -15,14 +15,13 @@ several steps whose ideas are not visible at a glance.
 
 ## Where it lives
 
-| Surface                                                             | Where the button sits                              | Who sees it                                 |
-| ------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------- |
-| [Share dialog](editor-app.md#share-dialog)                          | The dialog's title row (not on the offline gate)   | The owner (only the owner can open it)      |
-| [Page panel](pages-tour.md#where-it-appears)                        | The page panel's title row, on every unlocked page | An Editor (only an Editor has the panel)    |
-| [Sankey Flows dialog](../009-elements/sankey.md#show-me)            | The dialog's title row                             | An Editor (only an Editor opens the dialog) |
-| [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me) | The dialog's title row                             | An Editor (only an Editor opens the dialog) |
+| Surface                                                  | Where the button sits                            | Who sees it                                 |
+| -------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------- |
+| [Share dialog](editor-app.md#share-dialog)               | The dialog's title row (not on the offline gate) | The owner (only the owner can open it)      |
+| [Sankey Flows dialog](../009-elements/sankey.md#show-me) | The dialog's title row                           | An Editor (only an Editor opens the dialog) |
 
-A new Show Me surface is added to this table, and its own spec says its steps.
+A new Show Me surface is added to this table, and its own spec says its steps. The page panel's Show Me went with the
+[Pages tour](pages-tour.md), and Tab Style's with the dialog ([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md)).
 
 ## The button
 
@@ -48,12 +47,12 @@ A new Show Me surface is added to this table, and its own spec says its steps.
   beyond opening the tab, section or selection it is about.
 - **Only what is there.** Steps whose control the surface cannot show right now are left out when the tour starts, so the count
   is right from the first step; a target that still never appears skips its step.
-- **Escape belongs to the tour** while it runs over a dialog (the Share dialog, the Sankey's Flows, Tab Style): it never
+- **Escape belongs to the tour** while it runs over a dialog (the Share dialog, the Sankey's Flows): it never
   closes the surface under it. The surface stops closing on Escape for the duration;
-  the tour's own Skip ends it. A tour on the page itself (the page panel's) leaves Escape to the page.
+  the tour's own Skip ends it.
 - **Ending.** Done ends it as completed, Skip as skipped; closing the surface under it (Cancel, a finished save)
-  ends the tour with it and sends no Ended event. So does losing it while it stays mounted: a page deleted, locked or no longer
-  editable. Nothing is remembered: Show Me runs again every time it is pressed, and Settings' Show Tours does not list it.
+  ends the tour with it and sends no Ended event. Nothing is remembered: Show Me runs again every time it is pressed, and Settings'
+  Getting Started does not list it.
 - **Layer.** Over a dialog the ring draws just above the dialog and below the menus its controls open, so those
   stay lit (`layer` `modal`); over the editor's own chrome it draws at the overlay layer.
 
@@ -66,7 +65,7 @@ points only at controls that person can use. Each surface's spec names who that 
 
 Each surface sends three literal events under its own token `<Surface>Tour`: `UI` · `Started` · `<Surface>Tour`
 when the button is pressed, and `UI` · `Ended` · `<Surface>TourCompleted` or `<Surface>TourSkipped`. The tokens:
-`ShareTour`, `SlideTour`, `InfographicTour`, `ArticleTour`, `SankeyFlowsTour`, `TabStyleTour`. Each
+`ShareTour` and `SankeyFlowsTour` (`SlideTour`, `InfographicTour`, `ArticleTour` and `TabStyleTour` are retired). Each
 has its stack (Started, Completed, Skipped) on the telemetry dashboard, and its explanations.
 
 ## Code
@@ -74,5 +73,5 @@ has its stack (Started, Completed, Skipped) on the telemetry dashboard, and its 
 `apps/editor/components/tour/ShowMe.tsx` holds the button (`ShowMeButton`) and the running tour (`ShowMeStage`);
 each surface keeps its steps in `<surface>-tour-steps.ts` and its literal telemetry in `<Surface>Tour.tsx`, so
 the dashboard's emitter scan reads every event. The engine scrolls each step's control into view in its scrolling
-panel (`revealInScrollers`, `tour-reveal.ts`, [Mechanics](pages-tour.md#mechanics)); a step never scrolls itself. A surface whose steps depend on what is there fixes them when the button is pressed, so they never change mid-tour. A surface in the editor's first load (the page panel) imports its steps at the press (`onStart` returns the promise the tour waits for), so
-their copy stays out of that load; `show-me-lazy-load.test.ts` keeps it so.
+panel (`revealInScrollers`, `tour-reveal.ts`, [How a tour runs](knowledge-tours.md#how-a-tour-runs)); a step never scrolls itself. A surface whose steps depend on
+what is there fixes them when the button is pressed, so they never change mid-tour.

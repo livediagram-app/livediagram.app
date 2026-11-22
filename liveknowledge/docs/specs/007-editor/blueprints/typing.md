@@ -101,8 +101,8 @@ unchanged here; where a line names a card, read an article.
     - The page sheet's title bar row is its own memoised component (`PageSheetTitleBar.tsx`), apart from the sheet,
       which renders for its page's writing; its stored article style is compared by value
       (`sameArticleValue`), as a typing commit parses the article afresh and the style comes back an equal new object.
-    - `PagesTourHost` and `ElementTourHost` read a slice of the chrome store (`useEditorChrome(slice, sameSlice)`,
-      `editor-chrome-equal.ts`), their handlers reading `useEditorChromeStore().get()`.
+    - `KnowledgeToursHost` reads a slice of the chrome store (`useEditorChrome(slice, sameSlice)`,
+      `editor-chrome-equal.ts`), its handlers reading `useEditorChromeStore().get()`.
     - `QuickStyleHost` and `EditorFindHost` read their `deps` from the store (`useEditorChromeLatest`), compared by
       `sameDepsButWriting`: the same handlers by name, the same data, the active tab the same but for its writing.
       Find, while open, renders for every change, as its matches read the writing. The hook says `'use no memo'`:
