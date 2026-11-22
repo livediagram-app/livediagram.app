@@ -86,7 +86,7 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
 - **Page Health** is read (`GET pages/<tab>/health`) once per page for the session, when the page opens; concurrent
   asks share one request. A failed read leaves the fields showing from the tab and the reads as a dash.
 - **Page Health's rows** are Owner, Last Verified, **Review Due** (the date under the knowledgebase's period, "Not
-  Verified" for a page never verified, "No Review Period" under Never), **Review Period** ("Every 90 Days", and for
+  Verified" for a page never verified; Last Verified and Review Due are not drawn under Never), **Review Period** ("Every 90 Days", and for
   an Editor of the whole knowledgebase a pencil beside it: `ReviewPeriodButton`, named "Change Review
   Period", passed to the card as its `periodControl` by `PageRailBody` when `useSettingsOffered()` holds), and the
   two reads. Six rows whatever the period, each of a fixed least height, so
@@ -133,9 +133,11 @@ which takes Verify out of the meta row, Page Health, the tree's row menu and the
 regardless). Wire states from the api (an Ask source, a search result, a conflict side) arrive as `off` and draw
 no badge (`sourceTrust` answers mark `off`, `trustText` an empty string); `answerTrust` answers none when every
 source is `off`. AI Knowledge reads `overview.reviewEvery`: `FigureTiles` draws Average Health in Verified's place
-and `HealthSection` drops the share, the bar, the legend and Remind the Owners. Tests: `page-trust.test.ts`,
-`PageMetaRow.test.tsx`, `PageHealthCard.never.test.tsx`, `knowledge-rights` cases in `page-knowledge.test.ts`,
-`source-meta.test.ts`, `AiDashboard.test.tsx`, each for Never and a set period.
+and `HealthSection` drops the share, the bar, the legend and Remind the Owners. Tests: `page-knowledge.test.ts`
+(`pageTrust`, `trustMarks`, `knowledgeRights` a role at a time), `page-knowledge-ui.test.tsx` (the meta row and the
+Page Health card a role at a time), `page-knowledge-store-ui.test.tsx` (Never and back), `PageHealthScore.test.tsx`
+(the facts, Knowledge Health, a conflict side), `source-meta.test.ts`, `ask-words.test.ts`, `AskView.test.tsx`,
+`AiDashboard.test.tsx`, each for Never and a set period.
 
 ### Share roles
 

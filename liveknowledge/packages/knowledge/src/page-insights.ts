@@ -12,8 +12,8 @@ import {
 
 const DAY_MS = 86_400_000;
 
-/** A page made this recently with no reads shows New This Week, never a row of zeros (the Health Score's first
- *  week). */
+/** A page made this recently shows New This Week, never 30 days of bars mostly from before it was made (the Health
+ *  Score's first week). */
 export const NEW_PAGE_INSIGHT_DAYS = 7;
 /** Not read in this many days: every day `page_reads` keeps. */
 export const NOT_READ_DAYS = READS_KEPT_DAYS;
@@ -36,7 +36,7 @@ export function pageInsights(
   return { days, week };
 }
 
-/** Whether a page made at `createdAt` is in its first week: shown as New This Week while it has no reads. */
+/** Whether a page made at `createdAt` is in its first week: shown as New This Week. */
 export const isNewPage = (createdAt: number | undefined, now: number): boolean =>
   createdAt !== undefined && now - createdAt < NEW_PAGE_INSIGHT_DAYS * DAY_MS;
 

@@ -64,9 +64,11 @@ A page's use over time, in its right rail (and its Page Info card and sheet), fo
   served), from the same bars.
 - **Answered From This Page** moves here from AI Context: the 3 questions it answered most, as before. With none it
   is not drawn.
-- **A new page** (made in the last 7 days) with no reads yet shows **New This Week** and one line, "Reads show here
-  as people and agents open it.", in place of the bars and the figures: never a row of zeros. An older page with no
-  reads in 30 days shows the empty bars (hairlines) and "No reads in 30 days".
+- **A new page** (made in the last 7 days) shows **New This Week** and one line in place of the bars and the
+  figures: "Reads show here as people and agents open it." with no reads, else its reads so far ("3 reads so far: 2
+  by people, 1 by an agent"). Never 30 days of bars mostly from before it was made: opening a page counts a read, so
+  its maker would otherwise see one bar and 29 empty days. An older page with no reads in 30 days shows the empty
+  bars (hairlines) and "No reads in 30 days".
 - **The read.** Page Health's one read answers it (`insights`): the 30 days' reads by day and reader kind (a range
   of `page_reads_tab`, at most 60 rows), which also gives Read This Week, and the citations as a window total on
   the questions statement AI Context already runs. No request and no statement more than before.

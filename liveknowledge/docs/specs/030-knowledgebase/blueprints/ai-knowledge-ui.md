@@ -242,20 +242,21 @@ Derived from [AI Knowledge](../ai-knowledge.md#page-insights): `components/knowl
   `cited` absent through a link confined to one page (no Ask there). `reads` (the week) is now summed from the same
   rows.
 - **Layout** (264 px of content): the `RAIL_LABEL` heading "Page Insights"; a line of the 30-day total (`text-2xl`
-  semibold tabular) and "reads in 30 days"; the bars (`ReadsSparkline` with `height` 40, its spoken label
+  semibold tabular) and "reads in 30 days"; the bars (`ReadsSparkline` with `tall`, 40 px, its spoken label
   `readsSparkLabel(days)`); a key of two dots (People, Agents) with their counts; then a two-cell `dl` of quiet
   figures, **Cited by Ask** ("12 times", "Once", "Not yet") and **Read by Agents** ("34 times"); then **Answered
   From This Page** (moved from `PageAiContext`, the same quotes).
 - **States.** Before the read: placeholder bars of the final height. A page whose `created.at` is within
-  `NEW_PAGE_INSIGHT_DAYS` and whose 30 days hold no read: a soft panel, "New This Week" and "Reads show here as
-  people and agents open it."; no bars, no figures. Otherwise no reads: the hairline bars and "No reads in 30 days".
+  `NEW_PAGE_INSIGHT_DAYS`: a soft panel, "New This Week" and "Reads show here as people and agents open it." (no
+  reads) or `readsSoFarText` ("3 reads so far: 2 by people, 1 by an agent"); no bars, no figures. Otherwise no reads: the hairline bars and "No reads in 30 days".
   Offline: not drawn.
 - **Directions considered.** A heat strip of 30 cells (a calendar) lost the people and agents split; two line charts
   over 30 points at 264 px were noisy and dropped small values; the stacked bars match the dashboard's sparkline and
   key, so the two tones mean the same everywhere.
 - **Share roles:** every role, no control.
 - **Tests:** `PageInsights.test.tsx` (the figures, the new page, no reads, a scoped link without Cited by Ask, the
-  placeholder, the spoken label); `sql/reads.test.ts` (`pageInsights`); the route test for `insights`.
+  placeholder, the spoken label); `page-insights.test.ts` (`pageInsights`, `isNewPage`); the route test for `insights`
+  (`knowledge-verification-off.test.ts`). An api from before Page Insights answers no `insights`: not drawn.
 
 ## Not Read in 90 Days
 
@@ -269,8 +270,8 @@ Derived from [AI Knowledge](../ai-knowledge.md#page-insights): `components/knowl
 - **Directions considered.** A switch inside Most Read (Most Read, Not Read) hid one list behind the other; a figure
   tile had no room in the band of six. Its own card keeps both lists in view.
 - **Tests:** `AiDashboard.test.tsx` (rows, order kept, the count, the more line, the empty state, opening a page);
-  `page-health.test.ts` (`notReadPages`); the overview route test (one statement, a page read 91 days ago listed, a
-  new page left out).
+  `page-insights.test.ts` (`notReadPages`); the overview route test (`knowledge-verification-off.test.ts`: a new page
+  left out, a page listed until read); `page-health-read.test.ts` (500 pages and 45,000 reads in one statement).
 
 ## Not built, or not known
 
