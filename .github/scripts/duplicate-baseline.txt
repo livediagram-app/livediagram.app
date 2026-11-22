@@ -167,7 +167,6 @@ livedocuments/apps/editor/hooks/editor/find-shortcut.ts	liveknowledge/apps/edito
 livedocuments/apps/editor/hooks/ui/useImageSearch.ts	liveknowledge/apps/editor/hooks/ui/useImageSearch.ts
 livedocuments/apps/editor/hooks/ui/useStripCrowdsCorners.ts	liveknowledge/apps/editor/hooks/ui/useStripCrowdsCorners.ts
 livedocuments/apps/editor/lib/action-note-open.ts	liveknowledge/apps/editor/lib/action-note-open.ts
-livedocuments/apps/editor/lib/api/document-grants.ts	liveknowledge/apps/editor/lib/api/document-grants.ts
 livedocuments/apps/editor/lib/article/article-caret.ts	liveknowledge/apps/editor/lib/article/article-caret.ts
 livedocuments/apps/editor/lib/article/article-dock.ts	liveknowledge/apps/editor/lib/article/article-dock.ts
 livedocuments/apps/editor/lib/article/article-find-plugin.ts	liveknowledge/apps/editor/lib/article/article-find-plugin.ts
