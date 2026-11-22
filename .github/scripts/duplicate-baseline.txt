@@ -8,10 +8,10 @@ livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor
 livedesign/apps/live/components/canvas/canvas-pattern-context.ts	liveplanner/apps/editor/components/canvas/canvas-pattern-context.ts
 livedesign/apps/live/components/palette/strip-rail-items.tsx	livediagram/apps/editor/components/palette/strip-rail-items.tsx
 livedesign/apps/live/components/split/SplitViewContext.tsx	livediagram/apps/editor/components/split/SplitViewContext.tsx	livedocuments/apps/editor/components/split/SplitViewContext.tsx	livehuddle/apps/editor/components/split/SplitViewContext.tsx	liveknowledge/apps/editor/components/split/SplitViewContext.tsx	liveplanner/apps/editor/components/split/SplitViewContext.tsx
-livedesign/apps/live/components/tour/EditorTours.tsx	livedocuments/apps/editor/components/tour/EditorTours.tsx	liveknowledge/apps/editor/components/tour/EditorTours.tsx
+livedesign/apps/live/components/tour/EditorTours.tsx	livedocuments/apps/editor/components/tour/EditorTours.tsx
 livedesign/apps/live/components/tour/TourStage.tsx	livedocuments/apps/editor/components/tour/TourStage.tsx	liveknowledge/apps/editor/components/tour/TourStage.tsx
-livedesign/apps/live/components/tour/chevrons-tour-steps.ts	livedocuments/apps/editor/components/tour/chevrons-tour-steps.ts	liveknowledge/apps/editor/components/tour/chevrons-tour-steps.ts
-livedesign/apps/live/components/tour/stack-tour-steps.ts	livedocuments/apps/editor/components/tour/stack-tour-steps.ts	liveknowledge/apps/editor/components/tour/stack-tour-steps.ts
+livedesign/apps/live/components/tour/chevrons-tour-steps.ts	livedocuments/apps/editor/components/tour/chevrons-tour-steps.ts
+livedesign/apps/live/components/tour/stack-tour-steps.ts	livedocuments/apps/editor/components/tour/stack-tour-steps.ts
 livedesign/apps/live/hooks/canvas/useEditorContextMenu.ts	livediagram/apps/editor/hooks/canvas/useEditorContextMenu.ts	livedocuments/apps/editor/hooks/canvas/useEditorContextMenu.ts	livehuddle/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveknowledge/apps/editor/hooks/canvas/useEditorContextMenu.ts	liveplanner/apps/editor/hooks/canvas/useEditorContextMenu.ts
 livedesign/apps/live/hooks/ui/useEditorAccent.ts	livediagram/apps/editor/hooks/ui/useEditorAccent.ts	livedocuments/apps/editor/hooks/ui/useEditorAccent.ts	livehuddle/apps/editor/hooks/ui/useEditorAccent.ts	liveplanner/apps/editor/hooks/ui/useEditorAccent.ts
 livedesign/apps/live/lib/contents-placement.ts	livedocuments/apps/editor/lib/contents-placement.ts	liveknowledge/apps/editor/lib/contents-placement.ts
@@ -143,19 +143,6 @@ livedocuments/apps/editor/components/panels/Explorer.types.ts	liveknowledge/apps
 livedocuments/apps/editor/components/panels/ModePanel.tsx	liveknowledge/apps/editor/components/panels/ModePanel.tsx
 livedocuments/apps/editor/components/primitives/usePopoverTopClearance.ts	liveknowledge/apps/editor/components/primitives/usePopoverTopClearance.ts
 livedocuments/apps/editor/components/split/SplitViewFrame.tsx	liveknowledge/apps/editor/components/split/SplitViewFrame.tsx
-livedocuments/apps/editor/components/tour/article-tour-steps.ts	liveknowledge/apps/editor/components/tour/article-tour-steps.ts
-livedocuments/apps/editor/components/tour/cycle-tour-steps.ts	liveknowledge/apps/editor/components/tour/cycle-tour-steps.ts
-livedocuments/apps/editor/components/tour/funnel-tour-steps.ts	liveknowledge/apps/editor/components/tour/funnel-tour-steps.ts
-livedocuments/apps/editor/components/tour/hub-tour-steps.ts	liveknowledge/apps/editor/components/tour/hub-tour-steps.ts
-livedocuments/apps/editor/components/tour/infographic-tour-steps.ts	liveknowledge/apps/editor/components/tour/infographic-tour-steps.ts
-livedocuments/apps/editor/components/tour/layer-stack-tour-steps.ts	liveknowledge/apps/editor/components/tour/layer-stack-tour-steps.ts
-livedocuments/apps/editor/components/tour/menu-tour-step.ts	liveknowledge/apps/editor/components/tour/menu-tour-step.ts
-livedocuments/apps/editor/components/tour/onion-tour-steps.ts	liveknowledge/apps/editor/components/tour/onion-tour-steps.ts
-livedocuments/apps/editor/components/tour/page-tour-dom.ts	liveknowledge/apps/editor/components/tour/page-tour-dom.ts
-livedocuments/apps/editor/components/tour/page-tour-parts.ts	liveknowledge/apps/editor/components/tour/page-tour-parts.ts
-livedocuments/apps/editor/components/tour/pyramid-tour-steps.ts	liveknowledge/apps/editor/components/tour/pyramid-tour-steps.ts
-livedocuments/apps/editor/components/tour/slide-tour-steps.ts	liveknowledge/apps/editor/components/tour/slide-tour-steps.ts
-livedocuments/apps/editor/components/tour/timeline-tour-steps.ts	liveknowledge/apps/editor/components/tour/timeline-tour-steps.ts
 livedocuments/apps/editor/e2e/signed-in/session.ts	liveknowledge/apps/editor/e2e/signed-in/session.ts
 livedocuments/apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts	liveknowledge/apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts
 livedocuments/apps/editor/hooks/canvas/useDockPopovers.ts	liveknowledge/apps/editor/hooks/canvas/useDockPopovers.ts
@@ -182,7 +169,6 @@ livedocuments/apps/editor/lib/article/article-table-editor.ts	liveknowledge/apps
 livedocuments/apps/editor/lib/article/article-table-repeat.ts	liveknowledge/apps/editor/lib/article/article-table-repeat.ts
 livedocuments/apps/editor/lib/article/article-telemetry.ts	liveknowledge/apps/editor/lib/article/article-telemetry.ts
 livedocuments/apps/editor/lib/canvas-chrome.ts	liveknowledge/apps/editor/lib/canvas-chrome.ts
-livedocuments/apps/editor/lib/editor-deferred-code.ts	liveknowledge/apps/editor/lib/editor-deferred-code.ts
 livedocuments/apps/editor/lib/editor-path.ts	liveknowledge/apps/editor/lib/editor-path.ts
 livedocuments/apps/editor/lib/explorer-landing.ts	liveknowledge/apps/editor/lib/explorer-landing.ts
 livedocuments/apps/editor/lib/explorer-thumbnail.tsx	liveknowledge/apps/editor/lib/explorer-thumbnail.tsx
