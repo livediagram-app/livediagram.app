@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_KNOWLEDGE_STYLE, type KnowledgeStyle } from '@liveknowledge/document';
+import {
+  DEFAULT_KNOWLEDGE_STYLE,
+  KNOWLEDGE_LIGHT_GROUND,
+  knowledgeLightGround,
+  type KnowledgeStyle,
+} from '@liveknowledge/document';
+import { documentRoom } from '../document-client';
 import {
   exportDocumentCopy,
   importDocumentCopy,
@@ -285,5 +291,35 @@ describe('the style travels with the knowledgebase', () => {
     expect(await stored(kit, 'synced')).toEqual(STEEL);
     expect((await create('odd', { theme: 'nope', textSize: 'large' })).status).toBeLessThan(300);
     expect(await stored(kit, 'odd')).toEqual({ ...DEFAULT_KNOWLEDGE_STYLE, textSize: 'large' });
+  });
+});
+
+// The preview follows the style (liveworkspace/docs/specs/006-media/previews.md "The export door"): a style change is
+// an edit, so the export door's version moves and the previews service draws the picture afresh in the new look.
+describe('the preview after a style change', () => {
+  const exportSvg = (kit: Kit, ifVersion: number | null) =>
+    documentRoom(kit.db.env, 'kb').exportImage({
+      format: 'svg',
+      tabId: null,
+      code: null,
+      appearance: null,
+      ifVersion,
+    });
+
+  it('is stale, and drawn again in the new look', async () => {
+    const kit = await knowledgeKit();
+    const before = await exportSvg(kit, null);
+    expect(before.status).toBe('ok');
+    if (before.status !== 'ok') return;
+    expect(before.body).toContain(`fill="${KNOWLEDGE_LIGHT_GROUND}"`);
+    // Unchanged while nothing is: the service keeps the picture it holds.
+    expect((await exportSvg(kit, before.version)).status).toBe('unchanged');
+    vi.spyOn(Date, 'now').mockReturnValue(before.version + 1000);
+    expect((await set(kit, STEEL)).status).toBe(200);
+    const after = await exportSvg(kit, before.version);
+    expect(after.status).toBe('ok');
+    if (after.status !== 'ok') return;
+    expect(after.version).toBeGreaterThan(before.version);
+    expect(after.body).toContain(`fill="${knowledgeLightGround('steel')}"`);
   });
 });

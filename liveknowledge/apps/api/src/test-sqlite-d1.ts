@@ -224,7 +224,12 @@ function testDocumentRooms(
       }
       const svg = await (
         await import('./thumbnail')
-      ).drawDocument(env, { id: documentId, name: meta.name }, query.tabId, onPost);
+      ).drawDocument(
+        env,
+        { id: documentId, name: meta.name, knowledgeStyle: meta.knowledgeStyle },
+        query.tabId,
+        onPost,
+      );
       return svg === null
         ? { status: 'empty', version: savedAt }
         : {
