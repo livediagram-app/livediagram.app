@@ -130,7 +130,7 @@ export const mcpCreateProject = mcpTool('create_project', {
   description:
     'Create a new plan: Board tabs of cards, Sheets, Dashboards and Forms. Each tab takes a "template" ' +
     '(a kind from list_templates: a kanban board, a project planner, a budget sheet, ...), a "dashboard" over ' +
-    'the call\u2019s other tabs, or raw "elements" (the full format is documented inline on the "tabs" argument ' +
+    'the call\u2019s other tabs, or raw "elements" (the format is on the "tabs" argument ' +
     'below). Pass one tab, or several to build a multi-tab plan in one call. The server validates each tab, ' +
     "tags the plan as made by AI (the Explorer's Made by AI filter finds it), files it at the root of the " +
     "user's My Work (or in their default folder for what it is made as, when they have set one), and " +

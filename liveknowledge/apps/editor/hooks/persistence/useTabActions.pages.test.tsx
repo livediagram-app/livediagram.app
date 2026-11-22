@@ -42,6 +42,8 @@ function setup(over: Record<string, unknown> = {}) {
   };
   const base: Record<string, unknown> = {
     activeId: 'a',
+    // No saved knowledgebase: its delete has no Trash, as an Offline one's.
+    documentId: null,
     canEditStructure: true,
     createTab: (name: string) => page('new', name),
     commitTabs: vi.fn(apply),
@@ -77,19 +79,19 @@ describe('adding a page', () => {
   it('asks for the caret in the Title of the page it opens (New Page, Add Subpage)', () => {
     const s = setup();
     s.actions().addTab();
-    expect(takeTitleFocus('new')).toBe(true);
+    expect(takeTitleFocus('new')).toEqual({ from: document.body });
     s.actions().addTab('e');
-    expect(takeTitleFocus('new')).toBe(true);
+    expect(takeTitleFocus('new')).toEqual({ from: document.body });
     // Refused, or a session that may not add: nothing is asked.
     setup({ canEditStructure: false }).actions().addTab();
-    expect(takeTitleFocus('new')).toBe(false);
+    expect(takeTitleFocus('new')).toBeNull();
   });
 
   it('a page made by Create Page takes the caret in its Title when it is first opened', () => {
     const s = setup();
     expect(s.actions().addNamedSubpage('a', 'Rollback')).toBe('new');
     expect(s.deps.setActiveId).not.toHaveBeenCalled();
-    expect(takeTitleFocus('new')).toBe(true);
+    expect(takeTitleFocus('new')).toEqual({ from: document.body });
   });
 
   it('adds an Untitled Page at the top level, and opens it', () => {
@@ -184,6 +186,24 @@ describe('deleting a page', () => {
     const t = setup();
     await act(() => t.actions().deleteTab('e'));
     expect(t.deps.confirm.mock.calls[0]![0]).toMatchObject({ title: 'Delete Notes?' });
+  });
+
+  it("moves a saved knowledgebase's pages to the Trash, and says they can be restored", async () => {
+    const s = setup({ documentId: 'kb' });
+    await act(() => s.actions().deleteTab('b'));
+    expect(s.deps.confirm).toHaveBeenCalledWith({
+      title: 'Move Release Process and 1 Subpage to the Trash?',
+      message:
+        'You can restore them from the Trash for 30 days. Undo (Cmd/Ctrl-Z) brings them straight back.',
+      confirmLabel: 'Move to Trash',
+    });
+    expect(shape(s.tabs())).toBe('a c<a e');
+    const t = setup({ documentId: 'kb' });
+    await act(() => t.actions().deleteTab('e'));
+    expect(t.deps.confirm.mock.calls[0]![0]).toMatchObject({
+      title: 'Move Notes to the Trash?',
+      message: expect.stringContaining('restore it from the Trash'),
+    });
   });
 
   it('removes nothing when the confirmation is declined', async () => {

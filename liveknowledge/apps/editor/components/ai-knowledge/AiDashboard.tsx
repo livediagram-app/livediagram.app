@@ -53,6 +53,9 @@ const CARD_OF: Record<'reads' | 'agents' | 'health', string> = {
   health: 'ai-health',
 };
 
+// One column of cards: a stack of its own, spaced as the band above.
+const COLUMN = 'flex min-w-0 flex-col gap-4 sm:gap-5';
+
 export function AiDashboard({
   overview,
   rights,
@@ -90,8 +93,11 @@ export function AiDashboard({
         filter={filter}
         onGo={go}
       />
-      <div className="grid items-start gap-4 sm:gap-5 lg:grid-cols-3">
-        <div className="flex min-w-0 flex-col gap-4 sm:gap-5 lg:col-span-2">
+      {/* Two equal columns on a wide screen (owner 2026-11-21; ai-knowledge.md "The view, as built"), each its own
+          stack, so Knowledge Health heads the right one on a whole pixel. One column below lg, in the same order as
+          the page reads and focus moves: the left column, then the right. */}
+      <div className="flex flex-col gap-4 sm:gap-5 lg:grid lg:grid-cols-2 lg:items-start">
+        <div className={COLUMN}>
           <NeedsAttention
             overview={overview}
             filter={filter}
@@ -121,10 +127,13 @@ export function AiDashboard({
             onOpenPage={actions.openPage}
             onAskWrite={actions.askWrite}
           />
+          <MostReadCard pages={overview.reads.mostRead} onOpenPage={actions.openPage} />
         </div>
-        <div className="flex min-w-0 flex-col gap-4 sm:gap-5">
+        <div className={COLUMN}>
           <HealthSection
             health={overview.health}
+            lowHealth={overview.lowHealth}
+            onOpenPage={actions.openPage}
             canRemind={canEmailOwners}
             remindedAt={overview.reviewEmails.remindedAt}
             reminding={busy.has('remind-owners')}
@@ -139,7 +148,6 @@ export function AiDashboard({
             onAdd={actions.addContext}
             onRemove={actions.removeContext}
           />
-          <MostReadCard pages={overview.reads.mostRead} onOpenPage={actions.openPage} />
           <AgentSampleCard sample={agentSample(overview, now)} />
         </div>
       </div>

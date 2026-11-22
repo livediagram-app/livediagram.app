@@ -1,0 +1,90 @@
+/* Edit, Save and Cancel ripple inward round the document area (docs/specs/030-knowledgebase/editing.md "The buttons";
+   owner 2026-11-21: "increase the ... effect, make it radiate inward like a ripple"), and a double-click to edit sends
+   a ring out from the pointer. Drawn by components/page-edit/mode-flash.ts over the part of the document area clear of
+   the sidebars. Page motion, not chrome: the chrome motion budget does not read this file (motion-budget.test.ts lists
+   it); it runs once, by transform and opacity alone, and reduced motion collapses it (globals.css). */
+.lk-mode-ripple {
+  position: fixed;
+  pointer-events: none;
+  z-index: var(--z-panel);
+  overflow: hidden;
+  --lk-ripple: color-mix(in oklab, var(--color-brand-500) 75%, transparent);
+}
+.lk-mode-ripple[data-mode-ripple='save'] {
+  --lk-ripple: color-mix(in oklab, var(--color-brand-600) 90%, transparent);
+}
+.lk-mode-ripple[data-mode-ripple='cancel'] {
+  --lk-ripple: color-mix(in oklab, var(--color-slate-400) 80%, transparent);
+}
+.lk-mode-ripple > span {
+  position: absolute;
+  inset: 0;
+}
+@keyframes lk-ripple-glow {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.lk-mode-ripple-glow {
+  box-shadow:
+    inset 0 0 0 5px var(--lk-ripple),
+    inset 0 0 140px -20px var(--lk-ripple);
+  animation: lk-ripple-glow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* A ring travels in from the edge and fades, as a ripple runs to the middle of a pool. */
+@keyframes lk-ripple-ring {
+  from {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+}
+.lk-mode-ripple-ring {
+  border: 3px solid var(--lk-ripple);
+  border-radius: 16px;
+  opacity: 0;
+  animation: lk-ripple-ring 650ms cubic-bezier(0.25, 0.8, 0.4, 1) both;
+}
+.lk-mode-ripple-ring:nth-child(3) {
+  animation-delay: 110ms;
+}
+.lk-mode-ripple-ring:nth-child(4) {
+  animation-delay: 220ms;
+}
+/* Reduced motion collapses durations (globals.css), and the rings' delays with them, so nothing waits to run. */
+@media (prefers-reduced-motion: reduce) {
+  .lk-mode-ripple-ring {
+    animation-delay: 0s !important;
+  }
+}
+:root.reduce-motion .lk-mode-ripple-ring {
+  animation-delay: 0s !important;
+}
+
+@keyframes lk-click-ring {
+  from {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(0.25);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.8);
+  }
+}
+.lk-click-ring {
+  position: fixed;
+  width: 96px;
+  height: 96px;
+  border-radius: 9999px;
+  border: 3px solid var(--color-brand-500);
+  background: color-mix(in oklab, var(--color-brand-400) 20%, transparent);
+  pointer-events: none;
+  z-index: var(--z-toolbar);
+  animation: lk-click-ring 480ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}

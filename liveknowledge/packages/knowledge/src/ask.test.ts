@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerEvents, fakeFetch, streamResponse } from './__fixtures__/claude';
+import { answerEvents, fakeFetch, streamResponse } from '@liveworkspace/ai/testing';
 import { knowledgeDb } from './__fixtures__/db';
 import { flowOf, para } from './__fixtures__/writing';
 import { askAnswerStream, parseAskAnswer, ASK_MAX_GAPS } from './ask-answer';
@@ -14,7 +14,7 @@ import {
 } from './ask-limits';
 import { askSearch, chooseAskPassages, type AskPassage } from './ask-passages';
 import { ASK_SYSTEM, askMessage, askRequest } from './ask-request';
-import { callModel } from './model-providers';
+import { callModel } from '@liveworkspace/ai';
 import { pagePassages } from './passages';
 import { replacePageIndex } from './sql/page-index';
 import { foundPassage, type FoundPassage, type SearchRow } from './sql/search';
@@ -166,6 +166,15 @@ describe('the request Ask sends', () => {
         '</question>',
       ].join('\n'),
     );
+  });
+
+  it("carries each passage's page health where the api scored it", () => {
+    const scored = passages.map((p, at) =>
+      at === 0 ? { ...p, health: { score: 38, label: 'needs-work' as const } } : p,
+    );
+    const message = askMessage('When?', scored);
+    expect(message).toContain('verified_on="2026-11-01" health="38 needs-work">');
+    expect(message.match(/health="/g)).toHaveLength(1);
   });
 
   it('lets nothing a page or a person wrote close a fence', () => {

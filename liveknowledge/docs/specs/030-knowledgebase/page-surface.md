@@ -54,6 +54,8 @@ replaces what the fork still shows around the writing.
   (a shadow, the page not moving), with **Keep Pages Open** in place of Hide Pages (both a bordered button at the tree's foot, New Page and its chevron wearing the same border and ground, right of
   New Page as livedocuments' Contents Options, so the knowledgebase's name has its row to itself; owner 2026-11-21); it slides back 300 ms after the
   pointer leaves it, unless a menu opened from it is still open. Touch has no hover, so a phone keeps its Pages sheet.
+  The Page Info rail on the right slides the same way (owner 2026-11-21): **Hide Page Info** slides it out to the right
+  as its strip takes its place, and **Show Page Info** slides it back in (200 ms; at once with reduced motion).
 - **Reading time:** On This Page's heading carries how long the page takes to read ("4 min read"), at 230 words a
   minute over its text, lists, tables and code, rounded, at least 1 minute; an empty page shows none, and a page with
   writing but no headings shows the time alone. It follows the committed writing, never each keystroke.
@@ -218,8 +220,8 @@ should be to the right of Add Cover under the title."
 
 Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs in the footer."
 
-- The three views are **tabs in the footer**, where the other liveworkspace editors show their tab bar, with the
-  same look: **Pages**, **Ask**, **AI Knowledge**, each with its icon, the current one raised as a tab pill is.
+- The views are **tabs in the footer**, where the other liveworkspace editors show their tab bar, with the
+  same look: **Pages**, **Ask**, **AI Knowledge**, **Connect** ([Connect](mcp-connect.md)), each with its icon, the current one raised as a tab pill is.
   They are links (`?view=`, so Back works) with `aria-current`, reachable by keyboard, each with a hover card of a
   title and one line. They are views, not a person's tabs: no add, close, drag or menu.
 - The footer is a bar across the bottom of the content area: the tabs at its left, then Get Started, Tools,
@@ -227,11 +229,11 @@ Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs 
   scrolls above it.
 - **The top row.** The content area starts with one row, the same height in the three views (48 px; 56 px on a
   phone): a hairline under it, nothing floating. On Pages its left holds the formatting controls while a page is
-  being written; on Ask and AI Knowledge it holds the view's name and its own buttons. **Share** and the account
+  being written; on Ask, AI Knowledge and Connect it holds the view's name and its own buttons. **Share** and the account
   button stand at its right end, always; the floating corner card is gone. The page scrolls under the row, never
   behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
   Share, so nothing stands over the reading column at any width.
-- On a phone the three tabs are the footer's row, icons with short labels (Pages, Ask, AI), 44 px targets; the
+- On a phone the four tabs are the footer's row, icons with short labels (Pages, Ask, AI, Connect), 44 px targets; the
   notification list stays beside them and the footer's other items go behind one **More** button. The top row
   there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's
   writing bar takes the row and the row's own buttons step aside until the caret leaves.
@@ -316,7 +318,12 @@ per-page and no per-tab style.
   style back. Closing with nothing picked asks nothing.
 - **Looks.** The same carousel of looks, each card a small **page of writing** drawn in that look (a title, a
   heading, two lines, a link, a quote and a small table), never a diagram: a look is a theme (its colours) and a
-  font. Seasonal looks and their toggle stay, as does **Mashup** (it rolls a theme and a font). A card reads as
+  font. Each card's name is set in the look's typeface too, and the Text row's "Aa" in the heading font worn now,
+  so the dialog itself shows the type change as a look or a font is picked (owner 2026-11-21: "the tab style menu
+  itself doesn't seem to change font"), as the Text panel's sample and its two font lists already do. The faces
+  load only as the dialog draws them (the one fonts stylesheet's `@font-face` rules fetch a family when it is
+  first used): about 150 KB of woff2 on a first open, measured 2026-11-21. Seasonal looks and their toggle stay, as
+  does **Mashup** (it rolls a theme and a font). A card reads as
   selected while the knowledgebase's theme and font are the look's; a knowledgebase whose headings and body are in
   two fonts wears no look. A card's line names the two ("Steel, Inter"); the product's own theme is named **Lime**.
   Picking a look sets the theme and both fonts, keeps the size, spacing and heading style, and puts the accent back
@@ -349,6 +356,13 @@ per-page and no per-tab style.
     until white reads on its solid fills and its deeper step reads on its wash at 4.5:1.
   - In the dark appearance the page's ground is the chrome's own dark surface, so under a theme that tints the dark
     surfaces the reading column is the same ground as the top row and the sidebar.
+  - **The chrome keeps its edges** (owner 2026-11-21: "The everyday theme loses the borders on the sidebar and
+    header etc so it all blends into one mess"). The sidebar's right edge, the top row's foot, the rail's left edge
+    and the footer's top are one edge colour, a fixed step off the ground (the ground mixed 16% toward slate-900 in
+    the light, 13% toward white in the dark), and the sidebar stands a shade off the page (4% toward slate-900 in
+    the light, 30% toward black in the dark). Mixed from the ground, they read alike under every look, Everyday
+    included, in both appearances: about 1.4:1 for an edge, where the plain slate stops gave Everyday 1.06:1 in the
+    dark.
   - A picked accent colours the writing only, never the chrome.
   - Page links take the theme's accent (lime under the product's own theme), held to 4.5:1.
 - **Stored once**, on the knowledgebase (`knowledgeStyle` in the document's metadata: the theme, the heading and

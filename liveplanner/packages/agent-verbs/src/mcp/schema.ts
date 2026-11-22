@@ -55,8 +55,7 @@ const CHART_SOURCE =
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
 const ELEMENT_SCHEMA_HINT =
-  'An array of element objects. This is the COMPLETE format, documented inline ' +
-  'here: the tool definition is the full reference for it. ' +
+  'An array of element objects, in their whole format. ' +
   'Each element: { "id": a unique string, "type": "shape", "shape", "x", "y", "width", "height", and ' +
   `optional ${fieldsText(PLAN_COMMON_FIELDS.filter((f) => !['x', 'y', 'width', 'height'].includes(f)))} }. ` +
   'A liveplanner tab holds only these shapes; any other element is refused. ' +
@@ -113,7 +112,8 @@ list_templates lists the Plan templates (kanban, project-planner, bug-triage, bu
 pass a kind as "template" on create_project or add_tab to start a plan or a tab from it. A "dashboard" on
 create_project or add_tab makes a Dashboard tab over the plan's Board and Sheet tabs by name: metrics, Gantts,
 calendars, workload charts and notes, drawn live from the cards. update_project changes a tab's elements, or rebuilds
-a Dashboard tab whole; the element format is documented inline on each tool's element argument.
+a Dashboard tab whole; each tool's element argument carries the element format, and the schema resource
+liveplanner://schema/elements repeats it.
 Plan boards hold cards (items), which have their own tools:
 list_items reads a plan's boards, their columns by name, its cards and its
 card types; change_items adds, edits and moves cards, naming columns, card

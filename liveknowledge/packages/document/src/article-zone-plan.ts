@@ -73,9 +73,9 @@ export type ZonePlan = {
   bounds: PageRect;
   // An object wider than the text is scaled down to it.
   scale: number;
-  // Its place across the text when not the zone's default (centre): an embed's zone is made aligned left, level
-  // with the text (docs/specs/030-knowledgebase/links-and-embeds.md "Embeds from other apps"). Set on the zone as
-  // it is made, so a zone stored without one keeps the centre it always had.
+  // Its place across the text when not the zone's default (centre): every new object's zone (a picture, chart,
+  // table, embed ...) is made aligned left, level with the text (owner 2026-11-21; docs/specs/007-editor/article-pages.md
+  // "Wrap"). Set on the zone as it is made, so a zone stored without one keeps the centre it always had.
   align?: ArticleZoneAlign;
 };
 
@@ -97,7 +97,7 @@ export function zonePlanFor(
       height: zoneSide(single.height * scale),
       bounds,
       scale,
-      ...(single.type === 'video' ? { align: 'left' as const } : {}),
+      align: 'left',
     };
   }
   const width = Math.round(textWidth);

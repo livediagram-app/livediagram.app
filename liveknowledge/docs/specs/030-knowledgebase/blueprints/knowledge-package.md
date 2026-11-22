@@ -39,6 +39,8 @@ Every module is one file under `packages/knowledge/src`, with its tests beside i
 | `writing-text.ts`     | `blockText(block)`, `writingText(flow)`: the words of a block and of a page, no Markdown syntax                                                                                                                                                                                                                     |
 | `passages.ts`         | `pagePassages(tab, flow)`, `passagePieces(text)`, `MAX_PASSAGE_CHARS`                                                                                                                                                                                                                                               |
 | `trust.ts`            | `parseKnowledgeFields`, `trustState(fields, every, now)`, `reviewDays(every)`, `verified(fields, person, now)`, `knowledgeHealth(pages, every, now)`; re-exports `KnowledgeSettings`, `parseKnowledgeSettings`, `storedKnowledgeSettings`, `isReviewEvery` from `@liveknowledge/document` (`knowledge-settings.ts`) |
+| `page-shape.ts`       | `pageWords(blocks)`, `pageHeadingCount(blocks)`: the words reading time counts and the headings On This Page lists, one definition for the editor and the index                                                                                                                                                     |
+| `page-health.ts`      | `pageHealth(facts, now)`, `wordBand(words)`, `healthFactsOf(row, every, now)`, `lowHealthPages`, `averageHealth`, `likelierRight`, the `HEALTH_*` constants and words                                                                                                                                               |
 | `changed-since.ts`    | `changedFraction(before, after)`, `changedSinceVerified(before, after)`                                                                                                                                                                                                                                             |
 | `page-links.ts`       | `PAGE_LINK_KEY`, `isPageLinkRun`, `isPageLinkTarget`, `pageLinkTargets(flow)`, `backlinks(tab, fromTabs, treeOrder)`                                                                                                                                                                                                |
 | `context-budget.ts`   | `CONTEXT_BUDGET_TOKENS`, `estimateTokens(text)`, `fitsContextBudget`, `assembleContext(pages)`                                                                                                                                                                                                                      |
@@ -49,16 +51,6 @@ Every module is one file under `packages/knowledge/src`, with its tests beside i
 | `ask-passages.ts`     | `askSearch(question, options)`, `chooseAskPassages(found)`                                                                                                                                                                                                                                                          |
 | `ask-request.ts`      | `ASK_SYSTEM`, `askMessage`, `askRequest({ question, passages, turns })`: a `ModelRequest`, the same for both providers                                                                                                                                                                                              |
 | `ask-answer.ts`       | `parseAskAnswer(reply, passages)`, `askAnswerStream(passages)` (`push`, `finish`)                                                                                                                                                                                                                                   |
-| `claude-models.ts`    | `CLAUDE_MODELS`, `DEFAULT_CLAUDE_MODEL`, `claudeModel(id)`                                                                                                                                                                                                                                                          |
-| `model-failure.ts`    | `ModelProviderId`, `ModelFailureKind`, `modelFailureWords(provider, kind)`, `ModelCallError`                                                                                                                                                                                                                        |
-| `model-request.ts`    | `ModelRequest`, `ModelMessage`, `ModelEffort`, `fenced(text)`                                                                                                                                                                                                                                                       |
-| `sse.ts`              | `eventData(body)`, `parseEvent(data)`: a server-sent event stream as its `data:` payloads, for both clients                                                                                                                                                                                                         |
-| `claude-request.ts`   | `claudeRequest(...)`, the URL, API version and beta header                                                                                                                                                                                                                                                          |
-| `claude-client.ts`    | `callClaude({ fetch, apiKey, request, onText, signal })`, `ClaudeCallError`, `claudeFailureKind`, `CLAUDE_FAILURE_WORDS`                                                                                                                                                                                            |
-| `openai-models.ts`    | `OPENAI_MODELS`, `DEFAULT_OPENAI_MODEL`, `openAiModel(id)`                                                                                                                                                                                                                                                          |
-| `openai-request.ts`   | `OPENAI_RESPONSES_URL`, `openAiRequest(model, request)`                                                                                                                                                                                                                                                             |
-| `openai-client.ts`    | `callOpenAi({ fetch, apiKey, request, onText, signal })`, `OpenAiCallError`, `openAiFailureKind`, `openAiHeaders`                                                                                                                                                                                                   |
-| `model-providers.ts`  | `MODEL_PROVIDERS`, `modelProvider(id)`, `isModelProviderId`, `isProviderModel`, `providerModel`, `callModel(...)`                                                                                                                                                                                                   |
 | `setup-limits.ts`     | the `SETUP_*` constants, `setupRefusal(description, used)`                                                                                                                                                                                                                                                          |
 | `setup-request.ts`    | `SETUP_SYSTEM`, `setupMessage(description, existing)`, `setupRequest({ description, existing })`                                                                                                                                                                                                                    |
 | `setup-suggestion.ts` | `parseSetupSuggestion(reply)`, `SetupPage`, `SetupSuggestion`, `SETUP_MAX_REPLY_CHARS`                                                                                                                                                                                                                              |
@@ -242,6 +234,43 @@ CREATE TABLE IF NOT EXISTS knowledge_settings (name TEXT PRIMARY KEY, value TEXT
   it is compared by its length alone.
 - `knowledgeHealth(pages, every, now)`: the counts of each state and the total.
 
+## Page Health
+
+The Health Score ([Verification](../verification.md#health-score)), one pure function for the editor and the api.
+
+- **`PageHealthFacts`** is everything the score reads, each a plain value: `state`, `reviewAt`, `reviewDays`
+  (undefined under Never), `verifiedAt`, `owned`, `band` (`wordBand(words)`: `empty`, `few` under 20, `short` under
+  50, `brief` under 300, `medium` up to 2,500, `long`), `headings`, `brokenLinks`, `backlinks`, `openConflicts`,
+  `openThreads`, `suggestions`, `pendingApproval`, `reads`, `createdAt`, `updatedAt`. `backlinks` and `reads`
+  undefined (Offline, or the editor before Page Health is read) count as full; the issue counts as none.
+- **`pageHealth(facts, now)`** answers `{ score, label, reason, factors }`, each factor `{ factor, points, max,
+raise?, gain?, fix? }` (`fix`: `verify`, `owner`, `heading`), in the spec's order. Each factor is rounded to a
+  whole number before the sum, so the factors always add up to the score. Constant work: no input grows it.
+  `reviewDays` undefined (a Review Period of Never) leaves Verification out, counts Freshness from `updatedAt`
+  alone (`editedLately`) and scales each factor to `NEVER_MAX` (15, 15, 15, 15, 10, 20, 10), its gain with it.
+- **`healthFactsOf(row, every, now)`** turns one row of the api's facts read into facts: `words` NULL (a page the
+  backfill has not reached since schema step 38) reads as `chars / 6`; `headings` NULL as one heading.
+- **`lowHealthPages(pages, limit = 5)`**: under `HEALTH_HEALTHY_MIN`, lowest first, then most read, then tree order.
+  **`averageHealth(scores)`**: a whole number, undefined for none. **`likelierRight(a, b)`**: the side 10 or more
+  points higher (`HEALTH_LIKELIER_MARGIN`), else undefined.
+- **The api's facts read** (`apps/api/src/knowledge/page-health-read.ts`, `pageHealthFacts(env, documentId, now,
+tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound values), every page of the
+  knowledgebase or the given tabs, joining `tabs`, `document_tabs`, `page_trust`, `knowledge_pages` (`words`,
+  `headings`, `owned`, schema step 38) and `page_authors`, with correlated counts over `page_links` (both ways, a
+  broken link being a target not in `document_tabs`), `page_threads` (unresolved), `page_approvals` (pending),
+  `conflicts` (open, either side), `suggestions` and `page_reads` (the last 7 days, on `page_reads_tab`). Each count
+  is on an index the table already has. No page's writing is read.
+- **Schema step 38** adds `words`, `headings` and `owned` to `knowledge_pages` (asking before each ALTER) and queues
+  every indexed page for the backfill. `settlePage` writes them on every settle; a settle whose hashes match but whose
+  shape or owner moved writes those three alone (an owner change is a write of the tab, so it settles).
+- **Where it rides:** `GET pages/<tab>/health` answers `signals` (`openConflicts`, `openThreads`, `suggestions`,
+  `backlinks`); the editor scores from them and its own state. `read_page`, `get_context`, an agent's search and
+  Ask's passages carry `health` (the api scores them from one facts read for their tabs). `GET knowledge` scores
+  every page once: `health.average`, `lowHealth` (5 rows), and each conflict side's `health`.
+- **The editor** (`components/knowledge/PageHealthScore.tsx`, `usePageHealthScore.ts`): the facts are read from the
+  chrome store as primitives (the band, the heading count, the broken link count, against the editor's tab ids), so
+  a typing commit that crosses no band renders nothing; `pageHealth` runs in a `useMemo` over them and the clock.
+
 ## Links
 
 - A page link is a run with `page: <tab id>` (`PAGE_LINK_KEY`). `isPageLinkRun` is the one guard: the id is a string
@@ -350,6 +379,14 @@ is made in a Worker with an injected `fetch`; no SDK is a dependency.
 ## Providers
 
 Derived from [Search and Ask](../search-and-ask.md) "Providers". Built in the package, the api and AI Settings.
+
+**The model call lives in `@liveworkspace/ai`** (`packages/ai`, owner 2026-11-21: one key setting for every app,
+[liveworkspace/docs/specs/003-accounts/ai-keys.md](../../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md)):
+the providers and their models, `ModelRequest` and `fenced`, the failures, the server-sent event reader, both
+providers' request builders and clients, built-in AI's client and `callModel`, moved whole with their tests and the
+fake responses (`@liveworkspace/ai/testing`). This package keeps what is liveknowledge's: the prompts and their
+requests (`askRequest`, `conflictRequest`, `setupRequest`), the answer readers, the limits and the key seal of a
+knowledgebase's own key. The names below are unchanged; they are imported from `@liveworkspace/ai`.
 **No real model was called for either provider**: every test runs on faked `fetch`.
 
 - **One interface.** `callModel({ provider, fetch, apiKey, model, request, onText, signal })` is the only call Ask,
@@ -373,7 +410,7 @@ Derived from [Search and Ask](../search-and-ask.md) "Providers". Built in the pa
   (`x-api-key` for Claude, `Authorization: Bearer` for OpenAI) and nowhere else.
 - **Built-in AI is the third provider** ([Search and Ask](../search-and-ask.md) "Built-in AI"). `ModelCaller` is
   `{ provider: 'built-in', ai }` or `{ provider: KeyProviderId, fetch, apiKey, model }`; `callModel` hands the first
-  to `callBuiltIn` (`built-in-client.ts`): `builtInInput(request)` (the system prompt first, then the messages,
+  to `callBuiltIn` (`@liveworkspace/ai` `built-in-client.ts`): `builtInInput(request)` (the system prompt first, then the messages,
   `max_tokens` at most `BUILT_IN_MAX_TOKENS` 2,000, temperature 0.2, `stream: true`, thinking off), the binding's
   event stream read as `{ response }` or chat-completion pieces through to `[DONE]` (or one object, read by
   `builtInReplyText`), bounded by `BUILT_IN_TIMEOUT_MS` (60 s) and the caller's signal; after either, what arrives is
@@ -529,6 +566,37 @@ description, a title or the key.
 **Risk not ruled out:** thinking counts against the 4,000 token ceiling on both providers, so a long structure
 from a model that thinks at length can be cut off. The prompt asks for a compact reply and effort is `low`; a cut
 reply still yields its whole pages (step 4). Raise `SETUP_MAX_TOKENS` (and the spec's bound) if real replies are cut.
+
+## Describe Structure
+
+Derived from [Describe to set up](../describe-to-set-up.md) "Describe Structure on a page" (`page-structure.ts`,
+`page-structure-blocks.ts`).
+
+1. `structureRefusal({ title, purpose }, used)`: `purpose-too-long` (over 500 after trimming), `no-purpose` (no
+   words and no title), `person-limit` (10 an hour), `knowledgebase-limit` (50 a day), or `undefined`.
+   `structureCounters(person, now)` count in scopes of their own (`structure:person:<id>`, `structure:knowledgebase`).
+2. `pageStructureRequest(input)`: one `ModelRequest`, `maxTokens` 2,000, effort `low`. `STRUCTURE_SYSTEM` asks for
+   headings and a line under each, lists, tables and callouts only where they help, never content, as one JSON object
+   `{ blocks: [{ kind, level, text, items }] }`. The user message is `<knowledgebase>`, `<page_tree>` (at most 200
+   `<page depth="n">title</page>`, titles cut at 80), `<page_title>` and `<purpose>`, every piece through `fenced`.
+   No page's writing is in it. `pageStructureBuiltInInput(input, refused?)` is the same in Workers AI's chat shape in
+   JSON mode (`STRUCTURE_REPLY_SCHEMA`), the second ask carrying fixed words for why, never the reply.
+3. `parsePageStructure(reply)`: the reply read up to 40,000 characters, from its first `{` to its last `}`, or (cut
+   off) each complete brace-free object on its own. Each block's kind is one of seven; text is one plain line
+   (`plainLine`, with a leading `#`, list marker or bold wrapping taken off), headings cut at 80, lines and callouts
+   at 240, up to 8 list items of 120, a table 2 to 5 columns of 40. At most 48 blocks, 12 headings and 4,000
+   characters: past a bound the rest is left out. No heading that reads: `undefined`.
+4. `pageStructureArticleBlocks(blocks, newId)`: Heading 2 or 3 paragraphs, an italic body line, a quote for a callout,
+   one list block per item (`bullet`, `numbered`, `todo`), a table of a header row and one empty row
+   (`tableFromGrid`). Text only.
+
+**The route** (`routes/knowledge-structure-route.ts`): `POST pages/<tab>/describe-structure` inside the page routes,
+so a link to one page reaches only its own page and sees the tree's other pages nameless (left out of `<page_tree>`).
+An API token: 403 `needs_a_person`; not `writesPages`: 403; no account: 403 `sign_in_required`. `ai: "built-in"` or no
+key: built-in AI, `spendSetupDraft(..., 'structure')` (its own DOCUMENT_ROOM instance per account,
+`~page-structure:<id>`, 10 a day; a fault refuses with `built-in-failed`), asked through `askBuiltInOnce` at most
+twice. Otherwise `callModel` on the team's key through `modelDoorFor`. Answers `{ blocks, provider }`; writes
+nothing; logs only counts, the provider and the kind.
 
 ## Conflicts
 
@@ -821,6 +889,10 @@ Measured on an M-series Mac, Node 22, CPU time (not wall-clock), 2026-11-20:
 | `pagePassages` on a 104,573 character page (122 passages)                    | 0.5 ms median, 1.7 ms worst of 9 | a CPU budget test: 50 ms (the spec's bound)     |
 | `pagePassages` on one unbroken 400,000 character block                       | inside its budget                | a CPU budget test: 100 ms                       |
 | `replacePageIndex` for that page: 18 statements, the longest 423 bytes       | 1.8 ms in `node:sqlite`          | the fixture's statement checks                  |
+| `pageWords` and `pageHeadingCount` on a 100,000 word page (2026-11-21)       | 2.9 ms median, 6.4 ms worst      | a CPU budget test: 50 ms                        |
+| `pageHealth` for one page                                                    | about 2 µs                       | constant work, no input grows it                |
+| Every page's Health Score facts at 500 pages: one statement                  | 4.4 to 5.1 ms in `node:sqlite`   | page-health-read.test.ts (one prepare, budget)  |
+| A 20-result agent search's scores: one statement                             | one prepare                      | page-health-read.test.ts                        |
 | A search whose words match nearly every row of a 5,612 row index (500 pages) | 8.8 ms in `node:sqlite`          | `LIMIT` 20; not held by a budget test           |
 | `changedFraction` on two 104,000 character versions                          | 3.3 ms                           | a CPU budget test at 400,000 characters: 150 ms |
 

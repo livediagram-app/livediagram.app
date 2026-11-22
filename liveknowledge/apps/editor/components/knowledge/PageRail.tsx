@@ -16,6 +16,7 @@ import {
 } from '@/lib/knowledge/page-headings';
 import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
 import { track } from '@/lib/telemetry';
+import { useSlideOut } from '@/lib/ui/use-slide-out';
 import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
@@ -23,7 +24,11 @@ import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
 import { ReviewPeriodButton } from '@/components/knowledge-settings/ReviewPeriodButton';
 import { useSettingsOffered } from '@/components/knowledge-settings/useSettingsOffered';
 import { PageHealthApproval } from './approval/PageHealthApproval';
+import { usePageApproval } from './approval/usePageApproval';
+import { askApproval, useApprovalAsked } from '@/lib/knowledge/approval-asked';
 import { PageRailAiContext } from './PageAiContext';
+import { PageHealthScore } from './PageHealthScore';
+import { usePageHealthScore } from './usePageHealthScore';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
 import { RailCollapseIcon, RailExpandIcon } from '@/components/page-tree/page-tree-icons';
 import { setPageRailCollapsed, usePageRailCollapsed } from '@/lib/page-rail-collapsed';
@@ -110,6 +115,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
   const writing = useEditorChrome((s) => writingOf(s.activeTab), sameWriting);
   const page = usePageKnowledge();
   const { people, nameOf } = useKnowledgePeople();
+  const score = usePageHealthScore(page);
   const current = useCurrentHeading(writing.headings);
   const go = useCallback(
     (id: string) => {
@@ -120,6 +126,16 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
     [chrome, writing.flow],
   );
   const { rights, pageId } = page;
+  // The Approval row under Review Period: only for a page never sent for approval, and not while its form is open.
+  const stored = useEditorChrome((s) => s.activeTab.knowledge);
+  const approval = usePageApproval(pageId, stored);
+  const asking = useApprovalAsked(pageId);
+  const approvalRow =
+    approval.approval || asking
+      ? undefined
+      : {
+          onRequest: approval.actions.includes('request') ? () => askApproval(pageId) : undefined,
+        };
   // The pencil beside the Review Period: an Editor of the whole knowledgebase's alone.
   const changesPeriod = useSettingsOffered();
   const activity = (
@@ -152,6 +168,10 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         }
         onVerify={rights.verify ? () => page.verify(pageId) : undefined}
         periodControl={changesPeriod ? <ReviewPeriodButton /> : undefined}
+        approvalRow={approvalRow}
+        score={
+          <PageHealthScore health={score.health} fixes={score.fixes} offline={score.offline} />
+        }
       />
       {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
       <OnThisPage headings={writing.headings} current={current} onGo={go} />
@@ -178,62 +198,84 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
 const RAIL_TOGGLE =
   'flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-400/60 dark:hover:bg-brand-500/20 dark:hover:text-brand-100';
 
-/** Docked down the canvas's right, from under the top row to its foot; collapsed, a narrow strip with the way back. */
+/** Docked down the canvas's right, from under the top row to its foot; collapsed, a narrow strip with the way back.
+ *  Hiding it slides the rail out to the right as the strip takes its place, and showing it slides it back in, as the
+ *  page tree does on the left (page-surface.md "Sidebars slide"; owner 2026-11-21). */
 export function PageRailDocked() {
   const collapsed = usePageRailCollapsed();
-  return (
+  // Open, the rail slides out to the right before the strip takes its place.
+  const open = useSlideOut(!collapsed);
+  const stop = {
+    onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
+    onContextMenu: (e: React.MouseEvent) => e.stopPropagation(),
+  };
+  const strip = (
     <aside
+      key="strip"
       aria-label="Page Info"
-      {...{ [PAGE_RAIL_ATTR]: collapsed ? 'strip' : 'docked' }}
-      onPointerDown={(e) => e.stopPropagation()}
-      onContextMenu={(e) => e.stopPropagation()}
-      style={{
-        top: TOP_ROW_HEIGHT_VAR,
-        width: collapsed ? PAGE_RAIL_STRIP_WIDTH : PAGE_RAIL_WIDTH,
-      }}
+      {...{ [PAGE_RAIL_ATTR]: 'strip' }}
+      {...stop}
+      style={{ top: TOP_ROW_HEIGHT_VAR, width: PAGE_RAIL_STRIP_WIDTH }}
       className="pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] flex cursor-default flex-col border-l border-slate-200/70 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800/70 dark:text-slate-100"
     >
-      {collapsed ? (
-        <div className="flex justify-center pt-3">
-          <HoverCard
-            title="Show Page Info"
-            description="Opens Page Health and the rest of this sidebar."
+      <div className="flex justify-center pt-3">
+        <HoverCard
+          title="Show Page Info"
+          description="Opens Page Health and the rest of this sidebar."
+        >
+          <button
+            type="button"
+            aria-label="Show Page Info"
+            aria-expanded={false}
+            data-page-rail-expand=""
+            onClick={() => setPageRailCollapsed(false)}
+            className={RAIL_TOGGLE}
           >
+            <RailExpandIcon />
+          </button>
+        </HoverCard>
+      </div>
+    </aside>
+  );
+  // One element for the open rail, whether docked or sliding out, so hiding it animates it rather than swapping it.
+  // Sliding out it is no longer the docked rail: the page's framing and the edit ripple measure the strip instead.
+  const leaving = collapsed;
+  const full = (
+    <aside
+      key="full"
+      aria-label={leaving ? undefined : 'Page Info'}
+      aria-hidden={leaving ? true : undefined}
+      {...(leaving ? { 'data-page-rail-leaving': '' } : { [PAGE_RAIL_ATTR]: 'docked' })}
+      {...stop}
+      style={{ top: TOP_ROW_HEIGHT_VAR, width: PAGE_RAIL_WIDTH }}
+      className={`pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] flex cursor-default flex-col border-l border-slate-200/70 text-slate-900 motion-safe:transition-[translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-full dark:border-slate-800/70 dark:text-slate-100 ${
+        leaving ? 'pointer-events-none translate-x-full' : ''
+      }`}
+    >
+      {leaving ? null : (
+        <div className="absolute right-4 top-4 z-10">
+          <HoverCard title="Hide Page Info" description="Collapses this sidebar to a narrow strip.">
             <button
               type="button"
-              aria-label="Show Page Info"
-              aria-expanded={false}
-              data-page-rail-expand=""
-              onClick={() => setPageRailCollapsed(false)}
+              aria-label="Hide Page Info"
+              aria-expanded
+              data-page-rail-collapse=""
+              onClick={() => setPageRailCollapsed(true)}
               className={RAIL_TOGGLE}
             >
-              <RailExpandIcon />
+              <RailCollapseIcon />
             </button>
           </HoverCard>
         </div>
-      ) : (
-        <>
-          <div className="absolute right-4 top-4 z-10">
-            <HoverCard
-              title="Hide Page Info"
-              description="Collapses this sidebar to a narrow strip."
-            >
-              <button
-                type="button"
-                aria-label="Hide Page Info"
-                aria-expanded
-                data-page-rail-collapse=""
-                onClick={() => setPageRailCollapsed(true)}
-                className={RAIL_TOGGLE}
-              >
-                <RailCollapseIcon />
-              </button>
-            </HoverCard>
-          </div>
-          <PageRailBody docked />
-        </>
       )}
+      <PageRailBody docked />
     </aside>
+  );
+  return (
+    <>
+      {open.drawn ? full : null}
+      {collapsed ? strip : null}
+    </>
   );
 }
 

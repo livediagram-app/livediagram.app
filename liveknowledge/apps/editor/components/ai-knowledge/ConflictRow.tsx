@@ -6,7 +6,9 @@
 // Ask Both Owners emails the two pages' owners once (knowledge-email-routes.ts); once asked, the row says when in
 // its place. The passages are text.
 import type { KnowledgeConflict, KnowledgeConflictSide } from '@liveknowledge/api-schema';
+import { likelierRight } from '@liveknowledge/knowledge';
 import { Button } from '@liveknowledge/ui';
+import { HealthChip } from '@/components/knowledge/HealthChip';
 import { ownersEmailedText } from '@/lib/knowledge-ask/email-words';
 import { trustText } from '@/lib/knowledge-ask/source-meta';
 import { MailIcon } from './ai-knowledge-icons';
@@ -30,8 +32,11 @@ function Side({
       >
         {side.title || 'Untitled Page'}
       </button>
-      <p className={`text-xs ${AI_MUTED}`}>
-        {trustText(side.trust, side.verifiedAt, undefined, now)}
+      <p className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${AI_MUTED}`}>
+        <span>{trustText(side.trust, side.verifiedAt, undefined, now)}</span>
+        {side.health ? (
+          <HealthChip score={side.health.score} label={side.health.label} prefix />
+        ) : null}
       </p>
       <p className="mt-2 line-clamp-6 whitespace-pre-wrap break-words text-[13px] leading-5 text-slate-700 dark:text-slate-300">
         {side.text}
@@ -63,38 +68,51 @@ export function ConflictRow({
   onDismiss: (id: string) => void;
   onAskOwners: (id: string) => void;
 }) {
+  // The likelier right side (ai-knowledge.md "Pages that disagree"): 10 or more points healthier. A suggestion only:
+  // both buttons stay, the likelier one first.
+  const likely = likelierRight(conflict.a.health?.score, conflict.b.health?.score);
+  const right = likely === 'b' ? conflict.b : conflict.a;
+  const other = likely === 'b' ? conflict.a : conflict.b;
+  const fixOther = (side: KnowledgeConflictSide, fallback: string, fix: KnowledgeConflictSide) => (
+    <Button
+      key={side.passageId}
+      variant={likely && side === right ? 'primary' : 'secondary'}
+      size="xs"
+      onClick={() => onOpenPage(fix.tab, fix.firstBlock)}
+      className="max-w-full phone:min-h-11"
+    >
+      <span className="truncate">{side.title || fallback} Is Right, Fix the Other</span>
+    </Button>
+  );
   return (
     <div data-conflict={conflict.id}>
       <p className="break-words text-sm font-medium text-slate-900 dark:text-slate-100">
         {conflict.question}
       </p>
+      {likely ? (
+        <p data-likelier-right={likely} className={`mt-1 text-xs ${AI_MUTED}`}>
+          <span className="font-medium text-slate-800 dark:text-slate-200">
+            {right.title || 'Untitled Page'}
+          </span>{' '}
+          is more likely right (health {right.health!.score} against {other.health!.score})
+        </p>
+      ) : null}
       <div className="mt-2 grid gap-3 md:grid-cols-2">
         <Side side={conflict.a} now={now} onOpen={onOpenPage} />
         <Side side={conflict.b} now={now} onOpen={onOpenPage} />
       </div>
       {canResolve ? (
         <div className="mt-3 flex flex-wrap gap-2">
-          {/* Whichever page is right, the other is the one that opens to be fixed. */}
-          <Button
-            variant="secondary"
-            size="xs"
-            onClick={() => onOpenPage(conflict.b.tab, conflict.b.firstBlock)}
-            className="max-w-full phone:min-h-11"
-          >
-            <span className="truncate">
-              {conflict.a.title || 'The First Page'} Is Right, Fix the Other
-            </span>
-          </Button>
-          <Button
-            variant="secondary"
-            size="xs"
-            onClick={() => onOpenPage(conflict.a.tab, conflict.a.firstBlock)}
-            className="max-w-full phone:min-h-11"
-          >
-            <span className="truncate">
-              {conflict.b.title || 'The Second Page'} Is Right, Fix the Other
-            </span>
-          </Button>
+          {/* Whichever page is right, the other is the one that opens to be fixed; the likelier right leads. */}
+          {likely === 'b'
+            ? [
+                fixOther(conflict.b, 'The Second Page', conflict.a),
+                fixOther(conflict.a, 'The First Page', conflict.b),
+              ]
+            : [
+                fixOther(conflict.a, 'The First Page', conflict.b),
+                fixOther(conflict.b, 'The Second Page', conflict.a),
+              ]}
           {!canAskOwners ? null : conflict.askedAt === undefined ? (
             <Button
               variant="secondary"

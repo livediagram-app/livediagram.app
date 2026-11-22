@@ -3,6 +3,7 @@
 // A Knowledge Gap (docs/specs/030-knowledgebase/search-and-ask.md "It does not guess"): a part of the question no
 // page answers, with the way to start one. Draft a Page From What We Know is an Editor's; "Ask <owner> to Write It"
 // waits for the knowledgebase's emails and is not drawn.
+import { Spinner } from '@/components/palette/template-picker-icons';
 import { Button } from '@liveknowledge/ui';
 import { QuestionIcon } from './ask-icons';
 
@@ -39,12 +40,13 @@ export function KnowledgeGapCard({
         <Button
           variant="secondary"
           size="xs"
-          className="mt-3"
+          className="mt-3 gap-1.5"
           busy={drafting}
           disabled={busy && !drafting}
           onClick={onDraft}
         >
-          Draft a Page From What We Know
+          {drafting ? <Spinner /> : null}
+          {drafting ? 'Drafting…' : 'Draft a Page From What We Know'}
         </Button>
       ) : null}
     </section>

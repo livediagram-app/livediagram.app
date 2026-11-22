@@ -17,6 +17,7 @@ on the first try, writes an article in Markdown, and is never told a change work
 | **article**      | One flow of article pages and its writing (`Tab.articles[flow]`), named by its flow id or its title         |
 | **title**        | The text of an article's first `title` block; what `write_article` and the views name an article by         |
 | **front matter** | An optional `---` fenced block of `title:` and `subtitle:` lines at the top of the Markdown an agent writes |
+| **text slot**    | A named place for words in a layout (`title`, `subtitle`, `bullets`, `body`), read from the layout as built |
 
 The interface's words are kept: an agent writes an **article**, never a "document" (the document is the file).
 
@@ -53,15 +54,15 @@ Up to **50** page changes, applied in order, each to the tab as the ones before 
 edit. A refused change stops the batch and nothing is written; the answer names the change and why, and what the
 changes before it would have done.
 
-| Change                    | Fields                                                                                                    | Does                                                                                                                                                                                                                                |
-| ------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `add`                     | `kind` (infographic, slide, flashcard), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
-| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                        | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
-| `layout`                  | `page`, `layout`                                                                                          | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                                                                                 |
-| `move`                    | `page`, `to`                                                                                              | Moves the page (an article page: its whole article) to place `to`, its content with it                                                                                                                                              |
-| `duplicate`               | `page`                                                                                                    | A copy after it, content and all (an article: the whole article and its writing)                                                                                                                                                    |
-| `delete`                  | `page`                                                                                                    | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
-| `apply_background_to_all` | `page`                                                                                                    | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                                                                             |
+| Change                    | Fields                                                                                                             | Does                                                                                                                                                                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add`                     | `kind` (infographic, slide, flashcard), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `text?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
+| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                                 | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
+| `layout`                  | `page`, `layout`, `text?`                                                                                          | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                                                                                 |
+| `move`                    | `page`, `to`                                                                                                       | Moves the page (an article page: its whole article) to place `to`, its content with it                                                                                                                                              |
+| `duplicate`               | `page`                                                                                                             | A copy after it, content and all (an article: the whole article and its writing)                                                                                                                                                    |
+| `delete`                  | `page`                                                                                                             | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
+| `apply_background_to_all` | `page`                                                                                                             | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                                                                             |
 
 - **Article pages are made by `write_article`**, never by `add`: an `add` of kind `article` is refused
   (`article_by_write`) with that hint.
@@ -111,10 +112,48 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   locked page refuses the changes that reach all its pages, as in the editor.
 - **Limit**: a tab holds at most 100 pages (`MAX_PAGES`); an `add` or `duplicate` past it is refused
   (`page_limit`).
+- **Text slots** ([Layout text slots](layout-slots.md) lists every layout's): an `add` with a `layout`, and a
+  `layout` change, take `text`, the words for the layout's sample text by slot, so a deck is laid out and written in
+  one call: `{"op": "add", "kind": "slide", "layout": "slide-bullets", "text": {"title": "Why now", "bullets": ["...",
+"..."]}}`. A six-slide deck was four calls and about 40 texts replaced by ref (create, lay out, read the refs, write
+  them); it is now two. The slots are **read from the layout as built**, never marked by hand, so every layout has
+  them and a new one needs nothing (`layoutSlots`, `@liveworkspace/edit-operations/layout-slots`, shared with
+  livedesign):
+  - `title`: the largest words on the page (the headline; on a big-number slide whose figure has a word in it, the
+    figure);
+  - `subtitle`: the text straight after the title, when it is smaller, not bold, not a bullet and has words;
+  - `bullets`: each line set beside a bullet dot (an empty circle just left of it, level with it), in order;
+  - `body`: every other text with words, in the order the layout builds them (top to bottom, then the next column);
+  - `figures`: each figure, in the same order.
+
+  A **figure**, a text with no letter or a number with a unit or two (`09:00`, `73%`, `3.2M`, `“`, `01`), is one of
+  `figures`, so a stat slide's big numbers are written in the same change as its words (an eval run of the coffee
+  pitch deck left `86k` and `4.8` as samples when figures had no slot). Slots are read from the layout's sample
+  before any words go in, so words written into a figure's slot keep that slot. A slot left out keeps its sample. `bullets` given fewer items
+  than the layout has drops the rest, each with its dot ("Removed the layout's 2 unused bullets."); `body` given fewer
+  keeps the rest's sample and says so ("2 body texts keep the layout's sample: change them by ref"); a list given
+  more, or a slot the layout lacks, places what fits and says what was not placed. Nothing given is dropped in
+  silence. A headline given longer words is refitted as the layout fits its own (`headlineTextScale`: the type shrinks
+  until one line fills the box's width, never grows). `text` without a `layout` is refused (`invalid_value`), and so
+  is a key other than the four, a slot that is not text, or a list past `LAYOUT_SLOT_ITEMS_MAX` (60) items or a text
+  past `LAYOUT_TEXT_MAX` (2,000) characters.
+
+  Slot names are a contract assistants learn: a layout's slots change only when its texts do, and the
+  [table](layout-slots.md) is checked against the layouts by a test, so a change to one shows in review.
+
 - **The answer**: one line per change ("Added page 3 (slide, 16:9) from layout Title", "Deleted page 2 and 4
   elements on it"), then the tab's pages as they now are: place, id, name, kind, size and orientation, the page's
   rectangle on the canvas (`x, y, width, height`) and how many elements are on it. Elements are put onto a page with
   `update_document`, at coordinates inside its rectangle.
+- **A laid-out page's texts**: each page this call laid out (an `add` with a `layout`, or a `layout` change) also
+  lists its `texts`, `{ ref, slot, text, sample? }` for every text on it (`sample: true` on one still holding the layout's sample, given no words; an eval run of the pitch deck asked for it, to tell leftovers from its own words) in the layout's order: the ref `update_document` and
+  the views take, its slot (`title`, `subtitle`, `bullets[0]`, `body[2]`, `figures[0]`, a list's by its index), and its words, cut to `PAGE_TEXT_SAMPLE_MAX` (80) characters with
+  an ellipsis. So the sample text left to replace, and its ref, come back in the answer rather than from a
+  `read_document` call. Bounded for the 150,000-character tool result: the texts of the laid-out pages are listed in
+  order while they fit `PAGE_TEXTS_BUDGET` (60,000 characters); a page past it has none, and one line says which
+  pages those are and that the `pages` view lists them. Fifty pages of the fullest layout (40 texts each) answer in
+  well under the cap (`page-texts-budget.test.ts`). Charts, tables and the other content kinds keep their sample data
+  and are not listed: the `pages` view prints them by ref.
 
 ## `write_article`
 

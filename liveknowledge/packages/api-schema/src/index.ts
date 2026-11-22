@@ -337,6 +337,7 @@ export * from './document-conversion';
 export * from './activity';
 export * from './responses';
 export * from './trash';
+export * from './page-trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
 // A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
 // check, and the editor's before it sends an imported board's dates.

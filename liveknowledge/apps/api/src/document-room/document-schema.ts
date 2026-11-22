@@ -28,7 +28,7 @@ import {
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SAVE_STEP, VERSION_SCHEMA } from '../versions/version-schema';
-import { knowledgeSchemaStep } from '../knowledge/knowledge-schema';
+import { knowledgeSchemaStep, knowledgeShapeStep } from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
 import { agentSeenSchemaStep } from '../knowledge/agent-seen';
@@ -37,6 +37,7 @@ import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
 import { publishedSchemaStep } from '../publishing/published-schema';
+import { pageTrashSchemaStep } from './page-trash';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -430,6 +431,16 @@ const V35 = automationSchemaStep('wake');
 // docs/specs/030-knowledgebase/publishing.md). Additive, IF NOT EXISTS.
 const V36 = publishedSchemaStep;
 
+// Step 37: the knowledgebase's page Trash (document-room/page-trash.ts; docs/specs/030-knowledgebase/
+// knowledgebases-and-pages.md "The page Trash"): where each trashed page stood and who put it there, and the
+// triggers that take a relinked page out of it and mark a page's index when its link comes or goes. Additive,
+// IF NOT EXISTS.
+const V37 = pageTrashSchemaStep;
+
+// Step 38: each page's words, headings and whether it has an owner, kept by the index beside its characters
+// (knowledge/knowledge-schema.ts knowledgeShapeStep; docs/specs/030-knowledgebase/verification.md "Health Score").
+const V38 = knowledgeShapeStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -459,6 +470,8 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V34,
   V35,
   V36,
+  V37,
+  V38,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

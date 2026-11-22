@@ -1,5 +1,8 @@
 import type { DatabaseSync } from 'node:sqlite';
-import { LEGACY_GUEST_SIGNING_LIVE_AT } from '@liveworkspace/migration/contract';
+import {
+  LEGACY_GUEST_SIGNING_LIVE_AT,
+  rekeyedLegacyGuestOwner,
+} from '@liveworkspace/migration/contract';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleAccountApi } from './account-api.ts';
 import type { Auth } from './auth.ts';
@@ -322,5 +325,130 @@ describe('claiming a returning guest of the old livediagram.app', () => {
     });
     expect(keys).toEqual([`claim:${NEW_GUEST}`]);
     expect(merges).toEqual([]);
+  });
+});
+
+// liveworkspace/docs/specs/003-accounts/accounts.md "Re-keyed ids": once LEGACY_GUEST_REKEY_SECRET is set and the
+// guest re-keyed (legacy-guest-rekey.ts), the bare id is proof again, and the stored id is not.
+describe('claiming a re-keyed guest from before signing', () => {
+  const REKEY_SECRET = 'rekey-secret';
+  let rekeyed: string;
+
+  function addRekeyed(firstSeenAt: number, claimed?: { at: number; by: string }) {
+    sql
+      .prepare(
+        'INSERT INTO legacy_guest (id, firstSeenAt, claimedAt, claimedBy, rekeyedAt) VALUES (?, ?, ?, ?, 1)',
+      )
+      .run(rekeyed, firstSeenAt, claimed?.at ?? null, claimed?.by ?? null);
+  }
+  const rekeyedRow = () =>
+    sql.prepare('SELECT claimedAt, claimedBy FROM legacy_guest WHERE id = ?').get(rekeyed);
+
+  beforeEach(async () => {
+    env.LEGACY_GUEST_REKEY_SECRET = REKEY_SECRET;
+    rekeyed = await rekeyedLegacyGuestOwner(OLD, REKEY_SECRET);
+  });
+
+  it.each([null, undefined, ''])(
+    'merges an unsigned claim (%s) under the re-keyed id, and stamps it',
+    async (signature) => {
+      addRekeyed(BEFORE);
+      expect(await claim({ legacyId: OLD, signature, into: NEW_GUEST })).toEqual({
+        status: 200,
+        body: { merged: true },
+      });
+      expect(merges.map((m) => m.body)).toEqual([
+        { guestId: rekeyed, userId: NEW_GUEST, legacy: true },
+      ]);
+      expect(rekeyedRow()).toEqual({ claimedAt: expect.any(Number), claimedBy: NEW_GUEST });
+    },
+  );
+
+  it('merges a signed claim under the re-keyed id too', async () => {
+    addRekeyed(BEFORE);
+    const answer = await claim({ legacyId: OLD, signature: await sign(OLD), into: 'user_ada' });
+    expect(answer.body).toEqual({ merged: true });
+    expect(merges.map((m) => m.body)).toEqual([
+      { guestId: rekeyed, userId: 'user_ada', legacy: true },
+    ]);
+  });
+
+  // What a share link's visitor sees is the re-keyed owner id: sent back as an old id, it finds nothing.
+  it('never takes the owner id a visitor sees as a claim', async () => {
+    addRekeyed(BEFORE);
+    const shown = rekeyed.slice('guest_'.length);
+    for (const signature of [null, await sign(shown)]) {
+      expect(await claim({ legacyId: shown, signature, into: 'user_ada' })).toEqual({
+        status: 200,
+        body: { merged: false, reason: 'unknown' },
+      });
+    }
+    expect(merges).toEqual([]);
+    expect(rekeyedRow()).toEqual({ claimedAt: null, claimedBy: null });
+  });
+
+  it('answers a re-keyed guest already claimed as before', async () => {
+    addRekeyed(BEFORE, { at: 5, by: NEW_GUEST });
+    expect((await claim({ legacyId: OLD, signature: null, into: NEW_GUEST })).body).toEqual({
+      merged: true,
+    });
+    expect((await claim({ legacyId: OLD, signature: null, into: 'user_ada' })).body).toEqual({
+      merged: false,
+      reason: 'claimed',
+    });
+    expect(merges).toEqual([]);
+  });
+
+  it('still pauses an unsigned claim of a guest not re-keyed yet', async () => {
+    addLegacy(BEFORE);
+    expect(await claim({ legacyId: OLD, signature: null, into: NEW_GUEST })).toEqual({
+      status: 503,
+      body: { error: 'unsigned_claims_paused' },
+    });
+    expect(merges).toEqual([]);
+  });
+
+  // A re-key that stopped after the index moved the guest and before the row was renamed: a signed claim merges
+  // both ids, so nothing is stranded under the re-keyed one.
+  it('merges the re-keyed id as well on a signed claim of a guest not re-keyed yet', async () => {
+    addLegacy(BEFORE);
+    expect(
+      (await claim({ legacyId: OLD, signature: await sign(OLD), into: NEW_GUEST })).body,
+    ).toEqual({ merged: true });
+    expect(merges.map((m) => m.body)).toEqual([
+      { guestId: LEGACY, userId: NEW_GUEST, legacy: true },
+      { guestId: rekeyed, userId: NEW_GUEST, legacy: true },
+    ]);
+    expect(row()).toEqual({ claimedAt: expect.any(Number), claimedBy: NEW_GUEST });
+  });
+
+  it('keeps a signed claim from after signing to its one id', async () => {
+    addLegacy(AFTER);
+    expect(
+      (await claim({ legacyId: OLD, signature: await sign(OLD), into: NEW_GUEST })).body,
+    ).toEqual({ merged: true });
+    expect(merges).toHaveLength(1);
+  });
+
+  it('stamps nothing when the second merge fails', async () => {
+    addLegacy(BEFORE);
+    let calls = 0;
+    const inner = globalThis.fetch;
+    vi.stubGlobal('fetch', async (input: string | URL | Request, init?: RequestInit) =>
+      ++calls === 2 ? new Response(null, { status: 503 }) : inner(input, init),
+    );
+    expect(await claim({ legacyId: OLD, signature: await sign(OLD), into: NEW_GUEST })).toEqual({
+      status: 502,
+      body: { error: 'merge_failed' },
+    });
+    expect(row()).toEqual({ claimedAt: null, claimedBy: null });
+  });
+
+  it('refuses the re-keyed id itself as the target', async () => {
+    addRekeyed(BEFORE);
+    expect(await claim({ legacyId: OLD, signature: null, into: rekeyed })).toEqual({
+      status: 400,
+      body: { error: 'invalid_into' },
+    });
   });
 });

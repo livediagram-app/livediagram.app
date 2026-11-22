@@ -21,3 +21,6 @@ One row per default applied where a spec is silent or qualitative.
 | D15 | publishing      | A Pending or Rejected page's subpages                     | Published under the nearest published ancestor                                                         |
 | D16 | publishing      | How fresh the public site is                              | 60 seconds at the edge, refreshed from the knowledgebase on the next read after a change               |
 | D17 | publishing      | A renamed page's or site's old address                    | A permanent redirect to the new one while the site stays published                                     |
+| D18 | page-tree       | Restoring a subpage trashed apart from its parent page    | It comes back at the top level when its parent is not in the tree, saying so ("at the top level")      |
+| D19 | page-tree       | An Offline knowledgebase's Trash                          | None: its delete keeps the old words and Undo brings a page back                                       |
+| D20 | page-tree       | Who "deleted" a page an agent deleted                     | The agent's token name, else "An agent"; agents never list, restore or empty the Trash                 |

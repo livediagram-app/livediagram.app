@@ -17,6 +17,7 @@ import { pendingPurgeStatement, purgeFromIndex, type IndexPurgeConfig } from './
 import { legacyGuestCloseStatements } from './legacy-guests.ts';
 import { deleteProfile } from './profiles.ts';
 import { deleteSettings } from './settings.ts';
+import { deleteAccountAiKey } from './ai-keys/store.ts';
 import { leaveAllTeams } from './teams.ts';
 
 export const DELETE_ACCOUNT_PATH = '/delete-account';
@@ -62,6 +63,8 @@ export async function deleteAccount(
   // they go here.
   await deleteSettings(db, userId);
   await deleteProfile(db, userId);
+  // Their own AI key (ai-keys.md "Deletion and export"); a team's stays with its team.
+  await deleteAccountAiKey(db, userId);
   const ctx = await config.auth.$context;
   await ctx.internalAdapter.deleteUser(userId);
   // A failure is logged and left for the cron; it never keeps the account open.

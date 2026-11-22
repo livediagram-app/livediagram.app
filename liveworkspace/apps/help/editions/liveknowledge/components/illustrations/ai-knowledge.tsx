@@ -1,8 +1,8 @@
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import { Btn, Code, DialogCard, HAIR, MenuRows, Pill, StackedBar, Surface } from './kit';
+import { Btn, Code, HAIR, MenuRows, Pill, StackedBar, Surface } from './kit';
 
 // The AI Knowledge figures (liveworkspace/docs/specs/017-help/help-centre.md "Figures and card icons"): the Connect
-// an Agent dialog, a connected agent's card and its menu, a suggested edit, the questions nobody could answer, two
+// view, a connected agent's card and its menu, a suggested edit, the questions nobody could answer, two
 // pages that disagree, and the Always in Context budget. Each is drawn from the view's own words.
 
 const W = 420;
@@ -70,54 +70,123 @@ function CodeBox({
   );
 }
 
-/** Connect an Agent: what a new connection may do, then the MCP server, the command line and an API token. */
-export function ConnectAgentScene() {
-  const x = 60;
+/** One numbered step of the Connect view: its number in a brand circle, its heading and its line. */
+function StepHead({
+  x,
+  y,
+  n,
+  title,
+  line,
+}: {
+  x: number;
+  y: number;
+  n: number;
+  title: string;
+  line: string;
+}) {
   return (
-    <Scene w={W} h={262} bg="plain">
-      <DialogCard
-        x={x}
-        y={8}
-        w={300}
-        h={246}
-        title="Connect an Agent"
-        line="A new connection can read, search and suggest edits."
-      >
-        <Label x={x + 14} y={52} size={6.6} tone="muted">
-          To let it write, choose Allow Writing on its card in Connected Agents.
-        </Label>
-        <Label x={x + 14} y={72} size={8.5} weight={700} tone="strong">
-          MCP Server
-        </Label>
-        <Label x={x + 14} y={84} size={6.6} tone="muted">
-          Add this address to Claude or another AI tool, then approve the connection.
-        </Label>
-        <CodeBox x={x + 14} y={90} w={272} lines={['https://mcp.liveknowledge.app/mcp']} />
-        <Label x={x + 14} y={124} size={8.5} weight={700} tone="strong">
-          Command Line
-        </Label>
-        <Label x={x + 14} y={136} size={6.6} tone="muted">
-          Sign in once, then read and suggest from a terminal or a script.
-        </Label>
-        <CodeBox
-          x={x + 14}
-          y={142}
-          w={272}
-          lines={[
-            'liveknowledge auth login',
-            'liveknowledge context Handbook',
-            'liveknowledge search Handbook when do we deploy',
-          ]}
+    <g>
+      <circle cx={x + 7} cy={y + 2} r={7} className="fill-brand-600" />
+      <Label x={x + 7} y={y + 2.4} anchor="middle" size={7} weight={700} tone="onAccent">
+        {String(n)}
+      </Label>
+      <SectionHead x={x + 20} y={y + 2} title={title} line={line} />
+    </g>
+  );
+}
+
+const APPS = ['Claude', 'Claude Code', 'ChatGPT', 'Cursor', 'VS Code', 'Other App'] as const;
+
+/** The Connect view: pick an AI app, its steps with the address to copy, and the status that watches for it. */
+export function ConnectAgentScene() {
+  const x = 30;
+  const cardW = 360;
+  const appW = 112;
+  return (
+    <Scene w={W} h={300} bg="plain">
+      <Surface x={x} y={8} w={cardW} h={92} r={9}>
+        <StepHead
+          x={x + 12}
+          y={20}
+          n={1}
+          title="Pick Your AI App"
+          line="The app you want to read and write these pages."
         />
-        <Label x={x + 14} y={196} size={8.5} weight={700} tone="strong">
-          API Token
+        {APPS.map((name, i) => {
+          const cx = x + 32 + (i % 3) * (appW + 4);
+          const cy = 46 + Math.floor(i / 3) * 24;
+          const picked = i === 0;
+          return (
+            <g key={name}>
+              <rect
+                x={cx}
+                y={cy}
+                width={appW}
+                height={20}
+                rx={5}
+                strokeWidth={HAIR}
+                className={
+                  picked ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'
+                }
+              />
+              <rect
+                x={cx + 5}
+                y={cy + 4}
+                width={12}
+                height={12}
+                rx={3}
+                className={picked ? 'fill-brand-600' : 'fill-slate-100'}
+              />
+              <Label x={cx + 22} y={cy + 10.5} size={7} weight={600} tone="strong">
+                {name}
+              </Label>
+            </g>
+          );
+        })}
+      </Surface>
+      <Surface x={x} y={108} w={cardW} h={88} r={9}>
+        <StepHead
+          x={x + 12}
+          y={120}
+          n={2}
+          title="Add liveknowledge to Claude"
+          line="On the web and the desktop app"
+        />
+        <Label x={x + 32} y={148} size={6.8} tone="muted">
+          Choose Add custom connector, name it liveknowledge and paste the address as its URL.
         </Label>
-        <Label x={x + 14} y={208} size={6.6} tone="muted">
-          Send a token from Settings as a Bearer token. A read-only one only reads.
+        <CodeBox x={x + 32} y={156} w={cardW - 44} lines={['https://mcp.liveknowledge.app/mcp']} />
+        <Btn x={x + cardW - 50} y={158} w={34} h={14} label="Copy" size={6.6} />
+        <Label x={x + 32} y={185} size={6.8} tone="muted">
+          Choose Connect, then approve on the liveknowledge page that opens.
         </Label>
-        <Btn x={x + 14} y={214} w={72} h={14} label="Open API Tokens" size={6.6} />
-        <Btn x={x + 252} y={232} w={34} h={14} label="Done" variant="primary" size={7} />
-      </DialogCard>
+      </Surface>
+      <Surface x={x} y={204} w={cardW} h={88} r={9}>
+        <StepHead
+          x={x + 12}
+          y={216}
+          n={4}
+          title="Check It Worked"
+          line="Your app shows here once it reads a page of this knowledgebase."
+        />
+        <rect
+          x={x + 32}
+          y={240}
+          width={cardW - 44}
+          height={40}
+          rx={6}
+          strokeWidth={HAIR}
+          className="fill-slate-50 stroke-slate-200"
+        />
+        <circle cx={x + 46} cy={260} r={4} className="fill-brand-600" />
+        <Label x={x + 58} y={255} size={7.5} weight={700} tone="strong">
+          Waiting for Your App
+        </Label>
+        <Label x={x + 58} y={267} size={6.4} tone="muted">
+          Ask it the prompt below. Checking every 10 seconds.
+        </Label>
+        <Btn x={x + cardW - 70} y={253} w={54} h={14} label="Check Now" size={6.6} />
+      </Surface>
     </Scene>
   );
 }

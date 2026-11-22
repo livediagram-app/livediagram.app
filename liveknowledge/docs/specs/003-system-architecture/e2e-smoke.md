@@ -284,12 +284,22 @@ there instead: `/v1/messages` is answered as Anthropic's Messages API streams, `
 API does, so one var serves both. Built-in AI (Workers AI) has no door to swap, so under the same var alone the api's
 `builtInAi` posts `{ model, input }` to the stand-in's `/workers-ai/run` instead of the `AI` binding, answered as the
 binding answers (`{ response }`). A description (Describe to Set Up) is answered with a fixed structure of five
-pages (`SETUP_STRUCTURE`), or with text that is no JSON when it holds "not json".
+pages (`SETUP_STRUCTURE`), or with text that is no JSON when it holds "not json"; a page title (Describe Structure
+on a page) with a fixed structure of three headings (`PAGE_STRUCTURE`).
 The door ignores the var unless it names plain HTTP on a loopback port, the var is in no `wrangler.toml` or hosted
 var, and a unit test holds both. The stand-in answers from the request alone: a question sent with passages is
 answered citing the first, one sent with none comes back as a gap, a key containing "refused" is not accepted, and
 the conflict check's request gets a reply that names no conflict. Under the same var only, `POST pages/<tab>/verify`
 takes an earlier moment from `X-E2E-Verified-At` (`verifyMoment`), so a spec can make a page due for review.
+
+### The accounts Worker stand-in
+
+A signed-in asker with no knowledgebase key asks accounts whose AI key applies, over the api's `ACCOUNTS` service
+binding only ([AI keys](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md)). With nothing behind that
+binding the answer is "unavailable", and Ask refuses rather than guess. So the stack runs a Worker under the
+accounts Worker's name (the root's `scripts/e2e-stack/accounts-worker`) in its own wrangler dev registry, one port
+above the api (`E2E_ACCOUNTS_WORKER_PORT`): it checks the api's client credentials and answers that no team or
+personal key applies, so Ask runs on built-in AI as it does deployed with none set.
 
 A new browser-risky feature adds one focused spec file here (or a case in the
 file of the feature it extends), linked from its own spec; depth stays in unit
@@ -316,7 +326,8 @@ tests where it's cheap.
 - `scripts/e2e-stack.mjs`: this product's settings for the stack (its ports, canvas route, accounts client and
   the api's own vars); the root's `scripts/e2e-stack/stack.mjs` boots it and serves the static sites (live, help, marketing).
 - The root's `scripts/e2e-stack/` (shared with the other product stacks): `stack.mjs` (the boot and the static
-  server), `accounts-stand-in.mjs` (here without records: API tokens and profiles only), `processes.mjs`,
+  server), `accounts-stand-in.mjs` (here without records: API tokens and profiles only), `accounts-worker/` ("The accounts
+  Worker stand-in"), `processes.mjs`,
   `proxies.mjs` (the router's forwards and the WebSocket upgrade) and `static-serving.mjs` (caching, the Trusted Types
   header, the 404 page, the simulated deploy).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@liveknowledge/document';
 import {
+  deletePageMessage,
   deletePageTitle,
   pageAfterDelete,
   pageTreeRefusalText,
@@ -89,6 +90,18 @@ describe('what a person reads', () => {
     expect(deletePageTitle('Release Process', 1)).toBe('Delete Release Process and 1 Subpage?');
     expect(deletePageTitle('Release Process', 0)).toBe('Delete Release Process?');
     expect(deletePageTitle(' ', 0)).toBe('Delete This Page?');
+    expect(deletePageTitle('Release Process', 3, true)).toBe(
+      'Move Release Process and 3 Subpages to the Trash?',
+    );
+    expect(deletePageTitle('Release Process', 0, true)).toBe('Move Release Process to the Trash?');
+  });
+  it("says where a delete goes: the Trash, or (an Offline knowledgebase's) Undo alone", () => {
+    expect(deletePageMessage(0, true)).toContain('restore it from the Trash for 30 days');
+    expect(deletePageMessage(2, true)).toContain('restore them from the Trash for 30 days');
+    expect(deletePageMessage(0, false)).toBe(
+      'The page is removed for everyone. Undo (Cmd/Ctrl-Z) brings it back.',
+    );
+    expect(deletePageMessage(2, false)).toContain('The page and its subpages are removed');
   });
   it('says why the tree refuses', () => {
     expect(pageTreeRefusalText('page_limit')).toBe('A knowledgebase holds 500 pages at most.');

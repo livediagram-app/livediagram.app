@@ -13,7 +13,8 @@ Most of it needs no model: it is bookkeeping the room already has.
 
 One card per agent that has read or written this knowledgebase in the last 30 days: its name (the MCP client's, the CLI, or an
 API token's label), how it connects, what it may do (**Reads**, **Suggests Edits**, **Writes**), pages read this week and the
-three it read most. **Connect an Agent** opens the instructions for the MCP server, the CLI and tokens.
+three it read most. **Connect an Agent** opens the [Connect](mcp-connect.md) view: the steps for an AI app over the
+MCP server, the CLI and tokens.
 
 A new connection reads and suggests. An Editor allows one connection to write from its card's menu (**Allow
 Writing**), and stops it there (**Stop Writing**); each asks first, saying what writing allows (replace a page's
@@ -44,8 +45,11 @@ and the 5 pages read most in the last 7 days with each one's reads by people and
 - **Draft a Page** starts a page titled from the question, drafted from the nearest passages (on the team's key, or
   built-in AI without one: [Built-in AI](search-and-ask.md#built-in-ai)), marked "Draft, Not Verified" in its first
   line; when no AI can answer (no key and no built-in AI on the server, or the draft's call fails) it opens with the
-  question as its first heading alone.
-  **Dismiss** removes the row.
+  question as its first heading alone. While it drafts, the button shows a spinner and reads **Drafting…** (the call
+  takes seconds). Once the page is made the question has a page, so its row leaves the list.
+  **Dismiss** removes the row. A question also leaves the list once it is answered (owner 2026-11-21): when Ask later
+  answers it in full from pages (a first question, citing pages, with no gap), and when a writer presses **Accept
+  Answer** on a chat, which settles the chat's question and every gap its answers named.
 
 ## Pages that disagree
 
@@ -61,6 +65,9 @@ and the 5 pages read most in the last 7 days with each one's reads by people and
   still open the knowledgebase, the same 50 a day. The answer says what happened: sent to how many owners, already
   asked and when, nobody owns either page, the owners cannot be reached, the day's emails are spent, or this
   server sends no email.
+- **The likely right one** (owner 2026-11-21): each side carries its page's Health Score, and when one side's score
+  is higher by 10 or more, its row says "<Page> is more likely right (health 86 against 41)" and leads with that
+  side's **Is Right, Fix the Other**. Closer than 10, it suggests neither. It is a suggestion: both buttons stay.
 - A conflict closes by itself when either passage changes. Bounds: 50 checks a knowledgebase a day on a key, 20 on built-in AI;
   at most 5 candidate passages a check. Only a deployment with no built-in AI and a knowledgebase with no key has no
   check, and the section says so.
@@ -117,10 +124,21 @@ what agents and Ask make of this one page. It looks as the rest of the rail does
 
 ## Knowledge Health
 
-Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, and **Remind the Owners**
+Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, the knowledgebase's
+**average Health Score** ([Verification](verification.md#health-score)) beside the verified share, the pages with
+low health, and **Remind the Owners**
 (one email each, at most once a week per knowledgebase). The counts are worked out under the knowledgebase's one
 Review Period ([Verification](verification.md) "The Review Period") when the view is read: under Never no page is
 Review Due.
+
+**Pages With Low Health** (owner 2026-11-21: "Knowledge health should show up to 5 pages with low health"): the 5
+lowest-scoring pages whose score is under the Healthy line (75), lowest first, a tie the most read this week first,
+then tree order. Each row is the page's title, its score and word ("38 Needs Work", the word's colour and never
+colour alone) and its main reason ("Never verified", "Review due 40 days ago", "2 broken links"); pressing it opens
+the page. With none: "Every Page Is Healthy", saying every page scores 75 or more. The average is of every page, a
+whole number, "No pages yet" with none. Both come from the overview's one read (`GET knowledge`, still one
+request): the api scores every page with the same function from one statement over the room's tables, no read a
+page.
 
 **Remind the Owners** sends each owner one email, **Pages to Review**, listing their pages that are Review Due or
 Never Verified (each named with its state and linked; the first 100, the rest counted). It is a
@@ -140,14 +158,14 @@ rows and actions, long lists capped so the page never grows with the data.
 - **The figures band:** six tiles, each a button named by its words and its figure. Six across on a wide screen,
   three across from a tablet's width, two across on a phone.
 
-  | Tile                | Figure                                                                     | Pressed                                  |
-  | ------------------- | -------------------------------------------------------------------------- | ---------------------------------------- |
-  | Reads This Week     | page reads in the last 7 days; people and agents apart; a 14-day sparkline | brings Most Read into view               |
-  | Connected Agents    | agents seen in 30 days; how many may write                                 | brings Connected Agents into view        |
-  | Open Questions      | questions nobody could answer; how many asks in all                        | shows Needs Attention at Questions       |
-  | Pages That Disagree | open conflicts                                                             | shows Needs Attention at Disagreements   |
-  | Suggested Edits     | agents' edits waiting                                                      | shows Needs Attention at Suggested Edits |
-  | Verified            | the verified share of the pages, as a percentage; how many are Review Due  | brings Knowledge Health into view        |
+  | Tile                | Figure                                                                                              | Pressed                                  |
+  | ------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+  | Reads This Week     | page reads in the last 7 days; people and agents apart; a 14-day sparkline                          | brings Most Read into view               |
+  | Connected Agents    | agents seen in 30 days; how many may write                                                          | brings Connected Agents into view        |
+  | Open Questions      | questions nobody could answer; how many asks in all                                                 | shows Needs Attention at Questions       |
+  | Pages That Disagree | open conflicts                                                                                      | shows Needs Attention at Disagreements   |
+  | Suggested Edits     | agents' edits waiting                                                                               | shows Needs Attention at Suggested Edits |
+  | Verified            | the verified share of the pages, as a percentage; how many are Review Due; the average Health Score | brings Knowledge Health into view        |
 
   A tile whose figure asks for someone (an open question, a conflict, an edit waiting, a page Review Due) carries a
   small amber mark; a tile that filters Needs Attention shows pressed while its filter is on, and pressing it again
@@ -159,18 +177,22 @@ rows and actions, long lists capped so the page never grows with the data.
   questions nobody could answer, the most asked first. A switch above it shows **All**, **Questions**,
   **Disagreements** or **Edits** (an agent's suggested edits). Each row says what kind it is with an icon and a word, and keeps its
   actions as below. At most 4 rows show; **Show All 9** opens the rest in place and **Show Fewer** folds them.
-- **Knowledge Health:** the verified share as a large figure, the stacked bar and its legend, and **Remind the
-  Owners**.
-- **Connected Agents:** compact cards, two across in the wide column, at most 4 before **Show All**; **Connect an
+- **Knowledge Health:** the verified share as a large figure with the average Health Score beside it ("Average
+  health 71"), the stacked bar and its legend, **Pages With Low Health** (at most 5 rows, under the legend), and
+  **Remind the Owners**.
+- **Connected Agents:** compact cards, two across, at most 4 before **Show All**; **Connect an
   Agent** at the card's top right.
 - **Always in Context:** the budget meter, each page with its size and a remove button, at most 5 before **Show All**,
   and **Add a Page**.
 - **Most Read:** the 5 pages read most in the last 7 days, each with a bar of its reads, people and agents in the
   same two tones as the sparkline, and its figures. A row opens its page. A deleted page is left out.
-- **What an Agent Sees:** the dark sample card, last in the narrow column.
-- On a wide screen the cards sit in two columns: Needs Attention and Connected Agents in the wide one (two thirds),
-  Knowledge Health, Always in Context, Most Read and What an Agent Sees in the narrow one. Below a laptop's width
-  (1024px) the cards are one column in that order. Nothing scrolls sideways at any width.
+- **What an Agent Sees:** the dark sample card, last.
+- On a wide screen the cards fill two equal columns (owner 2026-11-21): Needs Attention, Connected Agents and Most
+  Read on the left; Knowledge Health, Always in Context and What an Agent Sees on the right, so neither column runs
+  long beside an empty one. Each column is its own stack, so a card's height in one never moves a card in the other,
+  and Knowledge Health heads its column on a whole pixel (CSS columns put it half a pixel off, and its glyph with it).
+  Below a laptop's width (1024px) they are one column, the left column's cards then the right's, the order focus
+  moves in. Nothing scrolls sideways at any width.
 - **Empty states** teach how each card fills:
   - Needs Attention with nothing waiting: "Nothing Needs Attention", saying what lands here and how (an
     unanswered Ask, an agent's empty search or `report_gap`, a page that disagrees with another, an agent's
@@ -185,10 +207,9 @@ rows and actions, long lists capped so the page never grows with the data.
   (owner, 2026-11-21). Only where no AI can check (no key, and no built-in AI on this server) does the Disagreements
   filter carry one small note, with **Open AI Settings** for an Editor; the All list, the tiles and the empty states
   say nothing of a key.
-- **Connect an Agent** is a dialog: a new connection can read, search and suggest; how an Editor allows writing
-  (anyone else reads that an Editor can); then the MCP server's address and its first tools (`get_context`,
-  `search_pages`, `read_page`, `suggest_edit`), the command line (`liveknowledge auth login`, `context`, `search`)
-  and **Open API Tokens** (Settings' Tokens page).
+- **Connect an Agent** opens the [Connect](mcp-connect.md) view (owner 2026-11-21), which replaced the dialog it
+  opened: the steps for each AI app, what a connection may do and how an Editor allows writing, the command line
+  and **Open API Tokens**.
 - **An agent's card:** an icon, the name, how it connects and when it was last seen (what the room noted of its
   token), a "Connected" dot, what it may do as chips from its scopes (**Reads**, **Suggests Edits**, **Writes**),
   pages read this week and the three it read most, each opening its page. An agent known only by its reads, counted

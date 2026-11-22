@@ -132,7 +132,8 @@ export function registerTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpDeleteDocument, async (args, extra) => {
     const token = requireToken(extra);
     // A whole knowledgebase only ever goes to the Trash (docs/specs/013-workspace/trash.md): a permanent delete
-    // is the REST API's, never an AI tool's. A page has no Trash.
+    // is the REST API's, never an AI tool's. A page goes to its knowledgebase's page Trash (knowledgebases-and-
+    // pages.md "The page Trash"), which a person restores from in the editor.
     const page = args.page ? await pageIdOf(env, token, args.documentId, args.page) : null;
     const path = page
       ? knowledgePath(args.documentId, 'tabs', page)
@@ -148,7 +149,13 @@ export function registerTools(server: McpServer, env: Env): void {
     }
     return textResult(
       page
-        ? { deleted: 'page', documentId: args.documentId, page }
+        ? {
+            deleted: 'page',
+            documentId: args.documentId,
+            page,
+            trashed: true,
+            restorableForDays: TRASH_RETENTION_DAYS,
+          }
         : {
             deleted: 'document',
             documentId: args.documentId,

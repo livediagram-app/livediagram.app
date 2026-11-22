@@ -5,6 +5,14 @@ import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { HOME_PICK_TYPES, HOME_START_TYPES } from '../../_shared/home-picks';
 
+const NOT_SHARE_COPIES: ReadonlySet<string> = new Set([
+  'TeamInviteLink',
+  'Diagnostics',
+  'Diagnostics.Help',
+  'McpSetup',
+  'ConnectPrompt',
+]);
+
 // The shared Share dialog (@liveworkspace/explorer ShareDialog), reported through its host's onTelemetry
 // (apps/editor lib/explorer-share-host.ts) and, from the Explorer on liveworkspace.app, in this app's name.
 export const SHARE_LINKS_COPIED = chart(
@@ -12,9 +20,8 @@ export const SHARE_LINKS_COPIED = chart(
   'Copied',
   'Share Links Copied',
   'A document share link, embed code or live image copied.',
-  {
-    typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
-  },
+  // Connect's copies (McpSetup, ConnectPrompt) are Connect Steps Copied's (knowledge.ts).
+  { typeIn: (t) => !NOT_SHARE_COPIES.has(t ?? '') },
 );
 
 export const SHARE_LINKS_REMOVED = chart(

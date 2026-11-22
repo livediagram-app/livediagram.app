@@ -11,6 +11,7 @@ import { getParticipants } from '../person/profiles';
 import { readPageAuthors } from '../knowledge/page-authors';
 import { guestOwnersOf, guestStampNamer } from '../knowledge/page-writer';
 import { readPageEditors } from '../knowledge/page-editors';
+import { pageHealthRows } from '../knowledge/page-health-read';
 import { verifyMoment } from '../knowledge/model-door';
 import { pageTreeRows } from '@liveknowledge/document';
 import {
@@ -30,7 +31,7 @@ import {
   type PageAnswerRow,
   type PageReadsRow,
 } from '@liveknowledge/knowledge';
-import type { PageKnowledgePatch } from '@liveknowledge/api-schema';
+import { isAccountIdShape, type PageKnowledgePatch } from '@liveknowledge/api-schema';
 import { accountOf } from '../knowledge/knowledge-caller';
 import { rowsOf } from '../knowledge/knowledge-db';
 import { contextPages } from '../knowledge/knowledge-reads';
@@ -91,21 +92,29 @@ export async function handlePageHealth(
   }
   // AI Context (ai-knowledge.md "AI Context on a page") rides this read: the questions a range of their
   // table's key, the agents a range of `page_reads_tab` (schema step V19).
-  const [readRows, authors, editors, answered, agents] = await Promise.all([
+  // The Health Score's counts the editor cannot see itself (verification.md "Health Score"): one read of the page's
+  // facts row, on indexes its tables already have.
+  const [readRows, authors, editors, answered, agents, [facts]] = await Promise.all([
     rowsOf<PageReadsRow>(ctx.env, countPageReads(tab, now)),
     readPageAuthors(ctx.env, tab),
     readPageEditors(ctx.env, tab),
     rowsOf<PageAnswerRow>(ctx.env, listPageAnswers(tab, now)),
     rowsOf<PageAgentReadsRow>(ctx.env, countPageAgentReads(tab, now)),
+    pageHealthRows(ctx.env, document.id, now, [tab]),
   ]);
+  const knowledge = pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now);
   // A guest's stamp holds their owner id, a credential: it never leaves here. It reads as the name on their profile,
-  // "Bright Marlin (Guest)" (owner 2026-11-21), the way a guest's Verify is stored (guestVerifier).
-  const named = await guestStampsNamed(ctx, [
-    ...(authors ? [authors.created, authors.updated] : []),
-    ...editors,
-  ]);
+  // "Bright Marlin (Guest)" (owner 2026-11-21), the way a guest's Verify is stored (guestVerifier). The accounts the
+  // page names (who made and changed it, its owner, who verified it) go with their names, so a reader outside the
+  // team (a Viewer through a link) sees people, never "Guest" (owner 2026-11-21). One profiles read for both.
+  const { named, names } = await stampsNamed(
+    ctx,
+    [...(authors ? [authors.created, authors.updated] : []), ...editors],
+    [knowledge.owner, knowledge.verifiedBy],
+  );
   return json({
-    knowledge: pageKnowledgeOf(page, document.knowledgeSettings.reviewEvery, now),
+    knowledge,
+    ...(Object.keys(names).length > 0 ? { names } : {}),
     reads: pageReads(readRows),
     ...(authors ? { created: named(authors.created), updated: named(authors.updated) } : {}),
     ...(editors.length > 0 ? { editors: editors.map(named) } : {}),
@@ -115,6 +124,16 @@ export async function handlePageHealth(
         ? answered.map((r) => ({ question: r.question, asked: r.asked }))
         : [],
     agents: agents.map((r) => ({ agent: r.agent, reads: r.reads })),
+    ...(facts
+      ? {
+          signals: {
+            openConflicts: facts.openConflicts,
+            openThreads: facts.openThreads,
+            suggestions: facts.suggestions,
+            backlinks: facts.backlinks,
+          },
+        }
+      : {}),
   });
 }
 
@@ -234,14 +253,27 @@ export async function handleKnowledgePatch(
 }
 
 /** Swaps each guest's owner id on a stamp for its name (guestStampNamer), the names read from profiles in one call. */
-async function guestStampsNamed<T extends { by: string }>(
+async function stampsNamed<T extends { by: string }>(
   ctx: DocumentRouteContext,
   stamps: readonly T[],
-): Promise<(stamp: T) => T> {
+  also: readonly (string | undefined)[],
+): Promise<{ named: (stamp: T) => T; names: Record<string, string> }> {
   const guests = guestOwnersOf(stamps);
-  if (guests.length === 0) return (stamp) => stamp;
-  const people = await getParticipants(ctx.env, guests).catch(
+  const accounts = [
+    ...new Set(
+      [...stamps.map((s) => s.by), ...also].filter(
+        (id): id is string => typeof id === 'string' && isAccountIdShape(id),
+      ),
+    ),
+  ];
+  if (guests.length === 0 && accounts.length === 0) return { named: (stamp) => stamp, names: {} };
+  const people = await getParticipants(ctx.env, [...guests, ...accounts]).catch(
     () => new Map<string, { name: string }>(),
   );
-  return guestStampNamer((id) => people.get(id)?.name);
+  const names: Record<string, string> = {};
+  for (const id of accounts) {
+    const name = people.get(id)?.name.trim();
+    if (name) names[id] = name;
+  }
+  return { named: guestStampNamer((id) => people.get(id)?.name), names };
 }

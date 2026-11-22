@@ -23,6 +23,8 @@ export type DashboardFigures = {
   verifiedShare: number | null;
   reviewDue: number;
   neverVerified: number;
+  /** The average Health Score; undefined with no pages, or from an older api. */
+  averageHealth: number | undefined;
 };
 
 export function dashboardFigures(overview: KnowledgeOverviewResponse): DashboardFigures {
@@ -42,6 +44,7 @@ export function dashboardFigures(overview: KnowledgeOverviewResponse): Dashboard
     verifiedShare: health.total === 0 ? null : Math.floor((health.verified / health.total) * 100),
     reviewDue: health.reviewDue,
     neverVerified: health.neverVerified,
+    averageHealth: health.average,
   };
 }
 

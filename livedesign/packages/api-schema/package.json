@@ -21,6 +21,7 @@
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/automations": "workspace:^",
+    "@liveworkspace/edit-operations": "workspace:*",
     "@liveworkspace/community": "workspace:^",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"

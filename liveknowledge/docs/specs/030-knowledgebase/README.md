@@ -11,6 +11,7 @@ brought from livedocuments ([Article pages](../007-editor/article-pages.md)) and
 - [Comments on a page](page-comments.md): comment threads at the foot of every page.
 - [Search and Ask](search-and-ask.md): the search index, and answers with sources from a team's own Claude or OpenAI key.
 - [AI Knowledge](ai-knowledge.md): what agents read, what nobody could answer, pages that disagree, suggested edits.
+- [Connect](mcp-connect.md): the fourth view, a guided setup that connects an AI app over MCP and shows it connected.
 - [Knowledgebase Home](knowledgebase-home.md): the page a person lands on.
 - [Publish to the Web](publishing.md): the knowledgebase, or one section, as a public, read-only site.
 - [Describe to set up](describe-to-set-up.md): no start screen, and a page structure proposed from a description.

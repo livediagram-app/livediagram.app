@@ -114,6 +114,20 @@ describe('the store', () => {
     return { promise, resolve, reject };
   }
 
+  // verification.md "Created and Updated": the names a health read carries name those people for every reader.
+  it('keeps the account names a health read carries', async () => {
+    const api = {
+      health: vi.fn(async () => ({ ...health(), names: { u2: 'Alex Tester' } })),
+      verify: vi.fn(),
+      set: vi.fn(),
+    };
+    const store = createPageKnowledgeStore(api);
+    expect(store.nameOf('u2')).toBeUndefined();
+    await store.load(who, 'd1', 't1');
+    expect(store.nameOf('u2')).toBe('Alex Tester');
+    expect(store.nameOf('u1')).toBeUndefined();
+  });
+
   it('reads a page’s health once for the session, and concurrent asks share a request', async () => {
     const api = { health: vi.fn(async () => health()), verify: vi.fn(), set: vi.fn() };
     const store = createPageKnowledgeStore(api);

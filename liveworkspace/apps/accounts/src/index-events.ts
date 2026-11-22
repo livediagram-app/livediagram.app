@@ -29,7 +29,8 @@ export type TeamEventType =
   | 'team_declined'
   | 'team_role_changed'
   | 'team_member_removed'
-  | 'team_renamed';
+  | 'team_renamed'
+  | 'team_ai_key_changed';
 
 export type TeamEvent = {
   id: string;

@@ -850,6 +850,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429, 502, 503],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/pages/{tabId}/describe-structure',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Describe Structure: draft an initial structure for one empty page from its title, what it is for (`purpose`, up to 500 characters, optional when the page has a title), the knowledgebase's name and its tree's titles (never a page's writing): up to 12 headings (level 2 or 3), a line under each, and where it helps a list, a table's columns or a callout, at most 4,000 characters, as plain text, and which AI answered (`provider`). On the team's own key when one is set and `ai` is not `built-in`, else on built-in AI. Nothing is written. A signed-in person who may edit pages, in person: an API token gets 403 `needs_a_person`. 10 a person an hour, 50 a knowledgebase a day, and on built-in AI 10 a person a day across every knowledgebase (`built-in-limit`). 502 with the failure's kind in words when the model call fails (`built-in-failed` on built-in AI) or its reply holds no heading (`no-structure`); 503 `built-in-unavailable` with no key and no built-in AI.",
+    auth: 'clerk',
+    tokenUsable: false,
+    requestSchema: 'PageStructureRequest',
+    responseSchema: 'PageStructureResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429, 502, 503],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/knowledge',
     segment: 'documents',
@@ -1171,10 +1184,55 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
     tag: 'Documents',
-    summary: 'Delete one tab from a document.',
+    summary:
+      'Delete one page: it moves to the knowledgebase\'s page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page Trash"), restorable by a person in the editor for 30 days. A connected file\'s row, and a tab shared with another item, are removed outright.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 410],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/trash',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "The knowledgebase's page Trash, newest first: each page put there with its trashed subpages, who put it there and when. Pages past their 30 days, and past the newest 500, are removed for good first. A Writer of the whole knowledgebase in person; a token is refused 403 `trash_is_a_persons`.",
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/trash',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Empty Trash: remove every page in the page Trash for good. An Editor of the whole knowledgebase in person.',
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    statuses: [204, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/trash/{tabId}/restore',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Restore a page and its trashed subpages to where they stood: under the old parent at the old place, or at the top level when that parent is gone (`topLevel`). Told to every open editor. 404 `not_in_trash`; 409 `page_limit` past 500 pages. A Writer of the whole knowledgebase in person.',
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    statuses: [200, 401, 403, 404, 405, 409, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/trash/{tabId}',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Delete Forever: remove a page in the page Trash, and its trashed subpages, for good. 404 `not_in_trash`. An Editor of the whole knowledgebase in person.',
+    auth: 'guest-or-clerk',
+    tokenUsable: false,
+    statuses: [204, 401, 403, 404, 405, 410],
   },
   {
     method: 'POST',

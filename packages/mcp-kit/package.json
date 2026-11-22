@@ -23,6 +23,7 @@
     "./request-scope": "./src/request-scope.ts",
     "./server-json": "./src/server-json.ts",
     "./tab-named": "./src/tab-named.ts",
+    "./tool-list-compact": "./src/tool-list-compact.ts",
     "./tool-result": "./src/tool-result.ts",
     "./template-elements": "./src/template-elements.ts",
     "./tool-scope": "./src/tool-scope.ts",

@@ -56,6 +56,12 @@ export function auditSentence(event: TeamAuditEvent, teamId: string): AuditSente
         : { who, action: 'removed', target: about };
     case 'team_renamed':
       return { who, action: 'renamed the team to', target: title };
+    case 'team_ai_key_changed':
+      return {
+        who,
+        action: AI_KEY_CHANGE_WORDS[detail.change ?? ''] ?? 'changed the team’s AI key',
+        target: null,
+      };
     case 'shared':
       return {
         who,
@@ -92,6 +98,18 @@ export function auditSentence(event: TeamAuditEvent, teamId: string): AuditSente
   }
 }
 
+// A team AI key's change (003-accounts/ai-keys.md "Changes are deliberate"), and its provider beside the label.
+const AI_KEY_CHANGE_WORDS: Readonly<Record<string, string>> = {
+  set: 'added the team’s AI key',
+  replaced: 'replaced the team’s AI key',
+  model: 'changed the team’s AI model',
+  removed: 'removed the team’s AI key',
+};
+const AI_PROVIDER_WORDS: Readonly<Record<string, string>> = {
+  anthropic: 'Anthropic',
+  openai: 'OpenAI',
+};
+
 const WEBHOOK_KIND_WORDS: Readonly<Record<WebhookKind, string>> = {
   json: 'Signed JSON',
   slack: 'Slack',
@@ -107,6 +125,8 @@ export function auditDetail(event: TeamAuditEvent): string | null {
       return SHARE_LEVEL_WORDS[detail.level ?? ''] ?? null;
     case 'team_renamed':
       return detail.from ? `Was ${quoted(detail.from)}` : null;
+    case 'team_ai_key_changed':
+      return AI_PROVIDER_WORDS[detail.provider ?? ''] ?? null;
     case 'deleted':
       return detail.reason === 'offline' ? 'Taken offline' : null;
     case 'approval_requested': {

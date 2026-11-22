@@ -44,6 +44,8 @@ export function makeTestRouteContext(
     headers?: Record<string, string>;
     // The caller's joined teams, as its token carries them.
     teams?: TeamClaim[] | null;
+    // The browser's own bearer (an account's access token); null unless given.
+    bearer?: string | null;
     // The index's grant on the document: given, or (undefined) worked out from a sqliteD1 env as the index would
     // (test-sqlite-d1.ts `testGrantFor`).
     grant?: DocumentGrant | null;
@@ -91,7 +93,7 @@ export function makeTestRouteContext(
           : {}),
     workbench: opts.workbench ?? null,
     teams: opts.teams ?? null,
-    bearer: null,
+    bearer: opts.bearer ?? null,
     grant,
     ...(opts.waitUntil ? { waitUntil: opts.waitUntil } : {}),
   };

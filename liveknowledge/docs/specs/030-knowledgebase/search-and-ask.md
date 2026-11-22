@@ -43,7 +43,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   stored key that cannot be opened is refused ("Replace it in AI Settings"), never quietly swapped for built-in AI.
   With no key, the Ask view says quietly under the field **Uses built-in AI**.
 - **Choosing which AI answers** (owner, 2026-11-21: "on Ask, I want to be able to choose whether to ask my configured
-  AI, or the built in AI"). Once a key is set, the quiet line under Ask's field becomes a small choice of two, **Answer With**:
+  AI, or the built in AI"). Once a key applies ([Which key answers](#which-key-answers)), the quiet line under Ask's field becomes a small choice of two, **Answer With**:
   **Built-In AI** and the team's key named by its model ("Claude Fable 5.2 (Team Key)"). The team's key is chosen
   until the person picks otherwise; the choice is kept per person, per knowledgebase, in this browser, beside the
   chats. Each question carries it (`ai: 'built-in' | 'key'`); a follow-up uses the choice in force when it is asked,
@@ -60,7 +60,11 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   Claude `claude-fable-5-2` by default (or OpenAI's most capable); AI Settings offers the provider's current models,
   since the team pays for what it uses.
 - **Answering:** the api takes the question, finds the best passages with the search index (up to 12, verified pages
-  first), and asks the model to answer only from them, citing each claim. The answer streams to the page.
+  first), and asks the model to answer only from them, citing each claim. The answer streams to the page. Each
+  passage goes with its page's Health Score and word ([Verification](verification.md#health-score)), and the model
+  is told to prefer passages from higher-scoring pages, and to say in the answer when what it relies on comes from
+  a page whose health is Needs Work ("this comes from a page with a low health score"). The passages are chosen as
+  before (verified first, then rank); the score is worked out from one read for the chosen passages' pages.
 - **What an answer shows:** the answer with numbered citations, numbered **1 to n in the order they are first
   cited** (owner, 2026-11-21: "shouldn't the source be number 1, given there is only one source?"), whatever number
   the passage was sent to the model under: the stream's pieces, the finished answer and its Sources all use the same
@@ -79,6 +83,34 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   whichever AI answers, and on built-in AI the [Built-in AI](#built-in-ai) caps too; a question is at most 1,000
   characters; the passages sent are capped at 24,000 characters. A failed or refused model call says
   which (bad key, no credit, rate limit) in words, never a raw error.
+
+## Which key answers
+
+Owner, 2026-11-21: a person's and a team's own AI key, kept once in liveworkspace and used in every app
+([liveworkspace/docs/specs/003-accounts/ai-keys.md](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md)).
+The knowledgebase's own key stays, and comes first.
+
+- **The order**, for Ask, Draft a Page From What We Know and Describe to Set Up: the knowledgebase's own key (AI
+  Settings), else its team's key (the knowledgebase's team, when the asker is a joined member), else the asker's own
+  key, else built-in AI. Asking for built-in AI (`ai: 'built-in'`) skips the keys, as before.
+- **The conflict check** runs in the background, with no asker whose request could prove who they are, so it uses
+  the knowledgebase's own key or built-in AI only, never a team's or a person's.
+- **Only a signed-in person's own request** reaches a shared key: the api forwards the person's access token to
+  accounts, which checks it and their team itself (`aiKeyFor`). An API token, an agent, a workbench session, a guest
+  or a link visitor gets the knowledgebase's key or built-in AI.
+- **A shared key that will not open** is refused in words ("Your team's AI key could not be read. An admin can
+  replace it in Settings, under AI." or "Your AI key could not be read. Replace it in Settings, under AI."), never
+  swapped quietly for the next in line.
+- **Accounts that cannot answer** (down, slow or rate limited) for a signed-in asker with no knowledgebase key: the
+  call is refused ("Your AI key settings couldn't be reached just now. Try again in a moment."), never sent to
+  built-in AI on a guess, since the person or their team may have chosen their own key. A server with no accounts to
+  ask (self-hosted) has no shared keys.
+- **The plain key** is held in the one request's memory for the one call, never stored in the room.
+- **Which is in use** is said in AI Settings ("Uses This Knowledgebase's Key", "Uses Your Team's Key", "Uses Your Key",
+  "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's
+  **Answer With**, whose second choice names the key's model and its source ("Claude Fable 5.2 (Team Key)", "(Your
+  Key)", "(Knowledgebase Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
+  `usesModel` and its name `usesModelLabel`, read for the asker; the AI Knowledge overview does not ask accounts.
 
 ## Built-in AI
 
@@ -166,7 +198,8 @@ strangers.
   Completed Questions category"): the latest answer of a chat, once it has ended with an answer, always offers
   **Accept Answer** in its footer, calm and first. Accepting moves the chat out of the dated groups into
   **Completed Questions**, a group closed by default that shows its count ("Completed Questions 3"), and the
-  conversation returns to a fresh question field. A completed chat opens to read, with **Reopen** where the field
+  conversation returns to a fresh question field. For an Editor or a Participant, accepting also takes the chat's
+  question and the gaps its answers named off AI Knowledge's unanswered questions: they are answered. A completed chat opens to read, with **Reopen** where the field
   was: Reopen moves it back among the dated groups and gives it the field again.
 - **Delete** (owner, 2026-11-21): every chat, in the dated groups and in Completed Questions, has **Delete**, an icon
   button with a tooltip at the row's end (shown on hover or focus, always on touch). It asks first ("Delete This
@@ -193,7 +226,9 @@ strangers.
   - the passage with the question's words softly marked;
   - its **trust**, in the badges and colours of the page's meta row and Page Health: **Verified** (a green tick),
     then "21 Nov by Roger Blake" on the line, wrapping to a second line rather than cutting a name; **Review Due**
-    (amber, "Last verified 8 Nov"); **Never Verified** (quiet slate, no tick, saying so).
+    (amber, "Last verified 8 Nov"); **Never Verified** (quiet slate, no tick, saying so). After it the page's
+    **Health Score** and word ("Health 42, Needs Work", [Verification](verification.md#health-score)), in the word's
+    colour, which an older answer kept in the browser without one leaves out.
     Pressing a card shows Pages at that page and passage. **Found but Not Used** follows, each card amber with a
     "Older Passage" pill and the reason under its passage, its trust in the same badges as a source, and no
     number, so it never shares one with a cited source. One with no reason (kept in the browser from before a
@@ -220,9 +255,9 @@ strangers.
   and opens those same words in a dialog over it, a sheet on a phone. Its actions close it first (Open AI Settings
   opens over Pages). The key is read on the first press only, never on load. Ask's address followed from a link
   still shows them in the view.
-- **Offline, in the footer** (owner 2026-11-21): a knowledgebase kept Offline keeps the Ask and AI Knowledge tabs,
-  quieter and going nowhere. Hovering one (a long press on a phone, focus from the keyboard) shows "Ask Needs
-  Syncing" (or "AI Knowledge Needs Syncing"), why ("This knowledgebase is kept in this browser. Ask and AI Knowledge require your content to be synced to our servers.") and **Sync
+- **Offline, in the footer** (owner 2026-11-21): a knowledgebase kept Offline keeps the Ask, AI Knowledge and Connect
+  tabs, quieter and going nowhere. Hovering one (a long press on a phone, focus from the keyboard) shows "Ask Needs
+  Syncing" (or "AI Knowledge Needs Syncing", "Connect Needs Syncing"), why ("This knowledgebase is kept in this browser. Ask, AI Knowledge and Connect require your content to be synced to our servers.") and **Sync
   Knowledgebase**, the Share dialog's sync in place. Once it lands the tabs open as usual.
 - **A failure** is said in the answer's place in words with its next step: the key not accepted or the model not
   allowed (Open AI Settings for an Editor), no credit, the account's rate limit, Claude busy, a lost connection (Ask
@@ -254,15 +289,21 @@ strangers.
 - The typed key is held only in the field. It is read once when sent and the field is cleared in the same turn,
   whatever the answer. It is never kept in the page's state, a browser store, a log, telemetry or an error message.
 - An Editor has the controls; a Participant and a Viewer see the state and the model with none.
+- Under Which AI, one line says which AI answers this person now, and **Your AI Keys** opens the shared Settings
+  category ([Which key answers](#which-key-answers)): with no knowledgebase key, a team's or the person's own key
+  answers before built-in AI.
 
-## The three views
+## The views
 
-- A knowledgebase has three views: **Pages** (the editor), **Ask** and **AI Knowledge**
-  ([AI Knowledge](ai-knowledge.md)). They are three tabs at the left of the footer, **Pages | Ask | AI Knowledge**
-  ([The page surface](page-surface.md) "The footer"), on a phone too.
-- The view is in the address (`?view=ask`, `?view=ai`; none is Pages), not the hash, which is the open page's. A
-  reload keeps it, each change is a history entry, so Back returns to the view before, and each tab is a link.
-- Ask and AI Knowledge cover the canvas and the page tree, down to the footer; their header is the top row every view
-  shares, with Share and the account button at its right end. The editor under them takes no key, press or focus.
+- A knowledgebase has four views: **Pages** (the editor), **Ask**, **AI Knowledge**
+  ([AI Knowledge](ai-knowledge.md)) and **Connect** ([Connect](mcp-connect.md), owner 2026-11-21). They are four
+  tabs at the left of the footer, **Pages | Ask | AI Knowledge | Connect** ([The page surface](page-surface.md) "The
+  footer"), on a phone too.
+- The view is in the address (`?view=ask`, `?view=ai`, `?view=connect`; none is Pages), not the hash, which is the
+  open page's. A reload keeps it, each change is a history entry, so Back returns to the view before, and each tab
+  is a link.
+- Ask, AI Knowledge and Connect cover the canvas and the page tree, down to the footer; their header is the top row
+  every view shares, with Share and the account button at its right end. The editor under them takes no key, press
+  or focus.
 - Not offered in an embed, in zen mode, in a workbench, behind the welcome flow, to a Community visitor or through a
   link confined to one page.

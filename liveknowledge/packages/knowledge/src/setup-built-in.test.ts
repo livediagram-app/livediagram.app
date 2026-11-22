@@ -5,7 +5,7 @@ import {
   SETUP_REPLY_SCHEMA,
   setupBuiltInInput,
 } from './setup-built-in';
-import { builtInReplyText } from './built-in-client';
+import { builtInReplyText } from '@liveworkspace/ai';
 import { SETUP_MAX_PAGES, SETUP_MAX_TOKENS } from './setup-limits';
 import { SETUP_SYSTEM } from './setup-request';
 import { parseSetupSuggestion } from './setup-suggestion';

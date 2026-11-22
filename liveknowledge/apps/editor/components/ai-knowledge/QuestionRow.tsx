@@ -4,6 +4,7 @@
 // "Questions nobody could answer"): what Ask, an agent's empty search or its `report_gap` logged, grouped, with how
 // often and by whom. Draft a Page and Dismiss are a writer's.
 import type { KnowledgeQuestion } from '@liveknowledge/api-schema';
+import { Spinner } from '@/components/palette/template-picker-icons';
 import { Button, HoverCard } from '@liveknowledge/ui';
 import { askedByText } from '@/lib/knowledge-ask/overview-words';
 import { DismissIcon } from './ai-knowledge-icons';
@@ -43,9 +44,10 @@ export function QuestionRow({
           busy={drafting === question.question}
           disabled={drafting !== null && drafting !== question.question}
           onClick={() => onDraft(question)}
-          className="shrink-0 phone:min-h-11"
+          className="shrink-0 gap-1.5 phone:min-h-11"
         >
-          Draft a Page
+          {drafting === question.question ? <Spinner /> : null}
+          {drafting === question.question ? 'Drafting…' : 'Draft a Page'}
         </Button>
       ) : null}
       {canDismiss ? (

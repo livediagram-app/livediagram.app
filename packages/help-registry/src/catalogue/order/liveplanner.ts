@@ -24,6 +24,7 @@ export const ORDER: readonly string[] = [
   'account-and-data/deleting-your-data',
   'account-and-data/trash',
   'account-and-data/api-tokens',
+  'account-and-data/ai-keys',
   'account-and-data/connect-ai-mcp',
   'account-and-data/connect-ai-mcp/ai-clients',
   'account-and-data/google-drive',

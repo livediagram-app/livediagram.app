@@ -5,7 +5,7 @@ import type { SqlStatement } from './statement';
 export const SETTING_AI_KEY = 'ai_key';
 export const SETTING_AI_KEY_HINT = 'ai_key_hint';
 export const SETTING_AI_MODEL = 'ai_model';
-/** Whose API the key is for (model-providers.ts). No row: a key kept before there was a choice, Anthropic's. */
+/** Whose API the key is for (@liveworkspace/ai model-providers.ts). No row: a key kept before there was a choice, Anthropic's. */
 export const SETTING_AI_PROVIDER = 'ai_provider';
 
 /** One setting: a row `{ value }` or none. */

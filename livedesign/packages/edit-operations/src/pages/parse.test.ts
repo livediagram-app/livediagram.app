@@ -183,3 +183,34 @@ describe('photo pages', () => {
     );
   });
 });
+
+describe('text slots', () => {
+  it('reads a layout’s text beside its layout, on an add and a layout change', () => {
+    const text = { title: 'Why now', bullets: ['Costs fell'] };
+    expect(
+      parsePagesRequest({
+        pages: [
+          { op: 'add', kind: 'wireframe', layout: 'L', text },
+          { op: 'layout', page: 1, layout: 'L', text },
+        ],
+      }),
+    ).toMatchObject({
+      pages: [
+        { op: 'add', layout: 'L', text },
+        { op: 'layout', page: 1, layout: 'L', text },
+      ],
+    });
+  });
+
+  it('refuses text with no layout, and text that is not the slots', () => {
+    expect(
+      refusal({ pages: [{ op: 'add', kind: 'wireframe', text: { title: 'x' } }] }),
+    ).toMatchObject({
+      code: 'invalid_value',
+      change: 0,
+    });
+    expect(
+      refusal({ pages: [{ op: 'layout', page: 1, layout: 'L', text: { heading: 'x' } }] }).message,
+    ).toContain('"text" takes no "heading"');
+  });
+});

@@ -12,6 +12,7 @@ import {
 } from '@liveknowledge/knowledge';
 import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
 import type { SetupMode } from './setup-open';
+import { aiInUseLine } from '@/lib/knowledge-ask/ai-settings-words';
 
 export const SETUP_BUTTON = 'Describe to Set Up';
 export const SETUP_BUTTON_LINE = 'Tell AI what this is for and get a page structure.';
@@ -57,8 +58,10 @@ export const UNDO_NOTE = 'Pages are made twenty at a time; Undo takes back the l
 
 /** The quiet line under the field saying which AI answers (describe-to-set-up.md "The model"): nothing until the
  *  settings are read. */
-export const setupAiLine = (settings: Pick<KnowledgeAiSettings, 'hasKey'> | null): string | null =>
-  settings === null ? null : settings.hasKey ? "Uses your team's key" : 'Uses built-in AI';
+export const setupAiLine = (
+  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'uses'> | null,
+): string | null =>
+  settings === null ? null : (aiInUseLine({ builtIn: true, ...settings }) ?? 'Uses built-in AI');
 
 export type SetupNextStep = 'ai-settings' | 'try-again' | 'none';
 export type SetupFailureWords = { title: string; text: string; step: SetupNextStep };

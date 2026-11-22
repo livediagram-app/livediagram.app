@@ -38,7 +38,7 @@ export function makerWords(
 }
 
 /** The meta row's pills: one per stamp, or one for both when the same kind of writer made and last changed the page
- *  ("Human Written", "AI Written"; owner 2026-11-21: "if both human created and human edited, just use one badge"),
+ *  ("Human Authored", "AI Authored"; owner 2026-11-21: "if both human created and human edited, just use one badge"),
  *  its hover card saying both. */
 export function makerPills(
   makers: { created?: PageAuthorStamp; updated?: PageAuthorStamp },
@@ -52,7 +52,7 @@ export function makerPills(
       {
         key: 'both',
         kind: created.kind,
-        label: `${created.kind === 'ai' ? 'AI' : 'Human'} Written`,
+        label: `${created.kind === 'ai' ? 'AI' : 'Human'} Authored`,
         description: `${created.description}. ${updated.description}.`,
       },
     ];

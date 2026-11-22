@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The three views as tabs in the footer (docs/specs/030-knowledgebase/page-surface.md "The footer"): links with
+// The four views as tabs in the footer (docs/specs/030-knowledgebase/page-surface.md "The footer"): links with
 // `aria-current`, the view in the address, a hover card each, and nothing a person's tab has (add, close, menu).
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -67,8 +67,35 @@ describe('the Ask gate', () => {
   });
 });
 
+// Connect (docs/specs/030-knowledgebase/mcp-connect.md "The tab"): connecting makes a token for an account.
+describe('the Connect tab', () => {
+  it('opens Connect for someone signed in, and tells telemetry', async () => {
+    renderInEditor(<KnowledgeViewTabs />);
+    fireEvent.click(link('Connect'));
+    await waitFor(() => expect(window.location.search).toBe('?view=connect'));
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'ConnectView');
+  });
+
+  it('for someone not signed in, stays on Pages and asks them to sign in', async () => {
+    renderInEditor(<KnowledgeViewTabs />, chromeValue('edit', { accountUserId: null }));
+    fireEvent.click(link('Connect'));
+    const dialog = await screen.findByRole('dialog', { name: 'Sign In to Connect an AI App' });
+    expect(dialog.querySelector('a')?.textContent).toBe('Sign In');
+    expect(window.location.search).toBe('');
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it('says what it is for in its hover card', async () => {
+    renderInEditor(<KnowledgeViewTabs />);
+    fireEvent.pointerEnter(link('Connect'), { pointerType: 'mouse' });
+    const card = await screen.findByRole('tooltip');
+    expect(card.textContent).toContain('Connect an AI App');
+    expect(card.textContent).toContain('so it can read and write these pages');
+  });
+});
+
 describe('the view tabs', () => {
-  it('are three links in order, each with its icon, the showing view marked current', () => {
+  it('are four links in order, each with its icon, the showing view marked current', () => {
     window.history.replaceState(null, '', '/document/d1?view=ask#t=p1');
     renderInEditor(<KnowledgeViewTabs />);
     const nav = screen.getByRole('navigation', { name: 'Knowledgebase Views' });
@@ -77,10 +104,12 @@ describe('the view tabs', () => {
       'Pages',
       'Ask',
       'AI Knowledge',
+      'Connect',
     ]);
     for (const a of links) expect(a.querySelector('svg')).not.toBeNull();
     expect(link('Pages').getAttribute('href')).toBe('/document/d1#t=p1');
     expect(link('AI Knowledge').getAttribute('href')).toBe('/document/d1?view=ai#t=p1');
+    expect(link('Connect').getAttribute('href')).toBe('/document/d1?view=connect#t=p1');
     expect(link('Ask').getAttribute('aria-current')).toBe('page');
     expect(link('Pages').getAttribute('aria-current')).toBeNull();
     // The open tab alone wears the tab's card.
@@ -88,12 +117,12 @@ describe('the view tabs', () => {
     expect(nav.querySelector('[data-open]')?.getAttribute('data-knowledge-view-tab')).toBe('ask');
   });
 
-  it('in a knowledgebase kept Offline, keep Ask and AI Knowledge but quiet, going nowhere, saying why with Sync', async () => {
+  it('in a knowledgebase kept Offline, keep Ask, AI Knowledge and Connect but quiet, going nowhere, saying why with Sync', async () => {
     offline.on = true;
     window.history.replaceState(null, '', '/document/d1#t=p1');
     renderInEditor(<KnowledgeViewTabs />);
     expect(link('Pages').getAttribute('href')).toBe('/document/d1#t=p1');
-    for (const name of ['Ask', 'AI Knowledge']) {
+    for (const name of ['Ask', 'AI Knowledge', 'Connect']) {
       const a = link(name);
       expect(a.getAttribute('href')).toBeNull();
       expect(a.getAttribute('aria-disabled')).toBe('true');
@@ -146,7 +175,7 @@ describe('the view tabs', () => {
 
   it.each(ROLES)('are offered to a session of the %s role', (role) => {
     renderInEditor(<KnowledgeViewTabs />, chromeValue(role));
-    expect(screen.getAllByRole('link')).toHaveLength(3);
+    expect(screen.getAllByRole('link')).toHaveLength(4);
   });
 
   it.each([
@@ -173,7 +202,7 @@ describe('the footer', () => {
 
   it('on a phone keeps the tabs and the notification list in the row, the rest behind More', () => {
     renderInEditor(<BottomBar phone onOpenSettings={() => {}} onOpenSearch={() => {}} />);
-    expect(screen.getAllByRole('link')).toHaveLength(3);
+    expect(screen.getAllByRole('link')).toHaveLength(4);
     const more = screen.getByRole('button', { name: 'More' });
     expect(more.getAttribute('aria-expanded')).toBe('false');
     // Closed, the card's controls are out of the accessibility tree.

@@ -316,7 +316,7 @@ no tab.
 | drawings in the theme                   | `lib/knowledge-style/styled-elements.ts`                                                                                         |
 | a tab as the exports draw it            | `lib/knowledge-style/styled-tab.ts`, `lib/export-as-seen.ts`                                                                     |
 | the dialog and its panels               | `components/knowledge-style/` (`KnowledgeStyleDialog`, `knowledge-style-profile`, `KnowledgeTextPanel`, `KnowledgeColoursPanel`) |
-| the shared dialog's optional parts      | `packages/workbench` `tab-style-profile.ts` (`title`, `finishFilter`, `renderPanel`, `panelValues`)                              |
+| the shared dialog's optional parts      | `packages/workbench` `tab-style-profile.ts` (`title`, `finishFilter`, `renderPanel`, `panelValues`, `textFont`)                  |
 
 - **Model.** `KnowledgeStyle` is `{ theme, headingFont, bodyFont, textSize, lineSpacing, headingStyle, accent? }`:
   a built-in theme id (`brand` is the product's own), two typeface ids, `small | medium | large`, `compact |
@@ -355,10 +355,18 @@ comfortable | relaxed`, `plain | ruled`, and a hex when one was picked. `DEFAULT
   it and its 700 step reads on its 50 step at 4.5:1. `knowledgeDarkGround` is the dark appearance's ground under a
   theme: `#131b26` (the shared dark palette's slate-900) for `brand`, the ramp's slate-900 otherwise; `globals.css`
   paints the canvas root with `var(--color-slate-900)` in dark.
+- **The chrome's edges.** `globals.css` defines `--lk-chrome-edge` and `--lk-chrome-side` on the root, mixed in
+  oklab from the ground (`--color-white` in light, `--color-slate-900` in dark, both already the look's when a
+  theme tints them), and paints with them, unlayered so they outrank the utilities: the right edge and the surface
+  of `[data-contents-sidebar]` and `[data-page-tree-over]`, the foot of `[data-knowledge-top-row]`, the left edge
+  of `[data-page-rail]` and the top of `[data-editor-tabbar]`. `chrome-edges-css.test.ts` holds the rules and
+  works the mixes out for every look in both appearances (an edge at 1.3:1 or more on the ground, the sidebar
+  visibly off it).
 - **The dialog.** `KnowledgeStyleDialog` renders the shared `TabStyleDialog` with `knowledgeStyleProfile(style)`:
   `title` Knowledgebase Style, `finishFilter: false`, the looks from `KNOWLEDGE_LOOKS` (the platform's, each cut to
   a theme and a font) with `lookPagePreview` as the card, panels `['font', 'theme']` drawn by `renderPanel`, and
-  `panelValues` for the two rows. No tour binding runs (`NO_TOUR`). Its open state is the editor's existing
+  `panelValues` for the two rows, and `textFont` (the heading font) for the Text row's "Aa". The shared carousel
+  sets each card's name in its look's `font`. No tour binding runs (`NO_TOUR`). Its open state is the editor's existing
   `canvasThemeTab`; `EditorModals` draws it only while `useStyleOffered()`. The Fine-tune panels are
   `sm:min-h-[23.375rem]`, which makes all three views 562 px tall at 1440 x 900 (measured).
 - **Exports.** `tabAsSeen` first takes the tab through `tabInKnowledgeStyle(tab, knowledgeStyleStore.openStyle())`

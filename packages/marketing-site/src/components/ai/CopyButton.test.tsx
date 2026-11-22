@@ -26,6 +26,22 @@ describe('CopyButton', () => {
     expect(button.contains(status)).toBe(false);
   });
 
+  it('tells onCopied once the text is copied, and not when the clipboard refuses', async () => {
+    const onCopied = vi.fn();
+    const writeText = vi.fn(() => Promise.resolve());
+    Object.assign(navigator, { clipboard: { writeText } });
+    render(<CopyButton text="x" what="the command" onCopied={onCopied} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onCopied).toHaveBeenCalledTimes(1);
+    writeText.mockImplementationOnce(() => Promise.reject(new Error('blocked')));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onCopied).toHaveBeenCalledTimes(1);
+  });
+
   it('takes the compact size as its own, not as a class that loses to its padding', () => {
     render(<CopyButton text="x" what="the command" size="xs" />);
     const cls = screen.getByRole('button').className;

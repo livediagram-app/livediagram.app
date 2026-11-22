@@ -77,7 +77,7 @@ describe('makerPills', () => {
   it('says one pill when the same kind made and last changed the page, else one each', () => {
     const human = { by: 'u1', at: NOW_ - 60_000, kind: 'human' as const };
     const both = makerPills({ created: human, updated: human }, nameOf, NOW_);
-    expect(both.map((p) => [p.key, p.label])).toEqual([['both', 'Human Written']]);
+    expect(both.map((p) => [p.key, p.label])).toEqual([['both', 'Human Authored']]);
     expect(both[0]!.description).toMatch(/^Created by Priya Shah .*\. Last edited by Priya Shah/);
     const ai = { by: 'u1', at: NOW_, kind: 'ai' as const, agent: 'Claude' };
     expect(makerPills({ created: human, updated: ai }, nameOf, NOW_).map((p) => p.label)).toEqual([

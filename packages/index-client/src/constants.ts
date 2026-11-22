@@ -191,6 +191,7 @@ export const ACCOUNT_EVENT_TYPES = [
   'team_role_changed',
   'team_member_removed',
   'team_renamed',
+  'team_ai_key_changed',
 ] as const;
 export const EVENT_TYPES = [...ITEM_EVENT_TYPES, ...ACCOUNT_EVENT_TYPES] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -226,6 +227,8 @@ export const TEAM_AUDIT_ACCOUNT_TYPES = [
   'team_role_changed',
   'team_member_removed',
   'team_renamed',
+  // An admin set, replaced, re-modelled or removed the team's AI key (003-accounts/ai-keys.md); never any of the key.
+  'team_ai_key_changed',
 ] as const satisfies readonly AccountEventType[];
 export const TEAM_AUDIT_ITEM_TYPES = [
   'shared',
@@ -263,6 +266,7 @@ export const TEAM_AUDIT_EVENT_LABELS: Record<TeamAuditEventType, string> = {
   team_role_changed: 'Role Changed',
   team_member_removed: 'Removed or Left',
   team_renamed: 'Team Renamed',
+  team_ai_key_changed: 'AI Key Changed',
   shared: 'Share Link Made',
   unshared: 'Share Link Removed',
   moved: 'Moved',

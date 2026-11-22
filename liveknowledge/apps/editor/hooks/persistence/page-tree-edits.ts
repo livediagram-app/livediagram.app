@@ -92,10 +92,23 @@ export function pageAfterDelete(tabs: readonly Tab[], id: string): string | unde
 }
 
 /** The delete confirmation's title, naming the count ("Delete Release Process and 3 Subpages?"). */
-export function deletePageTitle(name: string, subpages: number): string {
+export function deletePageTitle(name: string, subpages: number, toTrash = false): string {
   const page = name.trim() || 'This Page';
-  if (subpages === 0) return `Delete ${page}?`;
-  return `Delete ${page} and ${subpages} ${subpages === 1 ? 'Subpage' : 'Subpages'}?`;
+  const what =
+    subpages === 0 ? page : `${page} and ${subpages} ${subpages === 1 ? 'Subpage' : 'Subpages'}`;
+  return toTrash ? `Move ${what} to the Trash?` : `Delete ${what}?`;
+}
+
+/** The delete confirmation's words: to the knowledgebase's Trash, or (an Offline knowledgebase, which has none)
+ *  removed, with Undo to bring it back (knowledgebases-and-pages.md "The page Trash"). */
+export function deletePageMessage(subpages: number, toTrash: boolean): string {
+  if (toTrash)
+    return subpages === 0
+      ? 'You can restore it from the Trash for 30 days. Undo (Cmd/Ctrl-Z) brings it straight back.'
+      : 'You can restore them from the Trash for 30 days. Undo (Cmd/Ctrl-Z) brings them straight back.';
+  return subpages === 0
+    ? 'The page is removed for everyone. Undo (Cmd/Ctrl-Z) brings it back.'
+    : 'The page and its subpages are removed for everyone. Undo (Cmd/Ctrl-Z) brings them back.';
 }
 
 /** Why the tree refuses an edit, as a person reads it in a tooltip or a toast. */

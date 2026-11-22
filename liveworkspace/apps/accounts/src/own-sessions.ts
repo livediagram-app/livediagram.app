@@ -52,6 +52,22 @@ export async function listOwnSessions(
     }));
 }
 
+/** Whether `id` is one of the account's sessions and has not expired: what a change by bearer that must not outlive
+ *  Sign out checks (an access token alone lives out its 15 minutes). One read by primary key. */
+export async function isLiveSession(
+  db: D1Database,
+  userId: string,
+  id: string | null,
+  now = Date.now(),
+): Promise<boolean> {
+  if (!id) return false;
+  const row = await db
+    .prepare('SELECT expiresAt FROM session WHERE id = ? AND userId = ?')
+    .bind(id, userId)
+    .first<{ expiresAt: string | number }>();
+  return row !== null && timeOf(row.expiresAt) > now;
+}
+
 /** Ends one of the account's own sessions, with every app's tokens on it, as Sign out does. False for an id that
  *  isn't the account's. */
 export async function endOwnSession(db: D1Database, userId: string, id: string): Promise<boolean> {
