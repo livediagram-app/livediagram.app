@@ -65,7 +65,8 @@ the [blueprint](blueprints/knowledgebase-for-agents.md).
   replaces it as `new_text`; `read_page` takes `heading` or `max_chars` and sends the first 6,000 characters unless
   asked.
 - **Every page and passage answer carries the trust fields**: `verified` (`verified`, `review-due`,
-  `never-verified`), `verified_at`, `verified_by` (the verifier's name, on `read_page`, where the accounts service
+  `never-verified`, or `off` under a Review Period of Never, when there is no `verified_at`, `verified_by` or
+  `review_due` and `stale` is false: [Verification](../030-knowledgebase/verification.md#under-a-review-period-of-never)), `verified_at`, `verified_by` (the verifier's name, on `read_page`, where the accounts service
   has one), `review_due`, `stale` (the review is due) and `conflicts_with` (the pages an open conflict names).
 - **The Review Period is the knowledgebase's, and no tool sets it.** `review_due` and `stale` are worked out from
   the knowledgebase's one period ([Verification](../030-knowledgebase/verification.md) "The Review Period") when an

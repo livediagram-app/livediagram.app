@@ -121,6 +121,22 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   `seed-fetched-document.ts` for the first page and `usePerTabLoad` for the rest), which the api counts once a
   person a page a day.
 
+### Under a Review Period of Never
+
+[Verification](../verification.md#under-a-review-period-of-never). `pageTrust(knowledge, every, now)` answers state
+`off` under Never (the fields kept, no `reviewAt`), so every editor reader of a page's state meets `off`:
+`trustMark('off')` is none (the meta row, the tree, a link's hover card, a search row, Home's search), the meta row's
+"Changed since verified" needs a mark, and `PageHealthCard` under `off` draws neither the state panel nor the Last
+Verified and Review Due rows. `knowledgeRights` takes `verificationOn` and answers `verify: false` under Never,
+which takes Verify out of the meta row, Page Health, the tree's row menu and the score's fixes at once.
+`pageHealthFacts` reads an `off` page's fields for the score's own state (it leaves verification out under Never
+regardless). Wire states from the api (an Ask source, a search result, a conflict side) arrive as `off` and draw
+no badge (`sourceTrust` answers mark `off`, `trustText` an empty string); `answerTrust` answers none when every
+source is `off`. AI Knowledge reads `overview.reviewEvery`: `FigureTiles` draws Average Health in Verified's place
+and `HealthSection` drops the share, the bar, the legend and Remind the Owners. Tests: `page-trust.test.ts`,
+`PageMetaRow.test.tsx`, `PageHealthCard.never.test.tsx`, `knowledge-rights` cases in `page-knowledge.test.ts`,
+`source-meta.test.ts`, `AiDashboard.test.tsx`, each for Never and a set period.
+
 ### Share roles
 
 | Action                                              | Editor               | Participant          | Viewer |

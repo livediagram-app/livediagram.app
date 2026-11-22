@@ -34,7 +34,48 @@ once a person a page a day), and Page Health's Read This Week is read again on e
 reload (owner 2026-11-21).
 
 The view's read answers the last 14 days' reads by day, people and agents apart (the sparkline and Reads This Week),
-and the 5 pages read most in the last 7 days with each one's reads by people and by agents (Most Read).
+the 5 pages read most in the last 7 days with each one's reads by people and by agents (Most Read), and the pages
+nobody read in the last 90 days (Not Read in 90 Days).
+
+### Not Read in 90 Days
+
+Owner, 2026-11-21: "isn't that already in AI Knowledge tab? if not add something useful". The pages to update, merge
+or delete: every page with no read, by a person or an agent, in the last 90 days (all `page_reads` keeps). A page
+made in the last 90 days is left out: it has not had 90 days to be read. Up to 10 are listed, the one touched
+longest ago first (its last edit, else when it was made; a page with neither kept is older than both and leads,
+ties in tree order), each with "Last edited 5 months ago" ("Last edit not kept" with none) and opening its page;
+the card's count is all of them, and "4 more not listed" follows the tenth. With none: "Every Page Was Read",
+saying every page older than 90 days was opened or read by an agent in that time. It comes from the overview's one
+read: the facts statement Knowledge Health already runs answers each page's last read day (`MAX(day)` on the
+`page_reads_tab` index), so it costs no request and no statement more. Every role that can see AI Knowledge sees
+it; it changes nothing.
+
+### Page Insights
+
+A page's use over time, in its right rail (and its Page Info card and sheet), for everyone who can read the page:
+
+- **Reads, 30 days**: a bar a day for the last 30 days, people under agents in the dashboard's two tones, scaled to
+  the page's busiest day, with the total ("128 reads in 30 days") and a key ("94 people, 34 agents"). One spoken
+  label says it all: "Reads by day over the last 30 days: 94 by people, 34 by agents."
+- **Cited by Ask**: how many times Ask's answer to a first question cited the page in the last 30 days
+  (`page_answers`, the same count AI Context's questions are). Not shown through a link confined to one page,
+  which has no Ask.
+- **Read by Agents**: the agents' reads in the last 30 days (each `read_page`, and each search result an agent was
+  served), from the same bars.
+- **Answered From This Page** moves here from AI Context: the 3 questions it answered most, as before. With none it
+  is not drawn.
+- **A new page** (made in the last 7 days) with no reads yet shows **New This Week** and one line, "Reads show here
+  as people and agents open it.", in place of the bars and the figures: never a row of zeros. An older page with no
+  reads in 30 days shows the empty bars (hairlines) and "No reads in 30 days".
+- **The read.** Page Health's one read answers it (`insights`): the 30 days' reads by day and reader kind (a range
+  of `page_reads_tab`, at most 60 rows), which also gives Read This Week, and the citations as a window total on
+  the questions statement AI Context already runs. No request and no statement more than before.
+- Kept Offline, there is no room: the section is not drawn.
+
+| Action             | Editor | Participant | Viewer |
+| ------------------ | ------ | ----------- | ------ |
+| See Page Insights  | yes    | yes         | yes    |
+| See Not Read in 90 | yes    | yes         | yes    |
 
 ## Questions nobody could answer
 
@@ -101,9 +142,10 @@ what agents and Ask make of this one page. It looks as the rest of the rail does
   budget's count). An Editor has a switch, the same change as the tree row menu's **Always in Context**: a page that
   would pass the budget is not added and the refusal says so in the route's words. Anyone else reads "Handed to
   Every Agent First" or "Not Handed to Agents First".
-- **Answered From This Page**: the questions whose Ask answer cited this page, up to 3, most asked first, over the
-  last 30 days, each quoted with "Asked 6 times" ("Asked once" for one). With none it is not shown (owner,
-  2026-11-21: "if no questions or read by agents, don't show it").
+- **Answered From This Page** (now in [Page Insights](#page-insights), beside how often Ask cited the page): the
+  questions whose Ask answer cited this page, up to 3, most asked first, over the last 30 days, each quoted with
+  "Asked 6 times" ("Asked once" for one). With none it is not shown (owner, 2026-11-21: "if no questions or read by
+  agents, don't show it").
 - **Read by Agents**: the agents that read this page in the last 7 days, the 3 that read it most, each with its
   reads. With none it is not shown.
 - No Ask About This Page (owner, 2026-11-21: "we already have Ask in the footer").
@@ -128,8 +170,10 @@ Counts of Verified, Review Due and Never Verified pages as one stacked bar with 
 **average Health Score** ([Verification](verification.md#health-score)) beside the verified share, the pages with
 low health, and **Remind the Owners**
 (one email each, at most once a week per knowledgebase). The counts are worked out under the knowledgebase's one
-Review Period ([Verification](verification.md) "The Review Period") when the view is read: under Never no page is
-Review Due.
+Review Period ([Verification](verification.md) "The Review Period") when the view is read. Under Never
+verification is off ([Verification](verification.md#under-a-review-period-of-never)): the card leads with the average
+Health Score ("71 average health across 24 pages"), keeps Pages With Low Health, and draws no verified share, no bar
+or legend and no Remind the Owners.
 
 **Pages With Low Health** (owner 2026-11-21: "Knowledge health should show up to 5 pages with low health"): the 5
 lowest-scoring pages whose score is under the Healthy line (75), lowest first, a tie the most read this week first,
@@ -166,6 +210,7 @@ rows and actions, long lists capped so the page never grows with the data.
   | Pages That Disagree | open conflicts                                                                                      | shows Needs Attention at Disagreements   |
   | Suggested Edits     | agents' edits waiting                                                                               | shows Needs Attention at Suggested Edits |
   | Verified            | the verified share of the pages, as a percentage; how many are Review Due; the average Health Score | brings Knowledge Health into view        |
+  | Average Health      | under a Review Period of Never, in Verified's place: the average Health Score; across how many pages | brings Knowledge Health into view        |
 
   A tile whose figure asks for someone (an open question, a conflict, an edit waiting, a page Review Due) carries a
   small amber mark; a tile that filters Needs Attention shows pressed while its filter is on, and pressing it again
@@ -186,9 +231,11 @@ rows and actions, long lists capped so the page never grows with the data.
   and **Add a Page**.
 - **Most Read:** the 5 pages read most in the last 7 days, each with a bar of its reads, people and agents in the
   same two tones as the sparkline, and its figures. A row opens its page. A deleted page is left out.
+- **Not Read in 90 Days:** under Most Read, as [Not Read in 90 Days](#not-read-in-90-days) says: a row a page,
+  its title and when it was last edited, a chevron, opening the page.
 - **What an Agent Sees:** the dark sample card, last.
-- On a wide screen the cards fill two equal columns (owner 2026-11-21): Needs Attention, Connected Agents and Most
-  Read on the left; Knowledge Health, Always in Context and What an Agent Sees on the right, so neither column runs
+- On a wide screen the cards fill two equal columns (owner 2026-11-21): Needs Attention, Connected Agents, Most
+  Read and Not Read in 90 Days on the left; Knowledge Health, Always in Context and What an Agent Sees on the right, so neither column runs
   long beside an empty one. Each column is its own stack, so a card's height in one never moves a card in the other,
   and Knowledge Health heads its column on a whole pixel (CSS columns put it half a pixel off, and its glyph with it).
   Below a laptop's width (1024px) they are one column, the left column's cards then the right's, the order focus
