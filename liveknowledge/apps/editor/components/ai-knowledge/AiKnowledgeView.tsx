@@ -156,6 +156,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
               ) : null}
               <AiDashboard
                 overview={overview}
+                documentId={documentId}
                 rights={rights}
                 agents={agentWrite.shown}
                 agentsBusy={agentWrite.busy}

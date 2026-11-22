@@ -4,7 +4,7 @@
 // then two stacks of cards, the wide one (Needs Attention, Connected Agents) and the narrow one (Knowledge Health,
 // Always in Context, Most Read, What an Agent Sees); one column below a laptop's width. Every figure is from the one
 // overview read. A tile filters Needs Attention or brings its card into view and focuses it.
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type {
   KnowledgeAgent,
   KnowledgeOverviewResponse,
@@ -22,6 +22,7 @@ import { AgentSampleCard, ContextSection, HealthSection } from './HealthAndConte
 import { MostReadCard } from './MostReadCard';
 import { NotReadCard } from './NotReadCard';
 import { NeedsAttention } from './NeedsAttention';
+import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 
 /** What the dashboard's controls do: AiKnowledgeView's handlers, each checking its right again. */
 export type DashboardActions = {
@@ -58,7 +59,8 @@ const CARD_OF: Record<'reads' | 'agents' | 'health', string> = {
 const COLUMN = 'flex min-w-0 flex-col gap-4 sm:gap-5';
 
 export function AiDashboard({
-  overview,
+  overview: read,
+  documentId,
   rights,
   agents,
   agentsBusy,
@@ -69,6 +71,9 @@ export function AiDashboard({
   actions,
 }: {
   overview: KnowledgeOverviewResponse;
+  /** The knowledgebase open: its Review Period is the live settings store's, as the rail's is, so a change of it
+   *  (here, or the room's op) shows at once with no new read. Absent, the read's period stands. */
+  documentId?: string;
   rights: AskRights;
   // The agents as shown, a pending write change already on its card (useAgentWrite).
   agents: readonly KnowledgeAgent[];
@@ -79,6 +84,13 @@ export function AiDashboard({
   now: number;
   actions: DashboardActions;
 }) {
+  const live = useReviewEvery(documentId);
+  const reviewEvery = documentId ? live : read.reviewEvery;
+  // Whether verification is on (verification.md "Under a Review Period of Never") follows the period held now.
+  const overview = useMemo(
+    () => (read.reviewEvery === reviewEvery ? read : { ...read, reviewEvery }),
+    [read, reviewEvery],
+  );
   const [filter, setFilter] = useState<AttentionFilter>('all');
   const go = (target: TileTarget) => {
     if ('filter' in target) {
