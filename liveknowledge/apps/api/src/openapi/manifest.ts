@@ -753,6 +753,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/documents/{id}/pages/{tabId}/watch',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Watching (docs/specs/030-knowledgebase/watching.md): the caller's own watch of the page (`page`, `section` or null), the section above it whose watch covers it, and how many people's watches cover it. Every role that reads the page; a guest without an account and an agent are answered with no watch of their own.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'PageWatchResponse',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/pages/{tabId}/watch',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Watch the page (`page`), the page and every page under it (`section`), or stop (null). Any signed-in role that reads the page, Viewers included; a guest without an account and an agent are refused with 403 `watch_needs_account`. 400 `not_a_section` for a page with no subpages, 409 `watchers_full` past 2,000 watches in a knowledgebase, 429 `watching_too_fast`. Tells nobody; answers the watch as GET does.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'PageWatchChange',
+    responseSchema: 'PageWatchResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429],
+  },
+  {
+    method: 'GET',
     path: '/documents/{id}/pages/{tabId}/threads',
     segment: 'documents',
     tag: 'Knowledge',

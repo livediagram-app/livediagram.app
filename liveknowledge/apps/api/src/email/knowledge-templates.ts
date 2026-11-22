@@ -10,8 +10,8 @@ import { xmlEscape } from '@liveworkspace/icons';
 import { mentionQuote, subjectText } from '@liveworkspace/email/layout';
 import { DEFAULT_REVIEW_EVERY, type ReviewEvery } from '@liveknowledge/knowledge';
 import type { Env } from '../types';
-import { EMAIL_BRAND, manageNotificationsFooter, profilePath, shell } from './brand-layout';
-import { appBaseUrl } from './client';
+import { manageNotificationsFooter, profilePath, shell } from './brand-layout';
+import { kbUrl, link, named, pageUrl, text } from './knowledge-email-parts';
 import type { RenderedEmail } from './templates';
 
 /** The pages one email lists; the rest are counted. 100 rows are about 25 KB of HTML: under the 102 KB at which
@@ -31,13 +31,6 @@ export type EmailConflict = {
   b: { tab: string; title: string; text: string };
 };
 
-export const named = (name: string, fallback: string) => name.trim() || fallback;
-export const kbUrl = (env: Env, kb: EmailKnowledgebase) =>
-  `${appBaseUrl(env)}/document/${encodeURIComponent(kb.id)}`;
-export const pageUrl = (env: Env, kb: EmailKnowledgebase, tab: string) =>
-  `${kbUrl(env, kb)}#t=${encodeURIComponent(tab)}`;
-export const link = (href: string, text: string) =>
-  `<a href="${xmlEscape(href)}" style="color:${EMAIL_BRAND};font-weight:600">${xmlEscape(text)}</a>`;
 const pagesWord = (n: number) => `${n.toLocaleString('en')} ${n === 1 ? 'page' : 'pages'}`;
 // What the knowledgebase's Review Period is, in a sentence; nothing under Never, where no page comes due.
 const PERIOD_WORDS: Record<ReviewEvery, string> = {
@@ -72,9 +65,6 @@ function pageRows(env: Env, kb: EmailKnowledgebase, pages: readonly EmailPage[])
   }
   return { points, lines };
 }
-
-export const text = (env: Env, parts: readonly string[], reason: string) =>
-  [...parts, '', reason, `Turn these emails off: ${profilePath(env)}`].join('\n');
 
 /** An owner's pages whose review came due: one email for them all. */
 export function reviewDueEmail(

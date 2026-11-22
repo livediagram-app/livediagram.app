@@ -35,6 +35,11 @@ PageWatchScope | null, through: { tab, name } | null, watchers: number, section:
 - **The route** (`routes/knowledge-watch-routes.ts`) runs after the knowledge router's grant and page lookup, so its
   read is every role's. A change needs `pageCreatorOf(ctx)` and `readerOf(ctx).kind === 'person'` (as a reaction);
   the role is never read: a Viewer passes. Rate: `createReactionRate(WATCH_CHANGES_PER_MINUTE)`, its own map.
+  Both methods are in the OpenAPI manifest (`openapi/manifest.ts`, `PageWatchResponse` and `PageWatchChange` in
+  `ROOT_TYPES`), so `/api/openapi.json` documents them and the route-parity test holds.
+- **The digest's email** (`email/watch-digest-email.ts`) shares the knowledgebase emails' links, fallback names and
+  plain-text footer through `email/knowledge-email-parts.ts`, kept apart from `knowledge-templates.ts` so that file's
+  pinned-hash test covers templates only.
 - **The store** (`knowledge/page-watch.ts`): `setPageWatch(env, tab, person, scope, now)` deletes the person's row
   for the tab, or upserts it (`INSERT ... ON CONFLICT (tab, person) DO UPDATE SET scope, at`), refusing a new row past
   `WATCHES_PER_KNOWLEDGEBASE_MAX`. `watchOf(env, tree, tab, person)` reads the person's rows for the page and its

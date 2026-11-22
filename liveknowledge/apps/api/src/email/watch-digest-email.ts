@@ -8,15 +8,8 @@ import { subjectText } from '@liveworkspace/email/layout';
 import type { UpdateActor, UpdateKind } from '@liveworkspace/index-client';
 import type { Env } from '../types';
 import { manageNotificationsFooter, profilePath, shell } from './brand-layout';
-import {
-  EMAIL_PAGES_LISTED,
-  kbUrl,
-  link,
-  named,
-  pageUrl,
-  text,
-  type EmailKnowledgebase,
-} from './knowledge-templates';
+import { kbUrl, link, named, pageUrl, text } from './knowledge-email-parts';
+import { EMAIL_PAGES_LISTED, type EmailKnowledgebase } from './knowledge-templates';
 import type { RenderedEmail } from './templates';
 
 /** One page's line: what happened to it and who did it, newest first. */
