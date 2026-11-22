@@ -2,6 +2,7 @@
 // time: a busy machine slows the clock on the wall, not the work counted here. Each figure is the best of a few
 // rounds, and each budget several times what was measured, so only a real regression fails.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs } from '@liveworkspace/vitest-config/cpu-time';
 import type { ItemEvent } from '../../item';
 import { AUTOMATION_LOG_MAX, AUTOMATION_RULES_MAX } from '../../limits';
 import { aiToday } from '../automation-ai';
@@ -32,6 +33,11 @@ const cpuMicros = (): number => {
 };
 
 // The least CPU time `work` took over a few rounds, in microseconds.
+// A budget in µs through the shared rule (cpu-time.js): as written locally, three times it on CI, and unbounded under
+// coverage, where instrumentation sets the pace; vitest-budgets reruns this file plain, where it holds (docs/ci.md
+// "Speed budgets"). A coverage run on CI read the no-rule write at 75 µs against 60, where a plain run reads 27.
+const budgetMicros = (micros: number): number => cpuBudgetMs(micros / 1000) * 1000;
+
 async function best(rounds: number, work: () => void | Promise<void>): Promise<number> {
   let least = Infinity;
   for (let i = 0; i < rounds; i += 1) {
@@ -81,8 +87,8 @@ describe('a tab write', () => {
       'tab write, no rule on, added',
       `${steady.toFixed(2)} µs (compiled afresh: ${compiled.toFixed(2)} µs)`,
     );
-    expect(steady).toBeLessThan(5);
-    expect(compiled).toBeLessThan(60);
+    expect(steady).toBeLessThan(budgetMicros(5));
+    expect(compiled).toBeLessThan(budgetMicros(60));
   });
 
   it('costs an item with 50 settling rules on under 150 µs a write', async () => {
@@ -97,8 +103,8 @@ describe('a tab write', () => {
       'tab write, 50 settling rules on, added',
       `${steady.toFixed(2)} µs (compiled afresh: ${compiled.toFixed(2)} µs)`,
     );
-    expect(steady).toBeLessThan(150);
-    expect(compiled).toBeLessThan(200);
+    expect(steady).toBeLessThan(budgetMicros(150));
+    expect(compiled).toBeLessThan(budgetMicros(200));
     // The budget is CPU time per write; the wall clock only bounds a loaded machine's setup.
   }, 60_000);
 });
@@ -126,7 +132,7 @@ describe('a wake', () => {
       expect(w.taken).toHaveLength(1000);
     }
     report('wake, 25 events over 50 rules (1,000 runs)', `${(least / 1000).toFixed(1)} ms`);
-    expect(least).toBeLessThan(900_000);
+    expect(least).toBeLessThan(budgetMicros(900_000));
   });
 });
 
@@ -171,7 +177,7 @@ describe('the rules list', () => {
     });
     expect(listed).toBe(AUTOMATION_RULES_MAX);
     report('rules list, 50 rules over 2,500 runs', `${(list / 1000).toFixed(1)} ms`);
-    expect(list).toBeLessThan(25_000);
+    expect(list).toBeLessThan(budgetMicros(25_000));
     const trail = new URL(`${url.href}/runs?limit=100000`);
     const response = await ask(['runs'], trail);
     expect((await response!.json<{ runs: unknown[] }>()).runs).toHaveLength(200);
@@ -202,8 +208,8 @@ describe('a wake’s upkeep and a call’s replay check', () => {
     report('trim, a full Audit Trail (2,000 + 500), nothing over', `${trim} µs`);
     report('the day’s AI asks, over a full Audit Trail', `${ai} µs`);
     expect(aiToday(w.sql, now)).toBe(100);
-    expect(trim).toBeLessThan(400);
-    expect(ai).toBeLessThan(200);
+    expect(trim).toBeLessThan(budgetMicros(400));
+    expect(ai).toBeLessThan(budgetMicros(200));
   });
 
   it('keeps a signed call’s signature with a rule’s 600 kept, in microseconds', async () => {
@@ -221,6 +227,6 @@ describe('a wake’s upkeep and a call’s replay check', () => {
       i += 1;
     });
     report('a signature kept, 600 a rule', `${take} µs`);
-    expect(take).toBeLessThan(500);
+    expect(take).toBeLessThan(budgetMicros(500));
   });
 });
