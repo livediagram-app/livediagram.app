@@ -10,10 +10,12 @@ import {
   pageKindOf,
   pageContentBox,
   pageShowsSystemBars,
+  computeRefs,
   type PageBackground,
   type Tab,
 } from '@livedesign/design';
-import type { PageSummary } from './pages';
+import { textsLeftOutLine, withLaidOutTexts } from '@liveworkspace/edit-operations/laid-out-texts';
+import type { LaidOutTexts, PageSummary } from './pages';
 
 export type PagesTab = Pick<Tab, 'elements' | 'pages'> & { pageOrientation?: unknown };
 
@@ -44,9 +46,10 @@ const roundRect = (r: { x: number; y: number; width: number; height: number }) =
 });
 
 /** Every page as the answers list it. */
-export function pageSummaries(tab: PagesTab): PageSummary[] {
+/** Every page as the answers list it; each one `laidOut` names (a change laid it out) with its texts. */
+export function pageSummaries(tab: PagesTab, laidOut?: LaidOutTexts): PageSummary[] {
   const laid = layOutPages(pagesOf(tab));
-  return laid.map((p, i) => ({
+  const pages = laid.map((p, i) => ({
     place: i + 1,
     id: p.id,
     name: p.name ?? null,
@@ -71,4 +74,14 @@ export function pageSummaries(tab: PagesTab): PageSummary[] {
         }
       : {}),
   }));
+  return withLaidOutTexts(
+    pages,
+    laidOut,
+    tab.elements,
+    computeRefs(tab.elements.map((el) => el.id)).refOf,
+  );
 }
+
+/** The answer's line for laid-out pages whose texts did not fit it, or null. */
+export const pagesTextsLeftOut = (pages: readonly PageSummary[], laidOut?: LaidOutTexts) =>
+  textsLeftOutLine(pages, laidOut, 'read_design with view "pages"');

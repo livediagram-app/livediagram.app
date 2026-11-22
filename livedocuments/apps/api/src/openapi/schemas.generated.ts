@@ -4824,6 +4824,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LayoutText": {
+    "additionalProperties": false,
+    "description": "What a change gives a layout's slots: a slot left out keeps the layout's sample.",
+    "properties": {
+      "body": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "bullets": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "subtitle": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
   "LayoutView": {
     "additionalProperties": false,
     "properties": {
@@ -5813,6 +5838,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "size": {
             "$ref": "#/components/schemas/PageSizeId"
+          },
+          "text": {
+            "$ref": "#/components/schemas/LayoutText"
           }
         },
         "required": [
@@ -5865,6 +5893,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "page": {
             "$ref": "#/components/schemas/PageRef"
+          },
+          "text": {
+            "$ref": "#/components/schemas/LayoutText"
           }
         },
         "required": [
@@ -6245,6 +6276,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "size": {
         "$ref": "#/components/schemas/PageSizeId"
+      },
+      "texts": {
+        "items": {
+          "$ref": "#/components/schemas/PageText"
+        },
+        "type": "array"
       }
     },
     "required": [
@@ -6259,6 +6296,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "locked",
       "flow",
       "elements"
+    ],
+    "type": "object"
+  },
+  "PageText": {
+    "additionalProperties": false,
+    "description": "One text of a laid-out page: its ref, its slot (null for a figure) and its words, cut short.",
+    "properties": {
+      "ref": {
+        "type": "string"
+      },
+      "slot": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "ref",
+      "slot",
+      "text"
     ],
     "type": "object"
   },
@@ -6559,6 +6620,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "size": {
               "$ref": "#/components/schemas/PageSizeId"
+            },
+            "texts": {
+              "items": {
+                "$ref": "#/components/schemas/PageText"
+              },
+              "type": "array"
             }
           },
           "required": [

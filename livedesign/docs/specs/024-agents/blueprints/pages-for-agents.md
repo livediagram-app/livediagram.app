@@ -93,17 +93,36 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 
 ```ts
 | { op: 'add'; kind: 'logo' | 'wireframe' | 'photo'; size?: PageSizeId; orientation?: PageOrientation;
-    name?: string; background?: PageBackgroundInput; layout?: string; at?: number }
+    name?: string; background?: PageBackgroundInput; layout?: string; text?: LayoutText; at?: number }
 | { op: 'set'; page: PageRef; name?: string; size?: PageSizeId; orientation?: PageOrientation;
     background?: PageBackgroundInput; locked?: boolean }
-| { op: 'layout'; page: PageRef; layout: string }
+| { op: 'layout'; page: PageRef; layout: string; text?: LayoutText }
 | { op: 'move'; page: PageRef; to: number }
 | { op: 'duplicate'; page: PageRef }
 | { op: 'delete'; page: PageRef }
 | { op: 'apply_background_to_all'; page: PageRef }
 PageBackgroundInput = { color?: string; gradient?: [string, string]; angle?: number;
                         pattern?: 'dots' | 'grid' | 'lines' | 'none'; paper?: true }
+LayoutText = { title?: string; subtitle?: string; bullets?: string[]; body?: string[] }  // each text <= 2,000, lists <= 60
 ```
+
+`text` is read by `readLayoutText` (`@liveworkspace/edit-operations/layout-slots`, re-exported by
+`@livedesign/api-schema`); its refusal message is the change's `invalid_value`, and `text` beside no `layout` is
+`invalid_value` "\"text\" fills a layout's slots: give a layout with it.".
+
+Text slots (spec "Text slots"), in `applyPageChanges`'s `layOut`, after `buildPageLayout` and before
+`themedForTab`: `layoutTextOf(built, text?)` (`packages/edit-operations/src/pages/layout-text.ts`) answers the
+layout's elements and `LayoutTextSlot[]`, filled by `fillLayoutSlots(built, text, textPxOf, relabel)` when `text` is
+given (`textPxOf(el)` is `labelFontPx(el.textSize) × (el.textScale ?? 1)`; `relabel` sets the label). Each fill line is
+pushed after the change's own line, prefixed `Page <place>: `. The outcome gains `laid: Map<pageId,
+LayoutTextSlot[]>`, the last layout each page took in the call.
+
+The answer's texts (spec "A laid-out page's texts"): `pageSummaries(tab, laid?)` (`packages/api-schema/src/pages-summary.ts`)
+gives each page in `laid` `texts: PageText[]`, `{ ref, slot, text }`: `ref` from `computeRefs` over the tab's element
+ids (the views' refs), `text` the element's label now, cut at `PAGE_TEXT_SAMPLE_MAX` (80) with `…`; a slot whose
+element is gone is skipped. Pages in row order while the running total of `JSON.stringify(texts).length` stays within
+`PAGE_TEXTS_BUDGET` (60,000); the first page past it and every later one get no `texts`, and `pagesTextsLeftOut`
+answers the line the route appends to `lines`.
 
 Answer `200`:
 
@@ -121,7 +140,8 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 ### MCP
 
 - `change_pages` `{ designId, tabId?, changes: PageChange[] (1..50) }`, behaviour `destructive`, output
-  `{ designId, tabId, lines, pages, rev, url }`; a refusal is a tool error, `Change n: …`
+  `{ designId, tabId, lines, pages, rev, url }`, each page with `texts?` `{ ref, slot, text }[]`; a change's `text`
+  is a strict zod object of the four slots; a refusal is a tool error, `Change n: …`
   counting from 1.
 - Which tab, before the route (`pagesTabOf`): the one named, else the first.
 - Every input and output property `.describe()`d; layout ids described by kind in `change_pages`'s `layout`

@@ -3,7 +3,12 @@
 // or name; articles by flow id or title. The layout ids each kind offers come from the catalogue the
 // editor's page panel shows, so the two never disagree.
 import { z } from 'zod';
-import { PAGE_CHANGES_MAX } from '@livedocuments/api-schema';
+import {
+  LAYOUT_SLOT_ITEMS_MAX,
+  LAYOUT_TEXT_MAX,
+  PAGE_CHANGES_MAX,
+  PAGE_TEXT_SAMPLE_MAX,
+} from '@livedocuments/api-schema';
 import {
   ARTICLE_LOOK_IDS,
   ARTICLE_MARKDOWN_MAX,
@@ -65,6 +70,28 @@ const layout = z
     `A ready-made arrangement put onto the page in place of what is on it. Infographic: ${layoutIds('infographic')}. ` +
       `Slide: ${layoutIds('slide')}. Article pages take none.`,
   );
+// A layout's words by slot (docs/specs/024-agents/pages-for-agents.md "Text slots").
+const slotText = z.string().max(LAYOUT_TEXT_MAX);
+const slotList = z.array(slotText).max(LAYOUT_SLOT_ITEMS_MAX);
+const text = z
+  .object({
+    title: slotText.optional().describe('The headline: the largest words on the page.'),
+    subtitle: slotText.optional().describe('The line straight under the headline.'),
+    bullets: slotList
+      .optional()
+      .describe(
+        'Each line beside a bullet dot, in order; fewer than the layout has drops the rest.',
+      ),
+    body: slotList
+      .optional()
+      .describe(
+        "Every other text with words, in the layout's order (top to bottom, then the next column); fewer keeps the rest's sample.",
+      ),
+  })
+  .strict()
+  .describe(
+    "Words for the layout's sample text, by slot; a slot left out keeps its sample. A figure (a number, a time, 73%) is no slot.",
+  );
 const name = z
   .string()
   .max(PAGE_NAME_MAX)
@@ -85,6 +112,7 @@ const pageChange = z
         name: name.optional(),
         background: background.optional(),
         layout: layout.optional(),
+        text: text.optional(),
         at: z.number().int().min(1).optional().describe('The place it goes to (default: the end).'),
       })
       .describe(
@@ -104,7 +132,12 @@ const pageChange = z
         'A page’s name, size, orientation, background or lock; on an article, all its pages.',
       ),
     z
-      .object({ op: z.literal('layout').describe('Lay a page out.'), page: pageRef, layout })
+      .object({
+        op: z.literal('layout').describe('Lay a page out.'),
+        page: pageRef,
+        layout,
+        text: text.optional(),
+      })
       .describe('Replace what is on a page with a layout.'),
     z
       .object({
@@ -161,6 +194,19 @@ const pageOut = z
     locked: z.boolean().describe('Whether it is locked.'),
     flow: z.string().nullable().describe('The article it is a page of, or null.'),
     elements: z.number().describe('How many elements are on it.'),
+    texts: z
+      .array(
+        z.object({
+          ref: z.string().describe("The element's ref."),
+          slot: z
+            .string()
+            .nullable()
+            .describe('Its slot (title, subtitle, bullets[0], body[2]), null for a figure.'),
+          text: z.string().describe(`Its words, cut to ${PAGE_TEXT_SAMPLE_MAX} characters.`),
+        }),
+      )
+      .optional()
+      .describe("A page this call laid out: its texts in the layout's order."),
   })
   .describe('A page as it is now.');
 

@@ -62,6 +62,13 @@ const WIDE_RATIO = 1.15;
 const TITLE_FILL = 0.72;
 const GLYPH_WIDTH = 0.6;
 
+/** A headline's textScale: large type scaled until one line of `label` fills the box's height or its width,
+ *  whichever is first (the fit-to-box size `kit.title` sets, and change_pages' text slots refit a title to). */
+export function headlineTextScale(w: number, h: number, label: string): number {
+  const fontPx = Math.min(h * TITLE_FILL, w / (Math.max(1, label.length) * GLYPH_WIDTH));
+  return Math.round((fontPx / LABEL_FONT_PX.lg) * 100) / 100;
+}
+
 export function kit(box: LayoutBox): Kit {
   const r = (n: number) => Math.round(n);
   return {
@@ -94,14 +101,13 @@ export function kit(box: LayoutBox): Kit {
     // A headline sized to its box: large type scaled up (textScale, honoured on the canvas and in
     // every export alike) until one line fills the box's height or its width, whichever is first.
     title: (x, y, w, h, label) => {
-      const fontPx = Math.min(h * TITLE_FILL, w / (Math.max(1, label.length) * GLYPH_WIDTH));
       return {
         ...createText(r(box.x + x), r(box.y + y)),
         width: r(w),
         height: r(h),
         label,
         textSize: 'lg',
-        textScale: Math.round((fontPx / LABEL_FONT_PX.lg) * 100) / 100,
+        textScale: headlineTextScale(w, h, label),
         textBold: true,
         textAlignX: 'left',
         textAlignY: 'middle',
