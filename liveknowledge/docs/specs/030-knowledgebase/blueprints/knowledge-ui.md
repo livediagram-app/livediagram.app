@@ -116,7 +116,9 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   first."
 - **Names.** `owner` and `verifiedBy` are account ids. The editor can name the person here and the people of the
   team whose library holds the knowledgebase (the comment mentions' list). Anyone else shows as "Verified" with no
-  name, and as "Someone Else" in the owner picker, which offers those same people and Nobody.
+  name, and as "Someone Else" in the owner picker, which offers those same people and Nobody. An owner outside that
+  list whom the page's read named (its `names`, from their profile) is offered by that name instead (owner
+  2026-11-22: a teammate read as "Someone Else").
 - **Reads** need no call of the editor's: opening a page is `GET tabs/<tab>` (`apiLoadTabRevisioned`, from
   `seed-fetched-document.ts` for the first page and `usePerTabLoad` for the rest), which the api counts once a
   person a page a day.

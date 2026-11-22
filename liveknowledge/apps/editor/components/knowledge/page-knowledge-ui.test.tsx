@@ -319,6 +319,20 @@ describe('Page Health', () => {
     expect(screen.getByRole('option', { name: 'Someone Else' })).toBeTruthy();
   });
 
+  it('offers an owner outside the list by the name the page read brought', () => {
+    renderRail(
+      <Rail
+        {...props({
+          trust: pageTrust({ owner: 'u9' }, 90, NOW),
+          nameOf: (id) => ({ u9: 'Sam Okafor' })[id ?? ''],
+        })}
+      />,
+    );
+    expect(screen.getByLabelText<HTMLSelectElement>('Owner').value).toBe('u9');
+    expect(screen.getByRole('option', { name: 'Sam Okafor' })).toBeTruthy();
+    expect(screen.queryByRole('option', { name: 'Someone Else' })).toBeNull();
+  });
+
   it('leads with the state and how long the page stays fresh, its ring filled by the share of the period left', () => {
     const { container } = renderRail(<Rail {...props()} />);
     const state = container.querySelector('[data-page-state]')!;

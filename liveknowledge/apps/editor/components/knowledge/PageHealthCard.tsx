@@ -437,10 +437,11 @@ export function PageHealthCard({
   const { owner, verifiedAt, verifiedBy } = trust.fields;
   const ownerName = nameOf(owner);
   const verifier = nameOf(verifiedBy);
-  // An owner the editor cannot name (someone outside the team it can read) still shows as chosen.
+  // An owner outside the people the editor offers still shows as chosen, by the name the page's health read brought
+  // (owner 2026-11-22: "Someone Else" for a known teammate), else "Someone Else".
   const ownerOptions =
     owner && !people.some((p) => p.id === owner)
-      ? [...people, { id: owner, name: 'Someone Else' }]
+      ? [...people, { id: owner, name: ownerName ?? 'Someone Else' }]
       : people;
   // Verification off (a Review Period of Never, verification.md): no state panel, no Last Verified, no Review Due,
   // no Verify. Owner and the Review Period stay, so the period can be set again from here.
