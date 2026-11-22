@@ -3,7 +3,11 @@
 // state; the size is ESTIMATED from fixed glyph, gap and character widths rather than measured,
 // so placement is pure and runs before anything is drawn (blueprint D76).
 
-export type IndicatorKind = 'outline' | 'tidy' | 'link' | 'note' | 'action' | 'comment';
+export type IndicatorKind =
+  'outline' | 'tidy' | 'link' | 'note' | 'action' | 'comment' | 'card' | 'card-done';
+
+// A sent card's indicator: its title, where it stands ("To Do · Sprint 12") and whether it is done.
+export type SentCardIndicator = { onOpen: () => void; done: boolean; title: string; where: string };
 
 export type IndicatorItem = {
   kind: IndicatorKind;
@@ -83,6 +87,8 @@ export function buildIndicatorItems(input: {
   note?: () => void;
   action?: { onOpen: () => void; assigneeName: string; initials: string; color: string };
   comments?: { count: number; onOpen: () => void };
+  // A card Send to Plan made from the element (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
+  card?: SentCardIndicator;
 }): IndicatorItem[] {
   const items: IndicatorItem[] = [];
   if (input.outline) {
@@ -128,6 +134,17 @@ export function buildIndicatorItems(input: {
       assignee: { initials, color },
       hoverCard: { title: 'Open action', description: `Assigned to ${assigneeName}` },
       dataAttr: 'data-action-trigger',
+    });
+  }
+  if (input.card) {
+    const { onOpen, done, title, where } = input.card;
+    items.push({
+      kind: done ? 'card-done' : 'card',
+      label: `Open the card “${title}”${done ? ', done' : ''}, in liveplanner`,
+      word: done ? 'Done' : 'Card',
+      onClick: onOpen,
+      hoverCard: { title, description: `${where}. Opens in liveplanner.` },
+      dataAttr: 'data-sent-card',
     });
   }
   if (input.comments && input.comments.count > 0) {

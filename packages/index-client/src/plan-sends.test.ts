@@ -1,3 +1,4 @@
+import { refusal } from './index-error';
 import { describe, expect, it } from 'vitest';
 import { createIndexAppClient, createIndexClient } from './client';
 import {
@@ -77,7 +78,7 @@ describe('a place', () => {
     expect(isPlanDay(3)).toBe(false);
   });
 
-  it('opens at liveplanner\'s door path', () => {
+  it("opens at liveplanner's door path", () => {
     expect(planSendDoorPath('p/1')).toBe('/api/internal/items/p%2F1/plan-send');
   });
 });
@@ -96,7 +97,11 @@ describe('a send', () => {
       cards: [{ title: 'Fix the login', assignee: 'Sam', due: '2026-12-01', places: [PLACE] }],
     });
     expect(
-      readPlanSendAsk({ ...ask, again: true, cards: [{ title: 'a', checklist: ['x'], places: [PLACE] }] }),
+      readPlanSendAsk({
+        ...ask,
+        again: true,
+        cards: [{ title: 'a', checklist: ['x'], places: [PLACE] }],
+      }),
     ).toEqual({
       board: 'b1',
       column: 'To Do',
@@ -162,21 +167,32 @@ describe('the change call', () => {
   });
 
   it('rides the source-changed door with the cards and no sheets', () => {
-    expect(readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: ['c1', 'c1'] })).toEqual(
-      { app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: ['c1'] },
-    );
-    expect(readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: ['s1'], cards: [] })).toEqual({
+    expect(
+      readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: ['c1', 'c1'] }),
+    ).toEqual({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: ['c1'] });
+    expect(
+      readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: ['s1'], cards: [] }),
+    ).toEqual({
       app: 'liveplanner',
       itemId: 'p1',
       sheetIds: ['s1'],
     });
-    expect(readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: [] })).toBeNull();
-    expect(readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: 'c1' })).toBeNull();
+    expect(
+      readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: [] }),
+    ).toBeNull();
+    expect(
+      readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: 'c1' }),
+    ).toBeNull();
     expect(
       readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: ['bad id'] }),
     ).toBeNull();
     expect(
-      readSourceChange({ app: 'liveplanner', itemId: 'p1', sheetIds: [], cards: Array(101).fill('c') }),
+      readSourceChange({
+        app: 'liveplanner',
+        itemId: 'p1',
+        sheetIds: [],
+        cards: Array(101).fill('c'),
+      }),
     ).toBeNull();
   });
 });
@@ -208,7 +224,13 @@ describe('Sent From', () => {
       text: 'Todo',
     });
     expect(
-      readAgentSentFrom({ app: 'livediagram', itemId: 'd1', tabId: 't1', elementId: 'e1', text: '' }),
+      readAgentSentFrom({
+        app: 'livediagram',
+        itemId: 'd1',
+        tabId: 't1',
+        elementId: 'e1',
+        text: '',
+      }),
     ).toEqual({ app: 'livediagram', itemId: 'd1', tabId: 't1', elementId: 'e1', text: '' });
     for (const b of [
       null,
@@ -262,7 +284,12 @@ describe("the door's call", () => {
 
 describe('the description', () => {
   it('holds every word sent, then the line back', () => {
-    const from = { title: 'Retro', label: 'Sprint 12', app: 'livediagram' as const, link: 'https://x' };
+    const from = {
+      title: 'Retro',
+      label: 'Sprint 12',
+      app: 'livediagram' as const,
+      link: 'https://x',
+    };
     expect(planSendDescription([{ text: ' a ' }, { text: '' }, { text: 'b' }], from)).toBe(
       'a\n\nb\n\nFrom Retro, Sprint 12 (livediagram): https://x',
     );
@@ -298,14 +325,35 @@ describe('the clients', () => {
       baseUrl: 'https://x/api/index',
       fetch: doFetch,
     });
-    await app.planCardsChanged('p1', [{ id: 'c1', title: 'a', column: 'b', done: false, gone: false }]);
+    await app.planCardsChanged('p1', [
+      { id: 'c1', title: 'a', column: 'b', done: false, gone: false },
+    ]);
     await app.recordPlanSends('p1', 'user_1', [
-      { id: 'c1', title: 'a', column: 'b', done: false, sentFrom: { app: 'livediagram', itemId: 'd1', text: '' } },
+      {
+        id: 'c1',
+        title: 'a',
+        column: 'b',
+        done: false,
+        sentFrom: { app: 'livediagram', itemId: 'd1', text: '' },
+      },
     ]);
     expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
       'POST https://x/api/index/app/items/p1/plan-cards',
       'POST https://x/api/index/app/items/p1/plan-sends',
     ]);
     expect(seen[1]!.body).toMatchObject({ person: 'user_1' });
+  });
+});
+
+describe("a Send to Plan refusal's detail", () => {
+  it('keeps the body of an already_sent and a plan_refused, and of nothing else', () => {
+    const res = (status: number) => new Response(null, { status });
+    const sent = refusal(res(409), { error: 'already_sent', send: { id: 'ps_1' } });
+    expect(sent.detail).toEqual({ error: 'already_sent', send: { id: 'ps_1' } });
+    expect(refusal(res(422), { error: 'plan_refused', reason: 'x' }).detail).toMatchObject({
+      reason: 'x',
+    });
+    expect(refusal(res(403), { error: 'forbidden', send: 1 }).detail).toBeNull();
+    expect(refusal(res(500), null).detail).toBeNull();
   });
 });
