@@ -8,6 +8,7 @@ import type {
 import { endRepeatWorld } from '../test-repeat-world';
 import { automationWorld, USER, type AutomationWorld } from './test-automation-world';
 import { cardDescription, openLinkingCard } from './cross-app-door';
+import { withAccounts } from './automation-cross';
 
 // Steps in other apps on a plan (docs/specs/026-plan/automations.md "Steps in other apps"), end to end through the
 // real worker and room: a rule here sends its step to the index as its author, and a step from another app makes a
@@ -204,5 +205,29 @@ describe('a step from another app on this plan', () => {
     ] as never;
     expect(openLinkingCard(items, 'u', (s) => s === 'done')).toMatchObject({ id: 'b' });
     expect(openLinkingCard(items, '', () => false)).toBeUndefined();
+  });
+});
+
+describe('a Notify from a plan', () => {
+  it('names each plan person by the account behind them, and leaves out one the plan lost', () => {
+    const accounts = new Map([['p-ana', 'user_ana']]);
+    expect(
+      withAccounts(
+        {
+          kind: 'inbox_notice',
+          to: [{ person: 'p-ana' }, { person: 'p-gone' }, { value: 'x' }],
+          text: 'Hi',
+        },
+        accounts,
+      ),
+    ).toEqual({ kind: 'inbox_notice', to: [{ person: 'user_ana' }, { value: 'x' }], text: 'Hi' });
+    expect(withAccounts(null, accounts)).toBeNull();
+    const kb = {
+      kind: 'kb_page',
+      target: { app: 'liveknowledge', item: 'k', title: '' },
+      title: 't',
+      body: 'b',
+    } as const;
+    expect(withAccounts(kb, accounts)).toBe(kb);
   });
 });

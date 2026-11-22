@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 // The pictures (blueprint item-ui.md "Pictures"): every shared trigger and step has one, each is decoration that
 // moves by the scenes' classes alone, and a template's picture is its trigger's and its last step's, or the app's.
+import { isCrossAppKind } from '@liveworkspace/automations/cross-app';
 import { cleanup, render } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -34,7 +35,8 @@ describe('the shared pictures', () => {
   });
 
   it('draws every shared step by its tile key, with its icon', () => {
-    const keys = actionKeysOf(KINDS).filter((k) => k !== 'clear_box');
+    // The steps in other apps draw from cross-app/cross-app-art.tsx (cross-app.test.tsx).
+    const keys = actionKeysOf(KINDS).filter((k) => k !== 'clear_box' && !isCrossAppKind(k));
     expect(Object.keys(ACTION_SCENES).sort()).toEqual([...keys].sort());
     expect(Object.keys(ITEM_ACTION_GLYPHS).sort()).toEqual([...keys].sort());
     expect(sharedActions(true).length).toBe(8);

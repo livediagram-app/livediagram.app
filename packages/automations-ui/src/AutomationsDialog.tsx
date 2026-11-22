@@ -199,6 +199,7 @@ export function AutomationsDialog({
         setHeld(builderDraft.current);
         onTarget({ view: 'connections' });
       },
+      openRuns: (ruleId) => guardNow.current(() => onTarget({ view: 'runs', ruleId }))(),
       draft: () => builderDraft.current,
       keepDraft: (kept) => {
         builderDraft.current = kept;
@@ -242,6 +243,14 @@ export function AutomationsDialog({
         .then((copy) => toast.success(`Made ${copy.name}`), failed('duplicate')),
     onRunLog: () => onTarget({ view: 'runs', ruleId: rule.id }),
     onFixConnection: () => onTarget({ view: 'connections' }),
+    onTakeOver: () =>
+      void withBusy(rule.id, async () => {
+        const { name, trigger, conditions, steps, chain, timeZone } = rule;
+        await api.save(rule.id, { name, trigger, conditions, steps, chain, timeZone });
+        await api.toggle(rule.id, true);
+        track('rule_taken_over');
+        toast.success(`${rule.name} now runs as you`);
+      }).catch(failed('take over')),
     onDelete: () =>
       void api.remove(rule.id).then(() => {
         track('rule_deleted');
@@ -385,6 +394,7 @@ export function AutomationsDialog({
           initialRule={target.ruleId}
           onOpenSubject={openRunSubject}
           reloadRef={runsReload}
+          onTakeOver={(r) => actionsFor(r).onTakeOver()}
         />
       );
     if (target.view === 'templates')

@@ -1,5 +1,6 @@
 // The item kit's logic, with no screen (blueprint item-ui.md "Tests"): what a rule reads, the pickers' groups,
 // Insert a Value's groups, the words, the read-once store, the routes and the outline's builder.
+import { isCrossAppKind } from '@liveworkspace/automations/cross-app';
 import { describe, expect, it, vi } from 'vitest';
 import { defineItemKinds } from '@liveworkspace/automations/item';
 import { WEBHOOK_VALUE_GROUP } from '../value-groups';
@@ -111,8 +112,16 @@ describe('the pickers’ groups', () => {
       'Messages',
       'Timing',
       'Other Tools',
+      'In Other Apps',
       'AI',
     ]);
+    // The steps in other apps: badged New, saying who they act as.
+    expect(groups.find((g) => g.name === 'In Other Apps')).toMatchObject({
+      id: 'in-other-apps',
+      kinds: ['plan_card', 'kb_page', 'space_post', 'doc_tab', 'inbox_notice'],
+      badge: 'New',
+      footnote: 'Every step acts as you, and only on items you can edit.',
+    });
     expect(groups.find((g) => g.name === 'Other Tools')!.kinds).toEqual([
       'notify_webhook',
       'notify_slack',
@@ -190,7 +199,7 @@ describe('the words', () => {
   it('writes a line for every shared kind', () => {
     for (const t of KINDS.triggers.filter((k) => k.kind !== 'poll_ended'))
       expect(sharedTriggerLines('document')[t.kind], t.kind).toMatch(/\.$/);
-    for (const key of actionKeysOf(KINDS).filter((k) => k !== 'clear_box'))
+    for (const key of actionKeysOf(KINDS).filter((k) => k !== 'clear_box' && !isCrossAppKind(k)))
       expect(sharedActionLines('document')[key], key).toMatch(/\.$/);
     expect(sharedTriggerLines('Space')['tab_added']).toBe('A tab is added to this Space.');
     expect(tileLine('empties the box')).toBe('Empties the box.');
@@ -210,6 +219,7 @@ describe('the words', () => {
       ]),
     ).toBe('A tab is gone · Pick a connection');
     expect(pickWords('template')).toBe('Pick a template');
+    expect(pickWords('target')).toBe('Pick where it goes');
     expect(pickWords('column')).toBe('Pick column');
     expect(goneLabel('snapshot', 'Clean board')).toBe('Clean board (No Longer Here)');
     expect(goneLabel('person')).toBe('Someone (No Longer Here)');

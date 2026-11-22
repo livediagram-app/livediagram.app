@@ -28,6 +28,8 @@ const HELD_AT_100 = [
   'src/item/client.ts',
   'src/item/plumbing.ts',
   'src/item/outline.ts',
+  // The In Other Apps group's marks (cross-app/cross-app.test.tsx).
+  'src/cross-app/cross-app-group.ts',
 ];
 
 export default defineProject({

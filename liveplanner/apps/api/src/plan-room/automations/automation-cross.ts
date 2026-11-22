@@ -5,7 +5,12 @@
 // step's line. Lost access pauses the rule at once; a loop or a cap skips the step and the run ends Skipped; any other
 // refusal fails the run. A test says what each would do and sends nothing.
 import type { AutomationRule, AutomationStepLine, PlannedCross } from '@liveplanner/items';
-import { chainOf, type CrossAppChain } from '@liveworkspace/automations/cross-app';
+import {
+  chainOf,
+  type CrossAppChain,
+  type CrossAppStep,
+  type NoticeRecipient,
+} from '@liveworkspace/automations/cross-app';
 import {
   kitCrossApp,
   runCrossAppStep,
@@ -54,6 +59,21 @@ const eventOf = (out: CrossAppOutcome): string =>
           : EVENT['capped']!
         : EVENT['failed']!;
 
+/** A Notify's people as the index reads them: a plan person's id is the plan's own (itemPersonId), so each is the
+ *  account behind it; a person the plan no longer knows is left out. */
+export function withAccounts(
+  step: CrossAppStep | null,
+  accounts: ReadonlyMap<string, string>,
+): CrossAppStep | null {
+  if (step?.kind !== 'inbox_notice') return step;
+  const to = step.to.flatMap((r): NoticeRecipient[] => {
+    if (!('person' in r)) return [r];
+    const account = accounts.get(r.person);
+    return account ? [{ person: account }] : [];
+  });
+  return { ...step, to };
+}
+
 export async function runPlanCrossSteps(
   run: PlanCrossRun,
   cross: readonly PlannedCross[],
@@ -92,7 +112,7 @@ export async function runPlanCrossSteps(
         key: `${run.runId}:${c.step}`,
         now: run.now,
       },
-      c.filled,
+      withAccounts(c.filled, run.plan.accounts),
     );
     lines[at] = { kind: 'action', ok: out.ok, text: out.text };
     run.tally?.track('Plan', 'Ran', eventOf(out));

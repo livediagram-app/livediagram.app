@@ -9,6 +9,7 @@
 // the builder. On a phone the row stacks: the name, the sentence's trigger, "4 min ago · 38 runs this week", and the
 // switch at the right. A rule the app runs from the list (kit.runRule) shows Run Rule beside its name, and in its menu.
 
+import { isAccessPause } from '@liveworkspace/automations/cross-app';
 import { AUTOMATION_FAILURES_TO_PAUSE } from '@liveworkspace/automations';
 import { Button, Switch, lucideGlyph } from '@liveworkspace/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
@@ -35,6 +36,8 @@ export type RuleRowActions = {
   onDelete: () => void;
   // Opens the screen's Connections tab, for a rule paused on one.
   onFixConnection?: (() => void) | undefined;
+  // Saves a rule paused on a step in another app's lost access as the person's own, and turns it on.
+  onTakeOver?: (() => void) | undefined;
 };
 
 // The row's link: Resume, Fix Connection, and an app's own fix after Needs Attention.
@@ -45,13 +48,33 @@ function PausedNote({
   rule,
   onResume,
   onFixConnection,
+  onTakeOver,
 }: {
   rule: AutomationListedRule;
   onResume: () => void;
   onFixConnection?: (() => void) | undefined;
+  onTakeOver?: (() => void) | undefined;
 }) {
   const { sentence } = useAutomationsKit();
   if (!rule.paused) return null;
+  // A step in another app lost its author's access: the rule acts as whoever takes it over.
+  if (isAccessPause(rule.paused.reason))
+    return (
+      <span
+        data-rule-paused-reason="access"
+        className="relative z-[1] text-[12px] text-amber-800 dark:text-amber-300"
+      >
+        Paused: {rule.paused.reason}. Its steps in other apps act as {rule.edited.by.name}.{' '}
+        {onTakeOver ? (
+          <>
+            <span aria-hidden>·</span>{' '}
+            <button type="button" className={RULE_ROW_LINK} onClick={onTakeOver}>
+              Take Over Rule
+            </button>
+          </>
+        ) : null}
+      </span>
+    );
   return (
     <span
       data-rule-paused-reason=""
@@ -188,6 +211,7 @@ export function RuleRow({
               rule={rule}
               onResume={() => actions.onToggle(true)}
               onFixConnection={actions.onFixConnection}
+              onTakeOver={actions.onTakeOver}
             />
           ) : (
             <>
@@ -237,6 +261,7 @@ export function RuleRow({
           rule={rule}
           onResume={() => actions.onToggle(true)}
           onFixConnection={actions.onFixConnection}
+          onTakeOver={actions.onTakeOver}
         />
       </div>
       <span className={`flex flex-col gap-0.5 text-[13px] ${tone}`}>

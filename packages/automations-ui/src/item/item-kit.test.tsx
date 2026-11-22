@@ -103,6 +103,48 @@ function addAction(key: string) {
   fireEvent.click(tile(key));
 }
 
+// A step in another app's fields, filled: its target picked from the person's Recent, its lists and texts set.
+const CROSS_TARGET: Readonly<Record<string, string>> = {
+  plan_card: 'Launch Board',
+  kb_page: 'Handbook',
+  space_post: 'Studio',
+  doc_tab: 'Release Notes',
+};
+async function fillCross(key: string) {
+  const panel = () => document.querySelector<HTMLElement>('[data-step-panel]')!;
+  const type = (name: string, value: string) =>
+    fireEvent.change(within(panel()).getByRole('textbox', { name }), { target: { value } });
+  const pick = async (name: string, value: string) =>
+    fireEvent.change(await within(panel()).findByRole('combobox', { name }), { target: { value } });
+  const title = CROSS_TARGET[key];
+  if (title) {
+    fireEvent.click(within(panel()).getByRole('button', { name: /^Pick a / }));
+    const dialog = await screen.findByRole('dialog', { name: /^Pick a / });
+    fireEvent.click((await within(dialog).findByText(title)).closest('button')!);
+  }
+  if (key === 'plan_card') {
+    await pick('Board', 'b1');
+    type('Title', 'Ship {{item.name}}');
+  }
+  if (key === 'kb_page') {
+    await pick('Under', 'g1');
+    type('Title', 'Release');
+    type('Body', 'It shipped');
+  }
+  if (key === 'space_post') {
+    await pick('Tab', 'st1');
+    type('Note', 'Standup moved');
+  }
+  if (key === 'doc_tab') {
+    await pick('Template', 'notes');
+    type('Name', 'Notes');
+  }
+  if (key === 'inbox_notice') {
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Ana Costa' }));
+    type('Message', 'Look at {{item.name}}');
+  }
+}
+
 async function save(client: ItemFakeClient): Promise<ItemRuleBody> {
   const before = client.create.mock.calls.length;
   await act(async () => {
@@ -270,6 +312,7 @@ describe('building a rule', () => {
           target: { value: select.options[select.options.length - 1]!.value },
         });
       }
+      await fillCross(key);
       const body = await save(client);
       expect(readItemRule(body, KINDS), key).toHaveProperty('body');
       kinds.push(body.steps[0]!.kind);
@@ -285,8 +328,36 @@ describe('building a rule', () => {
       'notify',
       'notify',
       'notify',
+      'plan_card',
+      'kb_page',
+      'space_post',
+      'doc_tab',
+      'inbox_notice',
       'ai',
     ]);
+    // A step in another app keeps its target as picked, its lists and its texts.
+    const crossOf = (kind: string) =>
+      client.create.mock.calls
+        .map((c) => (c[1] as ItemRuleBody).steps[0]!)
+        .find((s) => s.kind === kind);
+    expect(crossOf('plan_card')).toMatchObject({
+      target: { app: 'liveplanner', item: 'p1', title: 'Launch Board' },
+      board: 'b1',
+      column: 'To Do',
+      title: 'Ship {{item.name}}',
+    });
+    expect(crossOf('kb_page')).toMatchObject({
+      parent: 'g1',
+      title: 'Release',
+      body: 'It shipped',
+    });
+    expect(crossOf('inbox_notice')).toEqual({
+      kind: 'inbox_notice',
+      to: [{ person: 'p1' }],
+      text: 'Look at {{item.name}}',
+    });
+    // Each target was read once, however often its panel drew.
+    expect(fakes.automationTarget).toHaveBeenCalledTimes(4);
     // Revert names the snapshot it picked, and the list was read once for all of it.
     const revert = client.create.mock.calls[1]![1] as ItemRuleBody;
     expect(revert.steps[0]).toEqual({

@@ -56,6 +56,8 @@ export function trackSpaceAutomations(
       return track('Document', 'Toggled', 'AutomationOn');
     case 'rule_off':
       return track('Document', 'Toggled', 'AutomationOff');
+    case 'rule_taken_over':
+      return track('Document', 'Toggled', 'AutomationTakenOver');
     case 'rule_deleted':
       return track('Document', 'Deleted', 'AutomationRule');
     case 'rule_tested':

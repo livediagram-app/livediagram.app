@@ -8,17 +8,19 @@ import { useId } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import { BrandMark } from '@liveworkspace/brand';
 import { lucideGlyph, relativeSince } from '@liveworkspace/ui';
-import { lucideCheck, lucidePlus } from '@liveworkspace/icons/lucide';
+import { lucideCheck, lucideLock, lucidePlus } from '@liveworkspace/icons/lucide';
 import { Spinner } from '../palette/template-picker-icons';
 import { appName } from './connect-words';
 
 const CheckGlyph = lucideGlyph(lucideCheck, 13);
 const PlusGlyph = lucideGlyph(lucidePlus, 15);
+const LockGlyph = lucideGlyph(lucideLock, 11);
 
 export type ConnectRowState =
   | { kind: 'open' }
   | { kind: 'connected' }
-  | { kind: 'blocked'; reason: string }
+  // `lock`: the pill a row the person may only view wears (an automation step's target picker).
+  | { kind: 'blocked'; reason: string; lock?: string }
   | { kind: 'busy' }
   // Another row is connecting: this one waits.
   | { kind: 'waiting' };
@@ -84,7 +86,11 @@ export function ConnectRow({
             {detail}
           </span>
         </span>
-        <RowEnd kind={kind} busyLabel={busyLabel} />
+        <RowEnd
+          kind={kind}
+          busyLabel={busyLabel}
+          lock={state.kind === 'blocked' ? state.lock : undefined}
+        />
       </button>
       {error ? (
         <p
@@ -100,7 +106,15 @@ export function ConnectRow({
 }
 
 // The row's trailing mark: what a press does.
-export function RowEnd({ kind, busyLabel }: { kind: ConnectRowState['kind']; busyLabel: string }) {
+export function RowEnd({
+  kind,
+  busyLabel,
+  lock,
+}: {
+  kind: ConnectRowState['kind'];
+  busyLabel: string;
+  lock?: string | undefined;
+}) {
   if (kind === 'connected')
     return (
       <span className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--cp-column)] px-2 py-0.5 text-[11px] font-semibold text-[var(--cp-text)]">
@@ -115,7 +129,13 @@ export function RowEnd({ kind, busyLabel }: { kind: ConnectRowState['kind']; bus
         {busyLabel}
       </span>
     );
-  if (kind === 'blocked') return null;
+  if (kind === 'blocked')
+    return lock ? (
+      <span className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--cp-column)] px-2 py-0.5 text-[11px] font-semibold text-[var(--cp-muted)]">
+        <LockGlyph />
+        {lock}
+      </span>
+    ) : null;
   // A plus that wakes on hover and focus; a touch screen, with no hover, always shows it.
   return (
     <span

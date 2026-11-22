@@ -42,6 +42,8 @@ import {
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import { SparkleIcon } from '@liveplanner/ui';
 import { NOTIFY_GLYPHS, WaitGlyph } from '@liveworkspace/automations-ui/glyphs';
+import { crossAppGroup } from '@liveworkspace/automations-ui/cross-app/cross-app-group';
+import { crossAppKitActions } from '@liveworkspace/automations-ui/cross-app/cross-app-kit';
 import {
   defineAutomationsKit,
   type ActionKind,
@@ -286,13 +288,20 @@ export const PLAN_AUTOMATIONS_KIT = defineAutomationsKit<
     conditions: Object.fromEntries(
       CONDITION_KINDS.map((kind) => [kind, conditionKind(kind)]),
     ) as Record<AutomationCondition['kind'], ConditionKind<AutomationCondition, AutomationOutline>>,
-    actionGroups: ACTION_GROUPS.map((g) =>
-      g.id === 'ai' ? { ...g, note: `${AUTOMATION_AI_PER_DAY} a day per plan` } : g,
+    // In Other Apps stands before AI (cross-app/cross-app-group.ts).
+    actionGroups: ACTION_GROUPS.flatMap((g) =>
+      g.id === 'ai'
+        ? [crossAppGroup(), { ...g, note: `${AUTOMATION_AI_PER_DAY} a day per plan` }]
+        : [g],
     ),
     actionHint: 'Try another word, such as “label”, “email” or “Slack”.',
-    actions: Object.fromEntries(
-      (Object.keys(ADD_NAMES) as AddKind[]).map((key) => [key, actionKind(key)]),
-    ),
+    actions: {
+      ...Object.fromEntries(
+        (Object.keys(ADD_NAMES) as AddKind[]).map((key) => [key, actionKind(key)]),
+      ),
+      // The steps in other apps: the platform's tiles and panels, as every app's.
+      ...crossAppKitActions<AutomationStep, AutomationOutline>(),
+    },
     branch: {
       kind: 'for',
       name: AUTOMATION_STEP_NAMES.for,

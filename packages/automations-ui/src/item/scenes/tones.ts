@@ -18,6 +18,7 @@ export const ACTION_GROUP_TONES: Readonly<Record<string, SceneTone>> = {
   timing: 'orange',
   'other-tools': 'violet',
   ai: 'violet',
+  'in-other-apps': 'blue',
 };
 
 export const DEFAULT_TONE: SceneTone = 'violet';

@@ -8,7 +8,8 @@
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { AutomationResult } from '@liveworkspace/automations';
-import { CompactEmptyState, NoMatches, Select } from '@liveworkspace/ui';
+import { isAccessPause } from '@liveworkspace/automations/cross-app';
+import { Button, CompactEmptyState, NoMatches, Select } from '@liveworkspace/ui';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { BoltIcon } from './glyphs';
 import type { AutomationsScope } from './kit';
@@ -62,6 +63,7 @@ export function RunLog({
   initialRule,
   onOpenSubject,
   reloadRef,
+  onTakeOver,
 }: {
   scope: AutomationsScope;
   rules: readonly AutomationListedRule[];
@@ -73,6 +75,8 @@ export function RunLog({
   onOpenSubject?: ((id: string) => void) | undefined;
   // Set to this tab's reload while it is open (the screen's Refresh).
   reloadRef?: RefObject<RunLogReload | null>;
+  // Take Over Rule, for a rule its step in another app paused on lost access (the screen's, as on its row).
+  onTakeOver?: ((rule: ListedRule) => void) | undefined;
 }) {
   const kit = useAutomationsKit();
   const { client } = kit.plumbing;
@@ -137,8 +141,27 @@ export function RunLog({
     setSince(windowStart(7, Date.now()));
   };
 
+  // The rule shown, paused because a step in another app lost its author's access: the way back, above its runs.
+  const pausedOn = rules.find((r) => r.id === rule && r.paused && isAccessPause(r.paused.reason));
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      {pausedOn?.paused ? (
+        <div
+          role="status"
+          data-run-paused=""
+          className={`flex flex-wrap items-center justify-between gap-2 bg-amber-50 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-200 ${phone ? 'px-4 py-2.5' : 'px-5 py-3'}`}
+        >
+          <span>
+            <span className="font-semibold">Paused.</span> {pausedOn.paused.reason}. Its steps in
+            other apps act as {pausedOn.edited.by.name}.
+          </span>
+          {onTakeOver ? (
+            <Button variant="secondary" size="xs" onClick={() => onTakeOver(pausedOn)}>
+              Take Over Rule
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
       <div className={`flex flex-wrap items-center gap-2 ${phone ? 'px-4 py-3' : 'px-5 py-3.5'}`}>
         <Select
           aria-label="Rule"

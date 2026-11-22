@@ -15,6 +15,7 @@ import {
   AUTOMATION_WAITS_MAX,
   type AutomationKind,
 } from '@liveworkspace/automations';
+import { CROSS_APP_STEPS_MAX, isCrossAppKind } from '@liveworkspace/automations/cross-app';
 import { isHolder, type HolderStep, type RuleBody } from './types';
 
 export type { HolderStep } from './types';
@@ -94,6 +95,11 @@ export const canAddOutgoing = (body: RuleBody): boolean =>
 /** Whether another AI step fits (3 a rule, at its top level). */
 export const canAddAi = (body: RuleBody): boolean =>
   canAddAction(body) && body.steps.filter((s) => s.kind === 'ai').length < AUTOMATION_AI_STEPS_MAX;
+
+/** Whether another step in another app fits (5 a rule, at its top level). */
+export const canAddCrossApp = (body: RuleBody): boolean =>
+  canAddAction(body) &&
+  body.steps.filter((s) => isCrossAppKind(s.kind)).length < CROSS_APP_STEPS_MAX;
 
 /** Whether another Wait fits (3 a rule, at its top level). */
 export const canAddWait = (body: RuleBody): boolean =>
@@ -393,6 +399,7 @@ export function canDuplicate(body: RuleBody, part: RulePart, branchMax = Infinit
       if (step.kind === 'notify') return canAddOutgoing(body);
       if (step.kind === 'ai') return canAddAi(body);
       if (step.kind === 'wait') return canAddWait(body);
+      if (isCrossAppKind(step.kind)) return canAddCrossApp(body);
       return actionCount(body.steps) + actionCount([step]) <= AUTOMATION_ACTIONS_MAX;
     }
   }

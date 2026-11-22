@@ -227,12 +227,40 @@ export const WEBHOOKS = [
   { id: 'w3', name: 'Our Service', kind: 'json', pausedAt: null },
 ];
 
+// The person's Recent across the apps (a step in another app's picker), one of them only viewed.
+const recent = (id: string, app: string, title: string, access = 'edit') =>
+  ({ id, app, title, access, updatedAt: Date.UTC(2026, 10, 20), lastOpenedAt: null }) as never;
+export const RECENT = [
+  recent('p1', 'liveplanner', 'Launch Board'),
+  recent('p2', 'liveplanner', 'Finance Plan', 'view'),
+  recent('k1', 'liveknowledge', 'Handbook'),
+  recent('h1', 'livehuddle', 'Studio'),
+  recent('x1', 'livedocuments', 'Release Notes'),
+];
+// What each target offers the step's pickers.
+export const TARGETS: Readonly<Record<string, unknown>> = {
+  p1: {
+    app: 'liveplanner',
+    title: 'Launch Board',
+    boards: [{ id: 'b1', name: 'Kanban', columns: ['To Do', 'Done'] }],
+  },
+  k1: {
+    app: 'liveknowledge',
+    title: 'Handbook',
+    pages: [{ id: 'g1', name: 'Releases', parent: null }],
+  },
+  h1: { app: 'livehuddle', title: 'Studio', tabs: [{ id: 'st1', name: 'Lobby' }] },
+  x1: { app: 'livedocuments', title: 'Release Notes', templates: [{ id: 'notes', name: 'Notes' }] },
+};
+
 export type ItemFakes = {
   kit: AnyAutomationsKit;
   plumbing: AutomationsPlumbing;
   track: Mock;
   snapshots: Mock;
   listWebhooks: Mock;
+  listItems: Mock;
+  automationTarget: Mock;
   input: ItemAutomationsKitInput;
 };
 
@@ -245,6 +273,8 @@ export function itemKit(
   const track = vi.fn();
   const snapshots = vi.fn(async () => SNAPSHOTS);
   const listWebhooks = vi.fn(async () => ({ webhooks: WEBHOOKS }));
+  const listItems = vi.fn(async () => ({ items: RECENT, nextCursor: null }));
+  const automationTarget = vi.fn(async (id: string) => TARGETS[id]);
   const plumbing = defineItemPlumbing({
     itemWord: KINDS.itemWord,
     examples: 'Snapshot it every Friday, or tell Slack when it changes.',
@@ -280,12 +310,21 @@ export function itemKit(
       placeholder: 'Say',
     },
     helpButton: <a href="/help">How Rules Work</a>,
-    indexClient: { listWebhooks } as unknown as IndexClient,
+    indexClient: { listWebhooks, listItems, automationTarget } as unknown as IndexClient,
     useSignInHref: () => '/sign-in/',
     signatureHeader: 'X-Liveworkspace-Signature',
     ...over,
   };
-  return { kit: defineItemAutomationsKit(input), plumbing, track, snapshots, listWebhooks, input };
+  return {
+    kit: defineItemAutomationsKit(input),
+    plumbing,
+    track,
+    snapshots,
+    listWebhooks,
+    listItems,
+    automationTarget,
+    input,
+  };
 }
 
 /** A part as a panel is handed it. */

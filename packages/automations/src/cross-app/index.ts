@@ -16,6 +16,7 @@ export {
   type DocTabStep,
   type InboxNoticeStep,
   type KbPageStep,
+  type NoticeRecipient,
   type PlanCardStep,
   type SpacePostStep,
 } from '@liveworkspace/index-client';

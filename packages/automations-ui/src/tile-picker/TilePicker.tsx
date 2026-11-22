@@ -28,6 +28,10 @@ export type PickerSection<K extends string> = {
   note?: string;
   // Why the group's tiles are dimmed: the rule holds all it may of them.
   full?: string;
+  // A pill after the group's name ("New").
+  badge?: string;
+  // A line under the group's tiles.
+  footnote?: string;
   tiles: readonly PickerTile<K>[];
 };
 
@@ -280,9 +284,14 @@ export function TilePicker<K extends string>({
                   <div className="flex items-baseline justify-between gap-3 px-0.5">
                     <h3
                       id={`${titleId}-${s.id}`}
-                      className="text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500 dark:text-slate-400"
+                      className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-500 dark:text-slate-400"
                     >
                       {s.name}
+                      {s.badge ? (
+                        <span className="rounded-full bg-brand-100 px-1.5 py-px text-[10px] font-semibold normal-case tracking-normal text-brand-700 dark:bg-brand-500/20 dark:text-brand-200">
+                          {s.badge}
+                        </span>
+                      ) : null}
                     </h3>
                     {s.full ? (
                       <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
@@ -329,6 +338,11 @@ export function TilePicker<K extends string>({
                       </li>
                     ))}
                   </ul>
+                  {s.footnote ? (
+                    <p className="px-0.5 text-[12px] text-slate-500 dark:text-slate-400">
+                      {s.footnote}
+                    </p>
+                  ) : null}
                 </section>
               ))}
             </div>

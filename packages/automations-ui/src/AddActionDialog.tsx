@@ -12,12 +12,13 @@ import {
   AUTOMATION_OUTGOING_MAX,
   AUTOMATION_WAITS_MAX,
 } from '@liveworkspace/automations';
+import { CROSS_APP_STEPS_MAX, isCrossAppKind } from '@liveworkspace/automations/cross-app';
 import { Button, HoverCard, PlusIcon } from '@liveworkspace/ui';
 import { addActionHeroArt } from './AddActionHeroArt';
 import { StepTile } from './glyphs';
 import type { AnyAutomationsKit } from './kit';
 import { useAutomationsKit } from './kit-context';
-import { canAddAi, canAddOutgoing, canAddWait } from './rule-draft';
+import { canAddAi, canAddCrossApp, canAddOutgoing, canAddWait } from './rule-draft';
 import { TilePicker } from './tile-picker/TilePicker';
 import type { RuleBody } from './types';
 
@@ -31,6 +32,8 @@ export type PickerGroup = {
   kinds: readonly string[];
   // Why the group's tiles are dimmed: the rule holds all it may of them.
   full?: string;
+  badge?: string;
+  footnote?: string;
 };
 
 // Why a kind can't be added to this rule: it holds all it may of its family (a message step, an AI step, a Wait).
@@ -43,6 +46,10 @@ function fullWords(body: RuleBody, key: string): string | null {
     return canAddAi(body) ? null : `A rule holds up to ${AUTOMATION_AI_STEPS_MAX} AI actions`;
   if (key === 'wait')
     return canAddWait(body) ? null : `A rule holds up to ${AUTOMATION_WAITS_MAX} Waits`;
+  if (isCrossAppKind(key))
+    return canAddCrossApp(body)
+      ? null
+      : `A rule holds up to ${CROSS_APP_STEPS_MAX} steps in other apps`;
   return null;
 }
 
@@ -66,6 +73,8 @@ export function pickerGroups(
     if (kinds.length === 0) continue;
     const group: PickerGroup = { id: g.id, name: g.name, kinds };
     if (g.note) group.note = g.note;
+    if (g.badge) group.badge = g.badge;
+    if (g.footnote) group.footnote = g.footnote;
     if (body) {
       const said = kinds.map((k) => fullWords(body, k));
       if (said.every((s) => s !== null)) group.full = said[0]!;
@@ -185,6 +194,8 @@ export function AddActionDialog({
         name: g.name,
         ...(g.note ? { note: g.note } : {}),
         ...(g.full ? { full: g.full } : {}),
+        ...(g.badge ? { badge: g.badge } : {}),
+        ...(g.footnote ? { footnote: g.footnote } : {}),
         tiles: g.kinds.map((k) => {
           const kind = kit.kinds.actions[k]!;
           return {

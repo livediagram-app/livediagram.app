@@ -82,6 +82,8 @@ export const needWords = (attention: readonly ItemRef[], item: ItemWord = 'docum
 
 /** What a template, a copy or a draft left to pick: "Pick a snapshot". A pick the registry lacks reads as it is. */
 export const pickWords = (pick: string, item: ItemWord = 'document'): string => {
+  // A step in another app's target: the plan, knowledgebase, Space or document it acts on.
+  if (pick === 'target') return 'Pick where it goes';
   const unpicked = UNPICKED_NAMES[pick as ItemRefKind];
   return `Pick ${unpicked ? inTabWords(unpicked, item) : pick}`;
 };

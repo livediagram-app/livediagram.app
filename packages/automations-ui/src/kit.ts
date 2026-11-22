@@ -46,6 +46,8 @@ export type AutomationsEvent =
   | 'rule_created'
   | 'rule_on'
   | 'rule_off'
+  // Take Over Rule, on a rule paused on a step in another app's lost access.
+  | 'rule_taken_over'
   | 'rule_deleted'
   | 'rule_tested'
   // Run Rule, from a rule's row or its menu (kit.runRule).
@@ -89,6 +91,10 @@ export interface KindGroup {
   kinds: readonly string[];
   /** Beside the group's name (an AI group's daily allowance). */
   note?: string;
+  /** A pill after the group's name ("New"). */
+  badge?: string;
+  /** A line under the group's tiles (In Other Apps: who every step acts as). */
+  footnote?: string;
 }
 
 export interface TriggerPanelProps<Trigger, Outline> {

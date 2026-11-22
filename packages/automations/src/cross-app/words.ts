@@ -42,6 +42,11 @@ export const CROSS_APP_UNREACHED = "Couldn't reach the other app; the run may be
 export const noAccessWords = (target: CrossAppTarget | null): string =>
   `Stopped: no access to ${target ? targetWords(target, 'the target') : 'the people'}`;
 
+/** Whether a rule's pause is a step in another app's lost access (or no author): anyone who can edit the item may
+ *  Take Over the rule, which saves it as theirs and turns it back on. */
+export const isAccessPause = (reason: string): boolean =>
+  reason.startsWith('Stopped: no access') || reason === CROSS_APP_NO_AUTHOR;
+
 /** A refusal's words for the step's line: the index's or the target's reason where it gave one. */
 export function refusalWords(
   code: CrossAppRefusal,

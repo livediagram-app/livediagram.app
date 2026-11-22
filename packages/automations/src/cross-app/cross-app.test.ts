@@ -17,6 +17,8 @@ import {
   CROSS_APP_LOOP,
   CROSS_APP_UNREACHED,
   noAccessWords,
+  isAccessPause,
+  CROSS_APP_NO_AUTHOR,
   refusalWords,
   targetWords,
 } from './words';
@@ -250,6 +252,10 @@ describe('the words', () => {
     );
     const target = { app: 'liveknowledge' as const, item: 'k', title: 'Docs' };
     expect(noAccessWords(null)).toBe('Stopped: no access to the people');
+    // A pause on lost access (or no author) is the one Take Over Rule answers; a failure's is not.
+    expect(isAccessPause(noAccessWords(null))).toBe(true);
+    expect(isAccessPause(CROSS_APP_NO_AUTHOR)).toBe(true);
+    expect(isAccessPause('The webhook answered 500')).toBe(false);
     expect(refusalWords('no_access', '', target)).toBe('Stopped: no access to “Docs”');
     expect(refusalWords('loop', '', target)).toBe(CROSS_APP_LOOP);
     expect(refusalWords('chain_long', '', target)).toBe(CROSS_APP_CHAIN_LONG);
