@@ -127,7 +127,7 @@ NOT NULL DEFAULT 1)`; trigger `page_required_reading_tab_removed` AFTER DELETE O
 - `components/required-reading/`: `useRequiredReading(tab?)` (the slice for the open page, `shown`: signed in or not,
   not Offline, not an embed, its state read), `RequiredReadingBanner` (above the meta row, `PageKnowledgeSlots`), `PageRailReading`
   (the rail's section, after Page Health), `ReadingSetupPanel` (the shared `ResponsivePopover`, 340 px: a popover from `sm`, the
-  phone drawer below),
+  phone drawer below; its own chunk, fetched on the press that opens it, so a reader never loads it),
   `ReadAgainToggle` (the draft bar, left of Cancel), `reading-icons.tsx`; `components/ai-knowledge/RequiredReadingCard`.
 - The banner: `role="region"` named "Required Reading", brand-50 ground and brand-200 hairline (dark: brand-500/10
   and brand-400/30), the book glyph in a 32 px white chip, the words, and `Button` primary `xs` **I've Read This**

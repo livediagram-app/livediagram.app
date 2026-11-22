@@ -5,7 +5,7 @@
 // asked, a bar and "7 of 12 have read it" (a count, never who), and their own state. For an Editor and the page's
 // owner, the people too, Not Yet first then Read, and Remind; an Editor also has Change, which opens the setup panel.
 // What it shows is what the api answered: names only ever arrive for those who may see them.
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import type { PageReadingPerson, PageReadingResponse } from '@liveknowledge/api-schema';
 import { Button } from '@liveknowledge/ui';
 import { Disc, RAIL_LABEL } from '@/components/knowledge/PageHealthCard';
@@ -14,11 +14,15 @@ import { shortDate } from '@/lib/knowledge/page-trust';
 import { useRelativeNow } from '@/lib/relative-time';
 import { audienceText, lastRemindedText, progressText } from '@/lib/required-reading/reading-words';
 import { AudienceIcon, ReadTickIcon, RemindIcon } from './reading-icons';
-import { ReadingSetupPanel } from './ReadingSetupPanel';
 import { useRequiredReading, type RequiredReadingView } from './useRequiredReading';
 
 const SMALL =
   'inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium ring-1 ring-inset ring-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 hover:ring-slate-300 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default disabled:opacity-60 phone:h-9 phone:px-3 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800';
+
+// The setup panel is an Editor's, opened by a press: its own chunk, fetched on that press, so a reader never loads it.
+const ReadingSetupPanel = lazy(() =>
+  import('./ReadingSetupPanel').then((m) => ({ default: m.ReadingSetupPanel })),
+);
 
 /** Each group lists this many before Show All: a long list stays a rail, not a wall. */
 const GROUP_SHOWN = 8;
@@ -119,17 +123,20 @@ export function PageRailReadingView({
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const { required, progress, mine, manages, sees } = reading;
   if (!required && !manages) return null;
-  const panel = manages ? (
-    <ReadingSetupPanel
-      anchor={anchor}
-      onClose={() => setAnchor(null)}
-      audience={required?.audience ?? null}
-      chosen={reading.chosen ?? []}
-      people={people}
-      busy={busy === 'set'}
-      onSave={(change) => void onSet(change).then((saved) => saved && setAnchor(null))}
-    />
-  ) : null;
+  const panel =
+    manages && anchor ? (
+      <Suspense fallback={null}>
+        <ReadingSetupPanel
+          anchor={anchor}
+          onClose={() => setAnchor(null)}
+          audience={required?.audience ?? null}
+          chosen={reading.chosen ?? []}
+          people={people}
+          busy={busy === 'set'}
+          onSave={(change) => void onSet(change).then((saved) => saved && setAnchor(null))}
+        />
+      </Suspense>
+    ) : null;
   const open = (e: React.MouseEvent<HTMLElement>) => setAnchor(e.currentTarget);
   if (!required)
     return (
