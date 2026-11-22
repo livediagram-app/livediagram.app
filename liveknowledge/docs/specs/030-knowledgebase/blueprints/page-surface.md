@@ -310,11 +310,13 @@ no tab.
 | the editor's store                      | `apps/editor/lib/knowledge-style/knowledge-style-store.ts`                                                                       |
 | the change, its save and its undo step  | `editor-state/useEditorKnowledgeStyle.ts`, `lib/knowledge-style/style-change.ts`, `style-history.ts`                             |
 | who is offered it                       | `lib/knowledge-style/style-offered.ts`, `components/knowledge-style/useStyleOffered.ts`                                          |
-| accents, the dark ground                | `lib/knowledge-style/knowledge-accent.ts`                                                                                        |
+| accents, the light ground, a styled tab | `packages/document/src/knowledge-style-view.ts`                                                                                  |
+| the dark ground (and the accents again) | `lib/knowledge-style/knowledge-accent.ts`                                                                                        |
+| the Explorer's preview                  | `apps/api` `thumbnail.ts` (`drawDocument`), called by `document-room/document-room-doors.ts` `exportImage`                       |
 | looks, the Mashup                       | `lib/knowledge-style/knowledge-looks.ts`                                                                                         |
 | a card's page of writing                | `lib/knowledge-style/look-page-preview.ts`                                                                                       |
 | drawings in the theme                   | `lib/knowledge-style/styled-elements.ts`                                                                                         |
-| a tab as the exports draw it            | `lib/knowledge-style/styled-tab.ts`, `lib/export-as-seen.ts`                                                                     |
+| a tab as the exports draw it            | `packages/document/src/knowledge-style-view.ts` (`tabInKnowledgeStyle`), `lib/export-as-seen.ts`                                 |
 | the dialog and its panels               | `components/knowledge-style/` (`KnowledgeStyleDialog`, `knowledge-style-profile`, `KnowledgeTextPanel`, `KnowledgeColoursPanel`) |
 | the shared dialog's optional parts      | `packages/workbench` `tab-style-profile.ts` (`title`, `finishFilter`, `renderPanel`, `panelValues`)                              |
 
@@ -348,13 +350,19 @@ comfortable | relaxed`, `plain | ruled`, and a hex when one was picked. `DEFAULT
   through `elementsInTheme` (each unset colour the theme's, cached per element) and the theme's view map.
   `useThemeColours` and `useColourPalette` offer the theme's palette. Nothing subscribes for a page that is not
   mounted, and no tab is committed.
-- **The accent.** `knowledgeThemeAccent`: lime (`#4d7c0f`, brand-600) for `brand`; a one-colour theme's stroke; a
-  multi-colour theme's first branch whose hue is outside 330 to 65 degrees (red through amber, the hues of errors
-  and Review Due). `articleStyleVars` holds it to 4.5:1 on the page. `knowledgeChromeAccent` is what the chrome's
-  ramp is spun from (`useEditorAccent`): null for `brand`, else the accent deepened 4% a step until white reads on
-  it and its 700 step reads on its 50 step at 4.5:1. `knowledgeDarkGround` is the dark appearance's ground under a
-  theme: `#131b26` (the shared dark palette's slate-900) for `brand`, the ramp's slate-900 otherwise; `globals.css`
-  paints the canvas root with `var(--color-slate-900)` in dark.
+- **The accent.** In `@liveknowledge/document` (`knowledge-style-view.ts`), one copy for the editor and the api,
+  re-exported by the editor's `knowledge-accent.ts`. `knowledgeThemeAccent`: `LIME_ACCENT` (`#4d7c0f`, brand-600)
+  for `brand`; otherwise `writingAccentOf` the theme's light half: a multi-colour theme's first branch whose hue is
+  outside 330 to 65 degrees (`isWarmAccent`: red through amber, the hues of errors and Review Due), else its first
+  branch, else the theme's own stroke. `knowledgeWritingAccent` is the picked accent, else that.
+  `articleStyleVars` holds it to 4.5:1 on the page. `knowledgeChromeAccent` is what the chrome's ramp is spun from
+  (`useEditorAccent`): null for `brand`, else the accent deepened 4% a step until white reads on it and its 700
+  step reads on its 50 step at 4.5:1. `knowledgeLightGround(theme)` is the light appearance's ground:
+  `KNOWLEDGE_LIGHT_GROUND` (`#ffffff`) for `brand`, else `knowledgeGroundWash(chromeAccent)` (white mixed 94% with
+  the accent), which `useEditorAccent` paints `--color-white` with. `knowledgeDarkGround` (editor only, it reads
+  the workbench ramp) is the dark appearance's ground under a theme: `#131b26` (the shared dark palette's
+  slate-900) for `brand`, the ramp's slate-900 otherwise; `globals.css` paints the canvas root with
+  `var(--color-slate-900)` in dark.
 - **The dialog.** `KnowledgeStyleDialog` renders the shared `TabStyleDialog` with `knowledgeStyleProfile(style)`:
   `title` Knowledgebase Style, `finishFilter: false`, the looks from `KNOWLEDGE_LOOKS` (the platform's, each cut to
   a theme and a font) with `lookPagePreview` as the card, panels `['font', 'theme']` drawn by `renderPanel`, and
@@ -364,16 +372,33 @@ comfortable | relaxed`, `plain | ruled`, and a hex when one was picked. `DEFAULT
 - **Exports.** `tabAsSeen` first takes the tab through `tabInKnowledgeStyle(tab, knowledgeStyleStore.openStyle())`
   (the theme, the body font, each flow's article style, unset element colours), so the PDF, Word and image exports
   and the print read the knowledgebase's style where they read `tab.theme` and `flow.style`; the other pages of a
-  whole export are mapped the same way in `EditorTabDialogs`. Markdown carries no style.
+  whole export are mapped the same way in `EditorTabDialogs`. Markdown carries no style. Each flow's style carries
+  `accent: knowledgeWritingAccent(style)`, so the shared renderer, which otherwise falls back to the theme's raw
+  stroke (`pagesWithWriting`), draws the accent the page shows.
+- **The preview** (spec "The preview follows the style"). The export door (`exportImage`) reads the document's
+  head and hands `meta.knowledgeStyle` to `drawDocument` as `DrawSubject.knowledgeStyle` (absent:
+  `DEFAULT_KNOWLEDGE_STYLE`). `renderTabBodyToSvg` settles the stored tab (`migrateStoredTab`), then draws
+  `tabOnKnowledgeGround(tabInKnowledgeStyle(tab, style), style)`: every page with no fill of its own (every page,
+  `page-looks` drops them) gets a solid fill of `knowledgeLightGround(style.theme)`, read through `pagesOf` so a
+  tab with no page list grounds its one page; `brand` returns the tab unchanged (white paper). A Community link's
+  drawing is redacted after styling. Fonts are the article style's `resolveFontStack` stacks (`'Lora', ui-serif,
+Georgia, serif`) behind the renderer's Google Fonts `@import`, which an `<img>` never loads, so the stack's
+  generic family draws. The preview ignores `appearance` (always the light half). Staleness: the style write
+  (`setKnowledgeStyle`) and the metadata write's rename set `saved_at`, the room notes the write (`noteWrite`), the
+  outbox pushes the summary with `updatedAt = saved_at`, and the door's version is `saved_at`, so a held preview is
+  stale after a style change. Measured: 0.25 to 0.31 ms of CPU per drawing of a five-block page, styled or not.
 - **Agents.** `parsePagesRequest` refuses `look` and `accent` by name (`STYLE_IS_THE_KNOWLEDGEBASES`);
   `ArticleWrite` and the CLI's `article set` carry neither.
 - **Telemetry.** `Tab` `Changed` `Look` | `SeasonalLook` | `Mashup` | `Text` | `Colours`, and `UI` `Opened`
   `ThemePicker`.
 
 Tests: `knowledge-style.test.ts` (document: the parser, the write, the article style, the retired tab keys),
-`knowledge-style-write.test.ts` (api: every role, each refusal, one row written, the relay, the travel),
-`lib/knowledge-style/knowledge-style.test.ts` (the store, the undo placement, the offer per role, the looks, the
-cards, the drawings, the exported tab), `knowledge-style-contrast.test.ts` (every theme, light and dark: the tree's
+`knowledge-style-view.test.ts` (document: each accent, the warm hues, the chrome accent, the light ground, the
+styled tab and its accent, the grounded pages), `knowledge-style-write.test.ts` (api: every role, each refusal, one
+row written, the relay, the travel, the export door's version moving with a style change and the new ground drawn),
+`thumbnail.test.ts` "a drawing in the Knowledgebase Style" (api: the Everyday and Steel looks' ground, accent and
+typeface in the SVG, a picked accent, a document with no style), `lib/knowledge-style/knowledge-style.test.ts` (the
+store, the undo placement, the offer per role, the looks, the cards, the drawings, the dark ground), `knowledge-style-contrast.test.ts` (every theme, light and dark: the tree's
 selected row, the Verified pill, the formatting bar's active state, solid fills, the footer's tabs, the writing's
 accent and page links at 4.5:1; Review Due untouched), `useEditorKnowledgeStyle.test.tsx` (no page rewritten,
 saved or laid out; one undo step; a Participant and a Viewer never change it), `KnowledgeStyleDialog.test.tsx`.

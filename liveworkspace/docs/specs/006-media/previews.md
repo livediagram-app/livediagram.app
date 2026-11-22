@@ -234,7 +234,13 @@ item's whole-item envelope (`{ kind, schemaVersion, exportedAt, <item> }`, built
 Each app's door draws as its old snapshot did, in the reader's appearance where its drawing depends on one
 (livediagram: the tab as `tabAsSeen` draws it, [Document snapshots][old] "In the viewer's half"): the first tab (or the asked one) with its own DOM-free renderer, its
 images inlined from the media service under a 3 MB budget, icons as their glyphs. livediagram's draws a Community
-post's link from the redacted tab and refuses one whose post is hidden.
+post's link from the redacted tab and refuses one whose post is hidden. An item's look that lives on the item
+rather than on a tab is drawn too: liveknowledge draws a knowledgebase's first page in its Knowledgebase Style
+(its theme's ground and accent, its fonts and article style, [page-surface.md][lk-style] "The preview follows the
+style"), and a change of style moves the item's last save, so its preview goes stale as an edit's does. A web font
+cannot load in a picture drawn into an `<img>`: each typeface falls back to its family's generic stack.
+
+[lk-style]: ../../../../liveknowledge/docs/specs/030-knowledgebase/page-surface.md
 
 ## Purging
 
