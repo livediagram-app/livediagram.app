@@ -1,5 +1,6 @@
 // An app's kinds (blueprint item-engine.md "Kinds"): the ones every app has, and its own. Pure.
 
+import { crossAppActions } from '../cross-app/kinds';
 import { sharedActions } from './actions';
 import { sharedConditions } from './conditions';
 import { kindsOf, type ItemKinds, type ItemKindsInput, type TriggerKind } from './kinds';
@@ -42,7 +43,12 @@ export function defineItemKinds(input: ItemKindsInput): ItemKinds {
   return kindsOf(input, {
     triggers: [...wordedTriggers(sharedTriggers(input.collab), word), ...(input.triggers ?? [])],
     conditions: [...worded(sharedConditions(), word), ...(input.conditions ?? [])],
-    actions: [...worded(sharedActions(input.tabTemplates), word), ...(input.actions ?? [])],
+    // The steps in other apps keep their own words: a knowledgebase's "Add a Tab to a Document" names a document's tab.
+    actions: [
+      ...worded(sharedActions(input.tabTemplates), word),
+      ...crossAppActions(),
+      ...(input.actions ?? []),
+    ],
     values: [
       ...sharedValues(word).map((v) => ({ ...v, label: inTabWords(v.label, word) })),
       ...(input.values ?? []),

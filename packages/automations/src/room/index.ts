@@ -15,5 +15,6 @@ export * from './automation-sends';
 export * from './automation-addresses';
 export * from './automation-ai';
 export * from './automation-telemetry';
+export * from './cross-app';
 export * from './item';
 export * from './app';

@@ -49,6 +49,9 @@ import { sendMessages } from '../automation-sends';
 import type { AutomationTally } from '../automation-telemetry';
 import { WAIT_CONDITIONS, WAIT_RULE_CHANGED, holdRun, waitFullWords } from '../automation-waits';
 import { SHARED_RUNNERS } from './actions';
+import { chainOf } from '../../cross-app/chain';
+import { fillCrossAppStep, runCrossAppStep } from '../cross-app';
+import { isCrossAppKind, type CrossAppChain, type CrossAppStep } from '@liveworkspace/index-client';
 import { runSummarise, type AiCount } from './ai';
 import type { ItemActionContext, ItemDeps, ItemSource } from './kit';
 import { ITEM_TELEMETRY_ACTION, tallyItemRun } from './telemetry';
@@ -111,6 +114,18 @@ function noteBudgetSpent(sql: ItemDepsSql, state: ItemRunState, rule: ItemRule, 
     steps: [],
   } satisfies ItemRun);
 }
+
+// A step in another app's telemetry event (spec "Steps in other apps" "Telemetry").
+export const crossAppEvent = (out: { ok: boolean; pause?: true; skip?: true; text: string }) =>
+  out.ok
+    ? 'CrossAppDone'
+    : out.pause
+      ? 'CrossAppNoAccess'
+      : out.skip
+        ? out.text.startsWith('Skipped') || out.text.startsWith('Stopped after')
+          ? 'CrossAppLoop'
+          : 'CrossAppCapped'
+        : 'CrossAppFailed';
 
 type ItemDepsSql = ReturnType<ItemDeps['sql']>;
 
@@ -234,7 +249,14 @@ export async function runItemRule(
     }
     if (!holds) return resume ? end('no_match', WAIT_CONDITIONS) : end('no_match');
 
-    const source: ItemSource = { role: 'automation', rule: rule.id, chain: (event.chain ?? 0) + 1 };
+    // The chain across apps this run goes on in: its event's, or one it starts.
+    const cross: CrossAppChain = chainOf(event.cross, id);
+    const source: ItemSource = {
+      role: 'automation',
+      rule: rule.id,
+      chain: (event.chain ?? 0) + 1,
+      ...(event.cross ? { cross } : {}),
+    };
     const ctx: ItemActionContext = { rule, event, outline, names, tab, fill, source, now: at };
     // A step the day's limit held back skips only itself: the run goes on and is Skipped once the rest is done.
     let capped: string | undefined;
@@ -341,6 +363,33 @@ export async function runItemRule(
         else if (!summarised.line.ok) return end('failed', summarised.line.text);
         filling.summary = summarised.summary ?? '';
         continue;
+      }
+      if (isCrossAppKind(step.kind) && !dry) {
+        const out = await runCrossAppStep(
+          {
+            client: kit.crossApp?.client ?? null,
+            sql,
+            app: kit.crossApp?.app ?? 'livediagram',
+            itemId: kit.itemId,
+            rule: { id: rule.id, name: rule.name },
+            author: rule.edited.by.id,
+            from: { title: outline.name, url: tab?.url ?? outline.url },
+            chain: cross,
+            key: `${id}:${i}`,
+            now: at,
+          },
+          kit.crossApp ? fillCrossAppStep(step as unknown as CrossAppStep, fill) : null,
+        );
+        lines.push(action(out.ok, out.text));
+        state.tally?.track(kit.category, ITEM_TELEMETRY_ACTION, crossAppEvent(out));
+        if (out.ok) continue;
+        if (out.skip) {
+          shared.cap(out.text);
+          continue;
+        }
+        if (out.pause && store.pauseNow(rule.id, out.text, at))
+          state.tally?.track(kit.category, ITEM_TELEMETRY_ACTION, 'AutomationPaused');
+        return end('failed', out.text);
       }
       const branch = step.kind === 'if' ? (step as unknown as ItemIf) : null;
       const list = branch ? (check(branch.conditions) ? branch.then : branch.else) : [step];

@@ -15,7 +15,7 @@ export const ITEM_WRITER_MS = 60_000;
 
 export interface ItemWriter {
   // Merged into each event the triggers queue.
-  who?: Pick<ItemEvent, 'by' | 'role' | 'rule' | 'chain'>;
+  who?: Pick<ItemEvent, 'by' | 'role' | 'rule' | 'chain' | 'cross'>;
   // A rule's own write: not an edit.
   own?: boolean;
   // Nothing is queued or stamped (a revert).

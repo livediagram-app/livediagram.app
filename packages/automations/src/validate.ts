@@ -5,6 +5,7 @@
 // connection, If / Else). `readRuleShell` answers the rule as it is kept (unknown keys dropped), or the first refusal
 // with the `path` of the part at fault (`steps.2.text`) for the builder to mark. Also the rule's name rules. Pure.
 
+import { CROSS_APP_STEPS_MAX, isCrossAppKind } from '@liveworkspace/index-client';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import { isRuleTimeZone } from './dates';
 import {
@@ -144,6 +145,8 @@ export function checkStepCaps(steps: readonly AutomationKind[]): void {
     refuse('steps', `a rule holds up to ${AUTOMATION_AI_STEPS_MAX} AI actions`);
   if (count('wait') > AUTOMATION_WAITS_MAX)
     refuse('steps', `a rule holds up to ${AUTOMATION_WAITS_MAX} Waits`);
+  if (steps.filter((s) => isCrossAppKind(s.kind)).length > CROSS_APP_STEPS_MAX)
+    refuse('steps', `a rule holds up to ${CROSS_APP_STEPS_MAX} steps in other apps`);
 }
 
 // ---- The shell -------------------------------------------------------------------------------------------------------
