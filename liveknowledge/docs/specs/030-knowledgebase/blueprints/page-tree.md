@@ -170,12 +170,38 @@ All of it is in `apps/editor/components/page-tree/`.
   with `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (a page with subpages) and `aria-current` (the
   current page, in `brand-100` with `brand-900` text: 10.1:1). One row is the Tab stop (roving tabindex): the last one
   focused, else the current page.
-- **A row's controls** (Add Subpage, Page Options) are always there on every row (owner, 2026-11-21: "always keep
-  the + and ... visible on pages in the sidebar, not just on hover"), faint (`slate-400` at 70%) until the row is
-  under the pointer, holds focus or has its menu open, when they take full strength. Their hover cards and the title's
-  tooltip mount only on that active row, so a 500-page tree carries plain buttons and no cards (the drag perf test
-  holds the budget). Their 50 px is always kept, so nothing shifts. On a touch screen the menu button is always
-  there and Add Subpage is in the menu.
+- **A row's controls** (Add Subpage, Page Options; a connected row's File Options) show on hover with a mouse and
+  always on touch (owner, 2026-11-21: "only show the + and elipsis when hovering ... For touch devices always show
+  them", which replaces the same day's "always keep the + and ... visible"). It is CSS alone, so a hover across 500
+  rows costs no render: the row's `data-row-controls` box takes `ROW_CONTROLS_HIDDEN` (`page-tree-row-styles.ts`)
+  under the editor's `fine-pointer` variant (`@media (hover: hover) and (pointer: fine)`, `app/globals.css`):
+  `opacity-0`, `translate-x-1`, `scale-90` and `pointer-events-none`, lifted by `group-hover` and
+  `group-focus-within` on the row (`ROW` is the `group`). The current page's row and the row whose menu is open take
+  `ROW_CONTROLS_SHOWN` instead. The box moves `opacity`, `translate` and `scale` over `duration-micro` (150 ms)
+  `ease-out`, under `motion-safe`; reduced motion (the OS setting or the preference) collapses every transition to
+  0 s (`app/globals.css`), so they show at once. Off the fine-pointer media query (a touch screen, `hover: none`) none
+  of it applies: they always show. Shown, they are faint (`QUIET`, `slate-400` at 70%) until the row is under the
+  pointer, holds focus or has its menu open (the row's mark), when they take full strength. Their hover cards and the
+  title's tooltip mount only on that active row, so a 500-page tree carries plain buttons and no cards (the drag perf
+  test holds the budget). Their 50 px is always kept, so nothing shifts. In the phone sheet (`touch`) the menu button
+  (36 x 44) is always there and Add Subpage is in the menu, as before. The rail's peek draws the same `PageTree`.
+- **The keyboard and the row's buttons.** One row is the tree's Tab stop; its own + and ... are `tabIndex` 0 and every
+  other row's are -1, so Tab from the focused row goes to its +, its ..., then out of the tree, and a 500-page tree
+  is still one stop. Focus on a button is focus within the row: its controls show. `treeKeyAction`
+  (`page-tree-view.ts`) answers Up, Down, Home, End, Right, Left, Enter, F2, ContextMenu and Shift+F10;
+  `typeAheadMatch` answers a printable key: the next row, after the focused one and wrapping round, whose name (as
+  the row shows it: "Untitled Page", "Not Shared") starts with what was typed in the last `TYPE_AHEAD_RESET_MS`
+  (500); a repeated single letter cycles through the rows that start with it. The typed letters live in a ref in
+  `PageTree`, never state.
+- **Right-click and long press** (`PageTree`'s `onContextMenu`, `useRowLongPress.ts`): a right-click on any part of
+  a page's or a connected row's row opens that row's menu at the pointer (`PortalMenu`'s `point`, which places the
+  menu's corner there, flipped and clamped as an anchored menu is), with `preventDefault`. A row being renamed or out
+  of scope opens none. A second right-click elsewhere closes the menu on its press (the menu's outside press) and
+  opens the other row's. On a touch screen, a press held `LONG_PRESS_MS` (500) without moving more than
+  `LONG_PRESS_SLOP_PX` (8) opens the menu at the finger; the click that follows the release is swallowed, so the page
+  does not open, and a drag starting (a move past the slop, `dragstart`, `pointercancel`) cancels the hold, so the drag
+  wins. A press on a row's own button is the button's. The sidebar's `aside` keeps swallowing the browser's menu on
+  its empty space, as before.
 - **One set of handlers.** The list listens once for every row: a click, a double click (rename), a key, a hover and
   the drag are read off the row the event came from (`data-page-row`, `data-row-action`), so rows carry no handlers.
 - **Drag** (HTML drag and drop, as the tab bar used): a row's top and bottom quarters are its edges (an insertion
@@ -369,3 +395,6 @@ seen in a browser since.
 | `PAGE_NAME_SETTLE_MS`                  | 50     | `usePageNameFromTitle.ts` | Well inside the autosave's pause, so the name saves with the Title    |
 | `BREADCRUMB_MIN`                       | 240    | `page-title-bar-room.ts`  | Two ancestors at a readable width before the buttons name themselves  |
 | `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose closed pages are kept                            |
+| `TYPE_AHEAD_RESET_MS`                  | 500    | `page-tree-view.ts`       | WAI-ARIA's type-ahead pause; a slower typist starts a new search      |
+| `LONG_PRESS_MS`                        | 500    | `useRowLongPress.ts`      | iOS and Android's own long press; shorter fights a scroll or drag     |
+| `LONG_PRESS_SLOP_PX`                   | 8      | `useRowLongPress.ts`      | A finger's tremble; past it the press is a scroll or a drag           |

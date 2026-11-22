@@ -67,8 +67,18 @@ Public) already own the word.
   where it is. The current page wears the brand tint. A button at the sidebar's head collapses it to a narrow rail
   and back, kept per browser.
 - The bottom bar keeps what else stood in it (Tools, Settings, the appearance), where it stood.
-- The tree is a real tree for the keyboard: Up and Down move through the rows, Right opens a page or enters it, Left
-  closes it or goes to its parent, Enter opens the page, F2 renames it, and the menu key opens its menu.
+- The tree is a real tree for the keyboard (WAI-ARIA tree view), one Tab stop for the whole tree: Up and Down move
+  through the rows, Home and End to the first and the last, Right opens a page or enters it, Left closes it or goes
+  to its parent, Enter opens the page, F2 renames it, the menu key or Shift+F10 opens its menu, and typing a page's
+  first letters jumps to the next row whose name starts with them. Tab from the focused row reaches that row's + and
+  ... and then leaves the tree; no other row's buttons are Tab stops.
+- **A row's + and ...** (owner 2026-11-21): with a mouse or a trackpad they show only on the row under the pointer,
+  the row holding the keyboard focus, the row whose menu is open and the current page's row, fading and sliding in
+  and out (150 ms, ease out; with reduced motion, at once). Their room is kept, so a title never moves or truncates
+  differently. A touch screen cannot hover, so there they always show.
+- **Right-click** on a page's row opens its menu (the ... menu, the same rows for the same roles) at the pointer, kept
+  on screen, in place of the browser's; a long press does on a touch screen. The menu closes on Escape, a press
+  outside it or a right-click elsewhere. A Viewer's menu holds Copy Link, so it is never empty.
 - **Add:** "New Page" at the foot adds a top-level page; a row's **+** adds a subpage, as its last. The new page
   opens with the caret in its title, so what is typed next is its name. A page made from the writing (Create Page
   in the page link picker) is not opened; the first time it is, the caret is at the end of its title.
