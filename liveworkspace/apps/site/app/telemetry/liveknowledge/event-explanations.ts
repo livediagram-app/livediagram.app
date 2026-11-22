@@ -794,6 +794,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Removed|ContextPage': 'Someone took a page out of Always in Context.',
   'UI|Used|HealthAddHeading':
     "Add a Heading pressed in a page's Health Score breakdown, putting the page in edit mode with a heading to fill in.",
+  'UI|Used|HealthShowConflicts':
+    "Show Conflicts pressed in a page's Health Score breakdown, opening AI Knowledge at the pages that disagree.",
+  'UI|Used|HealthShowComments':
+    "Show Comments pressed in a page's Health Score breakdown, scrolling to the page's open comments.",
+  'UI|Used|HealthShowSuggestions':
+    "Show Suggested Edits pressed in a page's Health Score breakdown, scrolling to the edits waiting in the rail.",
+  'UI|Used|ReviewAllSuggestions':
+    "Review All pressed in a page's Suggested Edits, stepping through each waiting edit in the page.",
+  'UI|Used|SuggestionShownInPage':
+    'A suggested edit shown in the page from its card, its passage marked where it would change.',
   'UI|Used|VerifyPage': 'An Editor verified a page, marking it as right until its review is due.',
   'UI|Used|HomeStillRight':
     'Someone confirmed a page due for review with Still Right on Home, verifying it again.',
