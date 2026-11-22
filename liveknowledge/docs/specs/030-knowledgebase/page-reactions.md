@@ -22,7 +22,8 @@ have seen this". It says nothing a comment would say, asks nothing of the author
 - **Bounds** (decided): a page holds at most 500 reactions and 20 different emoji (`reactions_full`, 409); a person
   puts at most 10 different emoji on one page (`too_many_reactions`, 409); a person makes at most 30 reaction changes
   a minute in a knowledgebase (`reacting_too_fast`, 429).
-- **Who reacted** is shown by name: a person's profile name. Every reaction is public to whoever reads the page.
+- **Who reacted** is shown by name: a person's profile name, or the name on their cursor when the account has no
+  profile name to give. Every reaction is public to whoever reads the page.
 - **Stored** in the knowledgebase's Durable Object, its own table `page_reactions` (one row a person a page an emoji,
   schema step after the automation wake step), never in the page's body and never in D1. A reaction is not an edit:
   it moves no revision, no Updated stamp, no version, no History entry and no Most Used day, so previews, Recent and
@@ -31,11 +32,13 @@ have seen this". It says nothing a comment would say, asks nothing of the author
 
 ## Where they show
 
-- **In the page's floating corner** (the bottom right of the document's white area, where Edit floats while reading,
-  [Reading and editing a page](editing.md#read-mode-the-default)): the reactions stand **left of Edit** for an
-  Editor and a Participant, and for a Viewer, who has no Edit, **in that same place**, left of Zen.
+- **Beside Edit, or beside Zen:** for an Editor and a Participant the capsule stands **left of Edit**, in the page's
+  floating corner (the bottom right of the document's white area, where Edit floats while reading,
+  [Reading and editing a page](editing.md#read-mode-the-default)). A Viewer, who has no Edit, has it **left of Zen**
+  in the corner cluster at the bottom right, where Edit would otherwise stand beside it.
 - **One quiet capsule** (decided), white like Cancel and the same 40 px height as Edit (44 px on a phone): a segment
-  a used emoji, its emoji and count, most used first, then ties in the order they were first used; then the **Add
+  a used emoji, its emoji and count, in the order they were first used (so a press never moves a segment from under
+  the pointer; decided); then the **Add
   Reaction** smile-plus at the end. Yours are tinted in the accent with an accent ring and `aria-pressed`; pressing
   one adds yours, pressing your own again takes it back.
 - **Hovering a segment** (a long press on touch, focus from the keyboard) names who reacted: "👏 Clap" and "You, Priya

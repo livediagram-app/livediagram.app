@@ -79,11 +79,14 @@ person))` with an index on `(tab, at)` and a trigger deleting a page's rows when
 - `components/page-reactions/`: `usePageReactions` (the store slice, the caller's key, `canReact`, `toggle` with a
   toast on refusal), `PageReactionsCapsule` (the capsule, its segments, +N and Add Reaction), `PageReactionPicker`
   (the popover: On This Page, Quick Picks, then the page icon picker's search and grid via `EmojiReactionGrid`).
-- In `PageEditBarView` the reading corner becomes a row: the capsule, then Edit when the person may edit. With
-  `mayEdit` false the row holds the capsule alone, in Edit's place. While editing the draft bar replaces the row.
-  `PageEditBar` hides the row in Zen Mode and in an embed.
-- The capsule: `h-10 phone:h-11`, white with a slate ring and `shadow-lg` like Cancel; segments `min-w-11` on a
-  phone. A segment of yours: brand tint, brand text, `aria-pressed`. Each segment's hover card says "👏 Clap" and "You
+- In `PageEditBarView` the reading corner becomes a row (`data-page-read-corner`): the capsule (its `reactions`
+  slot), then Edit. While editing the draft bar replaces the row. `PageEditBar` fills the slot outside Zen Mode and
+  an embed.
+- Someone who may not edit: `PageReactionsBesideZen`, in `CanvasChrome`'s bottom-right cluster just before
+  `ZenControl` (shown there for a read-only session), renders the capsule when `pageEditing.mayEdit` is false, outside
+  Zen Mode, an embed, Version History, Ask and AI Knowledge.
+- The capsule: `h-10 phone:h-11`, white with a slate ring and `shadow-lg` like Cancel; segments, +N and Add Reaction
+  44 px tall and at least 44 px wide on a phone. A segment of yours: brand tint, brand text, `aria-pressed`. Each segment's hover card says "👏 Clap" and "You
   and Priya reacted" (`reactorsLine`, shared with comment reactions). Up to 5 segments (2 under 640 px), then +N.
 - The picker: `ResponsivePopover` anchored on the pressed control, 356 px wide, a sheet on a phone.
 
