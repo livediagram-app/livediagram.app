@@ -230,6 +230,18 @@ describe('the request Ask sends', () => {
     expect(request.system).not.toContain('Tuesdays');
   });
 
+  it('takes citations out of a long earlier answer in one pass', () => {
+    const answer = `Start${' '.repeat(100_000)}end [2]  [3].`;
+    const started = performance.now();
+    const { messages } = askRequest({
+      question: 'And now?',
+      passages,
+      turns: [{ question: 'Q?', answer }],
+    });
+    expect(performance.now() - started).toBeLessThan(500);
+    expect(messages[1]!.content).toBe(`<answer>\nStart${' '.repeat(100_000)}end.\n</answer>`);
+  });
+
   it('keeps the conversation: earlier turns without passages or their citation numbers, at most 10 turns', () => {
     const turns = Array.from({ length: 14 }, (_x, at) => ({
       question: `Question <${at}>?`,

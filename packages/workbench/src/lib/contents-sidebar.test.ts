@@ -48,6 +48,10 @@ describe('restingRect: the sidebar measured where it comes to rest', () => {
     expect(translateOf(undefined)).toEqual([0, 0]);
     expect(translateOf('640px')).toEqual([640, 0]);
     expect(translateOf('-12px 4px')).toEqual([-12, 4]);
+    expect(translateOf('calc(-50% + 4px) 2px', 200, 0)).toEqual([-96, 2]);
+    const started = performance.now();
+    expect(translateOf(`${'1'.repeat(50_000)} ${' '.repeat(50_000)}(`)).toEqual([0, 0]);
+    expect(performance.now() - started).toBeLessThan(500);
     expect(translateOf('50% 0px')).toEqual([0, 0]);
   });
 

@@ -59,8 +59,13 @@ export function askMessage(question: string, passages: readonly AskPassage[]): s
 
 // An earlier answer as the model wrote it, its citation numbers taken out: the passages they counted are not sent
 // again, and this turn's passages are numbered afresh.
-const earlierAnswer = (answer: string): string =>
-  `<answer>\n${answer.replace(/\s*\[\d{1,3}\]/g, '').trim()}\n</answer>`;
+// Split on the citations, each piece but the last losing the spaces before its citation: one pass, however long the
+// answer's runs of spaces.
+const earlierAnswer = (answer: string): string => {
+  const pieces = answer.split(/\[\d{1,3}\]/);
+  const text = pieces.map((piece, i) => (i < pieces.length - 1 ? piece.trimEnd() : piece)).join('');
+  return `<answer>\n${text.trim()}\n</answer>`;
+};
 
 /** The request for a question, for whichever provider's model answers (@liveworkspace/ai model-providers.ts `callModel`). `turns` are the conversation so far, oldest first; the last ASK_MAX_TURNS - 1 are
  *  kept, so the conversation is at most ASK_MAX_TURNS turns with this one. Earlier turns are sent as their

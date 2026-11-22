@@ -33,7 +33,7 @@ export function parseCsv(text: string): string[][] {
   return rows;
 }
 
-const cell = (value: string): string => value.replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
+const cell = (value: string): string => value.replace(/\s+/g, ' ').trim().replace(/[\\|]/g, '\\$&');
 
 /** The rows as a pipe table, the first its header; empty for no rows. */
 export function csvToMarkdownTable(text: string): string {

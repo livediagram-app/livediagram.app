@@ -32,6 +32,17 @@ const PAGE = [
 ].join('\n');
 
 describe('markdownHeadings', () => {
+  it('trims closing hashes and spaces, and reads a long line of them in one pass', () => {
+    expect(markdownHeadings('## Title ##  \n#  Spaced\n# #').map((h) => h.text)).toEqual([
+      'Title',
+      'Spaced',
+      '',
+    ]);
+    const long = `# a${' '.repeat(50_000)}b${'#'.repeat(50_000)}`;
+    const ms = cpuMsOf(() => markdownHeadings(Array.from({ length: 20 }, () => long).join('\n')));
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
+  });
+
   it('lists headings with their level, leaving out lines inside a code fence', () => {
     expect(markdownHeadings(PAGE).map((h) => `${h.level} ${h.text}`)).toEqual([
       '1 Deploys',

@@ -48,15 +48,33 @@ export function restingRect(el: HTMLElement): Box {
   return { left: r.left - dx, right: r.right - dx, top: r.top - dy, bottom: r.bottom - dy };
 }
 
+/** The parts of a computed value split on its spaces outside any parentheses, in one pass. */
+function splitOutsideParens(value: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let part = '';
+  for (const char of value) {
+    if (char === '(') depth++;
+    else if (char === ')') depth = Math.max(0, depth - 1);
+    if (depth === 0 && /\s/.test(char)) {
+      if (part) parts.push(part);
+      part = '';
+    } else part += char;
+  }
+  if (part) parts.push(part);
+  return parts;
+}
+
 /** The px of a computed `translate` ("12px", "12px -4px", "-100%", "calc(-37.5% + 4px)", "none"); a percentage is of
  *  `width` (x) or `height` (y). */
 export function translateOf(value: string | undefined, width = 0, height = 0): [number, number] {
   if (!value || value === 'none') return [0, 0];
   // The two values split on a space outside any calc(); each the sum of its px and its % of the panel.
-  const [x = '', y = ''] = value.trim().split(/\s+(?![^(]*\))/);
+  const [x = '', y = ''] = splitOutsideParens(value.trim());
   const px = (v: string, size: number) => {
     let sum = 0;
-    for (const m of v.matchAll(/([+-]?\s*[\d.]+)(px|%)/g)) {
+    // A number starts only where no digit came before, so a long run of digits is read once.
+    for (const m of v.matchAll(/(?<![\d.])([+-]? ?[\d.]+)(px|%)/g)) {
       const n = Number.parseFloat(m[1]!.replace(/\s/g, ''));
       sum += m[2] === '%' ? (n / 100) * size : n;
     }
