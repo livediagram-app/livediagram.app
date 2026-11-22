@@ -128,8 +128,9 @@ describe('sealing and opening', () => {
         sealed.replace(/^1\./, '2.'),
       ),
     ];
-    for (const refused of refusals) {
-      const error = await refused.catch((e: unknown) => e);
+    // Settled together, so no refusal waits unhandled while an earlier one is awaited.
+    const errors = await Promise.all(refusals.map((refused) => refused.catch((e: unknown) => e)));
+    for (const error of errors) {
       expect(error).toBeInstanceOf(AiKeySealError);
       expect(String((error as Error).message)).not.toContain(KEY);
     }
