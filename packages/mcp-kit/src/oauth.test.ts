@@ -907,3 +907,73 @@ describe('Claude connector directory', () => {
     });
   });
 });
+
+describe('a reconnect replaces the client’s earlier token (docs/specs/015-api/mcp-server.md "Consent + mint")', () => {
+  const hand = async (session: string, tokenId?: unknown) => {
+    const res = await app.request(
+      '/oauth/complete',
+      {
+        method: 'POST',
+        body: JSON.stringify({ session, token: 'lwt_secret', expiresAt: 9, tokenId }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+      env,
+    );
+    expect(res.status).toBe(200);
+    return (await res.json<{ replaces: string[] }>()).replaces;
+  };
+
+  it('answers nothing the first time, then the ids handed to that client before, newest first', async () => {
+    const client = await register();
+    expect(await hand(await startAuthorize(client), 't1')).toEqual([]);
+    expect(await hand(await startAuthorize(client), 't2')).toEqual(['t1']);
+    expect(await hand(await startAuthorize(client), 't3')).toEqual(['t2', 't1']);
+    // The same id again (a retried handover) is never its own replacement.
+    expect(await hand(await startAuthorize(client), 't3')).toEqual(['t2', 't1']);
+    // Kept for as long as the registration.
+    const put = vi.spyOn(env.OAUTH_KV, 'put');
+    await hand(await startAuthorize(client), 't4');
+    expect(put).toHaveBeenCalledWith(`grant:${client}`, JSON.stringify(['t4', 't3', 't2', 't1']), {
+      expirationTtl: CLIENT_TTL,
+    });
+  });
+
+  it('keeps the last five, and never answers another client’s', async () => {
+    const client = await register();
+    const other = await register('Other Assistant');
+    for (const id of ['a', 'b', 'c', 'd', 'e', 'f']) await hand(await startAuthorize(client), id);
+    expect(await hand(await startAuthorize(client), 'g')).toEqual(['f', 'e', 'd', 'c', 'b']);
+    expect(await hand(await startAuthorize(other), 'x')).toEqual([]);
+  });
+
+  it('records nothing without a token id, or with one that is not an id', async () => {
+    const client = await register();
+    expect(await hand(await startAuthorize(client))).toEqual([]);
+    expect(await hand(await startAuthorize(client), 42)).toEqual([]);
+    expect(await hand(await startAuthorize(client), '')).toEqual([]);
+    expect(await hand(await startAuthorize(client), 'x'.repeat(65))).toEqual([]);
+    expect(await hand(await startAuthorize(client), 't1')).toEqual([]);
+  });
+
+  it('reads a damaged record as none', async () => {
+    const client = await register();
+    await env.OAUTH_KV.put(`grant:${client}`, JSON.stringify({ not: 'a list' }));
+    expect(await hand(await startAuthorize(client), 't1')).toEqual([]);
+    await env.OAUTH_KV.put(`grant:${client}`, JSON.stringify([7, 't1', null]));
+    expect(await hand(await startAuthorize(client), 't2')).toEqual(['t1']);
+  });
+
+  it('replaces nothing for the built-in CLI, whose id every install shares', async () => {
+    const authorize = async () => {
+      const res = await app.request(
+        `/oauth/authorize?client_id=example-cli&redirect_uri=${encodeURIComponent('http://127.0.0.1:5000/callback')}&code_challenge=${'c'.repeat(43)}&code_challenge_method=S256&response_type=code`,
+        {},
+        env,
+      );
+      return new URL(res.headers.get('Location')!).searchParams.get('session')!;
+    };
+    expect(await hand(await authorize(), 't1')).toEqual([]);
+    expect(await hand(await authorize(), 't2')).toEqual([]);
+    expect(await env.OAUTH_KV.get('grant:example-cli')).toBeNull();
+  });
+});
