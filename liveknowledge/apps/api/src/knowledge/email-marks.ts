@@ -11,6 +11,8 @@
 //                                           (watching.md; key '': when the first check was), watch-work.ts
 //   kind `watch-digest`, key the person:    when that watcher was last sent their daily digest
 //   kind `watch-reach`,  key the person:    when the daily check last asked whether that watcher still reaches it
+//   kind `reading-remind`, key `<page> <person>`: when that person was last reminded of that Required Reading page
+//                                           (required-reading.md "Remind"; one a week), reading-remind.ts
 //
 // Ids and times only: no address and no words. The day's total of emails is a `usage_counters` row (the scope
 // `emails`), pruned with the other counters. Written through `knowledgeDb`: none of it is an edit.
@@ -31,7 +33,8 @@ export type MarkKind =
   | 'rule-review'
   | 'watch-review'
   | 'watch-digest'
-  | 'watch-reach';
+  | 'watch-reach'
+  | 'reading-remind';
 type Exec = (query: string) => unknown;
 
 /** The schema step (document-schema.ts STEPS). A knowledgebase that already holds verified pages is owed its first
@@ -99,8 +102,11 @@ export async function putMarks(
   );
 }
 
-/** The daily prune: marks of pages and conflicts the knowledgebase no longer holds. */
-export const pruneEmailMarks = () => [
+/** A Required Reading reminder's mark is kept this long: a day past its week (READING_REMIND_GAP_MS). */
+export const READING_MARKS_KEPT_MS = 8 * 86_400_000;
+
+/** The daily prune: marks of pages and conflicts the knowledgebase no longer holds, and reminders past their week. */
+export const pruneEmailMarks = (now: number) => [
   {
     sql: `DELETE FROM knowledge_email_marks WHERE kind = 'review-page' AND key NOT IN (SELECT id FROM tabs)`,
     params: [],
@@ -118,6 +124,10 @@ export const pruneEmailMarks = () => [
   {
     sql: `DELETE FROM knowledge_email_marks WHERE kind = 'watch-review' AND key != '' AND key NOT IN (SELECT id FROM tabs)`,
     params: [],
+  }, // A reminder's mark past its week holds nothing back (reading-remind.ts).
+  {
+    sql: `DELETE FROM knowledge_email_marks WHERE kind = 'reading-remind' AND at < ?`,
+    params: [now - READING_MARKS_KEPT_MS],
   },
 ];
 

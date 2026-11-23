@@ -86,7 +86,7 @@ test('a board imported on its own is in Home’s Most Used or Recent without bei
   expectNoPageErrors(pageErrors);
 });
 
-test('a two-board import marks neither used: Most Used and Recent stay empty, All has both', async ({
+test('a two-board import marks neither used: Most Used and Recent stay away, All has both', async ({
   page,
   pageErrors,
 }) => {
@@ -95,8 +95,9 @@ test('a two-board import marks neither used: Most Used and Recent stay empty, Al
   await importBoards(page, 2);
 
   await page.goto('/explorer/home');
-  const jump = page.getByRole('region', { name: 'Recent' });
-  await expect(jump).toContainText(/will gather here\./);
+  // Never opened, so both are New's alone: Most Used and Recent, with nothing in them, are left out.
+  await expect(page.getByRole('region', { name: 'New' }).getByRole('listitem')).toHaveCount(2);
+  await expect(page.getByRole('region', { name: /^(Most Used|Recent)$/ })).toHaveCount(0);
   await expect(homeOpened(page).getByRole('link')).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('bulk-import-home-desktop.png') });
 

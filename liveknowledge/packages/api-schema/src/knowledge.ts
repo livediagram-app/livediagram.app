@@ -4,6 +4,7 @@
 
 import type { KnowledgeStyle, PageApproval } from '@liveknowledge/document';
 import type { AgentCover, AgentPageIcon } from './pages';
+import type { KnowledgeRequiredReadingPage } from './page-reading';
 
 /** The Knowledgebase Style (docs/specs/030-knowledgebase/page-surface.md "Knowledgebase Style"): the one look every
  *  page is drawn in. In a document read (always whole), the `document-meta` op when it changed, and the metadata
@@ -243,6 +244,9 @@ export type KnowledgeAiSettings = {
   usesModel?: string;
   /** `usesModel`'s name ("Claude Fable 5.2"), for "Answer With". */
   usesModelLabel?: string;
+  /** The provider of the key that answers (a team's or a person's may differ from `provider`, the knowledgebase's
+   *  own), for the source line; with `usesModel`. */
+  usesProvider?: KnowledgeAiProvider;
 };
 export type KnowledgeAiUses = 'knowledgebase' | 'team' | 'personal' | 'built-in';
 
@@ -581,6 +585,9 @@ export type KnowledgeOverviewResponse = {
   /** Not Read in 90 Days (ai-knowledge.md): the first 10, touched longest ago first, and how many; absent from an
    *  older api. */
   notRead?: { pages: KnowledgeNotReadPage[]; total: number };
+  /** Required Reading (required-reading.md): each page asked to be read with its counts, least read first; absent
+   *  from an older api. */
+  requiredReading?: KnowledgeRequiredReadingPage[];
 };
 /** A page nobody read in 90 days: `touchedAt` is its last edit, else when it was made, where either was kept. */
 export type KnowledgeNotReadPage = { tab: string; title: string; touchedAt?: number };

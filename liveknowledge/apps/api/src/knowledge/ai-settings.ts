@@ -23,6 +23,7 @@ import {
   isProviderModel,
   modelProvider,
   providerModel,
+  type KeyAnswer,
   type KeyProviderId,
 } from '@liveworkspace/ai';
 import { aiKeyFor, type AiKeyAnswer } from '@liveworkspace/auth-client/ai-key';
@@ -205,15 +206,25 @@ export async function whichAi(
   settings: KnowledgeAiSettings,
   asker: AiAsker | null,
   door: SharedKeyDoor = aiKeyFor,
-): Promise<Pick<KnowledgeAiSettings, 'uses' | 'usesModel' | 'usesModelLabel'>> {
+): Promise<Pick<KnowledgeAiSettings, 'uses' | 'usesModel' | 'usesModelLabel' | 'usesProvider'>> {
   if (settings.hasKey) {
     const model = providerModel(settings.provider, settings.model);
-    return { uses: 'knowledgebase', usesModel: model.id, usesModelLabel: model.name };
+    return {
+      uses: 'knowledgebase',
+      usesModel: model.id,
+      usesModelLabel: model.name,
+      usesProvider: settings.provider,
+    };
   }
   const shared = await sharedKey(env, asker, 'which', door);
   if (shared.status === 'key') {
     const model = providerModel(shared.provider, shared.model);
-    return { uses: sharedSource(shared.source), usesModel: model.id, usesModelLabel: model.name };
+    return {
+      uses: sharedSource(shared.source),
+      usesModel: model.id,
+      usesModelLabel: model.name,
+      usesProvider: shared.provider,
+    };
   }
   if (shared.status === 'unreadable') return { uses: sharedSource(shared.source) };
   return { uses: 'built-in' };
@@ -231,3 +242,26 @@ export const ASK_UNAVAILABLE_WORDS = {
   'personal-unreadable': 'Your AI key could not be read. Replace it in Settings, under AI.',
   'shared-unavailable': "Your AI key settings couldn't be reached just now. Try again in a moment.",
 } as const;
+
+/** The key that answers, as the shared engine reads one (Describe a Rule; ai-keys.md "Every AI feature honours the
+ *  choice"): the knowledgebase's own key is the item's, a key that does not open is refused, and accounts that could
+ *  not say are unavailable. No key and no secret: none, so built-in AI. */
+export function keyAnswerOf(ai: AppliedAi | AiUnavailable): KeyAnswer {
+  if (typeof ai !== 'string') {
+    const source =
+      ai.source === 'knowledgebase' ? 'item' : ai.source === 'team' ? 'team' : 'account';
+    return { status: 'key', source, provider: ai.provider, model: ai.model, key: ai.apiKey };
+  }
+  switch (ai) {
+    case 'unreadable':
+      return { status: 'unreadable', source: 'item' };
+    case 'team-unreadable':
+      return { status: 'unreadable', source: 'team' };
+    case 'personal-unreadable':
+      return { status: 'unreadable', source: 'account' };
+    case 'shared-unavailable':
+      return { status: 'unavailable' };
+    default:
+      return { status: 'none' };
+  }
+}

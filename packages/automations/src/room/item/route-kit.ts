@@ -18,6 +18,7 @@ import {
   type ItemRef,
   type ItemRule,
 } from '../../item';
+import type { KeyAnswer } from '@liveworkspace/ai';
 import type { AutomationPerson, AutomationStamp } from '../../types';
 import { isObj, type Obj } from '../../validate-read';
 import { hookInfos } from '../automation-incoming';
@@ -36,6 +37,9 @@ export interface ItemCaller {
   person: AutomationPerson;
   // May read the item at all (a Participant, a Viewer, a link visitor): a rule's summary is theirs.
   reader: boolean;
+  // Asks accounts which AI key applies to this caller in the item's team, with the key (Describe a Rule; ai-keys.md
+  // "Every AI feature honours the choice"). Absent, or answering null: no person to ask for, so built-in AI.
+  aiKey?: () => Promise<KeyAnswer | null>;
 }
 
 export interface ItemRoutesInput {

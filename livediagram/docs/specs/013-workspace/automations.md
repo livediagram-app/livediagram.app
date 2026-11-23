@@ -142,6 +142,8 @@ over this app's kinds: Poll Ended, Question Asked and Agent Made Changes have pi
 (a poll card whose bars settle under a **Closed** chip; a Q&A list gaining a note with an upvote; an agent's cursor
 and sparkle changing a shape on a small canvas). Question Asked and Agent Made Changes take a tab (Any Tab or one);
 Poll Ended has nothing to set and says when it starts. The Templates gallery holds the table above in four sections:
+Which AI ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)): Describe a Rule runs on the person's own key, or the canvas's team's, when one applies, else built-in AI, and its dialog shows the source line with Try an Example above the box; Summarise with AI always runs on built-in AI, and its panel says so.
+
 **Keep It Safe**, **Stay in the Loop**, **Workshops** and **Agents and Tools**. Describe a Rule offers examples a
 canvas fits ("Every Friday at 5, take a snapshot and email me", "Reset this board every night", "Tell Slack when
 someone comments"). The empty state's **How Rules Work** opens the help centre's Automations article

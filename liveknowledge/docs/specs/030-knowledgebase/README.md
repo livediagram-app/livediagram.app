@@ -10,6 +10,7 @@ brought from livedocuments ([Article pages](../007-editor/article-pages.md)) and
 - [Approval](approval.md): Pending Approval, and other members approving or rejecting a page.
 - [Comments on a page](page-comments.md): comment threads at the foot of every page.
 - [Reactions on a page](page-reactions.md): any emoji from any signed-in reader, Viewers included, beside Edit; no notifications.
+- [Required Reading](required-reading.md): an Editor asks everyone or chosen people to confirm they read a page; who has, Remind, and asking again after a change.
 - [Watching a page](watching.md): Watch a page or a section, hear of its changes in the Inbox (one row a page an hour) and an optional daily digest.
 - [Search and Ask](search-and-ask.md): the search index, and answers with sources from a team's own Claude or OpenAI key.
 - [AI Knowledge](ai-knowledge.md): what agents read, what nobody could answer, pages that disagree, suggested edits.

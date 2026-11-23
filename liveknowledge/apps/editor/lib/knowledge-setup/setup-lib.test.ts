@@ -28,7 +28,6 @@ import {
   SETUP_BUTTON_LINE,
   createLabel,
   describeHint,
-  setupAiLine,
   setupFailureWords,
   setupTitle,
 } from './setup-words';
@@ -321,14 +320,6 @@ describe('the words', () => {
     expect(words.step).toBe(step);
     expect(words.text).not.toMatch(/ask again|Ask Again|\b[45]\d\d\b/);
     expect(words.title + words.text).not.toContain('Claude');
-  });
-
-  it("says which AI answers: built-in with no key, the team's with one, nothing unread", () => {
-    expect(setupAiLine(null)).toBeNull();
-    expect(setupAiLine({ hasKey: false })).toBe('Uses built-in AI');
-    expect(setupAiLine({ hasKey: true })).toBe("Uses this knowledgebase's key");
-    expect(setupAiLine({ hasKey: false, uses: 'team' })).toBe("Uses your team's key");
-    expect(setupAiLine({ hasKey: false, uses: 'personal' })).toBe('Uses your key');
   });
 
   it('names Claude when that is the provider, or none is known', () => {

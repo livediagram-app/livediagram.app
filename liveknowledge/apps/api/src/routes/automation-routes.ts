@@ -18,6 +18,7 @@ import {
   serveItemAutomations,
 } from '@liveworkspace/automations/room';
 import { getDocument } from '../db';
+import { applyingAi, askerOf, keyAnswerOf } from '../knowledge/ai-settings';
 import { authorOf } from './changesets';
 import { grantOn, missingDocument, type DocumentRouteContext } from './context';
 
@@ -54,6 +55,9 @@ export async function handleAutomationRoutes(ctx: DocumentRouteContext): Promise
         // Only someone the gate lets through is named: their rules and runs carry their name.
         person: () => authorOf(ctx, owner!),
         reader: grantOn(ctx, id) !== null,
+        // Describe a Rule on the knowledgebase's own key, its team's or the caller's (search-and-ask.md "Which key
+        // answers").
+        aiKey: async () => keyAnswerOf(await applyingAi(env, id, askerOf(ctx, existing.teamId))),
       });
     },
   });

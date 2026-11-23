@@ -27,18 +27,14 @@ import type {
   AutomationErrorBody,
 } from '@liveplanner/api-schema';
 import { listItems } from '../db/items';
+import { getProjectMeta } from '../db/projects';
 import { json } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
-import {
-  aiClient,
-  aiToday,
-  ask,
-  countDraftAsk,
-  draftsToday,
-} from '../plan-room/automations/automation-ai';
+import { aiToday, ask, countDraftAsk, draftsToday } from '../plan-room/automations/automation-ai';
 import { readAutomationPlan } from '../plan-room/automations/automation-plan';
 import type { Gated } from './automation-routes';
 import { readBody, type PlanRouteContext } from './context';
+import { draftAi, keyFailedResponse, keyFailureOf } from './draft-ai';
 
 // The asks one draft may make: the first, and one more with the check's words.
 export const DRAFT_ASKS_MAX = 2;
@@ -46,7 +42,7 @@ export const DRAFT_ASKS_MAX = 2;
 const refuse = (status: number, error: AutomationError, message: string, path?: string) =>
   json({ error, message, ...(path ? { path } : {}) } satisfies AutomationErrorBody, { status });
 
-type Answer = 'drafted' | 'off_topic' | 'unreadable' | 'failed';
+type Answer = 'drafted' | 'off_topic' | 'unreadable' | 'failed' | 'key_failed';
 
 export async function draftRule(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const raw = await readBody(ctx);
@@ -62,14 +58,23 @@ export async function draftRule(ctx: PlanRouteContext, g: Gated): Promise<Respon
   const timeZone = raw['timeZone'];
   if (!isRuleTimeZone(timeZone))
     return refuse(400, 'automation_draft_invalid', 'timeZone must name a time zone', 'timeZone');
-  const client = aiClient(ctx.env);
+  // The person's own key, or the plan's team's, else built-in AI (ai-keys.md "Every AI feature honours the choice").
+  // On a key nothing of the plan's AI allowance is read or spent.
+  const teamId = (await getProjectMeta(ctx.env, g.projectId))?.teamId ?? null;
+  const ai = await draftAi(ctx, teamId, (message) =>
+    refuse(503, 'automation_ai_unavailable', message),
+  );
+  if ('refused' in ai) return ai.refused;
+  const { client } = ai;
   if (!client) return refuse(503, 'automation_ai_unavailable', AI_NOT_SET_UP);
   const sql = g.hook.sql();
   const started = Date.now();
-  if (aiToday(sql, started) >= AUTOMATION_AI_PER_DAY)
-    return refuse(429, 'automation_ai_capped', AI_CAPPED);
-  if (draftsToday(sql, started) >= AI_DRAFT_PER_DAY)
-    return refuse(429, 'automation_ai_capped', AI_DRAFT_CAPPED);
+  if (!ai.keyed) {
+    if (aiToday(sql, started) >= AUTOMATION_AI_PER_DAY)
+      return refuse(429, 'automation_ai_capped', AI_CAPPED);
+    if (draftsToday(sql, started) >= AI_DRAFT_PER_DAY)
+      return refuse(429, 'automation_ai_capped', AI_DRAFT_CAPPED);
+  }
 
   const [plan, items] = await Promise.all([
     readAutomationPlan(ctx.env, g.projectId),
@@ -102,21 +107,26 @@ export async function draftRule(ctx: PlanRouteContext, g: Gated): Promise<Respon
     // The day's AI steps read again before each ask, with no await before it is counted: a rule's call made while the
     // plan was read counts. A first ask past them is refused as the check above; a second is not made, the draft
     // didn't read.
-    if (aiToday(sql, Date.now()) >= AUTOMATION_AI_PER_DAY) {
-      if (n === 0) return refuse(429, 'automation_ai_capped', AI_CAPPED);
-      break;
+    if (!ai.keyed) {
+      if (aiToday(sql, Date.now()) >= AUTOMATION_AI_PER_DAY) {
+        if (n === 0) return refuse(429, 'automation_ai_capped', AI_CAPPED);
+        break;
+      }
+      countDraftAsk(sql, Date.now(), n > 0);
+      g.hook.store.aiAsks += 1;
     }
-    countDraftAsk(sql, Date.now(), n > 0);
-    g.hook.store.aiAsks += 1;
     asks += 1;
     defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationAiDraft'));
-    const asked = await ask(
-      client,
-      aiDraftRequest(prompt, draftPlan, previous),
-      ctx.env.AI_GATEWAY,
-    );
-    if (!asked.ok)
-      return done('failed', asks, refuse(503, 'automation_ai_unavailable', AI_DRAFT_FAILED));
+    const request = aiDraftRequest(prompt, draftPlan, previous);
+    const asked = ai.keyed
+      ? await ask(client, request, undefined, ai.timeoutMs)
+      : await ask(client, request, ctx.env.AI_GATEWAY);
+    if (!asked.ok) {
+      const failure = keyFailureOf(ai, asked.keyFailure);
+      if (failure) return done('key_failed', asks, keyFailedResponse(failure, asked.reason));
+      const words = ai.keyed ? asked.reason : AI_DRAFT_FAILED;
+      return done('failed', asks, refuse(503, 'automation_ai_unavailable', words));
+    }
     const reply = readAiReply(asked.raw);
     if (!reply) {
       previous = { path: 'reply', message: 'the reply must be one JSON object' };

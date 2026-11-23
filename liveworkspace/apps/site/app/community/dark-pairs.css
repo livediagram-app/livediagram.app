@@ -22,7 +22,6 @@
 @source inline("dark:bg-slate-800/80");
 @source inline("dark:bg-slate-800/90");
 @source inline("dark:bg-slate-800/95");
-@source inline("dark:bg-slate-900/60");
 @source inline("dark:bg-slate-900/80");
 @source inline("dark:bg-slate-950/50");
 @source inline("dark:bg-transparent");
@@ -65,14 +64,12 @@
 @source inline("dark:hover:bg-brand-400/[0.06]");
 @source inline("dark:hover:bg-brand-500");
 @source inline("dark:hover:bg-brand-500/10");
-@source inline("dark:hover:bg-brand-500/15");
 @source inline("dark:hover:bg-rose-500/15");
 @source inline("dark:hover:bg-slate-600");
 @source inline("dark:hover:bg-slate-800/50");
 @source inline("dark:hover:border-brand-400");
 @source inline("dark:hover:border-brand-400/60");
 @source inline("dark:hover:border-slate-700");
-@source inline("dark:hover:text-brand-100");
 @source inline("dark:hover:text-slate-300");
 @source inline("dark:hover:text-slate-50");
 @source inline("dark:placeholder:text-slate-500");
@@ -95,6 +92,7 @@
 @source inline("dark:text-brand-300/80");
 @source inline("dark:text-emerald-950");
 @source inline("dark:text-lime-200");
+@source inline("dark:text-orange-300");
 @source inline("dark:text-pink-300");
 @source inline("dark:text-pink-950");
 @source inline("dark:text-red-400");

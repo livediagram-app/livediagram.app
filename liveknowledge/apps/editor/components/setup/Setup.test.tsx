@@ -339,8 +339,8 @@ describe('step 1, Describe', () => {
     expect(document.activeElement).toBe(field());
     expect(screen.getByText(/12 person logistics startup/)).toBeTruthy();
     await waitFor(() =>
-      expect(document.querySelector('[data-setup-ai]')?.textContent).toBe(
-        "Uses this knowledgebase's key",
+      expect(document.querySelector('[data-setup-ai]')?.textContent).toContain(
+        'This Knowledgebase’s Key',
       ),
     );
     const steps = [...document.querySelectorAll('[data-setup-steps] li')];
@@ -420,7 +420,8 @@ describe('step 1, Describe', () => {
   });
 
   it.each([
-    ['bad-key', 'Claude Did Not Accept the Key', 'Open AI Settings'],
+    // A refused key's fix is the source line's Fix Key (below): the alert is heard, not drawn twice.
+    ['bad-key', 'Claude Did Not Accept the Key', null],
     ['no-credit', 'The Claude Account Is Out of Credit', null],
     ['overloaded', 'Claude Is Busy Right Now', null],
     ['person-limit', 'You Have Asked for 5 Structures This Hour', null],
@@ -451,6 +452,17 @@ describe('step 1, Describe', () => {
     },
   );
 
+  it('says a refused key on the source line, with Fix Key to its AI Settings, the alert out of sight', async () => {
+    setupApi.apiSuggestSetup.mockResolvedValue({ ok: false, kind: 'bad-key' });
+    await openDialog();
+    describe_(DESCRIPTION);
+    press('Suggest a Structure');
+    expect((await screen.findByRole('alert')).className).toContain('sr-only');
+    const line = document.querySelector('[data-setup-ai]')!;
+    expect(line.textContent).toContain('This Knowledgebase’s Key Needs Attention');
+    expect(within(line as HTMLElement).getByRole('button').textContent).toBe('Fix Key');
+  });
+
   it('names OpenAI when the failure says so', async () => {
     setupApi.apiSuggestSetup.mockResolvedValue({ ok: false, kind: 'bad-key', provider: 'openai' });
     await openDialog();
@@ -473,7 +485,7 @@ describe('which AI answers', () => {
     });
     await openDialog();
     expect(step()).toBe('describe');
-    await waitFor(() => expect(aiLine()).toBe('Uses built-in AI'));
+    await waitFor(() => expect(aiLine()).toContain('Built-in AI'));
     expect(screen.queryByText(/Needs Your Team's AI Key/)).toBeNull();
     expect(screen.queryByRole('button', { name: 'Open AI Settings' })).toBeNull();
     describe_(DESCRIPTION);
@@ -497,9 +509,9 @@ describe('which AI answers', () => {
   it("says the team's key once one is set", async () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
     await openDialog();
-    await waitFor(() => expect(aiLine()).toBe('Uses built-in AI'));
+    await waitFor(() => expect(aiLine()).toContain('Built-in AI'));
     act(() => aiSettingsStore.set('d1', settings()));
-    expect(aiLine()).toBe("Uses this knowledgebase's key");
+    expect(aiLine()).toContain('This Knowledgebase’s Key');
   });
 
   it('waits for nothing: step 1 while the settings are read, and when they cannot be, with no line', async () => {

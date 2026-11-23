@@ -13,6 +13,7 @@ import { LinkedFrom } from './LinkedFrom';
 import { PageMetaRow } from './PageMetaRow';
 import { PageComments } from '@/components/page-comments/PageComments';
 import { PageIconHead } from '@/components/page-icon/PageIconHead';
+import { RequiredReadingBanner } from '@/components/required-reading/RequiredReadingBanner';
 
 export function PageKnowledgeSlots({ slots }: { slots: PageSlots }) {
   const store = useContext(EditorChromeContext);
@@ -20,7 +21,14 @@ export function PageKnowledgeSlots({ slots }: { slots: PageSlots }) {
   return (
     <>
       {createPortal(<PageIconHead />, slots.head)}
-      {createPortal(<PageMetaRow />, slots.meta)}
+      {createPortal(
+        <>
+          {/* Required Reading's ask, above the meta row (required-reading.md "Where it shows"). */}
+          <RequiredReadingBanner />
+          <PageMetaRow />
+        </>,
+        slots.meta,
+      )}
       {createPortal(
         <>
           <EmptyPage />

@@ -34,6 +34,9 @@ export type ItemOverlay = {
   /** Whether a read that started at `startedAt` raced a change of place (a move, Trash, restore or purge): it started
    *  after the change was laid and before the index took it, so it may lack what the change brought in. */
   raced: (startedAt: number) => boolean;
+  /** How many changes of place (a move, Trash, archive, restore or purge) the index has taken: it grows with each,
+   *  so what counts items by place (Home's Spaces) asks again once one has landed. */
+  placesSettled: () => number;
   /** A folder is gone: a move into it no longer stands for anything. */
   dropFolder: (folderId: string) => void;
   /** The overlay's version: it changes with every patch, for memos and useSyncExternalStore. */
@@ -67,6 +70,7 @@ export function createItemOverlay(): ItemOverlay {
   const patches = new Map<string, ItemPatch>();
   const listeners = new Set<() => void>();
   const placements: Placement[] = [];
+  let placesSettled = 0;
   let version = 0;
   // Orders settles against read starts.
   let clock = 0;
@@ -110,6 +114,7 @@ export function createItemOverlay(): ItemOverlay {
           if (!PLACE_KEYS.some((k) => k in layer.patch)) return;
           placements.push({ laidAt: layer.laidAt, settledAt: layer.settledAt });
           if (placements.length > OVERLAY_PLACEMENTS_MAX) placements.shift();
+          placesSettled++;
           // Lists check whether their read raced it.
           changed();
         },
@@ -162,6 +167,7 @@ export function createItemOverlay(): ItemOverlay {
       }
       if (any) changed();
     },
+    placesSettled: () => placesSettled,
     raced: (startedAt) => placements.some((p) => p.laidAt < startedAt && startedAt < p.settledAt),
     dropFolder(folderId) {
       let any = false;

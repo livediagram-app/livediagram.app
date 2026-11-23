@@ -132,6 +132,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone ran a Run by Hand automation rule from the Automations screen.',
   'Document|Toggled|AutomationTakenOver':
     'Someone took over a rule paused on lost access: it now runs as them, and is on again.',
+  'UI|Opened|AiSourceSettings':
+    'Someone pressed Use Your Own Key, Change or Fix Key on an AI feature’s source line, opening Settings › AI.',
+  'UI|Added|AiSourceKey':
+    'Someone added an AI key of their own in Settings › AI after opening it from an AI feature on built-in AI.',
   'UI|Opened|Automations': 'Someone opened the Automations screen from the Tools menu.',
   'UI|Opened|AutomationsOffline':
     'Someone opened Automations on a document kept Offline, which asks them to sync it first.',

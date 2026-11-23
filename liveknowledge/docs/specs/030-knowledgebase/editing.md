@@ -84,6 +84,9 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   verified" is worked out against it, and the draft is gone. Everyone else still in edit mode stays in edit mode on
   the new saved page, with a toast "Priya saved the page". The person who saved sees a toast naming the page, "Release Process
   Saved" (owner 2026-11-21; a title past 60 characters is cut, "Page Saved" with none).
+- **Ask Everyone to Read Again** (a Required Reading page, an Editor; [Required Reading](required-reading.md)): a
+  toggle in the draft bar, left of Cancel. Saving with it on asks everyone to read the page again; a save without it
+  keeps everyone's confirmations.
 - **Cancel** leaves edit mode. If others are still editing, the draft stays theirs and nothing is lost. If you are the
   last one editing and the draft has unsaved changes, Cancel asks first: "Discard your changes to this page?" with
   **Discard Changes** (destructive) and **Keep Editing**. Discarding throws the draft away, with any comment or action started on words only the draft held (its margin marker goes too).

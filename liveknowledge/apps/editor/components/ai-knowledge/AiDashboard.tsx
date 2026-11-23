@@ -21,6 +21,7 @@ import { FigureTiles, type TileTarget } from './FigureTiles';
 import { AgentSampleCard, ContextSection, HealthSection } from './HealthAndContext';
 import { MostReadCard } from './MostReadCard';
 import { NotReadCard } from './NotReadCard';
+import { RequiredReadingCard } from './RequiredReadingCard';
 import { NeedsAttention } from './NeedsAttention';
 import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 import { takeAskedAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
@@ -166,6 +167,10 @@ export function AiDashboard({
             onRemind={actions.remindOwners}
             verificationOn={overview.reviewEvery !== 'never'}
           />
+          {/* Under Knowledge Health (required-reading.md "Where it shows"); absent from an older api: not drawn. */}
+          {overview.requiredReading ? (
+            <RequiredReadingCard pages={overview.requiredReading} onOpenPage={actions.openPage} />
+          ) : null}
           <ContextSection
             context={overview.context}
             canEdit={rights.context}

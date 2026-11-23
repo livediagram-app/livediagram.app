@@ -1,7 +1,8 @@
 'use client';
 
 // Step 1 of Describe to Set Up (docs/specs/030-knowledgebase/describe-to-set-up.md "The flow"): what the
-// knowledgebase is for, in the person's own words, with an example under the field and three chips that fill it.
+// knowledgebase is for, in the person's own words: three chips that fill it, between the question and the field (owner, 2026-11-22: examples
+// above the textbox, as every Describe with AI screen has them), the example under it.
 import { useEffect, useId, useRef } from 'react';
 import { TextArea } from '@liveknowledge/ui';
 import { SETUP_MAX_DESCRIPTION_CHARS } from '@liveknowledge/knowledge';
@@ -42,6 +43,22 @@ export function DescribeStep({
       <label htmlFor={fieldId} className="text-sm font-semibold text-slate-900 dark:text-slate-100">
         {adding ? 'What Pages Should Be Added?' : DESCRIBE_LABEL}
       </label>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs text-slate-600 dark:text-slate-400">Start From</span>
+        {DESCRIBE_CHIPS.map((chip) => (
+          <button
+            key={chip.label}
+            type="button"
+            className={CHIP}
+            onClick={() => {
+              onChange(chip.text);
+              field.current?.focus();
+            }}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
       <TextArea
         ref={field}
         id={fieldId}
@@ -75,22 +92,6 @@ export function DescribeStep({
             {length.toLocaleString('en')} / {SETUP_MAX_DESCRIPTION_CHARS.toLocaleString('en')}
           </p>
         ) : null}
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-slate-600 dark:text-slate-400">Start From</span>
-        {DESCRIBE_CHIPS.map((chip) => (
-          <button
-            key={chip.label}
-            type="button"
-            className={CHIP}
-            onClick={() => {
-              onChange(chip.text);
-              field.current?.focus();
-            }}
-          >
-            {chip.label}
-          </button>
-        ))}
       </div>
     </div>
   );

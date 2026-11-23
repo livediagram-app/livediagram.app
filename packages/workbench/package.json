@@ -810,7 +810,9 @@
     "./components/start/useStartEscape": "./src/components/start/useStartEscape.ts",
     "./lib/watch-move": "./src/lib/watch-move.ts",
     "./hooks/canvas/toolbar-obstacle": "./src/hooks/canvas/toolbar-obstacle.ts",
-    "./components/chrome/menu-card-form": "./src/components/chrome/menu-card-form.ts"
+    "./components/chrome/menu-card-form": "./src/components/chrome/menu-card-form.ts",
+    "./components/ai/WorkbenchAiSource": "./src/components/ai/WorkbenchAiSource.tsx",
+    "./components/ai/ai-source-scope": "./src/components/ai/ai-source-scope.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -826,6 +828,7 @@
   },
   "dependencies": {
     "@liveworkspace/account-menu": "workspace:*",
+    "@liveworkspace/ai": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:*",

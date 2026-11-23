@@ -814,6 +814,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Ended|GithubConnectRequested':
     "Someone came back from GitHub waiting for an organisation's owner to approve the install.",
   'Plan|Unlinked|Github': 'Someone disconnected the plan from GitHub in Automations.',
+  'UI|Opened|AiSourceSettings':
+    'Someone pressed Use Your Own Key, Change or Fix Key on an AI feature’s source line, opening Settings › AI.',
+  'UI|Added|AiSourceKey':
+    'Someone added an AI key of their own in Settings › AI after opening it from an AI feature on built-in AI.',
   'UI|Opened|CalendarFeed': 'Someone opened Subscribe to Calendar from the tab menu.',
   'Plan|Created|CalendarFeed':
     "Someone made a private calendar link for the plan's card dates, to add to their own calendar.",

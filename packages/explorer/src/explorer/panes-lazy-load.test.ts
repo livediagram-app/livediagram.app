@@ -26,7 +26,7 @@ describe('the Explorer’s sections', () => {
 
   // History loads when it is first opened (livediagram/docs/specs/013-workspace/history.md "Speed").
   it('History is not a static import of the dialogs', () => {
-    const src = read('Dialogs.tsx');
+    const src = read('OpenDialog.tsx');
     expect(staticImports(src)).not.toContain('../library/HistoryDialog');
     expect(src).toContain("import('../library/HistoryDialog')");
   });

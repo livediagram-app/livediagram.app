@@ -2,7 +2,7 @@
 // and a failure in plain words with the next step. A failure of the model call reads in the words Ask uses
 // (lib/knowledge-ask/ask-failure-words.ts); the limits and an answer with no structure have words of their own.
 // Never a status, a code or the upstream's own message.
-import type { KnowledgeAiProvider, KnowledgeAiSettings } from '@liveknowledge/api-schema';
+import type { KnowledgeAiProvider } from '@liveknowledge/api-schema';
 import {
   SETUP_BUILT_IN_PER_PERSON_PER_DAY,
   SETUP_MAX_DESCRIPTION_CHARS,
@@ -12,7 +12,6 @@ import {
 } from '@liveknowledge/knowledge';
 import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
 import type { SetupMode } from './setup-open';
-import { aiInUseLine } from '@/lib/knowledge-ask/ai-settings-words';
 
 export const SETUP_BUTTON = 'Describe to Set Up';
 export const SETUP_BUTTON_LINE = 'Tell AI what this is for and get a page structure.';
@@ -55,13 +54,6 @@ export const createLabel = (count: number): string =>
   `Create ${count.toLocaleString('en')} ${count === 1 ? 'Page' : 'Pages'}`;
 
 export const UNDO_NOTE = 'Pages are made twenty at a time; Undo takes back the last twenty.';
-
-/** The quiet line under the field saying which AI answers (describe-to-set-up.md "The model"): nothing until the
- *  settings are read. */
-export const setupAiLine = (
-  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'uses'> | null,
-): string | null =>
-  settings === null ? null : (aiInUseLine({ builtIn: true, ...settings }) ?? 'Uses built-in AI');
 
 export type SetupNextStep = 'ai-settings' | 'try-again' | 'none';
 export type SetupFailureWords = { title: string; text: string; step: SetupNextStep };

@@ -3,7 +3,10 @@
 // form are the same whichever provider answers. claude-request.ts and openai-request.ts write it out for each API.
 
 export type ModelEffort = 'low' | 'medium' | 'high';
-export type ModelMessage = { role: 'user' | 'assistant'; content: string };
+/** One part of a message: text, or a picture (livediagram's photo reader) as its media type and base64 bytes. */
+export type ModelPart =
+  { type: 'text'; text: string } | { type: 'image'; mediaType: string; data: string };
+export type ModelMessage = { role: 'user' | 'assistant'; content: string | ModelPart[] };
 
 export type ModelRequest = {
   system: string;
@@ -17,3 +20,9 @@ export type ModelRequest = {
  *  as entities, so no writing and no question can end its own fence or start another. */
 export const fenced = (text: string): string =>
   text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/** A message's text alone: its parts' text joined, pictures left out (built-in AI reads no pictures). */
+export const messageText = (content: string | readonly ModelPart[]): string =>
+  typeof content === 'string'
+    ? content
+    : content.map((part) => (part.type === 'text' ? part.text : '')).join('\n');

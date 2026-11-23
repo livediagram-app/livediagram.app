@@ -1,7 +1,7 @@
 // A request to the Claude Messages API (`POST /v1/messages`), as Ask and the conflict check send it. Built by hand because the call is made with an injected `fetch` from a
 // Worker (claude-client.ts); the shapes are the Messages API's own.
 import { claudeModel } from './claude-models';
-import type { ModelEffort, ModelMessage } from './model-request';
+import type { ModelEffort, ModelMessage, ModelPart } from './model-request';
 
 export const CLAUDE_MESSAGES_URL = 'https://api.anthropic.com/v1/messages';
 export const CLAUDE_API_VERSION = '2026-10-21';
@@ -9,7 +9,22 @@ export const CLAUDE_API_VERSION = '2026-10-21';
 export const CLAUDE_FALLBACK_BETA = 'server-side-fallback-2026-07-01';
 
 export type ClaudeEffort = ModelEffort;
-export type ClaudeMessage = ModelMessage;
+/** A content block of the Messages API: text, or an image with its bytes inline. */
+export type ClaudeBlock =
+  | { type: 'text'; text: string }
+  | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } };
+export type ClaudeMessage = { role: ModelMessage['role']; content: string | ClaudeBlock[] };
+
+const claudeBlock = (part: ModelPart): ClaudeBlock =>
+  part.type === 'text'
+    ? { type: 'text', text: part.text }
+    : { type: 'image', source: { type: 'base64', media_type: part.mediaType, data: part.data } };
+
+/** A provider-neutral message in the Messages API's shape. */
+export const claudeMessage = ({ role, content }: ModelMessage): ClaudeMessage => ({
+  role,
+  content: typeof content === 'string' ? content : content.map(claudeBlock),
+});
 
 /** The body of a Messages request. No `thinking` (every listed model thinks adaptively when it is left out, and
  *  some reject any other setting) and no sampling parameters (the current models reject them). */
@@ -28,7 +43,7 @@ export type ClaudeRequest = {
 export function claudeRequest(options: {
   model: unknown;
   system: string;
-  messages: ClaudeMessage[];
+  messages: ModelMessage[];
   maxTokens: number;
   effort: ClaudeEffort;
 }): ClaudeRequest {
@@ -38,7 +53,7 @@ export function claudeRequest(options: {
     max_tokens: options.maxTokens,
     stream: true,
     system: options.system,
-    messages: options.messages,
+    messages: options.messages.map(claudeMessage),
     output_config: { effort: options.effort },
     ...(model.fallbacks ? { fallbacks: 'default' as const } : {}),
   };

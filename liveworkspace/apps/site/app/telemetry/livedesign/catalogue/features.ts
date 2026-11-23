@@ -771,6 +771,22 @@ export const SETTINGS_OPENED = opened(
   (t) => t === 'Settings',
 );
 
+// The source line on every AI feature (liveworkspace/docs/specs/003-accounts/ai-keys.md "The source line"): Settings
+// opened from it, and a key of the person's own added after, from built-in AI. Never which key.
+export const AI_SOURCE_SETTINGS_OPENED = opened(
+  'Settings Opened From an AI Feature',
+  'Use Your Own Key, Change or Fix Key pressed on an AI feature’s source line, opening Settings › AI over it.',
+  (t) => t === 'AiSourceSettings',
+);
+
+export const AI_SOURCE_KEYS_ADDED = chart(
+  'UI',
+  'Added',
+  'Keys Added From an AI Feature',
+  'A key of their own added in Settings › AI after opening it from an AI feature that ran on built-in AI.',
+  { types: ['AiSourceKey'] },
+);
+
 export const SETTINGS_CATEGORIES_VISITED = opened(
   'Settings Categories Visited',
   'A category picked inside the open Settings dialog: Appearance, Editor, Account and the rest.',
@@ -854,6 +870,8 @@ export const PANELS_OPENED: MetricStack = {
   blurb: 'Which dialogs and panels people open, from Settings and Share to help articles.',
   members: [
     SETTINGS_OPENED,
+    AI_SOURCE_SETTINGS_OPENED,
+    AI_SOURCE_KEYS_ADDED,
     SETTINGS_CATEGORIES_VISITED,
     SHARE_OPENED,
     PICKERS_OPENED,

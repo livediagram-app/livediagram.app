@@ -5560,6 +5560,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "usesModelLabel": {
         "description": "`usesModel`'s name (\"Claude Fable 5.2\"), for \"Answer With\".",
         "type": "string"
+      },
+      "usesProvider": {
+        "$ref": "#/components/schemas/KnowledgeAiProvider",
+        "description": "The provider of the key that answers (a team's or a person's may differ from `provider`, the knowledgebase's own), for the source line; with `usesModel`."
       }
     },
     "required": [
@@ -6224,6 +6228,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "requiredReading": {
+        "description": "Required Reading (required-reading.md): each page asked to be read with its counts, least read first; absent from an older api.",
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeRequiredReadingPage"
+        },
+        "type": "array"
+      },
       "reviewEmails": {
         "additionalProperties": false,
         "description": "The Knowledgebase Reviews emails: whether this deployment sends email, and when the owners were last reminded (Remind the Owners is once a week).",
@@ -6675,6 +6686,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "tab",
       "title",
       "updatedAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeRequiredReadingPage": {
+    "additionalProperties": false,
+    "description": "A Required Reading page in the AI Knowledge overview: counts, never who.",
+    "properties": {
+      "audience": {
+        "$ref": "#/components/schemas/ReadingAudience"
+      },
+      "done": {
+        "type": "number"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "total": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "tab",
+      "title",
+      "audience",
+      "done",
+      "total"
     ],
     "type": "object"
   },
@@ -9019,6 +9059,169 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PageReadingChange": {
+    "additionalProperties": false,
+    "description": "`PUT .../pages/<tab>/reading`: require the page for an audience, change it, or stop (null).",
+    "properties": {
+      "audience": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ReadingAudience"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "people": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "audience"
+    ],
+    "type": "object"
+  },
+  "PageReadingPerson": {
+    "additionalProperties": false,
+    "description": "One person in a page's audience, as an Editor or the page's owner sees them.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "readAt": {
+        "description": "When they confirmed this round; absent: not yet.",
+        "type": "number"
+      },
+      "remindedAt": {
+        "description": "When they were last reminded of this page.",
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
+  "PageReadingResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "chosen": {
+        "description": "The chosen ids, for the setup panel: only when `manages` and the audience is `people`.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "email": {
+        "description": "Whether Remind can send at all (the deployment sends email).",
+        "type": "boolean"
+      },
+      "manages": {
+        "description": "Whether the caller may require, change, stop and ask again: an Editor in person.",
+        "type": "boolean"
+      },
+      "mine": {
+        "additionalProperties": false,
+        "description": "The caller's own state: whether they are asked, and when they confirmed this round.",
+        "properties": {
+          "asked": {
+            "type": "boolean"
+          },
+          "readAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "asked"
+        ],
+        "type": "object"
+      },
+      "people": {
+        "description": "The audience, not yet read first: only when `sees`.",
+        "items": {
+          "$ref": "#/components/schemas/PageReadingPerson"
+        },
+        "type": "array"
+      },
+      "progress": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "done": {
+                "type": "number"
+              },
+              "total": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "done",
+              "total"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "How many of those asked have confirmed, of how many; null when not required."
+      },
+      "remindedAt": {
+        "description": "When anyone was last reminded of this page: only when `sees`.",
+        "type": "number"
+      },
+      "required": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "askedAt": {
+                "type": "number"
+              },
+              "audience": {
+                "$ref": "#/components/schemas/ReadingAudience"
+              },
+              "round": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "audience",
+              "askedAt",
+              "round"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "The page's requirement; null when it is not Required Reading. `round` is 1, then one more each time everyone is asked again, from `askedAt`."
+      },
+      "sees": {
+        "description": "Whether the caller sees who has read it and may Remind: an Editor or the page's owner, in person.",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "required",
+      "mine",
+      "progress",
+      "sees",
+      "manages",
+      "email"
+    ],
+    "type": "object"
+  },
   "PageRect": {
     "additionalProperties": false,
     "properties": {
@@ -10275,6 +10478,105 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "by"
     ],
     "type": "object"
+  },
+  "ReadingAudience": {
+    "description": "Everyone who reads the knowledgebase, or the people an Editor chose.",
+    "enum": [
+      "everyone",
+      "people"
+    ],
+    "type": "string"
+  },
+  "ReadingRemindResult": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "sent",
+            "type": "string"
+          },
+          "sent": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "outcome",
+          "sent"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "nextAt": {
+            "type": "number"
+          },
+          "outcome": {
+            "const": "already_sent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "nextAt"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "nobody_pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "no_recipients",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "daily_limit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "unavailable",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "`POST .../pages/<tab>/remind-readers`: what was sent, or why nothing was."
   },
   "RefCandidate": {
     "additionalProperties": false,

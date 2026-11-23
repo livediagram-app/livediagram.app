@@ -8,7 +8,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import type { ShownItem } from '../data/overlay';
-import { Button, ConfirmDialog } from '@liveworkspace/ui';
+import { Button } from '@liveworkspace/ui';
+import { ConfirmDialog } from './lazy-dialogs';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { ItemIcon } from '../ui/icons';

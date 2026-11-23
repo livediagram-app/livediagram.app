@@ -245,7 +245,8 @@ function tintOf(name: string | undefined): string {
   return DISC_TINTS[Math.abs(h) % DISC_TINTS.length]!;
 }
 
-function Disc({ name, size = 'size-6' }: { name: string | undefined; size?: string }) {
+/** A person's initials on their tint (a guest's figure), for Page Health's stamps and Required Reading's people. */
+export function Disc({ name, size = 'size-6' }: { name: string | undefined; size?: string }) {
   return (
     <span
       aria-hidden
