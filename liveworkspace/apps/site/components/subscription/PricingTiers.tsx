@@ -22,7 +22,7 @@ import {
   useUpgrade,
   type AccountKnown,
 } from '@liveworkspace/subscription-ui';
-import { Button, buttonClassName, ButtonContent, Spinner } from '@liveworkspace/ui';
+import { Button, buttonClassName, ButtonContent, Chip, Spinner } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { signInHref, signUpHref } from '@/lib/accounts';
 
@@ -237,9 +237,9 @@ function TierHeading({ id, tier, yours }: { id: string; tier: Tier; yours: boole
       </h2>
       {tier !== 'free' ? <ProBadge form="solid" size="sm" label="Pro" tooltip={false} /> : null}
       {yours ? (
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+        <Chip className="bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
           Your Tier
-        </span>
+        </Chip>
       ) : null}
     </div>
   );
