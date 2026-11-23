@@ -66,7 +66,10 @@ export function SendPlanList({
 
   const create = (typed: string) => {
     const name = typed.trim();
-    if (name) onCreate(name);
+    if (!name) return;
+    // The row closes once asked, so a second press never makes a second plan.
+    setNaming(null);
+    onCreate(name);
   };
 
   const list =
@@ -153,19 +156,19 @@ export function SendPlanList({
         <button
           type="button"
           data-plan-row=""
+          disabled={creating}
           onClick={() => setNaming(newName)}
-          className={`${ROW} ${ROW_IDLE} font-medium text-brand-700 dark:text-brand-200`}
+          className={`${ROW} ${ROW_IDLE} font-medium text-brand-700 disabled:cursor-default disabled:opacity-60 dark:text-brand-200`}
         >
           <PlusGlyph aria-hidden />
           New Plan
         </button>
       ) : (
-        <form
+        // Not a <form>: the row sits inside the dialog's own form, and a nested form submits the page.
+        <div
+          role="group"
+          aria-label="New Plan"
           className="flex items-center gap-2 rounded-lg bg-slate-50 p-1.5 dark:bg-slate-800/60"
-          onSubmit={(e) => {
-            e.preventDefault();
-            create(naming);
-          }}
         >
           <TextInput
             autoFocus
@@ -176,6 +179,11 @@ export function SendPlanList({
               if (e.key === 'Escape') {
                 e.stopPropagation();
                 setNaming(null);
+              } else if (e.key === 'Enter') {
+                // Enter makes the plan; it never sends the card the dialog's form holds.
+                e.preventDefault();
+                e.stopPropagation();
+                create(naming);
               }
             }}
             maxLength={120}
@@ -184,14 +192,15 @@ export function SendPlanList({
             className="min-w-0 flex-1"
           />
           <Button
-            type="submit"
+            type="button"
             size="sm"
-            disabled={creating || !naming.trim()}
+            onClick={() => create(naming)}
+            disabled={!naming.trim()}
             className="shrink-0"
           >
-            {creating ? 'Making…' : 'Make'}
+            Make
           </Button>
-        </form>
+        </div>
       )}
       <div className="max-h-64 min-h-24 overflow-y-auto sm:max-h-72">{list}</div>
     </div>

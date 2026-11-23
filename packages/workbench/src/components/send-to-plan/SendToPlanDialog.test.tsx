@@ -222,13 +222,26 @@ describe('SendToPlanDialog', () => {
   it('makes a New Plan and picks it; says when that fails', async () => {
     const c = client();
     open(c);
+    // Enter in the dialog's form with no plan picked yet sends nothing.
+    fireEvent.submit((await screen.findByRole('button', { name: 'New Plan' })).closest('form')!);
+    expect(c.sendToPlan).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByRole('button', { name: 'New Plan' }));
     const name = screen.getByLabelText<HTMLInputElement>("New plan's name");
     expect(name.value).toBe('Plans from Retro');
     fireEvent.keyDown(name, { key: 'Escape' });
     fireEvent.click(screen.getByRole('button', { name: 'New Plan' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Make' }));
+    // Not a form inside the dialog's form: a nested form submits the page in a browser.
+    expect(
+      screen.getByRole('group', { name: 'New Plan' }).closest('form')?.querySelector('form'),
+    ).toBeNull();
+    fireEvent.keyDown(screen.getByLabelText("New plan's name"), { key: 'a' });
+    fireEvent.keyDown(screen.getByLabelText("New plan's name"), { key: 'Enter' });
     await waitFor(() => expect(c.newPlanForSend).toHaveBeenCalledWith('Plans from Retro'));
+    // Making a plan never sends the card: the name's row is not a form inside the dialog's form.
+    expect(c.sendToPlan).not.toHaveBeenCalled();
+    // The name's row closes once asked, so a second press never makes a second plan.
+    expect(screen.queryByLabelText("New plan's name")).toBeNull();
+    expect(c.newPlanForSend).toHaveBeenCalledTimes(1);
     expect(
       await screen.findByRole('button', { name: /Plans from Retro/, pressed: true }),
     ).toBeTruthy();
@@ -237,8 +250,9 @@ describe('SendToPlanDialog', () => {
     open(failing);
     fireEvent.click(await screen.findByRole('button', { name: 'New Plan' }));
     fireEvent.change(screen.getByLabelText("New plan's name"), { target: { value: '  ' } });
-    fireEvent.submit(screen.getByLabelText("New plan's name").closest('form')!);
+    fireEvent.keyDown(screen.getByLabelText("New plan's name"), { key: 'Enter' });
     expect(failing.newPlanForSend).not.toHaveBeenCalled();
+    expect(failing.sendToPlan).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText("New plan's name"), { target: { value: 'Q4' } });
     fireEvent.click(screen.getByRole('button', { name: 'Make' }));
     expect((await screen.findByRole('alert')).textContent).toMatch(/Couldn't make the plan/);
