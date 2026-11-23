@@ -829,7 +829,19 @@
     "./components/canvas/TagColoursContext": "./src/components/canvas/TagColoursContext.tsx",
     "./hooks/canvas/useKeyboardElementMenu": "./src/hooks/canvas/useKeyboardElementMenu.ts",
     "./components/canvas/ElementEllipsisMenu": "./src/components/canvas/ElementEllipsisMenu.tsx",
-    "./components/canvas/StickerView": "./src/components/canvas/StickerView.tsx"
+    "./components/canvas/StickerView": "./src/components/canvas/StickerView.tsx",
+    "./components/canvas/arrow-flow": "./src/components/canvas/arrow-flow.tsx",
+    "./hooks/canvas/useArrowLabelLayouts": "./src/hooks/canvas/useArrowLabelLayouts.ts",
+    "./components/canvas/useTableAxisResize": "./src/components/canvas/useTableAxisResize.ts",
+    "./components/canvas/WordmarkArcLabel": "./src/components/canvas/WordmarkArcLabel.tsx",
+    "./components/canvas/ChecklistView": "./src/components/canvas/ChecklistView.tsx",
+    "./hooks/canvas/useSettledElements": "./src/hooks/canvas/useSettledElements.ts",
+    "./hooks/canvas/arrow-avoidance-apply": "./src/hooks/canvas/arrow-avoidance-apply.ts",
+    "./components/canvas/arrow-finish": "./src/components/canvas/arrow-finish.ts",
+    "./components/canvas/LegendView": "./src/components/canvas/LegendView.tsx",
+    "./components/canvas/AccentEdgeOverlay": "./src/components/canvas/AccentEdgeOverlay.tsx",
+    "./components/canvas/ChipFace": "./src/components/canvas/ChipFace.tsx",
+    "./components/canvas/layout-sample-pictures": "./src/components/canvas/layout-sample-pictures.ts"
   },
   "scripts": {
     "lint": "oxlint",

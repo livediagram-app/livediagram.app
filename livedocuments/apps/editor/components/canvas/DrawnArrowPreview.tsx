@@ -5,7 +5,7 @@ import {
   type Element,
   type ElementIndex,
 } from '@livedocuments/document';
-import type { ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
+import type { ArrowLabelRender } from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import { ArrowDefs } from '@liveworkspace/workbench/components/canvas/arrow-defs';
 import { ArrowView } from '@/components/canvas/ArrowView';
 import { arrowViewGeometry } from '@/components/canvas/arrow-view-frame';

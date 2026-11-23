@@ -30,7 +30,7 @@ import {
 } from '@/lib/page-contents';
 import { elementsByPage } from '@/lib/elements-by-page';
 import { pageTitleOf } from '@/lib/page-title';
-import { useSettledElements } from '@/hooks/canvas/useSettledElements';
+import { useSettledElements } from '@liveworkspace/workbench/hooks/canvas/useSettledElements';
 import { track } from '@/lib/telemetry';
 import { pageRowSlides } from '@/components/canvas/page-row-slides';
 import { requestPagePanel } from '@/lib/page-panel-request';

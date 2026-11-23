@@ -30,7 +30,7 @@ import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './eleme
 import type { TextHugLabel } from './useTextHug';
 import type { TextAnimView } from './useTextAnimation';
 import { wordmarkTextStyle } from './label-style';
-import { WordmarkArcLabel } from './WordmarkArcLabel';
+import { WordmarkArcLabel } from '@liveworkspace/workbench/components/canvas/WordmarkArcLabel';
 import { EmptyTextPrompt } from '@liveworkspace/workbench/components/canvas/EmptyTextPrompt';
 
 export function renderLabel(

@@ -17,7 +17,7 @@ import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { iconDropSide } from '@/lib/canvas';
 import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
-import { applyCollisionAvoidance } from './arrow-avoidance-apply';
+import { applyCollisionAvoidance } from '@liveworkspace/workbench/hooks/canvas/arrow-avoidance-apply';
 import { translateBoxedSelection } from './boxed-drag-resolve';
 import type { DragListenerContext } from './editor-drag-listeners';
 

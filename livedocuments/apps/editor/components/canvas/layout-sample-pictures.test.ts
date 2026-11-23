@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createImage, createText } from '@livedocuments/document';
-import { withSamplePictures } from './layout-sample-pictures';
+import { withSamplePictures } from '@liveworkspace/workbench/components/canvas/layout-sample-pictures';
 
 describe('withSamplePictures', () => {
   it('gives each empty picture a sample, in turn, cropped to fill its frame', () => {

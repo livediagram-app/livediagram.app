@@ -5,7 +5,7 @@ import { tidyAnswers } from '@/hooks/editor/page-tidy-edits';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useTabStyleOpen } from '@/lib/tab-style-opener';
-import { useSettledElements } from '@/hooks/canvas/useSettledElements';
+import { useSettledElements } from '@liveworkspace/workbench/hooks/canvas/useSettledElements';
 import { elementsByPage } from '@/lib/elements-by-page';
 import { isArticleLocked } from '@/lib/article/article-lock';
 import {

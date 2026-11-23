@@ -22,7 +22,7 @@ import {
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@liveworkspace/workbench/components/canvas/arrow-defs';
-import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import type { ArrowLabels } from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import {
   SelectionGripsContext,
   SelectionGripsLayer,

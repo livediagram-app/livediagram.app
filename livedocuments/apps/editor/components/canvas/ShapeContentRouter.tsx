@@ -39,8 +39,8 @@ import { ProgressView } from '@/components/canvas/ProgressView';
 import { RatingView } from '@/components/canvas/RatingView';
 import { PieChartView } from '@/components/canvas/PieChartView';
 import { CodeBlockView } from '@/components/canvas/CodeBlockView';
-import { LegendView } from '@/components/canvas/LegendView';
-import { ChecklistView } from '@/components/canvas/ChecklistView';
+import { LegendView } from '@liveworkspace/workbench/components/canvas/LegendView';
+import { ChecklistView } from '@liveworkspace/workbench/components/canvas/ChecklistView';
 import { BarChartView } from '@/components/canvas/BarChartView';
 import { LineChartView } from '@/components/canvas/LineChartView';
 import {

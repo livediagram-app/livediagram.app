@@ -46,7 +46,7 @@ import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/C
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { PLAN_BOARD } from '@/components/canvas/plan-face-finish';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
+import { AccentEdgeOverlay } from '@liveworkspace/workbench/components/canvas/AccentEdgeOverlay';
 import { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
