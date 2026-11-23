@@ -62,7 +62,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Is there a paid tier?',
-        a: 'Not at launch. Everything this site describes is free to use, built-in AI included. The only AI cost a team can carry is its own Claude or OpenAI key, if it adds one.',
+        a: 'Everything this site describes is free to use, built-in AI included. A paid plan only raises a few limits, such as pages per knowledgebase and how many knowledgebases you publish to the web, and a team’s own Claude or OpenAI key is free to add on any plan.',
       },
       {
         q: 'How do I start a knowledgebase?',
@@ -238,7 +238,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I publish a knowledgebase as a public website?',
-        a: 'Not yet. You can share a view-only link, but a public site with its own domain is not built.',
+        a: 'Yes. Publish to the Web puts a knowledgebase, or one section of it, on a public site anyone can read and search, with no account. Only saved writing goes public, never drafts or comments. Free publishes one knowledgebase at a time and Pro up to ten. A custom domain is not built.',
       },
       {
         q: 'Is there a mobile app?',

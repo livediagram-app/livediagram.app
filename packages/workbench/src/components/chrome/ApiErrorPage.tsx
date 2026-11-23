@@ -20,6 +20,8 @@ type ApiErrorPageProps = {
   title?: string;
   message?: string;
   retryLabel?: string;
+  // The circling arrow, for a button that tries again; false for one that goes elsewhere ("Choose another place").
+  retryIcon?: boolean;
   // Extra content under the Retry button: the load-error screen's recovery card
   // (docs/specs/007-editor/load-recovery.md).
   children?: ReactNode;
@@ -31,6 +33,7 @@ export function ApiErrorPage({
   title = 'Something went wrong',
   message = 'We couldn’t reach the server. Check your connection and try again.',
   retryLabel = 'Try again',
+  retryIcon = true,
   children,
 }: ApiErrorPageProps) {
   return (
@@ -49,7 +52,7 @@ export function ApiErrorPage({
         <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{message}</p>
         <Button size="md" onClick={onRetry} className="mt-6 shadow-sm">
-          <RetryIcon />
+          {retryIcon ? <RetryIcon /> : null}
           {retryLabel}
         </Button>
         {children}

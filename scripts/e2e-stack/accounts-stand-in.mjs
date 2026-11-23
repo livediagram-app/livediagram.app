@@ -224,6 +224,21 @@ export function createAccountsStandIn({
       accountsRecords.milestones.add(key);
       return sendJson(res, 200, { claimed });
     }
+    // Joined members of each team, counted from the records the specs seeded (accounts' `teams/member-counts`).
+    if (route === '/teams/member-counts') {
+      const teamIds = Array.isArray(body.teamIds) ? body.teamIds : null;
+      if (!teamIds || !teamIds.every((id) => typeof id === 'string' && id.length > 0))
+        return sendJson(res, 400, { error: 'team_ids_required' });
+      const counts = {};
+      for (const id of teamIds) {
+        const team = accountsRecords.teams.get(id);
+        if (!team || team.deleted) continue;
+        counts[id] = [...accountsRecords.members.values()].filter(
+          (m) => m.teamId === id && m.status === 'joined',
+        ).length;
+      }
+      return sendJson(res, 200, { counts });
+    }
     // The stand-in keeps no addresses: nobody is emailed.
     if (route === '/emails') return sendJson(res, 200, { emails: {} });
     if (route === '/activity') return sendJson(res, 200, { ok: true });

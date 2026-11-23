@@ -185,6 +185,7 @@ describe('a step from another app on this plan', () => {
     ).toMatchObject({ code: 'invalid' });
     expect(await room().automationTarget('A')).toEqual({
       boards: [{ id: 'b1', name: 'Kanban', columns: expect.arrayContaining(['Done']) }],
+      people: expect.any(Array),
     });
   });
 

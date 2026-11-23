@@ -19,6 +19,12 @@ export const AI_UNREADABLE = "The AI's reply couldn't be read";
 // `item`: what the app calls it ("space", "design").
 export const aiCappedWords = (item: string): string =>
   `This ${item} has used its ${AUTOMATION_AI_PER_DAY} AI steps today`;
+// The owner's AI credits for the month are used (liveworkspace/docs/specs/019-subscription/subscription.md "Tiers and
+// limits", Pro on only): the step is skipped as the day's cap skips it, and a draft is refused with these words.
+export const AI_CREDITS_USED = "This month's AI credits are used";
+// The subscription service refused the item's request (its key, never the owner's month): the step is skipped and
+// nothing is spent or asked uncounted. Never an offer to upgrade: no tier would change it.
+export const AI_CREDITS_UNCHECKED = 'AI credits could not be checked, so the AI was not asked';
 // A later AI step once one has failed: the run stopped there.
 export const AI_NOT_ASKED = 'Not asked: a step before it failed';
 // A step after a failed AI step: never written.

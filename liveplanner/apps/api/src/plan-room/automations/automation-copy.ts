@@ -39,8 +39,10 @@ export function copiedRuleStatements(
   env: Pick<PlanEnv, 'PLAN_DB'>,
   rules: readonly AutomationRule[],
   now = Date.now(),
+  // The most it keeps: the legacy cap, or the caller's (tier/room-tier.ts rulesCopyMax).
+  max = AUTOMATION_RULES_MAX,
 ): D1PreparedStatement[] {
-  return rules.slice(0, AUTOMATION_RULES_MAX).flatMap((rule, position) => {
+  return rules.slice(0, max).flatMap((rule, position) => {
     const { paused: _paused, ...kept } = rule;
     const row = env.PLAN_DB.prepare(
       'INSERT INTO automation_rules (id, body, enabled, position, failures) VALUES (?, ?, ?, ?, 0)',
@@ -85,9 +87,10 @@ export function rulesFromFile(
   now: number,
   tabIds: ReadonlyMap<string, string> = new Map(),
   types: readonly ItemTypeDef[] = [],
+  max = AUTOMATION_RULES_MAX,
 ): AutomationRule[] {
   const out: AutomationRule[] = [];
-  for (const r of raw.slice(0, AUTOMATION_RULES_MAX)) {
+  for (const r of raw.slice(0, max)) {
     const read = readRuleBody(r);
     if ('error' in read) continue;
     const { trigger, name } = read.body;

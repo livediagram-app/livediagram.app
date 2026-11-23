@@ -5,6 +5,8 @@
 // canvas chrome (it is what the page framing and Zoom to Fit measure, `data-contents-sidebar`), joined to the menu box
 // above it. Collapsed, it is a narrow rail with the way back; resting the pointer on the rail slides the whole tree out
 // over the page until the pointer leaves it (page-surface.md "Sidebars slide"). Every open and close is a slide.
+import { PageTreeLimit } from './PageTreeLimit';
+import { openPagesMax } from '@/lib/knowledge-tier';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { pageAddRefusal } from '@liveknowledge/document';
 import { HoverCard } from '@liveknowledge/ui';
@@ -165,7 +167,7 @@ export function PageTreeSidebar({
           <button
             type="button"
             aria-label="New Page"
-            disabled={pageAddRefusal(tree.tabs) !== null}
+            disabled={pageAddRefusal(tree.tabs, undefined, openPagesMax()) !== null}
             onClick={() => tree.actions.onAdd()}
             className={`${ICON_BUTTON} disabled:cursor-not-allowed disabled:opacity-50`}
           >
@@ -223,6 +225,8 @@ export function PageTreeSidebar({
         {trash ? <PageTrashRow /> : null}
       </div>
       <div className="border-t border-slate-200 p-3 dark:border-slate-800">
+        {/* Knowledgebase Pages, with Pro on, from 80% of the limit (tiers.md). */}
+        <PageTreeLimit tabs={tree.tabs} />
         {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
         {tree.canEdit ? <DescribeToSetUpButton /> : null}
         {/* Hide Pages (or Keep Pages Open while it peeks) is a bordered button at the foot's right, after New Page, as

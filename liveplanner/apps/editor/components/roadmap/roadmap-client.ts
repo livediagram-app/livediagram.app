@@ -4,6 +4,7 @@
 import type { RoadmapResponse, RoadmapSettings, RoadmapsResponse } from '@liveplanner/api-schema';
 import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from '@/lib/api/core';
 import type { RoadmapScope } from './roadmap-gate';
+import { roadmapLimitOf } from './roadmap-limit';
 
 const url = (scope: RoadmapScope, boardId?: string) =>
   `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}/roadmaps${
@@ -28,13 +29,18 @@ export async function readRoadmaps(scope: RoadmapScope): Promise<RoadmapsRespons
   return expectOk<RoadmapsResponse>(await call(scope, 'GET'), 'read roadmaps');
 }
 
-/** Publish the board, or change its published roadmap's settings (the link kept). */
+/** Publish the board, or change its published roadmap's settings (the link kept). A publish the owner's tier
+ *  refuses throws RoadmapLimitReached (roadmap-limit.ts). */
 export async function saveRoadmap(
   scope: RoadmapScope,
   boardId: string,
   settings: RoadmapSettings,
 ): Promise<RoadmapResponse> {
-  return expectOk<RoadmapResponse>(await call(scope, 'PUT', boardId, settings), 'save roadmap');
+  const res = await call(scope, 'PUT', boardId, settings);
+  // Every roadmap the owner's tier allows is published (Pro on only): thrown as itself, with the refusal's numbers.
+  const limit = await roadmapLimitOf(res);
+  if (limit) throw limit;
+  return expectOk<RoadmapResponse>(res, 'save roadmap');
 }
 
 /** Unpublish: the link stops at once. */

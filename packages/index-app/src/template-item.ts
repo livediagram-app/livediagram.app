@@ -16,7 +16,11 @@ import { IMPORT_NAME_MAX } from './internal-contract';
 import { USER_ID, badRequest, bodyOf, json, validId } from './internal-doors';
 
 // The template's file, named `name`, or null for a kind the app has no template of.
-export type TemplateFile = (template: string, name: string) => string | null;
+export type TemplateFile = (
+  template: string,
+  name: string,
+  options?: { bare?: boolean },
+) => string | null;
 
 // The app's import, as its import door runs it, with source `template`.
 export type TemplateImport = (input: ImportInput) => Promise<ImportResult>;
@@ -26,7 +30,9 @@ export async function itemFromTemplate(
   fileOf: TemplateFile,
   runImport: TemplateImport,
 ): Promise<TemplateResult> {
-  const file = fileOf(input.template, input.name);
+  const file = input.bare
+    ? fileOf(input.template, input.name, { bare: true })
+    : fileOf(input.template, input.name);
   if (file === null) return { status: 'unknown_template' };
   const { owner, folderId, name } = input;
   const result = await runImport({ owner, folderId, name, file });
@@ -42,7 +48,7 @@ export async function templateDoor(
 ): Promise<Response> {
   const body = await bodyOf(request);
   if (!body) return badRequest('body must be a JSON object');
-  const { owner, folderId, name, template } = body;
+  const { owner, folderId, name, template, bare } = body;
   if (typeof owner !== 'string' || !USER_ID.test(owner))
     return badRequest('owner must be an account id');
   if (folderId !== null && !validId(folderId))
@@ -51,9 +57,10 @@ export async function templateDoor(
     return badRequest('name must be a name');
   if (typeof template !== 'string' || !template || template.length > KIT_TEMPLATE_MAX)
     return badRequest('template must be a template kind');
+  if (bare !== undefined && typeof bare !== 'boolean') return badRequest('bare must be a boolean');
   let result: TemplateResult;
   try {
-    result = await run({ owner, folderId, name: name.trim(), template });
+    result = await run({ owner, folderId, name: name.trim(), template, ...(bare ? { bare } : {}) });
   } catch (err) {
     console.error('[internal] template item failed', { template, error: String(err) });
     return json({ error: 'unavailable' }, 503);

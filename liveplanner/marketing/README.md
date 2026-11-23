@@ -38,8 +38,9 @@ marketing/
 - **Don't overclaim.** Edits to different cards, cells and elements merge;
   two people changing the same thing at once is last-writer-wins, not CRDT (see
   "Not part of liveplanner" in the fact sheet). Never imply otherwise.
-- **Free means free.** No paid tier, no plan for one, no ads and no
-  third-party trackers. Say so where the format allows. The source is not
+- **Free means free.** Every feature on the free plan, no ads and no
+  third-party trackers. Say so where the format allows. Don't claim there is
+  no paid tier (Pro exists and only raises limits), and don't lead with Pro. The source is not
   public: never suggest anyone can read it or run their own copy.
 - **Brand colour** is violet, `#8B5CF6` ("liveplanner violet"). See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

@@ -138,6 +138,19 @@ The model's own words are never shown.
 - The count holds nothing but the day and how many. A count that can't be read refuses the ask ("The AI couldn’t
   answer just now").
 
+- **AI Credits** (only with [Pro on](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)): as [Describe a Plan](../026-plan/describe-a-plan.md#limits-and-cost),
+  each draft spends one AI credit for the month. **Whose** follows the one rule of who pays for an item: a form
+  described on a tab of a plan spends the **plan's owner's** credit (its team's for a team's plan), whoever asks,
+  and only an Editor of that plan may ask for it there; with no plan named the credit is the signed-in person's
+  own. The request carries the plan's id (`projectId`), and the index's grant says who owns it, never the request.
+  With none left it is refused, **429** `form_draft_credits_used`, with the same words and fields; `used` and `max` go to the plan's owner
+  or a member of its owning team alone, an Editor of someone else's plan reading only that the month is used. If the
+  subscription service refuses the app's own request the draft is not made uncounted: **503**
+  `form_draft_unavailable`, with no offer to upgrade. The dialog shows the same credits line and, with none
+  left, the same notice; Draft Form is off meanwhile. A draft for a guest's plan (its owner has no account) spends
+  nobody's credit: the day's count alone holds it. The notice goes, and the ask can be made again, when the owner's
+  tier changes or the window is looked at again.
+
 ## Telemetry
 
 `UI · Opened · FormDescribe` (the dialog), `Form · Created · FormDraft` (a form made from a draft), and from the api

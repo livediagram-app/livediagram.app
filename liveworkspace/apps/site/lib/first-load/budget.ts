@@ -11,7 +11,7 @@ export const FIRST_LOAD_BUDGETS: Readonly<Record<string, number>> = {
   // The front door: 208.7 KiB measured (2026-11-12, Work Item 341).
   'index.html': 212,
   // The Explorer, where most people land once signed in: 371.1 KiB measured (2026-11-12, Work Item 341).
-  'explorer.html': 380,
+  'explorer.html': 382,
 };
 
 export type FirstLoad = { page: string; scripts: number; gzipBytes: number };

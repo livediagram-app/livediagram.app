@@ -29,6 +29,11 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'a tab is capped at 10,000 elements; only plan limits are absent',
   },
   {
+    pattern:
+      /no paid tier|no plan to (?:introduce|add) one|no billing anywhere|nothing to upgrade to|per-seat pricing|every user gets it|free forever|ever move behind a paywall|every feature is free for everyone/i,
+    why: 'Pro is a paid tier that raises a few limits (liveworkspace/docs/specs/019-subscription/subscription.md)',
+  },
+  {
     pattern: /export any tab[^.]*mermaid/i,
     why: 'Pages tabs export PDF, PNG, SVG and JSON only',
   },

@@ -53,8 +53,9 @@ export type RoomCallsHost = {
   readTab: (tabId: string, knownRev: number | null) => { rev: number; data: string | null } | null;
 };
 
-/** The room's answer for one track: a hearing verdict, a share an Editor stopped, or a subscriber it cannot name. */
-export type HearingAnswer = HearingVerdict | 'stopped' | 'unknown-session';
+/** The room's answer for one track: a hearing verdict, a share an Editor stopped, a subscriber it cannot name, or
+ *  (from the room itself, with Pro on) the owner's month of call minutes being used. */
+export type HearingAnswer = HearingVerdict | 'stopped' | 'unknown-session' | 'minutes-used';
 
 /** A track asked for: whose session, which track. */
 export type HearingAsk = { readonly sessionId: string; readonly trackName: string };

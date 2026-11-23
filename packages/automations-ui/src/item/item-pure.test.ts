@@ -244,6 +244,11 @@ describe('the words', () => {
     expect(runRefusalWords('automation_budget_spent', 'x', 'document')).toBe(
       'This document has used today’s 1,000 runs. It runs again tomorrow.',
     );
+    // With Pro on, in the refusal's own number.
+    expect(runRefusalWords('automation_budget_spent', 'x', 'document', 250)).toContain('250 runs');
+    expect(runRefusalWords('automation_runs_used', 'x', 'document')).toContain(
+      'month’s automation runs',
+    );
     expect(runRefusalWords('automation_not_manual', 'x', 'document')).toMatch(/Run by Hand/);
     expect(runRefusalWords('automation_not_found', 'x', 'document')).toMatch(/deleted/);
     expect(runRefusalWords('tab_not_found', 'x', 'document')).toMatch(/no longer here/);

@@ -11,10 +11,14 @@ import {
   sniffWalkthroughContainer,
   WALKTHROUGH_EVENTS_MAX,
   WALKTHROUGH_HIDDEN_MAX,
+  WALKTHROUGH_AUDIO_BPS,
   WALKTHROUGH_MAX_MS,
   WALKTHROUGH_MEDIA_MAX_BYTES,
+  walkthroughMediaMaxBytes,
   walkthroughMediaType,
   walkthroughRefusalMessage,
+  WALKTHROUGH_VIDEO_BPS,
+  walkthroughVideoBps,
   type WalkthroughEvents,
 } from './walkthrough';
 
@@ -195,5 +199,98 @@ describe('titles, authors and types', () => {
     expect(words({ error: 'forbidden' })).toContain('Editor');
     expect(words({ error: 'walkthroughs_unavailable' })).toContain('right now');
     expect(words({ error: 'other' })).toContain('Try again');
+  });
+});
+
+describe('the bit rate a longer recording is made at', () => {
+  it('is the full rate up to ten minutes', () => {
+    expect(walkthroughVideoBps(5 * 60 * 1000)).toBe(WALKTHROUGH_VIDEO_BPS);
+    expect(walkthroughVideoBps(WALKTHROUGH_MAX_MS)).toBe(WALKTHROUGH_VIDEO_BPS);
+  });
+
+  it('fits thirty minutes into the bytes ten minutes makes, under the one-upload cap', () => {
+    const thirty = 30 * 60 * 1000;
+    const video = walkthroughVideoBps(thirty);
+    expect(video).toBe(301_333);
+    const bytes = ((video + WALKTHROUGH_AUDIO_BPS) * (thirty / 1000)) / 8;
+    const tenMinutes = ((WALKTHROUGH_VIDEO_BPS + WALKTHROUGH_AUDIO_BPS) * 600) / 8;
+    expect(bytes).toBeLessThanOrEqual(tenMinutes);
+    // The same fifth to spare ten minutes has, and under the 100 MB a Worker request carries.
+    expect(bytes * 1.2).toBeLessThanOrEqual(WALKTHROUGH_MEDIA_MAX_BYTES);
+    expect(WALKTHROUGH_MEDIA_MAX_BYTES).toBeLessThan(100_000_000);
+  });
+});
+
+describe('the length limit, weighed', () => {
+  const FIVE = 5 * 60 * 1000;
+  const startOf = (mediaBytes: number, durationMs: number) => ({
+    item: 'doc-1',
+    title: 'Tour',
+    author: null,
+    mediaType: 'video/webm',
+    mediaBytes,
+    events: { ...base(), durationMs },
+  });
+
+  it('gives a limit under ten minutes its share of the cap, with the same fifth to spare', () => {
+    expect(walkthroughMediaMaxBytes(FIVE)).toBe(WALKTHROUGH_MEDIA_MAX_BYTES / 2);
+    // Five minutes at the full rates is 39.3 MB: under its share by the fifth an encoder may overshoot.
+    const honest = ((WALKTHROUGH_VIDEO_BPS + WALKTHROUGH_AUDIO_BPS) * 300) / 8;
+    expect(honest * 1.2).toBeLessThanOrEqual(walkthroughMediaMaxBytes(FIVE));
+    expect(walkthroughMediaMaxBytes(60_000)).toBe(Math.ceil(WALKTHROUGH_MEDIA_MAX_BYTES / 10));
+    expect(walkthroughMediaMaxBytes(0)).toBe(0);
+    expect(walkthroughMediaMaxBytes(-5)).toBe(0);
+  });
+
+  it('gives ten minutes or more the whole cap: a longer limit is recorded at a lower rate to the same bytes', () => {
+    for (const maxMs of [WALKTHROUGH_MAX_MS, 30 * 60 * 1000, Number.NaN]) {
+      expect(walkthroughMediaMaxBytes(maxMs)).toBe(WALKTHROUGH_MEDIA_MAX_BYTES);
+    }
+  });
+
+  it('refuses a recording that says five minutes and weighs more than five minutes can', () => {
+    // Thirty minutes at the lower rate, declared as five: the duration is the browser's word, the bytes are not.
+    const half = WALKTHROUGH_MEDIA_MAX_BYTES / 2;
+    const lied = parseWalkthroughStart(startOf(half + 1, FIVE), FIVE);
+    expect(lied).toEqual({
+      ok: false,
+      refusal: { status: 413, body: { error: 'file_too_large', limitBytes: half } },
+    });
+    expect(parseWalkthroughStart(startOf(half, FIVE), FIVE).ok).toBe(true);
+    // The same bytes under a limit that allows them, and under the legacy cap with Pro off, are taken.
+    expect(parseWalkthroughStart(startOf(half + 1, FIVE), 30 * 60 * 1000).ok).toBe(true);
+    expect(parseWalkthroughStart(startOf(WALKTHROUGH_MEDIA_MAX_BYTES, FIVE)).ok).toBe(true);
+  });
+});
+
+describe('a tier’s length', () => {
+  const long = {
+    v: 1,
+    durationMs: 1_500_000,
+    camera: false,
+    corner: 'bottom-left',
+    startTab: 't',
+    hidden: [],
+    fingerprints: {},
+    events: [],
+  };
+  const start = { item: 'doc', mediaType: 'video/webm', mediaBytes: 10, events: long };
+
+  it('refuses past ten minutes by default, and words the refusal from its limit', () => {
+    const refused = parseWalkthroughStart(start);
+    expect(refused).toMatchObject({
+      ok: false,
+      refusal: { status: 413, body: { error: 'too_long', limitMs: 600_000 } },
+    });
+    expect(walkthroughRefusalMessage({ error: 'too_long' })).toContain('over 10 minutes');
+    expect(walkthroughRefusalMessage({ error: 'too_long', limitMs: 300_000 })).toContain(
+      'over 5 minutes',
+    );
+  });
+
+  it('takes and keeps the whole length when the caller holds a longer limit', () => {
+    const taken = parseWalkthroughStart(start, 1_800_000);
+    expect(taken.ok && taken.start.events.durationMs).toBe(1_500_000);
+    expect(parseWalkthroughStart(start, 1_499_999).ok).toBe(false);
   });
 });

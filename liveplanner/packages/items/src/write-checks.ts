@@ -14,6 +14,7 @@ import {
   validateFields,
   validateVotes,
   type ItemRejection,
+  type ItemWriteBounds,
 } from './fields';
 import { ITEM_STATUS_MAX } from './limits';
 import type { FieldLimit } from './field-limits';
@@ -52,9 +53,10 @@ export function fieldRefusalOf(
   error: ItemRejection,
   fields: unknown,
   mode: 'create' | 'patch',
+  bounds?: ItemWriteBounds,
 ): { field?: string; limit?: FieldLimit } {
   if (fields === undefined) return {};
-  const checked = validateFields(fields, mode);
+  const checked = validateFields(fields, mode, bounds);
   if (checked.ok || checked.error !== error) return {};
   return {
     ...(checked.field ? { field: checked.field } : {}),
@@ -64,11 +66,14 @@ export function fieldRefusalOf(
 
 // A create as the api reads it, but for its comment thread, which the api checks itself (it keeps author ids on
 // the caller's own comments only) and an offline project keeps as it is.
-export function readItemCreate(raw: unknown): Omit<ItemCreate, 'comments'> | ItemRejection {
+export function readItemCreate(
+  raw: unknown,
+  bounds?: ItemWriteBounds,
+): Omit<ItemCreate, 'comments'> | ItemRejection {
   if (!isObj(raw)) return 'field_value_invalid';
   if (!isValidItemType(raw.type)) return 'type_invalid';
   if (raw.id !== undefined && !isValidItemId(raw.id)) return 'id_invalid';
-  const fields = validateFields(raw.fields, 'create');
+  const fields = validateFields(raw.fields, 'create', bounds);
   if (!fields.ok) return fields.error;
   const place = readItemPlace(raw.place);
   if (typeof place === 'string') return place;
@@ -87,10 +92,13 @@ export function readItemCreate(raw: unknown): Omit<ItemCreate, 'comments'> | Ite
   };
 }
 
-export function readItemPatch(body: Record<string, unknown>): ItemPatch | ItemRejection {
+export function readItemPatch(
+  body: Record<string, unknown>,
+  bounds?: ItemWriteBounds,
+): ItemPatch | ItemRejection {
   const patch: ItemPatch = {};
   if (body.set !== undefined) {
-    const set = validateFields(body.set, 'patch');
+    const set = validateFields(body.set, 'patch', bounds);
     if (!set.ok) return set.error;
     patch.set = set.fields;
   }
@@ -105,11 +113,14 @@ export function readItemPatch(body: Record<string, unknown>): ItemPatch | ItemRe
 }
 
 // A move: a place, and only the fields a move may set or clear (isMoveSettable).
-export function readItemMove(body: Record<string, unknown>): ItemMove | ItemRejection {
+export function readItemMove(
+  body: Record<string, unknown>,
+  bounds?: ItemWriteBounds,
+): ItemMove | ItemRejection {
   const place = readItemPlace(body);
   if (typeof place === 'string') return place;
   const move: ItemMove = place;
-  const lane = readItemPatch(body);
+  const lane = readItemPatch(body, bounds);
   if (typeof lane === 'string') return lane;
   const touched = [...Object.keys(lane.set ?? {}), ...(lane.clear ?? [])];
   if (touched.some((k) => !isMoveSettable(k))) return 'place_invalid';

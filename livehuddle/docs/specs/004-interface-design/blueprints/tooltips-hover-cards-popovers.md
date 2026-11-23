@@ -167,6 +167,47 @@ box fits inside the viewport less `margin`; if none fits, top. Top and bottom ce
 horizontally; right and left centre vertically and clamp. `arrowOffset` is the trigger centre minus the surface's
 clamped start edge, so the triangle keeps pointing at the trigger.
 
+### Keeping anchored overlays on screen
+
+```ts
+// packages/ui/src/popover.ts
+export type ScreenEdges = { left: number; top: number; right: number; bottom: number };
+export type OnScreenShift = { x: number; y: number };
+export function shiftIntoRange(start: number, end: number, size: number, margin?: number): number;
+export const OVERLAY_MAX_WIDTH: string; // `calc(100vw - 16px)`
+export function overlayMaxWidth(width: number, margin?: number): number;
+export function keepOnScreen(
+  box: ScreenEdges,
+  viewport: { width: number; height: number },
+  options?: { anchor?: { top: number; bottom: number }; margin?: number },
+): OnScreenShift;
+
+// packages/ui/src/useKeepOnScreen.ts
+export function useKeepOnScreen(
+  ref: RefObject<HTMLElement | null>,
+  open: unknown,
+  options?: {
+    scale?: number; // the canvas zoom, for an overlay translated in canvas units
+    anchor?: () => Element | { top: number; bottom: number } | null | undefined;
+    revealOn?: 'parent'; // shown by CSS on hover: measure on the parent's pointerenter and focusin
+  },
+): OnScreenShift;
+export function onScreenTranslate(shift: OnScreenShift): string | undefined;
+```
+
+- `shiftIntoRange` keeps `[start, end]` inside `[margin, size - margin]`; a span longer than that keeps its start edge
+  in. `clampToViewport` (workbench menus) and `keepOnScreen` both use it.
+- `keepOnScreen`: `x` is `shiftIntoRange` across. Down, with an `anchor`: a box below it (`box.top >= anchor.bottom`)
+  whose bottom passes `height - margin` moves to `anchor.top - gap - boxHeight` when that is at least `margin`; a box
+  above it whose top is under `margin` moves to `anchor.bottom + gap` when it then fits. Otherwise `y` is
+  `shiftIntoRange` down.
+- `useKeepOnScreen` measures in a layout effect when `open` is truthy and changes, and on each reveal with `revealOn`.
+  It subtracts the shift already applied (times `scale`) to get the box's natural edges, so a shift no longer needed
+  returns to zero, and returns the previous object when nothing moved (no re-render). `scale` and `anchor` are read
+  when it measures, so a zoom alone never re-measures.
+- The caller applies `onScreenTranslate(shift)` in front of its own transform (before a counter-scale, since the shift
+  is in the overlay's parent units) and caps its width at `OVERLAY_MAX_WIDTH`.
+
 ## Data and persistence
 
 None. Hints persist nothing; the registry and warm-up clock are per page and reset on reload.
@@ -207,6 +248,9 @@ surface.
 - The accessible-name check runs once per open, not per render or mount.
 - Layout reads two rects per open or scroll event, and one trigger rect per frame while a hint is open (at most one):
   well inside a frame.
+- `useKeepOnScreen` reads one or two rects (the overlay, its anchor) per open or reveal and sets state only when
+  the shift changes: no listener on `document`, no frame loop. An always-mounted hover line adds two listeners on its
+  own parent (`pointerenter`, `focusin`), measured only when they fire.
 
 ## Presentation and UX
 

@@ -120,6 +120,10 @@ The knowledgebase's own key stays, and comes first.
   call is refused ("Your AI key settings couldn't be reached just now. Try again in a moment."), never sent to
   built-in AI on a guess, since the person or their team may have chosen their own key. A server with no accounts to
   ask (self-hosted) has no shared keys.
+- **The refusal names its reason** (`reason` beside `ask_unavailable`), and Ask, Describe to Set Up and Describe to
+  Add Pages say that reason's words: the knowledgebase's own key ("This knowledgebase's AI key could not be read.",
+  with Open AI Settings for an Editor), a team's or a person's shared key (the words above, with no button), or
+  accounts out of reach (the words above, with Ask Again). Never another reason's words.
 - **The plain key** is held in the one request's memory for the one call, never stored in the room.
 - **Which is in use** is said in AI Settings ("Uses This Knowledgebase's Key", "Uses Your Team's Key", "Uses Your Key",
   "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's
@@ -152,7 +156,8 @@ Workers AI sends (`{ response }` pieces and chat-completion `choices[0].delta.co
   - **Conflict checks:** 20 a knowledgebase a day on built-in AI (`CONFLICT_BUILT_IN_CHECKS_PER_DAY`; 50 on a key),
     still once a page per 10 minutes, 5 pairs a check, one call each.
   - **Describe to Set Up:** unchanged, 10 a person a day.
-  - **Each call** writes at most 2,000 tokens (`BUILT_IN_MAX_TOKENS`) and is given up after 60 seconds.
+  - **With Pro on**, each built-in call also spends one of the owner's AI credits ([Tiers](tiers.md)).
+- **Each call** writes at most 2,000 tokens (`BUILT_IN_MAX_TOKENS`) and is given up after 60 seconds.
   - A fault reaching a cap's count refuses the call rather than lifting the cap.
 - **Worst case a day** (every cap spent): a person, 30 questions and 20 Describe asks (10 suggestions, each up to two
   asks), 50 calls; a knowledgebase, 100 questions, 20 checks and 40 Describe asks, 160 calls.

@@ -23,6 +23,9 @@ import { handleTabRender } from './tab-render-route';
 import { handleKnowledgeRoutes } from './knowledge-routes';
 import { handlePageTrashRoutes } from './page-trash-routes';
 import { goesToTrash, trashPage } from '../document-room/page-trash';
+import { readStoredPages } from '../document-room/page-tree-store';
+import { workerTierOf } from '../knowledge/tier-limits';
+import { pageCount } from '@liveknowledge/document';
 import { countRead } from '../knowledge/knowledge-reads';
 import { readsDraft } from '../knowledge/page-draft-reads';
 import { withoutDraft } from '@liveknowledge/document';
@@ -231,6 +234,22 @@ export async function handleDocumentSubresources(
               ? { id: owner, name: ctx.token ? ctx.token.name || 'An agent' : author.name }
               : null,
         });
+      // One page fewer, told to the owner's Knowledgebase Pages without waiting (tiers.md): the tier's read, the
+      // count and the telling all run behind the answer. Asked only with Pro on.
+      if (toTrash) {
+        const told = (async () => {
+          const tier = await workerTierOf(env, existing);
+          if (tier) await tier.recount('pages', id, pageCount(await readStoredPages(env, id)));
+        })();
+        if (ctx.waitUntil) {
+          // A count that could not be told is said in the log: the page is in the Trash either way.
+          ctx.waitUntil(
+            told.catch((error) =>
+              console.warn('[knowledge] pages.recount.failed', { error: String(error) }),
+            ),
+          );
+        } else await told;
+      }
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();
     }

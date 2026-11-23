@@ -68,6 +68,10 @@
 @source '../../../../packages/settings-ui/src';
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
 @source '../../../../packages/workbench/src';
+/* Pro's badge, meters, notices and upgrade dialog (@liveworkspace/subscription-ui). They draw only with
+ * NEXT_PUBLIC_PRO_ENABLED on, but the classes are generated either way. */
+@source '../../../../packages/subscription-ui/src';
+@source not '../../../../packages/subscription-ui/src/**/*.test.tsx';
 @source '../../../../packages/capture/src';
 @source '../../../../packages/walkthrough/src';
 /* The Automations screen and builder every app shares (@liveworkspace/automations-ui). */
@@ -1051,4 +1055,11 @@ html {
   :root:not(.reduce-motion) [data-replay-press] {
     animation: lvd-replay-press 240ms ease-out forwards;
   }
+}
+
+/* A live embed's frame shows the file alone (liveworkspace/docs/specs/004-index/live-embeds.md "The frame", Work
+   Tracker 1386): no zoom controls either. The frame takes no pointer until Use the file, lands fitted, and pinch and
+   Ctrl-scroll still zoom; with nothing in its corners, no bar of the host page can sit over them. */
+[data-live-embed-frame] [data-zoom-cluster] {
+  display: none;
 }

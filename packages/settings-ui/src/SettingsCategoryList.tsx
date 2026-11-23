@@ -105,6 +105,7 @@ export function SettingsCategoryList({
         key={c.id}
         label={c.label}
         icon={c.icon ?? <IconSpace nested={nested} />}
+        hint={c.hint}
         nested={nested}
         current={selected === c.id}
         count={c.matchCount ?? 0}
@@ -244,6 +245,7 @@ export function SettingsSubcategoryLinks({
 function CategoryRow({
   label,
   icon,
+  hint,
   nested = false,
   current = false,
   count = 0,
@@ -255,6 +257,8 @@ function CategoryRow({
 }: {
   label: string;
   icon: ReactNode;
+  // A quiet word after the label (Subscription's tier).
+  hint?: ReactNode;
   nested?: boolean;
   current?: boolean;
   count?: number;
@@ -315,6 +319,17 @@ function CategoryRow({
       >
         {label}
       </span>
+      {hint && !searching ? (
+        // Empty until its content has something to say, so it takes no room and no gap.
+        <span
+          data-settings-hint=""
+          className={`shrink-0 text-xs font-medium empty:hidden ${
+            lit ? 'text-brand-700 dark:text-brand-200' : 'text-slate-500 dark:text-slate-400'
+          }`}
+        >
+          {hint}
+        </span>
+      ) : null}
       {searching && count > 0 ? (
         <span className="inline-flex h-[19px] shrink-0 items-center rounded-full bg-brand-100 px-1.5 text-[10px] font-semibold tabular-nums text-brand-700 dark:bg-brand-500/25 dark:text-brand-100">
           <span className="text-optical-centre">{count}</span>

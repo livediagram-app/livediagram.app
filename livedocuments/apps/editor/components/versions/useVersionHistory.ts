@@ -6,7 +6,12 @@
 // changeset raises no changeset toast here; the panel's own toast says what happened, with Undo.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Tab } from '@livedocuments/document';
-import { COPY_SUMMARY, restoreSummary, type VersionSummary } from '@livedocuments/api-schema';
+import {
+  COPY_SUMMARY,
+  restoreSummary,
+  type VersionRetentionInfo,
+  type VersionSummary,
+} from '@livedocuments/api-schema';
 import {
   apiCopyVersion,
   apiListVersions,
@@ -15,6 +20,7 @@ import {
   apiRenameVersion,
   apiRestoreVersion,
 } from '@/lib/api-client';
+import { versionRetentionOf } from '@/lib/api/versions';
 import { beginOwnVersionWrite } from '@/lib/own-version-writes';
 
 export type VersionWho = { ownerId: string; shareCode: string | null };
@@ -25,7 +31,8 @@ export const VERSION_BODY_CACHE = 8;
 export type VersionList =
   | { state: 'loading' }
   | { state: 'failed'; gone: boolean }
-  | { state: 'ready'; versions: VersionSummary[] };
+  // `retention`: with Pro on, how long the owner's tier keeps automatic versions, as the server answered it.
+  | { state: 'ready'; versions: VersionSummary[]; retention?: VersionRetentionInfo | null };
 
 export type VersionBody = { state: 'loading' } | { state: 'failed' } | { state: 'ready'; tab: Tab };
 
@@ -54,7 +61,7 @@ export function useVersionHistory(opts: { documentId: string; tabId: string; who
   const reload = useCallback(async () => {
     try {
       const versions = await apiListVersions(whoRef.current, documentId, tabId);
-      setList({ state: 'ready', versions });
+      setList({ state: 'ready', versions, retention: versionRetentionOf(versions) });
     } catch (err) {
       console.warn('[versions] list-failed', { tabId, status: statusOf(err) });
       setList({ state: 'failed', gone: statusOf(err) === 404 });
@@ -86,7 +93,7 @@ export function useVersionHistory(opts: { documentId: string; tabId: string; who
     setList((prev) =>
       prev.state !== 'ready'
         ? prev
-        : { state: 'ready', versions: mergeVersion(prev.versions, version, replacedId) },
+        : { ...prev, versions: mergeVersion(prev.versions, version, replacedId) },
     );
   }, []);
 

@@ -11,6 +11,7 @@ import {
   type StandingGrant,
 } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
+import { planSendHere, sourceChangedHere } from './plan-send-door';
 import { roomFetch } from './plan-room-fetch';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveplanner/api-schema';
@@ -19,13 +20,13 @@ import { RoomScopedStructure, cachedStoredTab } from '../room-scoped-structure';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import { LEDGER_RULES, type LedgerEntry, type TabLedger } from './plan-room-ledger';
 import { RoomSelectionStore } from '../room-selections';
-import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
+import { RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
 import { armPlanAlarm, wakePlanRoom } from './plan-room-alarm';
 import type { Env, PlanEnv, ServerMessage } from '../types';
 import { type LoggedOp } from '../project-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
-import { spendPlanDraftIn } from '../plan-draft-count';
+import { giveBackPlanDraftIn, spendPlanDraftIn } from '../plan-draft-count';
 import type { InternalRoom } from '../room-internal';
 import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import { planHasTab } from '../db/tabs';
@@ -47,7 +48,7 @@ import { importPlanCopy, readPlanOutline, type PlanCopy, type PlanOutline } from
 import type { CommunityLink, CommunityListing, CopySource } from '../plan-client';
 import type { Copier } from '@liveworkspace/index-app';
 import { RepeatSchedule } from './card-repeats';
-import { PlanStanding, STANDING_KEY, takeGrantStanding, takeStanding } from './plan-standing';
+import { PlanStanding, takeGrantStanding, takeStanding } from './plan-standing';
 import { PlanAutomations } from './automations/automation-queue';
 import { automationDeps } from './automations/plan-room-automations';
 import { importProjectFile, type ProjectFileImport } from './project-file';
@@ -68,15 +69,7 @@ import {
   writeDirectoryEntry,
   type IntakeEntry,
 } from '../email-intake/intake-directory';
-import {
-  MAINTENANCE_KEY,
-  restoreContentState,
-  ensureSchema,
-  bindStoredPlan,
-  noteWrite,
-  drain,
-  purge,
-} from './plan-room-content';
+import { ensureSchema, bindStoredPlan, noteWrite, drain, purge } from './plan-room-content';
 import {
   route,
   communityOf,
@@ -98,7 +91,6 @@ import {
 } from './plan-room-doors';
 import { renewGrant, acceptSession } from './plan-room-grants';
 import {
-  ORDER_STATE_KEY,
   broadcast,
   broadcastSystemOp,
   broadcastOrderedSystemOp,
@@ -109,20 +101,23 @@ import { answerHookCall, type HookAnswer, type HookCall } from './automations/au
 import { optOutAddress } from './automations/automation-addresses';
 import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './github/github-room';
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
+import { automationLimitsOf, roomTier } from './tier/room-tier';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
-import { purgedAt } from './plan-room-purged';
+import { restoreRoom } from './plan-room-restore';
 import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import type { SheetWatches } from './sheet-watchers';
+import type { SentCards } from './sent-cards';
 import {
   listSheets,
   planData,
   planDataList,
   readSheetRange,
   roomSheetWatches,
+  roomSentCards,
   type SheetRangeAsk,
 } from './plan-room-doors';
-import type { PlanDataAsk } from '@liveworkspace/index-client';
+import type { PlanDataAsk, PlanSendDoorCall, SourceChange } from '@liveworkspace/index-client';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -226,6 +221,8 @@ export class PlanRoom extends DurableObject<Env> {
   planRowReady = false;
   // Other apps' items whose charts read this plan's Sheets, told when a Sheet changes (sheet-watchers.ts).
   readonly sheetWatches: SheetWatches;
+  // Cards sent from other apps, their changes told to the index for the sources' chips (sent-cards.ts).
+  readonly sentCards: SentCards;
   // When the plan was purged (plan-room-purged.ts): null when it is not, undefined until read.
   purgedAt: number | null | undefined = undefined;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
@@ -254,7 +251,11 @@ export class PlanRoom extends DurableObject<Env> {
     () => this.armAlarm(),
     () => automationDeps(this),
     () => this.standing.putAway,
+    () => automationLimitsOf(this.tier),
   );
+  // The plan's tier (tier/plan-tier.ts; docs/specs/026-plan/automations.md "Tiers"): its owner's limits, read from
+  // the subscription service at most once a minute. With Pro off it asks nothing.
+  readonly tier = roomTier(this);
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
   writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
@@ -305,6 +306,7 @@ export class PlanRoom extends DurableObject<Env> {
           PLAN_ROOM: localNamespace(this, env.PLAN_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
           AUTOMATIONS: this.automations,
+          TIER: this.tier,
           REMOVAL_GUARD: new RemovalGuard(state.storage),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
           // Stamped with SQLite's change count, which every write in this room moves, whichever path made it.
@@ -315,6 +317,7 @@ export class PlanRoom extends DurableObject<Env> {
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.sheetWatches = roomSheetWatches(this);
+    this.sentCards = roomSentCards(this);
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);
     this.scopedStructure = new RoomScopedStructure(cachedStoredTab(this.roomEnv));
@@ -329,27 +332,8 @@ export class PlanRoom extends DurableObject<Env> {
       () => Date.now(),
       () => crypto.randomUUID(),
     );
-    // Restore before any request can observe `epoch`/`seq`. A wake re-runs
-    // the constructor, so without this gate a socket could be handed the
-    // freshly-minted field values above and defeat the whole point.
-    void state.blockConcurrencyWhile(async () => {
-      const saved = await state.storage.get<{ epoch: string; seq: number }>(ORDER_STATE_KEY);
-      if (saved) {
-        this.epoch = saved.epoch;
-        this.seq = saved.seq;
-      } else {
-        // First instantiation for this project: adopt the random epoch above.
-        await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
-      }
-      for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
-      // Before the schedules restore, so a plan put away asks for no wake.
-      this.standing.restore(await state.storage.get(STANDING_KEY));
-      restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
-      // A room with no plan schema learns whether it was purged before any door runs (plan-room-purged.ts); a plan
-      // with content reads nothing more.
-      await purgedAt(this);
-      this.armAlarm();
-    });
+    // Restore before any request can observe `epoch`/`seq` (plan-room-restore.ts).
+    void state.blockConcurrencyWhile(() => restoreRoom(this));
   }
 
   // ---------- The plan's content --------------------------------------------------------------------------
@@ -611,6 +595,16 @@ export class PlanRoom extends DurableObject<Env> {
     return crossApp.planAutomationTarget(this, planId);
   }
 
+  // Send to Plan's cards, the person's grant checked by the internal door (plan-send-door.ts).
+  planSend(planId: string, call: PlanSendDoorCall) {
+    return planSendHere(this, planId, call);
+  }
+
+  // Cards this plan's threads sent to another plan changed: every open session reads its chips again.
+  async sourceChanged(planId: string, change: SourceChange): Promise<void> {
+    sourceChangedHere(this, planId, change);
+  }
+
   // One call to a rule's address. An id nothing has written answers 401 and stays empty; a stored plan's schema is
   // brought up to date first (V20 holds the secrets).
   async incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
@@ -665,6 +659,11 @@ export class PlanRoom extends DurableObject<Env> {
   // Only on an account's `~plan-drafts:` instance, never a plan's: one storage key, no plan schema made or read.
   spendPlanDraft(day: string, cap: number): Promise<boolean> {
     return spendPlanDraftIn(this.state.storage, day, cap);
+  }
+
+  // The same count's give-back: a draft counted and then refused before the model was asked.
+  giveBackPlanDraft(day: string): Promise<void> {
+    return giveBackPlanDraftIn(this.state.storage, day);
   }
 
   requireEnv(): PlanEnv {
@@ -749,6 +748,7 @@ export class PlanRoom extends DurableObject<Env> {
 
   broadcastOrderedSystemOp(op: unknown): void {
     broadcastOrderedSystemOp(this, op);
+    this.sentCards.changed(op);
   }
 
   override webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {

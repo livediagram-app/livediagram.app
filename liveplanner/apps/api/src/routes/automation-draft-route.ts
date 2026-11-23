@@ -6,6 +6,8 @@
 // a day. Every refusal's message is fixed words, never the model's; the request and the reply are never logged.
 import {
   AI_CAPPED,
+  AI_CREDITS_UNCHECKED,
+  AI_CREDITS_USED,
   AI_DRAFT_CAPPED,
   AI_DRAFT_OFF_TOPIC,
   AI_DRAFT_PER_DAY,
@@ -26,6 +28,7 @@ import type {
   AutomationError,
   AutomationErrorBody,
 } from '@liveplanner/api-schema';
+import { AI_CREDIT_COSTS, refusedByService } from '@liveworkspace/subscription';
 import { listItems } from '../db/items';
 import { getProjectMeta } from '../db/projects';
 import { json } from '../responses';
@@ -69,11 +72,29 @@ export async function draftRule(ctx: PlanRouteContext, g: Gated): Promise<Respon
   if (!client) return refuse(503, 'automation_ai_unavailable', AI_NOT_SET_UP);
   const sql = g.hook.sql();
   const started = Date.now();
+  // On a key nothing of the plan's or its owner's is spent: no daily caps, no AI credit.
   if (!ai.keyed) {
     if (aiToday(sql, started) >= AUTOMATION_AI_PER_DAY)
       return refuse(429, 'automation_ai_capped', AI_CAPPED);
     if (draftsToday(sql, started) >= AI_DRAFT_PER_DAY)
       return refuse(429, 'automation_ai_capped', AI_DRAFT_CAPPED);
+    // One of the plan's owner's AI credits for the draft (spec "Tiers", Pro on only), before the model is asked: its
+    // second ask rides it, and it is never given back.
+    const credit = await g.tier?.spend('aiCredits', AI_CREDIT_COSTS.automationRuleDraft);
+    // The service refused the plan's request (its key, never the owner's month): not asked, and no offer to upgrade.
+    if (credit && refusedByService(credit))
+      return refuse(503, 'automation_ai_unavailable', AI_CREDITS_UNCHECKED);
+    if (credit && !credit.ok)
+      return json(
+        {
+          error: 'automation_ai_credits_used',
+          message: AI_CREDITS_USED,
+          limit: 'aiCreditsPerMonth',
+          used: credit.used,
+          max: credit.limit ?? 0,
+        } satisfies AutomationErrorBody,
+        { status: 429 },
+      );
   }
 
   const [plan, items] = await Promise.all([

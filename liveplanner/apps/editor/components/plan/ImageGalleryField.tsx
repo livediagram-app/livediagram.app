@@ -20,7 +20,13 @@ import { Button, CloseIcon, lucideGlyph, Tooltip } from '@liveplanner/ui';
 import { lucideImage, lucideImagePlus } from '@liveworkspace/icons/lucide';
 import { HANDLE_TOUCH } from '@/components/primitives/useHandleReorder';
 import { useGridReorder } from '@/components/primitives/useGridReorder';
-import { IMAGE_ACCEPT, IMAGE_THUMB_EDGE, type ImagesScope } from '@/lib/api/images';
+import {
+  IMAGE_ACCEPT,
+  IMAGE_THUMB_EDGE,
+  imageUploadHint,
+  type ImagesScope,
+} from '@/lib/api/images';
+import { ImageUploadLimit } from './ImageUploadLimit';
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { GripIcon } from './ItemTypeFieldMenu';
@@ -35,8 +41,6 @@ import { UploadRing, uploadPercent } from './UploadRing';
 
 const AddIcon = lucideGlyph(lucideImagePlus, 18);
 const BrokenIcon = lucideGlyph(lucideImage, 18);
-
-const HINT = 'PNG, JPEG, WebP or GIF, up to 10 MB';
 
 // The quiet round buttons over a thumbnail's corners: hidden until the tile is hovered or holds focus, always there on
 // a touch screen.
@@ -149,7 +153,7 @@ export function ImageGalleryField({
                 : 'sr-only'
             }
           >
-            {upload.blocked ?? HINT}
+            {upload.blocked ?? imageUploadHint()}
           </span>
         </Button>
       </Tooltip>
@@ -215,6 +219,7 @@ export function ImageGalleryField({
           ))}
         </ul>
       ) : null}
+      <ImageUploadLimit refusal={upload.limit} onChooseAnother={() => fileRef.current?.click()} />
     </div>
   );
 }

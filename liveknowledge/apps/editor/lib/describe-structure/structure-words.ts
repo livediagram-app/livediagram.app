@@ -13,7 +13,7 @@ import {
   STRUCTURE_PER_PERSON_PER_HOUR,
 } from '@liveknowledge/knowledge';
 import { offersAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
-import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
+import { AI_UNAVAILABLE_KINDS, askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
 
 export const STRUCTURE_BUTTON = 'Describe Structure';
 export const STRUCTURE_SUBTITLE =
@@ -45,7 +45,9 @@ const MODEL_KINDS = new Set([
   'overloaded',
   'model-unavailable',
   'refused',
-  'ask_unavailable',
+  ...AI_UNAVAILABLE_KINDS,
+  'ai_credits_used',
+  'ai_by_others_limit',
 ]);
 
 /** A failure in words. `manageAi`: whether the person may open AI Settings (an Editor). */
@@ -56,8 +58,9 @@ export function structureFailureWords(
   if (MODEL_KINDS.has(kind)) {
     const words = askFailureWords(kind, { manageAi: opts.manageAi, provider: opts.provider });
     return {
-      title:
-        kind === 'ask_unavailable' ? 'Describe Structure Is Not Available Right Now' : words.title,
+      title: AI_UNAVAILABLE_KINDS.has(kind)
+        ? 'Describe Structure Is Not Available Right Now'
+        : words.title,
       text: words.text
         .replace(/\bask again\b/g, 'try again')
         .replace(/\bAsk again\b/g, 'Try again'),

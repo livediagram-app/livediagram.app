@@ -29,7 +29,7 @@ import {
 import { HEX_COLOUR, isObj } from './validate';
 import { carriedTimeValue } from './time-tracking';
 import { itemColourValue } from './item-colour';
-import { normaliseAttachments } from './attachments';
+import { ATTACHMENTS_FIELD, normaliseAttachments } from './attachments';
 import { STATUS_SINCE_FIELD } from './item';
 import { isStatusSince } from './status-since';
 import { isStampField } from './card-stamps';
@@ -295,7 +295,29 @@ function normaliseUnknown(v: unknown): ItemFieldValue | undefined {
 
 // `create` requires a title; `patch` validates only the keys it is given.
 // Votes and comments are never accepted here: they change only through voting and the comment writes.
-export function validateFields(input: unknown, mode: 'create' | 'patch'): FieldsResult {
+export function validateFields(
+  input: unknown,
+  mode: 'create' | 'patch',
+  bounds?: ItemWriteBounds,
+): FieldsResult {
+  const checked = validateFieldsUnbounded(input, mode);
+  // A tighter bound the caller holds (the api with Pro off): no attachment may state more bytes than it.
+  const max = bounds?.attachmentBytesMax;
+  if (checked.ok && max !== undefined) {
+    const list = checked.fields[ATTACHMENTS_FIELD];
+    if (Array.isArray(list) && list.some((a) => isObj(a) && Number(a['size']) > max))
+      return { ok: false, error: 'field_value_invalid', field: ATTACHMENTS_FIELD };
+  }
+  return checked;
+}
+
+/** Bounds a write is held to beyond the store's own: the api passes the ones its deployment keeps. */
+export type ItemWriteBounds = {
+  /** The most bytes an attachment may state (ITEM_ATTACHMENT_BYTES_LEGACY with Pro off). */
+  attachmentBytesMax?: number;
+};
+
+function validateFieldsUnbounded(input: unknown, mode: 'create' | 'patch'): FieldsResult {
   if (!isObj(input)) return { ok: false, error: 'field_value_invalid' };
   const keys = Object.keys(input);
   if (keys.filter((k) => k !== STATUS_SINCE_FIELD).length > ITEM_FIELDS_MAX)

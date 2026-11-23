@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, type CSSProperties } from 'react';
+import { useMemo, useRef, type CSSProperties } from 'react';
+import { onScreenTranslate, useKeepOnScreen } from '@liveworkspace/ui';
 import { useTelemetryApp } from './app';
 import { typeLabel } from './event-vocab';
 import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
@@ -167,12 +168,7 @@ export function MetricCloud({
                 className="cloud-word group/word relative cursor-pointer leading-none tracking-tight opacity-[var(--o)] transition dark:opacity-[var(--o-dark)] duration-micro hover:-translate-y-0.5 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none group-hover/cloud:opacity-40"
               >
                 {w.label}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white opacity-0 shadow transition group-hover/word:opacity-100 group-focus-visible/word:opacity-100 dark:bg-slate-200 dark:text-slate-900"
-                >
-                  {w.count.toLocaleString()}
-                </span>
+                <CountPill count={w.count} />
               </button>
             );
           })}
@@ -185,5 +181,25 @@ export function MetricCloud({
         </p>
       </div>
     </div>
+  );
+}
+
+// A word's count, over it while it is hovered or focused. Centred on the word, so a short word at the edge of a phone
+// would carry it off screen: it slides back on (@liveworkspace/ui's useKeepOnScreen), measured as it shows, never per
+// pointer move. The slide is a `transform`, apart from the centring's `translate`.
+function CountPill({ count }: { count: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const slide = onScreenTranslate(
+    useKeepOnScreen(ref, false, { revealOn: 'parent', anchor: () => ref.current?.parentElement }),
+  );
+  return (
+    <span
+      ref={ref}
+      aria-hidden
+      style={{ transform: slide }}
+      className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white opacity-0 shadow transition group-hover/word:opacity-100 group-focus-visible/word:opacity-100 dark:bg-slate-200 dark:text-slate-900"
+    >
+      {count.toLocaleString()}
+    </span>
   );
 }

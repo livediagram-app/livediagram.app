@@ -29,6 +29,7 @@ export function AppPageHeader({
   center = null,
   hrefFor = null,
   settings = null,
+  subscribed = false,
   marker,
 }: {
   // The app the page is shown for, whose logo follows the hairline; null for none.
@@ -39,6 +40,8 @@ export function AppPageHeader({
   hrefFor?: ((site: Site) => string) | null;
   // The page's own Settings panel, for whoever has settings here (null: the control's own, or none).
   settings?: SettingsControl | null;
+  // Whether the page has SiteSubscription around this header (the Explorer): the account control then adds none.
+  subscribed?: boolean;
   // Names the header for its page's styles and tests (`data-explorer-header`, `data-community-header`).
   marker: 'explorer' | 'community';
 }) {
@@ -94,7 +97,7 @@ export function AppPageHeader({
           {host ? (
             <AppAccountControl settings={settings} />
           ) : (
-            <AccountControl settings={settings} />
+            <AccountControl settings={settings} subscribed={subscribed} />
           )}
         </div>
       </div>

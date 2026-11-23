@@ -24,7 +24,7 @@ import {
   ItemAutomations,
   type AutomationsHook as Hook,
 } from '@liveworkspace/automations/room';
-import { PLAN_RULES, type Sql } from './automation-store';
+import { PLAN_RULES, type AutomationLimits, type Sql } from './automation-store';
 import type { CrossAppChain } from '@liveworkspace/automations/cross-app';
 
 // The wake a plan's queue asks for, over its events.
@@ -137,7 +137,9 @@ export class PlanAutomations extends ItemAutomations<
     arm: () => void,
     deps: () => RunnerDeps | null,
     putAway: () => boolean = () => false,
+    // The plan's tier's limits (plan-room/tier/plan-tier.ts); absent, the legacy ones.
+    limits?: () => AutomationLimits,
   ) {
-    super({ sql, ready, arm, deps, putAway, kit: PLAN_RULES });
+    super({ sql, ready, arm, deps, putAway, kit: PLAN_RULES, ...(limits ? { limits } : {}) });
   }
 }

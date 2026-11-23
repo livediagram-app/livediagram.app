@@ -1,4 +1,5 @@
 import { DOCUMENT_TRASHED_CLOSE } from '@livediagram/api-schema';
+import { leaveRuleCount } from '@liveworkspace/automations/room';
 import { agentPresenceLog } from '@liveworkspace/api-kit/room-agent-presence';
 import { armRoomAlarm, disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
 import { documentRoom } from '../document-client';
@@ -24,6 +25,9 @@ export async function purge(room: DocumentRoom, documentId?: string): Promise<vo
   room.opLog = [];
   await leaveShares(room);
   await leaveCommunity(room);
+  // Its rules leave its owner's total (019 "Meters": item counts). Nothing with Pro off.
+  if (room.documentId !== null && room.schemaReady)
+    await leaveRuleCount(room.tier, room.documentId);
   await room.ledger.settled();
   await disarmRoomAlarm(room.state.storage);
   await room.state.storage.deleteAll();

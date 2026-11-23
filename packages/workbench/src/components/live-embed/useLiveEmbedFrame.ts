@@ -10,6 +10,7 @@ import type { LiveItem } from '@liveworkspace/element-model/live-item';
 import { liveEmbedOrigin } from './live-embed-target';
 import { requestLiveEmbedTicket, type LiveEmbedTicket } from './live-embed-ticket';
 import { workbench } from '../../bindings';
+import { liveEmbedFramePath } from '../../lib/editor-surface';
 
 export type LiveEmbedFrame =
   | { state: 'idle' }
@@ -94,7 +95,8 @@ export function useLiveEmbedFrame({
         key: asked,
         outcome: {
           state: 'live',
-          src: `${origin}${ticket.path}#ticket=${ticket.ticket}`,
+          // The frame flag: the target's page shows the item only (live-embeds.md "The frame").
+          src: `${origin}${liveEmbedFramePath(ticket.path)}#ticket=${ticket.ticket}`,
           ready: false,
         },
       });

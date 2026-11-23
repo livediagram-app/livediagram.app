@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_CLOSED_MESSAGE, DEFAULT_CONFIRMATION } from './limits';
+import { DEFAULT_CLOSED_MESSAGE, DEFAULT_CONFIRMATION, MONTHLY_LIMIT_MESSAGE } from './limits';
 import type { FormDefinition } from './model';
 import { closedBySettings, closedMessageOf, closedReason, publicForm } from './public';
 import {
@@ -73,6 +73,15 @@ describe('closed', () => {
     expect(closedReason({ ...form, limit: 3 }, { ...open, responses: 3 })).toBe('limit');
   });
 
+  it('closes at its month of responses, after anything of its own', () => {
+    const full = { ...open, monthFull: true };
+    expect(closedReason(form, full)).toBe('monthly_limit');
+    expect(closedReason(form, { ...open, monthFull: false })).toBeNull();
+    // The form's own Settings and switch say why first.
+    expect(closedReason({ ...form, limit: 3 }, { ...full, responses: 3 })).toBe('limit');
+    expect(closedReason(form, { ...full, open: false })).toBe('switched_off');
+  });
+
   it('says when its own Settings close it, whatever its switch', () => {
     expect(closedBySettings({}, { responses: 9, now: 5 })).toBeNull();
     expect(closedBySettings({ closesAt: 5 }, { responses: 0, now: 5 })).toBe('closes_at');
@@ -82,6 +91,12 @@ describe('closed', () => {
   it('has a closed message', () => {
     expect(closedMessageOf({})).toBe(DEFAULT_CLOSED_MESSAGE);
     expect(closedMessageOf({ closedMessage: 'Bye' })).toBe('Bye');
+    expect(closedMessageOf({ closedMessage: 'Bye' }, 'limit')).toBe('Bye');
+  });
+
+  it('says one neutral line for a full month, whatever the form says, naming no limit', () => {
+    expect(closedMessageOf({ closedMessage: 'Bye' }, 'monthly_limit')).toBe(MONTHLY_LIMIT_MESSAGE);
+    expect(MONTHLY_LIMIT_MESSAGE).not.toMatch(/pro|upgrade|limit|tier|free/i);
   });
 });
 

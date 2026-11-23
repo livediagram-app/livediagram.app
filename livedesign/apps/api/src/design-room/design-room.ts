@@ -1,4 +1,6 @@
 import { ItemDb, type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
+import { roomTier } from '@liveworkspace/automations/room';
+import type { ItemTier } from '@liveworkspace/subscription';
 import { type PutAwayRefusal, tellSourceChanged } from '@liveworkspace/index-app';
 import type { SourceChange } from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
@@ -241,6 +243,9 @@ export class DesignRoom extends DurableObject<Env> {
   // The design's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they hear,
   // and what waits to run on the alarm.
   readonly automations: ItemEngine;
+  // The item's tier (liveworkspace/docs/specs/019-subscription/subscription.md "Who pays for an item"): what its
+  // Automations allow and spend, read from its owner. With Pro off it asks nothing and every limit is the legacy one.
+  readonly tier: ItemTier;
   // The comment and action triggers' watch over each tab's threads.
   readonly collab: CollabWatch;
 
@@ -294,6 +299,15 @@ export class DesignRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
+    this.tier = roomTier({
+      app: 'livedesign.app',
+      env: () => this.roomEnv ?? null,
+      sql: () => this.state.storage.sql,
+      ready: () => this.schemaReady,
+      table: 'design',
+      id: () => this.designId,
+      defer: (work) => this.state.waitUntil(work),
+    });
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);

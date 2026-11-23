@@ -1,6 +1,6 @@
 # Open source + distribution
 
-livedesign is **open source software** with one official hosted deployment at livedesign.app. There is no paid tier and no plan to introduce one.
+livedesign is **open source software** with one official hosted deployment at livedesign.app. The hosted service can also sell **Pro**, a subscription that raises limits, when a deployment turns it on ([Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)). It is off by default: a self-hosted copy has no tiers.
 
 ## License
 
@@ -10,12 +10,12 @@ The third-party work the apps ship is credited on the generated `/licences` page
 
 ## Distribution model
 
-People use livedesign at the official deployment, [livedesign.app](https://www.livedesign.app). It is free for everyone, with no tiers, and it is not a commercial product.
+People use livedesign at the official deployment, [livedesign.app](https://www.livedesign.app). It is free for everyone to use; Pro, where it is on, raises limits for those who subscribe.
 
 ## Implications for how we build
 
-- **No license checks.** Don't gate any feature behind a server call, license string, or runtime telemetry that a deployment cannot do without.
-- **No paid-tier shims.** The codebase contains no "Pro features" feature-flag, no billing integration (no Stripe), no "upgrade" CTAs. If we ship it, every user gets it.
+- **No license checks.** Don't gate any feature behind a license string or runtime telemetry that a deployment cannot do without. The one server check a feature may make is its owner's tier limit, and only with Pro on.
+- **Pro is one flag, off by default, and the platform's.** Tiers, billing and upgrade prompts live in the subscription service and `@liveworkspace/subscription`, behind `PRO_ENABLED` ([Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)). With it off the app shows no Pro UI and imposes no tier limit. The product keeps no billing code and no copy of who is subscribed, and every tier limit is checked on the server, against the item's owner.
 - **Optional SaaS, not required SaaS.** The OSS core never calls home. Its SaaS integrations are all optional, each gated on its own configuration: the liveworkspace accounts Worker for sign-in ([Auth + guest access](../014-identity/auth-and-guest-access.md)) and Cloudflare Email Service for email, through the api's `EMAIL` binding ([Transactional email](../014-identity/transactional-email.md)). When the api's sign-in settings (`ACCOUNTS_URL` / `API_RESOURCE`) aren't set, the api worker degrades to pure-guest mode: the live frontend still offers sign-in, but every visitor settles as a guest and the editor is fully usable. With them unset there is no server-side outbound traffic besides Cloudflare, whose Email Service also carries the email; the browser still fetches the editor's typefaces from Google Fonts ([Fonts](../004-interface-design/fonts.md)).
 - All design decisions assume the codebase is visible to the public, which constrains how we handle [secrets](secrets-policy.md).
 

@@ -3,12 +3,20 @@
 import type {
   CapabilitiesResponse,
   NoteCrop,
+  ReadCredits,
   ReadNotesRequest,
   ReadNotesResponse,
 } from '@livediagram/api-schema';
 import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
 import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { createCapabilitiesClient } from '@liveworkspace/api-client';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
+import {
+  noteReadCredits,
+  noteReadCreditsUsed,
+  readRun,
+  readTarget,
+} from '@/lib/reading/read-credits';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
 // Fetch server capabilities (the shared one-ask client, @liveworkspace/api-client): fail-closed (every
@@ -51,10 +59,16 @@ export async function apiAiReadNotes(
   let unread = 0;
   let failure: string | undefined;
   let keyFailed: ReadKeyFailed | undefined;
+  // With Pro on, a read is paid for once (docs/specs/021-event-storming/note-reader.md "What a read costs"): a batch
+  // goes alone until the read holds its pass, which lets the rest through. An api that answers with no credits
+  // counts nothing, so the rest go as before; with a pass in hand, or Pro off, every batch goes as before.
+  let uncounted = false;
+  const width = () =>
+    proOn() && readRun().pass === null && !uncounted ? 1 : READ_BATCH_CONCURRENCY;
   // Two at a time: a whole wall in parallel is a burst any rate limiter will
   // refuse, and one at a time is a wait nobody enjoys.
-  for (let i = 0; i < batches.length; i += READ_BATCH_CONCURRENCY) {
-    const slice = batches.slice(i, i + READ_BATCH_CONCURRENCY);
+  for (let i = 0, step = width(); i < batches.length; i += step, step = width()) {
+    const slice = batches.slice(i, i + step);
     // ONE LOST BATCH IS ONE LOST BATCH. A hundred-note wall is seventeen
     // requests, and over seventeen requests something eventually answers 429
     // or hands back a truncated line; throwing on the first of them threw away
@@ -66,6 +80,7 @@ export async function apiAiReadNotes(
     const answers = await Promise.allSettled(slice.map((batch) => readBatch(ownerId, batch, opts)));
     answers.forEach((answer, at) => {
       if (answer.status === 'fulfilled') {
+        if (!answer.value.credits) uncounted = true;
         texts.push(...answer.value.texts);
         readCount += answer.value.texts.length;
         return;
@@ -80,6 +95,12 @@ export async function apiAiReadNotes(
     // Report batch-by-batch, so the author watching the bar sees the run
     // advance instead of a spinner that never moves.
     opts.onProgress?.(readCount);
+    // The payer's AI credits are used (note-reader.md "When the credits are used"): no later batch can be paid for
+    // either, so none is sent, and the rest of the photo is the device reader's.
+    if (failure === 'ai_credits_used') {
+      for (const batch of batches.slice(i + slice.length)) unread += batch.length;
+      break;
+    }
   }
   // Nothing at all came back: that is not a partial read, it is a failure, and
   // it is told the way every other failure here is told.
@@ -95,14 +116,33 @@ async function readBatch(
   crops: NoteCrop[],
   opts: { signal?: AbortSignal },
 ): Promise<ReadNotesResponse> {
+  // With Pro on the read names its diagram (whose owner pays), itself, how many notes the photo has (what the read
+  // costs), and the pass it was given. With Pro off the request is the crops alone, as it always was.
+  const metered = proOn();
+  const { documentId, shareCode } = readTarget();
+  const run = metered ? readRun() : null;
+  const body: ReadNotesRequest = run
+    ? {
+        crops,
+        ...(documentId ? { documentId } : {}),
+        read: run.id,
+        ...(run.notes > 0 ? { notes: run.notes } : {}),
+        ...(run.pass ? { pass: run.pass } : {}),
+      }
+    : { crops };
   const res = await apiFetch(`${API_BASE}/ai/read-notes`, {
     method: 'POST',
-    headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ crops } satisfies ReadNotesRequest),
+    headers: await apiHeaders(ownerId, {
+      body: true,
+      ...(metered && shareCode ? { share: shareCode } : {}),
+    }),
+    body: JSON.stringify(body),
     ...(opts.signal ? { signal: opts.signal } : {}),
   });
   if (!res.ok) throw await errorOf(res);
-  return (await res.json()) as ReadNotesResponse;
+  const answer = (await res.json()) as ReadNotesResponse;
+  noteReadCredits(answer.credits);
+  return answer;
 }
 
 /** The person's own key failed (`ai_key_failed`): whose key and how, for the review's source line. Never the key. */
@@ -128,8 +168,23 @@ async function errorOf(res: Response): Promise<Error> {
 // when the body is not one (a proxy's own 502 page, say).
 async function errorToken(res: Response): Promise<string> {
   try {
-    const body = (await res.json()) as { error?: unknown };
-    if (typeof body.error === 'string' && body.error !== '') return body.error;
+    const body = (await res.json()) as Record<string, unknown>;
+    const { error, owner, used, max, credits } = body;
+    // A read that spent and then failed still hands back its pass, so its next batch is not charged again.
+    if (
+      typeof credits === 'object' &&
+      credits !== null &&
+      typeof Reflect.get(credits, 'owner') === 'string'
+    ) {
+      noteReadCredits(credits as ReadCredits);
+    }
+    // The payer's month of AI credits is used (note-reader.md "When the credits are used"): the review says so.
+    // The numbers come only to the payer and the paying team; anyone else is told whose month it is and no more.
+    if (error === 'ai_credits_used' && typeof owner === 'string') {
+      const numbers = typeof used === 'number' && typeof max === 'number';
+      noteReadCreditsUsed({ owner, used: numbers ? used : 0, max: numbers ? max : 0 });
+    }
+    if (typeof error === 'string' && error !== '') return error;
   } catch {
     /* not an envelope */
   }

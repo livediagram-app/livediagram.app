@@ -112,6 +112,38 @@ storage. They are bounded by count, age and bytes, per tab:
   version of a 2 MB tab adds about 3 ms to the write that keeps it (3.7 ms against 1.1 ms for the same write without
   a pause), and nothing to a save that is not the first after a pause.
 
+### With Pro on
+
+With `PRO_ENABLED` off (the default) the bounds above stand. With it on
+([Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md) "Tiers and limits") the
+document's owner's tier, a person's or a team's, sets how long automatic versions are kept:
+
+| Tier                  | Automatic versions kept for | Newest kept, per tab | Bytes kept, per tab |
+| --------------------- | --------------------------- | -------------------- | ------------------- |
+| Free                  | 7 days                      | 50                   | 16 MiB              |
+| Pro and Pro for Teams | No age limit                | 500                  | 64 MiB              |
+
+- The count and byte caps on Pro are safety caps, not a tier's promise: 500 versions is about five months of
+  sessions on a busy tab, and 64 MiB per tab with 25 named versions of the largest tab stays near 115 MB, inside a
+  Durable Object's 10 GB.
+- **Named versions are never pruned**, on any tier.
+- The prune runs in SQL, in the same transaction as each new version, so the three numbers live in one row of the
+  document's own SQLite (`version_retention`), which the prune trigger and the daily upkeep read. A new document's
+  row holds the bounds above. The room writes the tier's numbers into it when it learns the owner's entitlement: at
+  most once an hour as requests arrive, off the request's path, and whenever Version History lists a tab. A save
+  never asks the subscription service.
+- Only a tier the service confirmed is written. While the owner is not named, or the service cannot be reached with
+  nothing remembered, the row stays as it was: nothing is pruned on a guess.
+- Going back to Free deletes nothing at once: the row changes, and versions older than 7 days go as the next version
+  is kept, or at the next daily upkeep. With Pro switched off again, the daily upkeep puts the row back to the bounds
+  above.
+- The list answers the retention (`retention: { days, owner }`, `days` null for no age limit), and the rail closes
+  with a quiet line for a document on a tier that keeps history for a time: "Free keeps 7 days of history. Pro keeps
+  it forever." with **See Pro** for someone who may upgrade the owner (the owner, or a team's admin; a team's member sees
+  **Ask an Admin**). Anyone else (a collaborator, a signed-out visitor, or while the owner's view is still loading)
+  reads "History here is kept for 7 days." with no badge and no tier named: a collaborator is never told the owner's
+  tier. It is not drawn with Pro off, or on Pro.
+
 ## Opening a version
 
 A version opens **read-only**. Nobody edits a version; they restore it, copy it, or name it.
@@ -212,7 +244,7 @@ it has no Make a Copy.
 
 | Method | Path                                                         | Gate                         | Answer                                                                                                                     |
 | ------ | ------------------------------------------------------------ | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/documents/:id/tabs/:tabId/versions`                    | grant (view), not Community  | `{ versions: VersionSummary[] }`, newest first, no bodies                                                                  |
+| GET    | `/api/documents/:id/tabs/:tabId/versions`                    | grant (view), not Community  | `{ versions: VersionSummary[] }`, newest first, no bodies; with Pro on also `retention: { days, owner }`                   |
 | GET    | `/api/documents/:id/tabs/:tabId/versions/:versionId`         | grant (view), not Community  | `{ version: VersionSummary, tab: Tab }`: the body as it was, with the tab's id and name                                    |
 | POST   | `/api/documents/:id/tabs/:tabId/versions`                    | grant (edit)                 | Name This Version: `{ name }` → `201 { version }`                                                                          |
 | PUT    | `/api/documents/:id/tabs/:tabId/versions/:versionId/name`    | grant (edit)                 | `{ name }` names or renames it; `{ name: null }` or `""` removes the name → `{ version }`                                  |

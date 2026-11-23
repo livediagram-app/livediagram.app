@@ -70,6 +70,7 @@ import { patches } from './item-patches-route';
 import { moves } from './item-moves-route';
 import { historyTagOf, itemHistory } from './item-history-route';
 import { appendItemHistory } from '../db/item-history';
+import { withAgentSentFrom } from './item-sent-from';
 import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
 import { listAssistants } from './item-assistants-route';
@@ -156,8 +157,9 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   if (caller.scope && !caller.scopeTakesNew) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const read = readCreate(body, caller.owner);
-  if (typeof read === 'string') return rejectedRead(read, bodyValue(body, 'fields'), 'create');
+  const read = readCreate(body, caller.owner, caller.bounds);
+  if (typeof read === 'string')
+    return rejectedRead(read, bodyValue(body, 'fields'), 'create', undefined, caller.bounds);
   // Votes, threads and a key come back only with an Editor's undo: a Participant makes a fresh card.
   const restores = read.votes !== undefined || restoresThreads(read) || read.key !== undefined;
   if (restores && !(await isItemEditor(ctx, caller))) return forbidden();
@@ -181,6 +183,9 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   // Blockers are an Editor's, and never close a loop (docs/specs/026-plan/item-types.md "Blocked By").
   const blocked = await blockersRefused(ctx, caller, [{ next: { ...input, id: input.id ?? '' } }]);
   if (blocked) return blocked;
+  // An agent's card from another app (item-sent-from.ts): an Editor's, its Sent From filled in by the index.
+  const sent = await withAgentSentFrom(ctx, caller, [body], [input]);
+  if (sent) return sent;
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
@@ -214,6 +219,8 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     creates.map((c) => ({ next: { ...c, id: c.id ?? '' } })),
   );
   if (blocked) return blocked;
+  const sent = await withAgentSentFrom(ctx, caller, body.items as unknown[], creates);
+  if (sent) return sent;
   const made = await createMany(ctx, caller, creates);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
@@ -291,8 +298,9 @@ async function patch(ctx: PlanRouteContext, projectId: string, itemId: string): 
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readItemPatch(body);
-  if (typeof input === 'string') return rejectedRead(input, body.set, 'patch');
+  const input = readItemPatch(body, caller.bounds);
+  if (typeof input === 'string')
+    return rejectedRead(input, body.set, 'patch', undefined, caller.bounds);
   return writeItem(
     ctx,
     caller,
@@ -311,8 +319,9 @@ async function move(ctx: PlanRouteContext, projectId: string, itemId: string): P
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readItemMove(body);
-  if (typeof input === 'string') return rejectedRead(input, body.set, 'patch');
+  const input = readItemMove(body, caller.bounds);
+  if (typeof input === 'string')
+    return rejectedRead(input, body.set, 'patch', undefined, caller.bounds);
   // The neighbours are read on every attempt: a retry after a lost race ranks against the column as it now is.
   return writeItem(
     ctx,

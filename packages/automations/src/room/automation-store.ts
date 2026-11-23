@@ -4,7 +4,11 @@
 // and on wake. That set is the whole cost a save pays when the item has no rule that is on: one lookup, no SQL.
 // Every rule write also keeps the time triggers' schedule (`automation_schedule`): a time-trigger rule that is on has
 // its next moment there, any other rule none.
-import { AUTOMATION_FAILURES_TO_PAUSE } from '../limits';
+import {
+  AUTOMATION_FAILURES_TO_PAUSE,
+  AUTOMATION_RULES_MAX,
+  AUTOMATION_RUNS_PER_DAY,
+} from '../limits';
 import type { AutomationPaused } from '../types';
 import { stopWaits } from './automation-waits';
 import { forgetFired } from './automation-fired';
@@ -31,6 +35,24 @@ export type PauseAbout<Rule extends StoredRule> = Omit<
   NonNullable<Rule['paused']>,
   'reason' | 'at'
 >;
+
+// The item's own two bounds (liveworkspace/docs/specs/018-automations/automations.md "Runs, limits and loops"): the
+// runs it makes a day and the rules it holds, the fixed ones on every tier (Free's rules for a guest's item).
+export type AutomationLimits = { runsPerDay: number; rulesMax: number };
+
+/** What the subscription service last said when it refused a run for the owner's month: `at` when, `until` the
+ *  month's end, and the numbers to say it in. */
+export type RunsUsed = { at: number; until: number; used: number; max: number };
+
+/** A refusal of the month is taken as the month's word for this long: past it the service is asked again, so an
+ *  upgrade is heard within the minute. */
+export const RUNS_USED_HELD_MS = 60_000;
+
+// Pro off, and a store made without a tier: the limits as they always were.
+export const LEGACY_AUTOMATION_LIMITS: AutomationLimits = {
+  runsPerDay: AUTOMATION_RUNS_PER_DAY,
+  rulesMax: AUTOMATION_RULES_MAX,
+};
 
 type Row = { body: string; failures: number };
 
@@ -59,10 +81,39 @@ export class AutomationStore<Rule extends StoredRule, EventKind extends string =
   // again.
   aiAsks = 0;
 
-  constructor(sql: () => Sql, ready: () => boolean, kit: AutomationStoreKit<Rule, EventKind>) {
+  // The owner's month of runs, as the service last refused it (item/run.ts): what the Incoming Webhook and a wake
+  // read before asking again. Null while nothing was refused.
+  runsUsed: RunsUsed | null = null;
+
+  // The item's limits as its tier holds them now (the room's ItemTier): a read of memory, never a wait.
+  private readonly limits: () => AutomationLimits;
+
+  constructor(
+    sql: () => Sql,
+    ready: () => boolean,
+    kit: AutomationStoreKit<Rule, EventKind>,
+    limits: () => AutomationLimits = () => LEGACY_AUTOMATION_LIMITS,
+  ) {
     this.sql = sql;
     this.ready = ready;
     this.kit = kit;
+    this.limits = limits;
+  }
+
+  // The runs the item may make a day (UTC): what a run's claim checks, with no await before it.
+  get runsPerDay(): number {
+    return this.limits().runsPerDay;
+  }
+
+  /** The owner's month of runs as last refused, while that is still the word: null once it is old or past. */
+  monthUsed(now: number): RunsUsed | null {
+    const used = this.runsUsed;
+    return used && now < used.until && now - used.at < RUNS_USED_HELD_MS ? used : null;
+  }
+
+  // The rules the item may hold. One holding more keeps them all; it takes no new one until it holds fewer.
+  get rulesMax(): number {
+    return this.limits().rulesMax;
   }
 
   // The rule's row in the time triggers' schedule, from the rule as it now is: its next moment after `now` for a

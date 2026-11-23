@@ -1,6 +1,7 @@
 // Image gallery calls (docs/specs/009-elements/images.md): list, upload, delete, usage index, and
 // the authenticated blob-URL fetch for rendering.
 import type { ImageSummary } from '@livediagram/api-schema';
+import { imageUploadQuery } from '@liveworkspace/subscription-ui/images';
 import {
   createImageClaims,
   unusedImageIdsParam,
@@ -60,6 +61,9 @@ export async function apiUploadImage(
     width: number;
     height: number;
     originalName?: string;
+    // The item the picture is for, so the api can read its owner's tier beside the uploader's with Pro on
+    // (liveworkspace/docs/specs/006-media/media.md "Who pays"). Left off the request with Pro off.
+    itemId?: string | null;
   },
 ): Promise<{ image: ImageSummary; deduped: boolean }> {
   const headers = new Headers(await apiHeaders(ownerId));
@@ -72,7 +76,7 @@ export async function apiUploadImage(
   // screenshot's narrow space before AM / PM, a Japanese or emoji name), failing the whole upload.
   if (file.originalName)
     headers.set('X-Image-Original-Name', encodeURIComponent(file.originalName));
-  const res = await apiFetch(`${API_BASE}/images`, {
+  const res = await apiFetch(`${API_BASE}/images${imageUploadQuery(file.itemId)}`, {
     method: 'POST',
     headers,
     body: file.bytes,

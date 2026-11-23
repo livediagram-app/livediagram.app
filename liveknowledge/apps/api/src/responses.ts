@@ -2,6 +2,7 @@
 // CORS headers, so the envelope, the status codes and the CORS set have one canonical home. Only the answers that
 // are this product's own are written here.
 
+import { AI_CREDITS_HEADER } from '@liveknowledge/api-schema';
 import {
   BUILD_ID_HEADER,
   CHANGESET_SEEN_HEADER,
@@ -33,7 +34,7 @@ export const CORS_HEADERS = corsHeaders({
     // My Shares passes the page's community key on (docs/specs/025-community/community.md "My Shares").
     COMMUNITY_KEY_HEADER,
   ],
-  exposeHeaders: [DOCUMENT_FORMAT_HEADER, BUILD_ID_HEADER, 'ETag'],
+  exposeHeaders: [DOCUMENT_FORMAT_HEADER, BUILD_ID_HEADER, 'ETag', AI_CREDITS_HEADER],
 });
 
 export const {

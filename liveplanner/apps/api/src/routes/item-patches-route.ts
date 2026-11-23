@@ -13,6 +13,7 @@ import {
   type Item,
   type ItemPatchOf,
   type ItemRejection,
+  type ItemWriteBounds,
 } from '@liveplanner/items';
 import { badRequest, forbidden, json } from '../responses';
 import { readBody, type PlanRouteContext } from './context';
@@ -40,7 +41,7 @@ function rejectedFor(id: string, error: ItemRejection, field?: string): Response
   return json({ error, id, ...(field ? { field } : {}) }, { status: 400 });
 }
 
-function readPatches(raw: unknown): ItemPatchOf[] | Response {
+function readPatches(raw: unknown, bounds?: ItemWriteBounds): ItemPatchOf[] | Response {
   if (!Array.isArray(raw) || raw.length === 0 || raw.length > ITEM_BULK_MAX)
     return badRequest(`items must be 1 to ${ITEM_BULK_MAX} items`);
   const out: ItemPatchOf[] = [];
@@ -48,8 +49,8 @@ function readPatches(raw: unknown): ItemPatchOf[] | Response {
     if (!entry || typeof entry !== 'object' || typeof (entry as { id?: unknown }).id !== 'string')
       return badRequest('each item needs its id');
     const { id, ...body } = entry as Record<string, unknown> & { id: string };
-    const patch = readItemPatch(body);
-    if (typeof patch === 'string') return rejectedRead(patch, body.set, 'patch', id);
+    const patch = readItemPatch(body, bounds);
+    if (typeof patch === 'string') return rejectedRead(patch, body.set, 'patch', id, bounds);
     out.push({ id, patch });
   }
   return out;
@@ -60,7 +61,7 @@ export async function patches(ctx: PlanRouteContext, projectId: string): Promise
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const wanted = readPatches(body.items);
+  const wanted = readPatches(body.items, caller.bounds);
   if (wanted instanceof Response) return wanted;
   if (caller.scope && wanted.some((w) => !caller.scope!.has(w.id))) return itemNotFound();
   const undo = body.undo === true;

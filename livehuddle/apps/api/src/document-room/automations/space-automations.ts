@@ -27,6 +27,7 @@ export function newSpaceAutomations(room: DocumentRoom): ItemEngine {
     kinds: KINDS,
     kit: () => spaceKit(room),
     putAway: () => room.standing.putAway,
+    tier: () => room.tier,
   });
 }
 

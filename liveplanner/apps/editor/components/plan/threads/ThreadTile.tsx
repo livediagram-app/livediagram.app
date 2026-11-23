@@ -5,7 +5,7 @@
 // comment's opening words while closed, the shared chip and the ⋯ menu), and, open, one conversation: its comments
 // hang from a rail down from the header's disc to your own beside the reply composer, with Resolve or Reopen. A
 // resolved thread is drawn quieter, a check on its disc and who resolved it. Rename edits the title in place. The
-// disc, rail and time are the Activity timeline's (timeline-parts.tsx).
+// disc, rail and time are the Activity timeline's (timeline-parts.tsx). Send to Plan sits left of the ⋯ menu.
 
 import { useId, useMemo, useRef, useState } from 'react';
 import {
@@ -30,6 +30,7 @@ import {
   threadTitle,
   type CardThread,
 } from '@liveplanner/project';
+import { ThreadSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/ThreadSendToPlan';
 import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,
@@ -302,6 +303,9 @@ export function ThreadTile({
           {thread.cards.length > 1 ? (
             <ThreadSharedChip thread={thread} ctx={ctx} itemId={itemId} titleOf={titleOf} />
           ) : null}
+          {/* Send to Plan (docs/specs/013-workspace/send-to-plan.md "What it sends"): this thread as another plan's card,
+              for everyone who reads it; once sent, its chip stands here. */}
+          <ThreadSendToPlan elementId={itemId} threadId={thread.id} words={first?.text ?? ''} />
           {canComment ? (
             <EllipsisTriggerButton
               ref={setMenuButton}

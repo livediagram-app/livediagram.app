@@ -155,7 +155,7 @@ The screen has four tabs:
 - **Templates**: ready-made rules (below).
 - **Connections**: the Slack and Microsoft Teams channels and your own services that rules post to (below).
 
-At the right of the tabs, **Runs today** shows how many of the <Noun />'s 1,000 runs a day have been used.
+At the right of the tabs, **Runs today** shows how many of the <Noun />'s 1,000 runs a day have been used. With subscriptions on, the <Noun />'s owner sees **Runs This Month** instead: their automation runs this month, over everything they own.
 
 ## Start From a Template
 
@@ -470,6 +470,7 @@ A rule's changes don't start other rules, so two rules can never keep answering 
 
 - A <Noun /> holds up to 50 rules, each with up to 10 conditions and 20 steps, a name of up to 60 characters, unique in the <Noun />.
 - A <Noun /> makes up to 1,000 runs a day (UTC); a No Match doesn't count. Up to 500 triggers can wait to run at once; a burst past that is let go, and the Audit Trail says so once.
+- With subscriptions on, the owner's tier counts their rules and runs over everything they own, in every app: Free holds 25 rules and makes 500 runs a month, Pro 500 and 10,000, Pro for Teams 250 and 5,000 a member. Each message a rule sends counts as one run. Once the month is used, rules wait until the 1st; they stay on, and the Audit Trail says so once a rule a day.
 - A <Noun /> makes up to 100 AI asks a day, rules and Describe a Rule together.
 - A rule holds up to 3 Waits, and up to 500 runs can be waiting in a <Noun />.
 - A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**.

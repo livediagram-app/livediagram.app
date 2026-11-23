@@ -388,8 +388,11 @@ hold-off; a wake that does its work clears the count; the 12th in a row gives up
 (`sha256(event.id:rule.id)`) claimed before anything; the day's 1,000 (past it the run never starts, `state.spent`
 is set, and the rule's one `budget:` line for the day is written if it is not there yet: one statement, `INSERT OR
 IGNORE`, remembered for the wake in `state.noted`); the chain (a rule that keeps its changes
-starts nothing; five deep); the conditions; then each step in order: an action through the shared runner or
-`kit.run[kind]`, If / Else, a message (`sendMessages`), Summarise (the day's 100; past it the step is skipped and
+starts nothing; five deep); the conditions; then, with Pro on, one of the owner's Automation Runs spent through
+`deps.tier.spend('automationRuns')` (not for a run going on after a Wait). The month used drops the claim and writes
+the rule's one `month:` line for the UTC day as the budget line is written, and sets `state.monthUsed`, so the rest of
+the wake asks the service nothing more; a refusal the service made of the request lets the run go. Then each step in order: an action through the shared runner or
+`kit.run[kind]`, If / Else, a message (`sendMessages`, one more run spent for it first, `deliveriesFor`), Summarise (the day's 100; past it the step is skipped and
 the run ends Skipped), Wait (`holdRun`; the run goes on later from the next step, Skipped if the rule changed). A
 failed step stops the run. A `last` step that is done ends the run. Ten failures in a row pause the rule. A dry run
 changes nothing and says "Would …".
@@ -399,22 +402,23 @@ changes nothing and says "Would …".
 `handleItemAutomationRoutes({ engine, method, segments, request, url, caller })`, `segments` being the path after
 `…/automations`. `caller`: `{ editor, signedIn, token?: { readOnly }, person, reader }`.
 
-| Route                     | Does                                                          | Refusals of its own                                        |
-| ------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
-| `GET /`                   | rules with stats, needs, hook info; `runsToday`, `runsPerDay` |                                                            |
-| `POST /`                  | a new rule, on once it has a step                             | 409 `automation_rules_full`, `automation_name_taken`       |
-| `PUT /:ruleId`            | the rule as written now                                       | 409 `automation_name_taken`                                |
-| `DELETE /:ruleId`         | 204                                                           |                                                            |
-| `POST /:ruleId/toggle`    | on or off; Resume clears a pause                              | 400 a rule with no step, or something left to pick         |
-| `POST /:ruleId/duplicate` | a copy, off                                                   | 409 `automation_rules_full`                                |
-| `POST /:ruleId/run`       | Run Rule, `{ tab? }`                                          | 409 `automation_not_manual`, 429 `automation_budget_spent` |
-|                           |                                                               | (Retry-After), 500 `automation_run_failed`                 |
-| `POST /:ruleId/secret`    | Make Secret, shown once; never a token                        | 409 `automation_not_incoming`                              |
-| `POST /order`             | the list's order                                              |                                                            |
-| `POST /test`              | Test Rule, `{ rule, tab? }`: a dry run                        |                                                            |
-| `POST /draft`             | Describe a Rule, on the caller's key when one applies         | 422, 429 `automation_ai_capped`, 503, 422 `ai_key_failed`  |
-| `GET /runs`               | the Audit Trail, at most 200                                  |                                                            |
-| `GET /summary`            | one rule for any reader (`?rule=` or `?name=`)                | 404 `automation_not_found`                                 |
+| Route                     | Does                                                                            | Refusals of its own                                                               |
+| ------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `GET /`                   | rules with stats, needs, hook info; `runsToday`, `runsPerDay` (the fixed 1,000) |                                                                                   |
+| `POST /`                  | a new rule, on once it has a step                                               | 409 `automation_rules_full`, `automation_name_taken`                              |
+| `PUT /:ruleId`            | the rule as written now                                                         | 409 `automation_name_taken`                                                       |
+| `DELETE /:ruleId`         | 204                                                                             |                                                                                   |
+| `POST /:ruleId/toggle`    | on or off; Resume clears a pause                                                | 400 a rule with no step, or something left to pick                                |
+|                           |                                                                                 | 409 `automation_rules_full`: Off to On while the owner holds more than their tier |
+| `POST /:ruleId/duplicate` | a copy, off                                                                     | 409 `automation_rules_full`                                                       |
+| `POST /:ruleId/run`       | Run Rule, `{ tab? }`                                                            | 409 `automation_not_manual`, 429 `automation_budget_spent`                        |
+|                           |                                                                                 | or `automation_runs_used` (Retry-After), 500 `automation_run_failed`              |
+| `POST /:ruleId/secret`    | Make Secret, shown once; never a token                                          | 409 `automation_not_incoming`                                                     |
+| `POST /order`             | the list's order                                                                |                                                                                   |
+| `POST /test`              | Test Rule, `{ rule, tab? }`: a dry run                                          |                                                                                   |
+| `POST /draft`             | Describe a Rule, on the caller's key when one applies                           | 422, 429 `automation_ai_capped`, 503, 422 `ai_key_failed`                         |
+| `GET /runs`               | the Audit Trail, at most 200                                                    |                                                                                   |
+| `GET /summary`            | one rule for any reader (`?rule=` or `?name=`)                                  | 404 `automation_not_found`                                                        |
 
 Every route but the summary is a signed-in Editor's of the whole item (403 `automations_need_editor`); a read-only
 token only reads (403 `read_only_token`). A token saving or duplicating a rule that `ruleNeedsPerson` is 403
@@ -531,7 +535,10 @@ each test holding a budget several times the figure so a regression fails it. Fi
 - **50 settling rules is the worst case a write can meet**: each save pushes back 50 rows of `automation_settles`.
   One Edited, Then Quiet rule costs about 1 µs a save.
 - **A wake's cost is its runs'**: about 0.17 ms a run here (the run id's hash, the claim, the kit's step, the
-  settle), and never more than the day's 1,000.
+  settle), and never more than the day's 1,000. With Pro on each run adds one call to the subscription service (and
+  one per message it sends), so a wake of 25 events over 50 rules could ask up to 1,250 times: past Cloudflare's
+  1,000 subrequests a request. The bound: a wake that is told the month is used asks no more, and a run's spend
+  failing open keeps the work going. The cost and the risk are measured in `run-spend.test.ts`.
 - A writer's window (`automation_writer`) is written only while a rule hears a SQL-fed kind (`deps.fed()`).
 - **The trim and the AI count were scans** (2026-11-21, the same laptop under load): the trim sorted both kinds of
   row on every wake (803 µs over a full trail) and the day's AI count unpacked every run body of the day (2.0 ms over

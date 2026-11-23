@@ -3,7 +3,8 @@
 // Publish to the Web (docs/specs/030-knowledgebase/publishing.md "The dialog"): an Editor puts the knowledgebase, or
 // one section of it, on a public site at /kb/<address>, sees what goes public and what stays private before it does,
 // and can take it down. Opened from the knowledgebase's menu. One steady height whatever shows, so nothing jumps when
-// the state arrives or a preview changes.
+// the state arrives or a preview changes. With Pro on, the owner's tier's limit shows above What to Publish while
+// every knowledgebase it allows is published (spec "Tiers").
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PublishingState } from '@liveknowledge/api-schema';
 import { pageTreeRows, isConnectedRow } from '@liveknowledge/document';
@@ -24,6 +25,7 @@ import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { apiPublish, apiPublishingState, apiUnpublish } from '@/lib/api/publishing';
 import { closePublishing, usePublishingOpen } from '@/lib/publishing/publish-open';
+import { publishLimitOf, type PublishLimit as RefusedLimit } from '@/lib/publishing/publish-limit';
 import {
   LEFT_OUT_WORDS,
   addressProblem,
@@ -36,6 +38,7 @@ import {
 } from '@/lib/publishing/publish-words';
 import { track } from '@/lib/telemetry';
 import { CopyIcon, GlobeIcon, LockIcon, OpenIcon } from './publish-icons';
+import { PublishLimit } from './PublishLimit';
 
 /** How many of the pages going public the preview names; the rest are counted. */
 export const PREVIEW_PAGES_SHOWN = 8;
@@ -72,6 +75,8 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
   const [confirming, setConfirming] = useState(false);
   const [copied, setCopied] = useState(false);
   const [touched, setTouched] = useState(false);
+  // A publish the owner's tier refused, with its numbers: truer than the state's until the next read.
+  const [refused, setRefused] = useState<RefusedLimit | null>(null);
 
   // The sections an Editor may publish alone: each page with subpages, in the tree's order.
   const sections = useMemo(() => {
@@ -145,6 +150,13 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
     busy === null &&
     (preview?.pages.length ?? 0) > 0;
 
+  // At the owner's tier's limit (Pro on): the state's count, or a refused publish's own numbers. Publish stays on, so
+  // a press after an upgrade asks the api again.
+  const limitMax = refused?.max ?? state?.usage?.limit ?? null;
+  const limitUsed = refused?.used ?? state?.usage?.used;
+  const atLimit =
+    !published && limitMax !== null && limitUsed !== undefined && limitUsed >= limitMax;
+
   const change = (next: Partial<Settings>) =>
     setSettings((was) => (was ? { ...was, ...next } : was));
 
@@ -161,8 +173,11 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
       });
       track('UI', 'Used', 'PublishSite');
       setState(next);
+      setRefused(null);
     } catch (err) {
-      setFailure({ action: 'publish', text: publishFailureText(err, 'publish') });
+      const limit = publishLimitOf(err);
+      setRefused(limit);
+      if (!limit) setFailure({ action: 'publish', text: publishFailureText(err, 'publish') });
     } finally {
       setBusy(null);
     }
@@ -298,6 +313,10 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
               </div>
             ) : null}
           </div>
+
+          {atLimit && limitMax !== null ? (
+            <PublishLimit owner={state?.owner} used={limitUsed} max={limitMax} />
+          ) : null}
 
           {settings ? (
             <>

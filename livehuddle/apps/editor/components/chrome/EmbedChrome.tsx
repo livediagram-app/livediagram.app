@@ -40,14 +40,13 @@ type EmbedChromeProps = {
   activeId: string;
   onSelectTab: (id: string) => void;
   // The session's share code; the badge links to the full share view
-  // for the same code. Null only in degenerate states (the embed
-  // route always arrives via ?s=); the badge then falls back to the
-  // app root so it never renders a dead link.
+  // for the same code. Without one no badge is drawn, never a dead
+  // link (the same rule as the live embed targets, Work Tracker 1386).
   shareCode: string | null;
 };
 
 export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChromeProps) {
-  const openUrl = shareCode ? `/document/shared?s=${encodeURIComponent(shareCode)}` : '/new';
+  const openUrl = shareCode ? `/document/shared?s=${encodeURIComponent(shareCode)}` : null;
   // A menu button (docs/specs/004-interface-design/menus.md); Escape and the keys come from the hooks.
   const {
     open: menuOpen,
@@ -67,15 +66,17 @@ export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChr
       className="pointer-events-none fixed bottom-3 left-3 z-[var(--z-chrome)] flex items-center gap-2"
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <a
-        href={openUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="pointer-events-auto flex shrink-0 items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-900 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-900 dark:hover:text-white"
-      >
-        <OpenExternalIcon />
-        Open in livehuddle
-      </a>
+      {openUrl ? (
+        <a
+          href={openUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pointer-events-auto flex shrink-0 items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-900 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-900 dark:hover:text-white"
+        >
+          <OpenExternalIcon />
+          Open in livehuddle
+        </a>
+      ) : null}
       {tabs.length > 1 ? (
         <div ref={menuRef} className="pointer-events-auto relative">
           <button

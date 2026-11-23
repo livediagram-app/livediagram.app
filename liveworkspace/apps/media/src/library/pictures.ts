@@ -6,6 +6,7 @@
 import type { MediaApp } from '@liveworkspace/media';
 import { parsePositiveCap, type Env } from '../env';
 import { findBySha, getImage, insertImage, type Caps, type ImageRow } from '../images';
+import { ownLimits } from '../tier';
 
 export type CopyOutcome = { copies: Map<string, string> } | { full: true };
 
@@ -20,10 +21,14 @@ export async function copyPictures(
   to: string,
 ): Promise<CopyOutcome> {
   const copies = new Map<string, string>();
-  const caps: Caps = {
-    maxImages: parsePositiveCap(env.IMAGE_MAX_PER_OWNER),
-    maxBytes: parsePositiveCap(env.IMAGE_MAX_BYTES_PER_OWNER),
-  };
+  // With Pro on the gallery copied into holds what its own tier stores (media.md "With Pro on").
+  const limits = await ownLimits(env, to);
+  const caps: Caps = limits
+    ? { maxImages: null, maxBytes: limits.imageStorageBytes }
+    : {
+        maxImages: parsePositiveCap(env.IMAGE_MAX_PER_OWNER),
+        maxBytes: parsePositiveCap(env.IMAGE_MAX_BYTES_PER_OWNER),
+      };
   for (const id of ids) {
     const row = await getImage(env, id);
     if (!row || row.owner !== from) continue;

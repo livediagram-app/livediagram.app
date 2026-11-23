@@ -9,6 +9,7 @@ import type { Metadata } from 'next';
 import { LegalPage, type LegalHighlight, type LegalSection } from '@/components/LegalPage';
 import { SECURITY_ADVISORY_URL } from '@liveworkspace/sites/security';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 
 export const metadata: Metadata = {
   title: 'Terms of Use · liveworkspace',
@@ -39,8 +40,15 @@ const ScaleIcon = lucideGlyph(lucideScale, 20);
 const HIGHLIGHTS: LegalHighlight[] = [
   {
     icon: <GiftIcon />,
-    title: 'Completely free',
-    body: 'Every app, every feature. No paywalls, no subscriptions.',
+    ...(proOn()
+      ? {
+          title: 'Free to use',
+          body: 'Every app is free, with generous limits. Pro, if you choose it, raises them.',
+        }
+      : {
+          title: 'Completely free',
+          body: 'Every app, every feature. No paywalls, no subscriptions.',
+        }),
   },
   {
     icon: <HandshakeIcon />,
@@ -219,10 +227,11 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          The Service is free, with no paywalls or subscriptions. We work to keep it running, but
-          provide it &ldquo;as is&rdquo; and &ldquo;as available&rdquo;, without warranties of any
-          kind. We may change, suspend or discontinue any part of it, and we may update these terms;
-          if we make significant changes, we will update the date at the top.
+          The Service is free to use, with no feature behind a paywall; paid plans raise some
+          limits. We work to keep it running, but provide it &ldquo;as is&rdquo; and &ldquo;as
+          available&rdquo;, without warranties of any kind. We may change, suspend or discontinue
+          any part of it, and we may update these terms; if we make significant changes, we will
+          update the date at the top.
         </p>
       </>
     ),

@@ -83,8 +83,8 @@ never arrives.
   not the goal.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline Mode is a per-project choice, not
   the default posture ([Offline Mode](../006-project/offline-mode.md)).
-- **Not a paid product, ever.** No tier, no billing, no feature flags gating the planner
-  ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
+- **No paid features.** No tier, no billing, no feature flags gating a feature;
+  Pro, where it is on, only raises limits ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
 - **Not a closed codebase.** The code is MIT licensed and its repository (the liveworkspace monorepo) is public; the product is free to use.
 
 ## Boundaries set by other specs
@@ -114,7 +114,7 @@ not "is this good?" but "does a team running this plan need it in the project?".
 ## How it ships
 
 liveplanner is **MIT licensed** and runs as one **hosted product**, free for
-everyone, no paid tier, with no trackers and no ads. It is hosted at
+everyone, every feature on the free plan, with no trackers and no ads. It is hosted at
 [liveplanner.app](https://www.liveplanner.app) ([Deployment](../016-platform/deployment.md)); see
 [Business model + licence](../002-project-scope/business-model-and-licence.md).
 

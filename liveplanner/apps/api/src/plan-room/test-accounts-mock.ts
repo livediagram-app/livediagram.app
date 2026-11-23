@@ -1,6 +1,9 @@
 // The accounts Worker as repeating cards' tests stand it in (vi.mock of ../auth/accounts, test-repeat-world.ts): its own
 // module, importing nothing, so a hoisted mock factory can load it before the worker.
-export const OWNER = 'guest_owner';
+// The plan's owner in every test world: an ACCOUNT's id, so a tier test's plan is a person's, never a guest's (whose
+// plan is never sent to the subscription service). Not the signed-in caller of test-automation-world.ts (USER), who
+// is another person: an Editor of the plan.
+export const OWNER = 'user_owner';
 
 // `Bearer guest:<id>` stands in for a verified guest token (mocked over ../auth/accounts).
 export const accountsMock = {

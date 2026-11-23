@@ -69,7 +69,8 @@ export type CallSignal =
   | HandSignal
   | { kind: 'avatar-let-speak'; targetId: string; on: boolean }
   // Proves this browser's Realtime session to the room, which then answers the mint route for it (#483).
-  | { kind: 'call-session'; sessionId: string; sessionToken: string }
+  // With `left`, a metered call saying its session has left (docs/specs/012-collaboration/call-minutes.md "The wire").
+  | { kind: 'call-session'; sessionId: string; sessionToken: string; left?: true }
   // An Editor stopping someone else's screen share (#469).
   | { kind: 'call-stop-share'; targetId: string }
   // A knock on a room, and the answer to one (docs/specs/012-collaboration/knock.md "The wire").

@@ -21,6 +21,7 @@ import { RULE_ROW_LINK } from '../RuleRow';
 import type { RuleBody } from '../types';
 import { ValueTextField } from '../ValueInsert';
 import { ChangeActionField } from './ChangeActionField';
+import { MessageRunCost } from '../tier/MessageRunCost';
 import { PanelField, PanelNote, PanelSelect } from './panel-parts';
 
 const KIND_OF: Readonly<Record<AutomationVia, WebhookKind>> = {
@@ -160,6 +161,8 @@ export function OutgoingPanel({
           if (via !== step.via) onChange({ ...messages.fresh(via), text: step.text });
         }}
       />
+      {/* With Pro on: each message counts as one of the owner's automation runs. */}
+      <MessageRunCost />
       <ConnectionPicker step={step} onChange={onChange} invalid={invalidPath === 'webhook'} />
       <ValueTextField
         label="Message"

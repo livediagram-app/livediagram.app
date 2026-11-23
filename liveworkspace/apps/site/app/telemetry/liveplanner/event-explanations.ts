@@ -13,6 +13,7 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
 import {
   SNAPSHOT_BY_ACTION,
   WALKTHROUGH_BY_ACTION,
@@ -27,6 +28,7 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
   );
 
 export const EXACT: Readonly<Record<string, string>> = {
+  ...SEND_TO_PLAN_EXACT,
   ...WALKTHROUGH_EXACT,
   'Element|Changed|CanvasSuggesting':
     'Someone switched the canvas to Suggesting, so their changes become suggestions for an Editor to accept or reject.',
@@ -918,6 +920,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "A call to a rule's Incoming Webhook address was refused for too many calls that minute.",
   'Plan|Ran|AutomationHookBudget':
     "A call to a rule's Incoming Webhook address was refused because the plan had used its runs for the day.",
+  'Plan|Ran|AutomationHookMonthUsed':
+    "A call to a rule's Incoming Webhook address was refused because the plan's owner had used this month's automation runs.",
   'Plan|Ran|AutomationHookInvalid':
     "A call to a rule's Incoming Webhook address was refused because its body couldn't be read.",
   'Plan|Ran|AutomationAiDraft':
@@ -2549,6 +2553,7 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   ...SNAPSHOT_BY_ACTION,
+  ...SEND_TO_PLAN_BY_ACTION,
   ...WALKTHROUGH_BY_ACTION,
   'Community|Shared': 'Someone shared a plan to the Community, the public gallery of plans.',
   'Community|Changed': 'A Community post changed: its owner edited the listing.',

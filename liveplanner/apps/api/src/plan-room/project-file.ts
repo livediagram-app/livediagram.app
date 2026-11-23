@@ -284,7 +284,8 @@ function sheetRowsOf(
 export function readProjectFile(
   text: string,
   now = Date.now(),
-  opts: { keepIds?: boolean } = {},
+  // `rulesMax`: the most rules it keeps (tier/room-tier.ts rulesCopyMax); absent, the legacy cap.
+  opts: { keepIds?: boolean; rulesMax?: number } = {},
 ): ProjectFileRead {
   const parsed = parseProjectEnvelope(text);
   if (!parsed.ok) return fail('invalid_file');
@@ -320,7 +321,15 @@ export function readProjectFile(
         ...sheets,
         ...threadsOf(project.threads ?? [], items),
         ...(project.automations?.length
-          ? { automations: rulesFromFile(project.automations, now, tabIdMap, typesOf(itemTypes)) }
+          ? {
+              automations: rulesFromFile(
+                project.automations,
+                now,
+                tabIdMap,
+                typesOf(itemTypes),
+                opts.rulesMax,
+              ),
+            }
           : {}),
       },
     },

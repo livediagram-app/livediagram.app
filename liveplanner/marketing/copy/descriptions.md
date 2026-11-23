@@ -20,7 +20,7 @@ For HTML `<meta name="description">` and search snippets.
 Alternate:
 
 > Boards, sheets and forms that share one set of cards, live for everyone. No
-> sign-up wall, no paid tier, no trackers. [117]
+> sign-up wall, no trial, no trackers. [113]
 
 ---
 
@@ -61,8 +61,8 @@ For Product Hunt, app store short descriptions, README intros.
 > Planner, Bug Tracker or Budget Planner, and let your AI tools move cards over
 > MCP.
 >
-> It is free for everyone with no paid tier, no ads and no third-party
-> trackers. [107 words]
+> It is free to use, with every feature on the free plan, no ads and no
+> third-party trackers. [109 words]
 
 ---
 
@@ -94,8 +94,8 @@ For longer listing bodies and "about this project" sections.
 > an Event RSVP form. Share editor, participant or view-only links, and let AI agents
 > read and change the plan over MCP, the API or the CLI.
 >
-> liveplanner is free for everyone with no paid tier and no plan for one, no
-> ads and no third-party trackers. [256 words]
+> liveplanner is free to use, with every feature on the free plan, no ads
+> and no third-party trackers. [253 words]
 
 ---
 
@@ -158,8 +158,8 @@ detailed Product Hunt write-up.
 >
 > #### Free, private, and yours
 >
-> liveplanner at liveplanner.app is free for everyone, with no paid tier and
-> no plan to introduce one. There are no ads and no third-party trackers, only
+> liveplanner at liveplanner.app is free to use, with every feature on the free plan
+> and no trial. There are no ads and no third-party trackers, only
 > anonymous first-party counts listed publicly on /telemetry. Export a board as
 > CSV, an image, a PDF or a Markdown outline, and a sheet as CSV, whenever you
 > like.

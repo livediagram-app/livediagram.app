@@ -4,10 +4,12 @@
 // tabs in place, then tells the room, which forgets its ledger and closes every socket so each open editor reloads.
 
 import type { Tab } from '@livedesign/design';
+import { knownItemOwnerScope } from '@liveworkspace/media';
 import {
   serveSnapshots,
   type SnapshotCaller,
   type SnapshotDoor,
+  snapshotRetention,
 } from '@liveworkspace/snapshots/server';
 import { componentInsertStatements } from '../db/components';
 import { replaceTabs } from '../db/tabs';
@@ -91,6 +93,14 @@ export async function serveDesignSnapshots(
     caller: () => snapshotCaller(ctx, designId),
     door: () => designSnapshotDoor(ctx.env, designId),
     handle,
+    // With Pro on, what the owner's tier keeps (liveworkspace/docs/specs/014-snapshots/snapshots.md "With Pro on"): the
+    // owner is the index's grant's, and nothing is asked with Pro off.
+    retention: () =>
+      snapshotRetention(
+        ctx.env,
+        'livedesign.app',
+        knownItemOwnerScope(ctx.grant?.item === designId ? ctx.grant : null),
+      ),
   });
   // Snapshot Taken (docs/specs/013-workspace/automations.md): a person's take, never a rule's own or a revert's
   // safety snapshot.

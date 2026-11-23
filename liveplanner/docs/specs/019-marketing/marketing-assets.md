@@ -49,7 +49,7 @@ calm, clear, warm and concise; free planning in real time for teams:
 boards, sheets, dashboards and forms in one project. Lead with the hook: a
 project works without signing in (open a link, plan, share). Say "project",
 never "document", in anything a person reads. Be honest about trade-offs (realtime is last-write-wins,
-not CRDT). Say "free, no trackers, no ads, no paid tier" where the
+not CRDT). Say "free, every feature on the free plan, no trackers, no ads" where the
 format allows. Call it open source and MIT licensed where a licence comes up; its source is public ([03](../002-project-scope/business-model-and-licence.md)). Product name
 **liveplanner** (lowercase); brand colour violet `#8B5CF6`
 ([01-color-scheme](../004-interface-design/color-scheme.md)). No em dashes in the copy.
