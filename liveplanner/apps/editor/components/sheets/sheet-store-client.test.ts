@@ -256,7 +256,8 @@ describe('the sheet store client', () => {
     s.write('sheet0001', set(2, 0, 1));
     await s.settle();
     await flush();
-    expect(toast).toHaveBeenLastCalledWith('This sheet holds the most cells it can');
+    // Named by the sheet's own title where the store knows it (the bell lists it later, on its own).
+    expect(toast).toHaveBeenLastCalledWith(expect.stringMatching(/holds the most cells it can$/));
     expect(value(2, 0)).toBeNull();
     expect(s.write('nope', set(0, 0, 1))).toBe('write_invalid');
   });
