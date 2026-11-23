@@ -1,7 +1,7 @@
 # Ask UI blueprint
 
 Derived from [Search and Ask](../search-and-ask.md) "The views" and "Ask": the way between the
-knowledgebase's views, the surface Ask and AI Knowledge are drawn on, AI Settings and the Ask view, over the client
+knowledgebase's views, the surface Ask and Insights are drawn on, AI Settings and the Ask view, over the client
 the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verified in a browser.**
 
 ## The views
@@ -124,7 +124,7 @@ provider, key)`).
     the team pays (`providerWords`, `teamPaysNote`); a refusal is worded for the provider the key was typed for.
   - Without `manageAi` the provider is its name as text.
 - **Words.** "Your team's AI key" wherever it does not matter which provider it is (the no-AI state of Ask, the
-  key note under AI Knowledge's Disagreements on a server with no built-in AI); the source line
+  key note under Insights' Disagreements on a server with no built-in AI); the source line
   (`components/ask/KnowledgeAiSource.tsx`: the shared `AiSource` from `knowledgeAiLine(state, manageAi)`, read from
   `GET ai`'s `uses` and `usesModelLabel`) under Ask's field (with a key and built-in AI both here, Ask's becomes the
   Answer With picker), in Describe to Set Up and in Describe the Structure; its action opens AI Settings on the
@@ -220,7 +220,7 @@ console after a save, Remove with its question, the model, and the controls per 
 - **Delete** is an icon button at each row's end (a `HoverCard`, "Delete"; on hover and focus, always on a coarse
   pointer), named `Delete “<question>”`. A `ConfirmDialog` "Delete This Question?" names the question and says "This
   cannot be undone."; confirm removes the row, sends `UI·Removed·AskChat` and, for the open chat, resets to a fresh
-  field. AI Knowledge's counts are the server's and stay.
+  field. Insights' counts are the server's and stay.
 
 ### Sources
 
@@ -314,7 +314,7 @@ not cover", "the answer footer", "a failure, in words with the next step").
 - **Markdown while an answer streams** still shows as the characters the model writes; it is formatted when the
   answer ends ("When it ends"). Formatting each finished block as it streams is not built.
 - **The draft's Ask call** spends one of the person's 20 questions and, when the pages still do not cover the
-  question, counts it again as asked under AI Knowledge.
+  question, counts it again as asked under Insights.
 - **Chats are kept in this browser only**: another browser or device does not see them. Feedback goes nowhere but
   telemetry's count.
 - **Stop** ends the request from the browser; whether the Worker's model call ends with it depends on the request's

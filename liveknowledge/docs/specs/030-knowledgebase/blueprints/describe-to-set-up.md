@@ -148,7 +148,7 @@ the editor holds.
 session is offered it; it closes itself when the session stops being offered it. `SetupDialog` is `next/dynamic`
 (`ssr: false`) inside `AreaErrorBoundary area="Modals"`: the dialog, its steps, the write path and the Markdown
 reader behind it are one chunk fetched on the first open. Over Pages the host also draws AI Settings when it is
-opened from the dialog (over Ask or AI Knowledge the views' host draws it).
+opened from the dialog (over Ask or Insights the views' host draws it).
 
 `Dialog` `size="lg"`, a sheet on a phone, centred. The body is one height whatever shows
 (`h-[29rem] max-h-[calc(100dvh-13rem)]`), with the three step names above it (`aria-current="step"`).

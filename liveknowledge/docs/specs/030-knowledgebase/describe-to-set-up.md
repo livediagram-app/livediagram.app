@@ -218,7 +218,7 @@ will sit under, a line under each on what goes there, and where it helps a list,
 - **Who sees it:** a signed-in person who may edit the page (an Editor or a Participant of the knowledgebase, or a
   signed-in person with an edit link to that one page), never a Viewer, a link visitor without an account, an agent,
   or anyone in a knowledgebase kept **Offline** (there is no server to ask). It shows on Pages alone: not over Version
-  History, Ask, AI Knowledge or a new knowledgebase's start screen.
+  History, Ask, Insights or a new knowledgebase's start screen.
 - **The dialog**, centred (on a phone a sheet from the foot): titled **Describe Structure**, the line "Say what this
   page is for and AI drafts its headings. Nothing is saved until you press Save." One field, **What Is This Page For?**
   (up to 500 characters, optional when the page has a title), its placeholder built from the title ("What goes on

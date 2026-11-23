@@ -102,7 +102,7 @@ Step anchors (all existing attributes; no new markup):
 
 Each step's `prepare` first calls `showView` for its view, then what it opens (`openTree` for the tree steps,
 `openPageInfo` for health and approval); its `cleanup` closes what the step alone opened (the phone's tree sheet, the
-Page Info popover), so the next step starts from a quiet page. A step inside the Ask, AI Knowledge or Connect view
+Page Info popover), so the next step starts from a quiet page. A step inside the Ask, Insights or Connect view
 carries `layer: 'modal'`: those views are drawn over the editor as a modal frame (KnowledgeViewFrame's modal guard),
 and without it the engine takes the view for someone else's dialog and steps aside, hiding the card.
 

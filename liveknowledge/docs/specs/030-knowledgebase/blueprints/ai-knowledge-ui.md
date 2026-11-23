@@ -1,6 +1,6 @@
-# AI Knowledge UI blueprint
+# Insights UI blueprint
 
-Derived from [AI Knowledge](../ai-knowledge.md): the knowledgebase's third view, over `GET knowledge` and the routes
+Derived from [Insights](../ai-knowledge.md): the knowledgebase's third view, over `GET knowledge` and the routes
 its actions call ([api.md](../../015-api/api.md) "Knowledge"). It is drawn on the surface the
 [Ask UI blueprint](ask-ui.md) "The views" describes and shares its session, rights, page picker, Draft a Page
 and AI Settings. The dashboard was seen in a browser on 2026-11-21; a conflict's row only through a stubbed read.
@@ -183,12 +183,12 @@ failed read, Offline, each card's rows, the passages and lines as text, the heal
 over-budget refusal, each action's request, and the controls per role. `components/ai-knowledge/AiDashboard.test.tsx`:
 each tile's figure and name, the amber mark, a filter tile pressing and unpressing, a tile scrolling to its card, the
 sparkline's label, the caps and Show All, Most Read's rows and empty state. The api's `knowledge-ask-routes.test.ts`
-"AI Knowledge" and `knowledge-overview-reads.test.ts`: the days filled with zeros, people and agents apart, the
+"Insights" and `knowledge-overview-reads.test.ts`: the days filled with zeros, people and agents apart, the
 14-day window, Most Read's order, its cap and a deleted page left out.
 
 ## AI Context on a page
 
-Derived from [AI Knowledge](../ai-knowledge.md) "AI Context on a page": a section of the page's right rail, drawn
+Derived from [Insights](../ai-knowledge.md) "AI Context on a page": a section of the page's right rail, drawn
 after Page Health in `PageRailBody` (docked and in the Page Info card alike), over Page Health's own read.
 
 | Piece                           | File                                                                              |
@@ -223,7 +223,7 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
     before it), and for an Editor (`rights.editFields`) a `Switch` (`sm`) labelled "Always in Context" calling
     `setFields(pageId, { context }, 'context')`, which shows the change at once and puts it back with the route's
     budget words in a toast on a refusal. Anyone else reads "Handed to Every Agent First" or "Not Handed to Agents
-    First". Telemetry `UI·Added·ContextPage` / `UI·Removed·ContextPage`, as AI Knowledge sends.
+    First". Telemetry `UI·Added·ContextPage` / `UI·Removed·ContextPage`, as Insights sends.
   - **Answered From This Page**: up to three quotes (an opening curly quote in the brand's colour, then the
     question, clamped to three lines with the whole words still in the page for a screen reader) with "Asked once" or "Asked 6 times" under each; before the read, quiet
     placeholder lines; with none, the block is not drawn.
@@ -241,7 +241,7 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
 
 ## Page Insights
 
-Derived from [AI Knowledge](../ai-knowledge.md#page-insights): `components/knowledge/PageInsights.tsx`, drawn in
+Derived from [Insights](../ai-knowledge.md#page-insights): `components/knowledge/PageInsights.tsx`, drawn in
 `PageRailBody` before AI Context (docked, card and sheet), over Page Health's read (`health.insights`,
 `health.answered`, `health.created`).
 

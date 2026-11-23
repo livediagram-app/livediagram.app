@@ -1,7 +1,7 @@
 # Knowledgebase for agents: blueprint
 
 Derived from [Knowledgebase for agents](../knowledgebase-for-agents.md), with
-[AI Knowledge](../../030-knowledgebase/ai-knowledge.md) for suggestions and
+[Insights](../../030-knowledgebase/ai-knowledge.md) for suggestions and
 [Verification](../../030-knowledgebase/verification.md) for trust. Built in step 13.
 
 ## Domain and naming

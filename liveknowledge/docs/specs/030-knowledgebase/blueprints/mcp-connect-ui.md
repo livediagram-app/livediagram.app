@@ -2,7 +2,7 @@
 
 Derived from [Connect](../mcp-connect.md). The fourth view, on the frame and the tabs the
 [Ask UI blueprint](ask-ui.md) "The views" describes, over the overview read the
-[AI Knowledge UI blueprint](ai-knowledge-ui.md) describes. Paths are under `apps/editor/`.
+[Insights UI blueprint](ai-knowledge-ui.md) describes. Paths are under `apps/editor/`.
 
 | Piece                                   | File                                                          |
 | --------------------------------------- | ------------------------------------------------------------- |
@@ -65,14 +65,14 @@ Derived from [Connect](../mcp-connect.md). The fourth view, on the frame and the
     seconds." and **Check Now**.
   - `stopped`: "Stopped Checking", "Nothing arrived in 5 minutes." and **Check Again**.
   - `connected`: an emerald check, "Connected: <name>", `lastSeenText` and `readsText` (`overview-words.ts`), and
-    **Manage in AI Knowledge**.
+    **Manage in Insights**.
   - `failed`: a `Callout` "Could Not Check" with **Try Again**.
     The status line is a polite live region, so the flip is announced.
 - **`ConnectAside`**: Already Connected is the latest agents, at most `ASIDE_AGENTS` (5), each a row with
-  `agentDoor`'s icon and words and `agentScopeChips`; **Manage in AI Knowledge** under them; none is a
+  `agentDoor`'s icon and words and `agentScopeChips`; **Manage in Insights** under them; none is a
   `CompactEmptyState`. Other Ways In: a `CodeSnippet` of the three commands and **Open API Tokens**
   (`openSettingsOn('tokens')`).
-- **AI Knowledge's Connect an Agent** (the header's button and Connected Agents') is
+- **Insights' Connect an Agent** (the header's button and Connected Agents') is
   `showKnowledgeView('connect')` after its `track('UI', 'Opened', 'ConnectAgent')`. `ConnectAgentDialog` is gone.
 
 ## The checks
@@ -93,7 +93,7 @@ Derived from [Connect](../mcp-connect.md). The fourth view, on the frame and the
 
 ## Cost
 
-`GET .../knowledge` is the one read AI Knowledge makes, 13 queries against the room's own SQLite in one
+`GET .../knowledge` is the one read Insights makes, 13 queries against the room's own SQLite in one
 `Promise.all`. Measured on the local stack (wrangler dev, 2026-11-21, a knowledgebase of 13 pages and 1 agent, 16
 reads through the router from the view): median 51 ms, slowest 62 ms, 493 bytes of body. Bounded by the window: 31
 reads at most per 5 minutes per open view (about 15 KB), none while hidden, none once connected.

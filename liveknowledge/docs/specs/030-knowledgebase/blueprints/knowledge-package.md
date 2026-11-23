@@ -1,7 +1,7 @@
 # Knowledge package blueprint
 
 Derived from [Search and Ask](../search-and-ask.md), [Verification](../verification.md),
-[Links and embeds](../links-and-embeds.md), [AI Knowledge](../ai-knowledge.md) and
+[Links and embeds](../links-and-embeds.md), [Insights](../ai-knowledge.md) and
 [Knowledgebase for agents](../../024-agents/knowledgebase-for-agents.md).
 
 `@liveknowledge/knowledge` (`packages/knowledge`) is the engine under search, trust, links, Ask, the conflict
@@ -271,7 +271,7 @@ tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound v
   `lastRead`, the page's latest read day (`SELECT MAX(day)` on `page_reads_tab`, one index seek; NULL for a page with
   no read kept), which Not Read in 90 Days reads. Each count is on an index the table already has. No page's
   writing is read.
-- **`notReadPages(pages, now)`** (Not Read in 90 Days, [AI Knowledge](../ai-knowledge.md#not-read-in-90-days)):
+- **`notReadPages(pages, now)`** (Not Read in 90 Days, [Insights](../ai-knowledge.md#not-read-in-90-days)):
   each page `{ tab, title, lastRead, createdAt, updatedAt, order }`; keeps a page whose `lastRead` is NULL or on or
   before `daysBefore(now, NOT_READ_DAYS)` (90, `READS_KEPT_DAYS`) and whose `createdAt` is NULL or at least 90 days
   back; sorts by `updatedAt ?? createdAt` ascending (none first), then `order`; answers `{ pages: first
@@ -290,7 +290,7 @@ NOT_READ_LISTED (10), total }`, each page `{ tab, title, touchedAt? }`. One pass
 
 ## Page Insights
 
-[AI Knowledge](../ai-knowledge.md#page-insights). In `sql/reads.ts` and `sql/page-answers.ts`:
+[Insights](../ai-knowledge.md#page-insights). In `sql/reads.ts` and `sql/page-answers.ts`:
 
 - `countPageDailyReads(tab, now, days = PAGE_INSIGHT_DAYS)`: `SELECT day, reader_kind, SUM(reads) FROM page_reads
 WHERE tab = ? AND day > ? GROUP BY day, reader_kind`, a range of `page_reads_tab`, at most 2 rows a day (60).
@@ -737,7 +737,7 @@ scopes, and the Markdown export's `withPageLinksAsFiles` (the CLI's `export`).
 
 ## The review emails
 
-Derived from [Verification](../verification.md) "Reminders" and [AI Knowledge](../ai-knowledge.md) "Pages that
+Derived from [Verification](../verification.md) "Reminders" and [Insights](../ai-knowledge.md) "Pages that
 disagree", "Knowledge Health". Built in the api; tested over the fake sender and the fake accounts service; never
 sent from a deployed Worker.
 

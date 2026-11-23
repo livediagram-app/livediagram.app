@@ -40,7 +40,7 @@ Web](publishing.md)): its "public site", never its "Public".
   page's `knowledge.owner`, from the create's credentials, and the pages a structure adds get theirs from the save
   that makes them. A guest's pages have no owner, and an Offline one's have none until its sync.
 - **Where a new knowledgebase is saved.** A signed-in person's is saved to their account, in Private, so Verify,
-  Ask, AI Knowledge and sharing work from the first page. A guest's, and a signed-out person's, is kept Offline in
+  Ask, Insights and sharing work from the first page. A guest's, and a signed-out person's, is kept Offline in
   this browser, as every app's is ([Save locations](../006-document/save-locations.md)). The start's **Sync
   Knowledgebase to Server** switch moves an empty one either way, so a signed-in person can still choose Offline.
   A browser that looks signed in waits for its session's answer before the create chooses, so a signed-in person is
@@ -88,10 +88,10 @@ Web](publishing.md)): its "public site", never its "Public".
   search (Cmd or Ctrl `.`) reads the pages already open in this browser and loads no other. Cmd or Ctrl `.` opens it
   from the writing and from a field too, a new page's title caret included: the chord types nothing there.
 - **Name:** a page's name and its Title are one thing: the Title is what the page is called, and its name (what the
-  tree, the breadcrumb, page links and backlinks, search, Home and AI Knowledge show) follows it. The name is kept
+  tree, the breadcrumb, page links and backlinks, search, Home and Insights show) follows it. The name is kept
   beside the writing only so a page can be listed without loading its writing; every way in keeps the two the same.
   - Typing in the Title renames the page in the tree as each key lands; the stored name follows when the writing
-    commits (the typing pauses), so the breadcrumb, links, search, Home and AI Knowledge follow then, one write with
+    commits (the typing pauses), so the breadcrumb, links, search, Home and Insights follow then, one write with
     the Title.
   - Renaming the page in the tree (F2, a double click, Rename) rewrites its Title; a page whose writing has not
     loaded yet is opened first, and renamed as soon as it has.
@@ -112,7 +112,7 @@ Web](publishing.md)): its "public site", never its "Public".
   of icon buttons, Rename, Duplicate, Copy Link and Delete, each named in its hover card; then icon-left rows, Add
   Subpage, Connect File Here, Verify, Request Approval, Always in Context (a checkmark row); then a closed **Move**
   section holding Move Up, Move Down, Indent and Outdent. A verb that cannot run stays, greyed, and says why. Delete is not red: the shared menu row never colours a verb.
-  Verify and Always in Context are [Verification](verification.md)'s and [AI Knowledge](ai-knowledge.md)'s, and an
+  Verify and Always in Context are [Verification](verification.md)'s and [Insights](ai-knowledge.md)'s, and an
   Editor's.
 - A row shows a Review Due pill at its right when its page is due; no Verified tick (owner 2026-11-21). The state is part of the row's name for a screen reader.
 - **Search** stands at the sidebar's head, under the knowledgebase's name ([Search and Ask](search-and-ask.md)).
@@ -165,7 +165,7 @@ and the two never mix: a page is never listed in the Explorer, and a knowledgeba
   at most 500 pages (`MAX_TRASHED_PAGES`, the knowledgebase's own page limit): putting the 501st in removes the
   oldest for good. Both are kept by the room as the Trash is read or written, so nothing runs on a schedule for it.
 - **Never seen elsewhere.** A page in the Trash is in no part of the knowledgebase but the Trash: not the tree, not
-  search, Ask or AI Knowledge, not Always in Context, not Home, not Linked From or a link's hover card, not an
+  search, Ask or Insights, not Always in Context, not Home, not Linked From or a link's hover card, not an
   export, a copy or the Community, and not to an agent (`list_pages`, `read_page`, `search_knowledge`,
   `get_context`, the CLI). A link to it shows "In the Trash", struck through; pressing it opens the Trash with the
   page's row marked, for a person who may restore it; for anyone else it reads as "Deleted Page" and goes nowhere.

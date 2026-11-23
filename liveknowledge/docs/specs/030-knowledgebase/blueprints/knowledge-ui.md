@@ -134,7 +134,7 @@ which takes Verify out of the meta row, Page Health, the tree's row menu and the
 `pageHealthFacts` reads an `off` page's fields for the score's own state (it leaves verification out under Never
 regardless). Wire states from the api (an Ask source, a search result, a conflict side) arrive as `off` and draw
 no badge (`sourceTrust` answers mark `off`, `trustText` an empty string); `answerTrust` answers none when every
-source is `off`. AI Knowledge reads the period from the live settings store (`useReviewEvery`, as the rail does; the read's
+source is `off`. Insights reads the period from the live settings store (`useReviewEvery`, as the rail does; the read's
 `overview.reviewEvery` only where no knowledgebase is named), so a change shows at once with no new read: `FigureTiles` draws Average Health in Verified's place
 and `HealthSection` drops the share, the bar, the legend and Remind the Owners. Tests: `page-knowledge.test.ts`
 (`pageTrust`, `trustMarks`, `knowledgeRights` a role at a time), `page-knowledge-ui.test.tsx` (the meta row and the
@@ -467,7 +467,7 @@ has not been seen in a browser.
 
 ## Not built
 
-The Ask tab, the AI Knowledge tab, Settings > AI and Home (another change's), over the client above.
+The Ask tab, the Insights tab, Settings > AI and Home (another change's), over the client above.
 
 ## Where this differs from the specs
 
