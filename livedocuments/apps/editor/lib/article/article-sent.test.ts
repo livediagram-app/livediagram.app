@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EditorState, NodeSelection, TextSelection } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
+import { EditorState, NodeSelection, Plugin, TextSelection } from 'prosemirror-state';
+import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import type { ArticleBlock } from '@livedocuments/document';
 import type { PlanSend } from '@liveworkspace/index-client';
 import {
@@ -14,7 +14,20 @@ import {
   type SendRequest,
 } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 import { blocksToDoc } from './article-convert';
-import { articleSendPick, articleSentPlugin, onlySent } from './article-sent';
+import {
+  articleSendPick,
+  articleSentSpec,
+  onlySent,
+} from '@liveworkspace/workbench/components/send-to-plan/article-sent';
+
+const articleSentPlugin = (editable: () => boolean) =>
+  new Plugin(
+    articleSentSpec<Decoration, DecorationSet, EditorState>(editable, {
+      widget: (pos, toDOM, spec) => Decoration.widget(pos, toDOM, spec),
+      set: (doc, decos) => DecorationSet.create(doc, decos),
+      empty: DecorationSet.empty,
+    }),
+  );
 
 // Send to Plan in the writing (docs/specs/013-workspace/send-to-plan.md "What it sends", "The chip"): the words a send
 // takes and the block it names, a sent block's chip after its last word, and a reader's pill under the words picked.

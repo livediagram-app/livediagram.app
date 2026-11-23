@@ -1,6 +1,6 @@
 import type { CSSProperties, Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { EditorState, TextSelection, type Plugin, type Transaction } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
+import { EditorState, Plugin, TextSelection, type Transaction } from 'prosemirror-state';
+import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
 import { cleanFootnoteText, isContinuousPage, type ArticleFlow } from '@liveknowledge/document';
 import { blocksToDoc } from '@/lib/article/article-convert';
@@ -26,7 +26,10 @@ import { readSlashPicks, recentIds } from '@/lib/article/slash-recent';
 import { articleLookOf } from '@/lib/article/article-style-vars';
 import { setLocalArticleCaret } from '@/lib/article/article-carets-store';
 import { articlePeersPlugin, onlyPeers } from '@/lib/article/article-peers';
-import { articleSentPlugin, onlySent } from '@/lib/article/article-sent';
+import {
+  articleSentSpec,
+  onlySent,
+} from '@liveworkspace/workbench/components/send-to-plan/article-sent';
 import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
 import { noteArticleTyping, releaseArticleHold } from '@/lib/article/article-holds-store';
 import { announceArticleHeld } from '@/lib/article/article-hold-notice';
@@ -56,6 +59,16 @@ import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
 import { commitWritingOnLeave } from '@/lib/article/article-open-edit';
 import type { ArticleEditorProps, SlashState } from './article-editor-types';
 
+// Sent blocks' chips, and a reader's Send to Plan under the words picked (docs/specs/013-workspace/send-to-plan.md),
+// built on this editor's own ProseMirror (@liveworkspace/workbench's article-sent).
+const sentPlugin = (editable: () => boolean) =>
+  new Plugin(
+    articleSentSpec<Decoration, DecorationSet, EditorState>(editable, {
+      widget: (pos, toDOM, spec) => Decoration.widget(pos, toDOM, spec),
+      set: (doc, decos) => DecorationSet.create(doc, decos),
+      empty: DecorationSet.empty,
+    }),
+  );
 // The writing's paste, tables composed over it.
 const pasteProps = articleTablePasteProps(articlePasteProps);
 
@@ -204,8 +217,7 @@ export function mountArticleView({
       // Collaborators' holds: outlined, and our typing in them refused with a notice naming the writer
       // (docs/specs/007-editor/article-pages.md "Holding a paragraph").
       articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
-      // Sent blocks' chips, and a reader's Send to Plan under the words picked (docs/specs/013-workspace/send-to-plan.md).
-      articleSentPlugin(isEditable),
+      sentPlugin(isEditable),
       // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
       findHighlightPlugin(() => latest.current.flow),
       // Agents' suggested edits on the page (docs/specs/030-knowledgebase/ai-knowledge.md "On the page").

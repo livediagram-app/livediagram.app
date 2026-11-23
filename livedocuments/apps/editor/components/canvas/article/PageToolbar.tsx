@@ -59,7 +59,7 @@ import { articleSchema } from '@/lib/article/article-schema';
 import { articleCountsOf } from '@/lib/article/article-word-count';
 import { selectNextLongSentence } from '@/lib/article/article-long-sentences';
 import { track } from '@/lib/telemetry';
-import { articleSendPick } from '@/lib/article/article-sent';
+import { articleSendPick } from '@liveworkspace/workbench/components/send-to-plan/article-sent';
 import { canSendHere } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { sendArticleWords } from '@liveworkspace/workbench/components/send-to-plan/article-send-dom';

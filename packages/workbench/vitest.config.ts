@@ -196,6 +196,7 @@ const HELD_AT_100 = [
   // Send to Plan: the picker, its entries, the chips' store and the words read as a card
   // (liveworkspace/docs/specs/004-index/send-to-plan.md, Work Tracker 1365).
   'src/components/send-to-plan/article-send-dom.ts',
+  'src/components/send-to-plan/article-sent.ts',
   'src/components/send-to-plan/send-cards.ts',
   'src/components/send-to-plan/send-memory.ts',
   'src/components/send-to-plan/send-menu-item.tsx',
