@@ -1,12 +1,15 @@
 name: E2E setup
 description: >-
   pnpm, Node and the workspace's dependencies inside Playwright's container image, then a check that
-  every e2e job's image carries the locked Playwright version (each product's
+  the job's image carries the editor's locked Playwright version (each product's
   docs/specs/003-system-architecture/e2e-smoke.md).
 
 inputs:
   editor:
     description: The editor app's package, whose Playwright version the images must match.
+    required: true
+  image:
+    description: The container image this job runs in (e2e.yml's plan reads it from the lockfile).
     required: true
 
 runs:
@@ -37,13 +40,13 @@ runs:
       shell: bash
       env:
         EDITOR: ${{ inputs.editor }}
+        IMAGE: ${{ inputs.image }}
       run: |
         set -euo pipefail
         locked="$(pnpm --filter "${EDITOR}" exec playwright --version | awk '{print $2}')"
         expected="mcr.microsoft.com/playwright:v${locked}-noble"
-        echo "Playwright ${locked}, expecting ${expected}"
-        stale="$(grep -o 'mcr.microsoft.com/playwright:v[0-9.]*-noble' .github/workflows/e2e-product.yml | grep -vxF "${expected}" || true)"
-        if [ -n "${stale}" ]; then
-          echo "::error::Set every e2e-product.yml container image to ${expected} (found ${stale//$'\n'/, })"
+        echo "Playwright ${locked}, image ${IMAGE}"
+        if [ "${IMAGE}" != "${expected}" ]; then
+          echo "::error::${EDITOR} locks Playwright ${locked} but the job runs in ${IMAGE}"
           exit 1
         fi

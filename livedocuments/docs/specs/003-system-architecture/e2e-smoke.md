@@ -54,8 +54,8 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
 - **Chromium only** (`--project=chromium`); no Firefox / WebKit.
 - **Playwright's container image** (`mcr.microsoft.com/playwright:v<version>-noble`) runs the job:
   Chromium and its system libraries come with it, so no run downloads a browser or apt-installs its
-  dependencies. The tag is the locked `@playwright/test` version; the workflow's first check fails,
-  naming the tag to set, when a Playwright bump leaves the image behind.
+  dependencies. The tag is the locked `@playwright/test` version, read from `pnpm-lock.yaml` by
+  e2e.yml's plan, so a Playwright bump moves the image with it; each job checks its editor agrees.
 - **Focused tests, not a matrix.** Each spec file proves what only a browser
   can show for one feature; breadth and edge cases stay in unit tests, where
   they are cheap.
@@ -104,8 +104,10 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   `livedocuments-live-signed-in`, `livedocuments-sites`); pull requests read it and never write their own, so they cannot evict it. Turbopack
   re-checks every input, so a cache from an older commit only ever saves work, and a lockfile change
   starts cold. Each restore logs `[next-cache] <name>: restored <key>` or a miss. A cache only ever
-  saves time: every build runs through `scripts/next-build-cold-retry.sh`, which, when a build fails
-  on a restored cache, warns, wipes it and builds once more from cold. Bumping the key's version
+  saves time: every build runs through `.github/scripts/next-build-cold-retry.sh`, which, when a build fails
+  on a restored cache, warns, wipes it and builds once more from cold. It skips the cold build when
+  `next build` itself finished and a later step (a first-load budget) failed, since the cache is not the
+  cause. Bumping the key's version
   discards every cache saved so far.
 - **No dependency cache** in the e2e jobs: in the container its store path never matches a saved
   cache, so `setup-node`'s `cache: pnpm` only cost a 75-second save per job, while a cold
