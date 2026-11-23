@@ -42,7 +42,7 @@ import { tabNameFromPlan, viewsTitled } from '@/lib/tab-named-plan';
 import type { DashboardItem, DashboardZone } from './dashboard-drop';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
 import { markPlacedHere } from '@/lib/setup-dialog-store';
-import { markEmbedPlaced } from '@/lib/embed-open-store';
+import { askEmbedFile } from '@/lib/embed-open-store';
 
 const newId = () => crypto.randomUUID();
 
@@ -402,7 +402,7 @@ export function usePlanTabActions({
         }
         // An Embed File lands empty and opens Embed File in its slot for this person (embed-open-store).
         if (item.kind === 'embed') {
-          markEmbedPlaced(target);
+          askEmbedFile(target);
           const next = withSlotContent(base, target, { type: 'embed' });
           return ts.map((t) => (t.id === activeId ? next : t));
         }

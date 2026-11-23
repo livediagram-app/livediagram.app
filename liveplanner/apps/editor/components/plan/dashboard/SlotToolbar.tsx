@@ -2,7 +2,7 @@
 
 // A Dashboard slot's toolbar (docs/specs/026-plan/plan-tabs.md "Editing"): a row of icon buttons across the top of the
 // item's cog, above its sections: **Open Tab** (a slot showing a tab, anyone), then an Editor's **Move Up** and **Move
-// Down** (stacked on a phone, where no grip carries a slot), **Duplicate**, **Clear Slot** and **Remove Slot**. Clearing or removing a slot that showed a tab or held a Sheet asks first, under the
+// Down** (stacked on a phone, where no grip carries a slot), **Change File** (an Embed File), **Duplicate**, **Clear Slot** and **Remove Slot**. Clearing or removing a slot that showed a tab or held a Sheet asks first, under the
 // toolbar, what goes with it (the tab, the Sheet's cells).
 import { useState, type ReactNode } from 'react';
 import { Button, Tooltip, lucideGlyph } from '@liveplanner/ui';
@@ -12,8 +12,10 @@ import {
   lucideCopy,
   lucideEraser,
   lucideExternalLink,
+  lucideFileInput,
   lucideTrash2,
 } from '@liveworkspace/icons/lucide';
+import { askEmbedFile } from '@/lib/embed-open-store';
 import {
   dashboardReadingNeighbour,
   moveDashboardSlot,
@@ -29,6 +31,7 @@ const DownGlyph = lucideGlyph(lucideArrowDown, 16);
 const DuplicateGlyph = lucideGlyph(lucideCopy, 16);
 const ClearGlyph = lucideGlyph(lucideEraser, 16);
 const RemoveGlyph = lucideGlyph(lucideTrash2, 16);
+const ChangeFileGlyph = lucideGlyph(lucideFileInput, 16);
 
 function ToolButton({
   label,
@@ -189,6 +192,16 @@ export function SlotToolbar({
               className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-700"
             />
           </>
+        ) : null}
+        {canEdit && content?.type === 'embed' ? (
+          <ToolButton
+            label="Change File"
+            icon={<ChangeFileGlyph />}
+            onClick={() => {
+              onClose();
+              askEmbedFile(slot.id);
+            }}
+          />
         ) : null}
         {canEdit ? (
           <>

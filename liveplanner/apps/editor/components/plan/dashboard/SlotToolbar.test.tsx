@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DashboardLayout, DashboardSlot, Tab } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { SlotToolbar } from './SlotToolbar';
+import { forgetEmbedAsk, isEmbedAsked } from '@/lib/embed-open-store';
 
 afterEach(cleanup);
 
@@ -143,5 +144,18 @@ describe('a stacked slot’s toolbar', () => {
     cleanup();
     show({ ...slot('b'), content: { type: 'tab', tabId: 't' } }, { layout, canEdit: false }, true);
     expect(screen.queryByRole('button', { name: 'Move Up' })).toBeNull();
+  });
+
+  // docs/specs/013-workspace/embeds.md "Embed File on a Dashboard": an Editor changes the file from Slot Settings.
+  it('gives an Editor Change File on an Embed File, asking its card to open the dialog', () => {
+    const embed = { id: 'e', span: 6, content: { type: 'embed' as const } };
+    const { onClose } = show(embed);
+    fireEvent.click(button('Change File'));
+    expect(onClose).toHaveBeenCalled();
+    expect(isEmbedAsked('e')).toBe(true);
+    forgetEmbedAsk('e');
+    cleanup();
+    show(embed, { canEdit: false });
+    expect(screen.queryByRole('button', { name: 'Change File' })).toBeNull();
   });
 });

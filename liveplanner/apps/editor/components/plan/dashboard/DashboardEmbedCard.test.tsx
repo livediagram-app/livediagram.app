@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DashboardEmbedContent } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardEmbedCard } from './DashboardEmbedCard';
-import { markEmbedPlaced } from '@/lib/embed-open-store';
+import { act } from 'react';
+import { askEmbedFile, forgetEmbedAsk } from '@/lib/embed-open-store';
 
 const track = vi.fn();
 vi.mock('@/lib/telemetry', () => ({
@@ -68,11 +69,25 @@ function show(role: Role, embed: DashboardEmbedContent = { type: 'embed' }, slot
 
 describe('Embed File on a Dashboard', () => {
   it('opens Embed File at once for the Editor who placed it, once', () => {
-    markEmbedPlaced('placed');
+    askEmbedFile('placed');
     show('Editor', { type: 'embed' }, 'placed');
     expect(screen.getByRole('dialog', { name: 'Embed File' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     cleanup();
     show('Editor', { type: 'embed' }, 'placed');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('opens when Slot Settings asks (Change File)', () => {
+    show('Editor', {
+      type: 'embed',
+      liveItem: { app: 'livediagram', itemId: 'd' },
+      liveName: 'Flow',
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    act(() => askEmbedFile('s1'));
+    expect(screen.getByRole('dialog', { name: 'Embed File' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
@@ -107,7 +122,7 @@ describe('Embed File on a Dashboard', () => {
   it.each(['Participant', 'Viewer'] as const)(
     'gives a %s the file to read and nothing to choose',
     (role) => {
-      markEmbedPlaced('s1');
+      askEmbedFile('s1');
       const setSlotContent = show(role);
       expect(screen.queryByRole('dialog')).toBeNull();
       expect(screen.queryByRole('button', { name: 'Choose a File' })).toBeNull();
@@ -116,6 +131,7 @@ describe('Embed File on a Dashboard', () => {
       fireEvent.doubleClick(face);
       expect(screen.queryByRole('dialog')).toBeNull();
       expect(setSlotContent).not.toHaveBeenCalled();
+      forgetEmbedAsk('s1');
     },
   );
 });

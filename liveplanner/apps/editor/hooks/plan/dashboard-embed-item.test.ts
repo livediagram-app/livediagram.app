@@ -6,7 +6,12 @@ import {
   phoneSlotSize,
   phoneSlotStyle,
 } from '@/components/plan/dashboard/condense';
-import { forgetEmbedPlaced, markEmbedPlaced, wasEmbedPlaced } from '@/lib/embed-open-store';
+import {
+  askEmbedFile,
+  forgetEmbedAsk,
+  isEmbedAsked,
+  subscribeEmbedAsk,
+} from '@/lib/embed-open-store';
 
 // docs/specs/013-workspace/embeds.md "Embed File on a Dashboard"; docs/specs/026-plan/plan-tabs.md "On a phone".
 describe('Embed File as a Dashboard item', () => {
@@ -31,11 +36,16 @@ describe('Embed File as a Dashboard item', () => {
   });
 
   it('opens Embed File once for the slot this person placed', () => {
-    expect(wasEmbedPlaced('x')).toBe(false);
-    markEmbedPlaced('x');
-    markEmbedPlaced('x');
-    expect(wasEmbedPlaced('x')).toBe(true);
-    forgetEmbedPlaced('x');
-    expect(wasEmbedPlaced('x')).toBe(false);
+    let heard = 0;
+    const stop = subscribeEmbedAsk(() => heard++);
+    expect(isEmbedAsked('x')).toBe(false);
+    askEmbedFile('x');
+    askEmbedFile('x');
+    expect(isEmbedAsked('x')).toBe(true);
+    forgetEmbedAsk('x');
+    forgetEmbedAsk('x');
+    expect(isEmbedAsked('x')).toBe(false);
+    expect(heard).toBe(2);
+    stop();
   });
 });
