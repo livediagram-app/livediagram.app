@@ -108,19 +108,22 @@ describe('httpsRedirect', () => {
   });
 
   it('is asked by every app’s router right after the bare domain’s redirect, never locally', () => {
+    // Every app's router is the shared one (app-router.ts), bound to the app.
     for (const app of APP_NAMES) {
-      const router = readFileSync(
+      const entry = readFileSync(
         new URL(`../../../${app}/apps/router/src/index.ts`, import.meta.url),
         'utf8',
       );
-      const route = router.slice(router.indexOf('async function route('));
-      const www = route.indexOf('wwwRedirect(request, url');
-      const https = route.indexOf(
-        "env.DEPLOY_ENV === 'local' ? null : httpsRedirect(request, url)",
-      );
-      expect(https, app).toBeGreaterThan(www);
-      expect(route.indexOf('routeToWorkspace('), app).toBeGreaterThan(https);
-      expect(route.indexOf('forward('), app).toBeGreaterThan(https);
+      expect(entry, app).toContain(`export default createAppRouter<`);
+      expect(entry, app).toContain(`app: '${app}',`);
     }
+    const router = readFileSync(new URL('./app-router.ts', import.meta.url), 'utf8');
+    const route = router.slice(router.indexOf('async function route('));
+    const www = route.indexOf('wwwRedirect(request, url');
+    expect(www).toBeGreaterThan(0);
+    const https = route.indexOf("env.DEPLOY_ENV === 'local' ? null : httpsRedirect(request, url)");
+    expect(https).toBeGreaterThan(www);
+    expect(route.indexOf('routeToWorkspace(')).toBeGreaterThan(https);
+    expect(route.indexOf('forward(')).toBeGreaterThan(https);
   });
 });

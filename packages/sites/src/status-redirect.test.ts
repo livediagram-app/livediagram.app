@@ -34,12 +34,16 @@ describe('statusRedirect', () => {
   });
 
   it('is what every app’s router answers its old status page with', () => {
+    // Every app's router is the shared one (app-router.ts), bound to the app.
     for (const app of APP_NAMES) {
-      const router = readFileSync(
+      const entry = readFileSync(
         new URL(`../../../${app}/apps/router/src/index.ts`, import.meta.url),
         'utf8',
       );
-      expect(router, app).toContain(`statusRedirect(url, '${app}', env.WORKSPACE_ORIGIN)`);
+      expect(entry, app).toContain(`export default createAppRouter<`);
+      expect(entry, app).toContain(`app: '${app}',`);
     }
+    const router = readFileSync(new URL('./app-router.ts', import.meta.url), 'utf8');
+    expect(router).toContain('statusRedirect(url, app, env.WORKSPACE_ORIGIN)');
   });
 });

@@ -10,7 +10,7 @@ export function createProxies({ apiPort, indexPort, mediaPort }) {
   const API_PORT = apiPort;
   const INDEX_PORT = indexPort;
   const MEDIA_PORT = mediaPort;
-  // The router's forwards (apps/router/src/index.ts): `/api/index/*` is the index's, and `/api/previews/*`
+  // The router's forwards (packages/sites/src/app-router.ts): `/api/index/*` is the index's, and `/api/previews/*`
   // liveworkspace's previews in the media service (routeToPreviews), each the same request at its origin minus this
   // site's cookies.
   const isIndexPath = (pathname) => pathname === '/api/index' || pathname.startsWith('/api/index/');

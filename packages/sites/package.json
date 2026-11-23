@@ -13,7 +13,9 @@
     "./picture": "./src/picture.ts",
     "./www": "./src/www.ts",
     "./security": "./src/security.ts",
-    "./cache-policy": "./src/cache-policy.ts"
+    "./cache-policy": "./src/cache-policy.ts",
+    "./app-router": "./src/app-router.ts",
+    "./app-router-testing": "./src/app-router-testing.ts"
   },
   "scripts": {
     "lint": "oxlint",
