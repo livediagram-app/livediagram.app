@@ -94,6 +94,8 @@ export const SHARED_CLIENT_ROOTS = [
   'packages/ui/src',
   'packages/snapshots/src',
   'packages/walkthrough/src',
+  // Ask AI, in every app's Tools but liveknowledge's.
+  'packages/ask/src',
 ];
 
 //

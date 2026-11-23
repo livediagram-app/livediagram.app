@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useAskAi } from './useAskAi';
 import { useItemToolsRows } from '@liveworkspace/workbench/components/chrome/useItemToolsRows';
 import { useHistorySnapshotsHost } from '@liveworkspace/snapshots/ui';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
@@ -22,6 +23,8 @@ export function ItemToolsHost({
   currentShareCode: string | null | undefined;
 }) {
   const { isSignedIn, accountUserId } = useAccountBootstrap();
+  // Ask AI, for whoever has the plan open (signed out, its row asks for a sign-in).
+  useAskAi(currentProjectId, isSignedIn ? (accountUserId ?? null) : null);
   // Offline, the row asks for a sync first (footer-tools-menu.md "Always there"), with Share's Sync move.
   const { syncToCloud, selfParticipant } = useEditorContext();
   const isOffline = useIsOfflineProject(currentProjectId ?? null);

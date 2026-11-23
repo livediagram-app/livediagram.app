@@ -1,0 +1,50 @@
+{
+  "name": "@liveworkspace/ask",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server/index.ts",
+    "./ui": "./src/ui/index.ts",
+    "./tools-item": "./src/ui/ask-tools-item.tsx",
+    "./use-ask-tool": "./src/ui/use-ask-tool.ts",
+    "./citation-chip": "./src/ui/CitationChip.tsx"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/ai": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/settings-ui": "workspace:*",
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/ui": "workspace:*",
+    "@liveworkspace/workbench": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitest/coverage-v8": "^5.1.1",
+    "jsdom": "^31.0.1",
+    "oxlint": "^1.94.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1"
+  }
+}

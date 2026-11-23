@@ -48,6 +48,7 @@ import { handleCommunity } from './routes/community';
 import { handleTeams } from './routes/teams';
 import { handleLibrary } from './routes/library';
 import { handleTrash } from './routes/trash';
+import { handleAsk } from './routes/ask';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
@@ -324,6 +325,9 @@ async function routeApiRequest(
       return await handleAccount(ctx);
     case 'trash':
       return await handleTrash(ctx);
+    // Ask AI (liveworkspace/docs/specs/020-ask/ask.md): a question answered from the open item's own words.
+    case 'ask':
+      return await handleAsk(ctx);
     case 'preferences':
       return await handlePreferences(ctx);
     case 'participants':

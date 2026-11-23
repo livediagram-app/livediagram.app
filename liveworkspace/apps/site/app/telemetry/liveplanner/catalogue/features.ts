@@ -6,6 +6,12 @@ import { NON_PATTERN_CANVAS_TYPES } from '../../_shared/look-feel-types';
 import { isNonThemePick } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
+import {
+  ASK_AI_ANSWERS_COPIED,
+  ASK_AI_QUESTIONS,
+  ASK_AI_SOURCES_OPENED,
+  ASK_AI_SWITCHED,
+} from './ask-ai';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -500,6 +506,10 @@ export const AI_SOURCE_KEYS_ADDED = chart(
   { types: ['AiSourceKey'] },
 );
 
+// Ask AI's charts (./ask-ai.ts); its Sources chart is a home among the opened ones.
+export * from './ask-ai';
+OPENED_HOMES.push(ASK_AI_SOURCES_OPENED.typeIn!);
+
 export const SETTINGS_CATEGORIES_VISITED = opened(
   'Settings Categories Visited',
   'A category picked inside the open Settings dialog: Appearance, Editor, Account and the rest.',
@@ -679,6 +689,10 @@ export const PANELS_OPENED: MetricStack = {
     SETTINGS_OPENED,
     AI_SOURCE_SETTINGS_OPENED,
     AI_SOURCE_KEYS_ADDED,
+    ASK_AI_QUESTIONS,
+    ASK_AI_SOURCES_OPENED,
+    ASK_AI_ANSWERS_COPIED,
+    ASK_AI_SWITCHED,
     SETTINGS_CATEGORIES_VISITED,
     SHARE_OPENED,
     PICKERS_OPENED,

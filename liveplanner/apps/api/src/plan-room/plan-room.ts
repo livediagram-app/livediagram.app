@@ -1,3 +1,4 @@
+import { spendAskIn } from '@liveworkspace/ask/server';
 import {
   ItemDb,
   type ItemHeadSync,
@@ -58,7 +59,6 @@ import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { type RouteIdentity } from './plan-route';
 import { answerRoomRoadmap } from '../roadmap/roadmap-room';
-import { RoadmapMemo } from '../roadmap/roadmap-memo';
 import {
   answerRoomIntake,
   type IntakeDelivery,
@@ -90,21 +90,15 @@ import {
   exportTables,
 } from './plan-room-doors';
 import { renewGrant, acceptSession } from './plan-room-grants';
-import {
-  broadcast,
-  broadcastSystemOp,
-  broadcastOrderedSystemOp,
-  closeAllReverted,
-} from './plan-room-sockets';
+import { broadcast, broadcastSystemOp, broadcastOrderedSystemOp } from './plan-room-sockets';
 import { webSocketMessage } from './plan-room-frames';
 import { answerHookCall, type HookAnswer, type HookCall } from './automations/automation-incoming';
 import { optOutAddress } from './automations/automation-addresses';
 import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './github/github-room';
-import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
+import { roomEnv, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { automationLimitsOf, roomTier } from './tier/room-tier';
-import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
+import { dropSession, broadcastPresence } from './plan-room-presence';
 import { restoreRoom } from './plan-room-restore';
-import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import type { SheetWatches } from './sheet-watchers';
 import type { SentCards } from './sent-cards';
@@ -299,22 +293,7 @@ export class PlanRoom extends DurableObject<Env> {
       ensureSchema: () => ensureSchema(this),
       onWrite: () => noteWrite(this),
     });
-    this.roomEnv = env
-      ? {
-          ...env,
-          PLAN_DB: this.db.asD1(),
-          PLAN_ROOM: localNamespace(this, env.PLAN_ROOM),
-          ROOM_PEOPLE: () => roomPeople(this),
-          AUTOMATIONS: this.automations,
-          TIER: this.tier,
-          REMOVAL_GUARD: new RemovalGuard(state.storage),
-          SNAPSHOT_REVERTED: () => closeAllReverted(this),
-          // Stamped with SQLite's change count, which every write in this room moves, whichever path made it.
-          ROADMAP_MEMO: new RoadmapMemo(() =>
-            Number(state.storage.sql.exec('SELECT total_changes() AS n').toArray()[0]?.n ?? 0),
-          ),
-        }
-      : undefined;
+    this.roomEnv = env ? roomEnv(this, env) : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.sheetWatches = roomSheetWatches(this);
     this.sentCards = roomSentCards(this);
@@ -758,6 +737,13 @@ export class PlanRoom extends DurableObject<Env> {
   // The room's one alarm, and what a wake runs (plan-room-alarm.ts).
   armAlarm(): void {
     armPlanAlarm(this);
+  }
+
+  // ---------- RPC: Ask AI's built-in allowance (@liveworkspace/ask/server daily-count.ts) -------------------------
+
+  // Only on an account's `~ask-ai:` instance, never an item's: one storage key, no schema made or read.
+  spendAsk(day: string, cap: number): Promise<boolean> {
+    return spendAskIn(this.state.storage, day, cap);
   }
 
   override async alarm(): Promise<void> {

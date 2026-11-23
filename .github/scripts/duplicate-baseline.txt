@@ -201,7 +201,6 @@ livedocuments/apps/editor/lib/workbench-bindings.ts	liveknowledge/apps/editor/li
 livedocuments/packages/agent-verbs/src/pages/index.ts	liveknowledge/packages/agent-verbs/src/pages/index.ts
 livedocuments/packages/api-schema/src/article-caret.ts	liveknowledge/packages/api-schema/src/article-caret.ts
 livedocuments/packages/api-schema/src/cta-sources.ts	liveknowledge/packages/api-schema/src/cta-sources.ts
-livedocuments/packages/api-schema/src/error-telemetry.ts	liveknowledge/packages/api-schema/src/error-telemetry.ts
 livedocuments/packages/api-schema/src/home.ts	liveknowledge/packages/api-schema/src/home.ts
 livedocuments/packages/api-schema/src/lint.ts	liveknowledge/packages/api-schema/src/lint.ts
 livedocuments/packages/api-schema/src/trash.ts	liveknowledge/packages/api-schema/src/trash.ts

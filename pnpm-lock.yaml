@@ -118,6 +118,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -297,6 +300,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -1237,6 +1243,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -1440,6 +1449,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -2397,6 +2409,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -2573,6 +2588,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -3498,6 +3516,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -3625,6 +3646,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -4610,6 +4634,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -5290,6 +5317,9 @@ importers:
       '@liveworkspace/ai':
         specifier: workspace:*
         version: link:../../../packages/ai
+      '@liveworkspace/ask':
+        specifier: workspace:*
+        version: link:../../../packages/ask
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
@@ -5624,6 +5654,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -5812,6 +5845,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/ask':
+        specifier: workspace:^
+        version: link:../../../packages/ask
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -8010,6 +8046,67 @@ importers:
       oxlint:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/ask:
+    dependencies:
+      '@liveworkspace/ai':
+        specifier: workspace:*
+        version: link:../ai
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
+      '@liveworkspace/settings-ui':
+        specifier: workspace:*
+        version: link:../settings-ui
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../sites
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@liveworkspace/workbench':
+        specifier: workspace:*
+        version: link:../workbench
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitest/coverage-v8':
+        specifier: ^5.1.1
+        version: 5.1.1(vitest@5.1.1)
+      jsdom:
+        specifier: ^31.0.1
+        version: 31.0.1(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.94.0
+        version: 1.94.0(oxlint-tsgolint@7.0.2007)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
