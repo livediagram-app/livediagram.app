@@ -8488,6 +8488,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "colors": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Each of those accounts' colour (their avatar's, Version History's dot), by account id, so Page Health's foot draws a person's disc in it; absent when none has one.",
+        "type": "object"
+      },
       "created": {
         "$ref": "#/components/schemas/PageAuthorStamp",
         "description": "Who made the page and who last saved it (verification.md \"Created and Updated\"), by account id; absent for a page not saved since the server began keeping them."

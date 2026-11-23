@@ -101,6 +101,32 @@ describe('the meta row’s maker pills', () => {
     for (const p of pills) expect(p.className).not.toMatch(/(bg|text)-(brand|amber|red|green)-/);
   });
 
+  // A phone has no hover: a tap (a click) opens the pill's card as a popover, and Escape closes it.
+  it("opens a pill's card on a tap, as a keyboard-reachable button", () => {
+    renderInEditor(
+      <PageMetaRowView
+        minutes={2}
+        trust={never}
+        now={NOW}
+        verifiedBy={undefined}
+        changedSinceVerified={false}
+        nameOf={nameOf}
+        makers={{
+          created: { by: 'u1', at: NOW - 3_600_000, kind: 'ai', agent: 'Claude', via: 'mcp' },
+        }}
+      />,
+    );
+    const pill = screen.getByRole('button', { name: 'AI Generated' });
+    expect(pill.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(pill);
+    expect(pill.getAttribute('aria-expanded')).toBe('true');
+    const card = screen.getByRole('dialog', { name: 'AI Generated' });
+    expect(card.textContent).toContain('Created by Claude for Priya Shah through MCP');
+    fireEvent.keyDown(document.activeElement ?? card, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'AI Generated' })).toBeNull();
+    expect(pill.getAttribute('aria-expanded')).toBe('false');
+  });
+
   it('shows neither for a page with no stamps', () => {
     const { container } = renderInEditor(
       <PageMetaRowView

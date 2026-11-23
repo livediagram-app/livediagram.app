@@ -10,7 +10,7 @@ import { GUEST_DISC_TINT, isGuestName } from './guest-disc';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useId, useState, type ReactNode } from 'react';
 import { reviewDays, type ReviewEvery } from '@liveknowledge/knowledge';
-import { Button, Select, Tooltip } from '@liveknowledge/ui';
+import { Button, IDENTITY_FILL, Select, Tooltip, identityVars } from '@liveknowledge/ui';
 import { reviewPeriodLabel } from '@/lib/knowledge-settings/review-period-words';
 import { shortDate, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
@@ -251,11 +251,22 @@ function tintOf(name: string | undefined): string {
   return DISC_TINTS[Math.abs(h) % DISC_TINTS.length]!;
 }
 
-function Disc({ name, size = 'size-6' }: { name: string | undefined; size?: string }) {
+function Disc({
+  name,
+  color,
+  size = 'size-6',
+}: {
+  name: string | undefined;
+  /** The person's own colour, as their avatar draws it; the name's tint without one. */
+  color?: string | undefined;
+  size?: string;
+}) {
+  const own = color && !isGuestName(name);
   return (
     <span
       aria-hidden
-      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${isGuestName(name) ? GUEST_DISC_TINT : tintOf(name)}`}
+      style={own ? identityVars(color) : undefined}
+      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${own ? `text-white ${IDENTITY_FILL}` : isGuestName(name) ? GUEST_DISC_TINT : tintOf(name)}`}
     >
       {isGuestName(name) ? (
         <MakerPersonIcon />
@@ -284,7 +295,7 @@ function StampRow({ what, stamp, now }: { what: string; stamp: PageStamp; now: n
       data-stamp-kind={agent ? 'ai' : 'human'}
       className="flex min-h-9 items-center gap-2.5"
     >
-      <Disc name={person} />
+      <Disc name={person} color={stamp.color} />
       <span className="min-w-0 flex-1 leading-4">
         <span className="flex min-w-0 items-center gap-1.5">
           <span className="truncate text-[13px] font-medium text-slate-800 dark:text-slate-200">

@@ -402,6 +402,26 @@ describe('Page Health', () => {
     expect(later[1]!.textContent).toMatch(/^SLSam LeeUpdated/);
     expect(screen.queryByRole('img', { name: 'Edited by AI' })).toBeNull();
   });
+
+  // verification.md "Created and Updated": a person's disc wears their own colour, as their avatar and Version
+  // History's dot do; the name's tint only where the read brought none.
+  it("draws a person's disc in their own colour where the read brought it", () => {
+    const { container } = renderRail(
+      <Rail
+        {...props({
+          created: { at: NOW - 3 * DAY, by: 'Priya Nair', color: '#ec4899' },
+          updated: { at: NOW - 3 * 60_000, by: 'Sam Lee' },
+        })}
+      />,
+    );
+    const discs = [
+      ...container.querySelectorAll<HTMLElement>('[data-page-stamp] > span:first-child'),
+    ];
+    expect(discs[0]!.style.getPropertyValue('--identity')).toBe('#ec4899');
+    expect(discs[0]!.className).toContain('bg-(--identity)');
+    expect(discs[1]!.style.getPropertyValue('--identity')).toBe('');
+    expect(discs[1]!.className).not.toContain('bg-(--identity)');
+  });
 });
 
 describe('On This Page', () => {

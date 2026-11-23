@@ -11,12 +11,16 @@ export const AGENT_NAME_HEADER = 'X-Liveknowledge-Agent';
 const DOOR_NAMES = { Mcp: 'MCP', Cli: 'CLI', Api: 'API Token', Editor: 'API Token' } as const;
 
 /** The reader a request counts as: an agent when it bears an API token or comes through the MCP or the CLI, named
- *  by its client (the header), else by its door; a person otherwise. */
+ *  by its client (the header), else by its token's name, else by its door; a person otherwise. The same name a
+ *  page's Created and Updated keep for its writes (page-writer.ts writerOf; verification.md "An agent acting for a
+ *  person"), so Connected Agents and the page name a CLI connection alike ("Claude Code", never "Agent"). */
 export function readerOf(ctx: Pick<RouteContext, 'request' | 'token'>): Reader {
   const door = frontDoorOf(ctx.request);
   if (!ctx.token && door !== 'Mcp' && door !== 'Cli') return { kind: 'person' };
-  const named = agentName(ctx.request.headers.get(AGENT_NAME_HEADER) ?? '');
-  return { kind: 'agent', name: named || DOOR_NAMES[door] };
+  const header = ctx.request.headers.get(AGENT_NAME_HEADER)?.trim();
+  const token = ctx.token?.name?.trim();
+  const name = header || token;
+  return { kind: 'agent', name: name ? agentName(name) : DOOR_NAMES[door] };
 }
 
 /** The account behind the request: a signed-in person's, or the one an API token acts for. Null for a guest and for

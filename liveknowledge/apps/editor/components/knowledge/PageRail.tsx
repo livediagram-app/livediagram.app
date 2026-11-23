@@ -168,8 +168,8 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
     <PageActivity
       now={page.now}
       reads={page.health?.reads}
-      created={stampOf(page.health?.created, nameOf)}
-      updated={stampOf(page.health?.updated, nameOf)}
+      created={stampOf(page.health?.created, nameOf, page.health?.colors)}
+      updated={stampOf(page.health?.updated, nameOf, page.health?.colors)}
       trend={<PageReadsTrend page={page} />}
       agentReads={page.health?.agents}
     />
@@ -178,8 +178,8 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
     <PageActivity
       now={page.now}
       reads={page.health?.reads}
-      created={stampOf(page.health?.created, nameOf)}
-      updated={stampOf(page.health?.updated, nameOf)}
+      created={stampOf(page.health?.created, nameOf, page.health?.colors)}
+      updated={stampOf(page.health?.updated, nameOf, page.health?.colors)}
       trend={<PageReadsTrend page={page} />}
       agentReads={page.health?.agents}
       fill

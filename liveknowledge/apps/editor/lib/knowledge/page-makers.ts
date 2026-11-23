@@ -13,6 +13,8 @@ export type MakerWhich = 'created' | 'updated';
 export type PageStamp = {
   at: number;
   by?: string | undefined;
+  /** The person's colour, their avatar's and Version History's dot, where Page Health's read brought it. */
+  color?: string | undefined;
   agent?: { name?: string | undefined; accepted?: boolean } | undefined;
 };
 
@@ -21,11 +23,13 @@ export type PageStamp = {
 export const railStampOf = (
   stamp: PageAuthorStamp | undefined,
   nameOf: (id: string | undefined) => string | undefined,
+  colors: Readonly<Record<string, string>> = {},
 ): PageStamp | undefined =>
   stamp
     ? {
         at: stamp.at,
         by: nameOf(stamp.by),
+        ...(colors[stamp.by] ? { color: colors[stamp.by] } : {}),
         ...(stamp.kind === 'ai'
           ? {
               agent: {

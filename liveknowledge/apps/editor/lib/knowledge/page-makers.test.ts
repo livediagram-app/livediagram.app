@@ -84,6 +84,16 @@ describe('who made and edited a page, in words', () => {
 
 // Page Health's foot (verification.md "An agent acting for a person").
 describe('railStampOf', () => {
+  it("carries the person's colour where Page Health's read brought it", () => {
+    const stamp = { by: 'u1', at: 5, kind: 'human' as const };
+    expect(railStampOf(stamp, nameOf, { u1: '#ec4899' })).toEqual({
+      at: 5,
+      by: 'Priya Shah',
+      color: '#ec4899',
+    });
+    expect(railStampOf(stamp, nameOf, { u2: '#ec4899' })).toEqual({ at: 5, by: 'Priya Shah' });
+  });
+
   it('names the person, and an agent with the agent that wrote for them', () => {
     expect(railStampOf(undefined, nameOf)).toBeUndefined();
     expect(railStampOf({ by: 'u1', at: 5, kind: 'human' }, nameOf)).toEqual({
