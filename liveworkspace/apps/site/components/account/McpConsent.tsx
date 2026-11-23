@@ -44,8 +44,9 @@ import { ConnectPitch } from './Pitch';
 export function McpConsent() {
   return (
     <>
-      <ConnectPitch />
+      {/* The card first; the pitch shows beside it from lg only. */}
       <ConsentCard />
+      <ConnectPitch />
     </>
   );
 }
@@ -88,6 +89,13 @@ function ConsentCard() {
       live = false;
     };
   }, [origin, session]);
+
+  // On a phone the token step opens below the pitch: bring its top into view rather than leaving the reader mid-page.
+  useEffect(() => {
+    if (!atLimit) return;
+    const step = document.getElementById('mcp-consent-step');
+    if (step && step.getBoundingClientRect().top < 0) step.scrollIntoView({ block: 'start' });
+  }, [atLimit]);
 
   if (cancelled)
     return (
@@ -174,12 +182,9 @@ function ConsentCard() {
   return (
     <AccountCard narrow>
       {room ? (
-        <BackBar
-          label="Back to apps and access"
-          current="Make room"
-          onClick={backToApps}
-          disabled={busy}
-        />
+        <div id="mcp-consent-step" className="scroll-mt-20">
+          <BackBar label="Back to apps" current="Make room" onClick={backToApps} disabled={busy} />
+        </div>
       ) : null}
       <AccountHeading title={`Connect ${client}`}>
         {/* The client's name is the client's own choice: isolated, and wrapped rather than leaving the card. */}

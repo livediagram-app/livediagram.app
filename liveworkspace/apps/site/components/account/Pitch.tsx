@@ -115,6 +115,8 @@ const CONNECT_ROWS: readonly Row[] = [
 export function ConnectPitch() {
   return (
     <PitchFrame
+      // Desktop only: on a phone the card stands alone, so Connect is the first thing seen.
+      className="max-lg:hidden"
       eyebrow="Connect"
       heading="Your work, wherever you work."
       rows={CONNECT_ROWS}
@@ -136,18 +138,20 @@ export function Pitch({ google }: { google: boolean }) {
 }
 
 function PitchFrame({
+  className = '',
   eyebrow,
   heading,
   rows,
   google,
 }: {
+  className?: string;
   eyebrow: string;
   heading: string;
   rows: readonly Row[];
   google: boolean;
 }) {
   return (
-    <section className="flex flex-col gap-4 lg:col-start-1 lg:row-start-1 lg:gap-6">
+    <section className={`flex flex-col gap-4 lg:col-start-1 lg:row-start-1 lg:gap-6 ${className}`}>
       <p className="text-xs font-semibold tracking-[.18em] text-slate-700 uppercase sm:text-sm dark:text-slate-300">
         {eyebrow}
       </p>
