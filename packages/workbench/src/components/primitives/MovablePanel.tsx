@@ -295,7 +295,10 @@ export function createMovablePanel<HelpKey extends string>({
                       }
                     : { top: px(56), right: px(12) }),
             }}
-            className={`pointer-events-auto absolute z-[var(--z-toolbar)] flex ${sheet ? 'rounded-t-lg border-x-0 border-b-0' : `${popoverWidth} max-w-[calc(100vw-2rem)] rounded-lg border`} cursor-default flex-col border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
+            // An open popover covers every canvas surface, the selection toolbar (z-overlay) included, and stays
+            // beneath the editor header whose button dropped it: a selected element's toolbar otherwise drew
+            // across the Explorer.
+            className={`pointer-events-auto absolute z-[var(--z-canvas-modal)] flex ${sheet ? 'rounded-t-lg border-x-0 border-b-0' : `${popoverWidth} max-w-[calc(100vw-2rem)] rounded-lg border`} cursor-default flex-col border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
           >
             {anchor ? (
               <div

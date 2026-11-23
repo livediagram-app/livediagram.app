@@ -208,7 +208,7 @@ export function FormStatusBar({
               onClick={onFix}
               className="cursor-pointer font-semibold underline underline-offset-2"
             >
-              Choose Where Responses Go
+              Choose Destination
             </button>
           ) : null}
         </div>

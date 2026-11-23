@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
+import { Button, CloseIcon, DialogHeader, PlusIcon } from '@livediagram/ui';
 import type { LineSeries } from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -142,7 +142,7 @@ export function LineDataDialog({
                       }
                       className={xBtn}
                     >
-                      ×
+                      <CloseIcon size={12} />
                     </button>
                   </div>
                 </th>
@@ -159,7 +159,7 @@ export function LineDataDialog({
                   }
                   className={`${addBtn} h-8 w-8 !px-0`}
                 >
-                  +
+                  <PlusIcon size={12} />
                 </button>
               </th>
             </tr>
@@ -210,7 +210,7 @@ export function LineDataDialog({
                     }
                     className={xBtn}
                   >
-                    ×
+                    <CloseIcon size={12} />
                   </button>
                 </td>
               </tr>

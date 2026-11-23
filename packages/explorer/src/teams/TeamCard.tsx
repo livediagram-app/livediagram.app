@@ -9,7 +9,8 @@
 
 import { useId, useRef, useState, type FormEvent } from 'react';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
-import { Button, ConfirmDialog, PictureDisc } from '@liveworkspace/ui';
+import { Button, ConfirmDialog, PictureDisc, Select } from '@liveworkspace/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
 import { avatarFill } from '@liveworkspace/account-menu/initials';
 import { LIST_CARD } from '../ui/classes';
@@ -287,9 +288,6 @@ export function TeamCard({
 }
 
 const PILL = 'shrink-0 rounded-full px-1.5 text-[10px] font-medium ring-1';
-const ROLE_SELECT =
-  'rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
-
 function RolePill({ role }: { role: TeamRole }) {
   return (
     <span
@@ -368,15 +366,15 @@ function TeamMemberRow({
         ) : null}
       </span>
       {answered ? null : manage && !pinned ? (
-        <select
+        <Select
           aria-label={`Role for ${name}`}
           value={m.role}
           onChange={(e) => onRole(e.target.value as TeamRole)}
-          className={ROLE_SELECT}
+          className="shrink-0"
         >
           <option value="member">Member</option>
           <option value="admin">Admin</option>
-        </select>
+        </Select>
       ) : (
         <span
           className="flex items-center gap-1.5"
@@ -458,22 +456,31 @@ function InviteFooter({ teamId, onInvited }: { teamId: string; onInvited: () => 
         onChange={(e) => setEmail(e.target.value)}
         className={`${TEAM_FIELD} min-w-0 flex-1 basis-48 py-1.5`}
       />
-      <select
+      <Select
         aria-label="Role for the invitation"
         value={role}
         onChange={(e) => setRole(e.target.value as TeamRole)}
-        className={ROLE_SELECT}
+        // As tall as the email field beside it, with Invite.
+        className="shrink-0 self-stretch"
+        selectClassName="h-full text-[13px]"
       >
         <option value="member">Member</option>
         <option value="admin">Admin</option>
-      </select>
-      <Button ref={inviteRef} type="submit" size="xs" disabled={!email.trim()} busy={busy}>
+      </Select>
+      <Button
+        ref={inviteRef}
+        type="submit"
+        size="sm"
+        className="self-stretch"
+        disabled={!email.trim()}
+        busy={busy}
+      >
         {busy ? 'Sending…' : 'Invite'}
       </Button>
       {error ? (
-        <p role="alert" className="w-full text-xs text-rose-600 dark:text-rose-400">
+        <Callout tone="error" role="alert" className="w-full">
           {error}
-        </p>
+        </Callout>
       ) : null}
     </form>
   );

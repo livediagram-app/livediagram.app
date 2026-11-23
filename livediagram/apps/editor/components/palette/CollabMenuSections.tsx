@@ -33,7 +33,7 @@ import {
   type EstimateScale,
   type ShapeElement,
 } from '@livediagram/document';
-import { DateInput } from '@livediagram/ui';
+import { ArrowUpIcon, CloseIcon, DateInput } from '@livediagram/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
@@ -179,7 +179,7 @@ export function AgendaMenuSection({
                 onClick={() => move(i, i - 1)}
                 className={`${removeButtonClass} hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700`}
               >
-                ↑
+                <ArrowUpIcon size={12} />
               </button>
               <button
                 type="button"
@@ -192,7 +192,7 @@ export function AgendaMenuSection({
                 }
                 className={removeButtonClass}
               >
-                ×
+                <CloseIcon size={12} />
               </button>
             </div>
           ))}
@@ -300,7 +300,7 @@ export function DecisionMenuSection({
                   onClick={() => onSetDrivers(rows.filter((_, j) => j !== i))}
                   className={removeButtonClass}
                 >
-                  ×
+                  <CloseIcon size={12} />
                 </button>
               </div>
             ))}

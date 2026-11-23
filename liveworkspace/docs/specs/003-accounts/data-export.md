@@ -126,7 +126,7 @@ beside API Tokens, for a signed-in person only.
   total, then images, then finishing) and says the email will follow; Settings asks again every few seconds while it
   is open and the export is running, and not otherwise.
 - Ready, the row shows the size, when it was made and when the link lapses, with **Download** (the same signed link)
-  and **Make a New One**. Failed, it says so with **Try Again**. Capped, it says how many items were left out.
+  and **New Export**. Failed, it says so with **Try Again**. Capped, it says how many items were left out.
 - **Your Teams** lists the teams the person is an admin of, each with the same row and **Download Team Data**.
 - On an app's own address and in each editor, the category links to liveworkspace.app's Settings, as API Tokens do.
 - Arriving from a refused link (`?settings=data&export=expired|other-account|missing`), the category opens and says

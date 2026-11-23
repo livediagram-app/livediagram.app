@@ -166,7 +166,7 @@ iPhone was closed while moving between its pages.
 
 The modal also surfaces the soft-cap usage as a tiny bar at the bottom ("3.2 MB / 1 GB used") so users see the cap before they hit it.
 
-When the picker is opened for an element that already has an attached image, a **Remove from element** action sits in the modal footer. It clears the element's `imageId` (returning the canvas back to the placeholder state) and drops `naturalWidth` / `naturalHeight` so a later "Reset to natural size" doesn't snap to stale dimensions. The gallery copy is untouched; users can re-attach the same image (or a different one) without re-uploading.
+When the picker is opened for an element that already has an attached image, a **Remove Image** action sits in the modal footer. It clears the element's `imageId` (returning the canvas back to the placeholder state) and drops `naturalWidth` / `naturalHeight` so a later "Reset to natural size" doesn't snap to stale dimensions. The gallery copy is untouched; users can re-attach the same image (or a different one) without re-uploading.
 
 ### Imported images
 

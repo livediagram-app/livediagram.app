@@ -389,7 +389,7 @@ describe('WhiteboardDock settings', () => {
       (h) => h.textContent,
     );
     expect(headings).toEqual(['Background', 'Cursor', 'Drawing', 'Colours']);
-    fireEvent.click(screen.getByRole('button', { name: 'Snap to stock colours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Snap Colours' }));
     expect(snap).toHaveBeenCalledTimes(1);
   });
 

@@ -144,7 +144,7 @@ describe('the Explorer’s Settings on an app’s address, signed in', () => {
     expect(dialog()!.textContent).toContain('Canvases kept Offline stay on this device');
     expect(fetchMock.mock.calls.length).toBe(before);
     // The confirmation is unchanged: the code waits for the account's own address, typed.
-    const send = buttonIn(dialog(), 'Email Me a Code')!;
+    const send = buttonIn(dialog(), 'Send Code')!;
     expect(send.disabled).toBe(true);
     const email = dialog()!.querySelector<HTMLInputElement>('#delete-confirm-email')!;
     act(() => {
@@ -152,8 +152,8 @@ describe('the Explorer’s Settings on an app’s address, signed in', () => {
       set.call(email, 'ada@example.com');
       email.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    expect(buttonIn(dialog(), 'Email Me a Code')!.disabled).toBe(false);
-    act(() => buttonIn(dialog(), 'Email Me a Code')!.click());
+    expect(buttonIn(dialog(), 'Send Code')!.disabled).toBe(false);
+    act(() => buttonIn(dialog(), 'Send Code')!.click());
     await until(() => dialog()?.textContent?.includes('We emailed a 6-digit code'));
     const [url, init] = fetchMock.mock.calls.at(-1)!;
     expect(url).toBe('/api/account/deletion-code');

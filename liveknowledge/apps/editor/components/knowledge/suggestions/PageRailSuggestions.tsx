@@ -3,7 +3,7 @@
 // Suggested Edits in the page's rail (docs/specs/030-knowledgebase/insights.md "On the page"; page-surface.md
 // "The rail"): between Page Health and AI Context, only while any wait. A row a suggestion (why, who, when, how many
 // lines), the press opening its popover; a passage no longer in the page is marked "The page has changed since", the
-// rail and the popover being where it shows. Review All in Insights opens Needs Attention at Suggested Edits.
+// rail and the popover being where it shows. Review All opens Needs Attention at Suggested Edits.
 import type { KnowledgeSuggestion } from '@liveknowledge/api-schema';
 import { askAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
 import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
@@ -82,7 +82,7 @@ export function PageRailSuggestionsView({
         onClick={onReviewAll}
         className="mt-2 cursor-pointer text-xs font-medium text-violet-700 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-violet-700 phone:min-h-11 dark:text-violet-300"
       >
-        Review All in Insights
+        Review All
       </button>
     </section>
   );

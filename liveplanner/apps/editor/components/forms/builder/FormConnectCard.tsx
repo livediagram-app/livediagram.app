@@ -101,7 +101,7 @@ export function FormConnectCard({
           }}
           className="mt-3 cursor-pointer text-[13px] font-medium text-slate-600 underline-offset-2 hover:text-slate-900 hover:underline dark:text-slate-300 dark:hover:text-slate-50"
         >
-          Or use a card type or sheet you already have
+          Use Existing
         </button>
       ) : null}
       {nowhere && questionsOf(b.form).length === 0 ? (

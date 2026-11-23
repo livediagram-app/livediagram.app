@@ -1,5 +1,6 @@
 'use client';
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useEffect, useId, useState } from 'react';
 import {
   COMMUNITY_DESCRIPTION_MAX,
@@ -286,12 +287,9 @@ export function CommunityPublishDialog({
 
           <DialogFooter>
             {error ? (
-              <p
-                role="alert"
-                className="mr-auto text-sm font-medium text-rose-600 dark:text-rose-300"
-              >
+              <Callout tone="error" role="alert" className="mr-auto">
                 {error}
-              </p>
+              </Callout>
             ) : null}
             <Button variant="secondary" size="xs" onClick={onClose} disabled={busy}>
               Cancel

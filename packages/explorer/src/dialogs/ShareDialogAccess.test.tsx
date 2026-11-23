@@ -101,7 +101,7 @@ describe('the Team tab', () => {
 
   it('takes the sharer to Passes in one click, to share with someone outside the team', async () => {
     renderDialog({ item: TEAM_ITEM });
-    fireEvent.click(screen.getByRole('button', { name: 'Share With Someone Outside the Team' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Issue a Pass' }));
     expect(screen.getByRole('tab', { name: 'Passes' }).getAttribute('aria-selected')).toBe('true');
     expect(
       await screen.findByText(/No passes yet\. Only the team can open this plan/),

@@ -32,7 +32,7 @@ describe('DeleteAccountDialog', () => {
     expect(screen.getByText(/not just liveknowledge/)).toBeTruthy();
     expect(screen.getByText(/Documents kept Offline stay on this device/)).toBeTruthy();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a@example.com' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Email Me a Code' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Send Code' }));
     const first = await screen.findByRole('textbox', { name: 'Digit 1' });
     fireEvent.paste(first, { clipboardData: { getData: () => '123456' } });
     fireEvent.click(screen.getByRole('button', { name: 'Delete Account' }));

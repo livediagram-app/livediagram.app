@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from 'react';
-import { Button, CloseIcon, DialogHeader } from '@liveknowledge/ui';
+import { Button, CloseIcon, DialogHeader, Select } from '@liveknowledge/ui';
 import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@liveknowledge/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 
@@ -89,17 +89,17 @@ export function CodeEditDialog({
         <div className="flex items-center justify-between gap-3">
           <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
             Language
-            <select
+            <Select
               value={lang}
               onChange={(e) => setLang(e.target.value as CodeLanguage)}
-              className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              selectClassName="text-sm"
             >
               {CODE_LANGUAGES.map((l) => (
                 <option key={l} value={l}>
                   {l === 'plain' ? 'Plain text' : l}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={onClose}>

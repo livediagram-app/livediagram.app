@@ -256,9 +256,9 @@ export function ApprovalForm({
       </div>
 
       {error ? (
-        <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="flex items-center justify-end gap-2">
         {onBack ? (

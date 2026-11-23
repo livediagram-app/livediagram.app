@@ -2,8 +2,9 @@
 
 // A kit's run, in place of the setup (liveworkspace/docs/specs/010-site/site.md "Start a Project"): a row per part
 // (spinning while the index works, then made with Open, or not made), a row for the connections, and what to do next:
-// Open Folder and Start Another once ready; Retry and Remove What Was Made when partly made, Remove asking once in
+// Open Folder and Start Another once ready; Retry and Remove Files when partly made, Remove asking once in
 // place; Try Again alone when nothing was made. The outcome is read out politely.
+import { Callout } from '@liveworkspace/ui/callout';
 import type { ReactNode } from 'react';
 import type { Kit, KitRun, Level } from '@liveworkspace/index-client';
 import { BrandMark } from '@liveworkspace/brand';
@@ -156,9 +157,9 @@ export function KitRunCard({
         />
       </ul>
       {error ? (
-        <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-400">
+        <Callout tone="error" role="alert" className="mt-4">
           {error}
-        </p>
+        </Callout>
       ) : null}
       {run ? (
         <RunActions
@@ -244,7 +245,7 @@ function RunActions({
       </button>
       {outcome === 'partial' ? (
         <button type="button" onClick={onAskRemove} className={secondary}>
-          Remove What Was Made
+          Remove Files
         </button>
       ) : null}
     </div>

@@ -3,6 +3,7 @@
 // Invite by Link (livediagram's TeamInviteLinkDialog; liveworkspace/docs/specs/003-accounts/accounts.md "The join link"): off until an
 // admin turns it on; then the link to copy, when it ends, New Link (the old stops working) and Turn Off.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useEffect, useId, useRef, useState } from 'react';
 import { teamErrorMessage, type InviteLink, type TeamResult } from '../data/teams';
 import { Button } from '@liveworkspace/ui';
@@ -131,9 +132,9 @@ export function InviteLinkDialog({
           </>
         )}
         {error ? (
-          <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">
+          <Callout tone="error" role="alert">
             {error}
-          </p>
+          </Callout>
         ) : null}
       </div>
       <DialogFooter>

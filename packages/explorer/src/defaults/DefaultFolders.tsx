@@ -6,6 +6,7 @@
 // top cannot be chosen (only a folder inside the team). The Explorer opens it as a dialog; a host's Settings page
 // renders <DefaultFoldersSettings> with the same rows.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useMemo, useState } from 'react';
 import type { App, Folder, IndexClient } from '@liveworkspace/index-client';
 import { Button } from '@liveworkspace/ui';
@@ -61,9 +62,9 @@ export function DefaultFoldersList({
   const teamName = (id: string | null) => (id ? (names.get(id) ?? 'Team') : null);
   if (defaults.status === 'failed') {
     return (
-      <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+      <Callout tone="error" role="alert">
         Couldn’t load your default folders.
-      </p>
+      </Callout>
     );
   }
   const ready = defaults.status === 'ready' && !loading;

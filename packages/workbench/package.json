@@ -229,6 +229,7 @@
     "./components/palette/useFrozenAnimations": "./src/components/palette/useFrozenAnimations.ts",
     "./components/palette/useStripCrowded": "./src/components/palette/useStripCrowded.ts",
     "./components/panels/GalleryEmpty": "./src/components/panels/GalleryEmpty.tsx",
+    "./components/panels/GalleryLoading": "./src/components/panels/GalleryLoading.tsx",
     "./components/panels/ManagedOnLiveworkspace": "./src/components/panels/ManagedOnLiveworkspace.tsx",
     "./components/panels/ToolOptionRow": "./src/components/panels/ToolOptionRow.tsx",
     "./components/panels/collaborate/CollaborateGlyph": "./src/components/panels/collaborate/CollaborateGlyph.tsx",

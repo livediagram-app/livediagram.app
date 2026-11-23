@@ -35,7 +35,7 @@ Inbox half is the platform's: [inbox.md](../../../../liveworkspace/docs/specs/00
   popover (`SuggestionPopover`, the bottom sheet on a phone), Show in Page's bar (`SuggestionReviewBar`), reads health
   again on a push, and opens `#t=<page>&suggestion=<id>` centred, then drops `suggestion` from the hash.
 - **The pill** (`SuggestedEditsPill`) beside the trust badge in the meta row, the **rail section**
-  (`PageRailSuggestions`, the newest 5, before AI Context, with Review All in Insights opening Needs Attention at
+  (`PageRailSuggestions`, the newest 5, before AI Context, with Review All opening Needs Attention at
   Suggested Edits) and the **tree dot** (an 8 px violet dot, from `suggestionCounts`).
 - **Accept and Dismiss** call `POST suggestions/<id>/accept|dismiss`, take the suggestion out of the held health at once
   (`pageKnowledgeStore.dropSuggestion`), toast, and read the page's health again. A 404 is read as already decided.

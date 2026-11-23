@@ -59,12 +59,12 @@ function open(
 
 const emailBox = () => screen.getByRole('textbox', { name: /to confirm/ });
 const digitBoxes = () => screen.getAllByRole('textbox', { name: /^Digit/ });
-const emailMeACode = () => screen.getByRole('button', { name: 'Email Me a Code' });
+const sendCodeButton = () => screen.getByRole('button', { name: 'Send Code' });
 const deleteButton = () => screen.getByRole('button', { name: 'Delete Account' });
 
 async function toCodeStep() {
   fireEvent.change(emailBox(), { target: { value: ' ada@example.com ' } });
-  fireEvent.click(emailMeACode());
+  fireEvent.click(sendCodeButton());
   await screen.findByRole('group', { name: 'Deletion code' });
 }
 
@@ -88,9 +88,9 @@ describe('DeleteAccountDialog', () => {
 
   it('asks for a code only once the email matches, whatever its case', async () => {
     const { sendCode } = open();
-    expect((emailMeACode() as HTMLButtonElement).disabled).toBe(true);
+    expect((sendCodeButton() as HTMLButtonElement).disabled).toBe(true);
     fireEvent.change(emailBox(), { target: { value: 'someone@else.com' } });
-    fireEvent.submit(emailMeACode().closest('form')!);
+    fireEvent.submit(sendCodeButton().closest('form')!);
     expect(sendCode).not.toHaveBeenCalled();
     await toCodeStep();
     expect(sendCode).toHaveBeenCalledTimes(1);
@@ -143,9 +143,9 @@ describe('DeleteAccountDialog', () => {
   it('stays on the email step and says why when no code could be sent', async () => {
     open({ sent: ['rate_limited', 'failed'] });
     fireEvent.change(emailBox(), { target: { value: 'ada@example.com' } });
-    fireEvent.click(emailMeACode());
+    fireEvent.click(sendCodeButton());
     expect((await screen.findByRole('alert')).textContent).toMatch(/Wait a minute/);
-    fireEvent.click(emailMeACode());
+    fireEvent.click(sendCodeButton());
     await waitFor(() =>
       expect(screen.getByRole('alert').textContent).toMatch(/could not send a code/),
     );

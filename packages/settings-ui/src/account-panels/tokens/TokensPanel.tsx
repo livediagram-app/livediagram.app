@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState, type FormEvent, type RefObject } from 'react';
-import { Button } from '@liveworkspace/ui';
+import { Button, CompactEmptyState, lucideGlyph } from '@liveworkspace/ui';
+import { lucideKey } from '@liveworkspace/icons/lucide';
 import { BUTTON, ErrorNote, INPUT, Panel } from '../account-ui';
 import { accountErrorMessage as errorMessage } from '../errors';
 import { useAccountPanelsHost } from '../host';
@@ -9,6 +10,8 @@ import { SecretReveal } from '../SecretReveal';
 import type { ApiToken } from '../types';
 import { useAccountData } from '../useAccountData';
 import { TokenList } from './TokenList';
+
+const KeyGlyph = /* @__PURE__ */ lucideGlyph(lucideKey, 18);
 
 // The Settings panel's API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): making a token, seeing it once,
 // and revoking it. A token is the account's, so it works on every app's API and MCP server; the AI
@@ -60,9 +63,12 @@ export function TokensPanel() {
         {load.state === 'error' && <ErrorNote>{errorMessage(load.error)}</ErrorNote>}
         {load.state === 'ready' &&
           (load.data.tokens.length === 0 ? (
-            <p className="mt-4 rounded-2xl border border-dashed border-slate-300 px-6 py-8 text-center text-slate-600 dark:border-slate-700 dark:text-slate-400">
-              No tokens yet. Make one above, or connect an AI tool from any app.
-            </p>
+            <CompactEmptyState
+              icon={<KeyGlyph />}
+              title="No Tokens"
+              description="Make one above, or connect an AI tool from any app."
+              className="mt-4 rounded-2xl border border-dashed border-slate-300 py-6 dark:border-slate-700"
+            />
           ) : (
             <TokenList
               tokens={load.data.tokens}

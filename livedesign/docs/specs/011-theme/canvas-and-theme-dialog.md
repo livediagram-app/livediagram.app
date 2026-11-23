@@ -250,7 +250,7 @@ Fine-tune row reads it ("Like the page before", "Paper", a theme gradient's or a
 - With **Choose One**, the page panel's own Background section (`BackgroundSection`), offering Solid, Gradient and
   Animated, never a picture (a picture is a page's own); on a logo page without a pattern, as the page panel. Each
   pick is one undo step and writes only the field: pages already made keep their own.
-- **Apply to Every Page** under it gives every page of the tab that background, one undo step, each page re-inked
+- **Apply to All** under it gives every page of the tab that background, one undo step, each page re-inked
   for it; a logo page takes the fill alone, a photo page is passed by (it takes no background), a locked page keeps
   its own, and a notice says how many it reached and kept.
 - **Around the Pages**, a small section: the canvas colour around the pages, and four calm patterns for it (Blank,
@@ -370,7 +370,7 @@ describes it on each.
 - **Copy.** The shared lines, but the home's ("Pick a look for the tab’s pages, then fine-tune any part of it.") and
   the Canvas panel's ("The background new pages start on, and the canvas around the pages.").
 - **The door.** `CanvasThemeDialog` takes `pages` (`TabStylePages`, `tab-style-pages.ts`: the kind, the field, the
-  pages Apply to Every Page reaches and its setters, and the tab's Element Colours choice with its setter), and hands
+  pages Apply to All reaches and its setters, and the tab's Element Colours choice with its setter), and hands
   that choice to every theme and look it applies.
 - **Frame.** The shared modal, its Show Me bound in `apps/live/components/tour/TabStyleTour.tsx`.
 

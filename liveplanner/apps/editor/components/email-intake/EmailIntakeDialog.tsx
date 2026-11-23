@@ -5,6 +5,7 @@
 // target: the boards that show it are read back, never chosen), Who Can Send and Turn On. On: the address with Copy
 // Address, a quiet line of what it has done, Each Email Becomes and Who Can Send saving as they change, and New
 // Address and Turn Off behind confirms. A tab with several boards gets a board picker at the top.
+import { Callout } from '@liveworkspace/ui/callout';
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type {
   EmailIntake,
@@ -390,9 +391,9 @@ export function EmailIntakeDialog({
           />
         ) : null}
         {saveFailed ? (
-          <p role="alert" className="text-xs text-rose-700 dark:text-rose-300">
+          <Callout tone="error" role="alert">
             Couldn’t save. Try again.
-          </p>
+          </Callout>
         ) : null}
       </div>
       {state === 'off' || state === 'on' ? (

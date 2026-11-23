@@ -6,6 +6,7 @@
 // so with Change Decision (while the request is open), and can be closed for the session. On a phone it wraps under its words, its buttons 44px
 // tall. Approving is a Viewer's one write (share-roles.md): the index checks they are named; this only draws it.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useEffect, useId, useRef, useState } from 'react';
 import { APPROVAL_NOTE_MAX, type ApprovalDecisionInput } from '@liveworkspace/index-client';
 import { Button, TextArea } from '@liveworkspace/ui';
@@ -210,9 +211,9 @@ export function ApprovalBanner() {
         </>
       )}
       {error ? (
-        <p role="alert" className="w-full text-[12px] text-rose-700 dark:text-rose-300">
+        <Callout tone="error" role="alert" className="w-full">
           {error}
-        </p>
+        </Callout>
       ) : null}
     </section>
   );

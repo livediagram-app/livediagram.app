@@ -9,6 +9,7 @@
 // gone), and is then unavailable; checking another clears its default, sending those back to the root. A team's
 // root is never a default.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { Button } from '@liveworkspace/ui';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import { useExplorer } from '../explorer/context';
@@ -45,9 +46,9 @@ export function UseAsDefaultDialog({
           New {kind.lowerMany} that open as
         </legend>
         {defaults.status === 'failed' ? (
-          <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+          <Callout tone="error" role="alert">
             Couldn’t load your default folders.
-          </p>
+          </Callout>
         ) : null}
         <ul className="flex flex-col gap-1">
           {defaultEntries.map((entry) => {

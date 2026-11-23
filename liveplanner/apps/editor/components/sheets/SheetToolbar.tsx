@@ -9,7 +9,7 @@ import { PaletteDropdown } from '@liveworkspace/workbench/components/palette/Pal
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
-import { ChevronIcon, SearchIcon } from './sheet-icons';
+import { ChevronIcon, MoreIcon, SearchIcon } from './sheet-icons';
 import { SheetFunctionSearch, type FunctionMatch } from './SheetFunctionSearch';
 import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';
 import { track } from '@/lib/telemetry';
@@ -283,10 +283,10 @@ export function SheetToolbar({
           type="button"
           aria-label="More"
           aria-haspopup="menu"
-          className="ml-auto flex h-9 w-9 cursor-pointer items-center justify-center rounded-md text-xl leading-none hover:bg-black/5 dark:hover:bg-white/10"
+          className="ml-auto flex h-9 w-9 cursor-pointer items-center justify-center rounded-md hover:bg-black/5 dark:hover:bg-white/10"
           onClick={(e) => setMenu({ kind: 'more', anchor: e.currentTarget })}
         >
-          ⋯
+          <MoreIcon />
         </button>
       ) : null}
       {/* Search, not on a phone: its room goes to the category's buttons. */}

@@ -1,4 +1,4 @@
-import { Button } from '@liveplanner/ui';
+import { Button, CloseIcon } from '@liveplanner/ui';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
@@ -111,7 +111,7 @@ export function PieDataEditor({
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
-              ×
+              <CloseIcon size={12} />
             </button>
           </div>
         ))}
@@ -175,7 +175,7 @@ export function LegendDataEditor({
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
-              ×
+              <CloseIcon size={12} />
             </button>
           </div>
         ))}
@@ -299,7 +299,7 @@ export function ChecklistRowsEditor({
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
               className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
-              ×
+              <CloseIcon size={12} />
             </button>
           </div>
         ))}

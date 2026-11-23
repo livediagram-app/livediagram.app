@@ -2,7 +2,7 @@
 
 import type { PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
-import { HoverCard, Tooltip, GlyphDisc, withArticle } from '@livediagram/ui';
+import { CloseIcon, GlyphDisc, HoverCard, Tooltip, withArticle } from '@livediagram/ui';
 import type { Corner } from '@/lib/photo-boxes';
 
 // What a SELECTED box offers (docs/specs/021-event-storming/event-storming.md Phase 9): its tick, a handle on each
@@ -99,7 +99,7 @@ export function BoxEditControls({
               onClick={onDelete}
               className="ml-1 text-sm text-white hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
             >
-              ×
+              <CloseIcon size={12} />
             </GlyphDisc>
           </HoverCard>
         </div>

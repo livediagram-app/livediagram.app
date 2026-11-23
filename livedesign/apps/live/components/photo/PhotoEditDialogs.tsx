@@ -27,7 +27,7 @@ import {
 } from '@/lib/photo-editor/selection-ops';
 import { photoTools } from '@/lib/photo-editor/tool-state';
 import { track } from '@/lib/telemetry';
-import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';
+import { OptionChoice, OptionSlider, OptionSwitch } from './photo-controls';
 
 const STANDARD = [standardGroup('strong', 'light', 'hex')];
 const BLENDS = BLEND_MODE_GROUPS.flat().map((m) => ({ value: m, label: BLEND_MODE_NAMES[m] }));
@@ -117,7 +117,7 @@ export function FillDialog({ photo, onClose }: { photo: PhotoEditorView; onClose
               width="w-full"
               onChange={setOpacity}
             />
-            <OptionToggle label="Preserve Transparency" on={keep} onChange={setKeep} />
+            <OptionSwitch label="Preserve Transparency" on={keep} onChange={setKeep} />
           </>
         ) : null}
       </div>

@@ -1,3 +1,4 @@
+import { CloseIcon } from '@livediagram/ui';
 import {
   ENTITY_KEY_LABELS,
   ENTITY_MAX_FIELDS,
@@ -95,7 +96,7 @@ export function EntityFieldsEditor({
               }
               className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
             >
-              ×
+              <CloseIcon size={12} />
             </button>
           </div>
         ))}

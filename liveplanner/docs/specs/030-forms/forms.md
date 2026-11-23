@@ -322,7 +322,7 @@ What a Response Makes, Set Automatically) stays closed until opened.
   then two choices side by side (stacked on a phone), each an icon, a name and a line: **Cards on a Board** ("A card
   for each response, to work through. Makes a new board.", Add a Board) and **Rows in a Sheet** ("A
   row for each response, to count and compare. Makes a new sheet.", its New Sheet); and, when the project already
-  has a Board or Sheet tab, **Or use a card type or sheet you already have**, which opens the cog on Responses Go To. It
+  has a Board or Sheet tab, **Use Existing**, which opens the cog on Responses Go To. It
   goes as soon as the form has a destination that holds, and comes back when it no longer does
   (no board shows its cards, its column or card type gone, its sheet removed), its line then the reason ("Its sheet was removed. Choose where
   responses go."). A Participant or Viewer never sees it.
@@ -376,7 +376,7 @@ What a Response Makes, Set Automatically) stays closed until opened.
     Action.
   - **A saved column outside the type's statuses** (a form from before, or a type changed since) is a warning, never
     a pause: responses keep arriving where they did, and Problems with this Form lists "Its column isn't one of
-    {Type}'s states, so its cards miss {Type}'s boards. Choose another column." with Choose Where Responses Go,
+    {Type}'s states, so its cards miss {Type}'s boards. Choose another column." with Choose Destination,
     until the column is changed. It does not hold back Publish Form or Accepting Responses, and the api never
     checks it.
 - **Questions from the card type's fields**: picking a card type under **Card Type** while the form has no questions
@@ -756,7 +756,7 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
     your sheet" for a sheet form) and **Publish Form**, which makes the form link. A form must be connected to a
     working board (its column and card type) or sheet to publish. While it has any problem, Publish Form is held
     back under "Before publishing:", every problem a line together (`FormProblems`): responses with nowhere to go
-    ("Responses have nowhere to go." and the reason) with **Choose Where Responses Go**, then each failing check, a
+    ("Responses have nowhere to go." and the reason) with **Choose Destination**, then each failing check, a
     question's or section's with **Show** (closing the dialog and selecting the question, or scrolling to the
     section):
     - "Add a question: a form needs at least one." (no questions);
@@ -849,7 +849,7 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
   one of the plan's live boards with a column of its status that takes its type (any board: none is named, see
   [Responses Go To](#responses-go-to-and-settings)). **Publish Form** is held back with the reason otherwise, so a
   form never takes responses whose cards nobody would see. A published form whose destination breaks
-  with the reason and **Choose Where Responses Go**, which opens the Responses Go To tab.
+  with the reason and **Choose Destination**, which opens the Responses Go To tab.
 
 ## Filling in a form
 

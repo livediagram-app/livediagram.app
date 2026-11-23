@@ -94,7 +94,7 @@ as every dialog's does, so no row lights up unasked.
   and a schema version this build reads), and a preview replaces the list under an **All Imports** back bar, headed
   **Import a Plan**, "See what it will make, then import it.": the plan's name, then how many tabs, cards, card
   types, comment threads and rules it holds (each count that is above zero), a quiet line "Rules come in off: turn
-  them on in Automations." when it holds any, the pictures line (below), and **Import as New Plan**. Pressing it
+  them on in Automations." when it holds any, the pictures line (below), and **Import Plan**. Pressing it
   makes a new plan of the importer's own, in My Work, named as the file names it, with every tab (fresh
   tab ids, links between them re-pointed), card (same ids and keys), card type, Sheet, comment thread and rule (off);
   then it opens. While it imports the button reads **Importing…** and the back bar is held.

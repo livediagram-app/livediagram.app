@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "Email Received" (Work Tracker 1173): the plan's addresses are read once as the
-// panel first opens, a board without one is marked in the Board picker, and Turn On Email to Board opens Email to
+// panel first opens, a board without one is marked in the Board picker, and Turn On opens Email to
 // Board over the builder on that board, reading the addresses again when it closes.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Suspense, lazy, useState, type ComponentType } from 'react';
@@ -142,10 +142,10 @@ describe('Email Received board addresses', () => {
     expect(read).toHaveBeenCalledTimes(1);
     // A board with an address, or Any Board while one has one: the plain note.
     expect(screen.getByText(/Only boards with Email to Board turned on get email/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Turn On Email to Board' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Turn On' })).toBeNull();
   });
 
-  it('offers Turn On Email to Board for a picked board with no address, and reads again once it closes', async () => {
+  it('offers Turn On for a picked board with no address, and reads again once it closes', async () => {
     read.mockResolvedValue(intakes(['b1']));
     render(<Fields trigger={{ kind: 'email_received' }} />);
     await waitFor(() => expect(options()).toContain('Inbox · Sales · No Address'));
@@ -154,7 +154,7 @@ describe('Email Received board addresses', () => {
     expect(
       screen.getByText(/Inbox · Sales has no email address yet, so no email reaches this rule\./),
     ).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Turn On Email to Board' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Turn On' }));
     const dialog = await screen.findByRole('dialog', { name: 'Email to Board' });
     expect(dialog.textContent).toContain('b2');
     read.mockResolvedValue(intakes(['b1', 'b2']));
@@ -164,14 +164,14 @@ describe('Email Received board addresses', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(read).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(options()).toContain('Inbox · Sales'));
-    expect(screen.queryByRole('button', { name: 'Turn On Email to Board' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Turn On' })).toBeNull();
   });
 
   it('says no board has an address on Any Board, opening Email to Board on every board', async () => {
     read.mockResolvedValue(intakes([]));
     render(<Fields trigger={{ kind: 'email_received' }} boards={BOARDS.slice(0, 2)} />);
     expect(await screen.findByText(/No board has an email address yet\./)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Turn On Email to Board' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Turn On' }));
     expect((await screen.findByRole('dialog')).textContent).toContain('b1,b2');
   });
 
@@ -193,7 +193,7 @@ describe('Email Received board addresses', () => {
 
     render(<Fields trigger={{ kind: 'email_received' }} ownerId="" />);
     expect(read).toHaveBeenCalledTimes(2);
-    expect(screen.queryByRole('button', { name: 'Turn On Email to Board' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Turn On' })).toBeNull();
   });
 });
 

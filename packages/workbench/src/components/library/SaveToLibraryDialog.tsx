@@ -4,6 +4,7 @@
 // person's teams) and an optional folder, then Save. A quick question, so the plain header. A refusal stays in the
 // dialog, in words, with what was typed kept.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useId, useState } from 'react';
 import { Button, DialogFooter, DialogHeader, TextInput } from '@liveworkspace/ui';
 import {
@@ -215,9 +216,9 @@ function SaveToLibraryForm({
           ) : null}
         </label>
         {error ? (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+          <Callout tone="error" role="alert">
             {error}
-          </p>
+          </Callout>
         ) : null}
       </div>
       <DialogFooter>

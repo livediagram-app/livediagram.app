@@ -104,7 +104,7 @@ On This Page. What follows is what the read carries:
 - When a page is verified or its writing is saved (at most once per page per 10 minutes), the
   room looks up passages on other pages that match its passages and asks the model whether any pair states opposite
   facts, on the team's key or, without one, on built-in AI. A found pair is a **conflict**: the question it answers, both passages, and each page's verified state.
-- Resolving: **<Page> Is Right, Fix the Other** opens the other page with the passage selected and a margin note
+- Resolving: **<Page> Is Right** opens the other page with the passage selected and a margin note
   quoting the right one; **Ask Both Owners** emails them; **Not a Conflict** dismisses the pair for good.
 - **Ask Both Owners** sends each owner of the two pages one email, **Two Pages Disagree**: the question, both
   pages by name with a link each, each passage as a plain text excerpt of at most 280 characters, and a link to
@@ -115,7 +115,7 @@ On This Page. What follows is what the read carries:
   server sends no email.
 - **The likely right one** (owner 2026-11-21): each side carries its page's Health Score, and when one side's score
   is higher by 10 or more, its row says "<Page> is more likely right (health 86 against 41)" and leads with that
-  side's **Is Right, Fix the Other**. Closer than 10, it suggests neither. It is a suggestion: both buttons stay.
+  side's **Is Right**. Closer than 10, it suggests neither. It is a suggestion: both buttons stay.
 - A conflict closes by itself when either passage changes. Bounds: 50 checks a knowledgebase a day on a key, 20 on built-in AI;
   at most 5 candidate passages a check. Only a deployment with no built-in AI and a knowledgebase with no key has no
   check, and the section says so.
@@ -158,7 +158,7 @@ page's trust (green and amber) or a comment.
 - **The right rail:** a **Suggested Edits** section between Page Health and AI Context, its heading in violet with a
   count chip: a row per suggestion (the reason's first line, then "Claude, 4 min ago · 1 removed, 2 added"), pressing
   which opens its popover on the passage (or, with no passage marked, a popover of its own anchored to the row), and a
-  **Review All in Insights** link that opens Insights filtered to Suggested Edits. Not drawn at 0.
+  **Review All** link that opens Insights filtered to Suggested Edits. Not drawn at 0.
 - **A passage no longer found** (the page changed after the suggestion was made, so `before` is not in the page once,
   as it now reads) is never marked: no wash, no marker, nothing struck. The suggestion shows in the rail and its
   popover alone, which say "The page has changed since" in place of Show in Page; Accept is still offered and the api
@@ -359,7 +359,7 @@ rows and actions, long lists capped so the page never grows with the data.
   with a toast saying why, when the change is refused. A connection that cannot write whatever is granted (a
   read-only token, or one acting for someone who is not an Editor) has no menu and says why.
 - **A conflict's row:** the question, the two passages side by side (stacked on a phone) each with its page's
-  trust, **<Page> Is Right, Fix the Other** for each side (it opens the other page), **Ask Both Owners** and **Not
+  trust, **<Page> Is Right** for each side (it opens the other page), **Ask Both Owners** and **Not
   a Conflict**. Once the owners were asked, "Owners asked 14 Nov" stands in the button's place.
 - **A question's row:** the question, "Asked 4 times by people and Coding Agent", **Draft a Page** and a dismiss
   button.
@@ -386,7 +386,7 @@ rows and actions, long lists capped so the page never grows with the data.
 - **Ask <Owner> to Write It** on a Knowledge Gap card ([Search and Ask](search-and-ask.md)): it has no email and
   is not drawn.
 - The emails have been sent only through a fake sender in tests, never from a deployed Worker.
-- **Fix the Other** opens the other page, not the passage with a margin note quoting the right one.
+- **Is Right** opens the other page, not the passage with a margin note quoting the right one.
 - **Edits Suggested by Agents** is built against the wire type and its two routes and tested over a fake; it has not
   been exercised against a running api.
 - A dismissed question or conflict, and an accepted suggestion, leave the list on the read after the action, not

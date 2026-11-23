@@ -7,6 +7,7 @@
 // one entry. One `itemHistory` page of 30, and Show older events for the next; nothing else is asked for
 // but people's names, from the Explorer's shared people store.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { Fragment, useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import type { Item, ItemEvent } from '@liveworkspace/index-client';
 import { Button, EmptyState } from '@liveworkspace/ui';
@@ -164,9 +165,9 @@ export function HistoryDialog({
         {more || state.failed ? (
           <div className="flex flex-col items-center gap-2 px-5 pb-6 pt-2">
             {state.failed ? (
-              <p role="alert" className="text-xs text-red-700 dark:text-red-300">
+              <Callout tone="error" role="alert">
                 Couldn’t load older events.
-              </p>
+              </Callout>
             ) : null}
             <Button
               variant="none"

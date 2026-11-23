@@ -37,7 +37,7 @@ export function PageCommentsView({
   change,
   me,
 }: PageCommentsViewProps) {
-  // A new thread's composer, opened from Start a New Thread while there are threads to reply to.
+  // A new thread's composer, opened from New Thread while there are threads to reply to.
   const [starting, setStarting] = useState(false);
   const { open, resolved } = useMemo(
     () => ({
@@ -138,7 +138,7 @@ export function PageCommentsView({
                 className="flex min-h-9 cursor-pointer items-center gap-1.5 self-start rounded-lg px-2 text-[13px] font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               >
                 <PlusIcon />
-                Start a New Thread
+                New Thread
               </button>
             )}
           </>

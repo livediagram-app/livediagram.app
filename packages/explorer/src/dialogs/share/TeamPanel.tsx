@@ -109,7 +109,7 @@ export function TeamPanel({
           </p>
         </div>
         <Button variant="secondary" onClick={onPasses} className="shrink-0 whitespace-nowrap">
-          Share With Someone Outside the Team
+          Issue a Pass
         </Button>
       </section>
     </div>

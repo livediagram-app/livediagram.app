@@ -448,9 +448,9 @@ function UploadZone({
         }}
       />
       {error ? (
-        <p role="alert" className="mt-2 text-xs text-rose-700 dark:text-rose-300">
+        <Callout tone="error" role="alert" className="mt-2">
           {error}
-        </p>
+        </Callout>
       ) : null}
     </div>
   );

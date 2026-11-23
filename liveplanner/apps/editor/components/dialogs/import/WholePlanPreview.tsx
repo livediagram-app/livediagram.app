@@ -2,7 +2,7 @@
 
 // The Import dialog's preview of a whole plan's file (docs/specs/026-plan/plan-tabs.md "The Import dialog", A Whole
 // Plan): under the All Imports back bar, the plan's name and what it holds, as the tools' preview shows a board, then
-// Import as New Plan in the footer. The file was read and summarised by the dialog; the import is usePlanFileImport's.
+// Import Plan in the footer. The file was read and summarised by the dialog; the import is usePlanFileImport's.
 import type { ReactNode } from 'react';
 import type { ProjectFileSummary } from '@liveplanner/project';
 import { BrandMark, Button, DialogFooter } from '@liveplanner/ui';
@@ -82,7 +82,7 @@ export function WholePlanPreview({
           onClick={onImport}
           busy={busy !== null}
         >
-          {busy === 'importing' ? 'Importing…' : 'Import as New Plan'}
+          {busy === 'importing' ? 'Importing…' : 'Import Plan'}
         </Button>
       </DialogFooter>
     </>

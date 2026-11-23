@@ -156,7 +156,7 @@ applies:
 
 On a computer, resting the pointer on it
 opens the **visibility legend** the header badge had (`VisibilityLegend`: the reach rings, one scale from Offline (first,
-the narrowest) through Private, Shared and Team to Everyone with the current stop marked, and Change Who Can See This, which opens Share), under the
+the narrowest) through Private, Shared and Team to Everyone with the current stop marked, and Change Access, which opens Share), under the
 button at its right edge. **Every state that applies is marked**: each of its stops is filled in its own hue and its
 name set bold, the track filled to the widest of them, and the top of the legend names them together ("Shared and
 Team"), each with its glyph in its hue and its own sentence, with the rings lit out to the widest; it closes a beat after the pointer leaves both. Pressing its Offline stop takes the canvas

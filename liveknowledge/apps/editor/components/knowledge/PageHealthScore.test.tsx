@@ -297,8 +297,8 @@ describe('the score elsewhere', () => {
     expect(document.querySelector('[data-likelier-right="b"]')!.textContent).toBe(
       'Old Deploys is more likely right (health 86 against 41)',
     );
-    const buttons = screen.getAllByRole('button', { name: /Is Right, Fix the Other/ });
-    expect(buttons[0]!.textContent).toBe('Old Deploys Is Right, Fix the Other');
+    const buttons = screen.getAllByRole('button', { name: /Is Right/ });
+    expect(buttons[0]!.textContent).toBe('Old Deploys Is Right');
     fireEvent.click(buttons[0]!);
     expect(open).toHaveBeenCalledWith('a', 'b1');
     expect(screen.getAllByText(/^Health \d+,$/)).toHaveLength(2);
@@ -308,7 +308,7 @@ describe('the score elsewhere', () => {
     row(conflict(80, 75));
     expect(document.querySelector('[data-likelier-right]')).toBeNull();
     expect(screen.getAllByRole('button', { name: /Is Right/ })[0]!.textContent).toBe(
-      'Deploys Is Right, Fix the Other',
+      'Deploys Is Right',
     );
     cleanup();
     row(conflict(90, undefined));
