@@ -52,7 +52,7 @@ export type AuthControlsProps = {
 // Each item leads with its glyph, as the Explorer's account menu and every other menu in the editor do.
 const MENU_ITEM =
   'flex w-full cursor-pointer items-center gap-2.5 rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700';
-const MENU_ICON = 'shrink-0 text-slate-400 dark:text-slate-500';
+const MENU_ICON = 'shrink-0 text-slate-400';
 const AccountIcon = lucideGlyph(lucideUser, 15);
 
 export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
