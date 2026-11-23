@@ -137,7 +137,7 @@ describe('ShareDialog', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Copy Viewer pass link' }));
     await waitFor(() =>
       expect(notify).toHaveBeenCalledWith(
-        'Couldn’t copy the link. Select it to copy it yourself.',
+        'Couldn’t copy the pass link. Select it to copy it yourself.',
         'error',
       ),
     );

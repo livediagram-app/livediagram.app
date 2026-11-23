@@ -6,16 +6,16 @@ import { viewList } from '../data/viewLists';
 import type { ShownItem } from '../data/overlay';
 import { useExplorer } from '../explorer/context';
 import { emptyCopy } from '../explorer/EmptyPane';
-import { Button, ConfirmDialog } from '@liveworkspace/ui';
+import { ConfirmDialog } from '@liveworkspace/ui';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
 import { ItemIcon, RestoreIcon, TrashIcon } from '../ui/icons';
 import { useNow } from '../time';
 import { quoted } from '../quoted';
 import {
-  PANE_LINK,
   PaneEmpty,
   PaneFailed,
   PaneIconButton,
+  PaneMore,
   PaneList,
   PaneRow,
   PaneSection,
@@ -85,18 +85,12 @@ export function TrashSection() {
         </PaneSection>
       ))}
       {state.hasMore ? (
-        <Button
-          variant="none"
-          busy={state.loadingMore}
-          onClick={state.moreFailed ? state.retryMore : state.loadMore}
-          className={`${PANE_LINK} self-center py-1`}
-        >
-          {state.loadingMore
-            ? 'Loading…'
-            : state.moreFailed
-              ? 'Couldn’t load more. Try again'
-              : 'Show more'}
-        </Button>
+        <PaneMore
+          loading={state.loadingMore}
+          failed={state.moreFailed}
+          onMore={state.loadMore}
+          onRetry={state.retryMore}
+        />
       ) : null}
       {confirming ? (
         <ConfirmDialog

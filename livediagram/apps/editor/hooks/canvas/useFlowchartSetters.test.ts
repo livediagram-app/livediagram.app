@@ -11,6 +11,7 @@ import {
   type ShapeElement,
   type Tab,
 } from '@livediagram/document';
+import { getTheme } from '@/lib/themes';
 import { useFlowchartSetters } from './useFlowchartSetters';
 
 // docs/specs/009-elements/flowchart.md: the Flowchart menu section's and step toolbar's actions, each one commit.
@@ -23,7 +24,7 @@ function chart(): Element[] {
   );
 }
 
-function setup(selected: string[], editsBlocked = false) {
+function setup(selected: string[], editsBlocked = false, theme?: string) {
   const notify = vi.fn();
   const commits = vi.fn();
   const hook = renderHook(() => {
@@ -31,6 +32,7 @@ function setup(selected: string[], editsBlocked = false) {
       id: 't',
       name: 'Flow',
       elements: chart(),
+      ...(theme ? { theme } : {}),
     } as unknown as Tab);
     const api = useFlowchartSetters({
       currentSelectionIds: () => new Set(selected),
@@ -72,6 +74,33 @@ describe('useFlowchartSetters', () => {
     const lane = flowchartLanes(hook.result.current.tab.elements, 'start')[1]!;
     act(() => hook.result.current.api.moveToLane('p', lane.id));
     expect(step(hook.result.current.tab.elements, 'p').flowLaneId).toBe(lane.id);
+  });
+
+  it('makes new lanes in the tab’s theme, the first two and a later one', () => {
+    const forest = getTheme('forest', 'light');
+    const { hook } = setup(['p'], false, 'forest');
+    act(() => hook.result.current.api.addLaneSelected());
+    act(() => hook.result.current.api.addLaneSelected());
+    const lanes = flowchartLanes(hook.result.current.tab.elements, 'start');
+    expect(lanes).toHaveLength(3);
+    for (const lane of lanes) {
+      expect(lane).toMatchObject({
+        fillColor: forest.elementFill,
+        strokeColor: forest.elementStroke,
+        textColor: forest.elementText,
+      });
+      // No heading of its own: the strip is the wash of the themed border.
+      expect(lane.headerFill).toBeUndefined();
+    }
+  });
+
+  it('leaves new lanes uncoloured in the Default scheme, so they read in light and dark', () => {
+    const { hook } = setup(['p']);
+    act(() => hook.result.current.api.addLaneSelected());
+    for (const lane of flowchartLanes(hook.result.current.tab.elements, 'start')) {
+      expect(lane.fillColor).toBeUndefined();
+      expect(lane.strokeColor).toBeUndefined();
+    }
   });
 
   it('says whether Tidy Flowchart moved anything', () => {

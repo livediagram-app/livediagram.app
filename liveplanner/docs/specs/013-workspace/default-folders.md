@@ -32,7 +32,7 @@ folder drops the defaults that point at it.
 - `/new` sends no place unless a `?folder=` / `?team=` context names one, so its creates are filed by default.
 - A blank made by `/new` whose template is picked afterwards on Start Planning moves to that template's default
   folder at the pick (`useTemplatePickMove`), once, unless the person chose its place. The toast says where:
-  "Moved to Boards, your default folder for Kanban plans."
+  "Moved “Roadmap” to Boards, your default folder for Kanban plans."
 - Duplicate and the server copy land beside their source and are never filed by a default.
 
 ## Surfaces

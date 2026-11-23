@@ -1,4 +1,5 @@
 import { useCallback, useState, type MutableRefObject, type SetStateAction } from 'react';
+import type { RowsEditorOpen } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
 import { useToast } from '@/hooks/ui/useToast';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
@@ -60,6 +61,12 @@ export function useEditorUiState(
   // double-click on the card and by the context menu's Code category (a
   // multi-line editor is too big for the menu, like the line chart's grid).
   const [codeEditOpenForId, setCodeEditOpenForId] = useState<string | null>(null);
+  // Which element's rows dialog is open, and which rows: a checklist's, a legend's, a chart's slices
+  // (docs/specs/008-canvas/canvas-and-palette.md "A category that opens a dialog"), or null.
+  const [rowsEditorOpenFor, setRowsEditorOpenFor] = useState<RowsEditorOpen | null>(null);
+  // Which element's Resources dialog is open (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"), or
+  // null. Opened by the element menu's Resources row.
+  const [resourcesOpenForId, setResourcesOpenForId] = useState<string | null>(null);
   // Which Sankey's Flows dialog is open (docs/specs/009-elements/sankey.md "The Flows dialog"), or null.
   // Opened by double-click on the diagram and by the menu's Edit Flows.
   const [sankeyFlowsOpenForId, setSankeyFlowsOpenForId] = useState<string | null>(null);
@@ -84,6 +91,10 @@ export function useEditorUiState(
     setLineDataOpenForId,
     codeEditOpenForId,
     setCodeEditOpenForId,
+    rowsEditorOpenFor,
+    setRowsEditorOpenFor,
+    resourcesOpenForId,
+    setResourcesOpenForId,
     sankeyFlowsOpenForId,
     setSankeyFlowsOpenForId,
     sequenceOpenForId,

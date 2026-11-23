@@ -54,7 +54,7 @@ told which tabs do ("A Markdown file imports into an article or an empty tab."),
 
 The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
 dialog**, the mirror of the Export dialog. Above the format cards a warning says the import replaces the tab and Undo
-brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine pointer). The user picks the format:
+brings it back. The warning is on this first screen only: a format's own step, reached from it, does not repeat it (a dialog offered one format opens at that step, which then carries it). The Word and PowerPoint cards show the tool's own logo in its brand colour (`brand-logos.tsx` in `@liveworkspace/workbench`); JSON and Markdown keep a text badge. The user picks the format:
 
 - **JSON**: a `.json` tab export, restored exactly.
 - **Markdown**: a `.md` document, written into an article as above.
@@ -80,7 +80,7 @@ parse + replace identically.
 **Import replaces the current tab's contents** (its elements, theme, and
 background), keeping the tab's id and name. The dialog leads with a
 warning that says so. The replace is a single `commitTabs` step, so
-**Undo (⌘Z) restores** the previous content; the warning says that too.
+**Undo restores** the previous content; the warning says that too.
 Errors render inline in the dialog; cancelling the file picker leaves the dialog
 open. Importing is disabled (menu item greyed) while the tab is locked,
 and the whole ellipsis menu is hidden for view-only visitors. Emits

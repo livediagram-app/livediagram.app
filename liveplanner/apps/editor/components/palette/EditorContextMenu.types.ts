@@ -1,4 +1,5 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
+import type { RowsEditorKind } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -43,7 +44,8 @@ import type { ColourPalette } from '@/components/palette/context-menu-input-rows
 import type { ShapeColorPreset } from '@/lib/themes';
 
 export type EditorContextMenuState =
-  | { mode: 'element'; elementId: string; x: number; y: number }
+  // `tools`: the element's own settings are open in their dialog, in the menu's place.
+  | { mode: 'element'; elementId: string; x: number; y: number; tools?: boolean }
   // A whole multi-selection or group was right-clicked — actions apply to
   // everything selected.
   | { mode: 'multi'; x: number; y: number }
@@ -65,6 +67,8 @@ export type EditorContextMenuProps = {
   // what the canvas paints.
   tabFont?: string;
   onClose: () => void;
+  // Opens the element's own settings in their dialog (MenuToolsSection).
+  onOpenTools: () => void;
   // The element currently in text-edit mode, if any. While the menu rides
   // alongside the editor (docs/specs/008-canvas/canvas-and-palette.md) the target's label is still uncommitted
   // (text commits on blur), so label-gated categories (Text: Typography /
@@ -175,8 +179,9 @@ export type EditorContextMenuProps = {
   // Code block (docs/specs/009-elements/code-block.md): open the code edit modal for the given element
   // (same too-big-for-the-menu rationale as the line chart's grid).
   onEditCodeBlock: (elementId: string) => void;
+  // Opens an element's rows in their dialog: a checklist's, a legend's, a chart's slices.
+  onEditRows: (elementId: string, kind: RowsEditorKind) => void;
   // Long-line wrapping on a code block (docs/specs/009-elements/code-block.md), on by default.
-  onSetCodeWrap: (wrap: boolean) => void;
   // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array, committed in one step.
   onSetLegendItems: (items: LegendItem[]) => void;
   // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
@@ -196,7 +201,6 @@ export type EditorContextMenuProps = {
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.
-  onSetWebRows: (rows: import('@liveplanner/project').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
@@ -345,6 +349,9 @@ export type EditorContextMenuProps = {
   // tile, shown for everyone (signed-out users can self-assign). Opens
   // the assign dialog (no action yet) or the action popover (one exists).
   onAssignAction: (elementId: string) => void;
+  // Opens the Resources dialog for the element (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"). The
+  // host closes the menu first, so the menu never stays drawn over it.
+  onOpenResources: (elementId: string) => void;
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed, Line + Pointer for arrows). The format setters

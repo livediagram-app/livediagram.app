@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type RefObject } from 'react';
+import { placeFocus } from './focus-origin';
 
 // Keep keyboard focus inside an open modal and hand it back when the modal
 // closes. Spread the returned ref onto the dialog container (which needs
@@ -97,7 +98,8 @@ export function useFocusTrap(
     // On a touch screen the container takes it instead: focusing the first control there highlights it and can
     // raise the on-screen keyboard for a field nobody tapped (docs/specs/007-editor/editor-app.md).
     if (!node.contains(document.activeElement)) {
-      (coarsePointer() || initial === 'container' ? node : (focusables()[0] ?? node)).focus({
+      // Placed, not chosen: the first control's hint stays shut (focus-origin.ts).
+      placeFocus(coarsePointer() || initial === 'container' ? node : (focusables()[0] ?? node), {
         preventScroll: true,
       });
     }

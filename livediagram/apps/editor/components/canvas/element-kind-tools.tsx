@@ -1,11 +1,12 @@
 'use client';
 
 // An element kind's own verbs (docs/specs/008-canvas/element-menu-quick-bar.md "Kind tools"): a mind node's Add Child
-// and Add Sibling, a flowchart step's Add Step, Add Branch, Step Type and Lane, a relationship's cardinality. They sit
+// and Add Sibling, a flowchart step's Add Step, Add Branch, Step Type and Lane, a relationship's cardinality, and the button that opens the element's own edit dialog (Edit Fields, Edit Code,
+// Edit Data, Edit Flows, Edit Sequence, Edit Outline). They sit
 // in a bar at the top of the element menu, with Save to Library at its right, not on the floating selection toolbar, so that toolbar keeps the same
 // buttons on every element. The canvas, which holds the handlers, publishes them for the selected element; the menu
 // shows them when it opens on that element.
-import { useLayoutEffect, useRef, useSyncExternalStore } from 'react';
+import { useLayoutEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import {
   MIND_CHILD_OPTION,
   MIND_SIBLING_OPTION,
@@ -13,8 +14,30 @@ import {
 } from '@/components/canvas/quick-connect-options';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import dynamic from 'next/dynamic';
+import {
+  lucideBetweenHorizontalEnd,
+  lucideBetweenVerticalEnd,
+  lucideChartLine,
+  lucideClock,
+  lucideList,
+  lucideListChecks,
+  lucideCode,
+  lucideEraser,
+  lucideEye,
+  lucideLock,
+  lucidePencil,
+  lucidePlay,
+  lucideRotateCcw,
+  lucideListTree,
+  lucideMessagesSquare,
+  lucideRows2,
+  lucideTable,
+  lucideWaves,
+} from '@liveworkspace/icons/lucide';
+import { lucideGlyph } from '@livediagram/ui';
 import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
 import type { LibrarySaveDraft } from '@liveworkspace/workbench/components/library/LibraryProvider';
+import type { FaceControl, FaceControlIcon } from '@/components/canvas/collab/face-controls';
 import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import {
   FlowchartStepButtons,
@@ -27,6 +50,22 @@ const CardinalityButton = dynamic(
   { ssr: false },
 );
 
+export type KindEditorKind =
+  | 'fields'
+  | 'code'
+  | 'data'
+  | 'flows'
+  | 'sequence'
+  | 'outline'
+  | 'checklist'
+  | 'legend'
+  | 'segments'
+  | 'table'
+  | 'rows';
+/** An element's own edit dialog: which one, and opening it. */
+// `label` names a rows dialog for what it holds (Edit Stats, Edit Pyramid), in place of the kind's own.
+export type KindEditor = { kind: KindEditorKind; open: () => void; label?: string };
+
 export type ElementKindTools = {
   onAddMindChild?: () => void;
   onAddMindSibling?: () => void;
@@ -34,6 +73,13 @@ export type ElementKindTools = {
   addRow?: { label: string; description: string; onAdd: () => void };
   flowchartStep?: FlowchartStepToolbar;
   cardinality?: CardinalityToolbar;
+  // The element's own edit dialog (docs/specs/008-canvas/element-menu-quick-bar.md "Kind tools"): an entity's
+  // fields, a code block's code, a line chart's data, a Sankey's flows, a sequence diagram, a mind map's outline.
+  editor?: KindEditor;
+  // A table's structure (docs/specs/008-canvas/canvas-and-palette.md): a row at its foot, a column at its right.
+  table?: { onAddRow: () => void; onAddColumn: () => void };
+  // A collaboration element's main controls (face-controls.ts): Edit Question, Start, Reveal Answer, Reset.
+  controls?: readonly FaceControl[];
   // The element as a Library item (liveworkspace/docs/specs/006-media/libraries.md).
   saveToLibrary?: () => LibrarySaveDraft | null;
 };
@@ -50,6 +96,9 @@ const hasAny = (t: ElementKindTools) =>
   !!t.addRow ||
   !!t.flowchartStep ||
   !!t.cardinality ||
+  !!t.editor ||
+  !!t.table ||
+  !!t.controls?.length ||
   !!t.saveToLibrary;
 
 /** The canvas: the selected element's kind tools, or none. Set before paint (a layout effect), so a menu opened in the
@@ -100,6 +149,81 @@ export function useElementKindTools(id: string): ElementKindTools | null {
   return snap && snap.id === id ? snap.tools : null;
 }
 
+// Each kind's edit dialog as a button: what it is called and what it opens.
+const icon = (prims: Parameters<typeof lucideGlyph>[0]) => {
+  const Icon = lucideGlyph(prims, 16);
+  return <Icon />;
+};
+const KIND_EDITORS: Record<
+  KindEditorKind,
+  { label: string; description: string; icon: ReactNode }
+> = {
+  fields: {
+    label: 'Edit Fields',
+    description: "Add, edit and remove this entity's fields.",
+    icon: icon(lucideTable),
+  },
+  code: {
+    label: 'Edit Code',
+    description: 'Write or paste the code, and pick its language.',
+    icon: icon(lucideCode),
+  },
+  data: {
+    label: 'Edit Data',
+    description: "Edit the chart's series and values in a grid.",
+    icon: icon(lucideChartLine),
+  },
+  flows: {
+    label: 'Edit Flows',
+    description: 'Edit what flows from where to where, and how much.',
+    icon: icon(lucideWaves),
+  },
+  sequence: {
+    label: 'Edit Sequence',
+    description: 'Edit the participants and the messages between them.',
+    icon: icon(lucideMessagesSquare),
+  },
+  outline: {
+    label: 'Edit Outline',
+    description: 'Edit the whole map as a list.',
+    icon: icon(lucideListTree),
+  },
+  checklist: {
+    label: 'Edit Checklist',
+    description: 'Tick, reword, add and remove its rows.',
+    icon: icon(lucideListChecks),
+  },
+  legend: {
+    label: 'Edit Legend',
+    description: 'Set the colour and the word on each row of the key.',
+    icon: icon(lucideList),
+  },
+  table: {
+    label: 'Edit Table',
+    description: "Set its header, its striping and its cells' text.",
+    icon: icon(lucideTable),
+  },
+  rows: {
+    label: 'Edit Rows',
+    description: 'Add, remove and reorder them, and set what it is made of.',
+    icon: icon(lucideRows2),
+  },
+  segments: {
+    label: 'Edit Segments',
+    description: 'Name each part of the meeting and give it its minutes.',
+    icon: icon(lucideClock),
+  },
+};
+
+const CONTROL_ICONS: Record<FaceControlIcon, ReactNode> = {
+  edit: icon(lucidePencil),
+  start: icon(lucidePlay),
+  lock: icon(lucideLock),
+  reveal: icon(lucideEye),
+  reset: icon(lucideRotateCcw),
+  clear: icon(lucideEraser),
+};
+
 /** The kind tools as toolbar buttons, each named in its hover card. */
 const SAVE_BUTTON =
   'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
@@ -141,16 +265,48 @@ export function ElementKindToolButtons({
           {webRowOption(tools.addRow.label, tools.addRow.description).icon}
         </PopoverButton>
       ) : null}
+      {tools.table ? (
+        <>
+          <PopoverButton
+            label="Add Row"
+            description="Add a row at the foot of the table."
+            onClick={tools.table.onAddRow}
+          >
+            {icon(lucideBetweenHorizontalEnd)}
+          </PopoverButton>
+          <PopoverButton
+            label="Add Column"
+            description="Add a column at the right of the table."
+            onClick={tools.table.onAddColumn}
+          >
+            {icon(lucideBetweenVerticalEnd)}
+          </PopoverButton>
+        </>
+      ) : null}
+      {tools.editor ? (
+        <PopoverButton
+          label={tools.editor.label ?? KIND_EDITORS[tools.editor.kind].label}
+          description={KIND_EDITORS[tools.editor.kind].description}
+          onClick={tools.editor.open}
+        >
+          {KIND_EDITORS[tools.editor.kind].icon}
+        </PopoverButton>
+      ) : null}
+      {tools.controls?.map((c) => (
+        <PopoverButton key={c.key} label={c.label} description={c.description} onClick={c.run}>
+          {CONTROL_ICONS[c.icon]}
+        </PopoverButton>
+      ))}
       {tools.flowchartStep ? (
         // Its own closing rule is dropped here: Save to Library sits apart at the right.
         <span className="contents [&>[aria-hidden]:last-child]:hidden">
-          <FlowchartStepButtons {...tools.flowchartStep} menuAnchor="self" />
+          <FlowchartStepButtons {...tools.flowchartStep} menuAnchor="portal" />
         </span>
       ) : null}
       {tools.cardinality ? (
         <>
           {tools.flowchartStep || tools.onAddMindChild ? <Divider /> : null}
-          <CardinalityButton {...tools.cardinality} menuAnchor="self" />
+          <CardinalityButton {...tools.cardinality} menuAnchor="portal" />
         </>
       ) : null}
       {/* Save to Library: pushed to the bar's right, which sets it apart (no rule needed). */}
@@ -166,6 +322,12 @@ export function ElementKindToolButtons({
 /** Whether the element has verbs of its kind (Save to Library aside). */
 export function hasKindVerbs(t: ElementKindTools): boolean {
   return (
-    !!(t.onAddMindChild && t.onAddMindSibling) || !!t.addRow || !!t.flowchartStep || !!t.cardinality
+    !!(t.onAddMindChild && t.onAddMindSibling) ||
+    !!t.addRow ||
+    !!t.flowchartStep ||
+    !!t.cardinality ||
+    !!t.editor ||
+    !!t.table ||
+    !!t.controls?.length
   );
 }

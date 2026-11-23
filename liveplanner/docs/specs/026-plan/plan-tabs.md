@@ -78,13 +78,14 @@ as every dialog's does, so no row lights up unasked.
     Sheet's own picker ([CSV](../029-sheets/sheet.md#csv)).
   - **Any other tab** (a Dashboard or Form tab, or one not yet started): **liveplanner Tab**, "A tab's JSON from
     Export. Replaces this tab." Pressing it opens the paste-or-file step ([Import and Export of a
-    Dashboard](#import-and-export-of-a-dashboard)) under an **All Imports** back bar: the amber warning naming the
-    tab, the box to paste into, **Import File** and **Import**.
+    Dashboard](#import-and-export-of-a-dashboard)) under an **All Imports** back bar: the box to paste into,
+    **Import File** and **Import**. The amber warning naming the tab is not repeated there (the row has said
+    "Replaces this tab."); it shows only where this step is the dialog's first screen.
   - The row is dimmed, its line saying why, when this person may not import into the tab: "This tab is locked.
     Unlock it to import into it.", "Only someone who may add cards can import here." (a board) or "Only someone who
     may change this sheet can import here." (a Sheet).
 - **A Board from Another Tool**, for an Editor only: **Trello**, **Asana**, **Jira** and **Linear**, each with the
-  tool's mark, its file type at the right and a line naming the file and where the tool keeps it
+  tool's own logo (white on a tile of its brand colour), its file type at the right and a line naming the file and where the tool keeps it
   ([Importing from another tool](tracker-import.md#where-it-lives)). Under the section, one quiet line: "A one-off
   copy into a new Board tab or plan, after a preview."
 - **A Whole Plan**, for an Editor only, under the tools: one row, **liveplanner Plan**, with the prism tile, a
@@ -94,7 +95,7 @@ as every dialog's does, so no row lights up unasked.
   and a schema version this build reads), and a preview replaces the list under an **All Imports** back bar, headed
   **Import a Plan**, "See what it will make, then import it.": the plan's name, then how many tabs, cards, card
   types, comment threads and rules it holds (each count that is above zero), a quiet line "Rules come in off: turn
-  them on in Automations." when it holds any, the pictures line (below), and **Import as New Plan**. Pressing it
+  them on in Automations." when it holds any, the pictures line (below), and **Import Plan**. Pressing it
   makes a new plan of the importer's own, in My Work, named as the file names it, with every tab (fresh
   tab ids, links between them re-pointed), card (same ids and keys), card type, Sheet, comment thread and rule (off);
   then it opens. While it imports the button reads **Importing…** and the back bar is held.

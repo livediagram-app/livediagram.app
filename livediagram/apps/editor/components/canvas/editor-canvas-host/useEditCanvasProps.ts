@@ -3,6 +3,16 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
+import {
+  isChartShape,
+  isChecklistShape,
+  isLegendShape,
+  isLineShape,
+  type Element,
+} from '@livediagram/document';
+import type { RowsEditorKind } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
+import type { KindEditor } from '@/components/canvas/element-kind-tools';
+import { webRowsTitle } from '@/components/palette/context-menu-web-editors';
 
 // The Canvas props for changing what is on the canvas (EditorCanvasHost): the selection's actions, undo
 // and redo, dragging, label and table edits, the element faces' own setters, and the arrow handles.
@@ -56,6 +66,9 @@ export function useEditCanvasProps({
     setExportOpen,
     setExportScope,
     setCodeEditOpenForId,
+    setEntityFieldsOpenForId,
+    setLineDataOpenForId,
+    setRowsEditorOpenFor,
     setSankeyFlowsOpenForId,
     setSequenceOpenForId,
     setLinkPickerOpenForId,
@@ -95,6 +108,33 @@ export function useEditCanvasProps({
     if (el.shape === 'code-block') setCodeEditOpenForId(id);
     else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
     else if (el.shape === 'sequence' && canEditSequence(can, el)) setSequenceOpenForId(id);
+  };
+  // The element's own edit dialog, for its kind tool in the element menu's bar and the Quick Style panel
+  // (docs/specs/008-canvas/element-menu-quick-bar.md "Kind tools"). A chart a sheet fills has no data to edit here.
+  const kindEditor = (el: Element): KindEditor | null => {
+    if (el.locked) return null;
+    if (el.type === 'table')
+      return { kind: 'table', open: () => setRowsEditorOpenFor({ id: el.id, kind: 'table' }) };
+    if (el.type !== 'shape') return null;
+    if (el.shape === 'entity')
+      return { kind: 'fields', open: () => setEntityFieldsOpenForId(el.id) };
+    if (el.shape === 'code-block') return { kind: 'code', open: () => setCodeEditOpenForId(el.id) };
+    if (isLineShape(el.shape) && !el.chartSheetSource)
+      return { kind: 'data', open: () => setLineDataOpenForId(el.id) };
+    const rows = (kind: RowsEditorKind) => () => setRowsEditorOpenFor({ id: el.id, kind });
+    if (isChartShape(el.shape) && !el.chartSheetSource)
+      return { kind: 'data', open: rows('slices') };
+    if (isChecklistShape(el.shape)) return { kind: 'checklist', open: rows('checklist') };
+    if (isLegendShape(el.shape)) return { kind: 'legend', open: rows('legend') };
+    if (el.shape === 'agenda') return { kind: 'segments', open: rows('segments') };
+    // A stat row, a process, a header, a card's tags, a concept graphic: the dialog named for what it holds.
+    const title = webRowsTitle(el);
+    if (title) return { kind: 'rows', open: rows('web-rows'), label: `Edit ${title}` };
+    if (el.shape === 'sankey' && canEditSankey(can, el))
+      return { kind: 'flows', open: () => setSankeyFlowsOpenForId(el.id) };
+    if (el.shape === 'sequence' && canEditSequence(can, el))
+      return { kind: 'sequence', open: () => setSequenceOpenForId(el.id) };
+    return null;
   };
   return {
     onDuplicateMultiSelected: duplicateMultiSelected,
@@ -153,6 +193,7 @@ export function useEditCanvasProps({
     onOpenNote: openNote,
     onEditLink: isReadOnly ? undefined : setLinkPickerOpenForId,
     onOpenEditDialog: isReadOnly ? undefined : openEditDialog,
+    kindEditor: isReadOnly ? undefined : kindEditor,
     onToggleAspectLock: toggleAspectLockSelected,
     onToggleLockSelected: toggleLockSelected,
     onDeleteSelected: deleteSelected,

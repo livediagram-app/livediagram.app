@@ -129,6 +129,10 @@ export function resetDialogSlot(): void {
 // the tool and closes it). A dialog opened inside it resets this for its own subtree.
 export const DialogInlineContext = createContext(false);
 
+// Whether the dialog a header sits in rises as a sheet on a phone, so a hero header runs its band up under the
+// sheet's grab handle without each dialog having to say so.
+export const DialogPhoneSheetContext = createContext(false);
+
 export function useDialogInline(): boolean {
   return useContext(DialogInlineContext);
 }

@@ -41,16 +41,17 @@ Scheme ids are stored on elements, so they are permanent: a name may be reworded
 ## Wrapping
 
 `codeWrap`, absent meaning **true**: a line longer than the card wraps instead of running off it, breaking mid-token
-as well as on spaces, because code has long unbroken runs (a URL, a minified line). **Wrap Long Lines** in the menu's
-Code category turns it off. The still render wraps too (word first, mid-token as a fallback).
+as well as on spaces, because code has long unbroken runs (a URL, a minified line). **Wrap Long Lines** in the Code
+dialog turns it off. The still render wraps too (word first, mid-token as a fallback).
 
 ## Editing
 
-- **Double-click** (`EditorCanvasHost`, `useBoxedElementGestures`) or **Edit Code** in the menu opens the **Edit code
+- **Double-click** (`EditorCanvasHost`, `useBoxedElementGestures`) or the menu's **Code** row opens the **Edit code
   dialog** (`../packages/workbench/src/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces; Shift+Tab moves focus back out as anywhere, and ⌘/Ctrl+Enter saves, so a keyboard is never trapped in the field; a hint under it says so where there is a keyboard) and a language dropdown. Save commits code and language together, one undo step
   (`useDataShapeSetters`); read-only and locked tabs can't open it.
-- The element menu's **Code** category (`context-menu-data-editors.tsx`, in `ElementDataSections`) shows the line
-  count and language, Edit Code, and Wrap Long Lines. The language is chosen in the dialog only.
+- The element menu's **Code** row (in `ElementDataSections`) opens the dialog, and says so with the window mark at
+  its right (`MenuDialogSection`); the language and **Wrap Long Lines** are chosen in the
+  dialog only.
 
 ## Export render
 

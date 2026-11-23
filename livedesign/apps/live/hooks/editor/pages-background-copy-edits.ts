@@ -15,6 +15,7 @@ import {
 } from '@livedesign/design';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { track } from '@/lib/telemetry';
 
 export type BackgroundCopyEdits = {
@@ -101,7 +102,8 @@ export function backgroundCopyEdits({
     const to = current.find((p) => p.id === toPageId);
     if (!from || !to || pagesSharing(current, fromPageId).has(toPageId) || !mayEdit()) return false;
     if (pageLockRefuses(current, toPageId)) {
-      toastInfo('That page is locked. Unlock it to change its background.');
+      const named = toastName(to.name) ?? `Page ${current.indexOf(to) + 1}`;
+      toastInfo(`${named} is locked. Unlock it to change its background.`);
       debugLog('[page] paint refused: page locked', { tabId, toPageId });
       return false;
     }

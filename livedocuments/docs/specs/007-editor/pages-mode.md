@@ -720,7 +720,7 @@ given in one go rather than page by page.
   are an element's and do not narrow a page's paint. A press on the source page, an element pressed
   under a page brush, or a page pressed under an element's brush is a no-op that keeps the brush
   (as a shape's look onto an arrow is). Painting crosses kinds (a slide's background onto an
-  infographic page); a locked target says so ("That page is locked. Unlock it to change its background.") and is left
+  infographic page); a locked target says so ("<Page> is locked. Unlock it to change its background.") and is left
   as it is. A refused paint keeps a Paint once brush (only a paint empties it), and a brush whose
   page has gone (deleted, undone) empties as the page goes (`useDeadPageBrush`), so the next press, on a page or an element, works at once. A press off every
   page still ends the tool.
@@ -814,7 +814,7 @@ size with a tooltip ("Tidy: align and space what is on this page"), its glyph a 
   it was. Where a worker cannot start, the page works it out itself.
 - **Runs at once.** One tidier, so no popover: a press tidies the page, one edit, one undo. On a
   desktop pointer, hovering the button shows the tidied page in place (nothing written); leaving the button puts it back. A page already tidy says so in a
-  toast ("This page is already tidy.") and writes nothing.
+  toast ("<Page> is already tidy.") and writes nothing.
 - **What it tidies**: the elements on the page (centre on the page, as everywhere else), as
   **blocks**: an element with others wholly inside it (a card and its text, a background and
   everything on it) carries them, and what is inside a block is tidied inside it the same way.
@@ -1829,7 +1829,7 @@ onto a page made to fit it instead.
   fits A4's margin box in that orientation, and otherwise **Fit to Content** ("Sizes"): the
   content's bounds plus the margin all round. Past `FIT_PAGE_MAX_SIDE` the page stops growing and
   the content runs off its edge, still unscaled.
-- A toast tells the editor: "Put onto a page that fits it. Undo takes the page away." Telemetry:
+- A toast tells the editor: "Put “<tab>” onto a page that fits it. Undo takes the page away." Telemetry:
   `Tab · Changed · PageFitToContent`.
 
 ### Split Into Pages
@@ -1851,9 +1851,9 @@ separate pages. It is explicit: never run on opening a tab.
   last share it (its page made around them together). At the page limit there is no room for a
   second page: nothing changes and a toast says "A tab holds at most 100 pages: delete one to split
   this page."
-- With one cluster there is nothing to split: the page is left as it is and a toast says "This
-  page is one group: nothing to split."
-- It is **one edit**. A toast: "Split into n pages. Undo puts it back." Telemetry:
+- With one cluster there is nothing to split: the page is left as it is and a toast says "<Page>
+  is one group: nothing to split."
+- It is **one edit**. A toast: "Split <page> into n pages. Undo puts it back." Telemetry:
   `Tab · Changed · PagesLaidOut`.
 
 ## Slides

@@ -15,7 +15,7 @@ const TeamGlyph = /* @__PURE__ */ lucideGlyph(lucideUsers, 18);
 /**
  * One export's row in Settings › Your Data: the person's own or a team's, in its state. None and lapsed offer to
  * make one; running shows how far it has got and that an email follows; ready shows its size and dates with Download
- * and Make a New One; failed says so with Try Again.
+ * and New Export; failed says so with Try Again.
  */
 export function ExportRow({
   kind,
@@ -109,7 +109,7 @@ export function ExportRow({
                 Download
               </a>
               <button type="button" className={BUTTON.secondary} disabled={busy} onClick={onStart}>
-                Make a New One
+                New Export
               </button>
             </>
           ) : (

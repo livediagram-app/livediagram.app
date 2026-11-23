@@ -30,7 +30,7 @@ and the tools' own import dialogs, **Import from draw.io**, **Import from Excali
 Import header too, each with its own one line.
 
 An import's refusal names what it read: a picked file is "This file isn't valid JSON.", pasted text "This pasted text
-isn't valid JSON." (a JSON tab), and an Excalidraw scene, pasted, dropped or picked, "This isn't valid JSON."; never
+isn't valid JSON." (a JSON tab), and an Excalidraw scene, pasted, dropped or picked, "This Excalidraw scene isn't valid JSON."; never
 "File" for text that was pasted (Work Tracker 1060).
 
 ## File types

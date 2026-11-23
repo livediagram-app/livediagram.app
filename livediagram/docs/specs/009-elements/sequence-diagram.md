@@ -46,8 +46,8 @@ A sequence is too much to edit in a menu, so it has its own dialog, as the [Sank
 
 ### The menu
 
-The **Sequence** section (Tools flyout), closed until opened: a one-line summary (`3 participants · 5 messages`), an
-**Edit Sequence** button that opens the dialog, and **Numbered** on / off. The **Play** animation is the Sequence
+The **Sequence** row (Tools flyout) opens the dialog, for someone who may edit the diagram, and says so with the
+window mark at its right (`MenuDialogSection`); **Numbered** on / off is the toggle row under it. The **Play** animation is the Sequence
 section of the menu's Animation row.
 
 ### The Sequence dialog

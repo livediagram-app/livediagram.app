@@ -84,6 +84,27 @@ What differs from a frame is presentation only:
 - **Left-aligned, vertically centred label**, so the title reads along the
   band's leading edge rather than floating in the middle of the work.
 
+## A lane in the tab's theme
+
+A lane follows the tab's theme whole: its body, its border, its title and its **heading strip**.
+
+- The body, border and title are the theme's element fill, stroke and text, as for any shape
+  ([Themes](../011-theme/README.md)); under a multi-colour theme they are the lane's branch colours.
+- The heading strip **follows the border**. Unset, it is the 10% wash of the lane's stroke, so it is
+  the theme's without a colour of its own. Whenever a theme writes a lane's border, the lane's
+  `headerFill` is cleared and the strip returns to that wash:
+  - a template or an import painted with the tab's theme (a Swimlane's lanes are built with a hue
+    each; in a themed tab they take the theme, strip included);
+  - a theme picked in the Tab Style dialog, for every lane whose border was still the old theme's
+    (or unset);
+  - **Reset Elements to Theme**, for every lane.
+- A lane whose border you coloured yourself keeps its border and its heading through a theme pick,
+  like any colour you chose. A heading picked on a lane whose border is the theme's goes with the
+  border: it was chosen against the old theme.
+- The Default scheme writes no element colours, so it leaves a lane, heading included, as it is.
+- Nothing is stored for the appearance: an unset strip is drawn from the border the viewer sees, so it
+  reads in light and in dark, on the canvas and in every export alike.
+
 ## Aligning the title re-orients the lane
 
 The gutter is the title's backdrop, so it runs along whichever **edge the

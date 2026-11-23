@@ -455,7 +455,9 @@ describe('the Audit Log', () => {
     await waitFor(() => expect(rows().length).toBe(1));
     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
     expect(
-      await screen.findByText(/Saved the newest 20 events\. Narrow the dates to export the rest\./),
+      await screen.findByText(
+        /Saved the newest 20 audit events\. Narrow the dates to export the rest\./,
+      ),
     ).toBeTruthy();
     expect(index.count('teamAuditCsv')).toBe(AUDIT_EXPORT_FILES_MAX);
   });

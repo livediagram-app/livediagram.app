@@ -301,14 +301,15 @@ View items of the command palette).
 
 All on the active photo, each one edit:
 
-- **Image Size…** (dialog): width and height in pixels or percent, a chain keeping the shape (on by default), and
-  **Resample**: **Bicubic** (the default, best for photos), **Bilinear**, **Nearest Neighbour** (hard edges, for
+- **Image Size…** (dialog): width and height, **Keep Proportions** (a switch, on by default), **Units**
+  (**Pixels** or **Percent**), and **Resample**: **Bicubic** (the default, best for photos), **Bilinear**, **Nearest Neighbour** (hard edges, for
   pixel art). Every layer and mask is resampled; text layers keep their text and scale their size. The page's
   sheet takes the new shape.
 - **Canvas Size…** (dialog): new width and height, an **Anchor** grid of nine (where the existing pixels sit), and
   the colour new pixels on the bottom layer take (**Transparent**, **White**, **Background Colour**). Layers keep
   their pixels; the photo grows or crops around them.
-- **Rotate** (90° steps, 180°, or **Rotate…** any angle with the canvas growing to fit) and **Flip** turn every
+- **Rotate** (90° steps, 180°, or **Rotate…** any angle, with a **Direction** of **Clockwise** or
+  **Anticlockwise** and the canvas growing to fit) and **Flip** turn every
   layer together. A text layer stays upright and editable: its box moves so its centre stays on the same part of
   the picture.
 - **Crop to Selection** crops to the selection's bounds; **Trim Transparent** crops to the composite's
@@ -366,7 +367,7 @@ has no Make Sizes ([Pages](../007-editor/pages-mode.md) "One kind a tab").
 
 - **One edit**: every new page lands in one tab edit (one undo step, synced to everyone), right after the page it
   came from, in the dialog's order, each named for its format ("Instagram Post", ..., "Custom"). The view goes to
-  the first new page, and a toast says "Made <n> sizes." with **Export All Sizes** ([Exports and other
+  the first new page, and a toast says "Made <n> sizes of “<design>”." with **Export All Sizes** ([Exports and other
   views](#exports-and-other-views)).
 - **Each new photo** is the source photo's layer stack at the format's pixel size, by the rules of **Image Size**
   then **Canvas Size** ([Changing the size](#changing-the-size)) in one step: every pixel layer and mask resampled

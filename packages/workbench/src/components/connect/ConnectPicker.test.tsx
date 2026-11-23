@@ -123,7 +123,7 @@ describe('ConnectPicker', () => {
     const { onConnect } = setup();
     await screen.findByRole('list', { name: 'Recent files' });
     fireEvent.click(screen.getByRole('radio', { name: 'Participant' }));
-    fireEvent.click(screen.getByRole('switch', { name: 'Add connection to both files' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Connect both files' }));
     fireEvent.click(row('plan1'));
     await waitFor(() => expect(onConnect).toHaveBeenCalledTimes(1));
     expect(onConnect).toHaveBeenCalledWith(ITEMS[1], { level: 'participate', both: true });
@@ -133,7 +133,7 @@ describe('ConnectPicker', () => {
     const { onConnect } = setup({ hostManaged: false });
     await screen.findByRole('list', { name: 'Recent files' });
     const both = screen.getByRole<HTMLButtonElement>('switch', {
-      name: 'Add connection to both files',
+      name: 'Connect both files',
     });
     expect(both.disabled).toBe(true);
     expect(screen.getByText("Only this diagram's owner can connect it both ways.")).toBeTruthy();

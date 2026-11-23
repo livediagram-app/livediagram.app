@@ -21,11 +21,14 @@ import {
 import {
   DialogCloseButton,
   Glyph,
+  Tooltip,
+  lucideGlyph,
   closeDialogSlot,
   openDialogSlot,
   setDialogSlotNode,
   useDialogSlot,
 } from '@liveworkspace/ui';
+import { lucideCloudUpload, lucideLogIn } from '@liveworkspace/icons/lucide';
 import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { toolsHeroArt } from '@liveworkspace/ui/dialog-hero-art/tools';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
@@ -37,7 +40,7 @@ import {
   useToolsDoorItems,
   useToolsViewRequest,
 } from './tools-door';
-import { ToolsView } from './ToolsView';
+import { TOOLS_HEIGHT_PX, ToolsView } from './ToolsView';
 import { AnimatedHeightBox } from '../primitives/AnimatedHeightBox';
 
 /** The popover's sections, in the order they show; a section with no tool in it is left out. */
@@ -126,8 +129,39 @@ const PLATE =
   'flex size-10 shrink-0 items-center justify-center rounded-[11px] bg-[var(--hero-soft)] text-[var(--hero-accent)] shadow-[inset_0_0_0_1px_var(--hero-faint)] transition-colors duration-micro group-hover:bg-[var(--hero-wash)] group-hover:shadow-[inset_0_0_0_1px_var(--hero-line)] group-focus-visible:bg-[var(--hero-wash)] [&_svg]:size-[18px]';
 
 // What a tool needs first (Sign In, Sync Plan): a quiet pill beside its name, in the row's own ink.
+// A badge is an icon, not its words (owner, 2026-11-23): the words widened every row they sat on. The words stay as
+// the badge's name, for a screen reader and the tooltip.
 const BADGE =
-  'shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-semibold leading-4 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700';
+  'flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700';
+
+const SignInBadgeIcon = lucideGlyph(lucideLogIn, 12);
+const SyncBadgeIcon = lucideGlyph(lucideCloudUpload, 12);
+
+// "Sign In" is a door; "Sync <Item>" (the app's own noun) is a cloud to send it to. A badge with other words keeps them.
+function ToolBadge({ badge }: { badge: string }) {
+  const icon =
+    badge === 'Sign In' ? (
+      <SignInBadgeIcon />
+    ) : badge.startsWith('Sync ') ? (
+      <SyncBadgeIcon />
+    ) : null;
+  if (!icon)
+    return (
+      <span
+        data-tools-badge=""
+        className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-semibold leading-4 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
+      >
+        <span className="text-optical-line">{badge}</span>
+      </span>
+    );
+  return (
+    <Tooltip label={badge}>
+      <span data-tools-badge="" role="img" aria-label={badge} className={BADGE}>
+        {icon}
+      </span>
+    </Tooltip>
+  );
+}
 
 function Chevron() {
   return (
@@ -144,13 +178,9 @@ function Chevron() {
 export function ChromeToolsMenu({
   items,
   labelled = false,
-  minPx,
 }: {
   items: ReadonlyArray<ChromeToolsItem | null>;
   labelled?: boolean;
-  /** A taller floor than 500 px, for an app with few tools whose views want the room a longer list gives (liveknowledge
-   *  takes liveplanner's height, owner 2026-11-21). Never past the screen. */
-  minPx?: number;
 }) {
   const [open, setOpen] = useState(false);
   // The button, held in state (not a ref) so the popover opens from it in render.
@@ -397,12 +427,17 @@ export function ChromeToolsMenu({
             <div
               ref={view ? undefined : measureList}
               data-tools-popover=""
-              // Never under 300 px, list or tool (owner, 2026-11-17), unless the screen is shorter.
+              // One height in every app (owner, 2026-11-23): the height liveplanner's list, the longest, stretches to,
+              // so Tools is as tall with two tools as with eight, unless the screen is shorter. A phone's drawer keeps
+              // its own floor and its 85% cap.
               className="relative flex max-h-[inherit] min-h-[min(500px,calc(100dvh-2rem))] flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
               style={
-                minPx
-                  ? { ...HERO_TOKEN_STYLE, minHeight: `min(${minPx}px, calc(100dvh - 2rem))` }
-                  : HERO_TOKEN_STYLE
+                sheet
+                  ? HERO_TOKEN_STYLE
+                  : {
+                      ...HERO_TOKEN_STYLE,
+                      minHeight: `min(${TOOLS_HEIGHT_PX}px, calc(100dvh - 2rem))`,
+                    }
               }
             >
               <p aria-live="polite" data-tools-live="" className="sr-only">
@@ -441,7 +476,6 @@ export function ChromeToolsMenu({
                     sheet={sheet}
                     tall={claimed?.size === '3xl'}
                     floorPx={listPx}
-                    minPx={minPx}
                     waiting={waiting}
                     slotRef={view.slot != null ? slotRef : undefined}
                   >
@@ -497,9 +531,7 @@ export function ChromeToolsMenu({
                                         {item.label}
                                       </span>
                                       {item.badges?.map((badge) => (
-                                        <span key={badge} data-tools-badge="" className={BADGE}>
-                                          {badge}
-                                        </span>
+                                        <ToolBadge key={badge} badge={badge} />
                                       ))}
                                     </span>
                                     <span className="truncate text-xs leading-snug text-slate-500 dark:text-slate-400">

@@ -3,6 +3,7 @@
 import { useRef, type PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import {
+  CloseIcon,
   HoverCard,
   Tooltip,
   GlyphDisc,
@@ -114,7 +115,7 @@ export function BoxEditControls({
               onClick={onDelete}
               className="ml-1 text-sm text-white hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-white"
             >
-              ×
+              <CloseIcon size={12} />
             </GlyphDisc>
           </HoverCard>
         </div>

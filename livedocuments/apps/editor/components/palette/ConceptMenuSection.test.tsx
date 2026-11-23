@@ -11,7 +11,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livedocuments/document';
-import { ConceptMenuSection } from './ConceptMenuSection';
+import { ConceptSettings, conceptTitle } from './ConceptMenuSection';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 afterEach(cleanup);
@@ -27,13 +27,7 @@ function show(target: ShapeElement & { shape: ConceptShape }) {
     burst: vi.fn(),
     commitTab: vi.fn(),
   };
-  render(
-    <ConceptMenuSection
-      target={target}
-      ops={ops}
-      sectionProps={() => ({ open: true, onToggle: () => {}, flush: true })}
-    />,
-  );
+  render(<ConceptSettings target={target} ops={ops} />);
   const lastMap = () =>
     (ops.commit as ReturnType<typeof vi.fn>).mock.calls.at(-1)![0] as (e: Element) => ShapeElement;
   return { ops, lastMap };
@@ -42,7 +36,8 @@ function show(target: ShapeElement & { shape: ConceptShape }) {
 describe('ConceptMenuSection', () => {
   it("switches a hub's spokes off, and names each new kind", () => {
     const { ops, lastMap } = show(make('hub'));
-    expect(screen.getByText('Hub and Spoke')).toBeTruthy();
+    // The graphic's name is its menu row's and its dialog's, not a heading over its settings.
+    expect(conceptTitle('hub')).toBe('Hub and Spoke');
     fireEvent.click(screen.getByRole('button', { name: /Spokes/ }));
     expect(ops.commit).toHaveBeenCalledWith(expect.any(Function), 'HubSpokes');
     expect(lastMap()(make('hub')).hubSpokes).toBe(false);

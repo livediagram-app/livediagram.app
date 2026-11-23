@@ -15,16 +15,21 @@ const PHONE_MAX_PX = 640;
 /** The popover never meets the window's right edge. */
 const EDGE_MIN_PX = 8;
 
-export type TabStyleAnchor = { right: number; top: number } | { right: number; bottom: number };
+// `arrow`: how far in from the popover's right edge the middle of what it hangs from is, for the arrow that points
+// at it, as the cluster's other popovers (Tidy Up, Layers) point at their buttons.
+export type TabStyleAnchor =
+  { right: number; top: number; arrow: number } | { right: number; bottom: number; arrow: number };
 
 /** Where the popover sits now, read once: nothing it hangs from moves while it is open. */
 export function tabStyleAnchor(opener?: () => Element | null): TabStyleAnchor | null {
   if (window.innerWidth < PHONE_MAX_PX) return null;
   const from = opener?.()?.getBoundingClientRect();
   if (from && from.width > 0) {
+    const right = Math.max(EDGE_MIN_PX, Math.round(window.innerWidth - from.right));
     return {
-      right: Math.max(EDGE_MIN_PX, Math.round(window.innerWidth - from.right)),
+      right,
       top: Math.round(from.bottom + ANCHOR_GAP_PX),
+      arrow: Math.round(window.innerWidth - right - (from.left + from.width / 2)),
     };
   }
   const brush = document.querySelector<HTMLElement>('[data-tour-id="canvas-theme"]');
@@ -35,9 +40,11 @@ export function tabStyleAnchor(opener?: () => Element | null): TabStyleAnchor | 
     .querySelector<HTMLElement>('[data-zoom-cluster]')
     ?.getBoundingClientRect();
   const edge = cluster && cluster.width > 0 ? Math.max(cluster.right, box.right) : box.right;
+  const right = Math.max(EDGE_MIN_PX, Math.round(window.innerWidth - edge));
   return {
-    right: Math.max(EDGE_MIN_PX, Math.round(window.innerWidth - edge)),
+    right,
     bottom: Math.round(window.innerHeight - box.top + ANCHOR_GAP_PX),
+    arrow: Math.round(window.innerWidth - right - (box.left + box.width / 2)),
   };
 }
 

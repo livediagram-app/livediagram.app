@@ -18,6 +18,8 @@ export {
   ShareDialog,
   type ShareDialogProps,
   type ShareTab,
+  type ShareTeamMember,
+  type ShareTeamRead,
   type ShareView,
   type ShareHandOver,
   type ShareHelpArticle,

@@ -66,7 +66,7 @@ the blank's (a Workshop template picked on a Diagram blank), so the mode's defau
   mode's blank, never for Offline or a template link.
 - **The first template picked from a start screen** on that first tab takes the note. When the person did not
   choose the folder, the index's defaults are read again for the template's mode, and the canvas goes to that
-  default when it is somewhere else. A toast says so: "Moved to **Retros**, your default folder for workshops."
+  default when it is somewhere else. A toast says so: "Moved “Sprint 12” to **Retros**, your default folder for workshops."
 - **Once per canvas:** the note is taken at the first pick, and dropped when the tab gains content any other way
   first. Only an Editor picks from a start screen, so only an Editor's pick files a canvas.
 - A failure (a list that cannot be read, a refused move) leaves the canvas where it is.

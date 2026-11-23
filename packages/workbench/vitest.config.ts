@@ -221,6 +221,10 @@ const HELD_AT_100 = [
   'src/components/send-to-plan/sent-card-indicator.ts',
   'src/components/send-to-plan/SentChip.tsx',
   'src/components/send-to-plan/ThreadSendToPlan.tsx',
+  // The Table dialog's controls and the text style glyphs, the editors' one copy (each editor's 008-canvas
+  // canvas-and-palette.md "The Table dialog").
+  'src/components/dialogs/TableSettings.tsx',
+  'src/components/palette/text-style-icons.tsx',
 ];
 
 export default defineProject({

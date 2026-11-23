@@ -82,6 +82,7 @@ export function useInspectHost(input: HostInput): InspectSession {
               writeClipboard: (text) => navigator.clipboard.writeText(text),
               openShare: now.openShare,
               toast,
+              link: 'Inspect link',
               copied: 'Copied a link that opens with Inspect',
               makeFirst: 'Make a Viewer link, then copy the Inspect link.',
             });

@@ -53,7 +53,11 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
 3. **Gutter size.** `laneSizeOfElement(el) = headerSize ?? (band || isUprightTitle(el) ? LANE_BAND_PX : LANE_GUTTER_PX)`,
    clamped to `[MIN_GUTTER_PX, span - MIN_GUTTER_PX]` where `span` is the lane's height for a band
    and its width otherwise; both renderers use this one clamp [QA10].
-4. **Gutter fill.** `headerFill` at full strength when set; else the stroke at opacity 0.1.
+4. **Gutter fill.** `headerFill` at full strength when set; else the stroke at opacity 0.1. The theme
+   transforms clear it when they write the lane's border (`laneHeadingPatch` in
+   `../packages/element-model/src/themes.ts`): `recolourElementForTheme` when the theme has an element
+   stroke, `switchThemeElement` when the lane's stroke was unset or the previous theme's, and
+   `resetThemeElement` always.
 5. **Seam drag.** States: **idle** (`dragSize === null`) and **dragging**. Pointer-down on the seam
    stores `{ start, from: size }` and enters dragging. Each `pointermove` on `window`:
    - `travel` is the client delta on the band's axis; `signed = 2 * travel` for `centre-x`, `-travel`

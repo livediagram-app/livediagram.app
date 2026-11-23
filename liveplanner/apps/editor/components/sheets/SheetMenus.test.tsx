@@ -562,7 +562,7 @@ describe('the sort dialog', () => {
     fireEvent.click(within(dialog).getByRole('checkbox'));
     fireEvent.change(columns()[0]!, { target: { value: '1' } });
     fireEvent.change(orders()[0]!, { target: { value: 'z' } });
-    fireEvent.click(btn('Add Another Sort Column'));
+    fireEvent.click(btn('Add Sort Column'));
     expect(within(dialog).getByText('Then by')).toBeTruthy();
     fireEvent.change(orders()[1]!, { target: { value: 'z' } });
     fireEvent.change(orders()[1]!, { target: { value: 'a' } });

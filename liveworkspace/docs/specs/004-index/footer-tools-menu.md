@@ -100,7 +100,7 @@ between tools, never in a modal of its own on top of the editor.
   (Automations' rule builder) asks first, as its own close did. Escape steps back one level (a confirm or a menu open
   in the tool first, a snapshot's in-place confirm among them), then closes Tools from the list. The close shuts Tools from any level.
 - **Sizes.** Every tool takes Tools' own width, 480px (owner, 2026-11-17), so the popover's sides never move. Each view takes
-  its own height, never under **500 px** (owner, 2026-11-17; a shorter screen caps it), or a taller floor an app asks for (`minPx`: liveknowledge, with few tools, takes liveplanner's 785 px, and an open tool fills that floor too, its footer at the bottom; owner 2026-11-21) (Email to Board is short, History tall), the popover easing smoothly to it whenever it grows or shrinks. A press outside closes Tools, except for a tool marked to stay open (livediagram's Slide Deck, used alongside the canvas), which only its close button or Escape shuts
+  one height in every app, **785 px** (owner, 2026-11-23: what liveplanner's list, the longest, stretches to; a shorter screen caps it, and a phone's drawer keeps its 500 px floor), the list and every open tool alike, a tool filling it with its footer at the bottom (Email to Board is short, History tall), the popover easing smoothly to it whenever it grows or shrinks. A press outside closes Tools, except for a tool marked to stay open (livediagram's Slide Deck, used alongside the canvas), which only its close button or Escape shuts
   (owner, 2026-11-17), up to the room above the button; past that it scrolls inside under the band.
 - **Stepping aside** (Work Tracker 1287). A tool that works on the canvas from a bar of its own (Walkthroughs while
   picking what to hide) marks itself `stepAside`: Tools stays open, its view and state kept, but is drawn out of sight
@@ -161,8 +161,9 @@ a webhook is a connection, managed on the **Connections** tab inside Automations
 ### Always there
 
 A tool that would work for this person but for an account or for where the item lives **always shows** in Tools
-(owner, 2026-11-16), so everyone can find it, with small badges beside its name saying everything it needs, in order:
-**Sign In** (it needs an account), then **Sync Plan** (the app's own noun: Sync Canvas, Sync Document, Sync Design,
+(owner, 2026-11-16), so everyone can find it, with small round icon badges beside its name saying everything it needs, in order (icons, not words, which widened
+the row; each badge's words are its tooltip and its name for a screen reader):
+**Sign In**, a door with an arrow in (it needs an account), then **Sync Plan**, a cloud with an arrow up (the app's own noun: Sync Canvas, Sync Document, Sync Design,
 Sync Space; it needs the item saved to the server). Signed out on an item kept Offline, it wears both. A press opens
 that tool's gate in its place, in Automations' shape, on the first thing it needs: Sign In leaves for the sign-in page
 and comes back with the tool open; Sync syncs in place and goes on to the tool. Where neither would help (a share-link holder for a tool only an

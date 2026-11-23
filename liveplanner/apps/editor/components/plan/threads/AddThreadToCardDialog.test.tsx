@@ -88,7 +88,7 @@ describe('Add Thread to Card', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Search cards' }), {
       target: { value: 'nothing like it' },
     });
-    expect(screen.getByText('No cards match.')).toBeTruthy();
+    expect(screen.getByText('No cards match “nothing like it”')).toBeTruthy();
   });
 
   it('adds the thread to a card in this plan at once', async () => {

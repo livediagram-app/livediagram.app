@@ -68,7 +68,7 @@ test('two Editors write one draft, a Viewer reads the saved page, and Save publi
   // bar.
   await edit(page);
   await expect(
-    sam.getByText(/^Ada\b.* started editing\. You're editing with them\.$/),
+    sam.getByText(/^Ada\b.* started editing .+\. You're editing with them\.$/),
   ).toBeVisible();
   await expect(draftBar(sam)).toBeVisible();
   await expect(writing(sam)).toHaveAttribute('contenteditable', 'true');
@@ -88,7 +88,7 @@ test('two Editors write one draft, a Viewer reads the saved page, and Save publi
   // Sam saves: Vera reads it, Ada is told and keeps editing.
   await saveButton(sam).click();
   await expect(writing(vera)).toContainText('A line in the draft.');
-  await expect(page.getByText('Sam Okafor saved the page')).toBeVisible();
+  await expect(page.getByText(/^Sam Okafor saved /)).toBeVisible();
   await expect(draftBar(page)).toBeVisible();
   await expect(editButton(sam)).toBeVisible();
 

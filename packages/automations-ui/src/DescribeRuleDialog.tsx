@@ -9,17 +9,13 @@
 // item's owner's AI credits: the line under the box says so and what is left, and once they are used a notice says
 // when they start again, with the right way on (liveworkspace/docs/specs/019-subscription/subscription.md).
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import type { AiSourceLine } from '@liveworkspace/settings-ui/ai-source';
 import { AI_DRAFT_PROMPT_MAX, AUTOMATION_AI_PER_DAY } from '@liveworkspace/automations';
-import {
-  Button,
-  DialogCloseButton,
-  DialogFooter,
-  DialogHeader,
-  SparkleIcon,
-} from '@liveworkspace/ui';
+import { Button, DialogFooter, SparkleIcon } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { describeRuleHeroArt } from '@liveworkspace/ui/dialog-hero-art/describe-rule';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import { AutomationRefusal } from './automations-client';
@@ -67,6 +63,7 @@ export function DescribeRuleDialog({
   const box = useRef<HTMLTextAreaElement>(null);
   // The ask under way: an answer to one cancelled, or replaced, is dropped.
   const asking = useRef(0);
+  const titleId = useId();
   const prompt = text.trim();
   useEffect(() => {
     box.current?.focus();
@@ -102,18 +99,15 @@ export function DescribeRuleDialog({
   };
 
   return (
-    <Dialog open onClose={cancel} ariaLabel="Describe a Rule" size="xl" phoneSheet>
-      <DialogHeader
-        title={
-          <span className="flex items-center gap-2">
-            <SparkleIcon size={16} aria-hidden className="text-brand-700 dark:text-brand-300" />
-            Describe a Rule
-          </span>
-        }
+    <Dialog open onClose={cancel} titleId={titleId} size="xl" phoneSheet>
+      <HeroDialogHeader
+        art={describeRuleHeroArt}
+        titleId={titleId}
+        title="Describe a Rule"
         subtitle="Say when the rule should run and what it should do. You check it before anything is saved."
-      >
-        <DialogCloseButton onClick={cancel} />
-      </DialogHeader>
+        onClose={cancel}
+        underHandle
+      />
       <DescribePrompt
         ref={box}
         dataAttr="data-describe-rule"

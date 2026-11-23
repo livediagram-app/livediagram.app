@@ -5,14 +5,15 @@
 // flowchart step's, a relationship's cardinality), which the floating selection toolbar no longer carries. Not drawn on
 // an element with none. Also here: quickBarItems, the Resources category's rows.
 import { elementSendItem } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
-import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
-import { elementKindLabel, type BoxedElement, type Element } from '@livediagram/document';
 import {
-  ActionMenuIcon,
-  CommentMenuIcon,
-  NoteMenuIcon,
-} from '@liveworkspace/workbench/components/palette/context-menu-icons';
-import { LinkMenuIcon, LiveStatusMenuIcon } from '@/components/palette/context-menu-icons';
+  elementResourceOptions,
+  appLinkModes,
+  type AppLinkMode,
+  type ResourceOption,
+} from '@liveworkspace/workbench/components/palette/element-resources';
+import type { ReactNode } from 'react';
+import { elementKindLabel, type BoxedElement, type Element } from '@livediagram/document';
+import { LiveStatusMenuIcon } from '@/components/palette/context-menu-icons';
 import {
   ElementKindToolButtons,
   useElementKindTools,
@@ -22,69 +23,63 @@ import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-// The items the bar offers on `target`, in order: what attaches to it. A link card and a video take their link from
-// their own Link category, so the generic Add Link is not offered on them.
+// The Resources options offered on `target`, in order: what attaches to it. A link card and a video take their link from
+// their own Link category, so Link is not offered on them (elementResourceOptions).
+// A link's places: a web address, a tab, then a file of each product, this app's first.
+const LINK_MODES = appLinkModes('livediagram', 'document');
 export function quickBarItems(
   target: BoxedElement,
   props: Pick<
     EditorContextMenuProps,
     'onAssignAction' | 'onOpenComments' | 'onLinkElement' | 'onOpenNote' | 'onEditLiveStatus'
-  >,
-): ResourceItem[] {
-  const comments = (target as { commentThread?: { comments: readonly unknown[] } }).commentThread;
-  const hasComments = !!comments && comments.comments.length > 0;
-  const items: ResourceItem[] = [
-    {
-      key: 'action',
-      detail: 'What a click on it does',
-      label: target.action ? 'View Action' : 'Assign Action',
-      icon: <ActionMenuIcon />,
-      on: !!target.action,
-      run: () => props.onAssignAction(target.id),
-    },
-    {
-      key: 'comment',
-      detail: 'A thread to talk it over',
-      label: hasComments ? 'View Comments' : 'Add Comment',
-      icon: <CommentMenuIcon />,
-      on: hasComments,
-      run: () => props.onOpenComments(target.id),
-    },
-  ];
-  if (target.type !== 'link-card' && target.type !== 'video')
-    items.push({
-      key: 'link',
-      detail: 'A page or tab it opens',
-      label: target.link ? 'Edit Link' : 'Add Link',
-      icon: <LinkMenuIcon />,
-      on: !!target.link,
-      run: () => props.onLinkElement(target.id),
-    });
-  items.push({
-    key: 'note',
-    detail: 'Words kept behind it',
-    label: target.note ? 'Edit Note' : 'Add Note',
-    icon: <NoteMenuIcon />,
-    on: !!target.note,
-    run: () => props.onOpenNote(target.id),
+  > & {
+    // The Resources dialog's own: what takes a link or a note off, and the tabs a link may name.
+    onRemoveLink?: () => void;
+    onRemoveNote?: (elementId: string) => void;
+    tabs?: readonly { id: string; name: string }[];
+    // A link place's own step inside the dialog (ResourceLinkPanel).
+    linkPanel?: (mode: 'url' | 'tab' | 'document' | AppLinkMode, done: () => void) => ReactNode;
+  },
+): ResourceOption[] {
+  const options = elementResourceOptions<(typeof LINK_MODES)[number]['mode']>(target, {
+    onAssignAction: props.onAssignAction,
+    onOpenComments: props.onOpenComments,
+    // The link picker knows this app's own places; another product's files are picked in the dialog's own step.
+    onLinkElement:
+      props.onLinkElement &&
+      ((id, mode) =>
+        props.onLinkElement?.(id, mode?.startsWith('app:') ? undefined : (mode as never))),
+    onOpenNote: props.onOpenNote,
+    onRemoveLink: props.onRemoveLink,
+    onRemoveNote: props.onRemoveNote,
+    linkModes: LINK_MODES,
+    linkPanel: props.linkPanel,
+    tabs: props.tabs,
   });
   // An Editor's binding to a status URL (docs/specs/009-elements/live-status.md "The Live Status dialog"): passed only
   // when this session may bind this shape on a deployment that checks.
   const { onEditLiveStatus } = props;
-  if (onEditLiveStatus)
-    items.push({
+  if (onEditLiveStatus) {
+    const statusUrl =
+      target.type === 'shape' && typeof target.statusUrl === 'string' ? target.statusUrl : '';
+    options.push({
       key: 'live-status',
-      detail: 'Whether its service is up',
+      name: 'Live Status',
       label: 'Live Status…',
       icon: <LiveStatusMenuIcon />,
-      on: target.type === 'shape' && typeof target.statusUrl === 'string',
+      on: !!statusUrl,
+      detail: 'Whether its service is up',
+      state: statusUrl
+        ? statusUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+        : 'No status URL yet',
       run: () => onEditLiveStatus(target.id),
     });
+  }
   // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner, while this session
   // may send.
   const send = elementSendItem(target);
-  if (send) items.push(send);
-  return items;
+  if (send) options.push(send);
+  return options;
 }
 
 export function ElementMenuQuickBar({ target, onClose }: { target: Element; onClose: () => void }) {
@@ -104,7 +99,7 @@ export function ElementMenuQuickBar({ target, onClose }: { target: Element; onCl
         const b = (e.target as HTMLElement).closest('button');
         if (b && !b.hasAttribute('aria-haspopup')) queueMicrotask(onClose);
       }}
-      className="flex items-center gap-0.5 border-b border-slate-100 px-1.5 py-1 dark:border-slate-800 [&>[aria-hidden]:last-child]:hidden"
+      className="relative z-[1] flex items-center gap-0.5 border-b border-slate-100 px-1.5 py-1 dark:border-slate-800 [&>[aria-hidden]:last-child]:hidden"
     >
       {tools ? <ElementKindToolButtons tools={tools} /> : null}
       {canClear ? (

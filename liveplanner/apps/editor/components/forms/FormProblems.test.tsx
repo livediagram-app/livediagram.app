@@ -25,7 +25,7 @@ describe('FormProblems', () => {
       />,
     );
     expect(screen.getByText(/Responses have nowhere to go/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Choose Where Responses Go' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Choose Destination' }));
     expect(fix).toHaveBeenCalledOnce();
     // Show for a question's problem; none for "add a question", which has nothing to show.
     expect(screen.getAllByRole('button', { name: 'Show' })).toHaveLength(1);
@@ -72,7 +72,7 @@ describe('FormProblemsButton', () => {
 // the problems, with its fix, and counted only where it is given.
 
 describe('FormProblems with a warning', () => {
-  it('lists the warning with Choose Where Responses Go', () => {
+  it('lists the warning with Choose Destination', () => {
     const fix = vi.fn();
     render(
       <FormProblems
@@ -84,7 +84,7 @@ describe('FormProblems with a warning', () => {
       />,
     );
     expect(screen.getByText('Its column isn’t one of Work Item’s states.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Choose Where Responses Go' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Choose Destination' }));
     expect(fix).toHaveBeenCalledTimes(1);
   });
 

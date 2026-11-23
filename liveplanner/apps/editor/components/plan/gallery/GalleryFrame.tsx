@@ -4,10 +4,12 @@
 // Field), shared by Add a Widget and Add Field: a header with the title, its line, a search beside them and a close
 // cross, then the rail down the left and the list beside it (the rail a row of chips over the list in a gallery under
 // 600 px wide), and a polite line said to a screen reader. The gallery fills the popover it sits in, or, given
-// `dialogTitleId`, the modal (Add Field's): the modal's panel draws the box, the title is the dialog's heading at the
-// type editor's size, the close is the dialogs' cross, and under 600 px the search drops below the title and close.
+// `dialogHero`, the modal (Add Field's): the modal's panel draws the box, the title, its line and the close are the
+// dialog hero header's (liveworkspace/docs/specs/004-index/dialog-hero-header.md), and the search has a row of its own
+// under it.
 import type { ComponentProps, KeyboardEvent, ReactNode, Ref } from 'react';
-import { CloseIcon, DialogCloseButton, lucideGlyph } from '@liveplanner/ui';
+import { CloseIcon, lucideGlyph } from '@liveplanner/ui';
+import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
 import { lucideSearch } from '@liveworkspace/icons/lucide';
 
 const SearchGlyph = lucideGlyph(lucideSearch, 14);
@@ -23,7 +25,7 @@ export function GalleryFrame({
   onClose,
   rail,
   said,
-  dialogTitleId,
+  dialogHero,
   children,
 }: {
   title: string;
@@ -42,11 +44,32 @@ export function GalleryFrame({
   rail?: ReactNode;
   // Said to a screen reader as it changes (what a press did, how many match).
   said?: string;
-  // In a modal: the id its heading takes, for the dialog's aria-labelledby.
-  dialogTitleId?: string | undefined;
+  // In a modal: the hero header's art, and the id its heading takes, for the dialog's aria-labelledby.
+  dialogHero?: { titleId: string; art: HeroArt } | undefined;
   children: ReactNode;
 }) {
-  const inDialog = dialogTitleId !== undefined;
+  const inDialog = dialogHero !== undefined;
+  const searchBox = (
+    <label
+      className={`flex h-8 pointer-coarse:h-auto min-w-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-slate-400 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-400/30 motion-reduce:transition-none dark:border-slate-700 ${
+        inDialog ? 'w-full' : 'w-56 @max-[600px]:w-auto @max-[600px]:flex-1'
+      }`}
+    >
+      <SearchGlyph />
+      <input
+        ref={searchRef}
+        type="search"
+        autoFocus={search.autoFocus}
+        autoComplete="off"
+        aria-label={search.label}
+        placeholder={search.placeholder}
+        value={search.value}
+        onChange={(e) => search.onChange(e.target.value)}
+        onKeyDown={search.onKeyDown}
+        className="min-w-0 flex-1 bg-transparent text-[12px] text-slate-800 outline-none placeholder:text-slate-400 pointer-coarse:min-h-8 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
+      />
+    </label>
+  );
   return (
     <div
       className={`@container flex flex-col overflow-hidden text-slate-900 dark:text-slate-50 ${
@@ -55,70 +78,43 @@ export function GalleryFrame({
           : 'max-h-[min(76vh,40rem)] rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900'
       }`}
     >
-      <div
-        className={`flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-100 dark:border-slate-800 ${
-          inDialog ? 'gap-x-3 px-5 pb-3.5 pt-5 max-sm:pt-2' : 'px-4 pb-3 pt-3.5'
-        }`}
-      >
-        <div className="min-w-[12rem] flex-1">
-          {inDialog ? (
-            <h2
-              id={dialogTitleId}
-              className="text-lg font-semibold text-slate-900 dark:text-slate-50"
-            >
-              {title}
-            </h2>
-          ) : (
+      {dialogHero ? (
+        <>
+          <HeroDialogHeader
+            art={dialogHero.art}
+            titleId={dialogHero.titleId}
+            title={title}
+            subtitle={line}
+            onClose={onClose}
+            underHandle
+          />
+          <div className="shrink-0 border-b border-slate-100 px-5 py-3 max-sm:px-4 dark:border-slate-800">
+            {searchBox}
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-100 px-4 pb-3 pt-3.5 dark:border-slate-800">
+          <div className="min-w-[12rem] flex-1">
             <h3 className="text-[14px] font-semibold text-slate-900 dark:text-slate-100">
               {title}
             </h3>
-          )}
-          <p
-            className={`text-slate-500 dark:text-slate-400 ${inDialog ? 'text-[13px]' : 'text-[12px]'}`}
-          >
-            {line}
-          </p>
+            <p className="text-[12px] text-slate-500 dark:text-slate-400">{line}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1.5 @max-[600px]:w-full">
+            {searchBox}
+            {onClose ? (
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none pointer-coarse:size-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+              >
+                <CloseIcon size={12} />
+              </button>
+            ) : null}
+          </div>
         </div>
-        <div
-          className={`flex shrink-0 items-center gap-1.5 @max-[600px]:w-full ${
-            // In a modal, the search drops below the title and its close on a narrow gallery.
-            // Wide, it sits at the top level with the close (both 32 px tall), not centred on the two-line title.
-            inDialog ? 'self-start @max-[600px]:order-last @max-[600px]:self-auto' : ''
-          }`}
-        >
-          <label className="flex h-8 w-56 pointer-coarse:h-auto min-w-0 items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-slate-400 transition focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-400/30 motion-reduce:transition-none @max-[600px]:w-auto @max-[600px]:flex-1 dark:border-slate-700">
-            <SearchGlyph />
-            <input
-              ref={searchRef}
-              type="search"
-              autoFocus={search.autoFocus}
-              autoComplete="off"
-              aria-label={search.label}
-              placeholder={search.placeholder}
-              value={search.value}
-              onChange={(e) => search.onChange(e.target.value)}
-              onKeyDown={search.onKeyDown}
-              className="min-w-0 flex-1 bg-transparent text-[12px] text-slate-800 outline-none placeholder:text-slate-400 pointer-coarse:min-h-8 dark:text-slate-100 [&::-webkit-search-cancel-button]:hidden"
-            />
-          </label>
-          {onClose && !inDialog ? (
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={onClose}
-              className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 motion-reduce:transition-none pointer-coarse:size-11 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              <CloseIcon size={12} />
-            </button>
-          ) : null}
-        </div>
-        {onClose && inDialog ? (
-          // Level with the title and the search, as the type editor's close is.
-          <span className="flex h-8 items-center self-start">
-            <DialogCloseButton compact onClick={onClose} />
-          </span>
-        ) : null}
-      </div>
+      )}
       <div className="flex min-h-[18rem] flex-1 overflow-hidden @max-[600px]:flex-col">
         {rail}
         {children}

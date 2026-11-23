@@ -119,7 +119,7 @@ export function CrossAppRuleCard({
       {onRuns ? (
         <div>
           <Button variant="secondary" size="xs" onClick={onRuns}>
-            Last Runs in the Audit Trail
+            View Last Runs
           </Button>
         </div>
       ) : null}

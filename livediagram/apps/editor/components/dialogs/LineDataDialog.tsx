@@ -1,5 +1,7 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { lineDataHeroArt } from '@liveworkspace/ui/dialog-hero-art/line-data';
+import { Button, CloseIcon, PlusIcon } from '@livediagram/ui';
 import type { LineSeries } from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -71,29 +73,25 @@ export function LineDataDialog({
     });
   };
 
+  const titleId = useId();
   return (
     <Dialog
       open
       onClose={close}
       closeOnEscape={!elementTourRunning}
-      ariaLabel="Edit chart data"
+      titleId={titleId}
       size="xl"
       className="max-h-[90vh]"
     >
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): a line chart, the front series' peak ringed. */}
+      <HeroDialogHeader
+        art={lineDataHeroArt}
+        titleId={titleId}
         title="Chart Data"
         subtitle="A row per category, a column per series. Or import a CSV (header = series names, first column = categories)."
-      >
-        <HelpArticleLink article="dataElements" size="md" />
-        <button
-          type="button"
-          onClick={close}
-          aria-label="Close"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <CloseIcon size={18} />
-        </button>
-      </DialogHeader>
+        actions={<HelpArticleLink article="dataElements" size="md" />}
+        onClose={close}
+      />
 
       <div className="flex items-center gap-2 px-6 pt-4">
         <label data-tour-id="chart-data-import" className={`${addBtn} cursor-pointer`}>
@@ -142,7 +140,7 @@ export function LineDataDialog({
                       }
                       className={xBtn}
                     >
-                      ×
+                      <CloseIcon size={12} />
                     </button>
                   </div>
                 </th>
@@ -159,7 +157,7 @@ export function LineDataDialog({
                   }
                   className={`${addBtn} h-8 w-8 !px-0`}
                 >
-                  +
+                  <PlusIcon size={12} />
                 </button>
               </th>
             </tr>
@@ -210,7 +208,7 @@ export function LineDataDialog({
                     }
                     className={xBtn}
                   >
-                    ×
+                    <CloseIcon size={12} />
                   </button>
                 </td>
               </tr>

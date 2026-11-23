@@ -5,6 +5,8 @@ import { Button } from '../Button';
 import { Dialog } from './Dialog';
 import { useDialogInline } from './dialog-slot';
 import { DialogFooter } from './DialogFooter';
+import { confirmHeroArt } from './hero/art/confirm';
+import { HeroDialogHeader } from './hero/HeroDialogHeader';
 
 // The one "are you sure?" modal: a title, a message and a single yes/no choice, so nothing falls back to the
 // OS-default window.confirm chrome. Every editor's (through workbench's useConfirm, which adds the editor's modal
@@ -64,7 +66,9 @@ export function ConfirmDialog({
   );
 }
 
-// The question. Asked inside Tools (dialog-slot.ts), under the back bar that already heads it, it sits closer to it.
+// The question: the dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md) holding the title,
+// the message under it. No close in the header: the two answers are the ways out. Asked inside Tools (dialog-slot.ts)
+// the back bar names the tool, not the question, so the question stays in sight there as a plain heading.
 function ConfirmBody({
   titleId,
   title,
@@ -75,19 +79,23 @@ function ConfirmBody({
   message: string;
 }) {
   const inline = useDialogInline();
+  if (inline)
+    return (
+      <div className="border-b border-slate-100 px-4 pb-4 pt-1 dark:border-slate-800">
+        <h2 id={titleId} className="text-base font-semibold text-slate-900 dark:text-slate-50">
+          {title}
+        </h2>
+        <p className="mt-2 whitespace-pre-line text-sm text-slate-600 dark:text-slate-300">
+          {message}
+        </p>
+      </div>
+    );
   return (
-    <div
-      className={`border-b border-slate-100 dark:border-slate-800 ${inline ? 'px-4 pb-4 pt-1' : 'px-6 pb-4 pt-6'}`}
-    >
-      <h2
-        id={titleId}
-        className={`font-semibold text-slate-900 dark:text-slate-50 ${inline ? 'text-base' : 'text-lg'}`}
-      >
-        {title}
-      </h2>
-      <p className="mt-2 whitespace-pre-line text-sm text-slate-600 dark:text-slate-300">
+    <>
+      <HeroDialogHeader art={confirmHeroArt} titleId={titleId} title={title} />
+      <p className="whitespace-pre-line border-b border-slate-100 px-6 py-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-300">
         {message}
       </p>
-    </div>
+    </>
   );
 }

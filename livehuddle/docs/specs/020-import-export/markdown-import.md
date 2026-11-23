@@ -73,9 +73,9 @@ locked import.
 ## How it's triggered: the Import dialog
 
 The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
-dialog**, the mirror of the Export dialog. Both lay their format cards out three across, two across on a phone
+dialog**, the mirror of the Export dialog. A card's description is one short sentence, three or four lines at most on the card (owner, 2026-11-23: nobody reads eight). Both lay their format cards out three across, two across on a phone
 (three left each card about 110px wide there). Above the cards a warning says the import replaces the tab and Undo
-brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine pointer). The user picks the format:
+brings it back. The warning is on this first screen only: a format's own step, reached from it, does not repeat it (a dialog offered one format opens at that step, which then carries it). The user picks the format:
 
 - **JSON**: a `.json` tab export, restored exactly.
 - **Mermaid**: a flowchart, keeping every connection ([Mermaid import & export](mermaid.md)).
@@ -98,7 +98,7 @@ parse + replace identically.
 **Import replaces the current tab's contents**: its elements, theme, and
 background, keeping the tab's id and name. The dialog leads with a
 warning that says so. The replace is a single `commitTabs` step, so
-**Undo (⌘Z) restores** the previous content; the warning says that too.
+**Undo restores** the previous content; the warning says that too.
 Errors render inline in the dialog (e.g. "No headings, lists, or tables
 found in this Markdown."); cancelling the file picker leaves the dialog
 open. Importing is disabled (menu item greyed) while the tab is locked,

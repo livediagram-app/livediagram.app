@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { placeFocus } from '../focus-origin';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -185,6 +186,13 @@ describe('useHint, keyboard focus', () => {
     render(<Harness kind="tooltip" />);
     fireEvent.focus(button());
     expect(tip()?.dataset.source).toBe('focus');
+  });
+
+  it('opens nothing on visible focus that code placed (a modal focusing its first control)', () => {
+    focusVisible(true);
+    render(<Harness kind="hover-card" />);
+    act(() => placeFocus(button()));
+    expect(tip()).toBeNull();
   });
 
   it('opens nothing on focus that is not keyboard-visible', () => {

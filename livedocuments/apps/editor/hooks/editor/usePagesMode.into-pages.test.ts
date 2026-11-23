@@ -51,7 +51,7 @@ describe('entering Pages mode', () => {
     expect(h.tab().elements).toEqual(before.elements);
     expect(h.tab().pages).toHaveLength(1);
     expect(h.toastInfo).toHaveBeenCalledWith(
-      'Put onto a page that fits it. Undo takes the page away.',
+      'Put “T” onto a page that fits it. Undo takes the page away.',
     );
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'PageFitToContent');
   });

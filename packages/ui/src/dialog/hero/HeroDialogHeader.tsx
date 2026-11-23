@@ -7,11 +7,11 @@
 // to two lines inside the 100px, as at every width (two lines of each fit, 88px). The band is
 // the art's (HeroArt): a texture, corner pieces, and from a 56rem header a centre piece. It is static: memoised on
 // the art, which is a module constant, so it paints once however often the dialog re-renders.
-import { memo, type CSSProperties, type ReactNode } from 'react';
+import { memo, useContext, type CSSProperties, type ReactNode } from 'react';
 import { SHEET_HANDLE_PX } from '../../SheetHandle';
 import { DialogCloseButton } from '../DialogCloseButton';
 import { InlineDialogHeader } from '../InlineDialogHeader';
-import { useDialogInline } from '../dialog-slot';
+import { DialogPhoneSheetContext, useDialogInline } from '../dialog-slot';
 import { heroCentreCap, type HeroArt } from './hero-art';
 import { HERO_TOKEN_STYLE } from './hero-tokens';
 
@@ -80,7 +80,7 @@ export type HeroDialogHeaderProps = {
   actions?: ReactNode;
   /** The close (DialogCloseButton), last. Absent, no close. */
   onClose?: () => void;
-  /** A phone sheet's header: the band runs up under its grab handle. */
+  /** A phone sheet's header: the band runs up under its grab handle. Unset, it follows the dialog it sits in. */
   underHandle?: boolean;
   /** Extra classes, e.g. `[--hero-centre-end:15rem]` for wider actions. */
   className?: string;
@@ -93,9 +93,12 @@ export function HeroDialogHeader({
   subtitle,
   actions,
   onClose,
-  underHandle = false,
+  underHandle,
   className = '',
 }: HeroDialogHeaderProps) {
+  // In a dialog that is a sheet on a phone, the band runs up under the grab handle unless the dialog says otherwise.
+  const inSheet = useContext(DialogPhoneSheetContext);
+  const under = underHandle ?? inSheet;
   // Drawn inside Tools: no band (the back bar heads the tool), the title for screen readers, the line and the actions.
   const inline = useDialogInline();
   // Where a centre piece shows, the title and its line stop short of it, so the two never meet.
@@ -114,7 +117,7 @@ export function HeroDialogHeader({
       className={`@container relative isolate flex shrink-0 items-center gap-3 [color-scheme:light] dark:[color-scheme:dark] h-[100px] px-4 sm:px-6 ${TOP_RADIUS} ${className}`}
       style={HEADER_STYLE}
     >
-      <HeroBand art={art} underHandle={underHandle} />
+      <HeroBand art={art} underHandle={under} />
       <HeroTitleMark art={art} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <h2

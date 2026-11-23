@@ -6,15 +6,10 @@
 // confirmed in place in its own row. Drawn inside Tools; a sheet on a phone anywhere else. Escape inside a confirm
 // cancels the confirm, not the dialog. `after`: a line under the list (History's account prompt, Version History).
 
-import { useState, type ReactNode } from 'react';
-import {
-  Button,
-  CompactEmptyState,
-  Dialog,
-  DialogCloseButton,
-  DialogHeader,
-  SkeletonRows,
-} from '@liveworkspace/ui';
+import { useId, useState, type ReactNode } from 'react';
+import { Button, CompactEmptyState, Dialog, SkeletonRows } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { snapshotsHeroArt } from '@liveworkspace/ui/dialog-hero-art/snapshots';
 import type { SnapshotsDoor } from './door';
 import { SnapshotGlyph } from './glyphs';
 import { SnapshotRetentionNote } from './retention-note';
@@ -37,23 +32,26 @@ export function SnapshotsDialog({
   const [confirm, setConfirm] = useState<RowConfirm>(null);
   const list = state.snapshots;
   const working = state.busy !== null || state.reverted;
+  const titleId = useId();
 
   return (
     <Dialog
       open
       onClose={onClose}
-      ariaLabel="Snapshots"
+      titleId={titleId}
       size="md"
       phoneSheet
       closeOnEscape={confirm === null}
       className="max-h-[90vh]"
     >
-      <DialogHeader
+      <HeroDialogHeader
+        art={snapshotsHeroArt}
+        titleId={titleId}
         title="Snapshots"
         subtitle={`Save points for the whole ${door.noun}. The latest ${state.kept} are kept.`}
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        onClose={onClose}
+        underHandle
+      />
       <div className="border-b border-slate-100 px-6 py-4 dark:border-slate-800">
         <SnapshotButton state={state} />
       </div>

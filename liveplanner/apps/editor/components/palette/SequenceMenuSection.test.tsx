@@ -21,43 +21,25 @@ function show(target: ShapeElement, onEdit?: (id: string) => void) {
     burst: vi.fn(),
     commitTab: vi.fn(),
   };
-  render(
-    <SequenceMenuSection
-      target={target}
-      ops={ops}
-      sectionProps={() => ({ open: true, onToggle: () => {}, flush: true })}
-      onEdit={onEdit}
-    />,
-  );
+  render(<SequenceMenuSection target={target} onEdit={onEdit} />);
   const last = () =>
     (ops.commit as ReturnType<typeof vi.fn>).mock.calls.at(-1)![0] as (e: Element) => ShapeElement;
   return { ops, last };
 }
 
 describe('SequenceMenuSection', () => {
-  it('summarises the diagram and opens the dialog from Edit Sequence', () => {
+  it('opens the dialog from the Sequence row', () => {
     const onEdit = vi.fn();
     show(seq(), onEdit);
-    expect(screen.getByText('3 participants · 5 messages')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Edit Sequence' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sequence' }));
     expect(onEdit).toHaveBeenCalledWith('q');
     // The rows are the dialog's now, not the menu's.
     expect(screen.queryByRole('textbox')).toBeNull();
   });
 
-  it('offers no Edit Sequence to someone who may not edit it', () => {
+  it('offers no Sequence row to someone who may not edit it', () => {
     show(seq());
-    expect(screen.queryByRole('button', { name: 'Edit Sequence' })).toBeNull();
-  });
-
-  it('turns Numbered on and off, absent when off', () => {
-    const { last } = show(seq());
-    fireEvent.click(screen.getByRole('button', { name: 'Numbered' }));
-    expect(last()(seq()).sequenceNumbered).toBe(true);
-    cleanup();
-    const again = show(seq({ sequenceNumbered: true }));
-    fireEvent.click(screen.getByRole('button', { name: 'Numbered' }));
-    expect('sequenceNumbered' in again.last()(seq({ sequenceNumbered: true }))).toBe(false);
+    expect(screen.queryByRole('button', { name: 'Sequence' })).toBeNull();
   });
 
   it('leaves Play to the Animation row', () => {

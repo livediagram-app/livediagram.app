@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, TextInput, Switch } from '@livedesign/ui';
+import { useEffect, useId, useRef, useState } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { assignActionHeroArt } from '@liveworkspace/ui/dialog-hero-art/assign-action';
+import { Button, TextInput, Switch } from '@livedesign/ui';
 import {
   ACTION_STATUSES,
   ACTION_STATUS_LABELS,
@@ -215,40 +217,30 @@ export function AssignActionDialog({
     });
   };
 
+  const titleId = useId();
   return (
-    <Dialog open={open} onClose={onClose} titleId="assign-action-title">
+    <Dialog open={open} onClose={onClose} titleId={titleId}>
       <form
+        // The hero band's top corners follow the panel's through the form.
+        className="[border-radius:inherit]"
         onSubmit={(e) => {
           e.preventDefault();
           submit();
         }}
       >
-        <div className="border-b border-slate-100 px-6 pb-5 pt-5 dark:border-slate-800">
-          <div className="flex items-start justify-between gap-3">
-            <h2
-              id="assign-action-title"
-              className="text-lg font-semibold text-slate-900 dark:text-slate-50"
-            >
-              {editing ? 'Edit Action' : 'Assign an Action'}
-            </h2>
-            <div className="-mr-1.5 -mt-0.5 flex items-center gap-0.5">
-              <HelpArticleLink article="assignedActions" variant="icon" />
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              >
-                <CloseIcon size={14} />
-              </button>
-            </div>
-          </div>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            {editing
+        {/* The dialog hero header (dialog-hero-header.md): a task card handed to its assignee. */}
+        <HeroDialogHeader
+          art={assignActionHeroArt}
+          titleId={titleId}
+          title={editing ? 'Edit Action' : 'Assign an Action'}
+          subtitle={
+            editing
               ? 'Change what needs doing, or hand it to someone else.'
-              : 'Attach a piece of work to this element, for yourself or a teammate.'}
-          </p>
-        </div>
+              : 'Attach a piece of work to this element, for yourself or a teammate.'
+          }
+          actions={<HelpArticleLink article="assignedActions" variant="icon" />}
+          onClose={onClose}
+        />
 
         <div className="flex flex-col gap-4 px-6 py-5">
           <label className="flex flex-col gap-1.5">

@@ -9,9 +9,9 @@ import { useExplorer } from '../explorer/context';
 import { emptyCopy } from '../explorer/EmptyPane';
 import { OtherAppsHere } from '../explorer/OtherAppsHere';
 import { useOtherApps } from '../data/useOtherApps';
-import { BackBar, Button } from '@liveworkspace/ui';
+import { BackBar } from '@liveworkspace/ui';
 import type { ExplorerView } from '../views';
-import { PANE_LINK, PaneEmpty, PaneFailed, PaneGrid, PaneList, PaneSkeleton } from './pane-parts';
+import { PaneEmpty, PaneFailed, PaneGrid, PaneList, PaneMore, PaneSkeleton } from './pane-parts';
 import type { PanelSection } from './sections';
 import { paneView } from './panel-view';
 import { FolderCard, ItemRow } from './pane-items';
@@ -129,18 +129,12 @@ export function PlaceSection({
           </PaneList>
         ) : null}
         {state.hasMore ? (
-          <Button
-            variant="none"
-            busy={state.loadingMore}
-            onClick={state.moreFailed ? state.retryMore : state.loadMore}
-            className={`${PANE_LINK} self-center py-1`}
-          >
-            {state.loadingMore
-              ? 'Loading…'
-              : state.moreFailed
-                ? 'Couldn’t load more. Try again'
-                : 'Show more'}
-          </Button>
+          <PaneMore
+            loading={state.loadingMore}
+            failed={state.moreFailed}
+            onMore={state.loadMore}
+            onRetry={state.retryMore}
+          />
         ) : null}
       </div>
     );
