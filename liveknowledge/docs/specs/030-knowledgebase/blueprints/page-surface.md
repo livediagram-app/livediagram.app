@@ -164,7 +164,7 @@ browser's.
   open tab a card joined to the bar's foot, the others quiet with the inset wash on hover): each a `HoverCard`
   (name and one line) around a link to the view's address with its icon, `aria-current="page"` on the showing one,
   the tab's own focus ring (`data-tab-key`). A plain left press moves in place (`showKnowledgeView`, a history
-  entry) and sends `UI·Opened·PagesView`, `AskView` or `AiKnowledgeView`; a press with a modifier is the link's.
+  entry) and sends `UI·Opened·PagesView`, `AskView` or `InsightsView`; a press with a modifier is the link's.
   No button, no drag, no menu. Not offered (`useKnowledgeViewsOffered`), the `nav` is not drawn.
 - **The footer** (`BottomBar`) is a child of the editor's column under the canvas, 48 px and the bottom safe inset:
   the page's scroll container ends above it. Tabs, a spacer, then `ChromeControls`. On a phone (`phone`, the

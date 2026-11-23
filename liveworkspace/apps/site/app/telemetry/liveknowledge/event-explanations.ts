@@ -862,7 +862,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|AskAiBuiltIn': 'Someone chose built-in AI to answer their questions on Ask.',
   'UI|Changed|AskAiKey': "Someone chose the team's key to answer their questions on Ask.",
   'UI|Opened|AskView': 'Someone opened the Ask view, to ask the knowledgebase a question.',
-  'UI|Opened|AiKnowledgeView': 'Someone opened the Insights view.',
+  'UI|Opened|InsightsView': 'Someone opened the Insights view.',
   'UI|Opened|ConnectView': 'Someone opened the Connect view, to connect an AI app over MCP.',
   'UI|Opened|ConnectAgent':
     'Someone pressed Connect an Agent in Insights, which opens the Connect view.',

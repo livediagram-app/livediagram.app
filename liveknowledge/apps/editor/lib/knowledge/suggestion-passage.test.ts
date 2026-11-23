@@ -9,7 +9,7 @@ import {
   wordDiff,
 } from './suggestion-passage';
 
-// Finding a suggested edit's passage in the writing (docs/specs/030-knowledgebase/ai-knowledge.md "On the page").
+// Finding a suggested edit's passage in the writing (docs/specs/030-knowledgebase/insights.md "On the page").
 const PAGE = [
   'Start Here',
   'Self-Hosting liveworkspace',

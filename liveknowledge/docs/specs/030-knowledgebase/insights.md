@@ -3,7 +3,7 @@
 Status: **the view is built as a dashboard and was seen in a browser on 2026-11-21** (every tile and card action
 pressed, light and dark, 1440 to 390 wide; a conflict only through a stubbed read, since none can be found without a
 key) ([Build plan](../005-project-roadmap/build-plan.md)
-step 10). What is not built is under "Not built"; the [Insights UI blueprint](blueprints/ai-knowledge-ui.md) has
+step 10). What is not built is under "Not built"; the [Insights UI blueprint](blueprints/insights-ui.md) has
 the detail.
 
 The knowledgebase's third tab, beside Pages and Ask: what agents know, where they learned it and what they could not find.

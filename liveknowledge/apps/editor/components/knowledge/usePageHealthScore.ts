@@ -92,7 +92,7 @@ export function usePageHealthScore(page: PageKnowledgeView): {
       conflicts: () => {
         track('UI', 'Used', 'HealthShowConflicts');
         askAttentionFilter('conflicts');
-        showKnowledgeView('ai');
+        showKnowledgeView('insights');
       },
       comments: () => {
         track('UI', 'Used', 'HealthShowComments');

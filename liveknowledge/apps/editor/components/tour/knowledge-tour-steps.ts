@@ -26,7 +26,7 @@ const inTree = (api: KnowledgeTourApi) => {
   api.showView('pages');
   api.openTree();
 };
-const onView = (view: 'ask' | 'ai' | 'connect') => (api: KnowledgeTourApi) => api.showView(view);
+const onView = (view: 'ask' | 'insights' | 'connect') => (api: KnowledgeTourApi) => api.showView(view);
 // Ask, Insights and Connect are drawn over the editor as a modal frame (KnowledgeViewFrame's modal guard). A step
 // inside one is the tour's own dialog: without the modal layer the engine steps aside for it and the card vanishes.
 const IN_VIEW = { layer: 'modal' } as const;
@@ -170,11 +170,11 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
       prepare: onView('ask'),
       ...IN_VIEW,
     }),
-    ai: () => ({
-      id: 'ai',
+    insights: () => ({
+      id: 'insights',
       title: 'Insights',
       body: 'See what agents read, questions nobody could answer, and pages that disagree.',
-      selector: () => VIEW_TAB('ai'),
+      selector: () => VIEW_TAB('insights'),
     }),
   },
   connect: {

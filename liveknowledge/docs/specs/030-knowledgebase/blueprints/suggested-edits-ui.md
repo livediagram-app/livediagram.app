@@ -1,6 +1,6 @@
 # Suggested edits on the page and in the Inbox
 
-Blueprint for [ai-knowledge.md](../ai-knowledge.md) "On the page" and "In the owner's Inbox" (Work Tracker 1362). The
+Blueprint for [insights.md](../insights.md) "On the page" and "In the owner's Inbox" (Work Tracker 1362). The
 Inbox half is the platform's: [inbox.md](../../../../liveworkspace/docs/specs/004-index/blueprints/inbox.md) and
 [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Suggested edits".
 

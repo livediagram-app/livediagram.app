@@ -262,7 +262,7 @@ export function SuggestedEditArt() {
 }
 
 /** The Insights tab: connected agents, questions nobody could answer, pages that disagree. */
-export function AiKnowledgeArt() {
+export function InsightsArt() {
   const tiles = [
     { label: 'AGENTS', big: '3', line: 'read 128 pages this week' },
     { label: 'UNANSWERED', big: '5', line: 'questions to write up' },

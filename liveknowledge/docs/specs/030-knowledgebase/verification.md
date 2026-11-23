@@ -103,9 +103,9 @@ own.
   are the rail's foot, held at its bottom while the rest scrolls, the Page Info card showing them last; Created /
   Updated sit above Read This Week (owner 2026-11-21).) **Order** (owner 2026-11-21): Page Health first, On This Page
   under it. **AI
-  Context** follows Page Health, before the foot, in the same quiet style ([Insights](ai-knowledge.md) "AI
+  Context** follows Page Health, before the foot, in the same quiet style ([Insights](insights.md) "AI
   Context on a page"). **Page Insights**, the page's reads over 30 days, how often Ask cited it and the questions it
-  answered, sits just before AI Context, in the same style ([Insights](ai-knowledge.md#page-insights)).
+  answered, sits just before AI Context, in the same style ([Insights](insights.md#page-insights)).
 - **The meta row** under the title is drawn only when it has something to say (a tick or pill, a due date, an edit,
   how long it takes to read, who made and edited it, Add Cover): an empty page never verified has no row, so the writing starts right under the title.
 - **Reading time** sits in the meta row (owner, 2026-11-21: "1 min read should go under the page title, not the
@@ -132,7 +132,7 @@ Nothing is stored: it is worked out when read, as the states are.
 | Length       | 10     | 50 words or more                                                    | Empty 0; under 20 words 3; under 50 words 6                                                                                                                                                                                                                                                                  |
 | Structure    | 10     | Under 300 words, or any heading                                     | 300 to 2,500 words with no heading 5; over 2,500 words with no heading 0                                                                                                                                                                                                                                     |
 | Links        | 5      | No broken page link, and another page links here                    | 4 with no backlink; each broken link (to a page no longer in the knowledgebase) takes 2 of the 4                                                                                                                                                                                                             |
-| Open Issues  | 10     | Nothing open on the page                                            | Each open conflict ([Pages That Disagree](ai-knowledge.md#pages-that-disagree)) 5; Pending Approval 2; each unresolved comment thread 1 (3 at most); each agent's suggested edit waiting 1 (2 at most)                                                                                                       |
+| Open Issues  | 10     | Nothing open on the page                                            | Each open conflict ([Pages That Disagree](insights.md#pages-that-disagree)) 5; Pending Approval 2; each unresolved comment thread 1 (3 at most); each agent's suggested edit waiting 1 (2 at most)                                                                                                           |
 | Use          | 5      | Read this week, by a person or an agent; or made in the last 7 days | Not read this week 0 (a page in its first week is never marked down for it)                                                                                                                                                                                                                                  |
 
 - **Under a Review Period of Never** (owner 2026-11-21: "if I set no review period, / never, then don't show the
@@ -187,7 +187,7 @@ Nothing is stored: it is worked out when read, as the states are.
   threads, suggested edits waiting, backlinks), four counts the same read now answers. No request more: the score
   is there once Page Health is read, and before it the page's own facts give it, the read's counts as none.
   The same read carries the page's suggested edits themselves and the pending count of every page the reader may see
-  ([Insights](ai-knowledge.md) "On the page"), so the meta row's pill, the rail's Suggested Edits and the tree's
+  ([Insights](insights.md) "On the page"), so the meta row's pill, the rail's Suggested Edits and the tree's
   dots need no request of their own.
 - **Kept Offline:** no room, so no signals and no reads: the score counts what the page itself holds (verification,
   freshness, owner, length, structure, broken links), Links' backlink point and Use as full, Open Issues as none,
@@ -310,7 +310,7 @@ mark back, the pages' dates as they were. The Health Score already leaves verifi
 - It goes through the platform's notifier ([accounts.md "An app's own notices"](../../../liveworkspace/docs/specs/003-accounts/accounts.md#notification-emails)),
   to the owner's verified address, and only while their **Knowledgebase Reviews** setting is on (Settings, Account,
   Notifications; on by default; one switch for this email, a conflict's Ask Both Owners and Knowledge Health's
-  Remind the Owners, which [Insights](ai-knowledge.md) specifies, and [Required Reading](required-reading.md#remind)'s Remind). The knowledgebase keeps no address.
+  Remind the Owners, which [Insights](insights.md) specifies, and [Required Reading](required-reading.md#remind)'s Remind). The knowledgebase keeps no address.
 - Only someone who can still open the knowledgebase is emailed: its own owner, a joined member of its team, or
   someone the index still grants it to. An owner who is a guest has no address and gets none.
 - The three emails together are at most 50 a knowledgebase a day; an owner the ceiling leaves out is emailed the

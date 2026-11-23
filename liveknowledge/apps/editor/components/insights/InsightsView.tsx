@@ -1,7 +1,7 @@
 'use client';
 
-// Insights (docs/specs/030-knowledgebase/ai-knowledge.md): the knowledgebase's third view, a dashboard
-// (AiDashboard). What agents know, where they learned it and what they could not find, from one read of
+// Insights (docs/specs/030-knowledgebase/insights.md): the knowledgebase's third view, a dashboard
+// (InsightsDashboard). What agents know, where they learned it and what they could not find, from one read of
 // `GET knowledge` when the view opens and one after each action here. Everyone sees it; settling a conflict, drafting or dismissing a question, accepting or
 // dismissing a suggestion and Always in Context are an Editor's.
 import { useState } from 'react';
@@ -11,8 +11,8 @@ import { Callout } from '@liveworkspace/ui/callout';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { AiSettingsButton, openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
-import { AiViewIcon } from '@/components/ask/ask-icons';
-import { AgentIcon } from './ai-knowledge-icons';
+import { InsightsViewIcon } from '@/components/ask/ask-icons';
+import { AgentIcon } from './insights-icons';
 import { KnowledgeViewHeader } from '@/components/ask/KnowledgeViewFrame';
 import { openPassage } from '@/components/ask/open-passage';
 import { PagePickerDialog } from '@/components/ask/PagePickerDialog';
@@ -39,19 +39,19 @@ import { knowledgeFailureText } from '@/lib/knowledge/knowledge-words';
 import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
 import { useRelativeNow } from '@/lib/relative-time';
 import { track } from '@/lib/telemetry';
-import { AiDashboard } from './AiDashboard';
+import { InsightsDashboard } from './InsightsDashboard';
 import { AgentWriteDialog } from './AgentWriteDialog';
 import { DashboardLoading } from './DashboardLoading';
 import { useAgentWrite } from './useAgentWrite';
 import { useKnowledgeOverview } from './useKnowledgeOverview';
 
-export function AiKnowledgeView() {
+export function InsightsView() {
   const session = useAskSession();
   if (!session) return null;
-  return <AiKnowledge session={session} />;
+  return <Insights session={session} />;
 }
 
-function AiKnowledge({ session }: { session: AskSession }) {
+function Insights({ session }: { session: AskSession }) {
   const { who, documentId, rights } = session;
   const chrome = useEditorChromeStore();
   const toast = useToast();
@@ -127,11 +127,11 @@ function AiKnowledge({ session }: { session: AskSession }) {
         </Button>
         {offline ? null : <AiSettingsButton />}
       </KnowledgeViewHeader>
-      <div className="min-h-0 flex-1 overflow-y-auto" data-ai-knowledge="">
+      <div className="min-h-0 flex-1 overflow-y-auto" data-insights="">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 sm:py-6">
           {offline ? (
             <EmptyState
-              icon={<AiViewIcon />}
+              icon={<InsightsViewIcon />}
               title="No Insights in an Offline Knowledgebase"
               description="This knowledgebase is kept in this browser, where no agent can reach it and nothing is counted. Its pages and search work as they are."
             />
@@ -154,7 +154,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
                   {failure}
                 </Callout>
               ) : null}
-              <AiDashboard
+              <InsightsDashboard
                 overview={overview}
                 documentId={documentId}
                 rights={rights}

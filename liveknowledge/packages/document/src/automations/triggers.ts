@@ -31,7 +31,7 @@ export const OTHER_PAGE_DATA = 'other.tab';
 export const SUGGESTION_REASON_DATA = 'suggestion.reason';
 
 const TRUST = 'Trust';
-const AI_KNOWLEDGE = 'Insights';
+const INSIGHTS = 'Insights';
 const VERSIONS = 'Versions';
 
 const pageVerified = defineEventTrigger({
@@ -73,7 +73,7 @@ const ownerChanged = defineEventTrigger({
 const questionUnanswered = defineEventTrigger({
   kind: QUESTION_UNANSWERED_EVENT,
   name: 'Unanswered Question',
-  group: AI_KNOWLEDGE,
+  group: INSIGHTS,
   line: 'a question nobody’s pages answer is asked for the first time',
   note:
     'a question nobody’s pages answer is asked for the first time, in Ask, by an agent’s search that found ' +
@@ -84,7 +84,7 @@ const questionUnanswered = defineEventTrigger({
 const pagesDisagree = defineEventTrigger({
   kind: PAGES_DISAGREE_EVENT,
   name: 'Pages Disagree',
-  group: AI_KNOWLEDGE,
+  group: INSIGHTS,
   line: 'two pages are found stating opposite facts',
   note:
     'the conflict check finds a new pair of pages stating opposite facts; the page is the one whose save or ' +
@@ -98,7 +98,7 @@ const pagesDisagree = defineEventTrigger({
 const suggestionAdded = defineEventTrigger({
   kind: SUGGESTION_ADDED_EVENT,
   name: 'Agent Suggested a Change',
-  group: AI_KNOWLEDGE,
+  group: INSIGHTS,
   line: 'an agent suggests an edit to a page',
   note:
     'an agent with the suggest scope suggests an edit to a page; {{person}} is the agent’s name and ' +
@@ -113,7 +113,7 @@ const agentChanged: TriggerKind = {
     line: 'an agent writes a page through the MCP server, the CLI or the API',
     note: 'an agent, through an API token, makes or writes a page; once per write, {{person}} is the token’s name',
   }),
-  group: AI_KNOWLEDGE,
+  group: INSIGHTS,
 };
 
 const versionNamed = defineEventTrigger({

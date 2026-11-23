@@ -1,5 +1,5 @@
 // Who may do what in Ask and Insights (docs/specs/030-knowledgebase/search-and-ask.md "Share roles",
-// ai-knowledge.md "Share roles"). Asking is every signed-in role's; making pages from an answer or a gap, dismissals,
+// insights.md "Share roles"). Asking is every signed-in role's; making pages from an answer or a gap, dismissals,
 // Always in Context and the owners' emails are a writer's (an Editor or a Participant), on the whole knowledgebase;
 // the key, the model and an agent's write are an Editor's alone. Presentation only: the api is the rule.
 import type { EditorCapabilities } from '@/lib/editor-capabilities';
@@ -16,7 +16,7 @@ export type AskRights = {
   makePages: boolean;
   /** Dismiss a question or a conflict. */
   resolve: boolean;
-  /** Accept or dismiss a suggested edit: an Editor of the whole knowledgebase's alone (ai-knowledge.md "Share
+  /** Accept or dismiss a suggested edit: an Editor of the whole knowledgebase's alone (insights.md "Share
    *  roles", Work Tracker 1362). */
   acceptSuggestions: boolean;
   /** Add a page to Always in Context, or take one out. */

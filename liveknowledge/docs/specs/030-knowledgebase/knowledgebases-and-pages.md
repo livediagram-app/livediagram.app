@@ -112,7 +112,7 @@ Web](publishing.md)): its "public site", never its "Public".
   of icon buttons, Rename, Duplicate, Copy Link and Delete, each named in its hover card; then icon-left rows, Add
   Subpage, Connect File Here, Verify, Request Approval, Always in Context (a checkmark row); then a closed **Move**
   section holding Move Up, Move Down, Indent and Outdent. A verb that cannot run stays, greyed, and says why. Delete is not red: the shared menu row never colours a verb.
-  Verify and Always in Context are [Verification](verification.md)'s and [Insights](ai-knowledge.md)'s, and an
+  Verify and Always in Context are [Verification](verification.md)'s and [Insights](insights.md)'s, and an
   Editor's.
 - A row shows a Review Due pill at its right when its page is due; no Verified tick (owner 2026-11-21). The state is part of the row's name for a screen reader.
 - **Search** stands at the sidebar's head, under the knowledgebase's name ([Search and Ask](search-and-ask.md)).

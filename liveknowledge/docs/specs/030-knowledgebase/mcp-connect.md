@@ -78,7 +78,7 @@ Tokens** (Settings' Tokens page), with "A read-only token only reads, whatever i
 ## What it costs
 
 One `GET .../knowledge` when the view opens and one each check: at most 31 in 5 minutes, none while the browser tab
-is hidden, none once connected. Each is the read Insights makes on opening ([Insights](ai-knowledge.md) "The
+is hidden, none once connected. Each is the read Insights makes on opening ([Insights](insights.md) "The
 view, as built"), measured in the blueprint.
 
 ## Share roles

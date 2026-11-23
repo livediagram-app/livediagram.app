@@ -86,7 +86,7 @@ export type PageTreeKnowledge = {
   marks: ReadonlyMap<string, TrustMark>;
   // A page Pending Approval or Rejected: a dot after its title (approval.md "Where it shows").
   approvalMarks?: ReadonlyMap<string, ApprovalMark>;
-  // Suggested edits waiting, by page (ai-knowledge.md "On the page"), from the newest Page Health read.
+  // Suggested edits waiting, by page (insights.md "On the page"), from the newest Page Health read.
   suggestionCounts?: Readonly<Record<string, number>> | undefined;
   inContext: ReadonlySet<string>;
   // Verify: an Editor with an account. The fields: an Editor.

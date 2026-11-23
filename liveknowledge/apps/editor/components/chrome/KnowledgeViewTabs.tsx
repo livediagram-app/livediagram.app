@@ -15,7 +15,7 @@ import {
 } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import {
-  AiViewIcon,
+  InsightsViewIcon,
   AskViewIcon,
   ConnectViewIcon,
   PagesViewIcon,
@@ -36,14 +36,14 @@ import { track } from '@/lib/telemetry';
 const ICONS: Record<KnowledgeView, ReactNode> = {
   pages: <PagesViewIcon />,
   ask: <AskViewIcon />,
-  ai: <AiViewIcon />,
+  insights: <InsightsViewIcon />,
   connect: <ConnectViewIcon />,
 };
 
 // Each view's own telemetry call, so the pair and its type stay literal (telemetry-coverage.test.ts).
 function trackView(view: KnowledgeView): void {
   if (view === 'ask') track('UI', 'Opened', 'AskView');
-  else if (view === 'ai') track('UI', 'Opened', 'AiKnowledgeView');
+  else if (view === 'insights') track('UI', 'Opened', 'InsightsView');
   else if (view === 'connect') track('UI', 'Opened', 'ConnectView');
   else track('UI', 'Opened', 'PagesView');
 }

@@ -218,7 +218,7 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
       <OnThisPage headings={writing.headings} current={current} onGo={go} />
       {/* The questions Ask answered from the page; its reads over time are in Read This Week (owner 2026-11-22). */}
       <PageRailAnswered page={page} />
-      {/* Suggested Edits while any wait, before AI Context (ai-knowledge.md "On the page"). */}
+      {/* Suggested Edits while any wait, before AI Context (insights.md "On the page"). */}
       <PageRailSuggestions />
       <PageRailAiContext page={page} />
       {docked ? null : activity}

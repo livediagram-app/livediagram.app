@@ -1,4 +1,4 @@
-// Page reads (docs/specs/030-knowledgebase/ai-knowledge.md "Reads"): counted by day, by reader kind and by agent,
+// Page reads (docs/specs/030-knowledgebase/insights.md "Reads"): counted by day, by reader kind and by agent,
 // kept READS_KEPT_DAYS days. A read is one open of a page in the editor, or one `read_page` or search result
 // served to an agent. No reader's identity is kept beyond an agent's name.
 import { dayOf, daysBefore } from '../days';
@@ -38,7 +38,7 @@ export const PAGE_AGENTS_LISTED = 3;
 export type PageAgentReadsRow = { agent: string; reads: number };
 
 /** The agents that read a page in the last `days` days, the most reads first, then by name, PAGE_AGENTS_LISTED at
- *  most (ai-knowledge.md "AI Context on a page"). */
+ *  most (insights.md "AI Context on a page"). */
 export const countPageAgentReads = (tab: string, now: number, days = 7): SqlStatement => ({
   sql: `SELECT agent, SUM(reads) AS reads FROM page_reads
     WHERE tab = ? AND reader_kind = 'agent' AND day > ? GROUP BY agent
@@ -85,7 +85,7 @@ export const READS_TREND_DAYS = 14;
 
 export type DailyReadsRow = { day: string; readerKind: string; reads: number };
 
-/** Every reader's reads by day and reader kind over the last READS_TREND_DAYS days (ai-knowledge.md "Reads"): a range
+/** Every reader's reads by day and reader kind over the last READS_TREND_DAYS days (insights.md "Reads"): a range
  *  of the table's key, which leads with the day, at most two rows a day. */
 export const countDailyReads = (now: number): SqlStatement => ({
   sql: `SELECT day, reader_kind AS readerKind, SUM(reads) AS reads FROM page_reads
@@ -118,7 +118,7 @@ export function dailyReads(
   return days;
 }
 
-/** How many days of one page's reads Page Insights shows, today among them (ai-knowledge.md "Page Insights"). */
+/** How many days of one page's reads Page Insights shows, today among them (insights.md "Page Insights"). */
 export const PAGE_INSIGHT_DAYS = 30;
 
 /** One page's reads by day and reader kind over the last `days` days: a range of `page_reads_tab` (tab, day), at

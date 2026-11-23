@@ -1,4 +1,4 @@
-// Insights' figures and Needs Attention's order (docs/specs/030-knowledgebase/blueprints/ai-knowledge-ui.md
+// Insights' figures and Needs Attention's order (docs/specs/030-knowledgebase/blueprints/insights-ui.md
 // "The dashboard").
 import { describe, expect, it } from 'vitest';
 import type { KnowledgeConflict, KnowledgeOverviewResponse } from '@liveknowledge/api-schema';

@@ -14,7 +14,7 @@ import {
   type Who,
 } from './knowledge-test-kit';
 
-// docs/specs/030-knowledgebase/search-and-ask.md "Ask" and ai-knowledge.md.
+// docs/specs/030-knowledgebase/search-and-ask.md "Ask" and insights.md.
 vi.mock('../index-service', async (original) => {
   const tests = await import('../test-sqlite-d1');
   return {
@@ -383,7 +383,7 @@ describe('POST ask', () => {
     },
   );
 
-  // ai-knowledge.md "Questions nobody could answer": a question answered in full later leaves the list.
+  // insights.md "Questions nobody could answer": a question answered in full later leaves the list.
   it('takes a question off the unanswered list once Ask answers it in full from pages', async () => {
     vi.stubGlobal('fetch', fakeClaude(ANSWER).fetch);
     const kit = await knowledgeKit(withSecret);
@@ -631,7 +631,7 @@ describe('Insights', () => {
     const path = `/api/documents/kb/questions/${encodeURIComponent(group!.key)}`;
     for (const who of ['viewer', 'link', 'stranger'] as const)
       expect((await kit.call(who, 'DELETE', path)).status).toBe(403);
-    // A Participant dismisses as an Editor does (ai-knowledge.md "Share roles").
+    // A Participant dismisses as an Editor does (insights.md "Share roles").
     expect((await kit.call('participant', 'DELETE', path)).status).toBe(204);
     expect(kit.db.sql.prepare('SELECT * FROM questions').all()).toEqual([]);
     expect(kit.db.sql.prepare('SELECT * FROM question_agents').all()).toEqual([]);

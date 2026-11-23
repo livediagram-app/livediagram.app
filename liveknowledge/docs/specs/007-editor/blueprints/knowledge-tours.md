@@ -91,7 +91,7 @@ Step anchors (all existing attributes; no new markup):
 | trust/verify                        | `[data-meta-verify]`                                                                                |
 | trust/health                        | `[data-page-health]`                                                                                |
 | trust/approval                      | `[data-request-approval]`                                                                           |
-| ask/tab, ask/ai                     | `[data-knowledge-view-link="ask"]`, `[data-knowledge-view-link="ai"]`                               |
+| ask/tab, ask/insights               | `[data-knowledge-view-link="ask"]`, `[data-knowledge-view-link="insights"]`                         |
 | ask/composer, ask/questions         | `[data-ask-composer]`, `aside[aria-label="Your Questions"]`                                         |
 | connect/tab                         | `[data-knowledge-view-link="connect"]`                                                              |
 | connect/apps, steps, access, status | `[data-connect-apps]`, `[data-connect-app-steps]`, `[data-connect-access]`, `[data-connect-status]` |

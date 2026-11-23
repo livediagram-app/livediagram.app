@@ -1,5 +1,5 @@
 // A page's knowledge over REST (docs/specs/030-knowledgebase/verification.md, links-and-embeds.md "Backlinks",
-// ai-knowledge.md "Always in Context"):
+// insights.md "Always in Context"):
 //   GET   /api/documents/<id>/pages/<tab>/backlinks   the pages whose writing links here, in tree order
 //   GET   /api/documents/<id>/pages/<tab>/health      the fields, the state, the week's reads (Page Health), and
 //                                                    AI Context: the questions answered from it, its agents
@@ -88,19 +88,19 @@ export async function handlePageHealth(
   const now = Date.now();
   const page = await readPageKnowledge(ctx.env, document.id, tab);
   if (!page) return notFound();
-  // A person opening the page in the editor (`?opened=1`) is a read (ai-knowledge.md "Reads"), counted before the
+  // A person opening the page in the editor (`?opened=1`) is a read (insights.md "Reads"), counted before the
   // week's figures are, so the figures they get back hold it. Once a person a page a day, as countRead keeps; an
   // agent's token counts its reads through its own routes, never here.
   if (!ctx.token && new URL(ctx.request.url).searchParams.get('opened') === '1') {
     const person = ctx.resolveOwner();
     if (person) await countRead(ctx.env, tab, readerOf(ctx), person, now);
   }
-  // AI Context (ai-knowledge.md "AI Context on a page") rides this read: the questions a range of their
+  // AI Context (insights.md "AI Context on a page") rides this read: the questions a range of their
   // table's key, the agents a range of `page_reads_tab` (schema step V19).
   // The Health Score's counts the editor cannot see itself (verification.md "Health Score"): one read of the page's
-  // facts row, on indexes its tables already have. Page Insights (ai-knowledge.md) rides the reads, 30 days by day
+  // facts row, on indexes its tables already have. Page Insights (insights.md) rides the reads, 30 days by day
   // (the week summed from them), and the questions, whose window total is how often Ask cited the page.
-  // The page's suggested edits and every page's count (ai-knowledge.md "On the page") ride this read too: one read
+  // The page's suggested edits and every page's count (insights.md "On the page") ride this read too: one read
   // on `suggestions_tab` and one grouped count of a table of at most 50 rows, so the meta row, the rail and the tree's
   // dots make no request of their own.
   const [readRows, authors, editors, answered, agents, [facts], pageSuggestions, counts] =
@@ -270,7 +270,7 @@ export async function handleKnowledgePatch(
     else if (owner !== undefined) next.owner = owner;
     if (context === false) delete next.context;
     if (context === true && !page.fields.context) {
-      // Always in Context holds what fits the budget every agent is handed (ai-knowledge.md).
+      // Always in Context holds what fits the budget every agent is handed (insights.md).
       const used = (await contextPages(ctx.env, document.id)).reduce((sum, p) => sum + p.tokens, 0);
       const tokens = tokensOfChars(page.chars);
       if (!fitsContextBudget(tokens, used))

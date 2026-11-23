@@ -1,10 +1,10 @@
 // The knowledgebase's four views (docs/specs/030-knowledgebase/search-and-ask.md "The views"): Pages (the editor),
-// Ask, Insights and Connect (mcp-connect.md). Which one shows lives in the address, as `?view=ask`, `?view=ai`
-// or `?view=connect`, so a reload
+// Ask, Insights and Connect (mcp-connect.md). Which one shows lives in the address, as `?view=ask`, `?view=insights`
+// or `?view=connect` (`?view=ai`, its name before, still opens Insights), so a reload
 // keeps it and the browser's Back returns to the view before. Pages is the address with no `view`. Not in the hash:
 // the hash is the open page's (`#t=<id>`), and the editor rewrites it whole on every page switch.
 
-export type KnowledgeView = 'pages' | 'ask' | 'ai' | 'connect';
+export type KnowledgeView = 'pages' | 'ask' | 'insights' | 'connect';
 
 export const KNOWLEDGE_VIEW_PARAM = 'view';
 
@@ -30,9 +30,9 @@ export const KNOWLEDGE_VIEWS: readonly {
     about: 'Ask a question and get an answer from its pages.',
   },
   {
-    view: 'ai',
+    view: 'insights',
     label: 'Insights',
-    short: 'AI',
+    short: 'Insights',
     about: 'What agents know, read and could not find.',
   },
   {
@@ -46,12 +46,17 @@ export const KNOWLEDGE_VIEWS: readonly {
   },
 ];
 
-const NAMED: ReadonlySet<string> = new Set(['ask', 'ai', 'connect']);
+const NAMED: ReadonlySet<string> = new Set(['ask', 'insights', 'connect']);
+
+/** Addresses from before a view was renamed: emails and bookmarks still say `?view=ai` for Insights. */
+const FORMER: Readonly<Record<string, KnowledgeView>> = { ai: 'insights' };
 
 /** The view an address names; anything it does not know is Pages. */
 export function knowledgeViewOf(search: string): KnowledgeView {
   const named = new URLSearchParams(search).get(KNOWLEDGE_VIEW_PARAM);
-  return named !== null && NAMED.has(named) ? (named as KnowledgeView) : 'pages';
+  if (named === null) return 'pages';
+  if (NAMED.has(named)) return named as KnowledgeView;
+  return Object.hasOwn(FORMER, named) ? FORMER[named]! : 'pages';
 }
 
 /** The address of a view: `href` with its `view` set, or taken out for Pages. The path, the rest of the query and

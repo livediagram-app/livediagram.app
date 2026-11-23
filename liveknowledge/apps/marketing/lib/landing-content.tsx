@@ -281,7 +281,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Insights',
         description:
           'One tab shows which agents read what, the questions nobody could answer and the pages that disagree. Finding those runs on built-in AI or your own key.',
-        art: <AgentsCardArt.AiKnowledgeArt />,
+        art: <AgentsCardArt.InsightsArt />,
         href: '/help/knowledgebase/pages-that-disagree/',
       },
     ],

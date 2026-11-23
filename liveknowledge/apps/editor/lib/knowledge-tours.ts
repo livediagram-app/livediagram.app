@@ -85,7 +85,7 @@ export const KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]
     { id: 'tab', needs: ASK },
     { id: 'composer', needs: ASK },
     { id: 'questions', needs: ASK },
-    { id: 'ai', needs: ASK },
+    { id: 'insights', needs: ASK },
   ],
   connect: [
     { id: 'tab', needs: CONNECT },

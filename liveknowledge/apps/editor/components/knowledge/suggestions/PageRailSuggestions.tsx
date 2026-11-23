@@ -1,6 +1,6 @@
 'use client';
 
-// Suggested Edits in the page's rail (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"; page-surface.md
+// Suggested Edits in the page's rail (docs/specs/030-knowledgebase/insights.md "On the page"; page-surface.md
 // "The rail"): between Page Health and AI Context, only while any wait. A row a suggestion (why, who, when, how many
 // lines), the press opening its popover; a passage no longer in the page is marked "The page has changed since", the
 // rail and the popover being where it shows. Review All in Insights opens Needs Attention at Suggested Edits.
@@ -105,7 +105,7 @@ export function PageRailSuggestions() {
       onReviewAll={() => {
         track('UI', 'Used', 'ReviewAllSuggestions');
         askAttentionFilter('suggestions');
-        showKnowledgeView('ai');
+        showKnowledgeView('insights');
       }}
     />
   );

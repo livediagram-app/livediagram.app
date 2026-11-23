@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { KnowledgeOverviewResponse } from '@liveknowledge/api-schema';
 import { knowledgeKit, type Kit } from './knowledge-test-kit';
 
-// Insights' figures band and Most Read (docs/specs/030-knowledgebase/ai-knowledge.md "Reads"): the overview's
+// Insights' figures band and Most Read (docs/specs/030-knowledgebase/insights.md "Reads"): the overview's
 // one read answers the last 14 days' reads by day and the pages read most this week, for every role that may see it.
 
 const DAY = 86_400_000;

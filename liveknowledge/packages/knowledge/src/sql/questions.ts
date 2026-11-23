@@ -1,4 +1,4 @@
-// Questions nobody could answer (docs/specs/030-knowledgebase/ai-knowledge.md): one row a group of like questions
+// Questions nobody could answer (docs/specs/030-knowledgebase/insights.md): one row a group of like questions
 // (questions.ts `questionKey`), with how many times it was asked, how many of those by people, and each agent's
 // count beside it.
 import { ASK_MAX_QUESTION_CHARS } from '../ask-limits';

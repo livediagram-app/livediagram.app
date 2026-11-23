@@ -1,4 +1,4 @@
-// The Reads tile's sparkline (docs/specs/030-knowledgebase/blueprints/ai-knowledge-ui.md "The dashboard"): a bar a
+// The Reads tile's sparkline (docs/specs/030-knowledgebase/blueprints/insights-ui.md "The dashboard"): a bar a
 // day over the last 14 days, people under agents in two tones of the brand, scaled to the busiest day, with one
 // spoken label. A day with no reads is a hairline, so the run of days still reads as time.
 import type { KnowledgeReadsDay } from '@liveknowledge/api-schema';
@@ -15,7 +15,7 @@ export const AGENT_FILL = 'fill-brand-400 dark:fill-brand-600';
 export const PEOPLE_BG = 'bg-brand-700 dark:bg-brand-300';
 export const AGENT_BG = 'bg-brand-400 dark:bg-brand-600';
 
-/** `tall`: Page Insights' 40 px bars over 30 days (ai-knowledge.md "Page Insights"); the tile's are 28 px. */
+/** `tall`: Page Insights' 40 px bars over 30 days (insights.md "Page Insights"); the tile's are 28 px. */
 export function ReadsSparkline({
   days,
   tall = false,

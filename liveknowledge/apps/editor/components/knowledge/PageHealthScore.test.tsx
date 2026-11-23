@@ -11,8 +11,8 @@ import { pageTrust } from '@/lib/knowledge/page-trust';
 import { pageHealthFacts, pageShapeOf, sameShape } from '@/lib/knowledge/page-health-facts';
 import { PageHealthScore } from './PageHealthScore';
 import { HealthChip } from './HealthChip';
-import { HealthSection } from '@/components/ai-knowledge/HealthAndContext';
-import { ConflictRow } from '@/components/ai-knowledge/ConflictRow';
+import { HealthSection } from '@/components/insights/HealthAndContext';
+import { ConflictRow } from '@/components/insights/ConflictRow';
 
 const DAY = 86_400_000;
 const NOW = Date.UTC(2026, 10, 21, 12);

@@ -1,4 +1,4 @@
-// What Insights says of what the room counted (docs/specs/030-knowledgebase/ai-knowledge.md). Pure.
+// What Insights says of what the room counted (docs/specs/030-knowledgebase/insights.md). Pure.
 import { HEALTH_LABEL_WORDS } from '@liveknowledge/knowledge';
 import type {
   AgentScope,
@@ -167,7 +167,7 @@ export function agentSample(overview: KnowledgeOverviewResponse | null, now: num
   ].join('\n');
 }
 
-/** Not Read in 90 Days' line under a page (ai-knowledge.md): "Last edited 95 days ago", "Last edited 5 months ago",
+/** Not Read in 90 Days' line under a page (insights.md): "Last edited 95 days ago", "Last edited 5 months ago",
  *  "Last edited 2 years ago", or "Last edit not kept" where page_authors kept neither the edit nor the making. */
 export function lastEditedText(touchedAt: number | undefined, now: number): string {
   if (touchedAt === undefined) return 'Last edit not kept';

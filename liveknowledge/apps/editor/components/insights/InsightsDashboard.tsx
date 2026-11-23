@@ -1,6 +1,6 @@
 'use client';
 
-// The Insights dashboard (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): the figures band,
+// The Insights dashboard (docs/specs/030-knowledgebase/insights.md "The view, as built"): the figures band,
 // then two stacks of cards, the wide one (Needs Attention, Connected Agents) and the narrow one (Knowledge Health,
 // Always in Context, Most Read, What an Agent Sees); one column below a laptop's width. Every figure is from the one
 // overview read. A tile filters Needs Attention or brings its card into view and focuses it.
@@ -26,7 +26,7 @@ import { NeedsAttention } from './NeedsAttention';
 import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 import { takeAskedAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
 
-/** What the dashboard's controls do: AiKnowledgeView's handlers, each checking its right again. */
+/** What the dashboard's controls do: InsightsView's handlers, each checking its right again. */
 export type DashboardActions = {
   openPage: (tab: string, block?: string) => void;
   connect: () => void;
@@ -60,7 +60,7 @@ const CARD_OF: Record<'reads' | 'agents' | 'health', string> = {
 // One column of cards: a stack of its own, spaced as the band above.
 const COLUMN = 'flex min-w-0 flex-col gap-4 sm:gap-5';
 
-export function AiDashboard({
+export function InsightsDashboard({
   overview: read,
   documentId,
   rights,
@@ -109,7 +109,7 @@ export function AiDashboard({
         filter={filter}
         onGo={go}
       />
-      {/* Two equal columns on a wide screen (owner 2026-11-21; ai-knowledge.md "The view, as built"), each its own
+      {/* Two equal columns on a wide screen (owner 2026-11-21; insights.md "The view, as built"), each its own
           stack, so Knowledge Health heads the right one on a whole pixel. One column below lg, in the same order as
           the page reads and focus moves: the left column, then the right. */}
       <div className="flex flex-col gap-4 sm:gap-5 lg:grid lg:grid-cols-2 lg:items-start">

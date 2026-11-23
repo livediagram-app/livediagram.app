@@ -3,14 +3,14 @@ import { expect, expectNoPageErrors, test } from '../fixtures';
 import { nameOpenPage, openPageId, paragraphs, writeLines } from '../knowledgebase';
 import { asPerson, openView, savedWith, signedInKnowledgebase } from './knowledge-session';
 
-// Insights (docs/specs/030-knowledgebase/ai-knowledge.md; blueprints/ai-knowledge-ui.md): what agents know of
+// Insights (docs/specs/030-knowledgebase/insights.md; blueprints/insights-ui.md): what agents know of
 // the knowledgebase. Its sections with nothing in them, an agent's read arriving as its card, and an edit suggested
 // through the api, accepted into the page.
 
 test.use({ viewport: { width: 1440, height: 860 } });
 
 // Needs Attention holds the questions, disagreements and suggested edits in one list; its switch shows one kind
-// (ai-knowledge.md "The view, as built").
+// (insights.md "The view, as built").
 const attention = (page: Page): Locator => page.getByRole('region', { name: 'Needs Attention' });
 async function showAttention(page: Page, kind: string): Promise<void> {
   const option = attention(page)

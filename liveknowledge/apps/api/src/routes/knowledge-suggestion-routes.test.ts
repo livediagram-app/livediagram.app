@@ -14,7 +14,7 @@ import {
 } from '../knowledge/suggestions';
 import { knowledgeKit, type Kit, type Who } from './knowledge-test-kit';
 
-// Edits suggested by agents (docs/specs/030-knowledgebase/ai-knowledge.md; docs/specs/024-agents/
+// Edits suggested by agents (docs/specs/030-knowledgebase/insights.md; docs/specs/024-agents/
 // knowledgebase-for-agents.md): who may suggest, accept and dismiss, what a suggestion holds, and what happens when
 // the page moved on.
 
@@ -129,7 +129,7 @@ describe('accepting a suggestion', () => {
   const accept = (who: Who, id: string) =>
     kit.call(who, 'POST', `/api/documents/kb/suggestions/${id}/accept`);
 
-  // An Editor's alone (ai-knowledge.md "Share roles", Work Tracker 1362): a Participant's agent suggests, never decides.
+  // An Editor's alone (insights.md "Share roles", Work Tracker 1362): a Participant's agent suggests, never decides.
   it.each<[Who, number]>([
     ['participant', 403],
     ['viewer', 403],

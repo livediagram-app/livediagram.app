@@ -128,7 +128,7 @@ NOT NULL DEFAULT 1)`; trigger `page_required_reading_tab_removed` AFTER DELETE O
   not Offline, not an embed, its state read), `RequiredReadingBanner` (above the meta row, `PageKnowledgeSlots`), `PageRailReading`
   (the rail's section, after Page Health), `ReadingSetupPanel` (the shared `ResponsivePopover`, 340 px: a popover from `sm`, the
   phone drawer below; its own chunk, fetched on the press that opens it, so a reader never loads it),
-  `ReadAgainToggle` (the draft bar, left of Cancel), `reading-icons.tsx`; `components/ai-knowledge/RequiredReadingCard`.
+  `ReadAgainToggle` (the draft bar, left of Cancel), `reading-icons.tsx`; `components/insights/RequiredReadingCard`.
 - The banner: `role="region"` named "Required Reading", brand-50 ground and brand-200 hairline (dark: brand-500/10
   and brand-400/30), the book glyph in a 32 px white chip, the words, and `Button` primary `xs` **I've Read This**
   at the right (under the words on a phone, full width, 44 px). It fades in with its first read.
@@ -174,7 +174,7 @@ again` (how many confirmations cleared), `[reading] reminded` (pending, tried, s
 - editor `lib/required-reading/reading-store.test.ts` (the store, `takeReadAgain` and the words),
   `components/required-reading/required-reading-roles.test.tsx` (the banner for the asked only, the rail per role,
   Show All, an embed, the panel and its refusal, the toggle's switch),
-  `components/ai-knowledge/RequiredReadingCard.test.tsx`.
+  `components/insights/RequiredReadingCard.test.tsx`.
 
 ## Constants and configuration
 

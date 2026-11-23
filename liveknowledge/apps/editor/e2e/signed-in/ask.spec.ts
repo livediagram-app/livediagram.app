@@ -147,7 +147,7 @@ test('what the pages do not cover shows as a Knowledge Gap and is listed under I
   await expect(gap).toContainText(question);
 
   await openView(page, 'Insights');
-  // Needs Attention, at Questions: the questions nobody could answer (ai-knowledge.md "The view, as built").
+  // Needs Attention, at Questions: the questions nobody could answer (insights.md "The view, as built").
   const questions = page.getByRole('region', { name: 'Needs Attention' });
   const show = questions
     .getByRole('group', { name: 'Show' })

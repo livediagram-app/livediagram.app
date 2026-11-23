@@ -23,7 +23,7 @@ async function namePage(page: Page, name: string): Promise<void> {
   await page.keyboard.press('End');
 }
 
-// AI Context in a page's right rail (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"), end to
+// AI Context in a page's right rail (docs/specs/030-knowledgebase/insights.md "AI Context on a page"), end to
 // end through the real Ask route and Page Health's read, with the stack's stand-in answering for Anthropic
 // (scripts/e2e-claude-stand-in.mjs: a question that finds passages is answered citing the first).
 
@@ -34,7 +34,7 @@ const QUESTION = 'How do I restart the queue worker?';
 const rail = (page: Page) => page.getByRole('complementary', { name: 'Page Info' });
 const aiContext = (page: Page) => rail(page).getByRole('region', { name: 'AI Context' });
 // Read This Week's panel holds the page's 30-day trend; the questions Ask answered from the page sit under On This
-// Page (ai-knowledge.md "Page Insights": merged into Read This Week, owner 2026-11-22).
+// Page (insights.md "Page Insights": merged into Read This Week, owner 2026-11-22).
 const activity = (page: Page) => rail(page).getByRole('region', { name: 'Page Activity' });
 const answeredFrom = (page: Page) =>
   rail(page).getByRole('region', { name: 'Answered From This Page' });

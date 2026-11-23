@@ -140,7 +140,7 @@ and `HealthSection` drops the share, the bar, the legend and Remind the Owners. 
 (`pageTrust`, `trustMarks`, `knowledgeRights` a role at a time), `page-knowledge-ui.test.tsx` (the meta row and the
 Page Health card a role at a time), `page-knowledge-store-ui.test.tsx` (Never and back), `PageHealthScore.test.tsx`
 (the facts, Knowledge Health, a conflict side), `source-meta.test.ts`, `ask-words.test.ts`, `AskView.test.tsx`,
-`AiDashboard.test.tsx`, each for Never and a set period.
+`InsightsDashboard.test.tsx`, each for Never and a set period.
 
 ### Share roles
 

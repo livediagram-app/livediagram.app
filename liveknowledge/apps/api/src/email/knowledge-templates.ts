@@ -1,4 +1,4 @@
-// The Knowledgebase Reviews emails (docs/specs/030-knowledgebase/verification.md "Reminders", ai-knowledge.md "Pages
+// The Knowledgebase Reviews emails (docs/specs/030-knowledgebase/verification.md "Reminders", insights.md "Pages
 // that disagree" and "Knowledge Health"): a page's review come due, two pages that disagree, and an Editor's
 // reminder to the owners. One switch holds all three (`notifyKnowledgeReviews`), so each carries the settings link
 // and the List-Unsubscribe header the other opt-out notices do, and a plain-text alternative.
@@ -163,7 +163,7 @@ export function pagesDisagreeEmail(
   conflict: EmailConflict,
 ): RenderedEmail {
   const name = named(kb.name, 'a knowledgebase');
-  const aiUrl = `${kbUrl(env, kb)}?view=ai`;
+  const insightsUrl = `${kbUrl(env, kb)}?view=insights`;
   const sides = [conflict.a, conflict.b].map((side) => ({
     title: named(side.title, 'Untitled Page'),
     href: pageUrl(env, kb, side.tab),
@@ -185,7 +185,7 @@ export function pagesDisagreeEmail(
       outro:
         'Fix the page that is wrong. The disagreement closes by itself when either passage changes.',
       ctaText: 'See Both Passages',
-      ctaHref: aiUrl,
+      ctaHref: insightsUrl,
       footer: manageNotificationsFooter(env, reason),
     }),
     text: text(
@@ -200,7 +200,7 @@ export function pagesDisagreeEmail(
           `  "${side.quote}"`,
         ]),
         '',
-        `See both passages: ${aiUrl}`,
+        `See both passages: ${insightsUrl}`,
       ],
       reason,
     ),

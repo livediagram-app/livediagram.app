@@ -6,13 +6,13 @@ import type { ReactNode } from 'react';
 import type { KnowledgeAgent } from '@liveknowledge/api-schema';
 import { CodeSnippet } from '@liveworkspace/marketing-site/components/ai/CodeSnippet';
 import { Button, CompactEmptyState } from '@liveknowledge/ui';
-import { AiSection, AI_CHIP, AI_MUTED } from '@/components/ai-knowledge/AiSection';
+import { InsightsSection, INSIGHTS_CHIP, INSIGHTS_MUTED } from '@/components/insights/InsightsSection';
 import {
   AgentIcon,
   CliIcon,
   McpIcon,
   TokenIcon,
-} from '@/components/ai-knowledge/ai-knowledge-icons';
+} from '@/components/insights/insights-icons';
 import { ConnectViewIcon } from '@/components/ask/ask-icons';
 import { agentDoor, agentScopeChips, type AgentDoor } from '@/lib/knowledge-ask/overview-words';
 import { track } from '@/lib/telemetry';
@@ -40,7 +40,7 @@ export function AlreadyConnected({
 }) {
   const shown = agents?.slice(0, ASIDE_AGENTS) ?? [];
   return (
-    <AiSection
+    <InsightsSection
       id="connect-agents"
       title="Already Connected"
       icon={<AgentIcon />}
@@ -76,10 +76,10 @@ export function AlreadyConnected({
                     <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                       {agent.name}
                     </p>
-                    <p className={`truncate text-xs ${AI_MUTED}`}>{how}</p>
+                    <p className={`truncate text-xs ${INSIGHTS_MUTED}`}>{how}</p>
                     <ul aria-label="What it may do" className="mt-1.5 flex flex-wrap gap-1">
                       {agentScopeChips(agent).map((chip) => (
-                        <li key={chip} className={AI_CHIP}>
+                        <li key={chip} className={INSIGHTS_CHIP}>
                           {chip}
                         </li>
                       ))}
@@ -99,14 +99,14 @@ export function AlreadyConnected({
           </Button>
         </div>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }
 
 export function OtherWaysIn({ name, onOpenTokens }: { name: string; onOpenTokens: () => void }) {
-  const text = `text-[13px] leading-5 ${AI_MUTED}`;
+  const text = `text-[13px] leading-5 ${INSIGHTS_MUTED}`;
   return (
-    <AiSection
+    <InsightsSection
       id="connect-other"
       title="Other Ways In"
       icon={<CliIcon />}
@@ -139,6 +139,6 @@ export function OtherWaysIn({ name, onOpenTokens }: { name: string; onOpenTokens
           </Button>
         </div>
       </div>
-    </AiSection>
+    </InsightsSection>
   );
 }

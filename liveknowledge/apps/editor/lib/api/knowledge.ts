@@ -157,7 +157,7 @@ export function apiPageHealth(
   signal?: AbortSignal,
   opened = false,
 ): Promise<PageHealthResponse> {
-  // `opened`: this read is a person opening the page, which counts as their read (ai-knowledge.md "Reads").
+  // `opened`: this read is a person opening the page, which counts as their read (insights.md "Reads").
   const url = pageUrl(documentId, tab, 'health');
   return read(who, opened ? `${url}?opened=1` : url, 'read page health', signal);
 }

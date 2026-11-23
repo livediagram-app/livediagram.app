@@ -4,7 +4,7 @@ import { clearTestProfiles, setTestProfile } from '../test-profiles';
 
 vi.mock('../person/profiles', () => import('../test-profiles'));
 
-// docs/specs/030-knowledgebase/verification.md and ai-knowledge.md "Always in Context".
+// docs/specs/030-knowledgebase/verification.md and insights.md "Always in Context".
 vi.mock('../index-service', async (original) => {
   const tests = await import('../test-sqlite-d1');
   return {

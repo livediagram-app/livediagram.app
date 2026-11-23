@@ -84,7 +84,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   set-aside carries its reason; a bare mark with none (a small model marks any passage it skipped) sets nothing
   aside, so a page is never called Stale without a why.
 - **It does not guess.** The model is told to say so when the passages do not answer the question or part of it. That
-  part is recorded as an unanswered question ([Insights](ai-knowledge.md)) and shown as a **Knowledge Gap** card
+  part is recorded as an unanswered question ([Insights](insights.md)) and shown as a **Knowledge Gap** card
   with **Draft a Page From What We Know** and, once it has an email of its own (the review emails are built; this
   one is not), **Ask <owner> to Write It**.
 - **Scope:** an answer reads only pages the asker can open. A follow-up keeps the conversation (up to 10 turns).
@@ -328,10 +328,10 @@ strangers.
 ## The views
 
 - A knowledgebase has four views: **Pages** (the editor), **Ask**, **Insights**
-  ([Insights](ai-knowledge.md)) and **Connect** ([Connect](mcp-connect.md), owner 2026-11-21). They are four
+  ([Insights](insights.md)) and **Connect** ([Connect](mcp-connect.md), owner 2026-11-21). They are four
   tabs at the left of the footer, **Pages | Ask | Insights | Connect** ([The page surface](page-surface.md) "The
   footer"), on a phone too.
-- The view is in the address (`?view=ask`, `?view=ai`, `?view=connect`; none is Pages), not the hash, which is the
+- The view is in the address (`?view=ask`, `?view=insights`, `?view=connect`; none is Pages; `?view=ai`, its name before, still opens Insights), not the hash, which is the
   open page's. A reload keeps it, each change is a history entry, so Back returns to the view before, and each tab
   is a link.
 - Ask, Insights and Connect cover the canvas and the page tree, down to the footer; their header is the top row

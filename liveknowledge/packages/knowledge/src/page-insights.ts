@@ -1,4 +1,4 @@
-// How pages are used over time (docs/specs/030-knowledgebase/ai-knowledge.md "Page Insights", "Not Read in 90
+// How pages are used over time (docs/specs/030-knowledgebase/insights.md "Page Insights", "Not Read in 90
 // Days"): one page's reads by day with how often Ask cited it, and the pages nobody read in all the time the room
 // keeps reads. Pure, from rows the api already reads: no tracking of its own.
 import { daysBefore } from './days';

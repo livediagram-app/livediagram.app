@@ -15,7 +15,7 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
 | the view's host, the frame's mark | `components/ask/KnowledgeViewHost.tsx`                                                             |
 | the surface a view is drawn on    | `components/ask/KnowledgeViewFrame.tsx`                                                            |
 
-- **`KnowledgeView`** is `'pages' | 'ask' | 'ai' | 'connect'` (Connect: [its blueprint](mcp-connect-ui.md)). `knowledgeViewOf(search)` reads `?view=`; anything else is
+- **`KnowledgeView`** is `'pages' | 'ask' | 'insights' | 'connect'` (Connect: [its blueprint](mcp-connect-ui.md)). `knowledgeViewOf(search)` reads `?view=` (`ai`, Insights' name before, maps to `insights`); anything else is
   `pages`. `knowledgeViewHref(href, view)` sets or removes the parameter and keeps the path, the rest of the query
   (a share link's `s`) and the hash (`#t=<page>`).
 - **Why the query and not the hash:** `useTabEntryEffects` rewrites the whole hash to `#t=<id>` whenever it is not

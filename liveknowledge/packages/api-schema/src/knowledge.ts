@@ -143,15 +143,15 @@ export type PageHealthResponse = PageKnowledgeResponse & {
    *  page"); `at` is when each first wrote it. Absent for a page not saved since the server began keeping them. */
   editors?: PageAuthorStamp[];
   /** The questions Ask answered citing this page in the last 30 days, the most asked first, 3 at most
-   *  (ai-knowledge.md "AI Context on a page"). */
+   *  (insights.md "AI Context on a page"). */
   answered?: PageAnsweredQuestion[];
   /** The agents that read this page in the last 7 days, the most reads first, 3 at most. */
   agents?: PageAgentReads[];
   /** What the Health Score counts that the editor cannot see itself; absent from an older api. */
   signals?: PageHealthSignals;
-  /** Page Insights (ai-knowledge.md "Page Insights"); absent from an older api. */
+  /** Page Insights (insights.md "Page Insights"); absent from an older api. */
   insights?: PageInsightsWire;
-  /** The page's suggested edits waiting, newest first, the knowledgebase's cap at most (ai-knowledge.md "On the
+  /** The page's suggested edits waiting, newest first, the knowledgebase's cap at most (insights.md "On the
    *  page"); absent from an older api. */
   suggestions?: KnowledgeSuggestion[];
   /** How many suggested edits wait on each page the reader may see, by page id, none at 0 (the tree's dots); absent
@@ -342,7 +342,7 @@ export type PageStructureResponse = {
 
 /** How an agent connects: the MCP server, the command line, or an API token used directly. */
 export type KnowledgeAgentDoor = 'mcp' | 'cli' | 'token';
-/** One connection of Insights' Connected Agents (ai-knowledge.md "Connected agents"). What the room knows of
+/** One connection of Insights' Connected Agents (insights.md "Connected agents"). What the room knows of
  *  the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its
  *  reads, before the room kept its token. */
 export type KnowledgeAgent = {
@@ -383,7 +383,7 @@ export type KnowledgeConflictSide = {
   text: string;
   trust: KnowledgeTrustShown;
   verifiedAt?: number;
-  /** The page's Health Score: the higher side is the likelier right (ai-knowledge.md "Pages that disagree"). */
+  /** The page's Health Score: the higher side is the likelier right (insights.md "Pages that disagree"). */
   health?: { score: number; label: KnowledgeHealthLabel };
 };
 export type KnowledgeConflict = {
@@ -412,7 +412,7 @@ export type KnowledgeEmailResult =
         // Remind the Owners under a Review Period of Never: nothing is verified, so nobody is reminded.
         | 'verification_off';
     };
-/** An agent's edit waiting for an Editor (ai-knowledge.md "Edits suggested by agents"): a passage of the page's
+/** An agent's edit waiting for an Editor (insights.md "Edits suggested by agents"): a passage of the page's
  *  Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty). */
 export type KnowledgeSuggestion = {
   id: string;
@@ -554,11 +554,11 @@ export type MovePageResponse = { page: KnowledgePageRef & { parent?: string; dep
 export type AgentScopesRequest = { scopes: AgentScope[] };
 export type AgentScopesResponse = { tokenId: string; scopes: AgentScope[] };
 export type KnowledgeContextPage = { tab: string; title: string; tokens: number };
-/** One day of Insights' reads (ai-knowledge.md "Reads"): `day` is the UTC day, `YYYY-MM-DD`. */
+/** One day of Insights' reads (insights.md "Reads"): `day` is the UTC day, `YYYY-MM-DD`. */
 export type KnowledgeReadsDay = { day: string; people: number; agents: number };
 /** A page of Most Read: its reads in the last 7 days, by people and by agents. */
 export type KnowledgeMostRead = { tab: string; title: string; people: number; agents: number };
-/** `GET .../knowledge`: the Insights tab (ai-knowledge.md). */
+/** `GET .../knowledge`: the Insights tab (insights.md). */
 export type KnowledgeOverviewResponse = {
   agents: KnowledgeAgent[];
   questions: KnowledgeQuestion[];
@@ -578,7 +578,7 @@ export type KnowledgeOverviewResponse = {
   reads: { days: KnowledgeReadsDay[]; mostRead: KnowledgeMostRead[] };
   /** Pages With Low Health: the 5 lowest under the Healthy line; absent from an older api. */
   lowHealth?: KnowledgeLowHealthPage[];
-  /** Not Read in 90 Days (ai-knowledge.md): the first 10, touched longest ago first, and how many; absent from an
+  /** Not Read in 90 Days (insights.md): the first 10, touched longest ago first, and how many; absent from an
    *  older api. */
   notRead?: { pages: KnowledgeNotReadPage[]; total: number };
   /** Required Reading (required-reading.md): each page asked to be read with its counts, least read first; absent

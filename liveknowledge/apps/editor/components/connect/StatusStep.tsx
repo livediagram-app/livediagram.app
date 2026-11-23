@@ -6,7 +6,7 @@ import { CodeSnippet } from '@liveworkspace/marketing-site/components/ai/CodeSni
 import { lucideCircleCheck, lucideRefreshCw } from '@liveworkspace/icons/lucide';
 import { Button, lucideGlyph } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
-import { AI_MUTED } from '@/components/ai-knowledge/AiSection';
+import { INSIGHTS_MUTED } from '@/components/insights/InsightsSection';
 import { firstPrompt } from '@/lib/knowledge-connect/connect-words';
 import { CHECK_EVERY_MS, CHECK_FOR_MS } from '@/lib/knowledge-connect/connect-status';
 import { lastSeenText, readsText } from '@/lib/knowledge-ask/overview-words';
@@ -36,7 +36,7 @@ export function StatusStep({
   onCheckNow: () => void;
   onManage: () => void;
 }) {
-  const text = `text-[13px] leading-5 ${AI_MUTED}`;
+  const text = `text-[13px] leading-5 ${INSIGHTS_MUTED}`;
   return (
     <div className="flex flex-col gap-4">
       <div role="status" aria-live="polite" data-connect-status={status.kind}>

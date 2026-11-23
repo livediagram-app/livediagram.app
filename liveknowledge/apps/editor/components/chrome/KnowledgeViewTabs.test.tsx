@@ -108,7 +108,7 @@ describe('the view tabs', () => {
     ]);
     for (const a of links) expect(a.querySelector('svg')).not.toBeNull();
     expect(link('Pages').getAttribute('href')).toBe('/document/d1#t=p1');
-    expect(link('Insights').getAttribute('href')).toBe('/document/d1?view=ai#t=p1');
+    expect(link('Insights').getAttribute('href')).toBe('/document/d1?view=insights#t=p1');
     expect(link('Connect MCP').getAttribute('href')).toBe('/document/d1?view=connect#t=p1');
     expect(link('Ask').getAttribute('aria-current')).toBe('page');
     expect(link('Pages').getAttribute('aria-current')).toBeNull();

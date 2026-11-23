@@ -119,7 +119,7 @@ test('Required Reading: required, confirmed, seen by the owner, asked again, lis
   // Without a team, Everyone counts the owner and those who confirmed this round: Alan counts again once he confirms.
   await expect(card).toContainText('0 of 1');
   await card.scrollIntoViewIfNeeded();
-  await shot(page, '08-ai-knowledge-card');
+  await shot(page, '08-insights-card');
 
   // On a phone the banner's button takes the whole width.
   await viewer.setViewportSize({ width: 390, height: 844 });

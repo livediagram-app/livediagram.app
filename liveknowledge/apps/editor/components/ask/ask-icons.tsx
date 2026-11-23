@@ -35,7 +35,7 @@ import { lucideGlyph } from '@liveknowledge/ui';
 
 export const PagesViewIcon = lucideGlyph(lucideFileText, 16);
 export const AskViewIcon = lucideGlyph(lucideMessagesSquare, 16);
-export const AiViewIcon = lucideGlyph(lucideSparkles, 16);
+export const InsightsViewIcon = lucideGlyph(lucideSparkles, 16);
 export const ConnectViewIcon = lucideGlyph(lucidePlug, 16);
 
 export const SendIcon = lucideGlyph(lucideArrowUp, 16);

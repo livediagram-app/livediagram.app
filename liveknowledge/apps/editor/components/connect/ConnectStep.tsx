@@ -1,8 +1,8 @@
 // One numbered step of Connect (docs/specs/030-knowledgebase/mcp-connect.md "The view"): a card named by its
 // heading, the step's number in a brand circle beside it (the list it sits in counts for a screen reader), one line
-// about it, then its body. The card is Insights' (AiSection), so the two views read alike.
+// about it, then its body. The card is Insights' (InsightsSection), so the two views read alike.
 import { useId, type ReactNode } from 'react';
-import { AI_CARD, AI_MUTED } from '@/components/ai-knowledge/AiSection';
+import { INSIGHTS_CARD, INSIGHTS_MUTED } from '@/components/insights/InsightsSection';
 
 export function ConnectStep({
   n,
@@ -24,7 +24,7 @@ export function ConnectStep({
       <section
         aria-labelledby={id}
         data-connect-step={step}
-        className={`${AI_CARD} min-w-0 p-4 sm:p-5`}
+        className={`${INSIGHTS_CARD} min-w-0 p-4 sm:p-5`}
       >
         <div className="flex items-start gap-3">
           <span
@@ -40,7 +40,7 @@ export function ConnectStep({
             >
               {title}
             </h2>
-            <p className={`mt-1 text-[13px] leading-5 ${AI_MUTED}`}>{about}</p>
+            <p className={`mt-1 text-[13px] leading-5 ${INSIGHTS_MUTED}`}>{about}</p>
           </div>
         </div>
         <div className="mt-4 sm:pl-11">{children}</div>

@@ -98,12 +98,13 @@ export const ASK: MetricStack = {
   headline: QUESTIONS_ASKED,
 };
 
-// ---- Insights (ai-knowledge.md) ---------------------------------------------------------------------------
+// ---- Insights (insights.md) ---------------------------------------------------------------------------
 
-export const AI_KNOWLEDGE_OPENED = openedChart(
+export const INSIGHTS_OPENED = openedChart(
   'Insights Opened',
   'The Insights view opened from the footer: suggestions, conflicts and unanswered questions.',
-  (t) => t === 'AiKnowledgeView',
+  // AiKnowledgeView: what it sent before the rename (2026-11-23), so the history stays on the chart.
+  (t) => t === 'InsightsView' || t === 'AiKnowledgeView',
 );
 
 export const SUGGESTIONS_ACCEPTED = chart(
@@ -178,13 +179,13 @@ export const CONNECT_COPIED = chart(
   { types: ['McpSetup', 'ConnectPrompt'] },
 );
 
-export const AI_KNOWLEDGE: MetricStack = {
+export const INSIGHTS: MetricStack = {
   stack: true,
   title: 'Insights',
   blurb:
     'Keeping the knowledgebase right: agent suggestions accepted or dismissed, conflicts and unanswered questions settled, and owners emailed.',
   members: [
-    AI_KNOWLEDGE_OPENED,
+    INSIGHTS_OPENED,
     CONNECT_OPENED,
     CONNECT_COPIED,
     SUGGESTIONS_ACCEPTED,
@@ -538,7 +539,7 @@ export const PAGES_FROM_STRUCTURE = chart(
   { types: ['FromStructure'] },
 );
 
-// ---- Reading and editing a page (editing.md) and AI Context (ai-knowledge.md "AI Context on a page") ----------
+// ---- Reading and editing a page (editing.md) and AI Context (insights.md "AI Context on a page") ----------
 
 export const EDITS_STARTED = chart(
   'Tab',
@@ -694,7 +695,7 @@ export const SITE_PUBLISHING: MetricStack = {
   headline: [SITES_PUBLISHED],
 };
 
-// ---- Agents' access, for Connections (ai-knowledge.md "Agents") -------------------------------------------------
+// ---- Agents' access, for Connections (insights.md "Agents") -------------------------------------------------
 
 export const AGENT_WRITES_ALLOWED = chart(
   'UI',

@@ -1,4 +1,4 @@
-// The Insights tab over REST (docs/specs/030-knowledgebase/ai-knowledge.md):
+// The Insights tab over REST (docs/specs/030-knowledgebase/insights.md):
 //   GET    /api/documents/<id>/knowledge               agents, questions, conflicts, context pages, health
 //   POST   /api/documents/<id>/questions               { question }: an agent's `report_gap`
 //   DELETE /api/documents/<id>/questions/<key>         Dismiss (Editor)
@@ -160,7 +160,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     // What the review emails remember (knowledge/email-marks.ts): a row a conflict asked about, one for the week.
     marksOf(env, 'ask'),
     marksOf(env, 'remind'),
-    // The figures band's sparkline and Most Read (ai-knowledge.md "Reads"): two ranges of page_reads.
+    // The figures band's sparkline and Most Read (insights.md "Reads"): two ranges of page_reads.
     rowsOf<DailyReadsRow>(env, countDailyReads(now)),
     rowsOf<MostReadRow>(env, countMostRead(now)),
     // Every page's Health Score (verification.md "Health Score"): one statement, no read a page.
@@ -208,7 +208,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
       pages,
     },
     health: average === undefined ? health : { ...health, average },
-    // Pages With Low Health (ai-knowledge.md "Knowledge Health"): the 5 lowest under the Healthy line.
+    // Pages With Low Health (insights.md "Knowledge Health"): the 5 lowest under the Healthy line.
     lowHealth: lowHealthPages(
       scored.map(({ row, health: page }) => ({
         tab: row.tab,
@@ -220,7 +220,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
         reason: page.reason,
       })),
     ).map(({ tab, title, score, label, reason }) => ({ tab, title, score, label, reason })),
-    // Not Read in 90 Days (ai-knowledge.md): from the same facts rows, each with its last read day.
+    // Not Read in 90 Days (insights.md): from the same facts rows, each with its last read day.
     notRead: notReadPages(
       scored.map(({ row }) => ({
         tab: row.tab,
@@ -261,7 +261,7 @@ export async function handleOverviewRoutes(route: KnowledgeRoute): Promise<Respo
   const { ctx, document, grant } = route;
   const { env, request, segments } = ctx;
   const id = segments[4];
-  // Dismissing a question or a conflict is a page writer's: an Editor's or a Participant's (ai-knowledge.md "Share
+  // Dismissing a question or a conflict is a page writer's: an Editor's or a Participant's (insights.md "Share
   // roles").
   const writer = writesPages(grant);
   if (segments[3] === 'knowledge' && segments.length === 4)

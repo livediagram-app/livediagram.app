@@ -95,7 +95,7 @@ export async function openView(page: Page, view: 'Pages' | 'Ask' | 'Insights'): 
     .getByRole('navigation', { name: 'Knowledgebase Views' })
     .getByRole('link', { name: view, exact: true })
     .click();
-  const param = view === 'Ask' ? 'ask' : view === 'Insights' ? 'ai' : null;
+  const param = view === 'Ask' ? 'ask' : view === 'Insights' ? 'insights' : null;
   await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBe(param);
 }
 

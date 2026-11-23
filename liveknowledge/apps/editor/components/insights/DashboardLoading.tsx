@@ -1,4 +1,4 @@
-// Insights while its read is out (docs/specs/030-knowledgebase/blueprints/ai-knowledge-ui.md "States"): the
+// Insights while its read is out (docs/specs/030-knowledgebase/blueprints/insights-ui.md "States"): the
 // dashboard's own shape in quiet placeholders, so nothing jumps when it lands.
 const BLOCK =
   'rounded-2xl border border-slate-200 bg-white motion-safe:animate-pulse dark:border-slate-800 dark:bg-slate-900';

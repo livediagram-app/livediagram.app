@@ -15,8 +15,8 @@ import { KNOWLEDGE_VIEW_ANCHOR, KnowledgeViewFrame } from './KnowledgeViewFrame'
 import { useKnowledgeViewsOffered } from './useKnowledgeViewsOffered';
 
 const AskView = dynamic(() => import('./AskView').then((m) => m.AskView), { ssr: false });
-const AiKnowledgeView = dynamic(
-  () => import('@/components/ai-knowledge/AiKnowledgeView').then((m) => m.AiKnowledgeView),
+const InsightsView = dynamic(
+  () => import('@/components/insights/InsightsView').then((m) => m.InsightsView),
   { ssr: false },
 );
 
@@ -26,7 +26,7 @@ const ConnectView = dynamic(
 );
 
 // Each view's region name, as its tab is named.
-const VIEW_LABEL = { ask: 'Ask', ai: 'Insights', connect: 'Connect MCP' } as const;
+const VIEW_LABEL = { ask: 'Ask', insights: 'Insights', connect: 'Connect MCP' } as const;
 
 // The knowledgebase's key and model (AiSettingsDialog.tsx): its code is fetched the first time it is opened.
 const AiSettingsDialogHost = dynamic(
@@ -80,7 +80,7 @@ export function KnowledgeViewHost() {
     <>
       <KnowledgeViewFrame key={view} label={VIEW_LABEL[view]}>
         <AreaErrorBoundary area="KnowledgeView" fallback="panel" fallbackClassName="flex-1">
-          {view === 'ask' ? <AskView /> : view === 'ai' ? <AiKnowledgeView /> : <ConnectView />}
+          {view === 'ask' ? <AskView /> : view === 'insights' ? <InsightsView /> : <ConnectView />}
         </AreaErrorBoundary>
       </KnowledgeViewFrame>
       {/* The knowledgebase's key and model, opened from either view. */}

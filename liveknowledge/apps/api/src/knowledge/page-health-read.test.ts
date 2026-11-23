@@ -154,7 +154,7 @@ describe('the facts of each page', () => {
     expect(broken.map((s) => s.row.tab)).toEqual(['p499']);
   });
 
-  // ai-knowledge.md "Not Read in 90 Days", "Page Insights": both ride reads already made, at 500 pages with every
+  // insights.md "Not Read in 90 Days", "Page Insights": both ride reads already made, at 500 pages with every
   // page read on every one of the 90 days the room keeps (45,000 rows, the worst a busy knowledgebase holds).
   it('answers each page’s last read in the same one read, and one page’s 30 days in one, at 500 pages', async () => {
     const many = Array.from({ length: 500 }, (_, at) =>

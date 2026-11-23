@@ -151,7 +151,7 @@ export async function handleDocumentSubresources(
       const tab = readsDraft(ctx, grant, view !== null) ? stored : withoutDraft(stored);
       // An agent's read shows it on this tab (docs/specs/024-agents/agent-presence.md "Presence").
       if (caller !== null) refreshAfterRead(ctx, existing, tabId, caller);
-      // One open of a page is a read (ai-knowledge.md "Reads"); a document view is an agent's `read_page`.
+      // One open of a page is a read (insights.md "Reads"); a document view is an agent's `read_page`.
       await countRead(env, tabId, readerOf(ctx), caller);
       // Blank other people's comment author ids before handing the tab
       // to a non-owner: a visitor should only ever see their OWN author

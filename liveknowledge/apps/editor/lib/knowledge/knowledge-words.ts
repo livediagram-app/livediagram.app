@@ -1,5 +1,5 @@
 // What a refused knowledge request says, in words (docs/specs/030-knowledgebase/verification.md, search-and-ask.md
-// "Bounds", ai-knowledge.md "Always in Context"): never a status or a code.
+// "Bounds", insights.md "Always in Context"): never a status or a code.
 import { SEARCH_MAX_QUERY_CHARS } from '@liveknowledge/knowledge';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import { ContextBudgetError } from '@/lib/api/knowledge';

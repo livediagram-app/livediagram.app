@@ -2,7 +2,7 @@
 
 Derived from [Connect](../mcp-connect.md). The fourth view, on the frame and the tabs the
 [Ask UI blueprint](ask-ui.md) "The views" describes, over the overview read the
-[Insights UI blueprint](ai-knowledge-ui.md) describes. Paths are under `apps/editor/`.
+[Insights UI blueprint](insights-ui.md) describes. Paths are under `apps/editor/`.
 
 | Piece                                   | File                                                          |
 | --------------------------------------- | ------------------------------------------------------------- |
@@ -38,7 +38,7 @@ Derived from [Connect](../mcp-connect.md). The fourth view, on the frame and the
   the steps below `lg`).
 - **The MCP address** is `mcpEndpoint(MCP_ORIGIN)` (`lib/mcp-config.ts`), so a build with `NEXT_PUBLIC_MCP_ORIGIN`
   (staging, local) shows its own.
-- **`ConnectStep`**: an `AI_CARD` `section` named by its heading, a brand circle with the step's number (hidden from
+- **`ConnectStep`**: an `INSIGHTS_CARD` `section` named by its heading, a brand circle with the step's number (hidden from
   a screen reader: the `ol` it sits in counts), the heading, one line and the body.
 - **The apps** (`connectApps(mcpUrl)`): `aiClients({ name: 'liveknowledge', mcpUrl })` from
   `@liveworkspace/marketing-site/lib/ai-clients` (pure data, no imports), narrowed to `claude`, `claude-code`,

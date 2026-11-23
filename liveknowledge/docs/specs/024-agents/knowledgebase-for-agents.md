@@ -41,7 +41,7 @@ label, reason, factors }` beside the trust fields: the page's Health Score, 0 to
   does not have is refused, naming the labels it has. `list_pages` rows and `read_page` carry each page's `labels` by
   name (left out for a page with none), and `list_pages` takes the same `labels` to list only those pages. Agents
   cannot put labels on pages or make them yet.
-- Every read is counted for [Insights](../030-knowledgebase/ai-knowledge.md) under the client's name.
+- Every read is counted for [Insights](../030-knowledgebase/insights.md) under the client's name.
 - Tool results are small by default (a passage, not a page) and name the next tool to call for more.
 
 ## CLI

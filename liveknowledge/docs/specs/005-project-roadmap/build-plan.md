@@ -16,7 +16,7 @@ its own. Specs first at every step.
 | 7   | Verification ([Verification](../030-knowledgebase/verification.md))                                                           |                 |
 | 8   | Search ([Search and Ask](../030-knowledgebase/search-and-ask.md))                                                             |                 |
 | 9   | Ask, on built-in AI or the team's own key                                                                                     |                 |
-| 10  | Insights ([Insights](../030-knowledgebase/ai-knowledge.md))                                                                   |                 |
+| 10  | Insights ([Insights](../030-knowledgebase/insights.md))                                                                       |                 |
 | 11  | Knowledgebase Home ([Knowledgebase Home](../030-knowledgebase/knowledgebase-home.md))                                         |                 |
 | 12  | Knowledgebase import ([Knowledgebase import](../020-import-export/knowledgebase-import.md))                                   | built           |
 | 13  | The MCP server and CLI in pages ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md))                       |                 |

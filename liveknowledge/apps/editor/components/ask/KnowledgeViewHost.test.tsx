@@ -8,8 +8,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('next/dynamic', () => ({
   default: (load: () => Promise<unknown>) => {
     const source = String(load);
-    const name = source.includes('AiKnowledgeView')
-      ? 'ai'
+    const name = source.includes('InsightsView')
+      ? 'insights'
       : source.includes('ConnectView')
         ? 'connect'
         : source.includes('AskView')
@@ -89,7 +89,7 @@ describe('the view over the editor', () => {
 
   it('gives the editor back when Pages shows again, and follows the browser Back', () => {
     editor();
-    act(() => showKnowledgeView('ai'));
+    act(() => showKnowledgeView('insights'));
     expect(screen.getByRole('region', { name: 'Insights' })).toBeTruthy();
     act(() => {
       window.history.replaceState(null, '', '/document/d1');
