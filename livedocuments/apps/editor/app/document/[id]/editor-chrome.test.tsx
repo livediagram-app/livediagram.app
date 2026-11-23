@@ -24,17 +24,23 @@ vi.mock('@liveworkspace/workbench/components/chrome/EditorCornerActions', () => 
     return <h1>Corner</h1>;
   },
 }));
-vi.mock('@/components/chrome/TabBar', () => ({
-  TabBar: (p: { tabs: Tab[]; isOutOfScope?: (id: string) => boolean }) => {
-    renders.tabBar++;
-    // A tab out of a tab-scoped link's scope is marked, as the real bar greys it.
-    return (
-      <nav>
-        {p.tabs.map((t) => `${t.name}${p.isOutOfScope?.(t.id) ? ' (out of scope)' : ''}`).join(',')}
-      </nav>
-    );
-  },
-}));
+vi.mock('@/components/chrome/TabBar', () => {
+  const bar = {
+    TabBar: (p: { tabs: Tab[]; isOutOfScope?: (id: string) => boolean }) => {
+      renders.tabBar++;
+      // A tab out of a tab-scoped link's scope is marked, as the real bar greys it.
+      return (
+        <nav>
+          {p.tabs
+            .map((t) => `${t.name}${p.isOutOfScope?.(t.id) ? ' (out of scope)' : ''}`)
+            .join(',')}
+        </nav>
+      );
+    },
+  };
+  // The bar the editor draws, with Connect a File beside its + (connected-tabs.md "From the tab bar").
+  return { ...bar, TabBarWithConnect: bar.TabBar };
+});
 // Each dialog's code loads on demand: here it is a marker naming that something opened.
 vi.mock('next/dynamic', () => ({ default: () => () => <div data-testid="opened" /> }));
 vi.mock('@/components/start/useTemplatePickMove', () => ({ useTemplatePickMove: () => () => {} }));
