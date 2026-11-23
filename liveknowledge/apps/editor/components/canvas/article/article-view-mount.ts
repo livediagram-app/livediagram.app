@@ -73,6 +73,11 @@ const sentPlugin = (editable: () => boolean) =>
 const pasteProps = articleTablePasteProps(articlePasteProps);
 
 // What the writing's view is made from (ArticleEditor's refs, setters and handlers, as of its first render).
+/** The writing's class. Read only, it opts out of the canvas's no-selection (useNoCanvasTextSelection), so a reader
+ *  picks words to copy them or send them to a plan (the reader's Send to Plan pill). */
+export const articleFlowClass = (editable: boolean): string =>
+  editable ? 'article-flow' : 'article-flow select-text';
+
 export type MountContext = {
   host: MutableRefObject<HTMLDivElement | null>;
   viewRef: MutableRefObject<EditorView | null>;
@@ -265,7 +270,7 @@ export function mountArticleView({
         )
         .join('; ');
       return {
-        class: 'article-flow',
+        class: articleFlowClass(p.editable),
         style: continuous
           ? css
           : `${css}; column-count: ${frame.count}; column-gap: ${frame.gap}px`,
