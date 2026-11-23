@@ -11,7 +11,7 @@
 //   BASE=<sha or empty> HEAD=<sha> node .github/scripts/ci-plan.mjs
 //
 // With no BASE (a manual run, the nightly run, a new branch's first push) or a change to CI itself
-// or to the root's shared config or the parts of .github/ every job runs (ci-run-all.mjs), everything runs. Writes `groups`, `editors`, `e2e`, `deploys` and
+// or to the root's shared config or the parts of .github/ every job runs (ci-run-all.mjs), everything runs. Writes `groups`, `editors`, `e2e`, `sites`, `deploys` and
 // `any` to $GITHUB_OUTPUT when it is set, and prints the plan either way.
 //
 // The deploys (docs/ci.md "Deploys") read the same answer with PLAN_MODE=deploy and BASE set to the
@@ -131,6 +131,8 @@ else {
 }
 
 const packages = turboPackages(!all);
+// What turbo itself reached, before the suites that only read a change join below: the sites audit plans on it.
+const reachedByTurbo = new Set(packages.map((p) => p.name));
 
 // The suites that read another workspace's files (turbo.json's `$TURBO_ROOT$/…` test inputs, see
 // ci-readers.mjs) run when the change touches what they read, though turbo's graph never reaches them.
@@ -193,6 +195,11 @@ for (const spec of GROUPS) {
     group: spec.group,
     count: runnable.length,
     filters: filters(runnable.map((p) => p.name)),
+    // Build leaves out the editor when its E2E runs: the smoke build there runs the same `build` script
+    // (docs/ci.md "Workflows"), and no workspace builds on an editor.
+    build: filters(
+      runnable.filter((p) => !(editorAffected && p.name === spec.editor)).map((p) => p.name),
+    ),
     coverage: filters(coverage),
     plain: filters(plain),
     cli: spec.cli && runnable.some((p) => p.path === spec.cli) ? spec.cli : '',
@@ -212,6 +219,32 @@ for (const spec of GROUPS) {
     }
     e2e.push(spec.group);
   }
+}
+
+// The sites audit (each product's `test:e2e:sites`) checks the help centre, the Community (liveworkspace's site)
+// and the product's marketing site, never the editor, so it runs when one of those, or the audit itself, changed
+// (docs/ci.md "Workflows", E2E). Until 2026-11-23 it ran with the editor's suites instead: on every editor change,
+// where it had nothing new to check, and never on a marketing or help change, which it audits.
+const SITES_SHARED = ['@liveworkspace/help', '@liveworkspace/site', '@liveworkspace/e2e-kit'];
+const SITES_FILES = ['scripts/e2e-stack/'];
+const sites = [];
+for (const spec of GROUPS) {
+  if (!spec.editor) continue;
+  const own = changed.some((file) => spec.dirs.some((dir) => file.startsWith(dir)));
+  if (spec.held && !all && !own) continue;
+  const reached = (name) => reachedByTurbo.has(name);
+  if (
+    all ||
+    reached(`@${spec.group}/marketing`) ||
+    SITES_SHARED.some(reached) ||
+    changed.some(
+      (file) =>
+        file.startsWith(`${spec.editorDir}/e2e/`) ||
+        file === `${spec.editorDir}/playwright.config.ts` ||
+        SITES_FILES.some((prefix) => file.startsWith(prefix)),
+    )
+  )
+    sites.push(spec.group);
 }
 
 // The Workers among the affected workspaces. Tier 0: the services and apis everything else calls
@@ -275,13 +308,18 @@ function deployOf(p) {
 }
 const deploys = packages.map(deployOf).filter(Boolean);
 
-// What only the e2e jobs run (ci-run-all.mjs) runs every product's E2E, and no other job for it.
+// What only the e2e jobs run (ci-run-all.mjs) runs every product's E2E (its editor suites and its sites
+// audit), and no other job for it.
 if (!all && !deployMode && changed.some(forcesE2e)) {
-  for (const spec of GROUPS) if (spec.editor && !e2e.includes(spec.group)) e2e.push(spec.group);
+  for (const spec of GROUPS) {
+    if (!spec.editor) continue;
+    if (!e2e.includes(spec.group)) e2e.push(spec.group);
+    if (!sites.includes(spec.group)) sites.push(spec.group);
+  }
   reason += ", plus every product's E2E for its workflow";
 }
 
-const plan = { reason, groups, editors, e2e, deploys, any: groups.length > 0 };
+const plan = { reason, groups, editors, e2e, sites, deploys, any: groups.length > 0 };
 console.error(`[ci-plan] ${reason}; ${packages.length} workspaces`);
 for (const g of groups) console.error(`[ci-plan]   ${g.group}: ${g.count}${g.cli ? ', CLI' : ''}`);
 if (deployMode) {
@@ -295,6 +333,7 @@ if (deployMode) {
 console.error(
   `[ci-plan]   editor shards: ${[...new Set(editors.map((e) => e.group))].join(', ') || 'none'}`,
 );
+console.error(`[ci-plan]   sites audit: ${sites.join(', ') || 'none'}`);
 console.log(JSON.stringify(plan, null, 2));
 
 if (process.env.GITHUB_OUTPUT) {
@@ -302,6 +341,7 @@ if (process.env.GITHUB_OUTPUT) {
     `groups=${JSON.stringify(groups)}`,
     `editors=${JSON.stringify(editors)}`,
     `e2e=${JSON.stringify(e2e)}`,
+    `sites=${JSON.stringify(sites)}`,
     ...[0, 1, 2].map(
       (tier) => `deploys${tier}=${JSON.stringify(deploys.filter((d) => d.tier === tier))}`,
     ),
