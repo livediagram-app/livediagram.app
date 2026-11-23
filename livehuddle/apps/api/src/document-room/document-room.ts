@@ -1,3 +1,4 @@
+import { spendAskIn } from '@liveworkspace/ask/server';
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
@@ -751,6 +752,13 @@ export class DocumentRoom extends DurableObject<Env> {
 
   armAlarm(): void {
     armAlarm(this);
+  }
+
+  // ---------- RPC: Ask AI's built-in allowance (@liveworkspace/ask/server daily-count.ts) -------------------------
+
+  // Only on an account's `~ask-ai:` instance, never an item's: one storage key, no schema made or read.
+  spendAsk(day: string, cap: number): Promise<boolean> {
+    return spendAskIn(this.state.storage, day, cap);
   }
 
   override alarm(): Promise<void> {

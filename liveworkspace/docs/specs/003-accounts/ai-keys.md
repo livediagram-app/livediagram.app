@@ -264,6 +264,8 @@ Describe to Set Up and Describe the Structure.
   ([describe-a-plan.md](../../../../liveplanner/docs/specs/026-plan/describe-a-plan.md#which-ai-drafts-it)).
 - **Every app's Automations**: Describe a Rule runs on the person's key; the AI steps run on built-in AI
   ([automations.md](../018-automations/automations.md#ai)).
+- **Every app but liveknowledge**: Ask AI in the footer's Tools ([ask.md](../019-ask/ask.md)), whose source line is the
+  AI pill in its field: which AI the next question runs on, and Answer With to switch between built-in AI and the key.
 - **livediagram**: the photo reader ([note-reader.md](../../../../livediagram/docs/specs/021-event-storming/note-reader.md#on-your-own-key)).
   Its way in is [Build with AI](../../../../livediagram/docs/specs/019-marketing/build-with-ai.md#your-own-ai-key).
 

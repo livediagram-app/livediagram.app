@@ -99,6 +99,14 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   characters; the passages sent are capped at 24,000 characters. A failed or refused model call says
   which (bad key, no credit, rate limit) in words, never a raw error.
 
+### Shared with Ask AI
+
+The other apps' Ask AI ([ask.md](../../../../liveworkspace/docs/specs/019-ask/ask.md)) is built on the parts of Ask
+that are not the knowledgebase's own, which now live in `@liveworkspace/ask`: the reply's reader and its citation
+numbering (`askAnswerStream`, `parseAskAnswer`), the answer's parts and marked words (`answerParts`, `markedParts`),
+the server-sent-events reader and the citation chip. Ask itself, its search index, trust, gaps and Sources rail are
+unchanged.
+
 ## Which key answers
 
 Owner, 2026-11-21: a person's and a team's own AI key, kept once in liveworkspace and used in every app

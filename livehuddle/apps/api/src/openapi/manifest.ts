@@ -1232,6 +1232,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
 
   // ---- Preferences ----
   {
+    method: 'POST',
+    path: '/ask',
+    segment: 'ask',
+    tag: 'Documents',
+    summary:
+      'Ask AI: a question (up to 1,000 characters) answered from the passages of an open space that are sent with it (up to 200, 24,000 characters), streamed as server-sent events: `delta` pieces of the answer, then `done` with the passages it cites, or `error`. Runs on the caller’s own AI key, or their team’s, when one applies, else on built-in AI. Nothing is saved. Signed in only (a guest is refused); an account asks up to 30 questions a day on built-in AI.',
+    auth: 'clerk',
+    statuses: [200, 400, 401, 403, 405, 422, 429, 503],
+  },
+  {
     method: 'GET',
     path: '/preferences',
     segment: 'preferences',

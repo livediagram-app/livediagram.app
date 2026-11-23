@@ -34,6 +34,7 @@ Paths in these specs are relative to `liveworkspace/` (`apps/accounts/…`), exc
 - ./016-notifications/README.md - when working on toasts in any editor, the Explorer or Settings, the footer's bell and the notification list
 - ./017-help/README.md - when working on the one help centre every app shares: liveworkspace.app/help and each app's /help, the app switch and where it moves you, articles for several apps and their app notes, search, canonicals and old paths
 - ./018-automations/README.md - when working on Automations in any app: rules, the shared triggers and steps, where rules live and run, Connections (what Webhooks became), the engine and builder packages
+- ./019-ask/README.md - when working on Ask AI in any app but liveknowledge: the tool in the footer's Tools, what is sent, which AI answers and how the person switches, Sources, built-in AI's allowance, `@liveworkspace/ask`
 
 ## Workflow
 

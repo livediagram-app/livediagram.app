@@ -27,17 +27,18 @@ its name, one line on what it does (never wrapping: kept short enough for one li
 the band's paper under the pointer, so the list reads as the header's.
 
 The rows are grouped under small headings, in this order, a heading drawn only when its group holds a row: **Find**
-(Search), **Automate** (Automations, then liveplanner's Email to Board), **Collaborate** (Walkthroughs, and
+(Search, then Ask AI), **Automate** (Automations, then liveplanner's Email to Board), **Collaborate** (Walkthroughs, and
 liveplanner's Subscribe to Calendar), **Versioning** (History alone: Snapshots and livedocuments' Version History live
 inside it). Clear Example Content is not in Tools (owner, 2026-11-17): the palette's example tray offers it, and needs nothing more. Each
 group is a labelled group for screen readers; the arrow keys walk the rows straight through the groups.
 
-| Row              | App                                                 | Drawn when                                                                                                                                                               | Opens, inside Tools                      |
-| ---------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
-| **History**      | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor); or the person may take snapshots; or livedocuments offers Version History | the History below, with Snapshots in it  |
-| **Search**       | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                               | the Search dialog (closes Tools)         |
-| **Automations**  | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                        | the Automations screen, widened          |
-| **Walkthroughs** | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools")     | the list to play, and Record Walkthrough |
+| Row              | App                                                 | Drawn when                                                                                                                                                               | Opens, inside Tools                                      |
+| ---------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| **History**      | every app                                           | signed in, the open item not shared by link (no longer on the item's ⋯ menu inside an editor); or the person may take snapshots; or livedocuments offers Version History | the History below, with Snapshots in it                  |
+| **Search**       | every app                                           | the host offers search (the editor and the Explorer's bar)                                                                                                               | the Search dialog (closes Tools)                         |
+| **Ask AI**       | every app but liveknowledge                         | an item is open (signed out, badged Sign In)                                                                                                                             | [Ask AI](../019-ask/ask.md), kept open beside the canvas |
+| **Automations**  | liveplanner                                         | as its button was ([Automations](../../../../liveplanner/docs/specs/026-plan/automations.md) "The footer button")                                                        | the Automations screen, widened                          |
+| **Walkthroughs** | livediagram, livedocuments, liveplanner, livedesign | walkthroughs fit and there is one to play or the person may record ([Walkthroughs](../../../../livediagram/docs/specs/012-collaboration/walkthroughs.md) "In Tools")     | the list to play, and Record Walkthrough                 |
 
 - **Automations** keeps its count: the rules that are on, at the row's end (none at 0), amber when a rule
   paused itself. A paused rule also puts a small amber dot on the Tools button, so the warning the button carried

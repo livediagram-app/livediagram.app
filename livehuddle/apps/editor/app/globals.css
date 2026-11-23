@@ -80,6 +80,8 @@
 @source '../../../../packages/capture/src';
 /* The Automations screen and builder every app shares (@liveworkspace/automations-ui). */
 @source '../../../../packages/automations-ui/src';
+/* Ask AI, the tool every app's Tools holds (@liveworkspace/ask). */
+@source '../../../../packages/ask/src';
 /* So does Avatar mode's code (@livehuddle/avatar). */
 @source '../../../packages/avatar/src';
 

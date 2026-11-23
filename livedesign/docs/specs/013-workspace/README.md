@@ -31,3 +31,4 @@ Follow the references below only as needed; never upfront.
 - ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livedesign supplies (the platform's `004-index/inbox-notices.md`)
 - ./automations.md - when working on Automations: rules a design runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, local opens)
+- ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the design is read, where a source opens, the suggested questions (the platform's `019-ask`)

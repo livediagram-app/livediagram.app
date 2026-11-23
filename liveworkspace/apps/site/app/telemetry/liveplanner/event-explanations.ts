@@ -818,6 +818,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Use Your Own Key, Change or Fix Key on an AI feature’s source line, opening Settings › AI.',
   'UI|Added|AiSourceKey':
     'Someone added an AI key of their own in Settings › AI after opening it from an AI feature on built-in AI.',
+  'UI|Used|AskAi': 'Someone asked Ask AI a question about the open plan.',
+  'UI|Opened|AskAiSources': 'Someone opened the sources of an Ask AI answer.',
+  'UI|Opened|AskAiSource': 'Someone went from an Ask AI source to its place in the plan.',
+  'UI|Used|AskAiCopy': 'Someone copied an Ask AI answer.',
+  'UI|Changed|AskAiBuiltIn': 'Someone switched Ask AI to built-in AI.',
+  'UI|Changed|AskAiKey': 'Someone switched Ask AI to their own AI key.',
   'UI|Opened|CalendarFeed': 'Someone opened Subscribe to Calendar from the tab menu.',
   'Plan|Created|CalendarFeed':
     "Someone made a private calendar link for the plan's card dates, to add to their own calendar.",

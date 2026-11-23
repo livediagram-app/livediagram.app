@@ -34,6 +34,7 @@
     "@livedocuments/ui": "workspace:*",
     "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/ask": "workspace:^",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/automations": "workspace:^",
     "@liveworkspace/automations-ui": "workspace:^",

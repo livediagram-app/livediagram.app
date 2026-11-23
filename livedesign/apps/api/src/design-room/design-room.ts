@@ -1,3 +1,4 @@
+import { spendAskIn } from '@liveworkspace/ask/server';
 import { ItemDb, type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import { type PutAwayRefusal, tellSourceChanged } from '@liveworkspace/index-app';
 import type { SourceChange } from '@liveworkspace/index-client';
@@ -670,6 +671,13 @@ export class DesignRoom extends DurableObject<Env> {
   }
 
   /** Agent entries past their expiry go; the outbox pushes and the upkeep runs when due. Safe to call early. */
+  // ---------- RPC: Ask AI's built-in allowance (@liveworkspace/ask/server daily-count.ts) -------------------------
+
+  // Only on an account's `~ask-ai:` instance, never an item's: one storage key, no schema made or read.
+  spendAsk(day: string, cap: number): Promise<boolean> {
+    return spendAskIn(this.state.storage, day, cap);
+  }
+
   override async alarm(): Promise<void> {
     const expired = await this.agents.sweep();
     for (const r of expired) agentPresenceLog('expired', r);

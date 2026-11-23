@@ -73,6 +73,8 @@
 @source '../../../../packages/walkthrough/src';
 /* The Automations screen and builder every app shares (@liveworkspace/automations-ui). */
 @source '../../../../packages/automations-ui/src';
+/* Ask AI, the tool every app's Tools holds (@liveworkspace/ask). */
+@source '../../../../packages/ask/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating

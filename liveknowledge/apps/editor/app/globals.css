@@ -96,6 +96,8 @@
 @source '../../../../packages/walkthrough/src';
 /* The Automations screen and builder every app shares (@liveworkspace/automations-ui). */
 @source '../../../../packages/automations-ui/src';
+/* The citation chip Ask shares with every other app's Ask AI (@liveworkspace/ask). */
+@source '../../../../packages/ask/src';
 /* The Connect view's app steps and code panels, the Build with AI page's own (@liveworkspace/marketing-site). */
 @source '../../../../packages/marketing-site/src/components/ai';
 

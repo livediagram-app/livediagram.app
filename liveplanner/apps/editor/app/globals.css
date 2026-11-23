@@ -62,6 +62,8 @@
 @source '../../../../packages/workbench/src';
 /* The Automations screen and builder every app shares (@liveworkspace/automations-ui). */
 @source '../../../../packages/automations-ui/src';
+/* Ask AI, the tool every app's Tools holds (@liveworkspace/ask). */
+@source '../../../../packages/ask/src';
 @source '../../../../packages/capture/src';
 @source '../../../../packages/walkthrough/src';
 /* The Community's cards, bar and Share tab, every app's (@liveworkspace/community-ui). */

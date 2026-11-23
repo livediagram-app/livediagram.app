@@ -34,3 +34,4 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livediagram supplies (the platform's `004-index/inbox-notices.md`)
 - ./automations.md - when working on Automations: rules a document runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles, workbench embeds)
+- ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the canvas is read, where a source opens, the suggested questions (the platform's `019-ask`)

@@ -31,3 +31,4 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./snapshots.md - when working on Snapshots: manual save points of the whole Space, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./automations.md - when working on Automations: rules a Space runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles)
+- ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the Space is read, where a source opens, the suggested questions (the platform's `019-ask`)

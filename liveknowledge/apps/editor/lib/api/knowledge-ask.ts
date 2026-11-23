@@ -3,6 +3,7 @@
 // before the stream opens (no key, a limit, not signed in) arrives as JSON and is handed on as an `error` event with
 // the server's own words, so the Ask tab has one shape to show.
 import type { AskEvent, AskRequest } from '@liveknowledge/api-schema';
+import { readEvents } from '@liveworkspace/ask';
 import { apiFetch } from './core';
 import { knowledgeHeaders, knowledgeUrl, type KnowledgeCaller } from './knowledge';
 
@@ -20,49 +21,10 @@ function isAskEvent(value: unknown): value is AskEvent {
   return type === 'delta' || type === 'done' || type === 'error';
 }
 
-/** The events of one server-sent-events body, in order. Reads `data:` lines (an event may span several), ends an
- *  event at a blank line, ignores comments and every other field, and skips data that is not an `AskEvent`. */
-export async function* readAskEvents(body: ReadableStream<Uint8Array>): AsyncGenerator<AskEvent> {
-  const reader = body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let data: string[] = [];
-  const flush = (): AskEvent | null => {
-    if (data.length === 0) return null;
-    const text = data.join('\n');
-    data = [];
-    try {
-      const event: unknown = JSON.parse(text);
-      return isAskEvent(event) ? event : null;
-    } catch {
-      return null;
-    }
-  };
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      buffer += done ? decoder.decode() : decoder.decode(value, { stream: true });
-      let end: number;
-      while ((end = buffer.indexOf('\n')) !== -1) {
-        const line = buffer.slice(0, end).replace(/\r$/, '');
-        buffer = buffer.slice(end + 1);
-        if (line === '') {
-          const event = flush();
-          if (event) yield event;
-        } else if (line.startsWith('data:')) {
-          data.push(line.slice(5).replace(/^ /, ''));
-        }
-      }
-      if (done) break;
-    }
-    // A last event the stream closed on without its blank line.
-    if (buffer.startsWith('data:')) data.push(buffer.slice(5).replace(/^ /, ''));
-    const last = flush();
-    if (last) yield last;
-  } finally {
-    reader.releaseLock();
-  }
-}
+/** The events of one server-sent-events body, in order (the platform's reader, shared with every other app's Ask
+ *  AI): data that is not an `AskEvent` is skipped. */
+export const readAskEvents = (body: ReadableStream<Uint8Array>): AsyncGenerator<AskEvent> =>
+  readEvents(body, isAskEvent);
 
 /** Ask the knowledgebase a question. `onDelta` is handed each piece of the answer as it arrives; the promise
  *  answers the `done` event, or an `error` event for a refusal, a failed model call or a stream cut short. It

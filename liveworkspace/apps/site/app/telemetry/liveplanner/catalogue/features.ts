@@ -500,6 +500,38 @@ export const AI_SOURCE_KEYS_ADDED = chart(
   { types: ['AiSourceKey'] },
 );
 
+// Ask AI in the footer's Tools (liveworkspace/docs/specs/019-ask/ask.md): questions asked of the open plan, and an
+// answer's sources looked at. Never a question, an answer or which AI.
+export const ASK_AI_QUESTIONS = chart(
+  'UI',
+  'Used',
+  'Ask AI Questions',
+  'A question asked of the open plan in Ask AI, in Tools.',
+  { types: ['AskAi'] },
+);
+
+export const ASK_AI_SOURCES_OPENED = opened(
+  'Ask AI Sources Opened',
+  'An answer’s Sources opened in Ask AI, or one of them followed to its place in the plan.',
+  (t) => t === 'AskAiSources' || t === 'AskAiSource',
+);
+
+export const ASK_AI_ANSWERS_COPIED = chart(
+  'UI',
+  'Used',
+  'Ask AI Answers Copied',
+  'An Ask AI answer copied with Copy Answer.',
+  { types: ['AskAiCopy'] },
+);
+
+export const ASK_AI_SWITCHED = chart(
+  'UI',
+  'Changed',
+  'Ask AI Switched',
+  'Answer With changed in Ask AI, to built-in AI or to a key.',
+  { types: ['AskAiBuiltIn', 'AskAiKey'] },
+);
+
 export const SETTINGS_CATEGORIES_VISITED = opened(
   'Settings Categories Visited',
   'A category picked inside the open Settings dialog: Appearance, Editor, Account and the rest.',
@@ -676,6 +708,10 @@ export const PANELS_OPENED: MetricStack = {
     SETTINGS_OPENED,
     AI_SOURCE_SETTINGS_OPENED,
     AI_SOURCE_KEYS_ADDED,
+    ASK_AI_QUESTIONS,
+    ASK_AI_SOURCES_OPENED,
+    ASK_AI_ANSWERS_COPIED,
+    ASK_AI_SWITCHED,
     SETTINGS_CATEGORIES_VISITED,
     SHARE_OPENED,
     PICKERS_OPENED,

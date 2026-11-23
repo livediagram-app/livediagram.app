@@ -141,6 +141,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
     // that moves away (workbench went to liveworkspace) or arrives is named here too.
     expect([...handled.keys()].sort()).toEqual([
       'account',
+      'ask',
       'community',
       'events',
       'folders',
