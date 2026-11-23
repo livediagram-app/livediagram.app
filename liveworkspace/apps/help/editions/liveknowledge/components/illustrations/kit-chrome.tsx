@@ -240,7 +240,7 @@ export type KnowledgeView = 'pages' | 'ask' | 'ai';
 const VIEW_TABS: readonly { view: KnowledgeView; label: string; w: number }[] = [
   { view: 'pages', label: 'Pages', w: 36 },
   { view: 'ask', label: 'Ask', w: 28 },
-  { view: 'ai', label: 'AI Knowledge', w: 62 },
+  { view: 'ai', label: 'Insights', w: 62 },
 ];
 
 /** The footer: the three views as tabs at its left (the open one a white card standing on the bar's foot), then
@@ -310,7 +310,7 @@ export function TopRow({
   x: number;
   y: number;
   w: number;
-  /** A view's name (Ask, AI Knowledge), in place of the formatting controls. */
+  /** A view's name (Ask, Insights), in place of the formatting controls. */
   title?: string;
   children?: ReactNode;
 }) {
@@ -439,7 +439,7 @@ export function AppFrame({
   w: number;
   h: number;
   view?: KnowledgeView;
-  /** The page tree's rows. Absent: no sidebar (Ask and AI Knowledge cover it). */
+  /** The page tree's rows. Absent: no sidebar (Ask and Insights cover it). */
   rows?: readonly TreeRowSpec[];
   name?: string;
   topRow?: ReactNode;
@@ -468,7 +468,7 @@ export function AppFrame({
           x={left}
           y={0}
           w={w - left}
-          title={view === 'ask' ? 'Ask' : view === 'ai' ? 'AI Knowledge' : undefined}
+          title={view === 'ask' ? 'Ask' : view === 'ai' ? 'Insights' : undefined}
         >
           {topRow}
         </TopRow>

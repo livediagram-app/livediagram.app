@@ -35,7 +35,7 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideFlag, 20),
     title: 'Report a Gap',
-    body: 'Records a question no page answered, so it shows in AI Knowledge and someone can write the page.',
+    body: 'Records a question no page answered, so it shows in Insights and someone can write the page.',
   },
   {
     icon: lucideGlyph(lucideFilePlus, 20),

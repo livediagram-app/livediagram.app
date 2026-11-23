@@ -1,7 +1,7 @@
 'use client';
 
 // Connect's Check It Worked (docs/specs/030-knowledgebase/mcp-connect.md "The view" 4, blueprint "The checks"): the
-// overview AI Knowledge reads, once on opening and then every CHECK_EVERY_MS while the browser tab shows, for
+// overview Insights reads, once on opening and then every CHECK_EVERY_MS while the browser tab shows, for
 // CHECK_FOR_MS, until a connection arrives. At most 1 + 30 reads a window, none while hidden, none once connected.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KnowledgeAgent } from '@liveknowledge/api-schema';

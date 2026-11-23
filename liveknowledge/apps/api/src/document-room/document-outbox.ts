@@ -74,7 +74,7 @@ export function collabPushOf(
   suggestions: CollabPush['suggestions'] = undefined,
 ): CollabPush {
   return capCollabPush({
-    // The page's suggested edits waiting (ai-knowledge.md "In the owner's Inbox"), sent only when it has some.
+    // The page's suggested edits waiting (insights.md "In the owner's Inbox"), sent only when it has some.
     ...(suggestions && suggestions.length > 0 ? { suggestions } : {}),
     threads: threads.map((t) => ({
       elementId: t.elementId,

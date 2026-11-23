@@ -1,13 +1,13 @@
 'use client';
 
-// Not Read in 90 Days (docs/specs/030-knowledgebase/ai-knowledge.md "Not Read in 90 Days"): the pages nobody opened and
+// Not Read in 90 Days (docs/specs/030-knowledgebase/insights.md "Not Read in 90 Days"): the pages nobody opened and
 // no agent read in all the days the room keeps reads, the one touched longest ago first. A row opens its page. From
 // the overview's one read: nothing of its own.
 import type { KnowledgeNotReadPage } from '@liveknowledge/api-schema';
 import { CompactEmptyState } from '@liveknowledge/ui';
 import { lastEditedText, moreNotListedText } from '@/lib/knowledge-ask/overview-words';
-import { NotReadIcon, RowChevronIcon } from './ai-knowledge-icons';
-import { AI_MUTED, AiSection } from './AiSection';
+import { NotReadIcon, RowChevronIcon } from './insights-icons';
+import { INSIGHTS_MUTED, InsightsSection } from './InsightsSection';
 
 const ROW =
   'group flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors duration-micro hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 phone:min-h-11 dark:hover:bg-slate-800/60';
@@ -24,7 +24,7 @@ export function NotReadCard({
   onOpenPage: (tab: string) => void;
 }) {
   return (
-    <AiSection
+    <InsightsSection
       id="ai-not-read"
       title="Not Read in 90 Days"
       icon={<NotReadIcon />}
@@ -47,7 +47,7 @@ export function NotReadCard({
                     <span className="truncate text-sm font-medium text-slate-900 underline-offset-2 group-hover:underline dark:text-slate-100">
                       {page.title || 'Untitled Page'}
                     </span>
-                    <span className={`truncate text-xs ${AI_MUTED}`}>
+                    <span className={`truncate text-xs ${INSIGHTS_MUTED}`}>
                       {lastEditedText(page.touchedAt, now)}
                     </span>
                   </span>
@@ -62,12 +62,12 @@ export function NotReadCard({
             ))}
           </ol>
           {total > pages.length ? (
-            <p data-not-read-more="" className={`mt-2 text-xs ${AI_MUTED}`}>
+            <p data-not-read-more="" className={`mt-2 text-xs ${INSIGHTS_MUTED}`}>
               {moreNotListedText(total - pages.length)}
             </p>
           ) : null}
         </>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }

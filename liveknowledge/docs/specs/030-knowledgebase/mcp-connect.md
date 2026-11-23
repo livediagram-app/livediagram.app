@@ -8,13 +8,13 @@ has the detail.
 Owner, 2026-11-21: "I would also like a tab at the bottom for MCP Connect, which guides the user through connecting to
 the MCP from the AI app so it can read and write to the knowledgebase".
 
-The knowledgebase's fourth view, after AI Knowledge: a guided setup, step by step, that connects an AI app to this
+The knowledgebase's fourth view, after Insights: a guided setup, step by step, that connects an AI app to this
 knowledgebase over the MCP server, then shows it connected. It replaces the **Connect an Agent** dialog: AI
 Knowledge's **Connect an Agent** buttons open this view.
 
 ## The tab
 
-- **Connect MCP**, with a plug icon, the fourth tab in the footer: **Pages | Ask | AI Knowledge | Connect MCP**
+- **Connect MCP**, with a plug icon, the fourth tab in the footer: **Pages | Ask | Insights | Connect MCP**
   ([Search and Ask](search-and-ask.md) "The views"). Its address is `?view=connect`. Its hover card: "Connect an AI
   App", "Connect Claude, ChatGPT, Cursor or another AI app so it can read and write these pages."
 - "Connect MCP" (owner 2026-11-22, was "Connect"): the tab and the view's heading say what it connects. On a phone
@@ -62,13 +62,13 @@ it, the steps, numbered, in one column; beside them on a wide screen (one column
      every 10 seconds, for 5 minutes from when the view opened or **Check Now** was pressed, and only while the
      browser tab is showing; then **Stopped Checking**, with **Check Again**.
    - **Connected: <App>**, its last-seen line and pages read this week, once a connection that was not there when
-     the view opened reads here (or one that was, reads again). **Manage in AI Knowledge** opens AI Knowledge.
+     the view opened reads here (or one that was, reads again). **Manage in Insights** opens Insights.
      Checking stops.
    - A check that fails says "Could Not Check" with **Try Again**; what is on show stays.
    - The prompt, to copy: `Search my liveknowledge knowledgebase "<name>" and tell me in five lines what it covers.
 Name the pages you read.`
 
-**Already Connected**: the connections seen here in the last 30 days, as AI Knowledge counts them, each its icon,
+**Already Connected**: the connections seen here in the last 30 days, as Insights counts them, each its icon,
 name, how it connects and its chips (**Reads**, **Suggests Edits**, **Writes**), at most five, and **Manage in AI
 Knowledge**. None yet: "No Apps Connected Yet", "An app shows here once it reads a page of this knowledgebase."
 
@@ -78,17 +78,17 @@ Tokens** (Settings' Tokens page), with "A read-only token only reads, whatever i
 ## What it costs
 
 One `GET .../knowledge` when the view opens and one each check: at most 31 in 5 minutes, none while the browser tab
-is hidden, none once connected. Each is the read AI Knowledge makes on opening ([AI Knowledge](ai-knowledge.md) "The
+is hidden, none once connected. Each is the read Insights makes on opening ([Insights](insights.md) "The
 view, as built"), measured in the blueprint.
 
 ## Share roles
 
-| Action                                        | Editor | Participant | Viewer |
-| --------------------------------------------- | ------ | ----------- | ------ |
-| Open Connect, follow the steps, copy          | yes    | yes         | yes    |
-| Connect an app that reads                     | yes    | yes         | yes    |
-| Connect an app that suggests edits            | yes    | yes         | no     |
-| Allow a connection to write (in AI Knowledge) | yes    | no          | no     |
+| Action                                    | Editor | Participant | Viewer |
+| ----------------------------------------- | ------ | ----------- | ------ |
+| Open Connect, follow the steps, copy      | yes    | yes         | yes    |
+| Connect an app that reads                 | yes    | yes         | yes    |
+| Connect an app that suggests edits        | yes    | yes         | no     |
+| Allow a connection to write (in Insights) | yes    | no          | no     |
 
 Signed in only: a signed-out session gets the gate above. A knowledgebase kept Offline cannot be reached by any
 app.

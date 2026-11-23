@@ -120,7 +120,7 @@ export function PageReactions() {
 
 /** For someone who may not edit (a Viewer, a view link's visitor): the capsule in the corner cluster, left of Zen,
  *  where Edit would stand beside it for an Editor. Nothing for whoever may edit: theirs stand left of Edit
- *  (PageEditBar). Never in Zen Mode, an embed, Version History, or on Ask and AI Knowledge. */
+ *  (PageEditBar). Never in Zen Mode, an embed, Version History, or on Ask and Insights. */
 export function PageReactionsBesideZen() {
   const mayEdit = useEditorChrome((s) => s.pageEditing.mayEdit);
   const shown = useEditorChrome((s) => !s.embedMode && !s.zenMode);

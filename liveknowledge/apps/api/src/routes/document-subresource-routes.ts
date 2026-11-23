@@ -54,7 +54,7 @@ export async function handleDocumentSubresources(
   // Version history (docs/specs/006-document/version-history.md).
   const versions = await handleVersionRoutes(ctx);
   if (versions) return versions;
-  // Search, verification, Ask and AI Knowledge (docs/specs/030-knowledgebase; routes/knowledge-routes.ts).
+  // Search, verification, Ask and Insights (docs/specs/030-knowledgebase; routes/knowledge-routes.ts).
   const knowledge = await handleKnowledgeRoutes(ctx);
   if (knowledge) return knowledge;
   // The knowledgebase's page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page Trash").
@@ -151,7 +151,7 @@ export async function handleDocumentSubresources(
       const tab = readsDraft(ctx, grant, view !== null) ? stored : withoutDraft(stored);
       // An agent's read shows it on this tab (docs/specs/024-agents/agent-presence.md "Presence").
       if (caller !== null) refreshAfterRead(ctx, existing, tabId, caller);
-      // One open of a page is a read (ai-knowledge.md "Reads"); a document view is an agent's `read_page`.
+      // One open of a page is a read (insights.md "Reads"); a document view is an agent's `read_page`.
       await countRead(env, tabId, readerOf(ctx), caller);
       // Blank other people's comment author ids before handing the tab
       // to a non-owner: a visitor should only ever see their OWN author

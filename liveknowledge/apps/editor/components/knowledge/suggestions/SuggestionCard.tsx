@@ -1,6 +1,6 @@
 'use client';
 
-// One suggested edit, as the page's popover and phone sheet show it (docs/specs/030-knowledgebase/ai-knowledge.md "On
+// One suggested edit, as the page's popover and phone sheet show it (docs/specs/030-knowledgebase/insights.md "On
 // the page"): who suggested it and when, why, the lines it takes out and puts in, and Accept, Show in Page and Dismiss
 // for an Editor, with "Stays Verified" (accepting never unverifies the page). A passage no longer in the page says so
 // and offers no Show in Page. Everyone else reads it, with no verbs.

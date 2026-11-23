@@ -784,7 +784,7 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   the ids in `mentionedIds`, naming the author of the latest comment that mentioned them (a comment mentioning its
   own author names no one), so a reply in the thread, theirs or anyone's, never changes who mentioned them.
 - The same collab push carries the tab's **suggested edits** where the app has them (liveknowledge: an agent's edit
-  waiting on a page, its `030-knowledgebase/ai-knowledge.md` "Edits suggested by agents"): `suggestions?: [{id,
+  waiting on a page, its `030-knowledgebase/insights.md` "Edits suggested by agents"): `suggestions?: [{id,
 ownerId, agent, reason, kind: 'replace' | 'append', before, after, createdAt}]`, at most 50
   (`COLLAB_MAX_SUGGESTIONS`, the knowledgebase's own cap), replacing that tab's suggestion rows as `threads` replace
   its threads; absent is none, so an app that has no suggestions never sends the field and a tab whose page is gone

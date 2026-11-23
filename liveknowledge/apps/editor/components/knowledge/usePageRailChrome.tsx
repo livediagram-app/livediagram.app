@@ -62,7 +62,7 @@ export function usePageRailChrome({
   const shown = store !== null && !chromeHidden && !zenMode && !embed;
   // The search dialog's host rides here too: Cmd or Ctrl K works whether the chrome shows or not (zen), never in
   // an embed or outside the editor.
-  // The page's suggested edits ride the same once-mounted spot (ai-knowledge.md "On the page"): hidden with the
+  // The page's suggested edits ride the same once-mounted spot (insights.md "On the page"): hidden with the
   // chrome in zen too, and never in an embed.
   const search =
     store !== null && !embed ? (

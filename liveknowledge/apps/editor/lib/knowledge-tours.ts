@@ -85,7 +85,7 @@ export const KNOWLEDGE_TOUR_PLAN: Record<KnowledgeTourId, readonly PlannedStep[]
     { id: 'tab', needs: ASK },
     { id: 'composer', needs: ASK },
     { id: 'questions', needs: ASK },
-    { id: 'ai', needs: ASK },
+    { id: 'insights', needs: ASK },
   ],
   connect: [
     { id: 'tab', needs: CONNECT },
@@ -128,7 +128,7 @@ export const KNOWLEDGE_TOUR_COPY: Record<
   },
   ask: {
     title: 'Ask Your Knowledgebase',
-    line: 'Ask a question, get answers with sources, and see AI Knowledge.',
+    line: 'Ask a question, get answers with sources, and see Insights.',
     help: 'ask',
     token: 'Ask',
   },

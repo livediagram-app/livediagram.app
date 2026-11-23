@@ -1,5 +1,5 @@
 // The knowledge routes from the editor (docs/specs/015-api/api.md "Knowledge"): search, a page's backlinks, its
-// health and verification, the knowledgebase's summary, and the reads and writes the Ask tab, the AI Knowledge tab
+// health and verification, the knowledgebase's summary, and the reads and writes the Ask tab, the Insights tab
 // and Settings > AI are built over. Each is one request through the shared funnel (identity, the index's grant, the
 // release signal, the failure report); the Ask stream is knowledge-ask.ts.
 import type {
@@ -157,7 +157,7 @@ export function apiPageHealth(
   signal?: AbortSignal,
   opened = false,
 ): Promise<PageHealthResponse> {
-  // `opened`: this read is a person opening the page, which counts as their read (ai-knowledge.md "Reads").
+  // `opened`: this read is a person opening the page, which counts as their read (insights.md "Reads").
   const url = pageUrl(documentId, tab, 'health');
   return read(who, opened ? `${url}?opened=1` : url, 'read page health', signal);
 }
@@ -276,7 +276,7 @@ export async function apiSetKnowledgeAiModel(
   return expectOk<KnowledgeAiSettings>(res, 'set ai model', expected);
 }
 
-/** The AI Knowledge tab: agents, unanswered questions, conflicts, Always in Context pages, health. */
+/** The Insights tab: agents, unanswered questions, conflicts, Always in Context pages, health. */
 export function apiKnowledgeOverview(
   who: KnowledgeCaller,
   documentId: string,

@@ -99,7 +99,7 @@
 - [x] Constants and configuration
 - [ ] Defaults ledger
 
-## ai-knowledge-ui
+## insights-ui
 
 - [x] Domain and naming
 - [x] Behaviour and state

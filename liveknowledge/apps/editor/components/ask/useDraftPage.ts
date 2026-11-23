@@ -1,6 +1,6 @@
 'use client';
 
-// Draft a Page (docs/specs/030-knowledgebase/search-and-ask.md "It does not guess", ai-knowledge.md "Questions nobody
+// Draft a Page (docs/specs/030-knowledgebase/search-and-ask.md "It does not guess", insights.md "Questions nobody
 // could answer"): a page titled from the question whose first line is "Draft, Not Verified". It is drafted by one more
 // Ask call over the nearest passages, on the team's key or built-in AI; where no AI answers, or that call fails, it
 // holds the question as its first heading. An Editor's: without `makePages` nothing here runs. The same for an answer's Knowledge Gap card and

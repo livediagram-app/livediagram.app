@@ -23,7 +23,7 @@ export function flashBlock(el: HTMLElement): void {
 }
 
 export function goToBlock(editor: () => EditorContextValue, tab: string, block: string): void {
-  // Picked over Ask or AI Knowledge (search opens where someone is): the page shows in Pages.
+  // Picked over Ask or Insights (search opens where someone is): the page shows in Pages.
   showKnowledgeView('pages');
   selectPage(editor(), tab);
   if (!block) return;

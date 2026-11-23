@@ -45,13 +45,13 @@ replaces what the fork still shows around the writing.
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
   has one ("The page icon") to the left of the Title, the Title (40 px,
   bold, tight tracking), then the meta row ([Verification](verification.md); a **Suggested Edits** pill after its
-  verified badge while agents' edits wait, [AI Knowledge](ai-knowledge.md) "On the page"; the page's labels last,
+  verified badge while agents' edits wait, [Insights](insights.md) "On the page"; the page's labels last,
   "Page labels"). **Beside it** on a wide window, the right rail (Page Health, then On This Page, then Suggested Edits while any wait, then AI Context, a hairline between each section, owner 2026-11-22; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
 - **The logo** (mark, and the wordmark on a desktop) is always top left: heading the page tree, leading the top row
-  left of the menu button when the tree is folded away, and leading the Ask and AI Knowledge header. A phone shows
+  left of the menu button when the tree is folded away, and leading the Ask and Insights header. A phone shows
   the mark alone. It opens the Explorer on the place that holds the knowledgebase.
 - **Sidebars slide.** Opening or folding the page tree slides it in from, or out to, the left (200 ms; at once with
   reduced motion). Folded to its rail, resting a mouse on the rail for 150 ms slides the whole tree out over the page
@@ -304,10 +304,10 @@ Owner, 2026-11-21 (Work Tracker 1343): "The page tree gives one way to organise 
 
 ## The footer
 
-Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs in the footer."
+Owner, 2026-11-20: "Pages, Ask and Insights should be represented like tabs in the footer."
 
 - The views are **tabs in the footer**, where the other liveworkspace editors show their tab bar, with the
-  same look: **Pages**, **Ask**, **AI Knowledge**, **Connect** ([Connect](mcp-connect.md)), each with its icon, the current one raised as a tab pill is.
+  same look: **Pages**, **Ask**, **Insights**, **Connect** ([Connect](mcp-connect.md)), each with its icon, the current one raised as a tab pill is.
   They are links (`?view=`, so Back works) with `aria-current`, reachable by keyboard, each with a hover card of a
   title and one line. They are views, not a person's tabs: no add, close, drag or menu.
 - The footer is a bar across the bottom of the content area: the tabs at its left, then Get Started, Tools,
@@ -315,12 +315,12 @@ Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs 
   scrolls above it.
 - **The top row.** The content area starts with one row, the same height in the three views (48 px; 56 px on a
   phone): a hairline under it, nothing floating. On Pages its left holds the formatting controls while a page is
-  being written; on Ask, AI Knowledge and Connect it holds the view's name and its own buttons. **Share** and the account
+  being written; on Ask, Insights and Connect it holds the view's name and its own buttons. **Share** and the account
   button stand at its right end, always; the floating corner card is gone. The page scrolls under the row, never
   behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
   Share, so nothing stands over the reading column at any width.
-- On a phone the four tabs are the footer's row, icons with short labels (Pages, Ask, AI, Connect), 44 px targets; the
-  notification list stays beside them and the footer's other items go behind one **More** button. Its card opens above the Ask, AI Knowledge and Connect
+- On a phone the four tabs are the footer's row, icons with short labels (Pages, Ask, Insights, Connect), 44 px targets; the
+  notification list stays beside them and the footer's other items go behind one **More** button. Its card opens above the Ask, Insights and Connect
   views too (at the popover layer), so Get Started, Tools and Settings stay in reach on every view. The top row
   there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's
   writing bar takes the row and the row's own buttons step aside until the caret leaves.

@@ -1,6 +1,6 @@
 'use client';
 
-// The open page's suggested edits for its chrome (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"; blueprint
+// The open page's suggested edits for its chrome (docs/specs/030-knowledgebase/insights.md "On the page"; blueprint
 // suggested-edits-ui.md): read from the page's health (one read a page open, no read of their own), what the writing
 // found of them, who may decide them, and Accept and Dismiss. Each piece of chrome (the pill, the rail, the popover,
 // the review bar) reads this; the host (PageSuggestionsHost) alone hands the marks to the writing.
