@@ -8,7 +8,7 @@ import type { SqlStatement } from './statement';
 
 /** The most groups a knowledgebase keeps; the ones asked longest ago go first. */
 export const MAX_QUESTIONS = 500;
-/** How many the AI Knowledge tab lists. */
+/** How many the Insights tab lists. */
 export const QUESTIONS_LISTED = 50;
 
 /** Logs one unanswered question under its group's `key`. The first asker's words stay the group's question. Run

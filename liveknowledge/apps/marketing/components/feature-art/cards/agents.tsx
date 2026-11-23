@@ -1,5 +1,5 @@
 // The Agents page's card drawings (docs/specs/019-marketing/marketing-site.md "Feature pages", `agents`): the MCP
-// server, the command line, Always in Context, trust fields, suggested edits and AI Knowledge. The tool and command
+// server, the command line, Always in Context, trust fields, suggested edits and Insights. The tool and command
 // names are the MCP server's and the CLI's own.
 import { Agent, Arrow, Bars, Button, PageGlyph, Pill, Scene, Sheet, Tick, Txt, at } from './kit';
 
@@ -261,7 +261,7 @@ export function SuggestedEditArt() {
   );
 }
 
-/** The AI Knowledge tab: connected agents, questions nobody could answer, pages that disagree. */
+/** The Insights tab: connected agents, questions nobody could answer, pages that disagree. */
 export function AiKnowledgeArt() {
   const tiles = [
     { label: 'AGENTS', big: '3', line: 'read 128 pages this week' },

@@ -3,7 +3,7 @@
 import type { Conflict } from '../conflicts';
 import type { SqlStatement } from './statement';
 
-/** How many open conflicts the AI Knowledge tab lists. */
+/** How many open conflicts the Insights tab lists. */
 export const CONFLICTS_LISTED = 50;
 
 /** Stores a found conflict. A pair already there, open or dismissed, is left as it is. */

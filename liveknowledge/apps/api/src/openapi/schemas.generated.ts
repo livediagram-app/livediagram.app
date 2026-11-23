@@ -5305,7 +5305,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeAgent": {
     "additionalProperties": false,
-    "description": "One connection of AI Knowledge's Connected Agents (ai-knowledge.md \"Connected agents\"). What the room knows of the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its reads, before the room kept its token.",
+    "description": "One connection of Insights' Connected Agents (ai-knowledge.md \"Connected agents\"). What the room knows of the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its reads, before the room kept its token.",
     "properties": {
       "canHoldWrite": {
         "description": "Whether granting `write` would let it write: a full token acting for an Editor.",
@@ -6125,7 +6125,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeOverviewResponse": {
     "additionalProperties": false,
-    "description": "`GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md).",
+    "description": "`GET .../knowledge`: the Insights tab (ai-knowledge.md).",
     "properties": {
       "agents": {
         "items": {
@@ -6650,7 +6650,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeReadsDay": {
     "additionalProperties": false,
-    "description": "One day of AI Knowledge's reads (ai-knowledge.md \"Reads\"): `day` is the UTC day, `YYYY-MM-DD`.",
+    "description": "One day of Insights' reads (ai-knowledge.md \"Reads\"): `day` is the UTC day, `YYYY-MM-DD`.",
     "properties": {
       "agents": {
         "type": "number"
@@ -6691,7 +6691,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeRequiredReadingPage": {
     "additionalProperties": false,
-    "description": "A Required Reading page in the AI Knowledge overview: counts, never who.",
+    "description": "A Required Reading page in the Insights overview: counts, never who.",
     "properties": {
       "audience": {
         "$ref": "#/components/schemas/ReadingAudience"

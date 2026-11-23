@@ -1,6 +1,6 @@
 'use client';
 
-// AI Knowledge's data (docs/specs/030-knowledgebase/ai-knowledge.md): `GET knowledge`, one request each time the
+// Insights' data (docs/specs/030-knowledgebase/ai-knowledge.md): `GET knowledge`, one request each time the
 // view opens and one after each action here; nothing is polled. An action's request is `run`: it is one at a time
 // by its id, a refusal is said in words above the sections, and the overview is read again when it has landed.
 import { useCallback, useEffect, useRef, useState } from 'react';

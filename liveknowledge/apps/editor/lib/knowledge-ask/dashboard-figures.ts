@@ -1,4 +1,4 @@
-// AI Knowledge's figures band and Needs Attention (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as
+// Insights' figures band and Needs Attention (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as
 // built"): every figure from the one overview read, and the waiting work in the order it is shown. Pure.
 import type {
   KnowledgeConflict,

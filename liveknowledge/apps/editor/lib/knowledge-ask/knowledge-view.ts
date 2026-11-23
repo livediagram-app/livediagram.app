@@ -1,5 +1,5 @@
 // The knowledgebase's four views (docs/specs/030-knowledgebase/search-and-ask.md "The views"): Pages (the editor),
-// Ask, AI Knowledge and Connect (mcp-connect.md). Which one shows lives in the address, as `?view=ask`, `?view=ai`
+// Ask, Insights and Connect (mcp-connect.md). Which one shows lives in the address, as `?view=ask`, `?view=ai`
 // or `?view=connect`, so a reload
 // keeps it and the browser's Back returns to the view before. Pages is the address with no `view`. Not in the hash:
 // the hash is the open page's (`#t=<id>`), and the editor rewrites it whole on every page switch.
@@ -31,7 +31,7 @@ export const KNOWLEDGE_VIEWS: readonly {
   },
   {
     view: 'ai',
-    label: 'AI Knowledge',
+    label: 'Insights',
     short: 'AI',
     about: 'What agents know, read and could not find.',
   },

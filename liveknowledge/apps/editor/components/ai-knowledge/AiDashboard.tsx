@@ -1,6 +1,6 @@
 'use client';
 
-// The AI Knowledge dashboard (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): the figures band,
+// The Insights dashboard (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): the figures band,
 // then two stacks of cards, the wide one (Needs Attention, Connected Agents) and the narrow one (Knowledge Health,
 // Always in Context, Most Read, What an Agent Sees); one column below a laptop's width. Every figure is from the one
 // overview read. A tile filters Needs Attention or brings its card into view and focuses it.

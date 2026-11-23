@@ -67,7 +67,7 @@ export function StatusStep({
               onClick={onManage}
               className="w-fit shrink-0 cursor-pointer phone:min-h-11"
             >
-              Manage in AI Knowledge
+              Manage in Insights
             </Button>
           </div>
         ) : status.kind === 'failed' ? (

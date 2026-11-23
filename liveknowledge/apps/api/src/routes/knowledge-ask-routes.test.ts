@@ -527,7 +527,7 @@ describe('POST ask', () => {
   });
 });
 
-describe('AI Knowledge', () => {
+describe('Insights', () => {
   it.each(['editor', 'participant', 'viewer', 'link'] as const)(
     'shows %s the agents, questions, context pages and health',
     async (who) => {

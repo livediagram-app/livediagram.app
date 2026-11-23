@@ -17,7 +17,7 @@ const DAY_MS = 86_400_000;
 export const NEW_PAGE_INSIGHT_DAYS = 7;
 /** Not read in this many days: every day `page_reads` keeps. */
 export const NOT_READ_DAYS = READS_KEPT_DAYS;
-/** How many of them AI Knowledge lists. */
+/** How many of them Insights lists. */
 export const NOT_READ_LISTED = 10;
 
 export type PageInsightsWeek = { people: number; agents: number };

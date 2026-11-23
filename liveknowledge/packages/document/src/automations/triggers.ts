@@ -31,7 +31,7 @@ export const OTHER_PAGE_DATA = 'other.tab';
 export const SUGGESTION_REASON_DATA = 'suggestion.reason';
 
 const TRUST = 'Trust';
-const AI_KNOWLEDGE = 'AI Knowledge';
+const AI_KNOWLEDGE = 'Insights';
 const VERSIONS = 'Versions';
 
 const pageVerified = defineEventTrigger({

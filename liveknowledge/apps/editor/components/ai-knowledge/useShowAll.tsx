@@ -1,6 +1,6 @@
 'use client';
 
-// A card's long list on AI Knowledge (docs/specs/030-knowledgebase/blueprints/ai-knowledge-ui.md "Caps"): the rows
+// A card's long list on Insights (docs/specs/030-knowledgebase/blueprints/ai-knowledge-ui.md "Caps"): the rows
 // past the cap are not drawn until Show All is pressed, so the dashboard never grows with the data.
 import { useCallback, useState } from 'react';
 import { Button } from '@liveknowledge/ui';

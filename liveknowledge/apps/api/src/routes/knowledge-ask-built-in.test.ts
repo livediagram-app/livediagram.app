@@ -247,7 +247,7 @@ describe('POST ask on built-in AI', () => {
     expect(await failure(await ask(none))).toEqual([503, 'built-in-unavailable']);
   });
 
-  it('tells the AI settings and AI Knowledge that built-in AI answers here', async () => {
+  it('tells the AI settings and Insights that built-in AI answers here', async () => {
     const kit = await knowledgeKit({ AI: fakeAi('x') });
     expect(await (await kit.call('viewer', 'GET', '/api/documents/kb/ai')).json()).toMatchObject({
       hasKey: false,

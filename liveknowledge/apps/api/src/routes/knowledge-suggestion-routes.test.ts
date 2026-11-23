@@ -62,7 +62,7 @@ describe('suggesting an edit', () => {
     expect(suggestion.id).toMatch(/^sg_[0-9a-z]{10}$/);
     expect(count).toBe(1);
     expect(await markdownOf()).toContain('Tuesdays');
-    // Every role sees what waits, and the AI Knowledge tab lists it.
+    // Every role sees what waits, and the Insights tab lists it.
     expect((await pending('viewer')).map((s) => s.id)).toEqual([suggestion.id]);
     const overview = await (
       await kit.call('viewer', 'GET', '/api/documents/kb/knowledge')

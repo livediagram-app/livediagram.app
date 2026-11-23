@@ -1,4 +1,4 @@
-// The AI Knowledge tab over REST (docs/specs/030-knowledgebase/ai-knowledge.md):
+// The Insights tab over REST (docs/specs/030-knowledgebase/ai-knowledge.md):
 //   GET    /api/documents/<id>/knowledge               agents, questions, conflicts, context pages, health
 //   POST   /api/documents/<id>/questions               { question }: an agent's `report_gap`
 //   DELETE /api/documents/<id>/questions/<key>         Dismiss (Editor)

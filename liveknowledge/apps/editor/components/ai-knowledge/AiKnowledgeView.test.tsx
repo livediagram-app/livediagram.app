@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// AI Knowledge (docs/specs/030-knowledgebase/ai-knowledge.md, "Share roles"): one read when the view opens and one
+// Insights (docs/specs/030-knowledgebase/ai-knowledge.md, "Share roles"): one read when the view opens and one
 // after each action, every section with its rows or its empty state, and each Editor action per role.
 import {
   act,
@@ -187,7 +187,7 @@ afterEach(() => {
 async function open(role: Role = 'edit', over: Record<string, unknown> = {}) {
   const utils = renderInEditor(<AiKnowledgeView />, chromeValue(role, over));
   await waitFor(() =>
-    expect(screen.queryByRole('status', { name: 'Loading AI Knowledge' })).toBeNull(),
+    expect(screen.queryByRole('status', { name: 'Loading Insights' })).toBeNull(),
   );
   return utils;
 }
@@ -243,7 +243,7 @@ describe('reading it', () => {
     api.apiKnowledgeOverview.mockRejectedValueOnce(new Error('down'));
     await open();
     const alert = screen.getByRole('alert');
-    expect(alert.textContent).toContain('AI Knowledge Could Not Be Read');
+    expect(alert.textContent).toContain('Insights Could Not Be Read');
     fireEvent.click(within(alert).getByRole('button', { name: 'Try Again' }));
     await screen.findByRole('region', { name: 'Connected Agents' });
   });
@@ -251,7 +251,7 @@ describe('reading it', () => {
   it('reads nothing for a knowledgebase kept Offline', async () => {
     offline.value = true;
     renderInEditor(<AiKnowledgeView />);
-    expect(screen.getByText('No AI Knowledge in an Offline Knowledgebase')).toBeTruthy();
+    expect(screen.getByText('No Insights in an Offline Knowledgebase')).toBeTruthy();
     expect(api.apiKnowledgeOverview).not.toHaveBeenCalled();
   });
 });

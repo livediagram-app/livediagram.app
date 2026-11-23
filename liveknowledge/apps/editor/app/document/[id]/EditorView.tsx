@@ -149,7 +149,7 @@ const TOURS = (
   </AreaErrorBoundary>
 );
 const START_PANELS = <EditorStartPanels />;
-// Ask and AI Knowledge (docs/specs/030-knowledgebase/search-and-ask.md "The three views"): the mark a view starts
+// Ask and Insights (docs/specs/030-knowledgebase/search-and-ask.md "The three views"): the mark a view starts
 // under, and the view drawn over the editor while the address names one.
 const KNOWLEDGE_VIEW_ANCHOR = <KnowledgeViewAnchor />;
 const KNOWLEDGE_VIEW = <KnowledgeViewHost />;

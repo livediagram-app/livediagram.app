@@ -1,5 +1,5 @@
 // The knowledge routes' wire shapes (docs/specs/015-api/api.md "Knowledge"; docs/specs/030-knowledgebase): search,
-// backlinks, a page's verification, the knowledgebase's summary, Ask, its settings and the AI Knowledge tab. Types
+// backlinks, a page's verification, the knowledgebase's summary, Ask, its settings and the Insights tab. Types
 // only: the engine and its limits are `@liveknowledge/knowledge`.
 
 import type { KnowledgeStyle, PageApproval } from '@liveknowledge/document';
@@ -342,7 +342,7 @@ export type PageStructureResponse = {
 
 /** How an agent connects: the MCP server, the command line, or an API token used directly. */
 export type KnowledgeAgentDoor = 'mcp' | 'cli' | 'token';
-/** One connection of AI Knowledge's Connected Agents (ai-knowledge.md "Connected agents"). What the room knows of
+/** One connection of Insights' Connected Agents (ai-knowledge.md "Connected agents"). What the room knows of
  *  the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its
  *  reads, before the room kept its token. */
 export type KnowledgeAgent = {
@@ -554,11 +554,11 @@ export type MovePageResponse = { page: KnowledgePageRef & { parent?: string; dep
 export type AgentScopesRequest = { scopes: AgentScope[] };
 export type AgentScopesResponse = { tokenId: string; scopes: AgentScope[] };
 export type KnowledgeContextPage = { tab: string; title: string; tokens: number };
-/** One day of AI Knowledge's reads (ai-knowledge.md "Reads"): `day` is the UTC day, `YYYY-MM-DD`. */
+/** One day of Insights' reads (ai-knowledge.md "Reads"): `day` is the UTC day, `YYYY-MM-DD`. */
 export type KnowledgeReadsDay = { day: string; people: number; agents: number };
 /** A page of Most Read: its reads in the last 7 days, by people and by agents. */
 export type KnowledgeMostRead = { tab: string; title: string; people: number; agents: number };
-/** `GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md). */
+/** `GET .../knowledge`: the Insights tab (ai-knowledge.md). */
 export type KnowledgeOverviewResponse = {
   agents: KnowledgeAgent[];
   questions: KnowledgeQuestion[];

@@ -1,4 +1,4 @@
-// What makes liveknowledge a knowledgebase (docs/specs/030-knowledgebase): Ask, AI Knowledge, verification,
+// What makes liveknowledge a knowledgebase (docs/specs/030-knowledgebase): Ask, Insights, verification,
 // search and getting around the pages, Describe to Set Up and the team's AI key, and the pages made from them.
 // Every event here is a count with a preset type, never a question, an answer, a page or a key. Part of the metric
 // catalogue: import from ../metric-catalogue.
@@ -98,11 +98,11 @@ export const ASK: MetricStack = {
   headline: QUESTIONS_ASKED,
 };
 
-// ---- AI Knowledge (ai-knowledge.md) ---------------------------------------------------------------------------
+// ---- Insights (ai-knowledge.md) ---------------------------------------------------------------------------
 
 export const AI_KNOWLEDGE_OPENED = openedChart(
-  'AI Knowledge Opened',
-  'The AI Knowledge view opened from the footer: suggestions, conflicts and unanswered questions.',
+  'Insights Opened',
+  'The Insights view opened from the footer: suggestions, conflicts and unanswered questions.',
   (t) => t === 'AiKnowledgeView',
 );
 
@@ -180,7 +180,7 @@ export const CONNECT_COPIED = chart(
 
 export const AI_KNOWLEDGE: MetricStack = {
   stack: true,
-  title: 'AI Knowledge',
+  title: 'Insights',
   blurb:
     'Keeping the knowledgebase right: agent suggestions accepted or dismissed, conflicts and unanswered questions settled, and owners emailed.',
   members: [
@@ -510,7 +510,7 @@ export const PAGES_FROM_GAPS = chart(
   'Tab',
   'Created',
   'Pages From Unanswered Questions',
-  'A page drafted for a question nobody could answer, from AI Knowledge.',
+  'A page drafted for a question nobody could answer, from Insights.',
   { types: ['FromGap'] },
 );
 
@@ -617,7 +617,7 @@ export const AI_KEYS_ADDED = chart(
   'UI',
   'Added',
   'AI Keys Added',
-  "A team's own Claude or OpenAI key added in AI Settings, switching on Ask and AI Knowledge. Never the key.",
+  "A team's own Claude or OpenAI key added in AI Settings, switching on Ask and Insights. Never the key.",
   { types: ['AiKey'] },
 );
 
@@ -657,7 +657,7 @@ export const AI_MODELS_CHANGED = chart(
   'UI',
   'Changed',
   'AI Models Picked',
-  'Another model picked for Ask and AI Knowledge in AI Settings.',
+  'Another model picked for Ask and Insights in AI Settings.',
   { types: ['AiModel'], rising: 'neutral' },
 );
 

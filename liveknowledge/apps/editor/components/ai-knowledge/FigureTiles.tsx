@@ -1,6 +1,6 @@
 'use client';
 
-// AI Knowledge's figures band (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): six tiles, each
+// Insights' figures band (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): six tiles, each
 // a button named by its words and its figure. Three filter Needs Attention; the others bring their card into view.
 // A figure that asks for someone carries a small amber mark.
 import { useId, useState, type ReactNode } from 'react';
@@ -143,7 +143,7 @@ export function FigureTiles({
   return (
     <div
       role="group"
-      aria-label="AI Knowledge at a glance"
+      aria-label="Insights at a glance"
       className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
     >
       <Tile

@@ -65,7 +65,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'searching-a-knowledgebase': lucide(lucideSearch),
   ask: lucide(lucideMessageCircle),
   'ai-settings': lucide(lucideSparkles),
-  // ---- AI Knowledge ----
+  // ---- Insights ----
   // A plug: an agent connected to the Knowledgebase.
   'connecting-an-agent': (
     <Glyph>

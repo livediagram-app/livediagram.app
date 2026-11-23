@@ -128,7 +128,7 @@ export const KNOWLEDGE_TOUR_COPY: Record<
   },
   ask: {
     title: 'Ask Your Knowledgebase',
-    line: 'Ask a question, get answers with sources, and see AI Knowledge.',
+    line: 'Ask a question, get answers with sources, and see Insights.',
     help: 'ask',
     token: 'Ask',
   },

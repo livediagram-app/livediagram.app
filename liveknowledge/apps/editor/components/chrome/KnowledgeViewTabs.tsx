@@ -1,7 +1,7 @@
 'use client';
 
 // The knowledgebase's four views as tabs at the footer's left (docs/specs/030-knowledgebase/page-surface.md "The
-// footer"): Pages | Ask | AI Knowledge | Connect, drawn as the other liveworkspace editors draw the tabs of their footer tab
+// footer"): Pages | Ask | Insights | Connect, drawn as the other liveworkspace editors draw the tabs of their footer tab
 // bar (the shared tab shape, @liveworkspace/workbench tab-shape). They are views, not a person's tabs: no add,
 // close, drag or menu. Each is a real link to the view's address (so it opens in a new tab, and Back returns),
 // marked `aria-current` when it is the view showing; a plain press moves in place, as a new history entry.
@@ -84,9 +84,9 @@ const OPEN_INK = 'text-slate-900 dark:text-white';
 // A view an Offline knowledgebase can't open: the tab stays, quieter, and says why (owner 2026-11-21).
 const OFF_INK = 'text-slate-400 dark:text-slate-400/60';
 
-// Why Ask, AI Knowledge and Connect are off in a knowledgebase kept Offline: each needs the room on the server.
+// Why Ask, Insights and Connect are off in a knowledgebase kept Offline: each needs the room on the server.
 export const OFFLINE_VIEW_WHY =
-  'This knowledgebase is kept in this browser. Ask, AI Knowledge and Connect require your content to be synced to our servers.';
+  'This knowledgebase is kept in this browser. Ask, Insights and Connect require your content to be synced to our servers.';
 
 // A view this knowledgebase can't open while it is kept Offline: everything but Pages.
 export const offlineOff = (view: KnowledgeView, offline: boolean): boolean =>

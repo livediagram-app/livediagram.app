@@ -100,7 +100,7 @@ test('the view switch is within reach, and no view scrolls sideways', async ({
 }) => {
   await newKnowledgebase(page);
   const views = page.getByRole('navigation', { name: 'Knowledgebase Views' });
-  for (const view of ['Pages', 'Ask', 'AI Knowledge', 'Connect MCP']) {
+  for (const view of ['Pages', 'Ask', 'Insights', 'Connect MCP']) {
     const link = views.getByRole('link', { name: view, exact: true });
     await expect(link).toBeInViewport({ ratio: 1 });
     const box = (await link.boundingBox())!;
@@ -108,9 +108,9 @@ test('the view switch is within reach, and no view scrolls sideways', async ({
   }
   await expectNoSidewaysScroll(page, 'Pages');
 
-  // Kept Offline, Ask and AI Knowledge stay in the footer going nowhere; a long press says why and offers the sync
+  // Kept Offline, Ask and Insights stay in the footer going nowhere; a long press says why and offers the sync
   // (docs/specs/030-knowledgebase/search-and-ask.md "Offline, in the footer").
-  for (const view of ['Ask', 'AI Knowledge']) {
+  for (const view of ['Ask', 'Insights']) {
     const link = views.getByRole('link', { name: view, exact: true });
     await expect(link).toHaveAttribute('aria-disabled', 'true');
     // A tap goes nowhere: the page stays. (Playwright's tap() waits for an aria-disabled control to be enabled.)

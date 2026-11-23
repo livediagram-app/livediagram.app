@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The AI Knowledge dashboard (docs/specs/030-knowledgebase/blueprints/ai-knowledge-ui.md "The dashboard"): each
+// The Insights dashboard (docs/specs/030-knowledgebase/blueprints/ai-knowledge-ui.md "The dashboard"): each
 // tile's figure and name, the amber mark, a filter tile pressed and unpressed, a tile bringing its card into view,
 // the sparkline said in words, the caps and Show All, and Most Read.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
@@ -112,7 +112,7 @@ afterEach(() => {
 describe('the figures band', () => {
   it('names each tile by its words and its figure, and marks what asks for someone', () => {
     draw();
-    const tiles = within(screen.getByRole('group', { name: 'AI Knowledge at a glance' }))
+    const tiles = within(screen.getByRole('group', { name: 'Insights at a glance' }))
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label'));
     expect(tiles).toEqual([

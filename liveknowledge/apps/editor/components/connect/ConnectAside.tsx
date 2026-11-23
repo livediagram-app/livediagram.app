@@ -1,7 +1,7 @@
 'use client';
 
 // Beside Connect's steps (docs/specs/030-knowledgebase/mcp-connect.md "The view"): Already Connected, the
-// connections AI Knowledge counts, and Other Ways In, the command line and API tokens.
+// connections Insights counts, and Other Ways In, the command line and API tokens.
 import type { ReactNode } from 'react';
 import type { KnowledgeAgent } from '@liveknowledge/api-schema';
 import { CodeSnippet } from '@liveworkspace/marketing-site/components/ai/CodeSnippet';
@@ -17,7 +17,7 @@ import { ConnectViewIcon } from '@/components/ask/ask-icons';
 import { agentDoor, agentScopeChips, type AgentDoor } from '@/lib/knowledge-ask/overview-words';
 import { track } from '@/lib/telemetry';
 
-/** How many connections the aside lists; AI Knowledge has them all. */
+/** How many connections the aside lists; Insights has them all. */
 export const ASIDE_AGENTS = 5;
 
 const DOOR_ICON: Record<AgentDoor, ReactNode> = {
@@ -95,7 +95,7 @@ export function AlreadyConnected({
             onClick={onManage}
             className="w-fit cursor-pointer phone:min-h-11"
           >
-            Manage in AI Knowledge
+            Manage in Insights
           </Button>
         </div>
       )}

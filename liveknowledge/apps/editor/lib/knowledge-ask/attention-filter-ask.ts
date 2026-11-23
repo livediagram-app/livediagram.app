@@ -1,11 +1,11 @@
-// Needs Attention's filter asked for by a door outside AI Knowledge (docs/specs/030-knowledgebase/ai-knowledge.md "On
-// the page": a page rail's Review All in AI Knowledge opens it at Suggested Edits). Held until the dashboard reads it
+// Needs Attention's filter asked for by a door outside Insights (docs/specs/030-knowledgebase/ai-knowledge.md "On
+// the page": a page rail's Review All in Insights opens it at Suggested Edits). Held until the dashboard reads it
 // as it opens, then gone, so it never sticks to a later visit.
 import type { AttentionFilter } from './dashboard-figures';
 
 let asked: AttentionFilter | null = null;
 
-/** Open AI Knowledge's Needs Attention at `filter` the next time the dashboard starts. */
+/** Open Insights' Needs Attention at `filter` the next time the dashboard starts. */
 export function askAttentionFilter(filter: AttentionFilter): void {
   asked = filter;
 }

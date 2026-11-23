@@ -197,7 +197,7 @@ describe('the facts of each page', () => {
     expect(oneMs).toBeLessThan(cpuBudgetMs(20));
   });
 
-  it('rides Page Health’s read, the agents’ reads and searches, and AI Knowledge’s conflicts', async () => {
+  it('rides Page Health’s read, the agents’ reads and searches, and Insights’ conflicts', async () => {
     const kit = await knowledgeKit();
     kit.db.sql.exec(`
       INSERT INTO conflicts (id, question, a_passage, a_tab, a_hash, b_passage, b_tab, b_hash, state, found_at)

@@ -1,4 +1,4 @@
-// One card of the AI Knowledge dashboard (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): its
+// One card of the Insights dashboard (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): its
 // glyph and heading, one line about it, an action at its right (under the heading where there is no room), and its
 // rows or its empty state. A figure tile brings it into view and focuses it, so it takes focus without being a stop.
 import type { ReactNode } from 'react';

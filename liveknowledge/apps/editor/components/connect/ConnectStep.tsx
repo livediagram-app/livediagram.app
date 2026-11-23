@@ -1,6 +1,6 @@
 // One numbered step of Connect (docs/specs/030-knowledgebase/mcp-connect.md "The view"): a card named by its
 // heading, the step's number in a brand circle beside it (the list it sits in counts for a screen reader), one line
-// about it, then its body. The card is AI Knowledge's (AiSection), so the two views read alike.
+// about it, then its body. The card is Insights' (AiSection), so the two views read alike.
 import { useId, type ReactNode } from 'react';
 import { AI_CARD, AI_MUTED } from '@/components/ai-knowledge/AiSection';
 

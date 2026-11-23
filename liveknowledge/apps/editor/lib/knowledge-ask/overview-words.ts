@@ -1,4 +1,4 @@
-// What AI Knowledge says of what the room counted (docs/specs/030-knowledgebase/ai-knowledge.md). Pure.
+// What Insights says of what the room counted (docs/specs/030-knowledgebase/ai-knowledge.md). Pure.
 import { HEALTH_LABEL_WORDS } from '@liveknowledge/knowledge';
 import type {
   AgentScope,

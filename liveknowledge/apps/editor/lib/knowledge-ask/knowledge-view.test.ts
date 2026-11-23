@@ -11,7 +11,7 @@ import {
 afterEach(() => window.history.replaceState(null, '', '/document/d1'));
 
 describe('the view an address names', () => {
-  it('is Pages unless it names Ask, AI Knowledge or Connect', () => {
+  it('is Pages unless it names Ask, Insights or Connect', () => {
     expect(knowledgeViewOf('')).toBe('pages');
     expect(knowledgeViewOf('?view=ask')).toBe('ask');
     expect(knowledgeViewOf('?s=abc&view=ai')).toBe('ai');

@@ -69,7 +69,7 @@ export function AnsweredQuestions({ answered }: { answered: readonly PageAnswere
 }
 
 /** Read This Week's trend (owner 2026-11-22: Page Insights merged into Read This Week): the page's reads over the
- *  last 30 days, a bar a day with people under agents in AI Knowledge's two tones. A page in its first week has no
+ *  last 30 days, a bar a day with people under agents in Insights' two tones. A page in its first week has no
  *  history to show, so it says its reads so far instead. */
 export function ReadsTrend({ insights, createdAt, now }: Omit<PageInsightsProps, 'answered'>) {
   if (insights === undefined)

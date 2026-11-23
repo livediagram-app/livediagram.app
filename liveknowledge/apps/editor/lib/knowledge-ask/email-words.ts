@@ -1,4 +1,4 @@
-// What AI Knowledge says after an Editor asks for a Knowledgebase Reviews email (docs/specs/030-knowledgebase/
+// What Insights says after an Editor asks for a Knowledgebase Reviews email (docs/specs/030-knowledgebase/
 // ai-knowledge.md "Pages that disagree", "Knowledge Health"): what was sent, or why nothing was, in words. Pure.
 import type { KnowledgeEmailResult } from '@liveknowledge/api-schema';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';

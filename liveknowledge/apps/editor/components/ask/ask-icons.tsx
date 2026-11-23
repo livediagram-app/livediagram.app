@@ -1,4 +1,4 @@
-// The Ask and AI Knowledge chrome's icons (docs/specs/004-interface-design/iconography.md): vendored Lucide glyphs
+// The Ask and Insights chrome's icons (docs/specs/004-interface-design/iconography.md): vendored Lucide glyphs
 // at the chrome's sizes.
 import {
   lucideArrowUp,
@@ -57,7 +57,7 @@ export const ChevronIcon = lucideGlyph(lucideChevronRight, 14);
 export const CopiedIcon = lucideGlyph(lucideCheck, 14);
 export const SavePageIcon = lucideGlyph(lucideFilePlus, 14);
 export const KeyIcon = lucideGlyph(lucideKey, 16);
-// Built-in AI in AI Settings: the sparkles of AI Knowledge, liveknowledge's own.
+// Built-in AI in AI Settings: the sparkles of Insights, liveknowledge's own.
 export const BuiltInAiIcon = lucideGlyph(lucideSparkles, 16);
 // Generic marks for the two providers of AI Settings: never a company's logo.
 export const ProviderSparkIcon = lucideGlyph(lucideSparkle, 16);

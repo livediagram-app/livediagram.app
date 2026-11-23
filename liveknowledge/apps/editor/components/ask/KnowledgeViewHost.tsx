@@ -1,7 +1,7 @@
 'use client';
 
 // Where the knowledgebase's views meet the editor (docs/specs/030-knowledgebase/search-and-ask.md "The views"): the
-// mark the views start under, and the view drawn over the editor when the address names Ask, AI Knowledge or
+// mark the views start under, and the view drawn over the editor when the address names Ask, Insights or
 // Connect. The way between them is the footer's tabs (components/chrome/KnowledgeViewTabs.tsx). Each view's code is fetched when it is first shown, never with the editor.
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
@@ -26,7 +26,7 @@ const ConnectView = dynamic(
 );
 
 // Each view's region name, as its tab is named.
-const VIEW_LABEL = { ask: 'Ask', ai: 'AI Knowledge', connect: 'Connect MCP' } as const;
+const VIEW_LABEL = { ask: 'Ask', ai: 'Insights', connect: 'Connect MCP' } as const;
 
 // The knowledgebase's key and model (AiSettingsDialog.tsx): its code is fetched the first time it is opened.
 const AiSettingsDialogHost = dynamic(
@@ -69,7 +69,7 @@ function usePassageArrival(): void {
   }, [documentId, hydrated, chrome]);
 }
 
-/** Ask, AI Knowledge or Connect over the editor; nothing while Pages shows. */
+/** Ask, Insights or Connect over the editor; nothing while Pages shows. */
 export function KnowledgeViewHost() {
   const view = useKnowledgeView();
   const offered = useKnowledgeViewsOffered();

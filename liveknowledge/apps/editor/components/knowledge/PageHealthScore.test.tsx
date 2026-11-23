@@ -2,7 +2,7 @@
 
 // The Health Score in Page Health (docs/specs/030-knowledgebase/verification.md "In Page Health"): the figure, its
 // word and reason, the breakdown closed by default, each fix a button only for whoever may make it; the facts the
-// editor reads, and the score's chip where AI Knowledge and Ask draw it.
+// editor reads, and the score's chip where Insights and Ask draw it.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { pageHealth, type PageHealthFacts } from '@liveknowledge/knowledge';

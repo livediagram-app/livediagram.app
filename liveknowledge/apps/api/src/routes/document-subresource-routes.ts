@@ -54,7 +54,7 @@ export async function handleDocumentSubresources(
   // Version history (docs/specs/006-document/version-history.md).
   const versions = await handleVersionRoutes(ctx);
   if (versions) return versions;
-  // Search, verification, Ask and AI Knowledge (docs/specs/030-knowledgebase; routes/knowledge-routes.ts).
+  // Search, verification, Ask and Insights (docs/specs/030-knowledgebase; routes/knowledge-routes.ts).
   const knowledge = await handleKnowledgeRoutes(ctx);
   if (knowledge) return knowledge;
   // The knowledgebase's page Trash (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page Trash").

@@ -1,6 +1,6 @@
 'use client';
 
-// AI Knowledge (docs/specs/030-knowledgebase/ai-knowledge.md): the knowledgebase's third view, a dashboard
+// Insights (docs/specs/030-knowledgebase/ai-knowledge.md): the knowledgebase's third view, a dashboard
 // (AiDashboard). What agents know, where they learned it and what they could not find, from one read of
 // `GET knowledge` when the view opens and one after each action here. Everyone sees it; settling a conflict, drafting or dismissing a question, accepting or
 // dismissing a suggestion and Always in Context are an Editor's.
@@ -110,7 +110,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
   return (
     <>
       <KnowledgeViewHeader
-        title="AI Knowledge"
+        title="Insights"
         about="What agents know of this knowledgebase, where they learned it and what they could not find."
       >
         {/* Icon only on a phone, as AI Settings beside it: the top row has no room for both labels and Share
@@ -132,7 +132,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
           {offline ? (
             <EmptyState
               icon={<AiViewIcon />}
-              title="No AI Knowledge in an Offline Knowledgebase"
+              title="No Insights in an Offline Knowledgebase"
               description="This knowledgebase is kept in this browser, where no agent can reach it and nothing is counted. Its pages and search work as they are."
             />
           ) : state.status === 'loading' ? (
@@ -142,7 +142,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
               tone="error"
               size="md"
               role="alert"
-              title="AI Knowledge Could Not Be Read"
+              title="Insights Could Not Be Read"
               action={{ label: 'Try Again', onSelect: refresh }}
             >
               Check your connection.

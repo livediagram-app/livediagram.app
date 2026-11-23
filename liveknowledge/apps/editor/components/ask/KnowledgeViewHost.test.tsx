@@ -90,7 +90,7 @@ describe('the view over the editor', () => {
   it('gives the editor back when Pages shows again, and follows the browser Back', () => {
     editor();
     act(() => showKnowledgeView('ai'));
-    expect(screen.getByRole('region', { name: 'AI Knowledge' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Insights' })).toBeTruthy();
     act(() => {
       window.history.replaceState(null, '', '/document/d1');
       window.dispatchEvent(new PopStateEvent('popstate'));

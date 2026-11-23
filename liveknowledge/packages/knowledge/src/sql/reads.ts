@@ -80,7 +80,7 @@ export function agentReads(rows: readonly AgentReadsRow[]): AgentReads[] {
   return [...agents.values()];
 }
 
-/** How many days of reads AI Knowledge's sparkline shows, today among them. */
+/** How many days of reads Insights' sparkline shows, today among them. */
 export const READS_TREND_DAYS = 14;
 
 export type DailyReadsRow = { day: string; readerKind: string; reads: number };
@@ -133,7 +133,7 @@ export const countPageDailyReads = (
   params: [tab, daysBefore(now, days)],
 });
 
-/** How many pages AI Knowledge's Most Read names. */
+/** How many pages Insights' Most Read names. */
 export const MOST_READ_PAGES = 5;
 
 export type MostReadRow = { tab: string; people: number; agents: number };

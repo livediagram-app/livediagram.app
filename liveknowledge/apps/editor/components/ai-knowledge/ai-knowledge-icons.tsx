@@ -1,4 +1,4 @@
-// AI Knowledge's icons (docs/specs/004-interface-design/iconography.md): vendored Lucide glyphs.
+// Insights' icons (docs/specs/004-interface-design/iconography.md): vendored Lucide glyphs.
 import {
   lucideBell,
   lucideBookOpen,

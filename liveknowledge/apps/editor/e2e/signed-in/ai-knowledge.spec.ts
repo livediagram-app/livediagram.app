@@ -3,7 +3,7 @@ import { expect, expectNoPageErrors, test } from '../fixtures';
 import { nameOpenPage, openPageId, paragraphs, writeLines } from '../knowledgebase';
 import { asPerson, openView, savedWith, signedInKnowledgebase } from './knowledge-session';
 
-// AI Knowledge (docs/specs/030-knowledgebase/ai-knowledge.md; blueprints/ai-knowledge-ui.md): what agents know of
+// Insights (docs/specs/030-knowledgebase/ai-knowledge.md; blueprints/ai-knowledge-ui.md): what agents know of
 // the knowledgebase. Its sections with nothing in them, an agent's read arriving as its card, and an edit suggested
 // through the api, accepted into the page.
 
@@ -22,7 +22,7 @@ async function showAttention(page: Page, kind: string): Promise<void> {
 
 test('every section shows, each with its empty state', async ({ page, pageErrors }) => {
   await signedInKnowledgebase(page);
-  await openView(page, 'AI Knowledge');
+  await openView(page, 'Insights');
   const empty: [string, string][] = [
     ['Connected Agents', 'No Agents Yet'],
     ['Needs Attention', 'Nothing Needs Attention'],
@@ -67,7 +67,7 @@ test("an agent's read of a page shows as its card under Connected Agents", async
   expect(read.status()).toBe(200);
   expect(await read.text()).toContain('blue lever');
 
-  await openView(page, 'AI Knowledge');
+  await openView(page, 'Insights');
   const agents = page.getByRole('region', { name: 'Connected Agents' });
   await expect(agents.locator('[data-agent="Coding Agent"]')).toBeVisible();
   await expect(agents.locator('[data-agent="Coding Agent"]')).toContainText('Runbook');
@@ -95,7 +95,7 @@ test('an edit suggested through the api waits for an Editor, and Accept changes 
   });
   expect(suggested.status(), await suggested.text()).toBeLessThan(300);
 
-  await openView(page, 'AI Knowledge');
+  await openView(page, 'Insights');
   await showAttention(page, 'Edits');
   const suggestions = attention(page);
   const card = suggestions.locator('[data-suggestion]');
