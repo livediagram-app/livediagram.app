@@ -99,6 +99,18 @@ On This Page. What follows is what the read carries:
   **Dismiss** removes the row. A question also leaves the list once it is answered (owner 2026-11-21): when Ask later
   answers it in full from pages (a first question, citing pages, with no gap), and when a writer presses **Accept
   Answer** on a chat, which settles the chat's question and every gap its answers named.
+- **Likely answered elsewhere** (Work Tracker 1364, [Sources](search-and-ask.md#sources)): when Ask records a gap for
+  a signed-in person, the room asks the index for an item of the team's that the asker can open, is not one of the
+  knowledgebase's sources, and whose title holds the gap's words
+  ([knowledge-sources.md](../../../../liveworkspace/docs/specs/004-index/knowledge-sources.md) `knowledge-likely`).
+  The first one found is kept with the question (`question_likely`, one row a question, its app, item and name). The
+  row then shows a quiet note under the question, the item's app logo and "Likely answered in Payments Architecture,
+  which isn't connected", with **Connect** for an Editor: it connects the item to the knowledgebase as Connect File
+  does (at View, one way), which adds it to Connected Items, reads it and clears the note. A Participant or a
+  Viewer sees the note without Connect. The note is shown only to a reader who can open the item themselves: each
+  Insights read asks the index once (`knowledge-reach`, for the noted items) and leaves out the rest, so it never
+  names an item to someone who could not open it. A connect that
+  fails (the person cannot share the item, or the index is away) says so in a toast and the note stays.
 
 ## Pages that disagree
 
