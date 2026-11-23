@@ -856,6 +856,9 @@ export const LOCAL_MOVE_OFFERED = opened(
 
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 
+// Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
+OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard');
+
 export const OTHER_OPENED = chart(
   'UI',
   'Opened',

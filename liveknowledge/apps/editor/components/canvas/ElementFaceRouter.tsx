@@ -1,5 +1,6 @@
 'use client';
 
+import { LiveTableFace } from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
 import dynamic from 'next/dynamic';
 import { RetiredTabWindowFace } from './RetiredTabWindowFace';
 import type { ReactNode } from 'react';
@@ -183,17 +184,21 @@ export function ElementFaceRouter({
           {isEditing || label.length > 0 ? labelNode : null}
         </>
       ) : element.type === 'table' ? (
-        <TableView
-          element={element}
-          isSelected={isSelected}
-          readOnly={isLocked || (readOnly && !writable)}
-          cellsOnly={readOnly}
-          tabSummaries={tabSummaries}
-          onCommitTable={onCommitTable}
-          onLinkCell={onLinkCell}
-          onFollowLink={onFollowLink}
-          fontFamily={fontFamily}
-        />
+        <LiveTableFace element={element} selected={!!isSelected}>
+          {(seen, linked) => (
+            <TableView
+              element={seen}
+              isSelected={isSelected}
+              readOnly={isLocked || (readOnly && !writable) || linked}
+              cellsOnly={readOnly}
+              tabSummaries={tabSummaries}
+              onCommitTable={onCommitTable}
+              onLinkCell={onLinkCell}
+              onFollowLink={onFollowLink}
+              fontFamily={fontFamily}
+            />
+          )}
+        </LiveTableFace>
       ) : element.type === 'shape' && isConceptShape(element.shape) ? (
         // A layer stack, pyramid or cycle (docs/specs/009-elements/concept-graphics.md): its rows in the accent ramp.
         <ConceptFace

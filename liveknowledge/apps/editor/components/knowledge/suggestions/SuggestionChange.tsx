@@ -1,5 +1,5 @@
-// The lines a suggested edit takes out and puts in (docs/specs/030-knowledgebase/ai-knowledge.md "Edits suggested by
-// agents"): AI Knowledge's Needs Attention row and the page's popover draw the same change. Text, never Markdown made
+// The lines a suggested edit takes out and puts in (docs/specs/030-knowledgebase/insights.md "Edits suggested by
+// agents"): Insights' Needs Attention row and the page's popover draw the same change. Text, never Markdown made
 // into markup. A removed and an added line differ by their sign and their strike as well as their colour.
 import type { KnowledgeSuggestion } from '@liveknowledge/api-schema';
 import { suggestionLines } from '@/lib/knowledge-ask/overview-words';

@@ -129,7 +129,7 @@ export const SYSTEM_OP_KINDS = [
   // A reaction on a page was added or taken back (docs/specs/030-knowledgebase/page-reactions.md "Live"): the api
   // wrote it and sends it through /mutation. A forged one would show a reaction nobody made.
   'page-reaction',
-  // A suggested edit was made, accepted or dismissed (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"):
+  // A suggested edit was made, accepted or dismissed (docs/specs/030-knowledgebase/insights.md "On the page"):
   // the pages' ids only, each session reads its open page's health again. A forged one costs a read, nothing more.
   'page-suggestions',
 ] as const;
@@ -215,7 +215,13 @@ export type ServerMessage =
   | { kind: 'followers'; ids: string[] }
   // A Sheet a chart in this document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping in
   // step"): ids only, never values. Each session reads the range again with its own access.
-  | { kind: 'source-changed'; app: 'liveplanner'; itemId: string; sheetIds: string[] }
+  | {
+      kind: 'source-changed';
+      app: 'liveplanner';
+      itemId: string;
+      sheetIds: string[];
+      cards?: string[];
+    }
   // The ordering cursor this session has reached (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1), sent on
   // `hello` and to the SENDER of each ordered op, which the relay skips. Without
   // it a client only learned seqs from other people's ops, so a reconnect
@@ -500,7 +506,7 @@ export type RoomOp =
   // A reaction on a page, added or taken back (docs/specs/030-knowledgebase/page-reactions.md "Live").
   // Worker-originated through /mutation.
   | PageReactionOp
-  // A page's suggested edits changed (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"): ids only.
+  // A page's suggested edits changed (docs/specs/030-knowledgebase/insights.md "On the page"): ids only.
   // Worker-originated through /mutation.
   | PageSuggestionsOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every

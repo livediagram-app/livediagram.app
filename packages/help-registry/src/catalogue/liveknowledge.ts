@@ -68,14 +68,14 @@ export const categories: Category[] = [
     slug: 'knowledgebase',
     title: 'Knowledgebase',
     description:
-      'Everything a Knowledgebase does: the page tree, writing, links, verified pages, search, Ask, AI Knowledge, style, settings, import and export.',
+      'Everything a Knowledgebase does: the page tree, writing, links, verified pages, search, Ask, Insights, style, settings, import and export.',
     articleCount: 24,
     kind: 'feature',
     groups: [
       'Pages',
       'Trust',
       'Finding Things',
-      'AI Knowledge',
+      'Insights',
       'Style and Settings',
       'Import and Export',
       'Roles',
@@ -321,7 +321,7 @@ export const articles: Article[] = [
     group: 'Finding Things',
     ...APPS,
   },
-  // ---- Knowledgebase: AI Knowledge ----
+  // ---- Knowledgebase: Insights ----
   {
     slug: 'connecting-an-agent',
     title: 'Connecting an Agent',
@@ -330,7 +330,7 @@ export const articles: Article[] = [
     keywords:
       'connect an agent mcp server model context protocol claude cursor cli command line api token connector agents ai tools setup install auth login',
     ...KNOWLEDGEBASE,
-    group: 'AI Knowledge',
+    group: 'Insights',
     ...APPS,
   },
   {
@@ -341,7 +341,7 @@ export const articles: Article[] = [
     keywords:
       'agents permissions scopes read suggest write allow writing stop writing reads suggests edits writes connected agents verified review due protected what an agent sees',
     ...KNOWLEDGEBASE,
-    group: 'AI Knowledge',
+    group: 'Insights',
     ...APPS,
   },
   {
@@ -352,7 +352,7 @@ export const articles: Article[] = [
     keywords:
       'suggested edits edits suggested by agents suggestion review accept dismiss open the page change diff removed added lines reason agent proposal',
     ...KNOWLEDGEBASE,
-    group: 'AI Knowledge',
+    group: 'Insights',
     ...APPS,
   },
   {
@@ -363,18 +363,18 @@ export const articles: Article[] = [
     keywords:
       'questions nobody could answer knowledge gap gaps unanswered missing draft a page dismiss asked times report gap coverage',
     ...KNOWLEDGEBASE,
-    group: 'AI Knowledge',
+    group: 'Insights',
     ...APPS,
   },
   {
     slug: 'pages-that-disagree',
     title: 'Pages That Disagree',
     description:
-      'When two pages state opposite facts, AI Knowledge shows both passages so you can say which is right.',
+      'When two pages state opposite facts, Insights shows both passages so you can say which is right.',
     keywords:
       'pages that disagree conflict conflicts contradiction contradict opposite facts is right fix the other ask both owners not a conflict two pages disagree',
     ...KNOWLEDGEBASE,
-    group: 'AI Knowledge',
+    group: 'Insights',
     ...APPS,
   },
   {
@@ -385,7 +385,7 @@ export const articles: Article[] = [
     keywords:
       'always in context context pages get_context budget tokens 8000 add a page agents start pinned system prompt background',
     ...KNOWLEDGEBASE,
-    group: 'AI Knowledge',
+    group: 'Insights',
     ...APPS,
   },
   // ---- Knowledgebase: Style and Settings ----
@@ -494,7 +494,7 @@ export const articles: Article[] = [
     slug: 'knowledge-api',
     title: 'The Knowledge API',
     description:
-      'The REST routes behind pages, search, Ask and AI Knowledge, and where to find their OpenAPI reference.',
+      'The REST routes behind pages, search, Ask and Insights, and where to find their OpenAPI reference.',
     keywords:
       'api rest routes endpoints openapi json http curl bearer token pages knowledge search ask summary knowledge-settings suggestions scopes',
     category: 'Developers',

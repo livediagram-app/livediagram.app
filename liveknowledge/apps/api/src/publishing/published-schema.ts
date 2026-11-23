@@ -51,3 +51,31 @@ const TABLES = [
 export function publishedSchemaStep(exec: Exec): void {
   for (const statement of TABLES) exec(statement);
 }
+
+// A page's pictures and cover (blueprint P31 to P34, Work Tracker 1346): the pictures each published page places,
+// the only ones the public site serves; the cover band as drawn; a restyle redrawing every page, as their figures
+// and gradient covers are drawn in the style. A page published before this step is marked to be drawn again, so its
+// pictures show at the site's next read.
+const MEDIA = [
+  `CREATE TABLE IF NOT EXISTS published_media (
+    image TEXT NOT NULL, tab TEXT NOT NULL, PRIMARY KEY (image, tab)
+  )`,
+  'CREATE INDEX IF NOT EXISTS published_media_tab ON published_media (tab)',
+  // Only a real change: a room's start rewrites the style it already holds.
+  `CREATE TRIGGER IF NOT EXISTS published_pages_restyled AFTER UPDATE OF knowledge_style ON document
+    WHEN OLD.knowledge_style IS NOT NEW.knowledge_style
+    BEGIN INSERT INTO published_dirty (tab)
+      SELECT tab FROM published_pages WHERE tab NOT IN (SELECT tab FROM published_dirty); END`,
+  'INSERT OR IGNORE INTO published_dirty (tab) SELECT tab FROM published_pages',
+];
+
+/** The schema step for a page's pictures (document-schema.ts V44), after V36. Asks before the ALTER, as V16 does, so
+ *  it runs again harmlessly. */
+export function publishedMediaSchemaStep(exec: Exec): void {
+  const columns = (exec('PRAGMA table_info(published_pages)') as { toArray(): { name: unknown }[] })
+    .toArray()
+    .map((c) => String(c.name));
+  if (!columns.includes('cover'))
+    exec("ALTER TABLE published_pages ADD COLUMN cover TEXT NOT NULL DEFAULT ''");
+  for (const statement of MEDIA) exec(statement);
+}

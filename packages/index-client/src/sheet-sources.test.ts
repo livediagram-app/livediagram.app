@@ -36,6 +36,7 @@ describe('the apps', () => {
     expect(isSourceWatchApp('livedocuments')).toBe(true);
     expect(isSourceWatchApp('livediagram')).toBe(true);
     expect(isSourceWatchApp('livedesign')).toBe(true);
+    expect(isSourceWatchApp('liveknowledge')).toBe(true);
     expect(isSourceWatchApp('liveplanner')).toBe(false);
   });
 });

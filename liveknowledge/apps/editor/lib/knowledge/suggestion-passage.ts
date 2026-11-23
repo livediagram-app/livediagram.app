@@ -1,4 +1,4 @@
-// Where a suggested edit's passage sits in a page's writing (docs/specs/030-knowledgebase/ai-knowledge.md "On the
+// Where a suggested edit's passage sits in a page's writing (docs/specs/030-knowledgebase/insights.md "On the
 // page"; blueprint suggested-edits-ui.md "Finding the passage"). A suggestion's `before` is Markdown as an agent read
 // the page; the writing on screen is text. Both are read as words, the Markdown's marks set aside (a heading's `#`, a
 // list's marker, a quote's `>`, emphasis, backticks, a link's address, escapes, a table's pipes), and the passage is

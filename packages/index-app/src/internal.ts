@@ -74,6 +74,7 @@ import {
   type IndexAppClient,
 } from '@liveworkspace/index-client';
 import { automationStepDoor, automationTargetDoor } from './automation-step-door';
+import { planSendDoor } from './plan-send-door';
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
@@ -383,6 +384,13 @@ export async function handleInternalItems(
   if (rest.length === 2 && rest[1] === 'automation-target' && request.method === 'POST') {
     return handlers.automationTarget && verifyGrant
       ? automationTargetDoor(request, id, verifyGrant, handlers.automationTarget)
+      : notFound();
+  }
+
+  // Send to Plan (plan-send-door.ts): cards made here as the person, their grant checked.
+  if (rest.length === 2 && rest[1] === 'plan-send' && request.method === 'POST') {
+    return handlers.planSend && verifyGrant
+      ? planSendDoor(request, id, verifyGrant, handlers.planSend)
       : notFound();
   }
 

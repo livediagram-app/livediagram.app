@@ -23,6 +23,7 @@ import {
   lucideSquarePlus,
   lucideStarHalf,
   lucideUsers,
+  lucideSend,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livedesign/ui';
 import type { ReactNode } from 'react';
@@ -299,6 +300,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z" />
     </Glyph>
   ),
+  // A card going off to a plan: Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md).
+  'send-to-plan': (
+    <Glyph>
+      <Prims prims={lucideSend} />
+    </Glyph>
+  ),
   // A play mark inside a round bubble: a recorded narration played back. Not a camera (snapshots') and not a
   // screen (presenting's).
   walkthroughs: (
@@ -534,6 +541,17 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="12" y="10" width="3" height="8" rx="0.5" />
       <rect x="17.5" y="6.5" width="3" height="11.5" rx="0.5" />
       <path d="M6 10.5l4-3 4.5 2.5 5-4" />
+    </Glyph>
+  ),
+  // A chart fed by a plan: three bars rising from a card, with a live dot at their corner.
+  'live-data': (
+    <Glyph>
+      <rect x="3.5" y="14" width="7" height="6.5" rx="1" />
+      <path d="M13.5 20.5v-5" />
+      <path d="M17 20.5v-8" />
+      <path d="M20.5 20.5V9" />
+      <path d="M10.5 17.25h3" />
+      <circle cx="18.5" cy="4.5" r="1.75" />
     </Glyph>
   ),
   // Filled dots beside rules: the key's own shape, and distinct from the

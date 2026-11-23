@@ -1,5 +1,5 @@
 // Counts inside a window of time, for the limits the room checks before a model call
-// (docs/specs/030-knowledgebase/search-and-ask.md "Ask" bounds, ai-knowledge.md "Pages that disagree"). A scope
+// (docs/specs/030-knowledgebase/search-and-ask.md "Ask" bounds, insights.md "Pages that disagree"). A scope
 // names who or what is counted; a period is an hour or a day (days.ts).
 import { dayOf, daysBefore, hourOf } from '../days';
 import type { SqlStatement } from './statement';

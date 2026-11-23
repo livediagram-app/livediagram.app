@@ -46,7 +46,7 @@ export function FooterMore({ children }: { children: ReactNode }) {
         </button>
       </HoverCard>
       {/* Kept mounted while closed, so a control inside (Tools' own menu, the tour's offer) keeps its state. At the
-          popover layer, as a menu is: the Ask, AI Knowledge and Connect views (a canvas modal) stop at the footer, and
+          popover layer, as a menu is: the Ask, Insights and Connect views (a canvas modal) stop at the footer, and
           the card rising above it was drawn under them, so Get Started, Tools and Settings were out of reach there. */}
       <div
         id={panelId}

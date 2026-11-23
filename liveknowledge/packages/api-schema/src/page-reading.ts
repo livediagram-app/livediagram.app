@@ -1,7 +1,7 @@
 // Required Reading (docs/specs/030-knowledgebase/required-reading.md) on the wire: whether a page is asked to be read,
 // by whom, the caller's own confirmation and the counts, and for an Editor or the page's owner who has read it. The
 // api stores it (apps/api/src/knowledge/page-reading.ts); the editor draws the banner, the Page Info section, the
-// setup panel and the AI Knowledge card.
+// setup panel and the Insights card.
 
 /** Everyone who reads the knowledgebase, or the people an Editor chose. */
 export type ReadingAudience = 'everyone' | 'people';
@@ -50,7 +50,7 @@ export type ReadingRemindResult =
   | { outcome: 'daily_limit' }
   | { outcome: 'unavailable' };
 
-/** A Required Reading page in the AI Knowledge overview: counts, never who. */
+/** A Required Reading page in the Insights overview: counts, never who. */
 export type KnowledgeRequiredReadingPage = {
   tab: string;
   title: string;

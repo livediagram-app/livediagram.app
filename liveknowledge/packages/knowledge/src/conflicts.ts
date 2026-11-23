@@ -1,4 +1,4 @@
-// Pages that disagree (docs/specs/030-knowledgebase/ai-knowledge.md): which of a saved page's passages to look up
+// Pages that disagree (docs/specs/030-knowledgebase/insights.md): which of a saved page's passages to look up
 // on other pages, which pairs to put to the model, the limits of a check, and when a stored conflict closes.
 import { stableHash } from './hash';
 import type { Passage } from './passages';

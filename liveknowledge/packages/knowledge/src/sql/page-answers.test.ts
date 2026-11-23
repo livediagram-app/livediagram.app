@@ -1,4 +1,4 @@
-// The questions Ask answered from a page, and the agents that read it (ai-knowledge.md "AI Context on a page"), run
+// The questions Ask answered from a page, and the agents that read it (insights.md "AI Context on a page"), run
 // against a real SQLite.
 import { describe, expect, it } from 'vitest';
 import { knowledgeDb } from '../__fixtures__/db';

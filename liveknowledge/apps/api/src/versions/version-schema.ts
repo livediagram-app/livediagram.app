@@ -144,3 +144,16 @@ BEGIN
                      WHERE running > ${VERSION_AUTO_MAX_BYTES}));
 END;
 `;
+
+type Exec = (query: string) => unknown;
+
+/** Schema step 43 (docs/specs/006-document/version-history.md "An agent's mark"; blueprint VH25): the agent an agent's
+ *  version was kept for, beside its person. Added only when the table lacks it (as V18 asks before its ALTER), so it is
+ *  safe however far a room got and runs again harmlessly. Older rows read NULL: a person's. */
+export function versionAgentSchemaStep(exec: Exec): void {
+  const columns = (exec('PRAGMA table_info(tab_versions)') as { toArray(): { name: unknown }[] })
+    .toArray()
+    .map((c) => String(c.name));
+  if (!columns.includes('author_agent'))
+    exec('ALTER TABLE tab_versions ADD COLUMN author_agent TEXT NULL');
+}

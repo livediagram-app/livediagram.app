@@ -10,7 +10,7 @@
 //     not change rewrites nothing, and the writing's print at Verify (`verified_print`, changed-since.ts) for
 //     "Changed since verified".
 //   - `knowledge_work`: what the alarm owes (a conflict check, an email), keyed so asking twice is one row.
-//   - `suggestions`: agents' edits waiting for an Editor (docs/specs/030-knowledgebase/ai-knowledge.md "Edits
+//   - `suggestions`: agents' edits waiting for an Editor (docs/specs/030-knowledgebase/insights.md "Edits
 //     suggested by agents"), at most 50, each gone after 90 days.
 //   - `agent_grants`: the scopes an Editor granted an API token in this knowledgebase.
 import { KNOWLEDGE_SCHEMA } from '@liveknowledge/knowledge';

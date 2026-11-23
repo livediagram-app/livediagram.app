@@ -164,7 +164,7 @@ browser's.
   open tab a card joined to the bar's foot, the others quiet with the inset wash on hover): each a `HoverCard`
   (name and one line) around a link to the view's address with its icon, `aria-current="page"` on the showing one,
   the tab's own focus ring (`data-tab-key`). A plain left press moves in place (`showKnowledgeView`, a history
-  entry) and sends `UI·Opened·PagesView`, `AskView` or `AiKnowledgeView`; a press with a modifier is the link's.
+  entry) and sends `UI·Opened·PagesView`, `AskView` or `InsightsView`; a press with a modifier is the link's.
   No button, no drag, no menu. Not offered (`useKnowledgeViewsOffered`), the `nav` is not drawn.
 - **The footer** (`BottomBar`) is a child of the editor's column under the canvas, 48 px and the bottom safe inset:
   the page's scroll container ends above it. Tabs, a spacer, then `ChromeControls`. On a phone (`phone`, the
@@ -176,7 +176,7 @@ browser's.
   query), white (`slate-900` dark) with a hairline under it, `leading`, its children, `trailing`, then the slot
   (`data-top-row-actions`, also `data-corner-actions` so the shared account control is redrawn as a button by
   `corner-actions.css`). It offers its slot to `top-row-slot` with a rank: `page` (the canvas chrome's row) or
-  `view` (Ask's and AI Knowledge's header), and `view` outranks `page`.
+  `view` (Ask's and Insights' header), and `view` outranks `page`.
 - **Share and the account button** are drawn once, by `EditorViewHeader`, as `TopRowActions`: a portal into
   `useTopRowSlot()`. So the account's menu and the Share legend are one instance whichever view shows, and nothing
   is drawn while no row is (zen, an embed).
@@ -188,7 +188,7 @@ browser's.
   button. `[data-canvas-root]:has(> [data-knowledge-top-row]) > [data-page-scroller]` starts the scroll container
   under the row, the docked rail and the tree's rail start at the row's foot, and the top corner stacks and the
   top-centre stack start at 68 px.
-- **On Ask and AI Knowledge** `KnowledgeViewHeader` is the same row: the view's name (`h1`), its one line from
+- **On Ask and Insights** `KnowledgeViewHeader` is the same row: the view's name (`h1`), its one line from
   `lg` up, its buttons, a divider, the slot. The frame ends at the footer's top (measured, `[data-editor-tabbar]`),
   and the footer is the one column child it leaves live.
 - **A phone while writing:** the page toolbar's own bar is fixed along the top (`usePageToolbarPlacement`) and sets
@@ -455,7 +455,9 @@ Derived from [The page surface](../page-surface.md) "The cover".
 | the choices          | `COVER_GRADIENT_IDS` (14 `theme-*`), `COVER_MOTIONS` (`PAGE_MOTIONS`), `COVER_COLOURINGS` (`PAGE_MOTION_COLOURINGS`); the menu reuses `AnimatedBackgroundChoices` (`components/canvas/page-background-animated.tsx`, `customColours={false}`), mapped back by `animatedCoverOf`                           |
 | an agent's cover     | `parseAgentCover(raw)` (`packages/edit-operations/src/pages/cover.ts`): strict, refusing `invalid_cover`                                                                                                                                                                                                  |
 | the band             | `PageCoverBand` (`apps/editor/components/page-cover/`), with `CoverControls`, `CoverMenu`, `AddCoverButton`, `useCoverReposition`, and `CoverMotion` (the slide's `PageMotionLayer`, paused by `data-cover-paused` from an IntersectionObserver and `visibilitychange`; `app/motion-page.css`)            |
-| who may change it    | `useCoverEditable()` (`page-cover-state.ts`): an Editor (not read-only, not participating), in edit mode where the store has one (`pageEditing.editing`)                                                                                                                                                  |
+| who may add one      | `useCoverAddable()` (`page-cover-state.ts`, `coverAddable(s)`): a writer (not read-only, not participating), whether the page is read or edited; the meta row's Add Cover and Add Icon (`PageMetaRow`), shown to nobody else                                                                              |
+| who may change it    | `useCoverEditable()` (`page-cover-state.ts`): a writer, in edit mode where the store has one (`pageEditing.editing`): the band's controls and the icon's own button. `AddCoverButton` hands a motion's menu on to the band's Change Cover (`takeCoverMenuHandoff`) only while this holds                  |
+| no tooltip           | `AddCoverButton`, `AddIconButton`, `AddLabelButton`, `VerifyPageButton`, `PageApprovalMeta`'s Request Approval, `SuggestedEditsPill` and `PageMakersBadges` carry no `HoverCard` or `Tooltip` (owner 2026-11-23); `PageMetaRow.test.tsx` holds it                                                         |
 | the band's height    | `COVER_HEIGHT` 220, `COVER_HEIGHT_PHONE` 140, `coverHeightOf` (`lib/page-surface/page-lock.ts`): the lock's `cover` input moves the page down, `usePageSurface` writes `--page-cover-height`, `--page-cover-left` and `--page-cover-right` on the scroller                                                |
 
 ### Behaviour and state
@@ -605,7 +607,7 @@ Built: see "Knowledgebase Style (built)" above. What is left of it:
   retired from liveknowledge's scope (`lib/help-articles.ts`, `packages/help-registry`).
 - **Optical alignment:** the meta row's "Verified by" pill is centred (`TrustBadge`: even padding with
   `optical-edges`; its contents measured 0.05 px off centre in a browser, from 0.63). The optical audit
-  (`e2e/signed-in/knowledge-audit.spec.ts`) passes on Pages, Ask, AI Knowledge and Home in light and dark, the
+  (`e2e/signed-in/knowledge-audit.spec.ts`) passes on Pages, Ask, Insights and Home in light and dark, the
   footer's view tabs included, with no known failure.
 - **A drawing's tools on a phone** show in the row (`CanvasChrome`), unchecked in a browser.
 - **A phone keyboard put away without a blur.** The row comes back when the writing loses the caret. iOS blurs the

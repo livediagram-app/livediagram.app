@@ -1,5 +1,5 @@
 // Whether the app being connected has arrived (docs/specs/030-knowledgebase/mcp-connect.md "The view" 4): the
-// connections AI Knowledge counts, compared with what they were when the view first read them. Pure.
+// connections Insights counts, compared with what they were when the view first read them. Pure.
 import type { KnowledgeAgent } from '@liveknowledge/api-schema';
 
 /** How often the view checks while it waits, and for how long after it opens or Check Now is pressed. */

@@ -10,7 +10,7 @@ import { GUEST_DISC_TINT, isGuestName } from './guest-disc';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useId, useState, type ReactNode } from 'react';
 import { reviewDays, type ReviewEvery } from '@liveknowledge/knowledge';
-import { Button, Select, Tooltip } from '@liveknowledge/ui';
+import { Button, IDENTITY_FILL, Select, Tooltip, identityVars } from '@liveknowledge/ui';
 import { reviewPeriodLabel } from '@/lib/knowledge-settings/review-period-words';
 import { shortDate, type PageTrust } from '@/lib/knowledge/page-trust';
 import { relativeSince } from '@/lib/relative-time';
@@ -29,6 +29,12 @@ import {
   MakerPersonIcon,
 } from './knowledge-icons';
 import { RequestIcon } from './approval/feedback-icons';
+import type { PageStamp } from '@/lib/knowledge/page-makers';
+import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
+import {
+  AN_AGENT,
+  agentForPerson,
+} from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
 import { ReadByAgentsButton } from './ReadByAgents';
 import { Collapse } from './Collapse';
 import type { PageAgentReads } from '@liveknowledge/api-schema';
@@ -37,8 +43,8 @@ import type { KnowledgePerson } from './usePageKnowledge';
 const NO_OWNER = '';
 const DAY_MS = 86_400_000;
 
-/** Who did something to the page, and when. `by` is a name the editor could resolve. */
-export type PageStamp = { at: number; by?: string | undefined };
+/** Who did something to the page, and when (lib/knowledge/page-makers.ts). */
+export type { PageStamp } from '@/lib/knowledge/page-makers';
 
 export type PageHealthCardProps = {
   trust: PageTrust;
@@ -245,12 +251,24 @@ function tintOf(name: string | undefined): string {
   return DISC_TINTS[Math.abs(h) % DISC_TINTS.length]!;
 }
 
-/** A person's initials on their tint (a guest's figure), for Page Health's stamps and Required Reading's people. */
-export function Disc({ name, size = 'size-6' }: { name: string | undefined; size?: string }) {
+/** A person's initials on their own colour where it is known, else their name's tint (a guest's figure), for Page
+ *  Health's stamps and Required Reading's people. */
+export function Disc({
+  name,
+  color,
+  size = 'size-6',
+}: {
+  name: string | undefined;
+  /** The person's own colour, as their avatar draws it; the name's tint without one. */
+  color?: string | undefined;
+  size?: string;
+}) {
+  const own = color && !isGuestName(name);
   return (
     <span
       aria-hidden
-      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${isGuestName(name) ? GUEST_DISC_TINT : tintOf(name)}`}
+      style={own ? identityVars(color) : undefined}
+      className={`flex ${size} shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ring-2 ring-white dark:ring-slate-950 ${own ? `text-white ${IDENTITY_FILL}` : isGuestName(name) ? GUEST_DISC_TINT : tintOf(name)}`}
     >
       {isGuestName(name) ? (
         <MakerPersonIcon />
@@ -262,14 +280,32 @@ export function Disc({ name, size = 'size-6' }: { name: string | undefined; size
 }
 
 function StampRow({ what, stamp, now }: { what: string; stamp: PageStamp; now: number }) {
+  // A guest's stamp, and one written before guests were named so, reads "Guest" (owner 2026-11-21).
+  const person = !stamp.by || stamp.by === 'Someone' ? 'Guest' : stamp.by;
+  const { agent } = stamp;
+  // An agent's names the person it wrote for, "Claude for Priya Shah", with the AI sparkle as liveplanner's history
+  // draws it (verification.md "An agent acting for a person").
+  const name = agent
+    ? agent.accepted
+      ? `${agent.name || AN_AGENT}, accepted by ${person}`
+      : agentForPerson(agent.name, person)
+    : person;
   // Two lines, so a whole name fits the rail: who, then what they did and when.
   return (
-    <div data-page-stamp="" className="flex min-h-9 items-center gap-2.5">
-      <Disc name={!stamp.by || stamp.by === 'Someone' ? 'Guest' : stamp.by} />
+    <div
+      data-page-stamp=""
+      data-stamp-kind={agent ? 'ai' : 'human'}
+      className="flex min-h-9 items-center gap-2.5"
+    >
+      <Disc name={person} color={stamp.color} />
       <span className="min-w-0 flex-1 leading-4">
-        <span className="block truncate text-[13px] font-medium text-slate-800 dark:text-slate-200">
-          {/* A guest's stamp, and one written before guests were named so, reads "Guest" (owner 2026-11-21). */}
-          {!stamp.by || stamp.by === 'Someone' ? 'Guest' : stamp.by}
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate text-[13px] font-medium text-slate-800 dark:text-slate-200">
+            {name}
+          </span>
+          {agent ? (
+            <AiWriterMark words={`${what === 'Created' ? 'Created' : 'Edited'} by AI`} />
+          ) : null}
         </span>
         <span className="block text-[11px] text-slate-500 dark:text-slate-400">
           {what}{' '}

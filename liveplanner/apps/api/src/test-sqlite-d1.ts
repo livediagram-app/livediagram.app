@@ -232,6 +232,23 @@ function testPlanRooms(
       }
       return result;
     },
+    // A chart or table counting the plan's cards (plan-room.ts planDataList and planData), its watch kept likewise.
+    planDataList: async (planId: string) =>
+      (await import('./plan-room/plan-data-source')).listPlanData(env, planId),
+    planData: async (
+      planId: string,
+      ask: import('@liveworkspace/index-client').PlanDataAsk,
+      watcher: string | null,
+    ) => {
+      const result = await (
+        await import('./plan-room/plan-data-source')
+      ).readPlanData(env, planId, ask);
+      if (result.status === 'ok' && watcher) {
+        const { SheetWatches } = await import('./plan-room/sheet-watchers');
+        new SheetWatches(nodeItemSql(sql), () => null).watch(planId, 'cards', watcher);
+      }
+      return result;
+    },
     hasTab: async (planId: string, tabId: string) =>
       (await import('./db/tabs')).planHasTab(env, planId, tabId),
     item: async (planId: string, itemId: string) =>

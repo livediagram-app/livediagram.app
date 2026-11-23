@@ -17,7 +17,13 @@ import type { ThreadOp, ThreadsRelay, ThreadWriteResult } from './plan-room/card
 import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { CommunityShareInfo } from '@liveplanner/api-schema';
 import type { Copier, PutAwayRefusal, StandingGrant } from '@liveworkspace/index-app';
-import type { SheetRangeAsk } from '@liveworkspace/index-client';
+import type {
+  PlanDataAsk,
+  PlanSendDoorAnswer,
+  PlanSendDoorCall,
+  SheetRangeAsk,
+  SourceChange,
+} from '@liveworkspace/index-client';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { CalendarFeed } from './calendar/feed-store';
 import type { FeedRead } from './calendar/feed-events';
@@ -27,6 +33,8 @@ import type { GithubRoomAnswer, GithubRoomCall } from './plan-room/github/github
 import type { ProjectFileImport } from './plan-room/project-file';
 import type {
   ExportCommentsResult,
+  PlanDataListResult,
+  PlanDataResult,
   SheetListResult,
   SheetRangeResult,
   ExportQuery,
@@ -68,6 +76,8 @@ export type PlanRoomClient = {
   exportComments(): Promise<ExportCommentsResult>;
   listSheets(): Promise<SheetListResult>;
   readSheetRange(ask: SheetRangeAsk, watcher: string | null): Promise<SheetRangeResult>;
+  planDataList(): Promise<PlanDataListResult>;
+  planData(ask: PlanDataAsk, watcher: string | null): Promise<PlanDataResult>;
   // Whether the plan holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // The index's reverse write of a connected tab (plan-room/connected-tab.ts).
@@ -133,6 +143,10 @@ export type PlanRoomClient = {
   // the step's pickers may name here.
   automationStep(call: AutomationStepDoorCall): Promise<AutomationStepAnswer>;
   automationTarget(): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
+  // Send to Plan's cards, the person's grant checked (plan-room/plan-send-door.ts).
+  planSend(call: PlanSendDoorCall): Promise<PlanSendDoorAnswer>;
+  // Cards this plan sent elsewhere changed (the index's source-changed door): every open session is told.
+  sourceChanged(change: SourceChange): Promise<void>;
   // A rule email's unsubscribe (plan-room/automations/automation-addresses.ts): false for a token the plan never made.
   emailOptOut(token: string): Promise<boolean>;
   // A GitHub connect's callback or a verified delivery (plan-room/github/github-room.ts): the plan checks its own
@@ -165,6 +179,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     exportComments: () => room.exportComments(planId),
     listSheets: () => room.listSheets(planId),
     readSheetRange: (ask, watcher) => room.readSheetRange(planId, ask, watcher),
+    planDataList: () => room.planDataList(planId),
+    planData: (ask, watcher) => room.planData(planId, ask, watcher),
     hasTab: (tabId) => room.hasTab(planId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(planId, write),
     item: (itemId) => room.item(planId, itemId),
@@ -194,6 +210,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     incomingHook: (ruleId, call) => room.incomingHook(planId, ruleId, call),
     automationStep: (call) => room.automationStep(planId, call),
     automationTarget: () => room.automationTarget(planId),
+    planSend: (call) => room.planSend(planId, call),
+    sourceChanged: (change) => room.sourceChanged(planId, change),
     emailOptOut: (token) => room.emailOptOut(planId, token),
     github: (call) => room.github(planId, call),
     // One RPC, two calls (calendar/feed-room.ts): the answer's shape follows the call's kind.
@@ -221,6 +239,8 @@ export type PlanRoomRpc = {
     ask: SheetRangeAsk,
     watcher: string | null,
   ): Promise<SheetRangeResult>;
+  planDataList(planId: string): Promise<PlanDataListResult>;
+  planData(planId: string, ask: PlanDataAsk, watcher: string | null): Promise<PlanDataResult>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
   addConnectedTab(planId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   item(planId: string, itemId: string): Promise<Item | null>;
@@ -264,6 +284,8 @@ export type PlanRoomRpc = {
   incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
   automationStep(planId: string, call: AutomationStepDoorCall): Promise<AutomationStepAnswer>;
   automationTarget(planId: string): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
+  planSend(planId: string, call: PlanSendDoorCall): Promise<PlanSendDoorAnswer>;
+  sourceChanged(planId: string, change: SourceChange): Promise<void>;
   emailOptOut(planId: string, token: string): Promise<boolean>;
   github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer>;
   calendarFeed(planId: string, call: FeedRoomCall): Promise<FeedRoomAnswer>;

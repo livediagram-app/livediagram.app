@@ -424,6 +424,18 @@ export const articles: Article[] = [
     apps: ['livediagram', 'livedocuments', 'livedesign'],
   },
   {
+    slug: 'live-data',
+    title: 'Live Data From a Plan',
+    description:
+      'A chart or table kept in step with a liveplanner plan: a Sheet range, board counts or a Dashboard metric, with Freeze.',
+    keywords:
+      'liveplanner plan sheet range board cards count column label assignee priority dashboard metric live linked link data sync update freeze frozen snapshot table chart series spreadsheet kanban',
+    category: 'Palette',
+    categorySlug: 'palette/tools/data-elements',
+    parentSlug: 'data-elements',
+    apps: ['livediagram', 'livedocuments', 'livedesign'],
+  },
+  {
     slug: 'legend',
     title: 'Legend',
     description: 'A key of colour-coded rows to explain what your colours mean.',

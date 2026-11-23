@@ -29,7 +29,7 @@ export type KnowledgeFields = {
   verifiedAt?: number;
   /** Who verified it: an account id. */
   verifiedBy?: string;
-  /** Always in Context (docs/specs/030-knowledgebase/ai-knowledge.md). */
+  /** Always in Context (docs/specs/030-knowledgebase/insights.md). */
   context?: true;
   /** Asked for, approved or rejected (docs/specs/030-knowledgebase/approval.md). */
   approval?: PageApproval;
@@ -144,7 +144,7 @@ export function verified(fields: KnowledgeFields, person: string, now: number): 
   };
 }
 
-/** The counts Knowledge Health draws (docs/specs/030-knowledgebase/ai-knowledge.md "Knowledge Health"). */
+/** The counts Knowledge Health draws (docs/specs/030-knowledgebase/insights.md "Knowledge Health"). */
 export type KnowledgeHealth = {
   verified: number;
   reviewDue: number;

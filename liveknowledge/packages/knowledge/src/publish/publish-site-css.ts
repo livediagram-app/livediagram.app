@@ -12,6 +12,9 @@ import {
 const PAPER = '#ffffff';
 const PAPER_DARK = '#0f172a';
 const AA = 4.5;
+// A page's cover band, as the editor draws it (page-surface.md "The cover": 220 px, 140 px on a phone).
+export const COVER_BAND_PX = 220;
+export const COVER_BAND_PHONE_PX = 140;
 
 /** The Style as the site draws it: resolved colours and font stacks. */
 export type SiteLook = {
@@ -104,6 +107,14 @@ ul.todo{list-style:none;padding-left:4px}ul.todo input{margin-right:6px}
 .pager a:hover{border-color:var(--accent)}.pager span{font-size:13px;color:var(--muted)}.pager .next{margin-left:auto;text-align:right}
 .results{list-style:none;padding:0}.results li{padding:14px 0;border-bottom:1px solid var(--line)}.results a{font-weight:600}
 .results p{margin:4px 0 0;color:var(--muted);font-size:.95em}mark{background:color-mix(in srgb,var(--accent) 22%,transparent);color:inherit;border-radius:2px}
+.cover{position:relative;height:${COVER_BAND_PX}px;margin:-32px -48px 32px;overflow:hidden;background:color-mix(in srgb,var(--accent) 14%,var(--bg))}
+.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cover .credit{position:absolute;left:12px;bottom:8px;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.45);color:rgba(255,255,255,.9);font-size:11px;line-height:16px}
+.zone{margin:1.4em auto;border-radius:12px;overflow:hidden}.zone svg{display:block;width:100%;height:auto}
+.zone.align-left{margin-left:0}.zone.align-right{margin-right:0}
+.pager{clear:both}
+@media (min-width:640px){.zone.wrap-left{float:left;max-width:50%!important;margin:.3em 1.4em .8em 0}.zone.wrap-right{float:right;max-width:50%!important;margin:.3em 0 .8em 1.4em}}
+@media (prefers-color-scheme:dark){.zone:not(.zone-picture){background:${PAPER}}}
 .foot{padding:24px 16px 40px;text-align:center;font-size:13px;color:var(--muted)}.foot a{color:var(--muted)}
 @media (max-width:959px){
 .pages-button{display:inline-flex}
@@ -111,6 +122,8 @@ ul.todo{list-style:none;padding-left:4px}ul.todo input{margin-right:6px}
 .pages-toggle:checked~.layout .side{display:block}
 .side a{padding:11px 8px}
 main{padding:24px 16px 48px}
+.cover{margin:-24px -16px 24px}
 .search{flex:0 1 220px}.search input{width:100%;min-width:96px}
-}`;
+}
+@media (max-width:639px){.cover{height:${COVER_BAND_PHONE_PX}px}}`;
 }

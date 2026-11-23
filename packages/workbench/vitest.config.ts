@@ -8,6 +8,9 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // (docs/specs/007-editor/pages-mode.md "Contents" in each). The editors' door tests drive them with real pages; these
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
+  // The AI sparkle and "Claude for Priya Shah" (liveknowledge's verification.md "Made by a person or an agent",
+  // liveplanner's items.md "History"; Work Tracker 1360).
+  'src/components/ai-writer/**',
   // The chosen rail row's label in a start panel, read at AA on its tint (each product's start spec, "Rail").
   'src/components/start/start-chosen-ink.ts',
   // Organise in Tab Folder, the list and the folder colour (each product's 006 tab-folders.md, Work Tracker 1328).
@@ -27,6 +30,10 @@ const HELD_AT_100 = [
   'src/components/sheet-links/SheetLinkedCharts.tsx',
   'src/components/sheet-links/SheetLinkSection.tsx',
   'src/components/sheet-links/LinkSheetDialog.tsx',
+  // Live data from a plan's boards and metrics, and the series picked (liveworkspace/docs/specs/004-index/live-data.md,
+  // Work Tracker 1368).
+  'src/components/sheet-links/PlanDataFields.tsx',
+  'src/components/sheet-links/SeriesChips.tsx',
   'src/lib/relative-now.ts',
   // Deleting an unused picture (each canvas product's 009-elements images.md).
   'src/lib/unused-image-choice.ts',
@@ -196,6 +203,24 @@ const HELD_AT_100 = [
   'src/lib/oauth-replaced-tokens.ts',
   'src/components/oauth/TokenLimitList.tsx',
   'src/components/oauth/TokenLimitListLazy.tsx',
+  // Send to Plan: the picker, its entries, the chips' store and the words read as a card
+  // (liveworkspace/docs/specs/004-index/send-to-plan.md, Work Tracker 1365).
+  'src/components/send-to-plan/article-send-dom.ts',
+  'src/components/send-to-plan/article-sent.ts',
+  'src/components/send-to-plan/send-cards.ts',
+  'src/components/send-to-plan/send-memory.ts',
+  'src/components/send-to-plan/send-menu-item.tsx',
+  'src/components/send-to-plan/send-store.ts',
+  'src/components/send-to-plan/send-to-plan-entry.ts',
+  'src/components/send-to-plan/send-words.ts',
+  'src/components/send-to-plan/SendPlanList.tsx',
+  'src/components/send-to-plan/SendToPlanButton.tsx',
+  'src/components/send-to-plan/SendToPlanDialog.tsx',
+  'src/components/send-to-plan/SendToPlanHost.tsx',
+  'src/components/send-to-plan/SendWordsButton.tsx',
+  'src/components/send-to-plan/sent-card-indicator.ts',
+  'src/components/send-to-plan/SentChip.tsx',
+  'src/components/send-to-plan/ThreadSendToPlan.tsx',
 ];
 
 export default defineProject({

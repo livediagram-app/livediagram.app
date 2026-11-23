@@ -2,6 +2,7 @@
 // version is called, the rail's day headings, a row's time and the name a copy is given. Pure, over a clock and the
 // viewer's locale, so the tests pin both.
 import type { VersionKind, VersionSummary } from '@liveknowledge/api-schema';
+import { agentForPerson } from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
 
 const KIND_WORDS: Record<VersionKind, string> = {
   save: 'Saved',
@@ -10,6 +11,26 @@ const KIND_WORDS: Record<VersionKind, string> = {
   restore: 'Before restoring',
   manual: 'Named',
 };
+
+// What an agent did to keep each kind of version, the AI sparkle's words (version-history.md "In the editor"): its
+// write saved the page, it edited the page after the version before its burst, it ran the restore.
+const AI_WORDS: Record<VersionKind, string> = {
+  save: 'Saved by AI',
+  idle: 'Changed by AI',
+  agent: 'Edited by AI',
+  restore: 'Restored by AI',
+  manual: 'Named by AI',
+};
+
+/** The AI sparkle's words on an agent's version. */
+export function aiVersionWords(kind: VersionKind): string {
+  return AI_WORDS[kind];
+}
+
+/** Who a version names, in words: the person, or an agent for its person ("Claude for Priya Shah"). */
+export function versionAuthorWords(author: NonNullable<VersionSummary['author']>): string {
+  return author.agent ? agentForPerson(author.agent, author.name) : author.name;
+}
 
 /** A row's title: its name, else its kind in words. */
 export function versionTitle(version: Pick<VersionSummary, 'name' | 'kind'>): string {

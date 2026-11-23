@@ -63,7 +63,7 @@ the interface says "Publish to the Web", "public site" and "Published", never "P
   - **What Goes Public**: how many pages the site will hold, each named, and the pages left out with why: Pending
     Approval, Rejected, or Empty (a page with no saved writing). It reads the knowledgebase as it stands and changes
     as the section is picked. Under it, the line "Only saved writing goes public: never drafts, comments, Page
-    Health or pages waiting for approval. Pictures and drawings stay private for now."
+    Health or pages waiting for approval. A page's pictures, drawings and cover go public with it."
   - **Unpublish** (only while published), then **Publish** (or **Update Site** while published) as the primary.
 - **Publish** writes the published snapshot and answers with the site as it now stands; the link is live at once.
   The dialog stays open on the published state, so the Editor can copy or open the link.
@@ -81,23 +81,50 @@ reach them").
 - **Published:** each page in scope's saved writing (its blocks, tables, contents, footnotes and links), its title,
   its icon when it is an emoji, its place in the tree, the knowledgebase's name and its Style (theme accent, fonts,
   text size, line spacing, heading style), and when each page was last saved.
+- **Also published (Work Tracker 1346):** what is placed in a published page's saved writing (its pictures, drawings
+  and charts, each drawn where its spot in the writing sits, as a reader of the page sees it) and the page's cover (a
+  picture, a gradient, or an animated cover shown still: the public site runs no script). See "Pictures on the public
+  site" below for which pictures a reader may fetch.
 - **Never published:**
   - drafts: only the saved writing is read ([Reading and editing a page](editing.md));
   - pages Pending Approval or Rejected ([Approval](approval.md)): left out, with their subpages kept in the tree
     under the nearest published ancestor;
   - comments: the threads at a page's foot, margin notes and their marks in the writing, actions;
   - Page Health and verification: owners, Verified, Review Due, reviews, approvals, conflicts, page links' health;
-  - Ask, AI Knowledge, AI Settings, agents and their suggestions;
+  - Ask, Insights, AI Settings, agents and their suggestions;
   - people: no name, email, avatar or account id, unless **Show Who Wrote Each Page** is on, and then only the
     names of the people who wrote each page (never an agent's token, an email or an id);
   - the knowledgebase's id, its tab ids, its share links, its owner and team;
-  - pictures, drawings and charts inside a page, and covers (not built: they need a public way to the media
-    service, a platform change). Their place in the writing shows nothing.
+  - any other picture: one in no published page's saved writing or cover (the gallery, a picture placed only in a
+    draft, on a page left out, or in another knowledgebase), and a picture's own name, owner and id beyond its
+    address.
 - **Page links** to another published page link to its page address; a link to a page that is not published reads
   as its text, never as a link. Links to the web keep their address (http, https and mailto only).
 - **Keeping up:** a save of a published page, a rename, a move, a Style change or an approval decision reaches the
   public site with the next read of it (the snapshot of each changed page is rewritten then), and within a minute
   everywhere (the edge's copy, below). A page that becomes Pending Approval leaves the site the same way.
+
+## Pictures on the public site
+
+Owner's card, Work Tracker 1346: "A published help page with screenshots or diagrams loses them ... Showing them needs
+a public, read-only route to just the media a published page uses."
+
+- **Which pictures may be fetched:** a picture is public while, and only while, a page in the published snapshot
+  places it: a picture element in the page's saved writing (one standing in one of its spots), or the page's cover
+  picture, and the knowledgebase may serve it ([placement grants](../009-elements/images.md#placement-grants)). Nothing else of the
+  media service is reachable from the public site: not the gallery, not a picture of the same owner, not one placed
+  only in a draft, a left-out page or another knowledgebase (decided).
+- **How a request proves it:** a page's pictures are addressed `/kb/<site>/media/<picture>`. The address names the
+  site, never a knowledgebase id; the site's knowledgebase answers from its published snapshot, which records each
+  page's pictures when the page is drawn. The request carries nothing to trust (no token, cookie or signature): the
+  check is the snapshot's alone, made again on every fetch the edge has not kept, so a picture that leaves the page
+  (removed, the page left out, Unpublish) stops being served by the next refresh (decided).
+- **Drawings and charts** are drawn into the page itself (as an image of what stands in their spot, made when the page
+  is drawn), so they need no fetch; a picture inside a drawing is fetched as above.
+- **Taken down:** removing a picture from a page, leaving the page out, or **Unpublish** takes its pictures down with
+  it, within the same minute as the page (the edge's copy, below).
+- **A picture that cannot be read** (the media service down, the picture deleted from its owner's gallery) answers
+  404; its spot shows its frame empty.
 
 ## The public site
 
@@ -132,9 +159,13 @@ reach them").
   publishing, an update and Unpublish clear the copies the Editor's own edge holds at once, and every other edge's
   copy has gone within the 60 seconds. So a save, and an Unpublish, reach every reader within a minute.
 - **Rate limits:** search is limited per visitor's network (it is the one public read the edge cannot keep); a
-  publish is limited as every write is. Pages and the sitemap are cached reads.
+  publish is limited as every write is. Pages and the sitemap are cached reads. A picture is kept by the edge as a
+  page is (60 seconds), and its fetches the edge has not kept are limited per visitor's network too, apart from
+  search's, so a page full of pictures never uses a reader's searches (decided). A browser asking again for a
+  picture it holds is answered "not changed" without the picture being read again.
 - **Limits:** a site holds every page of the knowledgebase at most (500). A search query is 200 characters and 12
   words at most and answers 20 results.
 - **No new infrastructure:** the public site is served by the api Worker (the router sends `/kb/` there) from the
   knowledgebase's own Durable Object; each site address is held by its own instance of the same Durable Object
-  class, under a name no document can take. Nothing is added to D1, KV or R2.
+  class, under a name no document can take. Nothing is added to D1, KV or R2. Pictures are read from the media
+  service the api already reaches (`MEDIA_URL`, `MEDIA_KEY`), on the same Worker, with the same limiter.

@@ -1,4 +1,6 @@
 import { drawnTextSize, textPxRangeFor, type Element } from '@liveknowledge/document';
+import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
+import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,
@@ -238,6 +240,13 @@ export function ElementContentSections({
             checked={target.zebra ?? false}
             onToggle={props.onToggleTableZebra}
           />
+        </MenuAccordionSection>
+      ) : null}
+      {/* Data: live data from a plan (liveworkspace/docs/specs/004-index/live-data.md "Tables"), an Editor's From a Plan
+          or the plan it is linked to. */}
+      {target.type === 'table' ? (
+        <MenuAccordionSection title="Data" icon={<DataMenuGlyph />} {...sectionProps('table-data')}>
+          <SheetLinkSection chart={target} rows={null} onClose={onClose} />
         </MenuAccordionSection>
       ) : null}
       {/* Link — set / change / remove a link-card's destination (docs/specs/009-elements/link-cards.md), or

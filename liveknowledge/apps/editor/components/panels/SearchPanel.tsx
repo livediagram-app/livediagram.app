@@ -314,7 +314,7 @@ export function SearchPanel({
     }
   };
 
-  // Over whatever shows, Ask and AI Knowledge included (they stand over the canvas): drawn at the body's level.
+  // Over whatever shows, Ask and Insights included (they stand over the canvas): drawn at the body's level.
   return createPortal(
     <div
       onPointerDown={(e) => {

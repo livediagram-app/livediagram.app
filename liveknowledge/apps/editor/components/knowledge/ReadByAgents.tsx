@@ -1,6 +1,6 @@
 'use client';
 
-// Read by Agents, behind Read This Week's "N by Agents" (owner 2026-11-22; docs/specs/030-knowledgebase/ai-knowledge.md
+// Read by Agents, behind Read This Week's "N by Agents" (owner 2026-11-22; docs/specs/030-knowledgebase/insights.md
 // "AI Context on a page"): pressing the count opens a small pointer popover listing each agent that read the page this
 // week and how often, most first. It reads nothing of its own: the agents ride Page Health's one read.
 import { useState, type ReactNode } from 'react';

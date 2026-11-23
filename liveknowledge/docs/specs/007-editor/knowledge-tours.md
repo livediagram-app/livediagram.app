@@ -86,7 +86,7 @@ in their eyebrow (**Your First Page tour**). Every tour's last card reads **You'
 
 A step **opens what it explains** where the control opens something (the page tree's sheet on a phone, a page's
 options menu, the Page Info panel, another view): it presses the real control, rings what opened, and closes it again
-as the step ends, however it ends. A step on another view (Ask, AI Knowledge, Connect) switches to it by its footer
+as the step ends, however it ends. A step on another view (Ask, Insights, Connect) switches to it by its footer
 tab, as a press on the tab would; a step on Pages switches back. Ending a tour leaves the person on the view its last
 step showed: a person who just learned Ask is left on Ask to try it. The tours place nothing and change nothing of
 the knowledgebase: no page is made, no draft opened, nothing verified, shared or sent.
@@ -143,7 +143,7 @@ For everyone signed in, Online. Help: **Ask**.
 2. **Ask a Question** (Ask's question field, on the Ask view): type a question and press Enter. A follow-up keeps the
    conversation.
 3. **Your Questions** (Ask's list of questions): every question you asked here, to open again.
-4. **AI Knowledge** (the footer's AI Knowledge tab): what agents read, questions nobody could answer, and pages that
+4. **Insights** (the footer's Insights tab): what agents read, questions nobody could answer, and pages that
    disagree.
 5. Closing card: **Ask away**.
 
@@ -181,7 +181,7 @@ person was going, never pointing at nothing:
 - **By role** (`needs`): `write` (an Editor or a Participant: New Page, Add a Subpage, Edit, Page Options, the Trash,
   Verify, Request Approval, Comments), `share` (an Editor: Share), `signedIn` (Ask, Reactions, Connect, Verify, Request Approval), and a
   Viewer's own words where a step reads differently for one (The Page Tree).
-- **Offline** (`online`): Ask, AI Knowledge, Connect, Verify, Request Approval, Who Made It, Reactions and Comments
+- **Offline** (`online`): Ask, Insights, Connect, Verify, Request Approval, Who Made It, Reactions and Comments
   need the room on the server (found in the browser check: an Offline page draws none of them). Page Health stays.
 - **On a phone** (`desktop`): Connect and Add a Subpage are not on offer. The page tree is the **Pages** sheet: a tree step opens it and
   closes it again as it ends. Page Info is its button's sheet. The other steps are the same.

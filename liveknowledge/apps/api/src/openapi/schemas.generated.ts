@@ -2737,6 +2737,80 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ChartBoardSource": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "const": "liveplanner",
+        "type": "string"
+      },
+      "boardId": {
+        "type": "string"
+      },
+      "by": {
+        "$ref": "#/components/schemas/LinkBoardCountBy"
+      },
+      "filter": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "person": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "frozen": {
+        "const": true,
+        "type": "boolean"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "board",
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "readAt": {
+        "type": "number"
+      },
+      "series": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "sourceName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "boardId",
+      "by",
+      "itemId",
+      "itemName",
+      "kind",
+      "label",
+      "readAt",
+      "sourceName"
+    ],
+    "type": "object"
+  },
   "ChartLegendPosition": {
     "enum": [
       "top",
@@ -2745,6 +2819,58 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "left"
     ],
     "type": "string"
+  },
+  "ChartMetricSource": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "const": "liveplanner",
+        "type": "string"
+      },
+      "frozen": {
+        "const": true,
+        "type": "boolean"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "metric",
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "metric": {
+        "type": "string"
+      },
+      "readAt": {
+        "type": "number"
+      },
+      "series": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "sourceName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "itemName",
+      "kind",
+      "label",
+      "metric",
+      "readAt",
+      "sourceName"
+    ],
+    "type": "object"
   },
   "ChartPaletteId": {
     "enum": [
@@ -2759,7 +2885,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ChartSheetSource": {
+  "ChartRangeSource": {
     "additionalProperties": false,
     "properties": {
       "a1": {
@@ -2775,10 +2901,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "frozen": {
+        "const": true,
+        "type": "boolean"
+      },
       "itemId": {
         "type": "string"
       },
       "itemName": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "sheet",
         "type": "string"
       },
       "range": {
@@ -2808,6 +2942,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "readAt": {
         "type": "number"
       },
+      "series": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
       "sheetId": {
         "type": "string"
       },
@@ -2816,16 +2956,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "a1",
       "app",
       "itemId",
-      "sheetId",
-      "range",
       "itemName",
-      "sheetName",
-      "a1",
-      "readAt"
+      "range",
+      "readAt",
+      "sheetId",
+      "sheetName"
     ],
     "type": "object"
+  },
+  "ChartSheetSource": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/ChartRangeSource"
+      },
+      {
+        "$ref": "#/components/schemas/ChartBoardSource"
+      },
+      {
+        "$ref": "#/components/schemas/ChartMetricSource"
+      }
+    ]
   },
   "ChartVariant": {
     "enum": [
@@ -5305,7 +5458,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeAgent": {
     "additionalProperties": false,
-    "description": "One connection of AI Knowledge's Connected Agents (ai-knowledge.md \"Connected agents\"). What the room knows of the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its reads, before the room kept its token.",
+    "description": "One connection of Insights' Connected Agents (insights.md \"Connected agents\"). What the room knows of the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its reads, before the room kept its token.",
     "properties": {
       "canHoldWrite": {
         "description": "Whether granting `write` would let it write: a full token acting for an Editor.",
@@ -5717,7 +5870,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "health": {
         "additionalProperties": false,
-        "description": "The page's Health Score: the higher side is the likelier right (ai-knowledge.md \"Pages that disagree\").",
+        "description": "The page's Health Score: the higher side is the likelier right (insights.md \"Pages that disagree\").",
         "properties": {
           "label": {
             "$ref": "#/components/schemas/KnowledgeHealthLabel"
@@ -6125,7 +6278,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeOverviewResponse": {
     "additionalProperties": false,
-    "description": "`GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md).",
+    "description": "`GET .../knowledge`: the Insights tab (insights.md).",
     "properties": {
       "agents": {
         "items": {
@@ -6181,7 +6334,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "notRead": {
         "additionalProperties": false,
-        "description": "Not Read in 90 Days (ai-knowledge.md): the first 10, touched longest ago first, and how many; absent from an older api.",
+        "description": "Not Read in 90 Days (insights.md): the first 10, touched longest ago first, and how many; absent from an older api.",
         "properties": {
           "pages": {
             "items": {
@@ -6650,7 +6803,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeReadsDay": {
     "additionalProperties": false,
-    "description": "One day of AI Knowledge's reads (ai-knowledge.md \"Reads\"): `day` is the UTC day, `YYYY-MM-DD`.",
+    "description": "One day of Insights' reads (insights.md \"Reads\"): `day` is the UTC day, `YYYY-MM-DD`.",
     "properties": {
       "agents": {
         "type": "number"
@@ -6691,7 +6844,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeRequiredReadingPage": {
     "additionalProperties": false,
-    "description": "A Required Reading page in the AI Knowledge overview: counts, never who.",
+    "description": "A Required Reading page in the Insights overview: counts, never who.",
     "properties": {
       "audience": {
         "$ref": "#/components/schemas/ReadingAudience"
@@ -7038,7 +7191,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeSuggestion": {
     "additionalProperties": false,
-    "description": "An agent's edit waiting for an Editor (ai-knowledge.md \"Edits suggested by agents\"): a passage of the page's Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty).",
+    "description": "An agent's edit waiting for an Editor (insights.md \"Edits suggested by agents\"): a passage of the page's Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty).",
     "properties": {
       "after": {
         "type": "string"
@@ -7386,6 +7539,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "values"
     ],
     "type": "object"
+  },
+  "LinkBoardCountBy": {
+    "enum": [
+      "column",
+      "label",
+      "assignee",
+      "priority"
+    ],
+    "type": "string"
   },
   "LinkCardElement": {
     "additionalProperties": false,
@@ -8653,11 +8815,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "array"
       },
       "answered": {
-        "description": "The questions Ask answered citing this page in the last 30 days, the most asked first, 3 at most (ai-knowledge.md \"AI Context on a page\").",
+        "description": "The questions Ask answered citing this page in the last 30 days, the most asked first, 3 at most (insights.md \"AI Context on a page\").",
         "items": {
           "$ref": "#/components/schemas/PageAnsweredQuestion"
         },
         "type": "array"
+      },
+      "colors": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Each of those accounts' colour (their avatar's, Version History's dot), by account id, so Page Health's foot draws a person's disc in it; absent when none has one.",
+        "type": "object"
       },
       "created": {
         "$ref": "#/components/schemas/PageAuthorStamp",
@@ -8672,7 +8841,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "insights": {
         "$ref": "#/components/schemas/PageInsightsWire",
-        "description": "Page Insights (ai-knowledge.md \"Page Insights\"); absent from an older api."
+        "description": "Page Insights (insights.md \"Page Insights\"); absent from an older api."
       },
       "knowledge": {
         "$ref": "#/components/schemas/PageKnowledge"
@@ -8712,7 +8881,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       },
       "suggestions": {
-        "description": "The page's suggested edits waiting, newest first, the knowledgebase's cap at most (ai-knowledge.md \"On the page\"); absent from an older api.",
+        "description": "The page's suggested edits waiting, newest first, the knowledgebase's cap at most (insights.md \"On the page\"); absent from an older api.",
         "items": {
           "$ref": "#/components/schemas/KnowledgeSuggestion"
         },
@@ -12681,6 +12850,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "chartSheetSource": {
+        "$ref": "#/components/schemas/ChartSheetSource"
+      },
       "colWidths": {
         "items": {
           "type": [
@@ -13602,6 +13774,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           {
             "additionalProperties": false,
             "properties": {
+              "agent": {
+                "type": "string"
+              },
               "color": {
                 "type": "string"
               },

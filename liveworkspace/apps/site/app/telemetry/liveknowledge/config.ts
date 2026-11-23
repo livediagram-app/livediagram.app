@@ -18,6 +18,7 @@ import {
 import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
+import { SEND_TO_PLAN } from '../_shared/send-to-plan-metrics';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { LIBRARY } from '../_shared/library-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
@@ -48,7 +49,7 @@ import {
   CALLS_TO_ACTION,
   FORMAT_PAINTER,
   ASK,
-  AI_KNOWLEDGE,
+  INSIGHTS,
   VERIFICATION,
   KNOWLEDGE_SEARCH,
   PAGE_NAVIGATION,
@@ -252,7 +253,7 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
       title: 'Knowledge',
       metrics: [
         ASK,
-        AI_KNOWLEDGE,
+        INSIGHTS,
         VERIFICATION,
         KNOWLEDGE_SEARCH,
         PAGE_NAVIGATION,
@@ -304,6 +305,7 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
           SIDE_BY_SIDE,
           CONNECTED_TABS,
           SNAPSHOTS,
+          SEND_TO_PLAN,
           WALKTHROUGHS,
           LIBRARY,
           EDITOR_SEARCH,

@@ -17,6 +17,7 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVideo,
+  lucideSend,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livehuddle/ui';
 import type { ReactNode } from 'react';
@@ -302,6 +303,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <path d="M4 5l7 14 2.2-5.8L19 11 4 5z" />
       <circle cx="18" cy="6" r="2.5" />
+    </Glyph>
+  ),
+  // A card going off to a plan: Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md).
+  'send-to-plan': (
+    <Glyph>
+      <Prims prims={lucideSend} />
     </Glyph>
   ),
   // Calls: the headphones the call strip shows a listener, and the camera its Camera button shows.

@@ -1,5 +1,5 @@
 // The knowledgebase's own numbers, read from its room (docs/specs/030-knowledgebase/knowledgebase-home.md,
-// ai-knowledge.md "Reads", "Always in Context", "Knowledge Health"): each one bounded read of the index's tables,
+// insights.md "Reads", "Always in Context", "Knowledge Health"): each one bounded read of the index's tables,
 // never a scan of every page's writing.
 import {
   countReviewDue,
@@ -138,7 +138,7 @@ export async function ownDuePages(
 }
 
 /**
- * Count one read of a page (ai-knowledge.md "Reads"). An agent's every read counts. A person's counts once a page a
+ * Count one read of a page (insights.md "Reads"). An agent's every read counts. A person's counts once a page a
  * day: the counter that says "already counted" is keyed by a hash of the person and the page, so no reader's
  * identity is kept, and it goes with the day's other counters within two days (`pruneCounters`).
  */

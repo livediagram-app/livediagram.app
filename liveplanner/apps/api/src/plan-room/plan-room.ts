@@ -11,6 +11,7 @@ import {
   type StandingGrant,
 } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
+import { planSendHere, sourceChangedHere } from './plan-send-door';
 import { roomFetch } from './plan-room-fetch';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveplanner/api-schema';
@@ -114,12 +115,17 @@ import { purgedAt } from './plan-room-purged';
 import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import type { SheetWatches } from './sheet-watchers';
+import type { SentCards } from './sent-cards';
 import {
   listSheets,
+  planData,
+  planDataList,
   readSheetRange,
   roomSheetWatches,
+  roomSentCards,
   type SheetRangeAsk,
 } from './plan-room-doors';
+import type { PlanDataAsk, PlanSendDoorCall, SourceChange } from '@liveworkspace/index-client';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -223,6 +229,8 @@ export class PlanRoom extends DurableObject<Env> {
   planRowReady = false;
   // Other apps' items whose charts read this plan's Sheets, told when a Sheet changes (sheet-watchers.ts).
   readonly sheetWatches: SheetWatches;
+  // Cards sent from other apps, their changes told to the index for the sources' chips (sent-cards.ts).
+  readonly sentCards: SentCards;
   // When the plan was purged (plan-room-purged.ts): null when it is not, undefined until read.
   purgedAt: number | null | undefined = undefined;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
@@ -312,6 +320,7 @@ export class PlanRoom extends DurableObject<Env> {
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.sheetWatches = roomSheetWatches(this);
+    this.sentCards = roomSentCards(this);
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);
     this.scopedStructure = new RoomScopedStructure(cachedStoredTab(this.roomEnv));
@@ -425,6 +434,16 @@ export class PlanRoom extends DurableObject<Env> {
 
   readSheetRange(planId: string, ask: SheetRangeAsk, watcher: string | null) {
     return readSheetRange(this, planId, ask, watcher);
+  }
+
+  // A chart or table counting this plan's cards (liveworkspace/docs/specs/004-index/live-data.md): its boards and
+  // metrics for a picker, and one board's counts or one metric's rows, watching the plan's cards (plan-data-source.ts).
+  planDataList(planId: string) {
+    return planDataList(this, planId);
+  }
+
+  planData(planId: string, ask: PlanDataAsk, watcher: string | null) {
+    return planData(this, planId, ask, watcher);
   }
 
   // A new plan from a Drive file (routes/internal-file.ts read it): its content lands as a copy's does, and it
@@ -598,6 +617,16 @@ export class PlanRoom extends DurableObject<Env> {
     return crossApp.planAutomationTarget(this, planId);
   }
 
+  // Send to Plan's cards, the person's grant checked by the internal door (plan-send-door.ts).
+  planSend(planId: string, call: PlanSendDoorCall) {
+    return planSendHere(this, planId, call);
+  }
+
+  // Cards this plan's threads sent to another plan changed: every open session reads its chips again.
+  async sourceChanged(planId: string, change: SourceChange): Promise<void> {
+    sourceChangedHere(this, planId, change);
+  }
+
   // One call to a rule's address. An id nothing has written answers 401 and stays empty; a stored plan's schema is
   // brought up to date first (V20 holds the secrets).
   async incomingHook(planId: string, ruleId: string, call: HookCall): Promise<HookAnswer> {
@@ -736,6 +765,7 @@ export class PlanRoom extends DurableObject<Env> {
 
   broadcastOrderedSystemOp(op: unknown): void {
     broadcastOrderedSystemOp(this, op);
+    this.sentCards.changed(op);
   }
 
   override webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {

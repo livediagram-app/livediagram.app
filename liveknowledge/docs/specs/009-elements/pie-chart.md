@@ -195,7 +195,7 @@ sheet. The editor's side is one copy, shared with livediagram and livedesign, in
 - **The source** (`chartSheetSource`) names the plan, the sheet and the range by stable row and column ids (so rows
   inserted inside it are read, and moves are followed), with the plan's and sheet's names, the range as A1 text and
   when it was last read (`readAt`), as last read.
-- **Linked to.** A linked chart shows a quiet line below its bottom edge, left-aligned and clear of the selection handles, while it is hovered or selected, at one
+- **Linked to.** A linked chart shows a quiet line below its bottom edge, left-aligned (sliding left to stay on screen near the window's right edge) and clear of the selection handles, while it is hovered or selected, at one
   size on screen whatever the zoom (counter-scaled like the canvas's other chrome), a long plan name cut short: a
   sheet glyph, then "Linked to <plan> · updated 2 min ago" (the time ticks on its own, "just now" under a minute).
   The Sheet row in its Data section says the same, with the sheet and range under it ("Budget · B2:E9"), and
@@ -237,6 +237,29 @@ sheet. The editor's side is one copy, shared with livediagram and livedesign, in
 - **Who may.** Link to Sheet, Update and Unlink are an Editor's (`can.level === 'edit'`). A Participant and a Viewer see
   the line and the live values on the terms above; they never write.
 - **Telemetry.** `Element·Changed·ChartSheetLink` on Link, `Element·Changed·ChartSheetUnlink` on Unlink.
+
+## Live data from a plan
+
+A chart, and a table, can take its numbers from more of a liveplanner plan than a Sheet range (Work Tracker 1368): the
+platform's [live-data.md](../../../../liveworkspace/docs/specs/004-index/live-data.md) sets the sources, the reads and
+the bounds; this knowledgebase's side is the shared workbench copy above.
+
+- **From a Plan.** The Data section's **From a Plan…** (it was Link to Sheet) opens the dialog: a plan, then
+  **Sheet Range**, **Board Counts** (cards per column, label, assignee or priority, filtered by priority, label,
+  assignee and card type) or **Dashboard Metric**, a preview, and **Series** chips that say which of the read's series
+  feed the element, in order.
+- **The live mark.** A small live dot and, on hover or selection, "Live from <plan> · updated 2 min ago". The Data
+  section adds **Open Plan** (the plan in liveplanner, in a new tab) and **Freeze**.
+- **Freeze** keeps the numbers and stops reading ("Frozen · as of 12 Nov"); **Unfreeze** reads again. Both are one
+  undo step.
+- **Tables.** A table's Data section offers the same **From a Plan…**. Linked, its cells are the read (a header row,
+  then a row per category), not typed into, and its look stays the Editor's; Unlink keeps the cells.
+- **Readers without the plan** see the snapshot, never the live source; exports, thumbnails, Offline and Community
+  copies draw the snapshot and carry no link.
+- **Who may.** From a Plan, Update, Freeze, Unfreeze, Change and Unlink are an Editor's; a Participant and a Viewer see
+  the mark and the numbers on their own access.
+- **Telemetry.** `Element·Changed·ChartBoardLink`, `ChartMetricLink`, `TableLiveLink`, `LiveDataFreeze` and
+  `LiveDataUnfreeze`, beside `ChartSheetLink` and `ChartSheetUnlink`.
 
 ## Chart palettes
 

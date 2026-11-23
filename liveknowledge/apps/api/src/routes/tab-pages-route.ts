@@ -60,10 +60,13 @@ export async function handleTabPages(
   });
   // The writing's change moves Updated, an agent's or a person's; a cover alone is not the writing.
   if (!('cover' in parsed && !('article' in parsed)))
-    await notePageWriteAfter(ctx, tabId, owner, {
-      status: result.status,
-      body: result.status === 200 ? { changeset: true } : null,
-    });
+    await notePageWriteAfter(
+      ctx,
+      tabId,
+      owner,
+      { status: result.status, body: result.status === 200 ? { changeset: true } : null },
+      author,
+    );
   return json(result.body, { status: result.status });
 }
 

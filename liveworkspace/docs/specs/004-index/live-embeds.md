@@ -77,6 +77,10 @@ For a reader without access the snapshot is unreadable, not just dimmed: drawn w
 of a poster at most 480 px wide), so no title or card on it can be read. Readers who can open the target, while the
 frame is loading or after a failure, see it clear or lightly dimmed.
 
+**The name row.** The target's app logo, its name and **Live** (a dot, once the frame says hello) sit in a 24 px row
+across the element's top, the frame below it, so they never cover the target's own controls (a plan's tab switcher
+sat under them, Work Tracker 1386).
+
 **Use the file** and **Open** sit in a row just above the element's top left, outside the target's own content, shown
 on hover or focus, and counter-scaled like the canvas's other on-element chrome so they are one size on screen (28 px)
 at any zoom.
@@ -95,8 +99,22 @@ A frame is a whole app, so the host keeps their number small:
 
 ## The frame
 
-The host frames `<target origin>/embed/workbench?d=<itemId>#ticket=<ticket>`: the target app's own workbench page, which
-redeems the ticket, binds to the host's origin and shows the item at the view level ([workbench embeds](../011-workbench/workbench.md)).
+The host frames `<target origin>/embed/workbench?d=<itemId>&live=1#ticket=<ticket>`: the target app's own workbench
+page, which redeems the ticket, binds to the host's origin and shows the item at the view level ([workbench
+embeds](../011-workbench/workbench.md)). `live=1` (`LIVE_EMBED_FRAME_PARAM`, added by the host to the ticket's path)
+tells the page it is a live embed's frame, not a developer tool's workbench (Work Tracker 1386).
+
+**The item only.** A live embed's frame shows the item and nothing of the editor around it: no Map, no footer (Tools,
+Settings, Inbox, Open in <App>), no tab bar, palette, panels, tour, start panels or Quick Style, and no full screen. It
+takes the share-code embed's look (each app's `docs/specs/013-workspace/embeds.md` "What renders", for example
+[livediagram's](../../../../livediagram/docs/specs/013-workspace/embeds.md)): the item and, for an item of several tabs, the small tab switcher, with no link-out
+badge, as the host's own row (the name, Live, **Open**) is the only way out. It shows no zoom controls either: the frame
+takes no pointer until **Use the file**, lands fitted, and pinch and Ctrl-scroll still zoom, and with nothing in its
+right-hand corners no bar of the host's page (liveknowledge's Edit bar) can sit over its controls. It lands fitted: a canvas or a design
+fits its content, a plan shows its board, a document its page. The workbench page without `live=1` (a developer
+tool's workbench) keeps the workbench's chrome. The flag is presentation only: the session is still the embed
+session, at the view level, whatever the address says.
+
 The host answers the frame's messages as its workbench: `<app>:hello` with `<app>:hello-ack` (named after the host
 app), and `<app>:renew` with a fresh ticket (`<app>:ticket`), minted again with the reader's own access, so a reader
 who loses access loses the frame at the next renewal at the latest. Messages from any other origin, or any other frame,

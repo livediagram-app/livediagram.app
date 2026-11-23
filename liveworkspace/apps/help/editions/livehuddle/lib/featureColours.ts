@@ -19,6 +19,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   templates: '#14b8a6',
   'using-tabs': '#3b82f6',
   'live-presence': '#06b6d4',
+  'send-to-plan': '#0d9488',
   'proximity-audio': '#0ea5e9',
   'cameras-and-screen-sharing': '#8b5cf6',
   images: '#ec4899',

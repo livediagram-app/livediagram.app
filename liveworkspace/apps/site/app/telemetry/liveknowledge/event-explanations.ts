@@ -13,6 +13,7 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
 import {
   SNAPSHOT_BY_ACTION,
   WALKTHROUGH_BY_ACTION,
@@ -28,6 +29,7 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
   );
 
 export const EXACT: Readonly<Record<string, string>> = {
+  ...SEND_TO_PLAN_EXACT,
   ...WALKTHROUGH_EXACT,
   ...LIBRARY_EXACT,
   'Element|Changed|CanvasSuggesting':
@@ -268,6 +270,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
+  'Element|Changed|ChartSheetLink': "Someone linked a chart to a range of a plan's Sheet.",
+  'Element|Changed|ChartBoardLink': "Someone linked a chart to the counts of a plan's board.",
+  'Element|Changed|ChartMetricLink': "Someone linked a chart to one of a plan's Dashboard metrics.",
+  'Element|Changed|TableLiveLink': 'Someone filled a table with live data from a plan.',
+  'Element|Changed|ChartSheetUnlink':
+    'Someone unlinked a chart or table from its plan, keeping its numbers.',
+  'Element|Changed|LiveDataFreeze':
+    'Someone froze a linked chart or table, keeping its numbers as they are.',
+  'Element|Changed|LiveDataUnfreeze':
+    'Someone unfroze a linked chart or table, so it follows its plan again.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",
   'Element|Changed|ChartLegend':
     "Someone turned a chart's legend on or off, or moved it to a different side.",
@@ -762,7 +774,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Created|': 'Someone added a page to a knowledgebase by hand.',
   'Tab|Created|FromAnswer': 'Someone saved an answer from Ask as a new page.',
   'Tab|Created|FromGap':
-    'Someone drafted a page for a question nobody could answer, from AI Knowledge.',
+    'Someone drafted a page for a question nobody could answer, from Insights.',
   'Tab|Created|FromPageLink':
     'Someone followed a link to a page that did not exist yet, and so made that page.',
   'Tab|Created|FromSetup': 'Describe to Set Up made the pages it had suggested.',
@@ -778,7 +790,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed the text in the knowledgebase's style: its fonts, size, spacing or headings.",
   'Tab|Changed|Colours':
     "Someone changed the colours in the knowledgebase's style: its theme or accent.",
-  // Ask, AI Knowledge, verification, search and getting around (docs/specs/030-knowledgebase).
+  // Ask, Insights, verification, search and getting around (docs/specs/030-knowledgebase).
   'UI|Used|StartBlank':
     "Someone picked Blank Knowledgebase on a new knowledgebase's start, to write from an empty first page.",
   'UI|Used|AskQuestion': 'Someone asked the knowledgebase a question in Ask. Never the words.',
@@ -790,7 +802,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An Editor accepted an edit an agent had suggested, changing the page.',
   'UI|Used|SuggestionDismissed': 'An Editor dismissed an edit an agent had suggested.',
   'UI|Used|ConflictDismissed':
-    'An Editor dismissed a conflict between two pages in AI Knowledge, marking it as fine.',
+    'An Editor dismissed a conflict between two pages in Insights, marking it as fine.',
   'UI|Used|QuestionDismissed':
     'An Editor dismissed a question nobody could answer, without writing a page for it.',
   'UI|Used|OwnersAsked': "An Editor emailed a page's owners to settle two pages that disagree.",
@@ -805,7 +817,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|HealthAddHeading':
     "Add a Heading pressed in a page's Health Score breakdown, putting the page in edit mode with a heading to fill in.",
   'UI|Used|HealthShowConflicts':
-    "Show Conflicts pressed in a page's Health Score breakdown, opening AI Knowledge at the pages that disagree.",
+    "Show Conflicts pressed in a page's Health Score breakdown, opening Insights at the pages that disagree.",
   'UI|Used|HealthShowComments':
     "Show Comments pressed in a page's Health Score breakdown, scrolling to the page's open comments.",
   'UI|Used|HealthShowSuggestions':
@@ -858,14 +870,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An Editor published a knowledgebase, or one section of it, to the web, or changed what is published.',
   'UI|Removed|PublishSite': "An Editor took a knowledgebase's public site down with Unpublish.",
   'UI|Changed|AiProvider': "Someone switched a knowledgebase's AI provider.",
-  'UI|Changed|AiModel': 'Someone picked another model for Ask and AI Knowledge.',
+  'UI|Changed|AiModel': 'Someone picked another model for Ask and Insights.',
   'UI|Changed|AskAiBuiltIn': 'Someone chose built-in AI to answer their questions on Ask.',
   'UI|Changed|AskAiKey': "Someone chose the team's key to answer their questions on Ask.",
   'UI|Opened|AskView': 'Someone opened the Ask view, to ask the knowledgebase a question.',
-  'UI|Opened|AiKnowledgeView': 'Someone opened the AI Knowledge view.',
+  'UI|Opened|InsightsView': 'Someone opened the Insights view.',
   'UI|Opened|ConnectView': 'Someone opened the Connect view, to connect an AI app over MCP.',
   'UI|Opened|ConnectAgent':
-    'Someone pressed Connect an Agent in AI Knowledge, which opens the Connect view.',
+    'Someone pressed Connect an Agent in Insights, which opens the Connect view.',
   'UI|Copied|McpSetup':
     'Someone copied the MCP address, a command or a config from the Connect view. Never what was copied.',
   'UI|Copied|ConnectPrompt': 'Someone copied the first prompt to try from the Connect view.',
@@ -1855,6 +1867,7 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   ...SNAPSHOT_BY_ACTION,
+  ...SEND_TO_PLAN_BY_ACTION,
   ...WALKTHROUGH_BY_ACTION,
   ...LIBRARY_BY_ACTION,
   'Community|Shared':

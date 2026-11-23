@@ -587,6 +587,9 @@ export type TableElement = {
   // colours, and the table strands on the old theme. Cleared the moment any of
   // those colours (or the banding) is set by hand.
   tablePreset?: string;
+  // Live data from a liveplanner plan (liveworkspace/docs/specs/004-index/live-data.md "Tables"): what of the plan fills
+  // the cells. The cells are the last read, so a reader who cannot open the plan, an export and a copy still show them.
+  chartSheetSource?: ChartSheetSource;
   // Per-cell style overrides, row-major + aligned with `cells`
   // (null = inherit the table defaults). Splices alongside cells
   // when rows / columns are added or removed.

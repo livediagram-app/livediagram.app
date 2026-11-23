@@ -1,5 +1,5 @@
 // A page's suggested edits as its tab's collab push carries them to the index, for its owner's Inbox
-// (docs/specs/030-knowledgebase/ai-knowledge.md "In the owner's Inbox"; liveworkspace/docs/specs/004-index/
+// (docs/specs/030-knowledgebase/insights.md "In the owner's Inbox"; liveworkspace/docs/specs/004-index/
 // one-explorer-contracts.md "What an item pushes"). The whole suggestion stays here; the Inbox gets its texts cut,
 // enough to show the change and decide it.
 import type { DocumentEnv } from '../types';

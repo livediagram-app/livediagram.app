@@ -25,7 +25,7 @@ describe('what a connection may do here', () => {
   });
 
   it('says how writing is allowed, to an Editor, and who can, to anyone else', () => {
-    expect(writingLine('editor')).toContain('choose Allow Writing on its card in AI Knowledge');
+    expect(writingLine('editor')).toContain('choose Allow Writing on its card in Insights');
     expect(writingLine('viewer')).toContain('Only an Editor’s connection');
   });
 

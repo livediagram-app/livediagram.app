@@ -92,7 +92,7 @@ export function createPageKnowledgeStore(
   // outside the team (a Viewer through a link) names who made, changed, owns and verified a page.
   // Replaced, never changed in place, when a read brings a new name, so a reader can key on it.
   let names: ReadonlyMap<string, string> = new Map();
-  // Each knowledgebase's pending suggested edits by page (ai-knowledge.md "On the page"), from its newest Page Health
+  // Each knowledgebase's pending suggested edits by page (insights.md "On the page"), from its newest Page Health
   // read: the tree's dots. Replaced, never changed in place.
   const suggestionCounts = new Map<string, Readonly<Record<string, number>>>();
   const loading = new Map<string, Promise<void>>();
@@ -158,7 +158,7 @@ export function createPageKnowledgeStore(
      *  fieldsOf's. */
     suggestionCountsOf: (documentId: string, _at?: number) => suggestionCounts.get(documentId),
     /** A suggested edit decided here: gone from the page's health and the counts at once, before the read after it
-     *  says so (ai-knowledge.md "On the page"). */
+     *  says so (insights.md "On the page"). */
     dropSuggestion(documentId: string, tab: string, id: string): void {
       const key = keyOf(documentId, tab);
       const held = health.get(key);

@@ -57,14 +57,14 @@ The charts and meters live in the palette's **Data** category. The **Timeline** 
 - **Rating** shows a one to five score as a row of stars, in an amber accent, with star-specific animations. See [Rating](/help/palette/tools/data-elements/rating/).
 
 <AppNote app="livediagram">
-  **Linked charts:** any pie, column, bar or line chart can take its numbers from a range of a
-  liveplanner Sheet and keep in step with it. See [Bar and Line
-  Charts](/help/palette/tools/data-elements/bar-and-line-charts/#link-a-chart-to-a-liveplanner-sheet).
+  **Live data:** any pie, column, bar or line chart, and any table, can take its numbers from a
+  liveplanner plan (a Sheet range, a board's cards counted, or a Dashboard metric) and keep in step
+  with it. See [Live Data From a Plan](/help/palette/tools/data-elements/live-data/).
 </AppNote>
 
 <AppNote app="livedesign">
-  Any chart can also take its numbers from a liveplanner Sheet and keep in step with it. See [Bar
-  and Line Charts](/help/palette/tools/data-elements/bar-and-line-charts/).
+  Any chart or table can also take its numbers from a liveplanner plan and keep in step with it.
+  See [Live Data From a Plan](/help/palette/tools/data-elements/live-data/).
 </AppNote>
 
 ## Take the tour
@@ -107,25 +107,9 @@ Because they are ordinary canvas elements underneath, everything you already kno
 
 <AppNote app="livedocuments">
 
-**Charts linked to a sheet.**
+**Live data from a plan.**
 
-A chart can take its numbers from a range of a liveplanner Sheet and keep in step with it, so a weekly report or a deck never goes stale. It stays a native chart: drawn in your theme, styled and exported like any other, with only its numbers coming from the sheet.
-
-<Step n={1}>
-  Right-click the chart, open **Tools**, then **Data**, and press **Link to Sheet**.
-</Step>
-<Step n={2}>
-  Pick one of your plans (search them with **Search your plans**), one of its sheets, and type a
-  **Range** as in a spreadsheet, such as `B2:E9`. The first row names each series and the first
-  column labels each slice, bar or point.
-</Step>
-<Step n={3}>
-  Check the **Preview** of what the chart will draw, then press **Link**. It is one step to undo.
-</Step>
-
-While the document is open, a linked chart reads the sheet again whenever the sheet changes, with no refresh needed. Hover or select it and a line under it says which plan it follows and when it was last updated. While it is linked, its **Data** section shows a Sheet row in place of the rows, naming the sheet and range, and offers **Update** (read again now), **Change** (pick another range) and **Unlink**, which keeps the last values. If the range is deleted from the sheet, the chart keeps its values and says the linked range is gone.
-
-The values are saved in the document, so everyone who can open it sees them. Someone who can open the plan sees its numbers as they are now; someone who can't sees the values last saved. Only Editors can link, update or unlink a chart. Exports draw the saved values.
+A chart or a table can take its numbers from one of your liveplanner plans and keep in step with it, so a weekly report or a deck never goes stale: a range of a Sheet, a board's cards counted by column, label, assignee or priority, or a Dashboard metric. Right-click it and choose **From a Plan…** in its **Data** section. See [Live Data From a Plan](/help/palette/tools/data-elements/live-data/).
 
 <Tip>
   Mix data elements with regular shapes and text to build an infographic: drop a progress ring next

@@ -6,6 +6,7 @@
 // draft, so it rides the tab's save and its `tab-meta` op as a rename does.
 import { useMemo } from 'react';
 import {
+  coverThemeFrom,
   parseTabCover,
   themeBackgroundPresets,
   type KnowledgeStyle,
@@ -36,14 +37,7 @@ export type CoverTheme = Pick<ThemeDefinition, 'elementStroke' | 'palette'>;
 /** The colours a gradient or animated cover is painted in: the knowledgebase's writing accent (its theme's own, or
  *  the one picked in Knowledgebase Style) and its theme's next colours. */
 export function coverThemeOf(style: Pick<KnowledgeStyle, 'theme' | 'accent'>): CoverTheme {
-  const theme = getTheme(style.theme, 'light');
-  const accent = knowledgeWritingAccent(style);
-  const palette = theme.palette ?? [];
-  // The accent leads, so the theme's second colour is its next branch whatever accent was picked.
-  return {
-    elementStroke: accent,
-    palette: [{ ...(palette[0] ?? { fill: '', text: '' }), stroke: accent }, ...palette.slice(1)],
-  };
+  return coverThemeFrom(getTheme(style.theme, 'light'), knowledgeWritingAccent(style));
 }
 
 /** The open knowledgebase's cover colours and their gradients; worked out again only when its style changes. */
@@ -77,6 +71,17 @@ export function coverEditable(s: {
 }): boolean {
   if (s.isReadOnly || s.participating) return false;
   return s.pageEditing ? s.pageEditing.editing : true;
+}
+
+/** Whether this person may add a cover or an icon to the open page (Add Cover, Add Icon in the meta row): the
+ *  cover's writers, whether the page is being read or edited (owner 2026-11-23: "I should also see Add Cover and Add
+ *  Icon and Add Label even when the page isn't in edit mode"). Changing one stays an edit-mode control. */
+export function coverAddable(s: { isReadOnly: boolean; participating: boolean }): boolean {
+  return !s.isReadOnly && !s.participating;
+}
+
+export function useCoverAddable(): boolean {
+  return useEditorChrome(coverAddable);
 }
 
 export function useCoverEditable(): boolean {

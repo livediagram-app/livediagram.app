@@ -63,7 +63,7 @@ import {
   type SharedTabCopy,
 } from './tab-shares';
 import type { RouteIdentity } from './document-route';
-import type { ItemStanding } from '@liveworkspace/index-client';
+import type { ItemStanding, SourceChange } from '@liveworkspace/index-client';
 import {
   incomingItemHook,
   itemEmailOptOut,
@@ -649,6 +649,11 @@ export class DocumentRoom extends DurableObject<Env> {
     messages: ShareMessage[],
   ): Promise<ShareAnswer[]> {
     return rpc.receiveShares(this, documentId, from, messages);
+  }
+
+  // A plan's sent cards changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"): room-rpc.ts.
+  async sourceChanged(documentId: string, change: SourceChange): Promise<void> {
+    rpc.sourceChanged(this, documentId, change);
   }
 
   requireEnv(): DocumentEnv {

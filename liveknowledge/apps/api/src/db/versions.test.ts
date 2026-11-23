@@ -6,13 +6,16 @@ import {
   VERSION_IDLE_MS,
 } from '@liveknowledge/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { versionAgentSchemaStep } from '../versions/version-schema';
 import {
   agentVersionStatement,
+  agentVersionsStampStatement,
   copyTabStatement,
   deleteOldVersions,
   getVersion,
   listVersions,
   namedVersionCount,
+  saveVersionStampStatement,
   setVersionName,
   versionAtRev,
   versionAuthorOf,
@@ -280,5 +283,119 @@ describe('the by line', () => {
       color: '',
     });
     expect(versionAuthorOf({ ...row, author_name: null })).toBeNull();
+  });
+
+  it("names an agent's version's agent beside its person, and only a real name", () => {
+    const row = { author_id: 'user_a', author_name: 'Ada', author_color: '#123456' };
+    expect(versionAuthorOf({ ...row, author_agent: 'Claude' })).toEqual({
+      name: 'Ada',
+      color: '#123456',
+      agent: 'Claude',
+    });
+    expect(versionAuthorOf({ ...row, author_agent: '' })).toEqual({
+      name: 'Ada',
+      color: '#123456',
+    });
+    expect(versionAuthorOf({ ...row, author_agent: null })).toEqual({
+      name: 'Ada',
+      color: '#123456',
+    });
+  });
+});
+
+// VH25 to VH27: an agent's versions name the agent beside its person (version-history.md "An agent's mark").
+describe("an agent's mark", () => {
+  type MarkRow = {
+    rev: number;
+    kind: string;
+    author_name: string | null;
+    author_agent: string | null;
+  };
+  const agentRows = (db: SqliteD1) =>
+    db.sql
+      .prepare('SELECT rev, kind, author_name, author_agent FROM tab_versions ORDER BY rowid')
+      .all() as MarkRow[];
+  const stamp = (db: SqliteD1, now: number, author = AUTHOR, agent = 'Claude') =>
+    agentVersionsStampStatement(db.env, { tabId: 't1', author, agent, now }).run();
+  // The save trigger's version of an agent's write, naming nobody, as an agent's article write leaves it.
+  const saveRow = (db: SqliteD1, rev: number, at: number, agent: string | null = null) =>
+    db.sql
+      .prepare(
+        `INSERT INTO tab_versions (id, tab_id, rev, kind, author_agent, tab_name, data, bytes, element_count,
+           saved_at, created_at) VALUES (?, 't1', ?, 'save', ?, 'Pitch', '{}', 2, 0, ?, ?)`,
+      )
+      .run(`v_save${rev}`, rev, agent, at, at);
+
+  it('is a column schema step 43 adds once, safe to run again', () => {
+    const db = setUp();
+    const columns = () =>
+      (db.sql.prepare('PRAGMA table_info(tab_versions)').all() as { name: string }[]).map(
+        (c) => c.name,
+      );
+    expect(columns()).toContain('author_agent');
+    const exec = (q: string) => {
+      const statement = db.sql.prepare(q);
+      if (!q.startsWith('PRAGMA')) {
+        statement.run();
+        return null;
+      }
+      const rows = statement.all();
+      return { toArray: () => rows };
+    };
+    versionAgentSchemaStep(exec);
+    expect(columns().filter((c) => c === 'author_agent')).toHaveLength(1);
+    // A table without it (a room before the step) gains it, its rows reading as a person's.
+    db.sql.exec('ALTER TABLE tab_versions DROP COLUMN author_agent');
+    expect(columns()).not.toContain('author_agent');
+    versionAgentSchemaStep(exec);
+    expect(columns()).toContain('author_agent');
+  });
+
+  it('names the agent on the version before its burst and on the save it made, its person on the save', async () => {
+    const db = setUp();
+    await agentVersionStatement(db.env, {
+      tabId: 't1',
+      tokenId: 'tok',
+      author: AUTHOR,
+      now: 10_000,
+    }).run();
+    write(db, 'by agent', 10_001);
+    saveRow(db, 2, 10_001);
+    await stamp(db, 10_002);
+    expect(agentRows(db)).toEqual([
+      { rev: 1, kind: 'agent', author_name: 'Ada', author_agent: 'Claude' },
+      { rev: 2, kind: 'save', author_name: 'Ada', author_agent: 'Claude' },
+    ]);
+    expect((await listVersions(db.env, 't1')).map((v) => v.author)).toEqual([
+      { name: 'Ada', color: '#123456', agent: 'Claude' },
+      { name: 'Ada', color: '#123456', agent: 'Claude' },
+    ]);
+    // A later write by another agent leaves both as they are.
+    await stamp(db, 10_003, AUTHOR, 'Release bot');
+    expect(agentRows(db).map((r) => r.author_agent)).toEqual(['Claude', 'Claude']);
+  });
+
+  it("leaves another person's versions, older ones, and a person's Save clears it", async () => {
+    const db = setUp();
+    await agentVersionStatement(db.env, {
+      tabId: 't1',
+      tokenId: 'tok',
+      author: { ...AUTHOR, id: 'user_b', name: 'Bo' },
+      now: 1_000,
+    }).run();
+    // Another person's agent version, and one long before this write: neither is this write's.
+    await stamp(db, 1_000 + VERSION_IDLE_MS, { ...AUTHOR, id: 'user_b', name: 'Bo' });
+    await stamp(db, 1_001);
+    expect(agentRows(db).map((r) => r.author_agent)).toEqual([null]);
+    // A person's Save clears any agent on the version it stamps.
+    write(db, 'saved', 2_000);
+    saveRow(db, 2, 2_000, 'Claude');
+    await saveVersionStampStatement(db.env, 't1', 2, AUTHOR).run();
+    expect(agentRows(db).at(-1)).toEqual({
+      rev: 2,
+      kind: 'save',
+      author_name: 'Ada',
+      author_agent: null,
+    });
   });
 });

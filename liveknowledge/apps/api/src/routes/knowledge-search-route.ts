@@ -101,7 +101,7 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
       };
     });
     // Each result served to an agent is a read of its page; a search that found nothing is a question nobody
-    // could answer (ai-knowledge.md "Reads", "Questions nobody could answer").
+    // could answer (insights.md "Reads", "Questions nobody could answer").
     const notes: SqlStatement[] = [...new Set(results.map((r) => r.tab))].map((tab) =>
       recordRead(tab, reader, now),
     );

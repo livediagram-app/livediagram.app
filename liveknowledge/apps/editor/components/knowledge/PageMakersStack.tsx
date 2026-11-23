@@ -8,6 +8,7 @@
 import { GUEST_DISC_TINT, GUEST_NAME, isGuestName } from './guest-disc';
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
 import { Tooltip } from '@liveknowledge/ui';
+import { agentForPerson } from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
 import { initialsOf } from '@/lib/identity';
 import { AgentsIcon, MakerPersonIcon } from './knowledge-icons';
 import { useKnowledgePeople, usePageKnowledge } from './usePageKnowledge';
@@ -38,7 +39,10 @@ export function makersOf(
 ): Maker[] {
   return editors.map((s, i) => {
     const ai = s.kind === 'ai';
-    const name = ai ? (s.agent ?? 'An Agent') : (nameOf(s.by) ?? GUEST_NAME);
+    // An agent names the person it wrote for: "Claude for Priya Shah" (verification.md "An agent acting for a person").
+    const name = ai
+      ? agentForPerson(s.agent, nameOf(s.by), 'An Agent')
+      : (nameOf(s.by) ?? GUEST_NAME);
     return {
       key: `${ai ? 'ai' : 'p'}:${ai ? s.agent : s.by}`,
       name,

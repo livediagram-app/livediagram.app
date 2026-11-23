@@ -1,4 +1,4 @@
-// A suggested edit was made, accepted or dismissed (docs/specs/030-knowledgebase/ai-knowledge.md "On the page", "In
+// A suggested edit was made, accepted or dismissed (docs/specs/030-knowledgebase/insights.md "On the page", "In
 // the owner's Inbox"). The `suggestions` triggers (suggestions-outbox.ts) have already written the page's outbox key
 // in the write's own transaction; this arms the room's drain for it, since a suggestion is bookkeeping written
 // through the handle that notes no edit (knowledge-db.ts), and tells every open editor which pages changed, ids only,

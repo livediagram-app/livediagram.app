@@ -8,7 +8,8 @@ import type { VersionSummary } from '@liveknowledge/api-schema';
 import type { VersionChanges } from '@liveknowledge/document';
 import { versionChangesLine } from '@liveknowledge/document';
 import { Button, SwitchRow } from '@liveknowledge/ui';
-import { kindWords, whenWords } from './version-words';
+import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
+import { aiVersionWords, kindWords, versionAuthorWords, whenWords } from './version-words';
 
 export function VersionDetail({
   version,
@@ -50,14 +51,17 @@ export function VersionDetail({
         <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
           {version.name ?? `Version kept ${whenWords(version.savedAt, now)}`}
         </p>
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-          {[
-            version.name ? `Kept ${whenWords(version.savedAt, now)}` : null,
-            kindWords(version.kind),
-            version.author ? `by ${version.author.name}` : null,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
+        <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span>
+            {[
+              version.name ? `Kept ${whenWords(version.savedAt, now)}` : null,
+              kindWords(version.kind),
+              version.author ? `by ${versionAuthorWords(version.author)}` : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </span>
+          {version.author?.agent ? <AiWriterMark words={aiVersionWords(version.kind)} /> : null}
         </p>
         <p className="mt-1 text-xs text-slate-600 dark:text-slate-300" aria-live="polite">
           {changes === null

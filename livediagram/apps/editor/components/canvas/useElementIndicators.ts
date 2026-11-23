@@ -16,7 +16,8 @@ import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { useMindOutlineBadge } from '@/components/canvas/MindOutlineContext';
 import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inline-icon-layout';
-import { buildIndicatorItems, type IndicatorItem } from './indicator-items';
+import { useSentCardIndicator } from '@liveworkspace/workbench/components/send-to-plan/sent-card-indicator';
+import { buildIndicatorItems, type IndicatorItem, type SentCardIndicator } from './indicator-items';
 import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 
@@ -33,6 +34,8 @@ export function elementIndicatorItems(
   // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md; a
   // Community visitor, docs/specs/025-community/community.md): no comment indicator.
   showComments = true,
+  // The card Send to Plan made from the element (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
+  card?: SentCardIndicator,
 ): IndicatorItem[] {
   const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
   const shape = element.type === 'shape' ? element.shape : undefined;
@@ -67,6 +70,7 @@ export function elementIndicatorItems(
           color: presenceColourOf(assigneeName, assignee.color),
         }
       : undefined,
+    card,
     comments: {
       count:
         shape === 'comment-pin' || !showComments ? 0 : activeCommentCount(element.commentThread),
@@ -95,6 +99,7 @@ export function useElementIndicators(
     handlers,
     useMindOutlineBadge(element.id),
     useCommentBadges(),
+    useSentCardIndicator(element.id),
   );
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A circle or a pill is fully round however its corner preset reads.

@@ -2,7 +2,13 @@
 // editor's room connection to the linked charts that read the changed Sheets. A module-level relay: the room connection
 // and the charts' reader sit far apart in the tree, and the frame carries ids only. One editor runs per page, so one
 // relay serves it whatever its product.
-export type SourceChangedSignal = { app: string; itemId: string; sheetIds: string[] };
+// `cards`: a plan's sent cards changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
+export type SourceChangedSignal = {
+  app: string;
+  itemId: string;
+  sheetIds: string[];
+  cards?: string[];
+};
 
 const listeners = new Set<(signal: SourceChangedSignal) => void>();
 

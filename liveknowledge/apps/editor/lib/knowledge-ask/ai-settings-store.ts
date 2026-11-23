@@ -1,6 +1,6 @@
 // The knowledgebase's AI settings as the editor holds them (docs/specs/030-knowledgebase/search-and-ask.md "Ask"):
 // whether a key is set, its last characters (an Editor's only), the model and the models offered. Never the key:
-// the route does not send it, and nothing here takes it. Held outside React so the Ask view, AI Knowledge and the
+// the route does not send it, and nothing here takes it. Held outside React so the Ask view, Insights and the
 // AI Settings dialog read one answer, asked for once per knowledgebase and again only after a failure.
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import { apiKnowledgeAi, type KnowledgeCaller } from '@/lib/api/knowledge';

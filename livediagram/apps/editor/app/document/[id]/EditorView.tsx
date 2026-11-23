@@ -1,4 +1,6 @@
 'use client';
+import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
+import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import dynamic from 'next/dynamic';
@@ -103,7 +105,17 @@ const sheetLinkGrantOf = async (itemId: string): Promise<string | null> =>
 const trackSheetLink = (event: SheetLinkEvent): void =>
   event === 'ChartSheetLink'
     ? track('Element', 'Changed', 'ChartSheetLink')
-    : track('Element', 'Changed', 'ChartSheetUnlink');
+    : event === 'ChartBoardLink'
+      ? track('Element', 'Changed', 'ChartBoardLink')
+      : event === 'ChartMetricLink'
+        ? track('Element', 'Changed', 'ChartMetricLink')
+        : event === 'TableLiveLink'
+          ? track('Element', 'Changed', 'TableLiveLink')
+          : event === 'LiveDataFreeze'
+            ? track('Element', 'Changed', 'LiveDataFreeze')
+            : event === 'LiveDataUnfreeze'
+              ? track('Element', 'Changed', 'LiveDataUnfreeze')
+              : track('Element', 'Changed', 'ChartSheetUnlink');
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read
@@ -354,6 +366,20 @@ export function EditorView() {
               onTrack={trackSheetLink}
               noun="canvas"
             >
+              {/* Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): the chips' sends and the picker. */}
+              <SendToPlanHost
+                app="livediagram"
+                itemId={ctx.authLoaded && hydrated ? documentId : null}
+                tabId={activeId}
+                title={canvasName}
+                share={sessionShareCode ? { code: sessionShareCode } : null}
+                enabled={canSendToPlan({
+                  signedIn: !!accountUserId,
+                  offline: isOffline,
+                  embed: !appChrome,
+                  community: sessionCommunity !== null,
+                })}
+              />
               <ViewportStoreProvider store={ctx.viewport}>
                 <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
                   {/* The active tab's finish (docs/specs/008-canvas/finish.md), for the menus and panels; each

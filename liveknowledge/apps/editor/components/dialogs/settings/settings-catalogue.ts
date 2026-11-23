@@ -546,7 +546,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'TrustTourSeenOff', off: 'TrustTourSeenOn' },
       }),
       knowledgeTourSwitch('ask', {
-        description: 'Ask a question, your questions, and AI Knowledge.',
+        description: 'Ask a question, your questions, and Insights.',
         keywords: 'tour ask question answer sources ai knowledge',
         event: { category: 'UI', on: 'AskTourSeenOff', off: 'AskTourSeenOn' },
       }),

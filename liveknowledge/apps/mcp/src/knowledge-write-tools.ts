@@ -70,7 +70,7 @@ export function registerKnowledgeWriteTools(server: McpServer, env: Env): void {
       kind: suggestion.kind,
       pending,
       url: deepLink(env, args.documentId),
-      next: 'Nothing changed yet: an Editor accepts or dismisses it under AI Knowledge, Edits Suggested by Agents. Tell the user it waits there.',
+      next: 'Nothing changed yet: an Editor accepts or dismisses it under Insights, Edits Suggested by Agents. Tell the user it waits there.',
     });
   });
 

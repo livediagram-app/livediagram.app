@@ -7,7 +7,7 @@ import {
   remindedThisWeek,
 } from './email-words';
 
-// docs/specs/030-knowledgebase/ai-knowledge.md: what an Editor reads after asking for an email.
+// docs/specs/030-knowledgebase/insights.md: what an Editor reads after asking for an email.
 const NOW = new Date(2026, 10, 20, 12).getTime();
 const DAY = 86_400_000;
 

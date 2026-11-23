@@ -28,6 +28,8 @@ export function versionAuthorOf(row: {
   author_id: string | null;
   author_name: string | null;
   author_color: string | null;
+  // The agent an agent's write kept it for (VH25, VH27); absent from the snapshots' store, which an agent never names.
+  author_agent?: string | null;
 }): VersionSummary['author'] {
   if (row.author_name === null) return null;
   const name =
@@ -36,7 +38,13 @@ export function versionAuthorOf(row: {
         ? `Automation · ${row.author_name}`
         : 'Automation'
       : row.author_name;
-  return { name, color: row.author_color ?? '' };
+  return {
+    name,
+    color: row.author_color ?? '',
+    ...(typeof row.author_agent === 'string' && row.author_agent
+      ? { agent: row.author_agent }
+      : {}),
+  };
 }
 
 type VersionRow = {
@@ -48,6 +56,7 @@ type VersionRow = {
   author_id: string | null;
   author_name: string | null;
   author_color: string | null;
+  author_agent: string | null;
   tab_name: string;
   bytes: number;
   element_count: number;
@@ -58,7 +67,7 @@ type VersionRow = {
 export type StoredVersion = { summary: VersionSummary; tabName: string; data: string };
 
 const SUMMARY_COLUMNS =
-  'id, tab_id, rev, kind, name, author_id, author_name, author_color, tab_name, bytes, element_count, saved_at, created_at';
+  'id, tab_id, rev, kind, name, author_id, author_name, author_color, author_agent, tab_name, bytes, element_count, saved_at, created_at';
 
 // A version id: `v_` and 16 lower-case hex characters, as the schema's SQL_VERSION_ID mints them.
 export function versionId(): string {
@@ -249,9 +258,37 @@ export function saveVersionStampStatement(
   author: VersionAuthor,
 ): D1PreparedStatement {
   return env.DOCUMENT_DB.prepare(
-    `UPDATE tab_versions SET author_id = ?, author_name = ?, author_color = ?
+    `UPDATE tab_versions SET author_id = ?, author_name = ?, author_color = ?, author_agent = NULL
       WHERE tab_id = ? AND rev = ? AND kind = 'save'`,
   ).bind(author.id, author.name, author.color, tabId, rev);
+}
+
+// VH26: the agent an agent's write was made by, on the versions that write kept (docs/specs/006-document/
+// version-history.md "An agent's mark"): the `save` row at the tab's revision now, which the save trigger kept naming
+// nobody or a draft's writer, named the token's person with the agent; and that person's `agent` and `restore` rows on
+// the tab kept within the burst that name no agent yet, the version before this write. A row already naming an agent
+// is left as it is. Rides the batch that notes the page's writer (routes/changesets.ts notePageWriteAfter).
+export function agentVersionsStampStatement(
+  env: DocumentEnv,
+  a: { tabId: string; author: VersionAuthor; agent: string; now: number },
+): D1PreparedStatement {
+  return env.DOCUMENT_DB.prepare(
+    `UPDATE tab_versions
+        SET author_agent = ?1,
+            author_id = CASE WHEN kind = 'save' THEN ?2 ELSE author_id END,
+            author_name = CASE WHEN kind = 'save' THEN ?3 ELSE author_name END,
+            author_color = CASE WHEN kind = 'save' THEN ?4 ELSE author_color END
+      WHERE tab_id = ?5 AND author_agent IS NULL
+        AND ((kind = 'save' AND rev = (SELECT rev FROM tabs WHERE id = ?5))
+             OR (kind IN ('agent', 'restore') AND author_id = ?2 AND created_at > ?6))`,
+  ).bind(
+    a.agent,
+    a.author.id,
+    a.author.name,
+    a.author.color,
+    a.tabId,
+    a.now - VERSION_AGENT_BURST_MS,
+  );
 }
 
 // The tab's current revision, without its body; null when there is no such tab.

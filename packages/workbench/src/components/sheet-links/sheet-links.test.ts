@@ -1,8 +1,9 @@
-// Charts linked to a liveplanner sheet, the pure half (each reader app's docs/specs/009-elements/pie-chart.md "Charts
-// linked to a liveplanner sheet"): one key per range, what a live read shows and what it would save, and the words.
+// Charts and tables with live data from a plan, the pure half (each reader app's docs/specs/009-elements/pie-chart.md
+// "Live data from a plan", liveworkspace/docs/specs/004-index/live-data.md): one key per source, what a live read
+// shows and what it would save, and the words.
 import { describe, expect, it } from 'vitest';
 import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
-import type { SheetRangeRead } from '@liveworkspace/index-client';
+import type { PlanDataRead, SheetRangeRead } from '@liveworkspace/index-client';
 import {
   chartAsSeen,
   isLinkedChart,
@@ -13,9 +14,14 @@ import {
   sheetLinkKey,
   sheetLinkLine,
   sourceAfterRead,
-  liveChartFields,
+  liveFields,
   isChart,
+  isLinkable,
+  isLiveTable,
   drawnTable,
+  frameTouches,
+  frozenDay,
+  type LiveTable,
   type SheetChart,
 } from './sheet-links';
 
@@ -96,9 +102,10 @@ describe('a live read', () => {
 
   it('compares a line chart by its categories and series', () => {
     const line = shape('line-chart');
-    const fields = liveChartFields(line, read);
+    const fields = liveFields(line, read.table) as Parameters<typeof sameChartData>[1];
     expect(sameChartData(line, fields)).toBe(false);
     expect(sameChartData({ ...line, ...fields }, fields)).toBe(true);
+    expect(liveFields({ ...line, ...fields }, read.table)).toBeNull();
   });
 
   it('reads a chart with no rows stored as empty', () => {
@@ -129,6 +136,7 @@ describe('the words', () => {
   it('names the plan and how fresh the values are for each status', () => {
     const now = 1_000 + 2 * 60 * 60_000;
     expect(sheetLinkLine(source, { kind: 'live', read: { ...read, readAt: now } }, now)).toEqual({
+      lead: 'Live from',
       name: 'Budget',
       detail: 'updated just now',
       tone: 'live',
@@ -140,6 +148,7 @@ describe('the words', () => {
       tone: 'warn',
     });
     expect(sheetLinkLine({ ...source, itemName: '' }, { kind: 'failed' }, now)).toEqual({
+      lead: 'From',
       name: 'a plan',
       detail: "Couldn't update, saved 2 hours ago",
       tone: 'warn',
@@ -169,5 +178,131 @@ describe('what a preview shows', () => {
       table: { categories: ['3', '4'], series: [table.series[1]] },
       leftOut: 0,
     });
+  });
+});
+
+describe('boards, metrics and tables (live-data.md)', () => {
+  const board: ChartSheetSource = {
+    app: 'liveplanner',
+    itemId: 'plan_1',
+    itemName: 'Launch',
+    readAt: 1_000,
+    kind: 'board',
+    boardId: 'tab_1',
+    by: 'column',
+    filter: { priority: 'high' },
+    sourceName: 'Roadmap',
+    label: 'Cards per column',
+  };
+  const metric: ChartSheetSource = {
+    app: 'liveplanner',
+    itemId: 'plan_1',
+    itemName: 'Launch',
+    readAt: 1_000,
+    kind: 'metric',
+    metric: 'completion',
+    sourceName: 'Dashboard',
+    label: 'Completion',
+  };
+  const boardRead: PlanDataRead = {
+    itemId: 'plan_1',
+    itemName: 'Launch 2',
+    kind: 'board',
+    sourceName: 'Roadmap v2',
+    tabId: 'tab_1',
+    label: 'Cards per column',
+    table: {
+      categories: ['To Do', 'Done'],
+      series: [
+        { name: 'Cards', values: [3, 4] },
+        { name: 'Points', values: [8, 1.5] },
+      ],
+    },
+    readAt: 7_000,
+  };
+  const table = (extra: Partial<LiveTable> = {}): LiveTable => ({
+    id: 't',
+    type: 'table',
+    cells: [['a']],
+    ...extra,
+  });
+
+  it('keys a board by its plan, board, count and filter, a metric by its plan and id', () => {
+    expect(sheetLinkKey(board)).toBe('board|plan_1|tab_1|column|{"priority":"high"}');
+    expect(sheetLinkKey({ ...board, filter: undefined })).toBe('board|plan_1|tab_1|column|{}');
+    expect(sheetLinkKey(metric)).toBe('metric|plan_1|completion');
+  });
+
+  it('re-reads a board or metric on the cards signal, a range on its Sheet', () => {
+    expect(frameTouches(board, 'plan_1', ['cards'])).toBe(true);
+    expect(frameTouches(metric, 'plan_1', ['sheet0001'])).toBe(false);
+    expect(frameTouches(source, 'plan_1', ['cards'])).toBe(false);
+    expect(frameTouches(source, 'plan_1', ['sheet0001'])).toBe(true);
+    expect(frameTouches(board, 'plan_2', ['cards'])).toBe(false);
+  });
+
+  it('tells a table, and takes charts and tables as linkable', () => {
+    expect(isLiveTable(table())).toBe(true);
+    expect(isLiveTable({ id: 'x', type: 'table' })).toBe(false);
+    expect(isLinkable(table())).toBe(true);
+    expect(isLinkable(shape('square'))).toBe(false);
+    expect(linkedChartsOn([table({ chartSheetSource: board }), table()])).toHaveLength(1);
+  });
+
+  it("writes a table's cells with a header, its label column named for the count", () => {
+    expect(liveFields(table({ chartSheetSource: board }), boardRead.table)).toEqual({
+      cells: [
+        ['Column', 'Cards', 'Points'],
+        ['To Do', '3', '8'],
+        ['Done', '4', '1.5'],
+      ],
+      headerRow: true,
+      colWidths: undefined,
+      rowHeights: undefined,
+      cellStyles: undefined,
+    });
+    expect(
+      (liveFields(table({ chartSheetSource: metric }), boardRead.table) as { cells: string[][] })
+        .cells[0]![0],
+    ).toBe('');
+    expect(
+      (liveFields(table({ chartSheetSource: source }), boardRead.table) as { cells: string[][] })
+        .cells[0]![0],
+    ).toBe('');
+    expect(drawnTable(table(), boardRead.table)).toEqual({ table: boardRead.table, leftOut: 0 });
+  });
+
+  it('feeds only the series the link picks, in its order', () => {
+    const el = bar({ chartSheetSource: { ...board, series: [1] } });
+    expect(chartAsSeen(el, { kind: 'live', read: boardRead }).pieSlices).toEqual([
+      { label: 'To Do', value: 8, color: '#f00' },
+      { label: 'Done', value: 1.5 },
+    ]);
+  });
+
+  it('keeps a board link with the read names and time', () => {
+    const after = sourceAfterRead(board, boardRead);
+    expect(after).toMatchObject({ itemName: 'Launch 2', sourceName: 'Roadmap v2', readAt: 7_000 });
+    expect(sameSource(board, after)).toBe(false);
+    expect(sameSource(after, { ...after, readAt: 1 })).toBe(true);
+    // A read of the other shape only renames the plan.
+    expect(sourceAfterRead(board, read)).toEqual({
+      ...board,
+      itemName: 'Budget 2027',
+      readAt: 9_000,
+    });
+  });
+
+  it('says a frozen link is frozen, with its day', () => {
+    // The day as the reader's own clock has it.
+    const now = new Date(2026, 10, 20, 12).getTime();
+    const readAt = new Date(2026, 10, 12, 12).getTime();
+    expect(sheetLinkLine({ ...board, frozen: true, readAt }, { kind: 'frozen' }, now)).toEqual({
+      lead: 'From',
+      name: 'Launch',
+      detail: 'frozen 12 Nov',
+      tone: 'quiet',
+    });
+    expect(frozenDay(new Date(2025, 0, 3, 12).getTime(), now)).toBe('3 Jan 2025');
   });
 });

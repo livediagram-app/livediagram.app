@@ -48,7 +48,7 @@ const forgetWords = (tab: string): SqlStatement => ({
 });
 
 /** Closes every conflict one of whose passages is gone or reads differently now
- *  (docs/specs/030-knowledgebase/ai-knowledge.md "Pages that disagree": a conflict closes by itself when either
+ *  (docs/specs/030-knowledgebase/insights.md "Pages that disagree": a conflict closes by itself when either
  *  passage changes). A dismissed pair goes too: its passages are not the ones that were dismissed. */
 export const closeChangedConflicts = (tab: string): SqlStatement => ({
   sql: `DELETE FROM conflicts WHERE (a_tab = ? OR b_tab = ?) AND (

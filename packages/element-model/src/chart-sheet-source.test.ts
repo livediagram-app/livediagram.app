@@ -4,6 +4,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   isChartSheetSource,
+  isRangeSource,
+  liveSourceWhat,
+  sourceKindOf,
   withoutSheetSources,
   type ChartSheetSource,
 } from './chart-sheet-source';
@@ -46,6 +49,68 @@ describe('isChartSheetSource', () => {
     ['a range with a bad id', { ...source, range: { ...source.range, c2: 'X' } }],
   ])('refuses %s', (_name, v) => {
     expect(isChartSheetSource(v)).toBe(false);
+  });
+});
+
+describe('live data links (live-data.md)', () => {
+  const common = { app: 'liveplanner', itemId: 'plan_1', itemName: 'Launch', readAt: 5 } as const;
+  const board: ChartSheetSource = {
+    ...common,
+    kind: 'board',
+    boardId: 'tab_1',
+    by: 'column',
+    filter: { priority: 'high', label: 'bug' },
+    sourceName: 'Roadmap',
+    label: 'Cards per column',
+  };
+  const metric: ChartSheetSource = {
+    ...common,
+    kind: 'metric',
+    metric: 'top-voted',
+    sourceName: 'Dashboard',
+    label: 'Top Voted',
+  };
+
+  it('takes a board, a metric and a range named as a sheet, frozen or with picked series', () => {
+    expect(isChartSheetSource(board)).toBe(true);
+    expect(isChartSheetSource(metric)).toBe(true);
+    expect(isChartSheetSource({ ...source, kind: 'sheet', frozen: true, series: [1, 0] })).toBe(
+      true,
+    );
+    expect(sourceKindOf(source)).toBe('sheet');
+    expect(sourceKindOf(board)).toBe('board');
+    expect(isRangeSource(metric)).toBe(false);
+  });
+
+  it.each([
+    ['another kind', { ...board, kind: 'gantt' }],
+    ['a count by anything else', { ...board, by: 'status' }],
+    ['a bad board id', { ...board, boardId: 'a b' }],
+    ['a filter of another key', { ...board, filter: { status: 'x' } }],
+    ['an empty filter value', { ...board, filter: { label: '' } }],
+    ['a filter that is a list', { ...board, filter: ['x'] }],
+    ['a sheet field on a board', { ...board, sheetId: 'sheet0001' }],
+    ['a long label', { ...metric, label: 'x'.repeat(81) }],
+    ['a bad metric id', { ...metric, metric: 'Top Voted' }],
+    ['a board field on a metric', { ...metric, by: 'column' }],
+    ['frozen as false', { ...metric, frozen: false }],
+    ['no series', { ...metric, series: [] }],
+    ['a repeated series', { ...metric, series: [0, 0] }],
+    ['a series past the cap', { ...metric, series: [12] }],
+    ['a fractional series', { ...metric, series: [0.5] }],
+  ])('refuses %s', (_name, v) => {
+    expect(isChartSheetSource(v)).toBe(false);
+  });
+
+  it('says where each kind reads from', () => {
+    expect(liveSourceWhat(source)).toEqual({ name: 'Costs', detail: 'A1:B3' });
+    expect(liveSourceWhat(board)).toEqual({ name: 'Roadmap', detail: 'Cards per column' });
+    expect(liveSourceWhat({ ...metric, sourceName: '' })).toEqual({
+      name: 'Dashboard',
+      detail: 'Top Voted',
+    });
+    expect(liveSourceWhat({ ...board, sourceName: '' }).name).toBe('Board');
+    expect(liveSourceWhat({ ...source, sheetName: '' }).name).toBe('Sheet');
   });
 });
 

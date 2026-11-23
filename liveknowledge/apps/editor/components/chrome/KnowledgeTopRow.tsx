@@ -1,7 +1,7 @@
 'use client';
 
 // The top row of the content area (docs/specs/030-knowledgebase/page-surface.md "The footer"): one row, the same
-// height in the three views. Its left is the view's own (a page's formatting controls, Ask's or AI Knowledge's title
+// height in the three views. Its left is the view's own (a page's formatting controls, Ask's or Insights' title
 // and buttons); its right end is always Share and the account button, which the editor draws into the row's slot
 // (TopRowActions, lib/page-surface/top-row-slot.ts). A real row with a hairline under it: nothing here floats.
 import { useCallback, type CSSProperties, type ReactNode } from 'react';

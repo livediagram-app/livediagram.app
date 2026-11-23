@@ -531,6 +531,27 @@ describe('elementValidationIssue', () => {
     expect(issue?.field).toBe('cells');
   });
 
+  // Live data from a plan (liveworkspace/docs/specs/004-index/live-data.md "Tables").
+  it("takes a table's plan link, and names a malformed one", () => {
+    const table = { id: 't', type: 'table', cells: [['a']], ...box };
+    const chartSheetSource = {
+      app: 'liveplanner',
+      itemId: 'plan_1',
+      itemName: 'Launch',
+      readAt: 1,
+      kind: 'board',
+      boardId: 'tab_1',
+      by: 'column',
+      sourceName: 'Roadmap',
+      label: 'Cards per column',
+    };
+    expect(elementValidationIssue({ ...table, chartSheetSource })).toBeNull();
+    expect(
+      elementValidationIssue({ ...table, chartSheetSource: { ...chartSheetSource, by: 'x' } })
+        ?.field,
+    ).toBe('chartSheetSource');
+  });
+
   it('names a freehand stroke that still carries its former points', () => {
     const issue = elementValidationIssue({
       id: 'f',

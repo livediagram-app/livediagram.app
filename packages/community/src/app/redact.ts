@@ -9,8 +9,8 @@
 // - the collaboration cards keep their tallies but not their people: answers (`responses`) and Q&A
 //   voters get neutral per-card ids, a Q&A note loses its author, a roll call's names become "Participant n";
 // - the tab's dot vote keeps its counts per element with neutral voter ids, and loses who started it;
-// - a chart linked to a sheet in another item (`chartSheetSource`, livedocuments pie-chart.md "Charts linked to a
-//   liveplanner sheet") keeps its last values and loses the link, so a stranger is told of no other item;
+// - a chart or table with live data from a plan (`chartSheetSource`, liveworkspace/docs/specs/004-index/live-data.md)
+//   keeps its last values and loses the link, so a stranger is told of no other item;
 // - a live embed (`liveItem`, liveworkspace/docs/specs/004-index/live-embeds.md) keeps its snapshot and loses the link,
 //   for the same reason.
 //

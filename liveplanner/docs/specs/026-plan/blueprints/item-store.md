@@ -850,7 +850,8 @@ history.retention` with the count.
   status phase or a priority colour) from the plan's `statusNames` and `statusPhases`, the card's type (field labels)
   and its items (a Card field's title). The rail, disc and chip classes are `timeline-parts.tsx`'s, shared with the
   comment threads.
-  An agent's run (`run.ai`) draws its sparkle named by `aiRunWords(run)` (`activity-ai-words.ts`, pure): every change
+  An agent's run (`run.ai`) draws its sparkle (`AiWriterMark`, `@liveworkspace/workbench/components/ai-writer/AiWriterMark`,
+  the one liveknowledge's Created, Updated and Version History draw, its words as its tooltip) named by `aiRunWords(run)` (`activity-ai-words.ts`, pure): every change
   kind across the run's entries mapped to a verb (`moved` Transitioned, `created` Created, `set`/`cleared`/`type`
   Edited, `set` of `title` alone Renamed, `trashed` Trashed, `archived` Archived, `untrashed`/`unarchived` Restored,
   `flagged` Flagged, `unflagged` Unflagged), one verb reading "{Verb} by AI", more than one "Changed by AI"

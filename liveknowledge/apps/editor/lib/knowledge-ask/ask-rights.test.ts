@@ -11,8 +11,8 @@ const session = (level: 'edit' | 'participate' | 'view', over = {}) =>
     ...over,
   });
 
-// docs/specs/030-knowledgebase/search-and-ask.md "Share roles", ai-knowledge.md "Share roles".
-describe('who may do what in Ask and AI Knowledge', () => {
+// docs/specs/030-knowledgebase/search-and-ask.md "Share roles", insights.md "Share roles".
+describe('who may do what in Ask and Insights', () => {
   it('lets an Editor ask and do everything else', () => {
     expect(session('edit')).toEqual({
       askOff: null,

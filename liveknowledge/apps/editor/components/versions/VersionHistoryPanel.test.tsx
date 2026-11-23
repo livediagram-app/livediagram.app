@@ -116,6 +116,34 @@ describe('looking', () => {
     expect(screen.getByTestId('preview').textContent).toBe('no marks');
   });
 
+  // version-history.md "In the editor", blueprint VH28: an agent's version names the agent for its person.
+  it("marks an agent's version with the agent and the person it acted for, a person's with the person", async () => {
+    const agents: VersionSummary = {
+      ...VERSION,
+      id: 'v2',
+      rev: 3,
+      kind: 'save',
+      name: null,
+      author: { name: 'Ada', color: '#123456', agent: 'Claude' },
+    };
+    api.apiListVersions.mockResolvedValue([agents, VERSION]);
+    api.apiReadVersion.mockResolvedValue({ version: agents, tab: OLD_TAB });
+    const { container } = panel();
+    const rows = await waitFor(() => {
+      const found = [...container.querySelectorAll<HTMLElement>('[data-version-author]')];
+      expect(found).toHaveLength(2);
+      return found;
+    });
+    expect(rows.map((r) => [r.dataset.versionAuthor, r.textContent])).toEqual([
+      ['ai', 'Claude for Ada'],
+      ['human', 'Ada'],
+    ]);
+    expect(screen.getAllByRole('img', { name: 'Saved by AI' })).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: /Saved/ }));
+    expect(await screen.findByText('Saved · by Claude for Ada')).toBeTruthy();
+    expect(screen.getAllByRole('img', { name: 'Saved by AI' })).toHaveLength(2);
+  });
+
   it('gives a Viewer or Participant no way to change anything', async () => {
     panel({ canEdit: false, canCopy: false });
     await openVersion();

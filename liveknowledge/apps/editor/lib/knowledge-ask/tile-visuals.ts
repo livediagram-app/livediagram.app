@@ -1,4 +1,4 @@
-// The figures band's pictures (docs/specs/030-knowledgebase/ai-knowledge.md "Every tile draws a picture"): what each
+// The figures band's pictures (docs/specs/030-knowledgebase/insights.md "Every tile draws a picture"): what each
 // tile but Reads draws, and its words, from the one overview read. Pure.
 import type {
   KnowledgeAgent,

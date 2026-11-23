@@ -15,7 +15,13 @@ import {
   type ResultLine,
 } from '@liveknowledge/api-schema';
 import { redactCommentAuthorIds } from '../comments';
-import { getChangeset, getChangesetPart, getDocument, listChangesets } from '../db';
+import {
+  agentVersionsStampStatement,
+  getChangeset,
+  getChangesetPart,
+  getDocument,
+  listChangesets,
+} from '../db';
 import { getParticipant } from '../person/profiles';
 import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
@@ -28,6 +34,7 @@ import { parseChangesetRequest } from '../changesets/request';
 import { revertChangeset } from '../changesets/revert';
 import { submitChangeset, type SubmitResult } from '../changesets/submit';
 import type { Author } from '../changesets/write';
+import { AGENT_NAME } from '@liveworkspace/automations/room';
 import type { DocumentDTO } from '../types';
 import {
   gateEdit,
@@ -103,7 +110,7 @@ async function handleSubmit(
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
   refreshAfterWrite(ctx, document.id, tabId, author, result);
-  await notePageWriteAfter(ctx, tabId, owner, result);
+  await notePageWriteAfter(ctx, tabId, owner, result, author);
   return respond(redactConflicts(result, document, owner));
 }
 
@@ -171,7 +178,7 @@ async function handleRevert(
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
   refreshAfterWrite(ctx, document.id, record.tabId, author, result);
-  await notePageWriteAfter(ctx, record.tabId, owner, result);
+  await notePageWriteAfter(ctx, record.tabId, owner, result, author);
   return respond(result);
 }
 
@@ -207,16 +214,32 @@ export function refreshAfterWrite(
 }
 
 // A written change moves the page's Updated stamp, a person's or an agent's (docs/specs/030-knowledgebase/
-// verification.md "Made by a person or an agent"); a dry run and a refusal move nothing.
+// verification.md "Made by a person or an agent"); a dry run and a refusal move nothing. An agent's write also names
+// its agent on the versions it kept, by the stamp's own name, in the same batch (docs/specs/006-document/
+// version-history.md "An agent's mark"; blueprint VH26).
 export async function notePageWriteAfter(
   ctx: DocumentRouteContext,
   tabId: string,
   owner: string,
   result: { status: number; body: unknown },
+  author: Author,
 ): Promise<void> {
   const written = (result.body as { changeset?: unknown } | null)?.changeset;
   if (result.status !== 200 || !written) return;
-  await notePageWrite(ctx.env, tabId, writerOf(ctx, owner));
+  const writer = writerOf(ctx, owner);
+  const now = Date.now();
+  const also =
+    writer.kind === 'ai'
+      ? [
+          agentVersionsStampStatement(ctx.env, {
+            tabId,
+            author,
+            agent: writer.agent ?? AGENT_NAME,
+            now,
+          }),
+        ]
+      : [];
+  await notePageWrite(ctx.env, tabId, writer, now, also);
 }
 
 // A token's read of a tab keeps its presence there too (docs/specs/024-agents/agent-presence.md "Presence"): at most

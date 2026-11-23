@@ -13,6 +13,7 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
 import {
   SNAPSHOT_BY_ACTION,
   WALKTHROUGH_BY_ACTION,
@@ -35,6 +36,7 @@ const perReportReason = Object.fromEntries(
 );
 
 export const EXACT: Readonly<Record<string, string>> = {
+  ...SEND_TO_PLAN_EXACT,
   ...WALKTHROUGH_EXACT,
   ...LIBRARY_EXACT,
   'Element|Changed|CanvasSuggesting':
@@ -411,6 +413,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone changed which way a Sofa element faces. No longer recorded: the furniture moved to livehuddle in November 2026.',
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
+  'Element|Changed|ChartSheetLink': "Someone linked a chart to a range of a plan's Sheet.",
+  'Element|Changed|ChartBoardLink': "Someone linked a chart to the counts of a plan's board.",
+  'Element|Changed|ChartMetricLink': "Someone linked a chart to one of a plan's Dashboard metrics.",
+  'Element|Changed|TableLiveLink': 'Someone filled a table with live data from a plan.',
+  'Element|Changed|ChartSheetUnlink':
+    'Someone unlinked a chart or table from its plan, keeping its numbers.',
+  'Element|Changed|LiveDataFreeze':
+    'Someone froze a linked chart or table, keeping its numbers as they are.',
+  'Element|Changed|LiveDataUnfreeze':
+    'Someone unfroze a linked chart or table, so it follows its plan again.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",
   'Element|Changed|ChartLegend':
     "Someone turned a chart's legend on or off, or moved it to a different side.",
@@ -2597,6 +2609,7 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   ...SNAPSHOT_BY_ACTION,
+  ...SEND_TO_PLAN_BY_ACTION,
   ...WALKTHROUGH_BY_ACTION,
   ...LIBRARY_BY_ACTION,
   'Timing|Measured':

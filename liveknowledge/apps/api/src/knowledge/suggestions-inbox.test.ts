@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { INBOX_SUGGESTION_TEXT_MAX, suggestionPushOf } from './suggestions-inbox';
 
-// A suggested edit as the Inbox gets it (docs/specs/030-knowledgebase/ai-knowledge.md "In the owner's Inbox").
+// A suggested edit as the Inbox gets it (docs/specs/030-knowledgebase/insights.md "In the owner's Inbox").
 const stored = {
   id: 'sg_0123456789',
   tab: 'deploys',

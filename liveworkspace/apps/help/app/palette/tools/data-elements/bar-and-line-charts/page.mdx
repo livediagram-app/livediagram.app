@@ -95,62 +95,9 @@ Both charts share the pie chart's display options: in **Tools**, **Chart** place
 
 Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Appearance** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
 
-## Link a Chart to a liveplanner Sheet
+## Live Data From a Plan
 
-Instead of typing the numbers in, a chart can take them from a range of a liveplanner Sheet and keep in step with it. It stays a native chart, drawn in your theme and styled as usual; only its numbers come from the sheet.
-
-<AppNote app="livediagram">
-
-Instead of typing the numbers in, a pie, column, bar or line chart can take them from a range of a liveplanner Sheet and keep in step with it. It stays a livediagram chart, drawn in your theme and styled as usual; only its numbers come from the sheet.
-
-<Step n={1}>
-  Right-click the chart, open **Tools**, then **Data**, and choose **Link to Sheet…** under the
-  rows.
-</Step>
-<Step n={2}>
-  Pick one of your plans, one of its Sheets, and type a range as you would in a spreadsheet, such as
-  `B2:E9`. A preview shows what the chart will draw, or why the range can't be used.
-</Step>
-<Step n={3}>Press **Link**. The chart takes the sheet's values in one undoable step.</Step>
-
-While a linked chart is hovered or selected, a quiet line under it names the plan and how fresh the numbers are ("updated 2 min ago"). The chart reads the sheet again when the canvas opens, when you switch tabs and whenever the sheet changes. In **Data**, the sheet and range take the place of the rows, with **Update** (read again now), **Change…** and **Unlink**, which keeps the last values.
-
-- Everyone sees the numbers with their own access. Someone who can't open the plan sees the values last saved on the canvas, marked as saved.
-- If rows or columns at a corner of the range are deleted, the chart keeps its values and says the range is gone, so you can pick it again with **Change…**.
-- Exports draw the saved values and carry no link. A duplicate or a copy and paste within livediagram stays linked.
-- Linking, Update, Change and Unlink are an Editor's. Participants and Viewers see the line and the live values.
-
-</AppNote>
-
-<AppNote app="livedesign">
-
-Instead of typing the numbers in, a chart can take them from a range of a [liveplanner](https://www.liveplanner.app) Sheet and keep in step with it. It stays a native chart, drawn in your theme and styled and exported like any other: only its numbers come from the sheet.
-
-<Step n={1}>
-  Right-click the chart, open **Tools**, then **Data**, and choose **Link to Sheet…** under the
-  rows.
-</Step>
-<Step n={2}>
-  Pick one of your plans, then one of its Sheets, and type the range as in a spreadsheet, such as
-  `B2:E9` (it starts filled with the sheet's filled cells). A preview shows what the chart will
-  draw.
-</Step>
-<Step n={3}>Press **Link**. The chart takes the range's values in one undo step.</Step>
-
-While the design is open, a linked chart reads its sheet again whenever the sheet changes, so an edit in liveplanner shows on the chart without you doing anything. A line below the chart, while it is hovered or selected, says where the numbers come from and how fresh they are ("Linked to Q3 Budget · updated 2 min ago").
-
-- **The Data section changes.** While linked it shows the plan, the sheet and the range in place of the rows, since the next read would overwrite a hand edit. Chart type, palette, legend, values, axis and animation stay yours to set.
-- **Update**, **Change…** and **Unlink** sit under it. Unlink keeps the last values and turns the chart back into one you edit by hand.
-- **Everyone sees the numbers.** The values are saved in the design, so someone who can't open the plan still sees the chart as last saved (the line says "saved" rather than "updated"). Exports draw the saved values too.
-- **Only an Editor** can link, update, change or unlink. A Participant or a Viewer sees the chart and its line but changes nothing.
-- If a row or column at a corner of the range is deleted, the chart keeps its values and the line says **The linked range is gone**: use **Change…** to pick it again.
-
-</AppNote>
-
-<AppNote app="livedocuments">
-  Linking a chart to a Sheet is covered in [Charts linked to a
-  sheet](/help/palette/tools/data-elements/).
-</AppNote>
+Instead of typing the numbers in, a chart can take them from one of your liveplanner plans and keep in step with it: a range of a Sheet, a board's cards counted by column, label, assignee or priority, or a Dashboard metric. Right-click the chart, open **Tools**, then **Data**, and choose **From a Plan…** under the rows. With a source of several series, pick which feed the chart and in what order. **Freeze** keeps the numbers as of a day. See [Live Data From a Plan](/help/palette/tools/data-elements/live-data/).
 
 <Tip>
   For a single percentage rather than a series, a [progress bar or

@@ -22,7 +22,7 @@ const OX = 12;
 const OY = 10;
 
 // User Interface: the editor laid out, with numbered callouts on its parts: 1 the sidebar and its page tree, 2 the
-// formatting row, 3 the page, and 4 the footer, whose tabs are Pages, Ask and AI Knowledge.
+// formatting row, 3 the page, and 4 the footer, whose tabs are Pages, Ask and Insights.
 export function UserInterfaceArt() {
   return (
     <Stage>

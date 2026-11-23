@@ -5,11 +5,11 @@ import { McpResultScene } from '@/editions/liveknowledge/components/illustration
 export const metadata = helpMetadata({
   title: 'The Knowledge API',
   description:
-    "The REST routes behind a Knowledgebase's pages, search, Ask, verification and AI Knowledge, and where to read their OpenAPI reference.",
+    "The REST routes behind a Knowledgebase's pages, search, Ask, verification and Insights, and where to read their OpenAPI reference.",
   path: '/help/developers/knowledge-api/',
 });
 
-<ArticleLayout path="developers/knowledge-api" title="The Knowledge API" description="The REST routes behind pages, search, Ask and AI Knowledge, and where to find their OpenAPI reference." categoryTitle="Developers" categorySlug="developers">
+<ArticleLayout path="developers/knowledge-api" title="The Knowledge API" description="The REST routes behind pages, search, Ask and Insights, and where to find their OpenAPI reference." categoryTitle="Developers" categorySlug="developers">
 
 The app, the MCP server and the CLI all use the same REST API, so anything they do, your own script can do too. This article is a map of the routes a Knowledgebase adds to the API every liveworkspace app has. For request and response shapes, read the OpenAPI document the product serves, which is always current:
 
@@ -52,11 +52,11 @@ Every route is under `/api/documents/{id}`, where `{id}` is the Knowledgebase's 
 | `GET context`                           | The Always in Context pages within 8,000 tokens              | `get_context`  |
 | `GET ai`, `PUT ai/key`, `PUT ai/model`, `DELETE ai/key` | AI Settings                                  |                |
 
-**AI Knowledge**
+**Insights**
 
 | Route                                   | Does                                                         | MCP tool       |
 | --------------------------------------- | ------------------------------------------------------------ | -------------- |
-| `GET knowledge`                         | The whole AI Knowledge view in one read                      |                |
+| `GET knowledge`                         | The whole Insights view in one read                      |                |
 | `POST pages/{tabId}/suggestions`        | Suggest an edit                                              | `suggest_edit` |
 | `GET suggestions`                       | The suggestions waiting                                      |                |
 | `POST suggestions/{id}/accept`, `…/dismiss` | Accept or dismiss one                                    |                |
@@ -72,6 +72,6 @@ Every route is under `/api/documents/{id}`, where `{id}` is the Knowledgebase's 
 - Every page and passage answer carries the trust fields described in [The liveknowledge MCP Tools](/help/developers/liveknowledge-mcp-tools/#the-trust-fields).
 - Roles are checked on the server for every route. A token acts with its person's role, narrowed by its scopes: without `write` it acts as a Participant at most, and a read-only token as a Viewer.
 - Some actions take an Editor in person, never a token: emailing the owners, and allowing a connection to write.
-- Ask, AI Knowledge's model calls and Describe to Set Up run on built-in AI (Cloudflare Workers AI, with daily limits), or on the team's own AI key once one is saved. `GET ai` answers `builtIn`: whether this server has built-in AI.
+- Ask, Insights' model calls and Describe to Set Up run on built-in AI (Cloudflare Workers AI, with daily limits), or on the team's own AI key once one is saved. `GET ai` answers `builtIn`: whether this server has built-in AI.
 
 </ArticleLayout>

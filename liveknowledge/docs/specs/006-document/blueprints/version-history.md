@@ -70,6 +70,21 @@ VERSION_AUTO_MAX_DAYS`, and unnamed rows whose running byte total from the newes
 - **VH7 anonymise.** `anonymiseDocument` rewrites `tab_versions.data` through `anonymiseJsonText` where
   `instr(data, person)`, and sets `author_id`/`author_name` to the anonymised person.
 - **VH8 copies.** A document copy (`exportCopy`) reads `tabs` only: no versions travel.
+- **VH25 the agent column, schema step 43.** `versionAgentSchemaStep` (`versions/version-schema.ts`) adds
+  `author_agent TEXT NULL` to `tab_versions` when `PRAGMA table_info(tab_versions)` lacks it (as V18 asks before its
+  ALTER), so it is safe however far a room got and runs again harmlessly. Rows from before it read NULL: a person's.
+  The snapshots' store keeps no agent: a named version names whoever named it, always a person.
+- **VH26 the agent's stamp.** After an agent's write lands (`notePageWriteAfter`, `routes/changesets.ts`: a changeset,
+  a revert, the Pages route's `write_page`, a version restore), the batch that notes the page's writer also runs
+  `agentVersionsStampStatement` (`db/versions.ts`): the `PageWriter`'s agent name (`writerOf`, the same name the page's
+  Created and Updated keep) set as `author_agent` on (a) the `save` row at the tab's current revision, which the save
+  trigger kept with nobody or a draft's writer, now named the token's person (`authorOf`: id, name, colour), and (b)
+  the `agent` and `restore` rows of that person on that tab kept within `VERSION_AGENT_BURST_MS` that carry no agent
+  yet: the version before this burst. Rows that already name an agent are left alone. One `UPDATE`, in the batch the
+  write's stamp already sends: no extra round trip. A person's Save (`saveVersionStampStatement`) sets
+  `author_agent = NULL`.
+- **VH27 the wire.** `versionAuthorOf` answers `{ name, color, agent }` when `author_agent` is a non-empty string,
+  `{ name, color }` otherwise.
 
 Schema step 11 (`document-schema.ts` `V11`, from `versions/named-store-schema.ts`), additive and idempotent: the
 platform's `SNAPSHOT_SCHEMA` (SN3, `CREATE ... IF NOT EXISTS`, the same SQL its store runs on first use), then
@@ -154,6 +169,11 @@ invalid_name`. Renames the named version holding the stored revision (either sto
 - **VH18 editor restore.** The panel marks the tab as its own restore (`own-restores.ts`) for the request, so the
   relayed changeset raises no changeset toast on the restorer's screen; it then shows "Restored the version kept
   <when>" with Undo, which restores `undoVersionId` the same way and reads "Restore undone".
+- **VH28 an agent's version on screen.** `VersionRow` and `VersionDetail` draw an author with `agent` as
+  `agentForPerson(agent, name)` ("Claude for Priya Shah", `@liveworkspace/workbench/components/ai-writer/agent-for-person`)
+  and the shared `AiWriterMark` sparkle after it, worded by `aiVersionWords(kind)` (`version-words.ts`: `save` "Saved
+  by AI", `agent` "Edited by AI", `restore` "Restored by AI", `manual` "Named by AI", `idle` "Changed by AI"). A
+  person's author keeps their colour dot and name.
 - **VH19 editor gate.** Name, Restore and Make a Copy render only when `can.edit` (Make a Copy also needs no tab
   scope); History renders when the document is server-stored, hydrated, not offline, not embedded and not in a
   workbench frame, no welcome is open and no Community visitor holds the session. It is the footer's
@@ -225,6 +245,8 @@ idle and agent captures inside SQL are logged by the restore and copy that read 
 | VH14, VH16   | `apps/api/src/versions/restore-tab.test.ts`                                                                       |
 | VH17         | `apps/api/src/routes/versions.test.ts` (copy)                                                                     |
 | VH18, VH19   | `apps/editor/components/versions/*.test.tsx`                                                                      |
+| VH25-VH27    | `apps/api/src/db/versions.test.ts` (step, stamp, by line), `apps/api/src/routes/agent-authorship.test.ts`         |
+| VH28         | `apps/editor/components/versions/VersionHistoryPanel.test.tsx` (an agent's row and detail)                        |
 | VH20-VH23    | `apps/api/src/db/named-versions.test.ts`, `apps/api/src/routes/versions.test.ts` (old store only, new only, both) |
 | VH24         | `apps/api/src/document-room/document-room-store.test.ts`                                                          |
 | what changed | `packages/document/src/version-changes.test.ts`                                                                   |

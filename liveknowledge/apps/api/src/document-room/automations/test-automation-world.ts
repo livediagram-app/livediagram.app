@@ -92,7 +92,7 @@ export interface RoomWorld {
   settled(): Promise<void>;
   send(method: string, path: string, body?: unknown, who?: Who): Promise<Response>;
   // The knowledgebase, started with its pages, as its owner's; its owner has granted the test token (`tok_1`) the
-  // `write` scope here, as an Editor does in AI Knowledge (knowledge/agent-grants.ts).
+  // `write` scope here, as an Editor does in Insights (knowledge/agent-grants.ts).
   create(
     tabs?: { id: string; name: string; elements: Element[]; knowledge?: unknown }[],
   ): Promise<void>;

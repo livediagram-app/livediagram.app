@@ -16,7 +16,7 @@ import {
 } from './overview-words';
 import { overviewFailureText } from './suggestions-api';
 
-describe('what AI Knowledge says', () => {
+describe('what Insights says', () => {
   it('who asked, counting asks', () => {
     expect(
       askedByText({ asked: 4, byPeople: 3, agents: [{ name: 'Coding Agent', asked: 1 }] }),

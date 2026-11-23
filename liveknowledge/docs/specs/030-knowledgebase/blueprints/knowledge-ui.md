@@ -75,7 +75,9 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   per article (`meta`, `foot`) and a ProseMirror plugin that places each as a widget decoration (constant work a
   transaction: the first block's size and the document's); `ArticleEditor` hands the plugin to `mountArticleView`
   (`extraPlugins`) and `PageKnowledgeSlots` portals `PageMetaRow` into the host. The row is 28 px tall at least
-  whatever it holds, so the writing does not move when Page Health arrives. It holds: the tick with "Verified by
+  whatever it holds, so the writing does not move when Page Health arrives. What does move it (Required Reading's banner, a second line of pills on a phone) is
+  measured again: `observePageSlots` watches the hosts' sizes and `ArticleEditor` schedules a measure on each change,
+  so the zones, and the elements the narrow view draws at them, follow the blocks. It holds: the tick with "Verified by
   <name>" or the amber Review Due pill (nothing for Never Verified), "Review due <date>" ("Review was due" once
   passed), "Changed since verified" (from Page Health), and for whoever may verify a button: "Verify", or "Verify
   Again" once verified.
@@ -134,13 +136,13 @@ which takes Verify out of the meta row, Page Health, the tree's row menu and the
 `pageHealthFacts` reads an `off` page's fields for the score's own state (it leaves verification out under Never
 regardless). Wire states from the api (an Ask source, a search result, a conflict side) arrive as `off` and draw
 no badge (`sourceTrust` answers mark `off`, `trustText` an empty string); `answerTrust` answers none when every
-source is `off`. AI Knowledge reads the period from the live settings store (`useReviewEvery`, as the rail does; the read's
+source is `off`. Insights reads the period from the live settings store (`useReviewEvery`, as the rail does; the read's
 `overview.reviewEvery` only where no knowledgebase is named), so a change shows at once with no new read: `FigureTiles` draws Average Health in Verified's place
 and `HealthSection` drops the share, the bar, the legend and Remind the Owners. Tests: `page-knowledge.test.ts`
 (`pageTrust`, `trustMarks`, `knowledgeRights` a role at a time), `page-knowledge-ui.test.tsx` (the meta row and the
 Page Health card a role at a time), `page-knowledge-store-ui.test.tsx` (Never and back), `PageHealthScore.test.tsx`
 (the facts, Knowledge Health, a conflict side), `source-meta.test.ts`, `ask-words.test.ts`, `AskView.test.tsx`,
-`AiDashboard.test.tsx`, each for Never and a set period.
+`InsightsDashboard.test.tsx`, each for Never and a set period.
 
 ### Share roles
 
@@ -236,8 +238,17 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
 - **The read.** Page Health answers `created` and `updated` as `{ by, at, kind, agent?, via? }`
   (`PageAuthorStamp`, `@liveknowledge/api-schema`).
 - **The editor.** `PageMakersBadges` (`components/knowledge/PageMakersBadges.tsx`), in `PageMetaRowView` after the
-  reading time: two pills of the meta row's own size, neutral (`slate`), each with a `HoverCard` from
-  `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`). A page without a row draws neither.
+  reading time: two pills of the meta row's own size, neutral (`slate`), each opening an `AnchoredPopover` (no hover card: the meta row's labelled
+  buttons have none, owner 2026-11-23) of `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`); 20 px tall, with a 44 px tap on touch (`MAKER_PILL_TOUCH`: `relative touch-target-y`). A page without a row draws neither.
+- **An agent for its person.** Every named surface words an `ai` stamp with `agentForPerson(stamp.agent, nameOf(stamp.by),
+fallback)` (`@liveworkspace/workbench/components/ai-writer/agent-for-person`, shared with the approval line and
+  Version History): the pills' hover cards ("Created by Claude for Priya Shah through MCP on 12 Nov", fallback "an
+  agent"), the header's discs (`makersOf`, "Claude for Priya Shah, Created", fallback "An Agent") and Page Health's
+  foot. The foot's `StampRow` (`PageHealthCard.tsx`) takes a `PageStamp` `{ at, by?, agent? }` (`agent` the name
+  `stampOf` in `PageRail.tsx` carries for an `ai` stamp, the suggestion's excepted): the person's disc, the name line
+  "Claude for Priya Shah", then the shared `AiWriterMark` ("Created by AI", "Edited by AI"), and under it "Created 3
+  hours ago". An accepted suggestion's stamp reads "Claude, accepted by Priya Shah" with the same mark. Tests:
+  `page-makers.test.ts`, `PageMakersStack.test.tsx`, `PageActivity.test.tsx`.
 - **Tests.** `page-writer.test.ts` (V18 on a room at V17 with rows, every kind of writer), `routes/page-cover.test.ts`
   (every kind stamped through the routes, the suggestion's),
   `knowledge-page-routes.test.ts` (Page Health answers them; an agent's write shows as one),
@@ -443,6 +454,12 @@ own picture loop would have been a copy of it. What was done, exactly:
 - `ArticleInsert` gains `'embed'`, placed as `{ type: 'video', provider: 'live' }` (`PLACE_INTENT` in
   `hooks/editor/useArticles.ts`); `placeIntentAt` (`useElementCreation.ts`) takes a `video` intent. The element
   lands at the caret and the writing takes it into an object zone, as it takes a chart or a sticky.
+- Its size (Work Tracker 1386): `useArticles` places the embed with a size, `liveEmbedPageSize(textWidth)` in
+  `lib/article/article-embed-size.ts`: the text column's width, rounded, by three quarters of it
+  (`LIVE_EMBED_PAGE_ASPECT`, 4:3). `placeIntentAt` takes the size and puts the element's left edge at the text's left
+  (`articleTextOrigin`), its centre just under the caret's line as every insert's is (the intake takes in only an
+  object whose centre is on a page, so a centre pushed down by the embed's height left it loose on a short page, with
+  no zone and never shrunk to a narrow column). Other inserts keep their default size.
 - Its face is the platform's: the item's snapshot picture (the platform's preview, `/api/previews/items/<id>`), its
   app's mark, its name, **Open** in a new tab, and, on screen, the item's own read-only frame over the picture. A
   reader who cannot open it sees "You don't have access to <name>." and "Ask its owner to share it with you.", with
@@ -467,7 +484,7 @@ has not been seen in a browser.
 
 ## Not built
 
-The Ask tab, the AI Knowledge tab, Settings > AI and Home (another change's), over the client above.
+The Ask tab, the Insights tab, Settings > AI and Home (another change's), over the client above.
 
 ## Where this differs from the specs
 

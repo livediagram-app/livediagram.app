@@ -104,7 +104,7 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
       ctx.waitUntil?.(versionTelemetry(ctx.env, 'Restored', frontDoorOf(ctx.request)));
       const after = { status: 200, body: { changeset: result.body.restored.changesetId } };
       refreshAfterWrite(ctx, document.id, tabId, author, after);
-      await notePageWriteAfter(ctx, tabId, owner, after);
+      await notePageWriteAfter(ctx, tabId, owner, after, author);
     }
     return json(result.body, { status: result.status });
   }
@@ -124,10 +124,13 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
   if (result.status === 201) {
     ctx.waitUntil?.(versionTelemetry(ctx.env, 'Copied', frontDoorOf(ctx.request)));
     // The copy is a new page, made by whoever copied it.
-    await notePageWriteAfter(ctx, result.body.tab.id, owner, {
-      status: 200,
-      body: { changeset: true },
-    });
+    await notePageWriteAfter(
+      ctx,
+      result.body.tab.id,
+      owner,
+      { status: 200, body: { changeset: true } },
+      author,
+    );
   }
   return json(result.body, { status: result.status });
 }

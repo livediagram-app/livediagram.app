@@ -147,12 +147,12 @@ const emailOwner = defineAction<EmailOwnerStep & ItemPart>({
   summary: () => 'Email the Page Owner',
 });
 
-// ---- AI Knowledge ------------------------------------------------------------------------------------------------
+// ---- Insights ------------------------------------------------------------------------------------------------
 
 const context = defineAction<ContextStep & ItemPart>({
   kind: CONTEXT_STEP,
   name: 'Always in Context',
-  group: 'AI Knowledge',
+  group: 'Insights',
   line: 'puts a page in, or takes it out of, the pages every agent is handed before it starts',
   format:
     `{"kind":"context",${RUN_OR_PAGE},"on":true (Add to Always in Context) or false (Remove from it)} ` +
