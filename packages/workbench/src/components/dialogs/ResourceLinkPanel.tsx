@@ -83,7 +83,7 @@ function PickList({
             <span className="min-w-0 flex-1 truncate">{item.name}</span>
             {note?.id === item.id ? (
               <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                {note.label}
+                <span className="text-optical-line">{note.label}</span>
               </span>
             ) : null}
             {picked === item.id ? (

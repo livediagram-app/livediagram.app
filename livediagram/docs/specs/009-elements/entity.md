@@ -140,7 +140,7 @@ never leaves an empty tail, while a box someone stretched on purpose keeps its e
 ## The Fields dialog
 
 The rows also live in a **Fields dialog**: a centred modal, a bottom sheet on a phone, under the dialog hero header
-([Dialog hero header](../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md); its art is an entity rising
+([Dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md); its art is an entity rising
 from the band's foot, its first field's key in the accent). Per field it has a key dropdown, a name input, a type input and a remove button, then Add Field, at a size a finger lands on (a
 row of key, name and type had no room in the 224px menu, where it used to be an inline section). Each change saves
 as it is made, as in place: leaving an input saves it, a key, a remove and an add save at once. So there is no

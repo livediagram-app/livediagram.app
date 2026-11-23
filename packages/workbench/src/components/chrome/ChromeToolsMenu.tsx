@@ -151,7 +151,7 @@ function ToolBadge({ badge }: { badge: string }) {
         data-tools-badge=""
         className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-semibold leading-4 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
       >
-        {badge}
+        <span className="text-optical-line">{badge}</span>
       </span>
     );
   return (
