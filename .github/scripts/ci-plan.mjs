@@ -11,7 +11,7 @@
 //   BASE=<sha or empty> HEAD=<sha> node .github/scripts/ci-plan.mjs
 //
 // With no BASE (a manual run, the nightly run, a new branch's first push) or a change to CI itself
-// or to the root's shared config (ci-run-all.mjs; a guard's baseline list is not one), everything runs. Writes `groups`, `editors`, `e2e`, `deploys` and
+// or to the root's shared config or the parts of .github/ every job runs (ci-run-all.mjs), everything runs. Writes `groups`, `editors`, `e2e`, `deploys` and
 // `any` to $GITHUB_OUTPUT when it is set, and prints the plan either way.
 //
 // The deploys (docs/ci.md "Deploys") read the same answer with PLAN_MODE=deploy and BASE set to the
@@ -24,7 +24,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { readersReached, repoReaders } from './ci-readers.mjs';
-import { GUARD_DATA_HOST, forcesAll, isGuardData } from './ci-run-all.mjs';
+import { GUARD_DATA_HOST, forcesAll, forcesE2e, needsPlatformChecks } from './ci-run-all.mjs';
 import { deployGroups, groupOf } from './deploy-group.mjs';
 
 // turbo without installing the workspace (it reads only the manifests and the lockfile). Locally:
@@ -149,15 +149,15 @@ if (!all && !deployMode) {
   }
 }
 
-// A guard's baseline list (ci-run-all.mjs) is data, so it forces nothing; where the change reaches no
-// platform workspace, one small one stands in, so the platform's Checks job still runs the guards on it.
-if (!all && !deployMode && changed.some(isGuardData)) {
+// The rest of `.github/` (ci-run-all.mjs) forces nothing; where the change reaches no platform workspace,
+// one small one stands in, so the platform's Checks job still runs the guards and the CI script tests on it.
+if (!all && !deployMode && changed.some(needsPlatformChecks)) {
   const platform = GROUPS.find((g) => g.group === 'platform').dirs;
   if (!packages.some((p) => platform.some((dir) => `${p.path}/`.startsWith(dir)))) {
     const host = turboPackages(false).find((p) => p.name === GUARD_DATA_HOST);
     if (host) {
       packages.push(host);
-      reason += `, plus ${GUARD_DATA_HOST} for the guards' baseline`;
+      reason += `, plus ${GUARD_DATA_HOST} for the platform's Checks on .github/`;
     }
   }
 }
@@ -274,6 +274,12 @@ function deployOf(p) {
   };
 }
 const deploys = packages.map(deployOf).filter(Boolean);
+
+// What only the e2e jobs run (ci-run-all.mjs) runs every product's E2E, and no other job for it.
+if (!all && !deployMode && changed.some(forcesE2e)) {
+  for (const spec of GROUPS) if (spec.editor && !e2e.includes(spec.group)) e2e.push(spec.group);
+  reason += ", plus every product's E2E for its workflow";
+}
 
 const plan = { reason, groups, editors, e2e, deploys, any: groups.length > 0 };
 console.error(`[ci-plan] ${reason}; ${packages.length} workspaces`);
