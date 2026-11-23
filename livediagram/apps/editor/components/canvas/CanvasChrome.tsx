@@ -37,7 +37,7 @@ import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { panelEnabled } from '@/lib/user-preferences';
 import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
-import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
+import { useSnapGuides } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 
 // Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
 // fetches it as the editor mounts).

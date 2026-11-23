@@ -30,7 +30,10 @@ import {
   isSheetAnchoredChart,
   takesAttachments,
 } from '@liveplanner/project';
-import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
+import {
+  ArrowLineControls,
+  ArrowPointerControls,
+} from '@liveworkspace/workbench/components/canvas/arrow-controls';
 import {
   ContextMenu,
   ContextMenuDivider,

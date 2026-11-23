@@ -5,7 +5,7 @@ import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/us
 import type { EmbedProvider } from '@liveknowledge/document';
 import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
-import { getLineArtIconCatalog } from '@/lib/icons';
+import { getLineArtIconCatalog } from '@liveworkspace/workbench/lib/icons';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
 import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';

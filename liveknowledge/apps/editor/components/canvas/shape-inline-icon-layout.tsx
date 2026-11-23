@@ -18,7 +18,7 @@ import {
   labelTextStyleCss,
   TEXT_ALIGN,
 } from '@/components/canvas/label-style';
-import { IconGlyph } from '@/components/primitives/icon-glyph';
+import { IconGlyph } from '@liveworkspace/workbench/components/primitives/icon-glyph';
 import { ShapeMarkerGlyph } from '@liveworkspace/workbench/components/canvas/ShapeMarker';
 
 // Inline-icon + marker + label layout for a shape, split out of

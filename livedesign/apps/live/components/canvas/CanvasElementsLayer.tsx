@@ -32,7 +32,7 @@ import {
   type SelectionGripHosts,
 } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
-import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
+import { AgentFocusOverlay } from '@liveworkspace/workbench/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { BoxedShared } from '@/components/canvas/boxed-shared';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';

@@ -213,7 +213,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - `packages/workbench/src/lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
   `CanvasElementsLayer`) publishes `sketchBackdropIds` per tab; `useIsSketchBackdrop(id)` is a per-id
   `useSyncExternalStore` read, so only views whose flag flips re-render.
-- `components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
+- `../packages/workbench/src/components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
   reads (never position) and `SketchOverlay`, an absolutely positioned `<svg viewBox="0 0 w h">` drawing solid, hatch,
   strokes then details. `BoxedElementView` mounts it for every sketched boxed element (shapes, stickies, tables);
   `ShapeContentRouter` skips its silhouette overlay when `isHandDrawn(finish)`. `useSketchPaint` reads
@@ -239,7 +239,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - Palette tiles: `packages/workbench/src/components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` and the
   `.palette-finish-*` classes in `app/globals.css` are defined, with their test, but no Plan surface draws a palette
   tile, so nothing applies them.
-  `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
+  `../packages/workbench/src/components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
   `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
 
 - Faces (spec "Every other face is drawn by hand too"): `finishSplitsFace(el)` (`finish.ts`) names the elements

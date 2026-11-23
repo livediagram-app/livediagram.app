@@ -20,7 +20,7 @@ Scope, by file:
 | `apps/live/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                           |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
 | `apps/live/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                 |
-| `apps/live/lib/icons.ts`                                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
+| `../packages/workbench/src/lib/icons.ts`                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
 | `apps/live/components/palette/ElementDataSections.tsx`    | The Progress section inside the Tools flyout                                 |
 | `apps/live/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                            |

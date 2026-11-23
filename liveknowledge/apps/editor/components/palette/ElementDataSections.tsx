@@ -48,7 +48,7 @@ import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
 import { ChartAxisRows } from '@liveworkspace/workbench/components/palette/ChartAxisRows';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
-import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
+import { ChartTypeTiles } from '@liveworkspace/workbench/components/palette/ChartTypeTiles';
 import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
 import {
   hasWebRowsSection,

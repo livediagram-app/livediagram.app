@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/document/src/validate.ts`                               | Snippet length, closed language set, closed scheme ids                                        |
 | `packages/document/src/svg-render-shapes.ts`                      | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
 | `../packages/workbench/src/lib/code-tokens.ts`                    | `tokenizeCode`: the lazy tokenizer chunk                                                      |
-| `apps/editor/lib/code-highlight-registry.ts`                      | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
+| `../packages/workbench/src/lib/code-highlight-registry.ts`        | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
 | `apps/editor/components/canvas/CodeBlockView.tsx`                 | Canvas card, badge, placeholder, highlighted lines                                            |
 | `../packages/workbench/src/components/dialogs/CodeEditDialog.tsx` | Edit code dialog                                                                              |
 | `apps/editor/components/dialogs/EditorElementDialogs.tsx`         | Mounts the dialog for `codeEditOpenForId`                                                     |

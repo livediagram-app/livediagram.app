@@ -41,7 +41,7 @@ import type { useContextMenuScaffold } from '@liveworkspace/workbench/components
 import { BorderControls } from '@/components/palette/BorderControls';
 import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
-import { inkSwatch, shownColour } from '@/components/palette/ink-row';
+import { inkSwatch, shownColour } from '@liveworkspace/workbench/components/palette/ink-row';
 import { useTextContrast } from '@/hooks/ui/useTextContrast';
 
 // The multi-selection menu's style + motion sections (docs/specs/008-canvas/canvas-and-palette.md), each

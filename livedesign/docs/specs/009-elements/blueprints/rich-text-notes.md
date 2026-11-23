@@ -11,7 +11,7 @@ Scope, by file:
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `../packages/model-core/src/rich-text.ts`                                       | `TextRun`, `RunHeading`, list / heading / trim algebra, `ATTR_KEYS`              |
 | `packages/design/src/element-types.ts`                                          | `note?` + `noteRich?` on every boxed element                                     |
-| `apps/live/lib/note-value.ts`                                                   | `canonicalNote`, `noteFieldsEqual`: the one stored form of a note                |
+| `../packages/workbench/src/lib/note-value.ts`                                   | `canonicalNote`, `noteFieldsEqual`: the one stored form of a note                |
 | `apps/live/hooks/canvas/useEditorNotes.ts`                                      | `noteOpenId`, `openNote`, `closeNote`, `setNote` through history                 |
 | `apps/live/components/panels/EditorAnchoredPopovers.tsx`                        | Mounts `NotePopover`; lifecycle telemetry on commit                              |
 | `apps/live/components/notes/NotePopover.tsx`                                    | The anchored shell: position, flip, outside-click commit, Delete note            |
@@ -178,7 +178,7 @@ export function expandRangeToLines(text: string, range: Range): Range;
 export function trimRuns(runs: TextRun[]): TextRun[];
 export function hasRichFormatting(runs: TextRun[] | undefined): boolean;
 
-// apps/live/lib/note-value.ts
+// ../packages/workbench/src/lib/note-value.ts
 export type NoteFields = { note: string; noteRich?: TextRun[] };
 export function canonicalNote(plain: string, runs?: TextRun[]): NoteFields;
 export function noteFieldsEqual(a: NoteFields, b: NoteFields): boolean;
@@ -314,10 +314,10 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 
 | Rule                                                   | Test                                                 | File                                                                         |
 | ------------------------------------------------------ | ---------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `note` mirrors `noteRich` (I1), trimmed (I3)           | `canonicalNote` keeps runs / trims on the runs       | `apps/live/lib/note-value.test.ts`                                           |
-| `noteRich` absent without formatting (I2)              | stores a plain note as text only                     | `apps/live/lib/note-value.test.ts`                                           |
-| Empty note strips both fields                          | whitespace-only reads as empty                       | `apps/live/lib/note-value.test.ts`                                           |
-| Formatting-only edit reports `Changed`                 | `noteFieldsEqual` spots a formatting-only change     | `apps/live/lib/note-value.test.ts`                                           |
+| `note` mirrors `noteRich` (I1), trimmed (I3)           | `canonicalNote` keeps runs / trims on the runs       | `../packages/workbench/src/lib/note-value.test.ts`                           |
+| `noteRich` absent without formatting (I2)              | stores a plain note as text only                     | `../packages/workbench/src/lib/note-value.test.ts`                           |
+| Empty note strips both fields                          | whitespace-only reads as empty                       | `../packages/workbench/src/lib/note-value.test.ts`                           |
+| Formatting-only edit reports `Changed`                 | `noteFieldsEqual` spots a formatting-only change     | `../packages/workbench/src/lib/note-value.test.ts`                           |
 | `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `../packages/model-core/src/rich-text.test.ts`                               |
 | Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `../packages/model-core/src/rich-text.test.ts`                               |
 | Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `../packages/model-core/src/rich-text.test.ts`                               |

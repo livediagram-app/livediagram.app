@@ -4,7 +4,10 @@
 // value drawn on the button, and the one row of choices its popover holds. The context menu stays the complete home of
 // every setting; these are the fast path to a handful of them.
 
-import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
+import {
+  BorderStrokeIcon,
+  BorderStyleIcon,
+} from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,

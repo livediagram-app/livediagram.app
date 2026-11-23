@@ -7,7 +7,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement, type WebRows } from '@liveknowledge/document';
 
-import { CardFace } from './CardFace';
+import { CardFace } from '@liveworkspace/workbench/components/canvas/web/CardFace';
 import { TagColoursProvider } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 
 afterEach(cleanup);

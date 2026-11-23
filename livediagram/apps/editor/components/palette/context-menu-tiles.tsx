@@ -14,7 +14,7 @@ import {
   ArrowFlowPreview,
   IconAnimationPreview,
 } from '@/components/palette/animation-previews-existing';
-import { IconPrims } from '@/components/primitives/icon-glyph';
+import { IconPrims } from '@liveworkspace/workbench/components/primitives/icon-glyph';
 
 export {
   NOOP,

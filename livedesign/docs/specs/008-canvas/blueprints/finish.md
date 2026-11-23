@@ -213,7 +213,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - `packages/workbench/src/lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
   `CanvasElementsLayer`) publishes `sketchBackdropIds` per tab; `useIsSketchBackdrop(id)` is a per-id
   `useSyncExternalStore` read, so only views whose flag flips re-render.
-- `components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
+- `../packages/workbench/src/components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
   reads (never position) and `SketchOverlay`, an absolutely positioned `<svg viewBox="0 0 w h">` drawing solid, hatch,
   strokes then details. `BoxedElementView` mounts it for every sketched boxed element (shapes, stickies, tables);
   `ShapeContentRouter` skips its silhouette overlay when `isHandDrawn(finish)`. `useSketchPaint` reads
@@ -236,7 +236,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   `useTabFinish()` when given the tile's `finishAction`, and `StickerPickerTab` wraps each sticker's art in it. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
   strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`) and `.palette-finish-marker` (round caps and joins, 2.75 px strokes at 0.88 (the default glyph line is close to 2.25, so 2.25 barely showed)
   opacity).
-  `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
+  `../packages/workbench/src/components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
   `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
 
 - Faces (spec "Every other face is drawn by hand too"): `finishSplitsFace(el)` (`finish.ts`) names the elements
@@ -258,7 +258,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - WebKit (spec "In WebKit"): `../packages/workbench/src/lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
   `GestureEvent` (WebKit's own; `navigator.vendor` is not used, since jsdom answers Apple too). When it holds,
   `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole), and `ShapeContentRouter` wraps
-  icon and sticker art in `components/canvas/SketchArtPicture.tsx` instead of the `filter: url(#lvd-sketch-tile)`
+  icon and sticker art in `../packages/workbench/src/components/canvas/SketchArtPicture.tsx` instead of the `filter: url(#lvd-sketch-tile)`
   div. `SketchArtPicture` renders an empty `[data-sketch-art-picture]` div (`aria-hidden`, `inert`, no pointer
   events) then a hider div holding the live art, all `absolute inset-0` in a `relative h-full w-full` box (the box
   the filtered div was). In a layout effect `sketchArtPictureCopy(live)` clones the art and swaps each top-level
@@ -531,7 +531,7 @@ per command letter.
 | face split per finish, element font on the wrapper           | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 | WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 | WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                 |
-| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/live/components/canvas/SketchArtPicture.test.tsx`                                                  |
+| pictures: markup, colours, ids, scale, margin, settle, reuse | `../packages/workbench/src/components/canvas/SketchArtPicture.test.tsx`                                  |
 
 ## Constants and configuration
 

@@ -1,7 +1,7 @@
 import { useState, type DragEvent as ReactDragEvent } from 'react';
 import { acceptsInlineIcon, type Element, type IconPosition } from '@livedocuments/document';
 import { iconDropSide } from '@/lib/canvas';
-import { ICON_DND_MIME } from '@/lib/icons';
+import { ICON_DND_MIME } from '@/lib/dnd-mime';
 
 // Dragging a palette icon ONTO a shape (docs/specs/008-canvas/canvas-and-palette.md inline icons), or onto
 // an icon, which it then replaces (docs/specs/008-canvas/canvas-and-palette.md "Swapping an icon"): the drag

@@ -25,7 +25,7 @@ import { ImageCreditRow } from '@liveworkspace/workbench/components/palette/Imag
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
-import { inkSwatch, shownColour } from '@/components/palette/ink-row';
+import { inkSwatch, shownColour } from '@liveworkspace/workbench/components/palette/ink-row';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 

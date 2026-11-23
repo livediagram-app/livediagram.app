@@ -30,7 +30,7 @@ export function cornerRadiusPx(
 | `apps/editor/components/canvas/boxed-element-face-parts.tsx` (dashed-border overlay) | 8                           |
 | `apps/editor/components/canvas/ImageElementView.tsx`                                 | 4                           |
 | `../packages/workbench/src/components/canvas/web/BannerFace.tsx`                     | `lg`'s px (24)              |
-| `apps/editor/components/canvas/web/SiteHeaderFace.tsx`                               | `md`'s px (12)              |
+| `../packages/workbench/src/components/canvas/web/SiteHeaderFace.tsx`                 | `md`'s px (12)              |
 | `apps/editor/components/canvas/web/StatRowFace.tsx`                                  | `md`'s px (12)              |
 | `../packages/element-model/src/svg-render-border.ts` (`borderOf`)                    | `DEFAULT_BOX_RADIUS_PX`     |
 | `packages/document/src/svg-render-describe.ts`                                       | 4 (images)                  |

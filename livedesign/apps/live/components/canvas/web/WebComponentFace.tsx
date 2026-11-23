@@ -1,8 +1,8 @@
 import type { WebComponentShape } from '@livedesign/design';
 import { BannerFace } from '@liveworkspace/workbench/components/canvas/web/BannerFace';
-import { CardFace } from '@/components/canvas/web/CardFace';
+import { CardFace } from '@liveworkspace/workbench/components/canvas/web/CardFace';
 import { ProcessFace } from '@liveworkspace/workbench/components/canvas/web/ProcessFace';
-import { SiteHeaderFace } from '@/components/canvas/web/SiteHeaderFace';
+import { SiteHeaderFace } from '@liveworkspace/workbench/components/canvas/web/SiteHeaderFace';
 import { StatRowFace } from '@/components/canvas/web/StatRowFace';
 import type { WebFaceProps } from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 

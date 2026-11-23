@@ -19,7 +19,7 @@ import {
   FLOW_PATH_CLASS,
   FLOW_PATH_DASH,
 } from '@liveworkspace/workbench/components/canvas/arrow-flow';
-import { IconGlyph } from '@/components/primitives/icon-glyph';
+import { IconGlyph } from '@liveworkspace/workbench/components/primitives/icon-glyph';
 import { ProgressView } from '@/components/canvas/ProgressView';
 import { RatingView } from '@/components/canvas/RatingView';
 import { PieChartView } from '@/components/canvas/PieChartView';
