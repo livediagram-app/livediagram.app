@@ -307,6 +307,9 @@ describe('live data', () => {
       doorsAnswering({ status: 200, body: '{}' }).doors.listPlanData('liveplanner', 'P'),
     ).rejects.toMatchObject({ status: 200 });
     await expect(
+      doorsAnswering({ status: 200, body: 'not json' }).doors.listPlanData('liveplanner', 'P'),
+    ).rejects.toMatchObject({ status: 200 });
+    await expect(
       doorsAnswering({ status: 400, body: '{}' }).doors.readPlanData('liveplanner', 'P', ask),
     ).rejects.toMatchObject({ status: 400 });
     await expect(
