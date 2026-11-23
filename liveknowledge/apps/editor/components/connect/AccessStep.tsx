@@ -5,12 +5,8 @@
 // how writing is allowed. Presentation only: the api is the rule.
 import type { ReactNode } from 'react';
 import { Button } from '@liveknowledge/ui';
-import {
-  AllowWritingIcon,
-  ReadsIcon,
-  SuggestionIcon,
-} from '@/components/ai-knowledge/ai-knowledge-icons';
-import { AI_MUTED } from '@/components/ai-knowledge/AiSection';
+import { AllowWritingIcon, ReadsIcon, SuggestionIcon } from '@/components/insights/insights-icons';
+import { INSIGHTS_MUTED } from '@/components/insights/InsightsSection';
 import {
   accessRows,
   reachLine,
@@ -39,7 +35,7 @@ export function AccessStep({
   name: string;
   onOpenAgents: () => void;
 }) {
-  const text = `text-[13px] leading-5 ${AI_MUTED}`;
+  const text = `text-[13px] leading-5 ${INSIGHTS_MUTED}`;
   return (
     <div className="flex flex-col gap-4" data-connect-access={role}>
       <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">

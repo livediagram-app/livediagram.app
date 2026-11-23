@@ -146,6 +146,9 @@ export function handleInternalItems(
         return { tabs: source.copy.tabs.length, items: 0 };
       },
       // A closed account, wherever it was closed: what livehuddle keeps for them beside their canvases.
+      // A plan's sent cards changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"): the room tells
+      // every open session, which reads its chips again with its own access.
+      sourceChanged: (id, change) => documentRoom(env, id).sourceChanged(change),
       personClosed: async (personId) => void (await deleteAccount(env, personId)),
       // A guest who became an account: what livehuddle keeps for the guest becomes the account's, keyed by any owner
       // id (the media owner of a guest is its hash, `mediaOwner`).

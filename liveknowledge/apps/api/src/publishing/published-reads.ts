@@ -12,13 +12,15 @@ import {
 import type { KnowledgeStyle } from '@liveknowledge/document';
 import { readDocumentMeta } from '../document-room/document-content';
 import { knowledgeDb } from '../knowledge/knowledge-db';
+import { servableImageIds } from '../db/image-grants';
 import type { DocumentEnv } from '../types';
 import { readSite, refreshPublished } from './published-snapshot';
 
 export type PublishedRead =
   | { kind: 'page'; address: string | null }
   | { kind: 'search'; query: string }
-  | { kind: 'sitemap' };
+  | { kind: 'sitemap' }
+  | { kind: 'media'; imageId: string };
 
 /** The site as every public answer carries it. */
 export type PublishedSiteAnswer = {
@@ -37,11 +39,15 @@ export type PublishedPageAnswer = {
   description: string;
   savedAt: number;
   writers: string[];
+  /** The cover band as drawn (P33); '' for none. */
+  cover: string;
 };
 
 export type PublishedAnswer =
   | { status: 'none' }
   | { status: 'moved'; address: string | null }
+  // A picture a published page places, which the knowledgebase may serve (P35).
+  | { status: 'media' }
   | {
       status: 'ok';
       site: PublishedSiteAnswer;
@@ -55,6 +61,25 @@ type PageRow = Omit<PublishedPageAnswer, 'writers'> & { writers: string };
 
 const TITLE_WEIGHT = 10;
 
+/** Whether a picture may be fetched from the public site (P35): a page still in the snapshot places it
+ *  (`published_media`, written as the page was drawn), and the knowledgebase may still serve it. The request names
+ *  only the picture; nothing it carries is trusted. */
+async function servesPublishedPicture(
+  env: DocumentEnv,
+  documentId: string,
+  imageId: string,
+): Promise<boolean> {
+  const placed = await knowledgeDb(env)
+    .prepare(
+      `SELECT 1 AS placed FROM published_media m JOIN published_pages p ON p.tab = m.tab
+        WHERE m.image = ? AND EXISTS (SELECT 1 FROM published_site) LIMIT 1`,
+    )
+    .bind(imageId)
+    .first<{ placed: number }>();
+  if (!placed) return false;
+  return (await servableImageIds(env, documentId, [imageId])).has(imageId);
+}
+
 /** One public read: the snapshot brought up to date first, then answered from it. */
 export async function readPublished(
   env: DocumentEnv,
@@ -67,6 +92,10 @@ export async function readPublished(
     // The snapshot as it stands is still what was published: answer from it, and try again on the next read.
     console.warn('[publishing] refresh_failed', { documentId, error: String(error) });
   }
+  if (read.kind === 'media')
+    return (await servesPublishedPicture(env, documentId, read.imageId))
+      ? { status: 'media' }
+      : { status: 'none' };
   const site = await readSite(env);
   if (!site) return { status: 'none' };
   const db = knowledgeDb(env);
@@ -120,7 +149,7 @@ export async function readPublished(
   const address = read.address ?? front;
   const page = await db
     .prepare(
-      `SELECT address, title, icon, html, description, saved_at AS savedAt, writers
+      `SELECT address, title, icon, html, description, saved_at AS savedAt, writers, cover
          FROM published_pages WHERE address = ?`,
     )
     .bind(address)

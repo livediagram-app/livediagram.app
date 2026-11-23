@@ -32,6 +32,8 @@ export type SitePage = {
   savedAt: number;
   /** The names of the people who wrote it, only when the site shows them. */
   writers: string[];
+  /** Its cover band as the snapshot drew it (the api's published-media.ts, blueprint P33); none is '' or absent. */
+  cover?: string;
 };
 
 export type SiteSearchResult = { address: string; title: string; snippet: string };
@@ -174,7 +176,7 @@ export function renderSitePage(view: SiteView, page: SitePage): string {
     canonical: `${view.origin}${path}`,
     image: `${view.origin}/opengraph-image`,
   })}<body>${header(view)}<div class="layout">${tree(view, page.address)}
-<main id="main"><article class="column">${
+<main id="main">${page.cover ?? ''}<article class="column">${
     crumbs.length
       ? `<ol class="crumbs" aria-label="Breadcrumb">${crumbs.map((c) => `<li><a href="${e(pagePath(view, c.address))}">${e(titleOf(c.title))}</a></li>`).join('')}</ol>`
       : ''

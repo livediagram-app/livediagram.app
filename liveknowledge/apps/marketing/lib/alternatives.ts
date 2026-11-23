@@ -216,7 +216,7 @@ const LIST: Alternative[] = [
     usBest: [
       'Ask runs on built-in AI, included, or on your own Claude or OpenAI key with the model you choose.',
       'Agents are first-class readers, through an MCP server and a CLI with trust fields on every passage.',
-      'AI Knowledge shows which agents read what, and the questions nobody could answer.',
+      'Insights shows which agents read what, and the questions nobody could answer.',
       'MIT-licensed and free to start.',
       'It sits in a workspace: a page embeds a live diagram, board, document or design from the other apps.',
     ],

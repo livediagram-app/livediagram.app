@@ -1,4 +1,4 @@
-// Edits suggested by agents over REST (docs/specs/030-knowledgebase/ai-knowledge.md "Edits suggested by agents";
+// Edits suggested by agents over REST (docs/specs/030-knowledgebase/insights.md "Edits suggested by agents";
 // docs/specs/024-agents/knowledgebase-for-agents.md `suggest_edit`):
 //   POST /api/documents/<id>/pages/<tab>/suggestions   { reason, after, before? }: a Participant or an Editor, or
 //                                                      an agent of one holding `suggest`
@@ -8,7 +8,7 @@
 //   POST /api/documents/<id>/suggestions/<sid>/dismiss the same
 // A suggestion changes nothing until it is accepted, and accepting never verifies the page (nor unverifies it). Each
 // of the three tells the open editors and arms the outbox (suggestions-changed.ts), so the page's marks and the
-// owner's Inbox row follow (ai-knowledge.md "On the page", "In the owner's Inbox").
+// owner's Inbox row follow (insights.md "On the page", "In the owner's Inbox").
 import { SUGGESTION_ADDED_EVENT } from '@liveknowledge/document/automations';
 import { hearsKnowledge, queueSuggestion } from '../document-room/automations/knowledge-events';
 import { routeWho } from '../document-room/automations/knowledge-who';
@@ -221,7 +221,7 @@ export async function handleSuggestionRoutes(route: KnowledgeRoute): Promise<Res
   if (segments.length !== 6 || !id) return null;
   if (segments[5] !== 'accept' && segments[5] !== 'dismiss') return null;
   if (request.method !== 'POST') return methodNotAllowed();
-  // An Editor of the whole knowledgebase (ai-knowledge.md "Share roles", Work Tracker 1362): a Participant's agent
+  // An Editor of the whole knowledgebase (insights.md "Share roles", Work Tracker 1362): a Participant's agent
   // suggests, and someone who may change every page decides; never a link confined to one page.
   if (grant.role !== 'edit' || grant.tabScope !== null) return forbidden();
   // A suggestion is for a person to accept or dismiss (knowledgebase-for-agents.md `suggest_edit`): an agent that

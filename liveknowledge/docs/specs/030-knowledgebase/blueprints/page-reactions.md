@@ -84,7 +84,7 @@ person))` with an index on `(tab, at)` and a trigger deleting a page's rows when
   an embed.
 - Someone who may not edit: `PageReactionsBesideZen`, in `CanvasChrome`'s bottom-right cluster just before
   `ZenControl` (shown there for a read-only session), renders the capsule when `pageEditing.mayEdit` is false, outside
-  Zen Mode, an embed, Version History, Ask and AI Knowledge.
+  Zen Mode, an embed, Version History, Ask and Insights.
 - The capsule: `h-10 phone:h-11`, white with a slate ring and `shadow-lg` like Cancel; segments, +N and Add Reaction
   44 px tall and at least 44 px wide on a phone. A segment of yours: brand tint, brand text, `aria-pressed`. Each segment's hover card says "👏 Clap" and "You
   and Priya reacted" (`reactorsLine`, shared with comment reactions). Up to 5 segments (2 under 640 px), then +N.

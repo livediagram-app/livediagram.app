@@ -9,7 +9,7 @@ import { lucideExternalLink } from '@liveworkspace/icons/lucide';
 import { buttonClassName, lucideGlyph } from '@liveknowledge/ui';
 import type { ConnectApp } from '@/lib/knowledge-connect/connect-apps';
 import { track } from '@/lib/telemetry';
-import { AI_MUTED } from '@/components/ai-knowledge/AiSection';
+import { INSIGHTS_MUTED } from '@/components/insights/InsightsSection';
 
 const ExternalIcon = lucideGlyph(lucideExternalLink, 14);
 
@@ -66,7 +66,7 @@ export function AppSteps({ app }: { app: ConnectApp }) {
       </ol>
       {app.note ? (
         <p
-          className={`mt-4 rounded-xl bg-slate-50 px-3.5 py-2.5 text-[13px] leading-5 dark:bg-slate-800/60 ${AI_MUTED}`}
+          className={`mt-4 rounded-xl bg-slate-50 px-3.5 py-2.5 text-[13px] leading-5 dark:bg-slate-800/60 ${INSIGHTS_MUTED}`}
         >
           {app.note}
         </p>

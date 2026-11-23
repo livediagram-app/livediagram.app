@@ -1,6 +1,6 @@
 'use client';
 
-// The surface Ask and AI Knowledge are drawn on (docs/specs/030-knowledgebase/blueprints/ask-ui.md "The frame"): it
+// The surface Ask and Insights are drawn on (docs/specs/030-knowledgebase/blueprints/ask-ui.md "The frame"): it
 // covers the editor's canvas and page tree, from the top of the editor's column to the top of the footer, whose
 // tabs are how the view is changed. Its header is the top row every view shares (KnowledgeTopRow): the view's name
 // and its own buttons, then Share and the account button. While it shows, the editor underneath is inert and its

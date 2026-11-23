@@ -1,6 +1,6 @@
 'use client';
 
-// AI Context in the right rail (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"): whether every
+// AI Context in the right rail (docs/specs/030-knowledgebase/insights.md "AI Context on a page"): whether every
 // agent is handed this page first. The agents that read it this week are Read This Week's popover now (ReadByAgents.tsx,
 // owner 2026-11-22). The questions Ask answered from it are Page Insights' now (PageInsights.tsx). It reads nothing of its
 // own: the agents ride Page Health's one read. Quiet, as the rest of the rail is: small-capital headings, no card, no

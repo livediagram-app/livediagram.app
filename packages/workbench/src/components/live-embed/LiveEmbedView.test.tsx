@@ -105,6 +105,20 @@ describe('a live embed', () => {
     expect(container.querySelector('iframe')!.className).toContain('pointer-events-none');
   });
 
+  it("keeps the name and Live in a row of their own, never over the file's controls (Work Tracker 1386)", () => {
+    frame = {
+      state: 'live',
+      src: 'https://www.liveplanner.app/embed/workbench?d=p1#ticket=t',
+      ready: true,
+    };
+    const { container } = view();
+    const bar = container.querySelector('[data-live-embed-name]')!;
+    const body = container.querySelector('[data-live-embed-body]')!;
+    expect(bar.textContent).toContain('Live');
+    expect(body.contains(bar)).toBe(false);
+    expect(body.contains(container.querySelector('iframe'))).toBe(true);
+  });
+
   it('keeps the frame hidden and says it is opening until the file says hello', () => {
     frame = {
       state: 'live',
@@ -176,6 +190,42 @@ describe('a live embed', () => {
     expect(controls.className).toContain('bottom-full');
     expect(controls.style.transform).toBe('scale(2)');
     expect(controls.contains(screen.getByLabelText('Open in liveplanner'))).toBe(true);
+  });
+
+  it('slides its controls left to stay on a phone screen as they show, in canvas units', () => {
+    const box = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    // An element at 300 on a 390-wide phone: the 140-wide row above it would end at 440.
+    const spy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.hasAttribute('data-live-embed-controls')
+          ? box(300, 300, 140, 28)
+          : box(300, 334, 80, 60);
+      });
+    const width = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    try {
+      const { container } = render(
+        <CanvasZoomProvider zoom={0.5}>
+          <LiveEmbedView
+            liveItem={ITEM}
+            liveName="Roadmap"
+            livePoster={POSTER}
+            hostName="h"
+            canChoose
+          />
+        </CanvasZoomProvider>,
+      );
+      const controls = container.querySelector<HTMLElement>('[data-live-embed-controls]')!;
+      expect(controls.style.transform).toBe('scale(2)');
+      fireEvent.pointerEnter(controls.parentElement!);
+      // 58px left on screen is 116 canvas units at half zoom.
+      expect(controls.style.transform).toBe('translate(-116px) scale(2)');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      spy.mockRestore();
+    }
   });
 
   it('says a file is gone, offering an Editor another', () => {

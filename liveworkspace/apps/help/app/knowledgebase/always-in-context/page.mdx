@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ContextBudgetScene } from '@/editions/liveknowledge/components/illustrations/ai-knowledge';
+import { ContextBudgetScene } from '@/editions/liveknowledge/components/illustrations/insights';
 
 export const metadata = helpMetadata({
   title: 'Always in Context',
@@ -26,10 +26,10 @@ From the page tree:
   page out.
 </Step>
 
-Or from AI Knowledge:
+Or from Insights:
 
 <Step n={1}>
-  Press the **AI Knowledge** tab in the footer and find **Always in Context**.
+  Press the **Insights** tab in the footer and find **Always in Context**.
 </Step>
 
 <Step n={2}>
@@ -52,7 +52,7 @@ Agents work within a limited context, so the pages handed to every agent are hel
 
 The MCP tool `get_context` (and the CLI's `context`) answers with the Always in Context pages as Markdown, in the order of the page tree, each with how far it can be trusted, and the Knowledgebase's Review Period. Agents are told to call it first. Each page handed over counts as a read in [Connected Agents](/help/knowledgebase/connecting-an-agent/).
 
-**What an Agent Sees**, at the foot of AI Knowledge, shows a short sample of how one search result reads to an agent, built from a real passage of this Knowledgebase where it can be.
+**What an Agent Sees**, at the foot of Insights, shows a short sample of how one search result reads to an agent, built from a real passage of this Knowledgebase where it can be.
 
 ## Good to Know
 

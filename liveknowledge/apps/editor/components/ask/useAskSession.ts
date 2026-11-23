@@ -1,6 +1,6 @@
 'use client';
 
-// What Ask and AI Knowledge need to know of the session (docs/specs/030-knowledgebase/search-and-ask.md "Share
+// What Ask and Insights need to know of the session (docs/specs/030-knowledgebase/search-and-ask.md "Share
 // roles"): the knowledgebase, who is asking and what they may do. Read from the editor's chrome store a slice at a
 // time, so a typing commit renders none of it.
 import { useMemo, useSyncExternalStore } from 'react';

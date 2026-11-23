@@ -1,8 +1,8 @@
-// The Knowledgebase Reviews emails an Editor or a Participant asks for (docs/specs/030-knowledgebase/ai-knowledge.md "Pages that
+// The Knowledgebase Reviews emails an Editor or a Participant asks for (docs/specs/030-knowledgebase/insights.md "Pages that
 // disagree", "Knowledge Health"):
 //   POST /api/documents/<id>/conflicts/<id>/ask-owners   Ask Both Owners: each owner of the two pages, once a conflict
 //   POST /api/documents/<id>/knowledge/remind-owners     Remind the Owners: each owner's pages, once a week
-// A signed-in Editor's or Participant's, in person (ai-knowledge.md "Share roles"): an agent does not write to people, and neither does a guest. Each answers 200 with what was sent or why nothing was
+// A signed-in Editor's or Participant's, in person (insights.md "Share roles"): an agent does not write to people, and neither does a guest. Each answers 200 with what was sent or why nothing was
 // (`KnowledgeEmailResult`); the caps and the sending are knowledge/knowledge-emails.ts.
 import type { KnowledgeEmailResult } from '@liveknowledge/api-schema';
 import { askConflictOwners, remindOwners } from '../knowledge/knowledge-emails';

@@ -1,4 +1,4 @@
-// Who is asking, as the knowledge routes need it (docs/specs/030-knowledgebase/ai-knowledge.md "Reads",
+// Who is asking, as the knowledge routes need it (docs/specs/030-knowledgebase/insights.md "Reads",
 // search-and-ask.md "Share roles"): a person or a named agent, and whether a signed-in account stands behind the
 // request. No route here decides access: that is the grant's (routes/context.ts).
 import { agentName, type Reader } from '@liveknowledge/knowledge';

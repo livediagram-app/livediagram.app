@@ -32,6 +32,8 @@ const GATE_KEEPERS = [
   // The public site's doors (docs/specs/030-knowledgebase/publishing.md): what a reader with no identity is
   // served, who may publish, and who holds an address. A gap here can put private writing on the web.
   'src/publishing/public-site.ts',
+  // Which pictures a reader with no identity may fetch (Work Tracker 1346; the check is published-reads.ts').
+  'src/publishing/public-media.ts',
   'src/publishing/published-reads.ts',
   'src/publishing/publishing-routes.ts',
   'src/publishing/site-addresses.ts',

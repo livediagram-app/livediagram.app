@@ -186,6 +186,8 @@ describe('what is never published', () => {
       if (answer.page)
         expect(Object.keys(answer.page).sort()).toEqual([
           'address',
+          // The cover band as drawn (published-media.ts): a picture of the page's, or a gradient.
+          'cover',
           'description',
           'html',
           'icon',

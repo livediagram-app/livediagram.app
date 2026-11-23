@@ -82,7 +82,7 @@ function AddAndHead() {
 const NOW = Date.UTC(2026, 10, 21, 12);
 
 describe('Add Icon in the meta row', () => {
-  it('stands right after Add Cover, the pair with no dot between, with its hover card', () => {
+  it('stands right after Add Cover, the pair with no dot between, with no tooltip', () => {
     const { container } = renderInEditor(
       <PageMetaRowView
         minutes={3}
@@ -105,10 +105,8 @@ describe('Add Icon in the meta row', () => {
     expect(dots).toHaveLength(1);
     const button = screen.getByRole('button', { name: /Add Icon/ });
     expect(button.className).toContain('cursor-pointer');
-    const described = button.getAttribute('aria-describedby')!.split(' ').at(-1)!;
-    expect(document.getElementById(described)?.textContent).toBe(
-      "Add an emoji or an icon beside this page's title, shown in the page tree too.",
-    );
+    // The meta row's labelled buttons have no tooltip (page-surface.md, owner 2026-11-23).
+    expect(button.getAttribute('aria-describedby')).toBeNull();
   });
 
   it('stands alone where a cover is already set', () => {
@@ -155,6 +153,18 @@ describe('who may change a page’s icon', () => {
     expect(head.getAttribute('role')).toBe('img');
     expect(head.textContent).toBe('📚');
     expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  // Owner 2026-11-23: Add Icon shows while the page is read too, and adds one with no Edit first; changing it stays
+  // an edit-mode control.
+  it('an Editor reading the page adds one at once, and the head stays a picture until Edit', async () => {
+    const { icon, container } = mount(<AddAndHead />, undefined, 'edit', {
+      pageEditing: { editing: false },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Add Icon/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'rocket' }));
+    expect(icon()).toEqual({ emoji: '🚀' });
+    expect(container.querySelector('[data-page-icon]')!.tagName).toBe('DIV');
   });
 
   it('draws nothing for a page with no icon, or one it cannot read', () => {

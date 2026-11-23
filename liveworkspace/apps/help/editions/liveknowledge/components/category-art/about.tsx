@@ -25,7 +25,7 @@ export function AboutArt() {
         </AppFrame>
       </g>
       <Label x={200} y={208} anchor="middle" size={9} weight={600} tone="muted">
-        Pages · Verified · Ask · AI Knowledge
+        Pages · Verified · Ask · Insights
       </Label>
     </Stage>
   );

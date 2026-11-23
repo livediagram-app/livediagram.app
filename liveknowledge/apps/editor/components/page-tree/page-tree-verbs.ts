@@ -26,6 +26,8 @@ export function runPageVerb(verb: PageMenuVerb, id: string, deps: PageVerbDeps):
       return know?.onVerify(id);
     case 'approval':
       return know?.onRequestApproval?.(id);
+    case 'reading':
+      return know?.onRequireReading?.(id);
     case 'context':
       return know?.onSetContext(id, !know.inContext.has(id));
     case 'rename':

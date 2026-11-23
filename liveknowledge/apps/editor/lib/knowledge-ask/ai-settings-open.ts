@@ -1,7 +1,7 @@
 'use client';
 
 // Whether the AI Settings dialog is open (docs/specs/030-knowledgebase/search-and-ask.md "Ask"): opened from the Ask
-// view and from AI Knowledge, drawn once by the views' host.
+// view and from Insights, drawn once by the views' host.
 import { useSyncExternalStore } from 'react';
 
 let open = false;

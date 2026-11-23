@@ -59,7 +59,7 @@ export type PageTreeRowProps = {
   trust?: TrustMark | undefined;
   // Pending Approval or Rejected: a 6 px dot after the title (approval.md "Where it shows").
   approval?: ApprovalMark | undefined;
-  // Suggested edits waiting on the page: an 8 px violet dot after the title (ai-knowledge.md "On the page").
+  // Suggested edits waiting on the page: an 8 px violet dot after the title (insights.md "On the page").
   suggestions?: number | undefined;
   onRename: (id: string, name: string) => void;
   onRenameDone: () => void;

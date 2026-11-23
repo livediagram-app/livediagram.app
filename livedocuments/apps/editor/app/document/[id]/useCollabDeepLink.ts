@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type MutableRefObject, useEffectEvent } from 'react';
 import type { Element } from '@livedocuments/document';
+import { articleBlockRect } from '@/lib/article/article-editor-store';
 import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link';
 import type { TabLoadState } from './editor-page-helpers';
 
@@ -70,6 +71,10 @@ export function useCollabDeepLink({
     },
   );
 
+  const arriveAtBlock = useEffectEvent((at: { x: number; y: number; w: number; h: number }) =>
+    scrollIntoView(at.x, at.y, at.w, at.h, { center: true }),
+  );
+
   useEffect(() => {
     const target = link.current;
     if (!target || consumed.current || !hydrated) return;
@@ -83,7 +88,20 @@ export function useCollabDeepLink({
     const el = elements.find((e) => e.id === elementId);
     // Deleted since the Inbox loaded: the tab is open, which is
     // as close as the link can get (docs/specs/013-workspace/inbox.md §1).
-    if (!el || el.type === 'arrow') return;
-    arriveAt(el, target.open);
+    if (el) {
+      if (el.type !== 'arrow') arriveAt(el, target.open);
+      return;
+    }
+    // Not an element: a block of an article's writing, a sent paragraph's link
+    // (docs/specs/013-workspace/send-to-plan.md), brought into view once its article lays it out
+    // (a second at most, then the tab alone, as for a deleted element). The search ends itself: the
+    // tab's elements settling meanwhile re-run this effect, and must not cut it short.
+    let frames = 60;
+    const seek = () => {
+      const at = articleBlockRect(elementId);
+      if (at) arriveAtBlock(at);
+      else if (--frames > 0) requestAnimationFrame(seek);
+    };
+    seek();
   }, [link, hydrated, activeId, activeTabLoadState, elements]);
 }

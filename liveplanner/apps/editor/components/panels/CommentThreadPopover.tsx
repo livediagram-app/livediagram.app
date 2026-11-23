@@ -1,4 +1,5 @@
 'use client';
+import { ThreadSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/ThreadSendToPlan';
 
 import { useEffect, useId, useRef, useState, useCallback } from 'react';
 import { CloseIcon, useClickOutside, useEscape, Portal } from '@liveplanner/ui';
@@ -143,6 +144,7 @@ export function CommentThreadPopover({
             ) : null}
           </h3>
           <div className="flex items-center gap-1">
+            <ThreadSendToPlan elementId={elementId} words={comments[0]?.text ?? ''} />
             {comments.length > 0 && canComment ? (
               <CommentResolveToggle
                 resolved={resolved}

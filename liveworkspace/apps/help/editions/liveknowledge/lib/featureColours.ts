@@ -19,7 +19,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'searching-a-knowledgebase': '#0891b2',
   ask: '#7c3aed',
   'ai-settings': '#8b5cf6',
-  // ---- AI Knowledge ----
+  // ---- Insights ----
   'connecting-an-agent': '#0284c7',
   'what-agents-can-do': '#0ea5e9',
   'suggested-edits': '#14b8a6',
@@ -47,6 +47,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'finding-community-documents': '#8b5cf6',
   comments: '#f59e0b',
   'live-presence': '#06b6d4',
+  'send-to-plan': '#0d9488',
   snapshots: '#0d9488',
   teams: '#a855f7',
   'roles-and-invites': '#a855f7',

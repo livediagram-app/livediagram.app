@@ -153,6 +153,18 @@ export function useArticleHandle(flow: string | null | undefined): ArticleEditor
   );
 }
 
+/** Where a block of the tab's writing is, as a canvas rect, or null while no article lays it out (a link to a
+ *  paragraph, docs/specs/013-workspace/send-to-plan.md). */
+export function articleBlockRect(
+  blockId: string,
+): { x: number; y: number; w: number; h: number } | null {
+  for (const h of handles.values()) {
+    const at = h.rangeRect(blockId, 0, 0);
+    if (at) return at;
+  }
+  return null;
+}
+
 export function articleHandleOf(flow: string): ArticleEditorHandle | undefined {
   return handles.get(flow);
 }

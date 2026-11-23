@@ -105,6 +105,11 @@ It is the Drive import's path with the file built from the template: the index m
 `template`), the item's object writes it, and a write that fails takes the index's item away again. An unknown
 template is a 404 (`unknown_template`), so a catalogue that drifted fails loudly. The index alone calls it.
 
+An optional `bare: true` asks for the template's first tab alone, with no example cards (and so none of their
+sample people), and none of its other tabs, forms or dashboards: Send to Plan's New Plan
+([send-to-plan.md](send-to-plan.md) "The picker") asks for `kanban` that way, an empty Kanban board. An app whose
+templates have no example content may ignore it.
+
 ## Telemetry
 
 A run is every app's at once, so its events are liveworkspace.app's own (`PLATFORM_TELEMETRY_APP`), sent by the kits

@@ -73,7 +73,7 @@ describe('a live embed frame', () => {
     expect(result.current.state).toBe('loading');
     await waitFor(() => expect(result.current.state).toBe('live'));
     expect(result.current).toMatchObject({
-      src: `${TARGET}/embed/workbench?d=p1#ticket=t.1`,
+      src: `${TARGET}/embed/workbench?d=p1&live=1#ticket=t.1`,
       ready: false,
     });
     expect(request).toHaveBeenCalledWith(ITEM);

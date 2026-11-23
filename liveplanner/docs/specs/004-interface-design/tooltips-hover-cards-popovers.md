@@ -148,6 +148,22 @@ These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.
   card surface (slate 800), each with light text and a dark border (slate 700). Text on either meets
   4.5:1 in both appearances.
 
+## Anchored overlays stay on screen
+
+Every overlay hung from something on the page (a tooltip, a hover card, the line under a linked chart, a link's
+card, a cell's hint, a small popover or dropdown) stays wholly on screen, 8 px clear of its edges, on a phone as on a
+desktop:
+
+- **Across, it slides.** An overlay hung from an element's left edge near the right of the screen moves left as far as
+  it overflows, never past the left edge; one centred on its control slides the same way.
+- **Down, it flips.** One below its anchor that would run off the foot of the screen opens above it, the same gap
+  away, when it fits there; one above that would run off the top opens below. Otherwise it slides in.
+- **Never wider than the screen.** Its widest is the screen less 8 px each side; longer text truncates or wraps inside.
+- **Measured once per open.** It is placed as it opens or shows (a hover, a selection, another cell), never per frame
+  or per pointer move. A hint that follows a moving control keeps its own follow loop (see the blueprint).
+- **One helper.** `@liveworkspace/ui` places every one (`keepOnScreen`, `useKeepOnScreen`); the menus' own clamp and
+  the hints' placement use the same arithmetic.
+
 ## Touch
 
 Touch has no hover, so **a tooltip never shows on touch**, by tap or by long press: on a phone or tablet it can
@@ -228,5 +244,6 @@ None. Hints change no one's workflow, and hovering is not an action worth counti
 
 - `@liveworkspace/ui` owns `Tooltip` and `HoverCard`, used by every app (through `@liveplanner/ui`, which re-exports it).
 - The shared lint config (`@liveworkspace/oxlint-config`) holds the native-`title` rule.
+- `@liveworkspace/ui` owns keeping an anchored overlay on screen (`keepOnScreen`, `useKeepOnScreen`).
 - Popovers keep their own homes (`packages/ui` popover positioning, the editor's menus and pickers);
   this spec only fixes what the word means. A popover that is a menu follows [Menus](./menus.md).

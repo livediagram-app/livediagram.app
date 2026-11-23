@@ -27,7 +27,7 @@ import type { ShareAnswer, ShareMessage, SharedTabCopy } from './document-room/t
 import type { HearingAnswer, HearingAsk } from './calls/room-calls';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
-import type { ConnectedTabWrite, ItemStanding } from '@liveworkspace/index-client';
+import type { ConnectedTabWrite, ItemStanding, SourceChange } from '@liveworkspace/index-client';
 import type { Env } from './types';
 
 export type CopySource = { copy: DocumentCopy; community: boolean };
@@ -103,6 +103,8 @@ export type DocumentRoomClient = {
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(tabId: string, member: string, seenUpdatedAt: number): Promise<boolean>;
   receiveShares(from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
+  // A plan's sent cards changed (the index's source-changed door, send-to-plan.md "The chip"): every open session.
+  sourceChanged(change: SourceChange): Promise<void>;
   // The calls mint route's question (calls/room-calls.ts, #483): may this call session receive these tracks now?
   callsHearing(subscriberSession: string, asks: HearingAsk[]): Promise<HearingAnswer[]>;
 };
@@ -146,6 +148,7 @@ export function documentRoom(
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
+    sourceChanged: (change) => room.sourceChanged(documentId, change),
     callsHearing: (subscriber, asks) => room.callsHearing(documentId, subscriber, asks),
   };
 }
@@ -202,6 +205,7 @@ export type DocumentRoomRpc = {
     seenUpdatedAt: number,
   ): Promise<boolean>;
   receiveShares(documentId: string, from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
+  sourceChanged(documentId: string, change: SourceChange): Promise<void>;
   callsHearing(
     documentId: string,
     subscriberSession: string,

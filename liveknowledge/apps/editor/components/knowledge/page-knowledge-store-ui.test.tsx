@@ -48,7 +48,11 @@ const page = (id: string, body: string): Tab => ({
 });
 
 let n = 0;
-function mount(level: AccessLevel, accountUserId: string | null = 'u1') {
+function mount(
+  level: AccessLevel,
+  accountUserId: string | null = 'u1',
+  over: Record<string, unknown> = {},
+) {
   const documentId = `d${++n}`;
   // A page's id is its own in every knowledgebase, so each mount has its own (the store is the session's).
   const pageId = `p${n}`;
@@ -76,7 +80,7 @@ function mount(level: AccessLevel, accountUserId: string | null = 'u1') {
       { ...fields, ...over },
       { get: (target, key: string) => (key in target ? target[key] : vi.fn()) },
     ) as unknown as EditorContextValue;
-  const store = createEditorChromeStore(valueOf());
+  const store = createEditorChromeStore(valueOf(over));
   const renders = { meta: 0, rail: 0 };
   render(
     <EditorChromeContext.Provider value={store}>
@@ -296,5 +300,46 @@ describe('a page’s knowledge in the editor', () => {
     // The owner is theirs to set, and so is the knowledgebase's Review Period.
     expect(screen.getByLabelText('Owner')).toBeTruthy();
     expect(screen.getByRole('button', { name: /^Change Review Period/ })).toBeTruthy();
+  });
+});
+
+// Add Cover, Add Icon and Add Label show while the page is read, not only in edit mode (page-surface.md "The cover",
+// "The page icon", "Page labels"; owner 2026-11-23), to whoever may edit the page, and to nobody else.
+describe('the meta row’s Add Cover, Add Icon and Add Label, by share role', () => {
+  const reading = (level: AccessLevel) => ({
+    isReadOnly: level === 'view',
+    // A Participant writes the whole knowledgebase's pages, as an Editor does (its labels too).
+    isStructureReadOnly: level === 'view',
+    participating: false,
+    pageEditing: { editing: false },
+  });
+  const adds = () =>
+    ['Add Cover', 'Add Icon', 'Add Label'].filter((name) => screen.queryByRole('button', { name }));
+
+  it.each<AccessLevel>(['edit', 'participate'])(
+    'an %s writer has all three while reading the page, and each opens at once',
+    async (level) => {
+      mount(level, 'u1', reading(level));
+      await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+      expect(adds()).toEqual(['Add Cover', 'Add Icon', 'Add Label']);
+      fireEvent.click(screen.getByRole('button', { name: 'Add Cover' }));
+      expect(screen.getByRole('dialog', { name: 'Add Cover' })).toBeTruthy();
+    },
+  );
+
+  it.each<[string, AccessLevel, string | null]>([
+    ['a Viewer', 'view', 'u1'],
+    ['a guest', 'view', null],
+  ])('%s never sees them, reading or not', async (_who, level, account) => {
+    mount(level, account, reading(level));
+    await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    expect(adds()).toEqual([]);
+  });
+
+  it('a session that may not write the page (a participating visitor) never sees them', async () => {
+    mount('edit', 'u1', { isReadOnly: false, participating: true, pageEditing: { editing: true } });
+    await waitFor(() => expect(screen.getByText('3')).toBeTruthy());
+    expect(adds()).not.toContain('Add Cover');
+    expect(adds()).not.toContain('Add Icon');
   });
 });

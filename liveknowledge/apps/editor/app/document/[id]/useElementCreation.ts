@@ -375,18 +375,26 @@ export function useElementCreation(opts: {
     track('Element', 'Added', 'Text');
   };
 
-  // An element of its default size put at a canvas point at once, as a tap with its tile would:
+  // An element of its default size (or the size given) put at a canvas point at once, as a tap with its tile would:
   // an article page's Insert (docs/specs/007-editor/article-pages.md "The page toolbar") places
   // a table, a chart or an image at the caret, and the writing takes it into a zone.
   const placeIntentAt = (
     intent: Extract<PendingDraw, { type: 'shape' | 'table' | 'image' | 'sticky' | 'video' }>,
     x: number,
     y: number,
+    // A size other than the default: a page's live embed spans its column (links-and-embeds.md).
+    size?: { width: number; height: number },
   ) => {
     if (editsBlocked) return;
-    addBoxedAt(x, y, (px, py) => buildDrawnBoxed(intent, px, py, px, py, null, activeTab), {
-      style: styleNewElement,
-    });
+    addBoxedAt(
+      x,
+      y,
+      (px, py) => {
+        const el = buildDrawnBoxed(intent, px, py, px, py, null, activeTab);
+        return size ? { ...el, ...size } : el;
+      },
+      { style: styleNewElement },
+    );
   };
 
   return {

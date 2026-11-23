@@ -66,7 +66,7 @@ function ConnectSteps({ session }: { session: AskSession }) {
   const app = apps.find((a) => a.id === picked) ?? apps[0]!;
   const { status, agents, checkNow } = useConnectStatus(who, documentId, true);
   const role = connectRole(rights);
-  const openAgents = () => showKnowledgeView('ai');
+  const openAgents = () => showKnowledgeView('insights');
   const pick = (id: ConnectAppId) => {
     setPicked(id);
     keepConnectApp(id);

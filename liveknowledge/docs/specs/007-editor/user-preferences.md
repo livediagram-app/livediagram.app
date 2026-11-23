@@ -853,7 +853,7 @@ and the dialog stays as the one complete, browsable index of them.
 A knowledgebase page is writing, not a free canvas ([The page surface](../030-knowledgebase/page-surface.md)), so
 liveknowledge's Settings (`apps/editor/components/dialogs/settings/settings-catalogue.ts`, and its copy on
 liveworkspace.app, `packages/settings/src/catalogues/liveknowledge.ts`) offer only what acts on its pages, the page
-tree, comments, Ask, AI Knowledge and the account:
+tree, comments, Ask, Insights and the account:
 
 - **Appearance:** Theme, Button Labels, UI Scale and its Panel, Toolbar and Corner Buttons parts.
 - **Keyboard:** Keyboard Shortcuts and All Shortcuts.

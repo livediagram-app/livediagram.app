@@ -42,7 +42,7 @@ export const HELP_ARTICLES = {
   firstPage: 'knowledgebase/writing-on-a-page',
   pageTree: 'knowledgebase/the-page-tree',
   ask: 'knowledgebase/ask',
-  // The page rail's `?`s (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md "AI Context on a page").
+  // The page rail's `?`s (docs/specs/030-knowledgebase/verification.md, insights.md "AI Context on a page").
   verifying: 'knowledgebase/owners-and-verifying',
   aiContext: 'knowledgebase/always-in-context',
   // Tabs / import-export

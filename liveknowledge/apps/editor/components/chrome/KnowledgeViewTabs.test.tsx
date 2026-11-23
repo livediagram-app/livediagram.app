@@ -103,12 +103,12 @@ describe('the view tabs', () => {
     expect(links.map((a) => a.getAttribute('aria-label'))).toEqual([
       'Pages',
       'Ask',
-      'AI Knowledge',
+      'Insights',
       'Connect MCP',
     ]);
     for (const a of links) expect(a.querySelector('svg')).not.toBeNull();
     expect(link('Pages').getAttribute('href')).toBe('/document/d1#t=p1');
-    expect(link('AI Knowledge').getAttribute('href')).toBe('/document/d1?view=ai#t=p1');
+    expect(link('Insights').getAttribute('href')).toBe('/document/d1?view=insights#t=p1');
     expect(link('Connect MCP').getAttribute('href')).toBe('/document/d1?view=connect#t=p1');
     expect(link('Ask').getAttribute('aria-current')).toBe('page');
     expect(link('Pages').getAttribute('aria-current')).toBeNull();
@@ -117,12 +117,12 @@ describe('the view tabs', () => {
     expect(nav.querySelector('[data-open]')?.getAttribute('data-knowledge-view-tab')).toBe('ask');
   });
 
-  it('in a knowledgebase kept Offline, keep Ask, AI Knowledge and Connect but quiet, going nowhere, saying why with Sync', async () => {
+  it('in a knowledgebase kept Offline, keep Ask, Insights and Connect but quiet, going nowhere, saying why with Sync', async () => {
     offline.on = true;
     window.history.replaceState(null, '', '/document/d1#t=p1');
     renderInEditor(<KnowledgeViewTabs />);
     expect(link('Pages').getAttribute('href')).toBe('/document/d1#t=p1');
-    for (const name of ['Ask', 'AI Knowledge', 'Connect MCP']) {
+    for (const name of ['Ask', 'Insights', 'Connect MCP']) {
       const a = link(name);
       expect(a.getAttribute('href')).toBeNull();
       expect(a.getAttribute('aria-disabled')).toBe('true');
@@ -151,7 +151,7 @@ describe('the view tabs', () => {
 
   it('leaves a press for a new tab to the link', () => {
     renderInEditor(<KnowledgeViewTabs />);
-    fireEvent.click(link('AI Knowledge'), { metaKey: true });
+    fireEvent.click(link('Insights'), { metaKey: true });
     expect(window.location.search).toBe('');
     expect(track).not.toHaveBeenCalled();
   });

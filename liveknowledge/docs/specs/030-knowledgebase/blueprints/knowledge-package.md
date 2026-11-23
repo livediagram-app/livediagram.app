@@ -1,7 +1,7 @@
 # Knowledge package blueprint
 
 Derived from [Search and Ask](../search-and-ask.md), [Verification](../verification.md),
-[Links and embeds](../links-and-embeds.md), [AI Knowledge](../ai-knowledge.md) and
+[Links and embeds](../links-and-embeds.md), [Insights](../insights.md) and
 [Knowledgebase for agents](../../024-agents/knowledgebase-for-agents.md).
 
 `@liveknowledge/knowledge` (`packages/knowledge`) is the engine under search, trust, links, Ask, the conflict
@@ -271,7 +271,7 @@ tabs?)`): one statement a call (the tab set chunked at 50, under the 100 bound v
   `lastRead`, the page's latest read day (`SELECT MAX(day)` on `page_reads_tab`, one index seek; NULL for a page with
   no read kept), which Not Read in 90 Days reads. Each count is on an index the table already has. No page's
   writing is read.
-- **`notReadPages(pages, now)`** (Not Read in 90 Days, [AI Knowledge](../ai-knowledge.md#not-read-in-90-days)):
+- **`notReadPages(pages, now)`** (Not Read in 90 Days, [Insights](../insights.md#not-read-in-90-days)):
   each page `{ tab, title, lastRead, createdAt, updatedAt, order }`; keeps a page whose `lastRead` is NULL or on or
   before `daysBefore(now, NOT_READ_DAYS)` (90, `READS_KEPT_DAYS`) and whose `createdAt` is NULL or at least 90 days
   back; sorts by `updatedAt ?? createdAt` ascending (none first), then `order`; answers `{ pages: first
@@ -290,7 +290,7 @@ NOT_READ_LISTED (10), total }`, each page `{ tab, title, touchedAt? }`. One pass
 
 ## Page Insights
 
-[AI Knowledge](../ai-knowledge.md#page-insights). In `sql/reads.ts` and `sql/page-answers.ts`:
+[Insights](../insights.md#page-insights). In `sql/reads.ts` and `sql/page-answers.ts`:
 
 - `countPageDailyReads(tab, now, days = PAGE_INSIGHT_DAYS)`: `SELECT day, reader_kind, SUM(reads) FROM page_reads
 WHERE tab = ? AND day > ? GROUP BY day, reader_kind`, a range of `page_reads_tab`, at most 2 rows a day (60).
@@ -737,7 +737,7 @@ scopes, and the Markdown export's `withPageLinksAsFiles` (the CLI's `export`).
 
 ## The review emails
 
-Derived from [Verification](../verification.md) "Reminders" and [AI Knowledge](../ai-knowledge.md) "Pages that
+Derived from [Verification](../verification.md) "Reminders" and [Insights](../insights.md) "Pages that
 disagree", "Knowledge Health". Built in the api; tested over the fake sender and the fake accounts service; never
 sent from a deployed Worker.
 
@@ -798,7 +798,7 @@ null)` takes the mark only when there is none, else `already_sent`. `GET knowled
   the settings link in the footer and as `List-Unsubscribe`; a plain-text alternative with the same links. Names,
   titles, the question and the passages are escaped (`xmlEscape`); a passage is one line of at most 280
   characters cut at a word (`mentionQuote`). A page's link is `<base>/document/<id>#t=<tab>`, the conflict's
-  `<base>/document/<id>?view=ai`. `EMAIL_PAGES_LISTED` is 100: measured, a 500 page email of 100 rows and a count
+  `<base>/document/<id>?view=insights`. `EMAIL_PAGES_LISTED` is 100: measured, a 500 page email of 100 rows and a count
   is under 60 KB, where 500 rows would pass the 102 KB at which Gmail clips. Telemetry kinds `ReviewDue`,
   `OwnersReminded`, `PagesDisagree`.
 - **Cost.** A review check is one read of the document's outline, two reads of marks, one team read, at most one
@@ -976,25 +976,25 @@ Measured on an M-series Mac, Node 22, CPU time (not wall-clock), 2026-11-20:
 
 ## Constants and configuration
 
-| Constant                                                                               | Value                                           | From                                        |
-| -------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------- |
-| `MAX_PASSAGE_CHARS`                                                                    | 1,200                                           | search-and-ask.md "Search"                  |
-| `SEARCH_MAX_QUERY_CHARS`, `SEARCH_MAX_RESULTS`                                         | 200, 20                                         | search-and-ask.md "Bounds"                  |
-| `SEARCH_MAX_TERMS`                                                                     | 12                                              | default D1                                  |
-| `MAX_BOUND_PARAMETERS`                                                                 | 100                                             | Cloudflare's limit                          |
-| `ASK_PER_PERSON_PER_HOUR`, `ASK_PER_KNOWLEDGEBASE_PER_DAY`                             | 20, 200                                         | search-and-ask.md "Bounds"                  |
-| `ASK_MAX_QUESTION_CHARS`, `ASK_MAX_PASSAGES`, `ASK_MAX_PASSAGE_CHARS`, `ASK_MAX_TURNS` | 1,000, 12, 24,000, 10                           | search-and-ask.md "Ask"                     |
-| `ASK_MAX_TOKENS`, `CONFLICT_MAX_TOKENS`                                                | 16,000                                          | default D6                                  |
-| `ASK_MAX_GAPS`, `ASK_MAX_GAP_CHARS`                                                    | 5, 300                                          | default D7                                  |
-| `CONTEXT_BUDGET_TOKENS`                                                                | 8,000                                           | ai-knowledge.md "Always in Context"         |
-| `REVIEW_INTERVALS`, `DEFAULT_REVIEW_EVERY`                                             | 30, 90, 180, 365, never; 90                     | verification.md "The fields"                |
-| `CHANGED_SINCE_FRACTION`, `CHANGED_SINCE_MAX_CHARS`                                    | 0.2; 400,000                                    | verification.md; default D4                 |
-| `CONFLICT_CHECKS_PER_DAY`, `CONFLICT_MAX_CANDIDATES`, `CONFLICT_PAGE_INTERVAL_MS`      | 50, 5, 600,000                                  | ai-knowledge.md "Pages that disagree"       |
-| `CONFLICT_MAX_PROBES`                                                                  | 5                                               | default D8                                  |
-| `READS_KEPT_DAYS`, `AGENT_SEEN_DAYS`, `AGENT_TOP_PAGES`                                | 90, 30, 3                                       | ai-knowledge.md "Reads", "Connected agents" |
-| `MAX_QUESTIONS`, `QUESTIONS_LISTED`, `CONFLICTS_LISTED`                                | 500, 50, 50                                     | default D9                                  |
-| `MAX_PAGE_LINKS`, `MAX_PAGE_LINK_ID`                                                   | 500, 64                                         | the page limit; an article id's length      |
-| `CLAUDE_API_VERSION`, `CLAUDE_FALLBACK_BETA`                                           | `2026-10-21`, `server-side-fallback-2026-07-01` | the `claude-api` skill                      |
+| Constant                                                                               | Value                                           | From                                    |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------- | --------------------------------------- |
+| `MAX_PASSAGE_CHARS`                                                                    | 1,200                                           | search-and-ask.md "Search"              |
+| `SEARCH_MAX_QUERY_CHARS`, `SEARCH_MAX_RESULTS`                                         | 200, 20                                         | search-and-ask.md "Bounds"              |
+| `SEARCH_MAX_TERMS`                                                                     | 12                                              | default D1                              |
+| `MAX_BOUND_PARAMETERS`                                                                 | 100                                             | Cloudflare's limit                      |
+| `ASK_PER_PERSON_PER_HOUR`, `ASK_PER_KNOWLEDGEBASE_PER_DAY`                             | 20, 200                                         | search-and-ask.md "Bounds"              |
+| `ASK_MAX_QUESTION_CHARS`, `ASK_MAX_PASSAGES`, `ASK_MAX_PASSAGE_CHARS`, `ASK_MAX_TURNS` | 1,000, 12, 24,000, 10                           | search-and-ask.md "Ask"                 |
+| `ASK_MAX_TOKENS`, `CONFLICT_MAX_TOKENS`                                                | 16,000                                          | default D6                              |
+| `ASK_MAX_GAPS`, `ASK_MAX_GAP_CHARS`                                                    | 5, 300                                          | default D7                              |
+| `CONTEXT_BUDGET_TOKENS`                                                                | 8,000                                           | insights.md "Always in Context"         |
+| `REVIEW_INTERVALS`, `DEFAULT_REVIEW_EVERY`                                             | 30, 90, 180, 365, never; 90                     | verification.md "The fields"            |
+| `CHANGED_SINCE_FRACTION`, `CHANGED_SINCE_MAX_CHARS`                                    | 0.2; 400,000                                    | verification.md; default D4             |
+| `CONFLICT_CHECKS_PER_DAY`, `CONFLICT_MAX_CANDIDATES`, `CONFLICT_PAGE_INTERVAL_MS`      | 50, 5, 600,000                                  | insights.md "Pages that disagree"       |
+| `CONFLICT_MAX_PROBES`                                                                  | 5                                               | default D8                              |
+| `READS_KEPT_DAYS`, `AGENT_SEEN_DAYS`, `AGENT_TOP_PAGES`                                | 90, 30, 3                                       | insights.md "Reads", "Connected agents" |
+| `MAX_QUESTIONS`, `QUESTIONS_LISTED`, `CONFLICTS_LISTED`                                | 500, 50, 50                                     | default D9                              |
+| `MAX_PAGE_LINKS`, `MAX_PAGE_LINK_ID`                                                   | 500, 64                                         | the page limit; an article id's length  |
+| `CLAUDE_API_VERSION`, `CLAUDE_FALLBACK_BETA`                                           | `2026-10-21`, `server-side-fallback-2026-07-01` | the `claude-api` skill                  |
 
 ## Defaults ledger
 

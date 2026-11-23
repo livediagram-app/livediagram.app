@@ -1,6 +1,6 @@
 'use client';
 
-// Sync Knowledgebase inside the hover card of an Offline knowledgebase's Ask and AI Knowledge tabs
+// Sync Knowledgebase inside the hover card of an Offline knowledgebase's Ask and Insights tabs
 // (docs/specs/030-knowledgebase/search-and-ask.md "Offline"): the same sync in place the Share dialog's gate runs
 // (docs/specs/006-document/offline-mode.md "Syncing in place"), so the views open once it lands. Waits for the
 // reader to be known, as that gate does.
@@ -20,7 +20,7 @@ export function SyncKnowledgebaseButton() {
     setBusy(true);
     try {
       await syncToCloud();
-      toast.success('Synced. Ask and AI Knowledge are on now.');
+      toast.success('Synced. Ask and Insights are on now.');
     } catch (e) {
       toast.error(syncFailureMessage(e));
     } finally {

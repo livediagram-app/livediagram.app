@@ -1,4 +1,6 @@
 'use client';
+import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
+import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { usePublishDocumentVisibility } from '@/hooks/editor/document-visibility-store';
@@ -159,7 +161,7 @@ const TOURS = (
   </AreaErrorBoundary>
 );
 const START_PANELS = <EditorStartPanels />;
-// Ask and AI Knowledge (docs/specs/030-knowledgebase/search-and-ask.md "The three views"): the mark a view starts
+// Ask and Insights (docs/specs/030-knowledgebase/search-and-ask.md "The three views"): the mark a view starts
 // under, and the view drawn over the editor while the address names one.
 const KNOWLEDGE_VIEW_ANCHOR = <KnowledgeViewAnchor />;
 const KNOWLEDGE_VIEW = <KnowledgeViewHost />;
@@ -440,6 +442,20 @@ export function EditorView() {
               onTrack={trackSheetLink}
               noun="document"
             >
+              {/* Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): the chips' sends and the picker. */}
+              <SendToPlanHost
+                app="liveknowledge"
+                itemId={ctx.authLoaded && hydrated ? documentId : null}
+                tabId={activeId}
+                title={ctx.documentName?.trim() || 'Untitled Knowledgebase'}
+                share={sessionShareCode ? { code: sessionShareCode } : null}
+                enabled={canSendToPlan({
+                  signedIn: !!accountUserId,
+                  offline: isOffline,
+                  embed: !appChrome,
+                  community: sessionCommunity !== null,
+                })}
+              />
               <ViewportStoreProvider store={ctx.viewport}>
                 <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
                   {/* The active tab's finish (docs/specs/008-canvas/finish.md), for the menus and panels; each

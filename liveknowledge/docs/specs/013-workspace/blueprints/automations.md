@@ -4,7 +4,7 @@ Derived from [Automations](../automations.md) and the platform's
 [Automations](../../../../../liveworkspace/docs/specs/018-automations/automations.md). The engine is the platform's
 (`@liveworkspace/automations`, [item-engine.md](../../../../../liveworkspace/docs/specs/018-automations/blueprints/item-engine.md));
 so is almost all of the wiring ("An app's bindings" there). This blueprint is liveknowledge's share: its kinds (the
-version kinds it kept from livedocuments, and its own trust and AI Knowledge kinds), its kit, its call sites, the
+version kinds it kept from livedocuments, and its own trust and Insights kinds), its kit, its call sites, the
 screen's own panels and pictures, and its tests. livediagram's
 ([its blueprint](../../../../../livediagram/docs/specs/013-workspace/blueprints/automations.md)) is the same shape;
 where this one is silent, livediagram's holds.
@@ -28,7 +28,7 @@ where this one is silent, livediagram's holds.
 ```
 packages/document/src/automations/          @liveknowledge/document/automations (pure)
   kinds.ts                                    KINDS, AUTOMATIONS_TELEMETRY_CATEGORY
-  triggers.ts                                 the trust, AI Knowledge and version triggers; event kinds, data keys
+  triggers.ts                                 the trust, Insights and version triggers; event kinds, data keys
   actions.ts                                  Set the Page Owner, Clear Verification, Email the Page Owner, Always in
                                               Context, Name This Version, Restore a Version; VERSION_REF
   values.ts                                   page.owner, question, other.name, suggestion.reason, version.name
@@ -89,8 +89,8 @@ Page the Rule Runs On.
 | `review_due`          | `tab?`                        | a verified page's review comes due; nobody behind it (Trust)                    | none                    |
 | `owner_changed`       | `tab?`                        | a page's owner set or cleared (`tabbed`, Trust)                                 | `page.owner`            |
 | `question_unanswered` | none                          | a question nobody's pages answer, asked for the first time                      | `question`              |
-| `pages_disagree`      | `tab?`                        | the conflict check finds two pages at odds (AI Knowledge)                       | `question`, `other.tab` |
-| `suggestion_added`    | `tab?`                        | an agent suggests an edit (AI Knowledge)                                        | `suggestion.reason`     |
+| `pages_disagree`      | `tab?`                        | the conflict check finds two pages at odds (Insights)                           | `question`, `other.tab` |
+| `suggestion_added`    | `tab?`                        | an agent suggests an edit (Insights)                                            | `suggestion.reason`     |
 | `set_owner`           | `tab: 'run' \| id`, `to`      | `to` a `{ person }` or `{ trigger: true }`; fails for someone who can't open it |                         |
 | `clear_verification`  | `tab: 'run' \| id`            | takes `verifiedAt` away; the owner stays                                        |                         |
 | `email_owner`         | `subject`, `body`             | mails the run's page's owner; no owner fails                                    |                         |
@@ -304,7 +304,7 @@ apps/editor/components/automations/
   DocumentAutomationsGate.tsx    lazy: AutomationsSyncGate with the workbench's SyncGateDialog over SyncDocumentPrompt
   document-kit.tsx               DOCUMENT_AUTOMATIONS_KIT (defineItemAutomationsKit), the describe examples
   document-scenes.tsx            the version kinds' vignettes and the two steps' glyphs
-  knowledge-scenes.tsx           the trust and AI Knowledge kinds' vignettes and the four steps' glyphs
+  knowledge-scenes.tsx           the trust and Insights kinds' vignettes and the four steps' glyphs
   knowledge-panels.tsx           RunOrPageField; Set the Page Owner's, Clear Verification's, Email the Page
                                  Owner's and Always in Context's panels
   version-panels.tsx             Name This Version's and Restore a Version's panels
@@ -343,7 +343,7 @@ As livediagram's: `useDocumentItemView` memoised on the tabs' ids and names and 
 | `tabTemplates` | `automationTabTemplates()` (`@liveknowledge/templates`)                                   |
 | `own.triggers` | the nine: a picture each, and `TabTriggerPanel` for each one about a page                 |
 | `own.actions`  | the six: picture, glyph and panel each (`knowledge-panels.tsx`, `version-panels.tsx`)     |
-| `own.tones`    | `Trust`: emerald, `AI Knowledge`: violet, `Versions`: orange                              |
+| `own.tones`    | `Trust`: emerald, `Insights`: violet, `Versions`: orange                                  |
 | `templates`    | `DOCUMENT_TEMPLATES`, `TEMPLATE_CATEGORIES`; pictures composed (`ItemTemplateScene`)      |
 | `describe`     | Reviews to Slack, Agent Edits, Unanswered Questions; the placeholder the first            |
 | `helpButton`   | `HelpArticleLink article="automations" variant="button" label="How Rules Work"`           |

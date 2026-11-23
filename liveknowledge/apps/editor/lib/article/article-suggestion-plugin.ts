@@ -1,4 +1,4 @@
-// A page's suggested edits drawn in its writing (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"; blueprint
+// A page's suggested edits drawn in its writing (docs/specs/030-knowledgebase/insights.md "On the page"; blueprint
 // suggested-edits-ui.md "In the writing"): decorations only, never stored, never a step. Reading, each passage a
 // suggestion replaces is washed violet with a margin marker before it (an appended one marks the writing's end); in
 // Show in Page, one suggestion's words that go are struck and the words that arrive are drawn after them. Rebuilt from

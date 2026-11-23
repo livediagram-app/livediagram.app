@@ -1,5 +1,5 @@
 // A page made from an answer or for a gap (docs/specs/030-knowledgebase/search-and-ask.md "It does not guess",
-// ai-knowledge.md "Questions nobody could answer"): its Markdown read the way an imported page's is
+// insights.md "Questions nobody could answer"): its Markdown read the way an imported page's is
 // (`importedPageTab`: text only, the reader keeps http, https and mailto links and nothing that runs), added through
 // the editor's own page list so the autosave stores it like any page a person adds. Editor only: the caller gates
 // on `makePages`, and the tree and the room check again.

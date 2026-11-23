@@ -1,6 +1,6 @@
 'use client';
 
-// The open suggested edit (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"): a popover beside what opened
+// The open suggested edit (docs/specs/030-knowledgebase/insights.md "On the page"): a popover beside what opened
 // it (a margin marker, the pill, a rail row), centred when nothing did (an Inbox link), and the shared bottom sheet on
 // a phone. Measured once as it opens and again on a scroll or a resize while open, never per frame otherwise.
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';

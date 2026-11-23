@@ -68,7 +68,7 @@ type BottomBarProps = {
 };
 
 // The editor's bottom bar (docs/specs/030-knowledgebase/page-surface.md "The footer"): the knowledgebase's three
-// views as tabs at its left (Pages | Ask | AI Knowledge, KnowledgeViewTabs), then Get Started, Tools, Settings, the
+// views as tabs at its left (Pages | Ask | Insights, KnowledgeViewTabs), then Get Started, Tools, Settings, the
 // notification list and the appearance at its right. A bar of the editor's column, under everything that scrolls:
 // it never floats over the writing. The pages themselves are the page tree, down the editor's left. It also draws
 // the canvas right-click menu.

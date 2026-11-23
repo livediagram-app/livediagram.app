@@ -124,7 +124,7 @@ export const DOCUMENT_AUTOMATIONS_KIT = defineItemAutomationsKit({
         Panel: asPanel(RestoreVersionPanel),
       },
     },
-    tones: { Trust: 'emerald', 'AI Knowledge': 'violet', Versions: 'orange' },
+    tones: { Trust: 'emerald', Insights: 'violet', Versions: 'orange' },
   },
   templates: { list: DOCUMENT_TEMPLATES, categories: TEMPLATE_CATEGORIES },
   describe: { examples: DESCRIBE_EXAMPLES, placeholder: DESCRIBE_PLACEHOLDER },

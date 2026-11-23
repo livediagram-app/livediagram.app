@@ -1,7 +1,7 @@
 # Knowledgebase for agents: blueprint
 
 Derived from [Knowledgebase for agents](../knowledgebase-for-agents.md), with
-[AI Knowledge](../../030-knowledgebase/ai-knowledge.md) for suggestions and
+[Insights](../../030-knowledgebase/insights.md) for suggestions and
 [Verification](../../030-knowledgebase/verification.md) for trust. Built in step 13.
 
 ## Domain and naming
@@ -27,7 +27,7 @@ Derived from [Knowledgebase for agents](../knowledgebase-for-agents.md), with
 | `packages/edit-operations/src/pages/new-page.ts`                                     | `newPageFromMarkdown`: a page's tab from Markdown, for the api and the MCP    |
 | `apps/api/src/knowledge/agent-grants.ts`                                             | `agent_grants`, `withAgentGrant`, `scopeRefusalOf`                            |
 | `apps/api/src/knowledge/agent-seen.ts`, `connected-agents.ts`                        | `agent_seen`, `noteAgentSeen`, `seenAgents`; `connectedAgents` (pure)         |
-| `apps/editor/components/ai-knowledge/AgentCard.tsx`, `useAgentWrite.ts`              | The card's menu, Allow Writing and Stop Writing                               |
+| `apps/editor/components/insights/AgentCard.tsx`, `useAgentWrite.ts`                  | The card's menu, Allow Writing and Stop Writing                               |
 | `apps/api/src/knowledge/suggestions.ts`                                              | The `suggestions` table's reads, the capped insert, the prune                 |
 | `apps/api/src/knowledge/page-read.ts`                                                | `pageMarkdownOf`, `pageNamed`, `pageTrustOf`, `openConflictPages`             |
 | `apps/api/src/routes/knowledge-suggestion-routes.ts`                                 | Suggest, list, accept, dismiss                                                |
@@ -219,7 +219,7 @@ every tool does.
 | Suggest, accept, dismiss by role; stale; the cap; the prune          | `apps/api/src/routes/knowledge-suggestion-routes.test.ts`                                  |
 | The agent routes by role and scope; a page by title; `page_verified` | `apps/api/src/routes/knowledge-agent-routes.test.ts`                                       |
 | `page_review_due`; Connected Agents per role; the hourly write       | `apps/api/src/routes/knowledge-agent-routes.test.ts`                                       |
-| Allow Writing and Stop Writing per role, the confirm, the rollback   | `apps/editor/components/ai-knowledge/AiKnowledgeView.test.tsx`                             |
+| Allow Writing and Stop Writing per role, the confirm, the rollback   | `apps/editor/components/insights/InsightsView.test.tsx`                                    |
 | Sections, cuts and passages                                          | `packages/knowledge/src/page-markdown.test.ts`                                             |
 | One request a tool, the name sent, trust fields, sizes, refusals     | `apps/mcp/src/knowledge-tools.test.ts`                                                     |
 | `review_period` said once; no tool takes a review interval           | `apps/mcp/src/knowledge-tools.test.ts`, `packages/agent-verbs/src/verbs/knowledge.test.ts` |

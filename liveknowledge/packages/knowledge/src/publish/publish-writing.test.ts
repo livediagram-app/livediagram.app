@@ -163,6 +163,24 @@ describe('publishedWriting', () => {
     expect(publishedWriting([{ id: 'x', type: 'toc' }], none).html).toBe('');
   });
 
+  it('draws each zone as the figure its caller made, in its place, and nothing where it made none (P31)', () => {
+    const blocks = [
+      p([t('Before.')]),
+      { id: 'z1', type: 'zone', zone: 'object', width: 10, height: 10 },
+      { id: 'z2', type: 'zone', zone: 'drawing', width: 10, height: 10 },
+      p([t('After.')]),
+    ] as unknown as ArticleBlock[];
+    const asked: string[] = [];
+    const { html, text } = publishedWriting(blocks, none, (zone) => {
+      asked.push(zone.id);
+      return zone.id === 'z1' ? '<figure class="zone">one</figure>' : null;
+    });
+    expect(asked).toEqual(['z1', 'z2']);
+    expect(html).toBe('<p>Before.</p><figure class="zone">one</figure><p>After.</p>');
+    // A figure is no words: search and the description read the writing alone.
+    expect(text).toBe('Before.\nAfter.');
+  });
+
   it('finds no words in an empty page', () => {
     expect(
       publishedWriting([p([t('Only a title')], { style: 'title' }), p([t('  ')])], none),

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { suggestionRights } from './suggestion-rights';
 
-// docs/specs/030-knowledgebase/ai-knowledge.md "Share roles": see for everyone, decide for an Editor.
+// docs/specs/030-knowledgebase/insights.md "Share roles": see for everyone, decide for an Editor.
 const rights = (level: 'edit' | 'participate' | 'view', over = {}) =>
   suggestionRights({
     can: resolveEditorCapabilities(level),

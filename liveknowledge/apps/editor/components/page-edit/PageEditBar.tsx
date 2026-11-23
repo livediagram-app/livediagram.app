@@ -239,7 +239,7 @@ export function PageEditBar() {
   const others = usePageEditors(tabId);
   // Version History covers the page: no Edit floating over it, nor double-click to edit beneath it.
   const inHistory = useVersionHistoryState() !== null;
-  // Ask and AI Knowledge are not a page: no Edit there either (owner 2026-11-21).
+  // Ask and Insights are not a page: no Edit there either (owner 2026-11-21).
   const onPages = useKnowledgeView() === 'pages';
   // A new knowledgebase's start screen covers its first page: no Cancel and Save floating beside it.
   const startMayShow = useEditorChrome(templateStartShownOf);

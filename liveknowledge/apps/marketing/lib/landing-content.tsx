@@ -240,7 +240,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
     art: <AgentsArt />,
     metaDescription:
-      'An MCP server and a CLI for your agents: Always in Context pages, trust fields on every passage, suggested edits and AI Knowledge.',
+      'An MCP server and a CLI for your agents: Always in Context pages, trust fields on every passage, suggested edits and Insights.',
     items: [
       {
         title: 'An MCP Server',
@@ -278,10 +278,10 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/knowledgebase/suggested-edits/',
       },
       {
-        title: 'AI Knowledge',
+        title: 'Insights',
         description:
           'One tab shows which agents read what, the questions nobody could answer and the pages that disagree. Finding those runs on built-in AI or your own key.',
-        art: <AgentsCardArt.AiKnowledgeArt />,
+        art: <AgentsCardArt.InsightsArt />,
         href: '/help/knowledgebase/pages-that-disagree/',
       },
     ],

@@ -43,7 +43,7 @@ import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/C
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
-import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
+import { RemoteSelectorsStrip, SentCardBadge } from '@/components/canvas/element-badges';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
@@ -466,6 +466,7 @@ function BoxedElementViewImpl({
           land. Cleared on drop / drag-leave. */}
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
+      <SentCardBadge elementId={element.id} />
 
       {/* Selection chrome (resize / edge-grip handles), portalled into the
           grips layer above every element — see SelectionChromeLayer for the

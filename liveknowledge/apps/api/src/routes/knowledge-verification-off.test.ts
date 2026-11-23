@@ -11,7 +11,7 @@ import { isKnowledgePageRow } from '@liveknowledge/api-schema';
 import { knowledgeKit, type Kit, type Who } from './knowledge-test-kit';
 
 // docs/specs/030-knowledgebase/verification.md "Under a Review Period of Never" (agents' trust fields keep their
-// shape and say `off`), and ai-knowledge.md "Page Insights" and "Not Read in 90 Days" (both ride reads already made).
+// shape and say `off`), and insights.md "Page Insights" and "Not Read in 90 Days" (both ride reads already made).
 vi.mock('../index-service', async (original) => {
   const tests = await import('../test-sqlite-d1');
   return {

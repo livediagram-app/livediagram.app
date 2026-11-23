@@ -1,4 +1,4 @@
-// The questions Ask answered from a page (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"): a row
+// The questions Ask answered from a page (docs/specs/030-knowledgebase/insights.md "AI Context on a page"): a row
 // a page, question key (questions.ts `questionKey`) and UTC day, with the asker's words and how many times it was
 // asked that day. Kept PAGE_ANSWERS_KEPT_DAYS days and MAX_PAGE_ANSWER_ROWS rows; no asker's identity is kept.
 import { dayOf, daysBefore } from '../days';

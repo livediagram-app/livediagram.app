@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AGENT_NAME_HEADER, pageCreatorOf, readerOf } from './knowledge-caller';
 
-// ai-knowledge.md "Connected agents": a connection is named as its writes are (page-writer.ts writerOf).
+// insights.md "Connected agents": a connection is named as its writes are (page-writer.ts writerOf).
 describe('readerOf', () => {
   const request = (headers: Record<string, string> = {}) =>
     new Request('https://api.test/x', { headers });

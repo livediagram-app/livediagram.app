@@ -5,7 +5,7 @@ import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { knowledgeKit, page, PAGES, type Kit, type Who } from './knowledge-test-kit';
 
 // docs/specs/030-knowledgebase/search-and-ask.md "Search", links-and-embeds.md "Backlinks",
-// knowledgebase-home.md (the summary), ai-knowledge.md "Reads".
+// knowledgebase-home.md (the summary), insights.md "Reads".
 vi.mock('../index-service', async (original) => {
   const tests = await import('../test-sqlite-d1');
   return {

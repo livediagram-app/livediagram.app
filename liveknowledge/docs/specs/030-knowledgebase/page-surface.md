@@ -45,13 +45,18 @@ replaces what the fork still shows around the writing.
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
   has one ("The page icon") to the left of the Title, the Title (40 px,
   bold, tight tracking), then the meta row ([Verification](verification.md); a **Suggested Edits** pill after its
-  verified badge while agents' edits wait, [AI Knowledge](ai-knowledge.md) "On the page"; the page's labels last,
-  "Page labels"). **Beside it** on a wide window, the right rail (Page Health, then On This Page, then Suggested Edits while any wait, then AI Context, a hairline between each section, owner 2026-11-22; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
+  verified badge while agents' edits wait, [Insights](insights.md) "On the page"; the page's labels last,
+  "Page labels"). **The meta row's labelled buttons have no tooltip** (owner 2026-11-23: "remove the tooltips from
+  add cover, icon, label, verify etc they get in the way and aren't needed"): Add Cover, Add Icon, Add Label, Verify,
+  Request Approval, the Suggested Edits pill and the who-made-it pills say what they do in their own words, so no
+  hover card or tooltip rides them. This is a deliberate exception to the rule that every control has one; the
+  row's icon-only buttons (Edit Labels) and its notes that hold more than they show (the verified badge's review
+  date, a label pill's filter) keep theirs. **Beside it** on a wide window, the right rail (Page Health, then On This Page, then Suggested Edits while any wait, then AI Context, a hairline between each section, owner 2026-11-22; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
 - **The logo** (mark, and the wordmark on a desktop) is always top left: heading the page tree, leading the top row
-  left of the menu button when the tree is folded away, and leading the Ask and AI Knowledge header. A phone shows
+  left of the menu button when the tree is folded away, and leading the Ask and Insights header. A phone shows
   the mark alone. It opens the Explorer on the place that holds the knowledgebase.
 - **Sidebars slide.** Opening or folding the page tree slides it in from, or out to, the left (200 ms; at once with
   reduced motion). Folded to its rail, resting a mouse on the rail for 150 ms slides the whole tree out over the page
@@ -144,11 +149,14 @@ forms do" and "The gradients offered should be related to the knowledgebases the
 - **While loading**, a picture's band shows a soft tint of the knowledgebase's accent, and the picture fades in over
   it (150 ms; at once with reduced motion). A picture that cannot be fetched leaves the tint.
 - **Add Cover** sits in the meta row, after "N min read": a quiet ghost button, a picture icon and "Add Cover", the
-  row's own size and colour, taking the accent on hover, with a hover card "Add a picture or a gradient across the
-  top of this page." It opens the cover menu: **Choose a Picture** (the picker), the theme's gradients as two rows of
+  row's own size and colour, taking the accent on hover, with no tooltip (the meta row's labelled buttons have none,
+  owner 2026-11-23). It shows whether the page is being read or edited (owner 2026-11-23: "I should also see Add
+  Cover and Add Icon and Add Label even when the page isn't in edit mode"), and pressing it while reading opens the
+  menu at once, with no Edit first. It opens the cover menu: **Choose a Picture** (the picker), the theme's gradients as two rows of
   swatches, each named in a tooltip, and **Motion**: the animated backgrounds six to a carousel page, each tile
   playing in the theme's colours, then their Colours and Speed. A picture or a gradient sets the cover and closes
-  the menu; a motion sets it and the menu carries on from the band's Change Cover, for its colours and speed. A page with no writing and no cover still shows the row, with Add Cover alone,
+  the menu; a motion sets it and the menu carries on from the band's Change Cover, for its colours and speed, in edit
+  mode (while reading, the band has no controls, so the menu closes with the motion set). A page with no writing and no cover still shows the row, with Add Cover alone,
   to whoever may add one.
 - **On a page with a cover**, resting the pointer on the band shows, at its bottom right, **Change Cover**,
   **Reposition** (pictures only) and **Remove** (a trash icon), each a small frosted button with a tooltip; the
@@ -159,8 +167,9 @@ forms do" and "The gradients offered should be related to the knowledgebases the
   "Drag the picture to reposition" across the band, and **Save Position** and **Cancel** in place of the hover
   buttons. The arrow keys move it by 5 while the band has the focus; Enter saves and Escape cancels. Nothing is
   stored until Save Position.
-- **Who changes it.** An Editor or a Participant, and only where the page can be edited: whenever the page is
-  editable today, and only in edit mode once [read and edit modes](editing.md) land. A Viewer and a link visitor see
+- **Who changes it.** An Editor or a Participant. Adding a cover (Add Cover) is theirs whether the page is being
+  read or edited; the band's Change Cover, Reposition and Remove are theirs in edit mode
+  ([read and edit modes](editing.md)), so a page being read stays quiet under the pointer. A Viewer and a link visitor see
   the cover and none of its controls ([Share roles](knowledgebases-and-pages.md#share-roles)). The room and the api
   refuse a cover from anyone else.
 - **It is saved at once**, as the page's name is, whether or not the page is being edited: it is not part of the
@@ -197,8 +206,8 @@ should be to the right of Add Cover under the title."
   alone, as today. The **breadcrumb** names
   each ancestor with its icon too.
 - **Add Icon** sits in the meta row, right after Add Cover (or where Add Cover would be, on a page with a cover):
-  the same quiet ghost button, a smile icon and "Add Icon", with a hover card "Add an emoji or an icon beside this
-  page's title, shown in the page tree too." It opens the icon picker.
+  the same quiet ghost button, a smile icon and "Add Icon", with no tooltip. Like Add Cover, it shows whether the
+  page is being read or edited, and opens the icon picker at once.
 - **On a page with an icon**, the icon left of the Title is a button, for whoever may change it: it takes a soft
   ground on hover, a tooltip "Change Icon", and opens the picker. For anyone else it is a picture and nothing more.
 - **The picker** is a popover (a sheet on a phone) titled "Change Icon" or "Add Icon", with **Remove** at its top
@@ -209,7 +218,8 @@ should be to the right of Add Cover under the title."
   words. A pick sets the icon and closes the picker. The arrow keys move through the grid, Enter picks, Escape
   closes. An empty search says "No emoji match" or "No icons match".
 - **Remove** takes the icon away at once, with an Undo in the toast that says so ("Icon removed").
-- **Who changes it.** The cover's rule: an Editor or a Participant, and only in edit mode. A Viewer and a link
+- **Who changes it.** The cover's rule: an Editor or a Participant; Add Icon whether the page is read or edited,
+  changing or removing an icon (the icon's own button) in edit mode. A Viewer and a link
   visitor see the icon, in the page and the tree, and none of its controls. The room and the api refuse an icon from
   anyone else, as they refuse a cover.
 - **It is saved at once**, as the cover is: not part of the draft, and Save and Cancel neither keep nor drop it.
@@ -247,8 +257,7 @@ Owner, 2026-11-21 (Work Tracker 1343): "The page tree gives one way to organise 
   filter"), opening the tree where it is folded to its rail, and the Pages sheet on a phone. Its hover card says
   "Show Pages Labelled <name>".
 - **Adding and changing them.** For whoever may label the page, **Add Label** (a tag icon) sits after Add Cover and
-  Add Icon, the same quiet ghost button, with a hover card "Add a label to group this page with others, across
-  sections."; on a page that has labels it is a small **Edit Labels** button (a plus) after its pills.
+  Add Icon, the same quiet ghost button, with no tooltip; on a page that has labels it is a small **Edit Labels** button (a plus) after its pills.
   Both open the **label picker**, a popover (a sheet on a phone) titled **Labels**:
   - a field, **Find or Create a Label**, that takes the focus as it opens;
   - the knowledgebase's labels, those on the most pages first (then by name), each a row with its dot, its name,
@@ -267,7 +276,8 @@ Owner, 2026-11-21 (Work Tracker 1343): "The page tree gives one way to organise 
     the 101st label and an 11th on one page are refused in words ("This knowledgebase has 100 labels, the most it
     can hold." and "A page carries at most 10 labels.").
 - **Who changes them.** An Editor or a Participant (a page's writers), whenever the page is shown to them: labelling
-  is how pages are found, not how a page looks, so it is not held to edit mode as the cover and the icon are. Putting
+  is how pages are found, not how a page looks, so it is not held to edit mode, as changing the cover and the icon
+  are. Putting
   a label on, taking it off, making, renaming, recolouring and deleting one are all theirs. A Viewer and a link
   visitor see the pills, and pressing one filters their tree too; they have no Add Label, Edit Labels or picker. The
   room and the api refuse a label change from anyone else.
@@ -304,10 +314,10 @@ Owner, 2026-11-21 (Work Tracker 1343): "The page tree gives one way to organise 
 
 ## The footer
 
-Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs in the footer."
+Owner, 2026-11-20: "Pages, Ask and Insights should be represented like tabs in the footer."
 
 - The views are **tabs in the footer**, where the other liveworkspace editors show their tab bar, with the
-  same look: **Pages**, **Ask**, **AI Knowledge**, **Connect** ([Connect](mcp-connect.md)), each with its icon, the current one raised as a tab pill is.
+  same look: **Pages**, **Ask**, **Insights**, **Connect** ([Connect](mcp-connect.md)), each with its icon, the current one raised as a tab pill is.
   They are links (`?view=`, so Back works) with `aria-current`, reachable by keyboard, each with a hover card of a
   title and one line. They are views, not a person's tabs: no add, close, drag or menu.
 - The footer is a bar across the bottom of the content area: the tabs at its left, then Get Started, Tools,
@@ -315,12 +325,12 @@ Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs 
   scrolls above it.
 - **The top row.** The content area starts with one row, the same height in the three views (48 px; 56 px on a
   phone): a hairline under it, nothing floating. On Pages its left holds the formatting controls while a page is
-  being written; on Ask, AI Knowledge and Connect it holds the view's name and its own buttons. **Share** and the account
+  being written; on Ask, Insights and Connect it holds the view's name and its own buttons. **Share** and the account
   button stand at its right end, always; the floating corner card is gone. The page scrolls under the row, never
   behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
   Share, so nothing stands over the reading column at any width.
-- On a phone the four tabs are the footer's row, icons with short labels (Pages, Ask, AI, Connect), 44 px targets; the
-  notification list stays beside them and the footer's other items go behind one **More** button. Its card opens above the Ask, AI Knowledge and Connect
+- On a phone the four tabs are the footer's row, icons with short labels (Pages, Ask, Insights, Connect), 44 px targets; the
+  notification list stays beside them and the footer's other items go behind one **More** button. Its card opens above the Ask, Insights and Connect
   views too (at the popover layer), so Get Started, Tools and Settings stay in reach on every view. The top row
   there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's
   writing bar takes the row and the row's own buttons step aside until the caret leaves.
@@ -488,7 +498,8 @@ per-page and no per-tab style.
 
 Changing the Knowledgebase Style is Editor only: a Participant is never offered it and the api refuses its style
 write ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)). Everyone sees the same look. A page's
-cover and its icon are changed by an Editor or a Participant, and seen by everyone.
+cover and its icon are changed by an Editor or a Participant, and seen by everyone: Add Cover, Add Icon and Add Label
+show to them in read and edit mode alike, and never to a Viewer, a link visitor or a guest.
 
 | Labels                                                  | Editor | Participant | Viewer |
 | ------------------------------------------------------- | ------ | ----------- | ------ |

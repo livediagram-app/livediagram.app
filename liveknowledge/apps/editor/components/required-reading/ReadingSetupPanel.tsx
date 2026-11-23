@@ -3,7 +3,8 @@
 // Required Reading's setup panel (docs/specs/030-knowledgebase/required-reading.md "Where it shows"): a popover under
 // its button, a sheet on a phone. Who should read the page, Everyone or Chosen People (a checklist of the people the
 // editor knows, the person here first), Cancel and Require Reading (Save once required), and Stop Requiring at its
-// foot when required. Chosen People with nobody ticked can't be saved. The choices are a radio group: arrows move,
+// foot when required; or the same body in a centred modal, from the page menu (ReadingSetupModal). Chosen People with
+// nobody ticked can't be saved. The choices are a radio group: arrows move,
 // Space or Enter picks; the chosen one carries a tick as well as its colour.
 import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import {
@@ -12,6 +13,7 @@ import {
   type ReadingAudience,
 } from '@liveknowledge/api-schema';
 import { Button, ResponsivePopover } from '@liveknowledge/ui';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import type { KnowledgePerson } from '@/components/knowledge/usePageKnowledge';
 import { AudienceIcon, ReadingBookIcon } from './reading-icons';
 
@@ -262,5 +264,21 @@ export function ReadingSetupPanel({
     >
       {anchor ? <ReadingSetupBody titleId={titleId} {...props} onCancel={onClose} /> : null}
     </ResponsivePopover>
+  );
+}
+
+/** The panel's body in a centred modal (a sheet on a phone): the page menu's Require Reading opens it, as its Request
+ *  Approval opens that modal (required-reading.md "Where it shows"). */
+export function ReadingSetupModal({
+  onClose,
+  ...props
+}: Omit<ReadingSetupProps, 'onCancel'> & { onClose: () => void }): ReactNode {
+  const titleId = useId();
+  return (
+    <Dialog open onClose={onClose} titleId={titleId} size="sm" phoneSheet>
+      <div data-reading-ask="" className="p-6">
+        <ReadingSetupBody titleId={titleId} {...props} onCancel={onClose} />
+      </div>
+    </Dialog>
   );
 }

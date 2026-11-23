@@ -1,4 +1,4 @@
-// Always in Context (docs/specs/030-knowledgebase/ai-knowledge.md): the pages every agent is handed before it
+// Always in Context (docs/specs/030-knowledgebase/insights.md): the pages every agent is handed before it
 // starts, measured in estimated tokens against one budget for the knowledgebase.
 
 export const CONTEXT_BUDGET_TOKENS = 8000;

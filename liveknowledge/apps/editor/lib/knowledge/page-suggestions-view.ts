@@ -1,4 +1,4 @@
-// What the open page shows of its suggested edits (docs/specs/030-knowledgebase/ai-knowledge.md "On the page";
+// What the open page shows of its suggested edits (docs/specs/030-knowledgebase/insights.md "On the page";
 // blueprint suggested-edits-ui.md "The view store"): the suggestions its writing marks, which of them the writing found,
 // the one open in a popover, the one shown in the page (Show in Page), and a suggestion an address asked to open.
 // Outside React, as the Find bar's highlights are: the writing's plugin (lib/article/article-suggestion-plugin.ts)

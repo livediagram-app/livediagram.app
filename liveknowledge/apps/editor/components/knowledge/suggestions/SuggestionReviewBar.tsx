@@ -1,6 +1,6 @@
 'use client';
 
-// Show in Page's bar (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"): while one suggested edit is drawn in
+// Show in Page's bar (docs/specs/030-knowledgebase/insights.md "On the page"): while one suggested edit is drawn in
 // the writing (struck text goes, underlined text arrives), a bar at the top centre says so, with Accept and Dismiss for
 // an Editor and Done to go back to reading. Nothing changes until it is accepted.
 import type { KnowledgeSuggestion } from '@liveknowledge/api-schema';

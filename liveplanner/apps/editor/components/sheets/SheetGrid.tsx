@@ -4,11 +4,11 @@
 // native scroll container over a spacer the size of the whole sheet, with a sticky viewport inside that draws only
 // what is in view: the cells, the headers, the selection, the editor. One tab stop; its keys are the grid's while it
 // has focus, and Escape hands them back to the canvas.
-import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { usePlan } from '@/components/plan/PlanContext';
 import { cardFieldChoice } from './card-field-options';
 import { SheetCardRows } from './SheetCardRows';
 import { SheetCellSlot } from './SheetCellSlot';
+import { CELL_GAP, SheetCellHint } from './SheetCellHint';
 import { SheetRuleLayer } from './rules/SheetRuleLayer';
 import { invalidWhy } from './rules/sheet-rule-hover';
 import { previewFormatRules } from './rules/useSheetRulesState';
@@ -380,21 +380,13 @@ export function SheetGrid({ elementId, actions, input, pointRef, peers, zoom = 1
             ) : null}
             {hovered && (hoverError || hoverLink) && hoverBox ? (
               <SheetCellSlot r={hovered.r} c={hovered.c}>
-                <div
-                  role="tooltip"
-                  className="pointer-events-none absolute z-[10] max-w-64 rounded-md bg-slate-800 px-2 py-1 text-[11px] text-white shadow"
-                  style={{
-                    left: c.geometry.headW + hoverBox.x,
-                    top: c.geometry.headH + hoverBox.y + hoverBox.h + 2,
-                  }}
-                >
-                  {hoverError ?? (
-                    <>
-                      <span className="block truncate">{hoverLink}</span>
-                      <span className="block text-slate-300">{`${keyLabel('Mod-Click')} to open`}</span>
-                    </>
-                  )}
-                </div>
+                <SheetCellHint
+                  left={c.geometry.headW + hoverBox.x}
+                  top={c.geometry.headH + hoverBox.y + hoverBox.h + CELL_GAP}
+                  cellHeight={hoverBox.h}
+                  error={hoverError}
+                  link={hoverLink}
+                />
               </SheetCellSlot>
             ) : null}
           </div>

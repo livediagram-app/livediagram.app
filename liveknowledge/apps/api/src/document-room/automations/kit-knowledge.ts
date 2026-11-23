@@ -167,7 +167,7 @@ function setContext(
         return rest;
       }
       if (fields.context) return fields;
-      // Always in Context holds what fits the budget every agent is handed (ai-knowledge.md).
+      // Always in Context holds what fits the budget every agent is handed (insights.md).
       const used = (await contextPages(env, documentId)).reduce((sum, p) => sum + p.tokens, 0);
       const tokens = tokensOfChars(chars);
       if (!fitsContextBudget(tokens, used))

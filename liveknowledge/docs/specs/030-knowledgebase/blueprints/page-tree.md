@@ -379,7 +379,7 @@ DEFAULT '', trashed_by_name TEXT NOT NULL DEFAULT '')`, `page_trash_at` on `tras
   as before.
 - **Settle:** `settlePage` reads a tab only while it is linked (`EXISTS` on `document_tabs`), so the unlink's mark
   settles as `removed` in the same transaction: the page's passages, links, trust and conflict work go, and search,
-  Ask, AI Knowledge, Home and backlinks stop seeing it at once. A restore's link marks it again and it is indexed anew.
+  Ask, Insights, Home and backlinks stop seeing it at once. A restore's link marks it again and it is indexed anew.
 - **Restore** (`restorePages`): the root and every trashed page under it (walked over `page_trash.parent`), in their
   old order; the links at or after the root's old `order_index` shift by the count, and each comes back at its old
   index. A root whose parent is not linked (or whose old place would pass `MAX_PAGE_DEPTH`) has `$.parent` removed

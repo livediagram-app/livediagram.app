@@ -4,7 +4,7 @@ import { MAX_PAGE_ANSWER_ROWS } from '@liveknowledge/knowledge';
 import { pruneKnowledge } from '../knowledge/room-knowledge';
 import { fakeClaude, knowledgeKit, type Kit, type Who } from './knowledge-test-kit';
 
-// docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page": the questions Ask answered from a page and
+// docs/specs/030-knowledgebase/insights.md "AI Context on a page": the questions Ask answered from a page and
 // the agents that read it, counted by the room and read with Page Health.
 vi.mock('../index-service', async (original) => {
   const tests = await import('../test-sqlite-d1');

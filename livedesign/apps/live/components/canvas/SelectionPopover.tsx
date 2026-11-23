@@ -1,4 +1,5 @@
 import { useRef, type ReactNode } from 'react';
+import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
 import type { LibrarySaveDraft } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import { useEdgeAwarePlacement } from '@liveworkspace/workbench/hooks/canvas/useEdgeAwarePlacement';
@@ -54,6 +55,8 @@ type SelectionPopoverProps = {
   // is how view-role visitors get the comments-only toolbar (no
   // edit affordances next to it).
   onOpenComments?: () => void;
+  // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md), where this session may send and it has words.
+  onSendToPlan?: () => void;
   // Someone who may comment adds one; a Viewer only reads the thread there is (docs/specs/013-workspace/share-roles.md).
   commentsReadOnly?: boolean;
   // Open the same context menu that a right-click on the element
@@ -101,6 +104,7 @@ export function SelectionPopover({
   onBringToFront,
   onSendToBack,
   onOpenComments,
+  onSendToPlan,
   commentsReadOnly = false,
   onOpenContextMenu,
   compact = false,
@@ -256,6 +260,17 @@ export function SelectionPopover({
           session it duplicates the context menu entry, which is
           fine: comments are high-traffic and a one-click affordance
           beats a two-click context menu open + click. */}
+          {/* Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner. */}
+          {onSendToPlan ? (
+            <PopoverButton
+              label="Send to Plan"
+              description="Make a card for it in one of your plans."
+              onClick={onSendToPlan}
+            >
+              <SendToPlanMenuIcon size={16} />
+            </PopoverButton>
+          ) : null}
+
           {onOpenComments ? (
             <PopoverButton
               label={commentsReadOnly ? 'Show Comments' : 'Add Comment'}
