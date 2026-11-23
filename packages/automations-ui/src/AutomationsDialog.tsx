@@ -74,6 +74,7 @@ import {
 import type { ListedRule, RuleBody, RuleStart } from './types';
 import { readAutomations, useAutomations } from './use-automations';
 import { useCarriedRule } from './use-carried-rule';
+import { useBusyIds } from './useBusyIds';
 
 /** A template's rule over this item, named so no rule here has its name, and what it left to pick. */
 export function templateStart(
@@ -159,7 +160,7 @@ export function AutomationsDialog({
   const phone = !useMediaQuery('(min-width: 640px)');
   const titleId = useId();
   const tabsId = useId();
-  const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
+  const [busy, withBusy] = useBusyIds();
   const [dirty, setDirty] = useState(false);
   const [leaving, setLeaving] = useState<(() => void) | null>(null);
   // The rule Run Rule was pressed on, while the app's own run (kit.runRule) is up.
@@ -239,18 +240,6 @@ export function AutomationsDialog({
     [scope, signedIn, onTarget],
   );
 
-  const withBusy = async (id: string, work: () => Promise<unknown>) => {
-    setBusy((s) => new Set(s).add(id));
-    try {
-      await work();
-    } finally {
-      setBusy((s) => {
-        const next = new Set(s);
-        next.delete(id);
-        return next;
-      });
-    }
-  };
   // `verb` and the rule's name say what failed ("Couldn’t delete “Tidy Up”."), so the toast
   // reads right later.
   const failed = (what: string, verb: string, name: string) => (error: unknown) => {

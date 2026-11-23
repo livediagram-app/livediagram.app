@@ -135,6 +135,7 @@ apps/editor/components/automations/
   TestOnCard.tsx              the card finder and the dry-run result
   RunRuleMenu.tsx             the card ⋯ menu's Run Rule submenu
   use-automations.ts          fetch, mutate and cache the list for the open plan
+  useBusyIds.ts               the rules with a take-over or a switch under way, marked while the work runs
   automations-client.ts       the routes, typed with api-schema
 ```
 
