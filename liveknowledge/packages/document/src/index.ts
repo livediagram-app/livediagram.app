@@ -261,7 +261,7 @@ export * from '@liveworkspace/element-model/quick-swatch-rederive';
 export * from './web-components';
 // A stat's change line and count-up (docs/specs/009-elements/stat-row.md); the quote (docs/specs/009-elements/quote.md);
 // the table's marks and highlighted column (docs/specs/009-elements/comparison-tables.md).
-export * from './stat-count';
+export * from '@liveworkspace/element-model/stat-count';
 export * from './quote';
 export * from './element-images';
 export * from '@liveworkspace/element-model/table-marks';
@@ -461,7 +461,7 @@ export * from '@liveworkspace/element-model/containment';
 export * from '@liveworkspace/model-core/style-keys';
 export * from '@liveworkspace/model-core/tab-names';
 export * from './svg-render-pages';
-export * from './article-draw-ops';
+export * from '@liveworkspace/element-model/article-draw-ops';
 export * from './article-layout-estimate';
 export { lineChars } from './svg-render-web';
 export * from '@liveworkspace/model-core/drawn-count';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { articleOpsToSvg } from './article-draw-ops';
 
-// docs/specs/007-editor/article-pages.md "Everywhere a page goes": the writing's operations as SVG.
+// livedocuments/docs/specs/007-editor/article-pages.md "Everywhere a page goes": the writing's operations as SVG.
 describe('the writing as SVG', () => {
   it('marks an empty cell for a PDF’s tags, drawing nothing', () => {
     expect(

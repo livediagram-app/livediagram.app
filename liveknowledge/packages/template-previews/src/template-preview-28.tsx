@@ -14,7 +14,7 @@ import {
   Table,
   TINT,
   Todo,
-} from './article-preview-parts';
+} from '@liveworkspace/template-previews/article-preview-parts';
 
 // Group 28: more written documents (docs/specs/008-canvas/canvas-and-palette.md "Written documents"): Product
 // One-Pager, Research Report, Newsletter, Case Study and Onboarding Handbook. Each draws its A4 page as it opens, in

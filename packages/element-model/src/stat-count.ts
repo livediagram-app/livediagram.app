@@ -1,10 +1,10 @@
-// A stat's change line and its count-up (docs/specs/009-elements/stat-row.md). Pure: which way a change moved and the
+// A stat's change line and its count-up (livedocuments/docs/specs/009-elements/stat-row.md). Pure: which way a change moved and the
 // colour that says so, read from the change's own text, and the frames a value counts up through while its slide is
 // presented. The canvas face and the export both colour from here, so they cannot drift.
 
 import { colorWash } from '@liveworkspace/model-core/color-wash';
-import type { CanvasSurface } from './colors';
-import { reachContrast, THEME_TEXT_CONTRAST } from '@liveworkspace/element-model/readable-colour';
+import type { CanvasSurface } from './colour-math';
+import { reachContrast, THEME_TEXT_CONTRAST } from './readable-colour';
 
 export type StatTrend = 'up' | 'down' | 'flat';
 

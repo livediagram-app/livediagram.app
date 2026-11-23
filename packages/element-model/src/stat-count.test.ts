@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { contrastRatio } from './colors';
+import { contrastRatio } from './colour-math';
 import {
   countFrame,
   parseCountable,
@@ -10,7 +10,7 @@ import {
   statTrendColours,
 } from './stat-count';
 
-// docs/specs/009-elements/stat-row.md "The change line" and "Count-up when presented".
+// livedocuments/docs/specs/009-elements/stat-row.md "The change line" and "Count-up when presented".
 describe('statTrend', () => {
   it('reads up, down and flat from the first character', () => {
     for (const up of ['▲ 12%', '↑ 3', '+4 pts', ' ▲ 1']) expect(statTrend(up), up).toBe('up');

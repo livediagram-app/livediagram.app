@@ -1,9 +1,9 @@
-// An article's writing as draw operations (docs/specs/007-editor/article-pages.md "Everywhere a page goes"): each
-// word where it lands, with its font and colour, each painted background, border, list marker and to-do box, in
-// canvas coordinates; and those operations as SVG markup. The editor reads them off its live layout
-// (apps/editor/lib/article/article-snapshot.ts); a preview without a browser estimates them (article-layout-estimate.ts).
-// Pure.
-import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
+// An article's writing as draw operations (livedocuments/docs/specs/007-editor/article-pages.md "Everywhere a page
+// goes"): each word where it lands, with its font and colour, each painted background, border, list marker and to-do
+// box, in canvas coordinates; and those operations as SVG markup. A product's editor reads them off its live layout
+// (its apps/editor/lib/article/article-snapshot.ts); a preview without a browser estimates them (its
+// article-layout-estimate.ts). Pure. One copy for livedocuments and liveknowledge.
+import { r2, xmlEscape } from './svg-render-primitives';
 
 export type ArticleDrawOp =
   | {

@@ -327,6 +327,11 @@ drives it with fake timers.
   `flowchartId`, so they keep their own), `nearest-towards` (DSP), `path-geometry` (DS), `sankey-model` (DO),
   `shadow` (DHSP), `tab-folders` (DOH) and `tag-colours` (DOSP). `entity-geometry` (DP) reads no element, so it is
   `@liveworkspace/model-core/entity-geometry`.
+- From livedocuments and liveknowledge, whose copies were byte-identical and read neither product's union, tab or
+  page: `stat-count` (a stat's trend, its colours and its count-up frames) and `article-draw-ops` (an article's
+  writing as draw operations, and those as SVG), each with its test. The rest of the two models is typed on each
+  product's own `Tab` and `Page`, which differ (a flashcard page in one, the continuous page and the page tree in
+  the other), so it stays in each product.
 - Each of those products keeps `src/<module>.ts` as the binding `export * from '@liveworkspace/element-model/<module>'`
   (the copies guard leaves such a file out).
 - Generic over the caller's own type: `bringToFront`, `sendToBack`, `bringManyToFront`, `sendManyToBack`,

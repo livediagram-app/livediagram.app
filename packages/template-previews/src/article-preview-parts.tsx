@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { pv } from '@liveworkspace/template-previews/motion';
+import { pv } from './motion';
 
 // The written documents' preview parts (template-preview-27.tsx, template-preview-28.tsx): an A4 page, a line of text,
 // a table, a to-do box and a header or footer band, in one ink set, so every written template draws its page alike.
