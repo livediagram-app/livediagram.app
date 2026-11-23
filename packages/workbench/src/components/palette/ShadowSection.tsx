@@ -18,7 +18,7 @@ import { ShadowMenuGlyph } from './context-menu-icons';
 
 // A preset tile's swatch: a small rounded chip carrying the preset's own
 // shadow at half scale (opacity boosted so the effect reads at 16px).
-// `null` renders the bare chip — the None tile.
+// `null` renders the bare chip: the None tile.
 function ShadowPresetSwatch({ shadow }: { shadow: ElementShadow | null }) {
   const scaled = shadow
     ? {
