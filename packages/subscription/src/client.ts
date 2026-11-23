@@ -5,6 +5,7 @@
 // was a REFUSAL (a 4xx: a rotated key, a body the service will not take) are never confused. Out of reach allows
 // (the spec's rule for an outage); refused allows nothing, and says so in the log.
 
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { proEnabled } from './flag';
 import { isOwnerScope, type OwnerScope } from './owner';
 import {
@@ -209,7 +210,8 @@ export function createSubscriptionClient(config: SubscriptionClientConfig): Subs
   const now = config.now ?? (() => Date.now());
   const cache = config.cache ?? SHARED_CACHE;
   const reads = readsOf(cache);
-  const base = (config.url ?? SUBSCRIPTION_API_URL).replace(/\/+$/, '');
+  // By a scan, not `/\/+$/` (api-schema url-slashes.ts): linear on any address.
+  const base = withoutTrailingSlashes(config.url ?? SUBSCRIPTION_API_URL);
   const fetcher: SubscriptionFetcher = config.fetcher ?? {
     fetch: (input, init) => fetch(input, init),
   };

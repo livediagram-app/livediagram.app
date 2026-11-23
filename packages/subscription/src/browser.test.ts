@@ -45,6 +45,14 @@ describe('a page', () => {
     expect(seen[0]!.init.headers).toEqual({ Authorization: 'Bearer token-1' });
   });
 
+  it('stays linear on an origin with a long run of slashes that is not at its end', async () => {
+    // No timer: vitest's test timeout is the budget. `/\/+$/` takes minutes at this length, the scan a millisecond.
+    const worst = `${'/'.repeat(200_000)}x`;
+    const { client, seen } = setup(() => Response.json({ ok: true }), { origin: `${worst}//` });
+    await client.me();
+    expect(seen[0]!.url).toBe(`${worst}/api/subscription/me`);
+  });
+
   it('asks nothing when nobody is signed in: reads are null, writes are refused', async () => {
     const { client, seen } = setup(() => Response.json({}), { token: null });
     expect(await client.me()).toBeNull();

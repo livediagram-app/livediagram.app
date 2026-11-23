@@ -1,7 +1,6 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
-import { roomTier } from '@liveworkspace/automations/room';
 import type { ItemTier } from '@liveworkspace/subscription';
 import type { SourceChange } from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
@@ -9,7 +8,6 @@ import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livediagram/api-schema'
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import {
-  ledgerEntryKeys,
   ledgerKey,
   ledgerPrefix,
   recordInLedger,
@@ -26,7 +24,7 @@ import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import type { InternalRoom } from '../room-internal';
 import type { FacilitatorState } from '../facilitator';
-import { RoomFacilitator } from '../room-facilitator';
+import type { RoomFacilitator } from '../room-facilitator';
 import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import type { CommunityAuthor } from '@livediagram/api-schema';
 import { documentHasTab } from '../db/tabs';
@@ -84,15 +82,14 @@ import {
   roomHeadSync,
 } from './room-content-state';
 import { ORDER_STATE_KEY, restoreRoom } from './room-restore';
+import { newFacilitator, newInternalRoom, newRoomTier } from './room-wiring';
 import * as rpc from './room-rpc';
 import { community, communityListing, communityPostTitle } from './room-community';
 import { renewGrant, roomFetch } from './room-grants';
 import { roomServiceStatus, type RoomServiceStatus } from './room-service-status';
 import {
   broadcast,
-  closeAllIfTrashed,
   closeAllReverted,
-  closeSessionsForAccessChange,
   closeSessionsOfChangedLink,
   closeSockets,
   frameFor,
@@ -109,11 +106,8 @@ import {
   broadcastPresence,
   clearAgentsFor,
   dropSession,
-  handleAgentPresence,
-  liveSessions,
   noteMultiplayer,
   roomPeople,
-  socketByPresence,
 } from './room-roster';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
@@ -352,15 +346,7 @@ export class DocumentRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
-    this.tier = roomTier({
-      app: 'livediagram.app',
-      env: () => this.roomEnv ?? null,
-      sql: () => this.state.storage.sql,
-      ready: () => this.schemaReady,
-      table: 'document',
-      id: () => this.documentId,
-      defer: (work) => this.state.waitUntil(work),
-    });
+    this.tier = newRoomTier(this);
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = roomHeadSync(this);
     this.participantWrites = new RoomParticipantWrites({
@@ -372,31 +358,8 @@ export class DocumentRoom extends DurableObject<Env> {
       readLedger: (tabId) => this.ledger.read(tabId),
     });
     this.poll = new RoomLivePoll(state.storage);
-    this.internal = {
-      broadcastSystemOp: (op) => this.broadcastSystemOp(op),
-      broadcastOrderedSystemOp: (op) => this.broadcastOrderedSystemOp(op),
-      closeSessionsOfChangedLink: (op) => this.closeSessionsOfChangedLink(op),
-      closeAllIfTrashed: (op) => closeAllIfTrashed(this, op),
-      clearAgentsFor: (op) => this.clearAgentsFor(op),
-      closeSessionsForAccessChange: (close) => closeSessionsForAccessChange(this, close),
-      purge: () => this.purge(),
-      handleAgentPresence: (req, u) => handleAgentPresence(this, req, u),
-      handleQaWrite: (req) => this.handleQaWrite(req),
-      sequenceMutation: (from, op) => this.sequenceMutation(from, op),
-      readSelections: (tabId, person) => this.selections.read(tabId, liveSessions(this), person),
-      readLedger: (tabId, since) => this.ledger.read(tabId, since),
-      readLedgerEntries: (tabId, want) => this.ledger.readKeys(tabId, ledgerEntryKeys(tabId, want)),
-      epoch: () => this.epoch,
-    };
-    this.baton = new RoomFacilitator({
-      storage: state.storage,
-      broadcast: (payload, except) => this.broadcast(payload, except),
-      sendTo: (ws, payload) => this.sendTo(ws, payload),
-      sendToPresence: (presenceId, payload) => this.sendToPresence(presenceId, payload),
-      socketByPresence: (presenceId) => socketByPresence(this, presenceId),
-      readSession: (ws) => this.readSession(ws),
-      armAlarm: () => this.armAlarm(),
-    });
+    this.internal = newInternalRoom(this);
+    this.baton = newFacilitator(this);
     this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
     this.serviceStatus = roomServiceStatus(this);

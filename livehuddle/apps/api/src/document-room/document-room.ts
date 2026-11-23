@@ -1,8 +1,6 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
-import { roomTier } from '@liveworkspace/automations/room';
 import type { ItemTier } from '@liveworkspace/subscription';
-import { subscriptionClientOf } from '@liveworkspace/subscription';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -14,7 +12,7 @@ import {
   ROOM_PONG,
   type AccessLevel,
 } from '@livehuddle/api-schema';
-import { RoomParticipantWrites } from '../room-participant';
+import type { RoomParticipantWrites } from '../room-participant';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import {
   ledgerKey,
@@ -24,30 +22,21 @@ import {
   type TabLedger,
 } from '@livehuddle/document';
 import { RoomSelectionStore } from '../room-selections';
-import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
+import { RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
 import type { DocumentEnv, Env, ServerMessage } from '../types';
 import type { LoggedOp } from '../document-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import type { InternalRoom } from '../room-internal';
 import type { FacilitatorState } from '../facilitator';
-import { RoomFacilitator } from '../room-facilitator';
+import type { RoomFacilitator } from '../room-facilitator';
 import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import type { CommunityAuthor } from '@livehuddle/api-schema';
 import { documentHasTab } from '../db/tabs';
 import { callsMode } from '../calls/calls-mode';
 import { CallsModeWatch } from '../calls/calls-mode-watch';
 import { RoomCalls, type HearingAnswer, type HearingAsk } from '../calls/room-calls';
-import {
-  CALL_METER_KEY,
-  CallMeter,
-  type CallAdmission,
-  type CallMeterState,
-  type CallMinutesReading,
-  type CallsPayer,
-} from '../calls/call-meter';
-import { callsConfigured } from '../calls/calls-gate';
-import { severSession, type RealtimeEnv } from '../calls/realtime-api';
+import type { CallAdmission, CallMinutesReading, CallsPayer } from '../calls/call-meter';
 import {
   ItemDb,
   type ExportCommentsResult,
@@ -92,19 +81,23 @@ import {
   drainShares,
   ensureSchema,
   localNamespace,
-  MAINTENANCE_KEY,
   noteWrite,
-  restoreContentState,
   roomHeadSync,
 } from './room-content-state';
+import { ORDER_STATE_KEY, restoreRoom } from './room-restore';
 import * as rpc from './room-rpc';
+import {
+  newCallMeter,
+  newFacilitator,
+  newInternalRoom,
+  newParticipantWrites,
+  newRoomTier,
+} from './room-wiring';
 import { community, communityListing, communityPostTitle } from './room-community';
 import { renewGrant, roomFetch } from './room-grants';
 import {
   broadcast,
-  closeAllIfTrashed,
   closeAllReverted,
-  closeSessionsForAccessChange,
   closeSessionsOfChangedLink,
   closeSockets,
   frameFor,
@@ -115,24 +108,14 @@ import {
   type SessionArgs,
 } from './room-sockets';
 import { alarm, armAlarm, purge } from './room-lifecycle';
-import { renamePerson } from './room-names';
-import { sweepStaleAttendance } from './room-attendance';
 import { roomMessage } from './room-message';
-import {
-  callSessionHolders,
-  callSessions,
-  endCallSessions,
-  storedTabRev,
-} from './room-call-sessions';
+import { callSessions, storedTabRev } from './room-call-sessions';
 import {
   broadcastPresence,
   clearAgentsFor,
   dropSession,
-  handleAgentPresence,
-  liveSessions,
   noteMultiplayer,
   roomPeople,
-  socketByPresence,
 } from './room-roster';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
@@ -188,10 +171,6 @@ import {
 // the log lives in memory (like opRates) and resets on hibernation, which
 // only ever forces the safe path (a resync), never data loss.
 const OP_LOG_LIMIT = 256;
-
-// DO storage key holding `{ epoch, seq }` so the room keeps its ordering
-// identity across a hibernation wake (docs/specs/012-collaboration/resync-without-reload.md).
-const ORDER_STATE_KEY = 'order-state';
 
 // How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
@@ -354,21 +333,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // The Space's Call Minutes meter (docs/specs/012-collaboration/call-minutes.md "The meter"; calls/call-meter.ts):
   // with Pro on, one minute spent from the owner's month for each person in a call, at the start of each minute.
   // With Pro off it does nothing: no storage, no alarm, no request.
-  readonly callMeter = new CallMeter({
-    client: () => (this.roomEnv ? subscriptionClientOf(this.roomEnv, 'livehuddle.app') : null),
-    now: () => Date.now(),
-    load: () => this.state.storage.get<CallMeterState>(CALL_METER_KEY),
-    save: (state) => void this.state.storage.put(CALL_METER_KEY, state),
-    sessions: () => callSessionHolders(this),
-    end: () => endCallSessions(this),
-    tell: (op) => this.broadcast({ kind: 'op', from: 'system', op }),
-    sever: async (sessionId) => {
-      const env = this.roomEnv;
-      if (env && callsConfigured(env)) await severSession(env as RealtimeEnv, sessionId);
-    },
-    arm: () => this.armAlarm(),
-    defer: (work) => this.state.waitUntil(work),
-  });
+  readonly callMeter = newCallMeter(this);
   // The sample streams, walking characters and cursors (docs/specs/015-api/api.md "A busy room bounds its
   // presence fan-out"): sent to a character's tab only, and coalesced per socket in a busy room.
   readonly presenceRelay = new PresenceRelay<WebSocket, AvatarRelaySession>({
@@ -410,48 +375,12 @@ export class DocumentRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
-    this.tier = roomTier({
-      app: 'livehuddle.app',
-      env: () => this.roomEnv ?? null,
-      sql: () => this.state.storage.sql,
-      ready: () => this.schemaReady,
-      table: 'document',
-      id: () => this.documentId,
-      defer: (work) => this.state.waitUntil(work),
-    });
+    this.tier = newRoomTier(this);
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = roomHeadSync(this);
-    this.participantWrites = new RoomParticipantWrites({
-      env: this.roomEnv,
-      enqueue: (step) => this.queueTabWrite(step),
-      sequence: (from, op, except) => this.sequenceMutation(from, op, except),
-      sendTo: (ws, payload) => this.sendTo(ws, payload),
-      position: () => ({ epoch: this.epoch, seq: this.seq }),
-      readLedger: (tabId) => this.ledger.read(tabId),
-    });
-    this.internal = {
-      broadcastSystemOp: (op) => this.broadcastSystemOp(op),
-      closeSessionsOfChangedLink: (op) => this.closeSessionsOfChangedLink(op),
-      closeAllIfTrashed: (op) => closeAllIfTrashed(this, op),
-      clearAgentsFor: (op) => this.clearAgentsFor(op),
-      closeSessionsForAccessChange: (close) => closeSessionsForAccessChange(this, close),
-      purge: () => this.purge(),
-      handleAgentPresence: (req, u) => handleAgentPresence(this, req, u),
-      sequenceMutation: (from, op) => this.sequenceMutation(from, op),
-      readSelections: (tabId, person) => this.selections.read(tabId, liveSessions(this), person),
-      readLedger: (tabId, since) => this.ledger.read(tabId, since),
-      epoch: () => this.epoch,
-      renamePerson: (personTag, name) => renamePerson(this, personTag, name),
-    };
-    this.baton = new RoomFacilitator({
-      storage: state.storage,
-      broadcast: (payload, except) => this.broadcast(payload, except),
-      sendTo: (ws, payload) => this.sendTo(ws, payload),
-      sendToPresence: (presenceId, payload) => this.sendToPresence(presenceId, payload),
-      socketByPresence: (presenceId) => socketByPresence(this, presenceId),
-      readSession: (ws) => this.readSession(ws),
-      armAlarm: () => this.armAlarm(),
-    });
+    this.participantWrites = newParticipantWrites(this);
+    this.internal = newInternalRoom(this);
+    this.baton = newFacilitator(this);
     this.selections = new RoomSelectionStore(state.storage);
     // The keepalive (see the hibernation notes above): answered by the runtime, never by this class. Absent from a
     // test double of the state, and from a runtime without the hibernation API.
@@ -462,28 +391,8 @@ export class DocumentRoom extends DurableObject<Env> {
       () => Date.now(),
       () => crypto.randomUUID(),
     );
-    // Restore before any request can observe `epoch`/`seq`. A wake re-runs
-    // the constructor, so without this gate a socket could be handed the
-    // freshly-minted field values above and defeat the whole point.
-    void state.blockConcurrencyWhile(async () => {
-      const saved = await state.storage.get<{ epoch: string; seq: number }>(ORDER_STATE_KEY);
-      if (saved) {
-        this.epoch = saved.epoch;
-        this.seq = saved.seq;
-      } else {
-        // First instantiation for this document: adopt the random epoch above.
-        await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
-      }
-      await this.baton.restore();
-      for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
-      this.standing.restore(await state.storage.get(this.standing.key));
-      restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
-      // Visits a restart left open (room-attendance.ts): only when the room starts with nobody connected.
-      sweepStaleAttendance(this);
-      // The call meter's minute and the sessions it has still to close (nothing is read with Pro off).
-      await this.callMeter.restore();
-      this.armAlarm();
-    });
+    // Restore before any request can observe `epoch`/`seq` (room-restore.ts).
+    void state.blockConcurrencyWhile(() => restoreRoom(this));
   }
 
   // ---------- The document's content (room-content-state.ts) ----------------------------------------------------

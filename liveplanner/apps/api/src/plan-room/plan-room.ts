@@ -20,7 +20,7 @@ import { RoomScopedStructure, cachedStoredTab } from '../room-scoped-structure';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import { LEDGER_RULES, type LedgerEntry, type TabLedger } from './plan-room-ledger';
 import { RoomSelectionStore } from '../room-selections';
-import { agentPresenceLog, RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
+import { RoomAgentPresence } from '@liveworkspace/api-kit/room-agent-presence';
 import { armPlanAlarm, wakePlanRoom } from './plan-room-alarm';
 import type { Env, PlanEnv, ServerMessage } from '../types';
 import { type LoggedOp } from '../project-room-rules';
@@ -48,7 +48,7 @@ import { importPlanCopy, readPlanOutline, type PlanCopy, type PlanOutline } from
 import type { CommunityLink, CommunityListing, CopySource } from '../plan-client';
 import type { Copier } from '@liveworkspace/index-app';
 import { RepeatSchedule } from './card-repeats';
-import { PlanStanding, STANDING_KEY, takeGrantStanding, takeStanding } from './plan-standing';
+import { PlanStanding, takeGrantStanding, takeStanding } from './plan-standing';
 import { PlanAutomations } from './automations/automation-queue';
 import { automationDeps } from './automations/plan-room-automations';
 import { importProjectFile, type ProjectFileImport } from './project-file';
@@ -69,15 +69,7 @@ import {
   writeDirectoryEntry,
   type IntakeEntry,
 } from '../email-intake/intake-directory';
-import {
-  MAINTENANCE_KEY,
-  restoreContentState,
-  ensureSchema,
-  bindStoredPlan,
-  noteWrite,
-  drain,
-  purge,
-} from './plan-room-content';
+import { ensureSchema, bindStoredPlan, noteWrite, drain, purge } from './plan-room-content';
 import {
   route,
   communityOf,
@@ -99,7 +91,6 @@ import {
 } from './plan-room-doors';
 import { renewGrant, acceptSession } from './plan-room-grants';
 import {
-  ORDER_STATE_KEY,
   broadcast,
   broadcastSystemOp,
   broadcastOrderedSystemOp,
@@ -112,7 +103,7 @@ import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
 import { automationLimitsOf, roomTier } from './tier/room-tier';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
-import { purgedAt } from './plan-room-purged';
+import { restoreRoom } from './plan-room-restore';
 import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import type { SheetWatches } from './sheet-watchers';
@@ -341,27 +332,8 @@ export class PlanRoom extends DurableObject<Env> {
       () => Date.now(),
       () => crypto.randomUUID(),
     );
-    // Restore before any request can observe `epoch`/`seq`. A wake re-runs
-    // the constructor, so without this gate a socket could be handed the
-    // freshly-minted field values above and defeat the whole point.
-    void state.blockConcurrencyWhile(async () => {
-      const saved = await state.storage.get<{ epoch: string; seq: number }>(ORDER_STATE_KEY);
-      if (saved) {
-        this.epoch = saved.epoch;
-        this.seq = saved.seq;
-      } else {
-        // First instantiation for this project: adopt the random epoch above.
-        await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
-      }
-      for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
-      // Before the schedules restore, so a plan put away asks for no wake.
-      this.standing.restore(await state.storage.get(STANDING_KEY));
-      restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
-      // A room with no plan schema learns whether it was purged before any door runs (plan-room-purged.ts); a plan
-      // with content reads nothing more.
-      await purgedAt(this);
-      this.armAlarm();
-    });
+    // Restore before any request can observe `epoch`/`seq` (plan-room-restore.ts).
+    void state.blockConcurrencyWhile(() => restoreRoom(this));
   }
 
   // ---------- The plan's content --------------------------------------------------------------------------

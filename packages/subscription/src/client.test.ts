@@ -147,6 +147,14 @@ describe('without a key', () => {
 });
 
 describe('an entitlement', () => {
+  it('stays linear on an address with a long run of slashes that is not at its end', async () => {
+    // No timer: vitest's test timeout is the budget. `/\/+$/` takes minutes at this length, the scan a millisecond.
+    const worst = `${'/'.repeat(200_000)}x`;
+    const { client, calls } = setup(() => Response.json(pro()), { url: `${worst}//` });
+    await client.entitlement(ADA);
+    expect(calls[0]!.url).toBe(`${worst}/internal/entitlement`);
+  });
+
   it("is asked of the service with the app's key and name", async () => {
     const { client, calls } = setup(() => Response.json(pro()), {
       url: 'https://sub.test/api/subscription//',

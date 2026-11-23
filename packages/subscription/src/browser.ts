@@ -2,6 +2,7 @@
 // subscription, the prices in their currency, and the way into checkout and the billing portal. A page built with
 // Pro off never makes one of these.
 
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import type { OwnerScope } from './owner';
 import type { LimitKey } from './tiers';
 import {
@@ -76,7 +77,8 @@ function errorCode(body: unknown): string {
 export function createSubscriptionBrowserClient(
   config: SubscriptionBrowserConfig,
 ): SubscriptionBrowserClient {
-  const base = `${(config.origin ?? '').replace(/\/+$/, '')}${SUBSCRIPTION_API_PATH}`;
+  // By a scan, not `/\/+$/` (api-schema url-slashes.ts): linear on any origin.
+  const base = `${withoutTrailingSlashes(config.origin ?? '')}${SUBSCRIPTION_API_PATH}`;
   const doFetch = config.fetch ?? ((input, init) => fetch(input, init));
 
   async function request<T>(

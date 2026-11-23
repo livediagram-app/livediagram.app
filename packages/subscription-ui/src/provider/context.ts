@@ -1,5 +1,6 @@
 'use client';
 
+import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { createContext } from 'react';
 import type {
   LimitKey,
@@ -54,7 +55,8 @@ export type SubscriptionHost = {
 };
 
 /** The pricing page's address on the service's origin. */
-export const pricingHrefOn = (origin: string): string => `${origin.replace(/\/+$/, '')}/pricing`;
+export const pricingHrefOn = (origin: string): string =>
+  `${withoutTrailingSlashes(origin)}/pricing`;
 
 /** `refresh` where there is nothing to read again: no provider, Pro off, or the provider's working half not in yet. */
 export const noRefresh = async (): Promise<void> => {};
