@@ -1,3 +1,5 @@
+'use client';
+
 import { builtMarkup, htmlProps } from '@liveworkspace/trusted-types';
 // Renders a Technology (brand) icon: a brand-coloured rounded tile + the
 // icon's white line-art glyph (docs/specs/010-palette/technology-icons.md). Shared by the canvas element

@@ -129,7 +129,7 @@ still used for search, the aria-label, and the on-canvas element.
 Unlike the Icons tab, a Technology tile is **always a standalone element**: it
 never drops _inside_ a selected shape as an inline icon (a coloured brand tile
 beside a shape's text is not meaningful, and the inline-icon renderer only knows
-line-art prims). It therefore carries its own DnD MIME (`TECH_ICON_DND_MIME`, beside `ICON_DND_MIME` in `lib/icons.ts`),
+line-art prims). It therefore carries its own DnD MIME (`TECH_ICON_DND_MIME`, beside `ICON_DND_MIME` in `../packages/workbench/src/lib/icons.ts`),
 which the canvas drop handler routes to a standalone-icon create and which the
 shape drop target ignores. The same rule holds _after_ placement: dragging an
 existing standalone tech icon over a shape leaves it standalone: the
