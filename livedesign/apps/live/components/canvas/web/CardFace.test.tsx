@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type ShapeElement, type WebRows } from '@livedesign/design';
 
 import { CardFace } from './CardFace';
-import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
+import { TagColoursProvider } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 
 afterEach(cleanup);
 

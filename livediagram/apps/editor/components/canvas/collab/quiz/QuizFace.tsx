@@ -21,7 +21,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { QuizCentre } from './QuizCentre';
 import { QuizEditDialog } from './QuizEditDialog';
 import { QuizOption, type QuizOptionState } from './QuizOption';

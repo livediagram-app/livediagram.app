@@ -7,21 +7,21 @@ ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
 Scope, by file:
 
-| File                                                           | Role                                                                                                        |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                         | `ChecklistItem`, `CHECKLIST_MAX_ITEMS`, `CHECKLIST_MAX_TEXT`, `CHECKLIST_DEFAULT_ITEMS`, `isChecklistShape` |
-| `packages/document/src/shape-factory.ts`                       | Size 240 × 180; seeds the three rows                                                                        |
-| `packages/document/src/validate.ts`                            | Row count, row text and `done` type checks                                                                  |
-| `packages/document/src/element-deltas.ts`                      | The `check` delta, `checklistDeltaFor`, `keepLocalTicks`, `mergeIncomingElement`                            |
-| `packages/document/src/collab-ledger.ts`                       | Wire validation of an incoming `check` delta                                                                |
-| `packages/document/src/svg-render-shapes.ts`                   | `svgChecklistShape`: the headless render                                                                    |
-| `apps/editor/components/canvas/ChecklistView.tsx`              | Canvas card, row buttons, footer count                                                                      |
-| `apps/editor/components/canvas/ShapeContentRouter.tsx`         | Routes the kind; `editable = !readOnly && !isLocked`                                                        |
-| `apps/editor/app/document/[id]/useEditorState.ts`              | `toggleChecklistItem`: builds and applies the delta                                                         |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`              | `setChecklistItemsSelected`: whole-array row edits                                                          |
-| `apps/editor/components/palette/ElementDataSections.tsx`       | The Checklist section (Tools flyout)                                                                        |
-| `apps/editor/components/palette/context-menu-data-editors.tsx` | `ChecklistRowsEditor`                                                                                       |
-| `apps/editor/components/palette/tile-defs/element-tiles.tsx`   | Tile `tools:checklist`, section `components`                                                                |
+| File                                                            | Role                                                                                                        |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/data-shapes.ts`                          | `ChecklistItem`, `CHECKLIST_MAX_ITEMS`, `CHECKLIST_MAX_TEXT`, `CHECKLIST_DEFAULT_ITEMS`, `isChecklistShape` |
+| `packages/document/src/shape-factory.ts`                        | Size 240 × 180; seeds the three rows                                                                        |
+| `packages/document/src/validate.ts`                             | Row count, row text and `done` type checks                                                                  |
+| `packages/document/src/element-deltas.ts`                       | The `check` delta, `checklistDeltaFor`, `keepLocalTicks`, `mergeIncomingElement`                            |
+| `packages/document/src/collab-ledger.ts`                        | Wire validation of an incoming `check` delta                                                                |
+| `packages/document/src/svg-render-shapes.ts`                    | `svgChecklistShape`: the headless render                                                                    |
+| `../packages/workbench/src/components/canvas/ChecklistView.tsx` | Canvas card, row buttons, footer count                                                                      |
+| `apps/editor/components/canvas/ShapeContentRouter.tsx`          | Routes the kind; `editable = !readOnly && !isLocked`                                                        |
+| `apps/editor/app/document/[id]/useEditorState.ts`               | `toggleChecklistItem`: builds and applies the delta                                                         |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`               | `setChecklistItemsSelected`: whole-array row edits                                                          |
+| `apps/editor/components/palette/ElementDataSections.tsx`        | The Checklist section (Tools flyout)                                                                        |
+| `apps/editor/components/palette/context-menu-data-editors.tsx`  | `ChecklistRowsEditor`                                                                                       |
+| `apps/editor/components/palette/tile-defs/element-tiles.tsx`    | Tile `tools:checklist`, section `components`                                                                |
 
 ## Domain and naming
 

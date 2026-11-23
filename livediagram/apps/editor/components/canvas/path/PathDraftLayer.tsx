@@ -15,7 +15,7 @@ import {
   OVERLAY_SVG_CLASS,
   PATH_OVERLAY_Z,
   PATH_RING_PX,
-} from './path-markers';
+} from '@liveworkspace/workbench/components/canvas/path/path-markers';
 import type { PathRing } from './usePathDrawGesture';
 
 type Point = { x: number; y: number };

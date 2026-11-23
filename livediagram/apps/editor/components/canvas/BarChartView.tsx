@@ -16,7 +16,7 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { ChartValues } from '@/components/primitives/ChartValues';
-import { BarChartAxis } from './ChartAxis';
+import { BarChartAxis } from '@liveworkspace/workbench/components/canvas/ChartAxis';
 import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@liveworkspace/workbench/hooks/canvas/useChartHover';
 import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';

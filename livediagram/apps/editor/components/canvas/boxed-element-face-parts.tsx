@@ -13,13 +13,13 @@ import { EntityView } from '@/components/canvas/entity/EntityView';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { PageCornerFold } from '@liveworkspace/workbench/components/canvas/PageCornerFold';
-import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
+import { isCssNativeBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import type { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import type { useSketchPaint } from '@/components/canvas/SketchOverlay';
-import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
-import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
-import type { useTagColours } from '@/components/canvas/TagColoursContext';
+import { AccentEdgeOverlay } from '@liveworkspace/workbench/components/canvas/AccentEdgeOverlay';
+import { PointerNoteOverlay } from '@liveworkspace/workbench/components/canvas/PointerNoteOverlay';
+import type { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import type { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
@@ -96,6 +96,7 @@ export function useBoxedFaceParts(
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           editable={isSelected && !readOnly && !isLocked}
           onSetTip={onSetPointerTip}
+          previewsTip
         />
       ) : null}
       <ShapeContentRouter

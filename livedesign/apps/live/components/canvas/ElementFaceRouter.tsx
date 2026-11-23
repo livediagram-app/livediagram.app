@@ -36,8 +36,8 @@ import {
 } from '@liveworkspace/workbench/components/canvas/InsetContent';
 import { loadTableView } from '@/lib/editor-deferred-code';
 import { VideoView } from '@/components/canvas/VideoView';
-import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
-import { ChipFace } from '@/components/canvas/ChipFace';
+import { HeroCaptionCard } from '@liveworkspace/workbench/components/canvas/web/HeroCaptionCard';
+import { ChipFace } from '@liveworkspace/workbench/components/canvas/ChipFace';
 import { ConceptFace } from '@/components/canvas/ConceptFace';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';

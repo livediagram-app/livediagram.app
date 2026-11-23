@@ -20,7 +20,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { QaNoteRow } from './QaNoteRow';
 import { QaSpotlight } from './QaSpotlight';
 import { QaDiscussed } from './QaDiscussed';

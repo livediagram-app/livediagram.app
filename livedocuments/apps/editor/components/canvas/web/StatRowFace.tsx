@@ -9,9 +9,13 @@ import {
   statTrendColours,
   WEB_TEXT_MAX,
   type StatItem,
+  type ShapeElement,
 } from '@livedocuments/document';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import {
+  rectStyle,
+  type WebFaceProps,
+} from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { usePresenting } from '@/components/canvas/PresentingContext';
@@ -55,7 +59,7 @@ export function StatRowFace({
   fontFamily,
   editable,
   onSetRows,
-}: WebFaceProps) {
+}: WebFaceProps<ShapeElement>) {
   const zoom = useCanvasZoom();
   const presenting = usePresenting();
   const surface = useElementSurface(element.id);

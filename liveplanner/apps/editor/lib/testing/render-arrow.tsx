@@ -1,5 +1,5 @@
 import { elementGridFor, type ArrowElement } from '@liveplanner/project';
-import type { ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
+import type { ArrowLabelRender } from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import { ArrowView } from '@/components/canvas/ArrowView';
 import { arrowViewGeometry } from '@/components/canvas/arrow-view-frame';
 

@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { arrowheadShapeOf, arrowheadSizeOf, type ArrowElement } from '@livediagram/document';
-import { arrowheadMarkerId } from './arrow-defs';
+import { arrowheadMarkerId } from '@liveworkspace/workbench/components/canvas/arrow-defs';
 import { DrawnArrowPreview } from './DrawnArrowPreview';
 
 // docs/specs/023-draw-mode/draw-mode.md "Shapes": a line or an arrow previews as exactly the one

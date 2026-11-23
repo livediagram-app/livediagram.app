@@ -11,7 +11,7 @@ Scope, by file:
 | `../packages/model-core/src/shape-marker.ts`                   | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
 | `packages/document/src/element-types.ts`                       | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
 | `packages/document/src/collab-shapes.ts`                       | `supportsMarkers`: the menu gate, beside `hasOwnFace`                      |
-| `apps/editor/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
+| `../packages/workbench/src/components/canvas/ShapeMarker.tsx`  | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
 | `apps/editor/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
 | `apps/editor/components/canvas/boxed-element-label.tsx`        | Resolves `marker` (none for self-drawing shapes) for BoxedElementView      |
 | `apps/editor/components/canvas/ElementFaceRouter.tsx`          | Inline layout for an icon or a marker, after the face branches             |

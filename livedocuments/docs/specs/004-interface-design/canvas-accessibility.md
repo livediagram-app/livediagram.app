@@ -21,7 +21,7 @@ delete, undo, label edit via Space) that already work on a selection.
 - **The Menu key or Shift+F10 opens the selected element's menu**, beside it as a right-click does, for every role
   (an Editor's full menu, a Participant's or Viewer's short one). livedocuments has no selection toolbar whose More
   button Tab could reach, so this is the keyboard's way in; Escape closes the menu and focus returns to the canvas
-  (`apps/editor/hooks/canvas/useKeyboardElementMenu.ts`).
+  (`../packages/workbench/src/hooks/canvas/useKeyboardElementMenu.ts`).
 - **No wrap, no trap:** Tab past the last element (or Shift+Tab before the
   first) falls through to the browser default, so keyboard focus can always
   leave the canvas. Escape keeps its existing behaviour (clear selection /

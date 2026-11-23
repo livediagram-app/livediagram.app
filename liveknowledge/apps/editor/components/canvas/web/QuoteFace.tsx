@@ -11,12 +11,16 @@ import {
   quotePortraitOf,
   quoteSlotsOf,
   type LayoutRect,
+  type ShapeElement,
 } from '@liveknowledge/document';
 import { GlyphDisc } from '@liveknowledge/ui';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
-import { LabelRegion } from '@/components/canvas/web/LabelRegion';
-import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import { LabelRegion } from '@liveworkspace/workbench/components/canvas/web/LabelRegion';
+import {
+  rectStyle,
+  type WebFaceProps,
+} from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
 
 // The portrait's photo (docs/specs/009-elements/quote.md "The slots"), read through the same authenticated image path
@@ -62,7 +66,7 @@ export function QuoteFace({
   editable,
   onSetHeading,
   imageContext,
-}: WebFaceProps) {
+}: WebFaceProps<ShapeElement>) {
   const zoom = useCanvasZoom();
   const l = quoteLayout(
     element.width,

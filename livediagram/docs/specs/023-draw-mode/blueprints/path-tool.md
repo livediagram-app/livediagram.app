@@ -39,7 +39,7 @@ Scope, by file:
 | `apps/editor/components/canvas/path/PathDraftLayer.tsx`                 | The path being drawn, rubber band, rings                                                                                          |
 | `apps/editor/components/canvas/path/PathEditLayer.tsx`                  | Nodes, handles, box, snap guides                                                                                                  |
 | `apps/editor/components/canvas/path/PathEditToolbar.tsx`                | The edit toolbar: node type, Delete point, Close / Open path, Done                                                                |
-| `apps/editor/components/canvas/path/path-markers.tsx`                   | Node and handle markers, `PATH_OVERLAY_Z`                                                                                         |
+| `../packages/workbench/src/components/canvas/path/path-markers.tsx`     | Node and handle markers, `PATH_OVERLAY_Z`                                                                                         |
 | `apps/editor/components/canvas/SelectionPopover.tsx`                    | Edit points on a selected path                                                                                                    |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts`              | A double press (a double-tap) opens a path's edit mode                                                                            |
 | `apps/editor/components/canvas/element-variant.ts`                      | `editingLook`: a path in its edit mode takes no text cursor and no lift                                                           |

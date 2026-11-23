@@ -2,7 +2,10 @@ import { Fragment, memo } from 'react';
 import { drawsWithChartPalette } from '@livedesign/design';
 import { useShallowStable } from '@liveworkspace/workbench/hooks/ui/useShallowStable';
 import { arrowLabelFontStack, exportFontFamily, isBoxed, type Element } from '@livedesign/design';
-import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import type {
+  ArrowLabelRender,
+  ArrowLabels,
+} from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import type {
   LayerDrawn,
   LayerPreviewStore,

@@ -21,7 +21,7 @@ import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import { applyInsertionShift } from '@/lib/insert-between';
 import { setInsertionSlot } from '@/lib/insertion-preview';
 import { setLanePreview } from '@/lib/lane-preview';
-import { applyCollisionAvoidance } from './arrow-avoidance-apply';
+import { applyCollisionAvoidance } from '@liveworkspace/workbench/hooks/canvas/arrow-avoidance-apply';
 import { translateBoxedSelection } from './boxed-drag-resolve';
 import type { DragListenerContext } from './editor-drag-listeners';
 

@@ -26,7 +26,7 @@ import {
   type TextSize,
 } from '@livediagram/document';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
-import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
+import { ElementSettingsButton } from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
@@ -39,8 +39,8 @@ import {
 } from '@liveworkspace/workbench/components/canvas/InsetContent';
 import { loadTableView } from '@/lib/editor-deferred-code';
 import { VideoView } from '@/components/canvas/VideoView';
-import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
-import { ChipFace } from '@/components/canvas/ChipFace';
+import { HeroCaptionCard } from '@liveworkspace/workbench/components/canvas/web/HeroCaptionCard';
+import { ChipFace } from '@liveworkspace/workbench/components/canvas/ChipFace';
 import { PersonNodeFace } from '@/components/canvas/PersonNodeFace';
 import { DiagramKeyFace } from '@/components/canvas/DiagramKeyFace';
 import { SequenceFace } from '@/components/canvas/SequenceFace';

@@ -14,7 +14,7 @@ import {
 import {
   ElementEllipsisMenu,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { loadSessionElementSettings } from '@/lib/editor-deferred-code';
 import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 

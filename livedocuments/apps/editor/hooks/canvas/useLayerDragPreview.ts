@@ -10,7 +10,10 @@ import {
   type ElementIndex,
 } from '@livedocuments/document';
 import { dragPreviewFor, subscribeDragPreview, type DragOverlay } from '@/lib/drag-preview';
-import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import type {
+  ArrowLabelRender,
+  ArrowLabels,
+} from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import { sameArrowViewFrame, type ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
 import {
   affectedArrows,

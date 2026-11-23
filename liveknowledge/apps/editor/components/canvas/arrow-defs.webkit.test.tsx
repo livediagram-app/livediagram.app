@@ -5,7 +5,7 @@
 import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ArrowElement } from '@liveknowledge/document';
-import { resetMarkersTakeLineColourForTests } from './arrow-defs';
+import { resetMarkersTakeLineColourForTests } from '@liveworkspace/workbench/components/canvas/arrow-defs';
 import { DrawnArrowPreview } from './DrawnArrowPreview';
 
 const arrow: ArrowElement = {

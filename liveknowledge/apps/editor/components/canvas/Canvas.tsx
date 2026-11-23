@@ -44,7 +44,7 @@ import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/C
 import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import { useKeyboardElementMenu } from '@/hooks/canvas/useKeyboardElementMenu';
+import { useKeyboardElementMenu } from '@liveworkspace/workbench/hooks/canvas/useKeyboardElementMenu';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';

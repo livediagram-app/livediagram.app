@@ -69,7 +69,7 @@ import {
 } from '@/lib/article/article-table-commands';
 import { Button, Divider, LinkField, ToolbarPopover } from './page-toolbar-menus';
 import { TablePanel } from './page-toolbar-table';
-import { usePageToolbarPlacement } from './page-toolbar-placement';
+import { usePageToolbarPlacement } from '@liveworkspace/workbench/components/canvas/article/page-toolbar-placement';
 import { useShownArticle } from './page-toolbar-presence';
 import {
   AlignGlyph,

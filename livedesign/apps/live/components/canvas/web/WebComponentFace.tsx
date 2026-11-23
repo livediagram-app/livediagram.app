@@ -1,10 +1,10 @@
 import type { WebComponentShape } from '@livedesign/design';
-import { BannerFace } from '@/components/canvas/web/BannerFace';
+import { BannerFace } from '@liveworkspace/workbench/components/canvas/web/BannerFace';
 import { CardFace } from '@/components/canvas/web/CardFace';
-import { ProcessFace } from '@/components/canvas/web/ProcessFace';
+import { ProcessFace } from '@liveworkspace/workbench/components/canvas/web/ProcessFace';
 import { SiteHeaderFace } from '@/components/canvas/web/SiteHeaderFace';
 import { StatRowFace } from '@/components/canvas/web/StatRowFace';
-import type { WebFaceProps } from '@/components/canvas/web/web-face-props';
+import type { WebFaceProps } from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 
 // The web components' faces (docs/specs/009-elements/web-components-and-no-groups.md), one per kind. Each lays itself out
 // from the element's size via the shared layouts in @livedesign/design, so

@@ -1,16 +1,19 @@
-import type { WebComponentShape } from '@livedocuments/document';
-import { BannerFace } from '@/components/canvas/web/BannerFace';
+import type { ShapeElement, WebComponentShape } from '@livedocuments/document';
+import { BannerFace } from '@liveworkspace/workbench/components/canvas/web/BannerFace';
 import { CardFace } from '@/components/canvas/web/CardFace';
-import { ProcessFace } from '@/components/canvas/web/ProcessFace';
+import { ProcessFace } from '@liveworkspace/workbench/components/canvas/web/ProcessFace';
 import { QuoteFace } from '@/components/canvas/web/QuoteFace';
 import { SiteHeaderFace } from '@/components/canvas/web/SiteHeaderFace';
 import { StatRowFace } from '@/components/canvas/web/StatRowFace';
-import type { WebFaceProps } from '@/components/canvas/web/web-face-props';
+import type { WebFaceProps } from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 
 // The web components' faces (docs/specs/009-elements/web-components-and-no-groups.md), one per kind. Each lays itself out
 // from the element's size via the shared layouts in @livedocuments/document, so
 // a resize re-flows the content rather than zooming it.
-export function WebComponentFace({ kind, ...props }: WebFaceProps & { kind: WebComponentShape }) {
+export function WebComponentFace({
+  kind,
+  ...props
+}: WebFaceProps<ShapeElement> & { kind: WebComponentShape }) {
   switch (kind) {
     case 'banner':
       return <BannerFace {...props} />;
