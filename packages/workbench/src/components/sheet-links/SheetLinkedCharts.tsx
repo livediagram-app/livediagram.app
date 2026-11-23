@@ -12,6 +12,7 @@ import {
   Suspense,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -282,9 +283,27 @@ export function SheetLinkLine({
   );
 }
 
+// Room the line keeps from the window's edges, in screen pixels.
+export const SHEET_LINK_LINE_EDGE = 8;
+
+// How far to slide the line so it stays on screen: it starts at the element's left edge (`left`, in screen pixels),
+// and an element near the right of a phone would carry "updated 2 min ago" off it, so it moves left as far as it
+// overflows, and never past the window's left edge. The answer is in the canvas's own units (screen / zoom), since
+// the slide sits outside the line's counter-scale.
+export function sheetLinkLineShift(
+  left: number,
+  width: number,
+  viewport: number,
+  zoom: number,
+): number {
+  const edge = SHEET_LINK_LINE_EDGE;
+  const placed = Math.max(edge, Math.min(left, viewport - edge - width));
+  return placed === left ? 0 : (placed - left) / zoom;
+}
+
 // The line itself, mounted only for a linked chart, so only those follow the zoom. It is counter-scaled (1/zoom) like
-// the canvas's other chrome, so it reads at one size on screen at any zoom; a long plan name truncates past 20rem, the
-// freshness always shows.
+// the canvas's other chrome, so it reads at one size on screen at any zoom; a long plan name truncates past 20rem (or
+// the window, less its edges), the freshness always shows, and it slides left to stay on screen (sheetLinkLineShift).
 function SheetLinkPill({
   source,
   status,
@@ -297,18 +316,36 @@ function SheetLinkPill({
   const now = useRelativeNow();
   const zoom = useCanvasZoom();
   const line = sheetLinkLine(source, status, now);
+  const ref = useRef<HTMLDivElement>(null);
+  const [shift, setShift] = useState(0);
+  // Placed when it shows (a hover, a selection), not on every frame: one measure per reveal.
+  useLayoutEffect(() => {
+    // The line always renders, inside the element's box, so both are there once mounted.
+    const el = ref.current!;
+    const host = el.parentElement!;
+    const place = () => {
+      const left = host.getBoundingClientRect().left;
+      const width = el.getBoundingClientRect().width;
+      setShift(sheetLinkLineShift(left, width, window.innerWidth, zoom));
+    };
+    if (selected) place();
+    host.addEventListener('pointerenter', place);
+    return () => host.removeEventListener('pointerenter', place);
+  }, [selected, zoom]);
   return (
     <>
       {/* Not while selected: it sat on the top-right resize handle, and the line below says the same then. */}
       {selected ? null : <LiveMark tone={line.tone} zoom={zoom} />}
       <div
+        ref={ref}
         data-sheet-link-line
         style={{
-          transform: `scale(${1 / zoom})`,
+          transform: `${shift ? `translateX(${shift}px) ` : ''}scale(${1 / zoom})`,
           transformOrigin: 'top left',
           marginTop: SHEET_LINK_LINE_GAP / zoom,
+          maxWidth: `min(20rem, calc(100vw - ${2 * SHEET_LINK_LINE_EDGE}px))`,
         }}
-        className={`pointer-events-none absolute top-full left-0 z-10 flex max-w-80 items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 py-0.5 pr-2.5 pl-1.5 text-[11px] leading-4 whitespace-nowrap text-slate-600 shadow-sm transition-opacity duration-150 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-300 ${
+        className={`pointer-events-none absolute top-full left-0 z-10 flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/95 py-0.5 pr-2.5 pl-1.5 text-[11px] leading-4 whitespace-nowrap text-slate-600 shadow-sm transition-opacity duration-150 dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-300 ${
           selected ? 'opacity-100' : 'opacity-0 group-hover/el:opacity-100'
         }`}
       >

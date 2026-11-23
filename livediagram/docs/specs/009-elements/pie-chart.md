@@ -209,7 +209,7 @@ signal) is [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs
 - **The source** (`chartSheetSource`, `@liveworkspace/element-model/chart-sheet-source`) names the plan, the sheet and
   the range by stable row and column ids (so rows inserted inside it are read, and moves are followed), with the
   plan's and sheet's names, the range as A1 text and when it was last read (`readAt`).
-- **Linked to.** A linked chart shows a quiet line below its bottom edge, left-aligned and clear of the selection handles, while it is hovered or selected, at one
+- **Linked to.** A linked chart shows a quiet line below its bottom edge, left-aligned (sliding left to stay on screen near the window's right edge) and clear of the selection handles, while it is hovered or selected, at one
   size on screen whatever the zoom: a sheet glyph, then "Linked to <plan> · updated 2 min ago". The Sheet row in its
   Data section says the same, with the sheet and range under it ("Costs · B2:E9"), and offers an Editor **Update**
   (read again now), **Change…** and **Unlink**.

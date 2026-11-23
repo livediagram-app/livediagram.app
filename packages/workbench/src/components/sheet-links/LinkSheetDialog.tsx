@@ -447,6 +447,20 @@ export function LinkSheetDialog({
         </button>
       </DialogHeader>
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-5 gap-y-4 overflow-y-auto px-6 py-4 sm:grid-cols-2">
+        {/* Across both columns, so each label holds one line; on a narrow screen a whole segment wraps, never a word. */}
+        <section className="flex min-w-0 flex-col gap-2 sm:col-span-2">
+          <h3 className={FIELD_LABEL}>Source</h3>
+          <SegmentedToggle
+            value={kind}
+            onChange={(k) => {
+              setKind(k);
+              setSeries(undefined);
+            }}
+            options={KIND_OPTIONS}
+            label="Source"
+            className="flex-wrap self-start [&>button]:whitespace-nowrap"
+          />
+        </section>
         <section className="flex min-w-0 flex-col gap-2">
           <h3 className={FIELD_LABEL}>Plan</h3>
           {/* A row of its own: the search box grows across, never down, when the column beside is the taller one. */}
@@ -464,17 +478,7 @@ export function LinkSheetDialog({
           <div className="max-h-56 min-h-24 overflow-y-auto">{planList}</div>
         </section>
         <section className="flex min-w-0 flex-col gap-2">
-          <h3 className={FIELD_LABEL}>Source</h3>
-          <SegmentedToggle
-            value={kind}
-            onChange={(k) => {
-              setKind(k);
-              setSeries(undefined);
-            }}
-            options={KIND_OPTIONS}
-            label="Source"
-            className="self-start"
-          />
+          <h3 className={FIELD_LABEL}>{KIND_OPTIONS.find((o) => o.value === kind)?.label}</h3>
           {kind === 'sheet' ? (
             sheetFields
           ) : kind === 'board' ? (
