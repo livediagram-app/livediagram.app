@@ -6,7 +6,7 @@ import { isTextEditFocused } from '@liveplanner/ui';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
-import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
+import { SPLIT_HOVER_FOCUS_MS } from '@liveworkspace/workbench/lib/split-view';
 import type { CanvasAnchor } from '@liveworkspace/workbench/lib/split-pane-view';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { useAppearance } from '@/hooks/ui/useAppearance';

@@ -8,7 +8,7 @@ import {
 } from '@liveknowledge/api-schema';
 import type { Tab } from '@liveknowledge/document';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
-import { createRevealStore } from '@/lib/changeset-reveals';
+import { createRevealStore } from '@liveworkspace/workbench/lib/changeset-reveals';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // The editor's workbench messages (docs/specs/013-workspace/blueprints/workbench-embeds.md "Workbench

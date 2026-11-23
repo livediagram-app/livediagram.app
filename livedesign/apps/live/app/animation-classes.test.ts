@@ -11,9 +11,13 @@ import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 //
 // Each set's classes live in its own stylesheet (docs/specs/028-animation/element-animations.md);
 // the text-native silhouette classes for legacy values stay in canvas-motion.css.
+// The sets' stylesheets are every editor's one copy (@liveworkspace/workbench/styles); canvas-motion.css is this app's.
 const read = (name: string) => {
-  const url = new URL(`./${name}`, import.meta.url);
-  return existsSync(fileURLToPath(url)) ? readFileSync(fileURLToPath(url), 'utf8') : '';
+  for (const base of ['./', '../../../../packages/workbench/src/styles/']) {
+    const path = fileURLToPath(new URL(`${base}${name}`, import.meta.url));
+    if (existsSync(path)) return readFileSync(path, 'utf8');
+  }
+  return '';
 };
 const SHEET: Record<AnimationSetId, string> = {
   shape: 'motion-shape.css',

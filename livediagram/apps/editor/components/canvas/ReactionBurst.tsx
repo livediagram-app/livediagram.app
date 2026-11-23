@@ -4,7 +4,12 @@ import { useEffect, useRef } from 'react';
 
 import { SHAPE_DEFAULT_SIZE, type Reaction } from '@livediagram/document';
 
-import { drawParticle, spawnBurst, stepParticles, type Particle } from '@/lib/reaction-particles';
+import {
+  drawParticle,
+  spawnBurst,
+  stepParticles,
+  type Particle,
+} from '@liveworkspace/workbench/lib/reaction-particles';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // The burst a Reaction Pad throws (docs/specs/009-elements/reaction-pad.md), drawn on a canvas.

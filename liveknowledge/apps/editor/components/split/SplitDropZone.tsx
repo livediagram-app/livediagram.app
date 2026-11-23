@@ -9,7 +9,7 @@ import {
   approachProgress,
   dropZoneWidth,
   inDropZone,
-} from '@/lib/split-view';
+} from '@liveworkspace/workbench/lib/split-view';
 import { setDraggedTab, useDraggedTab } from '@liveworkspace/workbench/lib/tab-drag-store';
 import type { SplitView } from '@/hooks/ui/useSplitView';
 

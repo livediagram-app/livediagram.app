@@ -34,7 +34,7 @@ import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFac
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
-import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
+import { useIsSketchBackdrop } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';

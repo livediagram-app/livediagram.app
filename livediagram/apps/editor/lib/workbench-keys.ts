@@ -38,3 +38,9 @@ export const SPOTLIGHT_CONFIG_KEY = 'livediagram:v2:spotlight-config';
 
 /** The localStorage key of the Hide Participant Cursors switch (docs/specs/012-collaboration/collaborator-enhancements.md). */
 export const HIDE_CURSORS_KEY = 'livediagram:v2:hide-cursors';
+
+/** The localStorage prefix of the tabs a document was split on, one key per document (docs/specs/007-editor/split-view.md). */
+export const SPLIT_VIEW_PAIR_PREFIX = 'livediagram:v2:split-view-pair:';
+
+/** The localStorage key of the width people chose for the split (docs/specs/007-editor/split-view.md). */
+export const SPLIT_VIEW_FRACTION_KEY = 'livediagram:v2:split-view-fraction';

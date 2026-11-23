@@ -29,7 +29,7 @@ import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/C
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
-import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
+import { useIsSketchBackdrop } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { clearingInset } from '@liveworkspace/workbench/components/canvas/InsetContent';

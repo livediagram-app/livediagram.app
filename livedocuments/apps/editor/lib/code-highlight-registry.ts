@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
 import type { CodeLanguage } from '@livedocuments/document';
-import type { CodeToken } from './code-tokens';
+import type { CodeToken } from '@liveworkspace/workbench/lib/code-tokens';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // Async loader for the code tokenizer (docs/specs/009-elements/code-block.md), on the icon-registry
@@ -18,7 +18,7 @@ const listeners = createListeners();
 function ensureCodeTokenizer(): Promise<void> {
   if (tokenizer) return Promise.resolve();
   if (loadPromise) return loadPromise;
-  loadPromise = import('./code-tokens')
+  loadPromise = import('@liveworkspace/workbench/lib/code-tokens')
     .then((m) => {
       tokenizer = m.tokenizeCode;
       listeners.notify();

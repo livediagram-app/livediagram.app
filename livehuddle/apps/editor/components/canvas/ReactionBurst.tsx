@@ -4,7 +4,12 @@ import { useEffect, useRef } from 'react';
 
 import type { Reaction } from '@livehuddle/document';
 
-import { drawParticle, spawnBurst, stepParticles, type Particle } from '@/lib/reaction-particles';
+import {
+  drawParticle,
+  spawnBurst,
+  stepParticles,
+  type Particle,
+} from '@liveworkspace/workbench/lib/reaction-particles';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 
 // The burst an Avatar-mode character throws (docs/specs/008-canvas/avatar-mode.md "Reactions"), drawn on a canvas.

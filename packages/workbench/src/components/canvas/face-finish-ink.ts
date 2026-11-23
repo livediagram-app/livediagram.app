@@ -42,7 +42,7 @@ export type Pen = 'marker' | 'pencil';
 const PEN_PART = { marker: markerFacePart, pencil: sketchFacePart } as const;
 const SHAPE_TAGS = new Set(['rect', 'circle', 'ellipse', 'path', 'polygon', 'polyline', 'line']);
 
-/** Shows a Sketch face's hidden fills and lines while the pass reads them (app/sketch-face.css). */
+/** Shows a Sketch face's hidden fills and lines while the pass reads them (styles/sketch-face.css). */
 export const MEASURE_ATTR = 'data-sketch-measure';
 /** Marks a part a face wants drawn as a shape whatever its size or roundness (a progress bar's track and fill). */
 export const SHAPE_ATTR = 'data-marker-shape';

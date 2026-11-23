@@ -1,6 +1,6 @@
 import { codeTheme, type CodeTheme, type ShapeElement } from '@livedesign/design';
 import { tokenizeLoaded, useCodeTokenizer } from '@/lib/code-highlight-registry';
-import type { CodeTokenKind } from '@/lib/code-tokens';
+import type { CodeTokenKind } from '@liveworkspace/workbench/lib/code-tokens';
 
 // The code block's canvas view (docs/specs/009-elements/code-block.md): an editor card with monospace text,
 // a muted language badge, and syntax highlighting once the lazy tokenizer

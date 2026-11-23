@@ -13,7 +13,7 @@ import {
   type SankeyFlow,
   type SankeyNodeStyle,
 } from '@liveknowledge/document';
-import { flowNodeColors } from '@/lib/sankey-flow-levels';
+import { flowNodeColors } from '@liveworkspace/workbench/lib/sankey-flow-levels';
 
 export function SankeyNodeStrip({
   flows,

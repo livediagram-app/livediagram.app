@@ -100,6 +100,10 @@ export type WorkbenchBindings = {
   spotlightConfigKey?: string;
   /** The localStorage key of the Hide Participant Cursors switch (`<product>:v2:hide-cursors`). */
   hideCursorsKey: string;
+  /** The localStorage prefix of the tabs a document was split on, one key per document (`<product>:v2:split-view-pair:`). */
+  splitViewPairPrefix: string;
+  /** The localStorage key of the split's chosen width (`<product>:v2:split-view-fraction`). */
+  splitViewFractionKey: string;
   /** Starts the page picture Blur's worker (lib/page-image-blur.ts), from the editor's own entry beside it
    *  (`new Worker(new URL('./page-image-blur.worker.ts', import.meta.url))`), where the editor paints blurred pictures;
    *  null makes every copy on the main thread. */
@@ -133,6 +137,8 @@ export const WORKBENCH_DEFAULTS: Readonly<Required<WorkbenchBindings>> = Object.
   formatConfigKey: 'workbench:v2:format-config',
   spotlightConfigKey: 'workbench:v2:spotlight-config',
   hideCursorsKey: 'workbench:v2:hide-cursors',
+  splitViewPairPrefix: 'workbench:v2:split-view-pair:',
+  splitViewFractionKey: 'workbench:v2:split-view-fraction',
   blurWorker: () => null,
 });
 
@@ -195,6 +201,12 @@ export const workbench = {
   },
   get hideCursorsKey(): string {
     return current().hideCursorsKey;
+  },
+  get splitViewPairPrefix(): string {
+    return current().splitViewPairPrefix;
+  },
+  get splitViewFractionKey(): string {
+    return current().splitViewFractionKey;
   },
   // Bound only by an editor that runs the module, so an unbound one keeps its `workbench:` default.
   get emptyCardDismissedKey(): string {

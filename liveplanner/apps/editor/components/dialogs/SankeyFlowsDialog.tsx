@@ -41,7 +41,7 @@ import {
   rowsFromFlows,
   withTrailingBlank,
   type SankeyDraftRow,
-} from '@/lib/sankey-flow-rows';
+} from '@liveworkspace/workbench/lib/sankey-flow-rows';
 import { Callout } from '@liveworkspace/ui/callout';
 
 type Tab = 'table' | 'text';

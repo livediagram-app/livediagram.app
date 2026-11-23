@@ -6,7 +6,7 @@ import { withStableEventProps } from '@liveworkspace/workbench/components/primit
 import { buildRetiredArrowLinks } from './retired-arrow-links';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
 import { CanvasElementList, type BoxedShared } from './CanvasElementList';
-import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
+import { usePublishSketchBackdrops } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import { isSelectionMode, elementIndexFor, paintOrder } from '@livehuddle/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';

@@ -16,6 +16,8 @@ import {
   OPEN_SETTINGS_EVENT,
   PANEL_PRESENCE_EVENT,
   RELOAD_GUARD_KEY,
+  SPLIT_VIEW_FRACTION_KEY,
+  SPLIT_VIEW_PAIR_PREFIX,
   START_QUERY_KEY,
 } from './workbench-keys';
 
@@ -36,5 +38,7 @@ export function bindWorkbench(): void {
     startQueryKey: START_QUERY_KEY,
     localMoveDismissedPrefix: LOCAL_MOVE_DISMISSED_PREFIX,
     hideCursorsKey: HIDE_CURSORS_KEY,
+    splitViewPairPrefix: SPLIT_VIEW_PAIR_PREFIX,
+    splitViewFractionKey: SPLIT_VIEW_FRACTION_KEY,
   });
 }

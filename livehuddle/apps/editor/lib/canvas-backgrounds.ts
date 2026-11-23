@@ -1,6 +1,6 @@
 import { isFloorPattern, spacePattern, type BackgroundPattern } from '@livehuddle/document';
 import { floorTile, isDarkCanvas } from '@/lib/floor-tiles';
-import { seasonalPatternTile } from '@/lib/seasonal-patterns';
+import { seasonalPatternTile } from '@liveworkspace/workbench/lib/seasonal-patterns';
 import {
   applyAlpha,
   safeCssColor,

@@ -193,7 +193,7 @@ Pick failure copy (`pickFailureMessage`):
 - Form: `TextInput` with placeholder "Search openly licensed images" (`type="search"`), `Button`
   "Search". Autofocus when the tab mounts.
 - Idle: "Find openly licensed photos and illustrations from Openverse."
-- Loading (`ImageSearchLoader.tsx`, motion in `app/image-search-loader.css`): a new search swaps the
+- Loading (`ImageSearchLoader.tsx`, motion in `packages/workbench/src/styles/image-search-loader.css`): a new search swaps the
   grid for `SKELETON_TILES_FIRST` (8) `SkeletonTiles` (`aria-busy`, `data-image-search-skeleton`), each
   `skeletonClass(n)` (one of four tints, the `lvd-search-skeleton` glint at phase `n × 0.09s`) over
   `PlaceholderArt`; `SearchingStatus` "Searching Openverse for “<query>”…" with the orbiting lens.

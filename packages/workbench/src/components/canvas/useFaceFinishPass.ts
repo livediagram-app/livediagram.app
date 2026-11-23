@@ -218,7 +218,7 @@ export function markerFaceTake(
   board?: FaceFinishBoard,
   onUnseen?: (parts: readonly Element[]) => void,
 ): FaceTake {
-  // Sketch hides a live face's fills and lines (its ink copy shows them through the wobble, app/sketch-face.css):
+  // Sketch hides a live face's fills and lines (its ink copy shows them through the wobble, styles/sketch-face.css):
   // they are shown again from before the face is read until it is drawn.
   let measured: Element[] = [];
   const unmeasure = () => {

@@ -18,6 +18,20 @@ import {
 // motion.md in each product.
 const root = fileURLToPath(new URL('./src', import.meta.url));
 
+// Canvas motion follows its own specs (each product's docs/specs/004-interface-design/motion.md) and lives only in
+// these stylesheets, which the chrome budget does not read: the animation sets
+// (docs/specs/028-animation/element-animations.md) and the account and connect pages' entrance and lines
+// (docs/specs/014-identity/auth-and-guest-access.md).
+const CANVAS_STYLESHEETS = [
+  'styles/motion-shape.css',
+  'styles/motion-text.css',
+  'styles/motion-sticky.css',
+  'styles/motion-drawing.css',
+  'styles/motion-media.css',
+  'styles/motion-table.css',
+  'styles/auth-motion.css',
+];
+
 describe('workbench style guards', () => {
   it('holds no bare text in a centring circle or pill', () => {
     expect(formatOptical(checkOpticalAlignment({ root }))).toBe('');
@@ -28,6 +42,8 @@ describe('workbench style guards', () => {
   });
 
   it('keeps every chrome duration within the motion budget', () => {
-    expect(formatMotion(checkMotionBudget({ root }))).toBe('');
+    expect(formatMotion(checkMotionBudget({ root, canvasStylesheets: CANVAS_STYLESHEETS }))).toBe(
+      '',
+    );
   });
 });

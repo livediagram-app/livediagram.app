@@ -21,7 +21,7 @@ Scope, by file:
 | `packages/document/src/svg-render*.ts`                                  | `svgPathElementShape`: the export twin of the canvas path                                                                         |
 | `apps/api/src/openapi/schemas.generated.ts`                             | Regenerated: `PathElement` in `BoxedElement`                                                                                      |
 | `packages/api-schema/src/telemetry-schema.ts`                           | (no change: `Whiteboard`, `Element`, `Selected`, `Added`, `Changed` exist)                                                        |
-| `apps/editor/lib/path-draw.ts`                                          | Pure drawing state machine                                                                                                        |
+| `packages/workbench/src/lib/path-draw.ts`                               | Pure drawing state machine                                                                                                        |
 | `apps/editor/lib/path-edit.ts`                                          | Pure edit-mode operations, hit test, node types, open / close, cursors, `toLocal` / `toWorld`                                     |
 | `apps/editor/lib/path-edit-keys.ts`                                     | `pathEditKey`: what one key does in edit mode                                                                                     |
 | `apps/editor/lib/whiteboard-erase.ts`                                   | `pathsTouched`: the eraser takes a path whole                                                                                     |
@@ -504,7 +504,7 @@ numbers only).
 | Validation                                                                                      | `packages/document/src/validate.test.ts`                                                                            |
 | Export twin                                                                                     | `packages/document/src/svg-render-shapes.test.ts`                                                                   |
 | Ink projection                                                                                  | `../packages/element-model/src/whiteboard.test.ts`                                                                  |
-| Drawing state machine                                                                           | `apps/editor/lib/path-draw.test.ts`                                                                                 |
+| Drawing state machine                                                                           | `packages/workbench/src/lib/path-draw.test.ts`                                                                      |
 | Edit operations and hit test                                                                    | `apps/editor/lib/path-edit.test.ts`                                                                                 |
 | Draw gesture: press, drag, keys, commit, undo and redo while drawing                            | `apps/editor/components/canvas/path/usePathDrawGesture.test.tsx`                                                    |
 | Edit gesture: select, drag, keys, one commit                                                    | `apps/editor/components/canvas/path/usePathEditGesture.test.tsx`                                                    |

@@ -29,3 +29,9 @@ export const E2E_SESSION_KEY = 'liveplanner:e2e:session';
 
 /** The localStorage key of the Hide Participant Cursors switch (docs/specs/012-collaboration/collaborator-enhancements.md). */
 export const HIDE_CURSORS_KEY = 'liveplanner:v2:hide-cursors';
+
+/** The localStorage prefix of the tabs a project was split on, one key per project (docs/specs/007-editor/split-view.md). */
+export const SPLIT_VIEW_PAIR_PREFIX = 'liveplanner:v2:split-view-pair:';
+
+/** The localStorage key of the width people chose for the split (docs/specs/007-editor/split-view.md). */
+export const SPLIT_VIEW_FRACTION_KEY = 'liveplanner:v2:split-view-fraction';

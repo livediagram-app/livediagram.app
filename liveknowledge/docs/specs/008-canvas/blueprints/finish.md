@@ -210,7 +210,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   Professional corner / stroke fallbacks; Sketch makes the wrapper's background transparent and its border none for
   CSS shapes and stickies and drops the peel. Marker does the same through `finishDrawsBodyByHand`, except a sticky,
   which keeps its paper and peel.
-- `lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
+- `packages/workbench/src/lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
   `CanvasElementsLayer`) publishes `sketchBackdropIds` per tab; `useIsSketchBackdrop(id)` is a per-id
   `useSyncExternalStore` read, so only views whose flag flips re-render.
 - `components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
@@ -250,7 +250,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   every `id` stripped), and re-takes it from a `MutationObserver` on the live div, `SKETCH_INK_SETTLE_MS` after the
   last change, never later than `SKETCH_INK_MAX_WAIT_MS` after the first. Each copy goes through
   `face-take-batch.ts` in the `copy` stage (after the faces' own pass), and `watch.taken()` drops the changes it already
-  holds. `app/sketch-face.css` hides the live
+  holds. `packages/workbench/src/styles/sketch-face.css` hides the live
   layer's backgrounds, borders, shadows (not on `:focus-visible`) and SVG shapes (`opacity: 0`), and gives the ink
   layer `filter: url(#lvd-sketch-face)`, `pointer-events: none`, transparent text fill and hidden SVG text.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,

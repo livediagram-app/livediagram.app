@@ -15,7 +15,7 @@ Scope, by file:
 | `packages/document/src/colors.ts`                              | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
 | `packages/document/src/validate.ts`                            | Snippet length, closed language set, closed scheme ids                                        |
 | `packages/document/src/svg-render-shapes.ts`                   | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
-| `apps/editor/lib/code-tokens.ts`                               | `tokenizeCode`: the lazy tokenizer chunk                                                      |
+| `packages/workbench/src/lib/code-tokens.ts`                    | `tokenizeCode`: the lazy tokenizer chunk                                                      |
 | `apps/editor/lib/code-highlight-registry.ts`                   | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
 | `apps/editor/components/canvas/CodeBlockView.tsx`              | Canvas card, badge, placeholder, highlighted lines                                            |
 | `apps/editor/components/dialogs/CodeEditDialog.tsx`            | Edit code dialog                                                                              |

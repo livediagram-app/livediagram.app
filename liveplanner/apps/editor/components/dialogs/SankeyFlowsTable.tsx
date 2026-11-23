@@ -40,8 +40,12 @@ import {
   rowFrom,
   rowReasons,
   type SankeyDraftRow,
-} from '@/lib/sankey-flow-rows';
-import { flowLevels, flowNodeColors, flowTotals } from '@/lib/sankey-flow-levels';
+} from '@liveworkspace/workbench/lib/sankey-flow-rows';
+import {
+  flowLevels,
+  flowNodeColors,
+  flowTotals,
+} from '@liveworkspace/workbench/lib/sankey-flow-levels';
 import { SankeyFlowRow, type FlowField } from '@/components/dialogs/SankeyFlowRow';
 import { lucideGlyph, Switch } from '@liveplanner/ui';
 import { lucidePlus } from '@liveworkspace/icons/lucide';

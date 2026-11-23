@@ -15,7 +15,7 @@ import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useSplitView } from '@/hooks/ui/useSplitView';
 import { isCanvasCovered } from '@/hooks/plan/plan-cover-store';
-import { handoffAnchor } from '@/lib/split-view';
+import { handoffAnchor } from '@liveworkspace/workbench/lib/split-view';
 import { useBodyEndAnchor } from '@liveworkspace/workbench/hooks/ui/useBodyEndAnchor';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 import {

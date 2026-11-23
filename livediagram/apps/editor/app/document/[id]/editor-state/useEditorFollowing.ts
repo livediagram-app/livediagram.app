@@ -10,7 +10,7 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useTabEntryEffects } from '../useTabEntryEffects';
 import { useCollabDeepLinkCapture } from '../useCollabDeepLink';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { boundsOfElements } from '@/lib/changeset-reveals';
+import { boundsOfElements } from '@liveworkspace/workbench/lib/changeset-reveals';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

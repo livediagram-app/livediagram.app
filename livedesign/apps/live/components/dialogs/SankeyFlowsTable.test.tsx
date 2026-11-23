@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { SankeyFlowsTable } from './SankeyFlowsTable';
 import { withSankeyNodeLeftover, type SankeyNodeStyle } from '@livedesign/design';
-import { rowsFromFlows, withTrailingBlank, type SankeyDraftRow } from '@/lib/sankey-flow-rows';
+import {
+  rowsFromFlows,
+  withTrailingBlank,
+  type SankeyDraftRow,
+} from '@liveworkspace/workbench/lib/sankey-flow-rows';
 
 // The Flows table (docs/specs/009-elements/sankey.md "The Flows dialog"): levels, groups, keyboard, reasons, paste.
 function Harness({

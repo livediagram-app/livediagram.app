@@ -7,7 +7,7 @@ import { arrowViewGeometry } from './arrow-view-frame';
 import { arrowGeometryCache, buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
 import { CanvasElementList } from './CanvasElementList';
-import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
+import { usePublishSketchBackdrops } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import {
   elementFontId,

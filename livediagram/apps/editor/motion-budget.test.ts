@@ -5,20 +5,9 @@ import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards
 // The editor's chrome motion budget (docs/specs/004-interface-design/motion.md): every
 // chrome transition settles within 250ms, hovers within 150ms, cascades as a
 // whole within 250ms. Canvas motion follows its own specs and lives only in the
-// stylesheets listed here, which the guard does not read.
-const CANVAS_STYLESHEETS = [
-  'app/canvas-motion.css',
-  'app/qa-board.css',
-  // The animation sets (docs/specs/028-animation/element-animations.md).
-  'app/motion-shape.css',
-  'app/motion-text.css',
-  'app/motion-sticky.css',
-  'app/motion-drawing.css',
-  'app/motion-media.css',
-  'app/motion-table.css',
-  // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).
-  'app/auth-motion.css',
-];
+// stylesheets listed here, which the guard does not read. The animation sets and the account pages' lines are every
+// editor's one copy (@liveworkspace/workbench/styles), named in that package's style-guards.test.ts.
+const CANVAS_STYLESHEETS = ['app/canvas-motion.css', 'app/qa-board.css'];
 
 describe('editor motion budget', () => {
   it('keeps every chrome duration within the budget', () => {
