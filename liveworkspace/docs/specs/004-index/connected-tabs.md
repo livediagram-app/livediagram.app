@@ -22,7 +22,7 @@ Built in parts (Work Tracker #569). What each part brings is in the blueprint's
 
 A connected tab is a tab like any other in its host: it has a place in the order, it can sit in a tab folder, it can
 be dragged, and it can be removed. It has no content of its own. It shows the target app's logo and the target's
-name, and its name follows the target's (it is not renamed by hand).
+name, which it follows, unless an Editor has given the tab a name of its own ([A tab's own name](#a-tabs-own-name)).
 
 The host app keeps on the tab only what is not secret, `TabConnection = {id, app, itemId}`: which connection, and
 which app and item it stands for (`packages/index-client` `connections.ts`). The pass's code is never kept in the
@@ -58,6 +58,15 @@ stands.
 The entry shows only where connecting can work: the person is signed in, the item is on the server (not an offline
 item), and the session may change its tabs (an Editor's, not a tab-scoped link's, an embed's, a workbench's
 or a Community visitor's). Elsewhere the sidebar has no such entry.
+
+**From the tab bar.** An app may also offer **Connect a File** on its tab bar, right of Add tab, so connecting is one
+press from anywhere rather than New Tab, then Connect File. It is the liveworkspace logo (the platform's prism, drawn
+small, its light or dark look following the bar's) in a button the size of Add tab, its tooltip "Connect a File". It
+shows on a desktop only, where the strip has room: on a phone or a narrow window it is gone and Connect File stays on
+the start screen. It shows where the start screen's entry would, and only there. A press opens the same Connect list
+(role, both ways, Find a file, Recent) in a centred dialog; a connection made there adds its tab at the end of the bar,
+loose, and opens it, as from the start screen, with no empty tab to give way. Closing the dialog leaves nothing
+behind. livediagram offers it (Work Tracker 1374).
 
 Who may connect:
 
@@ -129,7 +138,7 @@ through a public link (a Community post's). It answers the target's app, its cur
 The address is always built by the index from the sites registry and the stored ids, never kept or taken as text, so
 a connected tab can only ever lead to one of our apps. A target in another app opens in a new browser tab; one in the
 same app opens in place. When the name the index answers differs from the tab's, an Editor's editor renames the tab
-to match.
+to match; a tab with a name of its own keeps it, and only the target's name it holds beside it changes.
 
 A connected tab opens its file only when a person presses Open on its page, under the file's preview. Pressing the
 tab itself only makes it the open tab: its page shows **ready**, with the preview and Open, and goes nowhere by
@@ -156,10 +165,11 @@ and behave alike everywhere.
 **The tab.** A tab like its neighbours, in the same shape and slots, led by the target app's logo (its Living Prism,
 the size of a tab's padlock) before the name. A target in another app carries a small arrow after the name, saying
 it opens in a new browser tab; one in the same app carries none. A tab that opens nothing carries a small amber dot
-in place of the arrow, so a broken connection shows without opening it. Its name is never renamed by hand, so a
-double-click does nothing; a screen reader hears "<name>, connected <app> file" (or "connected
-file, needs attention"); pressing it opens nothing, so it never says where the file opens. It is dragged, foldered and selected like any tab (selecting it shows its page; the file opens from Open there), and its menu offers, as plain rows, Connect Again
-(only when it opens nothing), Organise in Tab Folder and, last under a hairline, Remove Tab; never Duplicate.
+in place of the arrow, so a broken connection shows without opening it. Where the app lets an Editor rename it
+([A tab's own name](#a-tabs-own-name)), a double-click on the open tab and its menu's Rename do so; elsewhere a
+double-click does nothing. A screen reader hears "<name>, connected <app> file" (or "connected
+file, needs attention"), and for a renamed tab the file's own name after it; pressing it opens nothing, so it never says where the file opens. It is dragged, foldered and selected like any tab (selecting it shows its page; the file opens from Open there), and its menu offers, as plain rows, Rename (where the
+app offers it), Connect Again (only when it opens nothing), Organise in Tab Folder and, last under a hairline, Remove Tab; never Duplicate.
 
 **The tab's page.** Opened, a connected tab shows one calm card in place of a canvas: the target's preview (the
 same picture the Explorer shows of it, never more visible than the file), the target app's logo on its lower edge, then
@@ -197,6 +207,27 @@ and says why; a failure says why on the row, in words ("This file has too many l
 as it was. Loading shows quiet placeholder rows; nothing recent says so with a way to the Explorer; a failed load says
 so with Try Again.
 
+## A tab's own name
+
+An app may let an Editor name a connected tab as any tab (livediagram does, Work Tracker 1374): its menu's **Rename**,
+or a double-click on the open tab, opens the tab's name field in place. The name is this host's label for the tab and
+nothing more: the target keeps its own name, and nothing is written to it.
+
+- **Kept on the host's tab.** The tab's `name` is the label, so every place that shows the host's tabs (the tab bar,
+  its folders, search, agents' reads, the Drive file) shows it. Beside it the tab keeps `targetName`, the target's name
+  as last seen, in its body. A tab with no `targetName` has no name of its own and follows the target as before.
+- **Following.** An open's answered name (and Connect Again's) goes to `targetName` on a renamed tab, never to its
+  name; on any other tab it goes to the name, as before.
+- **The file's name on show.** Pointing at a renamed connected tab shows "Connected to <targetName>"; a screen reader
+  hears it after the tab's phrase. Its page's card names the target by `targetName`, the file it opens.
+- **Back to the file's name.** Renaming the tab to nothing, or to the target's own name, drops `targetName`: the tab
+  takes the target's name and follows it again.
+- **Who may.** Whoever may change the host's tabs (an Editor's session, not a tab-scoped link's, an embed's or a
+  workbench's), as for any rename. A tab-scoped link's save keeps both the stored name and `targetName`, and its room
+  patch of either is refused.
+- **Syncing.** It is a tab edit like any rename: saved with the tab, sent to everyone with the host open, kept by an
+  Offline copy, undone by Undo.
+
 ## Embedding it live
 
 A connected tab only goes to its file. To show the file live, read-only, inside the host, an Editor places a
@@ -230,7 +261,9 @@ app's logo and the host's title, on the pass under its link): the connected tab 
 Each editor counts, under its own app, through the shared workbench code: `Tab·Added·Connected` (a file connected one
 way), `Tab·Added·ConnectedBoth` (both ways asked), `Tab·Added·ConnectedAgain` (Connect Again) and
 `Tab·Opened·Connected` (a person opened a connected tab). Never a name, an id or an app: the question is whether
-people connect files and follow them.
+people connect files and follow them. An app that offers the tab bar's Connect a File or a tab's own name counts them
+itself: `Tab·Opened·ConnectButton` (the button pressed), `Tab·Changed·ConnectedName` (a connected tab given a name of
+its own) and `Tab·Changed·ConnectedNameReset` (renamed back to following its file). The automatic follow counts nothing.
 
 ## Security
 

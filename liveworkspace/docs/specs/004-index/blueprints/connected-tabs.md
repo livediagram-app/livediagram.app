@@ -213,7 +213,8 @@ Built in `packages/workbench`, mounted by no screen until part 5. Every module i
 - **`components/chrome/ConnectedTab.tsx`**: the tab. `TabFrame` with `lead` (a new slot before the name, drawn at
   full opacity, unlike `lockIcon`) holding the target app's `BrandMark` at `size-3.5`; `afterName` holding the
   arrow (`lucideArrowUpRight`, 11px) when `connection.app !== hostApp`, else nothing, or the amber dot when
-  `broken`; an `sr-only` phrase after the name (`connectedTabPhrase`). No `onRequestRename` (IDX26). `menu`,
+  `broken`; an `sr-only` phrase after the name (`connectedTabPhrase`). `renameField` and `onRequestRename` pass through
+  for an app that lets a connected tab be renamed (below); without them a double-click does nothing. `menu`,
   `presence`, `caret`, `dragging` and `dragHandlers` pass through, so a connected tab drags, folders and shows
   avatars as any tab.
 - **`components/connect/ConnectedTabCard.tsx`**: the tab's page, one card per `ConnectedTabView` (`opening`,
@@ -322,6 +323,37 @@ offline, `ConnectFilePanel.test.tsx`, `ConnectRailEntry.test.tsx`, `useConnected
 replace, the toast, Connect Again and its failure) and each editor's (the outline op keeps and carries a connection,
 the tab menu's connected mode for an Editor, nothing for a Viewer).
 
+### The Connect button and a tab's own name (Work Tracker 1374)
+
+- **`packages/brand` `WorkspaceMark`**: the liveworkspace logo's prism alone (livediagram's prism in
+  `PLATFORM_SITE.accent`, light and dark by the page's scheme), which `WorkspaceWordmark` now draws too.
+- **`TabStrip` `onConnect`**: given (and not `readOnly`), a `ConnectTabButton` (`components/chrome/ConnectTabButton.tsx`)
+  right of Add tab: Add tab's size and wash, `WorkspaceMark` at `size-4`, turning while pointed at (`spinning`, still
+  under reduced motion), `aria-label` and Tooltip "Connect a File", `data-tour-id="connect-tab"`, hidden below `md` and
+  on a `phone:` screen. It tracks nothing: each app counts its own press.
+- **`ConnectFileDialog`** (in `ConnectFilePanel.tsx`): the panel in the shared `Dialog` (centred, `lg`, a phone's
+  sheet), named by the panel's heading, with a close button. `onConnected` closes it first, then hands on.
+- **`tab-connection.ts`**: `targetNameOf(tab)` (its `targetName` when it has one, else its name), `hasOwnName(tab)`,
+  `renamedConnectedTab(tab, typed)` (typed nothing or the target's name: the name becomes the target's and
+  `targetName` goes; else the name is the typed one and `targetName` keeps the target's) and
+  `followedConnectedTab(tab, answered)` (the answered name to `targetName` on a tab with its own name, else to the
+  name). `useConnectedTabActions`' Connect Again goes through `followedConnectedTab`.
+- **`ConnectedTab`** takes `targetName`: given, the name's Tooltip reads "Connected to <targetName>" whatever its
+  width (`TabFrame`'s new `tooltip`), and the screen reader's phrase ends with it.
+- **The editor (livediagram)**: `Tab.targetName`; its tab actions' `renameTab` runs `renamedConnectedTab` on a
+  connected tab (`Tab·Changed·ConnectedName`, or `ConnectedNameReset` when it follows again) and `followConnectedTab(id, name)`
+  runs `followedConnectedTab` with no event, which `ConnectedTabHost` hands the page as its `onRename`, the page's
+  `name` being `targetNameOf(tab)`; its tab pill gives a connected tab the rename field (an empty commit allowed) and
+  `targetName`; its connected menu gains Rename first; its tab bar passes `onConnect` from `useConnectFileDialog`
+  (`components/connect/useConnectFileDialog.tsx`, the start entry's rules from `useConnectHost`), which mounts the
+  dialog and counts `Tab·Opened·ConnectButton`. Its api keeps the stored `targetName` on a tab-scoped save
+  (`tab-put-route.ts`), and its room's `scopedRenames` drops a scoped `tab-meta` that sets or clears `targetName`.
+
+Its tests: `tab-connection.test.ts` (every rename and follow case), `TabStrip` (the button, its absence read-only and
+without `onConnect`), `ConnectFileDialog` (closes on connect and on its close), `ConnectedTab` (the tooltip and phrase),
+and livediagram's (the rename and follow, the connected menu's Rename, the double-click, the button by role, the
+scoped save and patch).
+
 ## Data and persistence
 
 | Table         | Key  | Columns                                                                                                                                                                                | Indexes                                                                                                                                                                                                                 |
@@ -407,7 +439,8 @@ staging 2109). No new secret: the reverse write uses each app's `INDEX_KEY`, as 
 - `IDX23`: the open door allows 60 opens a minute per caller.
 - `IDX24`: the reverse write waits at most 5 seconds for the target app before taking the reverse back.
 - `IDX25`: Connect Again on a tab that still has a connection replaces it, deleting the old pass.
-- `IDX26`: a connected tab's name follows the target's title on open; it is not renamed by hand.
+- `IDX26`: a connected tab's name follows the target's title on open, unless an Editor named it: then its `targetName`
+  follows instead, and the name stays.
 - `IDX27`: a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.
 - `IDX36`: a connected tab opens its file only on a person's press of Open on its page, under the preview; selecting
   the tab, or showing it any other way, waits, ready.
