@@ -14,7 +14,7 @@ import {
   quotePortraitOf,
   quoteSlotsOf,
 } from './quote';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { label as webLabel, line as webLine, type WebFaceOptions } from './svg-render-web';
 
 type Shape = BoxedElement & { type: 'shape' };

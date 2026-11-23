@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { contrastRatio } from './colors';
 import { getBuiltInTheme, THEMES } from './themes';
 import { pagesOf } from './page';
-import { PEN_INK } from './pen-colours';
+import { PEN_INK } from '@liveworkspace/element-model/pen-colours';
 import {
   defaultPageBackground,
   STEEL_GRADIENT,

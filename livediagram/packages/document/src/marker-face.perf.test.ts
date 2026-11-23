@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { MARKER_FACE_MAX_PARTS } from './marker-face';
+import { MARKER_FACE_MAX_PARTS } from '@liveworkspace/element-model/marker-face';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';
-import { svgMarkerFace } from './svg-render-face-finish';
+import { svgMarkerFace } from '@liveworkspace/element-model/svg-render-face-finish';
 
 // docs/specs/008-canvas/finish.md "Performance": a face drawn in marker draws at most MARKER_FACE_MAX_PARTS parts, each
 // a marker part (markerFacePart) about the cost of a Marker body. The worst face, every part a coloured-in band, stays

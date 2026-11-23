@@ -17,7 +17,7 @@ import {
   type Tab,
 } from '@livehuddle/document';
 import { kindOf } from './element-text';
-import { sameValue } from './equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { invalidResult, invalidValue } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';

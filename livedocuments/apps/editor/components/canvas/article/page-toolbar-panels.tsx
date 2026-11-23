@@ -41,7 +41,7 @@ import { MenuRow } from './page-toolbar-menus';
 import { WordCountLine } from './page-toolbar-word-count';
 import type { ArticleCounts } from '@/lib/article/article-word-count';
 import { ColourPicker } from '@/components/colour/ColourPicker';
-import { noColour, standardGroup } from '@/components/colour/colour-options';
+import { noColour, standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 const I = (glyph: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(glyph, 16);

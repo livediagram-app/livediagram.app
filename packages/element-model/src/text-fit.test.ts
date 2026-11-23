@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   fitTextWidth,
   fitTextWidths,
@@ -98,7 +98,7 @@ describe('fitTextWidth', () => {
 
   it('fits a thousand titles in a few milliseconds', () => {
     const many = Array.from({ length: 1000 }, (_, i) => text({ label: `Title number ${i}` }));
-    expect(cpuMsOf(() => fitTextWidths(many))).toBeLessThan(50);
+    expect(cpuMsOf(() => fitTextWidths(many))).toBeLessThan(cpuBudgetMs(50));
   });
 });
 

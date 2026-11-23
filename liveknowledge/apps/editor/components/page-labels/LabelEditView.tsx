@@ -14,7 +14,7 @@ import {
 import { BackBar, Button, TextInput, useAppearance } from '@liveknowledge/ui';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { ColourPicker } from '@/components/colour/ColourPicker';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { LabelDeleteIcon } from './page-labels-icons';
 import type { LabelActions } from './page-labels-state';

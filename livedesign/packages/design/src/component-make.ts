@@ -1,7 +1,7 @@
 // Make Component and Detach (docs/specs/009-elements/components.md "Making a component", "Detach"): a selection
 // becomes a main plus one instance in its place, and an instance becomes plain elements again. Pure.
 import type { Endpoint } from './arrow-types';
-import { endpointPosition, elementIndexFor } from './geometry';
+import { endpointPosition, elementIndexFor } from '@liveworkspace/element-model/geometry';
 import { isBoxed, type Element } from './index';
 import {
   INSTANCE_SHAPE,

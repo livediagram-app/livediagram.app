@@ -3,7 +3,7 @@
 // so the card shows the look's colours and finish. Several cards share one page, so the exporter's fixed pattern id is
 // made unique per look.
 import type { Element, ShapeElement, Tab, TextElement } from '@liveplanner/project';
-import { animatedPatternStill } from '@/lib/animated-pattern-still';
+import { animatedPatternStill } from '@liveworkspace/workbench/lib/animated-pattern-still';
 import { EXPORT_PATTERN_COLOR, renderTabToSvg } from '@/lib/export-tab';
 import { withLookApplied, type TabLook } from '@/lib/tab-looks';
 

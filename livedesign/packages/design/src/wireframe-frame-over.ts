@@ -1,7 +1,7 @@
 // What is drawn over a wireframe page's screen content (docs/specs/007-editor/wireframe-pages.md): the
 // camera that sits in the screen (the Dynamic Island, the punch hole, a Duo's fold) and the status bar
 // and home indicator. Re-exported from wireframe-device-svg.ts.
-import { r2 } from './svg-render-primitives';
+import { r2 } from '@liveworkspace/element-model/svg-render-primitives';
 import {
   ANDROID,
   IPHONE,

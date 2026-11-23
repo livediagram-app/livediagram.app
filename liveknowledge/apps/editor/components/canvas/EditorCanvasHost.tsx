@@ -1,7 +1,7 @@
 'use client';
 
 import { goToElement } from '@/lib/go-to-element';
-import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
+import { TagColoursProvider } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { PresentingProvider } from '@/components/canvas/PresentingContext';

@@ -10,7 +10,7 @@ import {
   quizOptionLetter,
 } from '@livediagram/document';
 import { tint } from '@/lib/element-tint';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { Chip } from '@livediagram/ui';
 
 // One answer on the ring around a Quiz's disc (docs/specs/012-collaboration/quiz.md).

@@ -30,12 +30,15 @@ import {
   isSheetAnchoredChart,
   takesAttachments,
 } from '@liveplanner/project';
-import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
+import {
+  ArrowLineControls,
+  ArrowPointerControls,
+} from '@liveworkspace/workbench/components/canvas/arrow-controls';
 import {
   ContextMenu,
   ContextMenuDivider,
 } from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   LayerDownIcon,
   LayersGlyph,
@@ -46,7 +49,7 @@ import {
   RotationMenuIcon,
   SizeMenuIcon,
   SquareMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,

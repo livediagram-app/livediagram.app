@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM"],
     // Explicit, because TypeScript includes no @types package by default: the routing fixtures test reads its JSON

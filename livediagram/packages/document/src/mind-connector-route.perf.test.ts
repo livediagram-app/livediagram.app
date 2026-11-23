@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createPinnedArrow, createShape } from './factories';
-import { buildElementIndex } from './geometry';
-import { MIND_CONNECTOR_LOOK } from './mind-flow';
-import { finishArrowEnds } from './mind-connector-route';
+import { buildElementIndex } from '@liveworkspace/element-model/geometry';
+import { MIND_CONNECTOR_LOOK } from '@liveworkspace/element-model/mind-flow';
+import { finishArrowEnds } from '@liveworkspace/element-model/mind-connector-route';
 import type { ArrowElement, Element, ShapeElement } from './index';
 
 // docs/specs/009-elements/mind-node.md "Connectors": routing every connector of a big map under

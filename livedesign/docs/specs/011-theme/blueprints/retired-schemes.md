@@ -6,16 +6,16 @@ spec decides; this file adds engineering precision. Defaults are ledgered in [DE
 
 Scope, by file:
 
-| File                                              | Role                                                                     |
-| ------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/design/src/retired-schemes.ts`          | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`        |
-| `packages/design/src/stored-tab.ts`               | `migrateStoredTab`: retired scheme + stored-element migrations, one call |
-| `packages/design/src/themes-data.ts`, `themes.ts` | `LEGACY_THEMES` and the `'charcoal'` `ThemeId` are removed               |
-| `apps/live/lib/themes.ts`, `themes-taxonomy.ts`   | Drop the legacy lookup and Charcoal's taxonomy rows                      |
-| `apps/api/src/tab-row.ts`                         | `rowToTab` runs `migrateStoredTab`                                       |
-| `apps/api/src/thumbnail.ts`                       | `renderTabDataToSvg` runs `migrateStoredTab` on the parsed body          |
-| `apps/live/lib/offline/offline-store.ts`          | `offlineLoadTab` runs `migrateStoredTab`                                 |
-| `apps/live/lib/import-merge.ts`                   | `mergeImportedTab` runs `migrateStoredTab` on the imported tab first     |
+| File                                               | Role                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------ |
+| `../packages/element-model/src/retired-schemes.ts` | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`        |
+| `packages/design/src/stored-tab.ts`                | `migrateStoredTab`: retired scheme + stored-element migrations, one call |
+| `packages/design/src/themes-data.ts`, `themes.ts`  | `LEGACY_THEMES` and the `'charcoal'` `ThemeId` are removed               |
+| `apps/live/lib/themes.ts`, `themes-taxonomy.ts`    | Drop the legacy lookup and Charcoal's taxonomy rows                      |
+| `apps/api/src/tab-row.ts`                          | `rowToTab` runs `migrateStoredTab`                                       |
+| `apps/api/src/thumbnail.ts`                        | `renderTabDataToSvg` runs `migrateStoredTab` on the parsed body          |
+| `apps/live/lib/offline/offline-store.ts`           | `offlineLoadTab` runs `migrateStoredTab`                                 |
+| `apps/live/lib/import-merge.ts`                    | `mergeImportedTab` runs `migrateStoredTab` on the imported tab first     |
 
 ## Domain and naming
 

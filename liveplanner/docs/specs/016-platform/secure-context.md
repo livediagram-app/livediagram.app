@@ -25,7 +25,7 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
   has `randomUUID` keeps its own. Call sites keep calling `crypto.randomUUID()`: one shim, no second id helper.
 - **Hashes work everywhere.** Every SHA-256 the code computes (a Plan card person's id,
   an image's content address, the CLI's PKCE challenge) goes through `sha256` in `@liveplanner/items`
-  (`packages/items/src/sha256.ts`, the dependency-free package both `@liveplanner/project` and
+  (`../packages/model-core/src/sha256.ts`, the dependency-free package both `@liveplanner/project` and
   `@liveplanner/api-schema` already use). It calls `crypto.subtle.digest` wherever the context has it and
   otherwise computes the same FIPS 180-4 digest in plain code (about 24 ms per MB, measured on Node 22, so a 5 MB
   image costs about 120 ms, and only outside a secure context). The two must match byte for byte: the server

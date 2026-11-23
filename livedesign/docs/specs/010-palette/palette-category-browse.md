@@ -77,7 +77,7 @@ always "Tools ›".
 ## Every icon must be in a category
 
 Without an "All" filter, an icon in no category is an icon nobody can reach
-except by guessing its name into the search box. `lib/icons.test.ts` asserts
+except by guessing its name into the search box. `../packages/workbench/src/lib/icons.test.ts` asserts
 that every catalogue entry belongs to exactly one `ICON_CATEGORIES` entry, so
 adding a glyph without filing it fails the suite rather than quietly hiding it.
 

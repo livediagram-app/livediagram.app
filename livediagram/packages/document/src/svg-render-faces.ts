@@ -15,7 +15,7 @@
 
 import { isRetiredElement, RETIRED_SHAPE_KINDS } from './retired-elements';
 import type { ResolveEmojiArt } from './svg-render-describe';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL, sessionButtonPlan } from './selection-mode';
 import { type CanvasSurface } from './colors';
 import { collabAccent, text, type Face } from './svg-render-face-kit';

@@ -53,7 +53,7 @@ import { useColumnRemovedNotice } from './column-removed-notice';
 import { ColumnToolbar } from './PlanColumnToolbar';
 import { ColumnWidthRow, WipLimitRow } from './PlanColumnFields';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { noColour, standardGroup } from '@/components/colour/colour-options';
+import { noColour, standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 
 const NO_STATUSES: ReadonlyMap<string, string> = new Map();

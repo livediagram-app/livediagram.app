@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { arrowEndpointSpread, spreadOverBase } from './arrow-endpoint-spread';
+import {
+  arrowEndpointSpread,
+  spreadOverBase,
+} from '@liveworkspace/element-model/arrow-endpoint-spread';
 import { createShape } from './factories';
 import type { ArrowElement, Element, Endpoint } from './index';
 

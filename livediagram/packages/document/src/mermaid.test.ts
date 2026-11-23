@@ -6,7 +6,7 @@ import {
   startsWithMermaidHeader,
 } from './mermaid';
 import { graphToElements } from './graph-authoring';
-import { autoLayoutElements } from './auto-layout';
+import { autoLayoutElements } from '@liveworkspace/element-model/auto-layout';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
 import type { Element } from './index';

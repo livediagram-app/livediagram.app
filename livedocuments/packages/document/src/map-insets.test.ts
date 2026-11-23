@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { MAP_GEOMETRY } from './map-geometry.generated';
 import { MAP_INSETS, mapInsets, pathRings } from './map-insets';
 import { mapLayout } from './map-layout';
@@ -187,6 +187,6 @@ describe('the United States view', () => {
     expect(mapInsets('US', US[2], win, { ...win, h: 200 })).not.toBe(mapInsets('US', US[2], win));
     // A long run of frames never grows the cache past its bound.
     for (let i = 0; i < 40; i++) mapInsets('US', US[2], { ...win, x: i });
-    expect(cpuMsOf(() => mapInsets('US', US[2], { ...win, x: 99 }))).toBeLessThan(50);
+    expect(cpuMsOf(() => mapInsets('US', US[2], { ...win, x: 99 }))).toBeLessThan(cpuBudgetMs(50));
   });
 });

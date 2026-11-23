@@ -20,7 +20,7 @@ import {
 } from '@liveworkspace/element-model/thread-mentioners';
 import type { Comment } from './comments';
 import { elementActions, isClosedAction } from './element-action';
-import { elementDisplayLabel } from './element-display-label';
+import { elementDisplayLabel } from '@liveworkspace/element-model/element-display-label';
 import { isBoxed, type Element } from './index';
 
 export type CollabActionRow = {

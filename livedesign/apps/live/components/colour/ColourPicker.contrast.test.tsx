@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { contrastRatio, type TextContrastProbe, type TextGround } from '@livedesign/design';
 import { ColourPicker } from './ColourPicker';
-import { noColour } from './colour-options';
+import { noColour } from '@liveworkspace/workbench/components/colour/colour-options';
 
 // docs/specs/004-interface-design/colour-picker.md "Reading on its ground": the picker's readability row judges the
 // swatch the pointer or focus rested on. The row itself is the shared ContrastHint

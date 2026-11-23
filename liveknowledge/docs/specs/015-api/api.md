@@ -426,7 +426,7 @@ stands; storing a large tab in chunks is the follow-up.
 
 **Workbench** pairing requests, pairings, tickets and sessions are liveworkspace's
 ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)). API tokens are liveworkspace's alone: the
-api checks a presented token there (`apps/api/src/db/api-tokens.ts`) and keeps no copy. Nothing about folders,
+api checks a presented token there (`../packages/auth-client/src/api-tokens.ts`) and keeps no copy. Nothing about folders,
 sharing, teams, the Trash, the Timeline or the Inbox is kept here.
 
 **Routing.** The worker authenticates the caller, applies its cross-cutting gates (rate limits, read-only tokens,

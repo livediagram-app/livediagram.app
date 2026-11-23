@@ -34,7 +34,7 @@ export {
   isCreditUrl,
   isImageCredit,
   type ImageCredit,
-} from './image-credit';
+} from '@liveworkspace/model-core/image-credit';
 export type {
   ShapeElement,
   TextElement,
@@ -229,10 +229,10 @@ export * from './room-preset-shapes';
 export * from '@liveworkspace/model-core/title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
-export * from './wordmark';
-export * from './tab-has-drawing';
+export * from '@liveworkspace/element-model/wordmark';
+export * from '@liveworkspace/element-model/tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-export { upgradeLegacyLinks } from './legacy-links';
+export { upgradeLegacyLinks } from '@liveworkspace/element-model/legacy-links';
 
 export function isBoxed(element: Element): element is BoxedElement {
   return (
@@ -282,17 +282,17 @@ export * from './youtube';
 export * from '@liveworkspace/model-core/label-font';
 export * from '@liveworkspace/model-core/border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
-export * from './shadow';
+export * from '@liveworkspace/element-model/shadow';
 export * from './finish';
-export * from './image-backing';
-export * from './sketch';
+export * from '@liveworkspace/element-model/image-backing';
+export * from '@liveworkspace/element-model/sketch';
 export * from './sketch-element';
 export * from './sketch-backdrop';
-export * from './marker';
+export * from '@liveworkspace/element-model/marker';
 export * from './marker-element';
 // A face's own parts in its finish (docs/specs/008-canvas/finish.md "Faces").
 export * from '@liveworkspace/model-core/face-finish';
-export * from './marker-face';
+export * from '@liveworkspace/element-model/marker-face';
 export * from './hand-drawn';
 export * from './drawn-outline-finish';
 // Which elements can be rotated (an annotation marker cannot).
@@ -304,7 +304,7 @@ export * from './placed-kinds';
 export * from './behaviour-skin';
 export * from './comments';
 export * from './collab-index-rows';
-export * from './comment-thread';
+export * from '@liveworkspace/element-model/comment-thread';
 // The whole-document `livehuddle.document` envelope and the per-tab JSON and Markdown export (the editor, the
 // Drive mirror and the CLI's pull files).
 export * from './document-envelope';
@@ -321,7 +321,7 @@ export * from '@liveworkspace/model-core/seeded-random';
 // The shared count-with-noun wording.
 export * from '@liveworkspace/model-core/plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
-export * from './element-action';
+export * from '@liveworkspace/element-model/element-action';
 export * from './data-shapes';
 // The chair's facings and which kinds draw their own face (docs/specs/009-elements/chair.md). A leaf module, for the
 // factories cycle.
@@ -362,7 +362,7 @@ export * from './call-geometry';
 // The Screen and the Room Sign (docs/specs/009-elements/screen-and-room-sign.md).
 export * from './meeting-pieces';
 export * from '@liveworkspace/model-core/color-wash';
-export { labelOn } from './readable-colour';
+export { labelOn } from '@liveworkspace/element-model/readable-colour';
 export * from './quick-swatches';
 export * from './quick-swatch-rederive';
 // The Behaviours family (docs/specs/010-palette/palette-top-level-categories.md): which kinds are in it, and which of them
@@ -381,13 +381,13 @@ export * from '@liveworkspace/model-core/person-card';
 export * from './factories';
 // A template's text sized to its words, one copy for every product.
 export * from '@liveworkspace/element-model/text-fit';
-export * from './whiteboard';
+export * from '@liveworkspace/element-model/whiteboard';
 export * from './label-box-size';
 export * from './duplicate';
-export * from './polyline';
-export * from './pen-colours';
-export * from './standard-colours';
-export * from './custom-colours';
+export * from '@liveworkspace/model-core/polyline';
+export * from '@liveworkspace/element-model/pen-colours';
+export * from '@liveworkspace/element-model/standard-colours';
+export * from '@liveworkspace/element-model/custom-colours';
 export * from './stock-colours';
 export * from './snap-colours';
 export * from './component-factories';
@@ -414,9 +414,12 @@ export * from './tab-builders';
 // Headless SVG renderer (livediagram/docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the api's server-side renders.
 export * from './svg-render';
-export { borderOf } from './svg-render-border';
+export { borderOf } from '@liveworkspace/element-model/svg-render-border';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
-export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
+export {
+  inlineIconGap,
+  inlineIconMetrics,
+} from '@liveworkspace/element-model/svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 // The SVG face kit's marks (text, line fitting, colour mixing), for drawings made outside this package.
 export {
@@ -452,7 +455,7 @@ export * from '@liveworkspace/model-core/svg-path-outline';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
 export * from './indicator-placement';
 export * from './geometry';
-export * from './element-grid';
+export * from '@liveworkspace/element-model/element-grid';
 // The grid over this product's own elements (the shared grid is generic over any element union).
 export type ElementGrid = SharedElementGrid<Element>;
 import type { ElementGrid as SharedElementGrid } from '@liveworkspace/element-model/element-grid';
@@ -463,15 +466,18 @@ export * from '@liveworkspace/element-model/geometry-guides';
 
 // Layer order + union bounds, and the load-time migration of documents saved
 // while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
-export * from './layer-order';
+export * from '@liveworkspace/element-model/layer-order';
 export * from './legacy-groups';
 export * from './stored-elements';
 export { isSafeColourValue } from '@liveworkspace/element-model/unsafe-colours';
 export * from './stored-tab';
-export { settleTabFields } from './tab-fields';
+export { settleTabFields } from '@liveworkspace/model-core/tab-fields';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
 // The retired themes' upgrade on its own, and the Pages and Plan drops.
-export { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes';
+export {
+  dropCustomTheme,
+  isRetiredCustomThemeId,
+} from '@liveworkspace/element-model/retired-custom-themes';
 export { dropRetiredPages, isRetiredPagesElement } from './retired-pages';
 export { dropRetiredPlan, isRetiredPlanElement } from './retired-plan';
 
@@ -507,7 +513,7 @@ export * from './collab-ledger';
 // shared by the tab-bar renderer, the client save path, and the
 // server route so the contiguous-run invariant has a single
 // implementation.
-export * from './tab-folders';
+export * from '@liveworkspace/element-model/tab-folders';
 
 // The Timer and Stopwatch pieces (docs/specs/009-elements/timer-and-stopwatch.md): their clock and drawings.
 export * from './timer-pieces';
@@ -533,12 +539,12 @@ export * from './element-refs';
 export * from './content-origin';
 export * from '@liveworkspace/model-core/style-keys';
 export * from '@liveworkspace/model-core/tab-names';
-export * from './drawn-count';
+export * from '@liveworkspace/model-core/drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.
 export { indefiniteArticle, withArticle } from '@liveworkspace/model-core/indefinite-article';
 // Slug ids (element refs, and anything else that mints a readable id from a name).
-export { cutSlug, slugText, uniqueSlug } from './slug';
+export { cutSlug, slugText, uniqueSlug } from '@liveworkspace/model-core/slug';
 // A day in milliseconds, for day arithmetic.
-export * from './civil-dates';
+export * from '@liveworkspace/model-core/civil-dates';
 // SHA-256 in every runtime, secure context or not.
-export { sha256, sha256Fallback } from './sha256';
+export { sha256, sha256Fallback } from '@liveworkspace/model-core/sha256';

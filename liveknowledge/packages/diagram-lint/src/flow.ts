@@ -3,7 +3,7 @@
 
 import type { ArrowElement } from '@liveknowledge/document';
 import { centreOf } from './boxes';
-import { LINT_FLOW_MIN_ARROWS, LINT_FLOW_MIN_SHARE } from './constants';
+import { LINT_FLOW_MIN_ARROWS, LINT_FLOW_MIN_SHARE } from '@liveworkspace/diagram-lint/constants';
 import type { DrawableArrow, LintContext } from './context';
 
 export type LintFlow = 'down' | 'up' | 'right' | 'left';

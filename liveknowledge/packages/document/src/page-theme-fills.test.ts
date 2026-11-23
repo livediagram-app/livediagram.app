@@ -10,7 +10,7 @@ import {
   themeGradientFill,
   withPageBackgroundsFollowingTheme,
 } from './page-theme-fills';
-import { themePresetColors } from './theme-presets';
+import { themePresetColors } from '@liveworkspace/element-model/theme-presets';
 import { getBuiltInTheme } from './themes';
 import type { Element, Page, PageFill, Tab } from './index';
 

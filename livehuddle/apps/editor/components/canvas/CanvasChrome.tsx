@@ -23,7 +23,7 @@ import { stripPaletteFor } from '@/lib/avatar-palette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { ThemeStrip } from '@/components/canvas/ThemeStrip';
+import { ThemeStrip } from '@liveworkspace/workbench/components/canvas/ThemeStrip';
 import { Space3DButton } from '@/components/canvas/space-3d/Space3DButton';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -115,7 +115,8 @@ type ChromeExtras = {
     group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
   ) => void;
   onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
-  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
+  formatBrushSource?:
+    import('@liveworkspace/workbench/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;

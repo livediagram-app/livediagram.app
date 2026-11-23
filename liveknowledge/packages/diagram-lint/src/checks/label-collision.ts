@@ -11,7 +11,10 @@ import {
 } from '@liveknowledge/document';
 import { arrowName, arrowSelector } from '../arrow-names';
 import { boxBounds, isLintBox } from '../boxes';
-import { LINT_LABEL_RUN_PAD, LINT_OVERLAP_TOLERANCE_PX } from '../constants';
+import {
+  LINT_LABEL_RUN_PAD,
+  LINT_OVERLAP_TOLERANCE_PX,
+} from '@liveworkspace/diagram-lint/constants';
 import { padded, refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check } from './types';

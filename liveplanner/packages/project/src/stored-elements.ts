@@ -1,13 +1,13 @@
 // Everything a stored tab's elements need on the way in, in one call. Composed
 // into migrateStoredTab (stored-tab.ts), which every stored-tab entry point runs.
 
-import { migrateLegacyCallouts } from './card';
-import { settleChips } from './attachment';
-import { dropUnturnableRotation } from './unturnable-rotation';
-import { dropMalformedBends } from './malformed-bends';
+import { migrateLegacyCallouts } from '@liveworkspace/element-model/card';
+import { settleChips } from '@liveworkspace/element-model/attachment';
+import { dropUnturnableRotation } from '@liveworkspace/element-model/unturnable-rotation';
+import { dropMalformedBends } from '@liveworkspace/element-model/malformed-bends';
 import { dropMalformedIds } from './malformed-ids';
-import { dropMalformedStyles } from './malformed-styles';
-import { settleChartRows } from './malformed-chart-rows';
+import { dropMalformedStyles } from '@liveworkspace/element-model/malformed-styles';
+import { settleChartRows } from '@liveworkspace/element-model/malformed-chart-rows';
 import { dropUnsafeColours } from '@liveworkspace/element-model/unsafe-colours';
 import type { Element } from './index';
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { layoutGraph } from './graph-input';
-import { arrowPolyline, pathPassesThrough } from './arrow-path-hits';
-import { elementIndexFor } from './geometry';
+import { arrowPolyline, pathPassesThrough } from '@liveworkspace/element-model/arrow-path-hits';
+import { elementIndexFor } from '@liveworkspace/element-model/geometry';
 import { isBoxed, type ArrowElement, type BoxedElement } from './index';
 
 // docs/specs/015-api/mcp-server.md §4.7 `style: "cycle"`: a node with no edge sits at the ring's centre, the ring wide

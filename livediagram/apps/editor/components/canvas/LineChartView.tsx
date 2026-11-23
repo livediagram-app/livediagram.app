@@ -7,7 +7,7 @@
 // animation (`pieAnim` -> lvd-pie-*) + legend toggle. The line + point group
 // animates; the axes + x-labels stay still.
 
-import { LineChartAxis } from './ChartAxis';
+import { LineChartAxis } from '@liveworkspace/workbench/components/canvas/ChartAxis';
 import {
   AREA_FILL_OPACITY,
   chartValueFontPx,
@@ -23,7 +23,7 @@ import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@liveworkspace/workbench/hooks/canvas/useChartHover';
 import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';
 import { ChartSurface } from '@liveworkspace/workbench/components/primitives/ChartSurface';
-import { ChartValues } from '@/components/primitives/ChartValues';
+import { ChartValues } from '@liveworkspace/workbench/components/primitives/ChartValues';
 
 export function LineChartView({
   element,

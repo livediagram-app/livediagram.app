@@ -3,7 +3,11 @@
 // colour, kept once with its settings (`KnowledgeSettings.labels`), and the ids a page carries (`Tab.labels`). A
 // rename, a new colour or a deleted label is one change to the knowledgebase's list: no page is rewritten. Reading is
 // forgiving (what is valid is kept), a change is strict (it answers a refusal by name).
-import { STANDARD_COLOUR_NAMES, isHexColour, type StandardColourName } from './standard-colours';
+import {
+  STANDARD_COLOUR_NAMES,
+  isHexColour,
+  type StandardColourName,
+} from '@liveworkspace/element-model/standard-colours';
 
 /** A label's colour: a standard colour's name (`StandardColourName`, drawn in its version for the appearance) or a
  *  custom `#rrggbb`; `isLabelColour` says which strings are either. */

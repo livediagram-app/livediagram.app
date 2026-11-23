@@ -3,7 +3,7 @@
 import type { ReactElement } from 'react';
 import { Tooltip } from '@livediagram/ui';
 import type { PathHandleMode } from '@livediagram/document';
-import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
+import { FloatingToolbar } from '@liveworkspace/workbench/components/chrome/FloatingToolbar';
 
 export type PathToolbarView = {
   // Where it floats: above the path's box, or above the long-pressed node (a point).

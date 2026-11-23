@@ -22,7 +22,7 @@ import { canvasMainStyle, canvasWorldStyle } from './canvas-main-style';
 import { imageBackingInsetAttribute } from '@liveknowledge/document';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
-import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
+import { AnimatedCanvasBackground } from '@liveworkspace/workbench/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';
@@ -44,7 +44,7 @@ import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/C
 import { canvasGestureNow } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useCanvasLongTaskLog } from '@liveworkspace/workbench/hooks/canvas/useCanvasLongTaskLog';
 import { useSelectionStore } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
-import { useKeyboardElementMenu } from '@/hooks/canvas/useKeyboardElementMenu';
+import { useKeyboardElementMenu } from '@liveworkspace/workbench/hooks/canvas/useKeyboardElementMenu';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ElementIndicatorStyleProvider } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
 import { readElementIndicatorStyle } from '@liveworkspace/workbench/lib/element-indicator-style';

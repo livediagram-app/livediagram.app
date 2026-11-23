@@ -1,7 +1,11 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ANIMATION_SET_VALUES, SHAPE_ANIMATIONS, type AnimationSetId } from '@livedocuments/document';
+import {
+  ANIMATION_SET_VALUES,
+  SHAPE_ANIMATIONS,
+  type AnimationSetId,
+} from '@livedocuments/document';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 
 // An animation is applied by building a class name from its stored value. Nothing checks that the
@@ -11,9 +15,13 @@ import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
 //
 // Each set's classes live in its own stylesheet (docs/specs/028-animation/element-animations.md);
 // the text-native silhouette classes for legacy values stay in canvas-motion.css.
+// The sets' stylesheets are every editor's one copy (@liveworkspace/workbench/styles); canvas-motion.css is this app's.
 const read = (name: string) => {
-  const url = new URL(`./${name}`, import.meta.url);
-  return existsSync(fileURLToPath(url)) ? readFileSync(fileURLToPath(url), 'utf8') : '';
+  for (const base of ['./', '../../../../packages/workbench/src/styles/']) {
+    const path = fileURLToPath(new URL(`${base}${name}`, import.meta.url));
+    if (existsSync(path)) return readFileSync(path, 'utf8');
+  }
+  return '';
 };
 const SHEET: Record<AnimationSetId, string> = {
   shape: 'motion-shape.css',

@@ -3,7 +3,7 @@ import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time
 import { articlesOf, pagesOf } from '@livedocuments/document';
 import type { ImportImageSession } from '../import-images';
 import { importOfficeFile } from './index';
-import { asBlob, longDeck, longDocx } from './test-fixtures';
+import { asBlob, longDeck, longDocx } from '@liveworkspace/office-files/test-fixtures';
 
 // docs/specs/020-import-export/office-import.md "Performance": the card's two worst cases, a 100-page document and a
 // 50-slide deck, read and built inside a budget (the image pipeline faked: its own cost is the pipeline's).

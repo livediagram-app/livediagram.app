@@ -6,7 +6,7 @@ import {
   type SequenceDiagram,
 } from './mermaid-sequence';
 import { layoutSequence } from './sequence-layout';
-import { arrowLabelPass } from './arrow-label-layout';
+import { arrowLabelPass } from '@liveworkspace/element-model/arrow-label-layout';
 import type { ArrowElement, Element } from './index';
 
 // docs/specs/009-elements/sequence-diagram.md: a sequence read from Mermaid text, then drawn by layoutSequence.

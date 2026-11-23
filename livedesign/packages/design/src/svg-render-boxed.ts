@@ -2,7 +2,7 @@
 // its face (svgBoxedFace) and the finish pass over it (svgBoxed). svg-render.ts re-exports svgBoxed.
 
 import { isImageMask } from '@liveworkspace/element-model/image-frame';
-import { svgTabWindow } from './tab-window';
+import { svgTabWindow } from '@liveworkspace/element-model/tab-window';
 import { missingComponentFrame } from './component-resolve';
 import {
   hasShapeSilhouette,
@@ -15,24 +15,44 @@ import {
   svgPathElementShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
-import { faceFinishOf, finishWobblesArt, isHandDrawn, resolveFinish } from './finish';
-import { SKETCH_ART_FILTER_ID, svgSketchedBody, svgSketchFace } from './svg-render-sketch';
-import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
+import {
+  faceFinishOf,
+  finishWobblesArt,
+  isHandDrawn,
+  resolveFinish,
+} from '@liveworkspace/element-model/finish';
+import {
+  SKETCH_ART_FILTER_ID,
+  svgSketchedBody,
+  svgSketchFace,
+} from '@liveworkspace/element-model/svg-render-sketch';
+import {
+  svgMarkerFace,
+  svgProfessionalFace,
+} from '@liveworkspace/element-model/svg-render-face-finish';
 import { acceptsInlineIcon } from './colors';
-import { inlineIconLayout } from './svg-render-inline-icon';
-import { svgIconShape, svgImageShape } from './svg-render-image-icon';
-import { DIAMOND_POINTS } from './shape-geometry';
-import { svgTableShape } from './svg-render-table';
+import { inlineIconLayout } from '@liveworkspace/element-model/svg-render-inline-icon';
+import { svgIconShape, svgImageShape } from '@liveworkspace/element-model/svg-render-image-icon';
+import { DIAMOND_POINTS } from '@liveworkspace/element-model/shape-geometry';
+import { svgTableShape } from '@liveworkspace/element-model/svg-render-table';
 import { svgElementBody } from './svg-render-body';
-import { svgPageFold } from './svg-render-page';
-import { svgHeroCaption } from './svg-render-web';
+import { svgPageFold } from '@liveworkspace/element-model/svg-render-page';
+import { svgHeroCaption } from '@liveworkspace/element-model/svg-render-web';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
-import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
-import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
+import {
+  labelMeasure,
+  r2,
+  wrapLabel,
+  xmlEscape,
+} from '@liveworkspace/element-model/svg-render-primitives';
+import {
+  svgRichWrappedLabel,
+  svgWrappedLabel,
+} from '@liveworkspace/element-model/svg-render-labels';
 import { svgWordmarkLabel } from './svg-render-wordmark';
-import { hasWordmarkType } from './wordmark';
+import { hasWordmarkType } from '@liveworkspace/element-model/wordmark';
 import type { BoxedElement } from './index';
-import { shadowFilterId, supportsShadow } from './shadow';
+import { shadowFilterId, supportsShadow } from '@liveworkspace/element-model/shadow';
 import {
   describeBoxedExport,
   selfLabelled,
@@ -42,11 +62,15 @@ import {
   finishOf,
   type BoxedExportOptions,
 } from './svg-render-describe';
-import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
-import { svgAccentEdge } from './accent-edge';
-import { resolveStockColours } from './stock-colours';
-import { rotationOf } from './rotation';
-import { withTagAccent } from './tag-colours';
+import {
+  borderedRect,
+  borderOf,
+  strokeAttrs,
+} from '@liveworkspace/element-model/svg-render-border';
+import { svgAccentEdge } from '@liveworkspace/element-model/accent-edge';
+import { resolveStockColours } from '@liveworkspace/element-model/stock-colours';
+import { rotationOf } from '@liveworkspace/element-model/rotation';
+import { withTagAccent } from '@liveworkspace/element-model/tag-colours';
 
 export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
   // An instance (docs/specs/009-elements/components.md "Exports"): an export expands it first (expandInstances), which

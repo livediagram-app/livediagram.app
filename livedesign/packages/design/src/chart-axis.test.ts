@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { axisLabelRoom, axisScale, rightAxisSeries } from './chart-axis';
-import { barMarks, lineMarks } from './chart-marks';
+import { axisLabelRoom, axisScale, rightAxisSeries } from '@liveworkspace/element-model/chart-axis';
+import { barMarks, lineMarks } from '@liveworkspace/element-model/chart-marks';
 import { normaliseElement } from './element-normalise';
 import { renderElementsToSvg } from './svg-render';
 

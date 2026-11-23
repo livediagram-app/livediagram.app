@@ -19,7 +19,7 @@ import {
   SNAP_THRESHOLD,
   type ArrowEnd,
 } from '@/lib/canvas';
-import { computeSnapTargets, NO_ALIGN_EXCLUDE } from '@/lib/drag-geometry';
+import { computeSnapTargets, NO_ALIGN_EXCLUDE } from '@liveworkspace/workbench/lib/drag-geometry';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
 // Resolve one arrow-endpoint drag frame (docs/specs/008-canvas/canvas-and-palette.md arrows + docs/specs/008-canvas/arrow-to-arrow.md

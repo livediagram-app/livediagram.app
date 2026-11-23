@@ -21,7 +21,7 @@
 // pointer-down left alone so dragging still moves it.
 
 import { useId } from 'react';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { HoverCard } from '@livehuddle/ui';
 
 function PortalArt({ stroke, open }: { stroke: string; open: boolean }) {

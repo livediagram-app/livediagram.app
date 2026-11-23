@@ -14,13 +14,13 @@ Scope, by file:
 | `packages/document/src/data-shapes.ts`                      | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`        |
 | `packages/document/src/shape-factory.ts`                    | `SHAPE_DEFAULT_SIZE` rows and the `createShape` seeds                        |
 | `packages/document/src/colors.ts`                           | `SELF_PAINTING_SHAPES` membership (no wrapper border, no Border controls)    |
-| `packages/document/src/svg-render-data.ts`                  | `svgProgressBar`, `svgProgressRing`: the export body                         |
+| `../packages/element-model/src/svg-render-data.ts`          | `svgProgressBar`, `svgProgressRing`: the export body                         |
 | `packages/document/src/svg-render-body.ts`                  | `svgElementBody`: the export dispatch, its track from `progressTrackColour`  |
-| `packages/document/src/progress-colours.ts`                 | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
+| `../packages/element-model/src/progress-colours.ts`         | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
 | `apps/editor/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                           |
 | `apps/editor/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
 | `apps/editor/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                 |
-| `apps/editor/lib/icons.ts`                                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
+| `../packages/workbench/src/lib/icons.ts`                    | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
 | `apps/editor/components/palette/ElementDataSections.tsx`    | The Progress section inside the Tools flyout                                 |
 | `apps/editor/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                            |

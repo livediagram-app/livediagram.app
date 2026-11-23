@@ -4,7 +4,7 @@
 // them unpressable.
 
 import { useState } from 'react';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
 import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';

@@ -6,7 +6,7 @@ import {
 } from './dashboard-card-style';
 import { readDashboard, moveDashboardSlot, remapDashboardElements } from './dashboard';
 import { contrastRatio } from './colors';
-import { shapeColorPresets } from './theme-presets';
+import { shapeColorPresets } from '@liveworkspace/element-model/theme-presets';
 import { THEMES, defaultScheme } from './themes';
 
 // docs/specs/026-plan/plan-tabs.md "Card style".

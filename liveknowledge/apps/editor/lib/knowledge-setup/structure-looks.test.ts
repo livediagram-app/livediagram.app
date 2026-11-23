@@ -7,7 +7,7 @@ import {
   ensureIconCatalogs,
   getLoadedIconCatalog,
 } from '@liveworkspace/workbench/lib/icon-registry';
-import { ICON_CATEGORIES } from '@/lib/icons';
+import { ICON_CATEGORIES } from '@liveworkspace/workbench/lib/icons';
 
 beforeAll(async () => {
   await ensureIconCatalogs();

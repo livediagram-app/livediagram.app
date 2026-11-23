@@ -7,7 +7,7 @@
 
 import { agendaTotalMinutes, clampAgendaMinutes, type AgendaItem } from './collab-shapes';
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import {
   checkMark,
   collabCard,

@@ -21,7 +21,7 @@ import {
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { noColour } from '@/components/colour/colour-options';
+import { noColour } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useSheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
 import {

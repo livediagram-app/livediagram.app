@@ -19,7 +19,7 @@ import {
 } from '@liveplanner/project';
 import { DateInput } from '@liveplanner/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import {
   MENU_ADD_ROW_BUTTON,

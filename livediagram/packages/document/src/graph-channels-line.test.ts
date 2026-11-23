@@ -2,8 +2,8 @@
 // solid call and dashed event line each take their own channel, so the dashed line never rides the solid one's run.
 import { describe, expect, it } from 'vitest';
 import { layoutGraph } from './graph-input';
-import { arrowPolyline } from './arrow-path-hits';
-import { elementIndexFor } from './geometry';
+import { arrowPolyline } from '@liveworkspace/element-model/arrow-path-hits';
+import { elementIndexFor } from '@liveworkspace/element-model/geometry';
 import type { ArrowElement, Element } from './index';
 
 let n = 0;

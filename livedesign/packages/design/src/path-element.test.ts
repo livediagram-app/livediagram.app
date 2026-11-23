@@ -7,9 +7,9 @@ import {
   pathWorldAnchors,
   reshapePath,
   reversePath,
-} from './path-element';
+} from '@liveworkspace/element-model/path-element';
 import { elementSupportsText, isBoxed } from './index';
-import type { PathAnchor } from './path-geometry';
+import type { PathAnchor } from '@liveworkspace/element-model/path-geometry';
 
 const corner = (x: number, y: number): PathAnchor => ({ x, y, mode: 'corner' });
 

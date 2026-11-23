@@ -10,11 +10,15 @@ import {
   defaultTextColor,
   type CanvasSurface,
 } from './colors';
-import { elementIndexFor, endpointPosition } from './geometry';
+import { elementIndexFor, endpointPosition } from '@liveworkspace/element-model/geometry';
 import { pagesOf, rowPageAt, layOutPages, type Page, type PageRect } from './page';
 import { elementAnchorPoint, pageFillTone } from './page-content';
 import { layerBands } from './layers';
-import { inkToward, isOpaqueHex, worstContrast } from './page-ink-contrast';
+import {
+  inkToward,
+  isOpaqueHex,
+  worstContrast,
+} from '@liveworkspace/element-model/page-ink-contrast';
 import { PAPER_TONE, pageGroundUnder, type PageGround } from './page-ink-ground';
 import {
   boxBorder,
@@ -26,7 +30,7 @@ import {
   keptCover,
   type InkField,
   type InkRole,
-} from './page-ink-rules';
+} from '@liveworkspace/element-model/page-ink-rules';
 import { isBoxed, type BoxedElement, type Element, type Tab, type ElementIndex } from './index';
 import { pointInRect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 

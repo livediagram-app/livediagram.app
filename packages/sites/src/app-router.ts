@@ -1,0 +1,431 @@
+// An app's router (docs/specs/016-platform/router-app.md in each product): routes URL paths to the right downstream
+// app. In production each app is a service binding; in local dev (`wrangler dev --env local`) the bindings don't
+// exist and each app is a plain HTTP origin to proxy instead. Every product's router is this one, bound to its facts
+// with `createAppRouter` once at module scope: its name, its editor's route segments, its help categories, its
+// oEmbed and Community steps, where /telemetry lands, and the redirects only it keeps for its old addresses.
+
+import type { AppName } from './index';
+import { applyCachePolicy } from './cache-policy';
+import { httpsRedirect } from './https-redirect';
+import { openExplorerRedirect } from './open-explorer';
+import {
+  forwardOr502,
+  viaBinding,
+  type ServiceBinding,
+  type WorkspaceBindings,
+  routeToWorkspace,
+  routeToPreviews,
+  forwardToDrive,
+  forwardToIndex,
+  isDrivePath,
+  PRODUCTION_DRIVE_ORIGIN,
+  PRODUCTION_INDEX_ORIGIN,
+  statusRedirect,
+  wwwRedirect,
+} from './workspace-proxy';
+
+// The service bindings to liveworkspace's Workers (WORKSPACE_SITE, WORKSPACE_ACCOUNTS, WORKSPACE_INDEX, WORKSPACE_DRIVE,
+// WORKSPACE_MEDIA, WORKSPACE_COMMUNITY), absent in the `local` env and in forks, where the *_ORIGIN vars below are
+// fetched instead. The editor's own binding is the product's to name (`EDITOR`, or livedesign's `LIVE`), so it is not
+// here: a product's Env adds it, and `editorBinding` and `editorOrigin` read it.
+export interface AppRouterEnv extends WorkspaceBindings {
+  // Production service bindings (absent in the `local` env).
+  MARKETING?: ServiceBinding;
+  API?: ServiceBinding;
+  HELP?: ServiceBinding;
+  // Local-dev origins (absent in production).
+  MARKETING_ORIGIN?: string;
+  API_ORIGIN?: string;
+  HELP_ORIGIN?: string;
+  // Set to "staging" on the staging router only (docs/specs/016-platform/staging-environment.md). Marks every
+  // response noindex so the public staging mirror can't compete with
+  // production in search results. Absent in production and in local dev.
+  DEPLOY_ENV?: string;
+  // liveworkspace's Community service (liveworkspace/docs/specs/007-community/community.md), read for the Community
+  // page's head and its sitemap. Unset means production's.
+  COMMUNITY_URL?: string;
+  // liveworkspace.app, whose pages this router serves under this app's address while the app's switch is on
+  // (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"). Unset means production's; staging
+  // and local dev name their own.
+  WORKSPACE_ORIGIN?: string;
+  // The secret this router shares with liveworkspace's accounts and index (liveworkspace/docs/specs/002-architecture/
+  // blueprints/architecture.md "Security and trust"), sent beside the visitor's address so their per-network limits
+  // count the visitor rather than this router. Unset, none is sent.
+  WORKSPACE_PROXY_SECRET?: string;
+  // liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): `/api/previews/*` and a share link's image.svg,
+  // image.png and card go there, not to the api. Unset means production's.
+  PREVIEWS_ORIGIN?: string;
+  // The central index (liveworkspace/docs/specs/004-index/one-explorer.md): `/api/index/*` goes there, not to the api. Unset means
+  // production's; staging and local dev name their own.
+  INDEX_ORIGIN?: string;
+  // liveworkspace's Google Drive mirror (liveworkspace/docs/specs/005-drive/drive.md): `/api/drive/*` goes there, not to the api.
+  // Unset means production's.
+  DRIVE_ORIGIN?: string;
+}
+
+/** What the router asks of a product's oEmbed (`createOEmbed` in @liveworkspace/media/oembed). */
+type OEmbedStep = {
+  isOEmbedPath: (pathname: string) => boolean;
+  oembed: (
+    request: Request,
+    options?: { previewsOrigin?: string; fetch?: typeof fetch },
+  ) => Promise<Response>;
+};
+
+/** What the router hands the Community step (`routeCommunity` in @liveworkspace/community-site/router). */
+type CommunityStepOptions<S> = {
+  site: S;
+  communityUrl?: string;
+  fetch?: typeof fetch;
+  forward: (request: Request) => Promise<Response> | null;
+};
+
+export type AppRouterConfig<E extends AppRouterEnv, S> = {
+  /** The app: its status group, its help scope, its Explorer and Community on liveworkspace.app. */
+  app: AppName;
+  /** The editor's top-level page route segments, the product's api-schema `LIVE_ROUTE_SEGMENTS`: shared from there
+   *  so the telemetry dashboard's per-app page-view split reads the same list this routes by. */
+  liveRouteSegments: ReadonlySet<string>;
+  /** The product's signed-in hint cookie, for Automatically Open Explorer. */
+  signedInCookie: string;
+  /** The help centre's category slugs for this app (see HELP_CATEGORY_SEGMENTS below). */
+  helpCategorySegments: Iterable<string>;
+  /** The editor Worker's binding and local origin, as this product's wrangler.toml names them. */
+  editorBinding: (env: E) => ServiceBinding | undefined;
+  editorOrigin: (env: E) => string | undefined;
+  /** A pasted share link's embed (liveworkspace/docs/specs/006-media/previews.md "Pasting a share link: GET /oembed"):
+   *  the router answers `/oembed` itself, asking liveworkspace's previews whether the link may unfold. */
+  oembed: OEmbedStep;
+  /** The Community step, and whose Community the page at /community is here: this app's posts, at its canonical
+   *  address, in its words. */
+  routeCommunity: (request: Request, options: CommunityStepOptions<S>) => Promise<Response> | null;
+  communitySite: S;
+  /** Where /telemetry and everything under it now lives: the central dashboard, filtered to this app. */
+  telemetryRedirect: (env: E) => Response;
+  /** A path besides /api that the api serves and sets the caching of (liveknowledge's public site). */
+  apiServedPath?: string;
+  /** Redirects for a product's own old addresses, each null for a path it does not own. */
+  legacy?: {
+    /** Asked right after /telemetry, before the bare-domain hop. */
+    form?: (url: URL, deployEnv: string | undefined) => Response | null;
+    /** Asked before /help is forwarded; the bare domain's one hop lands where it points. */
+    help?: (url: URL) => Response | null;
+    /** Asked before the editor's page routes; the bare domain's one hop lands where it points. */
+    editor?: (url: URL) => Response | null;
+  };
+};
+
+const LIVE_PATH = '/live';
+const API_PATH = '/api';
+const INDEX_PATH = '/api/index';
+const TELEMETRY_PATH = '/telemetry';
+const HELP_PATH = '/help';
+
+// Root-served live assets that don't ride the `assetPrefix` (Next's
+// metadata icon). Routed to the editor worker by exact path.
+const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
+
+// The one help centre (liveworkspace/docs/specs/017-help/help-centre.md "Where it is shown") serves every app's help
+// from one Worker, liveworkspace-help, and picks the scope from this header: the app's help, on the app's address.
+const HELP_APP_HEADER = 'x-help-app';
+
+function hasPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(`${prefix}/`);
+}
+
+// A stripped app's own redirect (its trailing-slash one: `/explorer/folders` to `/explorer/folders/`)
+// names a path inside that app; relative to the host it would leave the app (`/help` lost, landing
+// on the editor or a 404). Its prefix goes back on. Absolute and protocol-relative ones are left be.
+export function withPrefixedRedirect(res: Response, prefix: string): Response {
+  if (res.status < 300 || res.status >= 400) return res;
+  const location = res.headers.get('Location');
+  if (!location || !location.startsWith('/') || location.startsWith('//')) return res;
+  if (hasPrefix(location.split(/[?#]/)[0]!, prefix)) return res;
+  const headers = new Headers(res.headers);
+  headers.set('Location', `${prefix}${location}`);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
+// Forward to a downstream app.
+//
+// Production (service binding): basePath/assetPrefix apps get `stripPrefix`
+// (Next.js's prefix rewrites the URLs in the emitted HTML/JS but does NOT
+// shift the file layout, so the deployed workers hold prefix-free `out/`
+// files and the router presents `/<prefix>/foo` to them as `/foo`).
+//
+// Local dev (origin): swap the origin and keep the path UNstripped: the
+// Next dev servers serve their own prefixes (basePath for help,
+// the editor app's `/live` assetPrefix, which applies in dev too).
+function forward(
+  request: Request,
+  url: URL,
+  binding: ServiceBinding | undefined,
+  origin: string | undefined,
+  stripPrefix?: string,
+): Response | Promise<Response> {
+  if (binding) {
+    if (!stripPrefix) return binding.fetch(request);
+    const rewritten = new URL(url.toString());
+    rewritten.pathname = url.pathname.slice(stripPrefix.length) || '/';
+    return binding
+      .fetch(new Request(rewritten.toString(), request))
+      .then((res) => withPrefixedRedirect(res, stripPrefix));
+  }
+  if (origin) {
+    const target = new URL(origin);
+    const rewritten = new URL(url.toString());
+    rewritten.protocol = target.protocol;
+    rewritten.host = target.host;
+    // An origin that isn't running (a local stack without that server) answers 502, never a bare 500.
+    return forwardOr502(new Request(rewritten.toString(), request));
+  }
+  return new Response(
+    `router: no service binding and no *_ORIGIN var for ${url.pathname} \u2014 ` +
+      'run `wrangler dev --env local` locally, or check wrangler.toml.',
+    { status: 503 },
+  );
+}
+
+// Stamp `X-Robots-Tag: noindex, nofollow` on a staging response (docs/specs/016-platform/staging-environment.md).
+//
+// Staging is deliberately public (no auth wall, so a change can be shared
+// with someone before it ships), which makes keeping it out of search results
+// this header's job. Done once here rather than as a build flag threaded into
+// five static apps: every app on the hostname passes through the router, the
+// api's JSON included.
+//
+// A 101 is returned UNTOUCHED. The realtime room answers its `/ws` path
+// with a WebSocket upgrade, and a Response carrying a
+// `webSocket` cannot be reconstructed: `new Response(body, res)` drops the
+// socket and takes realtime collab down on staging alone, on one path, which
+// is precisely the sort of breakage that survives a smoke test. Crawlers do
+// not open WebSockets, so there is nothing to mark noindex here anyway.
+function markNoIndex(response: Response): Response {
+  // `webSocket` is a Worker Response's own field, read here without the Worker types.
+  if (response.status === 101 || (response as { webSocket?: unknown }).webSocket) return response;
+  const tagged = new Response(response.body, response);
+  tagged.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return tagged;
+}
+
+/** The central dashboard at `base`, filtered to `app` ('livedocuments.app'): a 301. */
+export function telemetryRedirectTo(base: string, app: string): Response {
+  const target = new URL(base);
+  target.searchParams.set('app', app);
+  // Built by hand: Response.redirect's headers are immutable, and the caching rules still stamp this one.
+  return new Response(null, { status: 301, headers: { Location: target.toString() } });
+}
+
+/** The central dashboard of a deploy environment (staging's, local dev's, else production's), filtered to `app`. */
+export function telemetryDashboardUrlFor(deployEnv: string | undefined, app: string): string {
+  const base =
+    deployEnv === 'staging'
+      ? 'https://staging.liveworkspace.app/telemetry'
+      : deployEnv === 'local'
+        ? 'http://localhost:3000/telemetry'
+        : 'https://www.liveworkspace.app/telemetry';
+  return `${base}?app=${app}`;
+}
+
+/** A product's router: the handler its Worker entry exports as its default. */
+export function createAppRouter<E extends AppRouterEnv, S>(
+  config: AppRouterConfig<E, S>,
+): { fetch: (request: Request, env: E) => Promise<Response> } {
+  const { app, liveRouteSegments, editorBinding, editorOrigin, apiServedPath, legacy } = config;
+  const { signedInCookie, routeCommunity, communitySite, telemetryRedirect } = config;
+  const { isOEmbedPath, oembed } = config.oembed;
+
+  // Help-centre category slugs, which are the first segment of every help
+  // article path (`/canvas/shadows/`, `/palette/build/frames/`). The help app
+  // serves them all under `/help`, so a bare one is an article URL that lost
+  // its prefix: a hand-typed link, an old bookmark, a copy-paste that dropped
+  // the first segment. Those 404'd into marketing; they redirect now.
+  //
+  // Each product's list is pinned to the registry's own categories by its index.test.ts, so a
+  // new category cannot quietly stop redirecting. `explorer` is deliberately
+  // absent: the editor app owns that segment (it is matched first either way).
+  const HELP_CATEGORY_SEGMENTS = new Set(config.helpCategorySegments);
+
+  // The editor app's top-level page route segments serve at CLEAN
+  // URLs (no `/live` prefix): the editor worker's `out/` files are already
+  // `/live`-free, so the router forwards them to the editor worker AS-IS,
+  // no strip. Marketing owns every other first segment (`/`,
+  // `/alternatives`, `/faq`, ...) and there's no overlap with this set.
+  // `/live/*` still exists ONLY for the bundled `_next` assets (the live
+  // app's `assetPrefix`), which ARE stripped in production.
+  function isLivePageRoute(pathname: string): boolean {
+    if (LIVE_ROOT_ASSETS.has(pathname)) return true;
+    const first = pathname.split('/')[1] ?? '';
+    return liveRouteSegments.has(first);
+  }
+
+  // What the api serves and sets the caching of: /api, and a product's `apiServedPath`.
+  const servedByApi = apiServedPath
+    ? (pathname: string) => hasPrefix(pathname, API_PATH) || hasPrefix(pathname, apiServedPath)
+    : (pathname: string) => hasPrefix(pathname, API_PATH);
+
+  function helpRequest(request: Request): Request {
+    const named = new Request(request);
+    named.headers.set(HELP_APP_HEADER, app);
+    return named;
+  }
+
+  // The caching rules (docs/specs/016-platform/stale-builds.md "Caching rules"), for every site the
+  // router fronts: pages never stale, build assets immutable, a missing asset an honest 404. The api
+  // sets its own caching, so its responses pass as they are.
+  async function withCachePolicy(request: Request, env: E): Promise<Response> {
+    const { pathname } = new URL(request.url);
+    const response = await route(request, env);
+    if (servedByApi(pathname)) return response;
+    // Locally the router fronts `next dev`, whose chunks are not content-hashed (cache-policy.ts).
+    return applyCachePolicy(response, pathname, { hashedAssets: env.DEPLOY_ENV !== 'local' });
+  }
+
+  // The routing table itself. Split from `fetch` so the staging header wrapper
+  // has a single return value to decorate instead of nine.
+  async function route(request: Request, env: E): Promise<Response> {
+    const url = new URL(request.url);
+    // The status page is liveworkspace's now, one for every app (liveworkspace/docs/specs/010-site/site.md "Status"): an old link
+    // lands on it at this app's group.
+    const status = statusRedirect(url, app, env.WORKSPACE_ORIGIN);
+    if (status) return status;
+    if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
+      // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md) is liveworkspace's now, one
+      // for every app: an old link lands on it with this app picked.
+      return telemetryRedirect(env);
+    }
+    if (legacy?.form) {
+      const legacyForm = legacy.form(url, env.DEPLOY_ENV);
+      if (legacyForm) return legacyForm;
+    }
+    // The bare domain's pages live on www. (docs/specs/016-platform/router-app.md "The bare domain"): one 301, to
+    // where this router's own redirects below would land. Only the redirects that leave the site come first. Production
+    // only (no DEPLOY_ENV): `wrangler dev` hands the router its production host in request.url.
+    const www = env.DEPLOY_ENV ? null : wwwRedirect(request, url, redirectedPath);
+    if (www) return www;
+    // Plain HTTP goes to HTTPS (docs/specs/016-platform/router-app.md "Only over HTTPS"): every other request on one of
+    // the public hosts, the same host, path and query, 301 (308 for a method with a body). Staging too; never locally.
+    const https = env.DEPLOY_ENV === 'local' ? null : httpsRedirect(request, url);
+    if (https) return https;
+    // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"): the
+    // homepage, arrived at from outside the site by a signed-in person whose switch is on, opens their Explorer. A
+    // header test on the request's cookies, no fetch; `/?home` always shows the homepage.
+    const openExplorer = openExplorerRedirect(request, url, { signedInCookie });
+    if (openExplorer) return openExplorer;
+    // The Community page is liveworkspace's, one page for every app (liveworkspace/docs/specs/007-community/
+    // community.md "One page for every app"), served here at /community scoped to this app: its head made this app's
+    // own and its sitemap answered here (@liveworkspace/community-site/router).
+    const community = routeCommunity(request, {
+      site: communitySite,
+      communityUrl: env.COMMUNITY_URL,
+      fetch: viaBinding(env.WORKSPACE_COMMUNITY),
+      forward: (req) =>
+        routeToWorkspace(req, {
+          app,
+          origin: env.WORKSPACE_ORIGIN,
+          proxySecret: env.WORKSPACE_PROXY_SECRET,
+          bindings: env,
+        }),
+    });
+    if (community) return community;
+    // liveworkspace's Explorer under this address, while this app's switch is on (@liveworkspace/sites/workspace-proxy):
+    // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
+    const workspace = routeToWorkspace(request, {
+      app,
+      origin: env.WORKSPACE_ORIGIN,
+      proxySecret: env.WORKSPACE_PROXY_SECRET,
+      bindings: env,
+    });
+    if (workspace) return workspace;
+    if (isOEmbedPath(url.pathname))
+      return oembed(request, {
+        previewsOrigin: env.PREVIEWS_ORIGIN,
+        fetch: viaBinding(env.WORKSPACE_MEDIA),
+      });
+    // Every item's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md).
+    const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN, viaBinding(env.WORKSPACE_MEDIA));
+    if (preview) return preview;
+    // The Explorer's own calls (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): the index answers them, so the editor
+    // reaches it on its own origin with no CORS preflight. Path and query kept, Authorization passed through.
+    if (hasPrefix(url.pathname, INDEX_PATH)) {
+      return forwardToIndex(request, url, env.INDEX_ORIGIN || PRODUCTION_INDEX_ORIGIN, {
+        proxySecret: env.WORKSPACE_PROXY_SECRET,
+        fetch: viaBinding(env.WORKSPACE_INDEX),
+      });
+    }
+    // Cloud Sync and the Explorer's sync marks (liveworkspace/docs/specs/005-drive/drive.md): the Drive mirror answers them, cookies
+    // dropped.
+    if (isDrivePath(url.pathname)) {
+      return forwardToDrive(
+        request,
+        url,
+        env.DRIVE_ORIGIN || PRODUCTION_DRIVE_ORIGIN,
+        viaBinding(env.WORKSPACE_DRIVE),
+      );
+    }
+    // /api/* is forwarded as-is to the api worker. The API worker handles
+    // the full pathname (it expects `/api/...`) so there's no prefix
+    // stripping here, unlike the basePath apps.
+    if (servedByApi(url.pathname)) {
+      return forward(request, url, env.API, env.API_ORIGIN);
+    }
+    // `/live/*` is ONLY the editor app's `_next` assets (its `assetPrefix`).
+    // Stripped in production: the worker serves them from `out/_next`.
+    if (hasPrefix(url.pathname, LIVE_PATH)) {
+      return forward(request, url, editorBinding(env), editorOrigin(env), LIVE_PATH);
+    }
+    if (legacy?.help) {
+      const legacyHelp = legacy.help(url);
+      if (legacyHelp) return legacyHelp;
+    }
+    if (hasPrefix(url.pathname, HELP_PATH)) {
+      // The help centre (liveworkspace/docs/specs/017-help/help-centre.md), a basePath:'/help' static app: same
+      // prefix-strip as the editor app's assets.
+      return forward(helpRequest(request), url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
+    }
+    if (legacy?.editor) {
+      const legacyEditor = legacy.editor(url);
+      if (legacyEditor) return legacyEditor;
+    }
+    // Clean live-app page routes (/explorer, /new, ...) and
+    // its root-served icon: forwarded AS-IS (no strip: the worker's
+    // files are already `/live`-free).
+    if (isLivePageRoute(url.pathname)) {
+      return forward(request, url, editorBinding(env), editorOrigin(env));
+    }
+    // A help article URL that lost its `/help` prefix. Sent on with a
+    // permanent redirect rather than dropped into marketing's 404: the path
+    // is unambiguous, and these are links people have already shared.
+    const helpPath = helpCategoryPath(url.pathname);
+    if (helpPath) {
+      url.pathname = helpPath;
+      return Response.redirect(url.toString(), 308);
+    }
+    return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+  }
+
+  // Where this router's own redirects send `url`'s path, or null where none would: the bare domain's one hop lands
+  // there (wwwRedirect), so it is never followed by a second.
+  function redirectedPath(url: URL): string | null {
+    const own = legacy?.help?.(url) ?? legacy?.editor?.(url);
+    if (own) return new URL(own.headers.get('Location')!).pathname;
+    return helpCategoryPath(url.pathname);
+  }
+
+  // A help article's path that lost its `/help` prefix, with the prefix put back; null for any other path, a live
+  // page route's included.
+  function helpCategoryPath(pathname: string): string | null {
+    if (isLivePageRoute(pathname) || !HELP_CATEGORY_SEGMENTS.has(pathname.split('/')[1] ?? ''))
+      return null;
+    return `${HELP_PATH}${pathname}`;
+  }
+
+  return {
+    async fetch(request: Request, env: E): Promise<Response> {
+      if (env.DEPLOY_ENV === 'staging') {
+        return markNoIndex(await withCachePolicy(request, env));
+      }
+      return withCachePolicy(request, env);
+    },
+  };
+}

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
 import { svgFreehandShape, svgPathElementShape } from './svg-render-shapes';
-import { createPath, pathAnchors } from './path-element';
-import { pathD } from './path-geometry';
+import { createPath, pathAnchors } from '@liveworkspace/element-model/path-element';
+import { pathD } from '@liveworkspace/element-model/path-geometry';
 import { svgBoxed } from './svg-render';
-import { freehandPenStroke, penStrokePath } from './pen-stroke';
-import { r2 } from './svg-render-primitives';
+import { freehandPenStroke, penStrokePath } from '@liveworkspace/element-model/pen-stroke';
+import { r2 } from '@liveworkspace/element-model/svg-render-primitives';
 
 const stroke = (over: object = {}) => ({
   ...createFreehand(

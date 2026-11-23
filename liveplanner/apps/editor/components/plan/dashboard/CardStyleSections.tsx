@@ -27,11 +27,11 @@ import {
   PresetsMenuGlyph,
   StyleMenuGlyph,
   TextColourIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { ShapePresets } from '@/components/palette/StylePresets';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { BorderControls } from '@/components/palette/BorderControls';
-import { ShadowSection } from '@/components/palette/ShadowSection';
+import { ShadowSection } from '@liveworkspace/workbench/components/palette/ShadowSection';
 import { useViewerAppearance, type CardStyle } from './useCardStyle';
 
 // The slot card's own look (DashboardSlotView SLOT_CARD), as the colour rows show it before anything is set.

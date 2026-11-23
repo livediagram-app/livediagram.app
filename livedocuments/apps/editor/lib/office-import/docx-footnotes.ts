@@ -3,7 +3,7 @@
 
 import { cleanFootnoteText } from '@livedocuments/document';
 import { readStyles, runHidden, type DocxStyles } from './docx-styles';
-import { child, findAll, kids, textOf, type XmlElement } from './xml';
+import { child, findAll, kids, textOf, type XmlElement } from '@liveworkspace/office-files/xml';
 
 /** A document's footnotes by id, each its paragraphs' text as one plain line (the separators Word keeps there are
  *  left out). */

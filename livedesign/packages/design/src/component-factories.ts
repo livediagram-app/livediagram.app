@@ -13,7 +13,7 @@ import type { Element, ImageElement, ShapeElement, ShapeKind } from './index';
 import { createImage } from './factories';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { applyShapeVariant } from './shape-variants';
-import { ACCENT_BAR_TEXT, HERO_DEFAULT_CAPTION } from './web-components';
+import { ACCENT_BAR_TEXT, HERO_DEFAULT_CAPTION } from '@liveworkspace/element-model/web-components';
 
 // Theme colours a component is built from. `accent` is the theme accent
 // (elementStroke); `surface` is the light element fill; `ink` is the element

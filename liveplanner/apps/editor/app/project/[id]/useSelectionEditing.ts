@@ -14,7 +14,7 @@ import {
   type TextRun,
 } from '@liveplanner/project';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
-import { measureDrawnText } from '@/components/canvas/text-hug-measure';
+import { measureDrawnText } from '@liveworkspace/workbench/components/label-editor/plain-text-hug-measure';
 import { patchTab } from './editor-page-helpers';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

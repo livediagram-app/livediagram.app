@@ -4,14 +4,14 @@ import {
   MARKER_COLOUR_NIB_PX,
   markerColouring,
   markerStrokes,
-} from './marker';
+} from '@liveworkspace/element-model/marker';
 import {
   outlineOfBox,
   outlineOfEllipse,
   outlineOfPath,
   outlineOfPolygon,
   sketchSeed,
-} from './sketch';
+} from '@liveworkspace/element-model/sketch';
 
 // docs/specs/008-canvas/finish.md "Marker".
 

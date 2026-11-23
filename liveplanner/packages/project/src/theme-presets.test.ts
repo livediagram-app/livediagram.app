@@ -5,10 +5,10 @@ import {
   shapeColorPresets,
   STICKY_PRESETS,
   tableColorPresets,
-} from './theme-presets';
+} from '@liveworkspace/element-model/theme-presets';
 import { THEMES } from './themes-data';
-import { themeHalf } from './theme-halves';
-import { THEME_TEXT_CONTRAST } from './readable-colour';
+import { themeHalf } from '@liveworkspace/element-model/theme-halves';
+import { THEME_TEXT_CONTRAST } from '@liveworkspace/element-model/readable-colour';
 import type { TableElement } from './element-types';
 import type { Element } from './index';
 import { contrastRatio, isLightColor } from './colors';

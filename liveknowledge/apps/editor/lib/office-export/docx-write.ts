@@ -13,8 +13,8 @@ import {
   XML_DECL,
   type OoxmlPart,
   type OoxmlRel,
-} from './ooxml';
-import { fontTableXml } from './ooxml-fonts';
+} from '@liveworkspace/office-files/ooxml';
+import { fontTableXml } from '@liveworkspace/office-files/ooxml-fonts';
 import { docxBody, docxFootnotesXml } from './docx-body';
 import {
   bandXml,
@@ -127,8 +127,12 @@ export function writeDocx(doc: DocxDocument, when: Date = new Date()): Uint8Arra
         { id: 'rId3', type: REL.extendedProps, target: 'docProps/app.xml' },
       ]),
     },
-    { path: 'docProps/core.xml', xml: corePropsXml(doc.title, when), type: CORE_PROPS_TYPE },
-    { path: 'docProps/app.xml', xml: appPropsXml(), type: APP_PROPS_TYPE },
+    {
+      path: 'docProps/core.xml',
+      xml: corePropsXml(doc.title, when, 'liveknowledge'),
+      type: CORE_PROPS_TYPE,
+    },
+    { path: 'docProps/app.xml', xml: appPropsXml('liveknowledge'), type: APP_PROPS_TYPE },
     { path: 'word/document.xml', xml: documentXml, type: DOCX_TYPES.document },
     { path: 'word/_rels/document.xml.rels', xml: relsXml([...fixed, ...body.rels]) },
     { path: 'word/styles.xml', xml: stylesXml(doc.look), type: DOCX_TYPES.styles },

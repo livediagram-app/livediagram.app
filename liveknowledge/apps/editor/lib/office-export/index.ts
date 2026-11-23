@@ -11,8 +11,8 @@ import { buildDocx } from './docx-build';
 import { DOCX_MIME, writeDocx } from './docx-write';
 import { DrawRefused, pageDrawer } from './page-drawer';
 import { buildDeck } from './pptx-build';
-import { PPTX_MIME, writePptx } from './pptx-write';
-import { ExportCancelled, type ExportProgress } from './progress';
+import { PPTX_MIME, writePptx } from '@liveworkspace/office-files/pptx-write';
+import { ExportCancelled, type ExportProgress } from '@liveworkspace/office-files/progress';
 
 export type OfficeExportFormat = 'pptx' | 'docx';
 export type OfficeExportFailure = 'draw' | 'gone' | 'failed';

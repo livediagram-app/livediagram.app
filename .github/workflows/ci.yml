@@ -379,10 +379,13 @@ jobs:
       - name: Set up
         uses: ./.github/actions/setup
 
-      # The affected workspaces with a build, and whatever they build on. Every turbo run here takes
-      # --continue, so one failing workspace never hides another's failure.
+      # The affected workspaces with a build, and whatever they build on, but for an editor E2E builds
+      # (its smoke build runs the same script). Every turbo run here takes --continue, so one failing
+      # workspace never hides another's failure. With no filter turbo would build everything, so a group
+      # whose only change is its editor skips the step.
       - name: Build
-        run: pnpm turbo run build --continue ${{ matrix.filters }}
+        if: matrix.build != ''
+        run: pnpm turbo run build --continue ${{ matrix.build }}
 
       # The CLI as npm would publish it: its file list and size, without publishing.
       - name: CLI package dry run

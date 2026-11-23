@@ -15,7 +15,7 @@ import {
   writeStoredFraction,
   writeStoredPair,
   type SplitPair,
-} from '@/lib/split-view';
+} from '@liveworkspace/workbench/lib/split-view';
 import { track } from '@/lib/telemetry';
 import { useViewportHeight } from '@liveworkspace/workbench/hooks/ui/useViewportHeight';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';

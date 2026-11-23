@@ -9,7 +9,7 @@ import {
   SCREEN_IDLE_TEXT,
   screenVideoTarget,
 } from './meeting-pieces';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { text, type Face } from './svg-render-face-kit';
 
 // The piece's design box scaled onto the element's box.

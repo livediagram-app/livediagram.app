@@ -8,7 +8,10 @@ import {
   isVotableInVote,
   type Element,
 } from '@livediagram/document';
-import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import type {
+  ArrowLabelRender,
+  ArrowLabels,
+} from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import type { InsertShift } from '@/hooks/canvas/useInsertShift';
 import type {
   LayerDrawn,

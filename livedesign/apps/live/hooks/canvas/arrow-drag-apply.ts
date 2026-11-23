@@ -33,8 +33,11 @@ import {
   type LaidOutPage,
 } from '@livedesign/design';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
-import { repinnedArrow } from './arrow-repin';
-import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';
+import { repinnedArrow } from '@liveworkspace/workbench/hooks/canvas/arrow-repin';
+import {
+  resolveArrowControlFrame,
+  resolveArrowLabelFrame,
+} from '@liveworkspace/workbench/hooks/canvas/arrow-control-resolve';
 
 // Every arrow drag kind. `boxed` is handled before this module is reached,
 // so the caller has already narrowed it away.

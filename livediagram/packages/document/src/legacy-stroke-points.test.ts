@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { migrateLegacyStrokePoints } from './legacy-stroke-points';
+import { migrateLegacyStrokePoints } from '@liveworkspace/element-model/legacy-stroke-points';
 import { migrateIncomingElements, migrateIncomingTab, migrateStoredTab } from './stored-tab';
 import {
   STROKE_POINT_MAX_ERROR,

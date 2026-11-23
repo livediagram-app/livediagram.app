@@ -11,9 +11,9 @@ import type {
   ResolveStickerArt,
   ResolveEmojiArt,
 } from '@liveworkspace/element-model/export-shape';
-import type { TagColour } from './tag-colours';
-import { isPersonNode } from './person-node';
-import { imageCornerPx } from './drawn-outline-finish';
+import type { TagColour } from '@liveworkspace/element-model/tag-colours';
+import { isPersonNode } from '@liveworkspace/element-model/person-node';
+import { imageCornerPx } from '@liveworkspace/element-model/drawn-outline-finish';
 import { ownColours } from './behaviour-skin';
 import {
   defaultFillColor,
@@ -25,7 +25,12 @@ import {
 } from './colors';
 import { eventStormingLabelText, eventStormingNoteFont } from './event-storming';
 import { fontIdsUsed, resolveFontStack } from '@liveworkspace/model-core/fonts';
-import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
+import {
+  elementFontId,
+  isFinish,
+  resolveFinish,
+  type Finish,
+} from '@liveworkspace/element-model/finish';
 import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
 import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
 import {
@@ -34,29 +39,29 @@ import {
   laneTitleMeasure,
   laneTitleRoom,
   wholeWordFontPx,
-} from './svg-render-primitives';
+} from '@liveworkspace/element-model/svg-render-primitives';
 import { BEHAVIOUR_FACE_SHAPES } from './svg-render-faces';
 import { isCollabPanelShape } from './collab-shapes';
 import { isRetiredElement } from './retired-elements';
 import { isSelfDrawingShape } from './data-shapes';
-import { isWebComponentShape } from './web-components';
-import type { ExportLabel, ExportRun } from './svg-render-labels';
+import { isWebComponentShape } from '@liveworkspace/element-model/web-components';
+import type { ExportLabel, ExportRun } from '@liveworkspace/element-model/svg-render-labels';
 import { PADDING_PX } from './index';
-import { pageBodyTop } from './svg-render-page';
-import { borderOf } from './svg-render-border';
-import { chipColours, chipLookOf, isChipShape } from './chip';
+import { pageBodyTop } from '@liveworkspace/element-model/svg-render-page';
+import { borderOf } from '@liveworkspace/element-model/svg-render-border';
+import { chipColours, chipLookOf, isChipShape } from '@liveworkspace/element-model/chip';
 import {
   LANE_TITLE_MAX_LINES,
   acrossTitlePadding,
   acrossTitleStrip,
   isUprightTitle,
   uprightTitleStrip,
-} from './lane-gutter';
+} from '@liveworkspace/element-model/lane-gutter';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from '@liveworkspace/model-core/label-font';
-import { resolveStockColours } from './stock-colours';
+import { resolveStockColours } from '@liveworkspace/element-model/stock-colours';
 import { DEFAULT_BACKGROUND_COLOR } from '@liveworkspace/model-core/canvas-colors';
-import { labelBodyInset } from './label-body';
+import { labelBodyInset } from '@liveworkspace/element-model/label-body';
 
 export const EXPORT_PADDING = 32;
 // A tab that stores no canvas colour is on the Default theme: its light canvas.

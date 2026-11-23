@@ -5,7 +5,7 @@
 
 import type { EditRejection } from '@livediagram/api-schema';
 import type { ArrowElement, Element } from '@livediagram/document';
-import { sameValue } from '../equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
 import { layerLockOf } from '../locks';

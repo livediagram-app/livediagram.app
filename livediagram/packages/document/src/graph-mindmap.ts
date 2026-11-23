@@ -14,7 +14,7 @@ import {
   type GraphNode,
 } from './graph-authoring';
 import { buildMindTemplate, MIND_HUES, type MindSpec } from './mind-template';
-import { reanchorArrow, type Pt } from './auto-layout-shared';
+import { reanchorArrow, type Pt } from '@liveworkspace/element-model/auto-layout-shared';
 import { isBoxed, type Element } from './index';
 
 // Box sizes per level: the template's, widened for a longer label.

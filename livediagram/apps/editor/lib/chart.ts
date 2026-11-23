@@ -11,7 +11,7 @@
 import type { CSSProperties } from 'react';
 import { animLoops, PIE_LOOPING_ANIMS, type ShapeElement } from '@livediagram/document';
 import { useConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
-import { animClass, animSpeedVars } from './icons';
+import { animClass, animSpeedVars } from '@liveworkspace/workbench/lib/icons';
 
 export { chartFrame } from '@livediagram/document';
 

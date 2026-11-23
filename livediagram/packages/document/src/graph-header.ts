@@ -13,8 +13,8 @@ import {
   type ShapeElement,
   type TextElement,
 } from './index';
-import { arrowPolyline } from './arrow-path-hits';
-import { elementIndexFor } from './geometry';
+import { arrowPolyline } from '@liveworkspace/element-model/arrow-path-hits';
+import { elementIndexFor } from '@liveworkspace/element-model/geometry';
 
 // The template's muted caption grey (template-builders-flowchart.ts MUTED).
 export const GRAPH_MUTED = '#64748b';

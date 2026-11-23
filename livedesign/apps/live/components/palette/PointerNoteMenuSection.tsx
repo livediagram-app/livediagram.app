@@ -5,7 +5,7 @@ import {
   MenuAccordionSection,
   MenuActionButton,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 // A pointer note's section (docs/specs/009-elements/pointer-note.md "Menu"): Detach while its tip is attached; with

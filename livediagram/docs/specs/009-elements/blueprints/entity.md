@@ -15,12 +15,12 @@ Scope, by file:
 | `packages/document/src/validate-shape.ts`                                | The `entityFields` bounds and `key` check                               |
 | `packages/document/src/validate.ts`                                      | A pinned end's `field` check                                            |
 | `../packages/model-core/src/entity-geometry.ts`                          | Band, rows, gutter metrics; `entityFieldPoint`, `entityPartAt`, snap    |
-| `packages/document/src/entity-fields.ts`                                 | Keys, legacy reading, clean / fit / remap, relationship heads, presets  |
+| `../packages/element-model/src/entity-fields.ts`                         | Keys, legacy reading, clean / fit / remap, relationship heads, presets  |
 | `packages/document/src/entity-related.ts`                                | `buildRelatedEntity`: Add Related Entity's entity and relationship      |
-| `packages/document/src/entity-look.ts`                                   | Tints, type face, key glyph paths and inks                              |
+| `../packages/element-model/src/entity-look.ts`                           | Tints, type face, key glyph paths and inks                              |
 | `../packages/element-model/src/geometry.ts`                              | `endpointPosition` / `fieldEndPosition`: a field end's point            |
 | `packages/document/src/arrow-rebind.ts`, `arrow-rebind-swap.ts`          | A field end keeps its field on a move                                   |
-| `packages/document/src/svg-render-entity.ts`                             | `svgEntityRows`: the export body                                        |
+| `../packages/element-model/src/svg-render-entity.ts`                     | `svgEntityRows`: the export body                                        |
 | `../packages/model-core/src/label-font.ts`                               | `LABEL_FONT_PX`, `labelFontPx`: the title's px table                    |
 | `packages/document/src/graph-authoring.ts`                               | `entityNode`: a graph node with fields is an entity                     |
 | `packages/document/src/mermaid-er.ts`                                    | Attribute markers become the field's key                                |
@@ -146,7 +146,7 @@ export type EntityField = { name: string; type?: string; key?: EntityKey };
 // packages/document/src/arrow-types.ts
 | { kind: 'pinned'; elementId: ElementId; anchor: Anchor; field?: number }
 
-// packages/document/src/entity-fields.ts
+// ../packages/element-model/src/entity-fields.ts
 entityFieldView(field): EntityField;  nextEntityKey(key): EntityKey | undefined;
 entityKeyOf(markers): EntityKey | undefined;  entityKeyGutterPx(fields): number;
 cleanEntityFields(fields): EntityField[];  fittedEntityHeight(count, el): number;

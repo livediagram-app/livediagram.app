@@ -3,30 +3,31 @@
 Derived from [PowerPoint and Word export](../office-export.md). The spec decides; this file only adds engineering
 precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-Scope, by file (under `apps/editor/lib/office-export/` unless marked):
+Scope, by file (under `apps/editor/lib/office-export/` unless marked; the `../packages/office-files` ones are
+`@liveworkspace/office-files`, one copy for livedocuments and liveknowledge, liveworkspace/docs/specs/013-export/office-files.md):
 
-| File                                              | Role                                                                                                         |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `ooxml.ts`                                        | `writeOoxmlPackage`: content types, relationships, core and app properties, then the zip                     |
-| `ooxml-colour.ts`                                 | `ooxmlColour`: a CSS colour as six hex digits and an alpha, `NO_PAINT`, or null; `fontFaceName`              |
-| `ooxml-fonts.ts`                                  | `officeFace`: a face's family, pitch and safe `altName`; `fontTableXml` (Word); `pitchFamilyOf` (PowerPoint) |
-| `ooxml-theme.ts`                                  | The deck's theme part: `themeFontsOf` (minor, major) and `themeXml`; Word carries none                       |
-| `pptx-types.ts`, `docx-types.ts`                  | What each writer takes, already in the file's units                                                          |
-| `pptx-native.ts`                                  | `nativeSlideItem`: a text element or basic shape as a native shape, or null for a picture                    |
-| `pptx-build.ts`                                   | `buildDeck`: the tab's pages into slides, through a `PageDrawer` for pictures                                |
-| `pptx-slide-xml.ts`, `pptx-parts.ts`              | A slide's and its notes' XML; the presentation, master, layout, notes master and properties                  |
-| `pptx-write.ts`                                   | `writePptx`: the deck as a `.pptx`                                                                           |
-| `docx-build.ts`                                   | `buildDocx`: the tab's articles into blocks, each zone an image                                              |
-| `docx-styles.ts`, `docx-body.ts`                  | Styles, numbering, settings and footer; the body's paragraphs, runs, links and images                        |
-| `docx-write.ts`                                   | `writeDocx`: the document as a `.docx`                                                                       |
-| `page-drawer.ts`                                  | `pageDrawer`: pictures of some of a page's elements, or its background, as PNG bytes                         |
-| `progress.ts`                                     | `ExportProgress`, `ExportCancelled`, `yieldToBrowser`                                                        |
-| `summary.ts`                                      | The card offered (`officeFormatFor`), the panel's copy, `slideOfPage`                                        |
-| `index.ts`                                        | `exportOfficeFile`: tab to file, the panel's one entry                                                       |
-| `test-tabs.ts`                                    | Fixture tabs: every element kind, every block kind, long decks and articles; a fake drawer                   |
-| `components/dialogs/office/OfficeExportPanel.tsx` | The panel, loaded lazily with the writers                                                                    |
-| `components/dialogs/office/useOfficeExport.ts`    | The making: progress, Cancel, failure, download, telemetry                                                   |
-| `lib/export-tab-canvas.ts`                        | `renderTabToCanvas` takes `only` (element ids) and `crop` (a canvas rect)                                    |
+| File                                                                                           | Role                                                                                                         |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `../packages/office-files/src/ooxml.ts`                                                        | `writeOoxmlPackage`: content types, relationships, core and app properties, then the zip                     |
+| `../packages/office-files/src/ooxml-colour.ts`                                                 | `ooxmlColour`: a CSS colour as six hex digits and an alpha, `NO_PAINT`, or null; `fontFaceName`              |
+| `../packages/office-files/src/ooxml-fonts.ts`                                                  | `officeFace`: a face's family, pitch and safe `altName`; `fontTableXml` (Word); `pitchFamilyOf` (PowerPoint) |
+| `../packages/office-files/src/ooxml-theme.ts`                                                  | The deck's theme part: `themeFontsOf` (minor, major) and `themeXml`; Word carries none                       |
+| `../packages/office-files/src/pptx-types.ts`, `docx-types.ts`                                  | What each writer takes, already in the file's units                                                          |
+| `pptx-native.ts`                                                                               | `nativeSlideItem`: a text element or basic shape as a native shape, or null for a picture                    |
+| `pptx-build.ts`                                                                                | `buildDeck`: the tab's pages into slides, through a `PageDrawer` for pictures                                |
+| `../packages/office-files/src/pptx-slide-xml.ts`, `../packages/office-files/src/pptx-parts.ts` | A slide's and its notes' XML; the presentation, master, layout, notes master and properties                  |
+| `../packages/office-files/src/pptx-write.ts`                                                   | `writePptx`: the deck as a `.pptx`                                                                           |
+| `docx-build.ts`                                                                                | `buildDocx`: the tab's articles into blocks, each zone an image                                              |
+| `docx-styles.ts`, `docx-body.ts`                                                               | Styles, numbering, settings and footer; the body's paragraphs, runs, links and images                        |
+| `docx-write.ts`                                                                                | `writeDocx`: the document as a `.docx`                                                                       |
+| `page-drawer.ts`                                                                               | `pageDrawer`: pictures of some of a page's elements, or its background, as PNG bytes                         |
+| `../packages/office-files/src/progress.ts`                                                     | `ExportProgress`, `ExportCancelled`, `yieldToBrowser`                                                        |
+| `summary.ts`                                                                                   | The card offered (`officeFormatFor`), the panel's copy, `slideOfPage`                                        |
+| `index.ts`                                                                                     | `exportOfficeFile`: tab to file, the panel's one entry                                                       |
+| `test-tabs.ts`                                                                                 | Fixture tabs: every element kind, every block kind, long decks and articles; a fake drawer                   |
+| `components/dialogs/office/OfficeExportPanel.tsx`                                              | The panel, loaded lazily with the writers                                                                    |
+| `components/dialogs/office/useOfficeExport.ts`                                                 | The making: progress, Cancel, failure, download, telemetry                                                   |
+| `lib/export-tab-canvas.ts`                                                                     | `renderTabToCanvas` takes `only` (element ids) and `crop` (a canvas rect)                                    |
 
 Only `page-drawer.ts` and the panel touch the DOM; every other module runs in Node under Vitest.
 

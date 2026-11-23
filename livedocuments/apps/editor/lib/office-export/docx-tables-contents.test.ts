@@ -10,9 +10,9 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import { readDocx } from '../office-import/docx';
-import { openOfficePackage } from '../office-import/package';
-import { openZip } from '../office-import/zip';
-import { parseXml } from '../office-import/xml';
+import { openOfficePackage } from '@liveworkspace/office-files/package';
+import { openZip } from '@liveworkspace/office-files/zip';
+import { parseXml } from '@liveworkspace/office-files/xml';
 import { buildDocx } from './docx-build';
 import { tocBookmark } from './docx-body';
 import { writeDocx } from './docx-write';

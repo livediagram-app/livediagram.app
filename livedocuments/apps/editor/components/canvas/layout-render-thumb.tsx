@@ -23,7 +23,7 @@ import { renderTabToSvg } from '@/lib/export-tab';
 import { elementAsSeen } from '@/lib/stock-colour-projector';
 import { themeViewMap } from '@/lib/themes';
 import { buildPageLayout } from '@livedocuments/templates';
-import { withSamplePictures } from './layout-sample-pictures';
+import { withSamplePictures } from '@liveworkspace/workbench/components/canvas/layout-sample-pictures';
 
 // A plain page's paper in dark chrome, as CanvasPages paints it (dark:bg-slate-900).
 export const PAGE_PAPER_DARK = '#0f172a';

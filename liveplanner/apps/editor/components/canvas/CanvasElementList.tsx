@@ -8,7 +8,10 @@ import {
   isVotableInVote,
   type Element,
 } from '@liveplanner/project';
-import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import type {
+  ArrowLabelRender,
+  ArrowLabels,
+} from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import type {
   LayerDrawn,
   LayerPreviewStore,

@@ -12,7 +12,7 @@ Scope, by file:
 | `packages/document/src/element-types.ts`                    | `rating`, `ratingAnim`, `ratingAnimSpeed`, `ratingAnimRepeat`                                                        |
 | `packages/document/src/shape-factory.ts`                    | Size 200 × 44; seeds `rating` and the amber stroke                                                                   |
 | `packages/document/src/colors.ts`                           | `SELF_PAINTING_SHAPES` membership                                                                                    |
-| `packages/document/src/svg-render-data.ts`                  | `svgRating`: the export body                                                                                         |
+| `../packages/element-model/src/svg-render-data.ts`          | `svgRating`: the export body                                                                                         |
 | `packages/document/src/svg-render-body.ts`                  | `svgElementBody`: routes `'rating'` to `svgRating` with the resolved stroke                                          |
 | `apps/editor/components/canvas/RatingView.tsx`              | Canvas stars, animation class, stagger                                                                               |
 | `apps/editor/components/canvas/ShapeContentRouter.tsx`      | Routes `'rating'` to `RatingView`                                                                                    |

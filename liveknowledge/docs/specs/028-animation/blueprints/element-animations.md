@@ -38,8 +38,8 @@ EA1 onwards in [DEFAULTS.md](DEFAULTS.md).
 
 | Module                                                           | Holds                                                                                                                                      |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/animation-sets.ts`                        | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
-| `packages/document/src/animation.ts`                             | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
+| `../packages/model-core/src/animation-sets.ts`                   | the six catalogues, reveals, titles, labels, telemetry types, kept values; a leaf                                                          |
+| `../packages/model-core/src/animation.ts`                        | speed, `animLoops`, icon and progress sets; re-exports `animation-sets`                                                                    |
 | `packages/document/src/animation-membership.ts`                  | `bodyAnimationSetOf`, `takesShapeMotions`, `shapeAnimationsFor`, `animationSectionOf`, `carriesWords`, `inAnimationSet`, `animationSetsOf` |
 | `apps/editor/lib/animation-set-writes.ts`                        | `withSetAnimation`, `withSetAnimationSpeed`, `withSetAnimationRepeat`, `withoutAnimations`, `setAnimationState`                            |
 | `apps/editor/lib/animation-classes.ts`                           | `ANIMATION_CLASS_PREFIX`, `setAnimationClass`, `bodySetClass`                                                                              |

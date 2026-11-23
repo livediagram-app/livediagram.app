@@ -6,12 +6,12 @@
 // preview (apps/mcp) paint the same. Pure.
 import type { CanvasSurface } from './colors';
 import type { Element } from './index';
-import { endpointPosition } from './geometry';
+import { endpointPosition } from '@liveworkspace/element-model/geometry';
 import { pageIsDark, pageSurface } from './page-content';
 import { pageImageBlurSigma, pageImageOverlayColor, pageImageTone } from './page-image';
 import type { LaidOutPage, PageBackground, PageFill } from './page';
 import type { PageImageFill } from './page-image';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 
 // The pattern's pitch on a page, in px (the page panel's dots, grid and lines).
 export const PAGE_PATTERN_PITCH = 24;

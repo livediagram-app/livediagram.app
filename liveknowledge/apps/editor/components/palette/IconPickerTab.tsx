@@ -1,7 +1,8 @@
 import { createIconPickerTab } from '@liveworkspace/workbench/components/palette/IconPickerTab';
-import { ICON_CATEGORIES, ICON_DND_MIME, iconsInCategory } from '@/lib/icons';
+import { ICON_CATEGORIES, iconsInCategory } from '@liveworkspace/workbench/lib/icons';
+import { ICON_DND_MIME } from '@/lib/dnd-mime';
 import { IconButton } from '@/components/palette/palette-controls';
-import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
+import { CatalogIconThumb } from '@liveworkspace/workbench/components/primitives/icon-glyph';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 
 // The palette's icon grid and browse groups (docs/specs/010-palette/palette-category-browse.md), shared by the editors

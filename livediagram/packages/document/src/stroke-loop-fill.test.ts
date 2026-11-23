@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
-import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
+import {
+  freehandCanvasPoints,
+  freehandStrokePoints,
+} from '@liveworkspace/element-model/freehand-points';
 import {
   fillStrokeLoop,
   isFilledPenLoop,
   isOpenMarkerLoop,
   isVisibleFill,
   penLoopFillPath,
-} from './stroke-loop-fill';
+} from '@liveworkspace/element-model/stroke-loop-fill';
 import { svgFreehandShape } from './svg-render-shapes';
 import { eraseStrokePart, strokeTouchesBrush } from './whiteboard-stroke';
 import type { FreehandElement } from './element-types';

@@ -1,7 +1,7 @@
 // Placing the nodes a flow layout leaves alone, and the room a container keeps round what it holds
 // (docs/specs/024-agents/blueprints/edit-operations.md). Pure.
 
-import { LAYER_GAP, SIBLING_GAP, type Pt } from './auto-layout-shared';
+import { LAYER_GAP, SIBLING_GAP, type Pt } from '@liveworkspace/element-model/auto-layout-shared';
 import { unionRects, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { isBoxed, type BoxedElement, type Element } from './index';
 

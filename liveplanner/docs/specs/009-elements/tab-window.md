@@ -8,7 +8,7 @@ place in any liveworkspace product, so it is retired here as it is in the others
 - no palette tile, quick add, command palette or palette search entry, no menu section and no element tour;
 - no agent way to add one: the agents' element format and `add` take only the Plan kinds
   (`packages/edit-operations/src/plan-elements.ts`), so `add` with a `tab-window` is refused, and
-  `RETIRED_SHAPE_KINDS` (`packages/project/src/tab-window.ts`) names the kind as retired. The API's element schema
+  `RETIRED_SHAPE_KINDS` (`../packages/element-model/src/tab-window.ts`) names the kind as retired. The API's element schema
   still names the kind, since a stored one is valid;
 - no live drawing: the export's drawing of the shown tab, its typefaces and its moving arrows
   (`resolveTabWindow` drawings, `tabWindowFontIds`, `motionFor`, an arrow's `lineMotion`) are gone.
@@ -24,7 +24,7 @@ A project saved with a window keeps it, so nobody's tab loses something silently
   (`apps/editor/components/canvas/RetiredTabWindowFace.tsx`). It draws no live tab, fetches nothing, and has no
   controls: it selects, moves, resizes, copies and deletes like any box, and reads as a picture (`role="img"`).
 - Exports (the Export dialog, the split view's other pane) draw the same frame named for its tab (`svgTabWindow`
-  with `tabWindowNames`, `packages/project/src/tab-window.ts`), never the tab inside it. Under the Sketch finish its
+  with `tabWindowNames`, `../packages/element-model/src/tab-window.ts`), never the tab inside it. Under the Sketch finish its
   hairline is drawn by hand ([Finish](../008-canvas/finish.md)).
 - Copying a project still re-points its `windowTabId` to the copied tab (`remapTabLinks`,
   [tab-project-many-to-many](../006-project/tab-project-many-to-many.md)), so a copy's frame keeps its name.

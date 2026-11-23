@@ -1,6 +1,6 @@
 import type { Element } from '@livediagram/document';
 import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
-import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,
@@ -10,22 +10,22 @@ import {
 } from '@/components/palette/palette-icons';
 import {
   ImageGlyph,
-  LinkMenuIcon,
   RemoveIconGlyph,
   FillColourIcon,
   TableGlyph,
   TextColourIcon,
   TextGlyph,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
-import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
+import { ImageCreditRow } from '@liveworkspace/workbench/components/palette/ImageCreditRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
-import { inkSwatch, shownColour } from '@/components/palette/ink-row';
+import { inkSwatch, shownColour } from '@liveworkspace/workbench/components/palette/ink-row';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 

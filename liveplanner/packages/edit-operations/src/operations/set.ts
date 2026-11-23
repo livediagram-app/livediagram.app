@@ -4,7 +4,7 @@
 
 import type { EditRejection } from '@liveplanner/api-schema';
 import type { Element } from '@liveplanner/project';
-import { sameValue } from '../equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { writeFieldsOnto } from '../fields';
 import { resolveSome } from '../selectors';
 import { type EditState, refuseLocked, writeFields } from '../state';

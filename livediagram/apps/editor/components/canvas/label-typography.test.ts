@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { labelTypographyClass } from './label-style';
+import { labelTypographyClass } from '@liveworkspace/workbench/components/label-editor/label-style';
 
 // Zero layout shift on entering text-edit (the design rule, and docs/specs/021-event-storming/event-storming.md's
 // capture loop: double-click means "type", not "watch the text jump").

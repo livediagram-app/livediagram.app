@@ -5,10 +5,10 @@
 import { migrateRetiredPattern } from './retired-patterns';
 import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
-import { settleDiagramKeys } from './diagram-key';
-import { settleStacks } from './stack';
+import { settleDiagramKeys } from '@liveworkspace/element-model/diagram-key';
+import { settleStacks } from '@liveworkspace/element-model/stack';
 import { settleTabFields } from './tab-fields';
-import { tagColoursOf } from './tag-colours';
+import { tagColoursOf } from '@liveworkspace/element-model/tag-colours';
 import type { Element, Tab } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 

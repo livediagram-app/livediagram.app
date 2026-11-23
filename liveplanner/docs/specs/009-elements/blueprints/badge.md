@@ -6,13 +6,13 @@ moves them. The spec decides; this file adds engineering precision.
 
 Scope, by file:
 
-| File                                       | Role                                                                          |
-| ------------------------------------------ | ----------------------------------------------------------------------------- |
-| `packages/project/src/chip.ts`             | `isChip`, `badgeSize`, `stepFontPx`, `nextStepNumber`                         |
-| `packages/project/src/attachment.ts`       | `AttachPoint`, `ATTACH_POINTS`, `ATTACH_SNAP_PX`, `settleChips`               |
-| `packages/project/src/stored-elements.ts`  | Settles a stored tab's chips on read, `attachLoose: false`                    |
-| `packages/templates/src/build-template.ts` | A template lands settled, `attachLoose: false`                                |
-| `apps/editor/lib/settle-tabs.ts`           | `settleChipsInTabs`: every tab a commit or a tick changed, against its before |
+| File                                          | Role                                                                          |
+| --------------------------------------------- | ----------------------------------------------------------------------------- |
+| `../packages/element-model/src/chip.ts`       | `isChip`, `badgeSize`, `stepFontPx`, `nextStepNumber`                         |
+| `../packages/element-model/src/attachment.ts` | `AttachPoint`, `ATTACH_POINTS`, `ATTACH_SNAP_PX`, `settleChips`               |
+| `packages/project/src/stored-elements.ts`     | Settles a stored tab's chips on read, `attachLoose: false`                    |
+| `packages/templates/src/build-template.ts`    | A template lands settled, `attachLoose: false`                                |
+| `apps/editor/lib/settle-tabs.ts`              | `settleChipsInTabs`: every tab a commit or a tick changed, against its before |
 
 ## Domain and naming
 

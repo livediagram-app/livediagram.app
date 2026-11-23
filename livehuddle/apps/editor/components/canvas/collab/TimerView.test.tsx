@@ -4,7 +4,7 @@
 // controls as the piece's own buttons, and who sees them ("Share roles").
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   applyElementDelta,
   createShape,
@@ -40,6 +40,13 @@ afterEach(() => {
   act(() => setTimerPieceControls(null));
   vi.useRealTimers();
 });
+
+// The popover's code is a lazy chunk, fetched the first time it is drawn. That first load used to fall inside a
+// `findBy`'s one second, which a busy machine does not always give it (approvals-roles: 0.9 s for the load alone,
+// 2026-11-23). It is loaded here instead, on a wait that is a module load's, not the UI's.
+beforeAll(async () => {
+  await import('./TimerLengthPopover');
+}, 60_000);
 
 describe('TimerView', () => {
   it('draws a placement preview idle, with no buttons', () => {
