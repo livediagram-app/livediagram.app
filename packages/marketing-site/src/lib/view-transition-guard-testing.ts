@@ -48,7 +48,9 @@ export function describeViewTransitionGuard(f: {
         '/new?via=Home.Hero',
         f.itemPath,
         '/explorer',
-        '/help/tabs',
+        // The help centre's home: the one help path every product registers. Each product's help-links test
+        // reads this file as marketing source, so a path here has to be a real one in all of them.
+        '/help/',
         '/telemetry',
       ]) {
         const { skipTransition, debug } = swapTo(`${ORIGIN}${path}`);
