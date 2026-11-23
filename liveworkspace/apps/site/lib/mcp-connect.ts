@@ -55,12 +55,14 @@ export async function connect(
   session: string,
   clientName: string,
   apps: readonly McpApp[],
+  // A read-only token: the AI tool finds and reads, every app refusing a change.
+  readOnly = false,
 ): Promise<HandOver> {
   if (!(await fetchConsentSession(origin, session))) return { ok: false, reason: 'expired' };
   const minted = await accountApi<{ id: string; secret: string; expiresAt: number }>(
     '/tokens',
     'POST',
-    { name: clientName },
+    { name: clientName, readOnly },
   );
   if (!minted.ok)
     return {
@@ -119,7 +121,7 @@ export function handOverError(reason: 'expired' | 'token_limit' | 'failed'): str
     case 'expired':
       return 'This request has expired. Start the connection again from your AI tool.';
     case 'token_limit':
-      return 'Your account has 20 API tokens, the most it can hold. Remove one in Settings › API Tokens, then try again.';
+      return 'Your account holds 20 API Tokens, the most it can. Revoke one below, then choose Connect again.';
     default:
       return 'Couldn’t finish connecting. Start the connection again from your AI tool.';
   }

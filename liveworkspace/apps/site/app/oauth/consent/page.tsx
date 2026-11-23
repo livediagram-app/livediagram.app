@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <AccountPage alone>
+    <AccountPage>
       <McpConsent />
     </AccountPage>
   );

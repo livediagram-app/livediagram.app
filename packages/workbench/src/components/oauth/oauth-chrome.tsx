@@ -9,6 +9,7 @@ import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { Chip, Glyph, SOLID_BRAND_DARK_CONTROL, Switch, lucideGlyph } from '@liveworkspace/ui';
 import type { SignInGate } from '../../hooks/auth/useSignInGate';
 import { Callout } from '@liveworkspace/ui/callout';
+import { isLoopbackHost } from '@liveworkspace/api-kit/request-auth';
 
 // What an editor tells its OAuth pages, once, in its app/oauth/oauth-shell.tsx.
 export type OauthPagesConfig = {
@@ -113,5 +114,61 @@ export function OauthWarning({ title, children }: { title: string; children: Rea
     <Callout tone="warning" role="note" title={title} className="mt-4">
       {children}
     </Callout>
+  );
+}
+
+// The host, as the line says it, in mono. A site's may be long, so it breaks anywhere; a loopback one is short
+// (`localhost:55884`) and is kept whole.
+function Host({ host, whole = false }: { host: string; whole?: boolean }) {
+  return (
+    <span
+      className={`font-mono text-sm font-semibold text-slate-900 dark:text-white ${whole ? 'whitespace-nowrap' : 'break-all'}`}
+    >
+      {host}
+    </span>
+  );
+}
+
+// Where the access goes, for a client the server vouches for (the product's CLI): the quiet line.
+export function VerifiedDestination({ host }: { host: string }) {
+  return (
+    <Callout tone="info" className="mt-3">
+      {isLoopbackHost(host) ? (
+        <>
+          Access will be sent back to the app on this computer (
+          <span className="font-semibold">{host}</span>). Only continue if you started this
+          connection yourself.
+        </>
+      ) : (
+        <>
+          Access will be sent to <span className="font-semibold">{host}</span>. Only continue if you
+          recognise this.
+        </>
+      )}
+    </Callout>
+  );
+}
+
+// Where the access goes, for any other client: the card's first fact, with whose app this is not.
+export function UnverifiedDestination({ client, host }: { client: string; host: string }) {
+  return (
+    <OauthWarning title={`${client} is not made by liveworkspace, and we can’t check who made it.`}>
+      {host && isLoopbackHost(host) ? (
+        <p>
+          Access will be sent back to the app on this computer{' '}
+          <span className="whitespace-nowrap">
+            (<Host host={host} whole />)
+          </span>
+          . Only continue if you started this connection yourself.
+        </p>
+      ) : host ? (
+        <p>
+          Access will be sent to <Host host={host} />. Only continue if you recognise this site and
+          started this connection yourself.
+        </p>
+      ) : (
+        <p>Only continue if you started this connection yourself.</p>
+      )}
+    </OauthWarning>
   );
 }

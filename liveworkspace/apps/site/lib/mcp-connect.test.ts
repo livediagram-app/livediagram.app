@@ -72,6 +72,14 @@ describe('fetchConsentSession', () => {
 });
 
 describe('connect', () => {
+  it('mints a read-only token when read-only is chosen', async () => {
+    await connect('https://mcp.test', 's1', 'Claude', ['livediagram'], true);
+    expect(seen.find((s) => s.method === 'POST' && s.url === '/api/account/tokens')?.body).toEqual({
+      name: 'Claude',
+      readOnly: true,
+    });
+  });
+
   it('mints a token named for the client, hands it over with the ticked apps and retires its earlier one', async () => {
     const result = await connect('https://mcp.test', 's1', 'Claude', [
       'livediagram',
@@ -80,6 +88,7 @@ describe('connect', () => {
     expect(result).toEqual({ ok: true, redirectTo: 'https://claude.ai/cb?code=c' });
     expect(seen.find((s) => s.method === 'POST' && s.url === '/api/account/tokens')?.body).toEqual({
       name: 'Claude',
+      readOnly: false,
     });
     expect(seen.find((s) => s.url === 'https://mcp.test/oauth/complete')?.body).toEqual({
       session: 's1',

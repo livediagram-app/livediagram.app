@@ -26,7 +26,10 @@ export const PLATFORM_OWN_TELEMETRY_EVENTS = {
   'Kit·Retried': KIT_TELEMETRY_TYPES,
   'Kit·Completed': KIT_TELEMETRY_TYPES,
   'Kit·Removed': KIT_TELEMETRY_TYPES,
-} as const satisfies Record<`Kit·${KitTelemetryAction}`, readonly (string | null)[]>;
+  // An AI tool connected through the one MCP's consent page (liveworkspace/docs/specs/021-mcp/mcp.md), which mints a
+  // token: each app's consent page sends the same event in its own name.
+  'Token·Created': ['MCP'],
+} as const satisfies Record<string, readonly (string | null)[]>;
 
 const TYPES = PLATFORM_OWN_TELEMETRY_EVENTS as Record<string, readonly (string | null)[]>;
 

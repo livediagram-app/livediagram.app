@@ -1,6 +1,12 @@
 import { APP_SITES } from '@liveworkspace/sites';
 import type { IconPrim } from '@liveworkspace/icons';
-import { lucideLayoutGrid, lucideMail, lucideUsers } from '@liveworkspace/icons/lucide';
+import {
+  lucideCircleCheck,
+  lucideLayoutGrid,
+  lucideMail,
+  lucideUndo2,
+  lucideUsers,
+} from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livediagram/ui';
 import type { ReactNode } from 'react';
 
@@ -35,14 +41,21 @@ const AppsIcon = lucideGlyph(lucideLayoutGrid, 20);
 const DeviceIcon = lucideGlyph(SCREEN, 20);
 const TeamIcon = lucideGlyph(lucideUsers, 20);
 const MailIcon = lucideGlyph(lucideMail, 20);
+// A pulse, drawn here on the same 24-unit grid (no Lucide activity is vendored).
+const PULSE: readonly IconPrim[] = [{ t: 'path', d: 'M22 12h-4l-3 9L9 3l-3 9H2' }];
+const LiveIcon = lucideGlyph(PULSE, 20);
+const ApproveIcon = lucideGlyph(lucideCircleCheck, 20);
+const UndoIcon = lucideGlyph(lucideUndo2, 20);
 
-const ROWS: {
+type Row = {
   tone: keyof typeof TONES;
   icon: ReactNode;
   title: string;
   line: string;
   withGoogle?: string;
-}[] = [
+};
+
+const ROWS: readonly Row[] = [
   {
     tone: 'emerald',
     icon: <AppsIcon />,
@@ -70,18 +83,79 @@ const ROWS: {
   },
 ];
 
+// Beside the one MCP's consent card (liveworkspace/docs/specs/021-mcp/mcp.md): what connecting an AI tool means, as
+// each app's connect pages say it (their ConnectPitch), for every app at once.
+const CONNECT_ROWS: readonly Row[] = [
+  {
+    tone: 'emerald',
+    icon: <AppsIcon />,
+    title: 'Every app, one connection',
+    line: 'Diagrams, docs, plans, designs and knowledgebases, from one AI tool.',
+  },
+  {
+    tone: 'violet',
+    icon: <LiveIcon />,
+    title: 'Changes show live',
+    line: 'Edits land in your apps like a teammate’s.',
+  },
+  {
+    tone: 'sky',
+    icon: <ApproveIcon />,
+    title: 'You approve every connection',
+    line: 'Nothing connects until you say so here, and only to the apps you tick.',
+  },
+  {
+    tone: 'amber',
+    icon: <UndoIcon />,
+    title: 'Revoke access any time',
+    line: 'In Settings, under API tokens.',
+  },
+];
+
+export function ConnectPitch() {
+  return (
+    <PitchFrame
+      eyebrow="Connect"
+      heading="Your work, wherever you work."
+      rows={CONNECT_ROWS}
+      google={false}
+    />
+  );
+}
+
 // Beside the card: what a liveworkspace account adds.
 export function Pitch({ google }: { google: boolean }) {
   return (
+    <PitchFrame
+      eyebrow="Your liveworkspace account"
+      heading="One account for every editor app."
+      rows={ROWS}
+      google={google}
+    />
+  );
+}
+
+function PitchFrame({
+  eyebrow,
+  heading,
+  rows,
+  google,
+}: {
+  eyebrow: string;
+  heading: string;
+  rows: readonly Row[];
+  google: boolean;
+}) {
+  return (
     <section className="flex flex-col gap-4 lg:col-start-1 lg:row-start-1 lg:gap-6">
       <p className="text-xs font-semibold tracking-[.18em] text-slate-700 uppercase sm:text-sm dark:text-slate-300">
-        Your liveworkspace account
+        {eyebrow}
       </p>
       <h2 className="text-2xl leading-tight font-semibold tracking-tight text-indigo-950 sm:text-4xl lg:text-6xl lg:leading-[1.02] lg:tracking-[-.03em] dark:text-slate-100">
-        One account for every editor app.
+        {heading}
       </h2>
       <ul className="mt-1 flex flex-col gap-2 lg:gap-3">
-        {ROWS.map((row, i) => (
+        {rows.map((row, i) => (
           <li
             key={row.title}
             style={{ animationDelay: `${i * 60}ms` }}
