@@ -14,7 +14,8 @@ import type { VisibilityActions } from '@liveworkspace/workbench/components/chro
 import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
-import { TabBar } from '@/components/chrome/TabBar';
+// The tab bar with Connect a File beside its + (connected-tabs.md "From the tab bar").
+import { TabBarWithConnect } from '@/components/connect/useConnectFileDialog';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 // Each major area fails on its own and reports which one it was (docs/specs/017-telemetry/telemetry.md).
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -160,7 +161,7 @@ export function editorViewFooter(
   return anyWelcomeOpen || zenMode || embedMode ? null : (
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
-        <TabBar
+        <TabBarWithConnect
           workbenchLink={
             workbench && documentId
               ? (labelled) => (
