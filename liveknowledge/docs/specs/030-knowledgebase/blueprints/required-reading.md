@@ -131,7 +131,7 @@ NOT NULL DEFAULT 1)`; trigger `page_required_reading_tab_removed` AFTER DELETE O
   put away by `clearReadingAsk()`; while asked for the open page it lazily draws `ReadingSetupModal`, the panel's body in
   the shared `Dialog`, `size="sm"`, `phoneSheet`, as the menu's Request Approval does), `ReadingSetupPanel` (the shared `ResponsivePopover`, 340 px: a popover from `sm`, the
   phone drawer below; its own chunk, fetched on the press that opens it, so a reader never loads it),
-  `ReadAgainToggle` (the draft bar, left of Cancel), `reading-icons.tsx`; `components/ai-knowledge/RequiredReadingCard`.
+  `ReadAgainToggle` (the draft bar, left of Cancel), `reading-icons.tsx`; `components/insights/RequiredReadingCard`.
 - The banner: `role="region"` named "Required Reading", brand-50 ground and brand-200 hairline (dark: brand-500/10
   and brand-400/30), the book glyph in a 32 px white chip, the words, and `Button` primary `xs` **I've Read This**
   at the right (under the words on a phone, full width, 44 px). It fades in with its first read.
@@ -180,9 +180,9 @@ again` (how many confirmations cleared), `[reading] reminded` (pending, tried, s
 - editor `lib/required-reading/reading-store.test.ts` (the store, `takeReadAgain` and the words),
   `components/required-reading/required-reading-roles.test.tsx` (the banner for the asked only, the rail per role,
   nothing in the rail while not required, the menu's ask and its modal, Stop Requiring back to the menu, Show All, an
-  embed, the panel and its refusal, the toggle's switch), `components/page-tree/PageTreeRowMenu.test.tsx` (the row
-  per role and state),
-  `components/ai-knowledge/RequiredReadingCard.test.tsx`.
+  embed, the panel and its refusal, the toggle's switch), `components/page-tree/PageTree.knowledge.test.tsx` (the
+  menu row) and `lib/required-reading/reading-asked.test.ts` (who is offered it),
+  `components/insights/RequiredReadingCard.test.tsx`.
 
 ## Constants and configuration
 

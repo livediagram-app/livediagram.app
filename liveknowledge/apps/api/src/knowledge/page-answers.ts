@@ -1,4 +1,4 @@
-// The questions Ask answered from each page (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"):
+// The questions Ask answered from each page (docs/specs/030-knowledgebase/insights.md "AI Context on a page"):
 // the package's table (`PAGE_ANSWERS_SCHEMA`) and a trigger that drops a deleted page's rows. Counted by the Ask
 // route, read by Page Health, pruned by the daily upkeep (room-knowledge.ts). Also an index of a page's reads by
 // day, so Page Health's reads and its agents are a range of one page's rows, not of every page's for the week.

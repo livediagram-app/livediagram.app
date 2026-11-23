@@ -89,13 +89,13 @@ export async function secondPerson(
   return page;
 }
 
-/** One of the three views, from the switch (Pages, Ask, AI Knowledge). */
-export async function openView(page: Page, view: 'Pages' | 'Ask' | 'AI Knowledge'): Promise<void> {
+/** One of the three views, from the switch (Pages, Ask, Insights). */
+export async function openView(page: Page, view: 'Pages' | 'Ask' | 'Insights'): Promise<void> {
   await page
     .getByRole('navigation', { name: 'Knowledgebase Views' })
     .getByRole('link', { name: view, exact: true })
     .click();
-  const param = view === 'Ask' ? 'ask' : view === 'AI Knowledge' ? 'ai' : null;
+  const param = view === 'Ask' ? 'ask' : view === 'Insights' ? 'insights' : null;
   await expect.poll(() => new URL(page.url()).searchParams.get('view')).toBe(param);
 }
 

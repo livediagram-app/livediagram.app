@@ -1,6 +1,6 @@
 'use client';
 
-// "2 Suggested Edits" beside Verified in the page's meta row (docs/specs/030-knowledgebase/ai-knowledge.md "On the
+// "2 Suggested Edits" beside Verified in the page's meta row (docs/specs/030-knowledgebase/insights.md "On the
 // page"; page-surface.md "The meta row"): shown to everyone while any wait; a press opens the newest in its popover.
 // No tooltip: its words are its name (owner 2026-11-23, page-surface.md "What a page looks like").
 import { suggestionsView } from '@/lib/knowledge/page-suggestions-view';

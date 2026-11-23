@@ -55,7 +55,7 @@ opens that in a new tab". (This replaces the earlier ask that connected files sh
 - Search, Ask and agents do not read connected files; page links and embeds are unchanged.
 - Editors and Participants add, move and remove connected rows; Viewers and link visitors see and open them only
   (opening still needs access to the file in its own app).
-- The footer keeps Pages, Ask and AI Knowledge only.
+- The footer keeps Pages, Ask and Insights only.
 
 **Details** (decided 2026-11-21, building the owner's ask):
 

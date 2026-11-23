@@ -1,6 +1,6 @@
 # Suggested edits on the page and in the Inbox
 
-Blueprint for [ai-knowledge.md](../ai-knowledge.md) "On the page" and "In the owner's Inbox" (Work Tracker 1362). The
+Blueprint for [insights.md](../insights.md) "On the page" and "In the owner's Inbox" (Work Tracker 1362). The
 Inbox half is the platform's: [inbox.md](../../../../liveworkspace/docs/specs/004-index/blueprints/inbox.md) and
 [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) "Suggested edits".
 
@@ -35,7 +35,7 @@ Inbox half is the platform's: [inbox.md](../../../../liveworkspace/docs/specs/00
   popover (`SuggestionPopover`, the bottom sheet on a phone), Show in Page's bar (`SuggestionReviewBar`), reads health
   again on a push, and opens `#t=<page>&suggestion=<id>` centred, then drops `suggestion` from the hash.
 - **The pill** (`SuggestedEditsPill`, no tooltip: its words are its name) beside the trust badge in the meta row, the **rail section**
-  (`PageRailSuggestions`, the newest 5, before AI Context, with Review All in AI Knowledge opening Needs Attention at
+  (`PageRailSuggestions`, the newest 5, before AI Context, with Review All in Insights opening Needs Attention at
   Suggested Edits) and the **tree dot** (an 8 px violet dot, from `suggestionCounts`).
 - **Accept and Dismiss** call `POST suggestions/<id>/accept|dismiss`, take the suggestion out of the held health at once
   (`pageKnowledgeStore.dropSuggestion`), toast, and read the page's health again. A 404 is read as already decided.
@@ -56,7 +56,7 @@ Inbox half is the platform's: [inbox.md](../../../../liveworkspace/docs/specs/00
 ## Security and trust
 
 - Accept and dismiss are an Editor's of the whole knowledgebase alone (`grant.role === 'edit'`, no tab scope), never an
-  agent's token. The editor mirrors it with `suggestionRights` and AI Knowledge's `acceptSuggestions`.
+  agent's token. The editor mirrors it with `suggestionRights` and Insights' `acceptSuggestions`.
 - Suggestion texts are drawn as text (`textContent`, React text), never as markup.
 - A passage found in two places is never marked: the page is never marked in the wrong place.
 
@@ -71,7 +71,7 @@ Inbox half is the platform's: [inbox.md](../../../../liveworkspace/docs/specs/00
 
 ## Presentation and UX
 
-The AI Knowledge violet: the wash `#f5f3ff` with a dashed `#a78bfa` underline, the marker a 28 px `violet-700` disc
+The Insights violet: the wash `#f5f3ff` with a dashed `#a78bfa` underline, the marker a 28 px `violet-700` disc
 with a 4 px `violet-100` ring at -44 px, the popover 500 px; removed lines rose and struck, added lines blue and
 underlined. Dark mode in `app/article-suggestions.css`.
 

@@ -1,4 +1,4 @@
-// Opening a page from Ask or AI Knowledge (docs/specs/030-knowledgebase/search-and-ask.md "What an answer shows"):
+// Opening a page from Ask or Insights (docs/specs/030-knowledgebase/search-and-ask.md "What an answer shows"):
 // Pages shows again, as a history entry (so Back returns to the answer), and the page opens at the passage's first
 // block, lit for a moment (lib/knowledge/go-to-block.ts, the search result's own way in).
 import type { EditorChromeStore } from '@/app/document/[id]/EditorContext';

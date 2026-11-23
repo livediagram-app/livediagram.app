@@ -91,7 +91,7 @@ reach them").
     under the nearest published ancestor;
   - comments: the threads at a page's foot, margin notes and their marks in the writing, actions;
   - Page Health and verification: owners, Verified, Review Due, reviews, approvals, conflicts, page links' health;
-  - Ask, AI Knowledge, AI Settings, agents and their suggestions;
+  - Ask, Insights, AI Settings, agents and their suggestions;
   - people: no name, email, avatar or account id, unless **Show Who Wrote Each Page** is on, and then only the
     names of the people who wrote each page (never an agent's token, an email or an id);
   - the knowledgebase's id, its tab ids, its share links, its owner and team;

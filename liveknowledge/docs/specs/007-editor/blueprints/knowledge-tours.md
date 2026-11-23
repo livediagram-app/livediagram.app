@@ -91,7 +91,7 @@ Step anchors (all existing attributes; no new markup):
 | trust/verify                        | `[data-meta-verify]`                                                                                |
 | trust/health                        | `[data-page-health]`                                                                                |
 | trust/approval                      | `[data-request-approval]`                                                                           |
-| ask/tab, ask/ai                     | `[data-knowledge-view-link="ask"]`, `[data-knowledge-view-link="ai"]`                               |
+| ask/tab, ask/insights               | `[data-knowledge-view-link="ask"]`, `[data-knowledge-view-link="insights"]`                         |
 | ask/composer, ask/questions         | `[data-ask-composer]`, `aside[aria-label="Your Questions"]`                                         |
 | connect/tab                         | `[data-knowledge-view-link="connect"]`                                                              |
 | connect/apps, steps, access, status | `[data-connect-apps]`, `[data-connect-app-steps]`, `[data-connect-access]`, `[data-connect-status]` |
@@ -102,7 +102,7 @@ Step anchors (all existing attributes; no new markup):
 
 Each step's `prepare` first calls `showView` for its view, then what it opens (`openTree` for the tree steps,
 `openPageInfo` for health and approval); its `cleanup` closes what the step alone opened (the phone's tree sheet, the
-Page Info popover), so the next step starts from a quiet page. A step inside the Ask, AI Knowledge or Connect view
+Page Info popover), so the next step starts from a quiet page. A step inside the Ask, Insights or Connect view
 carries `layer: 'modal'`: those views are drawn over the editor as a modal frame (KnowledgeViewFrame's modal guard),
 and without it the engine takes the view for someone else's dialog and steps aside, hiding the card.
 

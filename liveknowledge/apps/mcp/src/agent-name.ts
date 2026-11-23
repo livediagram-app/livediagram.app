@@ -1,4 +1,4 @@
-// The name an agent's reads are counted under (docs/specs/030-knowledgebase/ai-knowledge.md "Reads";
+// The name an agent's reads are counted under (docs/specs/030-knowledgebase/insights.md "Reads";
 // docs/specs/024-agents/knowledgebase-for-agents.md): the MCP client's own, from its `initialize` handshake's
 // clientInfo ("Claude Code", "Cursor"), sent to the api as `X-Liveknowledge-Agent` with every knowledgebase tool.
 //

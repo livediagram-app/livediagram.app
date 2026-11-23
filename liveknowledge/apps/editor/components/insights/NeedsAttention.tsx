@@ -1,6 +1,6 @@
 'use client';
 
-// Needs Attention (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): the work waiting for someone
+// Needs Attention (docs/specs/030-knowledgebase/insights.md "The view, as built"): the work waiting for someone
 // in one list, most urgent first (attentionItems): pages that disagree, edits agents suggested, questions nobody
 // could answer. A switch shows one kind; the figure tiles set it too. At most NEEDS_ATTENTION_CAP rows show until
 // Show All. Each row keeps its own actions, gated by role as before.
@@ -20,8 +20,8 @@ import {
   QuestionSmallIcon,
   SuggestionIcon,
   SuggestionSmallIcon,
-} from './ai-knowledge-icons';
-import { AiSection } from './AiSection';
+} from './insights-icons';
+import { InsightsSection } from './InsightsSection';
 import { ConflictKeyNote, ConflictRow } from './ConflictRow';
 import { QuestionRow } from './QuestionRow';
 import { SuggestionRow } from './SuggestionRow';
@@ -126,7 +126,7 @@ export function NeedsAttention(props: NeedsAttentionProps) {
   const total = overview.conflicts.length + overview.suggestions.length + overview.questions.length;
   const empty = EMPTY[filter];
   return (
-    <AiSection
+    <InsightsSection
       id="ai-attention"
       title="Needs Attention"
       icon={<AttentionIcon />}
@@ -211,6 +211,6 @@ export function NeedsAttention(props: NeedsAttentionProps) {
           {toggle}
         </>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }

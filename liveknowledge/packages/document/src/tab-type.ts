@@ -50,7 +50,7 @@ export type Tab = {
   // or one that would close a cycle (read via `pageParents`, page-tree.ts). Stored in the tab's body and synced in
   // a `tab-meta` patch, as its name is.
   parent?: TabId;
-  // The page's knowledge fields (docs/specs/030-knowledgebase/verification.md "The fields", ai-knowledge.md "Always
+  // The page's knowledge fields (docs/specs/030-knowledgebase/verification.md "The fields", insights.md "Always
   // in Context"): who vouches for it, when they last did, how often it is reviewed, and whether every agent is
   // handed it. Written only by the api's knowledge routes (Verify, the Page Health card), read through
   // `parseKnowledgeFields` (@liveknowledge/knowledge), and synced in a `tab-meta` patch, as the name is.

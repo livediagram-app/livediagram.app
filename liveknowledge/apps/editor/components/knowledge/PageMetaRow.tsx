@@ -68,7 +68,7 @@ export type PageMetaRowProps = {
   verify?: VerifyPageButtonProps | undefined;
   // Approval after Verify: its pill, or Request Approval (approval.md "Where it shows").
   approval?: ReactNode;
-  // The page's suggested edits, right beside the trust badge (ai-knowledge.md "On the page").
+  // The page's suggested edits, right beside the trust badge (insights.md "On the page").
   suggestions?: ReactNode;
 };
 

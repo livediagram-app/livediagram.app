@@ -1035,7 +1035,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "The AI Knowledge tab: the agents connected to this knowledgebase in the last 30 days, each with how it connects, the scopes it holds here and when it was last seen (its token's id only for an Editor in person, who may change those scopes), the questions nobody could answer, the pages that disagree, the pages every agent is handed with their size against the budget, and the counts of Verified, Review Due and Never Verified pages.",
+      "The Insights tab: the agents connected to this knowledgebase in the last 30 days, each with how it connects, the scopes it holds here and when it was last seen (its token's id only for an Editor in person, who may change those scopes), the questions nobody could answer, the pages that disagree, the pages every agent is handed with their size against the budget, and the counts of Verified, Review Due and Never Verified pages.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeOverviewResponse',

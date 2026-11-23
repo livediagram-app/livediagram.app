@@ -164,7 +164,7 @@ browser's.
   open tab a card joined to the bar's foot, the others quiet with the inset wash on hover): each a `HoverCard`
   (name and one line) around a link to the view's address with its icon, `aria-current="page"` on the showing one,
   the tab's own focus ring (`data-tab-key`). A plain left press moves in place (`showKnowledgeView`, a history
-  entry) and sends `UI·Opened·PagesView`, `AskView` or `AiKnowledgeView`; a press with a modifier is the link's.
+  entry) and sends `UI·Opened·PagesView`, `AskView` or `InsightsView`; a press with a modifier is the link's.
   No button, no drag, no menu. Not offered (`useKnowledgeViewsOffered`), the `nav` is not drawn.
 - **The footer** (`BottomBar`) is a child of the editor's column under the canvas, 48 px and the bottom safe inset:
   the page's scroll container ends above it. Tabs, a spacer, then `ChromeControls`. On a phone (`phone`, the
@@ -176,7 +176,7 @@ browser's.
   query), white (`slate-900` dark) with a hairline under it, `leading`, its children, `trailing`, then the slot
   (`data-top-row-actions`, also `data-corner-actions` so the shared account control is redrawn as a button by
   `corner-actions.css`). It offers its slot to `top-row-slot` with a rank: `page` (the canvas chrome's row) or
-  `view` (Ask's and AI Knowledge's header), and `view` outranks `page`.
+  `view` (Ask's and Insights' header), and `view` outranks `page`.
 - **Share and the account button** are drawn once, by `EditorViewHeader`, as `TopRowActions`: a portal into
   `useTopRowSlot()`. So the account's menu and the Share legend are one instance whichever view shows, and nothing
   is drawn while no row is (zen, an embed).
@@ -188,7 +188,7 @@ browser's.
   button. `[data-canvas-root]:has(> [data-knowledge-top-row]) > [data-page-scroller]` starts the scroll container
   under the row, the docked rail and the tree's rail start at the row's foot, and the top corner stacks and the
   top-centre stack start at 68 px.
-- **On Ask and AI Knowledge** `KnowledgeViewHeader` is the same row: the view's name (`h1`), its one line from
+- **On Ask and Insights** `KnowledgeViewHeader` is the same row: the view's name (`h1`), its one line from
   `lg` up, its buttons, a divider, the slot. The frame ends at the footer's top (measured, `[data-editor-tabbar]`),
   and the footer is the one column child it leaves live.
 - **A phone while writing:** the page toolbar's own bar is fixed along the top (`usePageToolbarPlacement`) and sets
@@ -607,7 +607,7 @@ Built: see "Knowledgebase Style (built)" above. What is left of it:
   retired from liveknowledge's scope (`lib/help-articles.ts`, `packages/help-registry`).
 - **Optical alignment:** the meta row's "Verified by" pill is centred (`TrustBadge`: even padding with
   `optical-edges`; its contents measured 0.05 px off centre in a browser, from 0.63). The optical audit
-  (`e2e/signed-in/knowledge-audit.spec.ts`) passes on Pages, Ask, AI Knowledge and Home in light and dark, the
+  (`e2e/signed-in/knowledge-audit.spec.ts`) passes on Pages, Ask, Insights and Home in light and dark, the
   footer's view tabs included, with no known failure.
 - **A drawing's tools on a phone** show in the row (`CanvasChrome`), unchecked in a browser.
 - **A phone keyboard put away without a blur.** The row comes back when the writing loses the caret. iOS blurs the

@@ -234,14 +234,14 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           const passage = byNumber.get(n.sent);
           return passage ? [{ ...sourceOf(passage), number: n.number, reason: n.reason }] : [];
         });
-        // Each part the pages did not cover is a question nobody could answer (ai-knowledge.md); not under a label
+        // Each part the pages did not cover is a question nobody could answer (insights.md); not under a label
         // scope, which asked only some of the pages (search-and-ask.md "By label").
         const recorded = scope ? [] : read.gaps;
         const gaps = recorded.flatMap((gap) => {
           const key = questionKey(gap);
           return key ? upsertQuestion(key, gap, asker, now) : [];
         });
-        // A first question that cited pages counts for each of them (ai-knowledge.md "AI Context on a page"): one
+        // A first question that cited pages counts for each of them (insights.md "AI Context on a page"): one
         // statement, in the gaps' transaction. A follow-up leans on the turns before it, so it is not counted.
         const answered = earlier.length
           ? null

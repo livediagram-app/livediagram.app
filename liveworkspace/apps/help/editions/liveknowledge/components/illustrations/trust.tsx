@@ -257,7 +257,7 @@ export function PageHealthRail() {
   );
 }
 
-/** Knowledge Health in AI Knowledge: one stacked bar of the three states, its legend, and Remind the Owners. */
+/** Knowledge Health in Insights: one stacked bar of the three states, its legend, and Remind the Owners. */
 export function KnowledgeHealthBar() {
   const total = 64;
   const parts = [

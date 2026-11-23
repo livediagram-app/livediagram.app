@@ -1,4 +1,4 @@
-// What the Ask and AI Knowledge tests stand the editor's chrome store up with: one opened knowledgebase and a
+// What the Ask and Insights tests stand the editor's chrome store up with: one opened knowledgebase and a
 // session of a given role.
 import type { ReactElement } from 'react';
 import { render, type RenderResult } from '@testing-library/react';

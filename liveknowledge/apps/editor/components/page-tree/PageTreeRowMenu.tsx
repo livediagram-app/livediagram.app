@@ -118,7 +118,7 @@ export function PageTreeRowMenu({
   tabs: readonly TreeTab[];
   id: string;
   canEdit: boolean;
-  // Verify and Always in Context (docs/specs/030-knowledgebase/verification.md, ai-knowledge.md): an Editor's.
+  // Verify and Always in Context (docs/specs/030-knowledgebase/verification.md, insights.md): an Editor's.
   knowledge?:
     | Pick<
         PageTreeKnowledge,
