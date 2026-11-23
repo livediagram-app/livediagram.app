@@ -105,6 +105,20 @@ describe('a live embed', () => {
     expect(container.querySelector('iframe')!.className).toContain('pointer-events-none');
   });
 
+  it("keeps the name and Live in a row of their own, never over the file's controls (Work Tracker 1386)", () => {
+    frame = {
+      state: 'live',
+      src: 'https://www.liveplanner.app/embed/workbench?d=p1#ticket=t',
+      ready: true,
+    };
+    const { container } = view();
+    const bar = container.querySelector('[data-live-embed-name]')!;
+    const body = container.querySelector('[data-live-embed-body]')!;
+    expect(bar.textContent).toContain('Live');
+    expect(body.contains(bar)).toBe(false);
+    expect(body.contains(container.querySelector('iframe'))).toBe(true);
+  });
+
   it('keeps the frame hidden and says it is opening until the file says hello', () => {
     frame = {
       state: 'live',

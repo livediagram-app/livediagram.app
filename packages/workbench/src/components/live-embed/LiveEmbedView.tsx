@@ -93,107 +93,110 @@ export function LiveEmbedView({
       className="group relative h-full w-full rounded-[inherit]"
     >
       <div
-        className={`relative h-full w-full overflow-hidden rounded-[inherit] bg-slate-100 dark:bg-slate-900 ${className}`}
+        className={`relative flex h-full w-full flex-col overflow-hidden rounded-[inherit] bg-slate-100 dark:bg-slate-900 ${className}`}
       >
-        <Snapshot
-          poster={livePoster}
-          app={liveItem?.app}
-          look={
-            noAccess
-              ? 'obscured'
-              : !live && !!liveItem && frame.state !== 'idle' && frame.state !== 'loading'
-                ? 'dim'
-                : 'clear'
-          }
-        />
-
-        {live ? (
-          <iframe
-            ref={frameRef}
-            src={frame.src}
-            title={name}
-            sandbox={FRAME_SANDBOX}
-            referrerPolicy="no-referrer"
-            className={`absolute inset-0 h-full w-full border-0 bg-white transition-opacity duration-200 motion-reduce:transition-none dark:bg-slate-900 ${
-              frame.ready ? 'opacity-100' : 'opacity-0'
-            } ${using ? '' : 'pointer-events-none'}`}
-          />
-        ) : null}
-
-        {!liveItem ? (
-          livePoster ? null : (
-            <Centre>
-              <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-                {words.emptyTitle(canChoose)}
-              </span>
-              <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-                {words.emptyLine}
-              </span>
-            </Centre>
-          )
-        ) : noAccess ? (
-          <Centre glass>
-            <span className="text-slate-500 dark:text-slate-300">
-              <LockGlyph />
-            </span>
-            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
-              {words.noAccess(name)}
-            </span>
-            <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-              {words.noAccessLine}
-            </span>
-            {href ? (
-              <a
-                href={href}
-                target="_blank"
-                rel="noreferrer noopener"
-                {...keepFromCanvas}
-                onClick={(e) => e.stopPropagation()}
-                className="pointer-events-auto mt-1 cursor-pointer rounded-md bg-brand-700 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-400 dark:text-slate-950 dark:hover:bg-brand-300"
-              >
-                {words.open(liveItem.app)}
-              </a>
-            ) : null}
-            {isSignedIn && liveItem ? <RequestAccessButton itemId={liveItem.itemId} /> : null}
-          </Centre>
-        ) : frame.state === 'gone' ? (
-          <Centre glass>
-            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
-              {words.gone}
-            </span>
-            <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-              {words.goneLine(canChoose)}
-            </span>
-          </Centre>
-        ) : frame.state === 'failed' ? (
-          <Centre glass>
-            <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
-              {words.failed(name)}
-            </span>
-            <button
-              type="button"
-              {...keepFromCanvas}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSettled(false);
-                frame.retry();
-              }}
-              className="pointer-events-auto mt-1 flex cursor-pointer items-center gap-1.5 rounded-md bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-slate-900 dark:bg-white/15 dark:hover:bg-white/25"
-            >
-              <RetryGlyph />
-              {words.tryAgain}
-            </button>
-          </Centre>
-        ) : null}
-
+        {/* The file's name and Live in a row of their own above it, never over the file's own controls (Work Tracker
+            1386: a plan's tab switcher sat under the name). */}
         {liveItem ? (
-          <NameChip
+          <NameBar
             app={liveItem.app}
             name={name}
             live={live && frame.ready}
             loading={frame.state === 'loading' || (live && !frame.ready)}
           />
         ) : null}
+        <div data-live-embed-body="" className="relative min-h-0 w-full flex-1">
+          <Snapshot
+            poster={livePoster}
+            app={liveItem?.app}
+            look={
+              noAccess
+                ? 'obscured'
+                : !live && !!liveItem && frame.state !== 'idle' && frame.state !== 'loading'
+                  ? 'dim'
+                  : 'clear'
+            }
+          />
+
+          {live ? (
+            <iframe
+              ref={frameRef}
+              src={frame.src}
+              title={name}
+              sandbox={FRAME_SANDBOX}
+              referrerPolicy="no-referrer"
+              className={`absolute inset-0 h-full w-full border-0 bg-white transition-opacity duration-200 motion-reduce:transition-none dark:bg-slate-900 ${
+                frame.ready ? 'opacity-100' : 'opacity-0'
+              } ${using ? '' : 'pointer-events-none'}`}
+            />
+          ) : null}
+
+          {!liveItem ? (
+            livePoster ? null : (
+              <Centre>
+                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
+                  {words.emptyTitle(canChoose)}
+                </span>
+                <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+                  {words.emptyLine}
+                </span>
+              </Centre>
+            )
+          ) : noAccess ? (
+            <Centre glass>
+              <span className="text-slate-500 dark:text-slate-300">
+                <LockGlyph />
+              </span>
+              <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
+                {words.noAccess(name)}
+              </span>
+              <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+                {words.noAccessLine}
+              </span>
+              {href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  {...keepFromCanvas}
+                  onClick={(e) => e.stopPropagation()}
+                  className="pointer-events-auto mt-1 cursor-pointer rounded-md bg-brand-700 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-400 dark:text-slate-950 dark:hover:bg-brand-300"
+                >
+                  {words.open(liveItem.app)}
+                </a>
+              ) : null}
+              {isSignedIn && liveItem ? <RequestAccessButton itemId={liveItem.itemId} /> : null}
+            </Centre>
+          ) : frame.state === 'gone' ? (
+            <Centre glass>
+              <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
+                {words.gone}
+              </span>
+              <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+                {words.goneLine(canChoose)}
+              </span>
+            </Centre>
+          ) : frame.state === 'failed' ? (
+            <Centre glass>
+              <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">
+                {words.failed(name)}
+              </span>
+              <button
+                type="button"
+                {...keepFromCanvas}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSettled(false);
+                  frame.retry();
+                }}
+                className="pointer-events-auto mt-1 flex cursor-pointer items-center gap-1.5 rounded-md bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-slate-900 dark:bg-white/15 dark:hover:bg-white/25"
+              >
+                <RetryGlyph />
+                {words.tryAgain}
+              </button>
+            </Centre>
+          ) : null}
+        </div>
       </div>
 
       {liveItem && href ? (
@@ -306,8 +309,9 @@ function Centre({ glass = false, children }: { glass?: boolean; children: ReactN
   );
 }
 
-// Which file this is, bottom left: its app's logo and its name, and a dot while it is live.
-function NameChip({
+// Which file this is, in a row across the element's top, clear of the file: its app's logo and its name, and a dot
+// while it is live.
+function NameBar({
   app,
   name,
   live,
@@ -319,7 +323,10 @@ function NameChip({
   loading: boolean;
 }) {
   return (
-    <div className="pointer-events-none absolute bottom-1.5 left-1.5 flex max-w-[calc(100%-0.75rem)] items-center gap-1.5 rounded-full bg-white/90 py-0.5 pl-1 pr-2 shadow-sm backdrop-blur dark:bg-slate-900/85">
+    <div
+      data-live-embed-name=""
+      className="pointer-events-none flex h-6 w-full shrink-0 items-center gap-1.5 border-b border-slate-200 bg-white px-2 dark:border-slate-700 dark:bg-slate-900"
+    >
       <BrandMark app={app} className="size-3.5 shrink-0" />
       <span className="truncate text-[10px] font-semibold text-slate-800 dark:text-slate-100">
         {name}

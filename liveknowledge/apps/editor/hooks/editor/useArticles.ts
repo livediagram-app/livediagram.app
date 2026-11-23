@@ -47,6 +47,7 @@ import {
   type ZoneMoveTo,
 } from '@/lib/article/article-editor-store';
 import { articleTextBox, articleTextOrigin } from '@/lib/article/article-flow-geometry';
+import { liveEmbedPageSize } from '@/lib/article/article-embed-size';
 import { articleLocked } from '@/lib/article/article-lock';
 import {
   articleGrowFloor,
@@ -176,11 +177,12 @@ export function useArticles(deps: {
   pages: readonly LaidOutPage[] | null;
   // This person's own edits, counted (useArticleIntake settles after each).
   localEditSeq: RefObject<number>;
-  // An element of its default size put at a canvas point (useElementCreation placeIntentAt).
+  // An element of its default size (or `size`) centred on a canvas point (useElementCreation placeIntentAt).
   placeAt: (
     intent: (typeof PLACE_INTENT)[Exclude<ArticleInsert, 'drawing'>],
     x: number,
     y: number,
+    size?: { width: number; height: number },
   ) => void;
   // An Editor: everything on the article. A Participant has `canWrite` alone: its writing.
   canEdit: boolean;
@@ -433,7 +435,20 @@ export function useArticles(deps: {
       if (!at) return;
       // Just under the caret's line, so the object lands after the block being written in.
       handle.flush();
-      d.placeAt(PLACE_INTENT[what], at.x, at.y + 30);
+      if (what === 'embed') {
+        // A live embed spans the text column (links-and-embeds.md "Embeds from other apps", Work Tracker 1386): its
+        // left edge at the text's. Its centre stays just under the caret's line, as every insert's does: the writing
+        // takes in only an object whose centre is on the page, and a short page ends above a centre pushed half the
+        // embed's height down, which left the embed loose (no zone, never shrunk to a phone's column).
+        const size = liveEmbedPageSize(textWidth(d.activeTab, flow));
+        const left =
+          articleTextOrigin(
+            layOutPages(pagesOf(d.activeTab)),
+            flow,
+            articlesOf(d.activeTab)[flow]?.style,
+          )?.x ?? at.x;
+        d.placeAt(PLACE_INTENT.embed, left + size.width / 2, at.y + 30, size);
+      } else d.placeAt(PLACE_INTENT[what], at.x, at.y + 30);
       track('Element', 'Added', INSERT_EVENT[what]);
     },
     [tabId],
