@@ -42,15 +42,34 @@ function actions(): PageTreeActions {
 
 // The head's menu, as the tree's host hands it (usePageTreeChrome): here a button that starts the rename, so the
 // sidebar's own part (the name, and the field it becomes) is tested without the editor's store. The menu itself is
-// components/knowledge-menu/KnowledgebaseMenu.test.tsx.
+// components/knowledge-menu/KnowledgebaseMenu.test.tsx. A second button starts it as a name typed at the menu does.
 const menu: NonNullable<PageTreeSidebarProps['menu']> = (head) =>
   head.onRename ? (
-    <button type="button" onClick={head.onRename}>
-      {head.name}
-    </button>
+    <>
+      <button type="button" onClick={() => head.onRename?.()}>
+        {head.name}
+      </button>
+      <button type="button" onClick={() => head.onRename?.('T')}>
+        Typed T
+      </button>
+    </>
   ) : (
     <p>{head.name}</p>
   );
+
+// A name typed at the menu (Work Tracker 1376): the field opens holding the letters already typed, the caret after
+// them, so the rest of the name carries on rather than replacing them.
+function typesOnFromTheMenu(onRenameKnowledgebase: unknown) {
+  fireEvent.click(screen.getByRole('button', { name: 'Typed T' }));
+  const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Knowledgebase name' });
+  expect(document.activeElement).toBe(field);
+  expect(field.value).toBe('T');
+  expect([field.selectionStart, field.selectionEnd]).toEqual([1, 1]);
+  fireEvent.change(field, { target: { value: 'Team Handbook' } });
+  fireEvent.keyDown(field, { key: 'Enter' });
+  expect(onRenameKnowledgebase).toHaveBeenCalledWith('Team Handbook');
+  expect(screen.queryByRole('textbox', { name: 'Knowledgebase name' })).toBeNull();
+}
 
 function props(over: Partial<PageTreeSidebarProps> = {}): PageTreeSidebarProps {
   return {
@@ -107,6 +126,21 @@ describe('PageTreeSidebar', () => {
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(p.onRenameKnowledgebase).toHaveBeenCalledWith('Platform');
     expect(screen.queryByRole('textbox')).toBeNull();
+  });
+
+  it('a rename started by typing at the menu keeps the letters typed and carries on after them', () => {
+    const p = props();
+    render(<PageTreeSidebar {...p} />);
+    typesOnFromTheMenu(p.onRenameKnowledgebase);
+  });
+
+  it('a rename from the menu’s row opens on the name, all of it selected', () => {
+    render(<PageTreeSidebar {...props()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Engineering' }));
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Knowledgebase name' });
+    expect([field.selectionStart, field.selectionEnd]).toEqual([0, 'Engineering'.length]);
+    fireEvent.keyDown(field, { key: 'Escape' });
+    expect(screen.queryByRole('textbox', { name: 'Knowledgebase name' })).toBeNull();
   });
 
   it('names an unnamed knowledgebase Untitled Knowledgebase', () => {
@@ -241,6 +275,15 @@ describe('PageTreeSheet', () => {
     expect(screen.getByRole('dialog', { name: 'Pages' })).toBeTruthy();
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('dialog', { name: 'Pages' })).toBeNull();
+  });
+
+  it('renames from a name typed at the sheet’s menu, keeping the letters typed', () => {
+    const p = props();
+    render(<PageTreeSheet {...p} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Pages' }));
+    typesOnFromTheMenu(p.onRenameKnowledgebase);
+    // The sheet stays: the rename is in its head.
+    expect(screen.getByRole('dialog', { name: 'Pages' })).toBeTruthy();
   });
 
   it('leaves Escape to a row menu open inside it', () => {

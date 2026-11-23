@@ -6,6 +6,7 @@
 import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { HoverCard, TextArea, isComposingKey } from '@liveknowledge/ui';
 import { ASK_MAX_QUESTION_CHARS } from '@liveknowledge/knowledge';
+import { AskLabelScope } from '@/components/page-labels/AskLabelScope';
 import { SendIcon, StopIcon } from './ask-icons';
 
 /** The count shows from here on. */
@@ -55,64 +56,68 @@ export function AskComposer({
   };
 
   return (
-    <form
-      data-ask-composer=""
-      onSubmit={(event) => {
-        event.preventDefault();
-        send();
-      }}
-      className="flex items-end gap-2 rounded-2xl border border-slate-300 bg-white p-2 pl-3 shadow-sm focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/25 dark:border-slate-700 dark:bg-slate-900"
-    >
-      <TextArea
-        ref={field}
-        rows={1}
-        value={value}
-        maxLength={ASK_MAX_QUESTION_CHARS}
-        disabled={streaming}
-        aria-label={followUp ? 'Ask a follow-up' : 'Ask a question'}
-        aria-describedby={length >= ASK_COUNT_FROM ? countId : undefined}
-        placeholder={followUp ? 'Ask a follow-up' : 'Ask this knowledgebase a question'}
-        onChange={(event) => setValue(event.target.value)}
-        onKeyDown={onKeyDown}
-        className="min-h-9 flex-1 resize-none !border-0 !bg-transparent !px-0 !py-1.5 !shadow-none !outline-none !ring-0"
-      />
-      {length >= ASK_COUNT_FROM ? (
-        <span
-          id={countId}
-          role="status"
-          data-ask-count=""
-          className={`shrink-0 self-center text-xs tabular-nums ${
-            length >= ASK_MAX_QUESTION_CHARS
-              ? 'font-semibold text-amber-800 dark:text-amber-200'
-              : 'text-slate-600 dark:text-slate-400'
-          }`}
-        >
-          {length.toLocaleString('en')} / {ASK_MAX_QUESTION_CHARS.toLocaleString('en')}
-        </span>
-      ) : null}
-      {streaming ? (
-        <HoverCard title="Stop" description="Stops this answer. What has arrived is kept.">
-          <button
-            type="button"
-            aria-label="Stop"
-            onClick={onStop}
-            className={`${ROUND_BUTTON} bg-slate-900 text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white`}
+    <div className="flex flex-col gap-1.5">
+      {/* Answer From, above the field, where the knowledgebase has labels (search-and-ask.md "Answer From"). */}
+      <AskLabelScope />
+      <form
+        data-ask-composer=""
+        onSubmit={(event) => {
+          event.preventDefault();
+          send();
+        }}
+        className="flex items-end gap-2 rounded-2xl border border-slate-300 bg-white p-2 pl-3 shadow-sm focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/25 dark:border-slate-700 dark:bg-slate-900"
+      >
+        <TextArea
+          ref={field}
+          rows={1}
+          value={value}
+          maxLength={ASK_MAX_QUESTION_CHARS}
+          disabled={streaming}
+          aria-label={followUp ? 'Ask a follow-up' : 'Ask a question'}
+          aria-describedby={length >= ASK_COUNT_FROM ? countId : undefined}
+          placeholder={followUp ? 'Ask a follow-up' : 'Ask this knowledgebase a question'}
+          onChange={(event) => setValue(event.target.value)}
+          onKeyDown={onKeyDown}
+          className="min-h-9 flex-1 resize-none !border-0 !bg-transparent !px-0 !py-1.5 !shadow-none !outline-none !ring-0"
+        />
+        {length >= ASK_COUNT_FROM ? (
+          <span
+            id={countId}
+            role="status"
+            data-ask-count=""
+            className={`shrink-0 self-center text-xs tabular-nums ${
+              length >= ASK_MAX_QUESTION_CHARS
+                ? 'font-semibold text-amber-800 dark:text-amber-200'
+                : 'text-slate-600 dark:text-slate-400'
+            }`}
           >
-            <StopIcon />
-          </button>
-        </HoverCard>
-      ) : (
-        <HoverCard title="Send" description="Enter sends. Shift and Enter make a new line.">
-          <button
-            type="submit"
-            aria-label="Send"
-            disabled={!ready}
-            className={`${ROUND_BUTTON} bg-brand-700 text-white enabled:hover:bg-brand-800 dark:bg-brand-600 dark:enabled:hover:bg-brand-500`}
-          >
-            <SendIcon />
-          </button>
-        </HoverCard>
-      )}
-    </form>
+            {length.toLocaleString('en')} / {ASK_MAX_QUESTION_CHARS.toLocaleString('en')}
+          </span>
+        ) : null}
+        {streaming ? (
+          <HoverCard title="Stop" description="Stops this answer. What has arrived is kept.">
+            <button
+              type="button"
+              aria-label="Stop"
+              onClick={onStop}
+              className={`${ROUND_BUTTON} bg-slate-900 text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white`}
+            >
+              <StopIcon />
+            </button>
+          </HoverCard>
+        ) : (
+          <HoverCard title="Send" description="Enter sends. Shift and Enter make a new line.">
+            <button
+              type="submit"
+              aria-label="Send"
+              disabled={!ready}
+              className={`${ROUND_BUTTON} bg-brand-700 text-white enabled:hover:bg-brand-800 dark:bg-brand-600 dark:enabled:hover:bg-brand-500`}
+            >
+              <SendIcon />
+            </button>
+          </HoverCard>
+        )}
+      </form>
+    </div>
   );
 }

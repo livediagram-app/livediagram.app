@@ -177,6 +177,45 @@ describe('the tab PUT', () => {
 
   // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-scoped
   // editor's save stores its content and keeps the stored name.
+  // A connected tab's own name (liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"): the file's name
+  // kept beside it is structure too, so a tab-scoped save neither writes nor drops it.
+  it("keeps the stored file name beside a connected tab's own, writing none it lacks", async () => {
+    const saved = async (storedTargetName: string | null) => {
+      const db = await documentWith([]);
+      const read = () =>
+        JSON.parse(
+          db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
+        ) as Record<string, unknown>;
+      if (storedTargetName !== null)
+        db.sql
+          .prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'")
+          .run(JSON.stringify({ ...read(), targetName: storedTargetName }));
+      const res = await handleDocuments(
+        makeTestRouteContext('PUT', '/api/documents/D/tabs/t1', {
+          env: db.env,
+          owner: 'user_v',
+          accountUserId: 'user_v',
+          verifiedUserId: 'user_v',
+          grant: {
+            item: 'D',
+            level: 'edit',
+            tab: 't1',
+            sub: 'user_v',
+            team: null,
+            exp: 2_000_000_000,
+            shareCode: 'code1',
+            token: 'g',
+          },
+          body: { id: 't1', name: 'Board', elements: [], targetName: 'Forged' },
+        }),
+      );
+      expect(res.status).toBe(200);
+      return read();
+    };
+    expect(await saved(null)).not.toHaveProperty('targetName');
+    expect((await saved('Launch plan')).targetName).toBe('Launch plan');
+  });
+
   it("keeps the stored name through a tab-scoped editor's save", async () => {
     const db = await documentWith([box('a')]);
     const res = await handleDocuments(

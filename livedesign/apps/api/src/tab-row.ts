@@ -27,6 +27,9 @@ export type TabRow = {
   // A connected tab's connection (liveworkspace/docs/specs/004-index/connected-tabs.md), `tabs.connection`: JSON of
   // `{ id, app, itemId }`, or NULL for every other tab. Read sites that don't select it leave it undefined.
   connection?: string | null;
+  // A connected tab's file name beside a name of its own (liveworkspace/docs/specs/004-index/connected-tabs.md "A
+  // tab's own name"), read out of `data` for a connected tab by the outline's summaries; NULL or undefined elsewhere.
+  target_name?: unknown;
 };
 
 // The folder colour a row carries: a hue name for a tab in a folder, else none (Automatic, or loose).
@@ -37,7 +40,11 @@ function folderColorField(row: TabRow): string | undefined {
 // The connection a row carries, as the wire shape spreads it: absent for a tab that is not connected.
 function connectionField(row: TabRow) {
   const connection = storedTabConnection(row.connection);
-  return connection ? { connection } : {};
+  if (!connection) return {};
+  // A renamed connected tab names its file from the first paint, before its body loads ("A tab's own name").
+  const targetName =
+    typeof row.target_name === 'string' && row.target_name !== '' ? row.target_name : undefined;
+  return targetName ? { connection, targetName } : { connection };
 }
 
 // Pure mapper from D1 tab row to wire-format DTO. Pulled out of db.ts

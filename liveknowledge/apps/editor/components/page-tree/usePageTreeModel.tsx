@@ -25,6 +25,7 @@ import { useRelativeNow } from '@/lib/relative-time';
 import type { PageTreeActions, PageTreeKnowledge, PageTreeProps } from './PageTree';
 import { selectPage } from './select-page';
 import { useConnectedRows } from './useConnectedRows';
+import { useLabelFilterPages } from '@/components/page-labels/useLabelFilter';
 
 /** The link to one page of a knowledgebase: the knowledgebase's address with the page pinned in its fragment, which
  *  is where the editor reads the page to open (seed-fetched-document.ts). */
@@ -201,12 +202,15 @@ export function usePageTreeModel(): PageTreeModel {
   );
 
   const { connected, dialog: connectDialog } = useConnectedRows();
+  // The label filter's pages (page-surface.md "The label filter"): one pass when the filter or the pages change.
+  const only = useLabelFilterPages();
 
   return {
     tabs,
     activeId,
     connected,
     connectDialog,
+    only,
     closed: closedFor.closed,
     onSetOpen,
     canEdit,

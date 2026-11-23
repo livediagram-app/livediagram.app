@@ -229,6 +229,15 @@ describe('search', () => {
       'no passage matches (recorded as a question the knowledgebase could not answer)',
     ]);
   });
+
+  it('narrows to the pages of the labels --labels names', async () => {
+    const { ctx, api } = setup({
+      [`${base}/search?q=a&labels=Engineering%2COps`]: { results: [passage()] },
+    });
+    const out = await run(search, ctx, { doc: DOC_A, query: ['a'], labels: 'Engineering,Ops' });
+    expect(api.calls.at(-1)).toBe(`${base}/search?q=a&labels=Engineering%2COps`);
+    expect(out).toMatchObject({ count: 1 });
+  });
 });
 
 describe('read', () => {

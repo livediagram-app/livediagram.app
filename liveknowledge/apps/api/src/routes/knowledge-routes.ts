@@ -63,6 +63,7 @@ import {
 } from './knowledge-page-routes';
 import { handleKnowledgeSearch } from './knowledge-search-route';
 import { handleSettingsRoutes } from './knowledge-settings-routes';
+import { handleLabelRoutes } from './knowledge-label-routes';
 import { handleSetupSuggest } from './knowledge-setup-route';
 import { handleDescribeStructure } from './knowledge-structure-route';
 import { handleSuggest, handleSuggestionRoutes } from './knowledge-suggestion-routes';
@@ -193,6 +194,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       segments[3] === 'ask' ||
       segments[3] === 'knowledge' ||
       segments[3] === 'knowledge-settings' ||
+      segments[3] === 'labels' ||
       segments[3] === 'publishing' ||
       segments[3] === 'questions' ||
       segments[3] === 'pages' ||
@@ -204,6 +206,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       (segments[3] === 'ai' && (segments[4] === 'key' || segments[4] === 'model')) ||
       (segments[3] === 'knowledge' && segments[4] === 'remind-owners') ||
       (segments[3] === 'knowledge-settings' && segments[4] === 'preview') ||
+      segments[3] === 'labels' ||
       (segments[3] === 'setup' && segments[4] === 'suggest') ||
       segments[3] === 'questions' ||
       segments[3] === 'pages'
@@ -272,6 +275,7 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   return (
     (await handlePublishingRoutes(route)) ??
     (await handleSettingsRoutes(route)) ??
+    (await handleLabelRoutes(route)) ??
     (await handleAgentRoutes(route)) ??
     (await handleSuggestionRoutes(route)) ??
     (await handleEmailRoutes(route)) ??

@@ -694,6 +694,13 @@ payload)`: what the alarm owes.
 - **Verify and the fields** (`page-knowledge.ts`): `json_set(data, '$.knowledge', ...)` at the revision read
   (`rev = rev + 1`), the trigger marks the page, the settle writes its trust row. Verify also keeps the writing's
   print (below). The whole-tab save keeps the stored fields (`keepStoredKnowledge`).
+- **The fields in the room.** The api tells open editors of a Verify, an owner change or an approval as a `tab-meta`
+  op through the room's `/mutation` (`from: 'system'`). A client socket's frame never carries them
+  (`withoutApiOnlyFields`, `room-api-only-fields.ts`, in `document-room-frames.ts`): `knowledge` is dropped from a
+  `tab-meta` patch and its `clear` list and from a whole `tab` op's tab, whatever the sender's role, a token's socket
+  too; the op still relays with what is left, so its sender's `ref` comes back. The editor applies the same rule
+  (`withoutPeerKnowledge`, `peer-knowledge.ts`, in `room-op-receive.ts`): a peer's op loses `knowledge`, a system
+  op keeps it, and a peer's whole tab keeps the page's own fields (`mergeRemoteTab`).
 - **Changed since verified.** What is kept is `sealWritingPrint(writingPrint(text))` in
   `knowledge_pages.verified_print`: for each distinct sentence an 8 character hash and its characters, and how
   much lay past the bounds; never the words. About 13 bytes a sentence, at most 8,000 sentences

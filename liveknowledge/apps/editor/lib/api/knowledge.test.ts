@@ -17,6 +17,7 @@ import {
   apiVerifyPage,
 } from './knowledge';
 import { ASK_CUT_SHORT, apiAskKnowledge, readAskEvents } from './knowledge-ask';
+import { apiCreateLabel, apiDeleteLabel, apiUpdateLabel } from './knowledge-labels';
 
 // The knowledge routes' client (docs/specs/015-api/api.md "Knowledge"), over a fake fetch.
 
@@ -50,6 +51,12 @@ describe('search', () => {
     expect(calls[0]!.url).toMatch(/\/documents\/d1\/search\?q=deploy%20%26%20roll%20back$/);
     expect(new Headers(calls[0]!.init.headers).get('X-Share-Code')).toBe('code-1');
     expect(calls[0]!.init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('narrows to the pages of a label filter, in one comma separated value', async () => {
+    const calls = stub({ results: [] });
+    await apiSearchKnowledge(who, 'd1', 'deploy', undefined, ['lbl_a', 'lbl_b']);
+    expect(calls[0]!.url).toMatch(/search\?q=deploy&labels=lbl_a%2Clbl_b$/);
   });
 
   it('throws the 200 character and rate-limit refusals with their codes', async () => {
@@ -307,5 +314,35 @@ describe('the Ask stream', () => {
     await expect(
       apiAskKnowledge(who, 'd1', { question: 'q' }, { signal: controller.signal }),
     ).rejects.toMatchObject({ name: 'AbortError' });
+  });
+});
+
+describe('labels (page-surface.md "Page labels")', () => {
+  const labels = [{ id: 'lbl_a', name: 'Alpha', colour: 'blue' }];
+
+  it('makes, changes and deletes a label, each one request answering the list', async () => {
+    const calls = stub({ label: labels[0], labels });
+    expect(await apiCreateLabel(who, 'd1', { id: 'lbl_a', name: 'Alpha', colour: 'blue' })).toEqual(
+      { label: labels[0], labels },
+    );
+    await apiUpdateLabel(who, 'd1', 'lbl_a', { name: 'Beta' });
+    await apiDeleteLabel(who, 'd1', 'lbl/a');
+    expect(calls.map((c) => [c.init.method, c.url.replace(/^.*\/documents\//, '')])).toEqual([
+      ['POST', 'd1/labels'],
+      ['PUT', 'd1/labels/lbl_a'],
+      ['DELETE', 'd1/labels/lbl%2Fa'],
+    ]);
+    expect(bodyOf(calls[0]!)).toEqual({ id: 'lbl_a', name: 'Alpha', colour: 'blue' });
+    expect(bodyOf(calls[1]!)).toEqual({ name: 'Beta' });
+    expect(calls[2]!.init.body).toBeUndefined();
+    expect(new Headers(calls[1]!.init.headers).get('X-Share-Code')).toBe('code-1');
+  });
+
+  it('throws a refusal with its code', async () => {
+    stub({ error: 'label_name_taken', message: 'A label is already called that.' }, 409);
+    await expect(apiUpdateLabel(who, 'd1', 'lbl_a', { name: 'B' })).rejects.toMatchObject({
+      status: 409,
+      code: 'label_name_taken',
+    });
   });
 });

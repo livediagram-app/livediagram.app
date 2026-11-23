@@ -685,3 +685,30 @@ describe('what an answer costs', () => {
     expect(undescribed).toEqual([]);
   });
 });
+
+describe('labels (page-surface.md "Page labels")', () => {
+  it('scopes search_pages and list_pages to labels by name, in one request each', async () => {
+    const { call, sent } = await connect({
+      'GET /pages': () =>
+        Response.json({
+          reviewEvery: 'never',
+          pages: [row('holidays', 'Holidays', 1, { labels: ['People'] })],
+        }),
+    });
+    await call('search_pages', { query: 'leave', labels: ['People', 'Ops'] });
+    expect(sent.at(-1)!.query.get('labels')).toBe('People,Ops');
+    const { out } = await call('list_pages', { labels: ['people'] });
+    expect(sent.at(-1)!.query.get('labels')).toBe('people');
+    expect((out.pages as { labels?: string[] }[])[0]!.labels).toEqual(['People']);
+    await call('search_pages', { query: 'leave' });
+    expect(sent.at(-1)!.query.has('labels')).toBe(false);
+  });
+
+  it("carries read_page's labels", async () => {
+    const { call } = await connect({
+      'GET /pages/Deploys': () => Response.json({ page: { ...PAGE, labels: ['Engineering'] } }),
+    });
+    const { out } = await call('read_page', { page: 'Deploys' });
+    expect(out.labels).toEqual(['Engineering']);
+  });
+});

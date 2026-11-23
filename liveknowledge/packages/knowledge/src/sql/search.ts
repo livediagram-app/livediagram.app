@@ -59,6 +59,9 @@ export type SearchOptions = {
   passagesOnly?: boolean;
   /** Leave one page out: the conflict check looks on other pages. */
   exceptTab?: string;
+  /** Only these pages (a label scope, search-and-ask.md "By label"): one bound parameter whatever their number, so
+   *  the index answers its results from them alone. */
+  onlyTabs?: readonly string[];
 };
 
 /** A row of `searchPassages`, as SQLite answers it. */
@@ -121,6 +124,10 @@ export function searchByTerms(
   if (options.exceptTab !== undefined) {
     where.push('p.tab <> ?');
     params.push(options.exceptTab);
+  }
+  if (options.onlyTabs !== undefined) {
+    where.push('p.tab IN (SELECT value FROM json_each(?))');
+    params.push(JSON.stringify(options.onlyTabs));
   }
   params.push(limit);
   return {

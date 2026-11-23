@@ -22,7 +22,24 @@ export type KnowledgeTrustShown = KnowledgeTrustState | 'off';
 export type KnowledgeReviewEvery = 30 | 90 | 180 | 365 | 'never';
 /** What a knowledgebase decides for every page (verification.md "The Review Period"): how long after it was last
  *  verified a page comes due for review. In a document read, the `document-meta` op and the routes below. */
-export type KnowledgeSettingsWire = { reviewEvery: KnowledgeReviewEvery };
+export type KnowledgeSettingsWire = {
+  reviewEvery: KnowledgeReviewEvery;
+  labels?: KnowledgeLabelWire[];
+};
+/** One of the knowledgebase's labels (page-surface.md "Page labels"): its colour a standard colour's name ("blue")
+ *  or a custom `#rrggbb`. Kept with the settings, so a rename is one write and no page's. */
+export type KnowledgeLabelWire = { id: string; name: string; colour: string };
+/** `GET .../labels`: the labels, most used first, each with how many pages carry it. */
+export type KnowledgeLabelsResponse = { labels: (KnowledgeLabelWire & { pages: number })[] };
+/** `POST .../labels`: a new label (no colour: the next one; no id: the api makes one). A Writer's. */
+export type CreateLabelRequest = { name: string; colour?: string; id?: string };
+/** `PUT .../labels/<label>`: a rename, a new colour, or both. A Writer's. */
+export type UpdateLabelRequest = { name?: string; colour?: string };
+/** What a label write answers: the label made or changed (absent after a delete), and every label now. */
+export type KnowledgeLabelChangeResponse = {
+  label?: KnowledgeLabelWire;
+  labels: KnowledgeLabelWire[];
+};
 /** `PUT .../knowledge-settings`: Editor only. Answers the settings as stored. */
 export type KnowledgeSettingsRequest = { reviewEvery: KnowledgeReviewEvery };
 export type KnowledgeSettingsResponse = { knowledgeSettings: KnowledgeSettingsWire };
@@ -234,7 +251,13 @@ export type AskTurn = { question: string; answer: string };
 /** Which AI a person asked to answer (search-and-ask.md "Choosing which AI answers"): built-in AI even with a key
  *  set, or the team's key (built-in AI when none is set). */
 export type AskAiChoice = 'built-in' | 'key';
-export type AskRequest = { question: string; turns?: AskTurn[]; ai?: AskAiChoice };
+export type AskRequest = {
+  question: string;
+  turns?: AskTurn[];
+  ai?: AskAiChoice;
+  /** Answer only from the pages carrying any of these labels, each an id or a name (search-and-ask.md "By label"). */
+  labels?: string[];
+};
 /** A passage an answer cites, or one it found and set aside. */
 export type AskSource = {
   number: number;
@@ -443,6 +466,8 @@ export type KnowledgePageRow = KnowledgePageRef & {
   owner?: string;
   context?: true;
   trust: KnowledgePageTrust;
+  /** The page's labels by name (page-surface.md "Page labels"); absent for none. */
+  labels?: string[];
 };
 /** A connected file in the tree (links-and-embeds.md "Connected files in the sidebar"): another app's file placed
  *  among the pages, which is no page. It holds no subpages and no trust, and `read_page` does not read it. */
@@ -481,6 +506,8 @@ export type KnowledgePageRead = KnowledgePageRef & {
   cover?: Exclude<AgentCover, null>;
   /** The page's icon (page-surface.md "The page icon"): an emoji or a catalogue icon. */
   icon?: AgentPageIcon;
+  /** The page's labels by name (page-surface.md "Page labels"); absent for none. */
+  labels?: string[];
 };
 export type KnowledgePageReadResponse = { page: KnowledgePageRead };
 /** `GET .../context`: the Always in Context pages as Markdown in tree order, within the budget, with what the
