@@ -69,7 +69,8 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // writer. In liveknowledge a Participant is an Editor minus the Review Period, the Knowledgebase Style and
   // automations (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"), so its writing, its page
   // tree changes and its elements relay as an Editor's. Neither the settings nor the style ever rides a socket's
-  // `document-meta` (document-room-frames.ts strips both, whoever sent it): the api alone sends them.
+  // `document-meta`, nor a page's own fields its `tab-meta` or `tab` (room-api-only-fields.ts strips them, whoever
+  // sent it): the api alone sends them.
   const writes = writerLevel(sender.role);
   if (!presence && !writes) return DROP;
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only a writer's

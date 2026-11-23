@@ -122,6 +122,8 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab, previous?: 
 // autosave.
 //
 // The pages are merged by the sender's `pageSteps` when it sent them, so a page added here meanwhile stays.
+//
+// The page's own fields (`knowledge`) stay ours: only the api's `tab-meta` changes them (peer-knowledge.ts).
 export function mergeRemoteTab(local: Tab, incoming: Tab, pageSteps?: unknown): Tab {
   const pages = withPeerPageSteps(local, pageSteps, incoming.pages);
   const localById = new Map(local.elements.map((e) => [e.id, e]));
@@ -130,8 +132,12 @@ export function mergeRemoteTab(local: Tab, incoming: Tab, pageSteps?: unknown): 
     // Delta-carried fields stay ours (docs/specs/012-collaboration/collab-race-hardening.md).
     return mine ? mergeIncomingElement(mine, el) : el;
   });
+  // A page's own fields (owner, Verify, approval) are the api's to tell (peer-knowledge.ts): ours stay.
+  const { knowledge: _peer, ...rest } = incoming;
+  void _peer;
   return {
-    ...incoming,
+    ...rest,
+    ...(local.knowledge !== undefined ? { knowledge: local.knowledge } : {}),
     // A tab-scoped sender's whole tab comes without its name (the room drops it: a tab's name is
     // structure, docs/specs/013-workspace/tab-scoped-share-links.md), so ours stays.
     name: typeof incoming.name === 'string' ? incoming.name : local.name,
