@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { announceAiKeyChanged } from '../../ai-source/ai-source-model';
 import { ErrorNote, Panel } from '../account-ui';
 import { accountErrorMessage } from '../errors';
 import { useAccountData } from '../useAccountData';
@@ -13,7 +14,12 @@ import { AiKeyEditor } from './AiKeyEditor';
 export function AiKeyPanel() {
   const [load, refresh] = useAccountData<AiKeysAnswer>('/ai-key');
   // The answer of the last change, until the next read: every change answers the whole state.
-  const [changed, setChanged] = useState<AiKeysAnswer | null>(null);
+  const [changed, setAnswer] = useState<AiKeysAnswer | null>(null);
+  // Each change is said to every AI feature's source line on the page, so it reads again with no reload.
+  const setChanged = useCallback((next: AiKeysAnswer) => {
+    setAnswer(next);
+    announceAiKeyChanged();
+  }, []);
   const data = changed ?? (load.state === 'ready' ? load.data : null);
 
   if (load.state === 'loading' && !data)

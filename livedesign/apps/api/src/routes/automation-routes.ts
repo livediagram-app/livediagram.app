@@ -16,6 +16,8 @@ import {
   serveItemAutomations,
 } from '@liveworkspace/automations/room';
 import { getDesign } from '../db';
+import { personAiKey } from '@liveworkspace/auth-client/ai-key';
+import { accountCredentials } from '../auth/accounts';
 import { authorOf } from './changesets';
 import { gateEdit, grantOn, missingDesign, type DesignRouteContext } from './context';
 
@@ -44,6 +46,8 @@ export async function handleAutomationRoutes(ctx: DesignRouteContext): Promise<R
         // Only someone the gate lets through is named: their rules and runs carry their name.
         person: () => authorOf(ctx, owner!),
         reader: grantOn(ctx, id) !== null,
+        // Describe a Rule on the caller's own key, or the item's team's (ai-keys.md "In the apps").
+        aiKey: () => personAiKey(accountCredentials(env), ctx, existing.teamId),
       });
     },
   });

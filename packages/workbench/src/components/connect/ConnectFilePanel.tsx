@@ -6,7 +6,9 @@
 // tab add; the editor then moves to the new tab. Times read "Opened 2 minutes ago" against one minute's clock, cleared
 // when the list goes.
 import { useEffect, useState } from 'react';
+import { DialogCloseButton } from '@liveworkspace/ui';
 import type { BesideOffer, ConnectionMade, IndexClient, Item } from '@liveworkspace/index-client';
+import { Dialog } from '../dialogs/Dialog';
 import { indexClient } from '../../lib/index-client';
 import { workbench } from '../../bindings';
 import { connectFile, makeBeside } from './connect-file';
@@ -113,7 +115,7 @@ export function ConnectFilePanel({
         Connect File
       </h3>
       <p
-        className="mb-4 mt-0.5 text-[13px] max-sm:mb-3"
+        className={`mb-4 mt-0.5 text-[13px] max-sm:mb-3${ink ? '' : ' text-slate-500 dark:text-slate-400'}`}
         style={ink ? { color: ink.muted } : undefined}
       >
         Add a tab that opens a file from any liveworkspace app.
@@ -137,5 +139,38 @@ export function ConnectFilePanel({
           : {})}
       />
     </section>
+  );
+}
+
+export type ConnectFileDialogProps = ConnectFilePanelProps & { onClose: () => void };
+
+/** Connect File from the tab bar's Connect a File (connected-tabs.md "From the tab bar"): the same panel in a centred
+ *  dialog (a sheet on a phone), named by the panel's heading, held at one height so the list arriving never moves it.
+ *  Connecting closes it, then the editor opens the new tab; its close leaves nothing behind. */
+export function ConnectFileDialog({
+  onClose,
+  onConnected,
+  onGoTo,
+  ...panel
+}: ConnectFileDialogProps) {
+  return (
+    <Dialog open onClose={onClose} titleId="connect-file-title" size="lg" phoneSheet>
+      <div className="relative flex h-[min(36rem,80vh)] flex-col overflow-y-auto px-5 pb-5 pt-5">
+        <div className="absolute right-3 top-3">
+          <DialogCloseButton onClick={onClose} />
+        </div>
+        <ConnectFilePanel
+          {...panel}
+          onConnected={(tabId, made) => {
+            onClose();
+            onConnected(tabId, made);
+          }}
+          onGoTo={(tabId) => {
+            onClose();
+            onGoTo(tabId);
+          }}
+        />
+      </div>
+    </Dialog>
   );
 }

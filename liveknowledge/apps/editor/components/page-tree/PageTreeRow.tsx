@@ -206,7 +206,11 @@ function PageTreeRowView({
           </span>
         </Tooltip>
       ) : (
-        <span data-page-title className="min-w-0 flex-1 truncate">
+        <span
+          data-page-title
+          // A page shown only because a filter's match sits under it: quieter, the way there and not a result.
+          className={`min-w-0 flex-1 truncate ${row.context ? 'text-slate-500 dark:text-slate-400' : ''}`}
+        >
           {name}
         </span>
       )}

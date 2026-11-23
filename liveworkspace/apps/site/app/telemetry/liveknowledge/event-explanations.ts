@@ -136,6 +136,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone ran a Run by Hand automation rule from the Automations screen.',
   'Document|Toggled|AutomationTakenOver':
     'Someone took over a rule paused on lost access: it now runs as them, and is on again.',
+  'UI|Opened|AiSourceSettings':
+    'Someone pressed Use Your Own Key, Change or Fix Key on an AI feature’s source line, opening Settings › AI.',
+  'UI|Added|AiSourceKey':
+    'Someone added an AI key of their own in Settings › AI after opening it from an AI feature on built-in AI.',
   'UI|Opened|Automations': 'Someone opened the Automations screen from the Tools menu.',
   'UI|Opened|AutomationsOffline':
     'Someone opened Automations on a knowledgebase kept Offline, which asks them to sync it first.',
@@ -828,6 +832,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|AskAboutPage': "Someone opened Ask from a page's AI Context, asking about that page.",
   'UI|Used|OnThisPage': 'Someone jumped to a heading from the On This Page list.',
   'UI|Used|CopyPageLink': "Someone copied a page's link from its menu in the page tree.",
+  'UI|Used|LabelFilter':
+    "Someone filtered the page tree by a label, from Filter by Label or a page's label pill.",
+  'Element|Added|Label': 'Someone put a label on a page, one already in use or one they made.',
+  'Element|Deleted|Label': 'Someone took a label off a page.',
+  'Element|Changed|Label':
+    'Someone renamed a label or changed its colour, on every page that carries it.',
   'UI|Used|RestorePage': "Someone restored a page from the knowledgebase's page Trash.",
   'UI|Used|DeletePageForever': 'An Editor deleted a page in the page Trash forever.',
   'UI|Used|EmptyPageTrash': "An Editor emptied the knowledgebase's page Trash.",

@@ -15,3 +15,5 @@ export * from './built-in-client';
 export * from './model-providers';
 export * from './provider-door';
 export * from './key-check';
+export * from './own-key';
+export * from './keyed-runner';

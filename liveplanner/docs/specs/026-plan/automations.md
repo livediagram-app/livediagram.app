@@ -692,8 +692,10 @@ steps only; the run is **Failed** if any did, naming them.
 
 **Summarise Card**, **Suggest Card Type** and **Triage** are the rule's **AI actions**: each asks a language model one
 question about the card and writes what it answers, constrained, as Automation. They sit in Add Action under their
-own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel says "Uses AI: counts toward this plan's
-100 AI steps a day" (the step's card in the rule: "Uses AI: counts toward 100 a day").
+own heading, **AI** ("100 a day per plan"), with a sparkle, and each panel shows the source line: **Built-in AI**,
+"Rules run on built-in AI: counts toward this plan's 100 AI steps a day", with no action, since a rule's run has no
+person's request behind it and so never uses a key ([ai-keys.md "Which key wins"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#which-key-wins);
+the step's card in the rule: "Uses AI: counts toward 100 a day").
 
 ### What each does
 
@@ -834,9 +836,13 @@ the same model as the AI actions, asked a different question: never a rule that 
   as New Rule is.
 - It opens the **Describe a Rule** dialog (a sheet on a phone): the line "Say when the rule should run and what it
   should do. You check it before anything is saved.", a text box ("When a card moves to Done, set Completed On to
-  today and remove the blocked label"), its count ("120 / 500"), three example chips that fill the box (**Stamp Done
-  Cards**, **Welcome Form Responses**, **Nudge Overdue Cards**), the line "Uses AI: counts toward this plan's 100 AI
-  steps a day", then **Cancel** and **Draft Rule** (also Ctrl or ⌘ Enter). Draft Rule is disabled while the box is empty.
+  today and remove the blocked label") with **Try an Example** above it: three example chips that fill the box
+  (**Stamp Done Cards**, **Welcome Form Responses**, **Nudge Overdue Cards**). Under the box, its count ("120 / 500")
+  and the source line (`AiSource`, [ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)):
+  **Built-in AI** with "Counts toward this plan's 100 AI steps a day", or the plan's team's key or the person's own
+  with "No daily limits", and **Use Your Own Key** or **Change**. On a key a draft counts toward none of the plan's
+  AI asks or drafts. Then **Cancel** and **Draft Rule** (also Ctrl or ⌘ Enter). Draft Rule is disabled while the box
+  is empty.
 - While it drafts, the button reads **Drafting…** with a spinner and the box is read-only; Cancel stops waiting
   (the call still counts). It takes a few seconds.
 - A draft opens the **builder**, filled in, unsaved and off, as a template does, with a violet note under its header:

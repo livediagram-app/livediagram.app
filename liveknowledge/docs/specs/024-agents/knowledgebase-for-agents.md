@@ -36,6 +36,11 @@ label, reason, factors }` beside the trust fields: the page's Health Score, 0 to
   low-scoring page as less reliable, to prefer the higher-scoring page when two disagree, and to tell the person
   when an answer rests on a low-scoring page and why. `list_pages` does not carry it (the tree is read without the
   pages' signals); read or search a page for it.
+- **Labels** ([Page labels](../030-knowledgebase/page-surface.md#page-labels)): `search_pages` takes `labels` (names,
+  ignoring case) and finds only the pages carrying any of them ("only Engineering pages"); a name the knowledgebase
+  does not have is refused, naming the labels it has. `list_pages` rows and `read_page` carry each page's `labels` by
+  name (left out for a page with none), and `list_pages` takes the same `labels` to list only those pages. Agents
+  cannot put labels on pages or make them yet.
 - Every read is counted for [AI Knowledge](../030-knowledgebase/ai-knowledge.md) under the client's name.
 - Tool results are small by default (a passage, not a page) and name the next tool to call for more.
 

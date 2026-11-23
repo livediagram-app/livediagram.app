@@ -166,6 +166,7 @@ question with no answer under it (Unanswered Question), two pages with opposite 
 sparkle over a page of removed and added lines (Agent Suggested a Change), the tick lifting off (Clear Verification),
 an envelope to the owner (Email the Page Owner), and a page joining a stack the agent reads (Always in Context).
 
+- Which AI ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)): Describe a Rule runs on the person's own key, or the knowledgebase's team's, when one applies, else built-in AI, and its dialog shows the source line with Try an Example above the box; Summarise with AI always runs on built-in AI, and its panel says so.
 - Describe a Rule offers examples a knowledgebase fits ("Tell Slack when a page is due for review", "Email the owner
   when an agent changes their page", "Post unanswered questions to Slack").
 - The empty state's **How Rules Work** opens the help centre's Automations article (`/help/tools/automations`).

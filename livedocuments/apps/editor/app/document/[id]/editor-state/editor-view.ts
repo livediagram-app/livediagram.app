@@ -291,6 +291,7 @@ export function editorView({
     removeImageFromElement: elementsSlice.removeImageFromElement,
     setImageAlt: elementsSlice.setImageAlt,
     renameTab: tabsSlice.renameTab,
+    followConnectedTab: tabsSlice.followConnectedTab,
     renameTabFolder: tabsSlice.renameTabFolder,
     moveTabToFolder: tabsSlice.moveTabToFolder,
     setFolderColour: tabsSlice.setFolderColour,

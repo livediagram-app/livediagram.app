@@ -399,6 +399,14 @@ export const PAGE_LINKS_COPIED = chart(
   { types: ['CopyPageLink'] },
 );
 
+export const LABEL_FILTERS_SET = chart(
+  'UI',
+  'Used',
+  'Label Filters Set',
+  "The page tree filtered by a label, from its Filter by Label menu or a page's label pill.",
+  { types: ['LabelFilter'], rising: 'neutral' },
+);
+
 export const PAGES_RESTORED = chart(
   'UI',
   'Used',
@@ -427,12 +435,13 @@ export const PAGE_NAVIGATION: MetricStack = {
   stack: true,
   title: 'Getting Around',
   blurb:
-    'How people move through a knowledgebase: links between pages followed both ways, headings jumped to, page links copied and the page tree folded.',
+    'How people move through a knowledgebase: links between pages followed both ways, headings jumped to, page links copied, the page tree filtered by label and folded.',
   members: [
     PAGE_LINKS_FOLLOWED,
     BACKLINKS_FOLLOWED,
     ON_THIS_PAGE_JUMPS,
     PAGE_LINKS_COPIED,
+    LABEL_FILTERS_SET,
     PAGES_RESTORED,
     PAGES_DELETED_FOREVER,
     PAGE_TREE_FOLDED,

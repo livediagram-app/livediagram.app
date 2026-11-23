@@ -178,6 +178,8 @@ describe('This Knowledgebase, searched', () => {
       'd1',
       'rollback',
       expect.any(AbortSignal),
+      // No label filter on: every page.
+      [],
     );
     fireEvent.click(screen.getAllByRole('option')[0]!);
     expect(setActiveId).toHaveBeenCalledWith('b');

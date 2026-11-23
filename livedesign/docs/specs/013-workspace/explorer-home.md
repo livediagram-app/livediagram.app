@@ -224,10 +224,10 @@ Used and Recent, on Home"): a design is in the first of New, Most Used and Recen
   section with no design at all is not drawn, heading included.
 - While it loads, each section's heading stands over its own skeleton, two rows of cards (the phone's, one strip),
   the height of a full section; a section the read finds empty then leaves.
-- With **no design at all** Most Used is left out and Recent keeps its heading over the Explorer's one empty state
-  ("No designs yet", "The designs you open will gather here."). Only then is Recent shorter than its reserved height.
-- On a phone with no design at all, the strip holds the small [empty state](../004-interface-design/empty-states.md)'s
-  heading alone, the size of one tile, and no See More tile.
+- With **no design at all** (nothing made, opened, in a space or shared) no section is drawn: Home shows one
+  empty state for the whole view, "No designs yet", "The designs you make, open or have shared with you gather
+  here.", with **New Design** (the platform's [Nothing on Home](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#nothing-on-home)).
+  The same on a phone.
 
 ### Making a design
 
@@ -294,14 +294,14 @@ An **open** is the editor loading a design for a person to look at.
 
 Every state keeps the layout it lands in: headings are in place from the first paint, and each section's skeleton
 has the size of what replaces it, so nothing shifts (CLS 0). The one exception is a person with no design at all:
-Recent's empty state is shorter than the skeleton, on a page with nothing else on it.
+Home's one empty state is shorter than the skeletons, on a page with nothing else on it.
 
-| State          | What shows                                                                                           |
-| -------------- | ---------------------------------------------------------------------------------------------------- |
-| Loading        | Each section's heading over its skeleton: New's, Most Used's and Recent's cards (the phone's strips) |
-| Partial        | What exists, no empty boxes; a section with none left out ([Fewer designs](#fewer-designs))          |
-| Nothing opened | Recent alone, its empty state "No designs yet": "The designs you open will gather here."             |
-| Read failed    | Recent's heading over one "Couldn’t load Home." with **Try again**; no Most Used                     |
+| State          | What shows                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| Loading        | Each section's heading over its skeleton: New's, Most Used's and Recent's cards (the phone's strips)  |
+| Partial        | What exists, no empty boxes; a section with none left out ([Fewer designs](#fewer-designs))           |
+| Nothing at all | No sections; one empty state, "No designs yet", with **New Design** ([Fewer designs](#fewer-designs)) |
+| Read failed    | Recent's heading over one "Couldn’t load Home." with **Try again**; no Most Used                      |
 
 Under reduced motion nothing animates: no skeleton pulse, no smooth scrolling.
 

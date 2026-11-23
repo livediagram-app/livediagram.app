@@ -3,6 +3,7 @@
 // made: the editor's Create Form makes the tab. `POST /api/form-drafts`.
 
 import type { FormDraft } from '@liveplanner/forms';
+import type { AiKeyFailureBody } from './plan-drafts';
 
 export interface FormDraftRequest {
   prompt: string;
@@ -24,6 +25,9 @@ export const FORM_DRAFT_ERRORS = [
   'form_draft_capped',
   // No model, one that erred or was slow, or a count that couldn't be read (503).
   'form_draft_unavailable',
+  // On the person's own key: the provider refused it (revoked, out of credit, a model it can't use) or it will not
+  // open (422), with `aiKey` (ai-keys.md "Every AI feature honours the choice"). Never sent to built-in AI instead.
+  'ai_key_failed',
 ] as const;
 export type FormDraftError = (typeof FORM_DRAFT_ERRORS)[number];
 
@@ -32,4 +36,5 @@ export interface FormDraftErrorBody {
   error: FormDraftError;
   path?: string;
   message?: string;
+  aiKey?: AiKeyFailureBody;
 }

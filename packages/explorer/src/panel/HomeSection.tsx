@@ -23,7 +23,8 @@ import { JumpBackInCard } from './pane-items';
 // ---- Home ----------------------------------------------------------------------------------------------
 
 // The panel's Home (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel's Home"): Most Used, then
-// Recent with See all, each under its own heading, from one request. Each holds one row of four (PANEL_PER_GROUP);
+// Recent with See all, each under its own heading, from one request; a section with nothing in it is left out, and with
+// both empty the pane shows one empty state and no headings. Each holds one row of four (PANEL_PER_GROUP);
 // Recent takes two (PANEL_RECENT_ALONE) while nothing is most used yet, so a newcomer still sees two full rows.
 const PANEL_PER_GROUP = 4;
 const PANEL_RECENT_ALONE = 8;
@@ -120,6 +121,15 @@ export function HomeSection({
   const onlyOpen =
     empty &&
     (list.items.some((i) => i.id === currentId) || localOpened.some((i) => i.id === currentId));
+  // Nothing to show: the pane's one empty state, under no heading (one-explorer.md "The editors' panel's Home").
+  if (empty)
+    return (
+      <PaneEmpty
+        icon={<ClockIcon />}
+        title={onlyOpen ? 'Nothing else yet' : `No ${words.lowerMany} yet`}
+        description={homeEmptyLine(words.lowerMany, onlyOpen)}
+      />
+    );
   return (
     <div className="flex flex-col gap-6">
       {mostUsed.length ? (
@@ -131,28 +141,20 @@ export function HomeSection({
           </PaneGrid>
         </PaneSection>
       ) : null}
-      {recent.length || empty ? (
+      {recent.length ? (
         <PaneSection title={RECENT} action={seeAll}>
-          {recent.length ? (
-            <PaneGrid
-              label={RECENT}
-              fullRows={recent.length > PANEL_PER_GROUP ? PANEL_RECENT_ALONE : PANEL_PER_GROUP}
-            >
-              {recent.map((item) =>
-                isIndexed(item) ? (
-                  <JumpBackInCard key={item.id} item={item} />
-                ) : (
-                  <PanelLocalCard key={item.id} item={item} />
-                ),
-              )}
-            </PaneGrid>
-          ) : (
-            <PaneEmpty
-              icon={<ClockIcon />}
-              title={onlyOpen ? 'Nothing else yet' : `No ${words.lowerMany} yet`}
-              description={homeEmptyLine(words.lowerMany, onlyOpen)}
-            />
-          )}
+          <PaneGrid
+            label={RECENT}
+            fullRows={recent.length > PANEL_PER_GROUP ? PANEL_RECENT_ALONE : PANEL_PER_GROUP}
+          >
+            {recent.map((item) =>
+              isIndexed(item) ? (
+                <JumpBackInCard key={item.id} item={item} />
+              ) : (
+                <PanelLocalCard key={item.id} item={item} />
+              ),
+            )}
+          </PaneGrid>
         </PaneSection>
       ) : null}
     </div>

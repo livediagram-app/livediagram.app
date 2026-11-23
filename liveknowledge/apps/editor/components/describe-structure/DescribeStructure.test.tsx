@@ -202,7 +202,7 @@ describe('the dialog', () => {
     act(() => openDescribeStructure('p1'));
     const field = await screen.findByLabelText('What Is This Page For?');
     expect(field.getAttribute('placeholder')).toBe('What goes on “Deploys”, in your own words.');
-    await waitFor(() => expect(screen.getByText('Uses built-in AI')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Built-in AI')).toBeTruthy());
     fireEvent.change(field, { target: { value: '  How we ship.  ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Describe' }));
     await waitFor(() => expect(screen.getByTestId('open').textContent).toBe('null'));
@@ -240,19 +240,29 @@ describe('the dialog', () => {
       <DescribeStructureDialog tabId="p1" onClose={vi.fn()} />,
       chrome(EMPTY(), { editing: true }).value,
     );
-    await waitFor(() => expect(screen.getByText('Uses built-in AI')).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Built-in AI')).toBeTruthy());
     fireEvent.click(screen.getByRole('button', { name: 'Describe' }));
     await waitFor(() => expect(structureApi.apiDescribeStructure).toHaveBeenCalled());
     expect(structureApi.apiDescribeStructure.mock.calls[0]![3]).toMatchObject({ ai: 'built-in' });
   });
 
   it("says the team's key when it answers and is not chosen away from", async () => {
-    api.apiKnowledgeAi.mockResolvedValue(settings({ uses: 'team' }));
+    api.apiKnowledgeAi.mockResolvedValue(
+      settings({
+        uses: 'team',
+        usesModel: 'gpt-6.2-astra',
+        usesModelLabel: 'GPT-6.2 Astra',
+        usesProvider: 'openai',
+      }),
+    );
     renderInEditor(
       <DescribeStructureDialog tabId="p1" onClose={vi.fn()} />,
       chrome(EMPTY(), { editing: true }).value,
     );
-    await waitFor(() => expect(screen.getByText("Uses your team's key")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText('Your Team’s Key')).toBeTruthy());
+    // The team's key is its admins' to change: the line names its provider and model, with no action.
+    expect(screen.getByText(/OpenAI · GPT-6.2 Astra · No daily limits/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /in Settings › AI/ })).toBeNull();
   });
 
   it('tells a failure in words and keeps the dialog open, the page untouched', async () => {
@@ -267,6 +277,28 @@ describe('the dialog', () => {
     structureApi.apiDescribeStructure.mockResolvedValue({ ok: false, kind: 'no-structure' });
     fireEvent.click(screen.getByRole('button', { name: 'Describe' }));
     expect(await screen.findByText('The AI Could Not Draft This Page')).toBeTruthy();
+  });
+
+  it('says a key the provider refused on the line, with Fix Key, its words heard once', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(
+      settings({ uses: 'personal', usesModel: 'gpt-6.2-astra', usesProvider: 'openai' }),
+    );
+    structureApi.apiDescribeStructure.mockResolvedValue({
+      ok: false,
+      kind: 'bad-key',
+      provider: 'openai',
+    });
+    renderInEditor(
+      <DescribeStructureDialog tabId="p1" onClose={vi.fn()} />,
+      chrome(EMPTY(), { editing: true }).value,
+    );
+    await waitFor(() => expect(screen.getByText('Your Key')).toBeTruthy());
+    fireEvent.click(screen.getByRole('button', { name: 'Describe' }));
+    expect(await screen.findByText('Your Key Needs Attention')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Fix Key, in Settings › AI' })).toBeTruthy();
+    // The dialog's own callout is read out, not drawn beside the line.
+    const alert = screen.getByRole('alert');
+    expect(alert.className).toContain('sr-only');
   });
 
   it('enters edit mode first when it ended while the request was out', async () => {

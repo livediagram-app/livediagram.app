@@ -1222,6 +1222,9 @@ importers:
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
@@ -1419,6 +1422,9 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
@@ -5567,6 +5573,9 @@ importers:
       '@liveplanner/templates':
         specifier: workspace:*
         version: link:../../packages/templates
+      '@liveworkspace/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../../../packages/api-kit
@@ -5749,6 +5758,9 @@ importers:
       '@liveplanner/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/ai':
+        specifier: workspace:*
+        version: link:../../../packages/ai
       '@liveworkspace/api-client':
         specifier: workspace:*
         version: link:../../../packages/api-client
@@ -7926,6 +7938,9 @@ importers:
 
   packages/automations:
     dependencies:
+      '@liveworkspace/ai':
+        specifier: workspace:^
+        version: link:../ai
       '@liveworkspace/api-schema':
         specifier: workspace:^
         version: link:../api-schema
@@ -7975,6 +7990,9 @@ importers:
 
   packages/automations-ui:
     dependencies:
+      '@liveworkspace/ai':
+        specifier: workspace:^
+        version: link:../ai
       '@liveworkspace/api-schema':
         specifier: workspace:^
         version: link:../api-schema
@@ -9123,6 +9141,9 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:^
         version: link:../account-menu
+      '@liveworkspace/ai':
+        specifier: workspace:^
+        version: link:../ai
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../api-schema
@@ -9603,6 +9624,9 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:*
         version: link:../account-menu
+      '@liveworkspace/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@liveworkspace/api-kit':
         specifier: workspace:*
         version: link:../api-kit

@@ -152,6 +152,9 @@ export async function writeTabSave(
     if (scoped) {
       if (!existingTab) return notFound();
       body.name = existingTab.name;
+      // Nor a connected tab's file name kept beside its own (connected-tabs.md "A tab's own name").
+      if (existingTab.targetName === undefined) delete body.targetName;
+      else body.targetName = existingTab.targetName;
     }
     // Data-loss backstop (docs/specs/006-design/per-tab-storage.md): refuse to blank a tab that
     // holds content unless the editor marks the empty write intentional (`X-Allow-Empty: 1`, set

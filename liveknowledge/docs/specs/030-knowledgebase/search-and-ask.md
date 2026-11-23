@@ -30,6 +30,15 @@ Owner, 2026-11-20: the sidebar's search is the **universal search**, with this k
   search in the browser over the same passages.
 - **Bounds:** a query is at most 200 characters, returns at most 20 passages, and is rate-limited per caller. Indexing
   a save is linear in the page's length; a 100,000 character page must index within 50 ms of CPU (a test holds it).
+- **By label** ([Page labels](page-surface.md#page-labels)): while the page tree's label filter is on, This
+  Knowledgebase finds only the pages that carry any of its labels, and while the field is empty its recent pages are
+  those pages too. The group's heading says so ("This Knowledgebase, Labelled Engineering, Onboarding") and carries
+  **Clear Label Filter**, which clears the filter in the tree as well. Where no page of the labels matches, "No Pages
+  Match" as before. The api takes the labels as `labels` (each a label's id or its name, ignoring case; any of them
+  matches) and looks only at those pages' passages, so a filter never empties the twenty results the index answers; a
+  label the knowledgebase does not have is `400 unknown_label`, naming the labels it has. An agent's search with a
+  label that finds nothing is not recorded as a question nobody could answer: the rest of the knowledgebase was not
+  searched.
 
 ## Ask
 
@@ -41,7 +50,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   and no setup. A team that wants its own provider adds its **own key**, Claude's or OpenAI's
   ([Providers](#providers)), in **AI Settings**; once saved, everything that uses a model runs on it instead. A
   stored key that cannot be opened is refused ("Replace it in AI Settings"), never quietly swapped for built-in AI.
-  With no key, the Ask view says quietly under the field **Uses built-in AI**.
+  With no key, the Ask view shows the source line under the field: **Built-in AI**, with **Use Your Own Key**.
 - **Choosing which AI answers** (owner, 2026-11-21: "on Ask, I want to be able to choose whether to ask my configured
   AI, or the built in AI"). Once a key applies ([Which key answers](#which-key-answers)), the quiet line under Ask's field becomes a small choice of two, **Answer With**:
   **Built-In AI** and the team's key named by its model ("Claude Fable 5.2 (Team Key)"). The team's key is chosen
@@ -80,6 +89,11 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   one is not), **Ask <owner> to Write It**.
 - **Scope:** an answer reads only pages the asker can open. A follow-up keeps the conversation (up to 10 turns).
   Chats are kept per person, per knowledgebase, in the browser ([The Ask view](#the-ask-view)).
+- **By label** ([Page labels](page-surface.md#page-labels)): a question may name labels (`labels`, each an id or a
+  name, ignoring case), and is then answered only from passages of the pages that carry any of them ("only
+  Engineering pages"); `400 unknown_label` for a label the knowledgebase does not have. Each question carries its
+  own, so a follow-up may widen or narrow it. A part such a question's pages do not cover is said in the answer as
+  any gap is, but is not recorded as an unanswered question: the rest of the knowledgebase was not asked.
 - **Bounds:** 20 questions a person an hour and 200 a knowledgebase a day (`ASK_*` limits, checked in the room),
   whichever AI answers, and on built-in AI the [Built-in AI](#built-in-ai) caps too; a question is at most 1,000
   characters; the passages sent are capped at 24,000 characters. A failed or refused model call says
@@ -111,7 +125,13 @@ The knowledgebase's own key stays, and comes first.
   "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's
   **Answer With**, whose second choice names the key's model and its source ("Claude Fable 5.2 (Team Key)", "(Your
   Key)", "(Knowledgebase Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
-  `usesModel` and its name `usesModelLabel`, read for the asker; the AI Knowledge overview does not ask accounts.
+  `usesModel` and its name `usesModelLabel`, and the key's provider `usesProvider` (a team's or a person's may be another than the knowledgebase's), read for the asker; the AI Knowledge overview does not ask accounts.
+- **The source line** ([ai-keys.md "The source line"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#the-source-line-aisource)):
+  Ask, Describe to Set Up and Describe the Structure show the shared `AiSource` line in place of their own "Uses …"
+  words: the mark, which key ("This Knowledgebase's Key", "Your Team's Key", "Your Key", "Built-in AI") with the
+  model, and its action. On the knowledgebase's own key, **Change** is an Editor's and opens AI Settings; on the
+  team's, the person's or built-in AI it opens Settings › AI over the view, and closing it reads `GET ai` again, with
+  no reload. A key that fails says so on the line, with **Fix Key**.
 
 ## Built-in AI
 
@@ -178,6 +198,7 @@ called for either provider, so the request and stream shapes are unverified agai
 | Action                                | Editor | Participant | Viewer |
 | ------------------------------------- | ------ | ----------- | ------ |
 | Search                                | yes    | yes         | yes    |
+| Search, Ask by label                  | yes    | yes         | yes    |
 | Ask                                   | yes    | yes         | yes    |
 | Add, replace or remove the key, model | yes    | no          | no     |
 | Draft a page from a gap               | yes    | yes         | no     |
@@ -235,6 +256,12 @@ strangers.
     "Older Passage" pill and the reason under its passage, its trust in the same badges as a source, and no
     number, so it never shares one with a cited source. One with no reason (kept in the browser from before a
     set-aside needed one) is not shown.
+- **Answer From** (Page labels): above the field, where the knowledgebase has labels, a quiet **All Pages** button
+  (a tag icon and a chevron) opens a menu of the labels, each with a tick; with some chosen it reads **Only** and
+  each label as a pill with a remove button ("Stop Answering Only From <name>"), and the next question is answered
+  from those pages alone. The choice is this person's, per knowledgebase, kept while the browser tab lives, and
+  applies to the next question asked, as the choice of AI does. Each answer asked under labels says so under its
+  trust line ("From pages labelled Engineering").
 - **The field** takes 1,000 characters and counts from 900. Enter sends; Shift and Enter make a new line. While an
   answer streams the field waits and the button is **Stop**, which ends the request and keeps what had arrived.
   After ten turns the field gives way to a line saying to start a new question.

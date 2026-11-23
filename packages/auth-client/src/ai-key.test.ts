@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AI_KEY_TIMEOUT_MS, aiKeyFor } from './ai-key';
+import { AI_KEY_TIMEOUT_MS, aiKeyFor, personAiKey } from './ai-key';
 import type { ClientCredentials } from './oauth';
 
 const KEY = 'sk-ant-api03-planted-secret-key-4f2a';
@@ -76,6 +76,9 @@ describe("asking accounts for the person's AI key", () => {
         () => Response.json({ error: 'ai_key_unreadable', source: 'nobody' }, { status: 409 }),
         'unavailable',
       ],
+      // A deployment that keeps no keys: none applies, so built-in AI answers.
+      [() => Response.json({ error: 'ai_keys_unavailable' }, { status: 503 }), 'none'],
+      [() => Response.json({ error: 'overloaded' }, { status: 503 }), 'unavailable'],
       [() => Response.json({ error: 'rate_limited' }, { status: 429 }), 'unavailable'],
       [() => Response.json({ error: 'invalid_token' }, { status: 401 }), 'unavailable'],
       [() => new Response('Not found', { status: 404 }), 'unavailable'],
@@ -124,5 +127,46 @@ describe("asking accounts for the person's AI key", () => {
     const pending = aiKeyFor(creds, { accessToken: 'jwt-ada', want: 'key' });
     await vi.advanceTimersByTimeAsync(AI_KEY_TIMEOUT_MS);
     expect(await pending).toEqual({ status: 'unavailable' });
+  });
+});
+
+describe('asking for the key of the person a request is from', () => {
+  const answer = { status: 'none' } as const;
+  it('asks for a signed-in person in person, with their bearer and the item’s team', async () => {
+    const door = vi.fn(async () => answer);
+    const { creds } = credentials(() => Response.json({ source: null }));
+    expect(
+      await personAiKey(creds, { accountUserId: 'user_ada', bearer: 'jwt-ada' }, 'team_1', door),
+    ).toBe(answer);
+    expect(door).toHaveBeenCalledWith(creds, {
+      accessToken: 'jwt-ada',
+      teamId: 'team_1',
+      want: 'key',
+    });
+    await personAiKey(creds, { accountUserId: 'user_ada', bearer: 'jwt-ada' }, undefined, door);
+    expect(door).toHaveBeenLastCalledWith(creds, {
+      accessToken: 'jwt-ada',
+      teamId: null,
+      want: 'key',
+    });
+  });
+
+  it('asks nothing for anyone else, or with no accounts to ask', async () => {
+    const door = vi.fn(async () => answer);
+    const { creds } = credentials(() => Response.json({ source: null }));
+    const person = { accountUserId: 'user_ada', bearer: 'jwt-ada' };
+    for (const [c, caller] of [
+      [null, person],
+      [creds, { ...person, accountUserId: null }],
+      [creds, { ...person, token: { id: 'tok' } }],
+      [creds, { ...person, workbench: { sessionId: 's' } }],
+      [creds, { ...person, bearer: null }],
+    ] as const)
+      expect(await personAiKey(c, caller, 'team_1', door)).toBeNull();
+    expect(door).not.toHaveBeenCalled();
+    // The real door, with no binding: unavailable, never a throw.
+    expect(await personAiKey({ ...creds, accounts: undefined }, person, null)).toEqual({
+      status: 'unavailable',
+    });
   });
 });

@@ -15,7 +15,11 @@ import { TabFrame } from '@liveworkspace/workbench/components/chrome/TabFrame';
 import type { CanvasMenuActions } from './TabBar';
 import type { AccessLevel } from '@livedesign/api-schema';
 import { ConnectedTab } from '@liveworkspace/workbench/components/chrome/ConnectedTab';
-import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import {
+  connectionOf,
+  hasOwnName,
+  targetNameOf,
+} from '@liveworkspace/workbench/components/connect/tab-connection';
 
 // One tab in the bar: this app's pieces (its rename field, presence avatars, menu and split view mark) in the
 // shared TabFrame, which draws the tab alike in every editor ("How a tab looks" in the editor spec). Loose tabs and
@@ -113,7 +117,8 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         setMenuFor(tab.id);
       };
   // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md "How it looks"): its file's app logo and
-  // name, never renamed by hand, dragged, foldered and opened like any tab.
+  // name, renamed (its own name, "A tab's own name"), dragged, foldered and opened like any tab. A rename to nothing
+  // follows the file again, so its field commits an empty name rather than keeping the old one.
   const connection = connectionOf(tab);
   if (connection) {
     return (
@@ -129,11 +134,27 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
         dragging={reorderDrag.isDragging(tab.id)}
         dragHandlers={reorderDrag.handlersFor(tab.id)}
         onSelect={() => onSelect(tab.id)}
+        onRequestRename={() => setEditingId(tab.id)}
         onContextMenu={onContextMenu}
+        targetName={hasOwnName(tab) ? targetNameOf(tab) : undefined}
+        renameField={
+          isEditing ? (
+            <NameEditor
+              label="Tab name"
+              initial={tab.name}
+              onCommit={(name) => {
+                onRename(tab.id, name.trim());
+                setEditingId(null);
+              }}
+              onCancel={() => setEditingId(null)}
+              className={TAB_RENAME_FIELD_CLASS}
+            />
+          ) : undefined
+        }
         hasPresence={(participantsByTab.get(tab.id)?.length ?? 0) > 0}
         presence={presenceStack}
         menu={
-          isActive && !readOnly ? (
+          isActive && !isEditing && !readOnly ? (
             <EllipsisMenuButton
               open={menuFor === tab.id}
               onToggle={() => setMenuFor(menuFor === tab.id ? null : tab.id)}

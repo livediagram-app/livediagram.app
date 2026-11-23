@@ -1,3 +1,5 @@
+import { answerEvents, errorResponse, fakeFetch, streamResponse } from '@liveworkspace/ai/testing';
+import type { KeyAnswer } from '@liveworkspace/ai';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   FORM_DRAFT_CAPPED,
@@ -20,6 +22,27 @@ import { makeTestRouteContext } from './test-route-context';
 // Describe a Form (docs/specs/030-forms/describe-a-form.md), Workers AI a stand-in binding and PLAN_ROOM a stand-in of
 // rooms by name: who may ask, what the model is sent, the second ask, the cap shared with Describe a Plan, and that
 // nothing but the count is written or logged. No network.
+// Whose key applies (ai-keys.md "Every AI feature honours the choice"): built-in AI unless a test says otherwise.
+const keyFor = vi.hoisted(() => vi.fn(async (): Promise<unknown> => null));
+vi.mock('@liveworkspace/auth-client/ai-key', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveworkspace/auth-client/ai-key')>()),
+  personAiKey: keyFor,
+}));
+const KEY = 'sk-ant-api03-planted-secret-key-7q7q';
+const onKey = (answer: KeyAnswer, respond: () => Response) => {
+  keyFor.mockResolvedValue(answer);
+  const faked = fakeFetch(respond);
+  vi.stubGlobal('fetch', faked.fetch);
+  return faked.sent;
+};
+const MINE: KeyAnswer = {
+  status: 'key',
+  source: 'account',
+  provider: 'anthropic',
+  model: 'claude-opus-5-5',
+  key: KEY,
+};
+
 const events: string[] = [];
 vi.mock('../server-telemetry', () => ({
   reportServerEvent: async (_env: unknown, category: string, action: string, type: string) =>
@@ -67,6 +90,9 @@ let env: Env;
 let waits: Promise<unknown>[];
 let logs: unknown[][];
 beforeEach(() => {
+  keyFor.mockReset();
+  keyFor.mockResolvedValue(null);
+  vi.unstubAllGlobals();
   calls = [];
   replies = [FORM];
   events.length = 0;
@@ -263,5 +289,44 @@ describe('the shared budget', () => {
       message: PLAN_DRAFT_FAILED,
     });
     expect(calls).toEqual([]);
+  });
+});
+
+describe('on the person’s own key', () => {
+  it('drafts on the provider, asking for the person’s key alone and spending no draft', async () => {
+    const sent = onKey(MINE, () => streamResponse(answerEvents([JSON.stringify(FORM)])));
+    const res = await draft();
+    expect(res.status).toBe(200);
+    expect((await res.json<FormDraftResponse>()).draft).toBeTruthy();
+    expect(keyFor).toHaveBeenCalledWith(null, expect.anything(), null);
+    expect(calls).toEqual([]);
+    expect(stores.size).toBe(0);
+    expect(sent[0]!.headers['x-api-key']).toBe(KEY);
+  });
+
+  it('says a key the provider refuses, whose it is, never drafting on built-in AI instead', async () => {
+    onKey(MINE, () => errorResponse(401, 'authentication_error'));
+    const res = await draft();
+    expect(res.status).toBe(422);
+    const body = await res.json<Record<string, unknown>>();
+    expect(body['error']).toBe('ai_key_failed');
+    expect(body['aiKey']).toEqual({ source: 'account', provider: 'anthropic', kind: 'bad-key' });
+    expect(JSON.stringify(body)).not.toContain(KEY);
+    expect(calls).toEqual([]);
+  });
+
+  it('says the provider’s busy words, a key that will not open, and accounts that could not say', async () => {
+    onKey(MINE, () => errorResponse(529, 'overloaded_error'));
+    const busy = await draft();
+    expect(busy.status).toBe(503);
+    expect((await error(busy)).error).toBe('form_draft_unavailable');
+    keyFor.mockResolvedValue({ status: 'unreadable', source: 'account' });
+    expect((await draft()).status).toBe(422);
+    keyFor.mockResolvedValue({ status: 'unavailable' });
+    const away = await draft();
+    expect(away.status).toBe(503);
+    expect((await error(away)).error).toBe('form_draft_unavailable');
+    expect(calls).toEqual([]);
+    expect(stores.size).toBe(0);
   });
 });

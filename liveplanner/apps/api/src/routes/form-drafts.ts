@@ -19,7 +19,7 @@ import type {
   FormDraftErrorBody,
   FormDraftResponse,
 } from '@liveplanner/api-schema';
-import { aiClient } from '../plan-room/automations/automation-ai';
+import { draftAi, keyFailedResponse, keyFailureOf } from './draft-ai';
 import { spendPlanDraft } from '../plan-draft-count';
 import { json, methodNotAllowed, notFound, signInRequired } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
@@ -29,7 +29,7 @@ import { askForDraft } from './draft-asks';
 const refuse = (status: number, error: FormDraftError, message: string, path?: string) =>
   json({ error, message, ...(path ? { path } : {}) } satisfies FormDraftErrorBody, { status });
 
-type Answer = 'drafted' | 'off_topic' | 'unreadable' | 'capped' | 'failed';
+type Answer = 'drafted' | 'off_topic' | 'unreadable' | 'capped' | 'failed' | 'key_failed';
 
 export async function handleFormDrafts(ctx: RouteContext): Promise<Response> {
   if (ctx.segments.length !== 2) return notFound();
@@ -54,7 +54,10 @@ async function draftForm(ctx: RouteContext): Promise<Response> {
       `prompt must be 1 to ${FORM_DRAFT_PROMPT_MAX} characters`,
       'prompt',
     );
-  const client = aiClient(ctx.env);
+  // The person's own key when they have one (the draft names no plan, so no team's), else built-in AI.
+  const ai = await draftAi(ctx, null, (message) => refuse(503, 'form_draft_unavailable', message));
+  if ('refused' in ai) return ai.refused;
+  const { client } = ai;
   if (!client) return refuse(503, 'form_draft_unavailable', PLAN_DRAFT_NOT_SET_UP);
 
   const env = ctx.env;
@@ -71,22 +74,30 @@ async function draftForm(ctx: RouteContext): Promise<Response> {
     return response;
   };
 
-  // One draft counted against the account's shared budget, before the first ask; its second ask rides it.
-  const spent = await spendPlanDraft(env, accountId, started);
-  if (spent === 'unavailable')
-    return done('failed', 0, refuse(503, 'form_draft_unavailable', PLAN_DRAFT_FAILED));
-  if (!spent) return done('capped', 0, refuse(429, 'form_draft_capped', FORM_DRAFT_CAPPED));
+  // One draft counted against the account's shared budget, before the first ask; its second ask rides it. On a key
+  // nothing is counted.
+  if (!ai.keyed) {
+    const spent = await spendPlanDraft(env, accountId, started);
+    if (spent === 'unavailable')
+      return done('failed', 0, refuse(503, 'form_draft_unavailable', PLAN_DRAFT_FAILED));
+    if (!spent) return done('capped', 0, refuse(429, 'form_draft_capped', FORM_DRAFT_CAPPED));
+  }
 
   const asked = await askForDraft({
     client,
-    gateway: env.AI_GATEWAY,
+    gateway: ai.keyed ? undefined : env.AI_GATEWAY,
+    ...(ai.keyed ? { timeoutMs: ai.timeoutMs } : {}),
     request: (refused) => formDraftRequest(prompt, refused),
     read: (reply) => readFormDraft(reply, prompt),
     onAsk: () => defer(reportServerEvent(env, 'Form', 'Ran', 'FormAiDraft')),
   });
   const { asks } = asked;
-  if (asked.answer === 'failed')
-    return done('failed', asks, refuse(503, 'form_draft_unavailable', PLAN_DRAFT_FAILED));
+  if (asked.answer === 'failed') {
+    const failure = keyFailureOf(ai, asked.keyFailure);
+    if (failure) return done('key_failed', asks, keyFailedResponse(failure, asked.reason));
+    const words = ai.keyed ? asked.reason : PLAN_DRAFT_FAILED;
+    return done('failed', asks, refuse(503, 'form_draft_unavailable', words));
+  }
   if (asked.answer === 'off_topic') {
     defer(reportServerEvent(env, 'Form', 'Ran', 'FormAiOffTopic'));
     return done('off_topic', asks, refuse(422, 'form_draft_off_topic', FORM_DRAFT_OFF_TOPIC));

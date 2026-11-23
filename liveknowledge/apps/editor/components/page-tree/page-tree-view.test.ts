@@ -68,6 +68,46 @@ describe('visiblePageRows', () => {
   });
 });
 
+describe('visiblePageRows under a label filter (page-surface.md "The label filter")', () => {
+  it('keeps the matches and the pages above them, open whatever is closed, the rest away', () => {
+    // d matches under b under a; e matches at the top. a and b are closed.
+    const rows = visiblePageRows(TABS, new Set(['a', 'b']), null, new Set(['d', 'e']));
+    expect(rows.map((r) => [r.id, r.open, r.subpages, r.context])).toEqual([
+      ['a', true, 1, true],
+      ['b', true, 1, true],
+      ['d', false, 0, false],
+      ['e', false, 0, false],
+    ]);
+    expect(rows.map((r) => `${r.position}/${r.siblings}`)).toEqual(['1/2', '1/1', '1/1', '2/2']);
+  });
+
+  it('counts the matches under a match, and shows none for no match', () => {
+    const rows = visiblePageRows(TABS, NONE, null, new Set(['a', 'c', 'd']));
+    expect(rows.map((r) => [r.id, r.subpages, r.context])).toEqual([
+      ['a', 2, false],
+      ['b', 1, true],
+      ['d', 0, false],
+      ['c', 0, false],
+    ]);
+    expect(visiblePageRows(TABS, NONE, 'd', new Set())).toEqual([]);
+    expect(visiblePageRows(TABS, NONE, null).every((r) => !r.context)).toBe(true);
+  });
+
+  it('filters a full knowledgebase (500 pages, 8 levels) within budget', () => {
+    const full: TreeTab[] = Array.from({ length: MAX_KNOWLEDGEBASE_PAGES }, (_, i) =>
+      i % MAX_PAGE_DEPTH === 0 ? tab(`t${i}`) : tab(`t${i}`, `t${i - 1}`),
+    );
+    // The last page of every chain matches: each keeps its whole chain above it.
+    const last = (i: number) => i % MAX_PAGE_DEPTH === MAX_PAGE_DEPTH - 1 || i === full.length - 1;
+    const only = new Set(full.filter((_, i) => last(i)).map((t) => t.id));
+    const start = cpuNowMs();
+    const rows = visiblePageRows(full, NONE, null, only);
+    expect(cpuNowMs() - start).toBeLessThan(cpuBudgetMs(50));
+    expect(rows).toHaveLength(MAX_KNOWLEDGEBASE_PAGES);
+    expect(rows.filter((r) => !r.context)).toHaveLength(only.size);
+  });
+});
+
 describe('treeKeyAction', () => {
   const rows = visiblePageRows(TABS, new Set(['b']), null); // a, b (closed), c, e
   const key = (from: string, k: string, shift = false) => treeKeyAction(rows, from, k, shift);

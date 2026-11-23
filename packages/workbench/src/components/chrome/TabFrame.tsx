@@ -60,6 +60,9 @@ export type TabFrameProps = {
   // Double-click on the open tab: rename it.
   onRequestRename?: () => void;
   onContextMenu?: (e: ReactMouseEvent) => void;
+  // A line the name's Tooltip always shows (a renamed connected tab's file); the full name leads it when cut short.
+  // The tab's accessible name must hold it (its sr-only words), as every Tooltip's label is its control's name.
+  tooltip?: string;
 };
 
 export function TabFrame({
@@ -83,6 +86,7 @@ export function TabFrame({
   onSelect,
   onRequestRename,
   onContextMenu,
+  tooltip,
 }: TabFrameProps) {
   const editing = renameField != null;
   return (
@@ -114,6 +118,7 @@ export function TabFrame({
           afterName={afterName}
           onSelect={onSelect}
           onDoubleClick={readOnly || !active ? undefined : onRequestRename}
+          tooltip={tooltip}
         />
       )}
       {/* The slots ease their width with the strip's sliding card (useTabSlider measures where they will end), so
@@ -140,6 +145,7 @@ function TabName({
   afterName,
   onSelect,
   onDoubleClick,
+  tooltip,
 }: {
   name: string;
   active: boolean;
@@ -148,6 +154,7 @@ function TabName({
   afterName?: ReactNode;
   onSelect: () => void;
   onDoubleClick?: () => void;
+  tooltip?: string | undefined;
 }) {
   const label = useRef<HTMLSpanElement>(null);
   const [cut, setCut] = useState(false);
@@ -183,6 +190,11 @@ function TabName({
       {afterName}
     </button>
   );
+  if (tooltip) {
+    // Cut short, the full name leads it: "Plan, connected to Launch plan".
+    const lead = cut ? `${name}, ${tooltip.charAt(0).toLowerCase()}${tooltip.slice(1)}` : tooltip;
+    return <Tooltip label={lead}>{button}</Tooltip>;
+  }
   return cut ? <Tooltip label={name}>{button}</Tooltip> : button;
 }
 

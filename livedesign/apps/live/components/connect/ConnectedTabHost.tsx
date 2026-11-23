@@ -3,7 +3,10 @@
 // The open connected tab's page, in the canvas's place (liveworkspace/docs/specs/004-index/connected-tabs.md "How it
 // looks"): the shared ConnectedTabPage, loaded the first time a connected tab is opened, never with the editor.
 import dynamic from 'next/dynamic';
-import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import {
+  connectionOf,
+  targetNameOf,
+} from '@liveworkspace/workbench/components/connect/tab-connection';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
 
@@ -16,7 +19,7 @@ const ConnectedTabPage = dynamic(
 );
 
 export function ConnectedTabHost() {
-  const { activeTab, connectedTabs, isStructureReadOnly, renameTab, deleteTab, designId } =
+  const { activeTab, connectedTabs, isStructureReadOnly, followConnectedTab, deleteTab, designId } =
     useEditorContext();
   const offline = useIsOfflineDesign(designId);
   const connection = connectionOf(activeTab);
@@ -24,14 +27,16 @@ export function ConnectedTabHost() {
   return (
     <ConnectedTabPage
       tabId={activeTab.id}
-      name={activeTab.name}
+      // The file's own name, even on a tab an Editor renamed ("A tab's own name").
+      name={targetNameOf(activeTab)}
       connection={connection}
       hostApp="livedesign"
       offline={offline}
       // Remove, Connect Again and the rename are an Editor's who may change the tabs (not a tab-scoped link's).
       canEdit={!isStructureReadOnly}
       grant={connectedTabs.grant}
-      onRename={(name) => renameTab(activeTab.id, name)}
+      // The file's answered name: the tab follows it, or holds it beside a name of its own.
+      onRename={(name) => followConnectedTab(activeTab.id, name)}
       onRemove={() => deleteTab(activeTab.id)}
       onConnectAgain={() => void connectedTabs.connectAgainTab(activeTab.id)}
     />
