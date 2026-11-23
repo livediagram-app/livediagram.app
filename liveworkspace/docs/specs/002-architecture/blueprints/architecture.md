@@ -216,16 +216,17 @@ Each Worker's own logs are in its blueprint. The status service checks every ser
 Production names and bindings (staging adds `-staging` to every Worker, database and bucket name and routes on
 `staging.liveworkspace.app`), from each `apps/<service>/wrangler.toml`:
 
-| Service   | Worker                    | Routes                                                                                                            | D1                        | R2                    | Durable Objects  | Service bindings              | Crons                        | Dev port |
-| --------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------- | --------------------- | ---------------- | ----------------------------- | ---------------------------- | -------- |
-| accounts  | `liveworkspace-accounts`  | `/api/auth/*`, `/api/account/*`, `/.well-known/openid-configuration*`, `/.well-known/oauth-authorization-server*` | `liveworkspace-accounts`  |                       | `WorkbenchStore` | `INDEX`, `TELEMETRY`, `DRIVE` | `17 * * * *`, `*/15 * * * *` | 8787     |
-| index     | `liveworkspace-index`     | `/api/index*`                                                                                                     | `liveworkspace-index`     |                       |                  | `DRIVE`, `ACCOUNTS`           | `23 4 * * *`, `*/15 * * * *` | 8793     |
-| drive     | `liveworkspace-drive`     | `/api/drive*`                                                                                                     |                           |                       | `DriveMirror`    | `INDEX`, `ACCOUNTS`           | (alarms per Durable Object)  | 3011     |
-| media     | `liveworkspace-media`     | `/api/media*`, `/api/previews*`                                                                                   | `liveworkspace-media`     | `liveworkspace-media` |                  | `INDEX`                       | `41 3 * * *`                 | 8792     |
-| community | `liveworkspace-community` | `/api/community*`                                                                                                 | `liveworkspace-community` |                       |                  |                               |                              | 8791     |
-| telemetry | `liveworkspace-telemetry` | `/api/telemetry*`                                                                                                 | `liveworkspace-telemetry` |                       |                  |                               | `17 3 * * *`                 | 8790     |
-| status    | `liveworkspace-status`    | `/api/status*`                                                                                                    | `liveworkspace-status`    |                       |                  |                               | `7 * * * *`                  | 3010     |
-| site      | `liveworkspace-site`      | `liveworkspace.app`, `www.liveworkspace.app` (custom domains)                                                     |                           |                       |                  |                               |                              | 3000     |
+| Service      | Worker                       | Routes                                                                                                            | D1                           | R2                    | Durable Objects  | Service bindings              | Crons                        | Dev port |
+| ------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------- | --------------------- | ---------------- | ----------------------------- | ---------------------------- | -------- |
+| accounts     | `liveworkspace-accounts`     | `/api/auth/*`, `/api/account/*`, `/.well-known/openid-configuration*`, `/.well-known/oauth-authorization-server*` | `liveworkspace-accounts`     |                       | `WorkbenchStore` | `INDEX`, `TELEMETRY`, `DRIVE` | `17 * * * *`, `*/15 * * * *` | 8787     |
+| index        | `liveworkspace-index`        | `/api/index*`                                                                                                     | `liveworkspace-index`        |                       |                  | `DRIVE`, `ACCOUNTS`           | `23 4 * * *`, `*/15 * * * *` | 8793     |
+| drive        | `liveworkspace-drive`        | `/api/drive*`                                                                                                     |                              |                       | `DriveMirror`    | `INDEX`, `ACCOUNTS`           | (alarms per Durable Object)  | 3011     |
+| media        | `liveworkspace-media`        | `/api/media*`, `/api/previews*`                                                                                   | `liveworkspace-media`        | `liveworkspace-media` |                  | `INDEX`                       | `41 3 * * *`                 | 8792     |
+| community    | `liveworkspace-community`    | `/api/community*`                                                                                                 | `liveworkspace-community`    |                       |                  |                               |                              | 8791     |
+| subscription | `liveworkspace-subscription` | `/api/subscription*`                                                                                              | `liveworkspace-subscription` |                       |                  | `ACCOUNTS`                    | `17 * * * *`                 | 8794     |
+| telemetry    | `liveworkspace-telemetry`    | `/api/telemetry*`                                                                                                 | `liveworkspace-telemetry`    |                       |                  |                               | `17 3 * * *`                 | 8790     |
+| status       | `liveworkspace-status`       | `/api/status*`                                                                                                    | `liveworkspace-status`       |                       |                  |                               | `7 * * * *`                  | 3010     |
+| site         | `liveworkspace-site`         | `liveworkspace.app`, `www.liveworkspace.app` (custom domains)                                                     |                              |                       |                  |                               |                              | 3000     |
 
 Every route is on the `liveworkspace.app` zone and every `wrangler.toml` pins `account_id =
 "851be7d244b76a6557bcbe6c4ded80f5"`. `apps/migrate` has no `wrangler.toml`: it is never deployed.
@@ -235,38 +236,49 @@ Each product's API Worker (`<product>-api`, `-staging`) binds `ACCOUNTS` to `liv
 (`@liveworkspace/auth-client` `keysFrom`), its items' Durable Objects included; the public route is the fallback
 when a binding is missing, throws or takes over 2 s (`BOUND_KEYS_TIMEOUT_MS`), as on a local run without that service.
 
+Each product's API Worker and media also read the four subscription vars (`SubscriptionEnv` in
+`packages/subscription`): `PRO_ENABLED` (`"false"` in every `[vars]`), the secret `SUBSCRIPTION_KEY`,
+`SUBSCRIPTION_URL` (staging's own in `[env.staging.vars]`) and the `SUBSCRIPTION` binding to
+`liveworkspace-subscription` (`-staging`). The binding is written in each `wrangler.toml` but commented out until
+the subscription Worker is deployed, because a binding to a Worker that does not exist fails the deploy; without it
+the client fetches the public route. The subscription Worker itself is held out of every deploy
+(`HELD_WORKERS` in `.github/scripts/ci-plan.mjs`) until its D1 databases exist
+([019-subscription/blueprints](../../019-subscription/blueprints/README.md#before-the-first-deploy)).
+
 ## Root scripts
 
 From the root `package.json`:
 
-| Script          | Runs                                                                                   |
-| --------------- | -------------------------------------------------------------------------------------- |
-| `dev:workspace` | `turbo run dev` for the site and all seven services                                    |
-| `dev:site`      | `@liveworkspace/site` alone (`next dev --port 3000`)                                   |
-| `dev:accounts`  | `@liveworkspace/accounts` (`wrangler dev --port 8787 --local-upstream localhost:3000`) |
-| `dev:telemetry` | `@liveworkspace/telemetry-service` (`--port 8790`)                                     |
-| `dev:community` | `@liveworkspace/community-service` (`--port 8791`)                                     |
-| `dev:media`     | `@liveworkspace/media-service` (`--port 8792`)                                         |
-| `dev:index`     | `@liveworkspace/index-service` (`--port 8793`)                                         |
-| `dev:status`    | `@liveworkspace/status-service` (`--port 3010`)                                        |
-| `dev:drive`     | `@liveworkspace/drive-service` (`--port 3011`)                                         |
+| Script             | Runs                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `dev:workspace`    | `turbo run dev` for the site and all eight services                                    |
+| `dev:site`         | `@liveworkspace/site` alone (`next dev --port 3000`)                                   |
+| `dev:accounts`     | `@liveworkspace/accounts` (`wrangler dev --port 8787 --local-upstream localhost:3000`) |
+| `dev:telemetry`    | `@liveworkspace/telemetry-service` (`--port 8790`)                                     |
+| `dev:community`    | `@liveworkspace/community-service` (`--port 8791`)                                     |
+| `dev:subscription` | `@liveworkspace/subscription-service` (`--port 8794`)                                  |
+| `dev:media`        | `@liveworkspace/media-service` (`--port 8792`)                                         |
+| `dev:index`        | `@liveworkspace/index-service` (`--port 8793`)                                         |
+| `dev:status`       | `@liveworkspace/status-service` (`--port 3010`)                                        |
+| `dev:drive`        | `@liveworkspace/drive-service` (`--port 3011`)                                         |
 
-Inspector ports, one per Worker: 9130 accounts, 9131 telemetry, 9132 community, 9133 media, 9134 index, 9135 status, 9136 drive. Status runs with `--test-scheduled`, `ENVIRONMENT=development` and `PLATFORM_ORIGIN=http://localhost:3000`; accounts with `--local-upstream localhost:3000`.
+Inspector ports, one per Worker: 9130 accounts, 9131 telemetry, 9132 community, 9133 media, 9134 index, 9135 status, 9136 drive, 9138 subscription. Status runs with `--test-scheduled`, `ENVIRONMENT=development` and `PLATFORM_ORIGIN=http://localhost:3000`; accounts with `--local-upstream localhost:3000`.
 
 ## The site's dev forwards
 
 `apps/site/next.config.ts` rewrites, in development only, each path to its Worker, each origin overridable by an
 env var:
 
-| Path                                                          | Default target          | Override               |
-| ------------------------------------------------------------- | ----------------------- | ---------------------- |
-| `/api/auth/*`, `/api/account/*`, `/.well-known/*`             | `http://localhost:8787` | `ACCOUNTS_DEV_ORIGIN`  |
-| `/api/telemetry/*`                                            | `http://localhost:8790` | `TELEMETRY_DEV_ORIGIN` |
-| `/api/community/*`                                            | `http://localhost:8791` | `COMMUNITY_DEV_ORIGIN` |
-| `/api/previews/*` (not `/api/media/*`: no site page calls it) | `http://localhost:8792` | `MEDIA_DEV_ORIGIN`     |
-| `/api/index/*`                                                | `http://localhost:8793` | `INDEX_DEV_ORIGIN`     |
-| `/api/status/*`                                               | `http://localhost:3010` | `STATUS_DEV_ORIGIN`    |
-| `/api/drive/*`                                                | `http://localhost:3011` | `DRIVE_DEV_ORIGIN`     |
+| Path                                                          | Default target          | Override                  |
+| ------------------------------------------------------------- | ----------------------- | ------------------------- |
+| `/api/auth/*`, `/api/account/*`, `/.well-known/*`             | `http://localhost:8787` | `ACCOUNTS_DEV_ORIGIN`     |
+| `/api/telemetry/*`                                            | `http://localhost:8790` | `TELEMETRY_DEV_ORIGIN`    |
+| `/api/community/*`                                            | `http://localhost:8791` | `COMMUNITY_DEV_ORIGIN`    |
+| `/api/previews/*` (not `/api/media/*`: no site page calls it) | `http://localhost:8792` | `MEDIA_DEV_ORIGIN`        |
+| `/api/index/*`                                                | `http://localhost:8793` | `INDEX_DEV_ORIGIN`        |
+| `/api/status/*`                                               | `http://localhost:3010` | `STATUS_DEV_ORIGIN`       |
+| `/api/drive/*`                                                | `http://localhost:3011` | `DRIVE_DEV_ORIGIN`        |
+| `/api/subscription/*`                                         | `http://localhost:8794` | `SUBSCRIPTION_DEV_ORIGIN` |
 
 ## The routers' forwards
 

@@ -19,6 +19,10 @@ export const VERSION_AUTO_MAX_DAYS = TRASH_RETENTION_DAYS;
 export const VERSION_AUTO_MAX_AGE_MS = VERSION_AUTO_MAX_DAYS * DAY_MS;
 // Automatic versions past this many bytes, counting from the newest, go. Safe range 4 to 64 MiB.
 export const VERSION_AUTO_MAX_BYTES = 16 * 1024 * 1024;
+// With Pro on, on a tier whose history has no age limit (version-history.md "With Pro on"): the newest automatic
+// versions kept per tab and their bytes, as safety caps. Safe ranges 100 to 2,000 and 32 to 256 MiB.
+export const VERSION_AUTO_MAX_PAID = 500;
+export const VERSION_AUTO_MAX_BYTES_PAID = 64 * 1024 * 1024;
 // Named versions a tab may keep; naming one more is refused. Safe range 5 to 100.
 export const VERSION_NAMED_MAX = 25;
 
@@ -44,7 +48,10 @@ export type VersionSummary = {
   elementCount: number;
 };
 
-export type VersionListResponse = { versions: VersionSummary[] };
+// With Pro on: how long the document's owner's tier keeps automatic versions (null is no age limit) and the owner's
+// scope (`p:<accountId>` or `t:<teamId>`), for the offer. Absent with Pro off, or while the tier is not known.
+export type VersionRetentionInfo = { days: number | null; owner: string | null };
+export type VersionListResponse = { versions: VersionSummary[]; retention?: VersionRetentionInfo };
 // One version with its body as it was, under the tab's id and the name the tab had then.
 export type VersionReadResponse = { version: VersionSummary; tab: Tab };
 export type VersionNameResponse = { version: VersionSummary };

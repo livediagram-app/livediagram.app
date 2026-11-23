@@ -49,6 +49,11 @@ export type Recording = {
 export type RecordingOptions = {
   stream: MediaStream;
   camera: boolean;
+  /** The video bit rate, where the recording may run longer than the full rate fits in one upload
+   *  (`walkthroughVideoBps`). The full rate when not given. */
+  videoBps?: number;
+  /** The most bytes kept (`walkthroughMediaMaxBytes` of the recording's length limit). The whole cap when not given. */
+  maxBytes?: number;
   /** Told when the bytes reach the size limit, after which nothing more is kept. */
   onFull?: () => void;
   Recorder?: RecorderClass | undefined;
@@ -59,6 +64,8 @@ export type RecordingOptions = {
 export function startRecording({
   stream,
   camera,
+  videoBps = WALKTHROUGH_VIDEO_BPS,
+  maxBytes = WALKTHROUGH_MEDIA_MAX_BYTES,
   onFull,
   Recorder = recorderClass(),
   steady = steadyAudio,
@@ -69,14 +76,14 @@ export function startRecording({
   const recorder = new Recorder(routed.stream, {
     mimeType: type,
     audioBitsPerSecond: WALKTHROUGH_AUDIO_BPS,
-    ...(camera ? { videoBitsPerSecond: WALKTHROUGH_VIDEO_BPS } : {}),
+    ...(camera ? { videoBitsPerSecond: videoBps } : {}),
   });
   const pieces: Blob[] = [];
   let bytes = 0;
   let full = false;
   recorder.ondataavailable = (e: BlobEvent) => {
     if (full || e.data.size === 0) return;
-    if (bytes + e.data.size > WALKTHROUGH_MEDIA_MAX_BYTES) {
+    if (bytes + e.data.size > maxBytes) {
       full = true;
       onFull?.();
       return;

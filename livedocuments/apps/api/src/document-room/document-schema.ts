@@ -26,6 +26,7 @@ import {
   itemAutomationSchemaSteps,
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
+import { VERSION_RETENTION_SCHEMA } from '../versions/version-retention-schema';
 import { VERSION_SCHEMA } from '../versions/version-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -352,6 +353,12 @@ const V22 = COLLAB_SEEN_SCHEMA_STEP;
 // the steps before it, never among the engine's own.
 const V23 = automationSchemaStep('wake');
 
+// Step 24: what automatic versions are held to, as a row the prune reads (docs/specs/006-document/version-history.md
+// "With Pro on"; versions/version-retention-schema.ts): the row starts at the bounds every tab had, and the prune
+// trigger is made again to read it, so a room that runs this step prunes exactly as it did. Appended after the
+// Automations steps, which shipped first.
+const V24 = VERSION_RETENTION_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -368,6 +375,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   ...AUTOMATION_STEPS,
   V22,
   V23,
+  V24,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

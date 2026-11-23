@@ -56,6 +56,12 @@ describe('readFormOf', () => {
       state: 'closed',
       closedReason: 'limit',
     });
+    // With Pro on the api says how much of its month the form has taken: full, it reads closed.
+    const month = { limit: 250, full: true };
+    expect(read(bugForm(), { ...link(true), month })).toMatchObject({
+      state: 'closed',
+      closedReason: 'monthly_limit',
+    });
     const gone = { ...bugForm(), destination: { ...bugForm().destination!, status: 'gone' } };
     expect(read(gone, link(true))).toMatchObject({
       state: 'paused',

@@ -12,6 +12,7 @@ export * from './automation-wake';
 export * from './automation-fired';
 export * from './automation-incoming';
 export * from './automation-sends';
+export * from './tier';
 export * from './automation-addresses';
 export * from './automation-ai';
 export * from './automation-telemetry';

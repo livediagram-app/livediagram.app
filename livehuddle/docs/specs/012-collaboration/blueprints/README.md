@@ -7,6 +7,7 @@ Follow the references below only as needed; never upfront.
 - ./workshop-tour.md - when implementing or changing the Workshop tour: its host, steps, offer, Settings rerun and telemetry
 - ./presentation-mode.md - (Gone from livehuddle, Work Tracker #423 part 2) when implementing or changing slide moves, the entrance or fullscreen while presenting: View Transitions typed by move, the asked-for slide, refusals logged
 - ./proximity-audio.md - when building or changing proximity audio: the call phases, hearing radii, voice detection, the `avatar-voice` and `call-track` ops, the mint routes and their tokens
+- ./call-minutes.md - when building or changing Call Minutes: the room's meter (`CallMeter`), its storage key and alarm, the admit and minutes routes, the `call-minutes` op, closing a session at Realtime, the editor's store and notices
 - ./meeting-rooms-and-stage.md - when building or changing room zones in a call (`roomZones`, `zoneAt`, zoned `nextHeard`), the stage, hands or Do Not Disturb
 - ./knock.md - when implementing or changing Knock: the two presence ops, the room's throttle and addressing, the knock inbox and toasts, Let In at a closed pod
 - ./join-and-leave-sounds.md - when implementing or changing the join and leave chimes: the one AudioContext and its unlock, the roster watcher (people, seeding, flap debounce, burst), Do Not Disturb, the setting

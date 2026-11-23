@@ -279,7 +279,7 @@ export function SendToPlanDialog({
       >
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-6 gap-y-5 overflow-y-auto px-6 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
           {existing ? (
-            <div ref={showBanner} data-already-sent="" className="sm:col-span-2">
+            <div data-already-sent="" ref={showBanner} className="sm:col-span-2">
               <Callout
                 tone="success"
                 size="md"

@@ -6,6 +6,7 @@
 
 import type { DocumentRouteContext, RouteContext, WorkbenchContext } from '../routes/context';
 import { handleDocumentRequest } from '../routes/documents';
+import { learnVersionRetention } from '../versions/version-retention';
 import { serveDocumentSnapshots } from './document-snapshots';
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { DocumentGrant } from '../index-service';
@@ -74,6 +75,9 @@ export async function answerDocumentRequest(
     community,
     waitUntil,
   };
+  // With Pro on, the owner's tier's retention of automatic versions, learnt at most once an hour and after the answer
+  // (versions/version-retention.ts). Nothing with Pro off.
+  learnVersionRetention(ctx);
   // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts). Snapshots answer
   // their own routes and fence a write from before a revert (document-snapshots.ts).
   return serveDocumentSnapshots(ctx, () => handleDocumentRequest(ctx));

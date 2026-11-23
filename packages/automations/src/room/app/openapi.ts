@@ -53,7 +53,7 @@ export function itemAutomationOperations(input: ItemOperationsInput): ItemOperat
     editor({
       method: 'GET',
       path: base,
-      summary: `The ${item}'s rules in their order, each with its last run, its next time, its runs this week, its failures in a row and what it names that the ${item} lacks; and the runs today against the day's budget.`,
+      summary: `The ${item}'s rules in their order, each with its last run, its next time, its runs this week, its failures in a row and what it names that the ${item} lacks; and the runs today against the ${item}'s fixed 1,000 a day.`,
       responseSchema: 'AutomationsListResponse',
       statuses: [200, 401, 403, 404, 405, 410],
     }),
@@ -101,7 +101,7 @@ export function itemAutomationOperations(input: ItemOperationsInput): ItemOperat
     editor({
       method: 'POST',
       path: `${base}/{ruleId}/run`,
-      summary: `Run a Run by Hand rule that is on, now, on a tab or on the ${item} alone. 429 automation_budget_spent past the day’s runs, 500 automation_run_failed when the run could not start.`,
+      summary: `Run a Run by Hand rule that is on, now, on a tab or on the ${item} alone. 429 automation_budget_spent past the ${item}’s 1,000 runs a day, 429 automation_runs_used once the owner’s month of automation runs is used (Retry-After until the 1st, UTC), 500 automation_run_failed when the run could not start.`,
       requestSchema: 'AutomationRunNowRequest',
       responseSchema: 'AutomationRunResponse',
       statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429, 500],

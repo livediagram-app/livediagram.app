@@ -18,6 +18,8 @@ export type HearingAsker = (asks: HearingAsk[]) => Promise<HearingAnswer[]>;
 export type HearingSplit = {
   allowed: CallSubscribeLocator[];
   refused: ReadonlySet<number>;
+  /** The room said the owner's month of call minutes is used: the whole request is refused, never part of it. */
+  paused: boolean;
 };
 
 /** Which of `locators` the room says the caller may receive now. */
@@ -42,7 +44,7 @@ export async function splitByHearing(
     console.warn('[calls] not heard', answer, locator.trackName);
     refused.add(i);
   });
-  return { allowed, refused };
+  return { allowed, refused, paused: (answers ?? []).includes('minutes-used') };
 }
 
 /**

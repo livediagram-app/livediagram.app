@@ -21,6 +21,9 @@ export type CallSessionOp = {
   tabId: string;
   sessionId: string;
   sessionToken: string;
+  // The session has left the call (docs/specs/012-collaboration/call-minutes.md "The wire"): said, with the same
+  // proof, only by a call whose session is metered.
+  left?: true;
 };
 
 /** An Editor's request that `targetId` stop sharing their screen: addressed to that person alone. */
@@ -41,6 +44,7 @@ export function parseCallSession(op: unknown): CallSessionOp | null {
     tabId: o.tabId,
     sessionId: o.sessionId,
     sessionToken: o.sessionToken,
+    ...(o.left === true ? { left: true as const } : {}),
   };
 }
 

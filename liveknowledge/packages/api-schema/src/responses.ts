@@ -4,10 +4,12 @@
 // the same shape instead of spelling `{ document: LiveDoc }` inline at each
 // call site, where a renamed key would drift silently.
 
+import type { KnowledgeTierInfo } from './knowledge-tier';
 import type { LiveDoc, DocumentSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
 
 // GET / PUT /api/documents/:id, POST /api/documents (+ copy).
-export type DocumentResponse = { document: LiveDoc };
+// `knowledgeTier`: with Pro on, the figures the knowledgebase's tier sets (docs/specs/030-knowledgebase/tiers.md).
+export type DocumentResponse = { document: LiveDoc; knowledgeTier?: KnowledgeTierInfo };
 // GET /api/documents/:id/tabs/:tabId.
 export type TabResponse = { tab: TabRecord };
 // GET /api/documents: the caller's personal library.

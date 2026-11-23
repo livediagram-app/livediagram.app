@@ -13,15 +13,29 @@ import type {
 import type { AutomationsScope } from './kit';
 import type { ListResponse, ListedRule, ListedRun, RuleBody, RuleStart } from './types';
 
+/** With Pro on, a refusal the owner's tier caused: which limit, what is used and its most, and whether the item is a
+ *  guest's (liveworkspace/docs/specs/019-subscription/subscription.md "What people see"). */
+export type AutomationTierRefusal = { limit: string; used: number; max: number; guest?: true };
+
 export class AutomationRefusal extends Error {
   readonly status: number;
   readonly code: string;
   readonly path: string | null;
   // `ai_key_failed` (Describe a Rule on a key): whose key failed and how, for the source line. Never the key.
   readonly aiKey: AiKeyFailure | null;
+  readonly tier: AutomationTierRefusal | null;
   constructor(
     status: number,
-    body: { error: string; path?: string; message?: string; aiKey?: AiKeyFailure | null },
+    body: {
+      error: string;
+      path?: string;
+      message?: string;
+      aiKey?: AiKeyFailure | null;
+      limit?: string;
+      used?: number;
+      max?: number;
+      guest?: boolean;
+    },
   ) {
     super(body.message ?? body.error);
     this.name = 'AutomationRefusal';
@@ -29,6 +43,15 @@ export class AutomationRefusal extends Error {
     this.code = body.error;
     this.path = body.path ?? null;
     this.aiKey = body.aiKey ?? null;
+    this.tier =
+      body.limit !== undefined && body.used !== undefined && body.max !== undefined
+        ? {
+            limit: body.limit,
+            used: body.used,
+            max: body.max,
+            ...(body.guest ? { guest: true } : {}),
+          }
+        : null;
   }
 }
 
@@ -89,17 +112,19 @@ export function createAutomationsClient<
 >(api: AutomationsApi): AutomationsClient<Body, Rule, Run> {
   async function refusalOf(res: Response): Promise<AutomationRefusal | null> {
     try {
-      const body = (await res.clone().json()) as {
-        error?: unknown;
-        path?: unknown;
-        message?: unknown;
-      };
-      if (typeof body.error !== 'string' || !api.errors.includes(body.error)) return null;
+      const body = (await res.clone().json()) as Record<string, unknown>;
+      if (typeof body['error'] !== 'string' || !api.errors.includes(body['error'])) return null;
+      const text = (key: string) => (typeof body[key] === 'string' ? { [key]: body[key] } : {});
+      const count = (key: string) => (typeof body[key] === 'number' ? { [key]: body[key] } : {});
       return new AutomationRefusal(res.status, {
-        error: body.error,
-        ...(typeof body.path === 'string' ? { path: body.path } : {}),
-        ...(typeof body.message === 'string' ? { message: body.message } : {}),
+        error: body['error'],
+        ...text('path'),
+        ...text('message'),
         aiKey: readAiKeyFailure(body),
+        ...text('limit'),
+        ...count('used'),
+        ...count('max'),
+        ...(body['guest'] === true ? { guest: true } : {}),
       });
     } catch {
       return null;

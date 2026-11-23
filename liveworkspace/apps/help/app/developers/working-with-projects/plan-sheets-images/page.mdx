@@ -196,7 +196,7 @@ A card's **Image** field and its attachments hold pictures uploaded for the plan
 curl -X POST "https://www.liveplanner.app/api/images?p=$DOC"   -H "Authorization: Bearer $TOKEN" -H "Content-Type: image/png"   --data-binary @cover.png
 ```
 
-It answers with `{ "image": { "id": …, … }, "deduped": false }`. The picture lands in your Image Gallery, and the plan shows it to everyone who can read the plan. Then write the `id` to the card's Image field, such as `"f-cover": "<id>"`, or a list of ids for a field that holds several. PNG, JPEG, WebP and GIF are taken, up to 10 MB each; anything else answers `415 unsupported_type`, and a bigger file `413 file_too_large`. Uploading needs the right to change the plan's cards, so an Editor or a Participant can, and a Viewer can't.
+It answers with `{ "image": { "id": …, … }, "deduped": false }`. The picture lands in your Image Gallery, and the plan shows it to everyone who can read the plan. Then write the `id` to the card's Image field, such as `"f-cover": "<id>"`, or a list of ids for a field that holds several. PNG, JPEG, WebP and GIF are taken, up to 10 MB each (with subscriptions on, up to the better of your tier's limit and the plan's owner's: 5 MB on Free, 25 MB on Pro and Pro for Teams, named in the refusal's `limitBytes`); anything else answers `415 unsupported_type`, and a bigger file `413 file_too_large`. Uploading needs the right to change the plan's cards, so an Editor or a Participant can, and a Viewer can't.
 
 An AI assistant does the same with `upload_image` (from a public web address or the picture itself), then places the id with `change_items`; see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/). On the command line, it's `image add`.
 

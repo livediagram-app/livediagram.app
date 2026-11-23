@@ -137,6 +137,10 @@ describe('the connections contract', () => {
     });
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer k');
     expect(seen[0]!.headers.get('X-Index-App')).toBe('liveplanner');
+    // A push says nothing of a check; a check says so, and the index then queues nothing.
+    expect(seen[0]!.body).not.toHaveProperty('check');
+    await app.pushAutomationSends('p 1', sends, { check: true });
+    expect(seen[1]!.body).toEqual({ sends, check: true });
     const refused = createIndexAppClient({
       app: 'livediagram',
       key: 'k',

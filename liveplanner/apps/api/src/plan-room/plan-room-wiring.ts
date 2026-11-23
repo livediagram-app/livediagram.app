@@ -15,6 +15,7 @@ import {
   sendTo,
 } from './plan-room-sockets';
 import { handleAgentPresence, clearAgentsFor, liveSessions } from './plan-room-presence';
+import { moveRoadmapGauge } from '../roadmap/roadmap-gauge';
 
 // This env's PLAN_ROOM, answering this plan's own id with this object: the code shared with the worker (a
 // project read's outline, the room relays) then calls straight in rather than through a stub.
@@ -53,6 +54,10 @@ export function roomHead(room: PlanRoom): ItemHeadSync {
       return row ? { ownerId: row.owner_id, teamId: row.team_id ?? null } : null;
     },
     write: async (h) => {
+      // The owner the plan is leaving, whose count its roadmaps come off (roadmap/roadmap-gauge.ts; Pro on only).
+      // Null for a guest's plan, which the service never counted.
+      const moving = room.tier.on;
+      const from = moving ? room.tier.scope() : null;
       // A team or owner change re-pushes the plan's cards (plan-schema.ts outbox_cards_plan).
       state.storage.sql.exec(
         'UPDATE plan SET owner_id = ?, team_id = ? WHERE id = ?',
@@ -64,6 +69,8 @@ export function roomHead(room: PlanRoom): ItemHeadSync {
       noteWrite(room);
       // A new owner or team can open or close a Community post: it asks where it stands now.
       if (room.communityAt !== null) room.communityAt = Date.now();
+      if (moving && room.planId !== null)
+        state.waitUntil(moveRoadmapGauge(room.tier, state.storage.sql, room.planId, from));
     },
   });
 }

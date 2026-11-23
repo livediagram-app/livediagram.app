@@ -194,7 +194,7 @@ glyph-per-module split (#1525) saved 2.8 KiB. `/explorer` is below its baseline 
 panels moved out of its first load. The page's HTML (51.7 KiB gzipped on `/`) is not part of this budget.
 
 The site's `build` ends with `scripts/first-load-budget.ts` (`lib/first-load/budget.ts`): it sums the same numbers
-from `out/` and fails the build when `/` passes 212 KiB or `/explorer` 380 KiB. `app/first-load-lazy.test.ts` keeps
+from `out/` and fails the build when `/` passes 212 KiB or `/explorer` 382 KiB. `app/first-load-lazy.test.ts` keeps
 the error files' imports light and the check in the build.
 
 **The root error boundary reads light or dark off the page it replaces (2026-11-14, Work Tracker 772).**
@@ -239,6 +239,16 @@ every first load. The count and its sections are now `inbox/inbox-count.ts`, and
 `inbox/inbox-keys.ts`; `sections.ts` re-exports both for the Inbox itself. Measured the same way: 389,116 to 387,795
 bytes (378.7 KiB), 18 scripts, 1,325 bytes under. The budget stays at 380 KiB.
 
+**Pro's account menu raises `/explorer` to 382 KiB (2026-11-22, Pro).** The Explorer's account menu now sits inside
+the site's subscription provider (`SiteSubscription`, `packages/subscription-ui/src/provider/SubscriptionProvider.tsx`),
+so its Pro badge and Upgrade to Pro read the person's tier. The provider's first-load half is its context and the
+dialogs' open state; everything that asks the service or draws is the lazy driver, and the menu's Pro parts are their
+own chunk. Measured from production builds on main at #2131: 387,795 bytes (378.7 KiB), 18 scripts, then 390,160
+(381.0 KiB), 19 scripts, with Pro on or off in the build, since the flag is read at run time. Building without the
+provider gives 379.6 KiB, so 1.4 KiB is the provider and 0.9 KiB the menu's lazy Pro parts and the Library's Pro
+reads. Moving the Library's parsing into its panes was tried and cost 0.8 KiB more (a shared chunk). The budget is
+382 KiB; the next addition to the Explorer's first load needs its own saving.
+
 **Closing a toast stays inside the budget (2026-11-20, #2058).** Closing a toast now dismisses it (it fades in place
 and leaves the notification list) and a popover risen from the bottom chrome is a toast floor. The toast provider,
 stack and floor hook are in `/explorer`'s first load, and the first cut added 135 bytes gzipped (389,052 to 389,187,
@@ -259,6 +269,22 @@ fetched once the page is idle, and the open dialog's as a ⋯ menu opens, so a p
 own commit. Measured the same way: 388,681 to 375,932 bytes (379.6 to 367.1 KiB), 19 to 18 scripts, 12,749 bytes
 saved and 13,188 under. `/` is unchanged at 212,832 bytes. `dialogs-lazy-load.test.ts` keeps them out of a static
 import. The budget stays at 380 KiB.
+
+**The header's menus and Pro leave `/` (2026-11-23, Pro).** Pro took `/` from 212,832 bytes on main to 216,995
+(211.9 KiB, 13 scripts; 212.1 KiB in CI, over its 212 KiB budget). Two things in the header, which is on every
+page, did it. The Product and Support menus (`components/HeaderMenus.tsx`) replaced four links the server drew, and
+as a client component brought their rows, seven glyphs and the open menu into the first load. And the account
+control (`components/AccountControl.tsx`) imported `SiteSubscription` statically, so a visitor's page carried the
+provider's shell, its hooks and `lib/subscription.ts`. Now `HeaderMenus.tsx` is the two buttons alone, with the
+pages each leads to (`header-menu-pages.ts`) so a button still reads as current; the open menu is
+`HeaderMenuSurface.tsx`, a `lazyPanel` fetched as a pointer or focus reaches a button, so a press opens it in its
+own commit. The account control fetches `SiteSubscription` only once someone is known to be signed in, and only
+with Pro on: the unseen Guest button holds the place until it lands, a failed fetch draws the menu without a
+provider, and in the Explorer, whose shell already has the provider around the page, the control adds none
+(`subscribed`). Measured the same way: 216,995 to 214,699 bytes (211.9 to 209.7 KiB), 13 to 12 scripts, 2,296 bytes
+saved; `/explorer` 370.9 to 370.7 KiB (379,623 bytes). What `/` still carries over main, about 1.9 KiB, is the two
+menu buttons as client code, the Pro flag and the account menu's lazy Pro parts. `app/first-load-lazy.test.ts`
+keeps both imports dynamic. The budget stays at 212 KiB.
 
 ## Presentation and UX
 

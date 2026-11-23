@@ -19,6 +19,8 @@
   },
   "dependencies": {
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/subscription": "workspace:*",
+    "@liveworkspace/subscription-ui": "workspace:*",
     "@liveworkspace/ui": "workspace:*",
     "@liveworkspace/workbench": "workspace:*"
   },

@@ -23,6 +23,8 @@ import {
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { formNotTakingReason, type FormNotTakingFix } from './form-not-taking';
 import { FormNotTakingWarning } from './FormNotTakingWarning';
+import { FormMonth, useFormMonth } from './FormMonth';
+import { FORM_MONTH_PAUSED } from '@/components/tier/tier-words';
 
 const SummaryIcon = lucideGlyph(lucideChartColumn, 15);
 
@@ -68,6 +70,9 @@ export function FormStatusBar({
   const notTaking = canEdit ? formNotTakingReason({ link: data, problem, closedBy, full }) : null;
   const live = data?.link ?? null;
   const responses = data?.responses ?? 0;
+  // With Pro on, a form that is open but whose month of responses is full reads Paused (forms.md "Tiers"): it opens
+  // again by itself, so it is amber, never the red Not Taking Responses.
+  const monthFull = useFormMonth(data).full && !!live?.open && !overdue && !problem;
   const pill = (tone: 'green' | 'slate' | 'amber' | 'red', text: string) => (
     <span
       className={`flex h-9 shrink-0 items-center gap-2 rounded-lg px-2.5 text-[13px] font-medium ${
@@ -92,17 +97,31 @@ export function FormStatusBar({
     </span>
   );
   const state =
-    link.status === 'offline'
-      ? pill('slate', 'Draft')
-      : data?.suspendedAt && !live
-        ? pill('red', 'Suspended')
-        : !live
-          ? pill('slate', 'Not Published')
-          : problem
-            ? pill('amber', 'Paused')
-            : live.open && !overdue
-              ? pill('green', 'Accepting Responses')
-              : pill('slate', 'Closed');
+    link.status === 'offline' ? (
+      pill('slate', 'Draft')
+    ) : data?.suspendedAt && !live ? (
+      pill('red', 'Suspended')
+    ) : !live ? (
+      pill('slate', 'Not Published')
+    ) : problem ? (
+      pill('amber', 'Paused')
+    ) : monthFull ? (
+      <Tooltip label={FORM_MONTH_PAUSED}>
+        <span
+          role="status"
+          tabIndex={0}
+          data-form-month-paused=""
+          aria-label={`Paused. ${FORM_MONTH_PAUSED}`}
+          className="flex rounded-lg"
+        >
+          {pill('amber', 'Paused')}
+        </span>
+      </Tooltip>
+    ) : live.open && !overdue ? (
+      pill('green', 'Accepting Responses')
+    ) : (
+      pill('slate', 'Closed')
+    );
   const count = (
     <>
       <strong className="font-semibold text-slate-900 dark:text-slate-50">{responses}</strong>{' '}
@@ -220,6 +239,13 @@ export function FormStatusBar({
         >
           Responses are paused: this plan holds as many cards as it can.
         </div>
+      ) : null}
+      {monthFull ? (
+        <FormMonth
+          link={data}
+          onViewResponses={onOpenResponses}
+          className="rounded-xl bg-white/80 px-4 py-3 dark:bg-slate-900/80"
+        />
       ) : null}
       {data?.suspendedAt && !live ? (
         <div

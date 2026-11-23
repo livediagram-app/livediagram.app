@@ -161,7 +161,8 @@ describe('the rule tools and verbs', () => {
       ],
       ['read_only_token', 403, 'this token is read-only'],
       ['automation_needs_a_person', 403, 'leave the revert_snapshot step out'],
-      ['automation_rules_full', 409, 'the knowledgebase holds 50 rules'],
+      ['automation_rules_full', 409, 'the knowledgebase holds 50, the most one can'],
+      ['automation_runs_used', 429, 'automation runs for this month are used'],
       ['automation_budget_spent', 429, 'the knowledgebase has made its 1,000 runs today'],
       [
         'tab_not_found',

@@ -19,8 +19,9 @@ import {
   guardRequest,
   UNAVAILABLE_RETRY_AFTER_SECONDS,
 } from '@liveworkspace/api-kit/request-failure';
-import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
+import { MAX_BODY_BYTES } from './limits';
 import { withCappedBody } from '@liveworkspace/api-kit/request-body';
+import { imageGateBytes, leavesImageUploadUnread } from '@liveworkspace/api-kit/image-upload';
 import { handleAccount } from './routes/account';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCommunity } from './routes/community';
@@ -166,16 +167,20 @@ async function routeApiRequest(
     const len = Number(request.headers.get('content-length'));
     // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
     // the route re-checks it and answers with file_too_large + limitBytes.
-    const cap = segments[1] === 'images' ? MAX_IMAGE_BYTES : MAX_BODY_BYTES;
+    const cap = segments[1] === 'images' ? imageGateBytes(env) : MAX_BODY_BYTES;
     if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }
     // A body that declares no length (a chunked upload, where Number(null) is 0) passes the check above, and
     // the routes read a body whole, so the body itself is read here through a byte counter that stops at the
     // same cap and answers the same 413, whatever the headers say (docs/specs/015-api/api.md "Rate limiting").
-    const capped = await withCappedBody(request, cap);
-    if (!capped) return payloadTooLarge();
-    request = capped;
+    // With Pro on an upload is not read here: its route holds it to the uploader's own limit, from their entitlement,
+    // before a byte is read (liveworkspace/docs/specs/006-media/media.md "With Pro on").
+    if (!leavesImageUploadUnread(env, request.method, segments)) {
+      const capped = await withCappedBody(request, cap);
+      if (!capped) return payloadTooLarge();
+      request = capped;
+    }
   }
   // Room-ticket mints (docs/specs/015-api/api.md) are exempt like /api/events: the mint
   // is the auth handshake for opening the realtime room, and a 429 —

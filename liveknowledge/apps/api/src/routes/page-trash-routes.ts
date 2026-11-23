@@ -7,6 +7,9 @@
 // to one page, a Viewer and a Community visitor. A page reaches the Trash by the tab DELETE
 // (document-subresource-routes.ts), whoever sends it.
 import { NOT_IN_TRASH, TRASH_IS_A_PERSONS } from '@liveknowledge/api-schema';
+import { pageCount } from '@liveknowledge/document';
+import { readStoredPages } from '../document-room/page-tree-store';
+import { countPages, pagesRefused, workerTierOf } from '../knowledge/tier-limits';
 import { getDocument } from '../db';
 import { deleteForever, emptyTrash, listTrash, restorePages } from '../document-room/page-trash';
 import { conflict, forbidden, json, methodNotAllowed, noContent } from '../responses';
@@ -50,6 +53,15 @@ export async function handlePageTrashRoutes(ctx: DocumentRouteContext): Promise<
   }
   if (segments.length === 6) {
     if (method !== 'POST') return methodNotAllowed();
+    // The pages back are told to the owner's Knowledgebase Pages first (tiers.md): refused there, none come back.
+    const entry = (await listTrash(env, id)).find((p) => p.id === page);
+    const restoring = entry ? 1 + entry.subpages.length : 0;
+    if (restoring > 0) {
+      const tier = await workerTierOf(env, document);
+      const stored = await readStoredPages(env, id);
+      const over = await countPages(tier, id, pageCount(stored) + restoring);
+      if (over) return pagesRefused(tier, over);
+    }
     const outcome = await restorePages(env, id, page!);
     if (outcome === 'not_in_trash') return notInTrash();
     if (outcome === 'page_limit') return conflict('page_limit');

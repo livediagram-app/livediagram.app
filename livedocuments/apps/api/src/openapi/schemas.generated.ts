@@ -1895,6 +1895,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationsListResponse": {
     "additionalProperties": false,
     "properties": {
+      "guest": {
+        "const": true,
+        "type": "boolean"
+      },
+      "owner": {
+        "type": "string"
+      },
       "people": {
         "items": {
           "additionalProperties": false,
@@ -1919,6 +1926,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/AutomationListedRule%3CAutomationRule%2CAutomationNeed%3E"
         },
         "type": "array"
+      },
+      "rulesMax": {
+        "type": "number"
       },
       "runsPerDay": {
         "type": "number"

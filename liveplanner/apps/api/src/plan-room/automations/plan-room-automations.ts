@@ -29,6 +29,7 @@ export function automationDeps(room: PlanRoom): RunnerDeps | null {
     planId,
     sql: () => room.state.storage.sql,
     store: room.automations.store,
+    tier: room.tier,
     relay: (items: Item[], rev: number) =>
       room.broadcastOrderedSystemOp({
         kind: 'items',
@@ -52,6 +53,9 @@ export async function runAutomations(room: PlanRoom, now: number): Promise<void>
   // The wake's counts, posted once when it ends, a failed wake's too.
   const tally = new AutomationTally();
   try {
+    // The plan's tier's limits, read again when they are over a minute old: once a wake at most, before any run, so
+    // a run's claim reads its day's limit from memory. With Pro off (and while fresh) nothing is awaited.
+    if (!room.tier.fresh()) await room.tier.refresh();
     // A time rule's moment queues its cards first, so this wake starts running them.
     if (schedule.timeDue(now)) {
       // Runs a Wait held whose time is up go on in this wake too.

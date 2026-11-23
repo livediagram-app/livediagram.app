@@ -9,6 +9,31 @@ import { createFailureCopy, createIdsFor } from './create-failure';
 const refused = (code: string, status = 400) => new ApiError('create document', status, code);
 
 describe('createFailureCopy', () => {
+  it('says the owner’s Knowledgebases are full, never the connection, and goes back to the Explorer', () => {
+    const full = new ApiError('create document', 409, 'page_limit', {
+      error: 'page_limit',
+      limit: 'knowledgebasePages',
+      used: 500,
+      max: 500,
+    });
+    expect(createFailureCopy(full)).toEqual({
+      action: 'explorer',
+      eyebrow: 'Knowledgebases full',
+      title: 'No room for another knowledgebase',
+      message:
+        'Your Knowledgebases hold 500 pages, the most your plan keeps, and a new one starts with a page. Delete pages you no longer need to make room. Pro holds 10,000.',
+      actionLabel: 'Back to Explorer',
+    });
+    // On Pro there is no Pro to offer; without the figures the words stay general.
+    const pro = new ApiError('create document', 409, 'page_limit', { max: 10_000 });
+    expect(createFailureCopy(pro).message).toBe(
+      'Your Knowledgebases hold 10,000 pages, the most your plan keeps, and a new one starts with a page. Delete pages you no longer need to make room.',
+    );
+    expect(createFailureCopy(new ApiError('create document', 409, 'page_limit')).message).toContain(
+      'Your Knowledgebases hold all the pages your plan holds',
+    );
+  });
+
   it('keeps the connection card for a network failure', () => {
     expect(createFailureCopy(new TypeError('Failed to fetch'))).toEqual({
       action: 'retry',

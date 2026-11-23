@@ -5,10 +5,13 @@
 // a key of their own), then Draft Rule (or Ctrl / ⌘ Enter). While it
 // drafts the box is read-only and the button busy; Cancel stops waiting (the ask still counts). A draft goes to
 // `onDrafted` (the dialog opens it in the builder, unsaved and off); a refusal is said under the box in the api's
-// fixed words, the text kept to change. The model's own words are never shown.
+// fixed words, the text kept to change. The model's own words are never shown. With Pro on a draft spends one of the
+// item's owner's AI credits: the line under the box says so and what is left, and once they are used a notice says
+// when they start again, with the right way on (liveworkspace/docs/specs/019-subscription/subscription.md).
 
 import { useEffect, useRef, useState } from 'react';
 import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
+import type { AiSourceLine } from '@liveworkspace/settings-ui/ai-source';
 import { AI_DRAFT_PROMPT_MAX, AUTOMATION_AI_PER_DAY } from '@liveworkspace/automations';
 import {
   Button,
@@ -21,7 +24,15 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import { AutomationRefusal } from './automations-client';
 import { DescribePrompt } from './DescribePrompt';
+import {
+  AI_DRAFT_CREDIT,
+  AiCreditsLine,
+  AiCreditsNotice,
+  ITEM_TIER_OFF,
+  useAiCredits,
+} from '@liveworkspace/subscription-ui/item-tier';
 import { useAutomationsKit } from './kit-context';
+import { useAutomationsTier } from './tier/automations-tier';
 import type { RuleBody, RuleStart } from './types';
 
 type Drafted = { rule: RuleBody; picks: RuleStart['picks'] };
@@ -31,19 +42,28 @@ export const DESCRIBE_FAILED = 'That didn’t work. Check your connection and tr
 export function DescribeRuleDialog({
   draft,
   onDrafted,
+  onByHand,
   onClose,
 }: {
   draft: (prompt: string) => Promise<Drafted>;
   onDrafted: (drafted: Drafted) => void;
+  // With the month's AI credits used: a blank rule to build step by step instead.
+  onByHand?: (() => void) | undefined;
   onClose: () => void;
 }) {
   const kit = useAutomationsKit();
+  const tier = useAutomationsTier()?.item ?? ITEM_TIER_OFF;
+  const credits = useAiCredits(tier);
   const { examples, placeholder } = kit.describe;
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
   // A key that failed on the last ask, for the source line to say so and offer to fix it.
   const [keyFailure, setKeyFailure] = useState<AiKeyFailure | null>(null);
+  // Which AI drafts it, as the source line learns it: AI credits are built-in AI's alone (a key spends none), so their
+  // notice, line and hold on Draft Rule apply only there, and while the line is still loading.
+  const [sourceKind, setSourceKind] = useState<AiSourceLine['kind']>('loading');
+  const builtIn = sourceKind === 'built-in' || sourceKind === 'loading';
   const box = useRef<HTMLTextAreaElement>(null);
   // The ask under way: an answer to one cancelled, or replaced, is dropped.
   const asking = useRef(0);
@@ -66,10 +86,13 @@ export function DescribeRuleDialog({
       if (mine === asking.current) onDrafted(drafted);
     } catch (error) {
       if (mine !== asking.current) return;
-      setSaid(error instanceof AutomationRefusal ? error.message : DESCRIBE_FAILED);
       setKeyFailure(error instanceof AutomationRefusal ? error.aiKey : null);
+      // The month's AI credits are used: the notice says so, with the right way on for this person.
+      if (!credits.take(error))
+        setSaid(error instanceof AutomationRefusal ? error.message : DESCRIBE_FAILED);
       box.current?.focus();
     } finally {
+      credits.settle();
       if (mine === asking.current) setBusy(false);
     }
   };
@@ -107,11 +130,28 @@ export function DescribeRuleDialog({
         said={said}
         saidOnSource={keyFailure !== null}
         source={(id) => (
-          <WorkbenchAiSource
-            id={id}
-            failure={keyFailure}
-            allowance={`Counts toward this ${kit.plumbing.words.item}’s ${AUTOMATION_AI_PER_DAY} AI steps a day.`}
-          />
+          <>
+            {builtIn ? (
+              <AiCreditsNotice
+                tier={tier}
+                spent={credits.spent}
+                byHand={
+                  onByHand ? (
+                    <Button variant="secondary" size="xs" onClick={onByHand}>
+                      Build the Rule by Hand
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : null}
+            <WorkbenchAiSource
+              id={id}
+              failure={keyFailure}
+              allowance={`Counts toward this ${kit.plumbing.words.item}’s ${AUTOMATION_AI_PER_DAY} AI steps a day.`}
+              onKind={setSourceKind}
+            />
+            {builtIn ? <AiCreditsLine tier={tier} cost={AI_DRAFT_CREDIT} /> : null}
+          </>
         )}
         onSubmit={() => void submit()}
       />
@@ -123,7 +163,7 @@ export function DescribeRuleDialog({
           variant="primary"
           size="sm"
           busy={busy}
-          disabled={!prompt}
+          disabled={!prompt || (builtIn && !!credits.spent)}
           onClick={() => void submit()}
         >
           <SparkleIcon size={14} aria-hidden />

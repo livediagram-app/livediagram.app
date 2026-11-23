@@ -120,6 +120,21 @@ describe('queuing a send', () => {
     expect(deliveries().some((d) => d.webhook_id === other.id)).toBe(false);
   });
 
+  it('only answers for a check: what a push would get now, with nothing queued', async () => {
+    const { plan, named, other } = await planWithHooks('user_as9');
+    pause(other.id, 'paused');
+    const asked = await push(plan.id, { sends: [send(named.id), send(other.id)], check: true });
+    expect(asked.status).toBe(200);
+    expect((await asked.json<{ results: unknown[] }>()).results).toMatchObject([
+      { key: 'run1:step1', queued: true },
+      { key: 'run1:step1', queued: false, code: 'webhook_paused' },
+    ]);
+    expect(deliveries()).toEqual([]);
+    // The push after it queues exactly what the check said it would.
+    await results(plan.id, [send(named.id)]);
+    expect(deliveries()).toHaveLength(1);
+  });
+
   it('queues nothing new for a key sent again, in a later push or the same one, and answers queued', async () => {
     const { plan, named } = await planWithHooks('user_as3');
     await results(plan.id, [send(named.id)]);

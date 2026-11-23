@@ -1255,6 +1255,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationsListResponse": {
     "additionalProperties": false,
     "properties": {
+      "guest": {
+        "const": true,
+        "type": "boolean"
+      },
+      "owner": {
+        "type": "string"
+      },
       "people": {
         "items": {
           "additionalProperties": false,
@@ -1279,6 +1286,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/AutomationListedRule%3CAutomationRule%2CAutomationNeed%3E"
         },
         "type": "array"
+      },
+      "rulesMax": {
+        "type": "number"
       },
       "runsPerDay": {
         "type": "number"
@@ -5984,6 +5994,31 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ReadCredits": {
+    "additionalProperties": false,
+    "description": "What a counted read says back: who paid (`p:<accountId>` or `t:<teamId>`), the read's pass for its later requests, the credits the read cost, and, for the payer or a member of the paying team, what is used of the month and its limit. A request that spent and then failed carries it too, beside its `error`.",
+    "properties": {
+      "cost": {
+        "type": "number"
+      },
+      "max": {
+        "type": "number"
+      },
+      "owner": {
+        "type": "string"
+      },
+      "pass": {
+        "type": "string"
+      },
+      "used": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "owner"
+    ],
+    "type": "object"
+  },
   "ReadNotesRequest": {
     "additionalProperties": false,
     "properties": {
@@ -5992,6 +6027,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/NoteCrop"
         },
         "type": "array"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "notes": {
+        "type": "number"
+      },
+      "pass": {
+        "type": "string"
+      },
+      "read": {
+        "type": "string"
       }
     },
     "required": [
@@ -6002,6 +6049,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ReadNotesResponse": {
     "additionalProperties": false,
     "properties": {
+      "credits": {
+        "$ref": "#/components/schemas/ReadCredits"
+      },
       "texts": {
         "items": {
           "$ref": "#/components/schemas/NoteText"

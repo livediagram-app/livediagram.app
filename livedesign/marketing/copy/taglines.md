@@ -41,7 +41,7 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 
 - A real-time editor for logos, wireframes and photos. No sign-in wall. [69]
 - Design logos and wireframes with your team, live. MIT-licensed and free. [72]
-- Logos, wireframes and photos, together in the browser. No paid tier. [68]
+- Logos, wireframes and photos, together in the browser. No trial. [64]
 
 ## Long, <= 100 characters
 

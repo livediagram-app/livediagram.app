@@ -4,7 +4,12 @@
 // item with none builds no event and runs no statement. At most AUTOMATION_QUEUE_MAX wait; a burst past it drops
 // the newest, which the next wake logs once. `AutomationSchedule` is the wake the queue asks for; `ItemAutomations`
 // is what the room puts on its env for the writes and routes.
-import { AutomationStore, type AutomationStoreKit, type StoredRule } from './automation-store';
+import {
+  AutomationStore,
+  type AutomationLimits,
+  type AutomationStoreKit,
+  type StoredRule,
+} from './automation-store';
 import type { Sql } from './sql';
 
 // What an item's writes ask of its Automations: the kinds its rules hear (the hot-path check), and a wake once
@@ -158,13 +163,15 @@ export class ItemAutomations<
     deps: () => Deps | null;
     putAway?: () => boolean;
     kit: AutomationStoreKit<Rule, EventKind>;
+    // The item's tier's limits (the room's ItemTier); absent, the legacy ones.
+    limits?: () => AutomationLimits;
     // A holder with a wake of its own (the item engine's also reads its settles); absent, the queue's.
     schedule?: (sql: () => Sql, ready: () => boolean) => AutomationSchedule<Event>;
   }) {
     const putAway = input.putAway ?? (() => false);
     this.sql = input.sql;
     this.putAway = putAway;
-    this.store = new AutomationStore(input.sql, input.ready, input.kit);
+    this.store = new AutomationStore(input.sql, input.ready, input.kit, input.limits);
     const awake = () => input.ready() && !putAway();
     this.schedule = input.schedule?.(input.sql, awake) ?? new AutomationSchedule(input.sql, awake);
     this.arm = input.arm;

@@ -34,6 +34,8 @@ export function ExplorerHeader({
       center={search}
       hrefFor={hrefFor}
       settings={settings}
+      // ExplorerShell has SiteSubscription around the whole page.
+      subscribed
       marker="explorer"
     />
   );

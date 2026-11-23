@@ -31,6 +31,7 @@ export const REJECTIONS = {
   refused_sender: "This board only takes mail from its plan's members.",
   unavailable: "Couldn't check the sender. Send it again later.",
   busy: 'Too many messages to this address. Try again later.',
+  month_limit: 'This board is not taking email right now. Try again next month.',
   failed: "Couldn't make a card from this message. Send it again later.",
 } as const;
 
@@ -48,6 +49,7 @@ const OUTCOME_REASON: Partial<Record<IntakeOutcome, Reason>> = {
   gone: 'no_address',
   refused_sender: 'refused_sender',
   busy: 'busy',
+  month_limit: 'month_limit',
   unavailable: 'unavailable',
   failed: 'failed',
 };

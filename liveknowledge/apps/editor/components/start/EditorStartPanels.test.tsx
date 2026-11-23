@@ -21,9 +21,11 @@ const state = vi.hoisted(() => ({
     can: { editPages: true },
     isStructureReadOnly: false,
     setImportOpen: () => {},
+    tabs: [] as unknown[],
   },
 }));
 const createStructure = vi.hoisted(() => vi.fn(async () => ({ imported: 1, first: null })));
+const toastError = vi.hoisted(() => vi.fn());
 
 vi.mock('@/app/document/[id]/EditorContext', () => ({
   useEditorChromeStore: () => ({ get: () => state.value }),
@@ -40,14 +42,24 @@ vi.mock('@/components/start/StartFromTemplates', () => ({
   StartFromTemplates: () => <div data-testid="start" />,
 }));
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => ({ error: toastError }) }));
 
 const { EditorStartPanels } = await import('./EditorStartPanels');
+const { forgetKnowledgeTiersForTests, setKnowledgeTier, setOpenPagesBound } =
+  await import('@/lib/knowledge-tier');
 
 beforeEach(() => {
   sessionStorage.clear();
   createStructure.mockClear();
+  toastError.mockClear();
+  // The open knowledgebase's bound, as the page tree feeds it: room to spare.
+  setKnowledgeTier('kb-1', { pagesMax: 500, historyDays: 30 });
+  setOpenPagesBound('kb-1', { max: 500, account: null });
 });
-afterEach(() => sessionStorage.clear());
+afterEach(() => {
+  sessionStorage.clear();
+  forgetKnowledgeTiersForTests();
+});
 
 describe('a structure asked for by link', () => {
   it('is picked on the start without the start being drawn, once', async () => {
@@ -73,6 +85,17 @@ describe('a structure asked for by link', () => {
     expect(knowledgebaseStartOffered(TAB)).toBe(false);
     await act(async () => {});
     expect(createStructure).toHaveBeenCalledTimes(1);
+  });
+
+  it('makes nothing, and says why, when the owner’s Knowledgebase Pages leave no room for it', async () => {
+    setOpenPagesBound('kb-1', { max: 3, account: { limit: 500, whose: 'yours' } });
+    queueStructurePick(TAB, 'team-handbook');
+    render(<EditorStartPanels />);
+    await waitFor(() => expect(toastError).toHaveBeenCalledTimes(1));
+    expect(toastError).toHaveBeenCalledWith(
+      'Free holds 500 pages across your Knowledgebases, so Team Handbook’s 11 pages don’t fit.',
+    );
+    expect(createStructure).not.toHaveBeenCalled();
   });
 
   it('opens the start as /new does when no structure has the id', async () => {

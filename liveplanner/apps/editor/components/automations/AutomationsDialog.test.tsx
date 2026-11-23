@@ -245,12 +245,23 @@ describe('the Rules list', () => {
   it('toasts a change the api refused', async () => {
     list();
     client.duplicateRule.mockRejectedValue(
-      new AutomationRefusal(409, { error: 'automation_rules_full', message: 'Full.' }),
+      new AutomationRefusal(404, { error: 'automation_not_found', message: 'Gone.' }),
     );
     wrap(<Harness />);
     fireEvent.click(await screen.findByRole('button', { name: 'More for Done Means Wrapped Up' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Full.'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Gone.'));
+    // A full plan is said in the screen's own words, never the api's.
+    client.duplicateRule.mockRejectedValue(
+      new AutomationRefusal(409, { error: 'automation_rules_full', message: 'Full.' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'More for Done Means Wrapped Up' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith(
+        'This plan has 50 rules, the most a plan can hold. Delete one to add another.',
+      ),
+    );
   });
 });
 

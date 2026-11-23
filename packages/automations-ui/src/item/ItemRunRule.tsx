@@ -47,7 +47,7 @@ export function ItemRunRule({ rule, outline, run, onClose }: Props) {
         debugLog('[automations] run.failed', { error: String(error) });
         toast.error(
           error instanceof AutomationRefusal
-            ? runRefusalWords(error.code, error.message, item)
+            ? runRefusalWords(error.code, error.message, item, error.tier?.max)
             : `“${rule.name}” didn’t run. Check your connection and try again.`,
         );
       },

@@ -33,7 +33,8 @@ marketing/
 - **Don't overclaim.** Check "Out of scope" in the fact sheet: no CRDT
   editing, and no diagrams, whiteboards, boards, sheets, forms, workshops or
   in-editor AI assistant. Never imply they exist.
-- **Free means free.** MIT-licensed, no paid tier, no plan for
-  one. Say so where the format allows.
+- **Free means free.** MIT-licensed, every feature on Free, no trial,
+  no card. Say so where the format allows. Don't claim there is no paid
+  tier (Pro raises a few limits), and don't lead with Pro.
 - **Brand color** is amber, `#F59E0B` ("livedocuments amber"); text and fills in it use `#A34A0C`. See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

@@ -13,11 +13,10 @@ import { StartDrawingCta } from './StartDrawingCta';
 
 // docs/specs/019-marketing/marketing-site.md "Structure" and "Closing CTA".
 describe('the promises', () => {
-  it('shows every promise, each with its value, and the proof links', () => {
+  it('shows every promise, each one label, and the proof links', () => {
     render(<PromisePrism />);
     for (const p of PROMISES) {
       expect(screen.getByText(p.title)).toBeTruthy();
-      if (p.value) expect(screen.getByText(p.value)).toBeTruthy();
     }
     expect(screen.getByRole('link', { name: /Read the Source/ }).getAttribute('href')).toBe(
       REPO_URL,

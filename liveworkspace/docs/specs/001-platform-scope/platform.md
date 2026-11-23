@@ -55,5 +55,7 @@ It never keeps its own copy of a platform record (no teams mirror, no folders ta
   app. Two services pass it through for a short time and keep no copy of their own: the Drive mirror, writing it to
   the person's Google Drive ([drive.md](../005-drive/drive.md)), and Download Your Data, which keeps the zip it builds
   in R2 only until its link lapses, 3 days at most ([data-export.md](../003-accounts/data-export.md#privacy)).
-- Billing and paid tiers. Every app is free and MIT-licensed.
+- Card handling. Every app is free to use and MIT-licensed. Pro, the subscription that raises limits, is the
+  platform's ([subscription.md](../019-subscription/subscription.md)), off by default, and its payments are a
+  billing provider's hosted pages, never forms of our own.
 - Passwords and passkeys. Accounts sign in with an emailed code or Google only.

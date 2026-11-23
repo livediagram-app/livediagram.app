@@ -18,13 +18,16 @@ export const MAX_BODY_BYTES = 8 * 1024 * 1024; // 8 MB
 // (`POST /api/projects/:id/file`) the plan file's (PROJECT_FILE_MAX_BYTES, 20 MB; Work Tracker 1019), so a full
 // plan's export imports back. Each route checks its own cap again.
 // `count` is how many path segments the request has, `area` the second (`images`, `projects`) and `sub` the fourth.
+// `imageBytes` is the image routes' outer bound: the 10 MB cap, or with Pro on the most any tier takes
+// (imageGateBytes in @liveworkspace/api-kit/image-upload; the upload's route then holds it to the caller's own limit).
 export function writeBodyCap(
   method: string,
   count: number,
   area: string | undefined,
   sub: string | undefined,
+  imageBytes: number = MAX_IMAGE_BYTES,
 ): number {
-  if (area === 'images') return MAX_IMAGE_BYTES;
+  if (area === 'images') return imageBytes;
   if (method === 'POST' && count === 4 && area === 'projects' && sub === 'file')
     return PROJECT_FILE_MAX_BYTES;
   return MAX_BODY_BYTES;

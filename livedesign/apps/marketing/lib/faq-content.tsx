@@ -111,12 +111,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'free-and-open-source',
     title: 'Free and open source',
-    blurb: 'No paid tier, no catch.',
+    blurb: 'Every feature, on the free plan.',
     icon: lucideGlyph(lucideGift, ICON),
     items: [
       {
         q: 'Is it really free?',
-        a: 'Yes. Every feature is free for everyone, with no paid tier, no trial and no plan to introduce one. If we ship it, every user gets it.',
+        a: 'Yes. Every feature works on the free plan, with no trial and no card. Paid plans raise a few limits.',
       },
       {
         q: 'Is the code open source?',
@@ -131,10 +131,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. The whole codebase is MIT-licensed and public on GitHub. You can read it, fork it, or contribute.',
-      },
-      {
-        q: 'Will features ever move behind a paywall?',
-        a: 'No. There are no "Pro" features and no billing anywhere in the code. Every feature is free for everyone.',
       },
     ],
   },

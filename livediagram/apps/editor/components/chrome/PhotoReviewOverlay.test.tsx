@@ -894,3 +894,35 @@ describe('reading a moved box again', () => {
     expect(screen.getByTestId('photo-rereading').textContent).toMatch(/reading 2 changed notes/i);
   });
 });
+
+// With Pro on, a charged read's choice sits with the review's other choices (docs/specs/021-event-storming/
+// note-reader.md "What the editor shows"), and is absent for every other read.
+describe('the choice before a charged read', () => {
+  it('is drawn when a read waits on it, and hands the choice back', async () => {
+    const onChooseRead = vi.fn();
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0), sticky(1)]) })}
+        reading={false}
+        readChoice={{ notes: 2 }}
+        onChooseRead={onChooseRead}
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Read on This Device' }));
+    expect(onChooseRead).toHaveBeenCalledWith(true);
+  });
+
+  it('is absent for any other read', () => {
+    render(
+      <PhotoReviewOverlay
+        review={review({ detection: found([sticky(0)]) })}
+        reading
+        onConfirm={noop}
+        onCancel={noop}
+      />,
+    );
+    expect(screen.queryByTestId('photo-read-choice')).toBeNull();
+  });
+});
