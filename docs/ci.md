@@ -26,10 +26,26 @@ everything runs, never because a shared package it uses changed (its E2E the sam
 deploy. None is held today: livehuddle was held until its launch (Work Tracker #189) and liveknowledge until
 2026-11-22, and both now run, test, run their E2E and deploy like any product. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
-change touches something every workspace leans on without turbo seeing it as theirs: `.github/` (but for a
-guard's baseline list, which only its guard reads: "Before a push"), the
-root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
+change touches something every workspace leans on without turbo seeing it as theirs: the parts of
+`.github/` every CI job runs (below), the root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
 Prettier config and ignore file, or a product folder's own `package.json` or Prettier ignore file.
+
+`.github/` is split by what a file can break (`ci-run-all.mjs`):
+
+- **Everything**: what every CI job runs. `ci.yml`; the `setup`, `turbo-cache`, `turbo-cache-save` and
+  `cancel-on-failure` actions; and the scripts the plan and the Checks and coverage jobs run
+  (`ci-plan.mjs`, `ci-run-all.mjs`, `ci-readers.mjs`, `format-check.sh`, `cpu-budget-guard.mjs`,
+  `cancel-on-failure.mjs`, `coverage-floors.*`, `lcov.mjs`). A mistake there can fail any job, and only
+  running them all shows it does not.
+- **Every product's E2E**: what only the e2e jobs run. `e2e.yml`, `e2e-product.yml`, the `e2e-setup`,
+  `next-cache-restore` and `next-cache-save` actions and `next-build-cold-retry.sh`. Unit tests, lint
+  and type check run only for what else the change reaches.
+- **The platform's Checks job alone**: the rest of `.github/` (the repo guards and their baseline lists,
+  the deploy, CodeQL, cache-prune and other workflows, the other scripts, `dependabot.yml`). Each script
+  has its own tests, the CI script tests, and the guards run over the whole repository in that job, so
+  where the change reaches no platform workspace, `@liveworkspace/vitest-config` stands in to run them.
+  A workflow there runs on its own trigger, and `action-lint.yml` lints every one. Before 2026-11-23 any
+  file under `.github/` ran everything: 60 of the 601 pull requests merged in the two weeks before.
 
 ### Suites that read other workspaces
 
@@ -563,12 +579,11 @@ package (41 s, its thresholds), and a note box already on `main` (85 s, the merg
   `corepack pnpm prepush:quick --site-build` also builds liveworkspace's site, which ends in its
   first-load budget (`liveworkspace/apps/site/scripts/first-load-budget.ts`): worth it for a change to
   the site or to a package its front door or Explorer loads.
-- A change to something every workspace leans on (`.github/`, the root config) reaches every group's
-  lint, type check and format, as on CI; turbo's cache replays what hasn't changed.
-  A guard's baseline list (`.github/scripts/*-baseline.txt`) is the exception, here and on CI
-  (`ci-run-all.mjs`): only its own guard reads it, so it forces nothing. Where such a change reaches no
-  platform workspace, `@liveworkspace/vitest-config` stands in, so the platform's Checks job still runs
-  the guards and the CI script tests on it.
+- A change to something every workspace leans on (the root config, the parts of `.github/` every CI job
+  runs: "Only what changed") reaches every group's lint, type check and format, as on CI; turbo's cache
+  replays what hasn't changed. The rest of `.github/` forces nothing, here and on CI (`ci-run-all.mjs`).
+  Where such a change reaches no platform workspace, `@liveworkspace/vitest-config` stands in, so the
+  platform's Checks job still runs the guards and the CI script tests on it.
 
 ## Deploys
 
