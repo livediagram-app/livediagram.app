@@ -3,6 +3,7 @@
 // What a Dashboard slot draws (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): a Board or Sheet tab compact and
 // live, a plan view or a chart from a Sheet at the slot's size (the element keeps its stored size; the slot lends it
 // its own), or a note.
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { isChartShape, type DashboardContent } from '@liveplanner/project';
 import { PlanViewView } from '@/components/plan/views/PlanViewView';
@@ -19,8 +20,13 @@ import { DashboardLinksCard } from './DashboardLinksCard';
 import { DashboardSheetMetric } from './DashboardSheetMetric';
 import { DashboardFormMetric } from './DashboardFormMetric';
 import { DashboardSheetChart } from './DashboardSheetChart';
-import { DashboardEmbedCard } from './DashboardEmbedCard';
 import { SlotName } from './slot-name-context';
+
+// The live embed face loads only on a Dashboard that holds an Embed File (Work Tracker 1375).
+const DashboardEmbedCard = dynamic(
+  () => import('./DashboardEmbedCard').then((m) => m.DashboardEmbedCard),
+  { ssr: false },
+);
 
 // The box's size, kept as it changes (the row resized, the window).
 export function useBoxSize(
