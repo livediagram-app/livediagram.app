@@ -160,7 +160,7 @@ function ResolveChip({ onPress }: { onPress: () => void }) {
       style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
     >
       <CheckGlyph size={10} />
-      Resolve
+      <span className="text-optical-line">Resolve</span>
     </button>
   );
 }

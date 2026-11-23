@@ -158,7 +158,7 @@ function AddButton({ onPress }: { onPress: () => void }) {
       style={{ ...LOUD_ACCENT, boxShadow: shadow(LOUD_ACCENT.boxShadow) }}
     >
       <PlusGlyph size={12} />
-      Add Action
+      <span className="text-optical-line">Add Action</span>
     </button>
   );
 }
@@ -176,8 +176,10 @@ function BoardChip({ onPress, textColor }: { onPress: () => void; textColor: str
       style={{ color: textColor, backgroundColor: tint(textColor, 0.08) }}
     >
       <BoardGlyph size={11} />
-      Board
-      <span aria-hidden>↗</span>
+      <span className="text-optical-line">Board</span>
+      <span aria-hidden className="text-optical-line">
+        ↗
+      </span>
     </button>
   );
 }

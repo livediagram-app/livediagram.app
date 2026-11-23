@@ -214,7 +214,8 @@ describe('the pricing page, signed in', () => {
     const button = within(card('team')).getByRole('button', { name: 'Get Pro for Teams' });
     await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false));
     fireEvent.click(button);
-    const dialog = await screen.findByRole('dialog', { name: 'One Upgrade, Every App' });
+    // The dialog's code is in (beforeAll), so the press itself draws it: nothing to wait for.
+    const dialog = screen.getByRole('dialog', { name: 'One Upgrade, Every App' });
     expect(
       dialog.querySelector('[role="group"][aria-label="Subscribe For"] [aria-pressed="true"]')
         ?.textContent,

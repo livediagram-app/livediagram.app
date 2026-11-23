@@ -6,7 +6,7 @@
 import { memo, useEffect, useRef } from 'react';
 import type { AskNotUsed, AskSource } from '@liveknowledge/api-schema';
 import { parseKnowledgeFields } from '@liveknowledge/knowledge';
-import { CompactEmptyState } from '@liveknowledge/ui';
+import { Chip, CompactEmptyState } from '@liveknowledge/ui';
 import { markedParts } from '@/lib/knowledge-ask/answer-parts';
 import type { AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
 import { pagePath, sourceTrust, type SourceTrust } from '@/lib/knowledge-ask/source-meta';
@@ -99,9 +99,9 @@ function SourceTrustLine({ trust, health }: { trust: SourceTrust; health: AskSou
       className="mt-2.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 border-t border-slate-100 pt-2 text-xs leading-5 text-slate-600 dark:border-slate-800 dark:text-slate-400"
     >
       {trust.mark === 'never' ? (
-        <span className="inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        <Chip className="bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
           {trust.label}
-        </span>
+        </Chip>
       ) : (
         <span className="[&>span]:text-[12px]">
           <TrustBadge mark={trust.mark} />

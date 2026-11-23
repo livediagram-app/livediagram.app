@@ -5,7 +5,7 @@
 // photos fill the grid with a glint rolling across them under a scanning lens; while a pick is
 // stored, its tile lifts behind a chasing ring and says which stage it is at.
 import type { ReactNode } from 'react';
-import { SearchIcon } from '@livedesign/ui';
+import { SearchIcon, Chip } from '@livedesign/ui';
 import type { PickStage } from '@liveworkspace/workbench/lib/image-search/pick';
 
 // One search page fills two rows of four; a further page adds one row.
@@ -107,9 +107,9 @@ export function PickOverlay({ stage }: { stage: PickStage }) {
           className="lvd-pick-ring stroke-brand-500 dark:stroke-brand-400"
         />
       </svg>
-      <span className="rounded-full bg-white/90 px-1.5 py-px text-[10px] font-semibold text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
+      <Chip className="bg-white/90 px-1.5 py-px text-[10px] font-semibold text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">
         {PICK_STAGE_COPY[stage].short}
-      </span>
+      </Chip>
     </span>
   );
 }

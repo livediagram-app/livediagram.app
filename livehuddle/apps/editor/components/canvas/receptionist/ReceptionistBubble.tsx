@@ -101,7 +101,7 @@ function Reply({
         onClick();
       }}
     >
-      {children}
+      <span className="text-optical-line">{children}</span>
     </button>
   );
 }

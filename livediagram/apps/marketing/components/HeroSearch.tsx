@@ -149,7 +149,7 @@ export function HeroSearch() {
                     </span>
                     <span className="hidden shrink-0 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 sm:inline-flex">
                       <ModeIcon size={13} aria-hidden />
-                      {editorModeLabel(t.mode)}
+                      <span className="text-optical-line">{editorModeLabel(t.mode)}</span>
                     </span>
                   </a>
                 </li>

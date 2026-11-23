@@ -125,14 +125,14 @@ export function MadeByAiBadge({ item }: { item: Pick<Item, 'source'> }) {
 /** The Made by AI chip, wherever something an AI tool made is shown: an item, or a picture in the Image Gallery. */
 export function MadeByAiChip() {
   return (
-    <span
+    <Chip
       data-made-by-ai=""
       title="Made by AI: an AI tool made it."
-      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/30"
+      icon={<SparkleIcon size={10} />}
+      className="bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700 ring-1 ring-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:ring-violet-500/30"
     >
-      <SparkleIcon size={10} />
       Made by AI
-    </span>
+    </Chip>
   );
 }
 
@@ -141,14 +141,14 @@ export function MadeByAiChip() {
 export function ArchivedBadge({ item }: { item: Pick<Item, 'archivedAt'> }) {
   if (!item.archivedAt) return null;
   return (
-    <span
+    <Chip
       data-archived=""
       title="Archived: it can't be opened until it is moved out with Change Folder."
-      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 ring-1 ring-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600"
+      icon={<ArchiveIcon size={10} />}
+      className="bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 ring-1 ring-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-600"
     >
-      <ArchiveIcon size={10} />
       Archived
-    </span>
+    </Chip>
   );
 }
 

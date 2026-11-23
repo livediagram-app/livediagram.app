@@ -4,7 +4,7 @@
 // Ask view"): kept in this browser, grouped Today, This Week and Earlier, then Completed Questions, a group closed by
 // default with its count. Pressing a chat opens it; each has Delete at its end, on hover or focus (always on touch).
 import { memo, useState } from 'react';
-import { Button, CompactEmptyState, HoverCard } from '@liveknowledge/ui';
+import { Button, Chip, CompactEmptyState, HoverCard } from '@liveknowledge/ui';
 import {
   chatIdOf,
   completedQuestions,
@@ -160,9 +160,9 @@ export const RecentQuestions = memo(function RecentQuestions({
                   <ChevronIcon />
                 </span>
                 Completed Questions
-                <span className="ml-auto rounded-full bg-slate-200 px-1.5 py-px text-[11px] font-semibold normal-case tracking-normal tabular-nums text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <Chip className="ml-auto bg-slate-200 px-1.5 py-px text-[11px] font-semibold normal-case tracking-normal tabular-nums text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                   {completed.length}
-                </span>
+                </Chip>
               </button>
             </h2>
             {completedOpen ? <ul className="mt-1 flex flex-col">{completed.map(row)}</ul> : null}

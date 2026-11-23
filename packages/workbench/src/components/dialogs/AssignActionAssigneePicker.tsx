@@ -1,4 +1,4 @@
-import { GlyphDisc } from '@liveworkspace/ui';
+import { Chip, GlyphDisc } from '@liveworkspace/ui';
 import { initialsOf } from '@liveworkspace/model-core/names';
 import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { explorerHref } from '../../lib/explorer-href';
@@ -101,9 +101,9 @@ export function AssigneePicker({
           </span>
           {m.pending ? (
             // Same amber badge the team pane uses for pending invites.
-            <span className="shrink-0 rounded-full bg-amber-100 px-1.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
+            <Chip className="bg-amber-100 px-1.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
               Invited
-            </span>
+            </Chip>
           ) : null}
         </span>
         {selected ? (

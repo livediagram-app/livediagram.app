@@ -52,7 +52,7 @@ export function ComponentSessionBar({
         className="flex cursor-pointer items-center gap-1 rounded-full bg-brand-700 px-3 py-1 text-sm font-semibold text-white transition hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
       >
         <DoneIcon />
-        Done
+        <span className="text-optical-line">Done</span>
       </button>
     </div>
   );

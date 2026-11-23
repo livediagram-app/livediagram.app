@@ -3,6 +3,7 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveworkspace/telemetry';
 import type { WebVital } from '@livediagram/api-schema';
 import type { TimingChart } from './timing-stats';
+import { Chip } from '@liveworkspace/ui';
 import {
   formatPercentile,
   TIMING_MIN_SAMPLES,
@@ -64,11 +65,9 @@ export function VitalsCard({
                   {enough ? formatPercentile(histogram.scale, p75) : 'Too few'}
                 </span>
                 {rating ? (
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${RATING_CLASS[rating]}`}
-                  >
+                  <Chip className={`px-2 py-0.5 text-[11px] font-medium ${RATING_CLASS[rating]}`}>
                     {rating}
-                  </span>
+                  </Chip>
                 ) : null}
               </div>
             </li>

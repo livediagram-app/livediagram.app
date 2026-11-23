@@ -4,6 +4,7 @@
 // style and the tab's colours: a Title bare on the page, a Status as its light and line, a Checklist as ticked rows, a
 // Key Date as its count, Links as labelled rows. Decorative: the card's name says what it is.
 import type { FormMetricKind, SheetMetricKind } from '@liveplanner/project';
+import { Chip } from '@liveplanner/ui';
 import type { DashboardCardKind } from '@/hooks/plan/dashboard-drop';
 import { AMBER, Bar, BLUE, Frame, GREEN, RED, type P } from './slot-previews';
 
@@ -217,13 +218,13 @@ export function FormMetricPreview({ palette, metric }: P & { metric: FormMetricK
     <Frame palette={palette}>
       <Bar w="45%" c={palette.muted} h={3} o={0.6} />
       {metric === 'status' ? (
-        <span
-          className="inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold"
+        <Chip
+          icon={<span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: GREEN }} />}
+          className="w-fit px-2 py-0.5 text-[9px] font-semibold"
           style={{ backgroundColor: 'rgb(16 185 129 / 0.14)', color: GREEN }}
         >
-          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
           Accepting
-        </span>
+        </Chip>
       ) : metric === 'link' ? (
         <span className="flex items-center gap-1">
           <span className="h-3 flex-1 rounded" style={{ backgroundColor: palette.column }} />

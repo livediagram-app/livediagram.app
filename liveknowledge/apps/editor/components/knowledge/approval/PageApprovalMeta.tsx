@@ -51,7 +51,7 @@ export function PageApprovalMeta(props: PageApprovalMetaProps) {
       }`}
     >
       {mark === 'pending' ? <PendingIcon /> : <RejectedIcon />}
-      {APPROVAL_MARK_LABEL[mark]}
+      <span className="text-optical-line">{APPROVAL_MARK_LABEL[mark]}</span>
     </button>
   ) : (
     <button

@@ -25,7 +25,7 @@ import {
   targetColumns,
   typeFieldLabel,
 } from '@liveplanner/items';
-import { PlusIcon, Select, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { Chip, PlusIcon, Select, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideArrowRight, lucideSquareKanban, lucideTable } from '@liveworkspace/icons/lucide';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { sheetsOf } from '@liveplanner/templates';
@@ -318,9 +318,9 @@ function DashedAdd({
       >
         <PlusIcon size={13} />
         <span className="truncate">{label}</span>
-        <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <Chip className="bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
           {count}
-        </span>
+        </Chip>
       </button>
     </Tooltip>
   );

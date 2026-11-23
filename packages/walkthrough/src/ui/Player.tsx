@@ -342,7 +342,7 @@ function PlayerBar({
             }`}
           >
             <PlayIcon size={13} className={looking ? '' : 'translate-x-px'} />
-            {looking ? 'Resume' : null}
+            {looking ? <span className="text-optical-line">Resume</span> : null}
           </button>
         </HoverCard>
       )}

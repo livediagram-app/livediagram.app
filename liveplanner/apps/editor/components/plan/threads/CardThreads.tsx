@@ -10,7 +10,7 @@
 // (CardActivity.tsx, items.md "History").
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CommentIcon, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
+import { Chip, CommentIcon, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideChevronDown, lucidePlus } from '@liveworkspace/icons/lucide';
 import {
   COMMENTS_FIELD,
@@ -164,12 +164,12 @@ function CardThreadsOf({ item, type, field = COMMENTS_FIELD, heading }: CardThre
   const actions = (
     <>
       {tally ? (
-        <span
+        <Chip
           data-thread-tally=""
-          className="rounded-full bg-slate-100 px-2 py-px text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+          className="bg-slate-100 px-2 py-px text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
         >
           {tally}
-        </span>
+        </Chip>
       ) : null}
       <span className="flex-1" />
       {canComment && !starting && threads.length > 0 ? newThread : null}

@@ -147,10 +147,10 @@ export function StateBadge({
       </span>
       {hold ? (
         <span data-hold={hold} className={`${HOLD} justify-items-center`}>
-          <span>{words}</span>
+          <span className="text-optical-line">{words}</span>
         </span>
       ) : (
-        words
+        <span className="text-optical-line">{words}</span>
       )}
     </span>
   );
@@ -184,13 +184,13 @@ export function UptimeFigure({
         <span
           className={
             variant === 'chip'
-              ? 'font-mono font-semibold tabular-nums text-slate-900 dark:text-white'
+              ? 'text-optical-line font-mono font-semibold tabular-nums text-slate-900 dark:text-white'
               : undefined
           }
         >
           {formatUptime(percent)}
         </span>
-        {variant === 'chip' ? ' Uptime' : null}
+        {variant === 'chip' ? <span className="text-optical-line"> Uptime</span> : null}
       </span>
     </Tooltip>
   );

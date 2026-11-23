@@ -428,7 +428,7 @@ function Huddle() {
         {/* Who is in the room, in the band's own colour so the rings stop at its edge. */}
         <div className="absolute bottom-3 right-6 hidden h-[22px] items-center gap-2 rounded-full border border-brand-300 bg-[var(--huddle-paper)] px-2.5 font-mono text-[10px] tracking-[0.1em] text-brand-600 lg:flex dark:border-brand-700/70 dark:text-brand-400">
           <span className="size-1.5 rounded-full bg-brand-500" />
-          LIVE · 5 HERE
+          <span className="text-optical-line">LIVE · 5 HERE</span>
         </div>
       </div>
     </div>

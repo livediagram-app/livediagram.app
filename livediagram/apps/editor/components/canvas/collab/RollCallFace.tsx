@@ -5,7 +5,7 @@
 
 import { useState } from 'react';
 import type { RollCallEntry, ShapeElement } from '@livediagram/document';
-import { GlyphDisc, Glyph, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { GlyphDisc, Glyph, IDENTITY_FILL, identityVars, Chip } from '@livediagram/ui';
 import { initialsOf } from '@/lib/identity';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
@@ -133,12 +133,12 @@ export function RollCallFace({
                 ) : null}
               </span>
               {takenAt ? (
-                <span
-                  className="ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums"
+                <Chip
+                  className="ml-auto px-2 py-0.5 text-[10px] font-medium tabular-nums"
                   style={{ color: textColor, backgroundColor: tint(textColor, 0.07) }}
                 >
                   {takenLabel(takenAt)}
-                </span>
+                </Chip>
               ) : null}
             </div>
             <ul className="flex flex-wrap gap-1.5" key={takenAt}>

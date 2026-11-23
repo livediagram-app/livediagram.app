@@ -8,7 +8,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { APPROVAL_NOTE_MAX, type ApprovalDecisionInput } from '@liveworkspace/index-client';
-import { Button, TextArea } from '@liveworkspace/ui';
+import { Button, Chip, TextArea } from '@liveworkspace/ui';
 import { ApprovalGlyph, DOCUMENT_CHECK } from './glyphs';
 import { decidedWords, dueWords, isOverdue, personName } from './approval-words';
 import { useApprovalDoor } from './door';
@@ -111,9 +111,9 @@ export function ApprovalBanner() {
                   {' by '}
                   <strong className="font-semibold">{dueWords(approval.due)}</strong>
                   {overdue ? (
-                    <span className="ml-1.5 rounded-full bg-rose-100 px-1.5 py-px text-[11px] font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200">
+                    <Chip className="ml-1.5 bg-rose-100 px-1.5 py-px text-[11px] font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200">
                       Overdue
-                    </span>
+                    </Chip>
                   ) : null}
                 </>
               ) : null}

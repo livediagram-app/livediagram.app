@@ -24,7 +24,7 @@ export function VsBadge({
         {mark(size === 'lg' ? 'size-9' : 'size-7')}
       </span>
       <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold tracking-widest text-slate-500 uppercase ring-1 ring-slate-200 dark:bg-slate-900/80 dark:text-slate-400 dark:ring-slate-700">
-        vs
+        <span className="text-optical-line">vs</span>
       </span>
       <span
         className={`flex items-center justify-center bg-white shadow-md shadow-slate-900/5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700 ${tile} ${look.glyph}`}
