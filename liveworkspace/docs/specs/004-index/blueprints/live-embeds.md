@@ -56,6 +56,8 @@ Work Tracker 930.
   `embedMode` and `workbenchMode` both on, `appChrome` off: the share embed's look (EmbedChrome, no header, footer,
   tab bar, panels, tours, Quick Style or Map, Hand tool, read-only open) over the workbench's session and load. The
   editor's `Session·Opened` is not counted for it (the host counts `Canvas·Used·LiveEmbed`).
+- Each target's `WorkbenchPage` wraps a live embed's editor in `data-live-embed-frame` (`display: contents`); its
+  `globals.css` hides `[data-live-embed-frame] [data-zoom-cluster]`.
 - `EmbedChrome` draws its Open in <App> badge only with a share code, so a live embed's frame (none) shows the tab
   switcher alone; livediagram's canvas lands on Fit to Screen in any embed (`embedMode`), never the phone focus.
 - Redeem (`POST sessions` at the target app) uses `sessionTokenFacts`: for `EMBED_TOKEN_ID`, read-only and no expiry
@@ -80,9 +82,9 @@ The face (`LiveEmbedView`), from `liveItem`, the slot and the frame hook:
 | --------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | empty     | no `liveItem`, no poster                                        | "Double-click to choose a file" (or "No file chosen yet")                                                             |
 | frozen    | no `liveItem`, a poster (a Community copy)                      | the poster alone                                                                                                      |
-| idle      | a link, no slot (off screen, over the cap, nested)              | snapshot, name chip, Open                                                                                             |
+| idle      | a link, no slot (off screen, over the cap, nested)              | snapshot, name row, Open                                                                                              |
 | loading   | a slot, ticket asked                                            | snapshot, chip with a pulse                                                                                           |
-| live      | a ticket: the frame mounted, `ready` after hello                | frame fading in over the snapshot, Live chip, Use the file, Open                                                      |
+| live      | a ticket: the frame mounted, `ready` after hello                | frame fading in over the snapshot, Live in the name row, Use the file, Open                                           |
 | no-access | refusal 401/403/404, `ended` revoked/refused, a renewal refused | obscured snapshot (`data-snapshot="obscured"`, `blur-xl`), lock, "Ask its owner to share it with you.", Open in <App> |
 | gone      | 410, `ended` trashed                                            | "This file is no longer there."                                                                                       |
 | failed    | anything else                                                   | "<name> could not be shown just now.", Try Again                                                                      |
@@ -173,7 +175,8 @@ originHost, kind }`.
 ## Presentation and UX
 
 - Tile: Media, embed group, "Live Embed", after Website, the window-with-a-live-dot art.
-- Face: the snapshot fills the element (`object-cover`); a glass name chip bottom left (app logo, name, Live dot);
+- Face: a 24 px name row across the top (`NameBar`: app logo, name, Live dot), the snapshot filling the rest
+  (`object-cover`) with the frame over it;
   controls in a row above the element's top left on hover or focus (Use the file, Open), counter-scaled by
   `useCanvasZoom` to 28 px on screen; the host's Embed wrapper drops its `overflow-hidden` for a live embed so the row
   shows, the face clipping itself to the radius; state cards centred

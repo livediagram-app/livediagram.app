@@ -77,6 +77,10 @@ For a reader without access the snapshot is unreadable, not just dimmed: drawn w
 of a poster at most 480 px wide), so no title or card on it can be read. Readers who can open the target, while the
 frame is loading or after a failure, see it clear or lightly dimmed.
 
+**The name row.** The target's app logo, its name and **Live** (a dot, once the frame says hello) sit in a 24 px row
+across the element's top, the frame below it, so they never cover the target's own controls (a plan's tab switcher
+sat under them, Work Tracker 1386).
+
 **Use the file** and **Open** sit in a row just above the element's top left, outside the target's own content, shown
 on hover or focus, and counter-scaled like the canvas's other on-element chrome so they are one size on screen (28 px)
 at any zoom.
@@ -103,8 +107,10 @@ tells the page it is a live embed's frame, not a developer tool's workbench (Wor
 **The item only.** A live embed's frame shows the item and nothing of the editor around it: no Map, no footer (Tools,
 Settings, Inbox, Open in <App>), no tab bar, palette, panels, tour, start panels or Quick Style, and no full screen. It
 takes the share-code embed's look (each app's `docs/specs/013-workspace/embeds.md` "What renders", for example
-[livediagram's](../../../../livediagram/docs/specs/013-workspace/embeds.md)): the item, the zoom controls and, for an item of several tabs, the small tab switcher, with no link-out
-badge, as the host's own row (the name, Live, **Open**) is the only way out. It lands fitted: a canvas or a design
+[livediagram's](../../../../livediagram/docs/specs/013-workspace/embeds.md)): the item and, for an item of several tabs, the small tab switcher, with no link-out
+badge, as the host's own row (the name, Live, **Open**) is the only way out. It shows no zoom controls either: the frame
+takes no pointer until **Use the file**, lands fitted, and pinch and Ctrl-scroll still zoom, and with nothing in its
+right-hand corners no bar of the host's page (liveknowledge's Edit bar) can sit over its controls. It lands fitted: a canvas or a design
 fits its content, a plan shows its board, a document its page. The workbench page without `live=1` (a developer
 tool's workbench) keeps the workbench's chrome. The flag is presentation only: the session is still the embed
 session, at the view level, whatever the address says.

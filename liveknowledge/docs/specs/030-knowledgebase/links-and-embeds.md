@@ -38,6 +38,8 @@ embed, placed from the slash menu, which is not the card described below: the bl
   plan, document or design reads at a useful size where it was a small 480 by 270 card. It is resized as any object.
   Inside it, the item shows alone, without its app's editor around it (no Map, Tools, Settings or Inbox): the host's
   row above it (its name, Live, **Open**) is the only way out.
+- The embed shows no zoom controls inside it ([live-embeds.md "The frame"](../../../../liveworkspace/docs/specs/004-index/live-embeds.md#the-frame)),
+  so the floating Edit bar never covers them when the embed reaches the bottom of the window.
 - The picture is the platform's preview of that item (`/api/previews`), so it follows the item as it changes; the card
   re-reads it when the page opens and every five minutes while it is visible. A reader who cannot open the item sees
   the frame with "You Don't Have Access to This".

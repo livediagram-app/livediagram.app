@@ -87,7 +87,7 @@ Work Tracker 930). The frame is this app's [workbench embed](workbench-embeds.md
 an **embed ticket**: minted by the host page with the reader's own access, always at the view level, bound to the host
 app's origin, and renewed through the host before its 30 minutes run out. The page is the workbench page at a view session,
 in this embed's look rather than the workbench's (`live=1`, Work Tracker 1386): the document alone, read-only, opened
-on its page, with the zoom controls and, for several tabs, the tab switcher ("What renders" above), and no header, footer
+on its page, with only the tab switcher for several tabs ("What renders" above), and no zoom controls, header, footer
 (Tools, Settings, Inbox), tab bar, palette, panels, Map, tour or Open in livedocuments badge, as the host's own row holds
 **Open**. A developer tool's workbench (no `live=1`) keeps the workbench's chrome. A reader without their own access never
 reaches this frame: the host shows its snapshot instead.
