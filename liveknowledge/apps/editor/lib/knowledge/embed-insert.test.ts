@@ -11,7 +11,7 @@ describe('the slash menu’s knowledge entries', () => {
   it('offers Embed, found by its name and by each app’s', () => {
     const [embed] = found('embed');
     expect(embed).toMatchObject({
-      label: 'Embed',
+      label: 'Embed File',
       group: 'Knowledge',
       action: { kind: 'insert', what: 'embed' },
     });

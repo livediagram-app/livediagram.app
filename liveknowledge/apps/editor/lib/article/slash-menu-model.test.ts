@@ -19,7 +19,7 @@ describe('the slash menu: what it offers', () => {
       Text: ['Text', 'Heading 1', 'Heading 2', 'Heading 3', 'Subtitle', 'Quote', 'Code'],
       Lists: ['Bulleted List', 'Numbered List', 'To-Do List'],
       'Media and Embeds': ['Image', 'Bar Chart', 'Pie Chart', 'Line Chart', 'Drawing'],
-      Knowledge: ['Link to Page', 'Embed', 'Footnote', 'Table of Contents'],
+      Knowledge: ['Link to Page', 'Embed File', 'Footnote', 'Table of Contents'],
       Layout: ['Table', 'Divider'],
     });
   });

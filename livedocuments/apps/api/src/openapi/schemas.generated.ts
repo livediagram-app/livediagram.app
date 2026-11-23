@@ -5529,7 +5529,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "livediagram",
       "liveplanner",
       "livedocuments",
-      "livedesign"
+      "livedesign",
+      "liveknowledge"
     ],
     "type": "string"
   },

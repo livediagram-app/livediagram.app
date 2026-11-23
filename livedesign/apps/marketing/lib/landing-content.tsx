@@ -447,7 +447,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Live files from your other apps',
         description:
-          'Add a Live Embed and a diagram, a plan or a document from another liveworkspace app sits on your page, live and read-only, each viewer seeing it with their own access. Link a chart to a liveplanner sheet and it redraws as the sheet changes.',
+          'Add an Embed File and a diagram, a plan or a document from another liveworkspace app sits on your page, live and read-only, each viewer seeing it with their own access. Link a chart to a liveplanner sheet and it redraws as the sheet changes.',
       },
       {
         art: <ApiArt />,

@@ -108,7 +108,7 @@ The picker (`LiveEmbedPicker`, "Embed File"): with `connect` (a `LiveEmbedConnec
 target id to tab id, `grant()`, `newTabId()`, `addTab(made, tabId)`, built by each host from its Connect host, so
 present exactly where Connect File's entry shows) the Role switch (`ConnectRolePicker`, `'edit'` first) heads the
 dialog. Pressing a row: when `connect` is given, the file is not in `connect.connected` and `managesItem(item)`,
-`connectFile({ level, both: false })` runs first (`Tab·Added·Connected`, and `Element·Added·LiveEmbedConnected`
+`connectFile({ level, both: false })` runs first (`Tab·Added·Connected`, and `Tab·Added·EmbedConnected`
 after the choice); its failure is the row's error (`connectErrorWords`) and nothing is chosen. A row the person does
 not manage, with `connect` given, carries `liveEmbedNoTabLine` under its name. Then Paste a Share Link (Add), Find a
 file, Connected (the first

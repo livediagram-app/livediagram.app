@@ -199,5 +199,5 @@ are kept; anything else (an SVG, any other URL) is refused by validation, so a p
 
 Each host counts, under its own app: `Element·Added·LiveEmbed` (a file chosen) and `Canvas·Used·LiveEmbed` (a frame
 went live). A connection Embed File makes counts as Connect File's does, `Tab·Added·Connected`, and
-`Element·Added·LiveEmbedConnected` beside it, so a chart can tell embeds that brought a tab from those that did not.
+`Tab·Added·EmbedConnected` beside it, so a chart can tell embeds that brought a tab from those that did not.
 Never a name, an id or an app.
