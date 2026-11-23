@@ -236,8 +236,8 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
 - **The read.** Page Health answers `created` and `updated` as `{ by, at, kind, agent?, via? }`
   (`PageAuthorStamp`, `@liveknowledge/api-schema`).
 - **The editor.** `PageMakersBadges` (`components/knowledge/PageMakersBadges.tsx`), in `PageMetaRowView` after the
-  reading time: two pills of the meta row's own size, neutral (`slate`), each with a `HoverCard` from
-  `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`). A page without a row draws neither.
+  reading time: two pills of the meta row's own size, neutral (`slate`), each opening an `AnchoredPopover` (no hover card: the meta row's labelled
+  buttons have none, owner 2026-11-23) of `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`). A page without a row draws neither.
 - **An agent for its person.** Every named surface words an `ai` stamp with `agentForPerson(stamp.agent, nameOf(stamp.by),
 fallback)` (`@liveworkspace/workbench/components/ai-writer/agent-for-person`, shared with the approval line and
   Version History): the pills' hover cards ("Created by Claude for Priya Shah through MCP on 12 Nov", fallback "an
