@@ -130,6 +130,20 @@ export function parseTabCover(v: unknown): TabCover | undefined {
 
 type ThemeColours = Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>;
 
+/** The colours a gradient or animated cover is painted in: the knowledgebase's writing accent leading its theme's
+ *  palette, so the theme's second colour is its next branch whatever accent was picked. The editor's band and the
+ *  public site (apps/api publishing/published-media.ts) both paint from it. */
+export function coverThemeFrom(
+  theme: Pick<ThemeDefinition, 'palette'>,
+  accent: string,
+): Pick<ThemeDefinition, 'elementStroke' | 'palette'> {
+  const palette = theme.palette ?? [];
+  return {
+    elementStroke: accent,
+    palette: [{ ...(palette[0] ?? { fill: '', text: '' }), stroke: accent }, ...palette.slice(1)],
+  };
+}
+
 /** The fill a gradient or animated cover paints, in the knowledgebase's theme: worked out each time it is drawn, so
  *  a change of style recolours every cover. Undefined for a picture. */
 export function coverFill(cover: TabCover, theme: ThemeColours): PageFill | undefined {

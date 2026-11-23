@@ -40,7 +40,7 @@ import { emailMarksSchemaStep } from '../knowledge/email-marks';
 import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
-import { publishedSchemaStep } from '../publishing/published-schema';
+import { publishedMediaSchemaStep, publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
 import { pageWatchSchemaStep } from '../knowledge/page-watch';
@@ -471,6 +471,11 @@ const V42 = requiredReadingSchemaStep;
 // first.
 const V43 = versionAgentSchemaStep;
 
+// Step 44: the pictures each published page places, its cover as drawn, and a restyle redrawing the site
+// (publishing/published-schema.ts; docs/specs/030-knowledgebase/publishing.md "Pictures on the public site").
+// Guarded, so it runs again harmlessly.
+const V44 = publishedMediaSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -507,6 +512,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V41,
   V42,
   V43,
+  V44,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
