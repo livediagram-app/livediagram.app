@@ -9,6 +9,7 @@ import { drainAssistantNotices, handleAssistantRevoked } from './assistant-notic
 import { handleAccessRequests } from './access-requests';
 import { handleApproval } from './approvals';
 import { handleNewPlanForSend, handlePlanSends } from './plan-sends';
+import { handleDiagramSends } from './diagram-sends';
 import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
@@ -77,6 +78,8 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   kits: handleKits,
   // Send to Plan's New Plan (plan-sends.ts).
   'plan-sends': handleNewPlanForSend,
+  // Send to Diagram's new diagram (diagram-sends.ts).
+  'diagram-sends': handleDiagramSends,
 };
 
 async function route(ctx: RouteContext): Promise<Response> {

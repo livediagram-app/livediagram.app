@@ -628,7 +628,7 @@ export const LOOKS_FILTERED = chart(
 );
 
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
-OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard');
+OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram');
 
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,

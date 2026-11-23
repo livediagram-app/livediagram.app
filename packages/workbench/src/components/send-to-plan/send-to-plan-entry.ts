@@ -92,6 +92,9 @@ export function setSendHere(next: { app: App; tabId: string | null } | null): vo
   here = next;
 }
 
+/** Where the editor is, for Send to Diagram's entries (send-to-diagram-entry.ts): null while no host is up. */
+export const sendHere = (): { app: App; tabId: string | null } | null => here;
+
 /** Whether a menu should offer Send to Plan now: the host is up and this session may send. */
 export function canSendHere(): boolean {
   return here !== null && sendSourceId() !== null;

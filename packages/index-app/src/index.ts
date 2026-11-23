@@ -14,6 +14,7 @@ export * from './data-export-door';
 export * from './sheet-source-doors';
 export * from './import-item';
 export { itemFromTemplate, type TemplateFile, type TemplateImport } from './template-item';
+export { graphDoor } from './graph-item';
 export * from './migration-door';
 export * from './migration-room';
 export * from './outbox';

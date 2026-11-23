@@ -58,6 +58,7 @@ import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
+import type { DiagramSendAsk } from './diagram-sends';
 import type { PlanDataAsk, PlanDataListing, PlanDataRead } from './live-data';
 import type {
   Approval,
@@ -369,6 +370,9 @@ export function createIndexClient({
       }),
     newPlanForSend: (name: string) =>
       call<{ item: Item }>('/plan-sends/plans', { method: 'POST', body: { name } }),
+    // Send to Diagram (send-to-diagram.md): a new livediagram diagram of the person's own, drawn from a graph.
+    sendToDiagram: (ask: DiagramSendAsk) =>
+      call<{ item: Item; link: string }>('/diagram-sends/diagrams', { method: 'POST', body: ask }),
 
     // Live data (live-data.md), on the person's own access: a plan's boards, metrics and filter values, and one board's
     // counts or one metric's rows now. `watch` as readSheetRange's.

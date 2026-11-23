@@ -4,9 +4,12 @@
 // who reads the writing but cannot write in it (a Viewer, a locked page), a Send to Plan pill over the words picked.
 // Both are plain buttons: never editable, never taking the caret, opening the card or the picker.
 import type { IconPrim } from '@liveworkspace/icons';
-import { lucideCircleCheck, lucideSquareKanban } from '@liveworkspace/icons/lucide';
+import { lucideCircleCheck } from '@liveworkspace/icons/lucide';
+import { brandMarkSvg, type BrandApp } from '@liveworkspace/brand/svg';
 import type { PlanSend } from '@liveworkspace/index-client';
+import { parseInert } from '@liveworkspace/trusted-types';
 import { canSendHere, sendFromHere } from './send-to-plan-entry';
+import { canSendDiagramHere, sendWordsToDiagram } from '../send-to-diagram/send-to-diagram-entry';
 import { chipWords, openSentCard } from './SentChip';
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -83,7 +86,7 @@ export function sentChipDom(sends: readonly PlanSend[]): HTMLButtonElement {
     `Open the card “${title}”, ${done ? 'done, ' : ''}${words}, in liveplanner`,
   );
   button.title = `${title}: ${words}${more > 0 ? `, and ${more} more` : ''}. Opens in liveplanner.`;
-  button.appendChild(glyphDom(done ? lucideCircleCheck : lucideSquareKanban, 12));
+  button.appendChild(done ? glyphDom(lucideCircleCheck, 12) : brandMarkDom('liveplanner', 12));
   const label = document.createElement('span');
   label.className = 'truncate';
   label.textContent = words;
@@ -113,8 +116,37 @@ export function sendArticleWords(pick: ArticlePick | null): void {
   sendFromHere('text', 'words', [{ elementId: pick.blockId, text: pick.text }]);
 }
 
-// The one pill on screen, over the words a reader picked.
+/** Send to Diagram's picker for the words picked (liveworkspace/docs/specs/004-index/send-to-diagram.md). */
+export function sendArticleWordsToDiagram(pick: ArticlePick | null, label?: string): void {
+  if (!pick || !pick.text.trim()) return;
+  sendWordsToDiagram({ elementId: pick.blockId, text: pick.text, ...(label ? { label } : {}) });
+}
+
+let markCount = 0;
+
+/** An app's logo (its prism, in the app's light or dark) as a DOM node: Send to Plan wears liveplanner's, Send to
+ *  Diagram livediagram's (owner, 2026-11-23). Parsed inert, from the brand package's own markup. */
+export function brandMarkDom(app: BrandApp, size: number): SVGSVGElement {
+  markCount += 1;
+  const svg = parseInert(
+    // The scheme the app shows (its `.dark` class), fixed, so the mark carries no style sheet of its own.
+    brandMarkSvg({
+      app,
+      scheme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+      idPrefix: `send-mark-${markCount}-`,
+    }),
+    'image/svg+xml',
+  ).documentElement as unknown as SVGSVGElement;
+  const node = document.importNode(svg, true);
+  node.setAttribute('width', String(size));
+  node.setAttribute('height', String(size));
+  node.setAttribute('aria-hidden', 'true');
+  return node;
+}
+
+// The one pill on screen, over the words a reader picked, and Send to Diagram's beside it when the app drafts diagrams.
 let pill: HTMLButtonElement | null = null;
+let diagramPill: HTMLButtonElement | null = null;
 
 const PILL =
   'fixed z-[var(--z-toolbar)] inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 shadow-lg shadow-slate-900/10 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 pointer-coarse:h-11';
@@ -137,7 +169,7 @@ export function showReadSendPill(
     pill.dataset.readSendPill = '';
     pill.className = PILL;
     pill.setAttribute('aria-label', 'Send the words to a plan');
-    pill.appendChild(glyphDom(lucideSquareKanban, 14));
+    pill.appendChild(brandMarkDom('liveplanner', 14));
     pill.appendChild(document.createTextNode('Send to Plan'));
     // Pressing it keeps the words picked until it reads them.
     pill.addEventListener('mousedown', (e) => e.preventDefault());
@@ -150,10 +182,35 @@ export function showReadSendPill(
   };
   pill.style.left = `${Math.max(8, at.left)}px`;
   pill.style.top = `${at.bottom + 8}px`;
+  if (!canSendDiagramHere()) {
+    diagramPill?.remove();
+    diagramPill = null;
+    return;
+  }
+  if (!diagramPill) {
+    diagramPill = document.createElement('button');
+    diagramPill.type = 'button';
+    diagramPill.dataset.readDiagramPill = '';
+    diagramPill.className = PILL;
+    diagramPill.setAttribute('aria-label', 'Send the words to a diagram');
+    diagramPill.appendChild(brandMarkDom('livediagram', 14));
+    diagramPill.appendChild(document.createTextNode('Send to Diagram'));
+    diagramPill.addEventListener('mousedown', (e) => e.preventDefault());
+    document.body.appendChild(diagramPill);
+  }
+  diagramPill.onclick = () => {
+    const picked = pick();
+    hideReadSendPill();
+    sendArticleWordsToDiagram(picked);
+  };
+  diagramPill.style.left = `${Math.max(8, at.left) + pill.offsetWidth + 6}px`;
+  diagramPill.style.top = pill.style.top;
 }
 
-/** Takes the pill away. */
+/** Takes the pills away. */
 export function hideReadSendPill(): void {
   pill?.remove();
   pill = null;
+  diagramPill?.remove();
+  diagramPill = null;
 }

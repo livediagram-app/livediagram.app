@@ -11,6 +11,7 @@
 
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { SendWordsButton } from '@liveworkspace/workbench/components/send-to-plan/SendWordsButton';
+import { SendWordsToDiagramButton } from '@liveworkspace/workbench/components/send-to-diagram/SendWordsToDiagramButton';
 import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import {
@@ -173,6 +174,11 @@ export function RichTextToolbar({
         <>
           {TOOLBAR_DIVIDER}
           <SendWordsButton
+            elementId={element.id}
+            wholeText={typeof element.label === 'string' ? element.label : ''}
+            className={toolbarButtonClass(false)}
+          />
+          <SendWordsToDiagramButton
             elementId={element.id}
             wholeText={typeof element.label === 'string' ? element.label : ''}
             className={toolbarButtonClass(false)}

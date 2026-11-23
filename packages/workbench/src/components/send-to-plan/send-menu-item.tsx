@@ -3,15 +3,17 @@
 // Send to Plan's row in an element's menu (each app's docs/specs/013-workspace/send-to-plan.md "Where it is"): beside
 // Add Comment and Add Note, for an element with words, while this session may send. "On" once a card was made from it,
 // its line then saying where the card stands. The menus build their rows on open, so reading the store here is current.
-import { lucideGlyph } from '@liveworkspace/ui';
-import { lucideSquareKanban } from '@liveworkspace/icons/lucide';
+import { BrandMark } from '@liveworkspace/brand';
 import type { ResourceItem } from '../palette/ResourcesFlyout';
 import { currentSends, sendsOf } from './send-store';
 import { canSendHere, sendFromHere, type SendNoun } from './send-to-plan-entry';
 import { chipWords } from './SentChip';
 
-/** The menu's Send to Plan glyph, at a menu row's size. */
-export const SendToPlanMenuIcon = lucideGlyph(lucideSquareKanban, 16);
+/** Send to Plan's glyph, at a menu row's size: liveplanner's logo (owner, 2026-11-23), as Send to Diagram wears
+ *  livediagram's. */
+export function SendToPlanMenuIcon({ size = 16 }: { size?: number }) {
+  return <BrandMark app="liveplanner" className="shrink-0" style={{ width: size, height: size }} />;
+}
 
 type Sendable = { id: string; type: string; label?: unknown };
 type Placed = Sendable & { x?: number; y?: number };

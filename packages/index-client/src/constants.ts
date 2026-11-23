@@ -465,6 +465,9 @@ export const INDEX_ERRORS = [
   'source_full',
   'plan_refused',
   'plan_unavailable',
+  // Send to Diagram (send-to-diagram.md): livediagram could not be reached, or refused the graph.
+  'diagram_unavailable',
+  'invalid_graph',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
 

@@ -5320,6 +5320,9 @@ importers:
       '@liveworkspace/ask':
         specifier: workspace:*
         version: link:../../../packages/ask
+      '@liveworkspace/index-client':
+        specifier: workspace:^
+        version: link:../../../packages/index-client
     devDependencies:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*

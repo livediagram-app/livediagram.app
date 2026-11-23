@@ -19,6 +19,7 @@ import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SEND_TO_PLAN } from '../_shared/send-to-plan-metrics';
+import { SEND_TO_DIAGRAM } from '../_shared/send-to-diagram-metrics';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { LIBRARY } from '../_shared/library-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
@@ -288,6 +289,7 @@ export const LIVEDESIGN: TelemetryAppConfig = {
           CONNECTED_TABS,
           SNAPSHOTS,
           SEND_TO_PLAN,
+          SEND_TO_DIAGRAM,
           WALKTHROUGHS,
           LIBRARY,
           EDITOR_SEARCH,

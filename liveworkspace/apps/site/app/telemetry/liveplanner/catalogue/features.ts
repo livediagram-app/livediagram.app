@@ -671,7 +671,7 @@ export const PLAN_DESCRIBE_OPENED = opened(
 );
 
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
-OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard');
+OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram');
 
 export const OTHER_OPENED = chart(
   'UI',
