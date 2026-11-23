@@ -22,7 +22,7 @@ import {
   type QuickFilter,
 } from '@liveplanner/items';
 import { lucideGripVertical } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@liveplanner/ui';
+import { ChevronDownIcon, lucideGlyph } from '@liveplanner/ui';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';
 import { FieldWidgetView } from './widgets/FieldWidgetView';
@@ -373,20 +373,30 @@ export function PlanBoardHeader({
                   {cardRefIn(types)(item)} {itemTitle(item)}
                 </span>
                 {canEdit && open.length > 0 ? (
-                  <select
-                    aria-label={`Move ${cardRefIn(types)(item)} to`}
-                    className="rounded border bg-transparent px-1 text-[12px]"
-                    style={{ borderColor: palette.border, color: palette.text }}
-                    value=""
-                    onChange={(e) => e.target.value && onMoveUnplaced(item, e.target.value)}
-                  >
-                    <option value="">Move to</option>
-                    {open.map((c) => (
-                      <option key={c.id} value={c.status}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                  // A real select in the board's own colours, with our chevron in place of the browser's arrow.
+                  <span className="relative inline-flex shrink-0">
+                    <select
+                      aria-label={`Move ${cardRefIn(types)(item)} to`}
+                      className="cursor-pointer appearance-none rounded-md border bg-transparent py-0.5 pl-2 pr-5 text-[12px] outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+                      style={{ borderColor: palette.border, color: palette.text }}
+                      value=""
+                      onChange={(e) => e.target.value && onMoveUnplaced(item, e.target.value)}
+                    >
+                      <option value="">Move to</option>
+                      {open.map((c) => (
+                        <option key={c.id} value={c.status}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2"
+                      style={{ color: palette.muted }}
+                    >
+                      <ChevronDownIcon size={12} />
+                    </span>
+                  </span>
                 ) : null}
               </div>
             );

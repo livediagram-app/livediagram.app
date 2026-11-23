@@ -94,7 +94,7 @@ No new network traffic.
 
 ## Presentation and UX
 
-The refused post: the error toast reads **The box filled up before your idea landed.** (IB3), the
+The refused post: the error toast reads **The idea box filled up before your idea landed.** (IB3), the
 draft returns to the composer, and the full box reads **Box is full** with the field off.
 
 ## Accessibility

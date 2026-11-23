@@ -100,7 +100,7 @@ Spec "A file made beside it" (Work Tracker 1281). Body `BesideInput { offer, tab
    the host is the person's own and in no team, else null. The answer's item must be live, the person's own, in no
    team, of the offer's app: else `503 unavailable`, nothing made.
 5. Making's steps 5 to 11 with that item as the target (`connectTo`, shared with Making). An answer other than `201`
-   purges the made item (`purgeRows`, as Remove What Was Made) and is passed on.
+   purges the made item (`purgeRows`, as Remove Files) and is passed on.
 6. `201 ConnectionMade`, as Making answers: the editor's add then runs as for Connect File (`connectFile`'s take-back).
 
 The editor's side: `ConnectFilePanel`'s `offer` (a `BesideOffer`) shows `ConnectPicker`'s Suggested row

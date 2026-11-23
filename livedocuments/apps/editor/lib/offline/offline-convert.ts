@@ -9,6 +9,7 @@
 import { apiLoadDocument, apiLoadTab } from '@/lib/api-client';
 import { DOCUMENT_CONVERSION_HEADER } from '@livedocuments/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
 import {
   offlineCreateDocument,
@@ -158,13 +159,17 @@ export class SyncStillSavingError extends Error {
 
 // A sync stopped by its own checks (./offline-sync) names what happened: the local copy is kept
 // either way, and a retry is the fix.
-export function syncFailureMessage(e: unknown): string {
+// Given the document's `name`, the toast names it.
+export function syncFailureMessage(e: unknown, name?: string | null): string {
   if (e instanceof SyncStillSavingError) return e.message;
+  const named = toastName(name);
   if (e instanceof OfflineSyncIncompleteError)
     return 'This document kept changing while syncing. Your copy is safe: try again soon.';
-  return e instanceof ApiError && e.status === 413
-    ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
-    : 'Could not sync this document. Check your connection and try again.';
+  if (e instanceof ApiError && e.status === 413)
+    return named
+      ? `${named} is too large to sync. Shrink a big image and try again.`
+      : 'Too large to sync, usually a big image on a tab. Shrink it and try again.';
+  return `Could not sync ${named ?? 'this document'}. Check your connection and try again.`;
 }
 
 // Re-exported for callers that only need to create an offline document from

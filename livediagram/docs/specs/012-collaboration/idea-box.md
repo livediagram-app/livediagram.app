@@ -84,7 +84,7 @@ apply. The second poster's copy settles the same way:
   pending card comes out, found by its id: the box ends exactly as every other
   copy has it.
 - The poster is told, as on the [Q&A board](qa-board.md): the toast says
-  **The box filled up before your idea landed.**, and the draft goes back in
+  **The idea box filled up before your idea landed.**, and the draft goes back in
   the composer (unless something new was typed there meanwhile), where the
   full box now reads **Box is full** with the field off.
 - A post the room answered, or one that never reached it (no live room, a

@@ -1,5 +1,5 @@
 // Project kits over HTTP (liveworkspace/docs/specs/004-index/kits.md): who may start one, a run's folder, parts and
-// connections both ways, the role the passes take, a partial failure and its Retry, and Remove What Was Made.
+// connections both ways, the role the passes take, a partial failure and its Retry, and Remove Files.
 import { kitById, type KitRun } from '@liveworkspace/index-client';
 import { describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, settle, useHarness, type AppCall } from './test-support';
@@ -261,7 +261,7 @@ describe('a partial failure', () => {
   });
 });
 
-describe('Remove What Was Made', () => {
+describe('Remove Files', () => {
   it('deletes the run’s items for good, and its folder once empty', async () => {
     const ada = await person('user_a');
     answerDoors(ada.auth, { failMake: new Set(['livehuddle']) });
@@ -362,7 +362,7 @@ describe('the run limit', () => {
     expect(keys).toEqual(['kit:user_a', 'kit:user_a', 'kit:user_a']);
   });
 
-  it('leaves Remove What Was Made unlimited', async () => {
+  it('leaves Remove Files unlimited', async () => {
     const ada = await person('user_a');
     answerDoors(ada.auth);
     const run = await body<KitRun>(await start(ada.auth, SOFTWARE));

@@ -34,6 +34,7 @@ import {
   OAUTH_QUIET,
   OAUTH_SECONDARY,
   OauthHelpLink,
+  OauthLoading,
   ReadOnlyAccessToggle,
   UnverifiedAppBadge,
   UnverifiedDestination,
@@ -100,7 +101,7 @@ function Consent({ config }: { config: OauthPagesConfig }) {
   if (gate === 'waiting') {
     return (
       <Shell>
-        <p className={OAUTH_QUIET}>Loading…</p>
+        <OauthLoading />
       </Shell>
     );
   }
@@ -270,7 +271,7 @@ export function createOauthConsentPage(config: OauthPagesConfig) {
       <Suspense
         fallback={
           <Shell>
-            <p className={OAUTH_QUIET}>Loading…</p>
+            <OauthLoading />
           </Shell>
         }
       >

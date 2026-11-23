@@ -17,14 +17,9 @@ import {
   type PlanDraft,
   type PlanDraftPlan,
 } from '@liveplanner/items';
-import {
-  Button,
-  DialogCloseButton,
-  DialogFooter,
-  DialogHeader,
-  SparkleIcon,
-} from '@liveplanner/ui';
+import { Button, DialogFooter, SparkleIcon } from '@liveplanner/ui';
 import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import type { AiSourceLine } from '@liveworkspace/settings-ui/ai-source';
@@ -32,11 +27,8 @@ import { useOwnTier } from '@/components/tier/plan-tier';
 import { AiCreditsLine, AiCreditsNotice } from '@/components/tier/TierParts';
 import { AI_DRAFT_CREDIT } from '@/components/tier/tier-words';
 import { useAiCredits } from '@/components/tier/use-ai-credits';
-import {
-  DescribePrompt,
-  DescribeSignIn,
-  DescribeTitle,
-} from '@/components/describe/DescribePrompt';
+import { DescribePrompt, DescribeSignIn } from '@/components/describe/DescribePrompt';
+import { describePlanHeroArt } from '@/components/describe/DescribeHeroArt';
 import { PlanDraftRefusal } from './plan-draft-client';
 import { PlanDraftPreview } from './PlanDraftPreview';
 import { problemsByPath } from './draft-edits';
@@ -110,6 +102,7 @@ export function DescribePlanDialog({
   // The ask in flight: a Cancel (or an unmount) makes its answer stale, and a stale answer is dropped.
   const asking = useRef(0);
   const titleId = useId();
+  const headingId = useId();
   const prompt = text.trim();
 
   useEffect(() => {
@@ -171,23 +164,28 @@ export function DescribePlanDialog({
     setMakeSaid(onMake(making));
   };
 
-  const title = (words: string) => <DescribeTitle ref={heading}>{words}</DescribeTitle>;
-
   return (
     <Dialog
       open
       onClose={cancel}
-      ariaLabel={checking ? 'Check Your Plan' : 'Describe a Plan'}
+      titleId={headingId}
       size="xl"
       phoneSheet
       className="flex max-h-[min(46rem,90dvh)] flex-col"
     >
-      <DialogHeader
-        title={title(checking ? 'Check Your Plan' : 'Describe a Plan')}
+      <HeroDialogHeader
+        art={describePlanHeroArt}
+        titleId={headingId}
+        // The words are focusable, so a step change is heard; the sparkle is the header's mark.
+        title={
+          <span ref={heading} tabIndex={-1} className="outline-none">
+            {checking ? 'Check Your Plan' : 'Describe a Plan'}
+          </span>
+        }
         subtitle={checking ? undefined : signedIn ? SUBTITLE : undefined}
-      >
-        <DialogCloseButton onClick={cancel} />
-      </DialogHeader>
+        onClose={cancel}
+        underHandle
+      />
       {!signedIn ? (
         <DescribeSignIn>{DESCRIBE_PLAN_SIGN_IN}</DescribeSignIn>
       ) : checking ? (

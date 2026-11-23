@@ -47,7 +47,7 @@ export function FormProblemsButton() {
     close();
     run();
   };
-  const destinationFix = { label: 'Choose Where Responses Go', run: fix(host.onFixDestination) };
+  const destinationFix = { label: 'Choose Destination', run: fix(host.onFixDestination) };
   const rows: Row[] = [
     ...(host.problem
       ? [

@@ -86,7 +86,7 @@ keeps its exact colour (the board scene's own rule, docs/specs/020-import-export
   unmounts it) forgets it; undo re-renders **offer** once colours are back and no result is shown.
 - Section heading "Colours" in the flyouts' small capitals; `role="group"`, `aria-label="Colours"`.
 - Offer copy: "1 custom colour" / "N custom colours"; swatches: first `SNAP_PREVIEW_MAX` (8, `SnapColoursSection.tsx`),
-  each `aria-hidden`, its hex in `data-snap-swatch`; button "Snap to stock colours", disabled when
+  each `aria-hidden`, its hex in `data-snap-swatch`; button "Snap Colours", disabled when
   `blocked`.
 - Done copy: "1 custom colour snapped to stock colours" / "N custom colours snapped to stock
   colours", in a `role="status"` paragraph that is present (empty) in the offer state so the
@@ -150,7 +150,7 @@ export function snapTabColours(
 
 ## Accessibility
 
-- Button reachable by Tab inside the flyout, accessible name "Snap to stock colours"; the count
+- Button reachable by Tab inside the flyout, accessible name "Snap Colours"; the count
   sentence is plain text in the group; result announced by `role="status"`. After a press the focus
   moves to that status, since the button is gone. Swatches are
   decorative. Text uses the flyouts' existing slate colours (AA in light and dark).

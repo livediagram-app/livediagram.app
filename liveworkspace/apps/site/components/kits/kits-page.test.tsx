@@ -5,7 +5,7 @@ import { IndexError, KITS, type KitRun, type KitStartInput } from '@liveworkspac
 import { KitsPage } from './KitsPage';
 
 // Start a Project in every state (liveworkspace/docs/specs/010-site/site.md "Start a Project"): the kits as a radio
-// group, the setup and its role, signed out, a run ready, partly made with Retry and Remove What Was Made, nothing made,
+// group, the setup and its role, signed out, a run ready, partly made with Retry and Remove Files, nothing made,
 // and a refused run.
 let session: { state: 'checking' | 'out' | 'in' } = { state: 'in' };
 vi.mock('@/lib/session', () => ({ useSession: () => session }));
@@ -167,10 +167,10 @@ describe('a run', () => {
   it('removes what was made after asking once, and Cancel keeps it', async () => {
     const client = draw([runOf(['a', null, null, null], { made: 0, failed: 0 })]);
     await create();
-    fireEvent.click(screen.getByRole('button', { name: 'Remove What Was Made' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Files' }));
     expect(screen.getByText('Delete the files this made? This can’t be undone.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Remove What Was Made' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Files' }));
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Delete Them' }));
     });
@@ -181,7 +181,7 @@ describe('a run', () => {
   it('says why a removal was refused, keeping the run', async () => {
     draw([runOf(['a', null, null, null], { made: 0, failed: 0 }), new IndexError(500, 'x')]);
     await create();
-    fireEvent.click(screen.getByRole('button', { name: 'Remove What Was Made' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Files' }));
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Delete Them' }));
     });
@@ -196,7 +196,7 @@ describe('a run', () => {
     await create();
     expect(screen.getByRole('heading', { name: 'Couldn’t start your project.' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Try Again' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Remove What Was Made' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Remove Files' })).toBeNull();
   });
 
   it('keeps the setup with the reason when the run is refused, and a refused Retry keeps the run', async () => {
@@ -248,7 +248,7 @@ describe('the run’s telemetry and limit', () => {
     steps.length = 0;
     draw([runOf(['a', null, null, null], { made: 0, failed: 0 }), runOf([])]);
     await create();
-    fireEvent.click(screen.getByRole('button', { name: 'Remove What Was Made' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Files' }));
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Delete Them' }));
     });

@@ -64,8 +64,8 @@ the sheet's, seen by everyone, and worked out in every browser that shows it, as
     a switch at the top), each a row with a swatch drawn in its style ("123" in the style, or the scale's gradient), its
     line ("Greater Than 100", "Custom Formula Is =$C2>100", "Colour Scale") and its range; a press opens it in the
     rule form; **Move Up** and **Move Down** (arrow buttons, named for screen readers) reorder it in the list; **Delete Rule** (a bin)
-    removes it. "No format rules on these cells yet." when there are none.
-  - **Add Another Rule** at the foot opens the rule form on a new Single Colour rule over the selection, placed last.
+    removes it. The empty state "No format rules on these cells" when there are none.
+  - **Add Rule** at the foot opens the rule form on a new Single Colour rule over the selection, placed last.
   - The **rule form**: **Apply to Range** (an A1 range field), a **Single Colour** / **Colour Scale** switch, then
     the condition (a select, and its one or two values, or the formula field) and the style, or the scale's points;
     **Cancel** and **Done** at the foot (Done writes the rule, one change, one undo step, and returns to the list).

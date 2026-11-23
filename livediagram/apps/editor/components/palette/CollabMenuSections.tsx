@@ -33,10 +33,11 @@ import {
   type EstimateScale,
   type ShapeElement,
 } from '@livediagram/document';
-import { DateInput } from '@livediagram/ui';
+import { ArrowUpIcon, CloseIcon, DateInput } from '@livediagram/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
+import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';
 import {
   MENU_ADD_ROW_BUTTON,
   MENU_CELL_INPUT,
@@ -112,13 +113,18 @@ const NO_DRIVERS: string[] = [];
 
 // Mirrors the checklist's row editor (docs/specs/009-elements/checklist.md) and the record's field editor
 // (docs/specs/009-elements/entity.md) rather than inventing a third row-editing idiom.
-export function AgendaMenuSection({
+// The agenda's segments as rows, in the Segments dialog (agenda.md "The Segments dialog"; ElementRowsDialogs):
+// a name and its minutes, Move Up, remove, then Add Segment. Sized for a dialog, and the rows slide in and out.
+const SEGMENT_CELL =
+  'h-9 min-w-0 rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100';
+const SEGMENT_BUTTON =
+  'flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md text-lg leading-none text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800 dark:hover:text-slate-200';
+
+export function AgendaSegmentsEditor({
   target,
-  sectionProps,
   onSetItems,
 }: {
   target: ShapeElement | undefined;
-  sectionProps: (id: string) => { open: boolean; onToggle: () => void };
   // `moveCurrent` carries the current segment with its row: given the index
   // that was current, where it is now (undefined when its row is gone). Left
   // out for an edit that keeps every row where it was.
@@ -127,6 +133,7 @@ export function AgendaMenuSection({
   const items = target?.agendaItems ?? NO_AGENDA_ITEMS;
   // The row drafts follow the element's segments when they change, adjusted during render.
   const [rows, setRows] = useFollowingDraft<AgendaItem[]>(items);
+  const motion = useRowMotion();
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= rows.length) return;
@@ -137,13 +144,18 @@ export function AgendaMenuSection({
   };
 
   return (
-    <MenuAccordionSection title="Segments" icon={<ToolsMenuGlyph />} {...sectionProps('agenda')}>
-      <div className="px-2 py-1.5">
-        <div className="flex flex-col gap-1">
-          {rows.map((item, i) => (
-            <div key={i} className="flex items-center gap-1">
+    <div>
+      {rows.length === 0 ? (
+        <p className="pb-3 text-sm text-slate-500 dark:text-slate-400">
+          No segments yet. Add the first one below.
+        </p>
+      ) : null}
+      <div className="flex flex-col">
+        {rows.map((item, i) => (
+          <div key={i} {...motion.rowProps(i)}>
+            <div className="flex items-center gap-2 pb-2">
               <input
-                className={`${MENU_CELL_INPUT} flex-1`}
+                className={`${SEGMENT_CELL} flex-1`}
                 value={item.label}
                 placeholder="Segment"
                 aria-label={`Segment ${i + 1} name`}
@@ -154,7 +166,7 @@ export function AgendaMenuSection({
                 onBlur={() => onSetItems(rows)}
               />
               <input
-                className={`${MENU_CELL_INPUT} w-[3.25rem]`}
+                className={`${SEGMENT_CELL} w-20 text-right tabular-nums`}
                 type="number"
                 min={AGENDA_MIN_MINUTES}
                 max={AGENDA_MAX_MINUTES}
@@ -177,36 +189,41 @@ export function AgendaMenuSection({
                 aria-label={`Move segment ${i + 1} up`}
                 disabled={i === 0}
                 onClick={() => move(i, i - 1)}
-                className={`${removeButtonClass} hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30 dark:hover:bg-slate-700`}
+                className={SEGMENT_BUTTON}
               >
-                ↑
+                <ArrowUpIcon size={12} />
               </button>
               <button
                 type="button"
                 aria-label={`Remove segment ${i + 1}`}
                 onClick={() =>
-                  onSetItems(
-                    rows.filter((_, j) => j !== i),
-                    (current) => removeAgendaCurrent(current, i),
+                  motion.leave(i, () =>
+                    onSetItems(
+                      rows.filter((_, j) => j !== i),
+                      (current) => removeAgendaCurrent(current, i),
+                    ),
                   )
                 }
-                className={removeButtonClass}
+                className={SEGMENT_BUTTON}
               >
-                ×
+                <CloseIcon size={12} />
               </button>
             </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          disabled={rows.length >= AGENDA_MAX_ITEMS}
-          onClick={() => onSetItems([...rows, { label: '', minutes: AGENDA_DEFAULT_MINUTES }])}
-          className={MENU_ADD_ROW_BUTTON}
-        >
-          Add Segment
-        </button>
+          </div>
+        ))}
       </div>
-    </MenuAccordionSection>
+      <button
+        type="button"
+        disabled={rows.length >= AGENDA_MAX_ITEMS}
+        onClick={() => {
+          motion.enter(rows.length);
+          onSetItems([...rows, { label: '', minutes: AGENDA_DEFAULT_MINUTES }]);
+        }}
+        className="mt-1 inline-flex h-9 w-full items-center justify-center rounded-md border border-dashed border-slate-300 text-sm font-medium text-slate-600 transition enabled:cursor-pointer enabled:hover:border-brand-400 enabled:hover:bg-brand-50/50 enabled:hover:text-brand-700 disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:enabled:hover:border-brand-500 dark:enabled:hover:bg-brand-500/10 dark:enabled:hover:text-brand-200"
+      >
+        Add Segment
+      </button>
+    </div>
   );
 }
 
@@ -300,7 +317,7 @@ export function DecisionMenuSection({
                   onClick={() => onSetDrivers(rows.filter((_, j) => j !== i))}
                   className={removeButtonClass}
                 >
-                  ×
+                  <CloseIcon size={12} />
                 </button>
               </div>
             ))}

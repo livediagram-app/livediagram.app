@@ -1,7 +1,8 @@
 name: E2E
 
 # Each product's end-to-end suites (e2e-product.yml), for the products whose editor a change reaches
-# (docs/ci.md): the same plan as CI, so a change to liveplanner alone never boots livediagram's stack.
+# (docs/ci.md): the same plan as CI, so a change to liveplanner alone never boots livediagram's stack. The
+# sites audit runs on its own plan (`sites`): when the help centre, the Community or the product's marketing changed.
 on:
   pull_request:
   push:
@@ -32,6 +33,8 @@ jobs:
       actions: write
     outputs:
       e2e: ${{ steps.plan.outputs.e2e }}
+      playwright-image: ${{ steps.playwright.outputs.image }}
+      sites: ${{ steps.plan.outputs.sites }}
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -59,6 +62,19 @@ jobs:
           HEAD: ${{ github.sha }}
         run: node .github/scripts/main-base.mjs
 
+      # The e2e jobs' container image, from the Playwright version the lockfile holds, so a Playwright bump
+      # (Dependabot's included) moves the image with it rather than failing every e2e job on a stale tag.
+      - name: Find Playwright's image
+        id: playwright
+        run: |
+          set -euo pipefail
+          versions="$(grep -oE "^  '@playwright/test@[0-9]+\.[0-9]+\.[0-9]+'" pnpm-lock.yaml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | sort -u)"
+          if [ "$(printf '%s\n' "${versions}" | grep -c .)" -ne 1 ]; then
+            echo "::error::Expected one @playwright/test version in pnpm-lock.yaml, found: ${versions//$'\n'/, }"
+            exit 1
+          fi
+          echo "image=mcr.microsoft.com/playwright:v${versions}-noble" >> "${GITHUB_OUTPUT}"
+
       # A pull request against its base; a push to main against the step above. A manual run has no
       # base and runs everything.
       - name: Plan
@@ -78,14 +94,19 @@ jobs:
   livediagram:
     name: livediagram
     needs: plan
-    if: contains(fromJSON(needs.plan.outputs.e2e), 'livediagram')
+    if: >-
+      contains(fromJSON(needs.plan.outputs.e2e), 'livediagram') ||
+      contains(fromJSON(needs.plan.outputs.sites), 'livediagram')
     # A called workflow gets at most what its caller grants: actions: write, to fail fast.
     permissions:
       contents: read
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: livediagram
+      editor-suites: ${{ contains(fromJSON(needs.plan.outputs.e2e), 'livediagram') }}
+      sites: ${{ contains(fromJSON(needs.plan.outputs.sites), 'livediagram') }}
       editor: '@livediagram/editor'
       editor-dir: apps/editor
       sites-cache: |
@@ -103,14 +124,19 @@ jobs:
   liveplanner:
     name: liveplanner
     needs: plan
-    if: contains(fromJSON(needs.plan.outputs.e2e), 'liveplanner')
+    if: >-
+      contains(fromJSON(needs.plan.outputs.e2e), 'liveplanner') ||
+      contains(fromJSON(needs.plan.outputs.sites), 'liveplanner')
     # A called workflow gets at most what its caller grants: actions: write, to fail fast.
     permissions:
       contents: read
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: liveplanner
+      editor-suites: ${{ contains(fromJSON(needs.plan.outputs.e2e), 'liveplanner') }}
+      sites: ${{ contains(fromJSON(needs.plan.outputs.sites), 'liveplanner') }}
       editor: '@liveplanner/editor'
       editor-dir: apps/editor
       sites-cache: |
@@ -124,14 +150,19 @@ jobs:
   livedesign:
     name: livedesign
     needs: plan
-    if: contains(fromJSON(needs.plan.outputs.e2e), 'livedesign')
+    if: >-
+      contains(fromJSON(needs.plan.outputs.e2e), 'livedesign') ||
+      contains(fromJSON(needs.plan.outputs.sites), 'livedesign')
     # A called workflow gets at most what its caller grants: actions: write, to fail fast.
     permissions:
       contents: read
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: livedesign
+      editor-suites: ${{ contains(fromJSON(needs.plan.outputs.e2e), 'livedesign') }}
+      sites: ${{ contains(fromJSON(needs.plan.outputs.sites), 'livedesign') }}
       editor: '@livedesign/live'
       editor-dir: apps/live
       sites-cache: |
@@ -144,14 +175,19 @@ jobs:
   livedocuments:
     name: livedocuments
     needs: plan
-    if: contains(fromJSON(needs.plan.outputs.e2e), 'livedocuments')
+    if: >-
+      contains(fromJSON(needs.plan.outputs.e2e), 'livedocuments') ||
+      contains(fromJSON(needs.plan.outputs.sites), 'livedocuments')
     # A called workflow gets at most what its caller grants: actions: write, to fail fast.
     permissions:
       contents: read
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: livedocuments
+      editor-suites: ${{ contains(fromJSON(needs.plan.outputs.e2e), 'livedocuments') }}
+      sites: ${{ contains(fromJSON(needs.plan.outputs.sites), 'livedocuments') }}
       editor: '@livedocuments/editor'
       editor-dir: apps/editor
       sites-cache: |
@@ -162,14 +198,19 @@ jobs:
   livehuddle:
     name: livehuddle
     needs: plan
-    if: contains(fromJSON(needs.plan.outputs.e2e), 'livehuddle')
+    if: >-
+      contains(fromJSON(needs.plan.outputs.e2e), 'livehuddle') ||
+      contains(fromJSON(needs.plan.outputs.sites), 'livehuddle')
     # A called workflow gets at most what its caller grants: actions: write, to fail fast.
     permissions:
       contents: read
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: livehuddle
+      editor-suites: ${{ contains(fromJSON(needs.plan.outputs.e2e), 'livehuddle') }}
+      sites: ${{ contains(fromJSON(needs.plan.outputs.sites), 'livehuddle') }}
       editor: '@livehuddle/editor'
       editor-dir: apps/editor
       sites-cache: |
@@ -186,14 +227,19 @@ jobs:
   liveknowledge:
     name: liveknowledge
     needs: plan
-    if: contains(fromJSON(needs.plan.outputs.e2e), 'liveknowledge')
+    if: >-
+      contains(fromJSON(needs.plan.outputs.e2e), 'liveknowledge') ||
+      contains(fromJSON(needs.plan.outputs.sites), 'liveknowledge')
     # A called workflow gets at most what its caller grants: actions: write, to fail fast.
     permissions:
       contents: read
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: liveknowledge
+      editor-suites: ${{ contains(fromJSON(needs.plan.outputs.e2e), 'liveknowledge') }}
+      sites: ${{ contains(fromJSON(needs.plan.outputs.sites), 'liveknowledge') }}
       editor: '@liveknowledge/editor'
       editor-dir: apps/editor
       sites-cache: |

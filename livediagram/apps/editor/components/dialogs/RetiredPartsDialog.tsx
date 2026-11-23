@@ -1,11 +1,14 @@
 'use client';
 
-import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { useId } from 'react';
+import { Button } from '@livediagram/ui';
 import type { MigrationApp } from '@liveworkspace/migration';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 import type { RetiredPartsPhase } from '@/hooks/persistence/useRetiredPartsMove';
+import { retiredPartsHeroArt } from './RetiredPartsHeroArt';
 
 // The dialog that moves the parts set aside from documents kept Offline
 // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps"). Drawn from the hook's phase;
@@ -16,6 +19,10 @@ export const RETIRED_PARTS_SUBTITLE =
   'Pages, boards and designs you made in this browser now live in livedocuments, liveplanner and livedesign. They’re kept safe here until you move them.';
 export const RETIRED_PARTS_FAILED =
   'These couldn’t be moved yet. They’re still safe in this browser, so try again from Settings.';
+
+// The hero header's title: these run long for a 30rem dialog, so they wrap inside the 100px band instead of
+// truncating.
+const WRAPPING_TITLE = 'block whitespace-normal';
 
 const APP_LABEL: Record<MigrationApp, string> = {
   livediagram: 'livediagram',
@@ -38,12 +45,17 @@ export function RetiredPartsDialog({
   // Under the list on the offer: where to find it again (the offer on load), or nothing (Settings, where it is).
   notNowHint?: string;
 }) {
+  const titleId = useId();
   if (phase.kind === 'idle') return null;
 
   if (phase.kind === 'moving') {
     return (
-      <Dialog open onClose={() => {}} ariaLabel={RETIRED_PARTS_TITLE} size="md">
-        <DialogHeader title={RETIRED_PARTS_TITLE} />
+      <Dialog open onClose={() => {}} titleId={titleId} size="md">
+        <HeroDialogHeader
+          art={retiredPartsHeroArt}
+          titleId={titleId}
+          title={<span className={WRAPPING_TITLE}>{RETIRED_PARTS_TITLE}</span>}
+        />
         <p
           role="status"
           className="flex items-center justify-center gap-2 px-6 py-8 text-sm text-slate-600 dark:text-slate-300"
@@ -60,10 +72,13 @@ export function RetiredPartsDialog({
   if (phase.kind === 'result') {
     const title = phase.moved.length > 0 ? 'Your Pages and Boards Have Moved' : RETIRED_PARTS_TITLE;
     return (
-      <Dialog open onClose={onClose} ariaLabel={title} size="md">
-        <DialogHeader title={title}>
-          <DialogCloseButton onClick={onClose} />
-        </DialogHeader>
+      <Dialog open onClose={onClose} titleId={titleId} size="md">
+        <HeroDialogHeader
+          art={retiredPartsHeroArt}
+          titleId={titleId}
+          title={<span className={WRAPPING_TITLE}>{title}</span>}
+          onClose={onClose}
+        />
         <div className="space-y-4 px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
           {phase.moved.length > 0 ? (
             <ul className="space-y-3" aria-label="Moved">
@@ -109,11 +124,16 @@ export function RetiredPartsDialog({
   }
 
   return (
-    <Dialog open onClose={onNotNow} ariaLabel={RETIRED_PARTS_TITLE} size="md">
-      <DialogHeader title={RETIRED_PARTS_TITLE} subtitle={RETIRED_PARTS_SUBTITLE}>
-        <DialogCloseButton onClick={onNotNow} />
-      </DialogHeader>
+    <Dialog open onClose={onNotNow} titleId={titleId} size="md">
+      <HeroDialogHeader
+        art={retiredPartsHeroArt}
+        titleId={titleId}
+        title={<span className={WRAPPING_TITLE}>{RETIRED_PARTS_TITLE}</span>}
+        onClose={onNotNow}
+      />
       <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
+        {/* Two sentences: the header's one line would cut them short, so they lead the body whole. */}
+        <p className="mb-3 text-slate-600 dark:text-slate-300">{RETIRED_PARTS_SUBTITLE}</p>
         <ul className="list-disc pl-5" aria-label="Offline Canvases">
           {phase.rows.map((row) => (
             <li key={row.id}>{row.name}</li>

@@ -99,7 +99,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
 │  ├─ apps/                    live (its editor), api, mcp, cli, marketing, router
 │  └─ packages/                @livedesign/*, with photo-engine of its own
-├─ livehuddle/                 forked from livediagram in-tree (meetings, workshops, Avatar mode)
+├─ livehuddle/                 forked from livediagram in-tree (meeting in Spaces: avatars, rooms, calls)
 │  ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, router
 │  ├─ packages/                @livehuddle/*, with avatar of its own (Avatar mode, the walk, the furniture and its turning, the wire shapes)
 │  └─ docs/specs               its specs, folded back to the code (build plan step 9)

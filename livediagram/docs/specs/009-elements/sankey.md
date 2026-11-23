@@ -108,6 +108,13 @@ every flow written before it keeps drawing. Names are matched after trimming and
 
 ## The menu
 
+**One Configure row, and a Configure dialog** (owner, 2026-11-23). The element menu has a single **Configure** row
+with the window mark in place of the six categories below. It opens the **Configure Sankey** dialog, wide enough for
+two columns: at the left **Flows** (the count, Edit Flows, and each node's colour), at the right **Bands**, **Layout**,
+**Labels** and **Leftovers**, each a row of tiles (its picture over its name, the chosen one in the accent, every
+option on show) under a one-line hint, then **Text** (the unit and the text size). Nothing folds and nothing scrolls
+at a desktop height; on a phone it is a bottom sheet in one column. Every change applies as it is made.
+
 The element's menu holds one **Sankey** category beside the usual others: a row that opens its sections in a
 side flyout (`MenuFlyoutSection`), so the menu stays short however much a Sankey offers. Its sections, each
 closed until opened as everywhere ([menus](../004-interface-design/menus.md)), are **Flows**, **Bands**,

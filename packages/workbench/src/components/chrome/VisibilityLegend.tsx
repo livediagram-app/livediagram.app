@@ -4,7 +4,7 @@
 // this item. A hero in the current state's tone draws its reach as rings around you, lit out to how far
 // the item goes; under it the audiences sit on one scale from Offline to Everyone (Offline first, the
 // narrowest: owner 2026-11-19, it used to stand apart below and read as unrelated), the current stop filled to, and
-// hovering a stop shows that audience in the hero; then, for someone who may share, Change Who Can See This opens
+// hovering a stop shows that audience in the hero; then, for someone who may share, Change Access opens
 // Share. An item can be several at once (Team and Shared, Shared and Public: owner 2026-11-19): every stop that applies
 // is filled in its own hue, the track runs to the widest, and the hero names them together. For the eye only:
 // the pill carries the current state's words for assistive technology and opens Share itself.
@@ -338,7 +338,7 @@ export function VisibilityLegend({
               onClick={onManage}
               className={`group flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-700 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-brand-500/30 transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
             >
-              Change Who Can See This
+              Change Access
               <span className="transition-transform duration-micro group-hover:translate-x-0.5">
                 <ChevronRightIcon size={13} />
               </span>

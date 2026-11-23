@@ -368,7 +368,7 @@ touching cards people add by hand.
 - **Boards without an address are marked.** When the Email Received panel first opens in a builder, it reads the
   plan's addresses once ([Managing an address](email-to-board.md#managing-an-address-signed-in-routes)), and the Board picker then
   marks each board with none ("Leads · No Address"). Picking one, the note says so ("Leads has no email address yet,
-  so no email reaches this rule.") with **Turn On Email to Board**, which opens [Email to Board](email-to-board.md)
+  so no email reaches this rule.") with **Turn On**, which opens [Email to Board](email-to-board.md)
   over the builder on that board; with **Any Board** and no address anywhere, the note reads "No board has an email
   address yet." and the button opens on every board. Closing it reads the addresses again. Only an Editor of the
   whole plan may read them: for anyone else, a server that takes no mail, or a read that fails, the picker marks

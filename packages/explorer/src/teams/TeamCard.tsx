@@ -9,7 +9,8 @@
 
 import { useId, useRef, useState, type FormEvent } from 'react';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
-import { Button, ConfirmDialog, PictureDisc } from '@liveworkspace/ui';
+import { Button, ConfirmDialog, PictureDisc, Select } from '@liveworkspace/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
 import { avatarFill } from '@liveworkspace/account-menu/initials';
 import { LIST_CARD } from '../ui/classes';
@@ -19,6 +20,7 @@ import { EllipsisTriggerButton } from '../ui/RowMenu';
 import { useToast } from '../ui/Toasts';
 import { useTeams } from './context';
 import { InviteLinkDialog } from './InviteLinkDialog';
+import { PILL, PILL_QUIET, RolePill } from './RolePill';
 import {
   deleteCopy,
   lastAdmin,
@@ -75,7 +77,8 @@ export function TeamCard({
     m.id === team.myMemberId || (m.userId !== null && m.userId === viewerId);
   const me = details.members.find((m) => m.id === team.myMemberId);
 
-  const fail = (error: string) => toast.error(teamErrorMessage(error));
+  // Named by its team, so the refusal still says where it happened in the notification list.
+  const fail = (error: string) => toast.error(`${team.name}: ${teamErrorMessage(error)}`);
 
   async function changeRole(member: TeamMember, role: TeamRole) {
     if (!teams.host) return;
@@ -289,24 +292,6 @@ export function TeamCard({
   );
 }
 
-const PILL = 'shrink-0 rounded-full px-1.5 text-[10px] font-medium ring-1';
-const ROLE_SELECT =
-  'rounded-md border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
-
-function RolePill({ role }: { role: TeamRole }) {
-  return (
-    <span
-      className={`inline-flex w-fit items-center py-0.5 ${PILL} ${
-        role === 'admin'
-          ? 'bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-500/30'
-          : 'bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-600'
-      }`}
-    >
-      {role === 'admin' ? 'Admin' : 'Member'}
-    </span>
-  );
-}
-
 function TeamMemberRow({
   m,
   self,
@@ -344,13 +329,7 @@ function TeamMemberRow({
           <bdi className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
             {name}
           </bdi>
-          {self ? (
-            <span
-              className={`${PILL} bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-600`}
-            >
-              you
-            </span>
-          ) : null}
+          {self ? <span className={`${PILL} ${PILL_QUIET}`}>you</span> : null}
           {waiting ? (
             <span className={`${PILL} bg-amber-100 text-amber-700 ring-amber-200`}>Invited</span>
           ) : null}
@@ -371,15 +350,15 @@ function TeamMemberRow({
         ) : null}
       </span>
       {answered ? null : manage && !pinned ? (
-        <select
+        <Select
           aria-label={`Role for ${name}`}
           value={m.role}
           onChange={(e) => onRole(e.target.value as TeamRole)}
-          className={ROLE_SELECT}
+          className="shrink-0"
         >
           <option value="member">Member</option>
           <option value="admin">Admin</option>
-        </select>
+        </Select>
       ) : (
         <span
           className="flex items-center gap-1.5"
@@ -461,22 +440,31 @@ function InviteFooter({ teamId, onInvited }: { teamId: string; onInvited: () => 
         onChange={(e) => setEmail(e.target.value)}
         className={`${TEAM_FIELD} min-w-0 flex-1 basis-48 py-1.5`}
       />
-      <select
+      <Select
         aria-label="Role for the invitation"
         value={role}
         onChange={(e) => setRole(e.target.value as TeamRole)}
-        className={ROLE_SELECT}
+        // As tall as the email field beside it, with Invite.
+        className="shrink-0 self-stretch"
+        selectClassName="h-full text-[13px]"
       >
         <option value="member">Member</option>
         <option value="admin">Admin</option>
-      </select>
-      <Button ref={inviteRef} type="submit" size="xs" disabled={!email.trim()} busy={busy}>
+      </Select>
+      <Button
+        ref={inviteRef}
+        type="submit"
+        size="sm"
+        className="self-stretch"
+        disabled={!email.trim()}
+        busy={busy}
+      >
         {busy ? 'Sending…' : 'Invite'}
       </Button>
       {error ? (
-        <p role="alert" className="w-full text-xs text-rose-600 dark:text-rose-400">
+        <Callout tone="error" role="alert" className="w-full">
           {error}
-        </p>
+        </Callout>
       ) : null}
     </form>
   );

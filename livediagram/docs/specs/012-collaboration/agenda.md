@@ -105,3 +105,10 @@ Rows are added / renamed / re-timed / reordered / removed from a **Segments**
 section in the element's context menu, mirroring the checklist's row editor
 ([Checklist](../009-elements/checklist.md)) and the record's field editor ([The entity](../009-elements/entity.md)) rather than inventing a
 third row-editing idiom.
+
+## The Segments dialog
+
+The element menu's **Segments** row opens the agenda's segments in the Segments dialog: a name and its minutes per
+segment, Move Up and a remove button, then Add Segment. A centred modal, a bottom sheet on a phone, under the
+dialog hero header; each change saves as it is made, the current segment travels with its row on a move or a
+remove, and rows slide in and out. **Edit Segments** among the agenda's kind tools opens it too.

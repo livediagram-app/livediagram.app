@@ -88,6 +88,7 @@ export function usePrototypeHost(input: HostInput): PrototypeHost {
               writeClipboard: (text) => navigator.clipboard.writeText(text),
               openShare: now.openShare,
               toast,
+              link: 'Prototype link',
               copied: 'Copied a link that opens the prototype',
               makeFirst: 'Make a Viewer link, then copy the Prototype link.',
             }).then((copied) => {

@@ -1,7 +1,7 @@
 'use client';
 
 // A Knowledge Gap (docs/specs/030-knowledgebase/search-and-ask.md "It does not guess"): a part of the question no
-// page answers, with the way to start one. Draft a Page From What We Know is an Editor's; "Ask <owner> to Write It"
+// page answers, with the way to start one. Draft a Page is an Editor's; "Ask <owner> to Write It"
 // waits for the knowledgebase's emails and is not drawn.
 import { Spinner } from '@/components/palette/template-picker-icons';
 import { Button } from '@liveknowledge/ui';
@@ -46,7 +46,7 @@ export function KnowledgeGapCard({
           onClick={onDraft}
         >
           {drafting ? <Spinner /> : null}
-          {drafting ? 'Drafting…' : 'Draft a Page From What We Know'}
+          {drafting ? 'Drafting…' : 'Draft a Page'}
         </Button>
       ) : null}
     </section>

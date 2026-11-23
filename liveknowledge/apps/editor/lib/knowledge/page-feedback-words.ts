@@ -23,10 +23,22 @@ const APPROVAL_REFUSED: Record<string, string> = {
   tab_busy: 'The page was being saved. Try again.',
 };
 
-export function approvalFailureText(err: unknown, action: ApprovalAction): string {
+// The same lines naming the page (its quoted name), for a toast read later in the notification list.
+const APPROVAL_FALLBACK_ON: Record<ApprovalAction, (page: string) => string> = {
+  request: (page) => `Approval of ${page} could not be requested. Try again.`,
+  withdraw: (page) => `The request for ${page} could not be withdrawn. Try again.`,
+  approve: (page) => `${page} could not be approved. Try again.`,
+  reject: (page) => `${page} could not be rejected. Try again.`,
+};
+
+export function approvalFailureText(
+  err: unknown,
+  action: ApprovalAction,
+  page?: string | null,
+): string {
   if (err instanceof ApiError && err.code && APPROVAL_REFUSED[err.code])
     return APPROVAL_REFUSED[err.code]!;
-  return APPROVAL_FALLBACK[action];
+  return page ? APPROVAL_FALLBACK_ON[action](page) : APPROVAL_FALLBACK[action];
 }
 
 export type CommentAction = 'start' | 'reply' | 'resolve' | 'reopen' | 'edit' | 'delete' | 'load';
@@ -52,10 +64,16 @@ const COMMENT_REFUSED: Record<string, string> = {
   thread_busy: 'Someone else changed this thread at the same moment. Try again.',
 };
 
-export function commentFailureText(err: unknown, action: CommentAction): string {
+/** `page` (its quoted name) names the page the comment is on, for a toast read later. */
+export function commentFailureText(
+  err: unknown,
+  action: CommentAction,
+  page?: string | null,
+): string {
   if (err instanceof ApiError && err.code && COMMENT_REFUSED[err.code])
     return COMMENT_REFUSED[err.code]!;
-  return COMMENT_FALLBACK[action];
+  const said = COMMENT_FALLBACK[action];
+  return page ? said.replace(' could not be ', ` on ${page} could not be `) : said;
 }
 
 const REACTION_REFUSED: Record<string, string> = {
@@ -67,12 +85,13 @@ const REACTION_REFUSED: Record<string, string> = {
 };
 
 /** A refused reaction (docs/specs/030-knowledgebase/page-reactions.md), in words. */
-export function reactionFailureText(err: unknown, on: boolean): string {
+export function reactionFailureText(err: unknown, on: boolean, page?: string | null): string {
   if (err instanceof ApiError && err.code && REACTION_REFUSED[err.code])
     return REACTION_REFUSED[err.code]!;
+  const reaction = page ? `The reaction to ${page}` : 'The reaction';
   return on
-    ? 'The reaction could not be added. Try again.'
-    : 'The reaction could not be taken back. Try again.';
+    ? `${reaction} could not be added. Try again.`
+    : `${reaction} could not be taken back. Try again.`;
 }
 
 const WATCH_REFUSED: Record<string, string> = {
@@ -84,10 +103,9 @@ const WATCH_REFUSED: Record<string, string> = {
 };
 
 /** A refused watch (docs/specs/030-knowledgebase/watching.md), in words. */
-export function watchFailureText(err: unknown, on: boolean): string {
+export function watchFailureText(err: unknown, on: boolean, page?: string | null): string {
   if (err instanceof ApiError && err.code && WATCH_REFUSED[err.code])
     return WATCH_REFUSED[err.code]!;
-  return on
-    ? 'The page could not be watched. Try again.'
-    : 'The watch could not be stopped. Try again.';
+  if (on) return `${page ?? 'The page'} could not be watched. Try again.`;
+  return `The watch${page ? ` on ${page}` : ''} could not be stopped. Try again.`;
 }

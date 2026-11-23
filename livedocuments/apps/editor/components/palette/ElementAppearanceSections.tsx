@@ -100,7 +100,10 @@ export function ElementAppearanceSections({
   arrowheadColorHandlers,
   strokeColorHandlers,
   afterGroup = true,
+  toolsOnly = false,
 }: ElementAppearanceSectionsProps & {
+  // In the element's settings dialog: its own sections alone.
+  toolsOnly?: boolean;
   // A group sits above (Layer, Size, Rotation): the appearance group is set apart from it. Not on an element covering
   // the canvas, whose menu has none of them.
   afterGroup?: boolean;
@@ -165,6 +168,25 @@ export function ElementAppearanceSections({
     // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
     // which sits in this flyout: without this it was never reachable on one.
     supportsShadow(target);
+  // The element's own sections: under Appearance in the menu, or alone in its settings dialog.
+  const data = (
+    <ElementDataSections
+      props={props}
+      target={target}
+      isProgress={isProgress}
+      isRating={isRating}
+      isChart={isChart}
+      isLine={isLine}
+      isCodeBlock={isCodeBlock}
+      isLegend={isLegend}
+      isSankey={isSankey}
+      isChecklist={isChecklist}
+      sectionProps={sectionProps}
+      flyoutProps={flyoutProps}
+      surface={toolsOnly ? 'dialog' : 'menu'}
+    />
+  );
+  if (toolsOnly) return data;
   return (
     <>
       {showAppearanceGroup && afterGroup ? <MenuGroupSeparator /> : null}
@@ -371,20 +393,7 @@ export function ElementAppearanceSections({
           ) : null}
         </MenuFlyoutSection>
       ) : null}
-      <ElementDataSections
-        props={props}
-        target={target}
-        isProgress={isProgress}
-        isRating={isRating}
-        isChart={isChart}
-        isLine={isLine}
-        isCodeBlock={isCodeBlock}
-        isLegend={isLegend}
-        isSankey={isSankey}
-        isChecklist={isChecklist}
-        sectionProps={sectionProps}
-        flyoutProps={flyoutProps}
-      />
+      {data}
       {/* ── Content group: Line / Pointer / Text / Icon / Image / Table / Link ── */}
     </>
   );

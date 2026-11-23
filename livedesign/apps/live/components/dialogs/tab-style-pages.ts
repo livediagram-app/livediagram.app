@@ -15,7 +15,7 @@ export type TabStylePages = {
   newPageBackground: PageBackground | undefined;
   // The tab's theme, for the theme's own gradients the panel offers.
   themeId: string;
-  // The tab's pages that take a background (every one but a photo page): what Apply to Every Page reaches.
+  // The tab's pages that take a background (every one but a photo page): what Apply to All reaches.
   units: number;
   onSet: (patch: Partial<PageBackground> | null) => void;
   onApplyToEveryPage: () => void;

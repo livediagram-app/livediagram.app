@@ -7,7 +7,8 @@
 // Connected, and picking it goes to its row. Loaded only once Connect File is chosen, never with the editor.
 import { useId } from 'react';
 import type { ConnectionMade, Item } from '@liveworkspace/index-client';
-import { DialogCloseButton, DialogHeader } from '@liveknowledge/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { connectFileHeroArt } from '@liveworkspace/ui/dialog-hero-art/connect-file';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { connectFile } from '@liveworkspace/workbench/components/connect/connect-file';
 import { useTickingNow } from '@liveworkspace/workbench/components/connect/ConnectFilePanel';
@@ -72,17 +73,18 @@ export function ConnectFileDialog({
   };
   return (
     <Dialog open onClose={onClose} titleId={titleId} size="lg" phoneSheet>
-      <DialogHeader
-        title={<span id={titleId}>Connect File</span>}
+      <HeroDialogHeader
+        art={connectFileHeroArt}
+        titleId={titleId}
+        title="Connect File"
         subtitle={
           parentName
             ? `Adds a file from another app under ${parentName}. Clicking it opens the file in a new tab.`
             : 'Adds a file from another app to the sidebar. Clicking it opens the file in a new tab.'
         }
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
-      <div data-connect-file-dialog="" className="px-6 pb-6 pt-2 max-sm:px-4">
+        onClose={onClose}
+      />
+      <div data-connect-file-dialog="" className="px-6 pb-6 pt-5 max-sm:px-4">
         <ConnectPicker
           client={client}
           hostId={hostId}

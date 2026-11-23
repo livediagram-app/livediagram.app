@@ -5,7 +5,7 @@
 // said under it, and the source line (@liveworkspace/automations-ui's DescribePrompt); and the sign-in nudge a guest
 // sees in its place. Shared, so the two dialogs ask alike.
 
-import { forwardRef, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { SparkleIcon } from '@liveplanner/ui';
 
 // The words step itself is every Describe with AI dialog's, shared with Describe a Rule.
@@ -22,17 +22,3 @@ export function DescribeSignIn({ children }: { children: ReactNode }) {
     </div>
   );
 }
-
-/** The dialog's title: the sparkle and its words, the words focusable so a step change is heard. */
-export const DescribeTitle = forwardRef<HTMLSpanElement, { children: ReactNode }>(
-  function DescribeTitle({ children }, ref) {
-    return (
-      <span className="flex items-center gap-2">
-        <SparkleIcon size={16} aria-hidden className="text-brand-700 dark:text-brand-300" />
-        <span ref={ref} tabIndex={-1} className="outline-none">
-          {children}
-        </span>
-      </span>
-    );
-  },
-);

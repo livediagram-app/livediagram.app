@@ -174,7 +174,7 @@ export function PracticeSprint({
               Clear Them
             </Button>
             <Button variant="secondary" size="sm" onClick={() => finish(true)}>
-              Keep as Real Cards
+              Keep Them
             </Button>
             <span className="flex-1" />
             <LearnMore href="/help/plan/planning-basics/" />

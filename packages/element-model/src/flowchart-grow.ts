@@ -227,6 +227,15 @@ export function setFlowchartDirection<E extends Element>(
   return relayoutFlowchart(next, chartId, { ...opts, direction });
 }
 
+/**
+ * Add Lane's options: the layout's, and how the product dresses a new lane. A lane is made bare by the
+ * shape factory, which knows nothing of the tab it lands on, so the caller hands in its tab's theme
+ * colours here (docs/specs/009-elements/flowchart.md "Swimlanes"). Absent leaves the lane as made.
+ */
+export type FlowchartLaneOptions<S extends ShapeElement = ShapeElement> = FlowchartLayoutOptions & {
+  dressLane?: (lane: S) => S;
+};
+
 /** What a new lane is titled: "Lane <n>". */
 const flowchartLaneTitle = (n: number) => `Lane ${n}`;
 
@@ -236,7 +245,7 @@ function addLane(
   elements: Element[],
   chartId: string,
   laneIds: readonly [ElementId, ElementId],
-  opts?: FlowchartLayoutOptions,
+  { dressLane, ...opts }: FlowchartLaneOptions = {},
 ): Element[] {
   const steps = flowchartSteps(elements, chartId);
   if (steps.length === 0) return elements;
@@ -255,7 +264,8 @@ function addLane(
     const shape = rows
       ? { x: left, y: at === 'start' ? top : bottom + 1 }
       : { x: at === 'start' ? left : right + 1, y: top, width: base.height, height: base.width };
-    return { ...base, ...shape, id, label: flowchartLaneTitle(n), flowchartId: chartId };
+    const made = { ...base, ...shape, id, label: flowchartLaneTitle(n), flowchartId: chartId };
+    return dressLane ? dressLane(made) : made;
   };
   if (lanes.length > 0)
     return relayoutFlowchart(
@@ -314,13 +324,14 @@ export function flowchartGrowth<E extends Element>(createShape: FlowchartShapeMa
     /**
      * Add Lane (docs/specs/009-elements/flowchart.md "Swimlanes"). A chart without lanes gets two, every
      * step in the first; a laned one gets the next at the end. `laneIds` supplies ids for the new lanes
-     * (two at most). Lanes go to the BACK of the element list, under the steps they hold.
+     * (two at most). Lanes go to the BACK of the element list, under the steps they hold. `opts.dressLane`
+     * gives each new lane the tab's theme colours.
      */
     addFlowchartLane: (
       elements: E[],
       chartId: string,
       laneIds: readonly [ElementId, ElementId],
-      opts?: FlowchartLayoutOptions,
-    ) => addLane(createShape, elements, chartId, laneIds, opts) as E[],
+      opts?: FlowchartLaneOptions<ShapeOf<E>>,
+    ) => addLane(createShape, elements, chartId, laneIds, opts as FlowchartLaneOptions) as E[],
   };
 }

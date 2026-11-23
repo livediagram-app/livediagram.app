@@ -1,14 +1,16 @@
 'use client';
 
 // Add Field's modal (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field): the shared Dialog over the type
-// editor, with its own dim layer, holding NewFieldForm in the gallery frame's dialog look. 720 px wide and a steady
+// editor, with its own dim layer, holding NewFieldForm in the gallery frame's dialog look, under the dialog hero
+// header (AddFieldHeroArt). 720 px wide and a steady
 // height, so moving between categories and steps never resizes it; a sheet on a phone, shorter than the type editor's
 // so the editor's top edge shows, dimmed, behind it. Escape is asked of the form first (a step back, a search
 // cleared) and only then closes this modal; the type editor under it never hears it (the Dialog closes only the one
 // on top). Every way out hands focus back to the Add Field that opened it.
-import { useId, useRef, useState, type ComponentProps } from 'react';
+import { useId, useMemo, useRef, useState, type ComponentProps } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useEscape } from '@liveplanner/ui';
+import { addFieldHeroArt } from './AddFieldHeroArt';
 import { NewFieldForm } from './NewFieldForm';
 
 const PANEL = '[data-dialog-panel]';
@@ -26,11 +28,12 @@ function onTop(inside: HTMLElement | null): boolean {
 
 type FormProps = Omit<
   ComponentProps<typeof NewFieldForm>,
-  'escapeRef' | 'onCancel' | 'dialogTitleId' | 'autoFocusSearch'
+  'escapeRef' | 'onCancel' | 'dialogHero' | 'autoFocusSearch'
 >;
 
 export function AddFieldDialog({ onClose, ...form }: FormProps & { onClose: () => void }) {
   const titleId = useId();
+  const hero = useMemo(() => ({ titleId, art: addFieldHeroArt }), [titleId]);
   const escape = useRef<(() => boolean) | null>(null);
   const inside = useRef<HTMLDivElement>(null);
   const [focusSearch] = useState(finePointer);
@@ -56,7 +59,7 @@ export function AddFieldDialog({ onClose, ...form }: FormProps & { onClose: () =
           {...form}
           escapeRef={escape}
           onCancel={onClose}
-          dialogTitleId={titleId}
+          dialogHero={hero}
           autoFocusSearch={focusSearch}
         />
       </div>

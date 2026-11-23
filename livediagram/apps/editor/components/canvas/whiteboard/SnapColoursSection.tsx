@@ -58,7 +58,7 @@ export function SnapColoursSection({ snap }: { snap: SnapColoursApi }) {
             onClick={press}
             className="flex h-10 items-center rounded-lg px-3 text-sm font-medium text-slate-700 ring-1 ring-slate-300 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-200 dark:ring-slate-600 dark:hover:bg-slate-800"
           >
-            Snap to stock colours
+            Snap Colours
           </button>
         </div>
       )}

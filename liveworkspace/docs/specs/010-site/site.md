@@ -634,7 +634,7 @@ Explorer does.
 - **Done.** "Your project is ready." with **Open Folder** (the Explorer at the folder, `/explorer/folder?id=<id>`) and
   each part's Open (its app's item address), and **Start Another**, which brings the setup back.
 - **Partly done.** "Some of your project couldn't be made." over the rows, with **Retry** (the same kit, role and
-  folder; only what is missing is made) and **Remove What Was Made** (asks once, in place: "Delete the files this
+  folder; only what is missing is made) and **Remove Files** (asks once, in place: "Delete the files this
   made? This can't be undone." Delete Them, Cancel; then the setup comes back). A run that made nothing at all
   ("Couldn't start your project.") offers Try Again alone.
 - **A refused run** (the network, the index) leaves the setup as it was with the reason under Create, in words. Too
@@ -884,7 +884,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     Prism and wordmark).
   - **Your Data** is a row with the export's state: **Download All My Data** with none; a progress bar and what it is
     doing ("Adding items: 12 of 48", "Adding images", "Finishing") while it is built, with the line that an email
-    follows; ready, its size, when it was made and when the link lapses, with **Download** and **Make a New One**;
+    follows; ready, its size, when it was made and when the link lapses, with **Download** and **New Export**;
     failed, why in a red note with **Try Again**; capped, an amber note of how many items were left out.
   - **Your Teams**, for someone who runs a team: one row per team they are an admin of, the same states, with
     **Download Team Data**. A section only someone who runs a team sees.

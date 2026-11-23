@@ -9,6 +9,10 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { BackBar } from '@liveworkspace/ui';
 import { ToolSkeleton } from '@liveworkspace/ui/tool-explainer';
 
+/** Tools' height in every app, list and tool alike: what liveplanner's list (the longest) stretches to, the 500 px
+ *  floor plus three more 95 px rows. Never past the screen. */
+export const TOOLS_HEIGHT_PX = 785;
+
 export function ToolsView({
   id,
   label,
@@ -18,7 +22,6 @@ export function ToolsView({
   slotRef,
   waiting,
   floorPx,
-  minPx,
   children,
 }: {
   id: string;
@@ -34,8 +37,6 @@ export function ToolsView({
   /** The Tools list's height as it last showed: every tool takes exactly this height and scrolls inside it, its footer
    *  pinned (owner, 2026-11-17). */
   floorPx?: number | null;
-  /** The menu's own floor (ChromeToolsMenu's minPx): the tool fills it, less the 100 px band and the 4 px pad. */
-  minPx?: number | undefined;
   children?: ReactNode;
 }) {
   const root = useRef<HTMLDivElement>(null);
@@ -58,11 +59,11 @@ export function ToolsView({
       // squeezed to nothing (History's timeline) over a blank band.
       className="flex min-h-[calc(min(500px,100dvh-2rem)-104px)] flex-1 flex-col"
       // A phone's drawer: at least the list's height, and as tall as the drawer is dragged.
-      // A menu with a taller floor (minPx): the tool fills it too, its footer at the bottom (owner 2026-11-21: History's
-      // Take Snapshot floated mid-panel over a blank band).
+      // Off a phone the tool fills Tools' one height (TOOLS_HEIGHT_PX, less the 100 px band and the 4 px pad), its
+      // footer at the bottom (owner 2026-11-21: History's Take Snapshot floated mid-panel over a blank band).
       style={{
         ...(floorPx ? (sheet ? { minHeight: floorPx } : { height: floorPx }) : {}),
-        ...(minPx && !sheet ? { minHeight: `calc(min(${minPx}px, 100dvh - 2rem) - 104px)` } : {}),
+        ...(sheet ? {} : { minHeight: `calc(min(${TOOLS_HEIGHT_PX}px, 100dvh - 2rem) - 104px)` }),
       }}
     >
       <div data-tools-back="" className="flex shrink-0 items-center px-3 pb-2.5 pt-3">

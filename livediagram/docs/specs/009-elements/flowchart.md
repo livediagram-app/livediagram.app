@@ -175,6 +175,10 @@ carry their contents exactly as any lane does.
 - **Add Lane** on a chart without lanes wraps every step in **"Lane 1"** and adds an empty
   **"Lane 2"**; on a chart with lanes it adds the next lane at the end. Titles are edited like any
   lane's.
+- A new lane is in the **tab's theme**, as a lane added from the palette is: the theme's fill, border
+  and title colours, its heading strip the wash of that border
+  ([A lane in the tab's theme](lane.md#a-lane-in-the-tabs-theme)). In the Default scheme it carries no
+  colour of its own. The chart's lanes follow a later theme pick like any lane.
 - Lanes run **across** the flow: horizontal rows when the chart flows right, vertical columns
   (title centred at the top) when it flows down. Changing direction turns the lanes. A lane whose title
   already runs the right way (a row's pinned left or right, a column's in a band at its top or bottom)

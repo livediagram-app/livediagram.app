@@ -11,6 +11,7 @@ import {
   type FlowchartStepType,
   type Tab,
 } from '@livediagram/document';
+import { dressFlowchartLane } from '@/lib/flowchart-dress';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -39,11 +40,12 @@ export function useFlowchartSetters({
   editsBlocked,
   notify,
 }: FlowchartSetterDeps) {
-  // `change` maps the tab's elements, given what the layout must leave where it is.
-  const commitChange = (change: (els: Element[], locked: Set<string>) => Element[]) => {
+  // `change` maps the tab's elements, given what the layout must leave where it is and the tab itself
+  // (a new lane takes its theme).
+  const commitChange = (change: (els: Element[], locked: Set<string>, tab: Tab) => Element[]) => {
     if (editsBlocked) return;
     commitActiveTab((t) => {
-      const next = change(t.elements, lockedElementIds(t.elements, t.layers));
+      const next = change(t.elements, lockedElementIds(t.elements, t.layers), t);
       return next === t.elements ? t : { ...t, elements: next };
     });
   };
@@ -83,11 +85,12 @@ export function useFlowchartSetters({
 
   const addLaneSelected = () => {
     const ids = currentSelectionIds();
-    commitChange((els, locked) =>
+    commitChange((els, locked, tab) =>
       chartsOf(els, ids).reduce(
         (acc, chart) =>
           addFlowchartLane(acc, chart, [crypto.randomUUID(), crypto.randomUUID()], {
             lockedIds: locked,
+            dressLane: (lane) => dressFlowchartLane(lane, tab),
           }),
         els,
       ),

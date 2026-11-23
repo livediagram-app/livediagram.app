@@ -4,6 +4,7 @@
 // page (when the tab has several), the page as it will export (see-through paper shown over a
 // checkerboard), what the kit holds, and the download. It owns the kit's making; the dialog hands
 // it the images it has loaded for previews.
+import { Callout } from '@liveworkspace/ui/callout';
 import { useState } from 'react';
 import type { LaidOutPage, Tab } from '@livedesign/design';
 import { Button, Select, BackBar } from '@livedesign/ui';
@@ -118,9 +119,9 @@ export function LogoKitPanel({
         )}
       </div>
       {error ? (
-        <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="flex justify-end">
         <Button size="sm" onClick={() => void download()} busy={busy}>

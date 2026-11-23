@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, type ComponentType, type ReactNode } from 'react';
-import { Button, DialogCloseButton, DialogHeader, holdDialogSlot } from '@liveworkspace/ui';
+import { useId, useState, type ComponentType, type ReactNode } from 'react';
+import { Button, holdDialogSlot } from '@liveworkspace/ui';
+import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
+import { shareOfflineHeroArt } from '@liveworkspace/ui/dialog-hero-art/share-offline';
 import { Dialog } from './Dialog';
 import { DialogFooter } from './DialogFooter';
 
@@ -33,7 +35,8 @@ export type SyncGateDialogProps = {
 };
 
 // A dialog an item kept Offline opens before a tool can work (each app's offline-mode.md "Sharing a document kept
-// Offline"; liveworkspace/docs/specs/018-automations/automations.md "Who may do what"): its header, the app's Sync
+// Offline"; liveworkspace/docs/specs/018-automations/automations.md "Who may do what"): its hero header
+// (liveworkspace/docs/specs/004-index/dialog-hero-header.md; `art`, the Share gate's unless the app hands its own), the app's Sync
 // prompt (`Prompt`) with the tool's own reason, or Sign In for a guest, and Cancel. While the sync runs nothing closes
 // it: Cancel is held, and the close, Escape, the backdrop and a phone sheet's swipe do nothing, as Cancel. The
 // sync converts the open item in place, with no reload, and whoever opened the gate swaps it for the tool as the
@@ -50,8 +53,10 @@ export function SyncGateDialog({
   signInHref,
   onClose,
   Prompt,
-}: SyncGateDialogProps & { Prompt: ComponentType<SyncPromptProps> }) {
+  art = shareOfflineHeroArt,
+}: SyncGateDialogProps & { Prompt: ComponentType<SyncPromptProps>; art?: HeroArt }) {
   const [busy, setBusy] = useState(false);
+  const titleId = useId();
   // Every way out is held while the sync runs, as Cancel is: `beforeClose` holds the close, the backdrop and a
   // phone sheet's swipe (each dismisses through it), `closeOnEscape` the key.
   return (
@@ -60,14 +65,19 @@ export function SyncGateDialog({
       onClose={onClose}
       beforeClose={() => !busy}
       closeOnEscape={!busy}
-      ariaLabel={title}
+      titleId={titleId}
       size="md"
       phoneSheet
     >
-      <DialogHeader title={title} subtitle={subtitle}>
-        {help}
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+      <HeroDialogHeader
+        art={art}
+        titleId={titleId}
+        title={title}
+        subtitle={subtitle}
+        actions={help}
+        onClose={onClose}
+        underHandle
+      />
 
       <Prompt
         // Opened inside Tools, the tool it goes on to opens in the gate's place there (holdDialogSlot).

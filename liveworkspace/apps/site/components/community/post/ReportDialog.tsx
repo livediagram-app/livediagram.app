@@ -8,7 +8,9 @@ import {
   type CommunityReportInput,
   type CommunityReportReason,
 } from '@liveworkspace/community';
-import { Button, Dialog, DialogCloseButton, DialogHeader, TextArea } from '@liveworkspace/ui';
+import { Button, Dialog, TextArea } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { reportHeroArt } from '@liveworkspace/ui/dialog-hero-art/report';
 import { useCommunitySite } from '../client';
 import { CommunityApiError } from '../lib/api';
 import { capitalise } from '../lib/format';
@@ -79,9 +81,13 @@ export function ReportDialog({
 
   return (
     <Dialog open onClose={close} titleId={titleId} phoneSheet>
-      <DialogHeader title={<span id={titleId}>{`Report This ${capitalise(words.noun)}`}</span>}>
-        <DialogCloseButton onClick={close} />
-      </DialogHeader>
+      <HeroDialogHeader
+        art={reportHeroArt}
+        titleId={titleId}
+        title={`Report This ${capitalise(words.noun)}`}
+        onClose={close}
+        underHandle
+      />
       <div ref={bodyRef} tabIndex={-1} className="px-6 py-5 outline-none">
         {phase === 'sent' ? (
           <div className="flex flex-col gap-5">

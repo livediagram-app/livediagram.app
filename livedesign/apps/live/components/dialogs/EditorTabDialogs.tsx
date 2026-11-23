@@ -9,6 +9,7 @@ import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { apiTeamMembers } from '@/lib/api-client';
 import { shareUrl } from '@/lib/explorer-host';
 import { designHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';
@@ -137,6 +138,13 @@ export function EditorTabDialogs() {
         />
       ) : shareDialogOpen && designId ? (
         <ShareDialog
+          // The Team tab's list: the team's members, for a signed-in member (the dialog keeps the joined ones).
+          loadTeamMembers={
+            accountUserId && designTeamId
+              ? () => apiTeamMembers(accountUserId, designTeamId)
+              : undefined
+          }
+          viewerUserId={accountUserId}
           client={indexClient}
           item={{
             id: designId,

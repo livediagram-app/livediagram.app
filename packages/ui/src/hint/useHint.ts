@@ -12,6 +12,7 @@ import {
 } from './hint-constants';
 import { claimHint, isHintWarm, releaseHint, type HintToken } from './hint-registry';
 import { canHover, touchedRecently, watchTouches } from './input-modality';
+import { focusIsPlaced } from '../focus-origin';
 import { hasVisibleText } from './trigger-text';
 
 type HintOpenSource = 'pointer' | 'focus' | 'touch';
@@ -258,7 +259,8 @@ export function useHint(
       if (e.pointerType === 'touch') endPress();
     },
     onFocus: (e) => {
-      if (!isFocusVisible(e.target)) return;
+      // Focus a modal placed on its first control as it opened is nobody's choice: no hint (focus-origin.ts).
+      if (focusIsPlaced() || !isFocusVisible(e.target)) return;
       const m = machine.current;
       m.focused = true;
       if (!m.dismissed) show('focus');

@@ -7,6 +7,7 @@ import {
   duplicateItemType,
   isArchived,
   isTrashed,
+  itemTitle,
   labelUsage,
   linkedCardsOf,
   newItemId,
@@ -198,7 +199,9 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           else track('Plan', 'Moved', 'Archive');
         }}
         onClose={plan.closeItem}
-        {...(linkOf ? { onCopyLink: () => copyCardLink(linkOf(item.id), ctx.notify) } : {})}
+        {...(linkOf
+          ? { onCopyLink: () => copyCardLink(linkOf(item.id), ctx.notify, itemTitle(item)) }
+          : {})}
         onEditType={() => {
           plan.closeItem();
           ctx.editType({ id: item.type });

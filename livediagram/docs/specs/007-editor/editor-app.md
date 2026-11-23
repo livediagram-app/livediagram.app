@@ -156,7 +156,7 @@ applies:
 
 On a computer, resting the pointer on it
 opens the **visibility legend** the header badge had (`VisibilityLegend`: the reach rings, one scale from Offline (first,
-the narrowest) through Private, Shared and Team to Everyone with the current stop marked, and Change Who Can See This, which opens Share), under the
+the narrowest) through Private, Shared and Team to Everyone with the current stop marked, and Change Access, which opens Share), under the
 button at its right edge. **Every state that applies is marked**: each of its stops is filled in its own hue and its
 name set bold, the track filled to the widest of them, and the top of the legend names them together ("Shared and
 Team"), each with its glyph in its hue and its own sentence, with the rings lit out to the widest; it closes a beat after the pointer leaves both. Pressing its Offline stop takes the canvas
@@ -377,6 +377,11 @@ screen tall with its own scroll, clear of the home indicator, rising in (`animat
 the same grab handle, which fills the screen, returns or closes it as a menu's sheet does (`useSheetDrag`). It stays a modal
 dialog: the dim behind it, the focus trap, Escape and the backdrop tap all behave as on a
 desktop, where it is the usual centred card (`Dialog`'s `phoneSheet`).
+
+**A sheet is the default** (owner, 2026-11-23): every dialog rises as a bottom sheet on a phone unless it says
+otherwise (`phoneSheet`, on by default in the shared `Dialog`), and a hero header runs its band up under the
+sheet's grab handle by itself. Only the few top-level dialogs that are a screen of their own stay full screen
+there: Share, Automations, Settings, Version History and Search.
 
 **A dialog stays above the on-screen keyboard.** A touch screen's keyboard shrinks the visual
 viewport, not the window a fixed layer and `vh` measure against, so a dialog centred in the window

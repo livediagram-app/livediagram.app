@@ -67,14 +67,18 @@ function StartCard({
           {card.picture}
         </span>
         <span className="flex min-w-0 flex-col gap-1 px-1.5 pb-1 pt-2.5 max-sm:flex-1 max-sm:py-0.5">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-[14px] font-semibold" style={{ color: palette.text }}>
+          {/* The name in full, on a second line when its tag leaves it no room: cut, "Company Knowle…" named nothing. */}
+          <span className="flex min-w-0 items-start gap-2">
+            <span
+              className="min-w-0 text-[14px] font-semibold leading-snug"
+              style={{ color: palette.text }}
+            >
               {card.name}
             </span>
             {card.badge ? (
               <Chip
                 caps
-                className="px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
+                className="mt-0.5 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
                 // The accent's tint, its ink deepened until it reads at AA (community-ui start-badge.ts).
                 style={communityStartBadgeStyle(palette.focus, palette.surface)}
               >
@@ -83,7 +87,7 @@ function StartCard({
             ) : null}
             {card.tag ? (
               <Chip
-                className="ml-auto border px-1.5 py-px text-[10px] font-semibold tabular-nums"
+                className="ml-auto mt-0.5 border px-1.5 py-px text-[10px] font-semibold tabular-nums"
                 style={{ borderColor: palette.border, color: palette.muted }}
               >
                 {card.tag}

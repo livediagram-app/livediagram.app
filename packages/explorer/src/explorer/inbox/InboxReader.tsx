@@ -10,6 +10,7 @@
 // Its verbs come from the host (`InboxHost.actions`), asked per row; nothing is offered that the page can't do. On a
 // phone and in the editor's panel the pane takes the list's place, with Back.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import {
   lazy,
   Suspense,
@@ -399,9 +400,9 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           />
           <div className="flex items-center justify-between gap-2">
             {failed === 'reply' ? (
-              <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+              <Callout tone="error" role="alert">
                 Couldn’t send your reply. Try again.
-              </p>
+              </Callout>
             ) : (
               <span
                 aria-hidden

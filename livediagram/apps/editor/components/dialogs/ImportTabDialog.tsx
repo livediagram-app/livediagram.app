@@ -10,6 +10,13 @@ import { reportHasLosses } from '@/lib/board-scene/report';
 import { ImportImageReport } from './ImportImageReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
 import { importFileTypes } from '@/lib/import-file-types';
+import {
+  BrandLogo,
+  DRAWIO_LOGO,
+  EXCALIDRAW_LOGO,
+  MERMAID_LOGO,
+  type BrandLogoMark,
+} from '@liveworkspace/workbench/components/dialogs/brand-logos';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 import type { DiagramSources } from '@livediagram/document';
@@ -74,37 +81,32 @@ const FORMATS: {
   {
     key: 'json',
     title: 'JSON',
-    description:
-      'A livediagram tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
+    description: 'A tab exported from livediagram (.json). Restored exactly.',
     placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livediagram.tab",\n  "tab": { … }\n}',
   },
   {
     key: 'mermaid',
     title: 'Mermaid',
-    description:
-      'A Mermaid flowchart, state diagram, or ER diagram. Keeps every connection. Paste it or pick a file.',
+    description: 'A flowchart, state or ER diagram, with every connection.',
     placeholder: 'flowchart TD\n  A([Start]) --> B{OK?}\n  B -->|yes| C[Ship]\n  B -->|no| A',
   },
   {
     key: 'markdown',
     title: 'Markdown',
-    description:
-      'A .md outline (headings + lists), e.g. exported from XMind. Becomes a themed tree.',
+    description: 'A .md outline of headings and lists, drawn as a tree.',
     placeholder: '# Project\n\n- Research\n  - Interviews\n  - Survey\n- Build\n- Launch',
     note: { article: 'markdownImport', label: 'See how a Markdown outline maps to a tree' },
   },
   {
     key: 'excalidraw',
     title: 'Excalidraw',
-    description:
-      'A .excalidraw scene, or a PNG / SVG exported with the scene. Keeps shapes, labels, connections, drawings, and images.',
+    description: 'A .excalidraw scene, or a PNG or SVG that holds one.',
     placeholder: '{\n  "type": "excalidraw",\n  "version": 2,\n  "elements": [ … ]\n}',
   },
   {
     key: 'drawio',
     title: 'draw.io',
-    description:
-      'A .drawio file, or a PNG / SVG with the diagram inside. Keeps shapes, text, connections and pages. Multi-page files add a tab for each further page.',
+    description: 'A .drawio file, or a PNG or SVG that holds one. Each page becomes a tab.',
     placeholder:
       '<mxfile>\n  <diagram name="Page-1">\n    <mxGraphModel>…</mxGraphModel>\n  </diagram>\n</mxfile>',
     note: { article: 'importTabs', label: 'See what carries over from draw.io' },
@@ -113,8 +115,7 @@ const FORMATS: {
     // docs/specs/020-import-export/visio-import.md "UI".
     key: 'visio',
     title: 'Visio',
-    description:
-      'A .vsdx from Visio, or a Lucidchart diagram exported as Visio (VSDX). Keeps shapes, text, connections and pages.',
+    description: 'A .vsdx from Visio, or one exported from Lucidchart.',
     placeholder: '',
     note: { article: 'importTabs', label: 'See what carries over from Visio' },
     file: {
@@ -126,8 +127,7 @@ const FORMATS: {
     // docs/specs/020-import-export/bpmn-import.md "Where".
     key: 'bpmn',
     title: 'BPMN',
-    description:
-      'A .bpmn file from Camunda, bpmn.io, Signavio or any BPMN 2.0 modeler. Keeps every event, task, gateway, pool and flow where the modeler drew it.',
+    description: 'A .bpmn file from any BPMN 2.0 modeler, laid out as drawn.',
     placeholder:
       '<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" …>\n  <bpmn:process id="Process_1">…</bpmn:process>\n  <bpmndi:BPMNDiagram>…</bpmndi:BPMNDiagram>\n</bpmn:definitions>',
     note: { article: 'importTabs', label: 'See how a BPMN file comes across' },
@@ -136,8 +136,7 @@ const FORMATS: {
     // docs/specs/020-import-export/infrastructure-import.md "The editor".
     key: 'infra',
     title: 'Infrastructure',
-    description:
-      'wrangler.toml, Compose, Terraform or Kubernetes files, several at once. Draws each service with its bindings, dependencies and networks.',
+    description: 'wrangler.toml, Compose, Terraform or Kubernetes files, drawn as services.',
     placeholder: '',
     note: { article: 'importTabs', label: 'See what each infrastructure file draws' },
   },
@@ -293,12 +292,15 @@ function ImportChooser({
       {onUpdate && infra?.sources ? (
         <InfraSourcesCard sources={infra.sources} onUpdate={onUpdate} />
       ) : null}
-      {/* Destructive-action warning — this overwrites the tab. */}
-      <Callout tone="warning" className="mb-4">
-        This replaces everything on{' '}
-        <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-        content. Undo brings it back.
-      </Callout>
+      {/* Destructive-action warning: this overwrites the tab. On the dialog's first screen only: a format's
+          own step, reached from it, does not say it again. */}
+      {activeFormat && !single ? null : (
+        <Callout tone="warning" className="mb-4">
+          This replaces everything on{' '}
+          <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
+          content. Undo brings it back.
+        </Callout>
+      )}
       {activeFormat?.key === 'infra' && infra ? (
         <InfraImportPanel
           note={note}
@@ -357,23 +359,18 @@ function ImportChooser({
   );
 }
 
+const FORMAT_LOGOS: Partial<Record<Format, BrandLogoMark>> = {
+  mermaid: MERMAID_LOGO,
+  excalidraw: EXCALIDRAW_LOGO,
+  drawio: DRAWIO_LOGO,
+};
+
 function FormatIcon({ kind }: { kind: Format }) {
-  const label =
-    kind === 'mermaid'
-      ? 'mmd'
-      : kind === 'markdown'
-        ? 'md'
-        : kind === 'excalidraw'
-          ? 'excali'
-          : kind === 'drawio'
-            ? 'drawio'
-            : kind === 'visio'
-              ? 'vsdx'
-              : kind === 'bpmn'
-                ? 'bpmn'
-                : kind === 'infra'
-                  ? 'infra'
-                  : 'json';
+  // A tool with a logo shows it; livediagram's own JSON, Markdown and infrastructure files, and the formats with no
+  // mark of their own, keep a text badge.
+  const logo = FORMAT_LOGOS[kind];
+  if (logo) return <BrandLogo mark={logo} />;
+  const label = kind === 'markdown' ? 'md' : kind === 'visio' ? 'vsdx' : kind;
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

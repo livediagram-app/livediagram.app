@@ -11,7 +11,7 @@ import { SHARE_PASSWORD_MAX, SHARE_PASSWORD_MIN } from '@liveworkspace/index-cli
 import { Button, Switch } from '@liveworkspace/ui';
 import { LockIcon } from '../../ui/icons';
 import { HelpLink } from './HelpLink';
-import { SETTING_DETAIL, SETTING_DETAIL_ROW, SETTING_NOTE } from './parts';
+import { SETTING_DETAIL, SETTING_DETAIL_ROW, SETTING_ICON_TILE, SETTING_NOTE } from './parts';
 import type { ShareHelpHref } from './types';
 
 // The card's lower part (parts.tsx SETTING_DETAIL): why it is locked, Password Set with Replace and Remove, or the
@@ -87,49 +87,42 @@ export function PasswordSection({
   const tooShort = next !== null && next.length < SHARE_PASSWORD_MIN;
   const canSave = !busy && next !== null && !tooShort;
   const editing = on && !showSet && !locked;
-  const detail = locked || (on && showSet) || editing;
 
   return (
-    <section
-      aria-label="Password"
-      data-tour-id="share-password"
-      className="border-t border-slate-100 pt-4 dark:border-slate-800"
-    >
-      {/* The Settings dialog's own row, as a card: the words, Learn More, and the switch, which a press anywhere on
-          the row flips (its hit area covers the row; Learn More sits above it and keeps its own click). Below it, in
-          the card, the detail. */}
-      <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+    // The access card's first rows (ShareDialog draws the card): the Settings dialog's row, the words, a help icon and
+    // the switch, which a press anywhere on the row flips (its hit area covers the row; the help icon sits above it
+    // and keeps its own click). Below it, the detail.
+    <section aria-label="Password" data-tour-id="share-password" className="rounded-t-[inherit]">
+      <div>
         <div
-          className={`relative flex items-center gap-4 px-4 py-3 ${
-            detail ? 'rounded-t-[inherit]' : 'rounded-[inherit]'
-          } ${
+          className={`relative flex items-center gap-4 rounded-t-[inherit] px-4 py-3 ${
             locked
               ? ''
               : 'transition-colors duration-micro hover:bg-slate-50 dark:hover:bg-slate-700/40'
           }`}
         >
+          <span aria-hidden className={SETTING_ICON_TILE}>
+            <LockIcon size={15} />
+          </span>
           <div className={`min-w-[9rem] flex-1 ${locked ? 'opacity-50' : ''}`}>
             <div
               id="share-password-label"
-              className="text-sm font-medium text-slate-800 dark:text-slate-100"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-800 dark:text-slate-100"
             >
               Password Protection
+              <span className="relative z-[1] flex">
+                <HelpLink
+                  href={helpHref?.('sharePasswords')}
+                  label="How share passwords work"
+                  description="One password guards every pass at once, embeds included. Everyone enters it before a pass opens. Only a hash is kept, so a saved password can be replaced or removed, never shown again."
+                />
+              </span>
             </div>
             <p
               id="share-password-description"
               className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400"
             >
               Everyone opening a pass must enter it first, embeds included.
-              {helpHref?.('sharePasswords') ? (
-                <span className="relative z-[1]">
-                  {' '}
-                  <HelpLink
-                    href={helpHref('sharePasswords')}
-                    label="How share passwords work"
-                    variant="text"
-                  />
-                </span>
-              ) : null}
             </p>
           </div>
           <Switch

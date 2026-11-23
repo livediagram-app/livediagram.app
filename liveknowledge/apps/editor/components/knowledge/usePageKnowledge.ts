@@ -20,6 +20,7 @@ import {
 } from '@liveknowledge/knowledge';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import type { KnowledgeCaller } from '@/lib/api/knowledge';
 import { knowledgeRights, type KnowledgeRights } from '@/lib/knowledge/knowledge-rights';
@@ -118,7 +119,9 @@ export function useKnowledgeActions(): KnowledgeActions {
       const person = editor.accountUserId ?? guestVerifier(editor.selfParticipant.name);
       pageKnowledgeStore
         .verify(caller.who, caller.documentId, page, person, Date.now())
-        .catch((err: unknown) => toast.error(knowledgeFailureText(err, 'verify')));
+        .catch((err: unknown) =>
+          toast.error(knowledgeFailureText(err, 'verify', toastName(page.name))),
+        );
     },
     [chrome, callerOf, rights.verify, toast],
   );
@@ -129,7 +132,9 @@ export function useKnowledgeActions(): KnowledgeActions {
       if (!rights.editFields || !caller || !page) return;
       pageKnowledgeStore
         .setFields(caller.who, caller.documentId, page, patch, Date.now())
-        .catch((err: unknown) => toast.error(knowledgeFailureText(err, action)));
+        .catch((err: unknown) =>
+          toast.error(knowledgeFailureText(err, action, toastName(page.name))),
+        );
     },
     [chrome, callerOf, rights.editFields, toast],
   );

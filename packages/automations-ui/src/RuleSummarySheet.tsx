@@ -8,13 +8,9 @@
 
 import { useCallback, useEffect, useId, useState } from 'react';
 import type { AutomationRuleSummary, AutomationSummaryLine } from '@liveworkspace/automations';
-import {
-  Button,
-  Chip,
-  CompactEmptyState,
-  DialogCloseButton,
-  formatRelativeTimeShort,
-} from '@liveworkspace/ui';
+import { Button, Chip, CompactEmptyState, formatRelativeTimeShort } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { ruleSummaryHeroArt } from '@liveworkspace/ui/dialog-hero-art/rule-summary';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { AutomationRefusal, type AutomationsClient } from './automations-client';
 import { BoltIcon, STEP_KIND_TEXT, StepTile, type StepTone } from './glyphs';
@@ -239,29 +235,15 @@ export function RuleSummarySheet({
   return (
     <Dialog open onClose={onClose} titleId={titleId} size="md" phoneSheet className="max-h-[90vh]">
       <div data-rule-summary="" className="flex min-h-0 flex-col">
-        <div className="flex items-start gap-3 border-b border-slate-100 px-6 pt-5 pb-4 dark:border-slate-800">
-          <span
-            aria-hidden
-            className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
-          >
-            <BoltIcon size={16} aria-hidden />
-          </span>
-          <div className="min-w-0 flex-1">
-            <span className="block text-[12px] font-medium text-slate-500 dark:text-slate-400">
-              Automation
-            </span>
-            <div className="flex min-w-0 items-center gap-2">
-              <h2
-                id={titleId}
-                className="min-w-0 break-words text-base font-semibold text-slate-900 dark:text-slate-50"
-              >
-                {title}
-              </h2>
-              {read.state === 'ready' ? <OnChip rule={read.rule} /> : null}
-            </div>
-          </div>
-          <DialogCloseButton onClick={onClose} />
-        </div>
+        <HeroDialogHeader
+          art={ruleSummaryHeroArt}
+          titleId={titleId}
+          title={title}
+          subtitle="Automation"
+          actions={read.state === 'ready' ? <OnChip rule={read.rule} /> : null}
+          onClose={onClose}
+          underHandle
+        />
         <div className="min-h-0 overflow-y-auto">
           {read.state === 'loading' ? (
             <div role="status" aria-label="Loading rule" className="flex flex-col gap-3 px-6 py-5">

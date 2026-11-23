@@ -158,11 +158,11 @@ for (const [scheme, position] of [
     expect(section.y + section.height).toBeLessThanOrEqual(800);
     if (SHOTS) await page.screenshot({ path: shot('2-offer') });
 
-    await colours.getByRole('button', { name: 'Snap to stock colours' }).click();
+    await colours.getByRole('button', { name: 'Snap Colours' }).click();
     await expect(colours.getByRole('status')).toHaveText(
       '6 custom colours snapped to stock colours',
     );
-    await expect(colours.getByRole('button', { name: 'Snap to stock colours' })).toHaveCount(0);
+    await expect(colours.getByRole('button', { name: 'Snap Colours' })).toHaveCount(0);
     if (SHOTS) await page.screenshot({ path: shot('3-snapped') });
 
     // Each now draws in its stock colour's version for this board; grey became the ink.
@@ -199,7 +199,7 @@ for (const [scheme, position] of [
 
     // From the keyboard: Tab reaches the button inside the flyout, Enter snaps, and the focus
     // lands on the confirmation rather than being lost with the button.
-    const snapButton = again.getByRole('button', { name: 'Snap to stock colours' });
+    const snapButton = again.getByRole('button', { name: 'Snap Colours' });
     for (
       let i = 0;
       i < 20 && !(await snapButton.evaluate((b) => b === document.activeElement));

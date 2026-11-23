@@ -214,6 +214,8 @@ export type ThemedElement = {
   // The element's text keeps its own ink under every theme, the partner of a locked fill whose ink is chosen to read
   // on it (a C4 element's white or dark text on its C4 colour).
   themeLockText?: boolean;
+  // A lane's heading strip (docs/specs/009-elements/lane.md), which follows its border under a theme.
+  headerFill?: string;
 };
 
 // Which element-colour fields each element type writes from a theme.
@@ -299,6 +301,17 @@ export function themeColourFields(el: ThemedElement): ThemeColourField[] {
   );
 }
 
+// A lane's heading strip under a theme (docs/specs/009-elements/lane.md "A lane in the tab's theme"). The
+// strip belongs to the border: with no `headerFill` it is a wash of the lane's stroke, so a lane whose
+// border a theme has just written goes back to that wash, and the strip is the theme's too. Without
+// this the three transforms below recoloured a lane's body, border and title and left its strip in the
+// hue it was built with. `borderThemed` is whether the transform wrote the lane's border; a lane whose
+// border is the user's own keeps its heading. Answers the patch to spread over the element.
+function laneHeadingPatch(el: ThemedElement, borderThemed: boolean): { headerFill?: undefined } {
+  const isLane = el.type === 'shape' && el.shape === 'lane';
+  return isLane && borderThemed && el.headerFill !== undefined ? { headerFill: undefined } : {};
+}
+
 // Apply a theme's element-colour overrides to a single Element,
 // returning a new element with the theme's fill / stroke / text fields
 // written when the theme defines them, and untouched otherwise. Used by
@@ -313,7 +326,7 @@ export function recolourElementForTheme<E extends ThemedElement>(el: E, theme: T
     const value = theme[themeKey];
     if (value) patch[element] = value;
   }
-  return { ...el, ...patch };
+  return { ...el, ...patch, ...laneHeadingPatch(el, patch.strokeColor !== undefined) };
 }
 
 // Soft theme switch: change the tab's theme but preserve every
@@ -369,7 +382,10 @@ export function switchThemeElement<E extends ThemedElement>(
       patch.fillColor = next.backgroundColor;
     }
   }
-  return { ...el, ...patch };
+  // A border still on the old theme (or unset) is the one this pick rewrites.
+  const borderThemed =
+    current.strokeColor === undefined || current.strokeColor === prev.elementStroke;
+  return { ...el, ...patch, ...laneHeadingPatch(el, borderThemed) };
 }
 
 // Backdrop counterpart to `switchThemeElement`. The canvas backdrop
@@ -461,7 +477,7 @@ export function resetThemeElement<E extends ThemedElement>(el: E, theme: ThemeDe
   if (el.type === 'table' && el.tablePreset) {
     return { ...el, ...patch, tablePreset: undefined };
   }
-  return { ...el, ...patch };
+  return { ...el, ...patch, ...laneHeadingPatch(el, true) };
 }
 // A page layout's elements in its tab's theme (docs/specs/007-editor/pages-mode.md "Layouts"): a layout is built
 // without colours of its own where it means the theme's, so each colour an element leaves unset takes the tab's

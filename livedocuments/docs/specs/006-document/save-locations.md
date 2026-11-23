@@ -57,8 +57,8 @@ person (livedocuments).
   empty and nobody else has it, so nothing can be lost. No reload: the person stays on the start screen.
 - **While it moves** the switch is busy (a spinner in its knob, `aria-busy`) and its line reads "Syncing to the
   server…" or "Moving to this browser…"; a polite status says the same, then "Synced to the server." or "Moved to
-  this browser.". **A failure** shows the conversion's toast (`syncFailureMessage`, or "Couldn’t move this to this
-  browser. It stays safe on the server.") and the switch returns to where the document still is.
+  this browser.". **A failure** shows the conversion's toast (`syncFailureMessage`, or "Couldn’t move “<name>” to this
+  browser. It’s safe on the server.", both naming the document) and the switch returns to where the document still is.
 - **The line under the label** follows the state, with a small cloud or browser-window icon beside it:
 
   | State          | Line                                                                        |

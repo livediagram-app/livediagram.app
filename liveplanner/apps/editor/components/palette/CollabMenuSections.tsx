@@ -17,7 +17,7 @@ import {
   type DecisionStatus,
   type ShapeElement,
 } from '@liveplanner/project';
-import { DateInput } from '@liveplanner/ui';
+import { CloseIcon, DateInput } from '@liveplanner/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
@@ -122,7 +122,7 @@ export function DecisionMenuSection({
                   onClick={() => onSetDrivers(rows.filter((_, j) => j !== i))}
                   className={removeButtonClass}
                 >
-                  ×
+                  <CloseIcon size={12} />
                 </button>
               </div>
             ))}

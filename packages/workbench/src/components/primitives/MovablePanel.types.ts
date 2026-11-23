@@ -1,6 +1,7 @@
 // The props of the shared MovablePanel (./MovablePanel), one copy for every editor. Each editor's
 // components/primitives/MovablePanel.types.ts binds MovablePanelProps to its own help-article keys.
 import type { ReactNode } from 'react';
+import type { HeroArt } from '@liveworkspace/ui/dialog-hero';
 import type { PanelCorner, PanelDragGeometry } from './movable-panel-geometry';
 
 /** Where a popover off a dock button sits (each editor's lib/canvas-chrome DockAnchor). */
@@ -63,6 +64,10 @@ export type MovablePanelProps<HelpKey extends string = string> = {
   // surface a status badge in the header without inventing a new
   // bar. Pointer events stay live so buttons inside still click.
   headerExtra?: ReactNode;
+  // As a popover, the panel wears the dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md)
+  // in place of its slim title band: the art's band and title mark, the title, an optional line, then the header's
+  // controls and a close. Docked or free, the panel keeps its draggable title row.
+  hero?: { art: HeroArt; subtitle?: ReactNode; className?: string };
   // A small adornment drawn DIRECTLY after the title (a count chip), as
   // opposed to `headerExtra`, which is pushed toward the button group and so
   // floated mid-header when a panel used it for a count.

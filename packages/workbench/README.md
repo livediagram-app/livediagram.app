@@ -84,6 +84,13 @@ Explorer's lazy load shares its loader (`components/panels/explorer-loader`) whi
 `next/dynamic` call. Telemetry stays in the editors: a component whose events the editor's telemetry scan counts (the
 Show Me tours, the strip's rail items, AreaErrorBoundary) is not moved.
 
+The Table dialog's controls (`components/dialogs/TableSettings`) take the product's part as props: the table's look,
+what each switch and style toggle does, and the editor's own text colour picker and Text Size control as two slots
+(both read the editor's model, so they stay in the editor). Each editor fills them in its
+`components/dialogs/ElementRowsDialogs.tsx`, inside the shared `ElementRowsDialog`. The four text style glyphs
+(`components/palette/text-style-icons`) are one copy too; each editor's `components/palette/palette-icons.tsx`
+re-exports them.
+
 The Export Tab dialog's frame, format grid and image-preview load (`components/dialogs/export-tab-dialog`'s
 `exportTabDialogFrame` and `useExportPreviewImages`) are called by every editor's
 `components/dialogs/ExportTabDialog.tsx`, which keeps its own formats, panels, telemetry and copy. The frame is a plain

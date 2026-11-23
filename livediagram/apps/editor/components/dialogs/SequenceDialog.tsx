@@ -8,8 +8,10 @@
 // preview redraws from the draft as you type; the diagram behind redraws when a change is stored, words on blur and
 // anything structural at once, one undo step each. A store that would change nothing is skipped.
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader, Switch } from '@livediagram/ui';
+import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { sequenceHeroArt } from '@liveworkspace/ui/dialog-hero-art/sequence';
+import { Button, Switch } from '@livediagram/ui';
 import {
   nextMessageAfter,
   parseSequenceText,
@@ -173,23 +175,27 @@ export function SequenceDialog({
   );
   const elementTourRunning = useActiveTour() === 'element';
 
+  const titleId = useId();
   return (
     <Dialog
       open
       onClose={close}
       closeOnEscape={!elementTourRunning}
-      ariaLabel="Edit sequence diagram"
+      titleId={titleId}
       size="3xl"
       phoneSheet
       className="max-h-[90vh]"
     >
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): three lifelines, a call arriving. */}
+      <HeroDialogHeader
+        art={sequenceHeroArt}
+        titleId={titleId}
         title="Sequence Diagram"
         subtitle="Who calls whom, in order. Write the messages top to bottom and the diagram lays itself out."
-      >
-        <HelpArticleLink article="sequenceDiagram" variant="labelled" />
-        <DialogCloseButton onClick={close} />
-      </DialogHeader>
+        actions={<HelpArticleLink article="sequenceDiagram" variant="labelled" />}
+        onClose={close}
+        underHandle
+      />
 
       <DialogTabs
         tabs={TABS}

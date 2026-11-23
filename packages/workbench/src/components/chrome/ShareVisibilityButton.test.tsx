@@ -167,7 +167,7 @@ describe('the hover legend', () => {
     expect(document.querySelector('[data-visibility-legend]')).toBeNull();
 
     open();
-    fireEvent.click(screen.getByText('Change Who Can See This'));
+    fireEvent.click(screen.getByText('Change Access'));
     expect(onOpenShare).toHaveBeenCalledOnce();
     expect(document.querySelector('[data-visibility-legend]')).toBeNull();
   });

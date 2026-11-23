@@ -4,8 +4,10 @@
 // (width and height in px or %, the chain keeping the shape, the resampling), Canvas Size (the new size
 // about an anchor, the new area's fill) and Rotate (any angle, the canvas growing to hold it). OK is
 // one edit; the page takes the new size.
-import { useState } from 'react';
-import { Button, DialogHeader } from '@livedesign/ui';
+import { useId, useState } from 'react';
+import { Button, SegmentedToggle, Select, Switch, TextInput } from '@livedesign/ui';
+import type React from 'react';
+import { Callout } from '@liveworkspace/ui/callout';
 import { ANCHORS, type Anchor, type Interpolation } from '@livedesign/photo-engine';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
@@ -15,11 +17,51 @@ import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { canvasSize, imageSize, rotateAny, sizeRefused } from '@/lib/photo-editor/image-ops';
 import { photoTools } from '@/lib/photo-editor/tool-state';
 import { track } from '@/lib/telemetry';
-import { OptionChoice, OptionToggle } from './photo-controls';
+import { photoCanvasSizeHeroArt } from './PhotoCanvasSizeHeroArt';
+import { PhotoDialogHero } from './PhotoDialogHero';
+import { photoImageSizeHeroArt } from './PhotoImageSizeHeroArt';
+import { photoRotateHeroArt } from './PhotoRotateHeroArt';
 
-const FIELD =
-  'w-24 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm tabular-nums dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100';
-const LABEL = 'flex items-center justify-between gap-3 text-sm text-slate-700 dark:text-slate-200';
+// Every row reads the same: its name on the left at one size, its control on the right.
+const LABEL =
+  'flex min-h-8 items-center justify-between gap-3 text-sm text-slate-700 dark:text-slate-200';
+
+// A row whose control is a dropdown (Resample, New Area).
+function ChoiceRow<T extends string>({
+  label,
+  value,
+  choices,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: T;
+  choices: readonly { value: T; label: string }[];
+  onChange: (v: T) => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className={LABEL}>
+      {label}
+      <span className="flex items-center gap-2">
+        {children}
+        <Select
+          aria-label={label}
+          className="w-44"
+          selectClassName="text-[13px]"
+          value={value}
+          onChange={(e) => onChange(e.target.value as T)}
+        >
+          {choices.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </Select>
+      </span>
+    </div>
+  );
+}
 
 export function NumberField({
   label,
@@ -37,12 +79,13 @@ export function NumberField({
     <label className={LABEL}>
       {label}
       <span className="flex items-center gap-1.5">
-        <input
+        <TextInput
           type="number"
+          compact
           aria-label={label}
           value={Number.isFinite(value) ? Math.round(value * 100) / 100 : ''}
           onChange={(e) => onChange(Number(e.target.value))}
-          className={FIELD}
+          className="w-24 tabular-nums"
         />
         <span className="w-6 text-xs text-slate-500 dark:text-slate-400">{unit}</span>
       </span>
@@ -78,9 +121,17 @@ export function ImageSizeDialog({
     if (chain) setW(Math.max(1, Math.round((px / H) * W)));
   };
   const refused = sizeRefused(w, h);
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel="Image Size" backdrop="desktop-light">
-      <DialogHeader title="Image Size" subtitle={`Now ${W} x ${H} px. Every layer is resampled.`} />
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): the photo scaled to a new size. */}
+      <PhotoDialogHero
+        art={photoImageSizeHeroArt}
+        titleId={titleId}
+        title="Image Size"
+        line={`Now ${W} x ${H} px. Every layer is resampled.`}
+        onClose={onClose}
+      />
       <div className="flex flex-col gap-3 px-6 py-4">
         <NumberField label="Width" value={shownW} onChange={setWidth} unit={percent ? '%' : 'px'} />
         <NumberField
@@ -89,11 +140,27 @@ export function ImageSizeDialog({
           onChange={setHeight}
           unit={percent ? '%' : 'px'}
         />
-        <div className="flex flex-wrap gap-2">
-          <OptionToggle label="Keep Proportions" on={chain} onChange={setChain} />
-          <OptionToggle label="Percent" on={percent} onChange={setPercent} />
+        <div className={LABEL}>
+          Keep Proportions
+          <Switch size="sm" label="Keep Proportions" checked={chain} onChange={setChain} />
         </div>
-        <OptionChoice<Interpolation>
+        <div className={LABEL}>
+          Units
+          <SegmentedToggle<'px' | 'percent'>
+            label="Units"
+            value={percent ? 'percent' : 'px'}
+            onChange={(u) => setPercent(u === 'percent')}
+            options={[
+              { value: 'px', label: 'Pixels', description: 'Width and height in pixels.' },
+              {
+                value: 'percent',
+                label: 'Percent',
+                description: 'Width and height as a share of the size now.',
+              },
+            ]}
+          />
+        </div>
+        <ChoiceRow<Interpolation>
           label="Resample"
           value={how}
           choices={[
@@ -103,7 +170,7 @@ export function ImageSizeDialog({
           ]}
           onChange={setHow}
         />
-        {refused ? <p className="text-xs text-rose-600 dark:text-rose-400">{refused}</p> : null}
+        {refused ? <Callout tone="error">{refused}</Callout> : null}
       </div>
       <DialogFooter>
         <Button variant="secondary" size="sm" onClick={onClose}>
@@ -156,6 +223,7 @@ export function CanvasSizeDialog({
   const [fill, setFill] = useState<Fill>('transparent');
   const [colour, setColour] = useState('#ffffff');
   const refused = sizeRefused(w, h);
+  const titleId = useId();
   const fillHex =
     fill === 'transparent'
       ? null
@@ -165,10 +233,15 @@ export function CanvasSizeDialog({
           ? photoTools.get().background
           : colour;
   return (
-    <Dialog open onClose={onClose} ariaLabel="Canvas Size" backdrop="desktop-light">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): the photo inside a wider canvas, and the anchor. */}
+      <PhotoDialogHero
+        art={photoCanvasSizeHeroArt}
+        titleId={titleId}
         title="Canvas Size"
-        subtitle={`Now ${W} x ${H} px. The layers keep their pixels; the photo's edges move.`}
+        line={`Now ${W} x ${H} px. The layers keep their pixels; the photo's edges move.`}
+        short={`Now ${W} x ${H} px. The photo's edges move.`}
+        onClose={onClose}
       />
       <div className="flex flex-col gap-3 px-6 py-4">
         <NumberField label="Width" value={w} onChange={(v) => setW(Math.round(v))} unit="px" />
@@ -193,18 +266,17 @@ export function CanvasSizeDialog({
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <OptionChoice<Fill>
-            label="New Area"
-            value={fill}
-            choices={[
-              { value: 'transparent', label: 'Transparent' },
-              { value: 'white', label: 'White' },
-              { value: 'background', label: 'Background Colour' },
-              { value: 'colour', label: 'Colour' },
-            ]}
-            onChange={setFill}
-          />
+        <ChoiceRow<Fill>
+          label="New Area"
+          value={fill}
+          choices={[
+            { value: 'transparent', label: 'Transparent' },
+            { value: 'white', label: 'White' },
+            { value: 'background', label: 'Background Colour' },
+            { value: 'colour', label: 'Colour' },
+          ]}
+          onChange={setFill}
+        >
           {fill === 'colour' ? (
             <ColourSwatchButton
               label="New Area Colour"
@@ -214,8 +286,8 @@ export function CanvasSizeDialog({
               onPick={(id) => /^#[0-9a-f]{6}$/i.test(id) && setColour(id.toLowerCase())}
             />
           ) : null}
-        </div>
-        {refused ? <p className="text-xs text-rose-600 dark:text-rose-400">{refused}</p> : null}
+        </ChoiceRow>
+        {refused ? <Callout tone="error">{refused}</Callout> : null}
       </div>
       <DialogFooter>
         <Button variant="secondary" size="sm" onClick={onClose}>
@@ -243,11 +315,17 @@ export function RotateDialog({ photo, onClose }: { photo: PhotoEditorView; onClo
   const s = photo.session!;
   const [angle, setAngle] = useState(0);
   const [clockwise, setClockwise] = useState(true);
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel="Rotate" backdrop="desktop-light">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): the photo turned about its centre. */}
+      <PhotoDialogHero
+        art={photoRotateHeroArt}
+        titleId={titleId}
         title="Rotate"
-        subtitle="The photo turns by the angle, the canvas growing to hold it."
+        line="The photo turns by the angle, the canvas growing to hold it."
+        short="The canvas grows to hold the turned photo."
+        onClose={onClose}
       />
       <div className="flex flex-col gap-3 px-6 py-4">
         <NumberField
@@ -256,7 +334,22 @@ export function RotateDialog({ photo, onClose }: { photo: PhotoEditorView; onClo
           onChange={(v) => setAngle(Math.min(359.99, Math.max(-359.99, v)))}
           unit="°"
         />
-        <OptionToggle label="Clockwise" on={clockwise} onChange={setClockwise} />
+        <div className={LABEL}>
+          Direction
+          <SegmentedToggle<'cw' | 'ccw'>
+            label="Direction"
+            value={clockwise ? 'cw' : 'ccw'}
+            onChange={(d) => setClockwise(d === 'cw')}
+            options={[
+              { value: 'cw', label: 'Clockwise', description: 'Turns the photo to the right.' },
+              {
+                value: 'ccw',
+                label: 'Anticlockwise',
+                description: 'Turns the photo to the left.',
+              },
+            ]}
+          />
+        </div>
       </div>
       <DialogFooter>
         <Button variant="secondary" size="sm" onClick={onClose}>

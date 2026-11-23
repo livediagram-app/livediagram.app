@@ -1,5 +1,6 @@
 'use client';
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { type FormEvent, useId, useRef, useState } from 'react';
 import {
   FORUM_BODY_MAX,
@@ -177,9 +178,9 @@ export function ForumComposer({
         </p>
       </div>
       {error ? (
-        <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="flex flex-wrap justify-end gap-2">
         <Button variant="secondary" size="md" onClick={onCancel} disabled={sending}>

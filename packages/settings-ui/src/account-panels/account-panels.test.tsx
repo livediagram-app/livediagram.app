@@ -73,7 +73,7 @@ describe('an editor’s Account section, over the bearer door', () => {
   it('draws the API tokens in place, read over the app’s router with the person’s token', async () => {
     const { container } = render(<>{rowOf('tokens', 'apiTokens').render()}</>);
     expect(container.querySelector('[data-settings-cell="tokens"]')).toBeTruthy();
-    expect(await screen.findByText(/No tokens yet/)).toBeTruthy();
+    expect(await screen.findByText(/No Tokens/)).toBeTruthy();
     expect(calls).toContainEqual({
       url: '/api/workspace/account/tokens',
       method: 'GET',

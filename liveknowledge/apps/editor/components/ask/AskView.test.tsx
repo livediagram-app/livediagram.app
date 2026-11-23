@@ -459,9 +459,7 @@ describe('the parts the pages do not cover', () => {
       const card = within(screen.getByRole('region', { name: 'Knowledge Gap' }));
       expect(card.getByText('Who approves a release?')).toBeTruthy();
       expect(card.getByText('No page answers it.')).toBeTruthy();
-      expect(card.queryByRole('button', { name: 'Draft a Page From What We Know' }) !== null).toBe(
-        role !== 'view',
-      );
+      expect(card.queryByRole('button', { name: 'Draft a Page' }) !== null).toBe(role !== 'view');
       // Email is not built: nothing offers to ask the owner.
       expect(screen.queryByRole('button', { name: /to Write It/ })).toBeNull();
     },
@@ -471,7 +469,7 @@ describe('the parts the pages do not cover', () => {
     const commitTabs = vi.fn();
     await open('edit', { commitTabs });
     await answer(ask('Q?'), gaps());
-    fireEvent.click(screen.getByRole('button', { name: 'Draft a Page From What We Know' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Draft a Page' }));
     const draftCall = wire.calls[1]!;
     expect(draftCall.request).toEqual({ question: 'Who approves a release?' });
     await answer(draftCall, done('The release manager [1].', { sources: [source(1)] }));
@@ -488,7 +486,7 @@ describe('the parts the pages do not cover', () => {
     const commitTabs = vi.fn();
     await open('edit', { commitTabs });
     await answer(ask('Q?'), gaps());
-    fireEvent.click(screen.getByRole('button', { name: 'Draft a Page From What We Know' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Draft a Page' }));
     await answer(wire.calls[1]!, { type: 'error', kind: 'overloaded', message: 'busy' });
     await waitFor(() => expect(commitTabs).toHaveBeenCalledTimes(1));
     const added = (commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[])([]);
