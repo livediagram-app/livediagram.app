@@ -5,32 +5,33 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
 
 ## Files
 
-| Path                                                            | Role                                                                                                                                                 |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `../packages/tailwind-config/theme.css`                         | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                                                            |
-| `../packages/tailwind-config/src/optical-utilities.test.ts`     | The utilities' contracts                                                                                                                             |
-| `../packages/ui/src/optical/GlyphDisc.tsx`                      | Glyph disc                                                                                                                                           |
-| `../packages/ui/src/optical/Chip.tsx`                           | Chip                                                                                                                                                 |
-| `../packages/ui/src/optical/IconSlot.tsx`                       | Icon slot                                                                                                                                            |
-| `../packages/ui/src/optical/index.ts`                           | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                                                |
-| `../packages/ui/src/optical/optical.test.tsx`                   | Primitive contracts                                                                                                                                  |
-| `../packages/ui/src/Button.tsx`                                 | `ButtonContent`; `optical-edges` in the button base                                                                                                  |
-| `../packages/workbench/src/components/chrome/header-action.tsx` | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                                                            |
-| `../packages/icons/src/svg-cap-band.ts`                         | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                                                           |
-| `../packages/style-guards/src/optical-guard.ts`                 | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                                                 |
-| `apps/{live,help,telemetry}/optical-guard.test.ts`              | Each app runs the guard over its own sources (as `motion-budget.test.ts`); the Community page is liveworkspace's site's                              |
-| `../packages/marketing-site/src/guards/source-guards.test.ts`   | The guard over every product's marketing app and the shared marketing pages                                                                          |
-| `packages/ui/optical-guard.test.ts`                             | The guard over `packages/ui/src`                                                                                                                     |
-| `../packages/e2e-kit/src/optical.ts`                            | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts), shared by every editor                                                           |
-| `../packages/e2e-kit/src/optical-discover.ts`                   | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                                                |
-| `../packages/e2e-kit/src/optical-snap.ts`                       | `paintedBaseline`, `inheritedSnap`: Chromium's whole-pixel baseline snap and the part a shape inherits from its position (pure)                      |
-| `../packages/e2e-kit/src/optical-snap.test.ts`                  | Their contracts (Vitest)                                                                                                                             |
-| `apps/editor/e2e/optical-snap.spec.ts`                          | The snap guard: the browser paints baselines where `paintedBaseline` says, and transforms move them after                                            |
-| `apps/editor/e2e/optical-audit.spec.ts`                         | The editor's audited screens                                                                                                                         |
-| `apps/editor/e2e/optical-audit-sites.spec.ts`                   | The help centre, telemetry dashboard, Community and marketing site                                                                                   |
-| `apps/editor/e2e/audit-screens.ts`                              | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                                                               |
-| `scripts/e2e-stack.mjs`                                         | Also serves `liveworkspace/apps/help/out` at `/help/*`, liveworkspace's site export at `/community/*` (as at `/explorer`), marketing on its own port |
-| `.github/workflows/e2e.yml`                                     | Its Sites audit job builds help, telemetry and marketing beside live and runs the `sites` project                                                    |
+| Path                                                                                                                       | Role                                                                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `../packages/tailwind-config/theme.css`                                                                                    | `@utility text-optical-centre`, `text-optical-line`, `text-optical-caps`, `optical-edges`                                                            |
+| `../packages/tailwind-config/src/optical-utilities.test.ts`                                                                | The utilities' contracts                                                                                                                             |
+| `../packages/ui/src/optical/GlyphDisc.tsx`                                                                                 | Glyph disc                                                                                                                                           |
+| `../packages/ui/src/optical/Chip.tsx`                                                                                      | Chip                                                                                                                                                 |
+| `../packages/ui/src/optical/IconSlot.tsx`                                                                                  | Icon slot                                                                                                                                            |
+| `../packages/ui/src/optical/index.ts`                                                                                      | Re-exports; `export * from './optical'` in `packages/ui/src/index.ts`                                                                                |
+| `../packages/ui/src/optical/optical.test.tsx`                                                                              | Primitive contracts                                                                                                                                  |
+| `../packages/ui/src/Button.tsx`                                                                                            | `ButtonContent`; `optical-edges` in the button base                                                                                                  |
+| `../packages/workbench/src/components/chrome/header-action.tsx`                                                            | `HEADER_ACTION_BTN`, `HEADER_ICON_SLOT_PX`, `HeaderGlyph`                                                                                            |
+| `../packages/icons/src/svg-cap-band.ts`                                                                                    | `CAP_HEIGHT_EM`, `capBandBaselineY` (`icons` is the lowest package both SVG renderers use)                                                           |
+| `../packages/style-guards/src/optical-guard.ts`                                                                            | Static guard `checkOpticalAlignment(root)`; export `./optical-guard`                                                                                 |
+| `apps/{live,help,telemetry}/optical-guard.test.ts`                                                                         | Each app runs the guard over its own sources (as `motion-budget.test.ts`); the Community page is liveworkspace's site's                              |
+| `../packages/marketing-site/src/guards/source-guards.test.ts`                                                              | The guard over every product's marketing app and the shared marketing pages                                                                          |
+| `packages/ui/optical-guard.test.ts`                                                                                        | The guard over `packages/ui/src`                                                                                                                     |
+| `../packages/{account-menu,community-ui,comparisons,explorer,settings-ui,snapshots,walkthrough}/src/optical-guard.test.ts` | The guard over each shared package with no style-guard suite of its own                                                                              |
+| `../packages/e2e-kit/src/optical.ts`                                                                                       | `auditOptical(page)`: the runner (screenshots, ink diff, verdicts), shared by every editor                                                           |
+| `../packages/e2e-kit/src/optical-discover.ts`                                                                              | `discover`: the in-page half (candidates, cap bands, intent, stack rows); one self-contained function                                                |
+| `../packages/e2e-kit/src/optical-snap.ts`                                                                                  | `paintedBaseline`, `inheritedSnap`: Chromium's whole-pixel baseline snap and the part a shape inherits from its position (pure)                      |
+| `../packages/e2e-kit/src/optical-snap.test.ts`                                                                             | Their contracts (Vitest)                                                                                                                             |
+| `apps/editor/e2e/optical-snap.spec.ts`                                                                                     | The snap guard: the browser paints baselines where `paintedBaseline` says, and transforms move them after                                            |
+| `apps/editor/e2e/optical-audit.spec.ts`                                                                                    | The editor's audited screens                                                                                                                         |
+| `apps/editor/e2e/optical-audit-sites.spec.ts`                                                                              | The help centre, telemetry dashboard, Community and marketing site                                                                                   |
+| `apps/editor/e2e/audit-screens.ts`                                                                                         | Screen setup shared with the contrast audit (seeded diagram, dark visitor, share link)                                                               |
+| `scripts/e2e-stack.mjs`                                                                                                    | Also serves `liveworkspace/apps/help/out` at `/help/*`, liveworkspace's site export at `/community/*` (as at `/explorer`), marketing on its own port |
+| `.github/workflows/e2e.yml`                                                                                                | Its Sites audit job builds help, telemetry and marketing beside live and runs the `sites` project                                                    |
 
 ## Names
 
@@ -122,7 +123,8 @@ type IconSlotProps = { size: number; children: ReactNode } & HTMLAttributes<HTML
 rounded-full leading-none [&>svg]:block`, `width` / `height` from `size` when given. Text children
   render inside `<span class="text-optical-centre">`; an element child renders as is.
 - `Chip` root: `optical-edges inline-flex shrink-0 items-center gap-1 [&>svg]:block`, `rounded-full` or
-  `rounded`, `height` when given. `icon` renders as is, first; the label renders in
+  `rounded`, `height` when given. `gap-1` is left out when the caller's class names its own `gap-*`
+  (Tailwind orders `gap-0.5` before `gap-1`, so a tighter gap would otherwise lose). `icon` renders as is, first; the label renders in
   `<span class="text-optical-line[ text-optical-caps]">`.
 - `IconSlot` root: `inline-flex shrink-0 items-center justify-center [&>svg]:block`, `size × size`.
 - Invariants (tested): each root carries `data-optical="disc|chip|slot"`; text in `GlyphDisc` is inside
@@ -256,14 +258,21 @@ audited there. A site that is not built fails with the build command to run.
 (`parseSourceFiles` from `@liveworkspace/source-ast`, [Source scanners](../../003-system-architecture/source-scanners.md))
 and flags a JSX element that:
 
-- has a class string (static chunks of a literal or template) with `rounded-full` and a centring token,
-  and a fixed size (an `h-*` / `size-*` class, or `width` / `height` in its `style`), and
+- has a class string (static chunks of a literal or template) with `rounded-full` and either a centring
+  token and a fixed size (an `h-*` / `size-*` class, or `width` / `height` in its `style`), or, on a
+  `span`, `button`, `a`, `Link` or `label`, a horizontal padding class (`px-*`, `pl-*`, `pr-*`, `ps-*`,
+  `pe-*`): a hand-rolled chip of any height (Work Tracker 1382). A `div` pill is a layout box (a banner,
+  a toast) and left to the audit, and
 - holds text that can reach it untrimmed: JSX text, or an expression that may be text (anything but
   JSX, `null`, `false`, or an identifier or property named like an icon), directly or through plain
-  wrappers (`span`, `div`, `b`, `strong`, `em`, `small`) without `text-optical-centre`,
+  wrappers (`span`, `div`, `b`, `strong`, `em`, `small`) without `text-optical-centre` or
+  `text-optical-line`,
 
 unless the element is `GlyphDisc`, `Chip` or `IconSlot`. `formatViolations` prints
-`path:line  <snippet>  (wrap in text-optical-centre, or use GlyphDisc / Chip)`.
+`path:line  <snippet>  (use GlyphDisc / Chip / ButtonContent, or wrap in text-optical-centre / text-optical-line)`.
+A status pill moves onto `Chip`; a pill control (filter chip, "Stop", "Open in ...") keeps its element and
+renders its label through `ButtonContent` or `text-optical-line`; a pill that `Chip`'s `inline-flex` cannot
+take (it truncates its label, toggles `hidden`, or ends in an icon) wraps its label in `text-optical-line`.
 
 ## Sites
 
