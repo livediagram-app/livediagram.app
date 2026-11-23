@@ -57,7 +57,7 @@ const PLAN_APP = 'liveplanner' as const;
 const COLUMN_MAX = 120;
 const NAME_MAX = 120;
 
-type SendRow = {
+export type SendRow = {
   id: string;
   source_id: string;
   ref: string;
@@ -72,7 +72,7 @@ type SendRow = {
 
 const enc = encodeURIComponent;
 const cut = (s: string, max: number) => (s.length > max ? s.slice(0, max) : s);
-const newSendId = () => `ps_${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
+export const newSendId = () => `ps_${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
 
 /** The card's own address in liveplanner. */
 export const cardLink = (env: Pick<Env, 'ENVIRONMENT'>, planId: string, cardId: string): string =>
@@ -102,7 +102,7 @@ export function placeLink(
   return parts.length > 0 ? `${base}#${parts.join('&')}` : base;
 }
 
-const sendOf = (env: Env, r: SendRow, planTitle: string): PlanSend => ({
+export const sendOf = (env: Env, r: SendRow, planTitle: string): PlanSend => ({
   id: r.id,
   ref: r.ref,
   kind: r.kind,
@@ -119,7 +119,7 @@ const asPerson = (id: string): Caller => ({
 });
 
 // A send's person: an account in person, never an app, the Drive mirror or an export acting for them.
-function sender(ctx: RouteContext): Person | Response {
+export function sender(ctx: RouteContext): Person | Response {
   const person = ctx.caller.person;
   if (!person) return unauthorized();
   if (isDelegate(person)) return forbidden();
@@ -127,7 +127,7 @@ function sender(ctx: RouteContext): Person | Response {
   return person;
 }
 
-type Row = {
+export type SendInsertRow = {
   id: string;
   source_id: string;
   ref: string;
@@ -139,7 +139,7 @@ type Row = {
   at: number;
 };
 
-async function insertRows(env: Env, rows: Row[]): Promise<void> {
+export async function insertSendRows(env: Env, rows: SendInsertRow[]): Promise<void> {
   if (rows.length === 0) return;
   await env.INDEX_DB.prepare(
     `INSERT INTO plan_sends (id, source_id, ref, kind, plan_id, card_id, card_title, column_name, done, gone, at, updated_at)
@@ -269,7 +269,7 @@ async function sendToPlan(ctx: RouteContext, planId: string): Promise<Response> 
   }
   const made = answer.cards as { id?: unknown; title?: unknown; column?: unknown }[];
   const now = Date.now();
-  const rows: Row[] = [];
+  const rows: SendInsertRow[] = [];
   ask.cards.forEach((card, i) => {
     const c = made[i];
     if (!c || !isId(c.id)) return;
@@ -286,7 +286,7 @@ async function sendToPlan(ctx: RouteContext, planId: string): Promise<Response> 
         at: now,
       });
   });
-  await insertRows(env, rows);
+  await insertSendRows(env, rows);
   console.info('[index] plan send', { cards: made.length, places: rows.length });
   const sends = rows.map((r) =>
     sendOf(env, { ...r, kind: r.kind as PlanSendKind, done: 0 }, plan.row.title),
@@ -501,7 +501,7 @@ export async function handleAgentPlanSends(
     } else sources.set(id, loaded.row);
   }
   const now = Date.now();
-  const rows: Row[] = [];
+  const rows: SendInsertRow[] = [];
   const sentFrom = read.cards.map((c): SentFrom | null => {
     const row = sources.get(c.sentFrom.itemId);
     if (!row || row.app !== c.sentFrom.app) return null;
@@ -545,7 +545,7 @@ export async function handleAgentPlanSends(
       .first<{ n: number }>();
     if ((count?.n ?? 0) + n > PLAN_SENDS_PER_SOURCE_MAX) return fail(409, 'source_full');
   }
-  await insertRows(env, rows);
+  await insertSendRows(env, rows);
   console.info('[index] agent plan sends', { cards: read.cards.length, recorded: rows.length });
   return json({ sentFrom });
 }

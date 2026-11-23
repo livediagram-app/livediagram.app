@@ -36,6 +36,7 @@ export * from './tab-link';
 export * from './connected-tabs';
 export * from './automation-step-door';
 export * from './plan-send-door';
+export * from './plan-diagram-door';
 export * from './own-items';
 export * from './item-tab-tables';
 export * from './item-tab-reads';

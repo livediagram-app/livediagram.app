@@ -6,6 +6,7 @@ import type {
   AutomationTargetHandler,
 } from './automation-step-door';
 import type { PlanSendHandler } from './plan-send-door';
+import type { PlanDiagramDrawHandler, PlanDiagramHandler } from './plan-diagram-door';
 import type {
   AccessGrantedNotice,
   AccessRequestedNotice,
@@ -172,6 +173,10 @@ export type InternalItemHandlers = {
   automationTarget?: AutomationTargetHandler;
   // Send to Plan's cards made in this plan as the person (plan-send-door.ts), their grant checked. liveplanner alone.
   planSend?: PlanSendHandler;
+  // Diagrams and Plans (plan-diagram-door.ts, liveworkspace/docs/specs/004-index/diagrams-and-plans.md): liveplanner's
+  // make, graph, watch and edit as the person, and livediagram's draw of a plan's board. Elsewhere a 404.
+  planDiagram?: PlanDiagramHandler;
+  drawPlanDiagram?: PlanDiagramDrawHandler;
   // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
   // Community's sweep. An app without it answers 404.
   communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;

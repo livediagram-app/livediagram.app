@@ -20,6 +20,7 @@ import type { UpdatePush } from './updates';
 import type { AutomationSend, AutomationSendResult, CardMove } from './webhooks';
 import type { AutomationStepAnswer, AutomationStepPush } from './automation-steps';
 import type { AgentSentFrom, PlanCardChange, SentFrom } from './plan-sends';
+import type { PlanViewRedraw, PlanViewRedrawStatus } from './plan-diagrams';
 import { appConnectionPath } from './connections';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { enc, IndexError, refusal } from './index-error';
@@ -136,6 +137,13 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     // where they cannot).
     planCardsChanged: (planId: string, cards: readonly PlanCardChange[]) =>
       post<{ told: number }>(`/items/${enc(planId)}/plan-cards`, { cards }),
+    // View As Diagram (diagrams-and-plans.md "Live"): the plan's live diagrams whose graph changed, each redrawn by the
+    // index as its maker while they may still read the plan and edit the diagram; `gone` ones the plan forgets.
+    planDiagramsChanged: (planId: string, views: readonly PlanViewRedraw[]) =>
+      post<{ views: { diagramId: string; status: PlanViewRedrawStatus }[] }>(
+        `/items/${enc(planId)}/plan-diagrams`,
+        { views },
+      ),
     recordPlanSends: (
       planId: string,
       person: string,

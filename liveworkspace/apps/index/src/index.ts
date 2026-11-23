@@ -9,6 +9,7 @@ import { drainAssistantNotices, handleAssistantRevoked } from './assistant-notic
 import { handleAccessRequests } from './access-requests';
 import { handleApproval } from './approvals';
 import { handleNewPlanForSend, handlePlanSends } from './plan-sends';
+import { handlePlanDiagramRoutes } from './plan-diagrams';
 import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
@@ -124,6 +125,12 @@ async function route(ctx: RouteContext): Promise<Response> {
     if (segments[2] === 'sheet-range' && segments.length === 3) return handleSheetRange(ctx, id);
     // Send to Plan (plan-sends.ts): a send to this plan, or this source's sends for its chips.
     if (segments[2] === 'plan-sends' && segments.length === 3) return handlePlanSends(ctx, id);
+    // Diagrams and Plans (plan-diagrams.ts): Make Plan Cards, View As Diagram and a drawn diagram's changes.
+    if (
+      (segments[2] === 'plan-makes' || segments[2] === 'plan-views' || segments[2] === 'plan-edits') &&
+      segments.length === 3
+    )
+      return handlePlanDiagramRoutes(ctx, id, segments[2]);
     // A board's counts or a metric's rows on the person's own access, and the plan's boards for its picker (live-data.ts).
     if (segments[2] === 'plan-data' && segments.length === 3) return handlePlanData(ctx, id);
     // Approvals (approvals.ts): asked, decided, cancelled and read, a person in person only.
@@ -217,6 +224,10 @@ const routeLabel = createApiRouteLabel(
     'plan-sends',
     'plan-cards',
     'plans',
+    'plan-makes',
+    'plan-views',
+    'plan-edits',
+    'plan-diagrams',
   ]),
 );
 

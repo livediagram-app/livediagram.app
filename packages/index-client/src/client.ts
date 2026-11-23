@@ -58,6 +58,14 @@ import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
+import type {
+  PlanEdit,
+  PlanEditsAnswer,
+  PlanMakeAnswer,
+  PlanMakeAsk,
+  PlanViewAnswer,
+  PlanViewAsk,
+} from './plan-diagrams';
 import type { PlanDataAsk, PlanDataListing, PlanDataRead } from './live-data';
 import type {
   Approval,
@@ -369,6 +377,17 @@ export function createIndexClient({
       }),
     newPlanForSend: (name: string) =>
       call<{ item: Item }>('/plan-sends/plans', { method: 'POST', body: { name } }),
+    // Diagrams and Plans (diagrams-and-plans.md): a diagram's shapes made cards in a plan (Make Plan Cards), a board
+    // drawn as a live diagram (View As Diagram), and the changes a drawn diagram offers, applied as the person.
+    makePlanCards: (planId: string, ask: PlanMakeAsk) =>
+      call<PlanMakeAnswer>(`/items/${enc(planId)}/plan-makes`, { method: 'POST', body: ask }),
+    viewPlanAsDiagram: (planId: string, ask: PlanViewAsk) =>
+      call<PlanViewAnswer>(`/items/${enc(planId)}/plan-views`, { method: 'POST', body: ask }),
+    applyPlanEdits: (planId: string, edits: readonly PlanEdit[]) =>
+      call<PlanEditsAnswer>(`/items/${enc(planId)}/plan-edits`, {
+        method: 'POST',
+        body: { edits },
+      }),
 
     // Live data (live-data.md), on the person's own access: a plan's boards, metrics and filter values, and one board's
     // counts or one metric's rows now. `watch` as readSheetRange's.
