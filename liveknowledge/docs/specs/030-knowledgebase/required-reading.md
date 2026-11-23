@@ -34,9 +34,15 @@ Status: **built, not yet verified on a deployed Worker** ([blueprint](blueprints
   This** (primary, small). A press shows at once: the banner goes and a toast says "Thanks. You've confirmed you read
   <page>.". A refusal puts it back with a toast in words. Calm brand tint, never amber or red: it asks, it does not
   warn.
-- **Page Info**: a **Required Reading** section under Page Health, drawn while the page is Required Reading, and for
-  an Editor on any page (to set it up):
-  - Not required, for an Editor: one line, "Ask people to confirm they've read this page.", and **Require Reading**.
+- **The page's menu** (the tree row's menu, right-click or its More button): **Require Reading** (the book glyph),
+  for an Editor, while the page is not Required Reading (owner 2026-11-23: "require reading should be in the page
+  context menu until enabled, not always shown"). It opens the page and the setup panel in a centred modal (a sheet
+  on a phone), as the menu's Request Approval does. Once the page is Required Reading the row goes from the menu and
+  the page shows it (below); Stop Requiring puts the row back. A page whose state this browser has not read yet
+  offers the row too, and its modal shows the page as it stands (Save and Stop Requiring when it turns out to be
+  required already, decided).
+- **Page Info**: a **Required Reading** section under Page Health, drawn only while the page is Required Reading
+  (never on a page that is not: setting it up starts in the page's menu, above):
   - Required, for everyone who reads the page: who is asked ("Everyone" or "4 People"), a progress bar and "7 of 12
     have read it" (a count, never who), and their own state: "You read it 3 Nov" with a tick, or "You haven't
     confirmed yet" with **I've Read This**.
@@ -46,14 +52,14 @@ Status: **built, not yet verified on a deployed Worker** ([blueprint](blueprints
 - **The setup panel** (a popover under its button, a sheet on a phone): **Required Reading** with "Who should read
   this page?", two choices, **Everyone** ("Every member of the team") and **Chosen People** (a checklist of the
   people the editor knows, the person here first), then **Cancel** and **Require Reading** (or **Save** when it is
-  already required). When required, **Stop Requiring** at its foot (destructive, no question: setting it again is one
+  already required). Opened from the page's menu, it is a centred modal with the same body. When required, **Stop Requiring** at its foot (destructive, no question: setting it again is one
   press, decided) clears it and its confirmations. Chosen People with nobody ticked can't be saved.
 - **Ask Everyone to Read Again**, while an Editor edits a Required Reading page: a small toggle in the draft bar, left
   of Cancel, off by default and off again after each Save or Cancel. Saving with it on asks everyone again; the
   save's toast says so: "Expenses Saved. Everyone is asked to read it again.".
 - **Insights**: a **Required Reading** card in the right column under Knowledge Health: each Required Reading
   page with its bar and "7 of 12", the least read first, each row opening its page; empty, "No Required Reading" and
-  "An Editor marks a page Required Reading from its Page Info.". Counts only, for everyone who sees Insights.
+  "An Editor marks a page Required Reading from its menu in the page tree.". Counts only, for everyone who sees Insights.
 - Hidden in an embed, a published site and a knowledgebase kept Offline (no room).
 
 ## Remind

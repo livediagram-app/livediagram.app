@@ -126,7 +126,10 @@ NOT NULL DEFAULT 1)`; trigger `page_required_reading_tab_removed` AFTER DELETE O
   reads the page again, so Last Reminded shows).
 - `components/required-reading/`: `useRequiredReading(tab?)` (the slice for the open page, `shown`: signed in or not,
   not Offline, not an embed, its state read), `RequiredReadingBanner` (above the meta row, `PageKnowledgeSlots`), `PageRailReading`
-  (the rail's section, after Page Health), `ReadingSetupPanel` (the shared `ResponsivePopover`, 340 px: a popover from `sm`, the
+  (the rail's section, after Page Health, drawn only while `required`), `RequiredReadingAsk` (in `PageKnowledgeSlots`:
+  the page menu's Require Reading, opened through `askReading(pageId)` in `lib/required-reading/reading-asked.ts` and
+  put away by `clearReadingAsk()`; while asked for the open page it lazily draws `ReadingSetupModal`, the panel's body in
+  the shared `Dialog`, `size="sm"`, `phoneSheet`, as the menu's Request Approval does), `ReadingSetupPanel` (the shared `ResponsivePopover`, 340 px: a popover from `sm`, the
   phone drawer below; its own chunk, fetched on the press that opens it, so a reader never loads it),
   `ReadAgainToggle` (the draft bar, left of Cancel), `reading-icons.tsx`; `components/insights/RequiredReadingCard`.
 - The banner: `role="region"` named "Required Reading", brand-50 ground and brand-200 hairline (dark: brand-500/10
@@ -137,8 +140,11 @@ NOT NULL DEFAULT 1)`; trigger `page_required_reading_tab_removed` AFTER DELETE O
   emerald once everyone has read it) and "7 of 12 have read it" under it; the caller's line; for `sees`, **Not Yet**
   and **Read** groups with their counts (Page Health's `Disc`, now exported, the name, the date for Read; the first
   8 of each with "Show all 23" opening the rest in place), then **Remind** (the rail's small ringed button, the
-  bell, as Watch's) and "Last reminded <when>". Not required, for `manages` alone: the line and **Require
-  Reading**.
+  bell, as Watch's) and "Last reminded <when>". Not required: nothing, for anyone.
+- The page menu's row: `PageTreeRowMenu`'s `reading` verb, **Require Reading** with the book glyph after Request
+  Approval, offered by `PageTreeKnowledge.canRequireReading(id)` (`usePageTreeModel`): an Editor (`rights.editFields`), signed in,
+  online and not Offline, on a page whose read state is not `required` (`readingStore.entryOf`, read when the menu
+  opens). Its verb opens the page and calls `askReading(id)`.
 - Toasts: "Thanks. You've confirmed you read Expenses."; "Expenses is Required Reading."; "Expenses is no longer
   Required Reading."; "Expenses Saved. Everyone is asked to read it again."; Remind's outcomes (`remindText`: a
   send is a success toast, every other outcome an info toast). Refusals in words
@@ -173,7 +179,9 @@ again` (how many confirmations cleared), `[reading] reminded` (pending, tried, s
 - api `email/reading-reminder-email.test.ts`: the lines, escaping, the settings link.
 - editor `lib/required-reading/reading-store.test.ts` (the store, `takeReadAgain` and the words),
   `components/required-reading/required-reading-roles.test.tsx` (the banner for the asked only, the rail per role,
-  Show All, an embed, the panel and its refusal, the toggle's switch),
+  nothing in the rail while not required, the menu's ask and its modal, Stop Requiring back to the menu, Show All, an
+  embed, the panel and its refusal, the toggle's switch), `components/page-tree/PageTree.knowledge.test.tsx` (the
+  menu row) and `lib/required-reading/reading-asked.test.ts` (who is offered it),
   `components/insights/RequiredReadingCard.test.tsx`.
 
 ## Constants and configuration

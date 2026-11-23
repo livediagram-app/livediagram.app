@@ -10,7 +10,7 @@ import {
 } from './knowledge-session';
 
 // Required Reading (docs/specs/030-knowledgebase/required-reading.md; blueprints/required-reading.md), signed in: the
-// owner, an Editor, requires a page for everyone from Page Info; a Viewer arriving through a view link sees the banner,
+// owner, an Editor, requires a page for everyone from the page's menu; a Viewer arriving through a view link sees the banner,
 // confirms, and the owner sees who has read it; saving with Ask Everyone to Read Again asks the Viewer again; AI
 // Knowledge lists the page with its counts. E2E_SHOTS=<dir> keeps a picture of each step.
 
@@ -48,9 +48,12 @@ test('Required Reading: required, confirmed, seen by the owner, asked again, lis
   await page.locator('[data-page-edit-save]').click();
   await expect(page.locator('[data-page-edit]')).toBeVisible();
 
-  // An Editor on a page that is not required: one line and Require Reading.
-  await expect(section(page)).toHaveAttribute('data-page-reading', 'off');
-  await section(page).getByRole('button', { name: 'Require Reading' }).click();
+  // A page that is not required shows nothing of it in Page Info: an Editor sets it up from the page's menu (owner
+  // 2026-11-23: "require reading should be in the page context menu until enabled, not always shown").
+  await expect(section(page)).toHaveCount(0);
+  await pageRow(page, 'Expenses Policy').hover();
+  await page.getByRole('button', { name: 'Page Options for Expenses Policy' }).click();
+  await page.getByRole('menuitem', { name: 'Require Reading' }).click();
   const dialog = page.getByRole('dialog', { name: 'Required Reading' });
   await expect(dialog.getByRole('radio', { name: /Everyone/ })).toHaveAttribute(
     'aria-checked',
