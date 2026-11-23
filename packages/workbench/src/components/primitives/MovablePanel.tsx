@@ -4,8 +4,9 @@
 // components/primitives/MovablePanel.tsx makes it once, at module scope, with createMovablePanel: its help-article
 // link, its popover top clearance (which toolbars a popover opening up stops short of) and, for livedesign, the
 // popover arrow drawn under the panel's contents.
-import { useEffect, useRef, useState, type ComponentType, type RefObject } from 'react';
+import { useEffect, useId, useRef, useState, type ComponentType, type RefObject } from 'react';
 import { useClickOutside } from '@liveworkspace/ui';
+import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { announceToastFloorChange, TOAST_FLOOR_POPOVER } from '@liveworkspace/ui/toast';
 import { isMobileViewportSync } from '../../lib/responsive';
 import { announcePanelPresence } from '../../lib/panel-presence';
@@ -61,6 +62,7 @@ export function createMovablePanel<HelpKey extends string>({
     width = 'w-56',
     headerExtra,
     titleAdornment,
+    hero,
     headerActions,
     helpArticle,
     onReset,
@@ -94,6 +96,7 @@ export function createMovablePanel<HelpKey extends string>({
     const scale = useUiScale('panels');
     const px = (v: number) => toSurfacePx(v, scale);
     const ref = useRef<HTMLDivElement>(null);
+    const heroTitleId = useId();
     const headerRef = useRef<HTMLDivElement>(null);
     // Banner-collapse state. Only meaningful when `collapsible` is
     // true. Initial value depends on the viewport: mobile users start
@@ -271,6 +274,8 @@ export function createMovablePanel<HelpKey extends string>({
               e.stopPropagation();
             }}
             style={{
+              // The hero's tokens on the panel itself, so its arrow can take the band's paper.
+              ...(hero ? HERO_TOKEN_STYLE : {}),
               ...uiScaleStyle(scale),
               ...(sheet && anchor
                 ? { top: px(anchor.top + 12), left: 0, right: 0, bottom: 0 }
@@ -295,7 +300,7 @@ export function createMovablePanel<HelpKey extends string>({
                       }
                     : { top: px(56), right: px(12) }),
             }}
-            className={`pointer-events-auto absolute z-[var(--z-toolbar)] flex ${sheet ? 'rounded-t-lg border-x-0 border-b-0' : `${popoverWidth} max-w-[calc(100vw-2rem)] rounded-lg border`} cursor-default flex-col border-slate-200 bg-white shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
+            className={`pointer-events-auto absolute z-[var(--z-toolbar)] flex ${sheet ? 'rounded-t-lg border-x-0 border-b-0' : `${popoverWidth} max-w-[calc(100vw-2rem)] rounded-lg border`} cursor-default flex-col border-slate-200 bg-white ${hero ? '[color-scheme:light] dark:[color-scheme:dark] ' : ''}shadow-lg shadow-slate-900/5 transition-opacity duration-micro dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40`}
           >
             {anchor ? (
               <div
@@ -304,7 +309,10 @@ export function createMovablePanel<HelpKey extends string>({
                 className={`${arrowLayer} h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 ${
                   anchor.bottom !== undefined
                     ? '-bottom-[7px] rounded-br-sm border-b border-r'
-                    : '-top-[7px] rounded-tl-sm border-l border-t'
+                    : `-top-[7px] rounded-tl-sm border-l border-t ${
+                        // Hung below its button, the arrow points out of the hero's band: the band's paper.
+                        hero ? 'bg-[var(--hero-paper)]! dark:bg-[var(--hero-paper)]!' : ''
+                      }`
                 }`}
               />
             ) : null}
@@ -313,19 +321,48 @@ export function createMovablePanel<HelpKey extends string>({
             headerActions like the Explorer's "New" button) reachable.
             Reset-position / drag affordances are intentionally omitted:
             a popover doesn't drag. */}
-            <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
-              <span className="flex min-w-0 items-center gap-1.5">
-                <PanelTitle title={title} />
-                {titleAdornment}
-              </span>
-              {headerExtra || headerActions || helpArticle ? (
-                <div className="ml-auto flex items-center gap-1">
-                  {headerExtra}
-                  {headerActions}
-                  {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
-                </div>
-              ) : null}
-            </div>
+            {hero ? (
+              <HeroDialogHeader
+                art={hero.art}
+                titleId={heroTitleId}
+                title={
+                  titleAdornment ? (
+                    <span className="flex items-center gap-1.5">
+                      {title}
+                      {titleAdornment}
+                    </span>
+                  ) : (
+                    title
+                  )
+                }
+                subtitle={hero.subtitle}
+                actions={
+                  headerExtra || headerActions || helpArticle ? (
+                    <>
+                      {headerExtra}
+                      {headerActions}
+                      {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
+                    </>
+                  ) : undefined
+                }
+                onClose={onPopoverClose}
+                className={`gap-2.5 px-3! ${hero.className ?? ''}`}
+              />
+            ) : (
+              <div className="flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 py-1.5 dark:border-slate-800">
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <PanelTitle title={title} />
+                  {titleAdornment}
+                </span>
+                {headerExtra || headerActions || helpArticle ? (
+                  <div className="ml-auto flex items-center gap-1">
+                    {headerExtra}
+                    {headerActions}
+                    {helpArticle ? <HelpArticleLink article={helpArticle} /> : null}
+                  </div>
+                ) : null}
+              </div>
+            )}
             <div
               className={`min-h-0 overflow-y-auto overflow-x-hidden ${sheet || fill ? 'flex flex-1 flex-col' : ''} ${flushTop ? '' : 'pt-2'}`}
             >

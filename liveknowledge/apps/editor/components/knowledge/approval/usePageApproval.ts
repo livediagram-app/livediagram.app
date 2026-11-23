@@ -8,6 +8,7 @@ import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import type { ApprovalAction, ApprovalCaller, PageApproval } from '@liveknowledge/knowledge';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import {
   approvalActionsOf,
@@ -63,7 +64,7 @@ export function useApprovalDoor(): ApprovalDoor {
         );
         return true;
       } catch (err) {
-        toast.error(approvalFailureText(err, action));
+        toast.error(approvalFailureText(err, action, toastName(page.name)));
         return false;
       }
     },

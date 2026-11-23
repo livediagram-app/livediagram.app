@@ -220,7 +220,9 @@ export function useTabActions(deps: TabActionsDeps) {
     // tab. The lazy fetch resolves in well under a second; asking the
     // user to retry beats silently duplicating nothing.
     if (!isTabLoaded(id)) {
-      toast.error('That tab is still loading. Try again in a moment.');
+      toast.error(
+        `Couldn’t duplicate ${toastName(src.name) ?? 'that tab'}: it is still loading. Try again.`,
+      );
       return;
     }
     // Re-mint ids (arrow endpoints remapped): element ids must be

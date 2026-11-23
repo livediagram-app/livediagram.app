@@ -695,7 +695,7 @@ given in one go rather than page by page.
   under a page brush, or a page pressed under an element's brush is a no-op that keeps the brush
   (as a shape's look onto an arrow is). Painting crosses kinds (a wireframe page's background onto a
   blank page), except a picture onto a logo page ("A logo page takes no picture background.");
-  a locked target says so ("That page is locked. Unlock it to change its background.") and is left
+  a locked target says so ("<Page> is locked. Unlock it to change its background.") and is left
   as it is. A refused paint keeps a Paint once brush (only a paint empties it), and a brush whose
   page has gone (deleted, undone) empties as the page goes (`useDeadPageBrush`), so the next press, on a page or an element, works at once. A press off every
   page still ends the tool.
@@ -1312,7 +1312,7 @@ onto a page made to fit it instead.
   fits A4's margin box in that orientation, and otherwise **Fit to Content** ("Sizes"): the
   content's bounds plus the margin all round. Past `FIT_PAGE_MAX_SIDE` the page stops growing and
   the content runs off its edge, still unscaled.
-- A toast tells the editor: "Put onto a page that fits it. Undo takes the page away." Telemetry:
+- A toast tells the editor: "Put “<tab>” onto a page that fits it. Undo takes the page away." Telemetry:
   `Tab · Changed · PageFitToContent`.
 
 ### Split Into Pages
@@ -1334,9 +1334,9 @@ separate pages. It is explicit: never run on opening a tab.
   last share it (its page made around them together). At the page limit there is no room for a
   second page: nothing changes and a toast says "A tab holds at most 100 pages: delete one to split
   this page."
-- With one cluster there is nothing to split: the page is left as it is and a toast says "This
-  page is one group: nothing to split."
-- It is **one edit**. A toast: "Split into n pages. Undo puts it back." Telemetry:
+- With one cluster there is nothing to split: the page is left as it is and a toast says "<Page>
+  is one group: nothing to split."
+- It is **one edit**. A toast: "Split <page> into n pages. Undo puts it back." Telemetry:
   `Tab · Changed · PagesLaidOut`.
 
 ## Zen

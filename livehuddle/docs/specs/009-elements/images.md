@@ -348,7 +348,7 @@ decision are `@liveworkspace/workbench`'s `useUnusedImagePrompt`, the same in ev
   Notifications off, so it never happens silently. Anything unsure still keeps the picture. Changing the setting
   sends `UI`/`Changed`/`UnusedImagesAsk`, `UnusedImagesDelete` or `UnusedImagesKeep`.
 - **Delete from Storage** sends `DELETE /api/images/:id` for each picture, first leaving out any this document places
-  again by then (an undo in the meantime). The toast then reads "Deleted from storage" (or "3 images deleted from
+  again by then (an undo in the meantime). The toast then reads "Image deleted from storage" (or "3 images deleted from
   storage"). A failure says "Couldn't delete the image from storage. Try again." and the pictures that didn't go
   stay in the gallery.
 - **Undo after it** brings the element back showing the broken-image placeholder, which is why the offer says it

@@ -20,7 +20,18 @@ const FALLBACK: Record<KnowledgeAction, string> = {
   search: 'Search is not answering. Check your connection and try again.',
 };
 
-export function knowledgeFailureText(err: unknown, action: KnowledgeAction): string {
+// The same lines naming the page (its quoted name), for a toast read later in the notification list.
+const FALLBACK_ON: Partial<Record<KnowledgeAction, (page: string) => string>> = {
+  verify: (page) => `${page} could not be verified. Try again.`,
+  owner: (page) => `The owner of ${page} could not be changed. Try again.`,
+  context: (page) => `Always in Context could not be changed for ${page}. Try again.`,
+};
+
+export function knowledgeFailureText(
+  err: unknown,
+  action: KnowledgeAction,
+  page?: string | null,
+): string {
   if (err instanceof ContextBudgetError) return contextBudgetText(err);
   if (err instanceof ApiError) {
     if (err.code === 'owner_no_access')
@@ -34,5 +45,5 @@ export function knowledgeFailureText(err: unknown, action: KnowledgeAction): str
         ? 'Only an Editor signed in to an account can verify a page.'
         : 'Only an Editor can change this.';
   }
-  return FALLBACK[action];
+  return (page && FALLBACK_ON[action]?.(page)) || FALLBACK[action];
 }

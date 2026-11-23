@@ -7,6 +7,8 @@
 import { useEffect, useRef } from 'react';
 import type { TabCover } from '@liveknowledge/document';
 import { Tooltip } from '@liveknowledge/ui';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
+import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useToast } from '@/hooks/ui/useToast';
 import { ChangeCoverIcon, RemoveCoverIcon, RepositionIcon } from './cover-icons';
 import { CoverMenu, takeCoverMenuHandoff, useCoverMenu } from './CoverMenu';
@@ -28,6 +30,7 @@ export function CoverControls({
   reposition: CoverReposition;
 }) {
   const setCover = useSetPageCover();
+  const chrome = useEditorChromeStore();
   const toast = useToast();
   const menu = useCoverMenu();
   const changeRef = useRef<HTMLButtonElement>(null);
@@ -63,7 +66,8 @@ export function CoverControls({
   const remove = () => {
     const was = cover;
     setCover(undefined);
-    toast.info('Cover removed', {
+    // The page is named, so the line still reads in the notification list.
+    toast.info(`Cover removed from ${toastName(chrome.get().activeTab?.name) ?? 'the page'}`, {
       action: {
         label: 'Undo',
         ariaLabel: 'Undo Removing the Cover',

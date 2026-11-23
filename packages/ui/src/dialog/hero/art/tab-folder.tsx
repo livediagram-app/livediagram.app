@@ -1,66 +1,69 @@
-// The Organise in Tab Folder dialog's hero art (each app's TabOrganiseDialogs: file the tab into a folder on the
-// tab bar). Faint dots fade in from the title's side; in the bottom right a folder rises off the band's foot with
-// two tabs filed in its pocket and a third, in the accent, dropping in beside them, bobbing twice, motion
-// allowing. The title mark is a folder holding a tab.
-// Every app's dialog draws it, so it lives here (@liveworkspace/ui/dialog-hero-art/tab-folder).
+// The Organise in Tab Folder dialog's hero art (each product's docs/specs/006-*/tab-folders.md "Membership UX"): a
+// tab filed into a folder on the bar. A grid of dots fades in from the title's side; in the bottom right a folder
+// rises from the band's edge, two tabs standing in it and a third, in the accent, dropping in between them, bobbing
+// twice, motion allowing. The title mark is a folder holding a tab.
+// Every editor's dialog uses it, so it lives here (@liveworkspace/ui/dialog-hero-art/tab-folder).
 import { HERO_MOTION, HERO_PLACE, HERO_SVG, heroTexture, type HeroArt } from '../hero-art';
 
-// A tab filed in the folder: a chip with its name, standing up out of the pocket.
-function tab(x: number) {
+/** A folder with a tab's line in it, in the accent. */
+export const TAB_FOLDER_GLYPH = (
+  <g
+    fill="none"
+    stroke="var(--hero-accent)"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M2.75 6.25c0-.83.67-1.5 1.5-1.5h3.1c.4 0 .78.16 1.06.44l1.2 1.2h6.14c.83 0 1.5.67 1.5 1.5v6.36c0 .83-.67 1.5-1.5 1.5H4.25c-.83 0-1.5-.67-1.5-1.5z" />
+    <path d="M7 11.5h6" />
+  </g>
+);
+
+// A tab on the bar, top left at (x, y), 20 wide: rounded on top, its name a short line.
+function tab(x: number, y: number, fill: string, line: string) {
   return (
-    <g key={x}>
-      <rect
-        x={x}
-        y="13"
-        width="18"
-        height="24"
-        rx="3.5"
-        fill="var(--hero-plate)"
+    <>
+      <path
+        d={`M${x} ${y + 30}V${y + 4}a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v26z`}
+        fill={fill}
         stroke="var(--hero-line)"
       />
-      <rect x={x + 4} y="17" width="10" height="3" rx="1.5" fill="var(--hero-mark)" />
-    </g>
+      <rect x={x + 4} y={y + 6} width="12" height="2.5" rx="1.25" fill={line} />
+    </>
   );
 }
 
 const PIECES = (
-  <svg {...HERO_SVG} width="86" height="30" viewBox="0 0 86 30" className={HERO_PLACE.bottomRight}>
-    {/* The folder's back, its lip at the left. */}
+  <svg
+    {...HERO_SVG}
+    width="96"
+    height="30"
+    viewBox="0 0 96 30"
+    className={`${HERO_PLACE.bottomRight} overflow-visible`}
+  >
+    {/* The folder's back, with its ear. */}
     <path
-      d="M7 38V8a4 4 0 0 1 4-4h14l5 5.5h45a4 4 0 0 1 4 4V38Z"
-      fill="var(--hero-wash)"
+      d="M10 40V12a4 4 0 0 1 4-4h16l5 5h47a4 4 0 0 1 4 4v23z"
+      fill="var(--hero-soft)"
       stroke="var(--hero-line)"
       strokeLinejoin="round"
     />
-    {[14, 35].map(tab)}
-    {/* The tab being filed. */}
-    <g className={HERO_MOTION.float}>
-      <rect x="56" y="6" width="18" height="30" rx="3.5" fill="var(--hero-accent)" />
-      <rect x="60" y="10.5" width="10" height="3" rx="1.5" fill="var(--hero-plate)" />
-    </g>
-    {/* The pocket, in front of the tabs. */}
+    {tab(18, 17, 'var(--hero-plate)', 'var(--hero-mark)')}
+    {tab(62, 17, 'var(--hero-plate)', 'var(--hero-mark)')}
+    <g className={HERO_MOTION.float}>{tab(40, 6, 'var(--hero-accent)', 'var(--hero-plate)')}</g>
+    {/* The folder's front lip, over the tabs' feet. */}
     <path
-      d="M2 38V28a4 4 0 0 1 4-4h74a4 4 0 0 1 4 4v10Z"
-      fill="var(--hero-plate)"
+      d="M6 40l3-14h78l3 14z"
+      fill="var(--hero-wash)"
       stroke="var(--hero-line)"
+      strokeLinejoin="round"
     />
   </svg>
 );
 
 export const tabFolderHeroArt: HeroArt = {
   name: 'tab-folder',
-  glyph: (
-    <g
-      fill="none"
-      stroke="var(--hero-accent)"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h3.2l1.8 2h6A1.5 1.5 0 0 1 17 8.5v6a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5Z" />
-      <path d="M7 11.75h6" />
-    </g>
-  ),
+  glyph: TAB_FOLDER_GLYPH,
   texture: heroTexture('dots', { fade: true }),
   pieces: PIECES,
 };

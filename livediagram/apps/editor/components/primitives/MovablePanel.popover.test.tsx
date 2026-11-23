@@ -17,6 +17,7 @@ vi.stubGlobal(
 );
 
 import { MovablePanel } from './MovablePanel';
+import { layersHeroArt } from '@/components/panels/LayersHeroArt';
 
 afterEach(cleanup);
 
@@ -92,5 +93,33 @@ describe('MovablePanel popover: height and scrim', () => {
       </MovablePanel>,
     );
     expect(view.getByRole('region', { name: 'Layers' })).toBeTruthy();
+  });
+
+  // dialog-hero-header.md: a popover that hangs from a button wears the hero header in place of its slim title band.
+  it('wears the hero header as a popover: the art’s band and mark, the title, the help link and a close', () => {
+    const { popover, onPopoverClose } = renderPopover({
+      title: 'Layers',
+      hero: { art: layersHeroArt },
+      helpArticle: 'layers',
+      headerActions: <button type="button">New Layer</button>,
+    });
+    const header = popover.querySelector<HTMLElement>('[data-dialog-hero="layers"]')!;
+    expect(header).toBeTruthy();
+    expect(header.querySelector('[data-dialog-hero-art="layers"]')).toBeTruthy();
+    expect(header.querySelector('[data-dialog-hero-mark="layers"]')).toBeTruthy();
+    expect(header.querySelector('h2')?.textContent).toBe('Layers');
+    // The panel's own header controls are the hero's actions, then the close.
+    expect(header.querySelector('button')?.textContent).toBe('New Layer');
+    expect(header.querySelector('a[href]')).toBeTruthy();
+    fireEvent.click(header.querySelector<HTMLElement>('button[aria-label="Close"]')!);
+    expect(onPopoverClose).toHaveBeenCalledTimes(1);
+    // Hung below its button, the arrow takes the band's paper.
+    expect(popover.querySelector('.rotate-45')?.className).toContain('bg-[var(--hero-paper)]');
+  });
+
+  it('keeps the slim title band without a hero', () => {
+    const { popover } = renderPopover();
+    expect(popover.querySelector('[data-dialog-hero]')).toBeNull();
+    expect(popover.textContent).toContain('Explorer');
   });
 });

@@ -5,8 +5,8 @@
 // Picking commits and closes. Organise in Tab Folder is the workbench's, one copy for every editor
 // (@liveworkspace/workbench TabFolderDialog, docs/specs/006-design/tab-folders.md).
 
+import { addToAnotherHeroArt } from '@liveworkspace/ui/dialog-hero-art/add-to-another';
 import { useState } from 'react';
-import { tabAddToHeroArt } from '@liveworkspace/ui/dialog-hero-art/tab-add-to';
 import { OrganiseDialogFrame } from '@liveworkspace/workbench/components/dialogs/OrganiseDialogFrame';
 import { DesignThumbnail } from '@/components/panels/DesignThumbnail';
 import { CompactEmptyState, NoMatches } from '@livedesign/ui';
@@ -67,7 +67,7 @@ export function AddTabToDesignDialog({
   );
   return (
     <OrganiseDialogFrame
-      art={tabAddToHeroArt}
+      art={addToAnotherHeroArt}
       title="Add to Design"
       sub="Link this tab into another design. It stays one live tab: edits show in both places."
       onClose={onClose}

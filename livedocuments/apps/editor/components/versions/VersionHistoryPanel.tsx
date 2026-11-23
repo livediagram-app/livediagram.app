@@ -8,6 +8,7 @@
 import { useId, useMemo, useRef, useState } from 'react';
 import { versionChanges, type Tab } from '@livedocuments/document';
 import { Button, CloseIcon, Select, useEscape, useFocusTrap } from '@livedocuments/ui';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 import { NOW, VersionRail } from './VersionRail';
@@ -31,14 +32,15 @@ export type VersionHistoryPanelProps = {
   onClose: () => void;
 };
 
+// Each names the tab (`tab`: its quoted name, or "the tab"), so it still reads in the notification list.
 const REFUSED: Record<
   Exclude<RestoreOutcome, { kind: 'restored' | 'unchanged' }>['reason'],
-  string
+  (tab: string) => string
 > = {
-  held: 'Someone is working on part of this tab. Try again once they let go.',
-  busy: 'The tab kept changing. Try again.',
-  gone: 'That version is no longer kept.',
-  other: 'The version could not be restored. Try again.',
+  held: (tab) => `Couldn’t restore ${tab}: someone is working on part of it.`,
+  busy: (tab) => `Couldn’t restore ${tab}: it kept changing. Try again.`,
+  gone: (tab) => `That version of ${tab} is no longer kept.`,
+  other: (tab) => `Couldn’t restore that version of ${tab}. Try again.`,
 };
 
 export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
@@ -68,6 +70,8 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
       ? { removed: new Set(changes.removed), changed: new Set(changes.changed) }
       : null;
   const tabName = tabs.find((t) => t.id === tabId)?.name ?? nowTab?.name ?? '';
+  // The tab as a toast names it.
+  const toastTab = toastName(tabName) ?? 'the tab';
   const imageContext = useMemo(
     () => ({ ownerId: who.ownerId, documentId, shareCode: who.shareCode }),
     [who.ownerId, who.shareCode, documentId],
@@ -81,28 +85,32 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
   const undoRestore = async (undoVersionId: string) => {
     const outcome = await history.restore({ id: undoVersionId, name: null });
     if (outcome.kind === 'failed') {
-      toast.error(REFUSED[outcome.reason]);
+      toast.error(REFUSED[outcome.reason](toastTab));
       return;
     }
     track('Version', 'Undone', 'Editor');
-    toast.action({ key: `version-restore-${tabId}`, message: 'Restore undone', actions: [] });
+    toast.action({
+      key: `version-restore-${tabId}`,
+      message: `Restore of ${toastTab} undone`,
+      actions: [],
+    });
   };
 
   const restore = async () => {
     if (!version) return;
     const outcome = await history.restore(version);
     if (outcome.kind === 'failed') {
-      toast.error(REFUSED[outcome.reason]);
+      toast.error(REFUSED[outcome.reason](toastTab));
       return;
     }
     if (outcome.kind === 'unchanged') {
-      toast.info('Already the current version');
+      toast.info(`${toastName(tabName) ?? 'The tab'} is already at that version`);
       return;
     }
     setSelected(NOW);
     toast.action({
       key: `version-restore-${tabId}`,
-      message: `Restored the version kept ${whenWords(version.savedAt, now)}`,
+      message: `Restored ${toastTab} to the version kept ${whenWords(version.savedAt, now)}`,
       actions: [
         {
           label: 'Undo',
@@ -132,7 +140,7 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
         ],
       });
     } catch {
-      toast.error('The copy could not be made. Try again.');
+      toast.error(`Couldn’t copy that version of ${toastTab}. Try again.`);
     }
   };
 

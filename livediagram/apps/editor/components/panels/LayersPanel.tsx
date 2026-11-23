@@ -1,5 +1,6 @@
 'use client';
 
+import { layersHeroArt } from './LayersHeroArt';
 import { useRef, useState } from 'react';
 import { type Element, type Layer } from '@livediagram/document';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
@@ -206,6 +207,7 @@ export function LayersPanel({
     <MovablePanel
       helpArticle="layers"
       title="Layers"
+      hero={{ art: layersHeroArt }}
       // A popover over its bottom-right cluster button (docs/specs/006-document/layers.md): never placed or dragged.
       position={null}
       defaultCorner="bottom-right"

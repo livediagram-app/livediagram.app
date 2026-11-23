@@ -2,7 +2,7 @@
 
 // Organise in Tab Folder (docs/specs/006-document/tab-folders.md "Membership UX"), the same centred modal in every
 // editor: the tab menu's row opens it, and its list (TabFolderList) files the tab into a folder, takes it out of one,
-// makes a new one and sets a folder's colour.
+// makes a new one (New Folder, first) and sets a folder's colour.
 import { useState } from 'react';
 import { tabFolderHeroArt } from '@liveworkspace/ui/dialog-hero-art/tab-folder';
 import { OrganiseDialogFrame } from '../dialogs/OrganiseDialogFrame';

@@ -353,7 +353,7 @@ buildPageLayoutOver(layout, page, elementsOnPage(tab.elements, pages, id)))`, th
 - `tidyPage(id)` (spec "Tidy"): refused when `!mayEdit()` or the page's own lock (`refusedLocked(id, 'tidy', false)`);
   commits `tidied(t, id)`: on an infographic page only, `tidyPageElements(t.elements, { ids: elementIdsOnPage, rect,
 margin: pageMargin, lockedIds: lockedElementIds(t.elements, t.layers) })`, the tab unchanged when the same array comes
-  back. Unchanged: toast `This page is already tidy.`, no telemetry. Changed: `Tab·Aligned·PageTidyUp`. Either way a
+  back. Unchanged: toast `<Page> is already tidy.`, no telemetry. Changed: `Tab·Aligned·PageTidyUp`. Either way a
   local preview of this tab is cleared (`landed` when it changed). `previewTidy(id | null)`: `setLocalPreview` of the
   tidied elements (from the view's `elements` and `layers`), cleared on null, a locked page or nothing to change.
 - `tidyPageElements` (pure, `lib/page-tidy.ts`): blocks by containment (smallest strictly larger non-text holder, O(n²));
@@ -441,7 +441,7 @@ with content copied in; geometry and look are always the placed element's.
     (`elementAnchorPoint` over `elementIndexFor`, linear) is on a page; else the stored pages are
     replaced by that one page.
   - Run by `usePagesMode` `putOnAPage` when an editor opens the tab (unlocked; a no-op once a page
-    is stored), one `commitTabs`, toast "Put onto a page that fits it. Undo takes the page away.";
+    is stored), one `commitTabs`, toast "Put “<tab>” onto a page that fits it. Undo takes the page away.";
     `track('Tab', 'Changed', 'PageFitToContent')`; log `[page] content put onto a page`.
 - `withPageSplit(tab, pageId)` (Split Into Pages): null unless the page exists, is `'fit'` and
   unlocked, and its content (`elementIdsOnPage`) makes 2 or more clusters. Room =
@@ -457,8 +457,8 @@ with content copied in; geometry and look are always the placed element's.
   (`top < row's first bottom`) then x.
 - `splitPage(id)` (`page-split-edits.ts`): refused on a locked page (log `refused: page
 locked`); at `MAX_PAGES` refused with the toast "A tab holds at most 100 pages: delete
-  one to split this page." (log `split refused: page limit`); null from `withPageSplit`: toast "This page is one group: nothing to split.", log
-  `split: one group`; else `PagesLaidOut`, toast "Split into n pages. Undo puts it back.", the view
+  one to split this page." (log `split refused: page limit`); null from `withPageSplit`: toast "<Page> is one group: nothing to split.", log
+  `split: one group`; else `PagesLaidOut`, toast "Split <page> into n pages. Undo puts it back.", the view
   goes to the first new page, log `page split`.
 - `setSize(id, 'fit')` is refused (log `size refused: fit to content`), as is any size outside
   `pageSizesFor(pageKindOf(page))` (log `size refused: not offered for the kind`).
@@ -1172,8 +1172,8 @@ page's content?**, "The n elements on it make way for <layout>. Undo brings them
 **Delete page** ("slide" on a slide page, "article" on an article page); the title-bar **Layout** and **Tidy Up** buttons; the title-bar **Background** button on an infographic or slide page (tooltip **Background**, its popover named **Background**, holding the **Background** and **Pattern** sections); the export row **All pages** / **One page** with the outcome line ("n pages, one PDF.", "A .zip of n PNG files, one per page.", "A one-page PDF.", "One PNG."), the subtitle "Pick a format to export the pages."; the slide picker
 **Add as slide**; the size tile **Fit** (tooltip "Sized around the board it was made for"), the
 action **Split Into Pages**; the toasts "Put onto a page that fits it. Undo switches back to
-<Mode>.", "Put onto a page that fits it. Undo takes the page away.",
-"Split into n pages. Undo puts it back.", "This page is one group: nothing to split.", "A tab holds
+<Mode>.", "Put “<tab>” onto a page that fits it. Undo takes the page away.",
+"Split <page> into n pages. Undo puts it back.", "<Page> is one group: nothing to split.", "A tab holds
 at most 100 pages: delete one to split this page."
 
 ## Accessibility

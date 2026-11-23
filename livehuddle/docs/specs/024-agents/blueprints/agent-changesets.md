@@ -615,7 +615,8 @@ document's object from its alarm once a day (`MAINTENANCE_EVERY_MS`); parts foll
   the selection chrome, for `CHANGESET_REVEAL_MS` from arrival. Elements removed by the changeset show no outline.
 - Toast copy: `{name} changed {n} element` / `{n} elements`, followed by `: {summary}` when the latest changeset in
   it has one. Buttons **Show** and **Undo**; Undo only while the session's `canEdit` holds (`canUndo`, read
-  when the toast is drawn), Show alone otherwise. After Undo: "Undone", or "Undone, {k} kept because they changed since";
+  when the toast is drawn), Show alone otherwise. After Undo: "Undid {name}'s change", or
+  "Undid {name}'s change, {k} kept because they changed since";
   on failure an error toast "Could not undo {name}'s change".
 - Name and colour are the author's: "Webber changed 3 elements" reads the same for Webber and for his agent.
 - No toast on a skipped op; a refetched op toasts as soon as the refetch lands. With "Show notifications" off there

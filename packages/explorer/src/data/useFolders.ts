@@ -10,6 +10,7 @@ import type { Folder, IndexClient } from '@liveworkspace/index-client';
 import { LIST_LIMIT_MAX } from '@liveworkspace/index-client';
 import type { OrganiseTelemetry } from '../types';
 import { failureText, isAbort } from './errors';
+import { quoted } from '../quoted';
 import { compareNames } from './name-order';
 
 export type FolderStore = {
@@ -113,6 +114,12 @@ export function useFolderStore(
     [onError],
   );
 
+  // A folder as a refusal names it: the folder “Boards”, read before the change is applied.
+  const folderNamed = useCallback((id: string) => {
+    const folder = latest.current.find((f) => f.id === id);
+    return folder ? `the folder ${quoted(folder.name)}` : 'that folder';
+  }, []);
+
   const create = useCallback<FolderStore['create']>(
     async ({ name, parentId, teamId }) => {
       const now = Date.now();
@@ -130,7 +137,7 @@ export function useFolderStore(
         (all) => [...all, draft],
         (all) => all.filter((f) => f.id !== id),
         () => client.createFolder({ id, name, parentId, teamId }),
-        'Couldn’t make that folder. Try again.',
+        `Couldn’t make the folder ${quoted(name)}. Try again.`,
       );
       if (!res) return null;
       onOrganise?.('Folder·Created', teamId ? 'Team' : null);
@@ -168,12 +175,12 @@ export function useFolderStore(
         id,
         { name },
         () => client.updateFolder(id, { name }),
-        'Couldn’t rename that folder. Try again.',
+        `Couldn’t rename ${folderNamed(id)}. Try again.`,
       );
       if (ok) onOrganise?.('Folder·Renamed', null);
       return ok;
     },
-    [client, patchOne, onOrganise],
+    [client, patchOne, onOrganise, folderNamed],
   );
 
   const move = useCallback<FolderStore['move']>(
@@ -182,12 +189,12 @@ export function useFolderStore(
         id,
         { parentId },
         () => client.updateFolder(id, { parentId }),
-        'Couldn’t move that folder. Try again.',
+        `Couldn’t move ${folderNamed(id)}. Try again.`,
       );
       if (ok) onOrganise?.('Folder·Moved', null);
       return ok;
     },
-    [client, patchOne, onOrganise],
+    [client, patchOne, onOrganise, folderNamed],
   );
 
   // The index moves a deleted folder's children (folders and items) up a level; the tree does the same at
@@ -208,7 +215,7 @@ export function useFolderStore(
             await client.deleteFolder(id);
             return true;
           },
-          'Couldn’t delete that folder. Try again.',
+          `Couldn’t delete the folder ${quoted(gone.name)}. Try again.`,
         )) === true;
       if (ok) {
         onOrganise?.('Folder·Deleted', null);

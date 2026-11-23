@@ -1,9 +1,9 @@
 'use client';
 
 // The tab menu's organise modals' frame (each product's docs/specs/006-*/tab-folders.md "Membership UX", and Add to
-// Another File where a product has it): a centred dialog, the dialog hero header (the dialog's own art, title, a line
-// under it, close; liveworkspace/docs/specs/004-index/dialog-hero-header.md) over a scrolling body, the same in every
-// editor.
+// Another File where a product has it): a centred dialog, the dialog hero header (liveworkspace/docs/specs/004-index/
+// dialog-hero-header.md: the dialog's art, its title, a line under it, the close) over a scrolling body, the same in
+// every editor.
 import { useId, type ReactNode } from 'react';
 import { useEscape } from '@liveworkspace/ui';
 import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
@@ -17,7 +17,6 @@ export function OrganiseDialogFrame({
   escapeHeld = false,
   children,
 }: {
-  // The dialog's own hero art.
   art: HeroArt;
   title: string;
   sub: string;
@@ -28,13 +27,13 @@ export function OrganiseDialogFrame({
 }) {
   // Capture-phase Esc so this wins over the editor's global shortcuts; the Dialog shell's own (bubble-phase) Esc is
   // suppressed via closeOnEscape.
-  useEscape(onClose, { capture: true, stopPropagation: true, enabled: !escapeHeld });
   const titleId = useId();
+  useEscape(onClose, { capture: true, stopPropagation: true, enabled: !escapeHeld });
   return (
     <Dialog
       open
       onClose={onClose}
-      titleId={titleId}
+      ariaLabel={title}
       size="lg"
       closeOnEscape={false}
       className="max-h-[80vh]"

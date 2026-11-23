@@ -44,7 +44,7 @@ export function StartSaveSwitch({ palette }: { palette: StartPalette }) {
         toast.error(
           move === 'server'
             ? syncFailureMessage(e)
-            : 'Couldn’t move this to this browser. It stays safe on the server.',
+            : 'Couldn’t move this knowledgebase to this browser. It stays safe on the server.',
         );
       }}
       ink={{

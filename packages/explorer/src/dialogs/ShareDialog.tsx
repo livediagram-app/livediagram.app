@@ -20,6 +20,7 @@ import {
 import { ApprovalPanel } from '../approvals/ApprovalPanel';
 import { useApprovalDoor } from '../approvals/door';
 import { useShareLinks } from '../data/useShareLinks';
+import { quoted } from '../quoted';
 import { useNow } from '../time';
 import { APP_ITEMS } from '@liveworkspace/sites';
 import { Button, CountBadge } from '@liveworkspace/ui';
@@ -34,12 +35,13 @@ import { ExpiredPass } from './share/ExpiredPass';
 import type { ShareHandOver } from './share/handover';
 import { HelpLink } from './share/HelpLink';
 import { IdentityRow } from './share/IdentityRow';
-import { SECTION_LABEL, type ShareTab, type ShareView } from './share/parts';
+import { SECTION_LABEL, SETTING_CARD, type ShareTab, type ShareView } from './share/parts';
 import { PasswordSection } from './share/PasswordSection';
 import { ShareComposer } from './share/ShareComposer';
 import { ShareStatus } from './share/ShareStatus';
 import { SignInSection } from './share/SignInSection';
 import { TeamPanel } from './share/TeamPanel';
+import { useShareTeamMembers, type ShareTeamRead } from './share/team-members';
 import { ShareTabs, sharePanelId, shareTabId } from './share/ShareTabs';
 import { ShareTourStage, ShowMeButton, useShareTour } from './share/ShareTour';
 import { useShareStartFocus } from './share/useShareStartFocus';
@@ -54,6 +56,7 @@ import {
 
 export type { ShareTab, ShareView } from './share/parts';
 export type { ShareHandOver } from './share/handover';
+export type { ShareTeamMember, ShareTeamRead } from './share/team-members';
 export type {
   ShareHelpArticle,
   ShareHelpHref,
@@ -78,6 +81,11 @@ export type ShareDialogProps = {
   // The team's name, for the Team tab's words (the Explorer knows it); left out, the index's share answer names it
   // (an editor), and "the team" without either.
   teamName?: string | null;
+  // The team's members as the host reads them, for the Team tab's list (the joined ones are shown); asked when the
+  // tab first shows. Left out, or failing, the tab has no list.
+  loadTeamMembers?: () => Promise<readonly ShareTeamRead[]>;
+  // The reader's account id, to mark their own row where the read doesn't.
+  viewerUserId?: string | null;
   // The item's tabs in order, so a link can open just one and a live image can draw one; omit for an app without
   // tabs. `loadTabs` reads them when the dialog opens instead (the Explorer, which holds no item's tabs).
   tabs?: ShareTab[];
@@ -126,6 +134,8 @@ export function ShareDialog({
   item,
   itemUrl,
   teamName = null,
+  loadTeamMembers,
+  viewerUserId = null,
   tabs: givenTabs,
   loadTabs,
   shareUrl,
@@ -174,6 +184,7 @@ export function ShareDialog({
   const showApp = Boolean(appTab) && view === 'app';
   const showApproval = approvalTab && view === 'approval';
   const showTeam = teamTab && view === 'team';
+  const teamMembers = useShareTeamMembers(loadTeamMembers, showTeam, viewerUserId);
   const [note, setNote] = useState<{ text: string; tone: 'success' | 'info' | 'error' } | null>(
     null,
   );
@@ -186,7 +197,7 @@ export function ShareDialog({
     [hostNotify, onError],
   );
   const notifyError = useCallback((text: string) => notify(text, 'error'), [notify]);
-  const share = useShareLinks(client, item.id, notifyError);
+  const share = useShareLinks(client, item.id, notifyError, quoted(item.title || 'Untitled'));
   const passwordSetChanged = useRef(onPasswordSetChange);
   passwordSetChanged.current = onPasswordSetChange;
   useEffect(() => {
@@ -320,12 +331,14 @@ export function ShareDialog({
           id={sharePanelId('team')}
           role="tabpanel"
           aria-labelledby={shareTabId('team')}
-          className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5"
+          // The panel scrolls its own content above its footer (Sharing outside the team?).
+          className="flex min-h-0 flex-1 flex-col"
         >
           <TeamPanel
             url={itemUrl ?? ownAddress(item)}
             teamName={teamName ?? share.teamName}
             word={word}
+            members={teamMembers}
             notify={notify}
             onPasses={() => {
               setView('passes');
@@ -417,7 +430,7 @@ export function ShareDialog({
                           // Without clipboard permission a write fails; the field stays selectable.
                           if (!ok)
                             notify(
-                              'Couldn’t copy the link. Select it to copy it yourself.',
+                              'Couldn’t copy the pass link. Select it to copy it yourself.',
                               'error',
                             );
                         })
@@ -472,25 +485,33 @@ export function ShareDialog({
             </section>
           ) : null}
 
-          <PasswordSection
-            passwordSet={share.passwordSet}
-            busy={share.busy}
-            helpHref={helpHref}
-            lockedReason={passwordLockedReason}
-            onSet={async (p) => {
-              const ok = await share.setPassword(p);
-              if (ok) onTelemetry?.('Shared', p ? 'PasswordSet' : 'PasswordCleared');
-              return ok;
-            }}
-          />
-          <SignInSection
-            signIn={share.signIn}
-            suggestedDomain={share.suggestedDomain}
-            busy={share.busy}
-            helpHref={helpHref}
-            lockedReason={signInLockedReason}
-            onSet={(rule) => share.setSignIn(rule)}
-          />
+          {/* Who may open the passes: the password, sign-in and email domains, three rows of one card. */}
+          <section
+            aria-label="Who can open passes"
+            className="border-t border-slate-100 pt-4 dark:border-slate-800"
+          >
+            <div className={SETTING_CARD}>
+              <PasswordSection
+                passwordSet={share.passwordSet}
+                busy={share.busy}
+                helpHref={helpHref}
+                lockedReason={passwordLockedReason}
+                onSet={async (p) => {
+                  const ok = await share.setPassword(p);
+                  if (ok) onTelemetry?.('Shared', p ? 'PasswordSet' : 'PasswordCleared');
+                  return ok;
+                }}
+              />
+              <SignInSection
+                signIn={share.signIn}
+                suggestedDomain={share.suggestedDomain}
+                busy={share.busy}
+                helpHref={helpHref}
+                lockedReason={signInLockedReason}
+                onSet={(rule) => share.setSignIn(rule)}
+              />
+            </div>
+          </section>
           {appSection}
           {note ? (
             <p

@@ -17,6 +17,8 @@ export type CopyFlaggedViewLinkInput = {
   openShare: () => void;
   toast: { success: (m: string) => void; info: (m: string) => void; error: (m: string) => void };
   // What the toasts say the link opens with ("Inspect", "the prototype") and what Share is opened to make.
+  // `link` names it where the copy failed ("Inspect link").
+  link: string;
   copied: string;
   makeFirst: string;
   now?: number;
@@ -43,7 +45,7 @@ export async function copyFlaggedViewLink(input: CopyFlaggedViewLinkInput): Prom
   try {
     await input.writeClipboard(input.withFlag(input.shareAddress(code)));
   } catch {
-    input.toast.error('Couldn’t copy the link. Try again.');
+    input.toast.error(`Couldn’t copy the ${input.link}. Try again.`);
     return false;
   }
   input.toast.success(input.copied);

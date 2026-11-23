@@ -167,7 +167,11 @@ describe('useChangesetFeed', () => {
       'cs_0000000002',
       'cs_0000000001',
     ]);
-    expect(lastToast()).toEqual({ key: 'abcabcabcabc', message: 'Undone', actions: [] });
+    expect(lastToast()).toEqual({
+      key: 'abcabcabcabc',
+      message: "Undid Webber's change",
+      actions: [],
+    });
   });
 
   it('raises no toast for the revert its own Undo relays back', async () => {

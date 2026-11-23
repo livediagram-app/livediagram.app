@@ -366,7 +366,7 @@ has no Make Sizes ([Pages](../007-editor/pages-mode.md) "One kind a tab").
 
 - **One edit**: every new page lands in one tab edit (one undo step, synced to everyone), right after the page it
   came from, in the dialog's order, each named for its format ("Instagram Post", ..., "Custom"). The view goes to
-  the first new page, and a toast says "Made <n> sizes." with **Export All Sizes** ([Exports and other
+  the first new page, and a toast says "Made <n> sizes of “<design>”." with **Export All Sizes** ([Exports and other
   views](#exports-and-other-views)).
 - **Each new photo** is the source photo's layer stack at the format's pixel size, by the rules of **Image Size**
   then **Canvas Size** ([Changing the size](#changing-the-size)) in one step: every pixel layer and mask resampled

@@ -5,8 +5,8 @@
 // filter for long document lists. Picking commits and closes. Organise in Tab Folder is the workbench's, one copy
 // for every editor (@liveworkspace/workbench TabFolderDialog, docs/specs/006-document/tab-folders.md).
 
+import { addToAnotherHeroArt } from '@liveworkspace/ui/dialog-hero-art/add-to-another';
 import { useState } from 'react';
-import { tabAddToHeroArt } from '@liveworkspace/ui/dialog-hero-art/tab-add-to';
 import { OrganiseDialogFrame } from '@liveworkspace/workbench/components/dialogs/OrganiseDialogFrame';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { CompactEmptyState, NoMatches } from '@livediagram/ui';
@@ -67,7 +67,7 @@ export function AddTabToDocumentDialog({
   );
   return (
     <OrganiseDialogFrame
-      art={tabAddToHeroArt}
+      art={addToAnotherHeroArt}
       title="Add to Another Canvas"
       sub="Link this tab into another canvas. It stays one live tab: edits show in both places."
       onClose={onClose}

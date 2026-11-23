@@ -33,6 +33,7 @@ import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from '@liveworkspace/workbench/hooks/persistence/tab-folder-reporting';
 import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import type { useToast } from '@/hooks/ui/useToast';
 import {
   connectionOf,
@@ -215,7 +216,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // tab. The lazy fetch resolves in well under a second; asking the
     // user to retry beats silently duplicating nothing.
     if (!isTabLoaded(id)) {
-      toast.error('That tab is still loading. Try again in a moment.');
+      toast.error(`${toastName(src.name) ?? 'That tab'} is still loading. Try again in a moment.`);
       return;
     }
     // Re-mint ids (arrow endpoints remapped): element ids must be

@@ -1,5 +1,6 @@
 'use client';
 
+import { tidyHeroArt } from './TidyHeroArt';
 import { useEffect, useId, useState } from 'react';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { AUTO_LAYOUT_CHOICES, AUTO_LAYOUT_TILE_ORDER } from '@/lib/auto-layout-choices';
@@ -96,6 +97,7 @@ export function TidyUpPopover({
   return (
     <MovablePanel
       title="Tidy"
+      hero={{ art: tidyHeroArt }}
       helpArticle="layoutCleanup"
       position={null}
       defaultCorner="bottom-right"

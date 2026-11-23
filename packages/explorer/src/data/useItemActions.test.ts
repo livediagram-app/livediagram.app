@@ -34,7 +34,7 @@ describe('item actions: optimistic, with rollback', () => {
     expect(overlay.apply(item).title).toBe('Nope');
     await expect(done).resolves.toBe(false);
     expect(overlay.apply(item).title).toBe('Item 1');
-    expect(toast.error).toHaveBeenCalledWith('You can’t change that here.');
+    expect(toast.error).toHaveBeenCalledWith('You can’t change “⁨Item 1⁩” here.');
   });
 
   it('does not call the index for an unchanged or empty name', async () => {
