@@ -94,7 +94,9 @@ describe('the meta row’s maker pills', () => {
         .map((id) => document.getElementById(id)?.textContent)
         .join('');
     expect(described(pills[0]!)).toBe('Created by Priya Shah on 12 Nov');
-    expect(described(pills[1]!)).toBe('Last edited by Claude through MCP, 1 hour ago');
+    expect(described(pills[1]!)).toBe(
+      'Last edited by Claude for Priya Shah through MCP, 1 hour ago',
+    );
     // Neutral grey: never the accent, never a state colour.
     for (const p of pills) expect(p.className).not.toMatch(/(bg|text)-(brand|amber|red|green)-/);
   });
