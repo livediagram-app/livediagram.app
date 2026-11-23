@@ -221,7 +221,17 @@ privacy policy covers each platform feature that keeps or sends personal data: t
 ([accounts.md "Profile pictures"](../003-accounts/accounts.md#profile-pictures)), teams and their invitations' 28-day
 expiry, phone notifications ([push.md](../003-accounts/push.md)), connections
 ([webhooks.md](../004-index/webhooks.md)), Download Your Data ([data-export.md](../003-accounts/data-export.md)), the
-Community, telemetry and Drive. livehuddle's part says what its calls do: microphone, camera and screen only on the
+Community and its Forum, telemetry and Drive. It also says (Work Tracker 1399, audited against main on 2026-11-23) how
+AI works: built-in AI on Cloudflare Workers AI, the person's or team's own Anthropic or OpenAI key (sealed, never
+returned, deleted with the account; [ai-keys.md](../003-accounts/ai-keys.md)), what Ask AI, Summarise with AI,
+Describe a Rule, Describe a Plan and liveknowledge's AI send ([ask.md](../020-ask/ask.md)), the Forum's safety check,
+and connected AI tools and the CLI; and how connected tabs, live embeds and Send to Plan link items across apps
+([connected-tabs.md](../004-index/connected-tabs.md)). Every claim cites a spec the code keeps: never a promise of
+deletion within a number of days the code does not keep, and never a claim about what an AI provider does with what it
+is sent beyond "its own terms govern". Pro stays out of both pages while it is off: the terms' availability sentence and
+the Stripe line in Service providers read `proOn()`. The products' landing-page privacy promises are one shared builder,
+`@liveworkspace/marketing-site/components/privacy/privacy-promises`, so a promise changes in every product together; each
+product's `/privacy` and `/terms` are redirect stubs to these pages. livehuddle's part says what its calls do: microphone, camera and screen only on the
 person's own press, relayed by Cloudflare Realtime and never recorded, who hears and sees whom, and that avatar
 presence is never stored ([livehuddle proximity-audio.md](../../../../livehuddle/docs/specs/012-collaboration/proximity-audio.md)).
 Walkthroughs ([006-media/walkthroughs.md](../006-media/walkthroughs.md)) are the one recording the apps keep, and the

@@ -149,6 +149,26 @@ feature that needs one:
   <WorkStorage />
 </Figure>
 
+## AI Features
+
+AI features run only when you use them, and only on what that feature needs. You choose which AI answers in **Settings**, **AI**.
+
+- **Built-in AI** is included with every app, with daily limits. It runs on Cloudflare Workers AI, so what you ask about goes to Cloudflare to be answered, and to no one else.
+- **Your own key** (or your team's, set by its admins) sends the calls it covers to Anthropic or OpenAI instead, billed by that provider and governed by its own terms and privacy policy. The key is checked once when you save it, kept encrypted, never shown to a browser again, never included in a download of your data, and deleted with your account. A key that fails is never quietly swapped for built-in AI. See [AI Keys](/help/account-and-data/ai-keys/).
+- **What is sent.** Ask AI sends your question and the words of the open <Noun /> (at most 24,000 characters), only when you are signed in, and the conversation stays in your browser until you reload. We log how many passages were sent and which model answered, never the question, the passages or the answer.
+- **Connected tools.** An AI tool you connect through [MCP](/help/account-and-data/connect-ai-mcp/) or the [CLI](/help/developers/cli/) sees only what your account or its token can open, and what it does with that is governed by its own terms.
+- **Training.** We do not use your work to train AI models.
+
+<AppNote app="liveknowledge">
+  A knowledgebase's Ask, Draft a Page, Describe to Set Up and the background check for pages that
+  disagree send the pages' passages to whichever AI answers. A knowledgebase can also have a key of
+  its own, kept encrypted in its own storage and never sent back to a browser.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Describe a Plan sends the words you write, and a card's AI steps send the card.
+</AppNote>
+
 ## What Is Stored, and Who Can Read It
 
 A <Noun /> is owned by an identity. That identity is either a signed-in account or, for guests, a guest identity that liveworkspace gives your browser, which is the same in every liveworkspace app. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of the [team](/help/collaboration/teams/) whose library the <Noun /> is in can read a <Noun />. Opening a <Noun /> you cannot access returns a plain "not found", so its contents and name are never revealed.
@@ -209,6 +229,8 @@ The [Privacy Policy](https://www.liveworkspace.app/privacy#livehuddle-calls) say
 - **Keep it in the browser.** [Offline Mode](/help/privacy-and-security/offline-mode/) keeps a <Noun /> off the server entirely.
 - **Share on your terms.** Add a [share password](/help/privacy-and-security/share-link-security/) to a <Noun /> or an expiry to a share link, and revoke links at any time.
 - **Delete what you own.** Deleting a <Noun /> moves it to the [Trash](/help/account-and-data/trash/) for 30 days, then removes it with its tabs, comments and share links; you can delete it permanently from the Trash sooner. Signed-in users can [delete their whole account](/help/account-and-data/deleting-your-data/#deleting-your-account), which removes their personal <Noun plural />, folders, tokens and preferences straight away.
+- **Link items knowingly.** A connected tab makes a share link on the item it opens, which you can delete from that item's Share, and anyone who can open the first item follows it. A live embed shows each reader only what their own account can already open.
+- **Forum posts are public.** What you write in the Community Forum is shown with your account's name, is read by a safety model before it is listed, and is removed if you delete the post or your account.
 - **Opt out of analytics.** The anonymous usage events have a switch in Settings. See [What We Collect](/help/privacy-and-security/what-we-collect/).
 
 <AppNote app="livediagram,livedocuments,livedesign,livehuddle">
