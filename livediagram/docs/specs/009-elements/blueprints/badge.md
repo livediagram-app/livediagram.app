@@ -195,7 +195,7 @@ Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `Chip
 | Paint tier                                          | `packages/document/src/layers.test.ts`                                                                       |
 | Export draws pill / disc in its look                | `packages/document/src/chip.test.ts`                                                                         |
 | Face, menu section                                  | `apps/editor/components/canvas/ChipFace.test.tsx`, `apps/editor/components/palette/ChipMenuSection.test.tsx` |
-| Settle budget                                       | `packages/document/src/attachment.perf.test.ts`                                                              |
+| Settle budget                                       | `../packages/element-model/src/attachment.perf.test.ts`                                                      |
 | Templates and layouts land settled                  | `packages/templates/src/template-settled.test.ts`                                                            |
 
 ## Constants and configuration

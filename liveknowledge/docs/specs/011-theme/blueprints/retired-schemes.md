@@ -38,10 +38,10 @@ Nothing is stored or rewritten for an unknown id. `Tab.theme` keeps whatever id 
 
 ## Testing
 
-| Rule                                            | Test                                           |
-| ----------------------------------------------- | ---------------------------------------------- |
-| Charcoal is not offered and resolves to Default | `packages/document/src/default-scheme.test.ts` |
-| The stored-tab settle                           | `packages/document/src/stored-tab.test.ts`     |
+| Rule                                            | Test                                                   |
+| ----------------------------------------------- | ------------------------------------------------------ |
+| Charcoal is not offered and resolves to Default | `../packages/element-model/src/default-scheme.test.ts` |
+| The stored-tab settle                           | `packages/document/src/stored-tab.test.ts`             |
 
 ## Retired UML
 
