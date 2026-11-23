@@ -57,7 +57,7 @@ export function EntityKeyPicker({
           className={`flex h-9 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md border transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800 ${
             value
               ? 'border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'
-              : 'border-dashed border-slate-300 text-slate-400 dark:border-slate-600 dark:text-slate-500'
+              : 'border-dashed border-slate-300 text-slate-400 dark:border-slate-600 dark:text-slate-400'
           } ${anchor ? 'bg-slate-100 dark:bg-slate-800' : ''}`}
         >
           {keyGlyph(value)}
