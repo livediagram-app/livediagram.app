@@ -5,7 +5,7 @@
 // tab, on the thread.
 
 import { useState } from 'react';
-import { Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { Chip, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideExternalLink, lucideLink } from '@liveworkspace/icons/lucide';
 import type { CardRef, CardThread } from '@liveplanner/project';
 import { MenuHeader, PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
@@ -132,9 +132,9 @@ function SharedCardRow({
         </span>
       </span>
       {current ? (
-        <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <Chip className="bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
           This card
-        </span>
+        </Chip>
       ) : null}
     </button>
   );

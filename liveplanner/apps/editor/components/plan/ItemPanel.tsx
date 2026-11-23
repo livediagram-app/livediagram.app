@@ -38,7 +38,7 @@ import {
   hiddenValueCount,
   hiddenValuesOf,
 } from '@liveplanner/items';
-import { DialogCloseButton } from '@liveplanner/ui';
+import { Chip, DialogCloseButton } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
@@ -375,9 +375,9 @@ function ItemPanelContent({
         onType={onType}
       />
       {practice ? (
-        <span className="rounded-full bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-brand-600">
+        <Chip className="bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white dark:bg-brand-600">
           Practice
-        </span>
+        </Chip>
       ) : (
         <ItemKeyTag text={cardRefIn(types)(item)} />
       )}
@@ -387,7 +387,7 @@ function ItemPanelContent({
           style={{ color: FLAG_COLOUR, backgroundColor: `${FLAG_COLOUR}14` }}
         >
           <PlanTypeGlyph glyph="flag" size={12} color={FLAG_COLOUR} />
-          Flagged
+          <span className="text-optical-line">Flagged</span>
         </span>
       ) : null}
       <span className="flex-1" />

@@ -8,7 +8,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { DialogCloseButton, lucideGlyph, useEscape } from '@liveplanner/ui';
+import { Chip, DialogCloseButton, lucideGlyph, useEscape } from '@liveplanner/ui';
 import { lucideSearch } from '@liveworkspace/icons/lucide';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import type { PickCard } from './card-picker';
@@ -63,9 +63,9 @@ function CardRow<R extends CardPickerRow>({
           ) : null}
         </span>
         {showType ? (
-          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <Chip className="bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             {card.typeLabel}
-          </span>
+          </Chip>
         ) : null}
       </button>
     </li>

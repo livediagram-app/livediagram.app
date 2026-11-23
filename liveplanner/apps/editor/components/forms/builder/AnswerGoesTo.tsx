@@ -19,7 +19,7 @@ import {
 } from '@liveplanner/forms';
 import { CUSTOM_KIND_LABELS } from '@/components/plan/ItemTypeFieldForms';
 import { CUSTOM_KIND_ICONS } from '@/components/plan/CustomFieldKindParts';
-import { PlusIcon, lucideGlyph } from '@liveplanner/ui';
+import { Chip, PlusIcon, lucideGlyph } from '@liveplanner/ui';
 import { lucideHeading1, lucideTextQuote } from '@liveworkspace/icons/lucide';
 import { useFormBuilder } from './form-builder-context';
 import { Callout } from '@liveworkspace/ui/callout';
@@ -233,12 +233,16 @@ function NewField({
         className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400"
       >
         New Field
-        <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium tracking-normal normal-case text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          <span aria-hidden className="[&_svg]:size-3">
-            {CUSTOM_KIND_ICONS[kind]}
-          </span>
+        <Chip
+          icon={
+            <span aria-hidden className="[&_svg]:size-3">
+              {CUSTOM_KIND_ICONS[kind]}
+            </span>
+          }
+          className="bg-slate-100 px-2 py-0.5 text-[11px] font-medium tracking-normal normal-case text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+        >
           {CUSTOM_KIND_LABELS[kind]}
-        </span>
+        </Chip>
       </label>
       <div className="flex gap-2">
         <input

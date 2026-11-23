@@ -327,7 +327,7 @@ export function LabelChips({
               className="h-1.5 w-1.5 shrink-0 rounded-full"
               style={{ backgroundColor: c }}
             />
-            <span className="truncate">{l}</span>
+            <span className="text-optical-line truncate">{l}</span>
           </span>
         );
       })}

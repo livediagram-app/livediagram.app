@@ -19,7 +19,7 @@ import {
   type DecisionStatus,
   type ShapeElement,
 } from '@liveplanner/project';
-import { Glyph } from '@liveplanner/ui';
+import { Chip, Glyph } from '@liveplanner/ui';
 import { CollabPanel, tint } from './collab-chrome';
 
 function StatusGlyph({ status }: { status: DecisionStatus }) {
@@ -76,25 +76,25 @@ export function DecisionFace({
         />
       }
       aside={
-        <span
-          className="inline-flex items-center gap-1 rounded-full py-[3px] pl-1.5 pr-2 text-[10px] font-semibold"
+        <Chip
+          icon={<StatusGlyph status={status} />}
+          className="py-[3px] pl-1.5 pr-2 text-[10px] font-semibold"
           style={{ color: ink, backgroundColor: tint(hue, 0.16) }}
         >
-          <StatusGlyph status={status} />
           {DECISION_STATUS_LABELS[status]}
-        </span>
+        </Chip>
       }
       footer={
         // An undated decision shows nothing at all: a card reading "no date"
         // is noise, and mid-discussion cards are commonly undated.
         element.decisionDate ? (
-          <span
-            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-medium tabular-nums"
+          <Chip
+            icon={<CalendarGlyph />}
+            className="px-2 py-0.5 text-[10.5px] font-medium tabular-nums"
             style={{ color: textColor, backgroundColor: tint(textColor, 0.07) }}
           >
-            <CalendarGlyph />
             {element.decisionDate}
-          </span>
+          </Chip>
         ) : undefined
       }
     >

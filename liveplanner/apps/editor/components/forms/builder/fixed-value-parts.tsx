@@ -5,7 +5,7 @@
 // is typed.
 import { useState, type ReactNode } from 'react';
 import { FIXED_DAYS_MAX, type SubmittedDay } from '@liveplanner/forms';
-import { CloseIcon } from '@liveplanner/ui';
+import { Chip, CloseIcon } from '@liveplanner/ui';
 import { AccordionSection } from '@liveworkspace/workbench/components/primitives/AccordionSection';
 import { DraftText } from './DraftText';
 
@@ -74,9 +74,9 @@ export function Shell({
         onToggle={() => setOpen((o) => !o)}
         trailing={
           count ? (
-            <span className="rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <Chip className="bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               {count}
-            </span>
+            </Chip>
           ) : null
         }
       >

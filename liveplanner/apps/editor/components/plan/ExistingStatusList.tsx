@@ -6,7 +6,7 @@
 // focus and the highlighted row is its active descendant, so arrows move through the rows, Enter adds the
 // highlighted one, and a press on a row adds it.
 import { useEffect } from 'react';
-import { NoMatches, PlusIcon } from '@liveplanner/ui';
+import { Chip, NoMatches, PlusIcon } from '@liveplanner/ui';
 import type { MissingStatus } from '@liveplanner/items';
 
 export const HEADING =
@@ -72,9 +72,9 @@ export function ExistingStatusList({
       <div className="flex min-h-6 items-center justify-between gap-2">
         <p id={`${listId}-label`} className={`${HEADING} flex items-center gap-1.5`}>
           Available States
-          <span className="rounded-full bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+          <Chip className="bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
             {total}
-          </span>
+          </Chip>
         </p>
         {onPickAll ? (
           <button
@@ -129,15 +129,15 @@ export function ExistingStatusList({
                     {usedOn(s)}
                   </span>
                 </span>
-                <span
-                  className={`shrink-0 rounded-full px-1.5 py-px text-[11px] tabular-nums ${
+                <Chip
+                  className={`px-1.5 py-px text-[11px] tabular-nums ${
                     s.cards
                       ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                       : 'text-slate-400 dark:text-slate-400'
                   }`}
                 >
                   {cardCount(s.cards)}
-                </span>
+                </Chip>
               </li>
             );
           })}

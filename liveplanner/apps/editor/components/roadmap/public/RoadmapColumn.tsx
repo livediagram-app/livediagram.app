@@ -5,6 +5,7 @@
 // it can read more than the 200 cards drawn.
 import { useId } from 'react';
 import type { PublicRoadmapColumn } from '@liveplanner/api-schema';
+import { Chip } from '@liveplanner/ui';
 import { RoadmapCard } from './RoadmapCard';
 
 export function RoadmapColumn({
@@ -32,12 +33,12 @@ export function RoadmapColumn({
         >
           {column.name}
         </h2>
-        <span className="shrink-0 rounded-full bg-slate-900/[0.06] px-2 py-0.5 text-[12px] font-medium tabular-nums text-slate-600 dark:bg-white/10 dark:text-slate-300">
+        <Chip className="bg-slate-900/[0.06] px-2 py-0.5 text-[12px] font-medium tabular-nums text-slate-600 dark:bg-white/10 dark:text-slate-300">
           <span aria-hidden>{column.count}</span>
           <span className="sr-only">
             {column.count} {column.count === 1 ? 'card' : 'cards'}
           </span>
-        </span>
+        </Chip>
       </header>
       {column.cards.length === 0 ? (
         <p className="rounded-xl border border-dashed border-slate-300 px-3 py-6 text-center text-[13px] text-slate-500 dark:border-slate-700 dark:text-slate-400">

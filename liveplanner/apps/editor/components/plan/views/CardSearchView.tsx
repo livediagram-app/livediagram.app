@@ -88,8 +88,8 @@ export function CardSearchView({
                 key={`${fieldKey(f)}:${f.key}`}
                 className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-0.5 pl-2.5 pr-1 text-[12px] text-brand-800 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/10 dark:text-brand-100 dark:ring-brand-500/30"
               >
-                <span className="font-medium">{label.field}:</span>
-                <span>{label.value}</span>
+                <span className="text-optical-line font-medium">{label.field}:</span>
+                <span className="text-optical-line">{label.value}</span>
                 {canEdit ? (
                   <button
                     type="button"

@@ -126,7 +126,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
           }`}
           style={chipColour ? ({ '--chip': chipColour(chip) } as CSSProperties) : undefined}
         >
-          {chip}
+          <span className="text-optical-line">{chip}</span>
           {readOnly ? null : (
             <button
               type="button"

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { Tab } from '@liveplanner/project';
-import { Button } from '@liveplanner/ui';
+import { Button, Chip } from '@liveplanner/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { collaboratorsHeroArt } from '@liveworkspace/ui/dialog-hero-art/collaborators';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -98,9 +98,9 @@ export function CollaboratorsDialog({
                 {group.tab?.name ?? 'Another Tab'}
               </h3>
               {group.isActive ? (
-                <span className="shrink-0 rounded-full bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
+                <Chip className="bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
                   You&apos;re Here
-                </span>
+                </Chip>
               ) : group.tab ? (
                 <Button
                   variant="secondary"
@@ -130,12 +130,12 @@ export function CollaboratorsDialog({
                           {p.name}
                         </span>
                         {participantBadges(p, selfId, selfRole).map((b) => (
-                          <span
+                          <Chip
                             key={b}
-                            className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                            className="bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                           >
                             {b}
-                          </span>
+                          </Chip>
                         ))}
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">

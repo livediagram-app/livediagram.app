@@ -6,7 +6,7 @@
 
 import { memo, useState } from 'react';
 import type { GithubRepositoryView } from '@liveplanner/api-schema';
-import { LockIcon, Switch } from '@liveplanner/ui';
+import { Chip, LockIcon, Switch } from '@liveplanner/ui';
 
 /** One row's height: the rows are a fixed 48px (`h-12`), so the window knows where each one sits. */
 export const REPOSITORY_ROW_PX = 48;
@@ -48,10 +48,12 @@ export const RepositoryRow = memo(function RepositoryRow({
       >
         <span className="truncate font-medium">{r.fullName}</span>
         {r.private ? (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            <LockIcon size={11} aria-hidden />
+          <Chip
+            icon={<LockIcon size={11} aria-hidden />}
+            className="bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+          >
             Private
-          </span>
+          </Chip>
         ) : null}
       </span>
       <Switch

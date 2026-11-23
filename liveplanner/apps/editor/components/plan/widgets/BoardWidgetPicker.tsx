@@ -16,7 +16,7 @@ import {
   type BoardWidgetId,
 } from '@liveplanner/items';
 import type { WidgetSuggestion } from '@liveplanner/plan-art';
-import { CompactEmptyState, NoMatches } from '@liveplanner/ui';
+import { Chip, CompactEmptyState, NoMatches } from '@liveplanner/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { SparkArt, FieldWidgetArt } from '../plan-tile-art';
 import type { PlanPalette } from '../plan-palette';
@@ -204,9 +204,9 @@ function Section({
                 <span className="text-[12px] font-medium text-slate-700 dark:text-slate-200">
                   {g.field.def.label}
                 </span>
-                <span className="rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <Chip className="bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   {g.kindLabel}
-                </span>
+                </Chip>
                 {g.also ? (
                   <span className="text-[11px] text-slate-500 dark:text-slate-400">{g.also}</span>
                 ) : null}

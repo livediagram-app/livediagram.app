@@ -6,7 +6,7 @@
 // `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
 import { useRef, useState, type RefObject } from 'react';
 import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
-import { Button, CheckIcon, IDENTITY_FILL, PictureDisc, identityVars } from '@liveplanner/ui';
+import { Button, CheckIcon, Chip, IDENTITY_FILL, PictureDisc, identityVars } from '@liveplanner/ui';
 import type { CommentMention, CommentThread } from '@liveplanner/project';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
@@ -56,10 +56,12 @@ export function CommentResolveToggle({
     );
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
-        <CheckIcon size={11} />
+      <Chip
+        icon={<CheckIcon size={11} />}
+        className="bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300"
+      >
         Resolved
-      </span>
+      </Chip>
       <button
         type="button"
         onClick={onUnresolve}

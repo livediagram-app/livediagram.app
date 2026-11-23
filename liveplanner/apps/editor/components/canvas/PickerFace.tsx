@@ -167,7 +167,9 @@ export function PickerFace({
           className="pointer-events-auto mt-0.5 cursor-pointer rounded-full bg-black/[0.06] px-3 py-1 text-[11px] font-semibold transition hover:bg-black/[0.1] disabled:cursor-default disabled:opacity-50 dark:bg-white/10 dark:hover:bg-white/15"
           style={{ color: textColor }}
         >
-          {spinning ? 'Picking…' : result ? 'Again' : 'Pick'}
+          <span className="text-optical-line">
+            {spinning ? 'Picking…' : result ? 'Again' : 'Pick'}
+          </span>
         </button>
       ) : null}
     </div>

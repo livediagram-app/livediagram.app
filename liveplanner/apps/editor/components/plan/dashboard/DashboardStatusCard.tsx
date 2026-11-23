@@ -102,7 +102,7 @@ export function DashboardStatusCard({
                   }`}
                 >
                   <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${STATUS_INFO[s].dot}`} />
-                  {STATUS_INFO[s].label}
+                  <span className="text-optical-line">{STATUS_INFO[s].label}</span>
                 </button>
               );
             })}

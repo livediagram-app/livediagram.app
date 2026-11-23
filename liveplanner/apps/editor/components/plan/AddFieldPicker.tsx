@@ -8,7 +8,7 @@
 // and Votes among them, opens Shape. The arrow keys move between tiles (gallery-keys.ts).
 import { useId, useLayoutEffect, type KeyboardEvent, type RefObject } from 'react';
 import { ITEM_TYPE_CUSTOM_MAX, type ItemFieldId } from '@liveplanner/items';
-import { NoMatches } from '@liveplanner/ui';
+import { Chip, NoMatches } from '@liveplanner/ui';
 import {
   CUSTOM_MAX_NOTE,
   KIND_DESCRIPTIONS,
@@ -258,12 +258,12 @@ function KindTile({
       }
       badge={
         tag ? (
-          <span
+          <Chip
             id={`${ids}-ready`}
-            className={`${TILE_BADGE_SPOT} rounded-full bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 shadow-sm ring-1 ring-inset ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30`}
+            className={`${TILE_BADGE_SPOT} bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 shadow-sm ring-1 ring-inset ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30`}
           >
             {tag}
-          </span>
+          </Chip>
         ) : null
       }
     />

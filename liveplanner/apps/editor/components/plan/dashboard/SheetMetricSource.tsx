@@ -249,7 +249,7 @@ function ColumnSource({
                   onClick={() => set({ stat: s })}
                   className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[12px] transition ${on ? 'border-brand-400 bg-brand-50 text-brand-800 dark:border-brand-500/60 dark:bg-brand-500/15 dark:text-brand-200' : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}`}
                 >
-                  {COLUMN_STAT_NAMES[s]}
+                  <span className="text-optical-line">{COLUMN_STAT_NAMES[s]}</span>
                 </button>
               );
             })}

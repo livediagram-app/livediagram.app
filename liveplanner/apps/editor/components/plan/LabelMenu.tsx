@@ -114,7 +114,7 @@ export function LabelMenu({
                 aria-hidden
                 className={`min-w-[1.25rem] rounded-full px-1.5 text-center text-[10.5px] font-semibold tabular-nums leading-[1.125rem] ${BADGE}`}
               >
-                {u.count}
+                <span className="text-optical-line">{u.count}</span>
               </span>
             </div>
           ))}
