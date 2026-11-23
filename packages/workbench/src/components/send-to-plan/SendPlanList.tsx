@@ -26,7 +26,7 @@ const ROW =
   'flex min-h-11 w-full min-w-0 cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 sm:min-h-9';
 const ROW_IDLE = 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/70';
 const ROW_ON =
-  'bg-brand-50 text-brand-800 ring-1 ring-brand-200 dark:bg-brand-500/15 dark:text-brand-100 dark:ring-brand-500/30';
+  'bg-brand-50 text-brand-800 ring-1 ring-brand-200 dark:bg-slate-800 dark:text-white dark:ring-brand-400/60';
 const ROW_LOCKED = 'cursor-not-allowed text-slate-400 dark:text-slate-400';
 
 // Arrow keys between the list's buttons.

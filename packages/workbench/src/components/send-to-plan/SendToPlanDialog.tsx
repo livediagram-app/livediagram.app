@@ -284,6 +284,7 @@ export function SendToPlanDialog({
             <div
               role="status"
               data-already-sent=""
+              ref={showBanner}
               className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-emerald-900 sm:col-span-2 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100"
             >
               <DoneGlyph aria-hidden className="shrink-0" />
@@ -343,6 +344,9 @@ export function SendToPlanDialog({
                 onMode={setMode}
                 title={title}
                 onTitle={setTitle}
+                // With "Already sent" showing, the field takes no focus: on a phone the keyboard would push the
+                // banner out of view.
+                focusTitle={existing === null}
                 people={people}
                 assignee={assignee}
                 onAssignee={setAssignee}
@@ -390,6 +394,11 @@ function refusal(err: unknown): string {
   return "Couldn't send. Check your connection and try again.";
 }
 
+// "Already sent" brought into view when it appears, so a phone's sheet, scrolled down to Send, shows it.
+const showBanner = (el: HTMLDivElement | null) => {
+  if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest' });
+};
+
 function CardFields(props: {
   loading: boolean;
   boards: NonNullable<AutomationTargetDescription['boards']>;
@@ -405,6 +414,7 @@ function CardFields(props: {
   onMode: (m: SendMode) => void;
   title: string;
   onTitle: (t: string) => void;
+  focusTitle: boolean;
   people: { name: string }[];
   assignee: string;
   onAssignee: (a: string) => void;
@@ -498,7 +508,7 @@ function CardFields(props: {
             value={props.title}
             onChange={(e) => props.onTitle(e.target.value)}
             maxLength={200}
-            autoFocus
+            autoFocus={props.focusTitle}
           />
         </div>
       ) : null}

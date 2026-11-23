@@ -89,6 +89,7 @@ describe('SendToPlanDialog', () => {
     );
     expect(screen.getByLabelText<HTMLInputElement>('Title').value).toBe('Fix login');
     expect(screen.getByLabelText<HTMLInputElement>('Due').value).toBe('2026-11-20');
+    expect(document.activeElement).toBe(screen.getByLabelText('Title'));
     fireEvent.change(screen.getByLabelText('Board'), { target: { value: 'b2' } });
     expect(screen.getByLabelText<HTMLSelectElement>('Column').value).toBe('Someday');
     fireEvent.change(screen.getByLabelText('Board'), { target: { value: 'b1' } });
@@ -165,8 +166,16 @@ describe('SendToPlanDialog', () => {
     setSendSource('D', null, { planSends: vi.fn().mockResolvedValue({ sends: [] }) });
     act(() => addSends([made()]));
     const c = client();
+    // The banner is brought into view, and the Title takes no focus, so a phone's keyboard leaves it showing.
+    const scrolled = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrolled,
+    });
     open(c, [place('Fix login')]);
     expect(screen.getByText(/Already sent:/)).toBeTruthy();
+    expect(scrolled).toHaveBeenCalledWith({ block: 'nearest' });
+    delete (HTMLElement.prototype as { scrollIntoView?: unknown }).scrollIntoView;
     const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
     fireEvent.click(screen.getByRole('button', { name: 'Open Card' }));
     expect(opened).toHaveBeenCalledWith(
@@ -176,6 +185,7 @@ describe('SendToPlanDialog', () => {
     );
     fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
     const again = await screen.findByRole('button', { name: 'Send Again' });
+    expect(document.activeElement).not.toBe(screen.getByLabelText('Title'));
     await waitFor(() => expect(again.hasAttribute('disabled')).toBe(false));
     fireEvent.click(again);
     await waitFor(() =>

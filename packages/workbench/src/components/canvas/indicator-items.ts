@@ -116,7 +116,8 @@ export function buildIndicatorItems(input: {
     const { onOpen, done, title, where } = input.card;
     items.push({
       kind: done ? 'card-done' : 'card',
-      label: `Open the card “${title}”${done ? ', done' : ''}, in liveplanner`,
+      // Its place spoken too ("To Do · Sprint"), as the hover card shows it.
+      label: `Open the card “${title}”${done ? ', done' : ''}, ${where}, in liveplanner`,
       word: done ? 'Done' : 'Card',
       onClick: onOpen,
       hoverCard: { title, description: `${where}. Opens in liveplanner.` },

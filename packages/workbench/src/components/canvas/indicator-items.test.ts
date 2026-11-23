@@ -92,7 +92,7 @@ describe('a sent card (liveworkspace/docs/specs/004-index/send-to-plan.md "The c
     });
     expect(items.map((i) => i.kind)).toEqual(['card', 'comment']);
     expect(items[0]).toMatchObject({
-      label: 'Open the card “Fix login”, in liveplanner',
+      label: 'Open the card “Fix login”, To Do · Sprint, in liveplanner',
       hoverCard: { title: 'Fix login', description: 'To Do · Sprint. Opens in liveplanner.' },
     });
     items[0]!.onClick();
@@ -102,7 +102,7 @@ describe('a sent card (liveworkspace/docs/specs/004-index/send-to-plan.md "The c
     });
     expect(done[0]).toMatchObject({
       kind: 'card-done',
-      label: 'Open the card “T”, done, in liveplanner',
+      label: 'Open the card “T”, done, Done · S, in liveplanner',
     });
   });
 });
