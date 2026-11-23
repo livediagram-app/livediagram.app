@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-// Charts linked to a liveplanner sheet on the canvas (each reader app's docs/specs/009-elements/pie-chart.md "Charts
-// linked to a liveplanner sheet"): the host reads, draws a live read over the saved values, links in one undo step, unlinks
-// keeping the values, opens Link to Sheet for an Editor only; the Linked to line; nothing outside an editor.
+// Charts and tables with live data on the canvas (each reader app's docs/specs/009-elements/pie-chart.md "Live data
+// from a plan", liveworkspace/docs/specs/004-index/live-data.md): the host reads, draws a live read over the saved
+// values, links in one undo step, unlinks keeping the values, freezes and unfreezes, opens From a Plan for an Editor
+// only; the live line and mark; nothing outside an editor.
 import { useEffect } from 'react';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -9,11 +10,12 @@ import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-
 import type { SheetRangeRead } from '@liveworkspace/index-client';
 import type { SheetChart, SheetLinkStatus } from './sheet-links';
 
-const { readSheetRange, onTrack } = vi.hoisted(() => ({
+const { readSheetRange, readPlanData, onTrack } = vi.hoisted(() => ({
   readSheetRange: vi.fn(),
+  readPlanData: vi.fn(),
   onTrack: vi.fn(),
 }));
-vi.mock('../../lib/index-client', () => ({ indexClient: { readSheetRange } }));
+vi.mock('../../lib/index-client', () => ({ indexClient: { readSheetRange, readPlanData } }));
 const linkRead = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('./LinkSheetDialog', () => ({
   LinkSheetDialog({
@@ -47,6 +49,8 @@ import {
   SheetLinkLine,
   SheetLinksContext,
   SheetLinksHost,
+  LiveTableFace,
+  linkEventOf,
   useChartAsSeen,
   useSheetLinks,
   type SheetLinks,
@@ -139,6 +143,9 @@ describe('SheetLinksHost', () => {
     await waitFor(() => expect(screen.getByTestId('values').textContent).toBe('10,20'));
     expect(screen.getByText('Budget')).toBeTruthy();
     expect(screen.getByText('updated just now')).toBeTruthy();
+    expect(screen.getByText(/Live from/)).toBeTruthy();
+    // The live mark: green while the numbers are live.
+    expect(document.querySelector('[data-live-mark]')!.getAttribute('data-live-mark')).toBe('live');
     // Counter-scaled to the canvas zoom (1 outside a canvas), so it reads at one size on screen.
     const line = document.querySelector<HTMLElement>('[data-sheet-link-line]')!;
     expect(line.style.transform).toBe('scale(1)');
@@ -231,6 +238,9 @@ describe('SheetLinkLine', () => {
           update: () => {},
           unlink: () => {},
           keepNumbers: () => {},
+          freeze: () => {},
+          unfreeze: () => {},
+          planHref: () => '',
         }}
       >
         <SheetLinkLine element={element} selected={selected} />
@@ -255,5 +265,182 @@ describe('outside an editor', () => {
     render(<Probe element={chart} />);
     expect(screen.getByTestId('values').textContent).toBe('1,2');
     expect(screen.queryByText('Budget')).toBeNull();
+  });
+});
+
+describe('Freeze and Unfreeze (live-data.md)', () => {
+  it('freezes in one commit, keeping the numbers and reading nothing more', async () => {
+    readSheetRange.mockResolvedValue(read);
+    const { commit, els } = arrange(true, [chart, { id: 'arrow', type: 'arrow' }]);
+    await waitFor(() => expect(readSheetRange).toHaveBeenCalledTimes(1));
+    act(() => api!.freeze('c1'));
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect((els()[0] as SheetChart).chartSheetSource).toEqual({ ...source, frozen: true });
+    expect(onTrack).toHaveBeenCalledWith('LiveDataFreeze');
+    expect(api!.statusOf({ ...source, frozen: true })).toEqual({ kind: 'frozen' });
+    // Freezing again, or an element with no link, changes nothing.
+    const before = els();
+    act(() => api!.freeze('c1'));
+    act(() => api!.freeze('arrow'));
+    expect(els()[0]).toBe(before[0]);
+    expect(els()[1]).toBe(before[1]);
+  });
+
+  it('a frozen chart is not read; Unfreeze drops the mark and reads again', async () => {
+    readSheetRange.mockResolvedValue(read);
+    const frozen: SheetChart = { ...chart, chartSheetSource: { ...source, frozen: true } };
+    const { commit } = arrange(true, [frozen, { id: 'arrow', type: 'arrow' }]);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(readSheetRange).not.toHaveBeenCalled();
+    expect(screen.getByTestId('values').textContent).toBe('1,2');
+    expect(screen.getByText(/frozen/)).toBeTruthy();
+    // Unfreezing an element that is not frozen does nothing.
+    act(() => api!.unfreeze('arrow'));
+    expect(commit).not.toHaveBeenCalled();
+    cleanup();
+    const again = arrange(true, [frozen, { id: 'arrow', type: 'arrow' }]);
+    act(() => api!.unfreeze('c1'));
+    expect(again.commit).toHaveBeenCalledTimes(1);
+    expect((again.els()[0] as SheetChart).chartSheetSource).toEqual(source);
+    expect(onTrack).toHaveBeenCalledWith('LiveDataUnfreeze');
+    await waitFor(() => expect(readSheetRange).toHaveBeenCalled());
+  });
+
+  it("saves a live read to the chart beside a frozen one, never the frozen one's", async () => {
+    readSheetRange.mockResolvedValue(read);
+    const frozen: SheetChart = { ...chart, chartSheetSource: { ...source, frozen: true } };
+    const { tick } = arrange(true, [frozen, { ...chart, id: 'c2' }]);
+    await waitFor(() => expect(tick).toHaveBeenCalledTimes(1));
+    const map = tick.mock.calls[0]![0] as (els: Element[]) => Element[];
+    const [a, b] = map([frozen, { ...chart, id: 'c2' }]) as SheetChart[];
+    expect(a).toBe(frozen);
+    expect(b!.pieSlices!.map((x) => x.value)).toEqual([10, 20]);
+    expect(screen.getByText(/frozen/)).toBeTruthy();
+  });
+
+  it('opens the plan in liveplanner', () => {
+    arrange(false, [{ id: 'arrow', type: 'arrow' }]);
+    expect(api!.planHref(source)).toContain('plan_1');
+  });
+});
+
+describe('linkEventOf', () => {
+  const common = { app: 'liveplanner', itemId: 'plan_1', itemName: 'L', readAt: 1 } as const;
+  const board: ChartSheetSource = {
+    ...common,
+    kind: 'board',
+    boardId: 'tab_1',
+    by: 'column',
+    sourceName: 'R',
+    label: 'Cards per column',
+  };
+  const metric: ChartSheetSource = {
+    ...common,
+    kind: 'metric',
+    metric: 'completion',
+    sourceName: 'Dashboard',
+    label: 'Completion',
+  };
+  it('names a table link, and a chart link by its kind', () => {
+    expect(linkEventOf({ id: 't', type: 'table', cells: [] }, board)).toBe('TableLiveLink');
+    expect(linkEventOf(chart, board)).toBe('ChartBoardLink');
+    expect(linkEventOf(chart, metric)).toBe('ChartMetricLink');
+    expect(linkEventOf(chart, source)).toBe('ChartSheetLink');
+  });
+
+  it('reads a board link through the plan-data door, and sends its event on link', async () => {
+    readPlanData.mockResolvedValue({
+      itemId: 'plan_1',
+      itemName: 'L',
+      kind: 'board',
+      sourceName: 'R',
+      tabId: 'tab_1',
+      label: 'Cards per column',
+      table: { categories: ['Q1', 'Q2'], series: [{ name: 'Cards', values: [5, 6] }] },
+      readAt: Date.now(),
+    });
+    arrange(false, [{ ...chart, chartSheetSource: { ...board, filter: { label: 'bug' } } }]);
+    await waitFor(() => expect(screen.getByTestId('values').textContent).toBe('5,6'));
+    expect(readPlanData).toHaveBeenCalledWith(
+      'plan_1',
+      { kind: 'board', boardId: 'tab_1', by: 'column', filter: { label: 'bug' } },
+      expect.anything(),
+    );
+    cleanup();
+    arrange(false, [{ ...chart, chartSheetSource: board }]);
+    await waitFor(() =>
+      expect(readPlanData).toHaveBeenCalledWith(
+        'plan_1',
+        { kind: 'board', boardId: 'tab_1', by: 'column' },
+        expect.anything(),
+      ),
+    );
+    cleanup();
+    arrange(false, [{ ...chart, chartSheetSource: metric }]);
+    await waitFor(() =>
+      expect(readPlanData).toHaveBeenCalledWith(
+        'plan_1',
+        { kind: 'metric', metric: 'completion' },
+        expect.anything(),
+      ),
+    );
+  });
+});
+
+describe('LiveTableFace', () => {
+  it("draws a linked table's live cells, read only, with its line; an unlinked one as stored", async () => {
+    const board: ChartSheetSource = {
+      app: 'liveplanner',
+      itemId: 'plan_1',
+      itemName: 'Launch',
+      readAt: 1,
+      kind: 'board',
+      boardId: 'tab_1',
+      by: 'column',
+      sourceName: 'Roadmap',
+      label: 'Cards per column',
+    };
+    readPlanData.mockResolvedValue({
+      itemId: 'plan_1',
+      itemName: 'Launch',
+      kind: 'board',
+      sourceName: 'Roadmap',
+      tabId: 'tab_1',
+      label: 'Cards per column',
+      table: { categories: ['To Do'], series: [{ name: 'Cards', values: [3] }] },
+      readAt: Date.now(),
+    });
+    const table = { id: 't1', type: 'table', cells: [['old']], chartSheetSource: board };
+    const face = (el: typeof table | { id: string; type: 'table'; cells: string[][] }) => (
+      <LiveTableFace element={el} selected>
+        {(seen, linked) => (
+          <p data-testid="cells">
+            {(seen as { cells: string[][] }).cells.flat().join(',')}
+            {linked ? ' (linked)' : ''}
+          </p>
+        )}
+      </LiveTableFace>
+    );
+    render(
+      <SheetLinksHost
+        elements={[table]}
+        itemId="doc_1"
+        canEdit={false}
+        commit={vi.fn()}
+        tick={vi.fn()}
+        grantOf={async () => null}
+        ready
+        onTrack={onTrack}
+        noun="document"
+      >
+        {face(table)}
+        {face({ id: 't2', type: 'table', cells: [['mine']] })}
+      </SheetLinksHost>,
+    );
+    await waitFor(() =>
+      expect(screen.getAllByTestId('cells')[0]!.textContent).toBe('Column,Cards,To Do,3 (linked)'),
+    );
+    expect(screen.getAllByTestId('cells')[1]!.textContent).toBe('mine');
+    expect(screen.getByText('Launch')).toBeTruthy();
   });
 });
