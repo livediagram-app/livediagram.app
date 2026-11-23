@@ -151,8 +151,8 @@ on a logo page: the same rules, from the same shared code, so a filled mark beha
      box's longer side, and the loop it makes is round enough to hold something (its area at least a
      tenth of a circle's of the same length).
   3. **Anything else: nothing changes**, and a small hint says why: "Click inside a closed shape, or
-     a loop whose ends meet, to fill it." or, on something locked, "That's locked, so its fill
-     stays." Elements on a hidden or locked layer are not there for it.
+     a loop whose ends meet, to fill it." or, on something locked, "That element is locked, so its
+     fill stays." Elements on a hidden or locked layer are not there for it.
 - **After a fill:** a filled loop is a closed stroke: the bucket refills it or clears it with No
   fill; it is picked, and erased, by its line or its fill. **One press is one edit**: one undo step,
   and it reaches every collaborator at once.

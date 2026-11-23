@@ -3,6 +3,7 @@
 // The social pieces' settings in the element menu (docs/specs/009-elements/social-pieces.md): a World Clock's zones
 // and a Jukebox's source. Typed locally and committed with Add / Set or Enter, like the Screen's link. Only an
 // Editor's menu renders them (EditorContextMenuHost hands a Participant or a Viewer its own short menu).
+import { CloseIcon } from '@livehuddle/ui';
 import { useId, useMemo, useState, type KeyboardEvent } from 'react';
 import {
   CLOCK_LABEL_MAX,
@@ -174,7 +175,7 @@ function ZoneRow({
         aria-label={`Remove ${zone.label}`}
         className={`${SECONDARY} w-7 shrink-0 px-0`}
       >
-        ×
+        <CloseIcon size={12} />
       </button>
     </li>
   );

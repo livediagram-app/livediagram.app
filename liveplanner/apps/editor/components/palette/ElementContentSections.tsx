@@ -16,6 +16,7 @@ import {
 } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
@@ -61,17 +62,8 @@ export function ElementContentSections({
             Caption, because that is what the words beside a line are, and
             because "Text" on an arrow reads as the line's own label field
             rather than how it is painted. */}
-      {(target.type === 'arrow' && target.label) || target.type === 'table' ? (
-        <MenuAccordionSection
-          title={target.type === 'arrow' ? 'Caption' : 'Text'}
-          icon={<TextGlyph />}
-          {...sectionProps('text')}
-        >
-          {target.type === 'table' ? (
-            <p className="px-3 pt-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-              Applies to every cell.
-            </p>
-          ) : null}
+      {target.type === 'arrow' && target.label ? (
+        <MenuAccordionSection title="Caption" icon={<TextGlyph />} {...sectionProps('text')}>
           <div className="flex gap-1 px-2 py-1.5">
             <TextToggle active={!!target.textBold} label="Bold" onClick={props.onToggleTextBold}>
               <BoldIcon />
@@ -144,30 +136,15 @@ export function ElementContentSections({
           />
         </MenuAccordionSection>
       ) : null}
-      {/* Table — header row / column + zebra. */}
+      {/* Table (docs/specs/008-canvas/canvas-and-palette.md "The Table dialog"): the row opens the Table dialog, which holds
+          its header row and column, its striping and its cells' text. */}
       {target.type === 'table' ? (
-        <MenuAccordionSection title="Table" icon={<TableGlyph />} {...sectionProps('table')}>
-          <MenuToggleRow
-            label="Header Row"
-            description="Style the first row as a header."
-            checked={target.headerRow ?? false}
-            onToggle={props.onToggleTableHeaderRow}
-          />
-          <ContextMenuDivider />
-          <MenuToggleRow
-            label="Header Column"
-            description="Style the first column as a header."
-            checked={target.headerColumn ?? false}
-            onToggle={props.onToggleTableHeaderColumn}
-          />
-          <ContextMenuDivider />
-          <MenuToggleRow
-            label="Zebra Striping"
-            description="Tint alternate body rows."
-            checked={target.zebra ?? false}
-            onToggle={props.onToggleTableZebra}
-          />
-        </MenuAccordionSection>
+        <MenuDialogSection
+          title="Table"
+          icon={<TableGlyph />}
+          onOpen={() => props.onEditRows(target.id, 'table')}
+          flush
+        />
       ) : null}
       {/* Link — set / change / remove a link-card's destination (docs/specs/009-elements/link-cards.md), or
           a video's YouTube URL (docs/specs/009-elements/youtube-video.md). Both keep their URL in `link`, so

@@ -49,7 +49,7 @@ describe('useUnusedImagePrompt', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete from Storage: the image' }));
     await settle();
     expect(remove).toHaveBeenCalledWith('img-1');
-    expect(screen.getByText('Deleted from storage')).toBeTruthy();
+    expect(screen.getByText('Image deleted from storage')).toBeTruthy();
   });
 
   // images.md "Remember My Choice" and "The setting".

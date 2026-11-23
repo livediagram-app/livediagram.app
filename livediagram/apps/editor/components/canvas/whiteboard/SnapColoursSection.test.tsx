@@ -30,7 +30,7 @@ describe('SnapColoursSection', () => {
       '#868e96',
     ]);
     expect(swatches[0]!.getAttribute('aria-hidden')).toBe('true');
-    expect(within(group).getByRole('button', { name: 'Snap to stock colours' })).toBeTruthy();
+    expect(within(group).getByRole('button', { name: 'Snap Colours' })).toBeTruthy();
     expect(screen.getByRole('status').textContent).toBe('');
   });
 
@@ -46,38 +46,38 @@ describe('SnapColoursSection', () => {
   it('snaps once on a press and confirms it in a polite status, in place of the button', () => {
     const snap = api();
     const { rerender } = render(<SnapColoursSection snap={snap} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Snap to stock colours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Snap Colours' }));
     expect(snap.snap).toHaveBeenCalledTimes(1);
     // The board now has none: the section stays to say what happened.
     rerender(<SnapColoursSection snap={api({ colours: [], snap: snap.snap })} />);
     expect(screen.getByRole('status').textContent).toBe(
       '3 custom colours snapped to stock colours',
     );
-    expect(screen.queryByRole('button', { name: 'Snap to stock colours' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Snap Colours' })).toBeNull();
     // The button is gone: the focus is on the confirmation, not lost.
     expect(document.activeElement).toBe(screen.getByRole('status'));
   });
 
   it('confirms one colour in the singular', () => {
     render(<SnapColoursSection snap={api({ colours: ['#e03131'], snap: vi.fn(() => 1) })} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Snap to stock colours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Snap Colours' }));
     expect(screen.getByRole('status').textContent).toBe('1 custom colour snapped to stock colours');
   });
 
   it('offers the colours again once an undo brings them back', () => {
     const snap = api();
     const { rerender } = render(<SnapColoursSection snap={snap} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Snap to stock colours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Snap Colours' }));
     rerender(<SnapColoursSection snap={api({ colours: [] })} />);
     rerender(<SnapColoursSection snap={api()} />);
-    expect(screen.getByRole('button', { name: 'Snap to stock colours' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Snap Colours' })).toBeTruthy();
     expect(screen.getByRole('status').textContent).toBe('');
   });
 
   it('keeps the button disabled while the board cannot be edited', () => {
     const snap = api({ blocked: true });
     render(<SnapColoursSection snap={snap} />);
-    const button = screen.getByRole('button', { name: 'Snap to stock colours' });
+    const button = screen.getByRole('button', { name: 'Snap Colours' });
     expect(button.hasAttribute('disabled')).toBe(true);
     fireEvent.click(button);
     expect(snap.snap).not.toHaveBeenCalled();
@@ -85,8 +85,8 @@ describe('SnapColoursSection', () => {
 
   it('shows nothing new when a press snapped nothing', () => {
     render(<SnapColoursSection snap={api({ snap: vi.fn(() => 0) })} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Snap to stock colours' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Snap Colours' }));
     expect(screen.getByRole('status').textContent).toBe('');
-    expect(screen.getByRole('button', { name: 'Snap to stock colours' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Snap Colours' })).toBeTruthy();
   });
 });

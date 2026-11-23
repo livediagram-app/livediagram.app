@@ -125,7 +125,10 @@ export function useConnectedTabActions<T extends TabLike>(deps: ConnectedTabActi
       });
       toast.success(`${toastName(made.name) ?? 'The file'} is connected again.`);
     } catch (error) {
-      toast.error(connectErrorWords(error, hostKind));
+      // Named by its tab, so the refusal says which connection it was in the notification list.
+      const name = toastName(tab.name);
+      const words = connectErrorWords(error, hostKind);
+      toast.error(name ? `${name}: ${words}` : words);
     }
   };
 

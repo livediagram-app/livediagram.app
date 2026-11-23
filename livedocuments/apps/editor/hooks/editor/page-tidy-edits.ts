@@ -14,6 +14,7 @@ import { tidyPageElements, type PageTidyInput } from '@/lib/page-tidy';
 import { pageTidyChecker, type PageTidyChecker } from '@/lib/page-tidy-check/page-tidy-checker';
 import { lockedElementIds } from '@/lib/locked-element-ids';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 
@@ -112,7 +113,10 @@ export function pageTidyEdits({
     if (out) commitTab((t) => (t === tab ? out : tidied(t, pageId)));
     if (localPreview()?.tabId === tabId) clearLocalPreview(changed ? 'landed' : 'cancelled');
     if (!changed) {
-      toastInfo('This page is already tidy.');
+      // Named, so the notice still reads in the notification list: its own name, or where it stands.
+      const at = current.findIndex((p) => p.id === pageId);
+      const named = toastName(current[at]?.name) ?? (at < 0 ? 'This page' : `Page ${at + 1}`);
+      toastInfo(`${named} is already tidy.`);
       debugLog('[page] tidy: already tidy', { tabId, pageId });
       return;
     }

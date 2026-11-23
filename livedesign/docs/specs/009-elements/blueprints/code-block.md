@@ -21,8 +21,7 @@ Scope, by file:
 | `../packages/workbench/src/components/dialogs/CodeEditDialog.tsx` | Edit code dialog                                                                              |
 | `apps/live/components/dialogs/EditorElementDialogs.tsx`           | Mounts the dialog for `codeEditOpenForId`                                                     |
 | `apps/live/components/canvas/useBoxedElementGestures.ts`          | Double-click routes a code block to `onEditCode`                                              |
-| `apps/live/components/palette/ElementDataSections.tsx`            | The Code section (Tools flyout)                                                               |
-| `apps/live/components/palette/context-menu-data-editors.tsx`      | `CodeSummary`: line count, language, Edit Code, Wrap toggle                                   |
+| `apps/live/components/palette/ElementDataSections.tsx`            | The Code row (Tools flyout), opening the dialog                                               |
 | `apps/live/components/palette/PresetSections.tsx`                 | `CodeThemePresetsSection` in the Style band                                                   |
 | `apps/live/lib/style-presets.ts`                                  | `applyCodeThemeToEl`                                                                          |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`                   | `setCodeSelected`, `setCodeWrapSelected`                                                      |
@@ -88,11 +87,11 @@ A failed load renders plain text and retries on the next mount (D105).
 
 1. Double-click on the card calls `onEditCode(id)` before any label edit, unless
    `remotelyLocked`; read-only surfaces pass no handler. A user-locked block still opens [QE7].
-2. The Code section (Tools flyout): `CodeSummary` ("No code yet" or "n lines · language"), an
-   **Edit Code** button opening the same dialog, and a **Wrap Long Lines** toggle
-   (`setCodeWrapSelected`, `'CodeWrap'`). No language picker in the menu [QE5].
+2. The Code row (Tools flyout, `MenuDialogSection`) opens the same dialog. No language picker
+   and no wrap toggle in the menu [QE5].
 3. `CodeEditDialog`: a 14-row monospace textarea (`maxLength = CODE_MAX_LENGTH`, spellcheck off,
-   autofocus) and a language `select` ("Plain text" for `plain`). Tab inserts two spaces at the
+   autofocus), a language `select` ("Plain text" for `plain`) and a **Wrap Long Lines** checkbox,
+   saved through `setCodeWrapSelected` (`'CodeWrap'`) only when it changed. Tab inserts two spaces at the
    caret and never moves focus [QE8]. Save commits `setCodeSelected(draft.slice(0, 4000), lang)`
    (one undo step, `'CodeBlock'`) and closes; Cancel, Close and Escape discard.
 4. `setCodeSelected` writes to every selected code block, not only the one the dialog opened

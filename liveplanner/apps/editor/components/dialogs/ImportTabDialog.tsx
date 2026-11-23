@@ -335,12 +335,15 @@ export function ImportTabDialog({
                   <ImportReport failures={report.failures} onDone={onClose} />
                 ) : (
                   <>
-                    {/* Destructive-action warning: this overwrites the tab. */}
-                    <Callout tone="warning" className="mb-4">
-                      This replaces everything on{' '}
-                      <strong className="font-semibold">{tabName || 'this tab'}</strong> with the
-                      imported content. Undo brings it back.
-                    </Callout>
+                    {/* Destructive-action warning: this overwrites the tab. Only where this step is the dialog's first
+                        screen: reached from the list, its row there has already said so. */}
+                    {jsonAlone ? (
+                      <Callout tone="warning" className="mb-4">
+                        This replaces everything on{' '}
+                        <strong className="font-semibold">{tabName || 'this tab'}</strong> with the
+                        imported content. Undo brings it back.
+                      </Callout>
+                    ) : null}
                     {dropError ? (
                       <div className="mb-4">
                         <ImportError>{dropError}</ImportError>

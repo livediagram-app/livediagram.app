@@ -17,6 +17,9 @@ import {
   onMouseHover,
   useRevertOnUnmount,
 } from '@liveworkspace/workbench/components/primitives/hover-preview';
+import { ElementRowsDialog } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
+import { elementSettingsHeroArt } from '@liveworkspace/ui/dialog-hero-art/element-settings';
+import { elementKindLabel } from '@livedesign/design';
 import {
   isFixedSizeElement,
   arrowheadShapeOf,
@@ -62,7 +65,8 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementMenuQuickBar, quickBarItems } from './ElementMenuQuickBar';
-import { ResourcesFlyout } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
+import { ResourcesMenuGlyph } from '@liveworkspace/workbench/components/palette/element-resources';
+import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
 import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
@@ -149,6 +153,45 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       action();
       onClose();
     };
+    // Its own settings, opened from the menu's row named for it: the same sections in a dialog, laid open
+    // (canvas-and-palette.md "An element's own settings open in a dialog"). The menu is not drawn under it.
+    if (menu.mode === 'element' && menu.tools) {
+      const sankeyTarget = target.type === 'shape' && target.shape === 'sankey';
+      return (
+        <ElementRowsDialog
+          art={elementSettingsHeroArt}
+          {...(sankeyTarget
+            ? {
+                size: '2xl' as const,
+                title: 'Configure Sankey',
+                subtitle: 'Its flows, and how it draws them.',
+              }
+            : {
+                title: elementKindLabel(target),
+                subtitle: 'What only this kind of element has.',
+              })}
+          onClose={onClose}
+        >
+          <div data-context-menu="" className="-mx-6 -my-4 text-sm">
+            <ElementAppearanceSections
+              props={props}
+              target={target}
+              onClose={onClose}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps}
+              colorProps={colorProps}
+              textColorHandlers={textColorHandlers}
+              fillColorHandlers={fillColorHandlers}
+              headerFillHandlers={headerFillHandlers}
+              arrowheadColorHandlers={arrowheadColorHandlers}
+              strokeColorHandlers={strokeColorHandlers}
+              afterGroup
+              toolsOnly
+            />
+          </div>
+        </ElementRowsDialog>
+      );
+    }
     return (
       <ContextMenu
         position={position}
@@ -329,12 +372,15 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           labelFillHandlers={labelFillHandlers}
         />
         {/* Resources (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"): what attaches to the element,
-            in one flyout laid out as Appearance's Finish list, the menu's last category. Arrows take none. */}
-        <ResourcesFlyout
-          items={showCollaborateGroup && isBoxed(target) ? quickBarItems(target, props) : []}
-          flyout={flyoutProps('resources')}
-          onClose={onClose}
-        />
+            the menu's last row, opening the Resources dialog (the host closes the menu as it opens). Arrows take
+            none, and with nothing to offer the row is not drawn. */}
+        {showCollaborateGroup && isBoxed(target) && quickBarItems(target, props).length ? (
+          <MenuDialogSection
+            title="Resources"
+            icon={<ResourcesMenuGlyph />}
+            onOpen={() => props.onOpenResources(target.id)}
+          />
+        ) : null}
       </ContextMenu>
     );
   }

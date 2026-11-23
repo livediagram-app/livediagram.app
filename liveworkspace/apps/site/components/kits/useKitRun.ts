@@ -1,7 +1,7 @@
 'use client';
 
 // A project kit's run on the page (liveworkspace/docs/specs/010-site/site.md "Start a Project"): the setup, one run
-// at a time, its Retry with what was made, and Remove What Was Made. The index does the work in one request each.
+// at a time, its Retry with what was made, and Remove Files. The index does the work in one request each.
 import { useCallback, useRef, useState } from 'react';
 import type { IndexClient, KitId, KitRun, Level } from '@liveworkspace/index-client';
 import type { KitTelemetryAction } from '@liveworkspace/telemetry';

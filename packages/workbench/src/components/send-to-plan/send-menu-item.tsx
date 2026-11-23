@@ -4,7 +4,7 @@
 // Add Comment and Add Note, for an element with words, while this session may send. "On" once a card was made from it,
 // its line then saying where the card stands. The menus build their rows on open, so reading the store here is current.
 import { BrandMark } from '@liveworkspace/brand';
-import type { ResourceItem } from '../palette/ResourcesFlyout';
+import type { ResourceOption } from '../palette/element-resources';
 import { currentSends, sendsOf } from './send-store';
 import { canSendHere, sendFromHere, type SendNoun } from './send-to-plan-entry';
 import { chipWords } from './SentChip';
@@ -26,14 +26,16 @@ export const elementWords = (el: Sendable): string =>
 export const elementNoun = (type: string): SendNoun =>
   type === 'sticky' ? 'sticky' : type === 'shape' ? 'shape' : 'element';
 
-/** The element menu's Send to Plan row, or null when it has no words or this session cannot send. */
-export function elementSendItem(target: Sendable, label?: string): ResourceItem | null {
+/** The element's Send to Plan option in its Resources, or null when it has no words or this session cannot send. */
+export function elementSendItem(target: Sendable, label?: string): ResourceOption | null {
   const text = elementWords(target);
   if (!text || !canSendHere()) return null;
   const sent = sendsOf(currentSends(), target.id, ['element'])[0];
   return {
     key: 'send-to-plan',
+    name: 'Send to Plan',
     detail: sent ? `Sent: ${chipWords(sent)}` : 'A card for it in liveplanner',
+    state: sent ? `Sent: ${chipWords(sent)}` : 'Not sent yet',
     label: 'Send to Plan…',
     icon: <SendToPlanMenuIcon />,
     on: !!sent,

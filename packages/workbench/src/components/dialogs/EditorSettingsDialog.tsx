@@ -194,6 +194,8 @@ export function EditorSettingsDialog<C, P extends object>({
       // Wide enough for the rail plus a readable pane, and for All's app headings (60rem). Below `sm:` the Dialog
       // goes edge-to-edge, which is what the phone layout wants.
       size={SETTINGS_DIALOG_SIZE}
+      // A screen of its own on a phone, not a drawer (a top-level dialog).
+      phoneSheet={false}
       // The see-through backdrop rather than the default dim and blur: Settings changes things whose effect is on
       // the canvas behind it (panel opacity, UI scale), so blurring the canvas hides what is being adjusted.
       backdrop="desktop-light"

@@ -70,7 +70,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
       toast.error('This tab is too big to save. Move some of it to another tab.');
     }
     if (saveStatus === 'forbidden') {
-      toast.error('You can no longer edit this. Export a copy to keep your changes.');
+      toast.error('You can no longer edit this canvas. Export a copy to keep your changes.');
     }
   }, [saveStatus, toast]);
 

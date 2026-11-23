@@ -140,7 +140,7 @@ export function ProjectKits({
             </li>
             <li>
               Completed is a run, first time or after a retry, that made every file and every
-              connection. Removed is Remove What Was Made, done.
+              connection. Removed is Remove Files, done.
             </li>
             <li>
               A browser that has turned telemetry off, or asks sites not to track, sends none of

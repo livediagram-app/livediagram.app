@@ -135,12 +135,12 @@ describe('the rule’s card', () => {
     expect(within(card).getByText('Ana Costa')).toBeTruthy();
     expect(card.textContent).toContain('Creates a card in Launch Board');
     expect(card.textContent).toContain('A chain stops after 3 hops');
-    fireEvent.click(within(card).getByRole('button', { name: 'Last Runs in the Audit Trail' }));
+    fireEvent.click(within(card).getByRole('button', { name: 'View Last Runs' }));
     expect(onRuns).toHaveBeenCalled();
     rerender(<CrossAppRuleCard body={{ steps: [plan('')] }} author={null} />);
     expect(screen.getByText('You, once you save it. Lost access stops the rule.')).toBeTruthy();
     expect(screen.getByText('Nothing picked yet.')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Last Runs in the Audit Trail' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'View Last Runs' })).toBeNull();
     rerender(<CrossAppRuleCard body={{ steps: [{ kind: 'take_snapshot' }] }} author={null} />);
     expect(screen.queryByRole('region', { name: 'Steps in Other Apps' })).toBeNull();
   });

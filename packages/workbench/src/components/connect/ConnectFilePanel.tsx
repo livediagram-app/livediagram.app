@@ -5,8 +5,9 @@
 // entry (its one read of Recent starts then). Each press runs connectFile with the host's grant and the editor's own
 // tab add; the editor then moves to the new tab. Times read "Opened 2 minutes ago" against one minute's clock, cleared
 // when the list goes.
-import { useEffect, useState } from 'react';
-import { DialogCloseButton } from '@liveworkspace/ui';
+import { useEffect, useId, useState } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { connectFileHeroArt } from '@liveworkspace/ui/dialog-hero-art/connect-file';
 import type { BesideOffer, ConnectionMade, IndexClient, Item } from '@liveworkspace/index-client';
 import { Dialog } from '../dialogs/Dialog';
 import { indexClient } from '../../lib/index-client';
@@ -51,7 +52,12 @@ export type ConnectFilePanelProps = {
   // A template's offer (connected-tabs.md "A file made beside it"): Make a plan beside it, shown above Find a file.
   offer?: BesideOffer;
   client?: Pick<IndexClient, 'listItems' | 'makeConnection' | 'makeBeside' | 'takeBackConnection'>;
+  // The dialog's hero header says the title and its line, so the panel draws neither (named by `labelledBy`).
+  labelledBy?: string;
 };
+
+/** The line under Connect File, on the start screen and in the dialog's header. */
+export const CONNECT_FILE_LINE = 'Add a tab that opens a file from any liveworkspace app.';
 
 export function ConnectFilePanel({
   hostId,
@@ -67,6 +73,7 @@ export function ConnectFilePanel({
   onOpenExplorer,
   offer,
   client = indexClient,
+  labelledBy,
 }: ConnectFilePanelProps) {
   const now = useTickingNow();
   const heldGrant = async () => {
@@ -110,16 +117,20 @@ export function ConnectFilePanel({
     onConnected(tabId, made);
   };
   return (
-    <section aria-labelledby="connect-file-title" data-connect-file="">
-      <h3 id="connect-file-title" className="text-[16px] font-semibold">
-        Connect File
-      </h3>
-      <p
-        className={`mb-4 mt-0.5 text-[13px] max-sm:mb-3${ink ? '' : ' text-slate-500 dark:text-slate-400'}`}
-        style={ink ? { color: ink.muted } : undefined}
-      >
-        Add a tab that opens a file from any liveworkspace app.
-      </p>
+    <section aria-labelledby={labelledBy ?? 'connect-file-title'} data-connect-file="">
+      {labelledBy ? null : (
+        <>
+          <h3 id="connect-file-title" className="text-[16px] font-semibold">
+            Connect File
+          </h3>
+          <p
+            className={`mb-4 mt-0.5 text-[13px] max-sm:mb-3${ink ? '' : ' text-slate-500 dark:text-slate-400'}`}
+            style={ink ? { color: ink.muted } : undefined}
+          >
+            {CONNECT_FILE_LINE}
+          </p>
+        </>
+      )}
       <ConnectPicker
         client={client}
         hostId={hostId}
@@ -145,22 +156,28 @@ export function ConnectFilePanel({
 export type ConnectFileDialogProps = ConnectFilePanelProps & { onClose: () => void };
 
 /** Connect File from the tab bar's Connect a File (connected-tabs.md "From the tab bar"): the same panel in a centred
- *  dialog (a sheet on a phone), named by the panel's heading, held at one height so the list arriving never moves it.
- *  Connecting closes it, then the editor opens the new tab; its close leaves nothing behind. */
+ *  dialog (a sheet on a phone) under the dialog hero header, which names it, held at one height so the list arriving
+ *  never moves it. Connecting closes it, then the editor opens the new tab; its close leaves nothing behind. */
 export function ConnectFileDialog({
   onClose,
   onConnected,
   onGoTo,
   ...panel
 }: ConnectFileDialogProps) {
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} titleId="connect-file-title" size="lg" phoneSheet>
-      <div className="relative flex h-[min(36rem,80vh)] flex-col overflow-y-auto px-5 pb-5 pt-5">
-        <div className="absolute right-3 top-3">
-          <DialogCloseButton onClick={onClose} />
-        </div>
+    <Dialog open onClose={onClose} titleId={titleId} size="lg" phoneSheet>
+      <HeroDialogHeader
+        art={connectFileHeroArt}
+        titleId={titleId}
+        title="Connect File"
+        subtitle={CONNECT_FILE_LINE}
+        onClose={onClose}
+      />
+      <div className="flex h-[min(36rem,80vh)] flex-col overflow-y-auto px-5 pb-5 pt-5">
         <ConnectFilePanel
           {...panel}
+          labelledBy={titleId}
           onConnected={(tabId, made) => {
             onClose();
             onConnected(tabId, made);

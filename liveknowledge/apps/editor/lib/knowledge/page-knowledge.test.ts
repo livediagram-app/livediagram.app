@@ -261,6 +261,19 @@ describe('a refusal in words', () => {
     expect(knowledgeFailureText(new Error('offline'), 'verify')).toBe(
       'The page could not be verified. Try again.',
     );
+    // Named, so the toast still reads in the notification list; Search has no page to name.
+    expect(knowledgeFailureText(new Error('offline'), 'verify', '“Onboarding”')).toBe(
+      '“Onboarding” could not be verified. Try again.',
+    );
+    expect(knowledgeFailureText(new Error('offline'), 'owner', '“Onboarding”')).toBe(
+      'The owner of “Onboarding” could not be changed. Try again.',
+    );
+    expect(knowledgeFailureText(new Error('offline'), 'context', '“Onboarding”')).toBe(
+      'Always in Context could not be changed for “Onboarding”. Try again.',
+    );
+    expect(knowledgeFailureText(new Error('offline'), 'search', '“Onboarding”')).toMatch(
+      /^Search is not answering/,
+    );
   });
 });
 

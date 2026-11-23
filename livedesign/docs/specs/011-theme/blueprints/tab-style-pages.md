@@ -10,7 +10,7 @@ Background".
 | ------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | New Page Background | `Tab.newPageBackground: PageBackground` (`{}` the chosen paper)                                | `packages/design/src/tab-type.ts`                                                                   |
 | Read and set it     | `newPageBackgroundOf(tab)`, `withNewPageBackground(tab, patch\|null)`                          | `packages/design/src/tab-new-page-background.ts`                                                    |
-| Apply to Every Page | `pagesGivenNewPageBackground(tab, memory?)`                                                    | `packages/design/src/pages-background-copy.ts`                                                      |
+| Apply to All        | `pagesGivenNewPageBackground(tab, memory?)`                                                    | `packages/design/src/pages-background-copy.ts`                                                      |
 | Element Colours     | `Tab.keepElementColours?: boolean` (`true` stored), `ThemeApplyOptions { keepElementColours }` | `packages/design/src/tab-type.ts`, `apps/live/lib/tab-theme-apply.ts`                               |
 | Finished-art filter | `HAND_DRAWN_FINISHES`, `suitsFinishedArt`                                                      | `apps/live/lib/tab-looks.ts`                                                                        |
 | The dialog's pages  | `TabStylePages`, `TabStylePagesContext`                                                        | `apps/live/components/dialogs/tab-style-pages.ts`                                                   |
@@ -54,7 +54,7 @@ Background".
 ## Performance and limits
 
 - The frame is one page export per change of background, theme, finish, font or size (`useMemo`), the cost of the
-  old sample. Apply to Every Page is one walk and one ink pass, on a press.
+  old sample. Apply to All is one walk and one ink pass, on a press.
 
 ## Testing
 

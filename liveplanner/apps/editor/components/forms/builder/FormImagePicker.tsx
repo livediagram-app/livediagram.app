@@ -4,6 +4,7 @@
 // dropped or chosen), Your Images (the person's gallery, every app's pictures) and Search (openly licensed pictures
 // from Openverse, credited). Whatever is picked is stored for this plan (uploaded, or claimed from the gallery), so
 // the plan serves it to the form's builder and its link. Opened over the builder by Change Cover and a picture block.
+import { Callout } from '@liveworkspace/ui/callout';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@liveworkspace/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -180,9 +181,9 @@ function UploadPane({ scope, onPick }: { scope: Scope; onPick: (p: FormPicked) =
         onChange={(e) => void upload(e.target.files?.[0])}
       />
       {error ? (
-        <p role="alert" className="mt-3 text-[13px] font-medium text-red-700 dark:text-red-400">
+        <Callout tone="error" role="alert" className="mt-3">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <ImageUploadLimit
         refusal={limit}
@@ -240,9 +241,9 @@ function GalleryPane({ scope, onPick }: { scope: Scope; onPick: (p: FormPicked) 
   return (
     <div>
       {error ? (
-        <p role="alert" className="mb-3 text-[13px] font-medium text-red-700 dark:text-red-400">
+        <Callout tone="error" role="alert" className="mb-3">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <ul className="grid grid-cols-4 gap-2 max-sm:grid-cols-3">
         {images.map((image) => (

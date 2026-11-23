@@ -30,14 +30,8 @@ import {
   type ItemFieldId,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import {
-  Button,
-  CheckIcon,
-  CloseIcon,
-  DialogCloseButton,
-  DuplicateIcon,
-  TrashIcon,
-} from '@liveplanner/ui';
+import { Button, CheckIcon, CloseIcon, DuplicateIcon, TrashIcon } from '@liveplanner/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -48,6 +42,7 @@ import {
   useCardTypeTour,
 } from '@/components/tour/CardTypeTour';
 import { SheetRow } from './PlanModal';
+import { itemTypeEditorHeroArt } from './ItemTypeEditorHeroArt';
 import { ItemTypeConfiguration } from './ItemTypeConfiguration';
 import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
 import { ItemTypeStatuses } from './ItemTypeStatuses';
@@ -64,8 +59,6 @@ import {
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { withoutEmptyTabs, type LayoutDraft } from './item-type-layout';
-import { PlanTypeGlyph } from './plan-type-glyph';
-import { ACCENT_TEXT, accentVars } from './plan-palette';
 
 // Where a deleted type's items go: another type's id, or null to keep them (drawn as "Item").
 
@@ -351,22 +344,21 @@ export function ItemTypeEditor({
       closeOnEscape={!tour.active}
       className="max-h-[min(46rem,calc(100dvh-2rem))] overflow-hidden"
     >
-      <div className="flex items-center gap-2 px-5 pt-5 pb-2">
-        <h2
-          id={titleId}
-          className="flex min-w-0 flex-1 items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-50"
-        >
-          <span className={ACCENT_TEXT} style={accentVars(color)}>
-            <PlanTypeGlyph glyph={glyph} size={18} />
-          </span>
-          {/* Named for the type as saved, so the title stays put while its Name is edited. */}
-          {type ? `Edit ${type.label} Card Type` : 'New Card Type'}
-        </h2>
-        {/* Show Me, Help on card types, and the editor's own close (as Cancel: the draft is dropped). */}
-        <CardTypeShowMeButton tour={tour} />
-        <HelpArticleLink article="planCardTypes" variant="labelled" />
-        <DialogCloseButton compact onClick={onClose} />
-      </div>
+      {/* Show Me, Help on card types, and the editor's own close (as Cancel: the draft is dropped). */}
+      <HeroDialogHeader
+        art={itemTypeEditorHeroArt}
+        titleId={titleId}
+        // Named for the type as saved, so the title stays put while its Name is edited.
+        title={type ? `Edit ${type.label} Card Type` : 'New Card Type'}
+        actions={
+          <>
+            <CardTypeShowMeButton tour={tour} />
+            <HelpArticleLink article="planCardTypes" variant="labelled" />
+          </>
+        }
+        onClose={onClose}
+        underHandle
+      />
       <ItemTypeEditorTabs
         tab={tab}
         onTab={setTab}

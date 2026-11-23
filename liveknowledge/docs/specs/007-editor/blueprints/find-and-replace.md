@@ -101,7 +101,7 @@ painters: a ProseMirror plugin in the writing and a ring overlay on the canvas. 
 - Replace All: `flushWriting(tab)`, then `replaceAllIn(seen)` (every match found again from the tab, uncapped) and one
   `commitActiveTab` the same way: one history step. A Participant's commit passes `participant.guardCommit`
   (`participantTabChange`), which every replaceable change satisfies by construction.
-- Toast: `Replaced N matches.` (`1 match`), or `Replaced N matches. M matches in text you can't edit were left as they
+- Toast: `Replaced N matches in “<page>”.` (`1 match`), or `Replaced N matches in “<page>”. M matches in text you can't edit were left as they
 are.` when any held (`1 match ... was left as it is.`).
 
 ### Highlights (`find-highlight-store.ts`)

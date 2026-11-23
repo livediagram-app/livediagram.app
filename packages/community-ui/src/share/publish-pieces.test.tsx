@@ -135,7 +135,7 @@ describe('CommunityPublishedConfirmation', () => {
       fireEvent.click(screen.getByRole('button', { name: /Copy Link/ }));
     });
     expect(notify).toHaveBeenCalledWith(
-      'Couldn’t copy the link. Copy it from the post instead.',
+      'Couldn’t copy the Community link. Copy it from the post instead.',
       'error',
     );
   });

@@ -1,5 +1,6 @@
 'use client';
 
+import { layersHeroArt } from './LayersHeroArt';
 import { useRef, useState } from 'react';
 import { type Element, type Layer } from '@livediagram/document';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
@@ -206,6 +207,7 @@ export function LayersPanel({
     <MovablePanel
       helpArticle="layers"
       title="Layers"
+      hero={{ art: layersHeroArt }}
       // A popover over its bottom-right cluster button (docs/specs/006-document/layers.md): never placed or dragged.
       position={null}
       defaultCorner="bottom-right"
@@ -225,16 +227,15 @@ export function LayersPanel({
           <span className="text-xs text-slate-500 dark:text-slate-400">
             {layers.length} {layers.length === 1 ? 'layer' : 'layers'}
           </span>
-          <HoverCard title="New Layer" description="Add a layer above the active one.">
-            <button
-              type="button"
-              onClick={onAddLayer}
-              className={`flex h-8 items-center gap-1.5 rounded-lg bg-brand-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
-            >
-              <PlusIcon />
-              New Layer
-            </button>
-          </HoverCard>
+          {/* No hover card: the button says what it does. */}
+          <button
+            type="button"
+            onClick={onAddLayer}
+            className={`flex h-8 items-center gap-1.5 rounded-lg bg-brand-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
+          >
+            <PlusIcon />
+            New Layer
+          </button>
         </div>
         <ul
           ref={listRef}

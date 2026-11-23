@@ -86,7 +86,7 @@ so `writing-text.ts` reads them from the block types with the document package's
 - `id` is `stableHash(tab, heading path, n)`, `n` being the passage's place among the passages of the same heading
   path. Writing added under one heading therefore renames no passage under another. `ordinal` is its place on the
   page. `textHash` is `stableHash(text)`. `firstBlock` and `lastBlock` are the ids of the blocks it spans, to find it
-  on the page (a citation's jump, "Fix the Other").
+  on the page (a citation's jump, "Is Right").
 - A heading's text in the path is cut at `MAX_HEADING_PATH_CHARS` (120).
 
 ## Durable Object SQLite: what was confirmed

@@ -64,7 +64,7 @@ Settings is opened on one of its rows (a search result) or on the section.
 
 ## Menu steps
 
-A step whose copy names a part of the element's own menu ("In its menu, Tools › Rows…", "Right-click it, then
+A step whose copy names a part of the element's own menu ("In its menu, the Layer Stack row…", "Right-click it, then
 Tools › Stack…") opens that menu on the element (`openElementMenu`, as a right-click does), opens each row of its path in
 turn (an accordion section, or a flyout such as **Tools**), highlights the part the last row opened, and closes the
 menu as the step ends, however it ends (`inTheMenu`, `menuStep`, `element-menu-tour.ts`). A path that cannot be
@@ -220,7 +220,7 @@ On the selected Timeline, from `timeline-tour-steps.ts`.
 2. **What Happens**: rings the first milestone's name; click (tap) to type over it.
 3. **And When**: rings the first milestone's when; click (tap) to change it.
 4. **Add a Milestone**: the "+" ring open on **Add Milestone**; one at the end, up to eight.
-5. **Reorder in the Menu** opens the menu; Tools › Rows.
+5. **Reorder in the Menu** opens the menu; the row named for the graphic, which opens its dialog.
 6. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
 7. **That Is a Timeline**: the closing card.
 

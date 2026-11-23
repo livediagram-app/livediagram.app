@@ -2,10 +2,20 @@
 
 // The Conditional Formatting popover (docs/specs/029-sheets/conditional-formatting.md "Making and changing rules"):
 // the rule list (the rules touching the selection, or every rule), each with its swatch, line and range, Move Up,
-// Move Down and Delete Rule; Add Another Rule; and the rule form, whose rule draws on the grid for this person while
+// Move Down and Delete Rule; Add Rule; and the rule form, whose rule draws on the grid for this person while
 // it is open (a preview, never sent). The draft and its presets are format-rule-draft.ts.
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Select, TextInput, Tooltip } from '@liveplanner/ui';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  Button,
+  CloseIcon,
+  CompactEmptyState,
+  Select,
+  TextInput,
+  Tooltip,
+} from '@liveplanner/ui';
+import { ConditionalFormatIcon } from '../sheet-icons';
 import {
   CONDITION_OPS,
   FORMAT_CONDITION_LABELS,
@@ -35,6 +45,10 @@ import {
   type Draft,
 } from './format-rule-draft';
 import { Swatch } from './FormatRuleSwatch';
+
+// A rule row's Move Up, Move Down and Delete: one square hit area each, the icon centred in it.
+const ROW_BUTTON =
+  'flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 
 const WIDTH_PX = 384;
 const NO_RULES: readonly FormatRule[] = [];
@@ -159,8 +173,13 @@ export function SheetFormatRules({
         <h2 className="text-sm font-semibold">Conditional Formatting</h2>
         {!d ? (
           <>
-            <label className="flex cursor-pointer items-center gap-2 text-[12px]">
-              <input type="checkbox" checked={all} onChange={(e) => setAll(e.target.checked)} />
+            <label className="flex w-fit cursor-pointer items-center gap-2 text-[12px]">
+              <input
+                type="checkbox"
+                className="h-3.5 w-3.5 cursor-pointer"
+                checked={all}
+                onChange={(e) => setAll(e.target.checked)}
+              />
               Show All Rules
             </label>
             {shown.length ? (
@@ -194,36 +213,39 @@ export function SheetFormatRules({
                         type="button"
                         aria-label="Move Up"
                         disabled={at <= 0}
-                        className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
+                        className={ROW_BUTTON}
                         onClick={() => actions.moveFormatRule(rule.id, -1)}
                       >
-                        ↑
+                        <ArrowUpIcon size={12} />
                       </button>
                       <button
                         type="button"
                         aria-label="Move Down"
                         disabled={at >= rules.length - 1}
-                        className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 disabled:cursor-default disabled:opacity-30 dark:hover:bg-slate-800"
+                        className={ROW_BUTTON}
                         onClick={() => actions.moveFormatRule(rule.id, 1)}
                       >
-                        ↓
+                        <ArrowDownIcon size={12} />
                       </button>
                       <button
                         type="button"
                         aria-label="Delete Rule"
-                        className="cursor-pointer rounded px-1 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                        className={ROW_BUTTON}
                         onClick={() => actions.removeFormatRule(rule.id)}
                       >
-                        ✕
+                        <CloseIcon size={12} />
                       </button>
                     </li>
                   );
                 })}
               </ul>
             ) : (
-              <p className="text-[12px] text-slate-500 dark:text-slate-400">
-                {all ? 'No format rules yet.' : 'No format rules on these cells yet.'}
-              </p>
+              <CompactEmptyState
+                size="small"
+                icon={<ConditionalFormatIcon />}
+                title={all ? 'No format rules' : 'No format rules on these cells'}
+                description="Add Rule starts one."
+              />
             )}
             <div className="flex justify-between gap-2 border-t border-slate-100 pt-2.5 dark:border-slate-800">
               <Button
@@ -231,7 +253,7 @@ export function SheetFormatRules({
                 size="xs"
                 onClick={() => setD(draftOf(c, null, actions.newFormatRuleId()))}
               >
-                Add Another Rule
+                Add Rule
               </Button>
               <Button size="xs" onClick={onClose}>
                 Done

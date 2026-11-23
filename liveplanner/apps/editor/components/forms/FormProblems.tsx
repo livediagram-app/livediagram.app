@@ -1,9 +1,9 @@
 'use client';
 
 // What stands between a form and its responses (docs/specs/030-forms/forms.md "Publishing and the form link"), listed
-// in Share Form, before publishing and after: responses with nowhere to go (with Choose Where Responses Go), each
+// in Share Form, before publishing and after: responses with nowhere to go (with Choose Destination), each
 // publish check that fails (with Show), and the warnings that hold nothing back (a column its card type leaves out,
-// with Choose Where Responses Go). The status bar's Problems with this Form opens it.
+// with Choose Destination). The status bar's Problems with this Form opens it.
 import {
   DESTINATION_PROBLEM_TEXT,
   publishProblemText,
@@ -50,7 +50,7 @@ export function FormProblems({
             </span>
             {onFixDestination ? (
               <button type="button" onClick={onFixDestination} className={LINK}>
-                Choose Where Responses Go
+                Choose Destination
               </button>
             ) : null}
           </li>
@@ -62,7 +62,7 @@ export function FormProblems({
             {'ruleId' in p && p.ruleId ? (
               onFixDestination ? (
                 <button type="button" onClick={onFixDestination} className={LINK}>
-                  Choose Where Responses Go
+                  Choose Destination
                 </button>
               ) : null
             ) : onShow && ('questionId' in p || 'sectionId' in p) ? (
@@ -77,7 +77,7 @@ export function FormProblems({
             <span>{w}</span>
             {onFixDestination ? (
               <button type="button" onClick={onFixDestination} className={LINK}>
-                Choose Where Responses Go
+                Choose Destination
               </button>
             ) : null}
           </li>

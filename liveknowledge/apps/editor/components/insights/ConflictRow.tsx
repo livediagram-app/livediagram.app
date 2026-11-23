@@ -83,7 +83,7 @@ export function ConflictRow({
       onClick={() => onOpenPage(fix.tab, fix.firstBlock)}
       className="max-w-full phone:min-h-11"
     >
-      <span className="truncate">{side.title || fallback} Is Right, Fix the Other</span>
+      <span className="truncate">{side.title || fallback} Is Right</span>
     </Button>
   );
   return (

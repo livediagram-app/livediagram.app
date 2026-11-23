@@ -31,7 +31,7 @@ function toastAfter(status: SaveStatus): string[] {
 
 describe('useEditorPersistence save toast', () => {
   it('blames the connection only for a failed save', () => {
-    expect(toastAfter('error')).toEqual(['Couldn’t save your changes. Check your connection.']);
+    expect(toastAfter('error')).toEqual(['Couldn’t save “Untitled plan”. Check your connection.']);
   });
 
   it('names the sign-in, not the connection, for an unauthenticated save', () => {

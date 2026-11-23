@@ -5,21 +5,24 @@ import type { EntityField, FieldRemap } from '@livediagram/document';
 import { EntityFieldsEditor } from './EntityFieldsEditor';
 import { CardinalityButton } from '@/components/canvas/entity/CardinalityButton';
 
-// docs/specs/009-elements/entity.md "The Fields menu" and "Cardinality ends".
+// docs/specs/009-elements/entity.md "The Fields dialog" and "Cardinality ends".
 
 describe('EntityFieldsEditor', () => {
-  it('cycles a key at once, reading a legacy key from the type', () => {
+  it('picks a key from its menu at once, reading a legacy key from the type', () => {
     const onChange = vi.fn();
     render(<EntityFieldsEditor fields={[{ name: 'id', type: 'uuid PK' }]} onChange={onChange} />);
     expect(screen.getByLabelText<HTMLInputElement>('Field 1 type').value).toBe('uuid');
-    fireEvent.click(screen.getByRole('button', { name: 'Field 1 key: PK. Change key' }));
+    // The row shows the key's glyph alone; its menu names every key.
+    fireEvent.click(screen.getByRole('button', { name: 'Field 1 key: Primary Key. Change key' }));
+    expect(screen.getByText('Unique Key')).toBeTruthy();
+    fireEvent.click(screen.getByText('Foreign Key'));
     expect(onChange).toHaveBeenCalledWith([{ name: 'id', type: 'uuid', key: 'fk' }]);
   });
 
   it('removes a field with the remap that lets go of ends on it', () => {
     const onChange = vi.fn();
     render(<EntityFieldsEditor fields={[{ name: 'a' }, { name: 'b' }]} onChange={onChange} />);
-    fireEvent.click(screen.getAllByRole('button', { name: 'Remove field' })[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Remove field 1' }));
     const [fields, remap] = onChange.mock.calls[0] as [EntityField[], FieldRemap];
     expect(fields).toEqual([{ name: 'b' }]);
     expect(remap(0)).toBeNull();

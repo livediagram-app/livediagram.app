@@ -2,6 +2,7 @@
 
 import { useConfirm } from '../ui/useConfirm';
 import { useToast } from '../ui/useToast';
+import { toastName } from '../../lib/toast-name';
 import { dismissLocalMove } from '../../lib/offline/local-move-dismissal';
 
 // The open editor, where there is one: its id and its in-place moves (useSyncInPlace, useTakeOfflineInPlace).
@@ -99,7 +100,9 @@ export function createOfflineConversion({
         // Stays on the server (aborts roll the local copy back). A conversion already running
         // reports for itself.
         if (e instanceof ConversionInProgressError) return;
-        toast.error('Couldn’t take this offline. It stays safe on the server.');
+        toast.error(
+          `Couldn’t take ${toastName(liveDoc.name) ?? 'this'} offline. It stays safe on the server.`,
+        );
       }
     };
 

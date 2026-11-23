@@ -4,6 +4,7 @@
 // in place. An Editor ticks, edits (Enter adds the next item, Backspace on an empty one removes it), and adds at the
 // foot; each change is one step. Anyone else sees the ticks.
 import { useRef, useState } from 'react';
+import { PlusIcon } from '@liveplanner/ui';
 import {
   DASHBOARD_CHECKLIST_ITEMS_MAX,
   DASHBOARD_CHECKLIST_ITEM_MAX,
@@ -245,9 +246,7 @@ export function DashboardChecklistCard({
           onClick={() => addAfter(-1)}
           className="flex cursor-pointer items-center gap-1.5 self-start rounded-md px-1 py-0.5 text-[12px] font-medium text-slate-500 transition hover:text-brand-700 dark:text-slate-400 dark:hover:text-brand-300"
         >
-          <span aria-hidden className="text-[14px] leading-none">
-            +
-          </span>
+          <PlusIcon size={12} />
           Add Item
         </button>
       ) : null}

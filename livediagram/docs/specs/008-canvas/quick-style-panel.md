@@ -154,9 +154,24 @@ opens nothing.
   menu, and offering both would put two rows of colour on every shape.
 - A section shows when at least one selected element supports it (a background for a shape that has
   one, a border for a shape that draws one, a label slot for alignment, text colour for a text
-  element). Sticky notes, tables, images and the other non-shape elements are not styled by the
+  element). Tables, images and the other non-shape elements are not styled by the
   panel; a selection holding only those shows no panel, and a selection mixing them with styled
   elements styles the rest (see Multi-selection).
+- **Sticky notes and code blocks** have rows of their own (owner, 2026-11-23), since neither follows the tab's
+  theme and so neither takes its swatches (`lib/quick-style-kinds.ts`, `QuickKindRows`):
+  - **Note colour**, on a selected sticky note: the warm and cool halves of the note pad, eight colours (Classic,
+    Lemon, Peach, Rose, Lilac, Sky, Mint, Teal), each setting the note's paper and the ink that reads on it, as
+    the menu's Presets do, then **More colours**, which sets the paper alone. The colour every selected note wears
+    is marked; a custom or mixed colour marks none. The neutral sheets stay in the menu.
+  - **Code theme**, on a selected code block: its eight themes (Midnight first, the one an unset block wears), each
+    swatch the theme's surface.
+    - **Tables**: a selected table gets **Background** and **Text colour** rows, the tab theme's swatches (its
+      default first) and More colours, set as plain colours since a table binds no swatch. The colour every selected
+      table wears is marked. Its Tools row holds Add Row, Add Column and Edit Table.
+      Each row styles only its own kind in a mixed selection, and a locked element is passed over, as everywhere.
+- **The Tools row shows for any one selected element that has kind tools**, with or without style rows: a code
+  block's Edit Code, a checklist's Edit Checklist and a concept graphic's Edit button show in a panel of their own
+  when no row applies.
 
 ### Option counts and rhythm
 
@@ -285,7 +300,7 @@ text element to that selection and a Text colour row appears beside the others, 
 **Any mix works.** A selection may hold every kind at once (a whole pasted or imported board:
 marker strokes, shapes, lines, arrows, paths, text boxes, stickies, images, frames). Each row
 styles the selected elements it is meaningful for and leaves the rest exactly as they are; the
-elements no row fits (stickies, images, frames, tables and the other non-shape kinds) are passed
+elements no row fits (images, frames, tables and the other non-shape kinds) are passed
 over, never refused, so they never hide the panel from the rest.
 
 - A section shows when **at least one** selected element supports it, and a choice applies only to
@@ -412,7 +427,7 @@ counted as Custom Swatches in the dashboard's Look & Feel stack.
   geometry work per kind. Today the icon and label form one group that text alignment moves together
   (`shape-inline-icon-layout.tsx`); pinning waits until that geometry exists.
 - **Phones.** See above.
-- **Styling other non-shape elements** (stickies, tables). They have their own looks and their own menus.
+- **Styling other non-shape elements** (tables, images). They have their own looks and their own menus.
 - **A shape's label colour.** It stays in the context menu's Colours category (see Text colour above).
 
 ## Help

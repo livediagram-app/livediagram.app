@@ -122,7 +122,7 @@ describe('painting one page from another', () => {
     expect(h.edits().copyBackground('a', 'b')).toBe(false);
     expect(h.commitTabs).not.toHaveBeenCalled();
     expect(h.toastInfo).toHaveBeenCalledWith(
-      'That page is locked. Unlock it to change its background.',
+      'Page 2 is locked. Unlock it to change its background.',
     );
   });
 

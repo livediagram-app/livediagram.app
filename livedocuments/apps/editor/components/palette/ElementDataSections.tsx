@@ -20,28 +20,27 @@ import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
-import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
+  elementKindLabel,
   isChipShape,
-  isConceptShape,
-  type ConceptShape,
-  type ShapeElement,
   LINE_DEFAULT_SERIES,
   chartRamp,
   chartTypeOf,
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
-  type ChecklistItem,
-  type LegendItem,
   type PieSlice,
 } from '@livedocuments/document';
 import {
   ProgressMenuGlyph,
   ToolsMenuGlyph,
 } from '@liveworkspace/workbench/components/palette/context-menu-icons';
-import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuGroupSeparator,
+} from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { AnimationSections } from '@/components/palette/AnimationSections';
-import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
+import { MenuToolsSection } from '@liveworkspace/workbench/components/primitives/MenuToolsSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
@@ -57,11 +56,8 @@ import {
 import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import {
   ChartMenuGlyph,
-  ChecklistRowsEditor,
-  CodeSummary,
-  LegendDataEditor,
   LineDataSummary,
-  PieDataEditor,
+  PieDataSummary,
   ProgressRow,
   RatingMenuGlyph,
   RatingPickerRow,
@@ -101,13 +97,13 @@ type ElementDataSectionsProps = {
   isSankey: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
+  // The menu, or the element's settings dialog (the sections alone, laid open).
+  surface?: 'menu' | 'dialog';
 };
 
 // Row editors re-seed their draft when handed a different array, so the fallbacks for an element
 // without rows are one stable array each rather than a fresh one per render (which reset the draft).
 const DEFAULT_PIE_ROWS: PieSlice[] = PIE_DEFAULT_SLICES.map((s) => ({ ...s }));
-const NO_CHECKLIST_ITEMS: ChecklistItem[] = [];
-const NO_LEGEND_ITEMS: LegendItem[] = [];
 
 export function ElementDataSections({
   props,
@@ -120,9 +116,15 @@ export function ElementDataSections({
   isChecklist,
   isLegend,
   isSankey,
-  sectionProps,
+  sectionProps: menuSectionProps,
   flyoutProps,
+  surface = 'menu',
 }: ElementDataSectionsProps) {
+  // In the element's settings dialog every section lies open: there is room, and nothing to fold away.
+  const sectionProps: typeof menuSectionProps =
+    surface === 'dialog'
+      ? () => ({ open: true, onToggle: () => {}, flush: true })
+      : menuSectionProps;
   const shapeTarget = target.type === 'shape' ? target : null;
   // What an uncoloured slice / series shows as, so the swatches in the data
   // rows match the chart: the ladder the canvas draws with (chartRamp, docs/specs/009-elements/pie-chart.md).
@@ -140,7 +142,6 @@ export function ElementDataSections({
     isChip ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
-    (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRating ||
     isChart ||
@@ -151,8 +152,27 @@ export function ElementDataSections({
     shapeTarget?.shape === 'map';
   return (
     <>
+      {surface === 'dialog' ? null : (
+        <>
+          {/* Animation sits straight under Appearance, on every element (owner, 2026-11-23); what is the element's
+          own (its Tools, or the one row that opens its dialog) follows under a rule, as a table's Table row does. */}
+          <AnimationSections
+            elements={[target]}
+            keyPrefix=""
+            sectionProps={sectionProps}
+            flyoutProps={flyoutProps}
+            handlers={props}
+          />
+          {showTools ? <MenuGroupSeparator /> : null}
+        </>
+      )}
       {showTools ? (
-        <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
+        <MenuToolsSection
+          title={elementKindLabel(target)}
+          icon={<ToolsMenuGlyph />}
+          onOpen={props.onOpenTools}
+          inline={surface === 'dialog'}
+        >
           {/* Progress (docs/specs/009-elements/progress.md) — the percentage; how the fill animates is the
             Animation row's Progress category. Only for progress bars / rings. */}
           {isProgress ? (
@@ -218,10 +238,10 @@ export function ElementDataSections({
                         onEdit={() => props.onEditLineData(shapeTarget.id)}
                       />
                     ) : (
-                      <PieDataEditor
+                      <PieDataSummary
                         palette={chartFallbackPalette}
                         slices={shapeTarget.pieSlices ?? DEFAULT_PIE_ROWS}
-                        onChange={props.onSetPieData}
+                        onEdit={() => shapeTarget && props.onEditRows(shapeTarget.id, 'slices')}
                       />
                     )
                   }
@@ -229,29 +249,18 @@ export function ElementDataSections({
               ) : null}
             </MenuAccordionSection>
           ) : null}
-          {/* Code (docs/specs/009-elements/code-block.md) — the snippet summary + the modal opener (the
-            multi-line editor is too big for the menu, like the line grid). */}
-          {isCodeBlock ? (
-            <MenuAccordionSection title="Code" icon={<DataMenuGlyph />} {...sectionProps('code')}>
-              <CodeSummary
-                code={shapeTarget?.code ?? ''}
-                language={shapeTarget?.codeLanguage ?? 'plain'}
-                wrap={shapeTarget?.codeWrap !== false}
-                onSetWrap={props.onSetCodeWrap}
-                onEdit={() => target.type === 'shape' && props.onEditCodeBlock(target.id)}
-              />
-            </MenuAccordionSection>
+          {/* Code (docs/specs/009-elements/code-block.md "The menu"): the row opens the code in its dialog (a
+            multi-line editor is too big for the menu), where its language and Wrap Long Lines are too. */}
+          {isCodeBlock && shapeTarget ? (
+            <MenuDialogSection
+              title="Code"
+              icon={<DataMenuGlyph />}
+              onOpen={() => props.onEditCodeBlock(shapeTarget.id)}
+              flush
+            />
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
-          {/* A concept graphic's variant; its animation is in the Animation row (docs/specs/009-elements/concept-graphics.md). */}
-          {shapeTarget && isConceptShape(shapeTarget.shape) ? (
-            <ConceptMenuSection
-              target={shapeTarget as ShapeElement & { shape: ConceptShape }}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
           {/* A badge's or step number's look, Detach, Renumber, Play in Order (docs/specs/009-elements/badge.md). */}
           {shapeTarget && isChip ? (
             <ChipMenuSection
@@ -311,41 +320,33 @@ export function ElementDataSections({
           {shapeTarget && hasWebRowsSection(shapeTarget) ? (
             <WebRowsMenuSection
               target={shapeTarget}
-              sectionProps={sectionProps}
-              onSetRows={props.onSetWebRows}
-              ops={props.elementStyle}
+              onOpen={() => props.onEditRows(shapeTarget.id, 'web-rows')}
             />
           ) : null}
-          {/* Checklist (docs/specs/009-elements/checklist.md) — the rows: done toggles, text, add / remove. */}
-          {isChecklist ? (
-            <MenuAccordionSection
+          {/* Checklist (docs/specs/009-elements/checklist.md): the row opens its rows in the Checklist dialog. */}
+          {isChecklist && shapeTarget ? (
+            <MenuDialogSection
               title="Checklist"
               icon={<DataMenuGlyph />}
-              {...sectionProps('checklist')}
-            >
-              <ChecklistRowsEditor
-                items={shapeTarget?.checklistItems ?? NO_CHECKLIST_ITEMS}
-                onChange={props.onSetChecklistItems}
-                onToggle={
-                  shapeTarget && props.onToggleChecklistItem
-                    ? (index) => props.onToggleChecklistItem!(shapeTarget.id, index)
-                    : undefined
-                }
-              />
-            </MenuAccordionSection>
+              onOpen={() => props.onEditRows(shapeTarget.id, 'checklist')}
+              flush
+            />
           ) : null}
           {/* Legend (docs/specs/009-elements/pie-chart.md): the key's rows, a colour and a word each. */}
+          {isLegend && shapeTarget ? (
+            <MenuDialogSection
+              title="Legend"
+              icon={<DataMenuGlyph />}
+              onOpen={() => props.onEditRows(shapeTarget.id, 'legend')}
+              flush
+            />
+          ) : null}
           {isLegend ? (
             <MenuAccordionSection
-              title="Legend"
+              title="Legend Style"
               icon={<DataMenuGlyph />}
               {...sectionProps('legend')}
             >
-              <LegendDataEditor
-                items={shapeTarget?.legendItems ?? NO_LEGEND_ITEMS}
-                palette={chartFallbackPalette}
-                onChange={props.onSetLegendItems}
-              />
               <LegendTextSize
                 current={shapeTarget?.textSize ?? 'md'}
                 onSet={props.onSetTextSize}
@@ -373,7 +374,8 @@ export function ElementDataSections({
               target={shapeTarget}
               handlers={props.sankey}
               sectionProps={sectionProps}
-              flyoutProps={flyoutProps('sankey')}
+              onOpen={props.onOpenTools}
+              inline={surface === 'dialog'}
               onPreviewTextSize={props.onPreviewTextSize}
               onPreviewEnd={props.onPreviewStyleEnd}
             />
@@ -429,17 +431,10 @@ export function ElementDataSections({
               ) : null}
             </MenuAccordionSection>
           ) : null}
-        </MenuFlyoutSection>
+        </MenuToolsSection>
       ) : null}
       {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
             element takes, such as Shape Animation and Text Animation for a labelled shape. */}
-      <AnimationSections
-        elements={[target]}
-        keyPrefix=""
-        sectionProps={sectionProps}
-        flyoutProps={flyoutProps}
-        handlers={props}
-      />
       {/* Colours — text / background / border swatches. Boxed elements that
             support colours (excludes images). Icons included: Text tints a
             line-art glyph, Background / Border paint the icon's box. Pie charts

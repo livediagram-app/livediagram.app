@@ -3,6 +3,7 @@
 // The rail of versions (docs/specs/006-document/version-history.md "In the editor"): Now first, then the versions
 // newest first under day headings, each with its time, its name or kind, and who it names. An Editor names the
 // current content at the rail's head and names, renames or unnames the selected row in place.
+import { Callout } from '@liveworkspace/ui/callout';
 import { useState, type FormEvent } from 'react';
 import type { VersionSummary } from '@livedocuments/api-schema';
 import { NAME_MAX_LENGTH } from '@livedocuments/document';
@@ -265,9 +266,9 @@ function NameField({
         }}
       />
       {error ? (
-        <p role="alert" className="text-xs text-red-600 dark:text-red-400">
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="flex justify-end gap-1">
         <Button variant="ghost" size="xs" onClick={onCancel}>

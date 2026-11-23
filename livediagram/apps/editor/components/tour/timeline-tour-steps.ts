@@ -44,8 +44,8 @@ export function timelineTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
           inTheMenu(
             'rows',
             'Reorder in the Menu',
-            'In its menu, Tools › Rows lets you rename, reorder or remove milestones.',
-            ['Tools', 'Rows'],
+            'In its menu, the Timeline row opens a dialog to rename, reorder or remove milestones.',
+            [],
           ),
         ]
       : []),

@@ -6,7 +6,14 @@
 // `OauthShell`) and the editor's facts are handed in through `OauthPagesConfig`.
 import type { ComponentType, ReactNode } from 'react';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
-import { Chip, Glyph, SOLID_BRAND_DARK_CONTROL, Switch, lucideGlyph } from '@liveworkspace/ui';
+import {
+  Chip,
+  Glyph,
+  SOLID_BRAND_DARK_CONTROL,
+  Spinner,
+  Switch,
+  lucideGlyph,
+} from '@liveworkspace/ui';
 import type { SignInGate } from '../../hooks/auth/useSignInGate';
 import { Callout } from '@liveworkspace/ui/callout';
 
@@ -40,6 +47,17 @@ export const OAUTH_SECONDARY =
 export const OAUTH_BODY = 'mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400';
 
 export const OAUTH_QUIET = 'text-sm text-slate-500 dark:text-slate-400';
+
+// Both pages' waiting line, while the sign-in gate or the request is still loading: a spinner beside the word, so it
+// reads as work in progress rather than a stray line of grey text.
+export function OauthLoading() {
+  return (
+    <p role="status" className={`flex items-center gap-2 ${OAUTH_QUIET}`}>
+      <Spinner size={14} />
+      Loading…
+    </p>
+  );
+}
 
 // Help link to the connect-an-AI-tool article. Opens in a new tab so it never abandons the in-progress OAuth
 // session on this screen.

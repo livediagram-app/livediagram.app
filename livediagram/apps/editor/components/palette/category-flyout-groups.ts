@@ -103,7 +103,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:polygon': 'Outlines',
   'tools:arrow': 'Connectors',
   'tools:mind-node': 'Diagrams',
-  'diagrams:c4-person': 'C4 Model',
   'concepts:layer-stack': 'Layers',
   'concepts:funnel': 'Process',
   'concepts:cycle': 'Relationships',

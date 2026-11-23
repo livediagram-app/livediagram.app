@@ -8,6 +8,7 @@ import { useMemo, useReducer } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { toolCaption, toolPhantom } from '@/lib/quick-style-tool';
 import type {
+  CodeThemeId,
   PenColour,
   Element,
   QuickSwatchRole,
@@ -40,6 +41,17 @@ import {
   strokesHighlighterStyle,
   toolHighlighterStyle,
 } from '@/lib/quick-style-highlighter';
+import { hasKindVerbs, useElementKindTools } from '@/components/canvas/element-kind-tools';
+import {
+  applyCodeBlockTheme,
+  applyNoteFill,
+  applyNotePreset,
+  applyTableFill,
+  applyTableTextColour,
+  codeQuickStyle,
+  noteQuickStyle,
+  tableQuickStyle,
+} from '@/lib/quick-style-kinds';
 import {
   highlighterWidthPx,
   type HighlighterWidthId,
@@ -91,6 +103,14 @@ export type QuickStyleApi = {
   // highlights, else the armed tile's next stroke.
   setHighlighterColour: (colour: string) => void;
   setHighlighterWidth: (width: HighlighterWidthId) => void;
+  // A sticky note's paper (a pad colour, or any colour from More colours) and a code block's theme
+  // (docs/specs/008-canvas/quick-style-panel.md "Sticky notes and code blocks").
+  setNoteColour: (presetId: string) => void;
+  setNoteFill: (colour: string) => void;
+  setCodeTheme: (id: CodeThemeId) => void;
+  // A table's cells and words (docs/specs/008-canvas/quick-style-panel.md "Tables").
+  setTableBackground: (colour: string) => void;
+  setTableTextColour: (colour: string) => void;
   // A row's More colours (docs/specs/004-interface-design/colour-picker.md "Skins"): any colour
   // from the full picker, a standard one by name on a line or text.
   setColour: (role: QuickSwatchRole, colour: string) => void;
@@ -204,7 +224,19 @@ export function useQuickStyle(
   }, [editsBlocked, selected, theme, overrides, whiteboard, held, phantom, intent, palette]);
   // The Highlighter rows join whatever else the panel shows; alone, they are the whole panel. A
   // mixed selection's caption counts every styled element, highlights included.
-  const view = useMemo((): QuickStyleView | null => {
+  // A note's and a code block's own rows join whatever else the panel shows; alone, they are the whole panel.
+  const kinds = useMemo(
+    () =>
+      editsBlocked
+        ? {}
+        : {
+            note: noteQuickStyle(selected),
+            code: codeQuickStyle(selected),
+            table: tableQuickStyle(selected, theme, overrides),
+          },
+    [editsBlocked, selected, theme, overrides],
+  );
+  const inkView = useMemo((): QuickStyleView | null => {
     if (!highlighter) return baseView;
     const styled =
       (baseView?.targetIds.length ?? 0) +
@@ -219,6 +251,36 @@ export function useQuickStyle(
       ...(caption ? { caption } : {}),
     };
   }, [baseView, highlighter]);
+  // The one selected element's kind tools (Edit Code, Add Row ...): the panel shows for them alone.
+  const soleId = !editsBlocked && selected.length === 1 ? selected[0]!.id : null;
+  const soleTools = useElementKindTools(soleId ?? '');
+  const toolsId = soleId && soleTools && hasKindVerbs(soleTools) ? soleId : null;
+  const styledView = useMemo((): QuickStyleView | null => {
+    const { note, code, table } = kinds;
+    if (!note && !code && !table) return inkView;
+    return {
+      ...(inkView ?? { targetIds: [], sections: {} }),
+      ...(note ? { note } : {}),
+      ...(code ? { code } : {}),
+      ...(table ? { table } : {}),
+    };
+  }, [inkView, kinds]);
+  const view = useMemo((): QuickStyleView | null => {
+    if (!toolsId) return styledView;
+    return { ...(styledView ?? { targetIds: [], sections: {} }), toolsId };
+  }, [styledView, toolsId]);
+
+  // A note's or a code block's own row: its elements through `apply`, as one commit.
+  const runKind = (
+    ids: readonly string[] | undefined,
+    apply: (el: Element) => Element,
+    telemetryType: string,
+  ) => {
+    if (!ids || editsBlocked) return;
+    const set = new Set(ids);
+    commit((els) => els.map((el) => (set.has(el.id) ? apply(el) : el)));
+    track('Element', 'Changed', telemetryType);
+  };
 
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
@@ -287,6 +349,16 @@ export function useQuickStyle(
   return {
     view,
     setHighlighterColour: (colour) => runHighlighter({ colour }),
+    setNoteColour: (presetId) =>
+      runKind(view?.note?.ids, (el) => applyNotePreset(el, presetId), 'QuickNoteColour'),
+    setNoteFill: (colour) =>
+      runKind(view?.note?.ids, (el) => applyNoteFill(el, colour), 'QuickNoteColour'),
+    setCodeTheme: (id) =>
+      runKind(view?.code?.ids, (el) => applyCodeBlockTheme(el, id), 'QuickCodeTheme'),
+    setTableBackground: (colour) =>
+      runKind(view?.table?.ids, (el) => applyTableFill(el, colour), 'QuickBackground'),
+    setTableTextColour: (colour) =>
+      runKind(view?.table?.ids, (el) => applyTableTextColour(el, colour), 'QuickTextColour'),
     setColour: (role, colour) =>
       run(
         (el) =>

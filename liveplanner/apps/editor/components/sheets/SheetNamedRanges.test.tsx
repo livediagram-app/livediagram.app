@@ -3,7 +3,7 @@
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SHEET_ID, makeSheet, renderSheet } from './sheet-ui-test-utils';
-import { NO_NAMES, NO_NAMES_READ, SheetNamedRanges } from './SheetNamedRanges';
+import { NO_NAMES, NO_NAMES_HINT, SheetNamedRanges } from './SheetNamedRanges';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -69,7 +69,8 @@ describe('the named ranges list', () => {
       canEdit: true,
       canShape: false,
     });
-    expect(screen.getByText(NO_NAMES_READ)).toBeTruthy();
+    expect(screen.getByText(NO_NAMES)).toBeTruthy();
+    expect(screen.queryByText(NO_NAMES_HINT)).toBeNull();
     act(() => {
       h.store.write(SHEET_ID, {
         kind: 'layout',

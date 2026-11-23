@@ -83,14 +83,14 @@ describe('FormConnectCard', () => {
 
   it('Choose Existing opens Responses Go To', () => {
     const { openSettings } = setup();
-    fireEvent.click(screen.getByRole('button', { name: /already have/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Use Existing' }));
     expect(openSettings).toHaveBeenCalledWith('destination');
     expect(track).toHaveBeenCalledWith('Form', 'Linked', 'ConnectChoose');
   });
 
   it('offers no Choose Existing when the project has no board or sheet', () => {
     setup({}, { hasExisting: false });
-    expect(screen.queryByRole('button', { name: /already have/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Use Existing' })).toBeNull();
   });
 
   // The user's report: a removed sheet left the form with nowhere to go and no box to fix it.

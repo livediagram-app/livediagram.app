@@ -9,8 +9,12 @@
 // gone), and is then unavailable; checking another clears its default, sending those back to the root. A team's
 // root is never a default.
 
+import { useId } from 'react';
+import { Callout } from '@liveworkspace/ui/callout';
 import { Button } from '@liveworkspace/ui';
-import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { useAsDefaultHeroArt } from '@liveworkspace/ui/dialog-hero-art/use-as-default';
+import { Dialog, DialogFooter } from '../ui/Dialog';
 import { useExplorer } from '../explorer/context';
 import { SIDEBAR_LABELS } from '../views';
 import { quoted } from '../quoted';
@@ -23,6 +27,7 @@ export function UseAsDefaultDialog({
   onClose: () => void;
 }) {
   const { folders, defaults, defaultEntries, kind, openDialog } = useExplorer();
+  const titleId = useId();
   const folder = folderId === null ? null : folders.byId.get(folderId);
   if (folderId !== null && !folder) return null;
   const name = folder ? folder.name : SIDEBAR_LABELS.myWork;
@@ -33,21 +38,27 @@ export function UseAsDefaultDialog({
     return at !== undefined && folders.byId.has(at);
   };
   return (
-    <Dialog onClose={onClose} ariaLabel={`Use ${quoted(name)} as Default for`} size="sm">
-      <DialogHeader
-        title={`Use ${quoted(name)} as Default for`}
+    <Dialog
+      onClose={onClose}
+      ariaLabel={`Use ${quoted(name)} as Default for`}
+      titleId={titleId}
+      size="sm"
+    >
+      <HeroDialogHeader
+        art={useAsDefaultHeroArt}
+        titleId={titleId}
+        title={<span title={name}>{`Use ${quoted(name)} as Default for`}</span>}
         subtitle={`New ${kind.lowerMany} you make without choosing a place are saved in your default folder.`}
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        onClose={onClose}
+      />
       <fieldset className="px-6 py-4">
         <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           New {kind.lowerMany} that open as
         </legend>
         {defaults.status === 'failed' ? (
-          <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+          <Callout tone="error" role="alert">
             Couldn’t load your default folders.
-          </p>
+          </Callout>
         ) : null}
         <ul className="flex flex-col gap-1">
           {defaultEntries.map((entry) => {
