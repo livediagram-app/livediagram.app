@@ -1,7 +1,7 @@
 'use client';
 
 // Page Info's Required Reading section (docs/specs/030-knowledgebase/required-reading.md "Where it shows"), under
-// Page Health. Not required: for an Editor alone, one line and Require Reading. Required, for every reader: who is
+// Page Health. Not required: nothing (the page menu's Require Reading sets it up). Required, for every reader: who is
 // asked, a bar and "7 of 12 have read it" (a count, never who), and their own state. For an Editor and the page's
 // owner, the people too, Not Yet first then Read, and Remind; an Editor also has Change, which opens the setup panel.
 // What it shows is what the api answered: names only ever arrive for those who may see them.
@@ -122,7 +122,9 @@ export function PageRailReadingView({
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const { required, progress, mine, manages, sees } = reading;
-  if (!required && !manages) return null;
+  // Not required: nothing, for anyone. Setting it up starts in the page's menu (owner 2026-11-23: "require reading
+  // should be in the page context menu until enabled, not always shown"; RequiredReadingAsk).
+  if (!required) return null;
   const panel =
     manages && anchor ? (
       <Suspense fallback={null}>
@@ -138,29 +140,6 @@ export function PageRailReadingView({
       </Suspense>
     ) : null;
   const open = (e: React.MouseEvent<HTMLElement>) => setAnchor(e.currentTarget);
-  if (!required)
-    return (
-      <section
-        data-page-reading="off"
-        className="text-[13px] leading-5 text-slate-700 dark:text-slate-300"
-      >
-        <h2 className={RAIL_LABEL}>Required Reading</h2>
-        <p className="mt-2 text-slate-600 dark:text-slate-400">
-          Ask people to confirm they&apos;ve read this page.
-        </p>
-        <button
-          type="button"
-          onClick={open}
-          aria-haspopup="dialog"
-          aria-expanded={anchor !== null}
-          data-reading-require=""
-          className={`${SMALL} mt-2.5`}
-        >
-          Require Reading
-        </button>
-        {panel}
-      </section>
-    );
   const done = progress?.done ?? 0;
   const total = progress?.total ?? 0;
   const list = reading.people ?? [];

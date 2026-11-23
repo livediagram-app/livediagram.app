@@ -3,7 +3,7 @@
 // api decides who may do what and sends names only to an Editor and the page's owner (its half is
 // apps/api/src/routes/knowledge-reading-routes.test.ts); here each role's answer draws the right banner, Page Info
 // section and presses, and nothing names anyone for a reader who may not see who has read it.
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PageReadingResponse } from '@liveknowledge/api-schema';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
@@ -35,6 +35,21 @@ const { RequiredReadingBanner } = await import('./RequiredReadingBanner');
 const { PageRailReading } = await import('./PageRailReading');
 const { ReadAgainSwitch, ReadAgainToggle } = await import('./ReadAgainToggle');
 const { EditorChromeContext } = await import('@/app/document/[id]/EditorContext');
+const { RequiredReadingAsk } = await import('./RequiredReadingAsk');
+const { askReading, clearReadingAsk, useReadingAsked } =
+  await import('@/lib/required-reading/reading-asked');
+const { readingStore } = await import('@/lib/required-reading/reading-store');
+
+/** Whether the ask for p1 still stands, read as a component would. */
+function readingAskedNow(): boolean {
+  let asked = false;
+  function Probe() {
+    asked = useReadingAsked('p1');
+    return null;
+  }
+  render(<Probe />).unmount();
+  return asked;
+}
 
 const NOW = Date.UTC(2026, 10, 22, 12);
 const REQUIRED = { audience: 'everyone' as const, askedAt: NOW - 86_400_000, round: 1 };
@@ -111,6 +126,7 @@ beforeEach(() => {
   vi.spyOn(Date, 'now').mockReturnValue(NOW);
 });
 afterEach(() => {
+  clearReadingAsk();
   cleanup();
   vi.restoreAllMocks();
   vi.clearAllMocks();
@@ -252,18 +268,25 @@ describe('Page Info', () => {
     },
   );
 
-  it('offers an Editor Require Reading on a page that is not required, and nobody else anything', async () => {
-    const off = { ...ANSWER.guest!, required: null, progress: null };
-    as(off);
-    const first = render(<PageRailReading />);
-    await waitFor(() => expect(api.read).toHaveBeenCalled());
-    expect(first.container.textContent).toBe('');
-    first.unmount();
-    as({ ...off, manages: true, sees: true });
-    await rail();
-    expect(await screen.findByText("Ask people to confirm they've read this page.")).toBeTruthy();
-    api.set.mockResolvedValue(ANSWER.editor);
-    fireEvent.click(screen.getByRole('button', { name: 'Require Reading' }));
+  // Owner 2026-11-23: "require reading should be in the page context menu until enabled, not always shown".
+  it.each(['guest', 'editor'])(
+    'draws nothing in Page Info on a page that is not required, even for an %s',
+    async (role) => {
+      as({ ...ANSWER[role]!, required: null, progress: null, people: [] });
+      const { container } = render(<PageRailReading />);
+      await waitFor(() => expect(api.read).toHaveBeenCalled());
+      await act(async () => {});
+      expect(container.textContent).toBe('');
+    },
+  );
+
+  it('sets it up from the page menu’s ask, in a modal, and ends the ask', async () => {
+    as({ ...ANSWER.editor!, required: null, progress: null, people: [] });
+    const { container } = render(<RequiredReadingAsk />);
+    // Not asked: no modal.
+    expect(container.textContent).toBe('');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    act(() => askReading('p1'));
     const dialog = await screen.findByRole('dialog', { name: 'Required Reading' });
     // Chosen People with nobody ticked can't be saved.
     fireEvent.click(within(dialog).getByRole('radio', { name: /Chosen People/ }));
@@ -274,6 +297,7 @@ describe('Page Info', () => {
     fireEvent.click(within(dialog).getByRole('checkbox', { name: 'Ada' }));
     expect(save.disabled).toBe(false);
     fireEvent.click(within(dialog).getByRole('radio', { name: /Everyone/ }));
+    api.set.mockResolvedValue(ANSWER.editor);
     fireEvent.click(save);
     await waitFor(() =>
       expect(api.set).toHaveBeenCalledWith(expect.anything(), `kb-${doc}`, 'p1', {
@@ -282,7 +306,41 @@ describe('Page Info', () => {
     );
     expect(toast.success).toHaveBeenCalledWith('Expenses is Required Reading.');
     expect(tracked).toHaveBeenCalledWith('UI', 'Used', 'RequiredReadingSet');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(readingAskedNow()).toBe(false);
   });
+
+  it('puts the ask away on Cancel, saving nothing', async () => {
+    as({ ...ANSWER.editor!, required: null, progress: null, people: [] });
+    render(<RequiredReadingAsk />);
+    act(() => askReading('p1'));
+    const dialog = await screen.findByRole('dialog', { name: 'Required Reading' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(api.set).not.toHaveBeenCalled();
+    expect(readingAskedNow()).toBe(false);
+  });
+
+  it('offers a page that turned out to be required already its Save and Stop Requiring', async () => {
+    as(ANSWER.editor!);
+    render(<RequiredReadingAsk />);
+    act(() => askReading('p1'));
+    const dialog = await screen.findByRole('dialog', { name: 'Required Reading' });
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: 'Stop Requiring' })).toBeTruthy();
+  });
+
+  it.each(['participant', 'viewer', 'guest'])(
+    'ends the ask quietly for a %s, whom the api does not let set it up',
+    async (role) => {
+      as({ ...ANSWER[role]!, required: null, progress: null });
+      render(<RequiredReadingAsk />);
+      act(() => askReading('p1'));
+      await waitFor(() => expect(api.read).toHaveBeenCalled());
+      await waitFor(() => expect(readingAskedNow()).toBe(false));
+      expect(screen.queryByRole('dialog')).toBeNull();
+    },
+  );
 
   it('lets an Editor choose people and stop requiring', async () => {
     as({ ...ANSWER.editor!, required: { ...REQUIRED, audience: 'people' }, chosen: ['user_p'] });
@@ -300,7 +358,9 @@ describe('Page Info', () => {
       }),
     );
     expect(tracked).toHaveBeenCalledWith('UI', 'Used', 'RequiredReadingStopped');
-    expect(await screen.findByText("Ask people to confirm they've read this page.")).toBeTruthy();
+    // Stopped: Page Info shows nothing of it, and the page menu offers Require Reading again (its row reads this).
+    await waitFor(() => expect(document.querySelector('[data-page-reading]')).toBeNull());
+    expect(readingStore.entryOf(`kb-${doc}`, 'p1').reading.required).toBeNull();
   });
 
   it('keeps the panel open with a toast when the api refuses a change', async () => {
