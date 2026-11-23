@@ -148,6 +148,9 @@ export const AUTOMATION_ERRORS = [
   'automation_draft_unreadable',
   'automation_ai_capped',
   'automation_ai_unavailable',
+  // Describe a Rule on the person's key, or their team's: the provider refused it (revoked, out of credit, a model
+  // it can't use) or it will not open (422), with `aiKey`; never sent to built-in AI instead.
+  'ai_key_failed',
   // An API token saving a rule only a person may save (Revert to Snapshot): 403.
   'automation_needs_a_person',
   // An API token's add, change or duplicate naming a connection the rule did not already name: 403.
@@ -162,4 +165,10 @@ export interface AutomationErrorBody {
   error: AutomationError;
   path?: string;
   message?: string;
+  // `ai_key_failed`: whose key, its provider (null for one that will not open) and the kind of failure.
+  aiKey?: {
+    source: 'item' | 'team' | 'account';
+    provider: 'anthropic' | 'openai' | null;
+    kind: 'bad-key' | 'no-credit' | 'model-unavailable' | 'unreadable';
+  };
 }

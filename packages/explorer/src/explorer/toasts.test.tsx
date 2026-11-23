@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
 import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/ui/toast';
 import { TOAST_ANSWER_MS, ToastProvider, useToast } from '../ui/Toasts';
-import { afterFolderDelete } from './Dialogs';
+import { afterFolderDelete } from './OpenDialog';
 
 function Shows({ action }: { action: boolean }) {
   const toast = useToast();

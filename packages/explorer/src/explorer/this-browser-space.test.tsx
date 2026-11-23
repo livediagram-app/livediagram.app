@@ -449,7 +449,8 @@ describe('Home and the phone', () => {
   });
 
   it('has no tile while empty', async () => {
-    page({ kind: 'home' });
+    // My Work holds one, so Spaces shows (a Spaces section with nothing in any space is left out).
+    page({ kind: 'home' }, { index: createFakeIndex({ items: [makeItem(1)] }) });
     await waitFor(() => expect(document.querySelector('[data-space-tile="mine"]')).toBeTruthy());
     expect(document.querySelector('[data-space-tile="this-browser"]')).toBeNull();
   });

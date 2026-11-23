@@ -103,7 +103,7 @@ export function pruneKnowledge(sql: ItemSql, now: number): void {
     ...prunePageAnswers(now),
     ...pruneSuggestions(now),
     pruneAgentSeen(now, READS_KEPT_DAYS),
-    ...pruneEmailMarks(),
+    ...pruneEmailMarks(now),
     ...pruneWatchUpdates(now),
   ])
     sql.exec(statement.sql, ...statement.params);

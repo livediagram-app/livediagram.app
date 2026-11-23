@@ -7,7 +7,12 @@ import type { Auth } from '../auth.ts';
 import { __setBearerVerifier } from '../bearer.ts';
 import type { Env } from '../env.ts';
 import { addClient, addUser, testD1 } from '../test-d1.ts';
-import { AI_KEY_INTERNAL_PATH, fromBinding, handleAiKeyInternal } from './internal.ts';
+import {
+  AI_KEY_INTERNAL_PATH,
+  AI_KEY_READERS,
+  fromBinding,
+  handleAiKeyInternal,
+} from './internal.ts';
 import { aiKeySecrets, sealAiKey } from './seal.ts';
 import { leaveAllTeams, removeMember } from '../teams/members.ts';
 import { readAiKey, resealAiKeys } from './store.ts';
@@ -15,6 +20,8 @@ import { readAiKey, resealAiKeys } from './store.ts';
 const BASE = 'https://liveworkspace.app';
 const CLIENT = `Basic ${btoa('liveknowledge:secret')}`;
 const OTHER_CLIENT = `Basic ${btoa('liveplanner:secret')}`;
+// A client that names no app: every product calls a model now, so it is the one left out of key readers.
+const NO_APP_CLIENT = `Basic ${btoa('no-app:secret')}`;
 const KEY = 'sk-ant-api03-planted-secret-key-4f2a';
 const TEAM_KEY = 'sk-proj-planted-team-secret-key-9c1d';
 const SECRET = '1:test-ai-key-master-secret-of-thirty-two-characters';
@@ -28,19 +35,22 @@ let providerAnswer: () => Response;
 let logged: unknown[][];
 let waits: Promise<unknown>[];
 
-// Better Auth's stand-in: the session from `signedIn`; introspection knows two clients and the tokens below.
+// Better Auth's stand-in: the session from `signedIn`; introspection knows three clients and the tokens below.
 const TOKENS: Record<string, { sub: string; client_id: string }> = {
   'jwt-ada': { sub: 'user_ada', client_id: 'liveknowledge' },
   'jwt-bea': { sub: 'user_bea', client_id: 'liveknowledge' },
   'jwt-ada-planner': { sub: 'user_ada', client_id: 'liveplanner' },
+  'jwt-ada-no-app': { sub: 'user_ada', client_id: 'no-app' },
   'jwt-guest': { sub: 'guest_00000000-0000-4000-8000-000000000009', client_id: 'liveknowledge' },
 };
 const auth = {
   api: { getSession: async () => (signedIn ? { user: signedIn, session: {} } : null) },
   handler: async (request: Request) => {
-    const client = { [CLIENT]: 'liveknowledge', [OTHER_CLIENT]: 'liveplanner' }[
-      request.headers.get('authorization') ?? ''
-    ];
+    const client = {
+      [CLIENT]: 'liveknowledge',
+      [OTHER_CLIENT]: 'liveplanner',
+      [NO_APP_CLIENT]: 'no-app',
+    }[request.headers.get('authorization') ?? ''];
     if (!client) return new Response(null, { status: 401 });
     const token = new URLSearchParams(await request.text()).get('token') ?? '';
     const known = TOKENS[token];
@@ -692,13 +702,22 @@ describe('the internal door', () => {
   });
 
   // Security review L4: only an app that calls a model is handed a key; any app may ask which applies.
+  it('names every product as a key reader, and nothing else', () => {
+    expect([...AI_KEY_READERS].sort()).toEqual([
+      'livedesign.app',
+      'livediagram.app',
+      'livedocuments.app',
+      'livehuddle.app',
+      'liveknowledge.app',
+      'liveplanner.app',
+    ]);
+  });
+
   it('hands a key only to an app that calls a model', async () => {
-    sql
-      .prepare(`UPDATE oauth_client_app SET app = 'livediagram.app' WHERE clientId = 'liveplanner'`)
-      .run();
-    const key = await door({ token: 'jwt-ada-planner', want: 'key' }, {}, OTHER_CLIENT);
+    addClient(sql, 'no-app', null);
+    const key = await door({ token: 'jwt-ada-no-app', want: 'key' }, {}, NO_APP_CLIENT);
     expect([key.status, await key.clone().json()]).toEqual([403, { error: 'not_a_key_reader' }]);
-    const which = await door({ token: 'jwt-ada-planner', want: 'which' }, {}, OTHER_CLIENT);
+    const which = await door({ token: 'jwt-ada-no-app', want: 'which' }, {}, NO_APP_CLIENT);
     expect(which.status).toBe(200);
     expect(await everythingThatLeft([key, which])).not.toContain(KEY);
   });

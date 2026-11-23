@@ -1,5 +1,6 @@
 import {
   lucideAppWindow,
+  lucideBookOpen,
   lucideBookOpenText,
   lucideCircleCheck,
   lucideClock,
@@ -60,6 +61,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'review-due-and-the-review-period': lucide(lucideClock),
   'page-health': lucide(lucideHeartPulse),
   'knowledge-health-and-reminders': lucide(lucideShieldCheck),
+  'required-reading': lucide(lucideBookOpen),
   // ---- Finding Things ----
   'searching-a-knowledgebase': lucide(lucideSearch),
   ask: lucide(lucideMessageCircle),

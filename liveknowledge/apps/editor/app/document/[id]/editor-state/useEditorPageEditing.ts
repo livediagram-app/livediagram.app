@@ -27,6 +27,7 @@ import {
   myEditingPage,
   usePageEditors,
 } from '@/lib/page-edit/page-edit-store';
+import { takeReadAgain } from '@/lib/required-reading/read-again';
 import { newEditorOf } from '@/lib/page-edit/follow-editors';
 import { flashMode } from '@/components/page-edit/mode-flash';
 import { overlayOpen, pageEditKeyAction } from '@/lib/page-edit/page-edit-keys';
@@ -157,9 +158,13 @@ export function useEditorPageEditing({
     flashMode('save');
     roomRef.current?.send({ kind: 'op', op: { kind: 'page-saved', tabId } });
     notePageSaved(tabId);
-    debugLog('[page-edit] saved', { tabId, changed });
+    // Saved asking everyone to read it again (required-reading.md "Where it shows"): the toggle's sender asks the api.
+    const askedAgain = takeReadAgain(tabId);
+    debugLog('[page-edit] saved', { tabId, changed, askedAgain });
     track('Tab', 'Ended', 'Save');
-    toast.success(savedToast(title));
+    toast.success(
+      askedAgain ? `${savedToast(title)}. Everyone is asked to read it again.` : savedToast(title),
+    );
   };
 
   const discard = (tabId: string) => {

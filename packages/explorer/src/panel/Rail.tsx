@@ -27,7 +27,7 @@ import {
 } from '../ui/icons';
 import { SIDEBAR_LABELS } from '../views';
 import { useTeams } from '../teams/context';
-import { NewTeamDialog } from '../teams/NewTeamDialog';
+import { NewTeamDialog } from '../explorer/lazy-dialogs';
 import {
   SECTION_GROUP_TITLES,
   sectionKey,

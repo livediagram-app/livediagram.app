@@ -115,6 +115,7 @@ over this app's kinds, with pictures of its own in the pickers:
   Addressed, Ready for Build), **Stay in the Loop** (Tell Slack When This Changes, Weekly Summary by Email, Access
   Requests to Slack), **Keep It Safe** (Snapshot Every Friday, Is This Still Current?) and **Library and Agents**
   (Library Updated, Tell Me When an Agent Edits).
+- Which AI ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)): Describe a Rule runs on the person's own key, or the design's team's, when one applies, else built-in AI, and its dialog shows the source line with Try an Example above the box; Summarise with AI always runs on built-in AI, and its panel says so.
 - Describe a Rule offers examples a design fits ("Tell Slack when a component in the library changes", "Every Friday
   at 5, take a snapshot and email me", "Post every new comment to Slack").
 - The empty state's **How Rules Work** opens the help centre's Automations article (`/help/tools/automations`).

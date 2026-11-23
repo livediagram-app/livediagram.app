@@ -187,8 +187,9 @@ export const CATALOGUE: AppCatalogue = {
           id: 'notifyKnowledgeReviews',
           label: 'Knowledgebase Reviews',
           description:
-            'A page you own is due for review, disagrees with another page, or an Editor reminds its owners.',
-          keywords: 'email review due verify owner remind reminder pages disagree conflict',
+            "A page you own is due for review or disagrees with another page, an Editor reminds its owners, or you're reminded to read a Required Reading page.",
+          keywords:
+            'email review due verify owner remind reminder pages disagree conflict required reading read confirm',
           section: 'Email',
           key: 'notifyKnowledgeReviews',
           on: true,

@@ -124,8 +124,12 @@ provider, key)`).
     the team pays (`providerWords`, `teamPaysNote`); a refusal is worded for the provider the key was typed for.
   - Without `manageAi` the provider is its name as text.
 - **Words.** "Your team's AI key" wherever it does not matter which provider it is (the no-AI state of Ask, the
-  key note under AI Knowledge's Disagreements on a server with no built-in AI); "Uses built-in AI" or "Uses your
-  team's key" (`aiInUseLine`) under Ask's field (with a key, Ask's becomes the Answer With picker) and in Describe to Set Up; the provider's name where a failure is the provider's own
+  key note under AI Knowledge's Disagreements on a server with no built-in AI); the source line
+  (`components/ask/KnowledgeAiSource.tsx`: the shared `AiSource` from `knowledgeAiLine(state, manageAi)`, read from
+  `GET ai`'s `uses` and `usesModelLabel`) under Ask's field (with a key and built-in AI both here, Ask's becomes the
+  Answer With picker), in Describe to Set Up and in Describe the Structure; its action opens AI Settings on the
+  knowledgebase's key (`manageAi`) and Settings › AI otherwise, and `liveworkspace:ai-key-changed` refreshes
+  `aiSettingsStore`; the provider's name where a failure is the provider's own
   (`askFailureWords(kind, { manageAi, provider })`: "OpenAI Did Not Accept the Key"). The provider comes from the
   settings the view already read. No AI copy says liveknowledge is free or has no paid tier: built-in AI is
   "Included", with daily limits, and on its own key the team pays its provider for what it uses.
@@ -257,8 +261,8 @@ draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
 `ask_unavailable`, `sign_in_required`, `network`, built-in AI's `built-in-unavailable`, `built-in-limit`,
 `built-in-knowledgebase-limit`, `built-in-failed` and anything else to a title, a line and a step (`ai-settings`,
 `ask-again`, `none`). On `provider: 'built-in'` a model's failure (`bad-key`, `overloaded`, `other`, ...) is "The
-Built-In AI Could Not Answer". The server's own `message` is never shown. Under the field, with no key, `aiInUseLine` adds
-"Uses built-in AI" (`data-ask-ai`).
+Built-In AI Could Not Answer". The server's own `message` is never shown. Under the field, with no key, the source line says **Built-in AI**
+with **Use Your Own Key** (`data-ask-ai`).
 
 ### Which AI answers
 

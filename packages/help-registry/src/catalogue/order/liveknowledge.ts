@@ -21,6 +21,7 @@ export const ORDER: readonly string[] = [
   'knowledgebase/review-due-and-the-review-period',
   'knowledgebase/page-health',
   'knowledgebase/knowledge-health-and-reminders',
+  'knowledgebase/required-reading',
   'knowledgebase/searching-a-knowledgebase',
   'knowledgebase/ask',
   'knowledgebase/ai-settings',

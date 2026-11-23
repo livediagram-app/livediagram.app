@@ -54,7 +54,7 @@ import { useFolderRowMenu, useMyWorkMenu } from './sidebar/rowMenus';
 import { useTreeNavigation } from './sidebar/useTreeNavigation';
 import { useExtras } from './extras';
 import { useTeams } from '../teams/context';
-import { NewTeamDialog } from '../teams/NewTeamDialog';
+import { NewTeamDialog } from './lazy-dialogs';
 import { SidebarSignInNudge, teamMemberBadge } from './SidebarSignInNudge';
 import { ImageIcon, MailIcon, ShapesIcon, WalkthroughIcon } from '../ui/library-icons';
 import { useLibraryHost } from '../library/context';

@@ -17,6 +17,7 @@ import {
 } from '@liveworkspace/automations/item';
 import type { ComponentType } from 'react';
 import type { ActionPanelProps } from '../../kit';
+import { AiStepSource } from '../../AiStepSource';
 import { useAutomationsKit } from '../../kit-context';
 import { useRuleContext } from '../../rule-context';
 import { EmailPanel } from '../../step-panels/EmailPanel';
@@ -207,6 +208,7 @@ export function summarisePanel(kinds: ItemKinds): ComponentType<Props<ItemSummar
           The summary becomes the value <ValueChipsText text="{{AI Summary}}" /> for the steps after
           this one: pick it from Insert a Value in their text.
         </PanelNote>
+        <AiStepSource item={kinds.itemWord} />
       </div>
     );
   };

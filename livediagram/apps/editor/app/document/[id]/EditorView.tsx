@@ -2,6 +2,7 @@
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 
+import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';
@@ -158,6 +159,8 @@ export function EditorView() {
   useEffect(() => registerUnsavedWork(hasUnsavedChanges), [hasUnsavedChanges]);
   // F6 moves between the header, palette, canvas, controls and tab bar (canvas-accessibility.md).
   useRegionCycle();
+  // Which team the item is in, for every AI feature's source line (ai-keys.md "The source line").
+  useAiSourceScope(ctx.documentTeamId ?? null, !!ctx.accountUserId);
   const {
     slideDeck,
     boardSceneInsert,

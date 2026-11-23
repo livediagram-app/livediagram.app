@@ -4,9 +4,9 @@
 // question a dark bubble at the right, each answer a card, a Knowledge Gap card for each part no page covers, the
 // question field at the foot, and beside them the passages of the answer showing. Nothing here renders while an
 // answer streams: the stream draws itself (StreamingAnswer) and the turn list is the same list until it ends.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AskSource } from '@liveknowledge/api-schema';
-import { ASK_MAX_TURNS } from '@liveknowledge/knowledge';
+import { ASK_BUILT_IN_PER_PERSON_PER_DAY, ASK_MAX_TURNS } from '@liveknowledge/knowledge';
 import { EmptyState } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import type { AskConversation, AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
 import { saveAnswerAsPage } from '@/lib/knowledge-ask/make-page';
 import { BLOCK_HIT_MS } from '@/lib/knowledge/go-to-block';
+import { KnowledgeAiSource } from './KnowledgeAiSource';
 import { track } from '@/lib/telemetry';
 import { AskAnswerCard } from './AskAnswerCard';
 import { AskComposer } from './AskComposer';
@@ -23,7 +24,7 @@ import { KnowledgeGapCard } from './KnowledgeGapCard';
 import { openPassage } from './open-passage';
 import { PagePickerDialog } from './PagePickerDialog';
 import { useDraftPage } from './useDraftPage';
-import { aiInUseLine } from '@/lib/knowledge-ask/ai-settings-words';
+import { aiInUse } from '@/lib/knowledge-ask/ai-settings-words';
 import { answeredByLabel, offersAiChoice, useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
 import { AskAiPicker } from './AskAiPicker';
 import { useAiSettingsState, type AskSession } from './useAskSession';
@@ -60,20 +61,28 @@ export function AskConversationPane({
   const chrome = useEditorChromeStore();
   const toast = useToast();
   const { rights } = session;
-  // Whose key the knowledgebase holds, for a failure that is the provider's own.
+  // Whose key answers (the knowledgebase's, the team's or the asker's own), for a failure that is the provider's own.
   const ai = useAiSettingsState(session.documentId);
   const settings = ai.status === 'ready' ? ai.settings : null;
   // With a key set and built-in AI here, the person chooses which answers (search-and-ask.md "Choosing which AI
   // answers"); else the quiet line says which does.
   const choosing = settings !== null && offersAiChoice(settings);
   const choice = useAskAiChoice(session.who, session.documentId);
+  const uses = settings ? aiInUse(settings) : null;
+  // A team's or a person's key may be another provider's than the knowledgebase's own (`usesProvider`).
   const provider = settings
-    ? settings.hasKey && !(choosing && choice === 'built-in')
-      ? settings.provider
+    ? uses !== null && uses !== 'built-in' && !(choosing && choice === 'built-in')
+      ? uses === 'knowledgebase'
+        ? settings.provider
+        : (settings.usesProvider ?? settings.provider)
       : 'built-in'
     : undefined;
-  const aiLine = choosing ? null : aiInUseLine(settings);
   const last = turns[turns.length - 1];
+  // The last answer's failure, for the source line (a key the provider refused); one per turn, gone with the next.
+  const lastFailure = useMemo(
+    () => (last?.status === 'failed' && last.failure ? { kind: last.failure } : null),
+    [last],
+  );
   const streaming = last?.status === 'streaming';
 
   // The answer whose Sources show: the one a citation was pressed in, else the newest. `lit` is the pressed source,
@@ -250,13 +259,19 @@ export function AskConversationPane({
             )}
             <p className="mt-1.5 text-center text-xs text-slate-600 dark:text-slate-400">
               Answers come from this knowledgebase alone. Check the sources before you rely on one.
-              {aiLine ? (
-                <span data-ask-ai="" className="whitespace-nowrap">
-                  {' '}
-                  · {aiLine}
-                </span>
-              ) : null}
             </p>
+            {choosing ? null : (
+              <div data-ask-ai="" className="mx-auto mt-2 w-full max-w-xl">
+                <KnowledgeAiSource
+                  state={ai}
+                  who={session.who}
+                  documentId={session.documentId}
+                  manageAi={rights.manageAi}
+                  allowance={`${ASK_BUILT_IN_PER_PERSON_PER_DAY} questions a person a day.`}
+                  failure={lastFailure}
+                />
+              </div>
+            )}
             {choosing ? (
               <div
                 data-ask-ai-choice=""

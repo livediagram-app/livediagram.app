@@ -42,6 +42,9 @@ const HELD_AT_100 = [
   'src/components/live-embed/live-poster.ts',
   'src/components/live-embed/choose-live-embed.ts',
   'src/components/live-embed/useLiveEmbedFrame.ts',
+  // Every AI feature's source line in an editor (ai-keys.md "The source line").
+  'src/components/ai/WorkbenchAiSource.tsx',
+  'src/components/ai/ai-source-scope.ts',
   'src/components/canvas/PageContentsList.tsx',
   'src/components/canvas/PageContentsSidebar.tsx',
   'src/components/canvas/ContentsSummary.tsx',

@@ -14,6 +14,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'review-due-and-the-review-period': '#d97706',
   'page-health': '#059669',
   'knowledge-health-and-reminders': '#15803d',
+  'required-reading': '#4f46e5',
   // ---- Finding Things ----
   'searching-a-knowledgebase': '#0891b2',
   ask: '#7c3aed',
