@@ -80,6 +80,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 │  ├─ apps/status              liveworkspace.app/api/status: hourly checks of every service, 90 days kept, own D1
+│  ├─ apps/mcp                 mcp.liveworkspace.app: one MCP server routing to every app's MCP Worker, unlisted while it is tried
 │  ├─ apps/drive               liveworkspace.app/api/drive: the Google Drive mirror for every app, one Durable Object per person
 │  ├─ apps/export              Download Your Data's service, behind accounts only: one Durable Object per export, the zip in R2
 │  ├─ apps/redirect            the bare liveworkspace.app: a page load's one 301 to www., everything else to the site

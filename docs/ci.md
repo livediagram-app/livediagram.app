@@ -623,10 +623,10 @@ failed one is retried by the next deploy. With no record yet, everything deploys
 
 **Order.** Three tiers, each waiting for the one before: first each product's api and every
 liveworkspace Worker but the site (with D1, migrations apply before the code: `wrangler d1 migrations
-apply`), then the sites and MCP Workers, then the routers in front of them. Two exceptions
+apply`), then the sites and MCP Workers, then the routers in front of them. Three exceptions
 (`TIER_OF` in `ci-plan.mjs`): accounts deploys with the sites, once every Worker that checks its tokens
-accepts the issuer it signs with, and liveworkspace's bare-domain redirect with the routers, once
-`www.` answers. A failing tier stops the ones after it.
+accepts the issuer it signs with; liveworkspace's bare-domain redirect with the routers, once
+`www.` answers; and liveworkspace's one MCP (`apps/mcp`) with the routers too, after the MCP Workers it binds. A failing tier stops the ones after it.
 
 **Jobs.** A tier's Workers deploy in a few jobs, not one each: the services and apis in one job, the
 sites in one job per product (liveworkspace's site and accounts together), and the routers in one job.

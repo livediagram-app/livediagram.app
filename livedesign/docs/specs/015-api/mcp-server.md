@@ -69,6 +69,10 @@ stays a pure REST/WS surface.
 - **Endpoints on the worker:** `POST /mcp` (the MCP transport, Bearer-gated),
   the OAuth endpoints ([§3](#3-authentication-oauth-21)), and `/health`.
 
+### The one liveworkspace MCP
+
+liveworkspace's one MCP server (liveworkspace/docs/specs/021-mcp/mcp.md) also serves this server's tools, renamed by what they make, by calling this Worker over a service binding with the person's own token. Nothing here changes for it: this server's tools, names and answers stay as they are, and it stays the connection this app's pages recommend while the one MCP is tried. A change to this server's tools refreshes the one MCP's recorded copy (`corepack pnpm --filter @liveworkspace/mcp-service eval:snapshot`), which its naming test and tool-pick eval read.
+
 ## 3. Authentication: OAuth 2.1
 
 The MCP authenticates with **OAuth 2.1 + PKCE (S256) + dynamic client
