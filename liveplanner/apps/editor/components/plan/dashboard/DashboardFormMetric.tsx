@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { readForm } from '@liveplanner/forms';
 import type { FormMetricContent } from '@liveplanner/project';
-import { Select, lucideGlyph } from '@liveplanner/ui';
+import { Chip, Select, lucideGlyph } from '@liveplanner/ui';
 import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import { useFormBoard } from '@/components/forms/form-board-context';
 import { useFormLink } from '@/hooks/forms/useFormLink';
@@ -181,11 +181,9 @@ function FormMetricBody({
           <span className={`text-[13px] ${MUTED}`}>Not published yet.</span>
         )
       ) : shown.tone ? (
-        <span
-          className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[15px] font-semibold ${TONES[shown.tone]}`}
-        >
+        <Chip className={`w-fit gap-1.5 px-3 py-1 text-[15px] font-semibold ${TONES[shown.tone]}`}>
           {shown.hero}
-        </span>
+        </Chip>
       ) : (
         <span className="text-[32px] font-semibold leading-none tracking-tight tabular-nums text-slate-900 dark:text-slate-50">
           {shown.hero}

@@ -140,7 +140,7 @@ function AddButton({ onPress }: { onPress: () => void }) {
       style={{ ...LOUD_ACCENT, boxShadow: shadow(LOUD_ACCENT.boxShadow) }}
     >
       <PlusGlyph size={12} />
-      Add Action
+      <span className="text-optical-line">Add Action</span>
     </button>
   );
 }

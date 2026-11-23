@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Button, usePageRestore } from '@liveworkspace/ui';
+import { Button, Chip, usePageRestore } from '@liveworkspace/ui';
 import { DAY_LONG_MONTH, DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
 import { Callout } from '@liveworkspace/ui/callout';
@@ -86,15 +86,15 @@ function MethodTile({ children }: { children: ReactNode }) {
 
 function StatusPill({ on, children }: { on: boolean; children: ReactNode }) {
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+    <Chip
+      className={`px-2 py-0.5 text-[11px] font-semibold ${
         on
           ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/30'
           : 'bg-slate-100 text-slate-600 dark:bg-slate-700/60 dark:text-slate-300'
       }`}
     >
       {children}
-    </span>
+    </Chip>
   );
 }
 

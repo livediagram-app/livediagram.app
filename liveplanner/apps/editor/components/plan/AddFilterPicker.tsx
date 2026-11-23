@@ -8,6 +8,7 @@ import { useState } from 'react';
 import {
   BackBar,
   ChevronRightIcon,
+  Chip,
   NoMatches,
   PlusIcon,
   SearchIcon,
@@ -121,9 +122,9 @@ export function AddFilterPicker({
                         }}
                       >
                         <span className="min-w-0 flex-1 truncate">{v.label}</span>
-                        <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[11px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                        <Chip className="bg-slate-100 px-1.5 text-[11px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                           {v.count}
-                        </span>
+                        </Chip>
                       </button>
                     </li>
                   ))

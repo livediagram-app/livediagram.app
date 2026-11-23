@@ -2,7 +2,7 @@
 
 import { TIER_NAMES, type MockPortal, type MockPortalRequest } from '@liveworkspace/subscription';
 import { monthlyCost, ProBadge } from '@liveworkspace/subscription-ui';
-import { Button, Spinner } from '@liveworkspace/ui';
+import { Button, Chip, Spinner } from '@liveworkspace/ui';
 import { BillingCard } from './BillingShell';
 import { cancelNote, seatPrice, STATE_LABEL, stateSentence } from './billing-copy';
 
@@ -43,11 +43,9 @@ export function BillingSubscription({
               {paid ? TIER_NAMES[subscription.tier] : TIER_NAMES.free}
             </span>
             {paid ? <ProBadge form="solid" label="Pro" tooltip={false} /> : null}
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${CHIP[state] ?? CHIP.ended}`}
-            >
+            <Chip className={`px-2.5 py-0.5 text-xs font-semibold ${CHIP[state] ?? CHIP.ended}`}>
               {STATE_LABEL[state]}
-            </span>
+            </Chip>
           </div>
           <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             {stateSentence(subscription)}

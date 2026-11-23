@@ -6,7 +6,7 @@
 // plate, its name and a quiet line under it. A row the element already has fills its plate and wears an "Added" badge,
 // and reads View / Edit. Up, Down, Home and End move between rows; each closes the menu as it runs.
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { Glyph, useMenuKind } from '@liveworkspace/ui';
+import { Chip, Glyph, useMenuKind } from '@liveworkspace/ui';
 import { MenuFlyoutSection } from '../primitives/MenuFlyoutSection';
 
 const ROW =
@@ -113,12 +113,12 @@ function ResourceRows({ items, onClose }: { items: readonly ResourceItem[]; onCl
             </span>
           </span>
           {i.on ? (
-            <span
+            <Chip
               data-resource-on=""
-              className="shrink-0 rounded-full bg-brand-50 px-1.5 py-px text-[10px] font-semibold text-brand-700 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30"
+              className="bg-brand-50 px-1.5 py-px text-[10px] font-semibold text-brand-700 ring-1 ring-inset ring-brand-200 dark:bg-brand-500/15 dark:text-brand-200 dark:ring-brand-500/30"
             >
               Added
-            </span>
+            </Chip>
           ) : null}
         </button>
       ))}

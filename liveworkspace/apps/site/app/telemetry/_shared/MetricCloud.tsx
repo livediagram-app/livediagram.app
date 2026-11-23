@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, type CSSProperties } from 'react';
-import { onScreenTranslate, useKeepOnScreen } from '@liveworkspace/ui';
+import { Chip, onScreenTranslate, useKeepOnScreen } from '@liveworkspace/ui';
 import { useTelemetryApp } from './app';
 import { typeLabel } from './event-vocab';
 import { MetricBreadcrumb, metricCrumbs, type CloudPath } from './MetricBreadcrumb';
@@ -193,13 +193,13 @@ function CountPill({ count }: { count: number }) {
     useKeepOnScreen(ref, false, { revealOn: 'parent', anchor: () => ref.current?.parentElement }),
   );
   return (
-    <span
+    <Chip
       ref={ref}
       aria-hidden
       style={{ transform: slide }}
-      className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white opacity-0 shadow transition group-hover/word:opacity-100 group-focus-visible/word:opacity-100 dark:bg-slate-200 dark:text-slate-900"
+      className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white opacity-0 shadow transition group-hover/word:opacity-100 group-focus-visible/word:opacity-100 dark:bg-slate-200 dark:text-slate-900"
     >
       {count.toLocaleString()}
-    </span>
+    </Chip>
   );
 }

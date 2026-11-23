@@ -7,6 +7,7 @@
 
 import type { LevelMeter } from '@liveworkspace/capture';
 import type { WalkthroughCorner } from '@liveworkspace/media/walkthrough';
+import { GlyphDisc } from '@liveworkspace/ui';
 import { CONTENTS_SIDEBAR_SELECTOR } from '@liveworkspace/workbench/lib/contents-sidebar';
 import { MAP_PANEL_SELECTOR } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
@@ -217,37 +218,45 @@ export function VoiceChip({
       attrs={{ 'data-walkthrough-voice': corner }}
       className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white/95 py-1 pl-1 pr-3 shadow-lg shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/30"
     >
-      <span
+      <GlyphDisc
         aria-hidden
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-[13px] font-semibold text-white"
+        size={32}
+        className="bg-gradient-to-br from-brand-500 to-brand-700 text-[13px] font-semibold text-white"
       >
         {initial}
-      </span>
+      </GlyphDisc>
       {name ? (
-        <span className="max-w-[9rem] truncate text-[12px] font-medium text-slate-700 dark:text-slate-200">
+        <span className="text-optical-line max-w-[9rem] truncate text-[12px] font-medium text-slate-700 dark:text-slate-200">
           {name}
         </span>
       ) : null}
-      <span
-        aria-hidden
-        data-voice-bars={playing ? 'moving' : 'resting'}
-        className="flex h-4 items-center gap-[3px]"
-      >
-        {VOICE_BARS.map((delay) => (
-          <span
-            key={delay}
-            // Rests at a third of its height; while playing it rises and falls, started part-way through its cycle.
-            style={{
-              transform: 'scaleY(0.35)',
-              animation: playing
-                ? `walkthrough-voice 0.9s ease-in-out -${delay}s infinite alternate`
-                : undefined,
-            }}
-            className="h-4 w-[3px] origin-center rounded-full bg-brand-600 motion-reduce:!animate-none dark:bg-brand-400"
-          />
-        ))}
-      </span>
+      <VoiceBars playing={playing} />
     </CornerFrame>
+  );
+}
+
+/** The voice chip's four level bars: moving while it plays, resting while paused. */
+function VoiceBars({ playing }: { playing: boolean }) {
+  return (
+    <span
+      aria-hidden
+      data-voice-bars={playing ? 'moving' : 'resting'}
+      className="flex h-4 items-center gap-[3px]"
+    >
+      {VOICE_BARS.map((delay) => (
+        <span
+          key={delay}
+          // Rests at a third of its height; while playing it rises and falls, started part-way through its cycle.
+          style={{
+            transform: 'scaleY(0.35)',
+            animation: playing
+              ? `walkthrough-voice 0.9s ease-in-out -${delay}s infinite alternate`
+              : undefined,
+          }}
+          className="h-4 w-[3px] origin-center rounded-full bg-brand-600 motion-reduce:!animate-none dark:bg-brand-400"
+        />
+      ))}
+    </span>
   );
 }
 

@@ -56,7 +56,7 @@ export function SectionRule({ section, index }: { section: FormSection; index: n
         }`}
       >
         <BranchIcon aria-hidden className="shrink-0" />
-        <span className="min-w-0 truncate">{label}</span>
+        <span className="text-optical-line min-w-0 truncate">{label}</span>
       </button>
       {anchor ? (
         <FormSheet anchor={anchor} name="Show This Section" onClose={() => setAnchor(null)}>

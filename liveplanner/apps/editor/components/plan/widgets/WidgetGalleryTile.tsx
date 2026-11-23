@@ -6,7 +6,7 @@
 // widget, or takes it off when the board has it (On Board, with a check). The preview is drawn only once the tile has
 // come into view (use-seen.ts).
 import type { ReactNode } from 'react';
-import { CheckIcon, PlusIcon } from '@liveplanner/ui';
+import { CheckIcon, Chip, PlusIcon } from '@liveplanner/ui';
 import { BoardWidgetArt, FieldWidgetArt } from '../plan-tile-art';
 import type { PlanPalette } from '../plan-palette';
 import { FitWidth, GalleryTile, TILE_BADGE_SPOT } from '../gallery/GalleryTile';
@@ -79,20 +79,20 @@ export function WidgetGalleryTile({
       // On Board, or Add on hover.
       badge={
         on ? (
-          <span
-            className={`${TILE_BADGE_SPOT} inline-flex items-center gap-1 rounded-full bg-brand-700 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm dark:bg-brand-600`}
+          <Chip
+            icon={<CheckIcon size={9} />}
+            className={`${TILE_BADGE_SPOT} bg-brand-700 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm dark:bg-brand-600`}
           >
-            <CheckIcon size={9} />
             On Board
-          </span>
+          </Chip>
         ) : capped ? null : (
-          <span
+          <Chip
             aria-hidden
-            className={`${TILE_BADGE_SPOT} inline-flex items-center gap-0.5 rounded-full border border-brand-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 opacity-0 shadow-sm transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 dark:border-brand-500/40 dark:bg-slate-900 dark:text-brand-200`}
+            icon={<PlusIcon size={9} />}
+            className={`${TILE_BADGE_SPOT} gap-0.5 border border-brand-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 opacity-0 shadow-sm transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 dark:border-brand-500/40 dark:bg-slate-900 dark:text-brand-200`}
           >
-            <PlusIcon size={9} />
             Add
-          </span>
+          </Chip>
         )
       }
     />

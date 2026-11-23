@@ -4,7 +4,7 @@
 // header, the overview card with its activity bars, a person's disc and the loading skeletons.
 
 import type { Item, ItemEvent } from '@liveworkspace/index-client';
-import { PictureDisc } from '@liveworkspace/ui';
+import { Chip, PictureDisc } from '@liveworkspace/ui';
 import { createContext, useContext, useMemo } from 'react';
 import { DAY_MONTH, DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../data/usePeople';
@@ -134,10 +134,10 @@ export function SummaryStrip({
                 })}
               </span>
               {people.length > PEOPLE_SHOWN || more ? (
-                <span className="ml-1 shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                <Chip className="ml-1 bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   +{Math.max(people.length - PEOPLE_SHOWN, 0)}
                   {more ? '…' : ''}
-                </span>
+                </Chip>
               ) : null}
             </div>
           ) : null}

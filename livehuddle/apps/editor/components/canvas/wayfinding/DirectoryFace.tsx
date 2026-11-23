@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { HoverCard } from '@livehuddle/ui';
+import { Chip, HoverCard } from '@livehuddle/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { spacePlaces, type PlaceKind, type WayPerson } from '@/lib/wayfinding';
 import { useWayfindingSelect, type Wayfinding } from './wayfinding-store';
@@ -135,9 +135,9 @@ export function DirectoryList({
                 <h3 className="flex items-center gap-2 px-1.5 pb-1 text-[10.5px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   <span className="truncate">{tab.name}</span>
                   {here ? (
-                    <span className="rounded-full bg-brand-100 px-1.5 py-[1px] text-[9.5px] normal-case tracking-normal text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+                    <Chip className="bg-brand-100 px-1.5 py-[1px] text-[9.5px] normal-case tracking-normal text-brand-700 dark:bg-brand-950 dark:text-brand-300">
                       This Floor
-                    </span>
+                    </Chip>
                   ) : null}
                 </h3>
                 {places.length === 0 ? (

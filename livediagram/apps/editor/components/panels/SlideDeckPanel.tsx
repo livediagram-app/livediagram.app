@@ -43,7 +43,7 @@ import {
   useRowReorderDrag,
 } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL, Chip } from '@livediagram/ui';
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 
@@ -130,10 +130,10 @@ export function SlideDeckPanel({
   const headerActions = (
     <>
       {deck.slides.length > 0 ? (
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+        <Chip className="bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
           {deck.slides.length === 1 ? '1 slide' : `${deck.slides.length} slides`}
           {totalMinutes > 0 ? ` · ${totalMinutes} min` : ''}
-        </span>
+        </Chip>
       ) : null}
     </>
   );

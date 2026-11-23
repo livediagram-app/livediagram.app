@@ -13,7 +13,7 @@ import {
   type TeamAuditEventType,
   isTeamAuditEventType,
 } from '@liveworkspace/index-client';
-import { Button, DateInput, EmptyState, Select } from '@liveworkspace/ui';
+import { Button, DateInput, EmptyState, GlyphDisc, Select } from '@liveworkspace/ui';
 import { downloadBlob } from '@liveworkspace/ui/download-blob';
 import { MEDIUM_DATE, TIME } from '@liveworkspace/ui/date-format';
 import type { TeamMember } from '../../data/teams';
@@ -372,12 +372,13 @@ function AuditRow({ event, teamId }: { event: TeamAuditEvent; teamId: string }) 
   const app = isApp(event.app) ? event.app : null;
   return (
     <li className="flex items-start gap-3 px-3 py-2.5" data-audit-event={event.id}>
-      <span
+      <GlyphDisc
         aria-hidden
-        className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+        size={28}
+        className="mt-0.5 bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
       >
         {auditIcon(event.type)}
-      </span>
+      </GlyphDisc>
       <div className="min-w-0 flex-1">
         <p className="m-0 text-sm leading-snug text-slate-700 dark:text-slate-200">
           <bdi className="font-semibold text-slate-900 dark:text-slate-100">{line.who}</bdi>{' '}

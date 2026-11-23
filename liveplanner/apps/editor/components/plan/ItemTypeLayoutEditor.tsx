@@ -31,7 +31,7 @@ import {
   type ItemFieldId,
   type PlanGlyphId,
 } from '@liveplanner/items';
-import { ArrowDownIcon, ArrowUpIcon, CloseIcon, PlusIcon } from '@liveplanner/ui';
+import { ArrowDownIcon, ArrowUpIcon, Chip, CloseIcon, PlusIcon } from '@liveplanner/ui';
 import { BUILT_IN_FIELD_LABELS, DASHED_ADD_BUTTON, ICON_BUTTON } from './ItemTypeFieldForms';
 import { AddFieldDialog } from './AddFieldDialog';
 import { EditFieldDialog } from './EditFieldDialog';
@@ -476,9 +476,9 @@ function LayoutGroup({
     <section className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40">
       <header className="flex min-h-10 items-center gap-2 px-2 py-1.5 text-[13px] font-semibold text-slate-900 dark:text-slate-50">
         {title}
-        <span className="shrink-0 rounded-full bg-slate-200/70 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+        <Chip className="bg-slate-200/70 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
           {tag}
-        </span>
+        </Chip>
         {actions ? <div className="ml-auto flex shrink-0 items-center">{actions}</div> : null}
       </header>
       <div className="flex flex-col gap-1 px-2 pb-2">

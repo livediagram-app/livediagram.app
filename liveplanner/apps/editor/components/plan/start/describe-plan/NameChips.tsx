@@ -104,7 +104,7 @@ export function NameChips({
             }`}
           >
             <PlusIcon size={12} aria-hidden />
-            Add {noun}
+            <span className="text-optical-line">Add {noun}</span>
           </button>
         ) : null}
       </div>
