@@ -23,7 +23,7 @@ liveplanner editor ── POST /api/index/items/:plan/plan-views {board, filter?
    mintGrant(person, plan, level) ─▶ liveplanner plan-diagram {op: 'graph'} → PlanDiagramGraph
    ─▶ livediagram POST /api/internal/items/plan-diagram {owner, name, graph, caption, link} → {id, tabId}
    ─▶ liveplanner plan-diagram {op: 'watch', diagramId, tabId, board, filter} (the room's plan_views)
-   → 201 {diagram: {id, title, tabId}, cards, links, critical}
+   → 201 {diagram: {id, title, tabId, link}, cards, links, critical}
 liveplanner editor ── connectFile(plan → diagram, Editor, one way) when the session may change tabs
 
 Live
@@ -47,7 +47,7 @@ livediagram editor ── POST /api/index/items/:plan/plan-edits {edits} ─▶ 
 | `PlanMakeAnswer`     | `sends: PlanSend[]`, `made`, `updated`, `trashed`, `skipped`                                                |
 | `PlanDiagramGraph`   | `lanes: {id, label}[]`, `nodes: {card, label, lane, done, critical, link}[]`, `edges: {from, to, critical}[]`, `total` |
 | `PlanViewAsk`        | `board`, `filter?` (`BoardFilterValue`, liveplanner's), `name`                                              |
-| `PlanViewAnswer`     | `diagram: {id, title, tabId}`, `cards`, `links`, `critical`                                                 |
+| `PlanViewAnswer`     | `diagram: {id, title, tabId, link}`, `cards`, `links`, `critical`                                               |
 | `PlanEdit`           | `{kind: 'block', card, blocker}` or `{kind: 'move', card, column}`                                          |
 | `PlanEditResult`     | `{status: 'applied'}` or `{status: 'refused', reason}`                                                      |
 | `PlanDiagramDoorCall`| `op: 'make' \| 'graph' \| 'watch' \| 'edit'`, `person`, and each op's fields                                |

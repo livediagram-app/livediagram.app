@@ -90,7 +90,8 @@ export type PlanViewAsk = {
 };
 
 export type PlanViewAnswer = {
-  diagram: { id: string; title: string; tabId: string };
+  // `link` opens the diagram on its drawn tab in livediagram.
+  diagram: { id: string; title: string; tabId: string; link: string };
   cards: number;
   links: number;
   critical: number;

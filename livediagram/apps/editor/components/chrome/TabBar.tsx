@@ -1,4 +1,6 @@
 import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
+import { canMakePlanCards, openMakePlanCards } from '@/lib/plan-cards/make-entry';
+import { countPlanShapes } from '@/lib/plan-cards/read-shapes';
 import dynamic from 'next/dynamic';
 import { MenuErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { useState, type ReactNode } from 'react';
@@ -230,6 +232,14 @@ export function TabBar({
         ? {
             broken: connectedTabBroken(connectionOf(tab)!.id),
             onConnectAgain: () => onConnectAgain(tab.id),
+          }
+        : undefined,
+    // Make Plan Cards (docs/specs/013-workspace/make-plan-cards.md "Where"): the tab shown, when it has a shape with words.
+    onMakePlanCards:
+      tab.id === activeId && canMakePlanCards() && countPlanShapes(tab.elements, 1) > 0
+        ? () => {
+            openMakePlanCards({ only: null });
+            close();
           }
         : undefined,
     canDelete: tabs.length > 1,

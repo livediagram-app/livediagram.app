@@ -61,7 +61,7 @@ close a loop.
    from the graph.
 4. liveplanner's door **watches** it (`op: 'watch'`): the plan remembers the diagram, its tab, the board, the filter
    and who made it, at most `PLAN_VIEWS_PER_PLAN_MAX` a plan (the oldest goes).
-5. The answer, `201 {diagram: {id, title, tabId}, cards, links, critical}`, is what the editor needs to put the
+5. The answer, `201 {diagram: {id, title, tabId, link}, cards, links, critical}`, is what the editor needs to put the
    connected tab in and say what was drawn.
 
 The connected tab itself is an ordinary [connection](connected-tabs.md) the plan's editor makes next (Editor on the

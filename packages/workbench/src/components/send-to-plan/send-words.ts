@@ -231,3 +231,55 @@ export function matchPerson(mention: string, people: readonly { name: string }[]
   const first = people.find((p) => p.name.trim().toLowerCase().split(' ')[0] === want);
   return first ? first.name : null;
 }
+
+// The words between two dates that make them a span ("1 Dec to 12 Dec", "2026-12-01 - 2026-12-12").
+const SPAN_WORDS = ['-', '–', '—', 'to', 'until', 'till', 'through', 'thru', '→'];
+
+/** The words as a span of work: its title with both dates out, and its first and last day; null without a span. */
+export function readSendSpan(
+  raw: string,
+  today: Date,
+): { title: string; start: string; due: string } | null {
+  const text = raw.length > READ_MAX ? raw.slice(0, READ_MAX) : raw;
+  const nl = text.indexOf('\n');
+  const line = nl < 0 ? text : text.slice(0, nl);
+  const list = tokens(line);
+  for (let i = 0; i < list.length; i += 1) {
+    const first = dateAt(list, i, today);
+    if (!first) continue;
+    const sep = list[first.to + 1]?.text.toLowerCase();
+    if (sep === undefined || !SPAN_WORDS.includes(sep)) continue;
+    const second = first.to + 2 < list.length ? dateAt(list, first.to + 2, today) : null;
+    if (!second) continue;
+    const start = first.due;
+    let due = second.due;
+    // A span written across the new year ("20 Dec to 5 Jan") ends in the next one.
+    if (due < start) {
+      const [y, m, d] = due.split('-').map(Number) as [number, number, number];
+      due = realDay(y + 1, m - 1, d) ?? start;
+    }
+    // A lead word before the span ("from 1 Dec to 5 Dec") goes with it.
+    const lead = i > 0 && ['from', 'on', 'between'].includes(list[i - 1]!.text.toLowerCase());
+    const from = lead ? i - 1 : i;
+    const title = list
+      .filter((_, k) => k < from || k > second.to)
+      .map((t) => t.text)
+      .join(' ')
+      .trim();
+    return { title: cutAtWord(title, SEND_TITLE_MAX), start, due };
+  }
+  return null;
+}
+
+/** The day the words write when they are nothing but a date ("1 Dec", "2026-12-01", "Dec 8"), else null. */
+export function readWholeDate(raw: string, today: Date): string | null {
+  const text = raw.trim();
+  if (!text || text.length > 40 || text.includes('\n')) return null;
+  const list = tokens(text);
+  if (list.length === 0 || list.length > 3) return null;
+  const lower = list[0]!.text.toLowerCase();
+  // Weekdays and "today" name no place on an axis.
+  if (lower === 'today' || lower === 'tomorrow' || weekdayOf(list[0]!.text) !== null) return null;
+  const hit = dateAt(list, 0, today);
+  return hit && hit.to === list.length - 1 ? hit.due : null;
+}

@@ -327,7 +327,18 @@ async function viewAsDiagram(ctx: RouteContext, planId: string): Promise<Respons
   console.info('[index] plan view', { cards: graph.nodes.length, links: graph.edges.length });
   return json(
     {
-      diagram: { id: drawn.id, title: row?.title ?? ask.name, tabId: drawn.tabId },
+      diagram: {
+        id: drawn.id,
+        title: row?.title ?? ask.name,
+        tabId: drawn.tabId,
+        link: placeLink(env, {
+          app: DIAGRAM_APP,
+          itemId: drawn.id,
+          kind: 'element',
+          tabId: drawn.tabId,
+          elementId: null,
+        }),
+      },
       cards: graph.nodes.length,
       links: graph.edges.length,
       critical,
