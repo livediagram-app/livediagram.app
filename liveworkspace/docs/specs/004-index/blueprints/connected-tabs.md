@@ -327,7 +327,7 @@ the tab menu's connected mode for an Editor, nothing for a Viewer).
 
 - **`packages/brand` `WorkspaceMark`**: the liveworkspace logo's prism alone (livediagram's prism in
   `PLATFORM_SITE.accent`, light and dark by the page's scheme), which `WorkspaceWordmark` now draws too.
-- **`TabStrip` `onConnect`**: given (and not `readOnly`), a `ConnectTabButton` (`components/chrome/ConnectTabButton.tsx`)
+- **`TabStrip` `onConnect`**: given (and not `readOnly`), a `ConnectTabButton` (in `components/chrome/TabStrip.tsx`)
   right of Add tab: Add tab's size and wash, `WorkspaceMark` at `size-4`, turning while pointed at (`spinning`, still
   under reduced motion), `aria-label` and Tooltip "Connect a File", `data-tour-id="connect-tab"`, hidden below `md` and
   on a `phone:` screen. It tracks nothing: each app counts its own press.
