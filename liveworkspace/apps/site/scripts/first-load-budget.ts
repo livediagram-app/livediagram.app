@@ -10,5 +10,8 @@ if (!ok) {
   console.error(
     '[first-load] a page grew past its budget: find the import that pulled code into it (liveworkspace/docs/specs/010-site/blueprints/site.md "Performance and limits")',
   );
+  console.error(
+    '[first-load] to see it before a push: `corepack pnpm prepush:quick --site-build` (docs/ci.md "Before a push")',
+  );
   process.exit(1);
 }

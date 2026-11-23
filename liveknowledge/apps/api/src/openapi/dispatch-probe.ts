@@ -14,6 +14,9 @@
 //     than anything known, is sent through `worker.fetch` against an env whose
 //     storage bindings (R2, Durable Objects) and outbound `fetch` are
 //     TRAPS: touching one records the fact and throws.
+//   - Classes: the sweep does not send every such path. It records which path segments a request reads, and
+//     sends one path of each class of paths the dispatch tells apart (`sweepDispatch`): a request answers for
+//     every path that agrees with it at the positions it read.
 //
 // Each probe lands in one of three outcomes:
 //   - `not-routed`: a clean 404 (`not_found`) / 405 without touching storage. Nothing serves
@@ -27,6 +30,12 @@
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import {
+  classOf,
+  sampleMembers,
+  sweepPaths,
+  tracePathReads,
+} from '@liveworkspace/vitest-config/route-sweep';
 import worker from '../index';
 import { setGrantVerifierForTests } from '../index-service';
 import { answerDocumentRequest, type RouteIdentity } from '../document-room/document-route';
@@ -38,10 +47,11 @@ export type ProbeMethod = (typeof PROBE_METHODS)[number];
 /** Stands in for every path parameter. Matches no literal the dispatch compares against. */
 const PARAM = 'probe-param';
 
-// The `error` a JSON answer names; null for any other body.
+// The `error` a JSON answer names; null for any other body. Reads the answer itself: nothing else does, and a
+// clone of each of the sweep's answers was a third of its time.
 async function errorOf(res: Response): Promise<string | null> {
   try {
-    const body: unknown = await res.clone().json();
+    const body: unknown = await res.json();
     const error: unknown =
       typeof body === 'object' && body !== null ? Reflect.get(body, 'error') : null;
     return typeof error === 'string' ? error : null;
@@ -155,20 +165,28 @@ export function instantiate(template: string): string[] {
 
 class StorageTrap extends Error {}
 
-/** Probes the real worker. `candidates` lists the paths to try; every path is
- *  tried with every method in PROBE_METHODS unless `methods` narrows it. */
-export async function probeDispatch(
-  candidates: readonly (readonly string[])[],
-  methods: readonly ProbeMethod[] = PROBE_METHODS,
-): Promise<ProbeResult[]> {
-  // Set by any trap; cleared before each request.
-  const state = { touched: false };
+/** Sends one request through the probe. `settled` is called the moment a trap is touched: the outcome is
+ *  `storage` from there on, whatever the Worker does next. */
+type Send = (
+  method: ProbeMethod,
+  path: readonly string[],
+  settled?: () => void,
+) => Promise<ProbeResult>;
+
+/** Opens the probe (its trapped env, its stand-ins) for `work`, which sends requests through it one at a time. */
+async function withProbe<T>(work: (send: Send) => Promise<T>): Promise<T> {
+  // Set by any trap; cleared before each request. `settled` is the request's own, told of the first touch.
+  const state: { touched: boolean; settled?: (() => void) | undefined } = { touched: false };
+  const touch = () => {
+    state.touched = true;
+    state.settled?.();
+  };
   const trap = (binding: string) =>
     new Proxy(
       {},
       {
         get() {
-          state.touched = true;
+          touch();
           throw new StorageTrap(`probe touched ${binding}`);
         },
       },
@@ -220,7 +238,7 @@ export async function probeDispatch(
               pending.push(p.catch(() => undefined));
             });
         }
-        state.touched = true;
+        touch();
         throw new StorageTrap(`probe touched DOCUMENT_ROOM.${String(method)}`);
       },
     },
@@ -235,43 +253,129 @@ export async function probeDispatch(
 
   const realFetch = globalThis.fetch;
   globalThis.fetch = () => {
-    state.touched = true;
+    touch();
     return Promise.reject(new StorageTrap('probe touched fetch'));
   };
-  const results: ProbeResult[] = [];
+  const send: Send = async (method, path, settled) => {
+    state.touched = false;
+    state.settled = settled;
+    const res = await worker.fetch(
+      new Request(`https://probe.test/api/${path.join('/')}`, {
+        method,
+        headers: {
+          Authorization: 'Bearer probe-token',
+          'X-Index-Grant': 'probe-grant',
+          'Content-Type': 'application/json',
+        },
+      }),
+      env,
+      executionCtx,
+    );
+    await Promise.all(pending.splice(0));
+    const clean =
+      res.status === 405 || (res.status === 404 && (await errorOf(res)) === 'not_found');
+    const outcome: ProbeOutcome = state.touched ? 'storage' : clean ? 'not-routed' : 'routed';
+    return { method, path: [...path], outcome, status: res.status };
+  };
   try {
-    for (const path of candidates) {
-      for (const method of methods) {
-        state.touched = false;
-        const res = await worker.fetch(
-          new Request(`https://probe.test/api/${path.join('/')}`, {
-            method,
-            headers: {
-              Authorization: 'Bearer probe-token',
-              'X-Index-Grant': 'probe-grant',
-              'Content-Type': 'application/json',
-            },
-          }),
-          env,
-          executionCtx,
-        );
-        await Promise.all(pending.splice(0));
-        const clean =
-          res.status === 405 || (res.status === 404 && (await errorOf(res)) === 'not_found');
-        const outcome: ProbeOutcome = state.touched ? 'storage' : clean ? 'not-routed' : 'routed';
-        results.push({ method, path: [...path], outcome, status: res.status });
-      }
-    }
+    return await work(send);
   } finally {
     globalThis.fetch = realFetch;
     setGrantVerifierForTests(null);
   }
-  return results;
+}
+
+/** Probes the real worker. `candidates` lists the paths to try; every path is
+ *  tried with every method in PROBE_METHODS unless `methods` narrows it. */
+export async function probeDispatch(
+  candidates: readonly (readonly string[])[],
+  methods: readonly ProbeMethod[] = PROBE_METHODS,
+): Promise<ProbeResult[]> {
+  return withProbe(async (send) => {
+    const results: ProbeResult[] = [];
+    for (const path of candidates) {
+      for (const method of methods) results.push(await send(method, path));
+    }
+    return results;
+  });
+}
+
+/** One resource segment to sweep: the literals its route code compares each position against, and how deep. */
+export interface SweepSpan {
+  segment: string;
+  vocabulary: Map<number, Set<string>>;
+  maxLength: number;
+}
+
+export interface DispatchSweep {
+  /** One result per class of paths the dispatch tells apart, in every method. */
+  results: ProbeResult[];
+  /** How many paths, in every method, those classes stand for: the full product of the vocabulary. */
+  stoodFor: number;
+  /** Members of the classes sent for real, each beside what its class answered. */
+  members: { sent: ProbeResult; classed: ProbeResult | undefined }[];
+}
+
+/** Sweeps every path built from each span's vocabulary, up to its `maxLength` segments (the resource segment
+ *  included), in every method, by sending one path of each class the dispatch tells apart: a request answers
+ *  for every path that agrees with it at the positions it read (@liveworkspace/vitest-config/route-sweep).
+ *  `sampled` members of those classes, the same ones every run and shared out by how many paths a span holds,
+ *  are then sent for real, for the test to hold each against its class. */
+export async function sweepDispatch(
+  spans: readonly SweepSpan[],
+  sampled: number,
+): Promise<DispatchSweep> {
+  return withProbe(async (send) => {
+    const results: ProbeResult[] = [];
+    const members: DispatchSweep['members'] = [];
+    const sizes = spans.map(
+      (span) => candidatePaths(span.segment, span.vocabulary, span.maxLength).length,
+    );
+    const paths = sizes.reduce((sum, size) => sum + size, 0);
+    for (const [at, span] of spans.entries()) {
+      // Path index i is segments[i + 1]: `api` is segments[0] and the resource segment is the path's first.
+      const vocabulary = new Map(
+        [...span.vocabulary].map(([position, literals]) => [position - 1, literals]),
+      );
+      const { classes, trees } = await sweepPaths({
+        root: span.segment,
+        vocabulary,
+        maxLength: span.maxLength,
+        methods: PROBE_METHODS,
+        param: PARAM,
+        send: async (method, path) => {
+          // Once a trap is touched the outcome is settled: what the catch-all reads to word its 500 is not routing.
+          const traced = await tracePathReads(`api/${path.join('/')}`, (stop) =>
+            send(method as ProbeMethod, path, stop),
+          );
+          // `api` is index 0 of what was read; the path starts at 1.
+          const reads = new Set([...traced.reads].map((index) => index - 1));
+          return { result: traced.value, reads, whole: traced.whole };
+        },
+      });
+      for (const c of classes) results.push(c.result);
+      const drawn = sampleMembers({
+        root: span.segment,
+        vocabulary,
+        maxLength: span.maxLength,
+        param: PARAM,
+        count: Math.max(5, Math.round((sampled * sizes[at]!) / paths)),
+      });
+      for (const [i, path] of drawn.entries()) {
+        const method = PROBE_METHODS[i % PROBE_METHODS.length]!;
+        members.push({
+          sent: await send(method, path),
+          classed: classOf(trees, method, path, PARAM)?.result,
+        });
+      }
+    }
+    return { results, stoodFor: paths * PROBE_METHODS.length, members };
+  });
 }
 
 /** Every path under `segment` built from its vocabulary, up to `maxLength`
  *  path segments (the resource segment included). */
-export function candidatePaths(
+function candidatePaths(
   segment: string,
   vocabulary: Map<number, Set<string>>,
   maxLength: number,

@@ -165,7 +165,13 @@ const empty = (): KnowledgeOverviewResponse =>
     },
   });
 
+// A date this year reads without its year ("Verified 8 Nov"), so the clock stands in the fixtures' year: on
+// the machine's own, every date here grew a year on 1 January. Only Date is faked; timers and waits run as ever.
+const TODAY = new Date(2026, 10, 23, 12);
+
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(TODAY);
   offline.value = false;
   api.apiKnowledgeOverview.mockResolvedValue(full());
   for (const fn of [
@@ -182,6 +188,7 @@ afterEach(() => {
   act(() => closeAiSettings());
   window.history.replaceState(null, '', '/document/d1');
   vi.clearAllMocks();
+  vi.useRealTimers();
 });
 
 async function open(role: Role = 'edit', over: Record<string, unknown> = {}) {

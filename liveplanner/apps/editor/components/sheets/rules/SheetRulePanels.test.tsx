@@ -53,6 +53,13 @@ async function open(cells: Record<string, string> = {}, opts: { canShape?: boole
   return { h, anchor, actions: () => acts! };
 }
 
+// The two panels' code is in lazy chunks, each fetched the first time it is drawn. That first load used to fall inside a
+// `findBy`'s one second, which a busy machine does not always give it (approvals-roles: 0.9 s for the load alone,
+// 2026-11-23). It is loaded here instead, on a wait that is a module load's, not the UI's.
+beforeAll(async () => {
+  await Promise.all([import('./SheetFormatRules'), import('./SheetCustomFormat')]);
+}, 60_000);
+
 describe('the Data Validation editor', () => {
   it('moves the typing to the option Enter adds', async () => {
     const { h, anchor, actions } = await open({ A2: 'Red' });

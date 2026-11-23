@@ -1,7 +1,7 @@
 // The Forum's contract (liveworkspace/docs/specs/007-community/community.md "The Forum"): its categories, reactions,
 // validation, the list's query and its paths.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   FORUM_BODY_MAX,
   FORUM_CATEGORIES,
@@ -150,7 +150,7 @@ describe('validation', () => {
   it('normalises text in one pass, however long', () => {
     expect(normaliseForumText(42)).toBe('');
     const worst = `a${'\r\n'.repeat(50_000)}b${' '.repeat(50_000)}`;
-    expect(cpuMsOf(() => normaliseForumText(worst))).toBeLessThan(200);
+    expect(cpuMsOf(() => normaliseForumText(worst))).toBeLessThan(cpuBudgetMs(200));
     expect(normaliseForumText(worst)).toBe('a\n\nb');
   });
 });

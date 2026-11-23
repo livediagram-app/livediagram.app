@@ -36,7 +36,7 @@ describe('plan view pictures at the limits', () => {
     });
     expect(size).toBeGreaterThan(0);
     // Measured at 67 ms on an M-series laptop at 2,000 cards, 204 ms at 5,000; a loaded CI runner gets four times that.
-    expect(ms).toBeLessThan(1500);
+    expect(ms).toBeLessThan(cpuBudgetMs(1500));
   });
 
   // A Gantt in swimlanes groups every row into its lane before drawing those that fit (plan-views.md "Swimlanes").

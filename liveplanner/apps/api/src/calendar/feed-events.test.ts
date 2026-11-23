@@ -2,7 +2,7 @@
 // hashed tokens tied to a person, Reset Link and turning a feed off, and the cards each feed shows.
 import { describe, expect, it } from 'vitest';
 import { DAY_MS, ITEMS_MAX, defaultCatalogue, itemPersonId, type Item } from '@liveplanner/items';
-import { cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { writeCalendar } from './ics';
 import type { Element } from '@liveplanner/project';
 import { insertItems } from '../db/items';
@@ -296,7 +296,7 @@ describe('the events', () => {
     });
     expect(body.split('BEGIN:VEVENT')).toHaveLength(FEED_EVENTS_MAX + 1);
     expect(new TextEncoder().encode(body).length).toBeLessThan(400_000);
-    expect(ms).toBeLessThan(2000);
+    expect(ms).toBeLessThan(cpuBudgetMs(2000));
   }, 30_000);
 
   it('answers null for a plan with no row', async () => {

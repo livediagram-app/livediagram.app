@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { ElementAction, Element, Tab } from '@liveplanner/project';
 import type { PlanBoardSetup } from '@liveplanner/items';
 import {
@@ -200,6 +200,6 @@ describe('budget', () => {
         found = placedActions(tabs, loaded).length + (actionsBoardIn(tabs) ? 1 : 0);
     });
     expect(found).toBe(2001);
-    expect(ms / 10).toBeLessThan(16);
+    expect(ms / 10).toBeLessThan(cpuBudgetMs(16));
   });
 });

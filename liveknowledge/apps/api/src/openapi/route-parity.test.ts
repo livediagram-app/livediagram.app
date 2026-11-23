@@ -1,56 +1,109 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ROUTE_MANIFEST } from './manifest';
 import {
   instantiate,
+  matchesTemplate,
   probeDispatch,
   routeSourceFiles,
   routeVocabulary,
+  sweepDispatch,
   templateSegments,
+  type DispatchSweep,
   type ProbeResult,
+  type SweepSpan,
 } from './dispatch-probe';
-import { SWEEP_SHARDS, showProbe, shardCandidates, sweepCandidates } from './dispatch-sweep';
 
 // (method, path-template) parity between the published manifest and the real
 // dispatch (docs/specs/015-api/api-documentation.md "Drift test"). See dispatch-probe.ts
-// for how the worker is probed; what each case below proves is stated on it. The sweep of every
-// candidate path, and the cases that read it, run in the route-sweep-<n>.test.ts files (dispatch-sweep.ts).
+// for how the worker is probed; what each case below proves is stated on it.
 
-// Probe as a signed-in caller (probe-caller.ts).
-vi.mock('../auth/accounts', () => import('./probe-caller').then((m) => m.probeAccounts()));
-vi.mock('../person/profiles', () => import('./probe-caller').then((m) => m.probeProfiles()));
+// Probe as a signed-in caller, so the signed-in-only surfaces (teams, tokens,
+// OAuth exchange) route instead of answering 401 for every path under them.
+vi.mock('../auth/accounts', () => ({
+  getPersonIdentity: async () => ({
+    kind: 'account',
+    userId: 'user_probe',
+    email: null,
+    teams: [{ id: 'probe-param', name: 'Probe', role: 'owner' }],
+  }),
+}));
+// Every participant id names someone, so GET /participants/{id} answers rather than 404ing.
+vi.mock('../person/profiles', async () => ({
+  ...(await import('../test-profiles')),
+  getParticipant: async (_env: unknown, id: string) => ({
+    id,
+    name: 'Probe',
+    color: '#000',
+    createdAt: 1,
+  }),
+}));
 
 const vocabulary = routeVocabulary();
+const show = (r: Pick<ProbeResult, 'method' | 'path'>) => `${r.method} /${r.path.join('/')}`;
 
-beforeAll(() => {
+let results: ProbeResult[] = [];
+let sweep: DispatchSweep;
+
+// The sweep answers for every path built from the vocabulary, in five methods each: 450,000 requests under one
+// resource when each was sent, 60 to 160 s on CI's shared runners and past this hook's timeout on a loaded one.
+// It now sends one path of each class the dispatch tells apart (dispatch-probe.ts `sweepDispatch`): a few
+// thousand requests, 1 to 3 s of CPU in the largest api. The timeout is on the wall clock, not a CPU budget
+// (testing.md): with every core of a machine busy twenty times over, those seconds of CPU took more than
+// Vitest's 10 s to come by, so it keeps a minute.
+const SAMPLED_MEMBERS = 2000;
+const PROBE_TIMEOUT_MS = 60_000;
+
+beforeAll(async () => {
   // Trapped requests end in index.ts's catch-all, which logs each one.
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
-});
+  const spans: SweepSpan[] = [];
+  for (const [segment, byPosition] of vocabulary) {
+    // One level deeper than the deepest literal or documented template, so a
+    // handler that serves an extension of a known path is caught too.
+    const documentedDepth = Math.max(
+      0,
+      ...ROUTE_MANIFEST.filter((r) => r.segment === segment).map(
+        (r) => templateSegments(r.path).length,
+      ),
+    );
+    const maxLength = Math.max(documentedDepth, ...byPosition.keys()) + 1;
+    spans.push({ segment, vocabulary: byPosition, maxLength });
+  }
+  sweep = await sweepDispatch(spans, SAMPLED_MEMBERS);
+  results = sweep.results;
+}, PROBE_TIMEOUT_MS);
 
 afterAll(() => {
   vi.restoreAllMocks();
 });
 
 describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
-  it('reads enough of the route code to mean something', () => {
-    // Vacuity guard: a broken source walk would pass every case here and in the sweep without checking anything.
+  it('probes enough of the dispatch to mean something', () => {
+    // Vacuity guard: a broken source walk or an env that routes nothing would
+    // pass every case below without checking anything.
     expect(vocabulary.size).toBeGreaterThan(15);
+    expect(sweep.stoodFor).toBeGreaterThan(1000);
+    expect(results.filter((r) => r.outcome === 'routed').length).toBeGreaterThan(10);
+    expect(results.filter((r) => r.outcome === 'storage').length).toBeGreaterThan(30);
   });
 
-  it('sweeps every candidate path exactly once, a share per test file', () => {
-    const candidates = sweepCandidates();
-    const shares = Array.from({ length: SWEEP_SHARDS }, (_, shard) =>
-      shardCandidates(candidates, shard),
-    );
-    expect(shares.flat().length).toBe(candidates.length);
-    expect(new Set(shares.flat().map((path) => path.join('/'))).size).toBe(candidates.length);
-    const files = readdirSync(fileURLToPath(new URL('.', import.meta.url).href))
-      .filter((f) => /^route-sweep-\d+\.test\.ts$/.test(f))
-      .sort();
-    expect(files).toEqual(shares.map((_, shard) => `route-sweep-${shard + 1}.test.ts`));
+  it('answers for a whole class of paths with one request', () => {
+    // The sweep sends one path of each class of paths the dispatch tells apart. These members of the classes,
+    // the same ones every run, were sent for real: one that answers unlike its class is a read of the path the
+    // sweep does not follow (@liveworkspace/vitest-config/route-sweep), and would hide a route from the cases below.
+    expect(sweep.members.length).toBeGreaterThanOrEqual(SAMPLED_MEMBERS);
+    const strays = sweep.members
+      .filter(
+        ({ sent, classed }) =>
+          classed?.outcome !== sent.outcome ||
+          (sent.outcome !== 'storage' && classed.status !== sent.status),
+      )
+      .map(({ sent, classed }) => `${show(sent)}: ${sent.outcome}, its class ${classed?.outcome}`);
+    expect(strays).toEqual([]);
   });
 
   it('serves every documented (method, path)', async () => {
@@ -60,8 +113,37 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     for (const route of ROUTE_MANIFEST) {
       probes.push(...(await probeDispatch([instantiate(route.path)], [route.method])));
     }
-    const phantom = probes.filter((r) => r.outcome === 'not-routed').map(showProbe);
+    const phantom = probes.filter((r) => r.outcome === 'not-routed').map(show);
     expect(phantom, `documented but not dispatched: ${phantom.join(', ')}`).toEqual([]);
+  });
+
+  it('documents every path the dispatch serves', () => {
+    const undocumented = [
+      ...new Set(
+        results
+          .filter((r) => r.outcome !== 'not-routed')
+          .filter((r) => !ROUTE_MANIFEST.some((route) => matchesTemplate(r.path, route.path)))
+          .map((r) => `/${r.path.join('/')}`),
+      ),
+    ];
+    expect(undocumented, `dispatched but not documented: ${undocumented.join(', ')}`).toEqual([]);
+  });
+
+  it('documents every method a handler answers before touching storage', () => {
+    // A `routed` outcome is definitive about the method as well as the path.
+    // A `storage` outcome is not (the handler loaded something before
+    // branching on the verb), which is what the per-segment verb check in
+    // manifest.test.ts covers.
+    const undocumented = results
+      .filter((r) => r.outcome === 'routed')
+      .filter(
+        (r) =>
+          !ROUTE_MANIFEST.some(
+            (route) => route.method === r.method && matchesTemplate(r.path, route.path),
+          ),
+      )
+      .map(show);
+    expect(undocumented, `answered but not documented: ${undocumented.join(', ')}`).toEqual([]);
   });
 
   it('documents every literal the dispatch discriminates on, at its position', () => {

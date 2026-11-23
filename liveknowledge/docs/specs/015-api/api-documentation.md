@@ -63,6 +63,7 @@ The route inventory is taken from the worker itself, by probing it:
 
 - **Vocabulary.** For each resource segment in `index.ts`'s dispatch switch, the literals its route modules compare a path position against (`segments[k] === '<literal>'`), read from the source, plus a placeholder standing in for any path parameter.
 - **Probe.** Every `(method, path)` built from that vocabulary, for GET, POST, PUT, DELETE and PATCH, one level deeper than the deepest known path, is sent through the real `fetch` handler as a signed-in caller, with feature gates open and every storage binding (the documents' Durable Objects and their store) and outbound `fetch` replaced by a trap that records the touch and throws.
+- **Classes.** The probe does not send every such path. It records which path segments a request reads, and a request answers for every path that agrees with it at those positions, so it sends one path of each class of paths the dispatch tells apart (`@liveworkspace/vitest-config/route-sweep`): a few thousand requests where the full product under one resource is hundreds of thousands. A read of the path it cannot follow segment by segment counts as reading all of it, and a fixed sample of the full product is sent for real, each path held against its class.
 - **Outcomes.** A clean 404 / 405 without a touch is _not routed_. Any other answer without a touch is _routed_: that exact method and path are served. A touch means the path is served, but not which methods, because most handlers load and authorise the resource before branching on the verb.
 
 What the test then proves:
@@ -108,11 +109,6 @@ All under `apps/api/src/openapi/` unless noted:
 - **`route-parity.test.ts`** + **`dispatch-probe.ts`**: the `(method,
 path-template)` parity described under "Drift test", run in the api worker's
   Node test env against `index.ts`'s default export.
-- **`dispatch-sweep.ts`** + **`route-sweep-<n>.test.ts`**: the probe of every candidate path (rules 2 and 3), split
-  into four equal shares, one test file each, so the shares run on separate cores. The sweep is about 91,000 paths
-  in five methods each (2026-11-23) and grows with every literal the `documents` routes compare; in one file it
-  reached its 120 s timeout on CI's runners. `route-parity.test.ts` checks the shares are the whole sweep exactly
-  once and that each has its file. **`probe-caller.ts`** is the signed-in caller every probing file mocks.
 - **`manifest.test.ts`**: the remaining guards: (1) the manifest's segment set
   equals the `case '…':` labels in `index.ts`'s dispatch, in both directions,
   and every verb a segment's handlers compare against is documented for it;

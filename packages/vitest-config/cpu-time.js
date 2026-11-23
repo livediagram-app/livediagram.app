@@ -19,6 +19,24 @@ export function cpuMsOf(fn) {
 }
 
 /**
+ * The least CPU time `fn` took over `runs` runs, in ms: the measure for a budget on work that takes a few
+ * milliseconds or less. `process.cpuUsage` counts the whole process, so one sample also holds whatever the
+ * collector and the compiler did meanwhile: a pass that settles at 0.3 ms read 17 to 27 ms in single samples
+ * while forty other suites ran (livedocuments' readability pass against its 20 ms, 2026-11-23). Interference
+ * only ever adds CPU time, so the least of a few runs is the work itself, and a real regression (a pass that
+ * looks back, a rescan) is slow in every run.
+ *
+ * @param {() => void} fn
+ * @param {number} [runs]
+ * @returns {number}
+ */
+export function cpuLeastMsOf(fn, runs = 5) {
+  let least = Number.POSITIVE_INFINITY;
+  for (let run = 0; run < runs; run++) least = Math.min(least, cpuMsOf(fn));
+  return least;
+}
+
+/**
  * The CPU time this process has spent so far, in ms (user + system): a clock that stands in for
  * `performance.now()` where a test times a stretch of code across several statements. Two reads give the CPU the
  * code between them spent, so `cpuNowMs() - start` replaces `performance.now() - start` one for one and never

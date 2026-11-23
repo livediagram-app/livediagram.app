@@ -121,6 +121,11 @@ describe('KnowledgeImportPanel, picking', () => {
   });
 });
 
+// A knowledgebase one page short of full: every query by role walks its 499 rows, 3 s of a test on a CI runner
+// under coverage (2026-11-23). The wall-clock timeout only stops a hang (testing.md "A long test names its own
+// timeout").
+const FULL_KNOWLEDGEBASE = { timeout: 30_000 };
+
 describe('KnowledgeImportPanel, review', () => {
   it('shows what was found as a tree, what is left out, where it lands and Import <n> Pages', async () => {
     mount();
@@ -187,7 +192,7 @@ describe('KnowledgeImportPanel, review', () => {
     });
   });
 
-  it('a plan that cannot fit says why and offers no Import', async () => {
+  it('a plan that cannot fit says why and offers no Import', FULL_KNOWLEDGEBASE, async () => {
     // 499 pages there: three more do not fit under one of them.
     mount({ tabs: Array.from({ length: 499 }, (_, i) => tab(`t${i}`, `Page ${i}`)) });
     chooseFolder(THREE);
@@ -203,30 +208,34 @@ describe('KnowledgeImportPanel, review', () => {
     expect(await screen.findByRole('button', { name: 'Import 3 Pages' })).toBeTruthy();
   });
 
-  it('with Pro on, offers the first pages that fit and says what was left out', async () => {
-    // The fixed bound of 500: 499 there, so one of the three fits under a page. Nobody's usage is known here, so the
-    // words are the bound's, with no tier named.
-    setKnowledgeTier('doc', { pagesMax: 500, historyDays: 30 });
-    const { run } = mount({
-      tabs: Array.from({ length: 499 }, (_, i) => tab(`t${i}`, `Page ${i}`)),
-    });
-    chooseFolder(THREE);
-    await screen.findByRole('button', { name: 'Import 3 Pages' });
-    fireEvent.click(screen.getByRole('radio', { name: /Under a Page of This Knowledgebase/ }));
-    expect(await screen.findByText('1 more page fits')).toBeTruthy();
-    expect(screen.queryByRole('alert')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Import First 1' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Import 1 Page' }));
-    await waitFor(() => expect(run).toHaveBeenCalled());
-    expect(run.mock.calls[0]![0].plan.summary.leftOut).toBe(2);
-    expect(
-      await screen.findByText(
-        'Imported 3 of 5 pages. The other 2 were left out: this Knowledgebase is full.',
-      ),
-    ).toBeTruthy();
-    forgetKnowledgeTiersForTests();
-  });
+  it(
+    'with Pro on, offers the first pages that fit and says what was left out',
+    FULL_KNOWLEDGEBASE,
+    async () => {
+      // The fixed bound of 500: 499 there, so one of the three fits under a page. Nobody's usage is known here, so the
+      // words are the bound's, with no tier named.
+      setKnowledgeTier('doc', { pagesMax: 500, historyDays: 30 });
+      const { run } = mount({
+        tabs: Array.from({ length: 499 }, (_, i) => tab(`t${i}`, `Page ${i}`)),
+      });
+      chooseFolder(THREE);
+      await screen.findByRole('button', { name: 'Import 3 Pages' });
+      fireEvent.click(screen.getByRole('radio', { name: /Under a Page of This Knowledgebase/ }));
+      expect(await screen.findByText('1 more page fits')).toBeTruthy();
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Import First 1' }));
+      fireEvent.click(await screen.findByRole('button', { name: 'Import 1 Page' }));
+      await waitFor(() => expect(run).toHaveBeenCalled());
+      expect(run.mock.calls[0]![0].plan.summary.leftOut).toBe(2);
+      expect(
+        await screen.findByText(
+          'Imported 3 of 5 pages. The other 2 were left out: this Knowledgebase is full.',
+        ),
+      ).toBeTruthy();
+      forgetKnowledgeTiersForTests();
+    },
+  );
 
   it('says when an archive holds no pages, with the way back', async () => {
     mount();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   clearTabExamples,
   clearTemplateExamples,
@@ -142,8 +142,8 @@ describe('isSampleCopy', () => {
   it('reads a very long label in one pass, within budget', () => {
     const spaces = `a${' '.repeat(50_000)}`;
     const digits = '1 '.repeat(50_000);
-    expect(cpuMsOf(() => isSampleCopy(text(spaces)))).toBeLessThan(100);
-    expect(cpuMsOf(() => isSampleCopy(text(digits)))).toBeLessThan(100);
+    expect(cpuMsOf(() => isSampleCopy(text(spaces)))).toBeLessThan(cpuBudgetMs(100));
+    expect(cpuMsOf(() => isSampleCopy(text(digits)))).toBeLessThan(cpuBudgetMs(100));
     expect(isSampleCopy(text(`${spaces}b`))).toBe(true);
   });
 });
@@ -153,7 +153,7 @@ describe('marking a large page of body copy', () => {
     const texts = Array.from({ length: 5000 }, (_, i) =>
       text(`Sample sentence number ${i} for a page`, { id: `t${i}`, textSize: 22 }),
     );
-    expect(cpuMsOf(() => markTemplateExamples(texts, isSampleCopy))).toBeLessThan(400);
+    expect(cpuMsOf(() => markTemplateExamples(texts, isSampleCopy))).toBeLessThan(cpuBudgetMs(400));
   });
 });
 
@@ -286,8 +286,8 @@ describe('clearTemplateExamples', () => {
         sticky(`Example note ${i}`.repeat(10), { id: `s${i}` }),
       ),
     );
-    expect(cpuMsOf(() => untouchedExampleCount(many))).toBeLessThan(200);
-    expect(cpuMsOf(() => clearTemplateExamples(many))).toBeLessThan(400);
+    expect(cpuMsOf(() => untouchedExampleCount(many))).toBeLessThan(cpuBudgetMs(200));
+    expect(cpuMsOf(() => clearTemplateExamples(many))).toBeLessThan(cpuBudgetMs(400));
   });
 });
 
@@ -385,7 +385,7 @@ describe('hasUntouchedExamples', () => {
       ),
     ).map((el) => ({ ...el, label: `${el.label as string}!` }));
     hasUntouchedExamples(changed);
-    expect(cpuMsOf(() => hasUntouchedExamples([...changed]))).toBeLessThan(50);
+    expect(cpuMsOf(() => hasUntouchedExamples([...changed]))).toBeLessThan(cpuBudgetMs(50));
   });
 });
 
