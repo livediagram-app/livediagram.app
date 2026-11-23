@@ -499,6 +499,13 @@ drives it with fake timers.
   `PanelField` hands its children the hint's id with the control's (`children(id, hintId)`), so Email Received's
   **From** and Add or Remove Label's **Label** are described by their hint, and the sheet's Custom Number Format
   field by its Preview line (which turns into "That format code can't be read").
+- `@liveworkspace/ui`'s `SegmentedToggle` (`packages/ui/src/SegmentedToggle.tsx`, Work Tracker 1384): the track is
+  `flex flex-wrap max-w-full`, each label `whitespace-nowrap`. A `ResizeObserver` on the track sets
+  `data-segments-wrapped` while its first and last segments sit on different rows (`segmentsWrapped`, offsetTop); under
+  it each segment (its `HoverCard` and its button) grows (`in-data-segments-wrapped:grow`) and, under a coarse
+  pointer, is `h-11`. On one row a segment is `h-7` with `relative touch-target-y`. Callers no longer add
+  `whitespace-nowrap`, `flex-wrap` or a scroller of their own (Live Data's Source and Needs Attention dropped theirs).
+  Tested in `SegmentedToggle.test.tsx` (narrow, normal and wide tracks).
 
 ## Testing
 
