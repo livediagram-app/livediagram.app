@@ -12,6 +12,7 @@ import { REVIEW_DUE_PILL, VERIFIED_PILL } from '@/components/knowledge/TrustBadg
 import { answerMarkdown } from '@/lib/knowledge-ask/answer-parts';
 import type { AskConversation, AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
 import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
+import { AnsweredFromLabels } from '@/components/page-labels/AskLabelScope';
 import { answerTrust } from '@/lib/knowledge-ask/ask-trust';
 import { track } from '@/lib/telemetry';
 import { openAiSettingsFrom } from './AiSettingsButton';
@@ -244,6 +245,7 @@ export const AskAnswerCard = memo(function AskAnswerCard(props: AskAnswerCardPro
       {turn.status === 'done' ? (
         <>
           <TrustLine turn={turn} answeredBy={props.answeredBy} />
+          <AnsweredFromLabels ids={turn.labels} />
           {turn.gaps.map((gap) => (
             <Callout
               key={gap}

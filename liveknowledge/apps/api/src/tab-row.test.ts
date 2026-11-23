@@ -164,4 +164,14 @@ describe('rowToTabSummary', () => {
     expect(rowToTabSummary(baseRow({ icon: '{"emoji":"not one"}' })).icon).toBeUndefined();
     expect(rowToTabSummary(baseRow({ icon: '{broken' })).icon).toBeUndefined();
   });
+
+  it("carries the page's labels read out of the body, and drops what is not them (page-surface.md)", () => {
+    expect(rowToTabSummary(baseRow({ labels: '["lbl_a","lbl_a","lbl_b"]' })).labels).toEqual([
+      'lbl_a',
+      'lbl_b',
+    ]);
+    expect(rowToTabSummary(baseRow({ labels: '[]' })).labels).toBeUndefined();
+    expect(rowToTabSummary(baseRow({ labels: null })).labels).toBeUndefined();
+    expect(rowToTabSummary(baseRow({ labels: '{broken' })).labels).toBeUndefined();
+  });
 });

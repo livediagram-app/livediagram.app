@@ -3,7 +3,7 @@
 // Tab[] used by the document-hydration + autosave paths.
 import type { Tab } from '@livedocuments/document';
 import type { AccessLevel } from '@livedocuments/api-schema';
-import { carryConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
+import { fromSummary } from '@liveworkspace/workbench/components/connect/tab-connection';
 
 export function createTab(name: string): Tab {
   // New tabs (and a new document's first tab) default the per-tab text size
@@ -28,15 +28,18 @@ export function placeholdersFromSummaries(
     folder?: string;
     folderColor?: string;
     connection?: unknown;
+    // A renamed connected tab's file name (connected-tabs.md "A tab's own name").
+    targetName?: unknown;
   }[],
 ): Tab[] {
   if (summaries.length === 0) return [createTab('Tab 1')];
   // Carry `folder` (docs/specs/006-document/tab-folders.md) so the tab bar renders folders from the
   // first paint; the lazy per-tab content fetch fills `elements` later
   // without touching folder (it's link metadata, not body content).
-  // A connected tab's connection too (liveworkspace/docs/specs/004-index/connected-tabs.md), so it shows as one at once.
+  // A connected tab's connection too (liveworkspace/docs/specs/004-index/connected-tabs.md), so it shows as one at once,
+  // and a renamed one's file name, so its tooltip names the file before its body loads.
   return summaries.map((summary) =>
-    carryConnection(
+    fromSummary(
       {
         id: summary.id,
         name: summary.name,

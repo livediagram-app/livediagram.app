@@ -65,7 +65,12 @@ export function cachedStoredTab(env: PlanEnv | undefined): StoredTabReader {
     if (hit && hit.rev === rev) return hit.tab;
     const tab = await getTab(env, projectId, tabId);
     if (!tab) return null;
-    const slim: StructuredTab = { name: tab.name, elements: tab.elements, form: tab.form };
+    const slim: StructuredTab = {
+      name: tab.name,
+      targetName: (tab as { targetName?: unknown }).targetName,
+      elements: tab.elements,
+      form: tab.form,
+    };
     cache.delete(key);
     cache.set(key, { rev: tab.rev ?? rev, tab: slim });
     while (cache.size > SCOPED_TABS_CACHED) cache.delete(cache.keys().next().value!);

@@ -8,6 +8,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react';
+import { WorkspaceMark } from '@liveworkspace/brand';
 import { Glyph, Tooltip } from '@liveworkspace/ui';
 import {
   edgeMask,
@@ -18,6 +19,7 @@ import {
 } from './tab-strip-scroll';
 import {
   TAB_ADD_CLASS,
+  TAB_CONNECT_CLASS,
   TAB_LIST_CLASS,
   TAB_SCROLL_BUTTON_CLASS,
   TAB_SLIDER_CLASS,
@@ -45,6 +47,8 @@ export type TabStripProps<T extends { id: string; folderColor?: string }> = {
   renderTab: (tab: T) => ReactNode;
   // Add tab, after the last tab; omitted for a Viewer.
   onAdd?: () => void;
+  // Connect a File, right of Add tab (connected-tabs.md "From the tab bar"); given only where connecting can work.
+  onConnect?: () => void;
   // A tab dropped on a folder's chip joins it at its head (placed before its first member).
   onReorder: (sourceId: string, targetId: string, placeBefore?: boolean) => void;
   onRenameFolder: (oldName: string, newName: string) => void;
@@ -65,6 +69,7 @@ export function TabStrip<T extends { id: string; folderColor?: string }>({
   readOnly,
   renderTab,
   onAdd,
+  onConnect,
   onReorder,
   onRenameFolder,
   renderRenameField,
@@ -332,8 +337,34 @@ export function TabStrip<T extends { id: string; folderColor?: string }>({
             +
           </button>
         )}
+        {readOnly || !onConnect ? null : <ConnectTabButton onClick={onConnect} />}
       </div>
       {scrollButton('right')}
     </nav>
+  );
+}
+
+// Connect a File on the tab bar, right of Add tab (liveworkspace/docs/specs/004-index/connected-tabs.md "From the tab
+// bar"): the liveworkspace logo, drawn small, in a button of Add tab's size. Its prism follows the bar's light or dark
+// look and turns while pointed at, as the platform's wordmark does. It counts nothing itself: each app counts its press.
+export const CONNECT_TAB_LABEL = 'Connect a File';
+
+export function ConnectTabButton({ onClick }: { onClick: () => void }) {
+  const [spinning, setSpinning] = useState(false);
+  return (
+    <Tooltip label={CONNECT_TAB_LABEL}>
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={CONNECT_TAB_LABEL}
+        aria-haspopup="dialog"
+        data-tour-id="connect-tab"
+        onPointerEnter={(e) => setSpinning(e.pointerType !== 'touch')}
+        onPointerLeave={() => setSpinning(false)}
+        className={TAB_CONNECT_CLASS}
+      >
+        <WorkspaceMark className="size-4" spinning={spinning} />
+      </button>
+    </Tooltip>
   );
 }

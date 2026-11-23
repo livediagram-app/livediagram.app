@@ -1,6 +1,9 @@
 import { applyMergedElementOps } from '@liveworkspace/workbench/lib/merged-element-ops';
 import type { RemoteOp } from '@liveworkspace/workbench/lib/remote-op-log';
-import { carryConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
+import {
+  carryConnection,
+  fromSummary,
+} from '@liveworkspace/workbench/components/connect/tab-connection';
 import {
   applyArticleOps,
   pagesOf,
@@ -148,7 +151,7 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
             summary,
           );
         }
-        return carryConnection(
+        return fromSummary(
           {
             id: summary.id,
             name: summary.name,

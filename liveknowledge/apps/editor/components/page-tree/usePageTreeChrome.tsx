@@ -19,6 +19,7 @@ import { usePageTreeModel } from './usePageTreeModel';
 import { KnowledgebaseMenu } from '@/components/knowledge-menu/KnowledgebaseMenu';
 import { usePageTrashSync } from '@/components/page-trash/usePageTrash';
 import { PageTrashHost } from '@/components/page-trash/PageTrashDialog';
+import { useLabelFilterReveal } from '@/components/page-labels/useLabelFilter';
 
 const noSubscribe = () => () => {};
 
@@ -107,6 +108,10 @@ export function usePageTreeChrome({
     writeTreeCollapsed(next);
     setCollapsedState(next);
   }, []);
+  // A page's label pill pressed while the tree is folded to its rail: it opens on the filtered tree.
+  useLabelFilterReveal(() => {
+    if (collapsed) setCollapsed(false);
+  });
   const shown = store !== null && !chromeHidden && !zenMode && !embed;
   const docked = shown && !isMobile;
   // Open, it rises to the canvas's top with the menu box as its first row; its rail stands under the top row.

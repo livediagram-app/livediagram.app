@@ -8,6 +8,8 @@ import { apiAskKnowledge } from '@/lib/api/knowledge-ask';
 import { track } from '@/lib/telemetry';
 import { aiSettingsStore } from './ai-settings-store';
 import { askAiChoiceStore } from './ask-ai-choice';
+import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
+import { askLabelScopeStore, chosenOf } from '@/lib/page-labels/label-selection-store';
 import { createAskConversation, type AskConversation, type AskTurnView } from './ask-conversation';
 import {
   chatIdOf,
@@ -130,6 +132,12 @@ export function askConversationFor(who: KnowledgeCaller, documentId: string): As
         { ...request, ai: askAiChoiceStore.get(who, documentId) },
         opts,
       ),
+    // Answer From's labels that still exist (search-and-ask.md "Answer From").
+    labels: () =>
+      chosenOf(
+        askLabelScopeStore.idsOf(documentId),
+        knowledgeSettingsStore.labelsOf(documentId),
+      ).map((l) => l.id),
     onAsked: () => {
       // The count of asks, never the words.
       track('UI', 'Used', 'AskQuestion');
@@ -161,4 +169,5 @@ export function resetAskSession(): void {
   conversations.clear();
   recents.clear();
   askAiChoiceStore.reset();
+  askLabelScopeStore.reset();
 }

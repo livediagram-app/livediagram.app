@@ -4,12 +4,27 @@
 // for every app: the host's grant, the new connected tab's add (the app's whole-tab save, awaited, so a failure takes
 // the connection back), the move to it, and Connect Again on a tab already connected. Each app hands in its own tab
 // type's pieces: how it makes a blank tab, saves one whole, and commits its tab list.
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
+import dynamic from 'next/dynamic';
+import {
+  createElement,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import type { ConnectionMade } from '@liveworkspace/index-client';
+import type { ConnectFilePanelProps } from './ConnectFilePanel';
 import { indexClient } from '../../lib/index-client';
 import { connectAgain, reverseUnreachedWords } from './connect-again';
 import { connectErrorWords } from './connect-words';
-import { connectedTargets, connectionOf, withConnection } from './tab-connection';
+import {
+  connectedTargets,
+  connectionOf,
+  followedConnectedTab,
+  withConnection,
+} from './tab-connection';
 import { toastName } from '../../lib/toast-name';
 
 type TabLike = { id: string; name: string };
@@ -97,10 +112,13 @@ export function useConnectedTabActions<T extends TabLike>(deps: ConnectedTabActi
         tabId,
         connection,
         addTab: async (answer) => {
-          await saveTab(withConnection({ ...tab, name: answer.name }, answer.connection));
+          // A tab with a name of its own keeps it: the answered name is the target's, held beside it.
+          await saveTab(withConnection(followedConnectedTab(tab, answer.name), answer.connection));
           commitTabs((ts) =>
             ts.map((t) =>
-              t.id === tabId ? withConnection({ ...t, name: answer.name }, answer.connection) : t,
+              t.id === tabId
+                ? withConnection(followedConnectedTab(t, answer.name), answer.connection)
+                : t,
             ),
           );
         },
@@ -114,4 +132,39 @@ export function useConnectedTabActions<T extends TabLike>(deps: ConnectedTabActi
   const connected = useMemo(() => connectedTargets(tabs), [tabs]);
 
   return { grant, connected, addConnectedTab, showConnected, connectAgainTab, goTo: openTab };
+}
+
+// The tab bar's Connect a File (connected-tabs.md "From the tab bar"), once for every app: the same Connect list as the
+// start's Connect File, in a centred dialog loaded the first time it is pressed. A file connected there becomes a new
+// tab at the end of the bar, which opens; no empty tab gives way, and closing the dialog leaves nothing behind. `host`
+// is the app's where-connecting-can-work answer (undefined elsewhere, so `open` is too); `onOpen` counts the press.
+const ConnectFileDialog = dynamic(
+  () => import('./ConnectFilePanel').then((m) => m.ConnectFileDialog),
+  { ssr: false },
+);
+
+export type ConnectFileHost = Omit<ConnectFilePanelProps, 'addTab' | 'ink'> & {
+  addConnectedTab: (made: ConnectionMade, tabId: string, replacing?: string) => Promise<void>;
+};
+
+export function useConnectFileDialog(
+  host: ConnectFileHost | undefined,
+  onOpen: () => void,
+): { open: (() => void) | undefined; dialog: ReactNode } {
+  const [shown, setShown] = useState(false);
+  if (!host) return { open: undefined, dialog: null };
+  const { addConnectedTab, ...panel } = host;
+  return {
+    open: () => {
+      onOpen();
+      setShown(true);
+    },
+    dialog: shown
+      ? createElement(ConnectFileDialog, {
+          ...panel,
+          addTab: (made: ConnectionMade, tabId: string) => addConnectedTab(made, tabId),
+          onClose: () => setShown(false),
+        })
+      : null,
+  };
 }

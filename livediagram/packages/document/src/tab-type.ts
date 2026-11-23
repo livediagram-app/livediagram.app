@@ -31,6 +31,9 @@ import type { DiagramSources } from './diagram-sources';
 export type Tab = {
   id: TabId;
   name: string;
+  // A connected tab an Editor renamed (liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"): the
+  // file's own name as last seen, while `name` is this canvas's label for it. Absent, the name follows the file.
+  targetName?: string;
   kind?: TabKind;
   // The tab's editor mode, the same for everyone on it and the mode it opens in
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via

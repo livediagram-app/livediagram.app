@@ -110,6 +110,21 @@ describe('useConnectedTabActions', () => {
     expect(toast.success).toHaveBeenCalledWith('“Launch plan v2” is connected again.');
   });
 
+  it('keeps a renamed tab’s own name on Connect Again, the new file name held beside it', async () => {
+    const client = {
+      makeConnection: vi.fn().mockResolvedValue(made({ connection: B, name: 'Launch plan v2' })),
+      takeBackConnection: vi.fn(),
+    };
+    const { hook, deps, tabs } = setup(
+      [{ id: 'c', name: 'Plan', targetName: 'Launch plan', connection: A } as Tab],
+      { client },
+    );
+    await act(() => hook.result.current.connectAgainTab('c'));
+    const kept = { id: 'c', name: 'Plan', targetName: 'Launch plan v2', connection: B };
+    expect(deps.saveTab).toHaveBeenCalledWith(kept);
+    expect(tabs()[0]).toEqual(kept);
+  });
+
   it('says why Connect Again failed, and ignores a tab of content', async () => {
     const client = {
       makeConnection: vi.fn().mockRejectedValue(new IndexError(409, 'share_link_limit')),
