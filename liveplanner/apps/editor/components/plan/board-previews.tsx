@@ -187,7 +187,7 @@ function Sprint({ palette }: P) {
                     className="ml-auto rounded-full px-[2px] text-[5px] font-bold leading-[6px]"
                     style={{ backgroundColor: palette.column, color: palette.muted }}
                   >
-                    {[3, 5, 2][(c + k + r) % 3]}
+                    <span className="text-optical-line">{[3, 5, 2][(c + k + r) % 3]}</span>
                   </span>
                 </Card>
               ))}
@@ -309,7 +309,7 @@ function Weekly({ palette }: P) {
               i === 2 ? { backgroundColor: `${BLUE}26`, color: BLUE } : { color: palette.muted }
             }
           >
-            {d}
+            <span className="text-optical-line">{d}</span>
           </span>
           {Array.from({ length: [2, 1, 2, 1, 1][i]! }, (_, k) => (
             <Card key={k} palette={palette} stripe={[BLUE, AMBER, VIOLET][(i + k) % 3]}>
@@ -371,8 +371,8 @@ function Blank({ palette }: P) {
           color: palette.muted,
         }}
       >
-        <span className="text-[10px] leading-none">+</span>
-        Setup Board
+        <span className="text-optical-line text-[10px] leading-none">+</span>
+        <span className="text-optical-line">Setup Board</span>
       </span>
     </div>
   );

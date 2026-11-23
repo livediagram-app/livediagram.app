@@ -36,8 +36,10 @@ export function TemplateCarousel({
         <>
           <h3 className={BAND_LABEL}>{label}</h3>
           <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-medium tabular-nums text-slate-600 sm:hidden dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-            {count}
-            <span className="sr-only"> templates</span>
+            <span className="text-optical-line">
+              {count}
+              <span className="sr-only"> templates</span>
+            </span>
           </span>
         </>
       }

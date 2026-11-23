@@ -58,7 +58,7 @@ export function TypeCell({ app, label }: { app: App; label: string }) {
       <span aria-hidden className="inline-flex">
         <AppMark app={app} size={12} />
       </span>
-      <span className="truncate">{label}</span>
+      <span className="text-optical-line min-w-0 truncate">{label}</span>
     </span>
   );
 }
@@ -69,7 +69,7 @@ export function FolderTypeCell() {
       <span aria-hidden className="inline-flex shrink-0 text-amber-500 [&_svg]:size-3.5">
         <FolderSolidIcon />
       </span>
-      Folder
+      <span className="text-optical-line">Folder</span>
     </span>
   );
 }

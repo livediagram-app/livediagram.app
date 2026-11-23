@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Chip } from '@liveworkspace/ui';
 import { ErrorNote, Panel } from '../account-ui';
 import { ConfirmAction } from '../ConfirmAction';
 import { accountErrorMessage as errorMessage, formatAccountDate as formatDate } from '../errors';
@@ -63,9 +64,9 @@ function TokenRow({
           >
             <bdi className="truncate">{token.name}</bdi>
             {token.readOnly && (
-              <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <Chip className="bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 Read only
-              </span>
+              </Chip>
             )}
           </p>
           <p

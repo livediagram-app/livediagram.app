@@ -1,6 +1,6 @@
 import { ctaHref, type CtaSource } from '@liveknowledge/api-schema';
 import { BAND_CARD, BAND_CONTROL_HOVER } from '@liveworkspace/marketing-site/lib/band-classes';
-import { StructureArt } from '@liveknowledge/ui';
+import { Chip, StructureArt } from '@liveknowledge/ui';
 import { createLabelPrefix } from '@/lib/create-label';
 import { structureCreateHref, type GalleryStructure } from '@/lib/template-gallery';
 
@@ -42,9 +42,9 @@ export function StructureCard({
           <span className="sr-only">{createLabelPrefix(template.title)}</span>
           {template.title}
         </span>
-        <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
+        <Chip className="bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
           {plural(template.pageCount)}
-        </span>
+        </Chip>
       </span>
       <span className="mt-1 block text-xs leading-relaxed text-slate-600 dark:text-slate-400">
         {template.line}

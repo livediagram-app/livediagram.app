@@ -2,7 +2,7 @@
 
 import { useId } from 'react';
 import { TIER_NAMES, type PaidTier, type SubscriptionSummary } from '@liveworkspace/subscription';
-import { Button } from '@liveworkspace/ui';
+import { Button, Chip } from '@liveworkspace/ui';
 import { lapsedChanges } from './copy';
 
 const CHIP = {
@@ -57,13 +57,13 @@ export function BackOnFree({
                 {change.what}
               </span>
             </div>
-            <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+            <Chip
+              className={`px-2 py-0.5 text-[11px] font-semibold ${
                 change.waiting ? CHIP.waiting : CHIP.quiet
               }`}
             >
               {change.state}
-            </span>
+            </Chip>
           </li>
         ))}
       </ul>

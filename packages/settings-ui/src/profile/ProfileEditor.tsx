@@ -294,7 +294,7 @@ export function ProfileSection({ host }: { host: ProfileHost }) {
             onClick={retry}
             className="relative touch-target inline-flex cursor-pointer items-center rounded-full border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors duration-micro hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           >
-            Try again
+            <span className="text-optical-line">Try again</span>
           </button>
         </div>
       ) : (

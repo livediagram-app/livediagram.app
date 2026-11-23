@@ -14,7 +14,7 @@ import {
   normaliseBoardSetup,
   type PlanBoardSetup,
 } from '@liveplanner/items';
-import { ChevronRightIcon } from '@liveplanner/ui';
+import { ChevronRightIcon, Chip } from '@liveplanner/ui';
 import { InfoNote } from '@/components/palette/plan-menu-parts';
 import { AddColumnPicker } from './AddColumnPicker';
 import { addColumnAfter, addColumnsAfter } from './board-setup-edits';
@@ -101,9 +101,9 @@ export function BoardColumnsSection({
         id={`${element.id}-columns`}
       >
         On This Board
-        <span className="rounded-full bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+        <Chip className="bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
           {setup.columns.length}
-        </span>
+        </Chip>
       </p>
       <ol
         aria-labelledby={`${element.id}-columns`}

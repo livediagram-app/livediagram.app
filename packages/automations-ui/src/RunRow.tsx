@@ -6,7 +6,7 @@
 // short and where it opens are the app's (kit.audit).
 
 import { useId, useState } from 'react';
-import { ChevronDownIcon } from '@liveworkspace/ui';
+import { ChevronDownIcon, Chip } from '@liveworkspace/ui';
 import { useAutomationsKit } from './kit-context';
 import { RunSteps } from './RunSteps';
 import { RESULT_LABELS, RESULT_PILL, nextRunWords, runWhen, tookWords } from './run-words';
@@ -19,13 +19,13 @@ export const RUN_GRID =
 
 export function ResultPill({ result }: { result: ListedRun['result'] }) {
   return (
-    <span
+    <Chip
       data-run-result={result}
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[12px] font-semibold leading-4 ${RESULT_PILL[result]}`}
+      icon={<span aria-hidden className="size-1.5 rounded-full bg-current" />}
+      className={`gap-1.5 whitespace-nowrap px-2.5 py-0.5 text-[12px] font-semibold leading-4 ${RESULT_PILL[result]}`}
     >
-      <span aria-hidden className="size-1.5 rounded-full bg-current" />
       {RESULT_LABELS[result]}
-    </span>
+    </Chip>
   );
 }
 

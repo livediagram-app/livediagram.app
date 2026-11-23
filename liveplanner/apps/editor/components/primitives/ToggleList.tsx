@@ -6,7 +6,7 @@
 // line of names. It scales: past eight rows a filter field appears and the rows scroll inside the card, never the dialog.
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { Switch, SwitchRow } from '@liveworkspace/ui';
-import { lucideGlyph } from '@liveplanner/ui';
+import { Chip, lucideGlyph } from '@liveplanner/ui';
 import { lucideChevronDown, lucideSearch } from '@liveworkspace/icons/lucide';
 
 const SearchIcon = lucideGlyph(lucideSearch, 14);
@@ -98,9 +98,9 @@ export function ToggleList({
               </span>
             )}
           </span>
-          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <Chip className="bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             {count}/{rows.length}
-          </span>
+          </Chip>
           <span
             aria-hidden
             className={`shrink-0 text-slate-400 transition-transform duration-short motion-reduce:transition-none ${open ? 'rotate-180' : ''}`}

@@ -23,7 +23,7 @@ import {
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { CheckIcon, ChevronRightIcon } from '@liveplanner/ui';
+import { CheckIcon, ChevronRightIcon, Chip } from '@liveplanner/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import { usePlan } from './PlanContext';
@@ -117,9 +117,9 @@ function BlockedByGroup({
         className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-slate-800 dark:text-slate-100"
       >
         {label}
-        <span className="rounded-full bg-slate-100 px-1.5 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+        <Chip className="bg-slate-100 px-1.5 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
           {cards.length}
-        </span>
+        </Chip>
         <span className={`text-[12px] font-medium ${open ? 'text-red-600 dark:text-red-400' : ''}`}>
           {open ? (
             `${open} open`

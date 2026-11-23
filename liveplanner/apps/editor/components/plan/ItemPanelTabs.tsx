@@ -152,7 +152,7 @@ export function ItemPanelTabBar({
                   aria-hidden
                   className={`inline-block min-w-[1.25rem] rounded-full px-1.5 text-center text-[11px] font-medium leading-[1.125rem] tabular-nums transition motion-reduce:transition-none ${on ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}
                 >
-                  {t.count}
+                  <span className="text-optical-line">{t.count}</span>
                 </span>
               ) : null}
               {on ? (

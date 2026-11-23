@@ -16,7 +16,7 @@ import {
 import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
 import { useSpace3DShowing, useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
 import { podClosed } from '@livehuddle/avatar/pod';
-import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
+import { Chip, IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
 import { useGameOn } from '@/lib/table-games/table-game-scene';
 import { hasMoment, type PieceMomentPlay } from '@/lib/piece-moments';
@@ -477,13 +477,13 @@ function SeatPill({
 }) {
   if (useGameOn(id)) return null;
   return (
-    <span
-      className={`absolute left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-full px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
+    <Chip
+      className={`absolute left-1/2 -translate-x-1/2 -translate-y-full whitespace-nowrap px-1.5 py-[1px] text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
       style={{ ...identityVars(color), top }}
       data-seat-pill=""
     >
       {names}
-    </span>
+    </Chip>
   );
 }
 

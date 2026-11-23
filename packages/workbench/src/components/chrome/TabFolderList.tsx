@@ -10,7 +10,7 @@ import { useId, useRef, useState, type ReactNode } from 'react';
 import { lucideFolderX, lucidePlus } from '@liveworkspace/icons/lucide';
 import type { TabFolderColour } from '@liveworkspace/api-schema/tab-folder-colour';
 import type { TabFolderSummary } from '@liveworkspace/element-model/tab-folders';
-import { Button, TextInput, lucideGlyph } from '@liveworkspace/ui';
+import { Button, Chip, TextInput, lucideGlyph } from '@liveworkspace/ui';
 import { FolderColourButton } from './FolderColourButton';
 import { FolderStackGlyph } from './FolderStackGlyph';
 import { chosenFolderHue, folderStyle, resolveFolderHue } from './folder-colour';
@@ -41,9 +41,9 @@ const SUB = 'block text-xs text-slate-500 dark:text-slate-400';
 
 function CurrentPill() {
   return (
-    <span className="shrink-0 rounded-full bg-brand-100 px-2 py-0.5 text-[11px] font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200">
+    <Chip className="bg-brand-100 px-2 py-0.5 text-[11px] font-semibold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200">
       Current
-    </span>
+    </Chip>
   );
 }
 

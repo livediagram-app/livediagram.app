@@ -13,6 +13,7 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // and the kit it now also feeds lives one level up (see lib/element-tint.ts).
 export { tint };
 import { useTouchScrollBody } from '@liveworkspace/workbench/hooks/ui/useTouchScrollBody';
+import { ButtonContent } from '@livediagram/ui';
 
 // Scales a Collaborate card's contents to the element's box (docs/specs/012-collaboration/participant-responses.md).
 //
@@ -258,7 +259,7 @@ export function CollabButton({
       className="pointer-events-auto shrink-0 cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-semibold transition hover:brightness-95 disabled:cursor-default disabled:opacity-45"
       style={{ color: textColor, backgroundColor: tint(textColor, tone === 'loud' ? 0.16 : 0.08) }}
     >
-      {children}
+      <ButtonContent>{children}</ButtonContent>
     </button>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { HoverCard } from '@livehuddle/ui';
+import { Chip, HoverCard } from '@livehuddle/ui';
 import { WAYFINDING_TONES } from '@livehuddle/document';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
@@ -241,9 +241,9 @@ function FloorHeading({
         {name}
       </span>
       {current ? (
-        <span className="rounded-full bg-brand-100 px-1.5 py-[1px] text-[9.5px] font-semibold text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+        <Chip className="bg-brand-100 px-1.5 py-[1px] text-[9.5px] font-semibold text-brand-700 dark:bg-brand-950 dark:text-brand-300">
           You Are Here
-        </span>
+        </Chip>
       ) : null}
     </h3>
   );

@@ -110,7 +110,9 @@ export function AvatarPalettePreview({
         {view.status ? (
           <span className="absolute bottom-2 left-1/2 inline-flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1.5 truncate rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700">
             <StatusDot status={view.status} />
-            {avatarStatusLabel(view.status)}
+            <span className="text-optical-line min-w-0 truncate">
+              {avatarStatusLabel(view.status)}
+            </span>
           </span>
         ) : null}
         {view.burst ? (
