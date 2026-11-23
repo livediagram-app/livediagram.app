@@ -82,7 +82,11 @@ export async function readCall(
   name: string,
   input: Record<string, unknown>,
 ): Promise<{ calls: AppCall[]; answer: string; discovery: boolean }> {
-  const stub = '(eval) Done. No further detail is available; carry on with the request.';
+  // Nothing runs, so a read can't show real content: the answer says to carry on as if it had, the same for every
+  // setup, so a model that reads first (a board's columns, say) isn't left reading until its calls run out.
+  const stub =
+    '(eval) Done. This is a test: assume the result showed what you needed (names, columns, ids as the person ' +
+    'gave them) and carry on with the request.';
   if (setup === 'apps') {
     const at = name.indexOf('__');
     const spec = at > 0 ? appById(name.slice(0, at)) : null;
