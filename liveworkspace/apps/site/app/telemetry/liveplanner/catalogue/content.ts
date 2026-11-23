@@ -929,6 +929,18 @@ export const PLAN_AUTOMATIONS_AI_FAILED = chart(
   { types: ['AutomationAiFailed', 'AutomationAiCapped'], rising: 'bad' },
 );
 
+// Snapshot steps (docs/specs/026-plan/automations.md "Snapshot steps", in the liveplanner folder), counted by the api.
+export const PLAN_AUTOMATION_SNAPSHOTS = chart(
+  'Plan',
+  'Ran',
+  'Automation Snapshot Steps',
+  "A rule's Take Snapshot saving the whole plan, its Revert to Snapshot putting the plan back, or either failing (a snapshot gone, or the plan's snapshots full).",
+  {
+    types: ['AutomationSnapshotTaken', 'AutomationSnapshotReverted', 'AutomationSnapshotFailed'],
+    rising: 'neutral',
+  },
+);
+
 // Automatic runs (docs/specs/026-plan/automations.md "Telemetry", in the liveplanner folder): what each run a wake
 // made came to, the trigger that started it, the trouble the engine met, and Incoming Webhook calls. Counted by the api.
 export const PLAN_AUTOMATION_RUN_RESULTS = chart(
@@ -1682,6 +1694,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATIONS_TAKEN_OVER,
   PLAN_AUTOMATIONS_AI,
   PLAN_AUTOMATIONS_AI_FAILED,
+  PLAN_AUTOMATION_SNAPSHOTS,
   PLAN_AUTOMATION_RUN_RESULTS,
   PLAN_AUTOMATION_RUN_TRIGGERS,
   PLAN_AUTOMATION_TROUBLE,

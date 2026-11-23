@@ -4,17 +4,20 @@
 // Week with its days, Month with its day) and At, which are the platform's (ScheduledPanel's parts); Due In's days
 // and At; Overdue's At; Card Stuck's days and columns. Every time is on the quarter hour, in the time zone the rule
 // is saved in, which a line under the fields names ("Times are Europe/London"). A time rule with no conditions runs
-// on every card in the plan, so the panel warns while it has none.
+// on every card in the plan, so the panel warns while it has none; one that runs once for the plan (its snapshot steps)
+// says so instead.
 
 import {
   AUTOMATION_DUE_DAYS_MAX,
   AUTOMATION_STUCK_DAYS_MAX,
   isTimeTrigger,
+  runsForPlan,
   type AutomationRuleBody,
   type AutomationTimeTrigger,
 } from '@liveplanner/items';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
+import { lucideClock, lucideTriangleAlert } from '@liveworkspace/icons/lucide';
+import { useRuleContext } from '@liveworkspace/automations-ui/rule-context';
 import {
   ChipToggles,
   PanelField,
@@ -31,6 +34,7 @@ import { Callout } from '@liveworkspace/ui/callout';
 export { QUARTER_HOURS } from '@liveworkspace/automations-ui/step-panels/ScheduledPanel';
 
 const AlertIcon = lucideGlyph(lucideTriangleAlert, 13);
+const ClockIcon = lucideGlyph(lucideClock, 13);
 
 type Scheduled = AutomationTimeTrigger & { kind: 'scheduled' };
 
@@ -120,8 +124,34 @@ export function TimeTriggerPanel({
         timeZone={timeZone}
         tail={trigger.kind === 'overdue' ? ', on the day after the card was due.' : '.'}
       />
-      {conditions === 0 && trigger.kind !== 'stuck' ? <EveryCardWarning /> : null}
+      {conditions === 0 && trigger.kind !== 'stuck' ? <TimeRuleNote /> : null}
     </div>
+  );
+}
+
+// The rule the builder holds: a Scheduled rule that runs for the plan (its snapshot steps) says so, not a warning.
+function TimeRuleNote() {
+  const body = useRuleContext().body as AutomationRuleBody | null;
+  return body && runsForPlan(body) ? <ForPlanNote /> : <EveryCardWarning />;
+}
+
+/** What a Scheduled rule that runs once a moment for the plan says (spec "Snapshot steps"), in its panel and
+ *  (`compact`) on its When card. */
+export function ForPlanNote({ compact = false }: { compact?: boolean }) {
+  if (compact)
+    return (
+      <span
+        data-for-plan=""
+        className="flex items-center gap-1.5 text-[12px] font-medium text-slate-600 dark:text-slate-300"
+      >
+        <ClockIcon aria-hidden />
+        Runs once for the plan, not for each card
+      </span>
+    );
+  return (
+    <Callout tone="info" title="Runs once for the plan, not for each card.">
+      Its snapshot steps act on the whole plan, so it runs once each time, with no card.
+    </Callout>
   );
 }
 
@@ -153,7 +183,10 @@ export function PlanTriggerNote({
   body: AutomationRuleBody;
   compact?: boolean;
 }) {
-  return isTimeTrigger(body.trigger) && body.conditions.length === 0 ? (
+  if (!isTimeTrigger(body.trigger) || body.conditions.length > 0) return null;
+  return runsForPlan(body) ? (
+    <ForPlanNote compact={compact ?? false} />
+  ) : (
     <EveryCardWarning compact={compact ?? false} />
-  ) : null;
+  );
 }

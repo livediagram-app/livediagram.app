@@ -13,6 +13,11 @@ import {
   isCrossAppKind,
   type CrossAppStep,
 } from '@liveworkspace/automations/cross-app';
+import {
+  isSnapshotKind,
+  snapshotStepChip,
+  type ItemSnapshotStep,
+} from '@liveworkspace/automations/item';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   itemAssignee,
@@ -83,6 +88,7 @@ export type {
   PlanActionsContext,
   PlannedCard,
   PlannedCross,
+  PlannedSnapshot,
   PlannedEmail,
   PlannedMention,
   PlannedRelated,
@@ -423,6 +429,19 @@ function crossStep(s: CrossAppStep, index: number, w: Walk) {
   w.plan.line(crossAppChip(s));
 }
 
+// Take Snapshot or Revert to Snapshot: planned with its line (Take Snapshot's name filled from the card now), run by
+// the api once the run's other writes and steps are done.
+function snapshotStep(s: ItemSnapshotStep, w: Walk) {
+  const run = w.plan.run;
+  run.snapshots.push({
+    step: s,
+    filled:
+      s.kind === 'take_snapshot' ? fillValues(s.name, { ...w.values, card: w.plan.card }) : '',
+    line: run.lines.length,
+  });
+  w.plan.line(snapshotStepChip(s));
+}
+
 // A branch: each related card's conditions, then its actions as one patch; a card that refuses one fails alone.
 function branch(s: AutomationBranch, top: Walk) {
   const run = top.plan.run;
@@ -521,6 +540,7 @@ export function planActions(
       ...all[0]!,
       sends: run.sends,
       ...(run.cross.length ? { cross: run.cross } : {}),
+      ...(run.snapshots.length ? { snapshots: run.snapshots } : {}),
       turns: run.turns,
       ...(run.ai.length ? { ai: run.ai } : {}),
     };
@@ -550,6 +570,11 @@ export function planActions(
       if (isCrossAppKind(s.kind)) {
         count(run);
         crossStep(s as CrossAppStep, index, w);
+        continue;
+      }
+      if (isSnapshotKind(s.kind)) {
+        count(run);
+        snapshotStep(s as ItemSnapshotStep, w);
         continue;
       }
       if (s.kind === 'ai') {

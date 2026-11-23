@@ -62,6 +62,7 @@ export function outline(over: Partial<AutomationOutline> = {}): AutomationOutlin
       },
     ],
     items,
+    snapshots: { status: 'ready', list: [], ask: () => {}, retry: () => {} },
     ...over,
   };
 }

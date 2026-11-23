@@ -11,6 +11,11 @@ import {
   type CrossAppStep,
 } from '@liveworkspace/automations/cross-app';
 import {
+  isSnapshotKind,
+  snapshotStepChip,
+  type ItemSnapshotStep,
+} from '@liveworkspace/automations/item';
+import {
   AUTOMATION_NOTIFY_NAMES,
   addressWords,
   notifyChip as notifyWords,
@@ -394,6 +399,7 @@ export function stepChip(step: AutomationStep, outline: RuleSentenceOutline): st
   if (step.kind === 'ai') return aiStepChip(step, (id) => outlineFieldName(id, outline));
   if (step.kind === 'wait') return waitWords(step.hours);
   if (isCrossAppKind(step.kind)) return crossAppChip(step as CrossAppStep);
+  if (isSnapshotKind(step.kind)) return snapshotStepChip(step as ItemSnapshotStep);
   return actionChip(step as AutomationAction, outline);
 }
 

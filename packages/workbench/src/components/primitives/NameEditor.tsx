@@ -10,29 +10,34 @@ import { refocusAfterField } from './refocus-after-field';
 // (e.g. fall back to the original name on an empty string). Styling is
 // caller-supplied via className since each surface sizes it differently.
 // `label` names the field for a screen reader (it has no visible label of its
-// own): "Tab name", "Folder name", "Document name".
+// own): "Tab name", "Folder name", "Document name". `typed` is a name the person already began typing elsewhere (a
+// letter at a menu that renames, liveknowledge's knowledgebase menu): the field opens holding it, the caret after it,
+// so the next keys carry on typing rather than replacing it.
 export function NameEditor({
   label,
   initial,
+  typed,
   onCommit,
   onCancel,
   className,
 }: {
   label: string;
   initial: string;
+  typed?: string | undefined;
   onCommit: (name: string) => void;
   onCancel: () => void;
   className: string;
 }) {
-  const [value, setValue] = useState(initial);
+  const [value, setValue] = useState(typed ?? initial);
   const ref = useRef<HTMLInputElement>(null);
+  const continues = typed !== undefined;
   useEffect(() => {
     const node = ref.current;
-    if (node) {
-      node.focus();
-      node.select();
-    }
-  }, []);
+    if (!node) return;
+    node.focus();
+    if (continues) node.setSelectionRange(node.value.length, node.value.length);
+    else node.select();
+  }, [continues]);
   return (
     <input
       ref={ref}

@@ -18,7 +18,7 @@ import {
 import { AUTOMATION_ADDRESS_EMAILS_PER_DAY } from '../../limits';
 import { AUTOMATION_COLOR, AUTOMATION_PERSON_ID, type AutomationPerson } from '../../types';
 import { claimAddresses, sendToAddresses } from '../automation-addresses';
-import type { ItemActionContext, ItemDeps, StepOutcome } from './kit';
+import type { ItemActionContext, ItemDeps, ItemRoomKit, SnapshotDone, StepOutcome } from './kit';
 import { withItemWriter } from './writer';
 
 export const SNAPSHOT_GONE = 'The snapshot is gone';
@@ -48,43 +48,62 @@ const ok = (text: string): StepOutcome => ({ ok: true, text });
 const failed = (text: string): StepOutcome => ({ ok: false, text });
 
 /** Who a rule's change is by, for a step that writes as someone: Automation, with the rule's name beside it. */
-export const automationAuthor = (ctx: Pick<ItemActionContext, 'rule'>): AutomationPerson => ({
+export const automationAuthor = (ctx: {
+  rule: Pick<ItemActionContext['rule'], 'name'>;
+}): AutomationPerson => ({
   id: AUTOMATION_PERSON_ID,
   name: ctx.rule.name,
   color: AUTOMATION_COLOR,
 });
 
-async function takeSnapshot(
-  action: ItemTakeSnapshot,
-  ctx: ItemActionContext,
-  run: SharedRun,
+/** Take Snapshot's run on any app's snapshots: its name as filled in, cut to the step's cap. */
+export async function runTakeSnapshot(
+  filled: string,
+  snapshots: Pick<ItemRoomKit['snapshots'], 'take'>,
+  author: AutomationPerson,
 ): Promise<StepOutcome> {
-  const name = cutText(ctx.fill(action.name).trim(), STEP_NAME_MAX);
+  const name = cutText(filled.trim(), STEP_NAME_MAX);
   if (!name) return failed(NAME_EMPTY);
-  const took = await run.deps.kit.snapshots.take(name, automationAuthor(ctx));
+  const took = await snapshots.take(name, author);
   return took.ok
     ? ok(`Took a snapshot named “${name}”`)
     : failed(`Couldn't take the snapshot: ${took.reason}`);
 }
 
-async function revertSnapshot(
+/** Revert to Snapshot's outcome from a kit's revert: `words` names the snapshot on the line; one gone says so. */
+export async function runRevertSnapshot(
   action: ItemRevertSnapshot,
-  ctx: ItemActionContext,
-  run: SharedRun,
+  words: string,
+  revert: () => Promise<SnapshotDone>,
 ): Promise<StepOutcome> {
-  const { kit } = run.deps;
-  // Nothing the revert rewrites is an edit, a tab added or a tab removed.
-  const reverted = await withItemWriter(
-    run.deps.sql(),
-    { silent: true },
-    () => kit.snapshots.revert(action.snapshot, automationAuthor(ctx)),
-    run.deps.fed(),
-  );
-  if (reverted.ok) return ok(`Reverted to “${snapshotWords(action, ctx.names)}”`);
+  const reverted = await revert();
+  if (reverted.ok) return ok(`Reverted to “${words}”`);
   if (reverted.reason === 'snapshot_missing')
     return { ok: false, text: SNAPSHOT_GONE, gone: { kind: 'snapshot', id: action.snapshot } };
   return failed(`Couldn't revert: ${reverted.reason}`);
 }
+
+const takeSnapshot = (
+  action: ItemTakeSnapshot,
+  ctx: ItemActionContext,
+  run: SharedRun,
+): Promise<StepOutcome> =>
+  runTakeSnapshot(ctx.fill(action.name), run.deps.kit.snapshots, automationAuthor(ctx));
+
+const revertSnapshot = (
+  action: ItemRevertSnapshot,
+  ctx: ItemActionContext,
+  run: SharedRun,
+): Promise<StepOutcome> =>
+  runRevertSnapshot(action, snapshotWords(action, ctx.names), () =>
+    // Nothing the revert rewrites is an edit, a tab added or a tab removed.
+    withItemWriter(
+      run.deps.sql(),
+      { silent: true },
+      () => run.deps.kit.snapshots.revert(action.snapshot, automationAuthor(ctx)),
+      run.deps.fed(),
+    ),
+  );
 
 async function sendEmail(
   action: ItemEmail,

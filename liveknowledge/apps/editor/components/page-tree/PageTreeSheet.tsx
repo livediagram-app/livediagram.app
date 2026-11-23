@@ -12,7 +12,7 @@ import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton'
 import { LabelFilterHeading } from '@/components/page-labels/LabelFilterHeading';
 import { useLabelFilterReveal } from '@/components/page-labels/useLabelFilter';
 import { PageTree, type PageTreeProps } from './PageTree';
-import { type KnowledgebaseHead } from './PageTreeSidebar';
+import { type HeadRename, type KnowledgebaseHead } from './PageTreeSidebar';
 import { AddToSidebar } from './AddToSidebar';
 import { PAGE_RENAME_FIELD } from './page-tree-row-styles';
 import { PagesIcon } from './page-tree-icons';
@@ -35,7 +35,7 @@ export function PageTreeSheet({
   const [open, setOpen] = useState(false);
   // A page's label pill pressed: the sheet opens on the filtered tree (page-surface.md "Page labels").
   useLabelFilterReveal(() => setOpen(true));
-  const [renaming, setRenaming] = useState(false);
+  const [renaming, setRenaming] = useState<HeadRename | null>(null);
   const shownName = name.trim() || 'Untitled Knowledgebase';
   const { actions } = tree;
   // Opening a page, or adding one, is what the sheet was for: it closes.
@@ -115,11 +115,12 @@ export function PageTreeSheet({
               <NameEditor
                 label="Knowledgebase name"
                 initial={name}
+                typed={renaming.typed}
                 onCommit={(next) => {
                   onRenameKnowledgebase(next);
-                  setRenaming(false);
+                  setRenaming(null);
                 }}
-                onCancel={() => setRenaming(false)}
+                onCancel={() => setRenaming(null)}
                 className={`${PAGE_RENAME_FIELD} h-11 text-base`}
               />
             </div>
@@ -128,7 +129,7 @@ export function PageTreeSheet({
             <div className="flex px-2.5 pb-1 pt-1">
               {menu({
                 name: shownName,
-                onRename: onRenameKnowledgebase ? () => setRenaming(true) : undefined,
+                onRename: onRenameKnowledgebase ? (typed) => setRenaming({ typed }) : undefined,
                 close: () => setOpen(false),
               })}
             </div>

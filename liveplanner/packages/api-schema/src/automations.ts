@@ -133,7 +133,7 @@ export interface AutomationDraftRequest {
 
 export interface AutomationDraftPick {
   path: string;
-  pick: 'column' | 'type' | 'field' | 'label' | 'people' | 'webhook' | 'target';
+  pick: 'column' | 'type' | 'field' | 'label' | 'people' | 'webhook' | 'target' | 'snapshot';
 }
 
 export interface AutomationDraftResponse {
@@ -159,6 +159,9 @@ export const AUTOMATION_ERRORS = [
   'automation_not_manual',
   // Run Rule past the day's budget (AUTOMATION_RUNS_PER_DAY): 429, nothing ran.
   'automation_budget_spent',
+  // A token's save of a rule holding Revert to Snapshot (403), and a save naming a sixth snapshot kept for rules (409).
+  'automation_needs_a_person',
+  'automation_snapshots_full',
   // Make Secret for a rule whose trigger is not Incoming Webhook: 409.
   'automation_not_incoming',
   // Describe a Rule: an empty or over-long request, or no time zone (400); a request that is not a rule for the plan,

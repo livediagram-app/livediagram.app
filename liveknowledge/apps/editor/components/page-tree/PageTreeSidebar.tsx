@@ -33,8 +33,14 @@ const ICON_BUTTON =
   'flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 export { NEW_PAGE_BUTTON, NewPageButton } from './AddToSidebar';
 
-/** What the head hands the knowledgebase's menu: the name as shown, and how a rename starts in place. */
-export type KnowledgebaseHead = { name: string; onRename: (() => void) | undefined };
+/**
+ * What the head hands the knowledgebase's menu: the name as shown, and how a rename starts in place (from the name typed
+ * at the menu, when the person typed one: KnowledgebaseMenu's typed-rename.ts).
+ */
+export type KnowledgebaseHead = { name: string; onRename: ((typed?: string) => void) | undefined };
+
+/** A rename under way in the head: `typed` is the name typed at the menu that started it, if any. */
+export type HeadRename = { typed?: string | undefined };
 
 export type PageTreeSidebarProps = PageTreeProps & {
   // The knowledgebase's name, and its rename where the session may rename it.
@@ -70,7 +76,7 @@ export function PageTreeSidebar({
 }: PageTreeSidebarProps) {
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
-  const [renaming, setRenaming] = useState(false);
+  const [renaming, setRenaming] = useState<HeadRename | null>(null);
   // Open, the tree slides out to the left before the rail takes its place.
   const open = useSlideOut(!collapsed);
   // The peek: the whole tree over the page while the pointer rests on the rail.
@@ -181,18 +187,19 @@ export function PageTreeSidebar({
           <NameEditor
             label="Knowledgebase name"
             initial={name}
+            typed={renaming.typed}
             onCommit={(next) => {
               onRenameKnowledgebase(next);
-              setRenaming(false);
+              setRenaming(null);
             }}
-            onCancel={() => setRenaming(false)}
+            onCancel={() => setRenaming(null)}
             className={`${PAGE_RENAME_FIELD} h-8 text-sm`}
           />
         ) : menu ? (
           // The name is its menu's button (knowledgebases-and-pages.md "The knowledgebase's menu"): Rename is a row.
           menu({
             name: shownName,
-            onRename: onRenameKnowledgebase ? () => setRenaming(true) : undefined,
+            onRename: onRenameKnowledgebase ? (typed) => setRenaming({ typed }) : undefined,
           })
         ) : (
           <p
