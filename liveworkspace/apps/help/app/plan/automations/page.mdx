@@ -69,7 +69,7 @@ Four triggers start a rule at a time instead of when something happens to a card
 - **Overdue**: on the day after a card was due, at a time. A card is reminded once for each due date it has, and a Done card is never overdue.
 - **Card Stuck**: once a day at a time, cards that have not changed for 1 to 90 days, outside Done columns (only in the columns you pick, if you pick any). Any change to a card starts its count again.
 
-At its time, the rule runs once for each card its conditions match: "Every Weekday at 9:00 **for cards** Overdue, not Done". A rule on a time with no conditions runs on every card in the plan, and the builder warns you. Times are in your time zone when you save the rule, which the trigger's panel names ("Times are Europe/London"). A rule on a time has nobody behind it, so it can't check **Who Did It** or assign or email whoever triggered it.
+At its time, the rule runs once for each card its conditions match: "Every Weekday at 9:00 **for cards** Overdue, not Done". A rule on a time with no conditions runs on every card in the plan, and the builder warns you. A **Scheduled** rule whose steps are [snapshot steps](#snapshot-steps) (with only messages or new cards beside them) runs once for the plan instead, and its trigger says **Runs once for the plan, not for each card**. Times are in your time zone when you save the rule, which the trigger's panel names ("Times are Europe/London"). A rule on a time has nobody behind it, so it can't check **Who Did It** or assign or email whoever triggered it.
 
 ### Assign in Turn
 
@@ -179,6 +179,22 @@ A rule whose trigger is **Run from a Card** is started by hand: open the card, p
 
 **Add an Action** has an **In Other Apps** group: **Create a Card in a Plan** (in another plan), **Write a Page in a Knowledgebase**, **Post in a Space**, **Add a Tab** (to a livedocuments or livediagram item) and **Notify**. They act as the person who last saved the rule, only on items they can edit, and a rule that loses that access pauses until someone presses **Take Over Rule**. They work as in every app: see [Steps in Other Apps](/help/tools/automations/#steps-in-other-apps).
 
+## Snapshot Steps
+
+**Add an Action** has a **Snapshots** group, for a rule that saves the whole plan or puts it back:
+
+- **Take Snapshot** saves the whole plan as a [snapshot](/help/collaboration/snapshots/), named as you write it. It starts as today's date (`{{now.date}}`); press **Insert a Value** to add the time, the rule's name or a card's field, as in "Weekly Backup `{{now.date}}`". Its **Preview** shows the name as the run will write it.
+- **Revert to Snapshot** puts the whole plan back to a snapshot you pick, for everyone, the way **Revert** in History does: a safety snapshot of the plan as it was is taken first, so the revert can be undone from History, then every open editor reloads onto it. **It throws away every change made since that snapshot**, and the step says so.
+
+To reset a board every Monday: set it up as it should start, take a snapshot of it in History, then make a rule **Scheduled**, every **Week** on Monday at 9:00, and **Revert to Snapshot** to that snapshot. A Scheduled rule like this runs once each time, for the whole plan, not once for each card.
+
+- Both steps sit at the rule's top level, never inside **For Related Cards** or **If / Else**, and run after the rule's other steps. A revert is the rule's last step.
+- A snapshot a rule reverts to is kept: History marks it **Kept by a Rule**, and it is never removed to make room. Up to 5 snapshots are kept this way in a plan.
+- Only a person saves a rule that reverts. An AI tool or a script can add **Take Snapshot**, but not **Revert to Snapshot**. Describe a Rule can write both, and leaves the snapshot for you to pick.
+- A snapshot deleted after the rule was saved fails its run, and the rule says **Needs Attention: Snapshot “Monday Start” is gone**. Open the step and pick another.
+- A snapshot a rule took, and the safety snapshot its revert took first, show in History by the rule's name. A revert starts no other rule.
+- When you copy a plan, its rules come with it, but a revert's snapshot stays with the first plan, so the copy's rule needs attention until you pick one of its own.
+
 ## Rules and Other Rules
 
 A rule's changes don't set off other rules, so two rules can never keep changing a card back and forth. To let them, open **Rule Details** in the rule and tick **Let this rule's changes trigger other rules**. Even then, a chain stops after 5 rules, and a rule never answers its own changes.
@@ -190,7 +206,7 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 - One move runs **Card Unblocked** or **Related Cards Done** on up to 100 cards, the first by their number; past that the Audit Trail says "Ran on 100 of 340 cards: at most 100 a move" and the rest are left out. A time trigger runs on up to 100 cards a time. Past that, **Overdue** and **Card Stuck** reach the rest at their next times; **Scheduled** and **Due In** leave the rest out, and the Audit Trail says so.
 - A rule holds up to 3 AI actions, and a plan makes up to 100 AI steps a day, rules and Describe a Rule together, even when they ask at once; past that, AI steps are skipped until the next day.
 - A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a paused connection stopped it, **Fix Connection** opens the plan's connections.
-- A rule that names something the plan no longer has (a column, a card type, a field, a person, a saved filter, a Form tab, or the card a **Link Cards** step points at, deleted or in the Trash) says **Needs Attention** and what is missing, in words: "Needs Attention: A column is gone · Someone is gone". Its steps say the same ("Move to a column no longer here", "Assign Someone No Longer Here"). A condition naming one doesn't hold, and an action that reaches one fails its run, saying what is gone. Open the step and pick again.
+- A rule that names something the plan no longer has (a column, a card type, a field, a person, a saved filter, a Form tab, the card a **Link Cards** step points at, deleted or in the Trash, or the snapshot a **Revert to Snapshot** step puts back) says **Needs Attention** and what is missing, in words: "Needs Attention: A column is gone · Someone is gone". Its steps say the same ("Move to a column no longer here", "Assign Someone No Longer Here"). A condition naming one doesn't hold, and an action that reaches one fails its run, saying what is gone. Open the step and pick again.
 - A rule with a GitHub trigger on a plan that isn't connected to GitHub (or no longer is) hears nothing, so it says **Needs Attention: GitHub isn't connected**, with **Connect GitHub** after it. Connect the plan and the line goes. A rule whose repositories have all left the plan's connection says so ("acme/old-site isn't heard any more"), with **Manage Repositories** after it, which opens the plan's GitHub repositories.
 - A plan that is [archived](/help/explorer/explorer-page/#archived) or in the [Trash](/help/account-and-data/trash/) runs no rules: no rule on a time reaches its time, no **Wait** goes on, its repeating cards make no copies, and calls from another tool or GitHub start nothing. Its rules and their Audit Trail are kept. When it comes back, a rule on a time whose time passed meanwhile runs once, for the latest time it missed, and only when that was at most a day ago; a run held by a Wait whose time came meanwhile goes on at once if that was at most a day ago, and is skipped otherwise.
 
@@ -201,6 +217,7 @@ An AI tool connected through the [MCP server](/help/account-and-data/connect-ai-
 - **List rules** (`list_rules`, or `liveplanner rule ls`) reads each rule's sentence, whether it is on, paused or needs attention, its last run, its runs this week and its next run. Ask for one rule by its name to get it whole (`liveplanner rule get`), or for the Audit Trail (`liveplanner rule log`) to see what recent runs did.
 - **Change rules** (`change_rules`) adds, changes, turns on and off, copies and deletes rules, tests one on a card and runs a Run from a Card rule. On the command line those are `rule add`, `rule set`, `rule on`, `rule off`, `rule duplicate`, `rule rm`, `rule test` and `rule run`, a rule written as JSON in a file.
 - The AI names columns, card types, fields and people the way your board shows them ("Done", "Bug", "Ana Costa"). A rule it saves says **Edited by** you, marked **(Agent)**.
+- It can add **Take Snapshot**, but a rule that holds **Revert to Snapshot** is saved only by a person, in the builder.
 - It reaches your rules only when you are an Editor of the whole plan, as you would. A read-only connection can list rules and the Audit Trail but never change, test or run them.
 
 ## Who Can

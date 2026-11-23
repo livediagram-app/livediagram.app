@@ -93,6 +93,8 @@ work. A rule does it every time, at once, and says that it did.
   sign-in too.
 - A guest on a plan kept Offline needs both: Tools badges the row **Sign In** then **Sync Plan**, and the gate
   asks for the sign-in first (owner, 2026-11-16), coming back to Sync Plan's gate.
+- **Revert to Snapshot** is a person's to save: a signed-in Editor of the whole plan in the builder, never an API
+  token (403 `automation_needs_a_person`), as snapshots refuse tokens ([Snapshot steps](#snapshot-steps)).
 - **Typed-in email addresses** (Send Email to addresses, [Typed-in addresses](#typed-in-addresses)) are an Editor's
   like any action: only a signed-in Editor of the whole plan, in person or through their API token, saves a rule that
   holds them. Participants, Viewers, guests and share-link visitors never see or set them.
@@ -197,7 +199,9 @@ work. A rule does it every time, at once, and says that it did.
 - **Scheduled, Due In, Overdue and Card Stuck** are **time triggers**: at their moment, the rule looks over the plan's cards and
   runs once **for each card** its conditions match, as a card trigger runs for one card. Its conditions are the
   card filter ("Every Weekday at 9:00 for cards Overdue, not Done"); a time trigger with no conditions matches
-  every card, which the builder warns about ("Runs on every card in the plan").
+  every card, which the builder warns about ("Runs on every card in the plan"). A Scheduled rule with no conditions
+  whose steps need no card and that holds a snapshot step runs once a moment for the plan instead
+  ([Snapshot steps](#snapshot-steps)).
 - **At most 100 cards** a moment: past that, the 100 whose due dates come first (then the oldest) run. Each card's
   run counts toward the plan's 1,000 a day. A card an Overdue or Card Stuck rule has already run on (for this due
   date, or this stretch unchanged) is not one of them again, so the next moments reach the rest, never the same
@@ -486,58 +490,60 @@ waits for ("Set a field Today", "to a column"), beside the step's "Pick a field"
 
 ## Actions
 
-| Action                          | Does                                                                                              |
-| ------------------------------- | ------------------------------------------------------------------------------------------------- |
-| **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                    |
-| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days); a field of   |
-|                                 | fixed values to one of them, picked: Priority and a Choice field to a value, the Assignee and a   |
-|                                 | Person field to one of the plan's people (kept by id, shown by name, as Assign's), a Checkbox to  |
-|                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save and by Test  |
-|                                 | on a Card); Flagged and the Checklist are set by Flag, Unflag and Add a Checklist instead         |
-| **Clear Field**                 | empties a field                                                                                   |
-|                                 | (an Image field's or Attachments' pictures leave storage 15 minutes on when nothing else uses     |
-|                                 | them, as a person's clear does: [items.md](items.md#removed-pictures) "Removed pictures")         |
-| **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run  |
-|                                 | the next of 2 to 10 chosen people, in order, round and round                                      |
-| **Add Label**, **Remove Label** | adds or takes off one label                                                                       |
-| **Add Comment**                 | starts a new thread on the card with the comment, by Automation                                   |
-| **Flag**, **Unflag**            | flags or unflags the card                                                                         |
-| **Archive**                     | archives the card                                                                                 |
-| **Create Card**                 | adds a card of a chosen type, with a title (values allowed), to a column, optionally copying the  |
-|                                 | triggering card's assignee, labels and due date, and optionally linking it through a Card field   |
-| **Send Email**                  | emails the assignee, whoever triggered it, a chosen person, or 1 to 10 **typed-in addresses**,    |
-|                                 | with a subject and a short body (values allowed) and a link to the card; a person of the plan     |
-|                                 | gets it only with an account, and the email                                                       |
-|                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies; a typed-in    |
-|                                 | address gets it unless it unsubscribed, within the plan's 50 a day                                |
-|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                        |
-| **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a     |
-|                                 | message (values allowed)                                                                          |
-| **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks |
-| **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                   |
-| **Change Card Type**            | sets the card's type to one of the plan's card types (its column must suit the new type)          |
-|                                 | and maps its custom fields by name, as every type change does                                     |
-|                                 | ([Changing a card's type](item-types.md#changing-a-cards-type)); **Map Fields** names fields      |
-|                                 | whose names differ, a source field into a field of the new type or its Description, winning over  |
-|                                 | name matching and overwriting the target's value                                                  |
-| **Set Colour**                  | sets the card's Colour to one of the standard colours, or none                                    |
-| **Restore From Archive**        | brings an archived card back                                                                      |
-| **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one               |
-| **Add a Checklist**             | adds 1 to 20 unticked items (values allowed) to the card's checklist; an item already on it, by   |
-|                                 | its text, is not added twice; an item is cut to 200 characters once its values are filled in, as  |
-|                                 | a person's checklist item is                                                                      |
-| **Link Cards**                  | points one of the card's Card fields (a Blocked By field too) at a chosen card, or, in a branch,  |
-|                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced    |
-| **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person, |
-|                                 | with a short message (values allowed); it reaches their Inbox and their mention email             |
-|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches)); the comment, @mention and all, keeps  |
-|                                 | within a comment's 2,000 characters, the message cut to fit                                       |
-| **Resolve Threads**             | resolves every open comment thread on the card                                                    |
-| **Wait**                        | holds the rest of the rule for 1 hour to 30 days (below)                                          |
-| **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                        |
-| **Summarise Card** (AI)         | writes a short plain-text summary of the card to a comment, or to a text field (below)            |
-| **Suggest Card Type** (AI)      | picks one of the plan's card types from the card's text, and sets it or comments the suggestion   |
-| **Triage** (AI)                 | sets the priority and adds up to 3 of the plan's labels, from the card's text                     |
+| Action                          | Does                                                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Move to Column**              | sets the card's status to a column its type uses (as the Status picker offers)                            |
+| **Set Field**                   | sets a field to a value: a literal, a value from the card, or a date (Today ± days); a field of           |
+|                                 | fixed values to one of them, picked: Priority and a Choice field to a value, the Assignee and a           |
+|                                 | Person field to one of the plan's people (kept by id, shown by name, as Assign's), a Checkbox to          |
+|                                 | Yes or No (a Checkbox given other text, a number, a day or a list is refused on save and by Test          |
+|                                 | on a Card); Flagged and the Checklist are set by Flag, Unflag and Add a Checklist instead                 |
+| **Clear Field**                 | empties a field                                                                                           |
+|                                 | (an Image field's or Attachments' pictures leave storage 15 minutes on when nothing else uses             |
+|                                 | them, as a person's clear does: [items.md](items.md#removed-pictures) "Removed pictures")                 |
+| **Assign**                      | assigns a chosen person, **whoever triggered the rule**, nobody, or **people in turn**: each run          |
+|                                 | the next of 2 to 10 chosen people, in order, round and round                                              |
+| **Add Label**, **Remove Label** | adds or takes off one label                                                                               |
+| **Add Comment**                 | starts a new thread on the card with the comment, by Automation                                           |
+| **Flag**, **Unflag**            | flags or unflags the card                                                                                 |
+| **Archive**                     | archives the card                                                                                         |
+| **Create Card**                 | adds a card of a chosen type, with a title (values allowed), to a column, optionally copying the          |
+|                                 | triggering card's assignee, labels and due date, and optionally linking it through a Card field           |
+| **Send Email**                  | emails the assignee, whoever triggered it, a chosen person, or 1 to 10 **typed-in addresses**,            |
+|                                 | with a subject and a short body (values allowed) and a link to the card; a person of the plan             |
+|                                 | gets it only with an account, and the email                                                               |
+|                                 | [notification](../014-identity/profile-and-email-notifications.md) opt-out applies; a typed-in            |
+|                                 | address gets it unless it unsubscribed, within the plan's 50 a day                                        |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches))                                                |
+| **Send to Webhook**             | sends a signed JSON event to one of the plan's own-service webhooks: the rule, the card and a             |
+|                                 | message (values allowed)                                                                                  |
+| **Post to Slack**               | posts the message, with an **Open in liveplanner** link, through one of the plan's Slack webhooks         |
+| **Post to Microsoft Teams**     | the same, as a card in a Teams channel through one of the plan's Teams webhooks                           |
+| **Change Card Type**            | sets the card's type to one of the plan's card types (its column must suit the new type)                  |
+|                                 | and maps its custom fields by name, as every type change does                                             |
+|                                 | ([Changing a card's type](item-types.md#changing-a-cards-type)); **Map Fields** names fields              |
+|                                 | whose names differ, a source field into a field of the new type or its Description, winning over          |
+|                                 | name matching and overwriting the target's value                                                          |
+| **Set Colour**                  | sets the card's Colour to one of the standard colours, or none                                            |
+| **Restore From Archive**        | brings an archived card back                                                                              |
+| **Copy Card**                   | adds a copy of the card (its type, title and fields), in its column or a chosen one                       |
+| **Add a Checklist**             | adds 1 to 20 unticked items (values allowed) to the card's checklist; an item already on it, by           |
+|                                 | its text, is not added twice; an item is cut to 200 characters once its values are filled in, as          |
+|                                 | a person's checklist item is                                                                              |
+| **Link Cards**                  | points one of the card's Card fields (a Blocked By field too) at a chosen card, or, in a branch,          |
+|                                 | at the card that started the rule; a field of several cards gains it, a single one is replaced            |
+| **Mention Someone**             | starts a thread on the card that @mentions the assignee, whoever triggered it or a chosen person,         |
+|                                 | with a short message (values allowed); it reaches their Inbox and their mention email                     |
+|                                 | ([Who a rule's email reaches](#who-a-rules-email-reaches)); the comment, @mention and all, keeps          |
+|                                 | within a comment's 2,000 characters, the message cut to fit                                               |
+| **Resolve Threads**             | resolves every open comment thread on the card                                                            |
+| **Take Snapshot**               | takes a snapshot of the whole plan, named by the rule (values allowed; [Snapshot steps](#snapshot-steps)) |
+| **Revert to Snapshot**          | puts the whole plan back to a chosen snapshot, for everyone; the rule's last step, saved only by a person |
+| **Wait**                        | holds the rest of the rule for 1 hour to 30 days (below)                                                  |
+| **For Related Cards**           | a branch: runs its own conditions and actions on each related card (below)                                |
+| **Summarise Card** (AI)         | writes a short plain-text summary of the card to a comment, or to a text field (below)                    |
+| **Suggest Card Type** (AI)      | picks one of the plan's card types from the card's text, and sets it or comments the suggestion           |
+| **Triage** (AI)                 | sets the priority and adds up to 3 of the plan's labels, from the card's text                             |
 
 ### Wait
 
@@ -1466,6 +1472,53 @@ does that.
 `{{card.title}}` under a chosen parent (Release Notes), its body the day it shipped, its assignee and a link
 back (a card's description is not a value yet). The knowledgebase is the person's to pick.
 
+## Snapshot steps
+
+The platform's [Take Snapshot and Revert to Snapshot](../../../../liveworkspace/docs/specs/018-automations/automations.md#revert-to-snapshot)
+are in a plan's Add Action, under **Snapshots** (after Comments, the rule's top level only). They are the shared
+steps every app has: their check, words, panels, pictures and runners are the platform's
+(`@liveworkspace/automations`, `@liveworkspace/automations-ui`), acting on the plan's own
+[snapshots](../013-workspace/snapshots.md): the whole plan, every tab, Sheet, card type and card. A weekly reset is
+a Scheduled rule ("Weekly on Monday at 9:00") with one step, Revert to Snapshot.
+
+- **Take Snapshot** names the snapshot: 1 to 120 characters with values (**Insert a Value**, and the step's live
+  **Preview** under its panel), starting as `{{now.date}}`, the day in the rule's time zone ("Board on
+  {{now.date}}"). The snapshot is an ordinary one in History, by **Automation** with the rule's name beside it, and
+  counts toward the latest five as a person's does. A name whose values all came out empty fails the step ("The name
+  came out empty").
+- **Revert to Snapshot** picks one of the plan's snapshots (newest first, by name or when it was taken; none yet says
+  to take one in History first) and puts the whole plan back to it **for everyone**: the safety snapshot first
+  ("Before reverting to …", never skipped, so History can undo it), then the plan's content replaced as a person's
+  revert replaces it (comment threads and the rules themselves stay), every open editor reloaded. Its panel says so
+  plainly: **This Replaces Everyone's Work**. It is the **rule's last step**: nothing follows it, so the builder
+  offers it only at the end.
+- **A snapshot a rule names is kept**: History marks it **Kept by a Rule**, never removes it to make room and
+  offers no Delete while any rule (on or off) names it. At most **5** are kept this way in a plan: a save naming a
+  sixth is refused (409 `automation_snapshots_full`).
+- **Only a person saves a rule that reverts.** A token's save (the MCP's `change_rules`, the CLI) of a rule holding
+  Revert to Snapshot is refused (403 `automation_needs_a_person`, "a rule that reverts the plan is saved by a person,
+  in the builder"), as snapshots refuse tokens. A token may save Take Snapshot.
+- **Who it runs as**: the rule's author, the Editor who last saved it, as every step does ("Who may do what");
+  History names the rule (Automation · its name) on the snapshot and the safety snapshot.
+- **When they run**: after the card's own writes, its messages and its steps in other apps, in their order, so a
+  snapshot holds what the rule changed and a revert comes last of all. A step before them failing leaves them
+  undone. Never inside an If / Else or For Related Cards.
+- **A rule that reverts starts no rule**: the cards a revert puts back are not changes any rule hears.
+- **On a time trigger**: a Scheduled rule with no conditions whose steps need no card (the snapshot steps, the
+  outgoing messages, a Create Card that copies and links nothing) runs **once a moment for the plan**, with no card,
+  never once for each card; the builder says "Runs once for the plan, not for each card". A snapshot step that would
+  run for each card (a Scheduled rule with conditions or a card step, a Due In, Overdue or Card Stuck rule) is refused
+  on save (400 `automation_invalid`, "A snapshot step on a time trigger runs once for the plan: only on a Scheduled
+  rule with no conditions and no card steps"). An Incoming Webhook call that names no card runs such a rule once too.
+- **A snapshot gone**: one removed since the rule was saved (a rule copied with its plan, or read from a file, names
+  a snapshot the new plan lacks) fails the run, "The snapshot is gone", and the Rules list marks the rule **Needs
+  Attention** naming it: "Snapshot “Monday Board” is gone" (by the name the step kept).
+- **Test on a Card** takes and changes nothing: "Would take a snapshot named “2026-11-23”", "Would revert to
+  “Monday Board”".
+- **Describe a Rule** writes both ("every Monday at 9 put the board back to Clean Board"); a revert's snapshot is
+  never the model's to name, so the draft leaves it to pick (**Pick a Snapshot**).
+- **Agents** read both in `list_rules` and the rule format (`take_snapshot`, `revert_snapshot`) as every kind.
+
 ## Telemetry
 
 `UI · Opened · Automations`; `Plan · Created · AutomationRule`; `Plan · Toggled · AutomationOn` /
@@ -1485,6 +1538,9 @@ never the secret, a signature or the body. Each AI call sends
 failed after it was asked also sends `Plan · Ran · AutomationAiFailed`, and one the cap skipped
 `Plan · Ran · AutomationAiCapped` (the existing action, typed, so the vocabulary needs nothing new); the api logs
 `[automations] ai` with the task, whether it answered and how long it took, never the card's text or the reply.
+A rule's snapshot steps send `Plan · Ran · AutomationSnapshotTaken`, `AutomationSnapshotReverted` or
+`AutomationSnapshotFailed` from the api (a test sends none), and log `[automations] snapshot` with the step and
+how it went, never the snapshot's name.
 
 **Runs** are counted from the api too, so what rules do on their own reads beside how they are set up. Each run a
 wake makes sends `Plan · Ran · AutomationDone`, `AutomationFailed`, `AutomationSkipped`, `AutomationWaiting` or
@@ -1532,6 +1588,8 @@ wake is one request however many rules ran. Like every row, none carries a rule'
 | A webhook value                  | 5 names deep, 500 characters           |
 | Addresses one Send Email types   | 10                                     |
 | Emails to typed-in addresses     | 50 per plan per UTC day                |
+| Snapshots kept for rules         | 5                                      |
+| A snapshot step's name           | 120 characters                         |
 
 ## Not yet
 

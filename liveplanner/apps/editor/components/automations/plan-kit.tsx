@@ -43,6 +43,7 @@ import type { AutomationListedRule } from '@liveplanner/api-schema';
 import { SparkleIcon } from '@liveplanner/ui';
 import { NOTIFY_GLYPHS, WaitGlyph } from '@liveworkspace/automations-ui/glyphs';
 import { crossAppGroup } from '@liveworkspace/automations-ui/cross-app/cross-app-group';
+import { snapshotGroup, snapshotKitActions } from '@liveworkspace/automations-ui/item/snapshot-kit';
 import { crossAppKitActions } from '@liveworkspace/automations-ui/cross-app/cross-app-kit';
 import {
   defineAutomationsKit,
@@ -288,11 +289,13 @@ export const PLAN_AUTOMATIONS_KIT = defineAutomationsKit<
     conditions: Object.fromEntries(
       CONDITION_KINDS.map((kind) => [kind, conditionKind(kind)]),
     ) as Record<AutomationCondition['kind'], ConditionKind<AutomationCondition, AutomationOutline>>,
-    // In Other Apps stands before AI (cross-app/cross-app-group.ts).
+    // Snapshots stands after Comments, In Other Apps before AI (cross-app/cross-app-group.ts).
     actionGroups: ACTION_GROUPS.flatMap((g) =>
       g.id === 'ai'
         ? [crossAppGroup(), { ...g, note: `${AUTOMATION_AI_PER_DAY} a day per plan` }]
-        : [g],
+        : g.id === 'comments'
+          ? [g, snapshotGroup()]
+          : [g],
     ),
     actionHint: 'Try another word, such as “label”, “email” or “Slack”.',
     actions: {
@@ -301,6 +304,8 @@ export const PLAN_AUTOMATIONS_KIT = defineAutomationsKit<
       ),
       // The steps in other apps: the platform's tiles and panels, as every app's.
       ...crossAppKitActions<AutomationStep, AutomationOutline>(),
+      // Take Snapshot and Revert to Snapshot: the platform's tiles and panels (spec "Snapshot steps").
+      ...snapshotKitActions<AutomationStep, AutomationOutline>('plan'),
     },
     branch: {
       kind: 'for',
@@ -412,7 +417,13 @@ export const PLAN_AUTOMATIONS_KIT = defineAutomationsKit<
   describe: { examples: DESCRIBE_EXAMPLES, placeholder: DESCRIBE_PLACEHOLDER },
   Preview: PlanStepPreview,
   previewText: (step) =>
-    step.kind === 'comment' ? step.text : step.kind === 'email' ? step.body : null,
+    step.kind === 'comment'
+      ? step.text
+      : step.kind === 'email'
+        ? step.body
+        : step.kind === 'take_snapshot'
+          ? step.name
+          : null,
   views: [GITHUB_VIEW],
   Provider: PlanScreenProvider,
   BuilderProvider: PlanBuilderProvider,

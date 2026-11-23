@@ -32,6 +32,9 @@ export interface AutomationOutline {
   // The plan's cards by id, where the caller read them: a Link Cards step's chosen card that is gone needs attention.
   // Absent, chosen cards are not checked.
   cards?: ReadonlySet<string>;
+  // The plan's snapshots by id, where the caller read them: a Revert to Snapshot's snapshot that is gone needs
+  // attention. Absent, snapshots are not checked.
+  snapshots?: ReadonlySet<string>;
 }
 
 // Fields every card has, whatever its type lists.

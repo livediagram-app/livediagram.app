@@ -879,6 +879,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     "An automation rule's AI action failed: the model erred or was slow, its reply couldn't be read or didn't fit, or the card refused the write.",
   'Plan|Ran|AutomationAiCapped':
     "An automation rule's AI action was skipped because the plan had used its 100 AI steps that day.",
+  'Plan|Ran|AutomationSnapshotTaken':
+    "An automation rule's Take Snapshot saved the whole plan as a snapshot.",
+  'Plan|Ran|AutomationSnapshotReverted':
+    "An automation rule's Revert to Snapshot put the whole plan back to one of its snapshots, for everyone.",
+  'Plan|Ran|AutomationSnapshotFailed':
+    "An automation rule's Take Snapshot or Revert to Snapshot failed: the snapshot was gone, or the plan's snapshots were full.",
   'Plan|Ran|AutomationDone': 'An automation rule ran on its own and did everything it set out to.',
   'Plan|Ran|AutomationFailed':
     'An automation rule ran on its own and one of its actions failed; the Audit Trail says why.',

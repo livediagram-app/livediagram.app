@@ -22,6 +22,12 @@ The plan as its own export file, the `.liveplanner` envelope (`exportProjectFile
 - **Kept as they are**: the cards' comment threads (conversation, not content; a thread on a card the revert
   removes goes as that card's delete takes it) and the Automations rules (set-up). The plan's name stays.
 
+## Kept by a rule
+
+A snapshot an Automations rule reverts to ([Snapshot steps](../026-plan/automations.md#snapshot-steps)) is kept
+beside the latest five, marked **Kept by a Rule** in History with no Delete, while any rule of the plan names it (at
+most five). A rule's Take Snapshot is an ordinary snapshot by Automation with the rule's name.
+
 ## Roles
 
 As the platform spec's table, through this app's edit gate on the whole plan ([Share roles](share-roles.md)): an

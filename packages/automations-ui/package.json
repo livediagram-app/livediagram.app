@@ -34,6 +34,8 @@
     "./item": "./src/item/index.ts",
     "./item-connections": "./src/item-connections.tsx",
     "./item/plumbing": "./src/item/plumbing.ts",
+    "./item/snapshot-kit": "./src/item/snapshot-kit.tsx",
+    "./item/snapshot-list": "./src/item/snapshot-list.ts",
     "./kit": "./src/kit.ts",
     "./kit-context": "./src/kit-context.tsx",
     "./NewRuleMenu": "./src/NewRuleMenu.tsx",

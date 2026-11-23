@@ -3,6 +3,7 @@
 // (the MCP's change_rules) and Describe a Rule's model are given; readRuleBody checks what comes back. A kind added to
 // types.ts is described here too (rule-format.test.ts fails until it is).
 import { CROSS_APP_STEPS_MAX, crossAppActions } from '@liveworkspace/automations/cross-app';
+import { snapshotActions } from '@liveworkspace/automations/item';
 import { ITEM_TITLE_MAX } from '../limits';
 import { AUTOMATION_ACTIONS_MAX, AUTOMATION_CONDITIONS_MAX } from './types';
 
@@ -106,6 +107,13 @@ export const RULE_STEPS_FORMAT =
     .join(
       '; ',
     )} (steps in other apps: up to ${CROSS_APP_STEPS_MAX} a rule, each run as you, only on items you can edit); ` +
+  // The snapshot steps: the shared kinds' own formats (automations.md "Snapshot steps").
+  `${snapshotActions()
+    .map((a) => a.format)
+    .join(
+      '; ',
+    )} (the snapshot steps: top level only, of the whole plan; on a time trigger only a scheduled rule ` +
+  'with no conditions and no card steps, which then runs once for the plan); ' +
   '{"kind":"if","conditions":[conditions],"then":[actions],"else":[actions]} (actions only inside: no if, for, ' +
   'notify, ai or wait); ' +
   '{"kind":"for","related":{"kind":"linked","field"?:a Card field}|{"kind":"blocked_by"}|{"kind":"blocking"}|' +

@@ -1901,7 +1901,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "label",
           "people",
           "webhook",
-          "target"
+          "target",
+          "snapshot"
         ],
         "type": "string"
       }
@@ -1998,7 +1999,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type",
           "field",
           "person",
-          "filter"
+          "filter",
+          "snapshot"
         ],
         "type": "string"
       },
@@ -2234,8 +2236,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "form",
               "board",
               "webhook",
-              "card"
+              "card",
+              "snapshot"
             ],
+            "type": "string"
+          },
+          "name": {
             "type": "string"
           }
         },
@@ -2868,6 +2874,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/CrossAppStep"
+      },
+      {
+        "$ref": "#/components/schemas/ItemSnapshotStep"
       }
     ]
   },
@@ -3011,7 +3020,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kb_page",
           "space_post",
           "doc_tab",
-          "inbox_notice"
+          "inbox_notice",
+          "take_snapshot",
+          "revert_snapshot"
         ],
         "type": "string"
       },
@@ -3087,7 +3098,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kb_page",
           "space_post",
           "doc_tab",
-          "inbox_notice"
+          "inbox_notice",
+          "take_snapshot",
+          "revert_snapshot"
         ],
         "type": "string"
       },
@@ -9484,6 +9497,53 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "item",
       "rev"
+    ],
+    "type": "object"
+  },
+  "ItemRevertSnapshot": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "const": "revert_snapshot",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "snapshot": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "snapshot"
+    ],
+    "type": "object"
+  },
+  "ItemSnapshotStep": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/ItemTakeSnapshot"
+      },
+      {
+        "$ref": "#/components/schemas/ItemRevertSnapshot"
+      }
+    ]
+  },
+  "ItemTakeSnapshot": {
+    "additionalProperties": false,
+    "properties": {
+      "kind": {
+        "const": "take_snapshot",
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "name"
     ],
     "type": "object"
   },
