@@ -19,7 +19,7 @@ export function PhotoBusyPill({ top }: { top: number }) {
             aria-hidden
             className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600 motion-reduce:animate-none dark:border-brand-500/30 dark:border-t-brand-300"
           />
-          {label}
+          <span className="text-optical-line">{label}</span>
         </span>
       ) : null}
     </div>
