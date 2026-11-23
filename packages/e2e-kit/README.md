@@ -6,6 +6,9 @@ fixtures and stack, and imports these by subpath.
 
 - `contrast`: the contrast audit (`auditContrast`), every visible text node against the background
   painted under it, held to WCAG 2.2 SC 1.4.3 (docs/specs/003-system-architecture/e2e-smoke.md).
+- `settled` and `rounded-size`: what a phone spec taps and measures with. `settled(locator)` waits until a sheet or
+  panel is in the viewport and the same box on two frames (no fixed timeout) before a tap; `expectAtLeastPx(measured, min)`
+  compares to the nearest CSS pixel (a 44 px row reads 43.99997 at a fractional device scale; a real 43 still fails).
 - `optical-snap`: the baseline snap a shape inherits from its fractional position, which the optical
   audit subtracts (docs/specs/004-interface-design/optical-alignment.md).
 - `optical` and `optical-discover`: the optical alignment audit (`auditOptical(page)`) and its in-page half
