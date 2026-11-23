@@ -1,7 +1,7 @@
 // The calls liveworkspace's services make on each app's internal doors, built once (liveworkspace/docs/specs/005-drive/
 // drive.md "Contracts > The apps", liveworkspace/docs/specs/003-accounts/data-export.md "The apps"): an item's
 // whole-item file, a tab drawn as SVG, its boards and sheets as CSV, its comment threads, a new item from a file, and
-// where an item opens, and a sheet source's sheets and one range of one (sheet-sources.md), and a plan's board counts and metrics (live-data.md). Each caller hands in its own origins and keys (the Drive mirror its DRIVE_KEY_<APP>, the data
+// where an item opens, an item's indexable text (knowledge-sources.md), and a sheet source's sheets and one range of one (sheet-sources.md), and a plan's board counts and metrics (live-data.md). Each caller hands in its own origins and keys (the Drive mirror its DRIVE_KEY_<APP>, the data
 // export its DATA_EXPORT_KEY_<APP>), so one client serves both and each key opens only what the app lets it.
 
 import { etagVersion, type ExportTable, type ExportThread } from '@liveworkspace/index-app';
@@ -10,7 +10,9 @@ import {
   isPlanDataDoorRead,
   isSheetListing,
   isSheetRangeDoorRead,
+  isKnowledgeText,
   type App,
+  type KnowledgeText,
   type PlanDataAsk,
   type PlanDataDoorListing,
   type PlanDataDoorRead,
@@ -55,6 +57,10 @@ export interface AppDoors {
     itemId: string,
     ask: PlanDataAsk & { watcher?: string | null },
   ): Promise<PlanDataDoorRead>;
+  // Knowledge sources (liveworkspace/docs/specs/004-index/knowledge-sources.md), on the app's own index key: the item's
+  // indexable text under the door's caps, or null for an item the app does not have (404). Anything else, an answer
+  // past the caps included, is a DoorError.
+  readKnowledgeText(app: App, itemId: string): Promise<KnowledgeText | null>;
 }
 
 export type AppDoorsConfig = {
@@ -260,6 +266,25 @@ export function createAppDoors(
       const read: unknown = await res.json().catch(() => null);
       if (!isPlanDataDoorRead(read)) throw new DoorError(200, `${caller}: malformed plan-data`);
       return read;
+    },
+
+    async readKnowledgeText(app, itemId) {
+      const { origin, key } = door(app);
+      const res = await doFetch(
+        `${origin}/api/internal/items/${encodeURIComponent(itemId)}/knowledge-text`,
+        { headers: { Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(timeoutMs) },
+      );
+      if (res.status === 404) {
+        await res.body?.cancel();
+        return null;
+      }
+      if (res.status !== 200) {
+        await res.body?.cancel();
+        throw new DoorError(res.status, `${caller}: knowledge-text ${res.status}`);
+      }
+      const text: unknown = await res.json().catch(() => null);
+      if (!isKnowledgeText(text)) throw new DoorError(200, `${caller}: malformed knowledge-text`);
+      return text;
     },
 
     itemUrl(app, itemId) {

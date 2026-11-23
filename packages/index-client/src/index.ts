@@ -20,3 +20,5 @@ export * from './access-requests';
 export * from './automation-steps';
 export * from './plan-sends';
 export * from './updates';
+export * from './knowledge-sources';
+export * from './knowledge-client';
