@@ -437,7 +437,9 @@ export function useArticles(deps: {
       handle.flush();
       if (what === 'embed') {
         // A live embed spans the text column (links-and-embeds.md "Embeds from other apps", Work Tracker 1386): its
-        // left edge at the text's, its top just under the caret's line.
+        // left edge at the text's. Its centre stays just under the caret's line, as every insert's does: the writing
+        // takes in only an object whose centre is on the page, and a short page ends above a centre pushed half the
+        // embed's height down, which left the embed loose (no zone, never shrunk to a phone's column).
         const size = liveEmbedPageSize(textWidth(d.activeTab, flow));
         const left =
           articleTextOrigin(
@@ -445,7 +447,7 @@ export function useArticles(deps: {
             flow,
             articlesOf(d.activeTab)[flow]?.style,
           )?.x ?? at.x;
-        d.placeAt(PLACE_INTENT.embed, left + size.width / 2, at.y + 30 + size.height / 2, size);
+        d.placeAt(PLACE_INTENT.embed, left + size.width / 2, at.y + 30, size);
       } else d.placeAt(PLACE_INTENT[what], at.x, at.y + 30);
       track('Element', 'Added', INSERT_EVENT[what]);
     },

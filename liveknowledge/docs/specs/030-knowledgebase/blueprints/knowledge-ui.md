@@ -455,7 +455,9 @@ own picture loop would have been a copy of it. What was done, exactly:
 - Its size (Work Tracker 1386): `useArticles` places the embed with a size, `liveEmbedPageSize(textWidth)` in
   `lib/article/article-embed-size.ts`: the text column's width, rounded, by three quarters of it
   (`LIVE_EMBED_PAGE_ASPECT`, 4:3). `placeIntentAt` takes the size and puts the element's left edge at the text's left
-  (`articleTextOrigin`), at the caret's line. Other inserts keep their default size.
+  (`articleTextOrigin`), its centre just under the caret's line as every insert's is (the intake takes in only an
+  object whose centre is on a page, so a centre pushed down by the embed's height left it loose on a short page, with
+  no zone and never shrunk to a narrow column). Other inserts keep their default size.
 - Its face is the platform's: the item's snapshot picture (the platform's preview, `/api/previews/items/<id>`), its
   app's mark, its name, **Open** in a new tab, and, on screen, the item's own read-only frame over the picture. A
   reader who cannot open it sees "You don't have access to <name>." and "Ask its owner to share it with you.", with
