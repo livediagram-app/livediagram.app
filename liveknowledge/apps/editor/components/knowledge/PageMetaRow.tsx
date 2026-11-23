@@ -27,6 +27,12 @@ import { PageMakersBadges, type PageMakers } from './PageMakersBadges';
 import { AutomationWrittenBanner } from './AutomationWrittenBanner';
 import { useCurrentApprovalMeta } from './approval/PageApprovalMeta';
 import { SuggestedEditsPill } from './suggestions/SuggestedEditsPill';
+import {
+  AddLabelButton,
+  PageLabelsNote,
+  useAddLabel,
+} from '@/components/page-labels/PageLabelsNote';
+import { usePageLabels } from '@/components/page-labels/page-labels-state';
 
 const NO_EDITORS: readonly PageEditor[] = [];
 
@@ -47,6 +53,10 @@ export type PageMetaRowProps = {
   addCover?: boolean;
   // Add Icon right after Add Cover, for whoever may give a page with none an icon (page-surface.md "The page icon").
   addIcon?: boolean;
+  // Add Label after Add Icon, for whoever may label a page with none (page-surface.md "Page labels").
+  addLabel?: boolean;
+  // The page's label pills (and Edit Labels), the row's last note.
+  labels?: ReactNode;
   // Who made the page and who changed it last, a person or an agent (verification.md "Made by a person or an
   // agent"), with the names of the people they name.
   makers?: PageMakers;
@@ -69,6 +79,8 @@ export function PageMetaRowView({
   editors = [],
   addCover = false,
   addIcon = false,
+  addLabel = false,
+  labels,
   makers,
   nameOf = () => undefined,
   verify,
@@ -89,14 +101,15 @@ export function PageMetaRowView({
         </span>
       ),
     });
-  // Add Cover and Add Icon are one pair, side by side with no dot between: the page's own dressing.
-  if (addCover || addIcon)
+  // Add Cover, Add Icon and Add Label are one group, side by side with no dot between: the page's own dressing.
+  if (addCover || addIcon || addLabel)
     notes.push({
       key: 'dress',
       node: (
         <span className="inline-flex items-center gap-3">
           {addCover ? <AddCoverButton /> : null}
           {addIcon ? <AddIconButton /> : null}
+          {addLabel ? <AddLabelButton /> : null}
         </span>
       ),
     });
@@ -129,6 +142,7 @@ export function PageMetaRowView({
       ),
     });
   }
+  if (labels) notes.push({ key: 'labels', node: labels });
   return (
     <div
       data-page-meta=""
@@ -205,6 +219,8 @@ export function PageMetaRow() {
   const addCover = coverEditable && !hasCover;
   const hasIcon = usePageIcon() !== undefined;
   const addIcon = coverEditable && !hasIcon;
+  const addLabel = useAddLabel();
+  const hasLabels = usePageLabels().length > 0;
   const health = page.health;
   const approval = useCurrentApprovalMeta();
   const suggestionCount = page.health?.suggestions?.length ?? 0;
@@ -224,6 +240,8 @@ export function PageMetaRow() {
         editors={editingHere ? NO_EDITORS : editors}
         addCover={addCover}
         addIcon={addIcon}
+        addLabel={addLabel}
+        labels={hasLabels ? <PageLabelsNote /> : undefined}
         {...(health ? { makers: makersOf(health) } : {})}
         nameOf={nameOf}
         approval={approval}
