@@ -4,6 +4,7 @@
 // said in the dialog; nothing made on Cancel.
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { IndexError } from '@liveworkspace/index-client';
+import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const toast = vi.hoisted(() => ({ success: vi.fn() }));
@@ -27,14 +28,20 @@ afterEach(() => {
   toast.success.mockReset();
 });
 
-function setup(over: { drafter?: ReturnType<typeof vi.fn>; send?: ReturnType<typeof vi.fn> } = {}) {
+function setup(
+  over: {
+    drafter?: ReturnType<typeof vi.fn>;
+    send?: ReturnType<typeof vi.fn>;
+    strict?: boolean;
+  } = {},
+) {
   const drafter = over.drafter ?? vi.fn().mockResolvedValue(GRAPH);
   const sendToDiagram =
     over.send ?? vi.fn().mockResolvedValue({ item: { id: 'D' }, link: 'https://ld/document/D' });
   const onClose = vi.fn();
   const tab = { closed: false, close: vi.fn(), opener: {}, location: { href: '' } };
   const open = vi.spyOn(window, 'open').mockReturnValue(tab as never);
-  render(
+  const dialog = (
     <SendToDiagramDialog
       request={request}
       source={source}
@@ -42,8 +49,9 @@ function setup(over: { drafter?: ReturnType<typeof vi.fn>; send?: ReturnType<typ
       drafter={drafter as never}
       onClose={onClose}
       client={{ sendToDiagram } as never}
-    />,
+    />
   );
+  render(over.strict ? <StrictMode>{dialog}</StrictMode> : dialog);
   return { drafter, sendToDiagram, onClose, tab, open };
 }
 
@@ -79,6 +87,14 @@ describe('SendToDiagramDialog', () => {
     expect(toast.success).toHaveBeenCalledWith('Diagram made: Ideas', expect.anything());
     (toast.success.mock.calls[0]![1] as { action: { onSelect: () => void } }).action.onSelect();
     expect(open).toHaveBeenLastCalledWith('https://ld/document/D', '_blank', 'noopener');
+  });
+
+  // Strict Mode (every Next dev server) mounts, unmounts and mounts again: the draft must still go on to the index.
+  it('makes the diagram under Strict Mode', async () => {
+    const { sendToDiagram, onClose } = setup({ strict: true });
+    fireEvent.click(screen.getByRole('button', { name: 'Make Diagram' }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(sendToDiagram).toHaveBeenCalledTimes(1);
   });
 
   it('still makes the diagram when the browser refuses the pending tab', async () => {

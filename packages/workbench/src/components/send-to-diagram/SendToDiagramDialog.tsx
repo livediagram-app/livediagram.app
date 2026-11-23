@@ -126,6 +126,8 @@ export function SendToDiagramDialog({
   const live = useRef(true);
 
   useEffect(() => {
+    // Set on every mount: React's Strict Mode runs this effect, its cleanup, then the effect again.
+    live.current = true;
     workbench.track('UI', 'Opened', 'SendToDiagram');
     return () => {
       live.current = false;
