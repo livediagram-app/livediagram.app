@@ -262,8 +262,8 @@ const DOT: Record<SheetLinkTone, string> = {
 
 // "Live from Launch Plan · updated 2 min ago" below a linked chart's or table's bottom edge, left-aligned, while it is
 // hovered or selected: clear of the selection toolbar above and of the quick-connect plus below (SHEET_LINK_LINE_GAP).
-// A small live dot at its top-right corner shows whether or not it is hovered. Neither takes a pointer, so neither ever
-// gets in the way of a drag.
+// A small live dot at its top-right corner shows whether or not it is hovered, but not while it is selected (it sat
+// on the resize handle). Neither takes a pointer, so neither ever gets in the way of a drag.
 export function SheetLinkLine({
   element,
   selected,
@@ -299,7 +299,8 @@ function SheetLinkPill({
   const line = sheetLinkLine(source, status, now);
   return (
     <>
-      <LiveMark tone={line.tone} zoom={zoom} />
+      {/* Not while selected: it sat on the top-right resize handle, and the line below says the same then. */}
+      {selected ? null : <LiveMark tone={line.tone} zoom={zoom} />}
       <div
         data-sheet-link-line
         style={{

@@ -36,7 +36,8 @@ plan"); the editor's side is one copy in `@liveworkspace/workbench` (`components
   element will draw, and for a read with several series, **Series** chips say which feed the element and in what order
   (a pie, doughnut, column or bar draws the first alone). **Link** writes the read and the link as one undo step.
 - **The live mark.** A linked element shows a small dot at its top-right corner (green while live, still, so a page of
-  linked charts costs no animation) and, on hover or selection, a quiet line below it:
+  linked charts costs no animation; hidden while the element is selected, where it would sit on the resize handle and the
+  line says the same) and, on hover or selection, a quiet line below it:
   "Live from Launch Plan · updated 2 min ago". Its Data section says the same with the source under it ("Roadmap ·
   Cards per column", "Budget · B2:E9", "Dashboard · Progress") and offers **Open Plan** (the plan in liveplanner, a new
   tab), **Update**, **Freeze**, **Change…** and **Unlink**.
@@ -44,8 +45,9 @@ plan"); the editor's side is one copy in `@liveworkspace/workbench` (`components
   The link stays (frozen), the line says "From Launch Plan · frozen 12 Nov", and **Unfreeze** reads again. A frozen element is
   never read, so it costs no reads and no watches.
 - **Tables.** A linked table's cells are the read: a header row (the label column's heading, then each series' name)
-  and a row per category. Its cells are not typed into while linked (the next read would overwrite them); its look,
-  widths and header styles stay the Editor's. Unlink keeps the cells.
+  and a row per category. The heading names what a board is counted by ("Priority"); it is blank for a range, and for a
+  metric, whose one series already carries the metric's name. Its cells are not typed into while linked (the next read
+  would overwrite them); its look, widths and header styles stay the Editor's. Unlink keeps the cells.
 - **Keeping in step**, **the first read waits for sign-in**, **the range breaks** and **Unlink** are as
   [sheet-sources.md](sheet-sources.md) and each app's chart spec already set them, for every source kind.
 

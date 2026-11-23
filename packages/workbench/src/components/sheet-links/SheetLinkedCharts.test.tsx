@@ -106,7 +106,7 @@ function Probe({ element }: { element: Element }) {
   return (
     <div>
       <p data-testid="values">{seen.pieSlices?.map((s) => s.value).join(',')}</p>
-      <SheetLinkLine element={element} selected />
+      <SheetLinkLine element={element} selected={false} />
     </div>
   );
 }
@@ -252,6 +252,16 @@ describe('SheetLinkLine', () => {
     const line = document.querySelector<HTMLElement>('[data-sheet-link-line]')!;
     expect(line.className).toContain('opacity-0');
     expect(screen.getByText('The linked range is gone').className).toContain('text-amber-700');
+    // The live mark shows unselected, in the line's tone.
+    expect(document.querySelector('[data-live-mark]')!.getAttribute('data-live-mark')).toBe('warn');
+  });
+
+  it('hides the live mark while selected, where it would sit on the resize handle', () => {
+    show({ kind: 'gone' }, chart, true);
+    expect(document.querySelector('[data-live-mark]')).toBeNull();
+    expect(document.querySelector<HTMLElement>('[data-sheet-link-line]')!.className).toContain(
+      'opacity-100',
+    );
   });
 
   it('draws nothing for an element with no link', () => {

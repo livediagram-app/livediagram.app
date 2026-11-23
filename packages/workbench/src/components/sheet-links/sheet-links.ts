@@ -119,8 +119,8 @@ export function frameTouches(s: ChartSheetSource, planId: string, ids: readonly 
 // The heading over a linked table's label column: the range's first cell is not read, so its words come from the
 // source.
 const labelHeading = (s: ChartSheetSource | undefined): string => {
-  if (!s || isRangeSource(s)) return '';
-  if (s.kind === 'metric') return s.label;
+  // A metric's one series is already named for it ("Priorities"): naming the label column the same said it twice.
+  if (!s || isRangeSource(s) || s.kind === 'metric') return '';
   return { column: 'Column', label: 'Label', assignee: 'Assignee', priority: 'Priority' }[s.by];
 };
 

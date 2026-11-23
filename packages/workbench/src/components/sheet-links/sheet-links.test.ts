@@ -264,7 +264,7 @@ describe('boards, metrics and tables (live-data.md)', () => {
     expect(
       (liveFields(table({ chartSheetSource: metric }), boardRead.table) as { cells: string[][] })
         .cells[0]![0],
-    ).toBe('Completion');
+    ).toBe('');
     expect(
       (liveFields(table({ chartSheetSource: source }), boardRead.table) as { cells: string[][] })
         .cells[0]![0],
