@@ -22,3 +22,19 @@ export function* guardedSources(
     for (const file of sourceFiles(join(root, dir), pattern))
       yield { rel: relative(root, file), text: readFileSync(file, 'utf8') };
 }
+
+/** Every file under `dir` that `keep` takes by name, never entering a folder named in `skip`. */
+export function filesUnder(
+  dir: string,
+  skip: ReadonlySet<string>,
+  keep: (name: string) => boolean,
+  acc: string[] = [],
+): string[] {
+  for (const entry of readdirSync(dir)) {
+    if (skip.has(entry)) continue;
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) filesUnder(full, skip, keep, acc);
+    else if (keep(entry)) acc.push(full);
+  }
+  return acc;
+}

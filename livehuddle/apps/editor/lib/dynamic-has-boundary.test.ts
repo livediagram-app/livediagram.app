@@ -1,7 +1,7 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { checkDynamicBoundaries } from '@liveworkspace/style-guards/dynamic-boundary';
 
 // Every next/dynamic import in the app must carry its own Suspense boundary.
 //
@@ -14,59 +14,15 @@ import { describe, expect, it } from 'vitest';
 // flashed the opening screen over the whole editor; in the Explorer, a pane swapped the whole layout
 // for its null fallback. Every lazy piece here is client-state-gated in a static export, so
 // `ssr: false` (a boundary with a null fallback) costs nothing.
+// The rule itself is every editor's (packages/style-guards/src/dynamic-boundary.ts).
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 // The editor code every editor shares (@liveworkspace/workbench) is scanned beside this app's own.
 const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
 // And Avatar mode's code (@livehuddle/avatar).
 const AVATAR = join(ROOT, '../../packages/avatar/src');
-const SKIP_DIRS = new Set([
-  'node_modules',
-  '.next',
-  '.next-dev',
-  'out',
-  '.turbo',
-  'coverage',
-  'e2e',
-]);
-
-function sourceFiles(dir: string, acc: string[] = []): string[] {
-  for (const entry of readdirSync(dir)) {
-    if (SKIP_DIRS.has(entry)) continue;
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) sourceFiles(full, acc);
-    else if (/\.tsx?$/.test(entry) && !/\.test\.tsx?$/.test(entry)) acc.push(full);
-  }
-  return acc;
-}
-
-// The full text of each `dynamic(...)` call, balanced on parentheses.
-function dynamicCalls(src: string): string[] {
-  const calls: string[] = [];
-  for (const m of src.matchAll(/\bdynamic\(/g)) {
-    let depth = 1;
-    let i = m.index + m[0].length;
-    while (depth > 0 && i < src.length) {
-      if (src[i] === '(') depth += 1;
-      else if (src[i] === ')') depth -= 1;
-      i += 1;
-    }
-    calls.push(src.slice(m.index, i));
-  }
-  return calls;
-}
 
 describe('next/dynamic imports', () => {
   it('each carry their own Suspense boundary (ssr: false or a loading component)', () => {
-    const offenders: string[] = [];
-    for (const file of [ROOT, WORKBENCH, AVATAR].flatMap((dir) => sourceFiles(dir))) {
-      const src = readFileSync(file, 'utf8');
-      if (!src.includes("from 'next/dynamic'")) continue;
-      for (const call of dynamicCalls(src)) {
-        if (!/ssr:\s*false|loading:/.test(call)) {
-          offenders.push(`${relative(ROOT, file)}: ${call.split('\n')[0]}`);
-        }
-      }
-    }
-    expect(offenders).toEqual([]);
+    expect(checkDynamicBoundaries({ root: ROOT, dirs: [ROOT, WORKBENCH, AVATAR] })).toEqual([]);
   });
 });

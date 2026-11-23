@@ -13,7 +13,10 @@
     "./label-contrast": "./src/label-contrast.ts",
     "./aria-label-roles": "./src/aria-label-roles.ts",
     "./clipped-descenders": "./src/clipped-descenders.ts",
-    "./commit-updater-flags": "./src/commit-updater-flags.ts"
+    "./commit-updater-flags": "./src/commit-updater-flags.ts",
+    "./dynamic-boundary": "./src/dynamic-boundary.ts",
+    "./source-is-text": "./src/source-is-text.ts",
+    "./tailwind-scan-safety": "./src/tailwind-scan-safety.ts"
   },
   "scripts": {
     "lint": "oxlint",
