@@ -1,8 +1,11 @@
 import { BORDER_RADIUS_PX, cornerRadiusPx, headerLayout, WEB_TEXT_MAX } from '@livedesign/design';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-import { LabelRegion } from '@/components/canvas/web/LabelRegion';
-import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import { LabelRegion } from '@liveworkspace/workbench/components/canvas/web/LabelRegion';
+import {
+  rectStyle,
+  type WebFaceProps,
+} from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 import { GlyphDisc } from '@livedesign/ui';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 

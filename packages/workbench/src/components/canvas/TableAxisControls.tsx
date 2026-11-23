@@ -1,20 +1,14 @@
 import { createPortal } from 'react-dom';
-import { MenuLandmark, MenuTreeContext, useMenu } from '@livediagram/ui';
-import type { TableElement } from '@livediagram/document';
-import {
-  TableHeaderMenu,
-  Trigger,
-} from '@liveworkspace/workbench/components/canvas/table-menu-controls';
-import {
-  FLOATING_CONTROL_GAP,
-  FLOATING_CONTROL_SIZE,
-} from '@liveworkspace/workbench/components/chrome/floating-controls';
+import { MenuLandmark, MenuTreeContext, useMenu } from '@liveworkspace/ui';
+import type { TableElement } from '@liveworkspace/element-model/element';
+import { TableHeaderMenu, Trigger } from './table-menu-controls';
+import { FLOATING_CONTROL_GAP, FLOATING_CONTROL_SIZE } from '../chrome/floating-controls';
 
 // The table's outside-the-edge column / row controls (docs/specs/008-canvas/canvas-and-palette.md Table): the
 // ⋯ trigger strips laid out on grids mirroring the live track templates
 // (so each trigger stays centred over its column / in its row at any
 // pinned width), and the portalled insert / move / delete menu the
-// triggers open. Extracted from TableView as one cohesive slice — the
+// triggers open. Extracted from TableView as one cohesive slice, the
 // hover state stays in TableView because the grid CELLS also arm it (the
 // trigger appears when hovering anywhere in the column / row).
 
@@ -88,6 +82,7 @@ export function TableAxisTriggers({
   onHoverLeave,
   menu,
   onToggle,
+  faceHover = true,
 }: {
   cols: number;
   rows: number;
@@ -109,6 +104,8 @@ export function TableAxisTriggers({
   onHoverLeave: () => void;
   menu: AxisMenu;
   onToggle: (axis: 'col' | 'row', index: number, e: React.MouseEvent) => void;
+  // False in an editor whose Marker pass does not read the hover mark (liveplanner): the strips carry none.
+  faceHover?: boolean;
 }) {
   const dodgeCol = plusDodgeTrack(colSizes, elementWidth, PLUS_CLEARANCE_PX * invScale);
   const dodgeRow = plusDodgeTrack(rowSizes, elementHeight, PLUS_CLEARANCE_PX * invScale);
@@ -121,7 +118,7 @@ export function TableAxisTriggers({
           content. */}
       <div
         // Hover chrome: the Marker pass neither draws it nor re-takes the table as it comes and goes (finish.md "Marker").
-        data-face-hover=""
+        data-face-hover={faceHover ? '' : undefined}
         className="pointer-events-none absolute inset-x-0 top-0 grid h-0"
         style={{ gridTemplateColumns: colTemplate }}
       >
@@ -161,7 +158,7 @@ export function TableAxisTriggers({
           heights are pinned to non-uniform values. They sit OUTSIDE the
           table's left edge so they never crowd the first column. */}
       <div
-        data-face-hover=""
+        data-face-hover={faceHover ? '' : undefined}
         className="pointer-events-none absolute inset-y-0 left-0 grid w-0"
         style={{ gridTemplateRows: rowTemplate }}
       >
@@ -214,6 +211,8 @@ export function TableAxisMenuPortal({
   moveRow,
   delRow,
   onClose,
+  highlightColumn,
+  onToggleHighlight,
 }: {
   menu: NonNullable<AxisMenu>;
   cols: number;
@@ -225,6 +224,9 @@ export function TableAxisMenuPortal({
   moveRow: (index: number, delta: number) => void;
   delRow: (index: number) => void;
   onClose: () => void;
+  // The recommended column (docs/specs/009-elements/comparison-tables.md "Highlight a column").
+  highlightColumn?: number;
+  onToggleHighlight?: (index: number) => void;
 }) {
   // A command menu (docs/specs/004-interface-design/menus.md): role menu with its rows as items, focus on the first
   // row, the arrow keys between rows, Escape to close and focus back to the ⋯. It had none of these, so Escape left
@@ -242,7 +244,10 @@ export function TableAxisMenuPortal({
           ref={attach}
           {...surfaceProps}
           data-table-ui
-          className={`pointer-events-auto fixed z-[var(--z-overlay)] w-36 animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
+          className={`pointer-events-auto fixed z-[var(--z-overlay)] ${
+            // The menu is wider where it carries the Highlight Column row.
+            onToggleHighlight ? 'w-40' : 'w-36'
+          } animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
             menu.axis === 'col' ? '-translate-x-1/2' : '-translate-y-1/2'
           }`}
           style={{ left: menu.x, top: menu.y }}
@@ -255,6 +260,14 @@ export function TableAxisMenuPortal({
               onAdd={addCol}
               onMove={moveCol}
               onDelete={delCol}
+              highlight={
+                onToggleHighlight
+                  ? {
+                      on: highlightColumn === menu.index,
+                      onToggle: () => onToggleHighlight(menu.index),
+                    }
+                  : undefined
+              }
             />
           ) : (
             <TableHeaderMenu
@@ -276,8 +289,8 @@ export function TableAxisMenuPortal({
 // The between-track resize divider strips (docs/specs/008-canvas/canvas-and-palette.md Table): thin strips
 // riding grids that mirror the live column / row templates so each
 // divider sits exactly on its boundary. A divider must REST (arm) under
-// the pointer before a press starts a resize — an instant strip on
-// every border swallowed clicks mid-edit — and double-clicking an armed
+// the pointer before a press starts a resize, an instant strip on
+// every border swallowed clicks mid-edit, and double-clicking an armed
 // divider clears that track's pinned size back to auto.
 export function TableResizeDividers({
   element,
@@ -304,7 +317,7 @@ export function TableResizeDividers({
   startRowResize: (index: number) => (e: React.PointerEvent) => void;
   onCommitTable: (
     id: string,
-    patch: Partial<Pick<TableElement, 'colWidths' | 'rowHeights'>>,
+    patch: { colWidths?: (number | null)[]; rowHeights?: (number | null)[] },
   ) => void;
 }) {
   return (
@@ -321,7 +334,7 @@ export function TableResizeDividers({
                 onPointerEnter={() => armResizeEnter('col', c)}
                 onPointerLeave={armResizeLeave}
                 onPointerDown={(e) => {
-                  // Only a rested (armed) divider starts a resize —
+                  // Only a rested (armed) divider starts a resize ,
                   // an instant strip on every border swallowed clicks
                   // mid-edit.
                   if (armedResize?.axis === 'col' && armedResize.index === c) startColResize(c)(e);

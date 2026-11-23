@@ -6,19 +6,19 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                                          | Role                                                                                                               |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/table-marks.ts`                                        | `TableMark`, `tableCellMark`, `TABLE_MARK_TEXT`, `tableMarkColour`, `tableHighlightColours`, `withHighlightColumn` |
-| `packages/document/src/table.ts`                                              | Insert, remove and move keep `highlightColumn` in step                                                             |
-| `packages/document/src/element-types.ts`, `element-fields.ts`                 | `TableElement.highlightColumn`                                                                                     |
-| `packages/document/src/validate.ts`                                           | `highlightColumn` a whole number within the columns                                                                |
-| `packages/document/src/svg-render-table.ts`                                   | Marks and the highlight in every export                                                                            |
-| `apps/editor/components/canvas/TableCellView.tsx`                             | The mark face and the highlight washes                                                                             |
-| `apps/editor/components/canvas/TableView.tsx`                                 | The column frame                                                                                                   |
-| `apps/editor/components/canvas/TableCellMenu.tsx`                             | The Marks row                                                                                                      |
-| `apps/editor/components/canvas/TableAxisControls.tsx`, `useTableStructure.ts` | Highlight Column / Remove Highlight                                                                                |
-| `packages/workbench/src/components/canvas/table-menu-controls.tsx`            | `TableHeaderMenu` takes an optional `highlight` row                                                                |
-| `packages/templates/src/slide-layouts-proof.ts`, `slide-layouts.ts`           | Pricing Table slide (`comparisonTable`)                                                                            |
+| File                                                                                        | Role                                                                                                               |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `packages/document/src/table-marks.ts`                                                      | `TableMark`, `tableCellMark`, `TABLE_MARK_TEXT`, `tableMarkColour`, `tableHighlightColours`, `withHighlightColumn` |
+| `packages/document/src/table.ts`                                                            | Insert, remove and move keep `highlightColumn` in step                                                             |
+| `packages/document/src/element-types.ts`, `element-fields.ts`                               | `TableElement.highlightColumn`                                                                                     |
+| `packages/document/src/validate.ts`                                                         | `highlightColumn` a whole number within the columns                                                                |
+| `packages/document/src/svg-render-table.ts`                                                 | Marks and the highlight in every export                                                                            |
+| `apps/editor/components/canvas/TableCellView.tsx`                                           | The mark face and the highlight washes                                                                             |
+| `apps/editor/components/canvas/TableView.tsx`                                               | The column frame                                                                                                   |
+| `apps/editor/components/canvas/TableCellMenu.tsx`                                           | The Marks row                                                                                                      |
+| `../packages/workbench/src/components/canvas/TableAxisControls.tsx`, `useTableStructure.ts` | Highlight Column / Remove Highlight                                                                                |
+| `packages/workbench/src/components/canvas/table-menu-controls.tsx`                          | `TableHeaderMenu` takes an optional `highlight` row                                                                |
+| `packages/templates/src/slide-layouts-proof.ts`, `slide-layouts.ts`                         | Pricing Table slide (`comparisonTable`)                                                                            |
 
 ## Domain and naming
 

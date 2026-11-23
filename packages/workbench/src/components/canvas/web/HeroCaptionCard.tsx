@@ -1,13 +1,13 @@
 import {
   ACCENT_BAR_TEXT,
   heroCaptionLayout,
-  PAGE_HEADING_MAX,
   type HeroCaption,
-  type ImageElement,
-} from '@livedocuments/document';
-import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-import { rectStyle } from '@/components/canvas/web/web-face-props';
-import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+} from '@liveworkspace/element-model/web-components';
+import { PAGE_HEADING_MAX } from '@liveworkspace/element-model/data-shapes';
+import { type ImageElement } from '@liveworkspace/element-model/element';
+import { InlineTextLine } from '../InlineTextLine';
+import { rectStyle } from './web-face-props';
+import { useCanvasZoom } from '../CanvasZoomContext';
 
 // A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md): inset near the bottom of the image in the
 // image's fill (the theme accent when dropped from the palette), with a title

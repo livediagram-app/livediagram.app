@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
-import type { LayoutRect, ShapeElement, WebRows } from '@livedesign/design';
+import type { LayoutRect, WebRows } from '@liveworkspace/element-model/web-components';
+import type { ShapeElement } from '@liveworkspace/element-model/element';
 
 // What every web component face (docs/specs/009-elements/web-components-and-no-groups.md) is handed by ElementFaceRouter.
-export type WebFaceProps = {
-  element: ShapeElement;
+// `E` is the editor's own shape where a face reads fields the shared element model does not name.
+export type WebFaceProps<E extends ShapeElement = ShapeElement> = {
+  element: E;
   // The element's label, rendered by the shared label path (so double-click
   // edits it with the normal editor). It positions itself `absolute inset-0`,
   // so a face places it by wrapping it in a region.
@@ -19,6 +21,9 @@ export type WebFaceProps = {
   editable: boolean;
   onSetRows: (rows: WebRows) => void;
   onSetHeading: (field: 'pageTitle' | 'pageSubtitle', value: string) => void;
+  // Who reads the document's pictures, for a quote's photo (docs/specs/009-elements/quote.md); absent where pictures
+  // are not shown (a preview with no document).
+  imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
 };
 
 // A layout rect as absolute CSS, element-relative.

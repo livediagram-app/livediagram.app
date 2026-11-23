@@ -14,7 +14,7 @@ import type { useElementSurface } from '@liveworkspace/workbench/components/canv
 import type { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import type { useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@liveworkspace/workbench/components/canvas/AccentEdgeOverlay';
-import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
+import { PointerNoteOverlay } from '@liveworkspace/workbench/components/canvas/PointerNoteOverlay';
 import type { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import type { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';

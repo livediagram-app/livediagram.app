@@ -18,7 +18,7 @@ import type { useCanvasSurface } from '@liveworkspace/workbench/components/canva
 import type { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import type { useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@liveworkspace/workbench/components/canvas/AccentEdgeOverlay';
-import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
+import { PointerNoteOverlay } from '@liveworkspace/workbench/components/canvas/PointerNoteOverlay';
 import type { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import type { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
@@ -96,6 +96,7 @@ export function useBoxedFaceParts(
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           editable={isSelected && !readOnly && !isLocked}
           onSetTip={onSetPointerTip}
+          previewsTip
         />
       ) : null}
       <ShapeContentRouter

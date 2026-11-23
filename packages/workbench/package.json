@@ -841,7 +841,15 @@
     "./components/canvas/LegendView": "./src/components/canvas/LegendView.tsx",
     "./components/canvas/AccentEdgeOverlay": "./src/components/canvas/AccentEdgeOverlay.tsx",
     "./components/canvas/ChipFace": "./src/components/canvas/ChipFace.tsx",
-    "./components/canvas/layout-sample-pictures": "./src/components/canvas/layout-sample-pictures.ts"
+    "./components/canvas/layout-sample-pictures": "./src/components/canvas/layout-sample-pictures.ts",
+    "./components/canvas/TableAxisControls": "./src/components/canvas/TableAxisControls.tsx",
+    "./components/canvas/PointerNoteOverlay": "./src/components/canvas/PointerNoteOverlay.tsx",
+    "./components/canvas/web/web-face-props": "./src/components/canvas/web/web-face-props.ts",
+    "./components/canvas/ThemeStrip": "./src/components/canvas/ThemeStrip.tsx",
+    "./components/canvas/web/ProcessFace": "./src/components/canvas/web/ProcessFace.tsx",
+    "./components/canvas/web/HeroCaptionCard": "./src/components/canvas/web/HeroCaptionCard.tsx",
+    "./components/canvas/web/LabelRegion": "./src/components/canvas/web/LabelRegion.tsx",
+    "./components/canvas/web/BannerFace": "./src/components/canvas/web/BannerFace.tsx"
   },
   "scripts": {
     "lint": "oxlint",

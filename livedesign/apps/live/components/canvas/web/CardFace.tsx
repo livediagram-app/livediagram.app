@@ -16,8 +16,11 @@ import { GlyphDisc } from '@livedesign/ui';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-import { LabelRegion } from '@/components/canvas/web/LabelRegion';
-import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
+import { LabelRegion } from '@liveworkspace/workbench/components/canvas/web/LabelRegion';
+import {
+  rectStyle,
+  type WebFaceProps,
+} from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';

@@ -1,17 +1,14 @@
-import {
-  bannerLayout,
-  BORDER_RADIUS_PX,
-  cornerRadiusPx,
-  PAGE_HEADING_MAX,
-} from '@liveknowledge/document';
-import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-import { LabelRegion } from '@/components/canvas/web/LabelRegion';
-import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
-import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import { bannerLayout } from '@liveworkspace/element-model/web-components';
+import { BORDER_RADIUS_PX, cornerRadiusPx } from '@liveworkspace/model-core/border-style';
+import { PAGE_HEADING_MAX } from '@liveworkspace/element-model/data-shapes';
+import { InlineTextLine } from '../InlineTextLine';
+import { LabelRegion } from './LabelRegion';
+import { rectStyle, type WebFaceProps } from './web-face-props';
+import { useCanvasZoom } from '../CanvasZoomContext';
 
 // Banner (docs/specs/009-elements/web-components-and-no-groups.md): an accent bar with the title (the label, edited like any
 // label) over a subtitle line edited in place. The bar paints in the fill
-// when one is picked, else the stroke — the theme accent.
+// when one is picked, else the stroke, the theme accent.
 export function BannerFace({
   element,
   labelNode,

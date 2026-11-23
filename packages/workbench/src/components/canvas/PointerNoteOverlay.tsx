@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { pointerLeader, pointerTipOf, type ShapeElement } from '@livedesign/design';
-import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
+import { pointerLeader, pointerTipOf } from '@liveworkspace/element-model/pointer-note';
+import { type ShapeElement } from '@liveworkspace/element-model/element';
+import { useCanvasZoom } from './CanvasZoomContext';
 
 // A pointer note's leader, tip and (while selected) the tip handle (docs/specs/009-elements/pointer-note.md). Drawn
 // over the note's ordinary box and label, overflowing it: the leader runs out to the tip. The handle drags the tip in
@@ -12,11 +13,19 @@ export function PointerNoteOverlay({
   stroke,
   editable,
   onSetTip,
+  previewsTip = false,
 }: {
-  element: ShapeElement;
+  element: ShapeElement & { animation?: string };
   stroke: string;
   editable: boolean;
-  onSetTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
+  onSetTip?: (
+    elementId: string,
+    tipAbs: { x: number; y: number },
+    phase?: 'preview' | 'commit' | 'cancel',
+  ) => { x: number; y: number } | null | void;
+  // True where the setter previews a drag (livediagram): it is then told of every move and of a drag that stores
+  // nothing. Elsewhere it hears of a commit alone, with no phase.
+  previewsTip?: boolean;
 }) {
   const zoom = useCanvasZoom();
   // The tip while the handle is being dragged, element-local; null at rest.
@@ -41,7 +50,13 @@ export function PointerNoteOverlay({
     const s = start.current;
     if (!s) return;
     const z = zoom || 1;
-    setDragTip({ x: s.tip.x + (e.clientX - s.px) / z, y: s.tip.y + (e.clientY - s.py) / z });
+    const t = { x: s.tip.x + (e.clientX - s.px) / z, y: s.tip.y + (e.clientY - s.py) / z };
+    // The host in reach shows its arrow anchors, as under a dragged arrow end, and the tip jumps to the one it
+    // would take.
+    const snapped = previewsTip
+      ? onSetTip?.(element.id, { x: element.x + t.x, y: element.y + t.y }, 'preview')
+      : null;
+    setDragTip(snapped ? { x: snapped.x - element.x, y: snapped.y - element.y } : t);
   };
   const onPointerUp = (e: PointerEvent<SVGCircleElement>) => {
     const s = start.current;
@@ -52,9 +67,13 @@ export function PointerNoteOverlay({
     const t = { x: s.tip.x + (e.clientX - s.px) / z, y: s.tip.y + (e.clientY - s.py) / z };
     setDragTip(null);
     if (t.x !== s.tip.x || t.y !== s.tip.y) commit(t);
+    else if (previewsTip)
+      onSetTip?.(element.id, { x: element.x + t.x, y: element.y + t.y }, 'cancel');
   };
   // A drag the browser takes back (a gesture, a lost capture) stores nothing and puts the tip back where it was.
   const onPointerCancel = () => {
+    if (previewsTip && start.current)
+      onSetTip?.(element.id, { x: element.x, y: element.y }, 'cancel');
     start.current = null;
     setDragTip(null);
   };

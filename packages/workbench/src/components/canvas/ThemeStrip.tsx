@@ -1,19 +1,19 @@
 'use client';
 
-import { HoverCard } from '@livehuddle/ui';
-import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
-import { ClusterStrip } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
-import { ThemeLookIcon } from '@/components/palette/palette-icons';
-import { useDockNames } from '@liveworkspace/workbench/hooks/ui/useDockNames';
+import { HoverCard } from '@liveworkspace/ui';
+import { CLUSTER_CONTROL_REST } from './cluster-strip';
+import { ClusterStrip } from './ClusterPopoverButton';
+import { ThemeLookIcon } from '@liveworkspace/ui';
+import { useDockNames } from '../../hooks/ui/useDockNames';
 
-// The Theme & canvas button's strip in the bottom-right cluster (docs/specs/007-editor/editor-app.md): it opens the
-// CanvasThemeDialog (docs/specs/011-theme/canvas-and-theme-dialog.md). A session without it (a view-only visitor, a
-// whiteboard) has no strip. livehuddle has no Tidy Up button to lead it (docs/specs/008-canvas/layout-cleanup.md
-// "No Tidy Up button").
+// The Theme & canvas button, a strip of its own in the bottom-right cluster
+// (each editor's docs/specs/007-editor/editor-app.md). It opens the CanvasThemeDialog
+// (docs/specs/011-theme/canvas-and-theme-dialog.md). A session without the button (a view-only visitor) draws no
+// strip.
 export function ThemeStrip({
   onOpenTheme,
 }: {
-  // The Theme & canvas button. Absent, the strip has none.
+  // The Theme & canvas button. Absent, there is no strip.
   onOpenTheme?: (() => void) | undefined;
 }) {
   const named = useDockNames();

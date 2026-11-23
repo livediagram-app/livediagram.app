@@ -18,7 +18,7 @@ import {
   TableAxisMenuPortal,
   TableAxisTriggers,
   TableResizeDividers,
-} from '@/components/canvas/TableAxisControls';
+} from '@liveworkspace/workbench/components/canvas/TableAxisControls';
 import { TableCellView, type TableCellCtx } from '@/components/canvas/TableCellView';
 import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
@@ -403,6 +403,7 @@ export function TableView({
           />
 
           <TableAxisTriggers
+            faceHover={false}
             cols={cols}
             rows={rows}
             colTemplate={colTemplate}

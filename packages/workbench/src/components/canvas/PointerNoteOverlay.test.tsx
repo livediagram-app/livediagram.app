@@ -4,12 +4,15 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@livediagram/document';
+import { createShape } from '@liveworkspace/element-model/testing/elements';
+import { type ShapeElement } from '@liveworkspace/element-model/element';
 import { PointerNoteOverlay } from './PointerNoteOverlay';
 
 afterEach(cleanup);
 
-const note = (over: Partial<ShapeElement> = {}) =>
+type Note = ShapeElement & { animation?: string };
+
+const note = (over: Partial<Note> = {}) =>
   ({
     ...createShape('pointer-note', 0, 0),
     id: 'n',
@@ -19,9 +22,9 @@ const note = (over: Partial<ShapeElement> = {}) =>
     height: 64,
     pointerTip: { x: -24, y: 120 },
     ...over,
-  }) as ShapeElement;
+  }) as Note;
 
-function show(element: ShapeElement, editable = true) {
+function show(element: Note, editable = true) {
   const onSetTip = vi.fn();
   const { container } = render(
     <PointerNoteOverlay
@@ -51,11 +54,9 @@ describe('PointerNoteOverlay', () => {
     fireEvent.pointerDown(handle, { clientX: 10, clientY: 10, pointerId: 1 });
     fireEvent.pointerMove(handle, { clientX: 40, clientY: 30, pointerId: 1 });
     expect(container.querySelector('[data-pointer-tip]')!.getAttribute('cx')).toBe('6');
-    // While it moves the host only previews (its anchors show, the tip may snap); nothing is stored.
-    expect(onSetTip.mock.calls.map((c: unknown[]) => c[2] as string)).toEqual(['preview']);
+    expect(onSetTip).not.toHaveBeenCalled();
     fireEvent.pointerUp(handle, { clientX: 40, clientY: 30, pointerId: 1 });
-    const stored = onSetTip.mock.calls.filter((c) => c[2] !== 'preview' && c[2] !== 'cancel');
-    expect(stored).toEqual([['n', { x: 100 + 6, y: 50 + 140 }, ...stored[0]!.slice(2)]]);
+    expect(onSetTip).toHaveBeenCalledWith('n', { x: 100 + 6, y: 50 + 140 });
   });
 
   it('puts the tip back and stores nothing when the browser cancels the drag', () => {
@@ -70,11 +71,7 @@ describe('PointerNoteOverlay', () => {
     fireEvent.pointerMove(handle, { clientX: 80, clientY: 80, pointerId: 1 });
     fireEvent.pointerUp(handle, { clientX: 80, clientY: 80, pointerId: 1 });
     expect(container.querySelector('[data-pointer-tip]')!.getAttribute('cx')).toBe('-24');
-    // Only the preview and its cancel reached the host: nothing was stored.
-    expect(onSetTip.mock.calls.map((c: unknown[]) => c[2] as string)).toEqual([
-      'preview',
-      'cancel',
-    ]);
+    expect(onSetTip).not.toHaveBeenCalled();
   });
 
   it('nudges the tip with the arrow keys, ten at a time with Shift', () => {
