@@ -2,7 +2,7 @@
 
 // The picker's preview as SVG (graph-sketch.ts lays it out): boxes with their labels, arrows, groups as frames, a
 // sequence's lifelines. Scaled to fit its box, in the app's colours; livediagram draws the real diagram.
-import { useId, useMemo } from 'react';
+import { useId, useLayoutEffect, useMemo, useRef } from 'react';
 import type { DiagramSendGraph } from '@liveworkspace/index-client';
 import { SKETCH_BOX_H, SKETCH_BOX_W, sketchGraph, type SketchBox } from './graph-sketch';
 
@@ -50,8 +50,27 @@ function Box({ box }: { box: SketchBox }) {
 export function DiagramSketch({ graph, fit = 2.2 }: { graph: DiagramSendGraph; fit?: number }) {
   const sketch = useMemo(() => sketchGraph(graph, fit), [graph, fit]);
   const marker = `sketch-arrow-${useId().replace(/:/g, '')}`;
+  const svg = useRef<SVGSVGElement>(null);
+  // A sketch bigger than its box scrolls: open it on where the diagram starts (a mind map's centre topic, else the
+  // first box), not on an empty corner.
+  useLayoutEffect(() => {
+    const el = svg.current;
+    const box = el?.parentElement;
+    const first = sketch.boxes[0];
+    if (!el || !box || !first) return;
+    if (box.scrollWidth <= box.clientWidth && box.scrollHeight <= box.clientHeight) return;
+    const scale = Math.min(el.clientWidth / sketch.width, el.clientHeight / sketch.height);
+    const offsetX = (el.clientWidth - sketch.width * scale) / 2;
+    const offsetY = (el.clientHeight - sketch.height * scale) / 2;
+    const x = offsetX + (first.x + SKETCH_BOX_W / 2) * scale;
+    const y = offsetY + (first.y + SKETCH_BOX_H / 2) * scale;
+    const centre = graph.style === 'mindmap';
+    box.scrollLeft = centre ? x - box.clientWidth / 2 : x - SKETCH_BOX_W * scale;
+    box.scrollTop = centre ? y - box.clientHeight / 2 : y - SKETCH_BOX_H * scale;
+  }, [sketch, graph.style]);
   return (
     <svg
+      ref={svg}
       data-diagram-sketch=""
       role="img"
       aria-label={`A sketch of ${graph.nodes.length} boxes and ${graph.edges.length} arrows`}
