@@ -133,6 +133,34 @@ describe('telling the index', () => {
   });
 });
 
+describe('a burst of card writes', () => {
+  // Live data (liveworkspace/docs/specs/004-index/live-data.md "Bounds"): every card write signals the plan's cards, so
+  // an id already gathered for the next flush is not probed again.
+  it('probes the watches once per settle, and tells the index once', async () => {
+    const inner = sql();
+    let execs = 0;
+    const counting = {
+      exec: (query: string, ...bindings: unknown[]) => {
+        execs += 1;
+        return inner.exec(query, ...bindings);
+      },
+    };
+    const sheetChanged = vi.fn(async () => []);
+    const store = new SheetWatches(
+      counting,
+      () => ({ sheetChanged }),
+      () => now,
+    );
+    store.watch('P1', 'cards', 'doc_a');
+    execs = 0;
+    for (let i = 0; i < 500; i++) store.changed('cards');
+    expect(execs).toBe(2);
+    await vi.advanceTimersByTimeAsync(SHEET_CHANGE_SETTLE_MS);
+    expect(sheetChanged).toHaveBeenCalledTimes(1);
+    expect(sheetChanged).toHaveBeenCalledWith('P1', ['cards'], ['doc_a']);
+  });
+});
+
 describe('the room relay', () => {
   it('passes a relayed op to sheetChanged after broadcasting it', async () => {
     const seen: unknown[] = [];
@@ -160,7 +188,9 @@ describe('the room relay', () => {
 describe('the ops that change a watch', () => {
   it("marks a Sheet's own id, and the plan's cards for any card or card-type change", () => {
     expect(watchIdsOfOp({ kind: 'sheets', sheetId: 's1' })).toEqual(['s1']);
-    expect(watchIdsOfOp({ kind: 'items', upserts: [], removed: ['c1'], rev: 2 })).toEqual(['cards']);
+    expect(watchIdsOfOp({ kind: 'items', upserts: [], removed: ['c1'], rev: 2 })).toEqual([
+      'cards',
+    ]);
     expect(watchIdsOfOp({ kind: 'item-types', itemTypes: {} })).toEqual(['cards']);
     expect(watchIdsOfOp({ kind: 'sheets' })).toEqual([]);
     expect(watchIdsOfOp({ kind: 'tab-meta' })).toEqual([]);

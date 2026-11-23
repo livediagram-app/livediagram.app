@@ -101,6 +101,9 @@ type FakeState = {
     setAlarm: (when: number) => Promise<void>;
     deleteAlarm: () => Promise<void>;
     deleteAll: () => Promise<void>;
+    // The room's SQL, as far as these tests reach it: a card write probes the plan's live-data watches
+    // (liveworkspace/docs/specs/004-index/live-data.md "Keeping in step"), and here nothing watches.
+    sql: { exec: (query: string, ...bindings: unknown[]) => { toArray: () => unknown[] } };
   };
   blockConcurrencyWhile: (fn: () => Promise<void>) => Promise<void>;
   // The last blockConcurrencyWhile's work: the runtime delivers no request until it settles.
@@ -157,6 +160,7 @@ function makeState(store: Map<string, unknown> = new Map()): FakeState {
         store.clear();
         return Promise.resolve();
       },
+      sql: { exec: () => ({ toArray: () => [] }) },
     },
     blockConcurrencyWhile: (fn) => {
       state.gate = fn();

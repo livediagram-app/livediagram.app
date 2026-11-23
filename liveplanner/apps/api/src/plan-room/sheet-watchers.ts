@@ -89,8 +89,11 @@ export class SheetWatches {
     );
   }
 
-  // A Sheet changed (any relayed `sheets` op). An unwatched Sheet costs one indexed probe and nothing else.
+  // A Sheet changed (any relayed `sheets` op), or the plan's cards (any card write). An unwatched id costs one indexed
+  // probe and nothing else; one already gathered for the next flush costs nothing, so a burst of card writes probes
+  // once per settle.
   changed(sheetId: string): void {
+    if (this.pending.has(sheetId)) return;
     this.table();
     const live = this.sql
       .exec(
