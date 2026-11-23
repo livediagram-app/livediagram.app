@@ -1,6 +1,8 @@
 'use client';
 
-// The Explorer's dialogs, one at a time, opened from a menu through the context.
+// The Explorer's open dialog, one at a time, opened from a menu through the context. Its code (Change Folder's
+// spaces, the confirmations, This Browser's dialogs and the dialog frame) loads from its own chunk, the first time a
+// dialog opens or once the page is idle (Dialogs.tsx, lazy-dialogs.ts), never in the Explorer's first load.
 
 import { lazy, Suspense, useMemo } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
@@ -71,7 +73,7 @@ const THIS_BROWSER_SPACE: PlacementSpace = {
   icon: <BrowserIcon size={16} />,
 };
 
-export function ExplorerDialogs() {
+export function OpenDialog() {
   const ctx = useExplorer();
   const teamsCtx = useTeams();
   // New Team in Move, name only: the same `create` as the sidebar's, the item then filed into it.

@@ -15,7 +15,7 @@ import { useSpacePreviews, type SpacePreviews } from '../data/useSpacePreviews';
 import { usePersonName } from '../data/usePeople';
 import { initialsOf } from '../teams/team-details';
 import { useTeams } from '../teams/context';
-import { NewTeamDialog } from '../teams/NewTeamDialog';
+import { NewTeamDialog } from './lazy-dialogs';
 import { useNow } from '../time';
 import { FOCUS_RING, MUTED, SKELETON } from '../ui/classes';
 import { ChevronDownIcon, MyWorkIcon, PlusIcon, TeamIcon } from '../ui/icons';
