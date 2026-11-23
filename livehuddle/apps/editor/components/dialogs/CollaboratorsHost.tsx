@@ -4,9 +4,16 @@ import dynamic from 'next/dynamic';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 
 const CollaboratorsDialog = dynamic(
   () => import('@/components/dialogs/CollaboratorsDialog').then((m) => m.CollaboratorsDialog),
+  { ssr: false },
+);
+// The Space's Call Minutes (docs/specs/012-collaboration/call-minutes.md "What people see"): with Pro on, loaded
+// with the dialog; with it off, never loaded.
+const CallMinutesSection = dynamic(
+  () => import('@/components/calls/minutes/CallMinutesSection').then((m) => m.CallMinutesSection),
   { ssr: false },
 );
 
@@ -27,6 +34,7 @@ export function CollaboratorsHost() {
     nudges,
     facilitator,
     isOwner,
+    imageContext,
   } = useEditorContext();
   const selectTab = useSelectTab();
   if (!collaborators) return null;
@@ -56,6 +64,7 @@ export function CollaboratorsHost() {
       onTakeFacilitation={facilitator.claimFacilitator}
       onStepDown={facilitator.releaseFacilitator}
       onClose={closeCollaborators}
+      below={proOn() ? <CallMinutesSection caller={imageContext ?? null} /> : undefined}
     />
   );
 }

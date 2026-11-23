@@ -50,6 +50,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
 │  ├─ settings-ui              the one Settings panel (this app or All) every app's Settings and liveworkspace.app open
+│  ├─ subscription             the subscription contract: tiers, limits, prices, wire shapes, the apps' client and the pages' client
+│  ├─ subscription-ui          the Pro badge, meters, upgrade dialog and Subscription settings every app shows
 │  ├─ snapshots                manual save points in every app: the store in each item's object, the five kept, revert and its fence, the footer button and dialog
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher, and the one profile picture URL rule (`/picture`)
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
@@ -71,6 +73,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/help                www.liveworkspace.app/help and every app's /help: the one help centre, six static builds behind one Worker
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
+│  ├─ apps/subscription        liveworkspace.app/api/subscription: tiers, entitlements, meters and billing for every app, own D1
 │  ├─ apps/media               liveworkspace.app/api/media and /api/previews: every app's images and previews, own D1 and R2
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
@@ -166,6 +169,7 @@ liveworkspace/
 │  ├─ telemetry                    every product's anonymous events; the dashboard is the site's /telemetry
 │  ├─ community                    every product's Community listings (liveworkspace/docs/specs/007-community)
 │  ├─ media                        every product's uploaded images and previews (liveworkspace/docs/specs/006-media)
+│  ├─ subscription                 every product's tiers, limits and billing (liveworkspace/docs/specs/019-subscription)
 │  ├─ status                       hourly checks of every service and 90 days of history (liveworkspace/docs/specs/009-status)
 │  ├─ index                        the One Explorer's index: every product's items, folders and sharing in one place
 │  ├─ drive                        the Google Drive mirror, for every product

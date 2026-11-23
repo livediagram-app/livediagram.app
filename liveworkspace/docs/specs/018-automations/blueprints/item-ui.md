@@ -307,7 +307,8 @@ reaches `kit.values` as `place.step`, which this stage adds to stage 3 (`PanelOu
   its row (a button with a tooltip) and in its ⋯ menu. It asks Which Tab? only when the rule reads the run's tab
   (`ruleWantsTab`: a Tab condition, a step on the run's tab, a `{{tab.…}}` value). Then a toast: "Ran “<rule>”"
   (up to its Wait, when one holds it), the run's reason when it failed or was skipped, the refusal's words when the
-  api refused (`automation_budget_spent`: "This <item> has used today’s 1,000 runs. It runs again tomorrow.").
+  api refused (`automation_budget_spent`: "This <item> has used today’s 1,000 runs. It runs again tomorrow.";
+  `automation_runs_used`: "This month’s automation runs are used. Rules run again on the 1st.").
 
 ### The Audit Trail
 

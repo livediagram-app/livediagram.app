@@ -18,6 +18,7 @@ import {
   type ItemCreate,
   type ItemPerson,
   type ItemRejection,
+  type ItemWriteBounds,
 } from '@liveplanner/items';
 import {
   fieldsGrowth,
@@ -48,8 +49,12 @@ export type ReadCreate = ItemCreate & { restoredThreads?: CardThread[] };
 // `owner` is the caller: a restored comment thread keeps author ids on their own comments only. A card's old single
 // thread (`comments`, from a client from before threads) is read as its first thread (docs/specs/026-plan/items.md
 // "Existing comments").
-export function readCreate(raw: unknown, owner: string): ReadCreate | ItemRejection {
-  const read = readItemCreate(raw);
+export function readCreate(
+  raw: unknown,
+  owner: string,
+  bounds?: ItemWriteBounds,
+): ReadCreate | ItemRejection {
+  const read = readItemCreate(raw, bounds);
   if (typeof read === 'string') return read;
   const r = raw as { comments?: unknown; threads?: unknown };
   const threads = readRestoredThreads(r.threads, owner);
@@ -189,8 +194,9 @@ export function readBulkCreates(
   let putBack = false;
   const types = typesOf(caller.doc?.itemTypes);
   for (const raw of items) {
-    const read = readCreate(raw, caller.owner);
-    if (typeof read === 'string') return rejectedRead(read, bodyValue(raw, 'fields'), 'create');
+    const read = readCreate(raw, caller.owner, caller.bounds);
+    if (typeof read === 'string')
+      return rejectedRead(read, bodyValue(raw, 'fields'), 'create', undefined, caller.bounds);
     const { restoredThreads: _threads, ...input } = read;
     reads.push(read);
     // A card put back (its number, votes or threads) holds what it held; any other gives no Calculated field a value.
@@ -210,14 +216,19 @@ export function readBulkCreates(
 
 // A project create's seed items (an offline project's, on sync), validated
 // before anything is written: the items, or the refusal.
-export function readSeedItems(raw: unknown, owner: string): ReadCreate[] | Response {
+export function readSeedItems(
+  raw: unknown,
+  owner: string,
+  bounds?: ItemWriteBounds,
+): ReadCreate[] | Response {
   if (raw === undefined) return [];
   if (!Array.isArray(raw) || raw.length > ITEMS_MAX)
     return badRequest(`items must be at most ${ITEMS_MAX}`);
   const creates: ReadCreate[] = [];
   for (const entry of raw) {
-    const input = readCreate(entry, owner);
-    if (typeof input === 'string') return rejectedRead(input, bodyValue(entry, 'fields'), 'create');
+    const input = readCreate(entry, owner, bounds);
+    if (typeof input === 'string')
+      return rejectedRead(input, bodyValue(entry, 'fields'), 'create', undefined, bounds);
     creates.push(input);
   }
   return creates;

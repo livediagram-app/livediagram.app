@@ -238,10 +238,10 @@ liveplanner is one product folder in the liveworkspace monorepo: its workspaces 
 See [Business model + licence](docs/specs/002-project-scope/business-model-and-licence.md).
 
 - The codebase is **MIT licensed** (`LICENSE`, every `package.json` declares `"license": "MIT"`), and **open source**: the source is public in the liveworkspace monorepo (owner, 2026-11-10), and the site footer links it as every app's does.
-- liveplanner is free to use. **No paid tier and no plan to introduce one.** No trackers, no ads.
+- liveplanner is free to use. Pro, a subscription that raises limits, is the platform's and sits behind `PRO_ENABLED`, off by default ([Subscription](../liveworkspace/docs/specs/019-subscription/subscription.md)). No trackers, no ads.
 - The Cloudflare ids in the wrangler configs are the live liveworkspace account's. Production deploys are a manual gate in CI; the CLI's npm publish and the MCP Registry listing are manual steps outside CI ([Deployment](docs/specs/016-platform/deployment.md)).
 - Optional integrations degrade, never break: the editor always offers sign-in (the liveworkspace accounts Worker), and when the api has no accounts settings every visitor settles as a guest.
-- No "Pro features" flags, no billing integration. If we ship it, every user gets it.
+- No billing code and no tier checks of the product's own. A limit that varies by tier comes from `@liveworkspace/subscription`, is checked on the server against the item's owner, and falls back to the legacy cap when Pro is off. With Pro off nothing Pro is shown.
 
 ## Secrets policy
 

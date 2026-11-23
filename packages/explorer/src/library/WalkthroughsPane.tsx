@@ -26,6 +26,7 @@ import { lucide } from '../ui/icons';
 import { WalkthroughIcon } from '../ui/library-icons';
 import { SIDEBAR_LABELS } from '../views';
 import { useLibraryHost } from './context';
+import { LibraryUsage } from './LibraryUsage';
 import type { WalkthroughEntry, WalkthroughsHost } from './types';
 
 // The index's lookup takes this many ids a call.
@@ -196,43 +197,66 @@ export function WalkthroughsContent({
         </button>
       </div>
     );
+  const usage = host.usage?.() ?? null;
+  const meter = usage ? (
+    <LibraryUsage
+      kind="walkthroughs"
+      used={usage.stored}
+      limit={usage.storedLimit}
+      maxMs={usage.maxMs}
+      owner={usage.owner}
+      compact={compact}
+      className={
+        compact
+          ? 'mb-3 border-b border-slate-100 pb-3 dark:border-slate-800'
+          : // In line with what follows: the grid's own inset, or the empty state's edge.
+            `${load.entries.length > 0 ? 'mx-4 sm:mx-6' : ''} mb-5 border-b border-slate-100 pb-4 dark:border-slate-800`
+      }
+    />
+  ) : null;
   if (load.entries.length === 0)
     return (
-      <EmptyState
-        compact={compact}
-        icon={<WalkthroughIcon size={compact ? 20 : 28} />}
-        title="No walkthroughs yet"
-        description={`Record one from Tools on any ${kind.lowerOne}: it collects here to watch again or tidy away.`}
-      />
+      <>
+        {meter}
+        <EmptyState
+          compact={compact}
+          icon={<WalkthroughIcon size={compact ? 20 : 28} />}
+          title="No walkthroughs yet"
+          description={`Record one from Tools on any ${kind.lowerOne}: it collects here to watch again or tidy away.`}
+        />
+      </>
     );
   return (
-    <ul aria-label={SIDEBAR_LABELS.walkthroughs} data-walkthroughs-grid="" className={grid}>
-      {load.entries.map((entry) => (
-        <WalkthroughCard
-          key={entry.id}
-          entry={entry}
-          item={items.get(entry.item) ?? null}
-          host={host}
-          playing={playing === entry.id}
-          onPlay={(on) => setPlaying(on ? entry.id : null)}
-          compact={compact}
-          onChanged={(next) =>
-            setLoad((l) =>
-              l.state === 'ready'
-                ? { state: 'ready', entries: l.entries.map((e) => (e.id === next.id ? next : e)) }
-                : l,
-            )
-          }
-          onDeleted={() =>
-            setLoad((l) =>
-              l.state === 'ready'
-                ? { state: 'ready', entries: l.entries.filter((e) => e.id !== entry.id) }
-                : l,
-            )
-          }
-        />
-      ))}
-    </ul>
+    <>
+      {meter}
+      <ul aria-label={SIDEBAR_LABELS.walkthroughs} data-walkthroughs-grid="" className={grid}>
+        {load.entries.map((entry) => (
+          <WalkthroughCard
+            key={entry.id}
+            entry={entry}
+            item={items.get(entry.item) ?? null}
+            host={host}
+            playing={playing === entry.id}
+            onPlay={(on) => setPlaying(on ? entry.id : null)}
+            compact={compact}
+            onChanged={(next) =>
+              setLoad((l) =>
+                l.state === 'ready'
+                  ? { state: 'ready', entries: l.entries.map((e) => (e.id === next.id ? next : e)) }
+                  : l,
+              )
+            }
+            onDeleted={() =>
+              setLoad((l) =>
+                l.state === 'ready'
+                  ? { state: 'ready', entries: l.entries.filter((e) => e.id !== entry.id) }
+                  : l,
+              )
+            }
+          />
+        ))}
+      </ul>
+    </>
   );
 }
 

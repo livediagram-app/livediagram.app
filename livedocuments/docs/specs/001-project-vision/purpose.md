@@ -73,8 +73,8 @@ never arrives.
 - **Not a project planner.** No boards, cards, spreadsheets or forms.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline
   Mode is a per-document choice, not the default posture (see below).
-- **Not a paid product, ever.** No tier, no billing, no feature flags gating the
-  core editor ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+- **No feature held back.** Every feature works on Free; Pro, where it is on, only raises
+  a few limits, and the product keeps no billing code of its own ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## Boundaries
 
@@ -97,7 +97,7 @@ making pages together need this?".
 ## How it ships
 
 livedocuments is **open source** (MIT) and also runs as a **hosted product**, free
-for everyone, no paid tier. The codebase is public; the hosted
+for everyone, every feature on the free plan. The codebase is public; the hosted
 version is the easy default. See
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md).
 

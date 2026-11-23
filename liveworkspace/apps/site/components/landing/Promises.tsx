@@ -2,6 +2,7 @@ import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { lucideFolder } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
 import type { CSSProperties, ReactNode } from 'react';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 import { listedApps } from '@/lib/apps';
 import { AccountTileLink } from './AccountActions';
 import { AppMark } from './AppLogo';
@@ -18,6 +19,10 @@ import {
   ShareArt,
   TeamsArt,
 } from './PromiseArt';
+
+// A tile's own link, under its words.
+const TILE_LINK =
+  'relative touch-target-y mt-4 inline-flex w-fit items-center gap-1 text-sm font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white';
 
 const FolderIcon = lucideGlyph(lucideFolder, 20);
 
@@ -102,10 +107,7 @@ export function Promises() {
             title="Open about data"
             body="No third-party trackers, no ads. The anonymous numbers we do count are public."
           >
-            <a
-              href="/telemetry"
-              className="relative touch-target-y mt-4 inline-flex w-fit items-center gap-1 text-sm font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white"
-            >
+            <a href="/telemetry" className={TILE_LINK}>
               See exactly what we measure <span aria-hidden>→</span>
             </a>
           </Tile>
@@ -114,11 +116,23 @@ export function Promises() {
             title="Yours to keep"
             body="No password to leak. Close your account from any app, and it is gone from all of them."
           />
-          <Tile
-            art={<FreeArt />}
-            title="Completely free"
-            body="Every app, every feature, for everyone. No paywalls, no subscriptions, and you can start before you sign in."
-          />
+          {proOn() ? (
+            <Tile
+              art={<FreeArt />}
+              title="Free for everyone"
+              body="Every app is free to use, with generous limits, and you can start before you sign in. Pro raises the limits when you need more."
+            >
+              <a href="/pricing" className={TILE_LINK}>
+                See pricing <span aria-hidden>→</span>
+              </a>
+            </Tile>
+          ) : (
+            <Tile
+              art={<FreeArt />}
+              title="Completely free"
+              body="Every app, every feature, for everyone. No paywalls, no subscriptions, and you can start before you sign in."
+            />
+          )}
         </div>
       </div>
     </section>

@@ -51,4 +51,7 @@ export const DROPDOWN_AFTER = 7;
 
 export const DEFAULT_CONFIRMATION = 'Thanks, your response has been recorded.';
 export const DEFAULT_CLOSED_MESSAGE = 'This form is no longer accepting responses.';
+// A form whose month of responses is used (forms.md "Abuse and limits → Tiers"): neutral, naming no limit.
+export const MONTHLY_LIMIT_MESSAGE =
+  "This form isn't accepting responses right now. Please try again later.";
 export const UNTITLED_FORM = 'Untitled Form';

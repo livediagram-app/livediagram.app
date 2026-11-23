@@ -24,12 +24,22 @@ export type SnapshotSummary = {
   author: SnapshotAuthor | null;
   createdAt: number;
   bytes: number;
+  /** With Pro on, on a tier that keeps snapshots for a time: when this one is dropped. Absent where they are kept. */
+  expiresAt?: number;
   /** In a list: whether a rule names it (Revert to Snapshot), so it is kept beside the latest five and can't be
    *  deleted. Absent from a take's or a revert's answer. */
   kept?: boolean;
 };
 
-export type SnapshotListResponse = { snapshots: SnapshotSummary[]; kept: number };
+/** With Pro on (snapshots.md "With Pro on"): how long the item's owner's tier keeps a snapshot (null is no age
+ *  limit), and the owner's scope, for the offer. Absent with Pro off. */
+export type SnapshotRetentionInfo = { days: number | null; owner: string | null };
+
+export type SnapshotListResponse = {
+  snapshots: SnapshotSummary[];
+  kept: number;
+  retention?: SnapshotRetentionInfo;
+};
 export type SnapshotTakeResponse = { snapshot: SnapshotSummary };
 export type SnapshotRevertResponse = {
   reverted: { snapshotId: string; safetySnapshotId: string; generation: number };

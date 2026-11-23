@@ -34,8 +34,11 @@ export function EditorPhotoImport() {
       {photoDraft.state.stage === 'review' && photoDraft.review ? (
         <PhotoReviewOverlay
           review={photoDraft.review}
+          // Not while a charged read waits for its choice: nothing is being read yet.
           reading={
-            photoDraft.state.readSoFar < photoDraft.state.found && !photoDraft.review.readError
+            photoDraft.state.readSoFar < photoDraft.state.found &&
+            !photoDraft.review.readError &&
+            !photoDraft.state.readChoice
           }
           modelDownload={photoDraft.state.modelDownload}
           readSoFar={photoDraft.state.readSoFar}
@@ -44,6 +47,8 @@ export function EditorPhotoImport() {
           readerWhy={photoDraft.state.readerWhy}
           readerFallback={photoDraft.state.readerFallback}
           rereading={photoDraft.rereading}
+          readChoice={photoDraft.state.readChoice}
+          onChooseRead={photoDraft.chooseRead}
           onReread={photoDraft.reread}
           onConfirm={photoDraft.confirm}
           onCancel={photoDraft.cancelReview}

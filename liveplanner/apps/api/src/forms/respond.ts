@@ -16,11 +16,16 @@ import {
 import { itemTitle, readItemCreate, typesOf, type ItemPerson } from '@liveplanner/items';
 import {
   claimResponseNumber,
+  formMonthFull,
   getProject,
   getFormLink,
+  markFormMonthFull,
   releaseResponseNumber,
   type FormLinkRow,
+  type FormMonth,
 } from '../db';
+import { monthKey, refusedByService } from '@liveworkspace/subscription';
+import { tierOn } from '../plan-room/tier/plan-tier';
 import { notifyFormResponse } from '../email/notifications';
 import { json } from '../responses';
 import { createMany } from '../routes/item-routes';
@@ -61,8 +66,44 @@ export async function openFormLink(ctx: PlanRouteContext, code: string) {
   return { link, doc, ...formTab };
 }
 
-function isClosed(form: FormDefinition, link: FormLinkRow, now: number): boolean {
-  return closedReason(form, { open: link.open === 1, responses: link.responses, now }) !== null;
+// `monthly`: the owner's month of responses against their tier, with Pro on (forms.md "Abuse and limits → Tiers").
+function isClosed(
+  form: FormDefinition,
+  link: FormLinkRow,
+  now: number,
+  monthly: FormMonth | null,
+): boolean {
+  return (
+    closedReason(form, {
+      open: link.open === 1,
+      responses: link.responses,
+      now,
+      ...(monthly ? { monthFull: formMonthFull(link, monthly) } : {}),
+    }) !== null
+  );
+}
+
+// The plan's owner's month of responses as their tier allows it now, over every form they own: null with Pro off,
+// for a guest's plan and for one that is nobody's yet, where nothing spends from it (the hourly cap and the form's own
+// Response Limit are all it has). Reads the owner's limits again when they are over a minute old (once a request at
+// most).
+export async function formMonthOf(ctx: PlanRouteContext, now: number): Promise<FormMonth | null> {
+  const tier = await tierOn(ctx.env);
+  if (!tier?.owner) return null;
+  return { key: monthKey(now), limit: tier.limit('formResponsesPerMonth', 0) };
+}
+
+// The same, for a response about to be turned away because the link found the month used: the owner's limits are
+// asked for once more first (plan-tier.ts `recheck`), so a form reopens on the response after an upgrade, not a
+// minute later.
+async function formMonthRechecked(
+  ctx: PlanRouteContext,
+  link: FormLinkRow,
+  now: number,
+  monthly: FormMonth | null,
+): Promise<FormMonth | null> {
+  if (!monthly || !formMonthFull(link, monthly)) return monthly;
+  return (await ctx.env.TIER?.recheck()) ? formMonthOf(ctx, now) : monthly;
 }
 
 // `preview`: an Editor's Preview of the published form (docs/specs/030-forms/forms.md "Preview"), sent through the
@@ -141,7 +182,11 @@ export async function respond(
     return json(accepted, { status: 201 });
   }
   const now = Date.now();
-  if (!preview && isClosed(form, link, now)) {
+  // A Preview never counts against the month, and is taken while the form is closed.
+  const monthly = preview
+    ? null
+    : await formMonthRechecked(ctx, link, now, await formMonthOf(ctx, now));
+  if (!preview && isClosed(form, link, now, monthly)) {
     console.info('[forms] form.response.refused', { error: 'form_closed' });
     return refuse({ error: 'form_closed' }, 409);
   }
@@ -165,7 +210,7 @@ export async function respond(
       });
       return refuse({ error: 'form_closed' }, 409);
     }
-    const number = await claimNumber(ctx, code, form, now, preview);
+    const number = await claimNumber(ctx, code, form, now, preview, monthly);
     if (number instanceof Response) return number;
     const wrote = await writeResponseRow(ctx, {
       projectId: doc.id,
@@ -185,7 +230,14 @@ export async function respond(
         wrote === 'missing' ? 409 : 429,
       );
     }
-    return accepted(ctx, { doc, form, code, number, preview, title: `${form.heading} #${number}` });
+    return accepted(ctx, {
+      doc,
+      form,
+      code,
+      number,
+      preview,
+      title: `${form.heading} #${number}`,
+    });
   }
 
   const types = typesOf(doc.itemTypes);
@@ -225,7 +277,7 @@ export async function respond(
     return refuse({ error: 'invalid_answers', errors: {} }, 400);
   }
 
-  const number = await claimNumber(ctx, code, form, now, preview);
+  const number = await claimNumber(ctx, code, form, now, preview, monthly);
   if (number instanceof Response) return number;
   const create = cardFor(number);
   // Only the title's number differs from the first, so the check holds.
@@ -263,24 +315,42 @@ export async function respond(
 
 // The next response number, or the refusal: the Response Limit reached meanwhile (another response took the last
 // place since the form was read: closed, as the form now is), else the hourly cap (busy). A preview passes the limit,
-// as it is taken while the form is closed.
+// as it is taken while the form is closed. Then, with the owner's month counted (`monthly`), one response spent from
+// it: refused at the limit, the number goes back and the link reads closed until the month turns or the limit grows;
+// refused by the service (it cannot be checked), the number goes back and the respondent is asked to try again. An
+// unreachable service lets it through, uncounted (019 "Out of reach is not refused").
 async function claimNumber(
   ctx: PlanRouteContext,
   code: string,
   form: Pick<FormDefinition, 'limit'>,
   now: number,
   preview: boolean,
+  monthly: FormMonth | null,
 ): Promise<number | Response> {
   const limit = preview ? null : (form.limit ?? null);
   const number = await claimResponseNumber(ctx.env, code, now, FORM_RESPONSES_PER_HOUR, limit);
-  if (number !== null) return number;
-  const link = limit === null ? null : await getFormLink(ctx.env, code);
-  if (link && limit !== null && link.responses >= limit) {
-    console.info('[forms] form.response.refused', { error: 'form_closed' });
-    return refuse({ error: 'form_closed' }, 409);
+  if (number === null) {
+    const link = limit === null ? null : await getFormLink(ctx.env, code);
+    if (link && limit !== null && link.responses >= limit) {
+      console.info('[forms] form.response.refused', { error: 'form_closed' });
+      return refuse({ error: 'form_closed' }, 409);
+    }
+    console.info('[forms] form.response.refused', { error: 'form_busy' });
+    return refuse({ error: 'form_busy' }, 429);
   }
-  console.info('[forms] form.response.refused', { error: 'form_busy' });
-  return refuse({ error: 'form_busy' }, 429);
+  const spent = monthly ? await ctx.env.TIER?.spend('formResponses') : null;
+  if (!spent || spent.ok) return number;
+  await releaseResponseNumber(ctx.env, code, number);
+  if (refusedByService(spent)) {
+    console.info('[forms] form.response.refused', { error: 'form_busy', unchecked: true });
+    return refuse({ error: 'form_busy' }, 429);
+  }
+  await markFormMonthFull(ctx.env, code, {
+    key: monthly!.key,
+    limit: spent.limit ?? monthly!.limit,
+  });
+  console.info('[forms] form.response.refused', { error: 'form_closed', month: true });
+  return refuse({ error: 'form_closed' }, 409);
 }
 
 // A response taken (a card or a sheet row): logged, counted, the owner emailed (not for a preview), and answered.

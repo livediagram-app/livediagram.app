@@ -26,6 +26,9 @@ export type ImportOptions = {
   /** The archive file's own size, when known before it is opened. */
   archiveBytes?: number;
   limits?: Partial<ImportLimits>;
+  /** Import the pages that fit, in the export's order, rather than none, when there are more than the room left
+   *  (docs/specs/030-knowledgebase/tiers.md "Import over the limit"). A parent is always kept before its subpages. */
+  trimToRoom?: boolean;
 };
 
 export type WarningKind =
@@ -84,6 +87,8 @@ export type ImportSummary = {
   ignoredFiles: number;
   /** Set when nothing can be imported: the plan then holds no pages. */
   blocked: ImportBlock | null;
+  /** With `trimToRoom`, the pages found that did not fit and are left out. */
+  leftOut?: number;
 };
 
 export type ImportPlan = { pages: PlannedPage[]; summary: ImportSummary };

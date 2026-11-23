@@ -19,6 +19,14 @@ describe('FormLockedStrip', () => {
     expect(onEdit).toHaveBeenCalledTimes(1);
   });
 
+  it('paused for the month (Pro on), never says it takes responses', () => {
+    render(<FormLockedStrip onEdit={vi.fn()} busy={false} paused />);
+    const text = screen.getByRole('status').textContent ?? '';
+    expect(text).toContain('Live, so it can’t be changed.');
+    expect(text).toContain('Edit Form unlocks it while you edit');
+    expect(text).not.toContain('Taking responses');
+  });
+
   it('holds Edit Form while the link is busy, keeping the keyboard on it', () => {
     const onEdit = vi.fn();
     render(<FormLockedStrip onEdit={onEdit} busy />);

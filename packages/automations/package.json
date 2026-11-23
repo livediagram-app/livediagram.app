@@ -27,6 +27,7 @@
     "@liveworkspace/index-app": "workspace:^",
     "@liveworkspace/index-client": "workspace:^",
     "@liveworkspace/model-core": "workspace:^",
+    "@liveworkspace/subscription": "workspace:*",
     "@liveworkspace/telemetry": "workspace:^"
   },
   "devDependencies": {

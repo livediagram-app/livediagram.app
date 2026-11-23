@@ -25,6 +25,7 @@ import type { DocumentFileImport } from './document-room/document-file';
 import type { RouteIdentity } from './document-room/document-route';
 import type { ShareAnswer, ShareMessage, SharedTabCopy } from './document-room/tab-shares';
 import type { HearingAnswer, HearingAsk } from './calls/room-calls';
+import type { CallAdmission, CallMinutesReading, CallsPayer } from './calls/call-meter';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite, ItemStanding, SourceChange } from '@liveworkspace/index-client';
@@ -107,6 +108,13 @@ export type DocumentRoomClient = {
   sourceChanged(change: SourceChange): Promise<void>;
   // The calls mint route's question (calls/room-calls.ts, #483): may this call session receive these tracks now?
   callsHearing(subscriberSession: string, asks: HearingAsk[]): Promise<HearingAnswer[]>;
+  // Call Minutes (calls/call-meter.ts, docs/specs/012-collaboration/call-minutes.md), asked only with Pro on: may a
+  // join go ahead for the Space's owner, and the owner's month as the room knows it.
+  callsAdmit(owner: CallsPayer): Promise<CallAdmission>;
+  callMinutes(owner: CallsPayer): Promise<CallMinutesReading | null>;
+  // Whether the owner's month is used, for the calls routes that ask the room nothing else (a publish, a
+  // renegotiation, a layer switch).
+  callsPaused(): Promise<boolean>;
 };
 
 export function documentRoom(
@@ -150,6 +158,9 @@ export function documentRoom(
     receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
     sourceChanged: (change) => room.sourceChanged(documentId, change),
     callsHearing: (subscriber, asks) => room.callsHearing(documentId, subscriber, asks),
+    callsAdmit: (owner) => room.callsAdmit(documentId, owner),
+    callMinutes: (owner) => room.callMinutes(documentId, owner),
+    callsPaused: () => room.callsPaused(documentId),
   };
 }
 
@@ -211,5 +222,8 @@ export type DocumentRoomRpc = {
     subscriberSession: string,
     asks: HearingAsk[],
   ): Promise<HearingAnswer[]>;
+  callsAdmit(documentId: string, owner: CallsPayer): Promise<CallAdmission>;
+  callMinutes(documentId: string, owner: CallsPayer): Promise<CallMinutesReading | null>;
+  callsPaused(documentId: string): Promise<boolean>;
   fetch(request: Request): Promise<Response>;
 };

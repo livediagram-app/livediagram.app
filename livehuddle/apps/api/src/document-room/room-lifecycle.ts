@@ -1,4 +1,5 @@
 import { DOCUMENT_TRASHED_CLOSE } from '@livehuddle/api-schema';
+import { leaveRuleCount } from '@liveworkspace/automations/room';
 import { agentPresenceLog } from '@liveworkspace/api-kit/room-agent-presence';
 import { armRoomAlarm, disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
 import { documentRoom } from '../document-client';
@@ -24,6 +25,9 @@ export async function purge(room: DocumentRoom, documentId?: string): Promise<vo
   room.opLog = [];
   await leaveShares(room);
   await leaveCommunity(room);
+  // Its rules leave its owner's total (019 "Meters": item counts). Nothing with Pro off.
+  if (room.documentId !== null && room.schemaReady)
+    await leaveRuleCount(room.tier, room.documentId);
   await room.ledger.settled();
   await disarmRoomAlarm(room.state.storage);
   await room.state.storage.deleteAll();
@@ -33,6 +37,7 @@ export async function purge(room: DocumentRoom, documentId?: string): Promise<vo
   room.shares.clear();
   room.maintenanceAt = null;
   room.communityAt = null;
+  room.callMeter.forget();
   room.head.forget();
   // Its rules went with its SQLite: nothing is heard and nothing of theirs wakes it.
   forgetAutomations(room);
@@ -54,8 +59,9 @@ async function leaveShares(room: DocumentRoom): Promise<void> {
 
 // The room's one alarm, at the earliest of: the facilitator grace deadline, an agent presence expiry
 // (agent-presence I5, PR29), a session's grant to ask for or lapse, the outbox's next push, the next send to a
-// shared tab's holders, the Community post's next check, the document's next upkeep, and its Automations (a waiting
-// trigger, a time rule's moment, a Wait's end, a quiet stretch's end). None when nothing is due.
+// shared tab's holders, the Community post's next check, the document's next upkeep, the call meter's next minute,
+// and its Automations (a waiting trigger, a time rule's moment, a Wait's end, a quiet stretch's end). None when
+// nothing is due.
 export function armAlarm(room: DocumentRoom): void {
   const due = [
     room.baton.deadline() ?? null,
@@ -65,6 +71,8 @@ export function armAlarm(room: DocumentRoom): void {
     room.shares.at,
     room.communityAt,
     room.maintenanceAt,
+    // The call meter's next minute, only while a call runs, or a session it has still to close (call-minutes.md).
+    room.callMeter.due(),
     room.automations.schedule.wakeAt,
   ];
   // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
@@ -88,6 +96,7 @@ export async function alarm(room: DocumentRoom): Promise<void> {
   if (room.shares.due(now)) await drainShares(room);
   if (room.communityAt !== null && room.communityAt <= now) await checkCommunity(room, now);
   if (room.maintenanceAt !== null && room.maintenanceAt <= now) await maintain(room, now);
+  await room.callMeter.alarm(now);
   // The Space's rules, last of the duties. Never throws.
   await runSpaceAutomations(room, Date.now());
   armAlarm(room);

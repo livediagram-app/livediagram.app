@@ -6,6 +6,8 @@
 // link, since it spends the team's key or liveknowledge's built-in AI and is the start of an edit. The description is untrusted
 // text to the model and the reply untrusted text to the app: one is fenced, the other is validated field by field
 // (`parseSetupSuggestion`) and only ever placed as text.
+import type { KnowledgeAiCredits } from '@liveknowledge/api-schema';
+import { creditCallerOf, spendBuiltInCredit } from '../knowledge/ai-credits';
 import {
   SETUP_BUILT_IN_PER_PERSON_PER_DAY,
   SETUP_MAX_DESCRIPTION_CHARS,
@@ -94,8 +96,16 @@ function existingOf(value: unknown): SetupExistingPage[] {
   return pages;
 }
 
-const answered = (suggestion: SetupSuggestion, provider: KnowledgeSetupProvider) =>
-  json({ ...suggestion, provider } satisfies KnowledgeSetupSuggestion);
+const answered = (
+  suggestion: SetupSuggestion,
+  provider: KnowledgeSetupProvider,
+  credits: KnowledgeAiCredits | null = null,
+) =>
+  json({
+    ...suggestion,
+    provider,
+    ...(credits ? { credits } : {}),
+  } satisfies KnowledgeSetupSuggestion);
 
 const usedOf = async (env: KnowledgeRoute['ctx']['env'], statement: SqlStatement) =>
   (await rowsOf<{ used: number }>(env, statement))[0]?.used ?? 0;
@@ -121,7 +131,8 @@ export async function handleSetupSuggest({
   // The knowledgebase's key, its team's, the person's own, or built-in AI (search-and-ask.md "Which key answers").
   const ai = await applyingAi(env, document.id, askerOf(ctx, document.teamId));
   // A key that does not open, or accounts that could not answer, is refused as Ask refuses it (isAiRefusal).
-  if (isAiRefusal(ai)) return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
+  if (isAiRefusal(ai))
+    return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai], { reason: ai });
   const existing = existingOf(body?.existing);
   if (typeof ai === 'string') {
     // No key (or no secret to keep one under): built-in AI.
@@ -134,6 +145,14 @@ export async function handleSetupSuggest({
     if (spent === 'unavailable')
       return refused(503, BUILT_IN.failed.error, BUILT_IN.failed.message);
     if (!spent) return no(BUILT_IN.limit);
+    // With Pro on, the owner's AI credits for a setup (two; its second ask rides them), once every cap has passed (tiers.md).
+    const credit = await spendBuiltInCredit(
+      env,
+      document,
+      'knowledgeSetup',
+      creditCallerOf(ctx, person),
+    );
+    if (!credit.ok) return credit.response;
     await runAll(env, counters.bump);
     const asked = await suggestOnBuiltIn(client, { description, existing });
     const log = { documentId: document.id, provider: 'built-in', asks: asked.asks };
@@ -149,7 +168,7 @@ export async function handleSetupSuggest({
       ...log,
       pages: asked.suggestion.pages.length,
     });
-    return answered(asked.suggestion, 'built-in');
+    return answered(asked.suggestion, 'built-in', credit.credits);
   }
   // Counted before the model is called: a suggestion that fails still spent a call on the team's key.
   await runAll(env, counters.bump);

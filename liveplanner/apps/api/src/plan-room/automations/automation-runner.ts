@@ -2,7 +2,8 @@
 // automations.md "The run"). A run's id is a hash of the trigger and the rule, claimed in the Audit Trail before anything
 // is done, so a retry or a second wake never runs a rule twice for one trigger. Then the day's budget, the chain
 // (never its own changes; a rule that keeps its changes to itself starts nothing; five rules at most), the card,
-// the conditions, the planned steps (@liveplanner/items planActions) and the writes (automation-writes.ts); the row
+// the conditions, with Pro on one of the owner's Automation Runs (none once the month is used: the claim dropped and
+// one Skipped line a rule a day), the planned steps (@liveplanner/items planActions) and the writes (automation-writes.ts); the row
 // is settled with its result and the rule's failures counted, ten in a row pausing it. A run never throws: anything
 // unexpected is a failed run. The wake drains the queue a bounded batch at a time; Test on a Card and Run Rule run
 // one at once, a test changing nothing. Phase 2: a time trigger's event runs its one rule (the scan matched it; the
@@ -12,10 +13,10 @@
 // after it unwritten (automation-ai.ts heldCardSteps).
 // Phase 3: an Incoming Webhook call's event runs its one rule on its card, or with no card when it named none and
 // the rule's steps need none (a blank card, `card.…` values reading nothing, no card on the run or its messages).
+import { AI_CREDIT_COSTS } from '@liveworkspace/subscription';
 import {
   AUTOMATION_CHAIN_MAX,
   AUTOMATION_DERIVED_CARDS_MAX,
-  AUTOMATION_RUNS_PER_DAY,
   NO_CARDS_NAMED,
   allHold,
   cardlessCard,
@@ -59,6 +60,8 @@ import {
   derivedLineId,
   claimRun,
   dropRun,
+  monthLineId,
+  noteLineOnce,
   runsToday,
   settleRun,
   settleWaiting,
@@ -73,6 +76,8 @@ import { runPlanCrossSteps } from './automation-cross';
 import { runPlanSnapshotSteps } from './automation-snapshots';
 import { aiClient, heldCardSteps, runAiSteps } from './automation-ai';
 import { tallyRun, type AutomationTally } from './automation-telemetry';
+import type { PlanTier } from '../tier/plan-tier';
+import { RUNS_USED, runsOfMonthUsed } from '@liveworkspace/automations/room';
 
 // Triggers one wake runs; the rest wait AUTOMATION_MORE_MS for the next.
 export const AUTOMATION_EVENTS_PER_WAKE = 25;
@@ -89,6 +94,9 @@ const WENT_WRONG = 'Something went wrong';
 export interface RunnerDeps extends WriteDeps {
   sql: () => Sql;
   store: AutomationStore;
+  // The plan's tier (tier/plan-tier.ts): with Pro on, what a run, its messages and its AI steps spend from. The
+  // day's runs are `store.runsPerDay`, the plan's own fixed bound.
+  tier?: PlanTier;
 }
 
 // What one wake (or one request) reads once: the plan, the runs started today, and (once an AI step asks) the AI
@@ -216,8 +224,8 @@ const readsCards = (rule: AutomationRule): boolean =>
       (s.kind === 'if' && [...s.then, ...s.else].some((a) => a.kind === 'link_card')),
   );
 
-// One rule answering one trigger: the run, or null when it never started (its own change, the budget spent, ran
-// already, or a chain stop whose conditions did not hold).
+// One rule answering one trigger: the run, or null when it never started (its own change, the budget or the owner's
+// month spent, ran already, or a chain stop whose conditions did not hold).
 export async function runRule(
   deps: RunnerDeps,
   state: RunState,
@@ -234,7 +242,7 @@ export async function runRule(
     // wake waited on a card read or an AI call), with no await before the claim: runs at once never pass the day
     // between them, and a wake alone reads it once.
     if (state.claims !== deps.store.claims) state.today = runsToday(sql, at);
-    if (state.today >= AUTOMATION_RUNS_PER_DAY) return null;
+    if (state.today >= deps.store.runsPerDay) return null;
     if (!claimRun(sql, id, rule.id, at)) return null;
     deps.store.claims += 1;
     state.claims = deps.store.claims;
@@ -356,6 +364,23 @@ export async function runRule(
       return end('skipped', stop);
     }
     if (!held.ok) return resume ? end('no_match', WAIT_CONDITIONS) : end('no_match');
+    // With Pro on, a run about to act spends one of the owner's month (a run going on after its Wait spent already).
+    // Used: the run never started, said once a rule a UTC day; the rule stays on.
+    if (!opts.dry && !resume && (await runsOfMonthUsed(deps.store, deps.tier, at))) {
+      dropRun(sql, id);
+      noteLineOnce(sql, {
+        id: monthLineId(rule.id, at),
+        ruleId: rule.id,
+        ruleName: rule.name,
+        card: null,
+        at,
+        result: 'skipped',
+        reason: RUNS_USED,
+        tookMs: 0,
+        steps: [],
+      } satisfies AutomationRun);
+      return null;
+    }
     // A test plans past every Wait; a held run goes on from the step after its Wait.
     const planned = planActions(
       rule.steps,
@@ -391,6 +416,8 @@ export async function runRule(
     const notes: AutomationStepLine[] = [];
     let failed: string | null = null;
     let gone: AutomationGone | undefined;
+    // With Pro on, a real run's messages and AI steps spend the owner's month (spec "Tiers"); a test spends nothing.
+    const tier = !opts.dry && deps.tier?.on ? deps.tier : null;
     const messages = {
       client: opts.dry ? null : sendsClient(deps.env),
       planId: deps.planId,
@@ -407,6 +434,7 @@ export async function runRule(
           },
       at,
       dry: opts.dry === true,
+      ...(tier ? { spend: (n: number) => tier.spend('automationRuns', n) } : {}),
     };
     const source = {
       role: 'automation' as const,
@@ -430,6 +458,9 @@ export async function runRule(
           runId: id,
           room: deps.store,
           ...(deps.env.AI_GATEWAY ? { gateway: deps.env.AI_GATEWAY } : {}),
+          ...(tier && !dry
+            ? { spend: () => tier.spend('aiCredits', AI_CREDIT_COSTS.automationSummary) }
+            : {}),
         },
         live.ai,
         lines,
@@ -597,7 +628,7 @@ export async function runRule(
     // A step the day's AI cap skipped skips only itself: the run goes on, a Wait holding it as ever, and is Skipped
     // (not Failed: nothing is wrong with the rule) once the rest is done, as the addresses limit's (spec "The daily
     // cap").
-    capped = asked.skipped ?? capped;
+    capped = asked.skipped ?? capped ?? sent.skipped;
     // A Wait reached: the rest goes on later, as a run of its own.
     if (live.wait) {
       const until = holdRun(sql, id, rule.id, event, rule.edited.at, live.wait, Date.now());
@@ -728,7 +759,7 @@ export async function runAutomationWake(
         sql,
         event.origin,
         'skipped',
-        state.today >= AUTOMATION_RUNS_PER_DAY ? BUDGET_SPENT : WAIT_RULE_CHANGED,
+        state.today >= deps.store.runsPerDay ? BUDGET_SPENT : WAIT_RULE_CHANGED,
       );
     schedule.done(row.id);
   }

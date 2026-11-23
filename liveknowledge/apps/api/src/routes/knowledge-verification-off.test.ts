@@ -111,7 +111,7 @@ describe('Not Read in 90 Days', () => {
     const kit = await knowledgeKit();
     const overview = () => get<KnowledgeOverviewResponse>(kit, 'viewer', 'knowledge');
     // Pages made today have not had 90 days to be read.
-    expect((await overview()).notRead).toEqual({ pages: [], total: 0 });
+    expect((await overview()).notRead).toEqual({ days: 90, pages: [], total: 0 });
     vi.setSystemTime(T0 + 100 * DAY);
     const all = (await overview()).notRead!;
     expect(all.total).toBeGreaterThan(1);

@@ -40,6 +40,7 @@ import { FormBuilderContext, type FormBuilderValue } from './builder/form-builde
 import { FormBuilderColumn } from './builder/FormBuilderColumn';
 import { formProblemCount } from './FormProblems';
 import { FormLockedStrip } from './FormLockedStrip';
+import { useFormMonth } from './FormMonth';
 import { FormSettingsButton, type FormSettingsSection } from './builder/FormSettingsButton';
 import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
@@ -138,6 +139,8 @@ export function FormPage({
     share,
     enabled: online && !!projectId,
   });
+  // With Pro on, live but paused until its month starts again: the lock strip says so (FormLockedStrip).
+  const monthFull = useFormMonth(link.link).full;
   // Switched on, but past its Close On or at its Response Limit: closed to respondents, so it reads Closed and is
   // not locked (docs/specs/030-forms/forms.md "Hearing about responses").
   // The clock, read once a minute while an open form has a Close On to pass.
@@ -356,6 +359,7 @@ export function FormPage({
                           <FormLockedStrip
                             onEdit={() => void link.setOpen(false)}
                             busy={link.busy}
+                            paused={monthFull}
                           />
                         ) : null}
                         {!canEdit ? (

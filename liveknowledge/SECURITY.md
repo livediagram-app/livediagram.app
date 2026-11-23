@@ -17,7 +17,7 @@ In short:
 - **In scope:** the hosted service at liveknowledge.app (and the subdomains we run, such as `mcp.liveknowledge.app`) and the source code in this repository.
 - **Out of scope:** third-party services (Cloudflare, GitHub), copies run by others, and findings with no demonstrated security impact.
 - **Safe harbour:** good-faith research that follows the policy is authorised, and we will not take legal action over it.
-- liveknowledge is free with no paid tier, so there is **no bug bounty** and **no guaranteed response time**. Every report is read, handled in good faith, and credited in the published advisory unless you would rather it wasn't.
+- liveknowledge is a small open-source project, so there is **no bug bounty** and **no guaranteed response time**. Every report is read, handled in good faith, and credited in the published advisory unless you would rather it wasn't.
 
 ## Supported versions
 

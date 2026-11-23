@@ -19,3 +19,8 @@ APP_ORIGIN_LIVEKNOWLEDGE=http://localhost:3600
 # Deleted teams (liveworkspace/docs/specs/006-media/libraries.md "Account and guest lifecycle"): the same as accounts'
 # ACCOUNTS_KEY_MEDIA. Without it the daily run keeps every team's Library.
 ACCOUNTS_KEY_MEDIA=dev-accounts-media-key
+# Pro, through the local subscription Worker (liveworkspace/apps/subscription): the platform Workers' key there, its
+# SUBSCRIPTION_KEY_LIVEWORKSPACE. PRO_ENABLED=false (or no line) turns Pro off.
+PRO_ENABLED=true
+SUBSCRIPTION_URL=http://localhost:8794/api/subscription
+SUBSCRIPTION_KEY=dev-liveworkspace-subscription-key

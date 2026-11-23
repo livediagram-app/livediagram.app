@@ -236,7 +236,7 @@ export const ASK_UNAVAILABLE_WORDS = {
   'no-secret': "Built-in AI isn't set up on this server, and it keeps no key.",
   'no-key':
     "Built-in AI isn't set up on this server. An Editor can add your team's AI key in AI Settings.",
-  unreadable: "Your team's stored AI key could not be read. Replace it in AI Settings.",
+  unreadable: "This knowledgebase's AI key could not be read. Replace it in AI Settings.",
   'team-unreadable':
     "Your team's AI key could not be read. An admin can replace it in Settings, under AI.",
   'personal-unreadable': 'Your AI key could not be read. Replace it in Settings, under AI.',

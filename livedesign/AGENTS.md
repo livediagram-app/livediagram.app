@@ -241,9 +241,9 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 See [Open source + distribution](docs/specs/002-project-scope/open-source-and-business-model.md).
 
 - The codebase is **MIT-licensed** and **publicly viewable**.
-- A free hosted version runs alongside at livedesign.app. **No paid tier and no plan to introduce one.**
+- A free hosted version runs alongside at livedesign.app. Pro, a subscription that raises limits, is the platform's and sits behind `PRO_ENABLED`, off by default ([Subscription](../liveworkspace/docs/specs/019-subscription/subscription.md)).
 - Keep outside services optional (no required SaaS calls, no license checks gating the core editor). Sign-in (the liveworkspace accounts Worker) is optional: when unset the api worker and live frontend degrade to pure-guest mode.
-- No "Pro features" flags, no billing integration. If we ship it, every user gets it.
+- No billing code and no tier checks of the product's own. A limit that varies by tier comes from `@liveworkspace/subscription`, is checked on the server against the item's owner, and falls back to the legacy cap when Pro is off. With Pro off nothing Pro is shown.
 
 ## Secrets policy
 

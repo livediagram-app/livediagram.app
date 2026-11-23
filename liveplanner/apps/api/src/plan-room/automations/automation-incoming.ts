@@ -13,7 +13,6 @@
 // are @liveworkspace/automations/room's (liveworkspace/docs/specs/018-automations/blueprints/engine.md "The room
 // entry"); the plan's address, the cards a call names and the answer are here.
 import {
-  AUTOMATION_RUNS_PER_DAY,
   INCOMING_WEBHOOK_PERSON,
   WEBHOOK_CALLS_PER_MINUTE,
   isTrashed,
@@ -45,6 +44,7 @@ import { runsToday } from './automation-log';
 import { enqueueStatement, type PlanAutomations } from './automation-queue';
 import type { Sql } from './automation-store';
 import { reportServerEvent } from '../../server-telemetry';
+import { runsUsedBody } from '@liveworkspace/automations/room';
 
 export {
   newHookSecret,
@@ -148,7 +148,9 @@ export async function answerHookCall(
       retryAfter: hookRetryAfter(minute.since, now),
     };
   }
-  if (runsToday(sql, now) >= AUTOMATION_RUNS_PER_DAY) {
+  // The plan's own fixed runs a day, on every tier, and with Pro on the owner's month once a refusal said it is used
+  // (kept on the store a minute): nothing is awaited.
+  if (runsToday(sql, now) >= automations.store.runsPerDay) {
     log('budget');
     defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationHookBudget'));
     const midnight = (Math.floor(now / DAY_MS) + 1) * DAY_MS;
@@ -157,6 +159,11 @@ export async function answerHookCall(
       body: { error: 'automation_budget_spent' },
       retryAfter: Math.max(1, Math.ceil((midnight - now) / 1000)),
     };
+  }
+  if (automations.store.monthUsed(now)) {
+    log('month');
+    defer(reportServerEvent(env, 'Plan', 'Ran', 'AutomationHookMonthUsed'));
+    return { status: 429, ...runsUsedBody(automations.store, env.TIER, now) };
   }
   const read = readHookBody(hookJson(call.body));
   if ('error' in read) {

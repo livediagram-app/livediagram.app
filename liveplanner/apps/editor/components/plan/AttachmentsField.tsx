@@ -32,7 +32,14 @@ import {
   MenuHeader,
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { IMAGE_ACCEPT, IMAGE_ROW_EDGE, apiImageOriginal, type ImagesScope } from '@/lib/api/images';
+import {
+  IMAGE_ACCEPT,
+  IMAGE_ROW_EDGE,
+  apiImageOriginal,
+  imageUploadHint,
+  type ImagesScope,
+} from '@/lib/api/images';
+import { ImageUploadLimit } from './ImageUploadLimit';
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { imageFilesOf, useAttachmentUpload } from './use-attachment-upload';
@@ -186,7 +193,7 @@ export function AttachmentsField({
                   : 'Add Images'}
               </span>
               <span id={hintId} className="text-[11px] text-slate-500 dark:text-slate-400">
-                {upload.blocked ?? 'PNG, JPEG, WebP or GIF, up to 10 MB · or paste'}
+                {upload.blocked ?? `${imageUploadHint()} · or paste`}
               </span>
             </span>
           </Button>
@@ -211,6 +218,7 @@ export function AttachmentsField({
           {message}
         </p>
       ) : null}
+      <ImageUploadLimit refusal={upload.limit} onChooseAnother={() => fileRef.current?.click()} />
     </div>
   );
 }

@@ -6,8 +6,8 @@ field, then trim to taste. Counts in brackets are approximate (characters for
 the short ones, words for the long ones).
 
 Built from [`facts.md`](facts.md). No em dashes. Don't promise voice or video,
-conflict-free (CRDT) editing or a paid tier (see "Do not claim" in the fact
-sheet).
+conflict-free (CRDT) editing, or claim there is no paid tier (see "Do not
+claim" in the fact sheet).
 
 ---
 
@@ -59,7 +59,7 @@ For Product Hunt, app store short descriptions, README intros.
 > Every Space is also a board: sticky notes and stickers on the walls, and a
 > Timer or a Stopwatch in the room. Share a link as an Editor or a
 > Participant. It has no voice or video yet, so keep your usual call
-> alongside. MIT-licensed and free, with no paid tier. [109 words]
+> alongside. MIT-licensed, and every feature works on the free plan. [112 words]
 
 ---
 
@@ -90,8 +90,8 @@ For longer listing bodies and "about this project" sections.
 > expiry. livehuddle has no voice or video in production yet, so a team keeps
 > its usual call open alongside.
 >
-> It is MIT-licensed and free for everyone, with no paid tier and no plan for
-> one. [242 words]
+> It is MIT-licensed and free to use: every feature works on the free plan, with no
+> trial. [242 words]
 
 ---
 
@@ -152,9 +152,9 @@ detailed GitHub / Product Hunt write-up.
 > #### Free, open, and scriptable
 >
 > livehuddle is MIT-licensed and publicly viewable. The hosted version at
-> livehuddle.app is free for everyone, with no paid tier and no plan to
-> introduce one. A REST API lets your own scripts set up and share Spaces for
+> livehuddle.app is free for everyone, with no trial and no card; paid plans
+> only raise a few limits. A REST API lets your own scripts set up and share Spaces for
 > you. Export any tab as PNG,
 > SVG, PDF or JSON.
 >
-> Open a link, walk in, meet your team. That is the whole pitch. [505 words]
+> Open a link, walk in, meet your team. That is the whole pitch. [508 words]

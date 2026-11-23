@@ -13,6 +13,7 @@ import { AppMark } from './AppLogo';
 import { HeldBy } from './AppWindow';
 import { Character } from './Character';
 import { Cursor } from './Cursor';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 
 // The illustrations on "What every app shares" (liveworkspace/docs/specs/010-site/site.md "The front door"): each
 // promise drawn as a small piece of the product, in the apps' own colours, light and dark. All
@@ -434,7 +435,7 @@ export function FreeArt() {
     >
       <div className="w-full max-w-60 rounded-xl border border-slate-200 bg-white p-3 text-center shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900">
         <span className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
-          Every app, every feature
+          {proOn() ? 'Every app' : 'Every app, every feature'}
         </span>
         <div className="mt-1 flex items-baseline justify-center gap-1">
           <span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
@@ -449,7 +450,7 @@ export function FreeArt() {
         </div>
         <div className="mt-2 flex items-center justify-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
           <CheckGlyph />
-          No card, no trial, no paywall
+          {proOn() ? 'No card, no trial, every feature' : 'No card, no trial, no paywall'}
         </div>
       </div>
     </ArtFrame>

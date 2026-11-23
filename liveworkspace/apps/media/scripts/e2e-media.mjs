@@ -77,6 +77,10 @@ export async function startE2EMedia({
         '--var',
         `${originVar(app)}:${origin}`,
       ]),
+      // Pro is off in the e2e stacks (liveworkspace/docs/specs/019-subscription/subscription.md "The flag"), whatever
+      // a developer's .dev.vars says: no subscription Worker runs here.
+      '--var',
+      'PRO_ENABLED:false',
     ],
     { cwd: MEDIA_DIR },
   );

@@ -1,6 +1,7 @@
 // The document's content state for its room (document-room.ts): the schema on first use, the write notes that arm the
 // outbox, the drains to the index and to shared tabs' holders, the daily upkeep, the Community post's checks and
 // the purge. Each takes the room it acts for.
+import { leaveRuleCount } from '@liveworkspace/automations/room';
 import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
@@ -10,9 +11,10 @@ import {
 } from '@liveworkspace/index-app';
 import { DOCUMENT_TRASHED_CLOSE } from '@livedocuments/api-schema';
 import { disarmRoomAlarm } from '@liveworkspace/api-kit/room-alarm';
-import { CHANGESET_RETENTION_MS, VERSION_AUTO_MAX_AGE_MS } from '@livedocuments/api-schema';
+import { CHANGESET_RETENTION_MS } from '@livedocuments/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
 import { deleteOldVersions } from '../db/versions';
+import { settleVersionRetention, versionMaxAgeMs } from '../versions/version-retention';
 import { documentShares } from './tab-shares';
 import { documentRoom } from '../document-client';
 import { hasDocumentSchema, migrateDocumentSchema } from './document-schema';
@@ -151,7 +153,10 @@ export async function maintain(room: DocumentRoom, now: number): Promise<void> {
     const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
     if (gone > 0) console.info('[changeset] retention', { documentId, deleted: gone });
     // Automatic versions past their age on tabs nobody has edited since (docs/specs/006-document/version-history.md).
-    const pruned = await deleteOldVersions(env, now - VERSION_AUTO_MAX_AGE_MS);
+    // By the document's retention row (VH25): the bounds it always had, or its owner's tier's with Pro on.
+    await settleVersionRetention(env);
+    const maxAgeMs = await versionMaxAgeMs(env);
+    const pruned = maxAgeMs === null ? 0 : await deleteOldVersions(env, now - maxAgeMs);
     if (pruned > 0) console.info('[versions] pruned', { documentId, deleted: pruned });
   } catch (error) {
     console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
@@ -228,6 +233,9 @@ export async function purge(room: DocumentRoom, documentId?: string): Promise<vo
   // A document going for good takes its Community post with it: the service hears it is gone.
   if (room.documentId !== null && room.storedSchema())
     await leaveCommunity(room.requireEnv(), room.documentId);
+  // Its rules leave its owner's total (019 "Meters": item counts). Nothing with Pro off.
+  if (room.documentId !== null && room.storedSchema())
+    await leaveRuleCount(room.tier, room.documentId);
   await room.ledger.settled();
   await disarmRoomAlarm(room.state.storage);
   await room.state.storage.deleteAll();

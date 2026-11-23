@@ -15,6 +15,7 @@ import {
   type ItemMoveOf,
   type ItemRejection,
   type RankedItem,
+  type ItemWriteBounds,
 } from '@liveplanner/items';
 import { listItemPlaces } from '../db';
 import { badRequest, forbidden, json } from '../responses';
@@ -42,7 +43,7 @@ function rejectedFor(id: string, error: ItemRejection, field?: string): Response
   return json({ error, id, ...(field ? { field } : {}) }, { status: 400 });
 }
 
-function readMoves(raw: unknown): ItemMoveOf[] | Response {
+function readMoves(raw: unknown, bounds?: ItemWriteBounds): ItemMoveOf[] | Response {
   if (!Array.isArray(raw) || raw.length === 0 || raw.length > ITEM_BULK_MAX)
     return badRequest(`items must be 1 to ${ITEM_BULK_MAX} items`);
   const out: ItemMoveOf[] = [];
@@ -50,8 +51,8 @@ function readMoves(raw: unknown): ItemMoveOf[] | Response {
     if (!entry || typeof entry !== 'object' || typeof (entry as { id?: unknown }).id !== 'string')
       return badRequest('each item needs its id');
     const { id, ...body } = entry as Record<string, unknown> & { id: string };
-    const move = readItemMove(body);
-    if (typeof move === 'string') return rejectedRead(move, body.set, 'patch', id);
+    const move = readItemMove(body, bounds);
+    if (typeof move === 'string') return rejectedRead(move, body.set, 'patch', id, bounds);
     out.push({ id, move });
   }
   return out;
@@ -62,7 +63,7 @@ export async function moves(ctx: PlanRouteContext, projectId: string): Promise<R
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const wanted = readMoves(body.items);
+  const wanted = readMoves(body.items, caller.bounds);
   if (wanted instanceof Response) return wanted;
   if (caller.scope && wanted.some((w) => !caller.scope!.has(w.id))) return itemNotFound();
   const undo = body.undo === true;

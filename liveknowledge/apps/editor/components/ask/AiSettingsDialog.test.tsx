@@ -27,6 +27,7 @@ import { track } from '@/lib/telemetry';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import { closeAiSettings, openAiSettings } from '@/lib/knowledge-ask/ai-settings-open';
 import { AiSettingsHost } from './AiSettingsDialog';
+import { forgetKnowledgeTiersForTests, setKnowledgeTier } from '@/lib/knowledge-tier';
 import { ROLES, chromeValue, renderInEditor, type Role } from './test-chrome';
 
 const SECRET = 'sk-ant-api03-THIS-IS-THE-SECRET-4f2a';
@@ -124,6 +125,18 @@ describe('which AI', () => {
     expect(screen.getByRole('radiogroup', { name: 'Provider' })).toBeTruthy();
     fireEvent.click(within(group).getByRole('radio', { name: /^Built-In AI/ }));
     expect(keyField()).toBeNull();
+  });
+
+  it('says built-in AI spends AI credits with Pro on, and a key never does', async () => {
+    setKnowledgeTier('d1', { pagesMax: 500, pagesLimit: 500, historyDays: 30 });
+    api.apiKnowledgeAi.mockResolvedValue(settings({ builtIn: true }));
+    await open();
+    const group = screen.getByRole('radiogroup', { name: 'Which AI' });
+    expect(group.textContent).toContain('No key to add. Uses AI credits.');
+    expect(document.querySelector('[data-ai-built-in-note]')?.textContent).toBe(
+      "Questions, conflict checks, drafted pages and Describe to Set Up run on built-in AI, each spending AI credits from the owner's month (a question 1, Describe to Set Up 2), within daily limits. Your own key never spends a credit.",
+    );
+    forgetKnowledgeTiersForTests();
   });
 
   it('asks before going back to built-in AI with a key saved, and removes the key', async () => {

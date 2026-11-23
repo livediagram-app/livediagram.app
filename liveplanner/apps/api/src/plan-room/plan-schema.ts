@@ -42,8 +42,9 @@ import {
 } from '@liveworkspace/automations/room';
 import { GITHUB_PULLS_SCHEMA, GITHUB_SCHEMA } from './github/github-schema';
 import { addCalendarFeedTypes, CALENDAR_FEEDS_SCHEMA } from '../calendar/feed-store';
-import { ROADMAPS_SCHEMA } from '../roadmap/roadmap-store';
+import { ROADMAPS_COUNTED_COLUMN, ROADMAPS_SCHEMA } from '../roadmap/roadmap-store';
 import { addIntakeTarget, EMAIL_INTAKES_SCHEMA } from '../email-intake/intake-store';
+import { PLAN_METERS_SCHEMA } from './tier/plan-meters';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -608,6 +609,32 @@ const V42 = AUTOMATION_COUNTS_SCHEMA;
 // next may try, so a wake that keeps failing backs off and gives up, over a restart too.
 const V43 = AUTOMATION_WAKE_SCHEMA;
 
+// Steps 44 and 45, appended after the Automations steps, which shipped first. Tier limits counted in the plan (tier/plan-meters.ts; docs/specs/026-plan/email-to-board.md "Tiers", docs/specs/
+// 030-forms/forms.md "Abuse and limits"): the plan's meters, and each form link's month and its count. Asks before
+// each ALTER, so it is safe however far a room got.
+const V44 = (exec: Exec) => {
+  exec(PLAN_METERS_SCHEMA);
+  const have = new Set(
+    exec('PRAGMA table_info(form_links)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('month')) exec("ALTER TABLE form_links ADD COLUMN month TEXT NOT NULL DEFAULT ''");
+  if (!have.has('month_count'))
+    exec('ALTER TABLE form_links ADD COLUMN month_count INTEGER NOT NULL DEFAULT 0');
+};
+
+// A roadmap's counted mark (roadmap/roadmap-store.ts ROADMAPS_COUNTED_COLUMN; docs/specs/026-plan/public-roadmap.md
+// "Tiers"). Asks before the ALTER, so it is safe however far a room got.
+const V45 = (exec: Exec) => {
+  const have = new Set(
+    exec('PRAGMA table_info(roadmaps)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('counted')) exec(ROADMAPS_COUNTED_COLUMN);
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -652,6 +679,8 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V41,
   V42,
   V43,
+  V44,
+  V45,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

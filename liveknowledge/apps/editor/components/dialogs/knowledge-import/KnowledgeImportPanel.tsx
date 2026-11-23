@@ -1,4 +1,5 @@
 import type { ImportSource } from '@liveknowledge/knowledge-import';
+import { ImportTrimmedNote } from './ImportTrimOffer';
 import type { KnowledgeImportHost, RunImportResult } from '@/lib/knowledge-import/run-import';
 import { ArchivePickStep } from './ArchivePickStep';
 import type { DestinationPage } from './DestinationPicker';
@@ -38,7 +39,7 @@ export function KnowledgeImportPanel({
   onClose: () => void;
 }) {
   const source = knowledgeSourceOf(sourceKey);
-  const { state, pick, setDestination, start, cancel, reset } = useKnowledgeImport(
+  const { state, pick, setDestination, trim, start, cancel, reset } = useKnowledgeImport(
     sourceKey,
     host,
     loadRunner,
@@ -63,10 +64,12 @@ export function KnowledgeImportPanel({
         plan={state.plan}
         destination={state.destination}
         replanning={state.replanning}
+        bound={state.bound ?? null}
         pages={pages}
         activePageId={activePageId}
         onDestination={setDestination}
         onImport={() => void start()}
+        onTrim={trim}
         onBack={reset}
       />
     );
@@ -78,13 +81,22 @@ export function KnowledgeImportPanel({
   }
   const result: RunImportResult = state.result;
   return (
-    <ImportDoneStep
-      result={result}
-      onOpen={(first) => {
-        onOpenPage(result.documentId, first.id);
-        onClose();
-      }}
-      onDone={onClose}
-    />
+    <>
+      {state.leftOut ? (
+        <ImportTrimmedNote
+          imported={result.imported}
+          leftOut={state.leftOut}
+          bound={state.bound ?? null}
+        />
+      ) : null}
+      <ImportDoneStep
+        result={result}
+        onOpen={(first) => {
+          onOpenPage(result.documentId, first.id);
+          onClose();
+        }}
+        onDone={onClose}
+      />
+    </>
   );
 }

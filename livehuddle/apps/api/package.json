@@ -36,6 +36,7 @@
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/snapshots": "workspace:*",
+    "@liveworkspace/subscription": "workspace:^",
     "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.17"
   },

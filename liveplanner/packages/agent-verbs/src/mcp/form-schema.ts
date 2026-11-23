@@ -347,7 +347,7 @@ export const readFormOutput = {
     .string()
     .optional()
     .describe(
-      'Why a published form is closed: switched_off, closes_at (its time passed) or limit (it is full).',
+      'Why a published form is closed: switched_off, closes_at (its time passed), limit (it is full) or monthly_limit (it has taken all the responses it can this month, and opens again by itself).',
     ),
   link: z
     .string()

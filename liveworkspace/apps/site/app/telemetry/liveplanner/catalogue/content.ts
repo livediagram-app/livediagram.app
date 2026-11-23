@@ -1020,13 +1020,14 @@ export const PLAN_AUTOMATION_HOOK_CALLS = chart(
   'Plan',
   'Ran',
   'Incoming Webhook Calls',
-  "Calls to a rule's webhook address: accepted, or refused for a wrong secret, too many a minute, the day's runs spent, or a body that couldn't be read.",
+  "Calls to a rule's webhook address: accepted, or refused for a wrong secret, too many a minute, the day's runs spent, the owner's month of runs used, or a body that couldn't be read.",
   {
     types: [
       'AutomationHookAccepted',
       'AutomationHookUnauthorized',
       'AutomationHookRateLimited',
       'AutomationHookBudget',
+      'AutomationHookMonthUsed',
       'AutomationHookInvalid',
     ],
     rising: 'neutral',

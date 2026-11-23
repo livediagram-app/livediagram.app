@@ -21,7 +21,9 @@ import {
   receiveStopShare,
   receiveCallOp,
   receiveCallsMode,
+  callSelf,
 } from '@/lib/calls/calls-store';
+import { receiveCallMinutes } from '@/lib/calls/call-minutes-store';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 import { remoteSelectionOf } from '@/lib/presence-rows';
 
@@ -231,6 +233,11 @@ export function receiveRoomOp(
     // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md "The room tells its clients").
     // System-only: the store takes it from the room alone, and a running call that may no longer run ends.
     receiveCallsMode(from, op);
+  } else if (op.kind === 'call-minutes') {
+    // The Space's owner's call minutes (docs/specs/012-collaboration/call-minutes.md "The wire"). System-only, as
+    // the kill switch's op is: the store takes it from the room alone, and a running call ends when they are used.
+    const phase = callSelf().phase;
+    receiveCallMinutes(from, op, phase === 'live' || phase === 'joining');
   } else if (op.kind === 'document-trashed') {
     // The document went to the Trash. System-only, like the share ops:
     // the room refuses it from a client socket.

@@ -52,7 +52,15 @@ export function createSettingsPanelHost(app: AppName) {
   // and Download Your Data, each fetched when its category is first shown.
   const ACCOUNT_SETTINGS = {
     security: bearerAccountSecurity(settingsRequest, { settingsParam: ACCOUNT_SETTINGS_PARAM }),
-    ...accountPanels({ request: settingsRequest }),
+    ...accountPanels({
+      request: settingsRequest,
+      // Settings' Subscription (liveworkspace/docs/specs/019-subscription/subscription.md "A person's browser"):
+      // liveworkspace's subscription service, with the person's token. Listed only in a build with Pro on.
+      subscription: {
+        getToken: token,
+        origin: () => workspaceOriginFor(window.location.host),
+      },
+    }),
   };
 
   // Each app's prism in its accent (this app's own, as its Explorer filter shows it), and liveworkspace's for All.

@@ -17,6 +17,7 @@ import {
 } from '@liveworkspace/ui';
 import type { SnapshotsDoor } from './door';
 import { SnapshotGlyph } from './glyphs';
+import { SnapshotRetentionNote } from './retention-note';
 import { SnapshotButton, SnapshotNotices } from './snapshot-parts';
 import { SnapshotRow, type RowConfirm } from './SnapshotRow';
 import { useSnapshots } from './useSnapshots';
@@ -107,6 +108,7 @@ export function SnapshotsDialog({
           </ul>
         )}
       </div>
+      <SnapshotRetentionNote retention={state.retention} />
       {after ? (
         <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">{after}</div>
       ) : null}

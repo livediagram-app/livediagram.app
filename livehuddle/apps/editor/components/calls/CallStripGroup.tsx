@@ -33,6 +33,7 @@ import {
   type CallActions,
   type CallSelf,
 } from '@/lib/calls/calls-store';
+import { useCallMinutes } from '@/lib/calls/call-minutes-store';
 import { localOnly, selfCamera, selfScreen } from '@/lib/calls/local-preview';
 import { Segment } from './CallSegment';
 import {
@@ -41,6 +42,7 @@ import {
   PREVIEW_TEXT,
   PreviewMicSegment,
 } from './MicAndCameraSegments';
+import { CallsPausedSegment } from './minutes/CallsPausedSegment';
 import { DoNotDisturbSegment, HandSegment, StageLine } from './StageSegments';
 
 const MicOffIcon = lucideGlyph(lucideMicOff, 16);
@@ -90,6 +92,9 @@ export function CallStripGroup({
 } = {}) {
   const self = useCallSelf();
   const actions = useCallActions();
+  // The Space's owner's call minutes are used (docs/specs/012-collaboration/call-minutes.md "Used"): Calls Paused,
+  // as under the kill switch, with its own hover card and a press that says why. Never with Pro off.
+  const minutesUsed = useCallMinutes().used !== null;
   if (!actions || !callGroupShows(self, actions)) return null;
   if (!self.available) {
     // No call here (no room, calls off): the microphone, the camera and the screen as a local preview only you see
@@ -104,7 +109,8 @@ export function CallStripGroup({
       </>
     );
   }
-  const paused = self.mode === 'off' && self.phase !== 'live';
+  const minutesPaused = minutesUsed && self.phase !== 'live';
+  const paused = (self.mode === 'off' && self.phase !== 'live') || minutesPaused;
   return (
     <>
       <CallGroup>
@@ -112,6 +118,7 @@ export function CallStripGroup({
           self={self}
           actions={actions}
           paused={paused}
+          minutesPaused={minutesPaused}
           doNotDisturb={doNotDisturb}
           onClearDoNotDisturb={onClearDoNotDisturb}
         />
@@ -129,15 +136,27 @@ function CallControl({
   self,
   actions,
   paused,
+  minutesPaused,
   doNotDisturb,
   onClearDoNotDisturb,
 }: {
   self: CallSelf;
   actions: CallActions;
   paused: boolean;
+  // Paused because the owner's call minutes are used, not by the kill switch.
+  minutesPaused: boolean;
   doNotDisturb: boolean;
   onClearDoNotDisturb?: () => void;
 }) {
+  if (minutesPaused) {
+    return (
+      <>
+        <CallsPausedSegment onRetry={actions.join} />
+        <PreviewMicSegment self={self} actions={actions} />
+        <MediaSegments self={self} actions={actions} />
+      </>
+    );
+  }
   if (paused) {
     const trying = self.phase === 'joining';
     return (

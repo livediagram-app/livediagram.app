@@ -24,7 +24,9 @@ import {
   type Item,
   type ItemPerson,
   type ItemRejection,
+  type ItemWriteBounds,
 } from '@liveplanner/items';
+import { itemWriteBounds } from './item-bounds';
 import { getProject, getTab, listItems } from '../db';
 import { getParticipant } from '../person/profiles';
 import { redactItemsForCommunity } from '../community-redact';
@@ -48,6 +50,8 @@ type Level = 'read' | 'participate' | 'edit';
 export type ItemCaller = {
   projectId: string;
   owner: string;
+  // The bounds this deployment holds a write to beyond the store's own (item-bounds.ts).
+  bounds?: ItemWriteBounds;
   // The project, for the gates a comment delete checks (item-comment-routes.ts); absent on a new project's
   // seed, which writes no comments.
   doc?: NonNullable<Awaited<ReturnType<typeof getProject>>>;
@@ -83,8 +87,9 @@ export function rejectedRead(
   fields: unknown,
   mode: 'create' | 'patch',
   id?: string,
+  bounds?: ItemWriteBounds,
 ): Response {
-  const { field, limit } = fieldRefusalOf(error, fields, mode);
+  const { field, limit } = fieldRefusalOf(error, fields, mode, bounds);
   console.info('[items] items.rejected', { error, field, ...(id ? { id } : {}) });
   return json(
     { error, ...(id ? { id } : {}), ...(field ? { field } : {}), ...(limit ? { limit } : {}) },
@@ -233,12 +238,25 @@ export const itemBusy = () => {
   );
 };
 
-// The caller and their reach: the whole project, or (a tab-scoped grant) the items one tab shows.
+// The caller and their reach: the whole project, or (a tab-scoped grant) the items one tab shows; with the bounds
+// this deployment holds their writes to.
 export async function itemCaller(
   ctx: PlanRouteContext,
   projectId: string,
   level: Level,
   opts: ItemCallerOptions = {},
+): Promise<ItemCaller | Response> {
+  const caller = await reachOf(ctx, projectId, level, opts);
+  if (caller instanceof Response) return caller;
+  const bounds = itemWriteBounds(ctx.env);
+  return bounds ? { ...caller, bounds } : caller;
+}
+
+async function reachOf(
+  ctx: PlanRouteContext,
+  projectId: string,
+  level: Level,
+  opts: ItemCallerOptions,
 ): Promise<ItemCaller | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;

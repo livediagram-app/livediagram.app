@@ -73,6 +73,9 @@ connection; the address, secret, retries, pausing and Recent Deliveries are the 
 - **`card`, for one release.** Before subjects only liveplanner sent, naming a card as
   `card: {key, ref?, title, url}`. A send with no `subject` field is read from `card` (its reference the card's
   `ref`, else `#<key>`); `subject` wins when both are sent; neither is no subject.
+- **Asked first, with Pro on.** The same request with `check: true` only answers: what each send would get now,
+  with nothing queued. The item's room asks it before it spends the owner's Automation Runs, so none is spent on
+  a send the index would refuse.
 - **Never twice.** Each send carries a key made from the run and the step; the same key again (a retried run) queues
   nothing new and answers **queued**.
 - **What it says.** A Slack or Teams post is the message as the rule wrote it, then the subject
@@ -86,6 +89,23 @@ connection; the address, secret, retries, pausing and Recent Deliveries are the 
   reads it as plain text, never Markdown, so a title can't make a link.
 - The connection's 500-pending cap holds: past it a send is refused ("Too many messages waiting for this
   connection").
+
+### Messages count as Automation Runs (Pro)
+
+A connection sends only what a rule tells it to: nothing in an item sends through one by itself. With Pro on
+([subscription.md](../019-subscription/subscription.md) "Tiers and limits"), every message a rule sends through a
+connection costs one of the **Automation Runs** of the item's owner (the person, or the team for a team's item), in
+every app, beside the run's own (owner, 2026-11-22). There is no Webhook Deliveries limit: Free's 500 runs a month
+cover the messages too. A guest's item counts nothing (its per-item bounds hold). With Pro off nothing is counted,
+asked or shown.
+
+- **Spent by the item's room**, before the push and after `check: true` says the index would take it
+  (@liveworkspace/automations/room `sendMessages`). The index spends nothing: a send reaches it already paid for.
+- **The month used:** the message is not sent and its step's line says why ("This month's automation runs are
+  used"). The run is Skipped, never Failed: it adds nothing to the failures that pause a rule.
+- **Send Test** is not counted: it is a person checking an address, bounded by the route's own rate, and the index
+  holds no subscription client to spend with.
+- **Adding is never refused.** A connection can be added, tested, paused and deleted on any tier.
 
 ## Destinations
 

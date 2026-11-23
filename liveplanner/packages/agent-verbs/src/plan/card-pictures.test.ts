@@ -265,7 +265,8 @@ describe('pictureValue', () => {
   });
 
   it('refuses an upload an attachment cannot hold, and Attachments past 20', () => {
-    const odd = granted(image('svg', { type: 'image/svg+xml' }), image('big', { size: 11e6 }));
+    // Past the most any tier uploads (25 MB, ITEM_ATTACHMENT_BYTES_MAX): no upload is that large.
+    const odd = granted(image('svg', { type: 'image/svg+xml' }), image('big', { size: 26e6 }));
     for (const id of ['svg', 'big'])
       expect(pictureValue('attachments', WORK, { add: [id], remove: [] }, {}, odd)).toMatchObject({
         ok: false,
