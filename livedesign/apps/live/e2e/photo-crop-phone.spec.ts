@@ -1,3 +1,4 @@
+import { settled } from '@liveworkspace/e2e-kit/settled';
 import { test, expect, expectNoPageErrors } from './fixtures';
 
 // docs/specs/031-photo/photo-pages.md (a phone's tools row and options sheet) and photo-tools.md "Crop": on a phone,
@@ -22,8 +23,12 @@ test.describe('cropping a photo on a phone', () => {
     await bar.getByRole('button', { name: 'Options' }).tap();
     const sheet = page.locator('[data-bottom-sheet]');
     await expect(sheet).toBeVisible();
-    await sheet.getByText('1:1', { exact: true }).tap();
-    await sheet.getByRole('button', { name: 'Crop', exact: true }).tap();
+    const ratio = sheet.getByText('1:1', { exact: true });
+    await settled(ratio);
+    await ratio.tap();
+    const crop = sheet.getByRole('button', { name: 'Crop', exact: true });
+    await settled(crop);
+    await crop.tap();
     await expect(sheet).toHaveCount(0);
     await expect(bar).toHaveCount(0);
     // The tool is still in hand: a tap on it opens the sheet again, offering Show Crop Box.
