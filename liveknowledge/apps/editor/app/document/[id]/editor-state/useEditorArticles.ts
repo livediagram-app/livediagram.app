@@ -56,7 +56,7 @@ export function useEditorArticles({
     on: true,
     pages: pagesMode.pages,
     localEditSeq: localEditSeqRef,
-    placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
+    placeAt: (intent, x, y, size) => placeIntentAtRef.current?.(intent, x, y, size),
     canEdit: !isReadOnly,
     // A Participant writes in an article too (docs/specs/013-workspace/share-roles.md), each commit through its guard.
     canWrite: participant.participating && participant.can.writeArticle,
