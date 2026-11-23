@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_KNOWLEDGEBASE_PAGES, MAX_PAGE_DEPTH } from '@liveknowledge/document';
+import {
+  COVER_GRADIENT_IDS,
+  MAX_KNOWLEDGEBASE_PAGES,
+  MAX_PAGE_DEPTH,
+  isPageIconId,
+} from '@liveknowledge/document';
 import {
   SETUP_MAX_DEPTH,
   SETUP_MAX_HEADINGS,
@@ -8,6 +13,8 @@ import {
   SETUP_MAX_SUMMARY_CHARS,
   SETUP_MAX_TITLE_CHARS,
 } from './setup-limits';
+import { GROUP_COVERS, SECTION_ICON, iconForTitle, styleStructure } from './structures/looks';
+import { p } from './structures/shape';
 import {
   SETUP_STRUCTURES,
   STRUCTURE_GROUPS,
@@ -133,5 +140,65 @@ describe('a structure outline', () => {
     const { lines, more } = structureOutline(handbook, 3);
     expect(lines.map((l) => l.title)).toEqual(['Overview', 'Architecture']);
     expect(more).toBe(2);
+  });
+});
+
+// describe-to-set-up.md "Icons and covers": a structure's pages are not bare in the tree. The ids are held to the
+// picker's own sets in the editor (apps/editor/lib/knowledge-setup/structure-looks.test.ts).
+describe('the structures’ looks', () => {
+  const walk = (
+    pages: readonly StructurePage[],
+    top: boolean,
+  ): { page: StructurePage; top: boolean }[] =>
+    pages.flatMap((page) => [{ page, top }, ...walk(page.pages, false)]);
+
+  it('give every section an icon, and every top section and the first page a cover', () => {
+    for (const s of SETUP_STRUCTURES)
+      for (const { page, top } of walk(s.pages, true)) {
+        const where = `${s.id}: ${page.title}`;
+        if (page.pages.length > 0) expect(page.icon, where).toBeTruthy();
+        const covered = top && (page.pages.length > 0 || page === s.pages[0]);
+        expect(page.cover !== undefined, where).toBe(covered);
+      }
+  });
+
+  it('keep each structure calm: one gradient to a structure, only built-in ones, and leaves mostly bare', () => {
+    for (const s of SETUP_STRUCTURES) {
+      const all = walk(s.pages, true).map((w) => w.page);
+      expect(new Set(all.flatMap((p) => (p.cover ? [p.cover] : []))), s.id).toEqual(
+        new Set([GROUP_COVERS[s.group]]),
+      );
+      expect(COVER_GRADIENT_IDS as readonly string[]).toContain(GROUP_COVERS[s.group]);
+      for (const p of all) if (p.icon) expect(isPageIconId(p.icon), p.icon).toBe(true);
+    }
+    const leaves = SETUP_STRUCTURES.flatMap((s) => walk(s.pages, true)).filter(
+      (w) => w.page.pages.length === 0,
+    );
+    const dressed = leaves.filter((w) => w.page.icon).length / leaves.length;
+    // A leaf takes an icon only when its title names a thing, so the tree reads calm, not dressed.
+    expect(dressed).toBeLessThan(0.7);
+    expect(dressed).toBeGreaterThan(0.3);
+  });
+
+  it('carry through the suggestion, page for page', () => {
+    for (const s of SETUP_STRUCTURES) {
+      const flat = walk(s.pages, true).map((w) => w.page);
+      const made = structureSuggestion(s).pages;
+      expect(made.map((p) => p.icon)).toEqual(flat.map((p) => p.icon));
+      expect(made.map((p) => p.cover)).toEqual(flat.map((p) => p.cover));
+    }
+  });
+
+  it('name an icon by its title where a rule does, and a bare section takes the folder', () => {
+    expect(iconForTitle('Glossary')).toBe('book');
+    expect(iconForTitle('Pay and Benefits')).toBe('dollar-sign');
+    expect(iconForTitle('Weekly Updates')).toBeUndefined();
+    expect(SECTION_ICON).toBe('folder');
+    const bare = { ...SETUP_STRUCTURES[0]!, pages: [p('Zzz', 'x', [], [p('Yyy', 'x')])] };
+    expect(styleStructure(bare).pages[0]).toMatchObject({
+      icon: 'folder',
+      cover: GROUP_COVERS.team,
+    });
+    expect(styleStructure(bare).pages[0]!.pages[0]).not.toHaveProperty('icon');
   });
 });

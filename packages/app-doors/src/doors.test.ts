@@ -265,3 +265,55 @@ describe('sheet sources', () => {
     ).rejects.toMatchObject({ status: 0 });
   });
 });
+
+describe('live data', () => {
+  const LISTING = {
+    boards: [{ id: 't1', name: 'Roadmap', tabId: 't1' }],
+    metrics: [{ id: 'count', label: 'Cards' }],
+    filters: { priorities: [], labels: [], people: [], types: [] },
+  };
+  const READ = {
+    sourceName: 'Roadmap',
+    tabId: 't1',
+    label: 'Cards per column',
+    table: { categories: ['To Do'], series: [{ name: 'Cards', values: [2] }] },
+  };
+
+  it("lists a plan's data and reads, sending a watcher only when there is one", async () => {
+    const { doors, calls } = doorsAnswering((_url, init) => ({
+      status: 200,
+      body: JSON.stringify(init?.method === 'POST' ? READ : LISTING),
+    }));
+    expect(await doors.listPlanData('liveplanner', 'P1')).toEqual(LISTING);
+    const ask = { kind: 'board', boardId: 't1', by: 'column' } as const;
+    expect(await doors.readPlanData('liveplanner', 'P1', { ...ask, watcher: 'D1' })).toEqual(READ);
+    await doors.readPlanData('liveplanner', 'P1', {
+      kind: 'metric',
+      metric: 'count',
+      watcher: null,
+    });
+    expect(calls[0]!.url).toBe('https://liveplanner.test/api/internal/items/P1/plan-data');
+    expect(authOf(calls[1]!.init)).toBe('Bearer liveplanner-key');
+    expect(JSON.parse(calls[1]!.init?.body as string)).toEqual({ ...ask, watcher: 'D1' });
+    expect(JSON.parse(calls[2]!.init?.body as string)).toEqual({ kind: 'metric', metric: 'count' });
+  });
+
+  it('throws a refusal or a malformed answer', async () => {
+    const ask = { kind: 'metric', metric: 'count' } as const;
+    await expect(
+      doorsAnswering({ status: 404, body: '{}' }).doors.listPlanData('liveplanner', 'P'),
+    ).rejects.toMatchObject({ status: 404 });
+    await expect(
+      doorsAnswering({ status: 200, body: '{}' }).doors.listPlanData('liveplanner', 'P'),
+    ).rejects.toMatchObject({ status: 200 });
+    await expect(
+      doorsAnswering({ status: 200, body: 'not json' }).doors.listPlanData('liveplanner', 'P'),
+    ).rejects.toMatchObject({ status: 200 });
+    await expect(
+      doorsAnswering({ status: 400, body: '{}' }).doors.readPlanData('liveplanner', 'P', ask),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      doorsAnswering({ status: 200, body: 'nope' }).doors.readPlanData('liveplanner', 'P', ask),
+    ).rejects.toMatchObject({ status: 200 });
+  });
+});

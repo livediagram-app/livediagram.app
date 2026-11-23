@@ -99,6 +99,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   rating: '#f59e0b',
   'pie-chart': '#ec4899',
   'bar-and-line-charts': '#6366f1',
+  'live-data': '#10b981',
   legend: '#a855f7',
   'timeline-rail': '#14b8a6',
   // Palette → Tools elements

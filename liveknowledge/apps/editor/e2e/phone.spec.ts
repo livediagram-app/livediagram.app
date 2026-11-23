@@ -34,6 +34,24 @@ async function longPress(page: Page, target: Locator): Promise<void> {
   await cdp.detach();
 }
 
+// A control that has stopped moving: in view, and the same box on two frames running (a sheet slides in, and a tap on
+// a row mid-slide lands on whatever is under the finger by then).
+async function settled(target: Locator): Promise<void> {
+  await expect(target).toBeInViewport({ ratio: 1 });
+  await expect
+    .poll(async () =>
+      target.evaluate(
+        (el) =>
+          new Promise<boolean>((done) => {
+            const box = () => JSON.stringify(el.getBoundingClientRect());
+            const before = box();
+            requestAnimationFrame(() => requestAnimationFrame(() => done(box() === before)));
+          }),
+      ),
+    )
+    .toBe(true);
+}
+
 // The phone's keyboard put away (its Done key): the writing lets go of the caret, as it does on a phone.
 const putKeyboardAway = (page: Page) =>
   page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
@@ -78,7 +96,9 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({
   await expect(rows).toHaveCount(2);
   // Rows are finger sized.
   expect((await rows.first().boundingBox())!.height).toBeGreaterThanOrEqual(44);
-  await sheet.getByRole('treeitem', { name: 'Handbook', exact: true }).tap();
+  const handbook = sheet.getByRole('treeitem', { name: 'Handbook', exact: true });
+  await settled(handbook);
+  await handbook.tap();
   await expect(titleOf(page)).toHaveText('Handbook');
   await expect(sheet).toBeHidden();
 

@@ -144,8 +144,7 @@ describe('the parking schema step (V7)', () => {
     expect(() => outboxDueAt(nodeSql(raw))).toThrow();
     migrateDocumentSchema(exec);
     expect(outboxDueAt(nodeSql(raw))).toBeNull();
-    // V44 (published pictures) sits at 43 until #2145's V43 lands ahead of it.
-    expect(DOCUMENT_SCHEMA_VERSION).toBe(43);
+    expect(DOCUMENT_SCHEMA_VERSION).toBe(44);
     // The Community triggers key the summary by delete-then-insert now.
     const triggers = raw
       .prepare(

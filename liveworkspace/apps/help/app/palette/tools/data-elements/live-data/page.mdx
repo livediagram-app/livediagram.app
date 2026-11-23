@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Live Data From a Plan',
+  description:
+    'Keep a chart or table in step with a liveplanner plan: a Sheet range, board cards counted by column, label, assignee or priority, or a Dashboard metric.',
+  path: '/help/palette/tools/data-elements/live-data/',
+});
+
+<ArticleLayout
+  path="palette/tools/data-elements/live-data"
+  title="Live Data From a Plan"
+  description="Charts and tables that take their numbers from a liveplanner plan and update when the plan changes."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Data and Chart Elements', slug: 'data-elements' }}
+  subArticles={getSubArticles('data-elements').filter((a) => a.slug !== 'live-data')}
+>
+
+A chart or a table in your <Noun /> can take its numbers from one of your [liveplanner](https://www.liveplanner.app) plans and keep in step with it, so a report, a slide or a status board never goes stale. Move a card on the plan's board and the chart that counts its columns changes wherever the <Noun /> is open. It stays an ordinary element, drawn in your theme and styled as usual: only its numbers come from the plan.
+
+## What a chart or table can show
+
+- **Sheet Range**: a range of one of the plan's Sheets, typed as in a spreadsheet (such as `B2:E9`). The first row names each series and the first column labels each slice, bar, point or row.
+- **Board Counts**: the cards on one of the plan's boards, counted by **Column**, **Label**, **Assignee** or **Priority**. Narrow them with **Only Cards With** a priority, a label, an assignee or a card type, such as the high priority bugs per column. Cards in the Trash are never counted.
+- **Dashboard Metric**: one of the numbers the plan's Dashboards work out, such as **Completion**, **Workload** or **Top Voted**.
+
+## Link a chart or table
+
+<Step n={1}>
+  Right-click the chart (**Tools**, then **Data**) or the table (**Data**) and choose **From a
+  Plan…**.
+</Step>
+<Step n={2}>
+  Pick one of your plans (search them with **Search your plans**), then the **Source**: a Sheet
+  Range, Board Counts or a Dashboard Metric, and what it reads.
+</Step>
+<Step n={3}>
+  Check the **Preview**. When the source has more than one series, press a series to choose which
+  feed the chart and in what order; a pie, column or bar chart draws one series, so pressing another
+  draws it instead.
+</Step>
+<Step n={4}>Press **Link**. The element takes the plan's numbers in one undoable step.</Step>
+
+A linked table fills its cells from the plan, with a header row, and is read only while it is linked, since the next update would write over a typed cell. A chart keeps its chart type, palette, legend and animation for you to set.
+
+## Staying in step
+
+- **Live, not polled.** While the <Noun /> is open, the plan tells it when a Sheet or a card changes, and the element reads again within a couple of seconds. Each source is read once however many elements show it.
+- **Where it comes from.** While a linked element is hovered or selected, a line under it says "Live from Launch Plan · updated 2 min ago", and a small dot at its corner is green while the numbers are live.
+- **Open Plan** in its **Data** section opens the plan in liveplanner, for anyone. **Update** reads it again now, **Change…** picks another source and **Unlink** keeps the last numbers and turns it back into an element you edit by hand.
+
+## Freeze
+
+**Freeze** keeps the numbers as they are now and stops reading the plan, for a report that should show the figures as of a day. The line says "From Launch Plan · frozen 12 Nov". **Unfreeze** reads the plan again and follows it from then on.
+
+## Who sees what
+
+- The numbers are saved in the <Noun />, so everyone who can open it sees them. Someone who can open the plan sees its numbers as they are now; someone who can't sees the numbers last saved, and the line says "saved" rather than "updated".
+- Linking needs read access to the plan, with your own account: a share link or a public link to the plan is not enough.
+- Only Editors can link, update, freeze, change or unlink. Participants and Viewers see the element, its line and Open Plan.
+- Exports, Offline copies and Community copies draw the saved numbers and carry no link, so they never name a plan their reader may not open.
+
+<Tip>
+  A plan's board renamed or a column added shows the next time the <Noun /> opens, or when you press
+  **Update**.
+</Tip>
+
+</ArticleLayout>

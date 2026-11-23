@@ -18,7 +18,6 @@ import {
   lucidePencil,
   lucidePlus,
   lucideShapes,
-  lucideSparkles,
   lucideTextCursorInput,
   lucideUndo2,
 } from '@liveworkspace/icons/lucide';
@@ -35,6 +34,7 @@ import {
   type ActivityLine,
 } from './activity-words';
 import { aiRunWords } from './activity-ai-words';
+import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
 import { activityTimeline, type TimelineEntry, type TimelineRun } from './activity-timeline';
 import { AutomationAuthorName } from '@/components/automations/AutomationAuthor';
 import { TimelineDisc, TimelineTime, ValueArrow, ValueChip, railClass } from './timeline-parts';
@@ -44,7 +44,6 @@ export const ACTIVITY_ENTRIES_SHOWN = 20;
 // An entry's change lines drawn before its own Show N More Changes.
 export const ACTIVITY_LINES_SHOWN = 3;
 
-const AiIcon = lucideGlyph(lucideSparkles, 10);
 const HistoryIcon = lucideGlyph(lucideHistory, 18);
 
 const GLYPHS: Record<ActivityGlyph, (p: { 'aria-hidden'?: boolean }) => ReactNode> = {
@@ -170,16 +169,8 @@ function ActivityRun({
               {run.github ? 'GitHub' : run.mine ? 'You' : run.by.name}
             </span>
           )}
-          {aiWords ? (
-            <span
-              data-activity-ai=""
-              role="img"
-              aria-label={aiWords}
-              className="inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
-            >
-              <AiIcon aria-hidden />
-            </span>
-          ) : null}
+          {/* The sparkle every app draws beside an agent's writer (liveknowledge's Created and Version History too). */}
+          {aiWords ? <AiWriterMark words={aiWords} data-activity-ai="" /> : null}
           <span className="flex-1" />
           {single ? <TimelineTime at={newest} now={now} clock={clock} /> : null}
         </div>

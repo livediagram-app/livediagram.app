@@ -15,6 +15,7 @@
 // the byte-size caps at the API layer (a structurally valid tab can still be
 // too big).
 
+import { isChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import type { Element, ShapeKind, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
@@ -248,6 +249,9 @@ function tableIssue(el: Record<string, unknown>): ElementValidationIssue | null 
   const hc = el.highlightColumn;
   if (hc !== undefined && !(Number.isInteger(hc) && (hc as number) >= 0 && (hc as number) < cols))
     return issue('highlightColumn', 'a column index of the table');
+  // Live data from a plan (liveworkspace/docs/specs/004-index/live-data.md "Tables").
+  if (el.chartSheetSource !== undefined && !isChartSheetSource(el.chartSheetSource))
+    return issue('chartSheetSource', 'a plan link');
   return null;
 }
 

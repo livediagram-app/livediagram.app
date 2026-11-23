@@ -268,6 +268,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone changed a selected element's border pattern: solid, dashed, or dotted.",
   'Element|Changed|ChartAnim':
     'Someone gave a selected chart a looping reveal animation, changed its speed, or turned it off.',
+  'Element|Changed|ChartSheetLink': "Someone linked a chart to a range of a plan's Sheet.",
+  'Element|Changed|ChartBoardLink': "Someone linked a chart to the counts of a plan's board.",
+  'Element|Changed|ChartMetricLink': "Someone linked a chart to one of a plan's Dashboard metrics.",
+  'Element|Changed|TableLiveLink': 'Someone filled a table with live data from a plan.',
+  'Element|Changed|ChartSheetUnlink':
+    'Someone unlinked a chart or table from its plan, keeping its numbers.',
+  'Element|Changed|LiveDataFreeze':
+    'Someone froze a linked chart or table, keeping its numbers as they are.',
+  'Element|Changed|LiveDataUnfreeze':
+    'Someone unfroze a linked chart or table, so it follows its plan again.',
   'Element|Changed|ChartData': "Someone edited a chart element's underlying data.",
   'Element|Changed|ChartLegend':
     "Someone turned a chart's legend on or off, or moved it to a different side.",

@@ -27,7 +27,11 @@ import {
   itemAutomationSchemaSteps,
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
-import { VERSION_SAVE_STEP, VERSION_SCHEMA } from '../versions/version-schema';
+import {
+  VERSION_SAVE_STEP,
+  VERSION_SCHEMA,
+  versionAgentSchemaStep,
+} from '../versions/version-schema';
 import { knowledgeSchemaStep, knowledgeShapeStep } from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
@@ -462,9 +466,14 @@ const V41 = pageWatchSchemaStep;
 // docs/specs/030-knowledgebase/required-reading.md). Additive, IF NOT EXISTS.
 const V42 = requiredReadingSchemaStep;
 
+// Step 43: the agent an agent's version was kept for, beside its person (versions/version-schema.ts
+// versionAgentSchemaStep; docs/specs/006-document/version-history.md "An agent's mark"). Additive, the table asked
+// first.
+const V43 = versionAgentSchemaStep;
+
 // Step 44: the pictures each published page places, its cover as drawn, and a restyle redrawing the site
-// (publishing/published-schema.ts; docs/specs/030-knowledgebase/publishing.md "Pictures on the public site"). Follows
-// #2145's V43 once it lands, until then at position 43; guarded, so it runs again harmlessly.
+// (publishing/published-schema.ts; docs/specs/030-knowledgebase/publishing.md "Pictures on the public site").
+// Guarded, so it runs again harmlessly.
 const V44 = publishedMediaSchemaStep;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
@@ -502,6 +511,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V40,
   V41,
   V42,
+  V43,
   V44,
 ];
 

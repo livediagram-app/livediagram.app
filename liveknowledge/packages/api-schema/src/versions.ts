@@ -36,7 +36,9 @@ export type VersionSummary = {
   // Named when not null.
   name: string | null;
   // Who it names: the namer, the restorer, the person whose agent wrote, the person who saved. Null for an idle version.
-  author: { name: string; color: string } | null;
+  // `agent`: the agent an agent's write kept it for ("Claude"), `name` then the person it acted for
+  // (docs/specs/006-document/version-history.md "An agent's mark").
+  author: { name: string; color: string; agent?: string } | null;
   // When its content was last written, epoch ms.
   savedAt: number;
   // When it was kept, epoch ms.

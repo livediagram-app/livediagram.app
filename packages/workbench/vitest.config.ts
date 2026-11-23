@@ -8,6 +8,9 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // (docs/specs/007-editor/pages-mode.md "Contents" in each). The editors' door tests drive them with real pages; these
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
+  // The AI sparkle and "Claude for Priya Shah" (liveknowledge's verification.md "Made by a person or an agent",
+  // liveplanner's items.md "History"; Work Tracker 1360).
+  'src/components/ai-writer/**',
   // The chosen rail row's label in a start panel, read at AA on its tint (each product's start spec, "Rail").
   'src/components/start/start-chosen-ink.ts',
   // Organise in Tab Folder, the list and the folder colour (each product's 006 tab-folders.md, Work Tracker 1328).
@@ -27,6 +30,10 @@ const HELD_AT_100 = [
   'src/components/sheet-links/SheetLinkedCharts.tsx',
   'src/components/sheet-links/SheetLinkSection.tsx',
   'src/components/sheet-links/LinkSheetDialog.tsx',
+  // Live data from a plan's boards and metrics, and the series picked (liveworkspace/docs/specs/004-index/live-data.md,
+  // Work Tracker 1368).
+  'src/components/sheet-links/PlanDataFields.tsx',
+  'src/components/sheet-links/SeriesChips.tsx',
   'src/lib/relative-now.ts',
   // Deleting an unused picture (each canvas product's 009-elements images.md).
   'src/lib/unused-image-choice.ts',
