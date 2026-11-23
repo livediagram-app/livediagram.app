@@ -141,7 +141,7 @@ export function McpConsent() {
         <legend className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
           The apps it can use
         </legend>
-        <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-slate-700/70 dark:border-slate-700">
+        <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
           {apps.map((a) => (
             <li key={a.app}>
               <label className="flex min-h-12 cursor-pointer items-center gap-3 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800">
