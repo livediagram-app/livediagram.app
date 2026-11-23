@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { AudioWake, isHeld } from './audio-wake';
 
 // docs/specs/012-collaboration/proximity-audio.md "Someone who arrives later": a call joined before any press, or sound
@@ -133,6 +133,6 @@ describe('AudioWake', () => {
     const ms = cpuMsOf(() => {
       for (let i = 0; i < 10_000; i++) where.window.dispatchEvent(new Event('pointerdown'));
     });
-    expect(ms).toBeLessThan(500);
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
 });

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { afterAll, describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { checkFirstLoad, FIRST_LOAD_BUDGETS, firstLoad, scriptSources } from './budget';
 
 // liveworkspace/docs/specs/010-site/blueprints/site.md "Performance and limits".
@@ -32,7 +32,7 @@ describe('scriptSources', () => {
 
   it('reads a long page in linear time', () => {
     const html = '<script src="/a.js"></script>'.repeat(20_000) + '<script'.repeat(20_000);
-    expect(cpuMsOf(() => scriptSources(html))).toBeLessThan(500);
+    expect(cpuMsOf(() => scriptSources(html))).toBeLessThan(cpuBudgetMs(500));
   });
 });
 

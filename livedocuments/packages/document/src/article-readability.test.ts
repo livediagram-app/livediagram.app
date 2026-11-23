@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuLeastMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   articleReadability,
   fleschReadingEase,
@@ -201,7 +201,9 @@ describe('cost', () => {
       'e.g.'.repeat(12_000),
     ]) {
       let n = 0;
-      const spent = cpuMsOf(() => {
+      // The least of a few runs: one sample also counts a collection or a compile that lands on it, and read 17 to
+      // 27 ms on a loaded machine for a pass that settles under 1 ms.
+      const spent = cpuLeastMsOf(() => {
         n = sentencesOf(worst).length;
       });
       expect(n).toBeGreaterThanOrEqual(0);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { FURNITURE_LIGHT, partShade, rgbaOf, shadeKeys, tone } from './furniture-shading';
 import { ellipse, path, rect } from './furniture-art';
 
@@ -53,6 +53,6 @@ describe('the furniture light', () => {
     const parts = Array.from({ length: 2000 }, (_, i) =>
       rect('panel', i, 0, 1, 1, 0, `#${(i % 16).toString(16).repeat(6)}`),
     );
-    expect(cpuMsOf(() => shadeKeys(parts, '#000000'))).toBeLessThan(20);
+    expect(cpuMsOf(() => shadeKeys(parts, '#000000'))).toBeLessThan(cpuBudgetMs(20));
   });
 });

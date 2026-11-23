@@ -1,5 +1,7 @@
 /** CPU time (user + system, ms) this process spent running `fn`; see cpu-time.js. */
 export declare function cpuMsOf(fn: () => void): number;
+/** The least CPU time (ms) `fn` took over `runs` runs (5): one sample also counts the collector and the compiler; see cpu-time.js. */
+export declare function cpuLeastMsOf(fn: () => void, runs?: number): number;
 /** CPU time (user + system, ms) this process has spent so far: `performance.now()`'s stand-in for a budget; see cpu-time.js. */
 export declare function cpuNowMs(): number;
 /** CPU time (user + system, ms) this process spent while `fn`'s promise settled; see cpu-time.js. */

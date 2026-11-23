@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   pickDockEdge,
   placeTourPopover,
@@ -143,7 +143,7 @@ describe('placeTourPopover on a phone', () => {
       for (let i = 0; i < 100_000; i++)
         placeTourPopover(rect(16, i % 700, 340, 44), { width: 336, height: 360 }, view);
     });
-    expect(spent / 100_000).toBeLessThan(0.05);
+    expect(spent / 100_000).toBeLessThan(cpuBudgetMs(0.05));
   });
 });
 
