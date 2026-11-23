@@ -8,8 +8,9 @@ const EMERALD: Record<string, string> = { '50': '#ecfdf5', '600': '#009966', '70
 describe('the leader tag', () => {
   it('reads at WCAG AA (4.5:1) in light mode at its 10px size', () => {
     const src = readFileSync(new URL('./LeaderTag.tsx', import.meta.url), 'utf8');
-    const ink = / text-emerald-(\d+) /.exec(src)?.[1];
-    const fill = / bg-emerald-(\d+) /.exec(src)?.[1];
+    // A light-mode class: not after a variant (`dark:`), wherever it sits in the Chip's class string.
+    const ink = /(?<![\w:-])text-emerald-(\d+)\b/.exec(src)?.[1];
+    const fill = /(?<![\w:-])bg-emerald-(\d+)\b/.exec(src)?.[1];
     expect(ink && fill && EMERALD[ink] && EMERALD[fill]).toBeTruthy();
     expect(contrastRatio(EMERALD[ink!]!, EMERALD[fill!]!)).toBeGreaterThanOrEqual(4.5);
   });
