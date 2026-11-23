@@ -19,6 +19,7 @@ import { DashboardLinksCard } from './DashboardLinksCard';
 import { DashboardSheetMetric } from './DashboardSheetMetric';
 import { DashboardFormMetric } from './DashboardFormMetric';
 import { DashboardSheetChart } from './DashboardSheetChart';
+import { DashboardEmbedCard } from './DashboardEmbedCard';
 import { SlotName } from './slot-name-context';
 
 // The box's size, kept as it changes (the row resized, the window).
@@ -134,5 +135,7 @@ export function DashboardSlotContent({
       return <DashboardSheetMetric slotId={slotId} content={content} />;
     case 'form-metric':
       return <DashboardFormMetric slotId={slotId} content={content} />;
+    case 'embed':
+      return <DashboardEmbedCard slotId={slotId} embed={content} />;
   }
 }

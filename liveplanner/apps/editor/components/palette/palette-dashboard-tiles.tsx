@@ -28,10 +28,12 @@ import {
   SHEET_CHART_CHOICE,
   dashboardCardChoice,
   dashboardTabChoice,
+  EMBED_FILE_CHOICE,
   type DashboardCardKind,
 } from '@/hooks/plan/dashboard-drop';
 import type { PlanTabEntry } from '@/hooks/plan/plan-tab-list-store';
 import type { PaletteTileDef } from './palette-tile-defs';
+import { LiveEmbedTileArt } from '@liveworkspace/workbench/components/palette/embed-tile-art';
 
 // A row drawn small: `slots` slots across, at `h` of the 20-unit glyph's height; a Slot is one slot with a plus.
 function LayoutGlyph({ slots, h, plus = false }: { slots: number; h: number; plus?: boolean }) {
@@ -104,7 +106,22 @@ export const DASHBOARD_LAYOUT_TILES: PaletteTileDef[] = [
     action: { type: 'shape', kind: 'plan-view', plan: 'layout:slot' },
     icon: <LayoutGlyph slots={1} h={12} plus />,
   },
+  // Embed File (docs/specs/013-workspace/embeds.md "Embed File on a Dashboard", Work Tracker 1375): another app's file
+  // in a slot, live and read-only. Also under Add to Slot's Utilities.
+  {
+    id: 'dashboard:embed-file',
+    section: 'dashboard-layout',
+    label: 'Add Embed File',
+    caption: 'Embed File',
+    description:
+      'A file from any of our apps (a canvas, another plan, a page, a design or a knowledgebase), live and read-only. Placing it asks the role for the file’s tab; everyone sees it with their own access.',
+    noTint: true,
+    action: { type: 'shape', kind: 'plan-view', plan: EMBED_FILE_CHOICE },
+    icon: <LiveEmbedTileArt />,
+  },
 ];
+
+export const DASHBOARD_EMBED_TILE = DASHBOARD_LAYOUT_TILES.at(-1)!;
 
 // A Title drawn small: a heavy heading line over two light lines of description.
 function TitleGlyph() {

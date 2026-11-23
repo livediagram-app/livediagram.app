@@ -436,6 +436,7 @@ export * from './plan-palette';
 export * from './plan-presets';
 export * from './dashboard';
 export * from './dashboard-cards';
+export * from './dashboard-embed';
 export * from './dashboard-card-style';
 export * from './dashboard-patch';
 export * from './dashboard-ledger';

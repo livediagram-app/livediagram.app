@@ -2,6 +2,7 @@
 // row or a new Dashboard starts from. Kept apart so the readers and the edits (dashboard-edit.ts) share one source.
 
 import type { DashboardCardContent } from './dashboard-cards';
+import type { DashboardEmbedContent } from './dashboard-embed';
 import type { DashboardCardStyle } from './dashboard-card-style';
 export const DASHBOARD_ROWS_MAX = 12;
 export const DASHBOARD_SLOTS_MAX = 4;
@@ -28,7 +29,9 @@ export type DashboardContent =
   // A section's title: a big heading over a line or two of description, drawn bare on the page.
   | { type: 'title'; title: string; text: string; style?: DashboardCardStyle }
   // A Status, Checklist, Key Date or Links (dashboard-cards.ts).
-  | DashboardCardContent;
+  | DashboardCardContent
+  // An Embed File: another app's file, live and read-only (dashboard-embed.ts, Work Tracker 1375).
+  | DashboardEmbedContent;
 
 // What kind of tab a slot shows: a Board or Sheet tab, worked on in place. No other kind of tab goes in a slot.
 export type DashboardTabOf = 'board' | 'sheet';

@@ -89,6 +89,30 @@ describe('redactElementsForCommunity', () => {
     });
   });
 
+  it("drops a Dashboard Embed File's link and keeps its snapshot (Work Tracker 1375)", () => {
+    const embed = {
+      type: 'embed',
+      liveItem: { app: 'livediagram', itemId: 'canvas_secret' },
+      liveName: 'Architecture',
+    };
+    const tab = {
+      elements: [],
+      dashboard: {
+        rows: [{ id: 'r1', slots: [{ id: 's1', content: embed }, { id: 's2' }] }, { id: 'r2' }],
+      },
+    };
+    const out = redactTabForCommunity(tab);
+    expect(out.dashboard!.rows![0]!.slots![0]!.content).toEqual({
+      type: 'embed',
+      liveName: 'Architecture',
+    });
+    expect(out.dashboard!.rows![0]!.slots![1]).toEqual({ id: 's2' });
+    expect(JSON.stringify(out)).not.toContain('canvas_secret');
+    // The stored data takes the same path, and a dashboard with no rows passes as it is.
+    expect(redactTabDataForCommunity(JSON.stringify(tab)).data).not.toContain('canvas_secret');
+    expect(redactTabForCommunity({ dashboard: {} }).dashboard).toEqual({});
+  });
+
   it('keeps an action but not the people on it', () => {
     expect(out[1]!.action).toEqual({
       ...action,
