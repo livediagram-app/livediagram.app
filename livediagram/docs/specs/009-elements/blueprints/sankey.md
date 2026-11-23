@@ -203,7 +203,7 @@ generic `invalid tab` path.
 
 | Rule                                                                  | Test                                                                                                               |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Graph, set-aside reasons, caps, loops                                 | `packages/document/src/sankey.test.ts`                                                                             |
+| Graph, set-aside reasons, caps, loops                                 | `../packages/element-model/src/sankey.test.ts`                                                                     |
 | Columns, scale, stacking, no crossing, worst-case budget              | `sankey.test.ts`                                                                                                   |
 | Text formats, round trip                                              | `sankey.test.ts`                                                                                                   |
 | Labels, collisions, colours, readouts, summary                        | `packages/document/src/sankey-render.test.ts`                                                                      |

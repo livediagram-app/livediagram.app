@@ -103,6 +103,9 @@ A handler that catches broadly and would turn an outage into another answer reth
    declared, else over the public route.
 3. On an app's address, its router first answers its platform paths through `routeToWorkspace`
    (`packages/sites/src/workspace-proxy.ts`), and everything else goes to the app's own Workers.
+   Every app's router is one routing table, `createAppRouter` (`packages/sites/src/app-router.ts`), which each
+   app's `apps/router/src/index.ts` binds once to its name, its editor's routes, its help categories and its own
+   old addresses; its tests are one suite too (`packages/sites/src/app-router-testing.ts`), run by each app.
 
 ### A router's forward (`routeToWorkspace`, in order)
 

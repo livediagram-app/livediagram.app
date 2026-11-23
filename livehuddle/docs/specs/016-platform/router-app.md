@@ -116,7 +116,8 @@ so it reaches the api, which answers 404 ([Not in livehuddle](../002-project-sco
 In production the Worker has four **service bindings**, one to each downstream app (MARKETING / EDITOR / API / HELP). `HELP` is liveworkspace's `liveworkspace-help` Worker (staging `liveworkspace-help-staging`), and the router adds `x-help-app: livehuddle` so it serves livehuddle's scope; locally `HELP_ORIGIN` is `http://127.0.0.1:3020`. A shared `forward()` helper resolves each target as _binding if present, else local-dev origin_ (see Local development below) and strips the prefix for the basePath/assetPrefix paths (the editor's `/live` assets + help) when forwarding to a binding:
 
 ```ts
-// sketch, real source: apps/router/src/index.ts
+// sketch, real source: ../packages/sites/src/app-router.ts (createAppRouter, the one router every app runs),
+// bound to this app in apps/router/src/index.ts
 // LIVE_ROUTE_SEGMENTS (packages/api-schema/src/page-views.ts): auth, document, embed, explorer, form, get-started,
 // import, join, new, oauth, offline, sign-in
 // Before these: routeCommunity, routeToWorkspace, the previews, /api/index/* and /api/drive/* (above).
@@ -131,7 +132,7 @@ export default {
       return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN, '/live');
     }
     if (url.pathname === '/telemetry' || url.pathname.startsWith('/telemetry/')) {
-      return Response.redirect(telemetryDashboardUrl(env), 301); // liveworkspace's dashboard
+      return Response.redirect(telemetryDashboardUrlFor(env.DEPLOY_ENV, 'livehuddle.app'), 301); // liveworkspace's dashboard
     }
     // Clean live-app page routes + its root icon: forward as-is (no strip).
     if (LIVE_ROUTE_SEGMENTS.has(url.pathname.split('/')[1]) || url.pathname === '/icon.svg') {

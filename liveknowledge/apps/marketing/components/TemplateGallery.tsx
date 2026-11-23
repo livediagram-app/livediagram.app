@@ -5,7 +5,7 @@ import { ctaHref } from '@liveknowledge/api-schema';
 import { templateCreateHref } from '@liveknowledge/templates';
 import { StructureCard } from '@/components/StructureCard';
 import { StructurePreview } from '@/components/StructurePreview';
-import { TemplateCarousel } from '@/components/TemplateCarousel';
+import { TemplateCarousel } from '@liveworkspace/marketing-site/components/TemplateCarousel';
 import {
   BLANK_START,
   galleryShelves,

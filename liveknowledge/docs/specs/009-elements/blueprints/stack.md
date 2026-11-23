@@ -111,7 +111,7 @@ Menu tiles named "Row Stack", "Column Stack", "Grid Stack", "Align Start / Centr
 | --------------------------------- | ---------------------------------------------------------- |
 | Children, layout per arrangement  | `packages/document/src/stack.test.ts`                      |
 | Settle (I1 to I3), nesting, carry | same                                                       |
-| Budget                            | `packages/document/src/stack.perf.test.ts`                 |
+| Budget                            | `../packages/element-model/src/stack.perf.test.ts`         |
 | Menu section                      | `apps/editor/components/palette/StackMenuSection.test.tsx` |
 
 ## Constants and configuration
