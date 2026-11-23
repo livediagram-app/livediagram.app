@@ -37,8 +37,8 @@ import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowin
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { LegendTextSize } from '@/components/palette/TypographySections';
-import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
-import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
+import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { lucideGlyph } from '@liveplanner/ui';
 import {

@@ -16,7 +16,7 @@ import {
   type ArrowThickness,
   type BorderStyle,
 } from '@liveknowledge/document';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   ArrowEndsIcon,
   ArrowheadShapeIcon,

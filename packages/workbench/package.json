@@ -838,7 +838,20 @@
     "./components/primitives/InlineRenameInput": "./src/components/primitives/InlineRenameInput.tsx",
     "./components/notes/note-run-style": "./src/components/notes/note-run-style.ts",
     "./components/dialogs/FocusInviteDialog": "./src/components/dialogs/FocusInviteDialog.tsx",
-    "./components/find/find-bar-top": "./src/components/find/find-bar-top.ts"
+    "./components/find/find-bar-top": "./src/components/find/find-bar-top.ts",
+    "./components/palette/FinishSection": "./src/components/palette/FinishSection.tsx",
+    "./components/dialogs/settings/relative-time": "./src/components/dialogs/settings/relative-time.ts",
+    "./components/palette/palette-buttons": "./src/components/palette/palette-buttons.tsx",
+    "./components/colour/ColourSwatchButton": "./src/components/colour/ColourSwatchButton.tsx",
+    "./components/panels/FormatPanel": "./src/components/panels/FormatPanel.tsx",
+    "./components/palette/PaletteCategoryRail": "./src/components/palette/PaletteCategoryRail.tsx",
+    "./components/palette/ChartAxisRows": "./src/components/palette/ChartAxisRows.tsx",
+    "./components/palette/BorderGrid": "./src/components/palette/BorderGrid.tsx",
+    "./components/palette/context-menu-data-parts": "./src/components/palette/context-menu-data-parts.tsx",
+    "./components/palette/IconPositionGrid": "./src/components/palette/IconPositionGrid.tsx",
+    "./components/primitives/MentionMenu": "./src/components/primitives/MentionMenu.tsx",
+    "./components/palette/ShadowSection": "./src/components/palette/ShadowSection.tsx",
+    "./components/chrome/AuthStage": "./src/components/chrome/AuthStage.tsx"
   },
   "scripts": {
     "lint": "oxlint",

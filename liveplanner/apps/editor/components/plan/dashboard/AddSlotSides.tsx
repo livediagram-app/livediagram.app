@@ -6,7 +6,7 @@
 // its tooltip saying why) when the row is full or the new slot would squeeze something below what it needs (useFitGuard).
 import { useState } from 'react';
 import { Tooltip } from '@liveplanner/ui';
-import { DirArrow } from '@/components/palette/context-menu-icons';
+import { DirArrow } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   DASHBOARD_ROW_H_DEFAULT,
   DASHBOARD_ROWS_MAX,

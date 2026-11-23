@@ -1,6 +1,6 @@
 import type { Element } from '@livedesign/design';
 import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
-import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,

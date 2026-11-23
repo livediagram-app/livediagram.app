@@ -13,12 +13,8 @@
 import { isAnimatedPattern, type BackgroundPattern } from '@liveknowledge/document';
 import { useShowMoreList } from '@liveworkspace/workbench/hooks/ui/useShowMoreList';
 import { PatternCarousel } from './PatternCarousel';
-import {
-  ColorSwatch,
-  PATTERNS,
-  PatternButton,
-  type PatternEntry,
-} from '@/components/palette/palette-controls';
+import { PatternButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
+import { ColorSwatch, PATTERNS, type PatternEntry } from '@/components/palette/palette-controls';
 import { ShowMoreButton } from '@liveworkspace/workbench/components/primitives/ShowMoreButton';
 import { HoverCard } from '@liveknowledge/ui';
 import { RANGE_SLIDER } from '@liveworkspace/workbench/components/primitives/surface-classes';

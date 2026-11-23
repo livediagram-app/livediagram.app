@@ -12,8 +12,8 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { Glyph } from '@livediagram/ui';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   SpeedAndRepeatRows,
   TileLabel,

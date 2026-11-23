@@ -23,7 +23,7 @@ import {
   stableColours,
   type ColourGroup,
   type ColourOption,
-} from './colour-options';
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { onColourKeys } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { useThemeColours } from './useThemeColours';
 

@@ -6,7 +6,8 @@
 import { isPostAuthPath } from '@liveworkspace/auth-client/return-path';
 import { createAuthCards } from '@liveworkspace/workbench/components/chrome/auth-cards';
 import { POST_AUTH_DEFAULT } from '@liveworkspace/workbench/components/chrome/auth-routes';
-import { AUTH_TITLE, AuthStage } from './AuthStage';
+import { AUTH_TITLE } from '@liveworkspace/workbench/components/chrome/AuthStage';
+import { AuthStage } from './AuthStage';
 import { AccountPitch } from './auth-pitches';
 
 export * from '@liveworkspace/workbench/components/chrome/auth-routes';

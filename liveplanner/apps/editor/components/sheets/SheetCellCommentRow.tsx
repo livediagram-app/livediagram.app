@@ -4,7 +4,7 @@
 // thread, Show Comments on one with one, opening the editor's thread popover beside the active cell. A Viewer reads
 // a thread that is there and starts none.
 import { MenuActionRow } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { CommentMenuIcon } from '@/components/palette/context-menu-icons';
+import { CommentMenuIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { useSheetCellThreads, useSheetComments } from '@/hooks/sheets/sheet-comments-context';
 import { useSheetController } from './sheet-controller';
 import { threadCellAt } from './SheetCellComments';

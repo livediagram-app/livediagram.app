@@ -2,17 +2,13 @@
 
 import { useState, type ReactNode } from 'react';
 import { Glyph } from '@livehuddle/ui';
+import { type PlacementLayout } from '@liveworkspace/workbench/components/placement/PlacementCard';
 
 // The pieces a placement level is built from (docs/specs/006-document/offline-mode.md, docs/specs/013-workspace/folders.md, docs/specs/006-document/save-locations.md):
 // the selectable destination card, the inline New Folder card, their
 // cascade entrance, and the glyphs. PlacementBrowser composes them into the
 // space -> folder browse; TabOrganiseDialogs (docs/specs/006-document/tab-folders.md) and the wizard's Save
 // location row (docs/specs/006-document/save-locations.md) use the cards on their own.
-
-// Tile grid (icon over label) or stacked rows (icon beside label, the
-// file-explorer idiom). One prop, threaded from the browser down to each
-// card, so the two shapes never drift into two components.
-export type PlacementLayout = 'tiles' | 'list';
 
 // The cascade entrance for one row / tile at `index` (see the level
 // container comment in PlacementBrowser). A list row slides in and grows
@@ -183,97 +179,6 @@ function NewFolderIcon() {
     <Glyph size={20} units={20}>
       <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
       <path d="M10 9.2v4M8 11.2h4" />
-    </Glyph>
-  );
-}
-
-// One selectable destination: icon, name, and a small kind caption, radio
-// semantics (exactly one destination is ever active). As a tile the three
-// stack; as a list row they sit side by side with the caption pinned right,
-// the way a file explorer's list view keeps its Type column.
-export function PlacementCard({
-  label,
-  sub,
-  icon,
-  selected,
-  onSelect,
-  onCommit,
-  layout = 'tiles',
-  enterIndex,
-  count,
-}: {
-  label: string;
-  sub: string;
-  icon: ReactNode;
-  selected: boolean;
-  onSelect: () => void;
-  // Double-click: select + commit the host flow in one gesture. Only wired on
-  // cards that stay mounted across the first click (drill-in cards swap the
-  // level under the cursor, so a dblclick can never land on them).
-  onCommit?: () => void;
-  layout?: PlacementLayout;
-  // Position in the level's cascade; absent = no entrance animation.
-  enterIndex?: number;
-  // Direct subfolders inside this destination. Shown as a badge when at
-  // least one, so a card that leads somewhere says so; 0 / absent = none.
-  count?: number;
-}) {
-  const row = layout === 'list';
-  const enter = enterProps(layout, enterIndex);
-  const badge = count ? (
-    <span
-      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
-        selected
-          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200'
-          : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
-      }`}
-    >
-      {count} {count === 1 ? 'Subfolder' : 'Subfolders'}
-    </span>
-  ) : null;
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      onClick={onSelect}
-      onDoubleClick={onCommit}
-      style={enter.style}
-      className={`${enter.className} ${
-        row
-          ? 'flex items-center gap-2.5 px-3 py-2 text-left'
-          : 'flex flex-col items-center gap-1.5 p-3 text-center'
-      } rounded-lg border transition ${
-        selected
-          ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-200 dark:border-brand-500 dark:bg-brand-500/10 dark:ring-brand-500/30'
-          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-700/60'
-      }`}
-    >
-      <span
-        className={`shrink-0 ${selected ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400'}`}
-      >
-        {icon}
-      </span>
-      <span
-        className={`${row ? 'min-w-0 flex-1' : 'w-full'} truncate text-xs font-medium ${
-          selected ? 'text-brand-800 dark:text-brand-200' : 'text-slate-700 dark:text-slate-200'
-        }`}
-      >
-        {label}
-      </span>
-      {/* In a row the badge sits beside the name; on a tile it takes its own
-          line between name and caption, where the narrow track has room. */}
-      {badge}
-      <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">{sub}</span>
-    </button>
-  );
-}
-
-// Tile glyphs, sized to sit above the card label.
-export function FolderPlaceIcon() {
-  return (
-    <Glyph size={20} units={20}>
-      <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
     </Glyph>
   );
 }

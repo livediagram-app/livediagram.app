@@ -1,9 +1,9 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
-import { CountBadge, NoMatches } from '@livedesign/ui';
-import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
-import type { BrowserCategory } from './PaletteCategoryBrowser';
+import { CountBadge, NoMatches } from '@liveworkspace/ui';
+import { SearchInput } from '../primitives/SearchInput';
+import type { BrowserCategory } from './palette-tools-nav';
 
 // The category browse as a two-pane picker (docs/specs/007-editor/toolbar-layout.md "The category bar"), for the
 // category bar's flyouts (Icons, Stickers, Technology, Session): the groups down a rail on the left, each its glyph,

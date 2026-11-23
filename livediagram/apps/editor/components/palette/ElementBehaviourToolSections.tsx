@@ -16,7 +16,7 @@ import {
   SpotlightIcon,
 } from '@/components/palette/palette-icons';
 import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import {

@@ -517,7 +517,7 @@ per command letter.
 | budgets                                                      | `packages/document/src/sketch.perf.test.ts`                                                                  |
 | export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                                                            |
 | variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
-| menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
+| menu rows commit, preview, Follow Tab clears                 | `../packages/workbench/src/components/palette/FinishSection.test.tsx`                                        |
 | backdrops: what sits on a shape, order, finish, speed        | `../packages/element-model/src/sketch-backdrop.test.ts`                                                      |
 | Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
 | which palette tiles take the finish                          | `packages/workbench/src/components/palette/palette-tile-finish.test.ts`                                      |

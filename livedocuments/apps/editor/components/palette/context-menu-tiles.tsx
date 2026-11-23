@@ -8,7 +8,7 @@ import {
   createContextMenuTiles,
   createFlowTiles,
 } from '@liveworkspace/workbench/components/palette/context-menu-tiles';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import {
   ArrowFlowPreview,

@@ -16,7 +16,7 @@ import {
   MenuToolbar,
   MenuToolButton,
 } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
+import { PasteMenuIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
 import {
   DuplicateIcon,

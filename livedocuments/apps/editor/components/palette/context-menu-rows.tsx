@@ -8,7 +8,7 @@
 import { type ReactNode } from 'react';
 import { SHAPE_MARKERS, type ShapeMarker, type TextSizePreset } from '@livedocuments/document';
 
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
 
@@ -20,8 +20,11 @@ import { withNone } from '@/components/palette/context-menu-tiles';
 
 // Colour / icon-position / toggle input rows live in their own module;
 // re-exported here so the context-menu row imports stay a single source.
-import { ColourRow, IconPositionGrid, MenuToggleRow } from './context-menu-input-rows';
-import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
+import { ColourRow, MenuToggleRow } from './context-menu-input-rows';
+import {
+  NoMarkerGlyph,
+  PercentSliderRow,
+} from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { lucideGlyph } from '@livedocuments/ui';
 import { lucideCircleDot } from '@liveworkspace/icons/lucide';
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
@@ -39,7 +42,6 @@ export {
 } from './context-menu-data-editors';
 export {
   ChartMenuGlyph,
-  DataMenuGlyph,
   PieAnimTiles,
   ProgressAnimTiles,
   ProgressRow,
@@ -47,33 +49,7 @@ export {
   RatingMenuGlyph,
   RatingPickerRow,
 } from './context-menu-data-rows';
-export { ColourRow, IconPositionGrid, MenuToggleRow };
-export function BorderGrid({
-  label,
-  cols,
-  children,
-}: {
-  label: string;
-  cols: 2 | 3 | 4 | 5;
-  children: ReactNode;
-}) {
-  const colClass =
-    cols === 5
-      ? 'grid-cols-5'
-      : cols === 4
-        ? 'grid-cols-4'
-        : cols === 3
-          ? 'grid-cols-3'
-          : 'grid-cols-2';
-  return (
-    <div className="mb-1.5 last:mb-0">
-      <p className="px-1 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-        {label}
-      </p>
-      <div className={`grid gap-1 ${colClass}`}>{children}</div>
-    </div>
-  );
-}
+export { ColourRow, MenuToggleRow };
 
 // The "Markers" category glyph — a small filled status dot.
 export const MarkersMenuGlyph = lucideGlyph(lucideCircleDot, MENU_ICON_PX);

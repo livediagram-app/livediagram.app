@@ -21,7 +21,7 @@ import {
   type WebRows,
 } from '@liveplanner/project';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import {
   MENU_ADD_ROW_BUTTON,
   MENU_CELL_INPUT,

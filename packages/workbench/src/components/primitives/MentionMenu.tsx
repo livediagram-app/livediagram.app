@@ -6,9 +6,11 @@
 // a themed card as over the comment popover. Pointer-down keeps focus in the
 // field (the pick writes into it) and never starts a canvas drag.
 
-import { Chip, GlyphDisc, SOLID_BRAND_DARK } from '@livediagram/ui';
-import { initialsOf } from '@/lib/identity';
-import type { MentionCandidate } from '@/hooks/collab/useCommentMentions';
+import { Chip, GlyphDisc, SOLID_BRAND_DARK } from '@liveworkspace/ui';
+import { initialsOf } from '@liveworkspace/model-core/names';
+
+/** A teammate the menu offers: what it draws of an editor's mention candidate (its useCommentMentions). */
+export type MentionMenuItem = { memberId: string; name: string; handle: string; pending: boolean };
 
 export function MentionMenu({
   items,
@@ -16,7 +18,7 @@ export function MentionMenu({
   hint,
   onPick,
 }: {
-  items: readonly MentionCandidate[];
+  items: readonly MentionMenuItem[];
   highlight: number;
   hint: string | null;
   onPick: (index: number) => void;

@@ -5,7 +5,7 @@
 // the shared ones (@liveworkspace/workbench/components/palette/context-menu-tiles), made once here around this
 // editor's palette tile, animation miniatures and icon primitives.
 import { createContextMenuTiles } from '@liveworkspace/workbench/components/palette/context-menu-tiles';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import { IconAnimationPreview } from '@/components/palette/animation-previews-existing';
 import { IconPrims } from '@/components/primitives/icon-glyph';

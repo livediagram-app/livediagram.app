@@ -8,19 +8,13 @@
 // and the multi-select Style flyout (MultiStyleSections), so both surfaces
 // stay pixel-identical.
 
-import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
-import {
-  DEFAULT_SHADOW,
-  SHADOW_LIMITS,
-  SHADOW_PRESETS,
-  shadowBoxCss,
-  type ElementShadow,
-} from '@liveknowledge/document';
-import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
-import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { SizeButton } from '@/components/palette/palette-controls';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
-import { ShadowMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { MenuSliderRow } from '../primitives/MenuSliderRow';
+import { DEFAULT_SHADOW, SHADOW_LIMITS, SHADOW_PRESETS, shadowBoxCss, type ElementShadow } from '@liveworkspace/element-model/shadow';
+import { onMouseHover } from '../primitives/hover-preview';
+import { MenuAccordionSection } from '../primitives/PortalMenu';
+import { SizeButton } from './palette-buttons';
+import { BorderGrid } from './BorderGrid';
+import { ShadowMenuGlyph } from './context-menu-icons';
 
 // A preset tile's swatch: a small rounded chip carrying the preset's own
 // shadow at half scale (opacity boosted so the effect reads at 16px).

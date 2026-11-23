@@ -25,7 +25,7 @@ import {
   identityVars,
 } from '@livedocuments/ui';
 import type { Comment, CommentMention, CommentThread } from '@livedocuments/document';
-import { MentionMenu } from '@/components/primitives/MentionMenu';
+import { MentionMenu } from '@liveworkspace/workbench/components/primitives/MentionMenu';
 import { MentionText } from '@liveworkspace/workbench/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';

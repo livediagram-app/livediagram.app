@@ -12,7 +12,7 @@ import {
   HeadingColourIcon,
   PointerColourIcon,
   TextColourIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   defaultArrowStrokeColor,
   defaultFillColor,
@@ -30,7 +30,10 @@ import {
   type BoxedElement,
   type ElementShadow,
 } from '@livediagram/document';
-import { BorderGlyph, PaletteMenuIcon } from '@/components/palette/context-menu-icons';
+import {
+  BorderGlyph,
+  PaletteMenuIcon,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuActionButton,
@@ -39,8 +42,11 @@ import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { BorderControls } from '@/components/palette/BorderControls';
 import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
-import { ShadowSection } from '@/components/palette/ShadowSection';
-import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
+import { ShadowSection } from '@liveworkspace/workbench/components/palette/ShadowSection';
+import {
+  FinishSection,
+  resolveOwnFinish,
+} from '@liveworkspace/workbench/components/palette/FinishSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';

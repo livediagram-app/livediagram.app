@@ -10,8 +10,8 @@ import {
   type Element,
 } from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
-import { SizeButton } from '@/components/palette/palette-controls';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
+import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';
 import { BorderColourIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';

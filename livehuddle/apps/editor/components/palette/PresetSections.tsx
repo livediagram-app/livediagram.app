@@ -14,7 +14,7 @@ import {
   type ShapeColorPreset,
   type ShapeElement,
 } from '@livehuddle/document';
-import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { PresetsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { ShapePresets } from '@/components/palette/StylePresets';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';

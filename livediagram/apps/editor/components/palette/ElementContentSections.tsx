@@ -1,6 +1,6 @@
 import type { Element } from '@livediagram/document';
 import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
-import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,
@@ -10,13 +10,13 @@ import {
 } from '@/components/palette/palette-icons';
 import {
   ImageGlyph,
-  LinkMenuIcon,
   RemoveIconGlyph,
   FillColourIcon,
   TableGlyph,
   TextColourIcon,
   TextGlyph,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';

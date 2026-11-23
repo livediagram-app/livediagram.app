@@ -18,8 +18,8 @@ import { lucideRoute, lucideShapes, lucideWorkflow } from '@liveworkspace/icons/
 import { OptionRows } from '@liveworkspace/workbench/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
-import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
-import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
+import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { STEP_TYPE_GLYPH } from '@/components/flowchart/step-type-glyphs';
 
 const ChartGlyph = lucideGlyph(lucideWorkflow, MENU_ICON_PX);

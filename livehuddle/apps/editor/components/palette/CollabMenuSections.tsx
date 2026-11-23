@@ -34,11 +34,8 @@ import { Glyph } from '@livehuddle/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { FloorTypeSwatch } from '@/components/palette/palette-style-previews';
-import {
-  FloorMenuGlyph,
-  ToolsMenuGlyph,
-  WallsMenuGlyph,
-} from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { FloorMenuGlyph, WallsMenuGlyph } from '@/components/palette/context-menu-icons';
 
 // Each kind contributes exactly ONE section to the Tools group: a chair has Chair and nothing else.
 // `MenuFlyoutSection` promotes a lone section into the host menu (docs/specs/008-canvas/canvas-and-palette.md),

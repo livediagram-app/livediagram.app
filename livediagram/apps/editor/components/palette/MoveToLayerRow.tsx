@@ -1,7 +1,7 @@
 import { htmlProps } from '@livediagram/ui';
 import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import type { Element, Layer } from '@livediagram/document';
-import { LayersGlyph } from '@/components/palette/context-menu-icons';
+import { LayersGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 

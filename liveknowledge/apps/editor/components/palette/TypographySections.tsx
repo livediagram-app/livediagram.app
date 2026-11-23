@@ -1,7 +1,8 @@
 'use client';
 
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile } from '@liveworkspace/workbench/components/primitives/MenuTiles';
+import { MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { FontGlyph } from '@liveworkspace/workbench/components/rich-text/rich-text-toolbar-icons';
 import { DotsIcon, NonePaddingIcon, PaddingIcon } from './palette-icons';

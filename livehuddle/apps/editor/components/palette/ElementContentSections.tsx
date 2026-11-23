@@ -1,6 +1,10 @@
 import type { Element } from '@livehuddle/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { ImageGlyph, LinkMenuIcon, RemoveIconGlyph } from '@/components/palette/context-menu-icons';
+import {
+  ImageGlyph,
+  RemoveIconGlyph,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ImageCreditRow } from '@liveworkspace/workbench/components/palette/ImageCreditRow';

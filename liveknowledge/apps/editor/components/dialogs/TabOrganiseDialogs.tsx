@@ -11,11 +11,8 @@
 import { lucideFolderX } from '@liveworkspace/icons/lucide';
 import { useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import {
-  FolderPlaceIcon,
-  NewFolderTile,
-  PlacementCard,
-} from '@/components/placement/PlacementCard';
+import { FolderPlaceIcon } from '@liveworkspace/workbench/components/placement/PlacementCard';
+import { NewFolderTile, PlacementCard } from '@/components/placement/PlacementCard';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import {
   CompactEmptyState,

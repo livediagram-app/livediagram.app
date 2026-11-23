@@ -9,10 +9,9 @@ import { elementKindLabel, type BoxedElement, type Element } from '@livediagram/
 import {
   ActionMenuIcon,
   CommentMenuIcon,
-  LinkMenuIcon,
-  LiveStatusMenuIcon,
   NoteMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { LinkMenuIcon, LiveStatusMenuIcon } from '@/components/palette/context-menu-icons';
 import {
   ElementKindToolButtons,
   useElementKindTools,

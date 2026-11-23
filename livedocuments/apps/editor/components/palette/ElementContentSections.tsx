@@ -1,6 +1,6 @@
 import { drawnTextSize, textPxRangeFor, type Element } from '@livedocuments/document';
 import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
-import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,
@@ -18,7 +18,8 @@ import {
   TextGlyph,
 } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile } from '@liveworkspace/workbench/components/primitives/MenuTiles';
+import { MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ImageCreditRow } from '@liveworkspace/workbench/components/palette/ImageCreditRow';

@@ -10,7 +10,7 @@ import {
   lucideScale,
 } from '@liveworkspace/icons/lucide';
 
-import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // A tab that isn't shared with this visitor (docs/specs/013-workspace/tab-scoped-share-links.md).
 export const TabNotSharedIcon = lucideGlyph(lucideEyeOff, 12);

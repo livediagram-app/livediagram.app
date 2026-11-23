@@ -5,7 +5,6 @@
 // context-menu-rows.tsx (which re-exports everything here) so that file
 // keeps the generic look-and-feel rows.
 
-import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 import { type ReactNode } from 'react';
 import {
   animationLabel,
@@ -23,14 +22,6 @@ import {
 } from '@liveknowledge/document';
 import { MenuToggleRow } from './context-menu-input-rows';
 
-// The "None" tile glyph — a dashed empty circle, sized to match a marker glyph.
-export function NoMarkerGlyph() {
-  return (
-    <Glyph size={18} units={24}>
-      <circle cx="12" cy="12" r="8" strokeDasharray="3 3" />
-    </Glyph>
-  );
-}
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import {
   SankeyAnimPreview,
@@ -41,7 +32,8 @@ import {
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { SpeedTiles, withNone } from '@/components/palette/context-menu-tiles';
 import { Glyph, lucideGlyph, Prims } from '@liveknowledge/ui';
-import { lucideChartColumn, lucideChartPie, lucideStar } from '@liveworkspace/icons/lucide';
+import { lucideChartColumn, lucideStar } from '@liveworkspace/icons/lucide';
+import { PercentSliderRow } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 
 // Progress percentage slider (docs/specs/009-elements/progress.md). Mirrors OpacityRow but on a 0–100
 // integer scale.
@@ -172,10 +164,6 @@ export function RatingAnimTiles(props: AnimTilesProps<RatingAnim>) {
   );
 }
 
-// Monochrome pie outline — the "Data" category glyph. The other category
-// glyphs are all single-colour (currentColor); this matches them.
-export const DataMenuGlyph = lucideGlyph(lucideChartPie, MENU_ICON_PX);
-
 // Bars on axes: the "Chart" (display options) category glyph.
 export const ChartMenuGlyph = lucideGlyph(lucideChartColumn, MENU_ICON_PX);
 
@@ -190,30 +178,6 @@ export function PieAnimTiles(props: AnimTilesProps<PieAnim>) {
 export function SankeyAnimTiles(props: AnimTilesProps<SankeyAnim>) {
   return (
     <AnimTiles {...props} anims={SANKEY_ANIMS} glyphFor={(v) => <SankeyAnimPreview anim={v} />} />
-  );
-}
-
-// A labelled 0–100 range slider with a right-aligned `{pct}%` readout. Shared
-// by the Progress percentage + the Layer opacity rows; each owns its own
-// value<->pct conversion and passes the already-resolved pct in.
-export function PercentSliderRow({
-  label,
-  pct,
-  onPct,
-}: {
-  label: string;
-  pct: number;
-  onPct: (pct: number) => void;
-}) {
-  return (
-    <MenuSliderRow
-      label={label}
-      min={0}
-      max={100}
-      value={pct}
-      display={`${pct}%`}
-      onChange={onPct}
-    />
   );
 }
 

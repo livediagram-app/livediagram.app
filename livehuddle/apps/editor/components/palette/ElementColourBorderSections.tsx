@@ -10,7 +10,7 @@ import {
   BorderColourIcon,
   FillColourIcon,
   TextColourIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   defaultFillColor,
   supportsFillColor,
@@ -24,7 +24,10 @@ import {
   type BoxedElement,
   type ElementShadow,
 } from '@livehuddle/document';
-import { BorderGlyph, PaletteMenuIcon } from '@/components/palette/context-menu-icons';
+import {
+  BorderGlyph,
+  PaletteMenuIcon,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuActionButton,
@@ -32,7 +35,7 @@ import {
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { BorderControls } from '@/components/palette/BorderControls';
-import { ShadowSection } from '@/components/palette/ShadowSection';
+import { ShadowSection } from '@liveworkspace/workbench/components/palette/ShadowSection';
 import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';

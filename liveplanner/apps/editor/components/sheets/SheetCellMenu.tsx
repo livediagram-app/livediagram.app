@@ -12,9 +12,9 @@ import { ContextMenu } from '@liveworkspace/workbench/components/palette/Context
 import {
   CopyIcon,
   CutIcon,
-  LinkMenuIcon,
   PasteMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { openHyperlink } from '@/lib/open-hyperlink';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import {

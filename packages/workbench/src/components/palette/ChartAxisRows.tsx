@@ -1,7 +1,7 @@
-import type { LineSeries } from '@livediagram/document';
-import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
-import { TileLabel } from '@/components/palette/context-menu-tiles';
-import { SizeButton } from '@/components/palette/palette-controls';
+import type { LineSeries } from '@liveworkspace/element-model/data-shapes';
+import { MenuToggleRow } from './MenuToggleRow';
+import { TileLabel } from './context-menu-tiles';
+import { SizeButton } from './palette-buttons';
 
 // Show Axis and Right Axis (docs/specs/009-elements/pie-chart.md "Show Axis", "A second axis"), under Show Values in
 // the Chart category: the value axis on a column, bar, line, area or scatter chart, and on a line chart of two or

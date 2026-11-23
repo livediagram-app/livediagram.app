@@ -8,23 +8,16 @@
 // moves under reduced motion, or on the first render.
 import { useLayoutEffect, useRef, type RefObject } from 'react';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
+import {
+  KIND_ITEM_MS,
+  kindStagger,
+} from '@liveworkspace/workbench/components/palette/usePaletteKindMotion';
 
-// Each item's own rise, and the cascade's whole length (the last item's start plus its rise).
-export const KIND_ITEM_MS = 160;
-export const KIND_CASCADE_MS = 250;
-// The most one item waits after the one before.
-const KIND_STAGGER_MAX_MS = 24;
 const EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
 
 // What moves: the bar's category buttons, or the docked formatting's slot as one (its controls
 // arrive a render later).
 const ITEMS = '[data-category-bar-button], [data-article-dock]';
-
-/** The stagger between items so `count` of them finish within the cascade. */
-export function kindStagger(count: number): number {
-  if (count <= 1) return 0;
-  return Math.min(KIND_STAGGER_MAX_MS, (KIND_CASCADE_MS - KIND_ITEM_MS) / (count - 1));
-}
 
 export function usePaletteKindMotion(kind: string, root: RefObject<HTMLElement | null>): void {
   const seen = useRef(kind);

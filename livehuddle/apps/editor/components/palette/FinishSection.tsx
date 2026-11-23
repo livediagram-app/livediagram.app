@@ -14,7 +14,7 @@ import {
   OptionRows,
   type OptionRow,
 } from '@liveworkspace/workbench/components/primitives/OptionRows';
-import { FinishMenuGlyph } from '@/components/palette/context-menu-icons';
+import { FinishMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 export const FINISH_LABELS: Record<Finish, string> = {
   flexible: 'Flexible',

@@ -18,8 +18,9 @@ import { Glyph, lucideGlyph, Prims } from '@liveknowledge/ui';
 import type { IconPrim } from '@liveworkspace/icons';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/menu-icon-base';
-import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
+import { MenuToggleRow } from '@/components/palette/context-menu-rows';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 export const CropGlyph = lucideGlyph(lucideCrop, MENU_ICON_PX);

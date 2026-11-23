@@ -7,7 +7,7 @@ import {
 } from '@livedocuments/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   AspectLockMenuIcon,
   LayerDownIcon,
@@ -21,7 +21,8 @@ import {
   MenuAccordionSection,
   MenuActionButton,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile } from '@liveworkspace/workbench/components/primitives/MenuTiles';
+import { MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { shapeKindLabel } from '@/lib/element-names';

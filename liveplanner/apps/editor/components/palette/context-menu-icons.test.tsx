@@ -4,7 +4,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import * as icons from './context-menu-icons';
-import { MENU_ICON_PX, QUICK_ACTION_ICON_PX } from './context-menu-icons';
+import {
+  MENU_ICON_PX,
+  QUICK_ACTION_ICON_PX,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // One menu, one size step (docs/specs/004-interface-design/iconography.md, "Relation to optical
 // alignment"): every menu glyph renders at MENU_ICON_PX, the quick-action verbs at

@@ -29,7 +29,10 @@ import {
   type LegendItem,
   type PieSlice,
 } from '@livediagram/document';
-import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import {
+  ProgressMenuGlyph,
+  ToolsMenuGlyph,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MindMapMenuSections } from './MindMapMenuSections';
 import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
@@ -43,17 +46,17 @@ import {
 } from '@/components/palette/CollabMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
-import { ChartAxisRows } from '@/components/palette/ChartAxisRows';
+import { ChartAxisRows } from '@liveworkspace/workbench/components/palette/ChartAxisRows';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
 import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
 import { hasWebRowsSection } from '@/components/palette/context-menu-web-editors';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
   EntityFieldsEditor,
   CodeSummary,
-  DataMenuGlyph,
   LegendDataEditor,
   LineDataSummary,
   PieDataEditor,

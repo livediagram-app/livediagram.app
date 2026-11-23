@@ -9,7 +9,7 @@ import {
 } from '@livedesign/design';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   AspectLockMenuIcon,
   LayerDownIcon,

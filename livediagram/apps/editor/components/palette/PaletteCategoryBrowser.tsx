@@ -6,10 +6,10 @@ import { SearchInput } from '@liveworkspace/workbench/components/primitives/Sear
 import {
   ToolsBreadcrumb,
   ToolsCategoryGrid,
-  type ToolsCategory,
+  type BrowserCategory,
 } from '@liveworkspace/workbench/components/palette/palette-tools-nav';
 import { track } from '@/lib/telemetry';
-import { PaletteCategoryRail } from './PaletteCategoryRail';
+import { PaletteCategoryRail } from '@liveworkspace/workbench/components/palette/PaletteCategoryRail';
 
 // The palette's drill-in browse pattern, once (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories",
 // docs/specs/010-palette/palette-category-browse.md).
@@ -25,8 +25,6 @@ import { PaletteCategoryRail } from './PaletteCategoryRail';
 // So the navigation lives here rather than three times over. The tabs supply
 // their catalogue and their tile rendering; nothing about a glyph, a tool
 // tile or a brand mark leaks in.
-
-export type BrowserCategory<T> = ToolsCategory & { items: T[] };
 
 // The group a browse opens on, when its host opened it from one: the Toolbar strip's group tiles for Icons, Stickers
 // and Technology (docs/specs/007-editor/toolbar-layout.md "More"). Null opens the group grid. Read as the browse mounts,

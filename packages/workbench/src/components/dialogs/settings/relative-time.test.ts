@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY_MS } from '@liveplanner/items';
+import { DAY_MS } from '@liveworkspace/api-schema/within-reach';
 import { relativeTime } from './relative-time';
 
 const NOW = Date.UTC(2026, 8, 30);

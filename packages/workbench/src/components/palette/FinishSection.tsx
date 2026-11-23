@@ -7,11 +7,11 @@
 // both read the same.
 
 import type { ReactNode } from 'react';
-import { FINISHES, isFinish, type Finish } from '@liveplanner/project';
-import { Glyph, LinkIcon } from '@liveplanner/ui';
-import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { OptionRows, type OptionRow } from '@/components/plan/OptionRows';
-import { FinishMenuGlyph } from '@/components/palette/context-menu-icons';
+import { FINISHES, isFinish, type Finish } from '@liveworkspace/element-model/finish';
+import { Glyph, LinkIcon } from '@liveworkspace/ui';
+import { MenuAccordionSection } from '../primitives/PortalMenu';
+import { OptionRows, type OptionRow } from '../primitives/OptionRows';
+import { FinishMenuGlyph } from './context-menu-icons';
 
 export const FINISH_LABELS: Record<Finish, string> = {
   flexible: 'Flexible',
@@ -67,7 +67,7 @@ const FINISH_DETAILS: Record<Finish, string> = {
   marker: 'Bold felt-tip',
 };
 
-// The Plan-style option list (docs/specs/026-plan/plan-board.md "Option lists"): one full-width row per choice.
+// An option list (OptionRows): one full-width row per choice.
 const FINISH_ROWS: OptionRow[] = [
   {
     id: FOLLOW_TAB,

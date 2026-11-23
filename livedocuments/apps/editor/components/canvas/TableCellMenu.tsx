@@ -11,7 +11,7 @@ import {
   ContextMenu,
   ContextMenuDivider,
 } from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   TextGlyph,
   PaletteMenuIcon,
@@ -26,7 +26,8 @@ import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { useCellTextContrast } from '@/hooks/ui/useTextContrast';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MenuTile } from '@liveworkspace/workbench/components/primitives/MenuTiles';
+import { MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { AlignIcon, CellLinkIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 
 // The per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md Table): right-click / long-press a cell

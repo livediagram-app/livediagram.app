@@ -23,7 +23,10 @@ import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { ContextMenu } from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { StyleMenuGlyph, TextGlyph } from '@/components/palette/context-menu-icons';
+import {
+  StyleMenuGlyph,
+  TextGlyph,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,

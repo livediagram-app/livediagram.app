@@ -4,7 +4,8 @@
 // worn in this app's Night Band frame and account pitch, and the hand-off to the liveworkspace accounts site with the
 // return-path rules (one copy for every editor, in the workbench).
 import { createAuthCards } from '@liveworkspace/workbench/components/chrome/auth-cards';
-import { AUTH_TITLE, AuthStage } from './AuthStage';
+import { AUTH_TITLE } from '@liveworkspace/workbench/components/chrome/AuthStage';
+import { AuthStage } from './AuthStage';
 import { AccountPitch } from './auth-pitches';
 
 export * from '@liveworkspace/workbench/components/chrome/auth-routes';
