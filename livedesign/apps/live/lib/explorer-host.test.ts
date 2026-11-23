@@ -10,7 +10,9 @@ describe('explorer host', () => {
   });
 
   it('opens a design here and another app’s item on its own site', () => {
-    expect(itemHref({ id: 'p1', app: 'livedesign', sharedVia: null } as never)).toBe('/design/p1');
+    expect(itemHref({ id: 'p1', app: 'livedesign', sharedVia: null } as never)).toBe(
+      '/design/p1',
+    );
     const elsewhere = itemHref({ id: 'd1', app: 'livediagram', sharedVia: 'CODE' } as never);
     expect(elsewhere).toMatch(/^https?:\/\//);
     expect(elsewhere.endsWith('/d1?s=CODE')).toBe(true);

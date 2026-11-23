@@ -13,12 +13,7 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livedocuments/edit-operations';
-import {
-  isFinish,
-  isRecord,
-  ELEMENT_FINGERPRINT_LENGTH,
-  type Finish,
-} from '@livedocuments/document';
+import { isFinish, isRecord, ELEMENT_FINGERPRINT_LENGTH, type Finish } from '@livedocuments/document';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.

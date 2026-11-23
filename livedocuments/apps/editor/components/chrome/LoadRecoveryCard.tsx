@@ -23,11 +23,7 @@ export function LoadRecoveryCard({ ownerId }: { ownerId: string | null }) {
         onRepairStart={() => track('UI', 'Cleared', 'BrowserRepair')}
         onRepaired={() => window.location.reload()}
       >
-        <HelpArticleLink
-          article="documentNotLoading"
-          variant="text"
-          label="Troubleshooting steps"
-        />
+        <HelpArticleLink article="documentNotLoading" variant="text" label="Troubleshooting steps" />
       </BrowserRepairPanel>
     </div>
   );

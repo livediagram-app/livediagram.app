@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { fakeAccounts, type FakeAccounts } from '../test-accounts';
 import type { Env } from '../types';
-import { claimAccountMilestone, emailOf, emailsOf, recordAccountSighting } from './people';
+import {
+  claimAccountMilestone,
+  emailOf,
+  emailsOf,
+  recordAccountSighting,
+} from './people';
 import { getNotificationPrefs } from './settings';
 
 // What the liveworkspace accounts Worker keeps of a signed-in person for livedesign

@@ -72,3 +72,4 @@ describe('useEditModeContextMenu', () => {
     document.body.removeChild(layer);
   });
 });
+

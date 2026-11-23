@@ -52,3 +52,4 @@ describe('closeWorkbenchSessions', () => {
     warn.mockRestore();
   });
 });
+

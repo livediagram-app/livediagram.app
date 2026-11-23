@@ -14,14 +14,7 @@ import type { DriveRow, MirrorFolder, MirrorItem } from './types';
 
 export type OutboundOp =
   | { op: 'create-folder'; folder: MirrorFolder }
-  | {
-      op: 'update-folder';
-      folder: MirrorFolder;
-      row: DriveRow;
-      rename: boolean;
-      move: boolean;
-      untrash: boolean;
-    }
+  | { op: 'update-folder'; folder: MirrorFolder; row: DriveRow; rename: boolean; move: boolean; untrash: boolean }
   | { op: 'create-file'; item: MirrorItem }
   | {
       op: 'update-file';
@@ -66,13 +59,10 @@ export function planOutbound(snapshot: MirrorSnapshot, opts: OutboundOptions): O
     const parent = expectedFolderParent(snapshot, folder, row);
     const rename = namesDiffer(folder.name, row);
     const move = parent !== null && parent !== row.parentId;
-    if (rename || move || row.trashed)
-      ops.push({ op: 'update-folder', folder, row, rename, move, untrash: row.trashed });
+    if (rename || move || row.trashed) ops.push({ op: 'update-folder', folder, row, rename, move, untrash: row.trashed });
   }
 
-  const live = [...snapshot.items.values()].sort(
-    (a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id),
-  );
+  const live = [...snapshot.items.values()].sort((a, b) => a.createdAt - b.createdAt || a.id.localeCompare(b.id));
   for (const item of live) {
     const row = snapshot.rows.get(rowKey('item', item.id));
     if (!row) {
@@ -85,9 +75,7 @@ export function planOutbound(snapshot: MirrorSnapshot, opts: OutboundOptions): O
     let content = false;
     if (item.updatedAt > (row.mirroredUpdatedAt ?? 0)) {
       const dueAt =
-        opts.flush || row.contentWrittenAt === null
-          ? opts.now
-          : row.contentWrittenAt + opts.writeIntervalMs;
+        opts.flush || row.contentWrittenAt === null ? opts.now : row.contentWrittenAt + opts.writeIntervalMs;
       if (dueAt <= opts.now) content = true;
       else nextDueAt = nextDueAt === null ? dueAt : Math.min(nextDueAt, dueAt);
     }

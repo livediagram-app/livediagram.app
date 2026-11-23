@@ -4,7 +4,11 @@
   "startBlankHref": "/new?start=blank",
   "allTemplatesHref": "/new",
   "searchHref": "/new?q=",
-  "fan": ["flowchart", "mindmap", "retrospective"],
+  "fan": [
+    "flowchart",
+    "mindmap",
+    "retrospective"
+  ],
   "blanks": [
     {
       "id": "blank",

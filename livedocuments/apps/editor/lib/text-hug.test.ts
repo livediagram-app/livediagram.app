@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createText,
-  TEXT_SCALE_MAX,
-  TEXT_SCALE_MIN,
-  type TextElement,
-} from '@livedocuments/document';
+import { createText, TEXT_SCALE_MAX, TEXT_SCALE_MIN, type TextElement } from '@livedocuments/document';
 import {
   hugCommittedText,
   hugResizedText,

@@ -15,7 +15,8 @@ export type CreateFailure = {
 };
 
 const PLACEMENT_MESSAGES: Record<PlacementRejection, string> = {
-  team_forbidden: 'You’re not a member of that team, so the design can’t be filed in its library.',
+  team_forbidden:
+    'You’re not a member of that team, so the design can’t be filed in its library.',
   folder_not_found: 'That folder no longer exists, or isn’t yours.',
   folder_scope_mismatch: 'That folder belongs to a different space from the one you chose.',
   placement_invalid: 'That isn’t a place a design can be filed.',

@@ -23,7 +23,10 @@ function isViewExempt(method: string, segments: readonly string[]): boolean {
 
 // The share-link list carries every code, edit links included: a view session never reads it (WB54).
 const isShareLinkList = (method: string, segments: readonly string[]) =>
-  method === 'GET' && segments.length === 4 && segments[1] === 'designs' && segments[3] === 'share';
+  method === 'GET' &&
+  segments.length === 4 &&
+  segments[1] === 'designs' &&
+  segments[3] === 'share';
 
 export function workbenchRefusal(
   workbench: WorkbenchContext,

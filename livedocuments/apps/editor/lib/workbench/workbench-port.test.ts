@@ -93,12 +93,8 @@ describe('createWorkbenchPort', () => {
 
     expect(listener).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(2);
-    expect(warn).toHaveBeenCalledWith('[workbench] message-ignored', {
-      type: 'livedocuments:dance',
-    });
-    expect(warn).toHaveBeenCalledWith('[workbench] message-ignored', {
-      type: 'livedocuments:theme',
-    });
+    expect(warn).toHaveBeenCalledWith('[workbench] message-ignored', { type: 'livedocuments:dance' });
+    expect(warn).toHaveBeenCalledWith('[workbench] message-ignored', { type: 'livedocuments:theme' });
   });
 
   it('logs an invalid message once per type and never hands it on', () => {

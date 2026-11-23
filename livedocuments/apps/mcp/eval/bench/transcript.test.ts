@@ -69,9 +69,7 @@ const transcript = [
   line({
     type: 'assistant',
     message: {
-      content: [
-        { type: 'tool_use', id: 't3', name: 'mcp__livedocuments__find_diagrams', input: {} },
-      ],
+      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livedocuments__find_diagrams', input: {} }],
     },
   }),
   line({
@@ -165,9 +163,9 @@ describe('metricsOf', () => {
 describe('documentIdsIn', () => {
   it('reads ids from documentId fields and document links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
-    expect(
-      documentIdsIn(`"documentId": "${DOC}" https://livedocuments.app/document/${other}`),
-    ).toEqual([DOC, other]);
+    expect(documentIdsIn(`"documentId": "${DOC}" https://livedocuments.app/document/${other}`)).toEqual(
+      [DOC, other],
+    );
     expect(documentIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });
 });

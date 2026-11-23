@@ -7,7 +7,12 @@
 // use). None while the page offers its layouts (Start From a Layout). In the canvas layer, sized in
 // screen px at any zoom; takes no presses.
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { logoGuides, logoGuideSnapTargets, logoPageAt, type LaidOutPage } from '@livedesign/design';
+import {
+  logoGuides,
+  logoGuideSnapTargets,
+  logoPageAt,
+  type LaidOutPage,
+} from '@livedesign/design';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { pointerToCanvas } from '@/lib/canvas';

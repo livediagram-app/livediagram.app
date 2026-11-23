@@ -139,3 +139,4 @@ describe('PUT /api/designs/:id/tabs/:tabId name cap', () => {
     expect(tabName(db.sql, 't1')).toBe('');
   });
 });
+

@@ -68,7 +68,9 @@ describe('pageViewApp', () => {
 describe('Page·View validation', () => {
   it('accepts a normalised path', () => {
     expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/' })).toBe(true);
-    expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/design' })).toBe(true);
+    expect(isValidTelemetryEvent({ category: 'Page', action: 'View', type: '/design' })).toBe(
+      true,
+    );
   });
 
   it('rejects a raw or missing path, and any other Page action', () => {

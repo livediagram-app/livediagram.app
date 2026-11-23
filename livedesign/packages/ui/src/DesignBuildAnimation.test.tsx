@@ -14,8 +14,7 @@ describe('DesignBuildAnimation', () => {
   });
 
   it('keeps every keyframe stop inside the loop', () => {
-    const css =
-      render(<DesignBuildAnimation />).container.querySelector('style')!.textContent ?? '';
+    const css = render(<DesignBuildAnimation />).container.querySelector('style')!.textContent ?? '';
     const stops = [...css.matchAll(/(-?[\d.]+)%\s*[{,]/g)].map((m) => Number(m[1]));
     expect(stops.length).toBeGreaterThan(50);
     expect(stops.every((t) => t >= 0 && t <= 100)).toBe(true);

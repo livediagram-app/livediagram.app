@@ -12,10 +12,8 @@ import type { Env } from './types';
 
 export const telemetryEnabled = (env: Env): boolean => serverTelemetryEnabled(env);
 
-export const reportServerEvents = (
-  env: Env,
-  events: readonly TelemetryWireEvent[],
-): Promise<void> => postServerEvents(env, 'livedocuments.app', events);
+export const reportServerEvents = (env: Env, events: readonly TelemetryWireEvent[]): Promise<void> =>
+  postServerEvents(env, 'livedocuments.app', events);
 
 export function reportServerEvent(
   env: Env,

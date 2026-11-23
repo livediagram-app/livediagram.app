@@ -4,7 +4,11 @@
   "startBlankHref": "/new?start=blank",
   "allTemplatesHref": "/new",
   "searchHref": "/new?q=",
-  "fan": ["logo-design", "wireframe-mobile-app", "wireframe-website"],
+  "fan": [
+    "logo-design",
+    "wireframe-mobile-app",
+    "wireframe-website"
+  ],
   "blanks": [
     {
       "id": "blank-logo",

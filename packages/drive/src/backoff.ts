@@ -26,10 +26,7 @@ export function backoffHit(b: Backoff, now: number): Backoff {
 export const backoffFactor = (b: Backoff, now: number) => 2 ** settled(b, now).level;
 
 export const writeIntervalMs = (b: Backoff, now: number) =>
-  Math.min(
-    DRIVE_ITEM_MIN_WRITE_INTERVAL_MS * backoffFactor(b, now),
-    DRIVE_ITEM_MIN_WRITE_INTERVAL_MAX_MS,
-  );
+  Math.min(DRIVE_ITEM_MIN_WRITE_INTERVAL_MS * backoffFactor(b, now), DRIVE_ITEM_MIN_WRITE_INTERVAL_MAX_MS);
 
 export const fallbackCheckMs = (b: Backoff, now: number, baseMs: number) =>
   Math.min(baseMs * backoffFactor(b, now), Math.max(baseMs, DRIVE_FALLBACK_CHECK_MAX_MS));

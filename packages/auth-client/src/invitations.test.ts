@@ -59,9 +59,9 @@ describe('pendingInvitationsFor', () => {
 
   it('throws on a refusal and does not remember it', async () => {
     const failing = fetcherAnswering(503, {});
-    await expect(
-      pendingInvitationsFor(credentials, 'user_bea', { fetcher: failing }),
-    ).rejects.toThrow('invitations failed: 503');
+    await expect(pendingInvitationsFor(credentials, 'user_bea', { fetcher: failing })).rejects.toThrow(
+      'invitations failed: 503',
+    );
     const fetcher = fetcherAnswering(200, { invitations: [] });
     expect(await pendingInvitationsFor(credentials, 'user_bea', { fetcher })).toEqual([]);
     expect(fetcher).toHaveBeenCalledTimes(1);

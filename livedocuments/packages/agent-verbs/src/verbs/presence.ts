@@ -115,10 +115,7 @@ export const presenceClear = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['doc'],
-    examples: [
-      'livedocuments presence clear "Shop"',
-      'livedocuments presence clear 3f9c --tab Flow',
-    ],
+    examples: ['livedocuments presence clear "Shop"', 'livedocuments presence clear 3f9c --tab Flow'],
     prints: 'the tab it left',
   },
 });

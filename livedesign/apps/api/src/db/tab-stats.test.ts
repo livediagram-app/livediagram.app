@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { designStatsSql, readDesignStats, tabStatsOfData, tabStatsStatement } from './tab-stats';
+import {
+  designStatsSql,
+  readDesignStats,
+  tabStatsOfData,
+  tabStatsStatement,
+} from './tab-stats';
 
 // docs/specs/013-workspace/explorer-details-view.md "Where the numbers come from".
 
@@ -45,7 +50,9 @@ function arrange() {
 }
 
 function docStats(sql: DatabaseSync, id: string) {
-  const row = sql.prepare(`SELECT ${designStatsSql('?1')}`).get(id) as { doc_stats: string | null };
+  const row = sql
+    .prepare(`SELECT ${designStatsSql('?1')}`)
+    .get(id) as { doc_stats: string | null };
   return readDesignStats(row.doc_stats);
 }
 
