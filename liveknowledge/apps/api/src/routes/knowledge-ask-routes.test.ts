@@ -597,6 +597,7 @@ describe('AI Knowledge', () => {
         ],
         // Every page was made today: none has had 90 days to be read (knowledge-verification-off.test.ts).
         notRead: { pages: [], total: 0 },
+        requiredReading: [],
         reviewEvery: 90,
         hasKey: false,
         // No key, and this deployment has no built-in AI.

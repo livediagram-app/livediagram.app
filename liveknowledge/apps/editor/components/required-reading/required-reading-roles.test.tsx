@@ -33,7 +33,8 @@ vi.mock('@/lib/telemetry', () => ({ track: tracked }));
 
 const { RequiredReadingBanner } = await import('./RequiredReadingBanner');
 const { PageRailReading } = await import('./PageRailReading');
-const { ReadAgainSwitch } = await import('./ReadAgainToggle');
+const { ReadAgainSwitch, ReadAgainToggle } = await import('./ReadAgainToggle');
+const { EditorChromeContext } = await import('@/app/document/[id]/EditorContext');
 
 const NOW = Date.UTC(2026, 10, 22, 12);
 const REQUIRED = { audience: 'everyone' as const, askedAt: NOW - 86_400_000, round: 1 };
@@ -315,6 +316,39 @@ describe('Page Info', () => {
 });
 
 describe('Ask Everyone to Read Again', () => {
+  it('draws nothing outside a page tab, and nothing without the editor', () => {
+    as(ANSWER.editor!, true);
+    delete chrome.state.pageTab;
+    const store = { get: () => chrome.state } as never;
+    const { container } = render(
+      <EditorChromeContext.Provider value={store}>
+        <ReadAgainToggle />
+      </EditorChromeContext.Provider>,
+    );
+    expect(container.textContent).toBe('');
+    const bare = render(<ReadAgainToggle />);
+    expect(bare.container.textContent).toBe('');
+  });
+
+  it('offers the switch to an Editor editing a Required Reading page', async () => {
+    as(ANSWER.editor!, true);
+    const store = { get: () => chrome.state } as never;
+    render(
+      <EditorChromeContext.Provider value={store}>
+        <ReadAgainToggle />
+      </EditorChromeContext.Provider>,
+    );
+    const toggle = await screen.findByRole('switch', { name: 'Ask Everyone to Read Again' });
+    fireEvent.click(toggle);
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole('switch', { name: 'Ask Everyone to Read Again' })
+          .getAttribute('aria-checked'),
+      ).toBe('true'),
+    );
+  });
+
   it('is a switch named for what it does', () => {
     const onChange = vi.fn();
     render(<ReadAgainSwitch on={false} onChange={onChange} />);

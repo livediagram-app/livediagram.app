@@ -56,11 +56,10 @@ export function ReadAgainSwitch({
   );
 }
 
-function ConnectedReadAgain() {
+function ConnectedReadAgain({ tab }: { tab: string }) {
   const chrome = useEditorChromeStore();
   const toast = useToast();
   const reading = useRequiredReading();
-  const tab = useEditorChrome((s) => s.pageTab.id);
   const on = useReadAgain(tab);
   const offered =
     reading.shown && !!reading.entry.reading.required && reading.entry.reading.manages;
@@ -79,16 +78,21 @@ function ConnectedReadAgain() {
         )
         .catch((err: unknown) => toast.error(readingFailureText(err, 'again')));
     });
-    return () => {
-      release();
-      setReadAgain(tab, false);
-    };
+    return release;
   }, [chrome, offered, tab, toast]);
+  // Off again when the switch goes (Save or Cancel ends edit mode), and only then: a new sender never resets it.
+  useEffect(() => () => setReadAgain(tab, false), [tab]);
   if (!offered) return null;
   return <ReadAgainSwitch on={on} onChange={(next) => setReadAgain(tab, next)} />;
 }
 
 export function ReadAgainToggle() {
   const store = useContext(EditorChromeContext);
-  return store ? <ConnectedReadAgain /> : null;
+  return store ? <ReadAgainOnPage /> : null;
+}
+
+// Outside a page tab (a screen that is no page) there is no page to ask about: nothing.
+function ReadAgainOnPage() {
+  const tab = useEditorChrome((s) => s.pageTab?.id);
+  return tab ? <ConnectedReadAgain key={tab} tab={tab} /> : null;
 }
