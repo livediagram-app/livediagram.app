@@ -69,7 +69,7 @@ export function PhotoDraftBar({
           disabled={busy}
           className="rounded-full border border-slate-300 px-2.5 py-1 text-[11px] font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
         >
-          Discard
+          <span className="text-optical-line">Discard</span>
         </button>
         <Button
           variant="none"

@@ -36,14 +36,14 @@ export function UnreadTip({
           onClick={onRetake}
           className="rounded-full border border-white/40 px-3 py-1 text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
-          Try another photo
+          <span className="text-optical-line">Try another photo</span>
         </button>
         <button
           type="button"
           onClick={onDismiss}
           className="rounded-full border border-white/40 px-3 py-1 text-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
-          I&rsquo;ll type them
+          <span className="text-optical-line">I&rsquo;ll type them</span>
         </button>
       </div>
     </div>

@@ -466,7 +466,7 @@ export function PhotoReviewOverlay({
             onClick={onCancel}
             className="pointer-events-auto rounded-full border border-white/40 bg-slate-900/70 px-4 py-1.5 text-sm text-white shadow-lg backdrop-blur hover:bg-slate-900/90"
           >
-            Cancel
+            <span className="text-optical-line">Cancel</span>
           </button>
           <button
             type="button"
@@ -475,7 +475,9 @@ export function PhotoReviewOverlay({
             data-tour-id="photo-add"
             className={`pointer-events-auto rounded-full bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-800 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
           >
-            Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
+            <span className="text-optical-line">
+              Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
+            </span>
           </button>
         </div>
       </div>

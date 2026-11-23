@@ -7,7 +7,14 @@ import {
 } from '@/lib/identity';
 import { agentRowDetail } from '@/lib/agent-presence-rows';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { AgentIcon, HoverCard, IDENTITY_FILL, PictureDisc, identityVars } from '@livediagram/ui';
+import {
+  AgentIcon,
+  HoverCard,
+  IDENTITY_FILL,
+  PictureDisc,
+  identityVars,
+  Chip,
+} from '@livediagram/ui';
 
 // How far the presence ring paints BEYOND the avatar's layout box, per side.
 //
@@ -98,12 +105,12 @@ export function ParticipantAvatar({
       <span className="flex flex-wrap items-center gap-1">
         <span>{participant.name}</span>
         {badges.map((b) => (
-          <span
+          <Chip
             key={b}
-            className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+            className="bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
           >
             {b}
-          </span>
+          </Chip>
         ))}
       </span>
     ) : (

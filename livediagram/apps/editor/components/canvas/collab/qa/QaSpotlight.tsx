@@ -16,6 +16,7 @@ import {
   stopPointer,
 } from './qa-parts';
 import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
+import { ButtonContent } from '@livediagram/ui';
 
 function SpotButton({
   children,
@@ -47,7 +48,7 @@ function SpotButton({
           : { color: textColor, backgroundColor: tint(textColor, 0.08) }
       }
     >
-      {children}
+      <ButtonContent>{children}</ButtonContent>
     </button>
   );
 }

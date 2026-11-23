@@ -15,6 +15,7 @@ import { participantKey, type Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, QA_ACCENT_INK, QA_ON_ACCENT } from '../qa/qa-parts';
+import { Chip } from '@livediagram/ui';
 
 export function EstimateTable({
   scale,
@@ -74,8 +75,8 @@ export function EstimateTable({
   const unanimous = spread.kind === 'unanimous';
   return (
     <div className="flex flex-col items-center gap-3">
-      <span
-        className="rounded-full px-2.5 py-1 text-[10.5px] font-bold"
+      <Chip
+        className="px-2.5 py-1 text-[10.5px] font-bold"
         style={
           unanimous
             ? { color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.16) }
@@ -83,7 +84,7 @@ export function EstimateTable({
         }
       >
         {estimateSpreadLabel(spread)}
-      </span>
+      </Chip>
       <div className="flex flex-wrap justify-center gap-2">
         {sorted.map((r, i) => {
           const end =

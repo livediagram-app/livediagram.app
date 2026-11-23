@@ -11,6 +11,7 @@ import {
 } from '@livediagram/document';
 import { tint } from '@/lib/element-tint';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { Chip } from '@livediagram/ui';
 
 // One answer on the ring around a Quiz's disc (docs/specs/012-collaboration/quiz.md).
 //
@@ -148,16 +149,17 @@ export function QuizOption({
         {mine ? (
           // Which one was yours, kept after the reveal so a wrong pick still
           // reads as yours rather than disappearing into the faded ones.
-          <span
+          <Chip
             aria-hidden
-            className="absolute -top-2 right-2 rounded-full px-1.5 py-px text-[9px] font-bold uppercase tracking-wide"
+            caps
+            className="absolute -top-2 right-2 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide"
             style={{
               color: right ? QUIZ_CORRECT_GREEN : surface,
               backgroundColor: right ? '#ffffff' : textColor,
             }}
           >
             You
-          </span>
+          </Chip>
         ) : null}
       </button>
       {pickers ? (

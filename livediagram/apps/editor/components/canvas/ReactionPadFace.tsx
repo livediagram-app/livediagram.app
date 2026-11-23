@@ -96,7 +96,7 @@ export function ReactionPadFace({
           className="relative max-w-full truncate rounded-full px-2 py-0.5 text-[10.5px] font-semibold leading-tight"
           style={{ color: textColor, backgroundColor: tint(textColor, 0.07) }}
         >
-          {label}
+          <span className="text-optical-line max-w-full truncate">{label}</span>
         </span>
       ) : null}
     </span>
