@@ -1023,7 +1023,8 @@ host-only, this step can go too.
 
 **Redirect URIs.** Every app's client already has its `www.` callbacks registered beside the bare ones
 (`/api/auth/callback` and `/auth/guest` on both hosts; checked read-only on production on 2026-10-26).
-`scripts/register-client.ts` takes both, and new clients are registered with both. Google's callback moves with
+`scripts/register-client.ts` takes both, and new clients are registered with both; the guest return is added for
+each origin at registration. Google's callback moves with
 `BASE_URL`, so `https://www.liveworkspace.app/api/auth/callback/google` must be an authorised redirect URI of the
 Google client before the accounts Worker deploys (the bare one stays).
 

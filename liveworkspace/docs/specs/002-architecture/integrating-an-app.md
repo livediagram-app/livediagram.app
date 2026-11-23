@@ -204,7 +204,8 @@ liveplanner is wired this way. Its routes live on its API Worker under `/api/aut
 (`liveplanner/apps/api/src/routes/auth.ts`), on the same origin as the app, and it uses the
 workspace package directly (`"@liveworkspace/auth-client": "workspace:*"`). It derives the issuer
 from `ACCOUNTS_URL` (`${ACCOUNTS_URL}/api/auth`) rather than taking `ACCOUNTS_ISSUER`. Register it
-once per environment with its callback on each origin it serves:
+once per environment with its callback on each origin it serves (registering adds each origin's `/auth/guest`,
+the guest hand-off's return):
 
 ```sh
 ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
