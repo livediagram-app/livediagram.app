@@ -294,14 +294,15 @@ describe('boards, metrics and tables (live-data.md)', () => {
   });
 
   it('says a frozen link is frozen, with its day', () => {
-    const now = Date.UTC(2026, 10, 20, 12);
-    const readAt = Date.UTC(2026, 10, 12, 12);
+    // The day as the reader's own clock has it.
+    const now = new Date(2026, 10, 20, 12).getTime();
+    const readAt = new Date(2026, 10, 12, 12).getTime();
     expect(sheetLinkLine({ ...board, frozen: true, readAt }, { kind: 'frozen' }, now)).toEqual({
       lead: 'From',
       name: 'Launch',
       detail: 'frozen 12 Nov',
       tone: 'quiet',
     });
-    expect(frozenDay(Date.UTC(2025, 0, 3, 12), now)).toBe('3 Jan 2025');
+    expect(frozenDay(new Date(2025, 0, 3, 12).getTime(), now)).toBe('3 Jan 2025');
   });
 });
