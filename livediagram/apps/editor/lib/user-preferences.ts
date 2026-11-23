@@ -23,7 +23,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { ElementTourKind } from './element-tours';
-import type { SwatchOverrideStore } from './swatch-overrides';
+import type { SwatchOverrideStore } from '@liveworkspace/workbench/lib/swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';

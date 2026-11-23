@@ -24,7 +24,7 @@ import {
   type Tab,
 } from '@liveplanner/project';
 import { type QuickConnectDirection, type QuickConnectKind } from '@/lib/canvas';
-import { quickAddPlacement } from '@/lib/quick-add-placement';
+import { quickAddPlacement } from '@liveworkspace/workbench/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';

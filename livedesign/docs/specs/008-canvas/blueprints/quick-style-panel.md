@@ -30,7 +30,7 @@ Scope, by file:
 | `apps/live/components/canvas/QuickPenRows.tsx`, `QuickHighlighterRows.tsx`       | The marker and highlighter rows, one per popover, and their button icons                                         |
 | `apps/live/components/canvas/QuickStyleHost.tsx`                                 | Reads the selection, builds the view, picks the page (`useCurrentPageId` for a tool in hand)                     |
 | `apps/live/components/canvas/quick-style-rows.tsx`                               | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
-| `apps/live/lib/swatch-overrides.ts`                                              | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
+| `packages/workbench/src/lib/swatch-overrides.ts`                                 | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
 | `apps/live/hooks/canvas/useSwatchOverrides.ts`                                   | The active theme's overrides, read from and written to the synced preferences                                    |
 | `packages/workbench/src/components/canvas/SwatchOverridePopover.tsx`             | The right-click popover: picker, hex field, Clear override                                                       |
 | `apps/live/app/design/[id]/useEditorState.ts`                                    | Wires memory into the style hooks and the creation hooks; exposes the bar's view-model and `pages`               |

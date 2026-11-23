@@ -1,4 +1,5 @@
-import { THEMES, quickSwatches } from '@livedesign/design';
+import { THEMES } from '@liveworkspace/element-model/themes';
+import { quickSwatches } from '@liveworkspace/element-model/quick-swatches';
 import { describe, expect, it } from 'vitest';
 import {
   SWATCH_OVERRIDE_MAX_BYTES,
@@ -123,10 +124,16 @@ describe('parseSwatchOverrideStore', () => {
       { t: '', s: { 1: '#ffffff' } },
       { s: { 1: '#ffffff' } },
       { t: 'ocean' },
+      // A retired theme's swatches are dropped, in an editor that names its retired themes.
+      { t: 'custom:gone', s: { 1: '#111111' } },
       'junk',
     ];
+    expect(parseSwatchOverrideStore(raw, (id) => id.startsWith('custom:'))).toEqual([
+      { t: 'forest', s: { 1: '#ff0000' }, f: { 6: '#aabbcc' } },
+    ]);
     expect(parseSwatchOverrideStore(raw)).toEqual([
       { t: 'forest', s: { 1: '#ff0000' }, f: { 6: '#aabbcc' } },
+      { t: 'custom:gone', s: { 1: '#111111' } },
     ]);
   });
 

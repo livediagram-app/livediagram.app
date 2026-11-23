@@ -1,5 +1,6 @@
-import { isBoxed, type Element, type Rect } from '@livediagram/document';
-import type { QuickConnectDirection } from '@/lib/canvas';
+import { isBoxed, type Element } from '@liveworkspace/element-model/element';
+import { type Rect } from '@liveworkspace/model-core/geometry-primitives';
+import type { QuickConnectDirection } from './quick-connect';
 
 // Placement math for quick add (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
 // useElementSelectionActions' spawnConnectSelected: given the source

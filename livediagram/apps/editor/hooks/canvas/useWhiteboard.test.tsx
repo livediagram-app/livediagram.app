@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
-import type { ShownSwatch } from '@/lib/swatch-overrides';
+import type { ShownSwatch } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { track } from '@/lib/telemetry';
 import { useWhiteboard } from './useWhiteboard';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';

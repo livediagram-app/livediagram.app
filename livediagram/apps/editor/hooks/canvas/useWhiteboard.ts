@@ -34,7 +34,7 @@ import {
 import { useWhiteboardDockPrefs, type WhiteboardDockPrefsDeps } from './useWhiteboardDockPrefs';
 import { DRAW_PATTERNS } from '@/lib/whiteboard-dock-prefs';
 import type { SnapColoursApi } from './useSnapColours';
-import type { ShownSwatch } from '@/lib/swatch-overrides';
+import type { ShownSwatch } from '@liveworkspace/workbench/lib/swatch-overrides';
 import {
   FILL_TRANSPARENT,
   loadFillChoice,

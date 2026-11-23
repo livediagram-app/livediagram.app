@@ -26,7 +26,11 @@ import {
   type TextElement,
   type ThemeDefinition,
 } from '@livedesign/design';
-import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
+import {
+  applySwatchOverrides,
+  type ShownSwatch,
+  type SwatchOverrides,
+} from '@liveworkspace/workbench/lib/swatch-overrides';
 import type { QuickPenStyle } from './quick-style-pen';
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;

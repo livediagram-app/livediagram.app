@@ -1,12 +1,23 @@
 // Resize geometry for the canvas drag engine (docs/specs/008-canvas/canvas-and-palette.md): projecting a
 // pointer delta into fresh bounds per drag mode (aspect-locked or
 // free), the union-scaling maths a multi-member resize maps every
-// member through, and the corner / snap-mode lookups. Split from
-// lib/canvas.ts (which re-exports everything here, so importers keep
-// resolving) as one cohesive, DOM-free unit.
+// member through, and the corner / snap-mode lookups: one cohesive,
+// DOM-free unit, which each editor's lib/canvas.ts re-exports.
 
-import type { Rect } from '@livehuddle/document';
-import type { DragMode } from './canvas';
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+
+// What a drag does to its element: move it, or resize it from a corner or an edge (n/s change height only, e/w
+// width only). Each editor's lib/canvas.ts names the same modes.
+export type DragMode =
+  | 'move'
+  | 'resize-nw'
+  | 'resize-ne'
+  | 'resize-sw'
+  | 'resize-se'
+  | 'resize-n'
+  | 'resize-s'
+  | 'resize-e'
+  | 'resize-w';
 
 // Floor for any single side of a boxed element during a resize. Below
 // this the shape becomes a pinprick that's near-impossible to grab
@@ -19,13 +30,13 @@ export const MIN_SIZE = 20;
 export type ShapeBounds = Rect;
 
 // Given a shape's bounds at gesture start, project the current pointer
-// delta (`dx`, `dy` already in canvas coordinates — caller has
+// delta (`dx`, `dy` already in canvas coordinates: the caller has
 // inverted the zoom) into a fresh ShapeBounds for the given drag mode.
 //
 // `move` translates the shape uniformly. Each `resize-*` mode pulls
 // the matching corner or edge, flooring each side at `MIN_SIZE` so a
 // shape can't be dragged down to a pinprick. `aspectLocked` (the
-// element's aspect lock, an aspect-locked member of a selection, or Shift) hands the
+// element's lock, a locked member of a selection, or Shift) hands the
 // gesture to `constrainedBounds`, which keeps the width:height ratio
 // from every handle.
 export function nextBounds(

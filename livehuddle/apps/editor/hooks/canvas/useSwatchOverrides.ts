@@ -6,7 +6,11 @@
 // The logic is pure, in lib/swatch-overrides.
 
 import { useMemo } from 'react';
-import type { QuickSwatchRole, QuickSwatchSlot } from '@livehuddle/document';
+import {
+  isRetiredCustomThemeId,
+  type QuickSwatchRole,
+  type QuickSwatchSlot,
+} from '@livehuddle/document';
 import { readUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
   overridesForTheme,
@@ -15,7 +19,7 @@ import {
   storeWithoutOverride,
   type SwatchOverrideStore,
   type SwatchOverrides,
-} from '@/lib/swatch-overrides';
+} from '@liveworkspace/workbench/lib/swatch-overrides';
 
 export type SwatchOverridesApi = {
   // The active theme's overrides only: another theme shows its own slots.
@@ -49,7 +53,7 @@ export function useSwatchOverrides({
 }): SwatchOverridesApi {
   const stored = userPreferences.quickSwatchOverrides;
   const overrides = useMemo(
-    () => overridesForTheme(parseSwatchOverrideStore(stored), themeId),
+    () => overridesForTheme(parseSwatchOverrideStore(stored, isRetiredCustomThemeId), themeId),
     [stored, themeId],
   );
 
@@ -57,7 +61,7 @@ export function useSwatchOverrides({
   // the PUT sends the whole blob, so a stale base would undo other writes.
   const update = (next: (store: SwatchOverrideStore) => SwatchOverrideStore) => {
     const latest = readUserPreferences();
-    const current = parseSwatchOverrideStore(latest.quickSwatchOverrides);
+    const current = parseSwatchOverrideStore(latest.quickSwatchOverrides, isRetiredCustomThemeId);
     const changed = next(current);
     if (changed === current) return;
     const merged = withSwatchOverrideStore(latest, changed);

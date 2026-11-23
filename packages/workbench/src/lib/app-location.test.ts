@@ -5,7 +5,7 @@ import {
   replaceAppLocation,
   interceptAppNavigation,
   setAppNavigationInterceptor,
-} from '@liveworkspace/workbench/lib/app-location';
+} from './app-location';
 
 describe('assignAppLocation', () => {
   const assign = vi.fn();
@@ -27,9 +27,9 @@ describe('assignAppLocation', () => {
   it('goes where it is asked when no frame intercepts', () => {
     stubLocation();
 
-    assignAppLocation('/project/d1');
+    assignAppLocation('/document/d1');
 
-    expect(assign).toHaveBeenCalledWith('/project/d1');
+    expect(assign).toHaveBeenCalledWith('/document/d1');
   });
 
   it('hands the move to the interceptor, which takes it or passes it on', () => {

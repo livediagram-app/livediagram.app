@@ -23,7 +23,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 
 import { upgradeLegacyPreferences } from '@livehuddle/api-schema';
 import type { ElementTourKind } from './element-tours';
-import type { SwatchOverrideStore } from './swatch-overrides';
+import type { SwatchOverrideStore } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livehuddle/telemetry-client';
 import { apiGetPreferences, PREFERENCES_LOCAL_ONLY } from './api-client';
 import {

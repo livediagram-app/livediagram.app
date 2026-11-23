@@ -140,7 +140,7 @@ export type DragMode =
 // Resize geometry (nextBounds / union scaling / corner lookups) +
 // MIN_SIZE / ShapeBounds live in resize-geometry.ts; re-exported so
 // importers keep resolving.
-import type { ShapeBounds } from './resize-geometry';
+import type { ShapeBounds } from '@liveworkspace/workbench/lib/resize-geometry';
 
 export {
   constrainedBounds,
@@ -153,7 +153,7 @@ export {
   snapModeOf,
   unionResizeMember,
   type ShapeBounds,
-} from './resize-geometry';
+} from '@liveworkspace/workbench/lib/resize-geometry';
 
 export type ArrowEnd = 'from' | 'to';
 

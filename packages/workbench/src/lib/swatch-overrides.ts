@@ -7,7 +7,7 @@ import {
   type QuickSwatch,
   type QuickSwatchRole,
   type QuickSwatchSlot,
-} from '@liveknowledge/document';
+} from '@liveworkspace/element-model/quick-swatches';
 
 export type SwatchOverrideRow = Partial<Record<QuickSwatchSlot, string>>;
 export type SwatchOverrides = Partial<Record<QuickSwatchRole, SwatchOverrideRow>>;
@@ -131,8 +131,12 @@ function parseRow(value: unknown): SwatchOverrideRow | undefined {
 
 // The synced blob is untrusted: another client version or a hand edit may
 // have written it. Keep valid themes, slots 1-6 and real colours; the first
-// entry for a theme wins; the caps apply.
-export function parseSwatchOverrideStore(value: unknown): SwatchOverrideStore {
+// entry for a theme wins; the caps apply. `isRetiredTheme` names the themes an editor no longer has (custom
+// themes, docs/specs/011-theme/retired-schemes.md), whose swatches are dropped on read.
+export function parseSwatchOverrideStore(
+  value: unknown,
+  isRetiredTheme?: (themeId: string) => boolean,
+): SwatchOverrideStore {
   if (!Array.isArray(value)) return [];
   const out: SwatchOverrideStore = [];
   for (const item of value) {
@@ -142,6 +146,7 @@ export function parseSwatchOverrideStore(value: unknown): SwatchOverrideStore {
     if (typeof t !== 'string' || t.length === 0 || t.length > SWATCH_OVERRIDE_MAX_THEME_ID)
       continue;
     if (out.some((e) => e.t === t)) continue;
+    if (isRetiredTheme?.(t)) continue;
     const entry: ThemeSwatchOverrides = { t };
     for (const role of ROLES) {
       const row = parseRow(raw[KEY[role]]);

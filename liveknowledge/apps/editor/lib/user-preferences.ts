@@ -24,7 +24,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 
 import { upgradeLegacyPreferences } from '@liveknowledge/api-schema';
 import type { KnowledgeTourId } from './knowledge-tours';
-import type { SwatchOverrideStore } from './swatch-overrides';
+import type { SwatchOverrideStore } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@liveknowledge/telemetry-client';
 import { apiGetPreferences } from './api-client';
 import {

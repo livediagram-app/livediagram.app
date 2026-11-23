@@ -15,7 +15,7 @@ import {
   storeWithoutOverride,
   type SwatchOverrideStore,
   type SwatchOverrides,
-} from '@/lib/swatch-overrides';
+} from '@liveworkspace/workbench/lib/swatch-overrides';
 
 export type SwatchOverridesApi = {
   // The active theme's overrides only: another theme shows its own slots.

@@ -26,7 +26,7 @@ import {
   type QuickSwatchSlot,
   type TextAlignX,
 } from '@liveknowledge/document';
-import type { ShownSwatch } from '@/lib/swatch-overrides';
+import type { ShownSwatch } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { QuickMoreColours } from './QuickMoreColours';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';

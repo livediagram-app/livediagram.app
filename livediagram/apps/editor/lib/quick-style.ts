@@ -26,7 +26,11 @@ import {
   type TextElement,
   type ThemeDefinition,
 } from '@livediagram/document';
-import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
+import {
+  applySwatchOverrides,
+  type ShownSwatch,
+  type SwatchOverrides,
+} from '@liveworkspace/workbench/lib/swatch-overrides';
 import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
 
 // The whiteboard's colours as a row: the choice the targets share and the stock options.

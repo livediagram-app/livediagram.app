@@ -79,7 +79,7 @@ unionMinScale)` where `unionMinScale` is the largest `minUniformScale` of the re
 
 ## Interfaces and contracts
 
-- `apps/editor/lib/resize-geometry.ts` (re-exported from `lib/canvas.ts`): `nextBounds`,
+- `packages/workbench/src/lib/resize-geometry.ts` (re-exported from `lib/canvas.ts`): `nextBounds`,
   `constrainedBounds`, `leadingAxis`, `minUniformScale`, `snapLeadingAxis(candidate, handle, lead,
 snapEdge, minScale = 0)`, `unionResizeMember`, `ResizeAxis`. All pure.
 - `../packages/workbench/src/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts,
@@ -125,7 +125,7 @@ primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ bo
 
 ## Testing
 
-- `lib/resize-geometry.test.ts`: constrained edges (anchor and centring), the floor, a thin stroke,
+- `packages/workbench/src/lib/resize-geometry.test.ts`: constrained edges (anchor and centring), the floor, a thin stroke,
   `leadingAxis`, `minUniformScale`, `snapLeadingAxis`, `unionResizeMember` never bumping.
 - `hooks/canvas/boxed-drag-resolve.resize.test.ts`: leading-axis snap and its guide, every edge
   handle, the aspect lock on an edge, rotated edge and corner, multi uniform scale, hard shrink,

@@ -839,7 +839,11 @@
     "./lib/animated-pattern-still": "./src/lib/animated-pattern-still.ts",
     "./lib/sketch-backdrop-store": "./src/lib/sketch-backdrop-store.ts",
     "./lib/path-draw": "./src/lib/path-draw.ts",
-    "./lib/reaction-particles": "./src/lib/reaction-particles.ts"
+    "./lib/reaction-particles": "./src/lib/reaction-particles.ts",
+    "./lib/panel-layout": "./src/lib/panel-layout.ts",
+    "./lib/swatch-overrides": "./src/lib/swatch-overrides.ts",
+    "./lib/resize-geometry": "./src/lib/resize-geometry.ts",
+    "./lib/quick-add-placement": "./src/lib/quick-add-placement.ts"
   },
   "scripts": {
     "lint": "oxlint",
