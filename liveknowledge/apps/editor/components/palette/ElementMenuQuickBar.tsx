@@ -3,6 +3,7 @@
 // The element menu's quick bar (docs/specs/008-canvas/element-menu-quick-bar.md): one row of glyph buttons above the
 // menu's first category. Assign Action and Add Comment at the left (an element that has one says so, tinted, and the
 // button reads View), Delete alone at the right. Each button closes the menu as it runs.
+import { elementSendItem } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
 import { type BoxedElement, type Element } from '@liveknowledge/document';
 import { Tooltip } from '@liveknowledge/ui';
@@ -41,6 +42,10 @@ export function quickBarItems(
       run: () => props.onOpenComments(target.id),
     },
   ];
+  // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner, while this session
+  // may send.
+  const send = elementSendItem(target);
+  if (send) items.push(send);
   return items;
 }
 

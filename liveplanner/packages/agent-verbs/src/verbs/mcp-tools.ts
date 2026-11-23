@@ -246,7 +246,7 @@ export const mcpChangeItems = mcpTool('change_items', {
   behaviour: 'destructive',
   title: 'Change the items on Plan boards',
   description:
-    'Add, change, move or delete cards, in order: add {title, type, status, fields, template}, set {item, fields, ' +
+    'Add, change, move or delete cards, in order: add {title, type, status, fields, template, sentFrom}, set {item, fields, ' +
     'clear, type}, move {item, status, before}, delete {item}, hand_back {item}. Take a card with fields ' +
     '{"assignee": "me"}; when done, hand it back to your person with hand_back. An add with template starts the card from one of ' +
     'its type’s card templates (by name or id, as list_items lists them), its own title and fields winning; the ' +
@@ -255,6 +255,8 @@ export const mcpChangeItems = mcpTool('change_items', {
     '(a multiple Person or Card field, Blocked By, a multichoice) also clears with [] or null in fields. ' +
     'Flag a card for attention with fields {"flagged": true} (on add or set); unflag it with {"flagged": false} ' +
     'or clear ["flagged"]. ' +
+    'An add with sentFrom {app, itemId, tabId, elementId, text} makes a card from a sticky, words or a thread in ' +
+    'another app (Send to Plan): the card links back to that exact place and the source shows a live chip. ' +
     'An image field or attachments takes {"add": [ids]} or {"remove": [ids]} of pictures upload_image uploaded ' +
     'for this plan. ' +
     'Name things as the board shows them: a ' +

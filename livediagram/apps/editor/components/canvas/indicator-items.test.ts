@@ -98,3 +98,27 @@ describe('indicatorBacking', () => {
     expect(indicatorBacking(undefined)).toBeUndefined();
   });
 });
+
+describe('a sent card (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip")', () => {
+  it('carries the card, a tick once done, before the comments', () => {
+    const onOpen = vi.fn();
+    const items = buildIndicatorItems({
+      card: { onOpen, done: false, title: 'Fix login', where: 'To Do · Sprint' },
+      comments: { count: 1, onOpen: () => {} },
+    });
+    expect(items.map((i) => i.kind)).toEqual(['card', 'comment']);
+    expect(items[0]).toMatchObject({
+      label: 'Open the card “Fix login”, To Do · Sprint, in liveplanner',
+      hoverCard: { title: 'Fix login', description: 'To Do · Sprint. Opens in liveplanner.' },
+    });
+    items[0]!.onClick();
+    expect(onOpen).toHaveBeenCalled();
+    const done = buildIndicatorItems({
+      card: { onOpen, done: true, title: 'T', where: 'Done · S' },
+    });
+    expect(done[0]).toMatchObject({
+      kind: 'card-done',
+      label: 'Open the card “T”, done, Done · S, in liveplanner',
+    });
+  });
+});

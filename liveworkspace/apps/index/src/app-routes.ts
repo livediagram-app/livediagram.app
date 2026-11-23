@@ -20,6 +20,7 @@ import { pushAppEvents } from './event-push';
 import { FUTURE_SLACK_MS } from './events';
 import { pushAutomationSends } from './webhooks/automation-sends';
 import { pushAutomationStep } from './automation-steps';
+import { handleAgentPlanSends, handlePlanCards } from './plan-sends';
 
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -79,6 +80,13 @@ export async function handleApp(
   // /app/items/:id/sheet-changed: watched sheets changed, told to each watcher's app (sheet-sources.ts).
   if (segments.length === 4 && segments[3] === 'sheet-changed') {
     return handleSheetChanged(request, env, app, segments[2]);
+  }
+  // /app/items/:id/plan-cards and /plan-sends: a plan's sent cards changed, an agent's cards with a source (plan-sends.ts).
+  if (segments.length === 4 && segments[3] === 'plan-cards') {
+    return handlePlanCards(request, env, app, segments[2]);
+  }
+  if (segments.length === 4 && segments[3] === 'plan-sends') {
+    return handleAgentPlanSends(request, env, app, segments[2]);
   }
   if (request.method !== 'PUT' && !seenRead && !automationSends && !automationSteps)
     return notFound();

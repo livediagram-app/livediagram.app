@@ -72,6 +72,9 @@ export type ItemChange =
       fields?: Readonly<Record<string, unknown>>;
       // A card template of its type, by name or id (docs/specs/026-plan/plan-agents.md "Card templates").
       template?: string;
+      // Where in another app it came from (plan-agents.md "Cards from another app"): the api asks the index to fill
+      // in its Sent From.
+      sentFrom?: Readonly<Record<string, unknown>>;
     }
   | {
       op: 'set';
@@ -376,7 +379,12 @@ export async function applyItemChanges(
   type PreparedAdd = {
     type: ItemTypeDef;
     fields: Record<string, unknown>;
-    body: { type: string; fields: Record<string, unknown>; place?: { status: string } };
+    body: {
+      type: string;
+      fields: Record<string, unknown>;
+      place?: { status: string };
+      sentFrom?: Readonly<Record<string, unknown>>;
+    };
   };
   const prepareAdd = async (c: Extract<ItemChange, { op: 'add' }>): Promise<PreparedAdd> => {
     const type = typeOfAdd(c);
@@ -409,6 +417,7 @@ export async function applyItemChanges(
         type: type.id,
         fields: { ...fields, title },
         ...(status ? { place: { status } } : {}),
+        ...(c.sentFrom ? { sentFrom: c.sentFrom } : {}),
       },
     };
   };

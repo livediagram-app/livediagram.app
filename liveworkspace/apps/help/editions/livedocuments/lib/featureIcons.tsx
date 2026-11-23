@@ -19,6 +19,7 @@ import {
   lucideSquarePlus,
   lucideStarHalf,
   lucideUsers,
+  lucideSend,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livedocuments/ui';
 import type { ReactNode } from 'react';
@@ -262,6 +263,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   comments: (
     <Glyph>
       <path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z" />
+    </Glyph>
+  ),
+  // A card going off to a plan: Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md).
+  'send-to-plan': (
+    <Glyph>
+      <Prims prims={lucideSend} />
     </Glyph>
   ),
   // A play mark inside a round bubble: a recorded narration played back. Not a camera (snapshots') and not a

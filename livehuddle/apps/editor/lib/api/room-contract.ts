@@ -29,6 +29,13 @@ export type RoomHandlers = {
   // Who follows us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"), by presence id. Sent to
   // this socket alone, on every change; emptied when a new socket opens, since nobody follows its new id yet.
   onFollowers?: (ids: string[]) => void;
+  // A plan's sent cards changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"): the chips read again.
+  onSourceChanged?: (msg: {
+    app: string;
+    itemId: string;
+    sheetIds: string[];
+    cards?: string[];
+  }) => void;
   // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
   // sent to this socket alone after each hello: our answers and reactions are recorded under it.
   onCollabKey?: (key: string) => void;

@@ -203,6 +203,24 @@ const HELD_AT_100 = [
   'src/lib/oauth-replaced-tokens.ts',
   'src/components/oauth/TokenLimitList.tsx',
   'src/components/oauth/TokenLimitListLazy.tsx',
+  // Send to Plan: the picker, its entries, the chips' store and the words read as a card
+  // (liveworkspace/docs/specs/004-index/send-to-plan.md, Work Tracker 1365).
+  'src/components/send-to-plan/article-send-dom.ts',
+  'src/components/send-to-plan/article-sent.ts',
+  'src/components/send-to-plan/send-cards.ts',
+  'src/components/send-to-plan/send-memory.ts',
+  'src/components/send-to-plan/send-menu-item.tsx',
+  'src/components/send-to-plan/send-store.ts',
+  'src/components/send-to-plan/send-to-plan-entry.ts',
+  'src/components/send-to-plan/send-words.ts',
+  'src/components/send-to-plan/SendPlanList.tsx',
+  'src/components/send-to-plan/SendToPlanButton.tsx',
+  'src/components/send-to-plan/SendToPlanDialog.tsx',
+  'src/components/send-to-plan/SendToPlanHost.tsx',
+  'src/components/send-to-plan/SendWordsButton.tsx',
+  'src/components/send-to-plan/sent-card-indicator.ts',
+  'src/components/send-to-plan/SentChip.tsx',
+  'src/components/send-to-plan/ThreadSendToPlan.tsx',
 ];
 
 export default defineProject({

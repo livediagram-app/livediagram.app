@@ -1,6 +1,6 @@
 import type { CSSProperties, Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { EditorState, TextSelection, type Transaction } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
+import { EditorState, Plugin, TextSelection, type Transaction } from 'prosemirror-state';
+import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
 import { cleanFootnoteText, type ArticleFlow } from '@livedocuments/document';
 import { blocksToDoc } from '@/lib/article/article-convert';
@@ -24,6 +24,10 @@ import { slashKey, slashPlugin, type SlashBridge } from '@/lib/article/article-s
 import { type SlashItem } from '@/lib/article/article-slash-items';
 import { setLocalArticleCaret } from '@/lib/article/article-carets-store';
 import { articlePeersPlugin, onlyPeers } from '@/lib/article/article-peers';
+import {
+  articleSentSpec,
+  onlySent,
+} from '@liveworkspace/workbench/components/send-to-plan/article-sent';
 import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
 import { noteArticleTyping, releaseArticleHold } from '@/lib/article/article-holds-store';
 import { announceArticleHeld } from '@/lib/article/article-hold-notice';
@@ -52,10 +56,25 @@ import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
 import { commitWritingOnLeave } from '@/lib/article/article-open-edit';
 import type { ArticleEditorProps, SlashState } from './article-editor-types';
 
+// Sent blocks' chips, and a reader's Send to Plan under the words picked (docs/specs/013-workspace/send-to-plan.md),
+// built on this editor's own ProseMirror (@liveworkspace/workbench's article-sent).
+const sentPlugin = (editable: () => boolean) =>
+  new Plugin(
+    articleSentSpec<Decoration, DecorationSet, EditorState>(editable, {
+      widget: (pos, toDOM, spec) => Decoration.widget(pos, toDOM, spec),
+      set: (doc, decos) => DecorationSet.create(doc, decos),
+      empty: DecorationSet.empty,
+    }),
+  );
 // The writing's paste, tables composed over it.
 const pasteProps = articleTablePasteProps(articlePasteProps);
 
 // What the writing's view is made from (ArticleEditor's refs, setters and handlers, as of its first render).
+/** The writing's class. Read only, it opts out of the canvas's no-selection (useNoCanvasTextSelection), so a reader
+ *  picks words to copy them or send them to a plan (the reader's Send to Plan pill). */
+export const articleFlowClass = (editable: boolean): string =>
+  editable ? 'article-flow' : 'article-flow select-text';
+
 export type MountContext = {
   host: MutableRefObject<HTMLDivElement | null>;
   viewRef: MutableRefObject<EditorView | null>;
@@ -182,6 +201,7 @@ export function mountArticleView({
       // Collaborators' holds: outlined, and our typing in them refused with a notice naming the writer
       // (docs/specs/007-editor/article-pages.md "Holding a paragraph").
       articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
+      sentPlugin(isEditable),
       // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
       findHighlightPlugin(() => latest.current.flow),
       // The footnotes' numbers and the breaks above their notes; a press on a reference puts the caret in its note.
@@ -219,7 +239,7 @@ export function mountArticleView({
         )
         .join('; ');
       return {
-        class: 'article-flow',
+        class: articleFlowClass(p.editable),
         style: `${css}; column-count: ${frame.count}; column-gap: ${frame.gap}px`,
         'data-rules': rules,
         'data-article-flow': p.flow,
@@ -274,7 +294,7 @@ export function mountArticleView({
       if (!v) return;
       v.updateState(v.state.apply(tr));
       // Collaborators' carets and holds arriving change nothing of ours: no commit, no toolbar update.
-      if (onlyPeers(tr) || onlyHolds(tr)) return;
+      if (onlyPeers(tr) || onlyHolds(tr) || onlySent(tr)) return;
       if (tr.docChanged) {
         if (!tr.getMeta('article-remote')) {
           lastLocal.current = Date.now();

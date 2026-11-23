@@ -13,6 +13,7 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
 import {
   SNAPSHOT_BY_ACTION,
   WALKTHROUGH_BY_ACTION,
@@ -28,6 +29,7 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
   );
 
 export const EXACT: Readonly<Record<string, string>> = {
+  ...SEND_TO_PLAN_EXACT,
   ...WALKTHROUGH_EXACT,
   ...LIBRARY_EXACT,
   'Element|Changed|CanvasSuggesting':
@@ -1729,6 +1731,7 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   ...SNAPSHOT_BY_ACTION,
+  ...SEND_TO_PLAN_BY_ACTION,
   ...WALKTHROUGH_BY_ACTION,
   ...LIBRARY_BY_ACTION,
   'Community|Shared': 'Someone shared a design to the Community, the public gallery of designs.',

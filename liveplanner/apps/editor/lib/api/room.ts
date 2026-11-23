@@ -38,6 +38,13 @@ export type RoomHandlers = {
   // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
   // sent to this socket alone after each hello: our answers and reactions are recorded under it.
   onCollabKey?: (key: string) => void;
+  // Cards this plan sent to another plan changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
+  onSourceChanged?: (msg: {
+    app: string;
+    itemId: string;
+    sheetIds: string[];
+    cards?: string[];
+  }) => void;
   onClose?: () => void;
   // The project went to the Trash (docs/specs/013-workspace/trash.md): the room
   // closed this socket with PROJECT_TRASHED_CLOSE and will refuse every
@@ -319,6 +326,13 @@ export function connectRoom(
         } else if (msg.kind === 'collab-key') {
           // A key of the wrong shape is no key of ours: the one we hold stays.
           if (isCollabKey(msg.key)) handlers.onCollabKey?.(msg.key);
+        } else if (msg.kind === 'source-changed') {
+          handlers.onSourceChanged?.({
+            app: msg.app,
+            itemId: msg.itemId,
+            sheetIds: msg.sheetIds,
+            ...(Array.isArray(msg.cards) ? { cards: msg.cards } : {}),
+          });
         } else if (msg.kind === 'op-refused') {
           // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An
           // invalid element"): it reached nobody, so a save waiting on it stops waiting.

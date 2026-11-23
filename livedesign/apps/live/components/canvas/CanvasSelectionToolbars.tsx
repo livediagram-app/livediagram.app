@@ -1,4 +1,8 @@
 import { useCallback } from 'react';
+import {
+  canSendElements,
+  sendElements,
+} from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { useViewportOf } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
@@ -183,6 +187,12 @@ export function CanvasSelectionToolbars({
             onOpenComments={
               readOnly && selected && commentsShown && (props.takePart || hasComments(selected))
                 ? () => onOpenComments(selected.id)
+                : undefined
+            }
+            // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a read-only session's way in; an Editor's is the element menu.
+            onSendToPlan={
+              readOnly && selected && canSendElements([selected])
+                ? () => sendElements([selected])
                 : undefined
             }
             commentsReadOnly={!props.takePart}

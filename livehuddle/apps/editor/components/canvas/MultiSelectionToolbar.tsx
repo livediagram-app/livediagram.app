@@ -1,4 +1,5 @@
 import type { Element } from '@livehuddle/document';
+import { SendToPlanButton } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanButton';
 import { DuplicateIcon, EllipsisIcon, TrashIcon, HoverCard, Glyph } from '@livehuddle/ui';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 import { TurnButtons } from '@livehuddle/avatar/components/TurnButtons';
@@ -89,6 +90,7 @@ export function MultiSelectionToolbar({
           (export, then delete); the divider marks that boundary, same as
           the one after More above. */}
       <span aria-hidden className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+      <SendToPlanButton elements={selectedElements} className={TOOLBAR_BTN} />
       <HoverCard title="Export" description="Export just these elements.">
         <button
           type="button"

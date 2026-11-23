@@ -4,11 +4,11 @@
 // its top, a main-column section under its heading, a Details row (label beside its control), and the
 // quiet created and edited lines at the foot of Details. ItemPanel arranges them; the field controls are
 // ItemFieldEditor's.
-import { FROM_EMAIL_FIELD, readFromEmail } from '@liveplanner/items';
+import { FROM_EMAIL_FIELD, readFromEmail, readSentFrom, SENT_FROM_FIELD } from '@liveplanner/items';
 import { FROM_FORM_FIELD, readFromForm } from '@liveplanner/forms';
 import type { ReactNode } from 'react';
 import { Tooltip, lucideGlyph, relativeSince } from '@liveplanner/ui';
-import { lucideClipboardList, lucideMail } from '@liveworkspace/icons/lucide';
+import { lucideClipboardList, lucideExternalLink, lucideMail } from '@liveworkspace/icons/lucide';
 import {
   AUTOMATION_PERSON_ID,
   GITHUB_PERSON,
@@ -134,6 +134,7 @@ export function ItemDetailsRow({
 export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const response = readFromForm(item.fields[FROM_FORM_FIELD]);
   const fromEmail = readFromEmail(item.fields[FROM_EMAIL_FIELD]);
+  const sentFrom = readSentFrom(item.fields[SENT_FROM_FIELD]);
   const maker = itemStampPerson(item, 'createdBy');
   const made = itemStampTime(item, 'createdAt');
   const editor = itemStampPerson(item, 'updatedBy');
@@ -141,7 +142,7 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
   // A card as made: its Edited by is only its maker, at the moment it was made, so it says Created by alone until
   // someone really edits it (items.md "Created and Last Edited").
   const unedited = editor?.id === maker?.id && edited === made;
-  if (!maker && !response && !fromEmail && !editor) return null;
+  if (!maker && !response && !fromEmail && !sentFrom && !editor) return null;
   const github = isGithubStamp(editor);
   const madeByGithub = isGithubStamp(maker);
   return (
@@ -193,6 +194,28 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
             From email <span className={META_NAME}>{fromEmail}</span>
           </MetaRow>
         ) : null}
+        {sentFrom ? (
+          // A card Send to Plan made (docs/specs/026-plan/items.md "Sent From"): the place it came from, one click back
+          // to it in its own app, in a new browser tab.
+          <MetaRow
+            lead={<SentFromGlyph aria-hidden />}
+            at={undefined}
+            when=""
+            full={`Sent from ${sentFrom.title || 'Untitled'} in ${sentFrom.app}: ${sentFrom.text}`}
+          >
+            Sent from{' '}
+            <a
+              href={sentFrom.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-sent-from=""
+              className={`${META_NAME} cursor-pointer underline decoration-slate-300 underline-offset-2 hover:decoration-current dark:decoration-slate-600`}
+            >
+              {sentFrom.label || sentFrom.title || 'Untitled'}
+            </a>{' '}
+            · {sentFrom.app}
+          </MetaRow>
+        ) : null}
         {maker ? (
           <MetaRow
             lead={<PersonDisc person={madeByGithub ? GITHUB_PERSON : maker} />}
@@ -223,6 +246,7 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
 const META_NAME = 'font-medium text-slate-700 dark:text-slate-200';
 const FormGlyph = lucideGlyph(lucideClipboardList, 14);
 const MailGlyph = lucideGlyph(lucideMail, 14);
+const SentFromGlyph = lucideGlyph(lucideExternalLink, 14);
 
 // One footer row: a disc (or a glyph), the words, and when at the row's end, the exact moment on hover. `full`: the
 // words whole, in a tooltip, for a row whose name may be cut (a rule's).

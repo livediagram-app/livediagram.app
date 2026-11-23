@@ -195,9 +195,13 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Cleared',
   'UI·Closed',
   'UI·Copied',
+  // Send to Plan's card made (liveworkspace/docs/specs/004-index/send-to-plan.md "Telemetry").
+  'UI·Created',
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',
+  // Send to Plan refused by the index or the plan.
+  'UI·Refused',
   'UI·Removed',
   'UI·Searched',
   'UI·Selected',

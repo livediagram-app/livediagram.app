@@ -128,6 +128,26 @@ they are the same family: filled in automatically, never typed.
 - **Dates** read as the viewer's local calendar day ("31 Oct") on a card, the full date and time in its spoken label
   (and in the panel's tooltip on the last edit's "2h ago"); lanes and filters group by that day (`2026-10-31`), sorts by the moment itself.
 
+### Sent From
+
+A card made by [Send to Plan](../../../../liveworkspace/docs/specs/004-index/send-to-plan.md) from another app's
+sticky, words, thread or action, or by an agent naming where it came from, holds **Sent From** (`sentFrom`): the source
+item's app, id and title, the kind of place, its label (a tab's or page's name), the words sent, and the link to the
+exact place. It is kept in `fields` as one plain text field (its JSON, `@liveplanner/items` sent-from.ts) as any
+unknown field is (as an email's sender is), so no card face draws it.
+
+- **In the card's footer**, above Created by: the source app's logo, "Sent from" and the source's title and place, a
+  link that opens the place in its app in a new browser tab, at whatever the reader's own access gives there. Its
+  words are the card's description already, so the row shows only where it came from. A value that does not read as a
+  whole Sent From, or whose link is not a web address, shows nothing.
+- **Filled in by the platform.** liveplanner's Send to Plan door and an agent's `sentFrom` set it, the index filling in
+  the title and the link; no field picker offers it. A copy of the card keeps the footer row, but only the card first
+  made is the one the source's chip follows.
+- **Live on the source.** While a card holds Sent From, every change to its title, column, done state or Trash is told
+  to the index, gathered for 1.5 s, so the source's chip follows it (the platform spec, "The chip"). A deleted sent
+  card is told gone; the room keeps the ids of the sent cards it has seen (`sent_cards`) to know a deletion is one.
+- **Community copies** leave it out, as they leave out an email's sender: it names another item.
+
 ### Attachments
 
 Screenshots, mock-ups and photos kept on the card itself. **Attachments** (`attachments`) is a built-in field any card
