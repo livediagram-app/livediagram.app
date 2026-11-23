@@ -70,7 +70,8 @@ export async function handleDiagramSends(ctx: PersonContext): Promise<Response> 
   const res = await callAppForJson(
     env,
     DIAGRAM_APP,
-    DIAGRAM_FROM_GRAPH_PATH,
+    // callApp adds the /api/internal prefix the shared path carries.
+    DIAGRAM_FROM_GRAPH_PATH.slice('/api/internal'.length),
     input,
     KIT_CREATE_TIMEOUT_MS,
   );

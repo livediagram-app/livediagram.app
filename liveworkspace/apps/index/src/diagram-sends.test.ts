@@ -51,7 +51,7 @@ describe('a send to a diagram', () => {
       link: `${appSiteOrigin(h.db.env, 'livediagram')}/document/${made.id}`,
     });
     const [door] = h.appCalls;
-    expect(door!.url).toContain('/api/internal/items/from-graph');
+    expect(new URL(door!.url).pathname).toBe('/api/internal/items/from-graph');
     expect(door!.body).toEqual({
       owner: 'user_ada',
       name: 'Onboarding diagram',
