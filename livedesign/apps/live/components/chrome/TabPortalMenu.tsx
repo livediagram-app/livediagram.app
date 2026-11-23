@@ -96,7 +96,8 @@ export function PortalMenu({
   canDelete: boolean;
   canClearContent: boolean;
   // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md "How it looks"): it has no content and its name
-  // follows its file, so its menu keeps only Remove Tab, its folder and, when it opens nothing, Connect Again.
+  // follows its file unless renamed, so its menu keeps only Rename, Remove Tab, its folder and, when it opens nothing,
+  // Connect Again.
   connected?: ConnectedTabMenu | undefined;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
@@ -214,9 +215,11 @@ export function PortalMenu({
     );
   }
 
-  // A connected tab's menu: Remove Tab (the file stays as it is), its folder and, when it opens nothing, Connect Again.
+  // A connected tab's menu: Rename (this design's name for it), Remove Tab (the file stays as it is), its folder and,
+  // when it opens nothing, Connect Again.
   const connectedBody = connected ? (
     <>
+      <MenuActionRow plain icon={<PencilIcon />} label="Rename" onClick={onRename} />
       {connected.broken ? (
         <MenuActionRow
           plain
@@ -234,7 +237,7 @@ export function PortalMenu({
         label="Organise in Tab Folder"
         onClick={() => setView('folder')}
       />
-      {/* Three verbs at most, so plain rows, Remove last under a hairline: an icon row would hold the bin alone. */}
+      {/* Four verbs at most, so plain rows, Remove last under a hairline: an icon row would hold the bin alone. */}
       <MenuGroupSeparator />
       <MenuActionRow
         plain

@@ -25,7 +25,12 @@ import {
   type Tab,
 } from '@livedesign/design';
 import { apiLinkTab } from '@/lib/api-client';
-import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
+import {
+  connectionOf,
+  followedConnectedTab,
+  hasOwnName,
+  renamedConnectedTab,
+} from '@liveworkspace/workbench/components/connect/tab-connection';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
@@ -156,9 +161,30 @@ export function useTabActions(deps: TabActionsDeps) {
     // pill's inline rename, the command palette, an import) lands under the
     // same limit (docs/specs/006-design/name-length.md).
     const trimmed = truncateName(name);
+    // A connected tab's own name (liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"): the name is
+    // this design's label, the file's kept beside it; nothing typed follows the file again.
+    const connected = tabs.find((t) => t.id === id);
+    if (connected && connectionOf(connected)) {
+      const next = renamedConnectedTab(connected, trimmed);
+      if (next === connected) return;
+      commitTabs((ts) => ts.map((t) => (t.id === id ? next : t)));
+      // Its own events: an untyped Renamed counts tabs of content (the dashboard's Tabs Renamed).
+      track('Tab', 'Changed', hasOwnName(next) ? 'ConnectedName' : 'ConnectedNameReset');
+      return;
+    }
     if (trimmed === previous.trim()) return;
     commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
     track('Tab', 'Renamed');
+  };
+
+  // A connected tab's file answered its name (an open): the tab follows it, or keeps its own name and holds the file's
+  // beside it. Nobody renamed anything, so it counts nothing.
+  const followConnectedTab = (id: string, answered: string) => {
+    const target = tabs.find((t) => t.id === id);
+    if (!target || !connectionOf(target)) return;
+    const next = followedConnectedTab(target, truncateName(answered));
+    if (next === target) return;
+    commitTabs((ts) => ts.map((t) => (t.id === id ? next : t)));
   };
 
   // Share the active tab into another of the user's designs (docs/specs/006-design/tab-design-many-to-many.md).
@@ -333,6 +359,7 @@ export function useTabActions(deps: TabActionsDeps) {
     importTextIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
+    followConnectedTab,
     linkActiveTabTo,
     duplicateTab,
     deleteTab,
