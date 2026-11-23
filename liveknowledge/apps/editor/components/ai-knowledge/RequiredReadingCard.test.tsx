@@ -36,7 +36,7 @@ describe('RequiredReadingCard', () => {
     render(<RequiredReadingCard pages={[]} onOpenPage={vi.fn()} />);
     expect(screen.getByText('No Required Reading')).toBeTruthy();
     expect(
-      screen.getByText('An Editor marks a page Required Reading from its Page Info.'),
+      screen.getByText('An Editor marks a page Required Reading from its menu in the page tree.'),
     ).toBeTruthy();
   });
 });
