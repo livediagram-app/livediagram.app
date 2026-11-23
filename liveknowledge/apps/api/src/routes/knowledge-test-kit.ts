@@ -1,6 +1,6 @@
 // What the knowledge route tests share: a knowledgebase of three pages in the test database, and a caller for each
 // share role (docs/specs/013-workspace/share-roles.md). Not a `.test.ts` file, so vitest collects no suite from it.
-import { UNOWNED_PAGE } from '@liveknowledge/knowledge';
+import { UNOWNED_PAGE, type AiEditing } from '@liveknowledge/knowledge';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
@@ -119,7 +119,12 @@ export async function knowledgeKit(
   {
     bearers = false,
     waitUntil,
-  }: { bearers?: boolean; waitUntil?: (work: Promise<unknown>) => void } = {},
+    aiEditing = 'unverified',
+  }: {
+    bearers?: boolean;
+    waitUntil?: (work: Promise<unknown>) => void;
+    aiEditing?: AiEditing;
+  } = {},
 ): Promise<Kit> {
   const db = sqliteD1({ DOCUMENT_ROOM: roomBinding(), ...base } as unknown as Partial<Env>);
   const call: Kit['call'] = (who, method, path, body) => {
@@ -149,6 +154,8 @@ export async function knowledgeKit(
   const made = await call('editor', 'POST', '/api/documents', {
     id: 'kb',
     name: 'Handbook',
+    // Agents write here as they did before AI Editing (ai-editing.md); a suite that tests a level sets its own.
+    knowledgeSettings: { reviewEvery: 90, aiEditing },
     tabs: pages.map((p) => ({ ...(p as object), knowledge: UNOWNED_PAGE })),
   });
   if (made.status >= 300) throw new Error(`create failed: ${made.status} ${await made.text()}`);

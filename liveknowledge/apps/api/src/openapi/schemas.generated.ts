@@ -5536,6 +5536,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "`GET .../context`: the Always in Context pages as Markdown in tree order, within the budget, with what the caller may do here.",
     "properties": {
+      "aiEditUnverifies": {
+        "description": "Remove Verification When AI Edits, on under Edit Any Page.",
+        "type": "boolean"
+      },
+      "aiEditing": {
+        "$ref": "#/components/schemas/KnowledgeAiEditing",
+        "description": "The knowledgebase's AI Editing (ai-editing.md); absent from an older api, read as `suggest`."
+      },
       "budget": {
         "type": "number"
       },
@@ -5640,6 +5648,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "mcp",
       "cli",
       "token"
+    ],
+    "type": "string"
+  },
+  "KnowledgeAiEditing": {
+    "description": "How far an agent may change pages itself (ai-editing.md): Suggest Edits Only, Edit Unverified Pages, Edit Any Page.",
+    "enum": [
+      "suggest",
+      "unverified",
+      "any"
     ],
     "type": "string"
   },
@@ -7031,15 +7048,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeSettingsRequest": {
     "additionalProperties": false,
-    "description": "`PUT .../knowledge-settings`: Editor only. Answers the settings as stored.",
+    "description": "`PUT .../knowledge-settings`: any of these, at least one. The AI fields are an Editor's in person (ai-editing.md).",
     "properties": {
+      "aiEditUnverifies": {
+        "type": "boolean"
+      },
+      "aiEditing": {
+        "$ref": "#/components/schemas/KnowledgeAiEditing"
+      },
       "reviewEvery": {
         "$ref": "#/components/schemas/KnowledgeReviewEvery"
       }
     },
-    "required": [
-      "reviewEvery"
-    ],
     "type": "object"
   },
   "KnowledgeSettingsResponse": {
@@ -7058,6 +7078,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "What a knowledgebase decides for every page (verification.md \"The Review Period\"): how long after it was last verified a page comes due for review. In a document read, the `document-meta` op and the routes below.",
     "properties": {
+      "aiEditUnverifies": {
+        "const": true,
+        "description": "Remove Verification When AI Edits, in effect under Edit Any Page alone.",
+        "type": "boolean"
+      },
+      "aiEditing": {
+        "$ref": "#/components/schemas/KnowledgeAiEditing",
+        "description": "AI Editing (ai-editing.md): absent is Suggest Edits Only."
+      },
       "labels": {
         "items": {
           "$ref": "#/components/schemas/KnowledgeLabelWire"

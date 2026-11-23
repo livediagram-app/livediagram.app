@@ -2,25 +2,28 @@
 
 One row per default applied where a spec is silent or qualitative.
 
-| #   | Blueprint       | Spec silence                                              | Default applied                                                                                        |
-| --- | --------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| D1  | continuous-page | How short a page may be                                   | `CONTINUOUS_PAGE_MIN_HEIGHT`, 240 px: the margins and a Title's line; the window fills the rest        |
-| D2  | continuous-page | The tallest a page may be                                 | `CONTINUOUS_PAGE_MAX_HEIGHT`, 4,000,000 px, its own limit and not Fit to Content's 19,200 px           |
-| D3  | continuous-page | Which way the page grows                                  | Downwards from a fixed top, so nothing placed in the writing moves                                     |
-| D4  | continuous-page | A page added later, before it is named                    | "Untitled Page"                                                                                        |
-| D5  | continuous-page | A template's header, footer, page numbers and page breaks | Left out as the template is built; the writing itself is kept                                          |
-| D6  | continuous-page | A page's height before any editor has laid it out         | The layout estimator's (`withArticleHeightEstimated`), written with an agent's `write_article`         |
-| D7  | continuous-page | An article stored on paper pages (an imported JSON tab)   | Kept on its paper pages, paginating as livedocuments does                                              |
-| D8  | editing         | When the draft is made                                    | At the first change in edit mode, never on Edit: an Edit and a Cancel with nothing typed store nothing |
-| D9  | editing         | Who saves while others edit                               | Anyone editing; the others stay in edit mode on the new saved page, their next change a new draft      |
-| D10 | editing         | Where the draft bar stands                                | In the top row, in Edit's place before Page Info and Share                                             |
-| D11 | editing         | How fresh "Unsaved changes from X, <when>" is             | The record moves at most once a minute (`DRAFT_TOUCH_MS`)                                              |
-| D12 | editing         | An agent's write and the draft's change to the same block | The draft's wins; the agent's other blocks stay (`mergeDraftOverSaved`)                                |
-| D13 | publishing      | Who may publish                                           | An Editor of the whole knowledgebase, in person and signed in; never a Participant or an agent's token |
-| D14 | publishing      | What of a page goes public                                | Its saved writing, title, emoji icon and place; pictures, drawings, charts and covers are not built    |
-| D15 | publishing      | A Pending or Rejected page's subpages                     | Published under the nearest published ancestor                                                         |
-| D16 | publishing      | How fresh the public site is                              | 60 seconds at the edge, refreshed from the knowledgebase on the next read after a change               |
-| D17 | publishing      | A renamed page's or site's old address                    | A permanent redirect to the new one while the site stays published                                     |
-| D18 | page-tree       | Restoring a subpage trashed apart from its parent page    | It comes back at the top level when its parent is not in the tree, saying so ("at the top level")      |
-| D19 | page-tree       | An Offline knowledgebase's Trash                          | None: its delete keeps the old words and Undo brings a page back                                       |
-| D20 | page-tree       | Who "deleted" a page an agent deleted                     | The agent's token name, else "An agent"; agents never list, restore or empty the Trash                 |
+| #   | Blueprint       | Spec silence                                                    | Default applied                                                                                        |
+| --- | --------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| D1  | continuous-page | How short a page may be                                         | `CONTINUOUS_PAGE_MIN_HEIGHT`, 240 px: the margins and a Title's line; the window fills the rest        |
+| D2  | continuous-page | The tallest a page may be                                       | `CONTINUOUS_PAGE_MAX_HEIGHT`, 4,000,000 px, its own limit and not Fit to Content's 19,200 px           |
+| D3  | continuous-page | Which way the page grows                                        | Downwards from a fixed top, so nothing placed in the writing moves                                     |
+| D4  | continuous-page | A page added later, before it is named                          | "Untitled Page"                                                                                        |
+| D5  | continuous-page | A template's header, footer, page numbers and page breaks       | Left out as the template is built; the writing itself is kept                                          |
+| D6  | continuous-page | A page's height before any editor has laid it out               | The layout estimator's (`withArticleHeightEstimated`), written with an agent's `write_article`         |
+| D7  | continuous-page | An article stored on paper pages (an imported JSON tab)         | Kept on its paper pages, paginating as livedocuments does                                              |
+| D8  | editing         | When the draft is made                                          | At the first change in edit mode, never on Edit: an Edit and a Cancel with nothing typed store nothing |
+| D9  | editing         | Who saves while others edit                                     | Anyone editing; the others stay in edit mode on the new saved page, their next change a new draft      |
+| D10 | editing         | Where the draft bar stands                                      | In the top row, in Edit's place before Page Info and Share                                             |
+| D11 | editing         | How fresh "Unsaved changes from X, <when>" is                   | The record moves at most once a minute (`DRAFT_TOUCH_MS`)                                              |
+| D12 | editing         | An agent's write and the draft's change to the same block       | The draft's wins; the agent's other blocks stay (`mergeDraftOverSaved`)                                |
+| D13 | publishing      | Who may publish                                                 | An Editor of the whole knowledgebase, in person and signed in; never a Participant or an agent's token |
+| D14 | publishing      | What of a page goes public                                      | Its saved writing, title, emoji icon and place; pictures, drawings, charts and covers are not built    |
+| D15 | publishing      | A Pending or Rejected page's subpages                           | Published under the nearest published ancestor                                                         |
+| D16 | publishing      | How fresh the public site is                                    | 60 seconds at the edge, refreshed from the knowledgebase on the next read after a change               |
+| D17 | publishing      | A renamed page's or site's old address                          | A permanent redirect to the new one while the site stays published                                     |
+| D18 | page-tree       | Restoring a subpage trashed apart from its parent page          | It comes back at the top level when its parent is not in the tree, saying so ("at the top level")      |
+| D19 | page-tree       | An Offline knowledgebase's Trash                                | None: its delete keeps the old words and Undo brings a page back                                       |
+| D20 | page-tree       | Who "deleted" a page an agent deleted                           | The agent's token name, else "An agent"; agents never list, restore or empty the Trash                 |
+| D21 | ai-editing      | AI Editing for a knowledgebase that never chose                 | Suggest Edits Only, as the owner named it; existing write grants meet it until an Editor raises it     |
+| D22 | ai-editing      | Moving and making pages under Suggest Edits Only                | By scope alone: they change no page's writing                                                          |
+| D23 | ai-editing      | Remove Verification When AI Edits while another level is chosen | Kept as it was, and in effect only under Edit Any Page                                                 |

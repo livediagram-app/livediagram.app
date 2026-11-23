@@ -84,7 +84,8 @@ export const mcpGetContext = mcpTool('get_context', {
   description:
     'Call this first. Returns the pages the team marked Always in Context, whole, as Markdown, in the order of ' +
     'the page tree and within the context budget, what this connection may do here (its role and scopes), and ' +
-    'the knowledgebase’s Review Period (review_period: how long after it was verified a page comes due). ' +
+    'the knowledgebase’s Review Period (review_period: how long after it was verified a page comes due), and ' +
+    'its AI Editing (ai_editing, ai_edit_unverifies and ai_editing_allows: how far write_page may change pages here). ' +
     `${TRUST} ${HEALTH} Then search_pages for what a task needs.`,
   inputSchema: getContextShape,
   outputSchema: getContextOutput,
@@ -159,8 +160,10 @@ export const mcpWritePage = mcpTool('write_page', {
   title: 'Write a page directly',
   description:
     'Replace a page’s whole writing with Markdown, or append to it, at once and without a person’s review. ' +
-    'Only for a connection with the write scope (get_context lists the scopes), and never on a verified page or one ' +
-    'whose review is due: there, use suggest_edit. read_page first and send the whole page back, since "replace" drops what the ' +
+    'Only for a connection with the write scope, and only as far as the knowledgebase’s AI Editing allows ' +
+    '(get_context’s ai_editing and ai_editing_allows): "suggest" refuses every write, "unverified" refuses a ' +
+    'verified page or one whose review is due, "any" takes every page. Where it is refused, use suggest_edit. ' +
+    'read_page first and send the whole page back, since "replace" drops what the ' +
     'Markdown leaves out.',
   inputSchema: writePageShape,
   outputSchema: writePageOutput,

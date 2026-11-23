@@ -25,7 +25,13 @@ export type KnowledgeReviewEvery = 30 | 90 | 180 | 365 | 'never';
 export type KnowledgeSettingsWire = {
   reviewEvery: KnowledgeReviewEvery;
   labels?: KnowledgeLabelWire[];
+  /** AI Editing (ai-editing.md): absent is Suggest Edits Only. */
+  aiEditing?: KnowledgeAiEditing;
+  /** Remove Verification When AI Edits, in effect under Edit Any Page alone. */
+  aiEditUnverifies?: true;
 };
+/** How far an agent may change pages itself (ai-editing.md): Suggest Edits Only, Edit Unverified Pages, Edit Any Page. */
+export type KnowledgeAiEditing = 'suggest' | 'unverified' | 'any';
 /** One of the knowledgebase's labels (page-surface.md "Page labels"): its colour a standard colour's name ("blue")
  *  or a custom `#rrggbb`. Kept with the settings, so a rename is one write and no page's. */
 export type KnowledgeLabelWire = { id: string; name: string; colour: string };
@@ -41,7 +47,12 @@ export type KnowledgeLabelChangeResponse = {
   labels: KnowledgeLabelWire[];
 };
 /** `PUT .../knowledge-settings`: Editor only. Answers the settings as stored. */
-export type KnowledgeSettingsRequest = { reviewEvery: KnowledgeReviewEvery };
+/** `PUT .../knowledge-settings`: any of these, at least one. The AI fields are an Editor's in person (ai-editing.md). */
+export type KnowledgeSettingsRequest = {
+  reviewEvery?: KnowledgeReviewEvery;
+  aiEditing?: KnowledgeAiEditing;
+  aiEditUnverifies?: boolean;
+};
 export type KnowledgeSettingsResponse = { knowledgeSettings: KnowledgeSettingsWire };
 /** `GET .../knowledge-settings/preview?reviewEvery=`: how many pages are Review Due now and how many would be
  *  under the period asked about, so a dialog can say so before a shorter period is applied. */
@@ -532,6 +543,10 @@ export type KnowledgeAgentContextResponse = {
   tokens: number;
   /** The knowledgebase's Review Period. */
   reviewEvery: KnowledgeReviewEvery;
+  /** The knowledgebase's AI Editing (ai-editing.md); absent from an older api, read as `suggest`. */
+  aiEditing?: KnowledgeAiEditing;
+  /** Remove Verification When AI Edits, on under Edit Any Page. */
+  aiEditUnverifies?: boolean;
   pages: (KnowledgePageRef & { markdown: string; tokens: number; trust: KnowledgePageTrust })[];
   leftOut: (KnowledgePageRef & { tokens: number })[];
   pageCount: number;

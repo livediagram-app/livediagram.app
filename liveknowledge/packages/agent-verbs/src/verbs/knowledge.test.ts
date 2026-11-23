@@ -99,7 +99,8 @@ describe('context', () => {
       review_period: '90 days',
     });
     expect(context.text!(out)).toEqual([
-      'Handbook · 4 pages · reviews every 90 days · you act as participate · scopes: read, suggest · 20 of 8000 tokens',
+      'Handbook · 4 pages · reviews every 90 days · AI Editing: suggest edits only · you act as participate · scopes: read, suggest · 20 of 8000 tokens',
+      'AI Editing is Suggest Edits Only: change a page with suggest_edit, for a person to accept. write_page is refused.',
       '',
       '--- "Deploys" (deploys) · verified 2026-10-01, review due 2026-12-30',
       'On Tuesdays.',

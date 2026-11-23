@@ -46,8 +46,10 @@ until then. --old is the passage as read prints it; without it the new text is a
   liveknowledge suggest Handbook Deploys --reason "Moved in March" --old "on Tuesdays" --new "on Mondays"
 
 Add a page (never verified), write one directly, or move one. write and move need the write scope
-(an Editor of the knowledgebase grants it), and write is refused on a verified page and on one whose
-review is due: suggest there.
+(an Editor of the knowledgebase grants it), and write goes only as far as the knowledgebase's AI
+Editing allows (context prints it): Suggest Edits Only, the default, refuses every write; Edit
+Unverified Pages refuses a verified page and one whose review is due; Edit Any Page takes every
+page. Where write is refused, suggest instead.
 
   liveknowledge new Handbook Hotfixes hotfixes.md --parent Deploys
   liveknowledge write Handbook Hotfixes hotfixes.md

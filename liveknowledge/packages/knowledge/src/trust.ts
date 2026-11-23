@@ -7,6 +7,13 @@ import type { ReviewEvery } from '@liveknowledge/document';
 import { parseApproval, type PageApproval } from './approval-field';
 
 export {
+  AI_EDITING_LEVELS,
+  DEFAULT_AI_EDITING,
+  aiEditingOf,
+  aiEditUnverifies,
+  aiWriteReach,
+  isAiEditing,
+  type AiEditing,
   DEFAULT_KNOWLEDGE_SETTINGS,
   DEFAULT_REVIEW_EVERY,
   REVIEW_INTERVALS,

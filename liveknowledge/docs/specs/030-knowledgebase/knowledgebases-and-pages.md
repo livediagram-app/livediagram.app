@@ -199,6 +199,7 @@ it. The menu is icon-left verb rows under the knowledgebase's name:
 | Export                | Opens Export                                                                                 | everyone                            |
 | Publish to the Web    | Opens [Publish to the Web](publishing.md): the knowledgebase, or a section, as a public site | Editor, signed in, not kept Offline |
 | AI Settings           | Opens AI Settings ([Search and Ask](search-and-ask.md))                                      | Editor, not kept Offline            |
+| AI Editing            | Opens [AI Editing](ai-editing.md): how far agents may change pages themselves                | Editor, not kept Offline            |
 | Delete                | Moves the knowledgebase to the Trash, after its own confirmation; last, under a separator    | Editor                              |
 
 - Knowledgebase Style is not a row: it opens from the footer's Style ([Knowledgebase Style](page-surface.md#knowledgebase-style)).
@@ -268,6 +269,7 @@ Participant never manages who has access.
 | Knowledgebase Style                                             | yes    | no          | no     |
 | Automations (none built yet; the rule stands for when they are) | yes    | no          | no     |
 | AI Settings (the key and the model), allow an agent to write    | yes    | no          | no     |
+| AI Editing (how far agents may change pages)                    | yes    | no          | no     |
 | Rename or delete the knowledgebase, share it, change roles      | yes    | no          | no     |
 | Publish to the Web, change what is published, Unpublish         | yes    | no          | no     |
 | Export, from the knowledgebase's menu                           | yes    | yes         | yes    |

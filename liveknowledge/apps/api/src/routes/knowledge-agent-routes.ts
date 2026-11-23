@@ -6,7 +6,7 @@
 //   POST /api/documents/<id>/pages                 a new page from Markdown (create_page): an Editor, or an
 //                                                  Editor's agent holding `suggest`
 //   PUT  /api/documents/<id>/pages/<tab>           the page's writing replaced, or added to (write_page): Editor;
-//                                                  an agent needs `write`, and never on a verified page
+//                                                  an agent needs `write`, and goes as far as AI Editing allows
 //   POST /api/documents/<id>/pages/<tab>/move      a page moved in the tree (move_page): Editor
 //   PUT  /api/documents/<id>/agents/<token>/scopes what an API token may do here: an Editor in person
 // Reading is every role's. A page read here is counted as `GET tabs/<tab>` counts it. `<tab>`, `parent` and `before`
@@ -51,6 +51,8 @@ import {
 } from '@liveknowledge/edit-operations';
 import {
   CONTEXT_BUDGET_TOKENS,
+  aiEditUnverifies,
+  aiEditingOf,
   assembleContext,
   backlinkRows,
   backlinks,
@@ -263,6 +265,9 @@ async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<
     budget: CONTEXT_BUDGET_TOKENS,
     tokens: context.tokens,
     reviewEvery: document.knowledgeSettings.reviewEvery,
+    // How far an agent may change pages itself here (ai-editing.md "For agents").
+    aiEditing: aiEditingOf(document.knowledgeSettings),
+    aiEditUnverifies: aiEditUnverifies(document.knowledgeSettings),
     pages: context.pages.map((p) => ({
       tab: p.id,
       title: p.title,

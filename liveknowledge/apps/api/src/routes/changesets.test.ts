@@ -85,6 +85,8 @@ async function setUp(
   const created = await call(db, 'POST', '/api/documents', {
     id: 'D',
     name: 'Board',
+    // Agents write here (docs/specs/030-knowledgebase/ai-editing.md): the default only suggests.
+    knowledgeSettings: { reviewEvery: 90, aiEditing: 'unverified' },
     tabs: [{ id: 't1', name: 'Board', elements }],
   });
   expect(created.status).toBe(201);

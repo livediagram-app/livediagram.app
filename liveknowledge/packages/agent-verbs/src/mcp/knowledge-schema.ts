@@ -15,6 +15,7 @@ import {
   PAGE_MOTION_SPEED_MIN,
   truncateName,
 } from '@liveknowledge/document';
+import { AI_EDITING_VALUES } from '../knowledge/ai-editing';
 import { REVIEW_PERIODS } from '../knowledge/trust';
 
 /** The most one suggestion holds (the api's SUGGESTION_MAX_CHARS). */
@@ -134,6 +135,21 @@ export const getContextOutput = {
       'What this connection may do here: read; suggest (suggest_edit, create_page); write (write_page, move_page).',
     ),
   review_period: reviewPeriod,
+  ai_editing: z
+    .enum(AI_EDITING_VALUES)
+    .describe(
+      'The knowledgebase’s AI Editing, set by an Editor (no tool sets it): "suggest" (Suggest Edits Only, the default: every agent change goes through suggest_edit), "unverified" (write_page rewrites never-verified pages only) or "any" (write_page rewrites any page, verified ones too). It caps the write scope: a connection without write only suggests whatever this says.',
+    ),
+  ai_edit_unverifies: z
+    .boolean()
+    .describe(
+      'True where ai_editing is "any" and rewriting a verified or review-due page takes its verification away until a person verifies it again.',
+    ),
+  ai_editing_allows: z
+    .string()
+    .describe(
+      'What this connection may change here, the lower of its scopes and ai_editing, in one sentence.',
+    ),
   budget_tokens: z.number().describe('The most the Always in Context pages may hold together.'),
   tokens: z.number().describe('What the pages below hold.'),
   pages: z
