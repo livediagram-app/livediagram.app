@@ -212,6 +212,13 @@ it. The menu is icon-left verb rows under the knowledgebase's name:
   knowledgebase's name. Enter, Space, Down Arrow or a press opens the menu with the first row focused; the arrow keys, Home and
   End move through the rows, a letter jumps to the row that starts with it, Enter chooses, and Escape closes it with
   the focus back on the button. Each row is a menu item.
+- **Typing a new name renames.** The name is what is pressed, so a person who presses it and types a name is renaming
+  it. While the letters typed spell the start of a row they jump to it, as above; the first letter that spells no row
+  starts Rename with every letter typed so far, the caret after them, and the rest of the name carries on in the field
+  ("Team Handbook" is kept whole, never "Handbook"). A space inside the name is the name's, never a press of the
+  focused row; a space with nothing typed still chooses it. The letters build one search as the typeahead's do (500
+  ms between keys), and a key typed before the menu has taken focus counts. Only where Rename is a row: a Participant's
+  or Viewer's typing stays the menu's.
 - **On a phone** the same menu opens from the head of the Pages sheet, its button 44 px tall. Rename renames in the
   sheet; every other row closes the sheet, since what it opens stands over the page.
 

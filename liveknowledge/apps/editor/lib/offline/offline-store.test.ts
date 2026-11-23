@@ -75,6 +75,15 @@ describe('offline transforms', () => {
     expect(out.tabs[0]!.folder).toBe('F');
   });
 
+  it("applyMeta keeps the labels when the Review Period changes, and tabToSummary carries a page's labels", () => {
+    const labels = [{ id: 'lbl_a', name: 'A', colour: 'blue' }];
+    const withLabels = applyMeta(rec(), { knowledgeSettings: { reviewEvery: 30, labels } }, 200);
+    const out = applyMeta(withLabels, { knowledgeSettings: { reviewEvery: 'never' } }, 300);
+    expect(out.knowledgeSettings).toEqual({ reviewEvery: 'never', labels });
+    expect(tabToSummary(tab('t1', { labels: ['lbl_a'] }), 'd1', 0, 5).labels).toEqual(['lbl_a']);
+    expect(Object.hasOwn(tabToSummary(tab('t1'), 'd1', 0, 5), 'labels')).toBe(false);
+  });
+
   it('upsertTab appends a new tab and replaces an existing one', () => {
     const appended = upsertTab(rec(), tab('t3'), 200);
     expect(appended.tabs.map((t) => t.id)).toEqual(['t1', 't2', 't3']);

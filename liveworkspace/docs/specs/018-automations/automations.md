@@ -170,9 +170,10 @@ minute), and nothing else of a call.
 | **If / Else**               | runs one list of actions when its conditions hold, another when they do not                                 |
 
 - liveplanner's card rules have their own set of steps (its card actions, For Related Cards, its AI steps): of the
-  steps above it has Send Email, the three messages, Wait and If / Else. **Take Snapshot**, **Revert to Snapshot** and
-  **Summarise with AI** are not in liveplanner yet (its Summarise Card summarises one card), so its Add Action offers
-  none of them and its templates name none.
+  steps above it has Send Email, the three messages, Wait, If / Else, **Take Snapshot** and **Revert to Snapshot**
+  (the shared definitions, panels and runners, at the rule's top level, run after the card's writes; liveplanner's
+  automations.md "Snapshot steps"). **Summarise with AI** is not in liveplanner yet (its Summarise Card summarises one
+  card), so its Add Action offers none and its templates name none.
 
 A failed step stops the run; the steps before it stay done. Ten failed runs in a row turn the rule off ("Paused"),
 with the reason on the rule and **Resume** beside it.
@@ -301,13 +302,13 @@ what a rule's step tells it to.
 
 Each app's spec holds its own tables; in short:
 
-| App           | Triggers of its own                                 | Steps of its own                                                                               |
-| ------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| liveplanner   | its card, form, email, time and GitHub triggers     | its card actions, For Related Cards, its AI steps (no snapshot steps or Summarise with AI yet) |
-| livediagram   | Poll Ended, Question Asked, Agent Made Changes      | Add a Tab from a Template                                                                      |
-| livedocuments | Version Named, Version Restored, Agent Made Changes | Name This Version, Restore a Version, Add a Tab from a Template                                |
-| livedesign    | Component Changed, Agent Made Changes               | Add a Tab from a Template                                                                      |
-| livehuddle    | Someone Arrived, Everyone Left, Suggestion Dropped  | Clear the Suggestion Box, Add a Tab from a Template                                            |
+| App           | Triggers of its own                                 | Steps of its own                                                             |
+| ------------- | --------------------------------------------------- | ---------------------------------------------------------------------------- |
+| liveplanner   | its card, form, email, time and GitHub triggers     | its card actions, For Related Cards, its AI steps (no Summarise with AI yet) |
+| livediagram   | Poll Ended, Question Asked, Agent Made Changes      | Add a Tab from a Template                                                    |
+| livedocuments | Version Named, Version Restored, Agent Made Changes | Name This Version, Restore a Version, Add a Tab from a Template              |
+| livedesign    | Component Changed, Agent Made Changes               | Add a Tab from a Template                                                    |
+| livehuddle    | Someone Arrived, Everyone Left, Suggestion Dropped  | Clear the Suggestion Box, Add a Tab from a Template                          |
 
 Each app also ships its own **Templates** (ready-made rules, opened in the builder to finish and save) and the
 pictures on its trigger and step tiles.

@@ -58,6 +58,8 @@ import {
 import { FootnoteNotes } from '@/lib/article/article-footnote-notes';
 import { commitWritingOnLeave } from '@/lib/article/article-open-edit';
 import type { ArticleEditorProps, SlashState } from './article-editor-types';
+import { articleFlowClass } from './read-mode-selection';
+import { articleClipboardSerializer } from '@/lib/article/article-clipboard-lists';
 
 // Sent blocks' chips, and a reader's Send to Plan under the words picked (docs/specs/013-workspace/send-to-plan.md),
 // built on this editor's own ProseMirror (@liveworkspace/workbench's article-sent).
@@ -73,11 +75,6 @@ const sentPlugin = (editable: () => boolean) =>
 const pasteProps = articleTablePasteProps(articlePasteProps);
 
 // What the writing's view is made from (ArticleEditor's refs, setters and handlers, as of its first render).
-/** The writing's class. Read only, it opts out of the canvas's no-selection (useNoCanvasTextSelection), so a reader
- *  picks words to copy them or send them to a plan (the reader's Send to Plan pill). */
-export const articleFlowClass = (editable: boolean): string =>
-  editable ? 'article-flow' : 'article-flow select-text';
-
 export type MountContext = {
   host: MutableRefObject<HTMLDivElement | null>;
   viewRef: MutableRefObject<EditorView | null>;
@@ -270,6 +267,7 @@ export function mountArticleView({
         )
         .join('; ');
       return {
+        // Read, a reader selects and copies the writing (read-mode-selection.ts).
         class: articleFlowClass(p.editable),
         style: continuous
           ? css
@@ -300,6 +298,8 @@ export function mountArticleView({
     // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
     handleScrollToSelection: () => true,
     ...pasteProps,
+    // Copied list items keep their <ul> or <ol>, so a rich editor pastes them as a list.
+    clipboardSerializer: articleClipboardSerializer,
     nodeViews: {
       footnote: footnoteNodeView,
       ...tableNodeViews(rights, (v, id) =>

@@ -1,4 +1,10 @@
-import { migrateStoredTab, parseTabIcon, parseTabParent, type Tab } from '@liveknowledge/document';
+import {
+  migrateStoredTab,
+  parseTabIcon,
+  parseTabLabels,
+  parseTabParent,
+  type Tab,
+} from '@liveknowledge/document';
 import { parseKnowledgeFields } from '@liveknowledge/knowledge';
 import { storedTabConnection } from '@liveworkspace/index-app';
 import type { TabDTO, TabSummaryDTO } from './types';
@@ -37,6 +43,10 @@ export type TabRow = {
   // outline alone (`json_extract(data, '$.icon')`, JSON text), so the page tree shows each page's icon from the
   // summaries. Read sites that do not select it leave it undefined.
   icon?: unknown;
+  // The page's labels' ids (docs/specs/030-knowledgebase/page-surface.md "Page labels"), read out of the body by the
+  // outline alone (`json_extract(data, '$.labels')`, JSON text), so the tree filters and a search scopes from the
+  // summaries. Read sites that do not select it leave it undefined.
+  labels?: unknown;
 };
 
 // The connection a row carries, as the wire shape spreads it: absent for a tab that is not connected.
@@ -68,6 +78,17 @@ function iconField(row: TabRow) {
   try {
     const icon = parseTabIcon(JSON.parse(row.icon));
     return icon ? { icon } : {};
+  } catch {
+    return {};
+  }
+}
+
+// The labels a row carries: absent for a page with none, and for anything stored there that is not them.
+function labelsField(row: TabRow) {
+  if (typeof row.labels !== 'string') return {};
+  try {
+    const labels = parseTabLabels(JSON.parse(row.labels));
+    return labels.length > 0 ? { labels } : {};
   } catch {
     return {};
   }
@@ -126,6 +147,7 @@ export function rowToTabSummary(row: TabRow): TabSummaryDTO {
     ...parentField(row),
     ...knowledgeField(row),
     ...iconField(row),
+    ...labelsField(row),
     ...connectionField(row),
   };
 }

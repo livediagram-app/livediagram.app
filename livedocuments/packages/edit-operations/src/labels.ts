@@ -2,9 +2,10 @@
 // shape's or an arrow's label over GRAPH_LABEL_MAX keeps its heading and the rest is cut (element notes, where a
 // shape's whole text used to go, are retired: docs/specs/009-elements/links-and-notes-retired.md); any other
 // element's label is its content and stays whole. A
-// shape whose label no longer fits grows around its centre, never shrinking.
+// shape whose label no longer fits grows around its centre, never shrinking, and a text sized to its one line of
+// words widens to hold its new ones on one line (EO22a).
 
-import { capLabel, labelBoxSize, type Element } from '@livedocuments/document';
+import { capLabel, growTextToLabel, labelBoxSize, type Element } from '@livedocuments/document';
 
 type LabelWrite = { label: string; capped: boolean };
 
@@ -22,6 +23,12 @@ export type Fit = { widened?: [number, number]; taller?: [number, number] };
 // old label's need grows by the difference between the two needs, so a label no longer than the last
 // leaves it be. Unchanged when fixed-size or scaling its text to the box; it never shrinks.
 export function fitToLabel(before: Element, el: Element): { el: Element; fit: Fit } {
+  if (el.type === 'text') {
+    const grown = growTextToLabel(before, el);
+    return grown === el
+      ? { el, fit: {} }
+      : { el: grown, fit: { widened: [el.width, grown.width] } };
+  }
   if (el.type !== 'shape' || before.type !== 'shape' || el.fixedSize || el.textSize === 'scale')
     return { el, fit: {} };
   const was = labelBoxSize(before.label, before.shape);

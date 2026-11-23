@@ -16,6 +16,7 @@ import {
 import type { KnowledgeSearchResult } from '@liveknowledge/api-schema';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { readerOf } from '../knowledge/knowledge-caller';
+import { labelScopeOf, labelsParam } from '../knowledge/label-scope';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { openConflictPages, pageTrustOf } from '../knowledge/page-read';
 import { pageHealthWires } from '../knowledge/page-health-read';
@@ -56,9 +57,19 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
   const query = ctx.url.searchParams.get('q') ?? '';
   if (query.length > SEARCH_MAX_QUERY_CHARS)
     return invalid('query_too_long', `A search is at most ${SEARCH_MAX_QUERY_CHARS} characters.`);
+  // `labels=` looks only at the pages carrying any of them (search-and-ask.md "By label").
+  const scope = labelScopeOf(route.document, labelsParam(ctx.url.searchParams));
+  if (scope instanceof Response) return scope;
   if (await searchLimited(ctx)) return rateLimited();
   const now = Date.now();
-  const statement = searchPassages(query, { now, reviewEvery });
+  const statement =
+    scope && scope.tabs.size === 0
+      ? undefined
+      : searchPassages(query, {
+          now,
+          reviewEvery,
+          ...(scope ? { onlyTabs: [...scope.tabs] } : {}),
+        });
   const found = statement ? (await rowsOf<SearchRow>(ctx.env, statement)).map(foundPassage) : [];
   // A link confined to one page (tab-scoped-share-links.md) finds only what that page holds.
   const results = grant.tabScope === null ? found : found.filter((r) => r.tab === grant.tabScope);
@@ -95,7 +106,8 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
       recordRead(tab, reader, now),
     );
     const key = questionKey(query);
-    const asked = results.length === 0 && key ? [{ key, question: query.trim() }] : [];
+    // A scoped search that finds nothing proves nothing of the rest of the knowledgebase: no question is recorded.
+    const asked = results.length === 0 && key && !scope ? [{ key, question: query.trim() }] : [];
     const fresh = await newQuestions(ctx, asked);
     if (asked.length > 0) notes.push(...upsertQuestion(key, query.trim(), reader, now));
     await runAll(ctx.env, notes);

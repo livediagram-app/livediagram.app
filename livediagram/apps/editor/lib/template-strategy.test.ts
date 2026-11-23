@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { buildTemplate } from './template-builders';
+import { textWordsWidth } from '@livediagram/document';
 
 // Structure pins for the strategy starters redesigned together
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Business Model
@@ -60,9 +61,11 @@ describe('business model canvas template', () => {
         expect(overlaps(containers[i]!, containers[j]!)).toBe(false);
   });
 
-  it('sizes every header so "Customer Relationships" sits on one line', () => {
-    // 22 characters of 22px bold Inter measure about 290px.
-    for (const title of BLOCKS) expect(header(title).width).toBeGreaterThanOrEqual(290);
+  it('sizes every header to its words, so "Customer Relationships" sits on one line', () => {
+    // 22 characters of 22px bold Inter measure about 290px; each header is as wide as its own words.
+    expect(header('Customer Relationships').width).toBeGreaterThanOrEqual(290);
+    for (const title of BLOCKS)
+      expect(header(title).width).toBeLessThanOrEqual(textWordsWidth(header(title)));
   });
 
   it('colours blocks by area, keyed by four chips on the title row', () => {

@@ -112,8 +112,11 @@ export async function apiSearchKnowledge(
   documentId: string,
   query: string,
   signal?: AbortSignal,
+  // Only the pages carrying any of these labels, by id (page-surface.md "The label filter").
+  labels: readonly string[] = [],
 ): Promise<KnowledgeSearchResult[]> {
-  const url = knowledgeUrl(documentId, `search?q=${encodeURIComponent(query)}`);
+  const scope = labels.length ? `&labels=${encodeURIComponent(labels.join(','))}` : '';
+  const url = knowledgeUrl(documentId, `search?q=${encodeURIComponent(query)}${scope}`);
   return (await read<KnowledgeSearchResponse>(who, url, 'search knowledge', signal)).results;
 }
 

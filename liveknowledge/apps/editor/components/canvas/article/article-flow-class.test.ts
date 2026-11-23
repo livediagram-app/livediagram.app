@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { cancelsCanvasSelectStart } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
-import { articleFlowClass } from './article-view-mount';
+import { articleFlowClass } from './read-mode-selection';
 
 // docs/specs/013-workspace/send-to-plan.md "Words in an article's writing": a reader picks words in writing they
 // cannot change, so the canvas must not cancel that selection as it does a press on the board.

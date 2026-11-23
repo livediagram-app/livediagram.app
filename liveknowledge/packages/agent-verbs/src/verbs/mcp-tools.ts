@@ -95,7 +95,8 @@ export const mcpListPages = mcpTool('list_pages', {
   title: 'List the pages',
   description:
     'The page tree of a knowledgebase: each page’s id, title, depth, parent, how many pages sit under it, its ' +
-    'owner and whether it is Always in Context, and once for them all the knowledgebase’s Review Period ' +
+    'owner, its labels and whether it is Always in Context, and once for them all the knowledgebase’s ' +
+    'Review Period ' +
     `(review_period). ${TRUST} No page’s writing is returned: read_page reads one, ` +
     'search_pages finds a passage.',
   inputSchema: listPagesShape,
@@ -110,8 +111,9 @@ export const mcpSearchPages = mcpTool('search_pages', {
     `of the writing, verified pages before others, each with its page and the headings it sits under. ${TRUST} ` +
     `${HEALTH} ` +
     'Prefer a verified passage; say so when you rely on a stale one; when conflicts_with names a page, read both ' +
-    'and tell the user they disagree. A search that finds nothing is recorded as a question the knowledgebase ' +
-    'could not answer.',
+    'and tell the user they disagree. labels narrows it to the pages carrying any of those labels ("only ' +
+    'Engineering pages"; list_pages shows each page’s labels). A search that finds nothing is recorded as a ' +
+    'question the knowledgebase could not answer, unless labels narrowed it.',
   inputSchema: searchPagesShape,
   outputSchema: searchPagesOutput,
 });

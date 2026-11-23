@@ -14,6 +14,7 @@ import {
   isTimeTrigger,
   latestMissed,
   nextMoment,
+  runsForPlan,
   timeCards,
   type AutomationEvent,
   type AutomationTimeTriggerKind,
@@ -71,7 +72,31 @@ export async function runTimeTriggers(
       continue;
     }
     const moment = latestMissed(rule.trigger, rule.timeZone, Number(row.next_at) - 1, now);
-    if (moment !== null) {
+    if (moment !== null && runsForPlan(rule)) {
+      // A Scheduled rule that runs for the plan (its snapshot steps, spec "Snapshot steps"): one event a moment, no
+      // card, its id the rule's and the moment's, so the moment runs once however often a wake repeats.
+      if (room < 1) {
+        waiting = true;
+        break;
+      }
+      const event: AutomationEvent = {
+        id: `t:${rule.id}:${moment}:plan`,
+        kind: 'time',
+        cardId: '',
+        by: automationPerson(rule.name),
+        role: 'system',
+        ruleId: rule.id,
+        at: moment,
+      };
+      sql.exec(
+        'INSERT INTO automation_queue (event, at) VALUES (?, ?)',
+        JSON.stringify(event),
+        now,
+      );
+      room -= 1;
+      queued += 1;
+      console.info('[automations] time.queued', { cards: 0, plan: true });
+    } else if (moment !== null) {
       plan ??= await readAutomationPlan(deps.env, deps.planId);
       items ??= await listItems(deps.env, deps.planId);
       const by = automationPerson(rule.name);

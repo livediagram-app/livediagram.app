@@ -8,6 +8,8 @@ import {
   COVER_COLOURINGS,
   COVER_GRADIENT_IDS,
   COVER_MOTIONS,
+  LABEL_NAME_MAX,
+  MAX_KNOWLEDGEBASE_LABELS,
   NAME_MAX_LENGTH,
   PAGE_MOTION_SPEED_MAX,
   PAGE_MOTION_SPEED_MIN,
@@ -151,9 +153,23 @@ export const getContextOutput = {
   next,
 };
 
+// A label scope (page-surface.md "Page labels"): names, ignoring case; a page carrying any of them matches.
+const labelScope = z
+  .array(z.string().min(1).max(LABEL_NAME_MAX))
+  .min(1)
+  .max(MAX_KNOWLEDGEBASE_LABELS)
+  .optional();
+const pageLabels = z
+  .array(z.string())
+  .optional()
+  .describe('The labels the page carries, by name ("Engineering", "Onboarding"); absent for none.');
+
 export const listPagesShape = {
   documentId,
   under: page.optional().describe('Only this page and the pages under it. Absent: the whole tree.'),
+  labels: labelScope.describe(
+    'Only the pages carrying any of these labels, by name (as list_pages shows them). Absent: every page.',
+  ),
   limit: z
     .number()
     .int()
@@ -176,6 +192,7 @@ export const listPagesOutput = {
           subpages: z.number().describe('How many pages sit under it, at every depth.'),
           owner: z.string().optional().describe('The account id of the person answerable for it.'),
           always_in_context: z.literal(true).optional().describe('get_context returns it.'),
+          labels: pageLabels,
           ...trustFields,
         }),
         z
@@ -213,6 +230,9 @@ export const searchPagesShape = {
     .max(SEARCH_MAX_LIMIT)
     .optional()
     .describe(`At most this many results (default ${SEARCH_DEFAULT_LIMIT}).`),
+  labels: labelScope.describe(
+    'Only the pages carrying any of these labels, by name ("only Engineering pages"). Absent: every page.',
+  ),
 };
 export const searchPagesOutput = {
   count: z.number().describe('How many results follow.'),
@@ -325,6 +345,7 @@ export const readPageOutput = {
   backlinks: z.array(pageRef).describe('The pages whose writing links to this one.'),
   subpages: z.array(pageRef).describe('The pages directly under it.'),
   cover: coverOut,
+  labels: pageLabels,
   ...trustFields,
   next,
 };

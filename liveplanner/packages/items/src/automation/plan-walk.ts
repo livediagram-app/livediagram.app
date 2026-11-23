@@ -4,6 +4,7 @@
 // plan-actions.ts walks the steps over it. Pure.
 
 import type { CrossAppStep } from '@liveworkspace/automations/cross-app';
+import type { ItemSnapshotStep } from '@liveworkspace/automations/item';
 import type { Item, ItemFieldValue, ItemFields, ItemPatch, ItemPerson } from '../item';
 import type { ItemTypeDef } from '../item-types';
 import { isEmptyFieldValue } from '../required-fields';
@@ -83,6 +84,14 @@ export interface PlannedCross {
   line: number;
 }
 
+// Take Snapshot or Revert to Snapshot (spec "Snapshot steps"): the step as written, Take Snapshot's name filled from
+// the card now, and the line the run settles once the step ran (after the card's writes, messages and cross steps).
+export interface PlannedSnapshot {
+  step: ItemSnapshotStep;
+  filled: string;
+  line: number;
+}
+
 // A branch's related card: its one patch, its threads and emails, and why it failed (what came before still lands).
 export interface PlannedRelated {
   card: Item;
@@ -117,6 +126,8 @@ export interface PlannedWrites extends PlannedSegment {
   sends: PlannedSend[];
   // Present only when the run has one.
   cross?: PlannedCross[];
+  // Present only when the run has one.
+  snapshots?: PlannedSnapshot[];
   turns: number;
   ai?: PlannedAi[];
 }
@@ -135,6 +146,7 @@ export class Run {
   readonly lines: AutomationStepLine[] = [];
   readonly sends: PlannedSend[] = [];
   readonly cross: PlannedCross[] = [];
+  readonly snapshots: PlannedSnapshot[] = [];
   readonly related: PlannedRelated[] = [];
   readonly ai: PlannedAi[] = [];
   actions: number;

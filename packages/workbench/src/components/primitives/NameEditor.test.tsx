@@ -49,6 +49,29 @@ describe('NameEditor', () => {
     expect([field.selectionStart, field.selectionEnd]).toEqual([0, 4]);
   });
 
+  // A name begun at a menu that renames (liveknowledge's knowledgebase menu, Work Tracker 1376): the next keys carry on
+  // after the letters already typed instead of replacing them.
+  it('opens on letters already typed, the caret after them, the name unselected', () => {
+    const onCommit = vi.fn();
+    render(
+      <NameEditor
+        label="Knowledgebase name"
+        initial="Untitled Knowledgebase"
+        typed="Te"
+        onCommit={onCommit}
+        onCancel={() => {}}
+        className=""
+      />,
+    );
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Knowledgebase name' });
+    expect(document.activeElement).toBe(field);
+    expect(field.value).toBe('Te');
+    expect([field.selectionStart, field.selectionEnd]).toEqual([2, 2]);
+    fireEvent.change(field, { target: { value: 'Team Handbook' } });
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(onCommit).toHaveBeenCalledWith('Team Handbook');
+  });
+
   // Ended from the keyboard, the field goes and focus used to fall to the page.
   it.each(['Escape', 'Enter'])('hands focus to the name button when %s ends it', async (key) => {
     const onRename = vi.fn();

@@ -18,6 +18,7 @@ import {
   CROSS_APP_UNREACHED,
   noAccessWords,
   isAccessPause,
+  accessPauseWords,
   CROSS_APP_NO_AUTHOR,
   refusalWords,
   targetWords,
@@ -256,6 +257,8 @@ describe('the words', () => {
     expect(isAccessPause(noAccessWords(null))).toBe(true);
     expect(isAccessPause(CROSS_APP_NO_AUTHOR)).toBe(true);
     expect(isAccessPause('The webhook answered 500')).toBe(false);
+    expect(accessPauseWords(noAccessWords(null))).toBe('no access to the people');
+    expect(accessPauseWords(CROSS_APP_NO_AUTHOR)).toBe(CROSS_APP_NO_AUTHOR);
     expect(refusalWords('no_access', '', target)).toBe('Stopped: no access to “Docs”');
     expect(refusalWords('loop', '', target)).toBe(CROSS_APP_LOOP);
     expect(refusalWords('chain_long', '', target)).toBe(CROSS_APP_CHAIN_LONG);

@@ -112,6 +112,33 @@ describe('TabStrip', () => {
     expect(screen.queryByRole('button', { name: 'Add tab' })).toBeNull();
   });
 
+  // connected-tabs.md "From the tab bar": the liveworkspace logo right of Add tab, a desktop's only.
+  it('draws Connect a File right of Add tab when given, its logo turning while pointed at', () => {
+    const onConnect = vi.fn();
+    strip({ onConnect });
+    const add = screen.getByRole('button', { name: 'Add tab' });
+    const connect = screen.getByRole('button', { name: 'Connect a File' });
+    expect(add.compareDocumentPosition(connect) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(connect.className).toContain('cursor-pointer');
+    expect(connect.className).toContain('max-md:hidden');
+    expect(connect.className).toContain('phone:hidden');
+    expect(connect.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(connect.querySelector('svg')).not.toBeNull();
+    fireEvent.pointerEnter(connect, { pointerType: 'mouse' });
+    fireEvent.pointerLeave(connect);
+    fireEvent.pointerEnter(connect, { pointerType: 'touch' });
+    fireEvent.click(connect);
+    expect(onConnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no Connect a File without a handler, or for a Viewer', () => {
+    strip();
+    expect(screen.queryByRole('button', { name: 'Connect a File' })).toBeNull();
+    cleanup();
+    strip({ readOnly: true, onConnect: vi.fn() });
+    expect(screen.queryByRole('button', { name: 'Connect a File' })).toBeNull();
+  });
+
   it('opens a folder in place on a click of its chip, and shuts it again', () => {
     strip();
     fireEvent.click(chip());

@@ -78,7 +78,8 @@ export async function readDocumentOutline(
 ): Promise<DocumentOutline> {
   const [tabs, document] = await env.DOCUMENT_DB.batch([
     env.DOCUMENT_DB.prepare(
-      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, dt.folder_color, t.connection
+      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, dt.folder_color, t.connection,
+              CASE WHEN t.connection IS NOT NULL AND json_valid(t.data) THEN json_extract(t.data, '$.targetName') END AS target_name
          FROM document_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.document_id = ?

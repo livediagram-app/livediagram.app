@@ -36,6 +36,8 @@ const STEP_KINDS: Record<AutomationStep['kind'], true> = {
   space_post: true,
   doc_tab: true,
   inbox_notice: true,
+  take_snapshot: true,
+  revert_snapshot: true,
 };
 const CONDITION_KINDS: Record<AutomationCondition['kind'], true> = {
   type: true,

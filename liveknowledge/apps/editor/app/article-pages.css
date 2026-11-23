@@ -31,8 +31,17 @@
   pointer-events: auto;
 }
 
+/* Read, the writing selects and copies like any web page (docs/specs/030-knowledgebase/editing.md "Selecting and
+   copying"). The canvas is select-none, which a non-editable flow would otherwise inherit; only the writing's
+   blocks take presses, so a drag on the margins or the canvas still starts no selection. The cursor is the
+   browser's own: a text cursor over text, an arrow elsewhere. */
 .article-flow[data-readonly] {
   cursor: default;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.article-flow[data-readonly] > * {
+  cursor: auto;
 }
 
 /* A drawing tool in hand: presses go through the writing to the canvas. */

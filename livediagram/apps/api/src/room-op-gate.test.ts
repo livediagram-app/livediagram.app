@@ -145,6 +145,19 @@ describe('gateClientOp', () => {
     expect(
       gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: {}, clear: ['name'] }, scoped),
     ).toEqual(DROP);
+    // A connected tab's file name beside its own (connected-tabs.md "A tab's own name") is its name too.
+    expect(
+      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { targetName: 'Plan' } }, scoped),
+    ).toEqual(DROP);
+    expect(
+      gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: {}, clear: ['targetName'] }, scoped),
+    ).toEqual(DROP);
+    expect(
+      gateClientOp(
+        { kind: 'tab-meta', tabId: 't1', patch: { timer: null }, clear: ['vote'] },
+        scoped,
+      ),
+    ).not.toEqual(DROP);
     expect(
       gateClientOp({ kind: 'tab-meta', tabId: 't1', patch: { name: 'Plan' } }, as('edit')),
     ).toEqual(relay(false));

@@ -830,6 +830,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|AskAboutPage': "Someone opened Ask from a page's AI Context, asking about that page.",
   'UI|Used|OnThisPage': 'Someone jumped to a heading from the On This Page list.',
   'UI|Used|CopyPageLink': "Someone copied a page's link from its menu in the page tree.",
+  'UI|Used|LabelFilter':
+    "Someone filtered the page tree by a label, from Filter by Label or a page's label pill.",
+  'Element|Added|Label': 'Someone put a label on a page, one already in use or one they made.',
+  'Element|Deleted|Label': 'Someone took a label off a page.',
+  'Element|Changed|Label':
+    'Someone renamed a label or changed its colour, on every page that carries it.',
   'UI|Used|RestorePage': "Someone restored a page from the knowledgebase's page Trash.",
   'UI|Used|DeletePageForever': 'An Editor deleted a page in the page Trash forever.',
   'UI|Used|EmptyPageTrash': "An Editor emptied the knowledgebase's page Trash.",

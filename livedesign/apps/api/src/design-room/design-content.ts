@@ -85,7 +85,8 @@ function metaOf(head: DesignHeadRow | null): DesignMeta | null {
 export async function readDesignOutline(env: DesignEnv, designId: string): Promise<DesignOutline> {
   const [tabs, design] = await env.DESIGN_DB.batch([
     env.DESIGN_DB.prepare(
-      `SELECT t.id, dt.design_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, dt.folder_color, t.connection
+      `SELECT t.id, dt.design_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, dt.folder_color, t.connection,
+              CASE WHEN t.connection IS NOT NULL AND json_valid(t.data) THEN json_extract(t.data, '$.targetName') END AS target_name
          FROM design_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.design_id = ?

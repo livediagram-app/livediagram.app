@@ -6,6 +6,7 @@ import type { PresenceCoalescer } from '@liveworkspace/workbench/lib/presence-co
 import { applyRoomOpToTabs, remoteRoomOp } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
 import { foldRemoteOpIntoBaseline } from './save-baseline';
+import { withoutPeerKnowledge } from './peer-knowledge';
 import { isSupersededByOwnWrite, withoutSupersededArticleOps } from './own-element-writes';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from '@liveworkspace/workbench/lib/share-link-ops';
@@ -95,8 +96,10 @@ export function receiveRoomOp(
       debugLog('[room] peer update superseded by our pending write');
       return;
     }
-    // The same for the blocks and cells of an article this editor is writing (own-element-writes.ts).
-    const incoming = ownWrites ? withoutSupersededArticleOps(ownWrites, op) : op;
+    // The same for the blocks and cells of an article this editor is writing (own-element-writes.ts). A page's own
+    // fields come from the api alone: a peer's op loses them (peer-knowledge.ts).
+    const fromPeer = withoutPeerKnowledge(from, op);
+    const incoming = ownWrites ? withoutSupersededArticleOps(ownWrites, fromPeer) : fromPeer;
     if (incoming === null) {
       debugLog('[room] peer writing superseded by our pending write');
       return;

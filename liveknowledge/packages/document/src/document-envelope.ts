@@ -8,6 +8,7 @@ import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
 import { DEFAULT_REVIEW_EVERY, isReviewEvery, type KnowledgeSettings } from './knowledge-settings';
 import { carriedKnowledgeStyle, type KnowledgeStyle } from './knowledge-style';
+import { parseKnowledgeLabels } from './page-labels';
 import type { StoredPresentation } from './slide-deck';
 
 export const DOCUMENT_ENVELOPE_KIND = 'liveknowledge.document';
@@ -35,12 +36,13 @@ export type DocumentEnvelope = {
   };
 };
 
-// The settings a file carries: a period that is known and not the default, or nothing.
+// The settings a file carries: a period that is known and not the default, and the labels, or nothing.
 function fileSettings(v: unknown): { knowledgeSettings?: KnowledgeSettings } {
-  const every = v && typeof v === 'object' ? (v as { reviewEvery?: unknown }).reviewEvery : 0;
-  return isReviewEvery(every) && every !== DEFAULT_REVIEW_EVERY
-    ? { knowledgeSettings: { reviewEvery: every } }
-    : {};
+  const raw = v && typeof v === 'object' ? (v as { reviewEvery?: unknown; labels?: unknown }) : {};
+  const every = isReviewEvery(raw.reviewEvery) ? raw.reviewEvery : DEFAULT_REVIEW_EVERY;
+  const labels = parseKnowledgeLabels(raw.labels);
+  if (every === DEFAULT_REVIEW_EVERY && labels.length === 0) return {};
+  return { knowledgeSettings: { reviewEvery: every, ...(labels.length > 0 ? { labels } : {}) } };
 }
 
 type DocumentEnvelopeFailure = 'not_json' | 'wrong_kind' | 'unsupported_version' | 'malformed';
