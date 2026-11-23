@@ -147,6 +147,16 @@ describe('WorkbenchPage', () => {
     expect(screen.getByText('editor workbench as Webber ended null')).toBeTruthy();
   });
 
+  it("mounts the editor in the embed's look for a live embed's frame (Work Tracker 1386)", () => {
+    harness.initial = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
+    harness.port = fakePort();
+    // The host's frame flag (liveworkspace/docs/specs/004-index/live-embeds.md "The frame").
+    window.history.replaceState(null, '', '/embed/workbench?d=doc-1&live=1');
+    render(<WorkbenchPage />);
+    expect(screen.getByText('editor live-embed as Webber ended null')).toBeTruthy();
+    window.history.replaceState(null, '', '/');
+  });
+
   it('shows the opening copy while the editor chunk loads', () => {
     render(<>{harness.loadings.editor() as never}</>);
     expect(screen.getByRole('status').textContent).toBe('Opening your document…');
