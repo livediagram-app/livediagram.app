@@ -21,6 +21,7 @@ import { FUTURE_SLACK_MS } from './events';
 import { pushAutomationSends } from './webhooks/automation-sends';
 import { pushAutomationStep } from './automation-steps';
 import { handleAgentPlanSends, handlePlanCards } from './plan-sends';
+import { handleCallPeople } from './item-call-people';
 
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -84,6 +85,10 @@ export async function handleApp(
   // /app/items/:id/plan-cards and /plan-sends: a plan's sent cards changed, an agent's cards with a source (plan-sends.ts).
   if (segments.length === 4 && segments[3] === 'plan-cards') {
     return handlePlanCards(request, env, app, segments[2]);
+  }
+  // /app/items/:space/call-people: who is in a call's Space now, from its room (item-call-people.ts).
+  if (segments.length === 4 && segments[3] === 'call-people') {
+    return handleCallPeople(request, env, app, segments[2], waitUntil);
   }
   if (segments.length === 4 && segments[3] === 'plan-sends') {
     return handleAgentPlanSends(request, env, app, segments[2]);

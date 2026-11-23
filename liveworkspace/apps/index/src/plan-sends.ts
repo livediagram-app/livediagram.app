@@ -52,6 +52,7 @@ import { badRequest, fail, forbidden, json, notFound, readObject, unauthorized }
 import { overRunLimit } from './kits';
 import { getItemRow, toItem, type ItemRow } from './rows';
 import { SOURCE_SIGNAL_CONCURRENCY } from './sheet-sources';
+import { callLineOf, keepCallPlan } from './item-call-plans';
 
 const PLAN_APP = 'liveplanner' as const;
 const COLUMN_MAX = 120;
@@ -202,6 +203,9 @@ async function sendToPlan(ctx: RouteContext, planId: string): Promise<Response> 
       );
   }
 
+  // A call's Space: each card also links back to the item the call was about (item-calls.md "After the call").
+  const callLine = await callLineOf(env, source.row);
+
   const grant = await mintGrant(env, {
     app: PLAN_APP,
     sub: person.id,
@@ -230,12 +234,15 @@ async function sendToPlan(ctx: RouteContext, planId: string): Promise<Response> 
         link,
       };
       const description = cut(
-        planSendDescription(card.places, {
-          title: source.row.title,
-          label: first.label,
-          app: first.app,
-          link,
-        }),
+        [
+          planSendDescription(card.places, {
+            title: source.row.title,
+            label: first.label,
+            app: first.app,
+            link,
+          }),
+          ...(callLine ? [callLine.line] : []),
+        ].join('\n\n'),
         PLAN_SEND_TEXT_MAX * 2,
       );
       return {
@@ -287,6 +294,7 @@ async function sendToPlan(ctx: RouteContext, planId: string): Promise<Response> 
       });
   });
   await insertRows(env, rows);
+  if (callLine) ctx.waitUntil(keepCallPlan(env, callLine, planId));
   console.info('[index] plan send', { cards: made.length, places: rows.length });
   const sends = rows.map((r) =>
     sendOf(env, { ...r, kind: r.kind as PlanSendKind, done: 0 }, plan.row.title),
