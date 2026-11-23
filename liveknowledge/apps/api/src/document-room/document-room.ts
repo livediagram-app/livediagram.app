@@ -1,4 +1,10 @@
 import {
+  prepareRoomRestore,
+  restartRoom,
+  type PreparedRestore,
+  type RestoreTarget,
+} from '@liveworkspace/api-kit/room-restore';
+import {
   ItemDb,
   type ItemHeadSync,
   sharesDueAt,
@@ -693,6 +699,17 @@ export class DocumentRoom extends DurableObject<Env> {
 
   purge(documentId?: string): Promise<void> {
     return purge(this, documentId);
+  }
+
+  // The operator's restore door (liveworkspace/docs/specs/002-architecture/room-restore.md), never a person's: find
+  // the bookmark for the moment and ask to start from it next time (answering the undo), then close every session and
+  // restart onto it. Every write to the Knowledgebase since is gone.
+  restorePrepare(target: RestoreTarget, dryRun: boolean): Promise<PreparedRestore> {
+    return prepareRoomRestore(this.state.storage, target, dryRun);
+  }
+
+  restoreNow(): void {
+    restartRoom(this.state);
   }
 
   broadcastSystemOp(op: unknown): void {

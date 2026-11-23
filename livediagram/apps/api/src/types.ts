@@ -37,6 +37,9 @@ export type Env = {
   // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
   // liveworkspace/docs/specs/004-index/one-explorer-contracts.md). A secret; unset, those endpoints answer 404.
   INDEX_KEY?: string;
+  // The operator's key on the restore door (liveworkspace/docs/specs/002-architecture/room-restore.md), which it opens
+  // and nothing else. A secret (wrangler secret put OPERATOR_KEY); unset, the door is a 404 to everyone.
+  OPERATOR_KEY?: string;
   // liveworkspace's index (liveworkspace/docs/specs/004-index/one-explorer.md): where every canvas is filed and who may open it.
   // The grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their
   // summaries there with INDEX_KEY. From hosted-vars.json per environment; local dev sets it in `.dev.vars`.

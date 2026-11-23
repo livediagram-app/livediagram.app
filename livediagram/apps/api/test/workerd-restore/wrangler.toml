@@ -1,0 +1,24 @@
+# The test Worker of room-restore.workerd.test.ts, run locally by wrangler's unstable_dev and never deployed: it has
+# no route and no deploy script. The account is pinned all the same, as in every wrangler.toml here, so nothing could
+# ever land on another one. SQLite-backed Durable Objects, as the api's own classes are.
+name = "livediagram-api-restore-test"
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "worker.ts"
+compatibility_date = "2026-05-29"
+workers_dev = false
+
+# The door's key for this test Worker only: a fixed test value, never a real secret.
+[vars]
+OPERATOR_KEY = "workerd-restore-test-key"
+
+[[durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "TestRoom"
+
+[[durable_objects.bindings]]
+name = "PERSON_STORE"
+class_name = "TestPerson"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TestRoom", "TestPerson"]

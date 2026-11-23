@@ -5,6 +5,12 @@
 //
 // A store that never held anything is never given storage by a read or a purge: those check for the schema first.
 
+import {
+  prepareRoomRestore,
+  restartRoom,
+  type PreparedRestore,
+  type RestoreTarget,
+} from '@liveworkspace/api-kit/room-restore';
 import { DurableObject } from 'cloudflare:workers';
 import type { ShapeLibrary, ShapeLibraryItem } from '@livediagram/api-schema';
 import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
@@ -116,5 +122,16 @@ export class PersonStore extends DurableObject<Env> {
     if (!this.ready && !hasPersonSchema(this.sql)) return;
     await this.ctx.storage.deleteAll();
     this.ready = false;
+  }
+
+  // The operator's restore door (liveworkspace/docs/specs/002-architecture/room-restore.md), never a person's: find
+  // the bookmark for the moment and ask to start from it next time (answering the undo), then close every session and
+  // restart onto it. Every write to the person's store since is gone.
+  restorePrepare(target: RestoreTarget, dryRun: boolean): Promise<PreparedRestore> {
+    return prepareRoomRestore(this.ctx.storage, target, dryRun);
+  }
+
+  restoreNow(): void {
+    restartRoom(this.ctx);
   }
 }

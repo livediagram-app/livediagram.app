@@ -45,6 +45,9 @@ export type Env = {
   INDEX?: Fetcher;
   ACCOUNTS?: Fetcher;
   INDEX_KEY?: string;
+  // The operator's key on the restore door (liveworkspace/docs/specs/002-architecture/room-restore.md), which it opens
+  // and nothing else. A secret (wrangler secret put OPERATOR_KEY); unset, the door is a 404 to everyone.
+  OPERATOR_KEY?: string;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.

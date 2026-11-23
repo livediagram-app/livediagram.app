@@ -1,3 +1,9 @@
+import {
+  prepareRoomRestore,
+  restartRoom,
+  type PreparedRestore,
+  type RestoreTarget,
+} from '@liveworkspace/api-kit/room-restore';
 import { ItemDb, type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import { type PutAwayRefusal, tellSourceChanged } from '@liveworkspace/index-app';
 import type { SourceChange } from '@liveworkspace/index-client';
@@ -632,6 +638,17 @@ export class DesignRoom extends DurableObject<Env> {
 
   purge(designId?: string): Promise<void> {
     return purge(this, designId);
+  }
+
+  // The operator's restore door (liveworkspace/docs/specs/002-architecture/room-restore.md), never a person's: find
+  // the bookmark for the moment and ask to start from it next time (answering the undo), then close every session and
+  // restart onto it. Every write to the design since is gone.
+  restorePrepare(target: RestoreTarget, dryRun: boolean): Promise<PreparedRestore> {
+    return prepareRoomRestore(this.state.storage, target, dryRun);
+  }
+
+  restoreNow(): void {
+    restartRoom(this.state);
   }
 
   broadcastSystemOp(op: unknown): void {

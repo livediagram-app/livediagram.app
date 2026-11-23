@@ -1,3 +1,9 @@
+import {
+  prepareRoomRestore,
+  restartRoom,
+  type PreparedRestore,
+  type RestoreTarget,
+} from '@liveworkspace/api-kit/room-restore';
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
@@ -48,7 +54,8 @@ import {
   type DocumentCopy,
   type DocumentOutline,
 } from './document-content';
-import { PresenceRelay, RELAYED_SAMPLE_KINDS } from '@liveworkspace/api-kit/room-presence-relay';
+import { PresenceRelay } from '@liveworkspace/api-kit/room-presence-relay';
+import { ROOM_SAMPLE_KINDS } from './room-sample-kinds';
 import { createAvatarTrack, type AvatarRelaySession } from '../room-avatar-track';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
 import type { ConnectedTabOutcome } from '@liveworkspace/index-app';
@@ -180,17 +187,6 @@ const ORDER_STATE_KEY = 'order-state';
 export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 // The document's own daily upkeep (room-content-state.ts).
 export { MAINTENANCE_EVERY_MS } from './room-content-state';
-
-// The sample streams this room relays and coalesces (docs/specs/015-api/api.md "A busy room bounds its presence
-// fan-out"): the cursors (the walking characters join as their own track, ../room-avatar-track.ts), plus proximity
-// audio's talking level (docs/specs/012-collaboration/proximity-audio.md "The wire"), so a full Space talking adds
-// bytes to frames the walkers already cause, never frames; and a game's paddle (docs/specs/009-elements/social-pieces.md "The wire"),
-// which only its tab can see.
-const ROOM_SAMPLE_KINDS: ReadonlySet<string> = new Set([
-  ...RELAYED_SAMPLE_KINDS,
-  'avatar-voice',
-  'game-input',
-]);
 
 // The collaboration ledger: this product's pure module (collab-ledger.ts) on the shared store
 // (liveworkspace/docs/specs/002-architecture/architecture.md "A room's collaboration ledger").
@@ -705,6 +701,17 @@ export class DocumentRoom extends DurableObject<Env> {
 
   purge(documentId?: string): Promise<void> {
     return purge(this, documentId);
+  }
+
+  // The operator's restore door (liveworkspace/docs/specs/002-architecture/room-restore.md), never a person's: find
+  // the bookmark for the moment and ask to start from it next time (answering the undo), then close every session and
+  // restart onto it. Every write to the Space since is gone.
+  restorePrepare(target: RestoreTarget, dryRun: boolean): Promise<PreparedRestore> {
+    return prepareRoomRestore(this.state.storage, target, dryRun);
+  }
+
+  restoreNow(): void {
+    restartRoom(this.state);
   }
 
   // Put a mutation into the ordered stream: a seq, the catch-up log, every

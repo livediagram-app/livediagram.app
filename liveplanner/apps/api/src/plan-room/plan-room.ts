@@ -1,4 +1,10 @@
 import {
+  prepareRoomRestore,
+  restartRoom,
+  type PreparedRestore,
+  type RestoreTarget,
+} from '@liveworkspace/api-kit/room-restore';
+import {
   ItemDb,
   type ItemHeadSync,
   sharesDueAt,
@@ -720,6 +726,17 @@ export class PlanRoom extends DurableObject<Env> {
 
   purge(planId?: string): Promise<void> {
     return purge(this, planId);
+  }
+
+  // The operator's restore door (liveworkspace/docs/specs/002-architecture/room-restore.md), never a person's: find
+  // the bookmark for the moment and ask to start from it next time (answering the undo), then close every session and
+  // restart onto it. Every write to the plan since is gone.
+  restorePrepare(target: RestoreTarget, dryRun: boolean): Promise<PreparedRestore> {
+    return prepareRoomRestore(this.state.storage, target, dryRun);
+  }
+
+  restoreNow(): void {
+    restartRoom(this.state);
   }
 
   broadcastSystemOp(op: unknown): void {

@@ -39,6 +39,7 @@ import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
 import { withServerRelease } from './server-release-header';
+import { handleOperatorRestore } from './routes/operator-restore';
 import type { Env } from './types';
 import { pollCallsBudget } from './calls/calls-budget';
 
@@ -73,6 +74,11 @@ async function routeApiRequest(
   if (segments[1] === 'auth') {
     return handleAuth(request, env, segments, (p) => executionCtx?.waitUntil(p));
   }
+
+  // The operator's restore door (liveworkspace/docs/specs/002-architecture/room-restore.md): OPERATOR_KEY alone, never a
+  // person or another service's key, so answered before identity; apart from every live path.
+  if (segments[1] === 'internal' && segments[2] === 'restore' && segments.length === 3)
+    return handleOperatorRestore(request, env);
 
   // The One Explorer index's server-to-server doors into a document's content (routes/internal-items.ts): their
   // own key, never a person's identity, so answered before identity and the per-owner limits.

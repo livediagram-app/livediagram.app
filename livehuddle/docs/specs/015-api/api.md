@@ -551,6 +551,17 @@ The room's other parts each have a module of their own in `apps/api/src/`, besid
 
 Every other document write is a REST call from a client (see the persistence boundary below).
 
+### Operator restore
+
+`POST /api/internal/restore`, with `Authorization: Bearer <OPERATOR_KEY>`, winds a room back to a moment in the last
+30 days through its Durable Object's point-in-time recovery: the operator's door after a bad deploy, never a person's
+([Restoring rooms](../../../../liveworkspace/docs/specs/002-architecture/room-restore.md), the runbook
+[docs/restore-rooms.md](../../../../docs/restore-rooms.md)). It reaches `DocumentRoom` (a Space, by its id) and `PersonStore` (a person, by their id). It is answered before identity, so
+no session, API token, share link or other service key opens it, and with no `OPERATOR_KEY` set it is a `404`. Every
+write to a restored Space after the moment is gone; its sessions close with 4009 and each editor reloads onto the
+restored Space. The index's row (name, folder, sharing, Trash) is not restored. One room by default (`name`), up to 20
+(`names`), or a dry run; `@liveworkspace/api-kit/room-restore` answers it (`routes/operator-restore.ts`).
+
 ### Internal endpoints
 
 The api worker reaches the DO through its stub (`env.DOCUMENT_ROOM.get(...).fetch(...)`; content goes through the typed RPCs under **Storage**), which never traverses the public edge, so these paths are implicitly internal:
