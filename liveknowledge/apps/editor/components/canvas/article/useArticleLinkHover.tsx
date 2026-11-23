@@ -4,7 +4,7 @@
 // its address with Open, Edit and Remove under it; ⌘-press (Ctrl on Windows and Linux) opens it in
 // a new tab. Listens on the writing's own element, so the editor's keyboard handling is untouched.
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Portal } from '@liveknowledge/ui';
+import { OVERLAY_MAX_WIDTH, Portal, onScreenTranslate, useKeepOnScreen } from '@liveknowledge/ui';
 import type { EditorView } from 'prosemirror-view';
 import { TextSelection } from 'prosemirror-state';
 import { markRange } from '@/lib/article/article-commands';
@@ -15,7 +15,14 @@ import { isSafeArticleHref } from '@liveknowledge/document';
 // How long the card stays once the pointer leaves the link, so it can cross to the card (ms).
 const LINK_CARD_GRACE_MS = 250;
 
-type Hover = { href: string; from: number; to: number; left: number; top: number };
+type Hover = {
+  href: string;
+  from: number;
+  to: number;
+  left: number;
+  top: number;
+  link: HTMLAnchorElement;
+};
 
 const openLink = (href: string) => {
   if (isSafeArticleHref(href)) window.open(href, '_blank', 'noopener,noreferrer');
@@ -27,6 +34,14 @@ export function useArticleLinkHover(
 ): React.ReactNode {
   const [hover, setHover] = useState<Hover | null>(null);
   const leave = useRef<number | null>(null);
+  // Hung from the link's left edge, so a link near the right of a phone slides the card left, and one near the foot
+  // of the screen flips it above the link: measured once per hover, never per pointer move.
+  const card = useRef<HTMLDivElement>(null);
+  const slide = onScreenTranslate(
+    useKeepOnScreen(card, hover && `${hover.from}:${hover.left}:${hover.top}`, {
+      anchor: () => hover?.link,
+    }),
+  );
   const stay = () => {
     if (leave.current !== null) window.clearTimeout(leave.current);
     leave.current = null;
@@ -56,6 +71,7 @@ export function useArticleLinkHover(
         to: range.to,
         left: r.left,
         top: r.bottom + 6,
+        link: a,
       });
     };
     const out = (e: MouseEvent) => {
@@ -103,8 +119,14 @@ export function useArticleLinkHover(
         role="dialog"
         aria-label="Link"
         data-article-keep-active=""
-        className="fixed z-[var(--z-overlay)] flex max-w-[22rem] animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
-        style={{ left: hover.left, top: hover.top }}
+        ref={card}
+        className="fixed z-[var(--z-overlay)] flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
+        style={{
+          left: hover.left,
+          top: hover.top,
+          maxWidth: `min(22rem, ${OVERLAY_MAX_WIDTH})`,
+          transform: slide,
+        }}
         onPointerEnter={stay}
         onPointerLeave={go}
         onMouseDown={(e) => e.preventDefault()}

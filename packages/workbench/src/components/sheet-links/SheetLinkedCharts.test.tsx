@@ -51,7 +51,6 @@ import {
   SheetLinksHost,
   LiveTableFace,
   linkEventOf,
-  sheetLinkLineShift,
   useChartAsSeen,
   useSheetLinks,
   type SheetLinks,
@@ -266,21 +265,24 @@ describe('SheetLinkLine', () => {
   });
 
   it('slides left to stay on a phone screen when the element sits near its right edge', () => {
-    const rect = (left: number, width: number) =>
+    const rect = (left: number, width: number, top: number, height: number) =>
       ({
         left,
         width,
         right: left + width,
-        top: 0,
-        bottom: 0,
-        height: 0,
+        top,
+        bottom: top + height,
+        height,
         x: left,
-        y: 0,
+        y: top,
       }) as DOMRect;
     const spy = vi
       .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
       .mockImplementation(function (this: HTMLElement) {
-        return this.hasAttribute('data-sheet-link-line') ? rect(0, 240) : rect(250, 100);
+        // The line hangs from the element's left edge, under it.
+        return this.hasAttribute('data-sheet-link-line')
+          ? rect(250, 240, 100, 16)
+          : rect(250, 100, 0, 96);
       });
     const width = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
@@ -290,7 +292,7 @@ describe('SheetLinkLine', () => {
       expect(line.style.transform).toBe('scale(1)');
       // Hovered: 250 + 240 runs past 390, so it ends 8px inside the right edge.
       fireEvent.pointerEnter(line.parentElement!);
-      expect(line.style.transform).toBe('translateX(-108px) scale(1)');
+      expect(line.style.transform).toBe('translate(-108px) scale(1)');
       expect(line.style.maxWidth).toMatch(/^min\(20rem, /);
     } finally {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
@@ -301,20 +303,6 @@ describe('SheetLinkLine', () => {
   it('draws nothing for an element with no link', () => {
     show({ kind: 'saved' }, { id: 'arrow', type: 'arrow' }, true);
     expect(document.querySelector('[data-sheet-link-line]')).toBeNull();
-  });
-});
-
-describe('sheetLinkLineShift', () => {
-  it('stays put when the line fits', () => {
-    expect(sheetLinkLineShift(20, 200, 390, 1)).toBe(0);
-  });
-  it('moves left as far as it overflows, in canvas units', () => {
-    expect(sheetLinkLineShift(300, 200, 390, 1)).toBe(-118);
-    expect(sheetLinkLineShift(300, 200, 390, 2)).toBe(-59);
-  });
-  it('never past the left edge, and back on screen from off its left', () => {
-    expect(sheetLinkLineShift(100, 380, 390, 1)).toBe(-92);
-    expect(sheetLinkLineShift(-50, 100, 390, 1)).toBe(58);
   });
 });
 

@@ -10,7 +10,7 @@
 import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { BrandMark } from '@liveworkspace/brand';
 import { useCanvasZoom } from '../canvas/CanvasZoomContext';
-import { Tooltip, lucideGlyph } from '@liveworkspace/ui';
+import { Tooltip, lucideGlyph, onScreenTranslate, useKeepOnScreen } from '@liveworkspace/ui';
 import {
   lucideExternalLink,
   lucideHand,
@@ -228,13 +228,24 @@ export function LiveEmbedView({
 
 // Use the file and Open: a row just above the element's top left, outside the file's own content, at one size on
 // screen whatever the zoom (counter-scaled, as the canvas's other chrome on an element is), shown on hover or focus.
+// Near the right of a phone it slides left to stay on screen, and flips under the element at the top of it: measured
+// as it shows (useKeepOnScreen's revealOn), never per frame.
 function Controls({ children }: { children: ReactNode }) {
   const zoom = useCanvasZoom();
+  const ref = useRef<HTMLDivElement>(null);
+  const slide = onScreenTranslate(
+    useKeepOnScreen(ref, false, {
+      scale: zoom,
+      anchor: () => ref.current?.parentElement,
+      revealOn: 'parent',
+    }),
+  );
   return (
     <div
+      ref={ref}
       data-live-embed-controls=""
       style={{
-        transform: `scale(${1 / zoom})`,
+        transform: `${slide ? `${slide} ` : ''}scale(${1 / zoom})`,
         transformOrigin: 'bottom left',
         marginBottom: 6 / zoom,
       }}

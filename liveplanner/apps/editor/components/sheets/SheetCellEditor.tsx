@@ -5,6 +5,7 @@
 // textarea's own text is transparent, its caret not). Under it, the function list while a name is typed, the
 // argument hint inside a call, and the reason a formula cannot be saved.
 import { useEffect, useRef } from 'react';
+import { OVERLAY_MAX_WIDTH, onScreenTranslate, useKeepOnScreen } from '@liveplanner/ui';
 import { FUNCTION_DOCS, formatA1 } from '@liveplanner/sheets';
 import { argumentAt, argumentSlot, refSpans } from './formula-assist';
 import { useSheetController } from './sheet-controller';
@@ -48,14 +49,33 @@ export function FunctionAssist({
 }) {
   const c = useSheetController();
   const arg = argumentAt(draft, input.caret);
+  // Each hangs from the editor's left edge, so an edit near the right of a phone slides it left, and one near the foot
+  // of the screen flips it above the editor (@liveworkspace/ui's useKeepOnScreen): measured when one opens or another
+  // takes its place, never per keystroke.
+  const shown = input.options
+    ? 'options'
+    : input.matches
+      ? 'functions'
+      : arg
+        ? `arg:${arg.name}`
+        : null;
+  const ref = useRef<HTMLDivElement & HTMLUListElement>(null);
+  const place = {
+    maxWidth: OVERLAY_MAX_WIDTH,
+    transform: onScreenTranslate(
+      useKeepOnScreen(ref, shown, { anchor: () => ref.current?.parentElement }),
+    ),
+  };
   // A dropdown cell's options matching the typing (data-validation.md "Using a dropdown").
   if (input.options)
     return (
       <ul
+        ref={ref}
         role="listbox"
         aria-label="Options"
         className="absolute left-0 top-full z-20 mt-1 max-h-64 w-56 overflow-auto rounded-lg border py-1 text-[12px] shadow-lg"
         style={{
+          ...place,
           backgroundColor: c.palette.surface,
           borderColor: c.palette.border,
           color: c.palette.text,
@@ -82,10 +102,12 @@ export function FunctionAssist({
   if (input.matches)
     return (
       <ul
+        ref={ref}
         role="listbox"
         aria-label="Functions"
         className="absolute left-0 top-full z-20 mt-1 max-h-64 w-72 overflow-auto rounded-lg border py-1 text-[12px] shadow-lg"
         style={{
+          ...place,
           backgroundColor: c.palette.surface,
           borderColor: c.palette.border,
           color: c.palette.text,
@@ -117,9 +139,11 @@ export function FunctionAssist({
     const slot = argumentSlot(arg.name, arg.index);
     return (
       <div
+        ref={ref}
         role="note"
         className="absolute left-0 top-full z-20 mt-1 w-80 rounded-lg border px-3 py-2 text-[12px] shadow-lg"
         style={{
+          ...place,
           backgroundColor: c.palette.surface,
           borderColor: c.palette.border,
           color: c.palette.text,

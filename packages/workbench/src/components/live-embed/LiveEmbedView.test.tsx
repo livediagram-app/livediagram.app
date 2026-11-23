@@ -178,6 +178,42 @@ describe('a live embed', () => {
     expect(controls.contains(screen.getByLabelText('Open in liveplanner'))).toBe(true);
   });
 
+  it('slides its controls left to stay on a phone screen as they show, in canvas units', () => {
+    const box = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height }) as DOMRect;
+    // An element at 300 on a 390-wide phone: the 140-wide row above it would end at 440.
+    const spy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        return this.hasAttribute('data-live-embed-controls')
+          ? box(300, 300, 140, 28)
+          : box(300, 334, 80, 60);
+      });
+    const width = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    try {
+      const { container } = render(
+        <CanvasZoomProvider zoom={0.5}>
+          <LiveEmbedView
+            liveItem={ITEM}
+            liveName="Roadmap"
+            livePoster={POSTER}
+            hostName="h"
+            canChoose
+          />
+        </CanvasZoomProvider>,
+      );
+      const controls = container.querySelector<HTMLElement>('[data-live-embed-controls]')!;
+      expect(controls.style.transform).toBe('scale(2)');
+      fireEvent.pointerEnter(controls.parentElement!);
+      // 58px left on screen is 116 canvas units at half zoom.
+      expect(controls.style.transform).toBe('translate(-116px) scale(2)');
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      spy.mockRestore();
+    }
+  });
+
   it('says a file is gone, offering an Editor another', () => {
     frame = { state: 'gone' };
     view();

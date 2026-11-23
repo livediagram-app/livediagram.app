@@ -5,8 +5,14 @@
 // card beside it; the control stays usable, so the person can pick a level or make a pass with the step up.
 // Escape or Skip ends it; the steps are fixed when it starts, so a tab added meanwhile can't shift them.
 
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import { Button, HoverCard } from '@liveworkspace/ui';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  Button,
+  HoverCard,
+  OVERLAY_MAX_WIDTH,
+  onScreenTranslate,
+  useKeepOnScreen,
+} from '@liveworkspace/ui';
 import { FootprintsGlyph } from './glyphs';
 import { scopeWords, type ScopeWords } from '../../words';
 import type { ShareTelemetry } from './types';
@@ -142,6 +148,14 @@ type Box = { left: number; top: number; width: number; height: number };
 export function ShareTourStage({ tour, helpHref }: { tour: ShareTour; helpHref?: string }) {
   const [box, setBox] = useState<Box | null>(null);
   const target = tour.step?.target;
+  // The card hangs from the control's left edge, so near the right of a phone it slides left (and flips above or
+  // below the control) to stay on screen: measured once per step and each time the control moves, never per frame.
+  const card = useRef<HTMLDivElement>(null);
+  const slide = onScreenTranslate(
+    useKeepOnScreen(card, box && `${tour.step?.id}:${box.left}:${box.top}:${box.width}`, {
+      anchor: () => (target ? document.querySelector(`[data-tour-id="${target}"]`) : null),
+    }),
+  );
   useLayoutEffect(() => {
     if (!target) {
       setBox(null);
@@ -185,6 +199,7 @@ export function ShareTourStage({ tour, helpHref }: { tour: ShareTour; helpHref?:
       ? { left: Math.max(12, box.left), top: box.top + box.height + 10 }
       : { left: Math.max(12, box.left), top: Math.max(12, box.top - 170) }
     : { left: '50%', top: '50%', transform: 'translate(-50%, -50%)' };
+  const placed = box && slide ? { ...cardStyle, transform: slide } : cardStyle;
   return (
     <>
       {box ? (
@@ -199,8 +214,9 @@ export function ShareTourStage({ tour, helpHref }: { tour: ShareTour; helpHref?:
         role="dialog"
         aria-label={tour.step.title}
         data-share-tour-step={tour.step.id}
-        className="fixed z-[61] w-72 max-w-[calc(100vw-24px)] rounded-xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-800"
-        style={cardStyle}
+        ref={card}
+        className="fixed z-[61] w-72 rounded-xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-800"
+        style={{ ...placed, maxWidth: OVERLAY_MAX_WIDTH }}
       >
         <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           {tour.index + 1} of {tour.count}

@@ -75,7 +75,17 @@ export {
 } from './ResponsivePopover';
 export * from './menu';
 export * from './optical';
-export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
+export {
+  POPOVER_VIEWPORT_MARGIN,
+  OVERLAY_MAX_WIDTH,
+  clampIntoRange,
+  keepOnScreen,
+  overlayMaxWidth,
+  shiftIntoRange,
+  type OnScreenShift,
+  type ScreenEdges,
+} from './popover';
+export { useKeepOnScreen, onScreenTranslate, type KeepOnScreenOptions } from './useKeepOnScreen';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
 export {

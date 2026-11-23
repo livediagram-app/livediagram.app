@@ -4,7 +4,8 @@
 // corner of every cell with an open thread, a preview of its first comment while the pointer rests on the cell, and
 // the anchor the editor's thread popover sits beside. Ctrl + Alt + M (⌘ ⌥ M) opens the active cell's thread. Nothing
 // draws over the frozen rows or columns a cell has scrolled under, nor outside the editor.
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { OVERLAY_MAX_WIDTH, onScreenTranslate, useKeepOnScreen } from '@liveplanner/ui';
 import { formatA1, layoutIndex, single, type SheetLayout } from '@liveplanner/sheets';
 import {
   CELL_COMMENT_ANCHOR_ATTR,
@@ -178,11 +179,16 @@ function CellPreview({
   box: { x: number; y: number; w: number; h: number };
 }) {
   const { author, text, more } = cellPreview(marker);
+  // Beside the cell's right edge, so a cell near the right of a phone slides it left to stay on screen
+  // (@liveworkspace/ui's useKeepOnScreen): measured once per cell shown, never per pointer move.
+  const ref = useRef<HTMLDivElement>(null);
+  const slide = onScreenTranslate(useKeepOnScreen(ref, `${box.x}:${box.y}:${box.w}`));
   return (
     <div
+      ref={ref}
       role="tooltip"
       className="pointer-events-none absolute z-[10] w-56 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[12px] text-slate-700 shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-      style={{ left: box.x + box.w + 4, top: box.y }}
+      style={{ left: box.x + box.w + 4, top: box.y, maxWidth: OVERLAY_MAX_WIDTH, transform: slide }}
     >
       <p className="font-semibold text-slate-900 dark:text-slate-100">{author}</p>
       <p className="mt-0.5 whitespace-pre-wrap break-words">{text}</p>
