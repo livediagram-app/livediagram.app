@@ -2,6 +2,7 @@
 // the plan's owner and team kept from its grants, a Participant's writes, and the surface the internal endpoints act
 // on. Each takes the room.
 import { createItemHeadSync, type ItemHeadSync } from '@liveworkspace/index-app';
+import { watchIdsOfOp } from './sheet-watchers';
 import { RoomParticipantWrites } from '../room-participant';
 import { type InternalRoom } from '../room-internal';
 import type { PlanRoom } from './plan-room';
@@ -105,9 +106,7 @@ export function roomInternal(room: PlanRoom): InternalRoom {
     readLedger: (tabId, since) => room.ledger.read(tabId, since),
     epoch: () => room.epoch,
     sheetChanged: (op) => {
-      const o = op as { kind?: unknown; sheetId?: unknown } | null;
-      if (o?.kind === 'sheets' && typeof o.sheetId === 'string')
-        room.sheetWatches.changed(o.sheetId);
+      for (const id of watchIdsOfOp(op)) room.sheetWatches.changed(id);
     },
   };
 }

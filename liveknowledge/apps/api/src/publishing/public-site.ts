@@ -15,6 +15,7 @@ import {
 } from '@liveknowledge/knowledge';
 import { documentRoom } from '../document-client';
 import type { Env } from '../types';
+import { handlePublicMedia, pictureIdOf } from './public-media';
 import type { PublishedAnswer, PublishedRead } from './published-reads';
 import { PUBLISH_PURGE_HEADER } from './publishing-routes';
 import { siteAddress } from './site-addresses';
@@ -69,7 +70,13 @@ function askedOf(url: URL): Asked | null {
   const parts = url.pathname.split('/').slice(2);
   if (parts.length > 0 && parts[parts.length - 1] === '') parts.pop();
   const [site, page, ...more] = parts;
-  if (!site || more.length > 0 || siteAddressRefusal(site) === 'invalid_address') return null;
+  if (!site || siteAddressRefusal(site) === 'invalid_address') return null;
+  // A published page's picture (public-media.ts): one segment after `media`, a page address never has two.
+  if (page === 'media' && more.length === 1) {
+    const imageId = pictureIdOf(more[0]!);
+    return imageId === null ? null : { site, read: { kind: 'media', imageId }, rest: '' };
+  }
+  if (more.length > 0) return null;
   if (page === undefined) return { site, read: { kind: 'page', address: null }, rest: '' };
   if (page === 'sitemap.xml') return { site, read: { kind: 'sitemap' }, rest: '/sitemap.xml' };
   if (page === 'search') {
@@ -82,9 +89,9 @@ function askedOf(url: URL): Asked | null {
 
 // The page drawn from the room's answer.
 function rendered(url: URL, asked: Asked, published: PublishedAnswer): Response {
-  if (published.status === 'none') return notFoundPage();
   if (published.status === 'moved')
     return redirect(`/kb/${asked.site}${published.address ? `/${published.address}` : ''}`);
+  if (published.status !== 'ok') return notFoundPage();
   const { site } = published;
   const view: SiteView = {
     origin: url.origin,
@@ -126,6 +133,17 @@ export async function handlePublicSite(
   const url = new URL(request.url);
   const asked = askedOf(url);
   if (!asked) return notFoundPage();
+  if (asked.read.kind === 'media') {
+    const served = await handlePublicMedia(
+      request,
+      env,
+      asked.site,
+      asked.read.imageId,
+      edgeCache(),
+      waitUntil,
+    );
+    return request.method === 'HEAD' ? new Response(null, served) : served;
+  }
   const searching = asked.read.kind === 'search';
   // Search is the one read the edge cannot keep, so it is limited per network (P23).
   if (searching && env.SEARCH_RATE_LIMITER) {

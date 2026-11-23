@@ -27,7 +27,11 @@ import {
   itemAutomationSchemaSteps,
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
-import { VERSION_SAVE_STEP, VERSION_SCHEMA } from '../versions/version-schema';
+import {
+  VERSION_SAVE_STEP,
+  VERSION_SCHEMA,
+  versionAgentSchemaStep,
+} from '../versions/version-schema';
 import { knowledgeSchemaStep, knowledgeShapeStep } from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
@@ -36,7 +40,11 @@ import { emailMarksSchemaStep } from '../knowledge/email-marks';
 import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
-import { publishedCountedStep, publishedSchemaStep } from '../publishing/published-schema';
+import {
+  publishedCountedStep,
+  publishedMediaSchemaStep,
+  publishedSchemaStep,
+} from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
 import { pageWatchSchemaStep } from '../knowledge/page-watch';
@@ -462,10 +470,20 @@ const V41 = pageWatchSchemaStep;
 // docs/specs/030-knowledgebase/required-reading.md). Additive, IF NOT EXISTS.
 const V42 = requiredReadingSchemaStep;
 
-// Step 43: whether a published site holds a counted place of its owner's Public Knowledgebases
+// Step 43: the agent an agent's version was kept for, beside its person (versions/version-schema.ts
+// versionAgentSchemaStep; docs/specs/006-document/version-history.md "An agent's mark"). Additive, the table asked
+// first.
+const V43 = versionAgentSchemaStep;
+
+// Step 44: the pictures each published page places, its cover as drawn, and a restyle redrawing the site
+// (publishing/published-schema.ts; docs/specs/030-knowledgebase/publishing.md "Pictures on the public site").
+// Guarded, so it runs again harmlessly.
+const V44 = publishedMediaSchemaStep;
+
+// Step 45: whether a published site holds a counted place of its owner's Public Knowledgebases
 // (publishing/published-gauge.ts; docs/specs/030-knowledgebase/publishing.md "Tiers"). Asks before the ALTER; every
 // site already there reads as never counted.
-const V43 = publishedCountedStep;
+const V45 = publishedCountedStep;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -503,6 +521,8 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V41,
   V42,
   V43,
+  V44,
+  V45,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

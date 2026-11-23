@@ -122,7 +122,7 @@ export async function handlePageHealth(
   // "Bright Marlin (Guest)" (owner 2026-11-21), the way a guest's Verify is stored (guestVerifier). The accounts the
   // page names (who made and changed it, its owner, who verified it) go with their names, so a reader outside the
   // team (a Viewer through a link) sees people, never "Guest" (owner 2026-11-21). One profiles read for both.
-  const { named, names } = await stampsNamed(
+  const { named, names, colors } = await stampsNamed(
     ctx,
     [...(authors ? [authors.created, authors.updated] : []), ...editors],
     [knowledge.owner, knowledge.verifiedBy],
@@ -130,6 +130,7 @@ export async function handlePageHealth(
   return json({
     knowledge,
     ...(Object.keys(names).length > 0 ? { names } : {}),
+    ...(Object.keys(colors).length > 0 ? { colors } : {}),
     reads: use.week,
     ...(authors ? { created: named(authors.created), updated: named(authors.updated) } : {}),
     ...(editors.length > 0 ? { editors: editors.map(named) } : {}),
@@ -295,7 +296,11 @@ async function stampsNamed<T extends { by: string }>(
   ctx: DocumentRouteContext,
   stamps: readonly T[],
   also: readonly (string | undefined)[],
-): Promise<{ named: (stamp: T) => T; names: Record<string, string> }> {
+): Promise<{
+  named: (stamp: T) => T;
+  names: Record<string, string>;
+  colors: Record<string, string>;
+}> {
   const guests = guestOwnersOf(stamps);
   const accounts = [
     ...new Set(
@@ -304,14 +309,19 @@ async function stampsNamed<T extends { by: string }>(
       ),
     ),
   ];
-  if (guests.length === 0 && accounts.length === 0) return { named: (stamp) => stamp, names: {} };
+  if (guests.length === 0 && accounts.length === 0)
+    return { named: (stamp) => stamp, names: {}, colors: {} };
   const people = await getParticipants(ctx.env, [...guests, ...accounts]).catch(
-    () => new Map<string, { name: string }>(),
+    () => new Map<string, { name: string; color?: string }>(),
   );
   const names: Record<string, string> = {};
+  // Each account's colour, as their avatar and Version History's dot draw them (verification.md "Created and Updated").
+  const colors: Record<string, string> = {};
   for (const id of accounts) {
-    const name = people.get(id)?.name.trim();
+    const person = people.get(id);
+    const name = person?.name.trim();
     if (name) names[id] = name;
+    if (person?.color) colors[id] = person.color;
   }
-  return { named: guestStampNamer((id) => people.get(id)?.name), names };
+  return { named: guestStampNamer((id) => people.get(id)?.name), names, colors };
 }

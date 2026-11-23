@@ -1,7 +1,7 @@
 # Blueprint: Publish to the Web
 
 Derived from [Publish to the Web](../publishing.md). The spec decides; this file adds the engineering precision.
-Rules are numbered P1 to P30 and each maps to a test (Testing).
+Rules are numbered P1 to P38 and each maps to a test (Testing).
 
 ## Domain and naming
 
@@ -36,6 +36,9 @@ an identifier of this feature.
 | The Editor's routes                        | `apps/api/src/publishing/publishing-routes.ts`                                                |
 | Public Knowledgebases, the tier's count    | `apps/api/src/publishing/published-gauge.ts`                                                  |
 | The public site, in the worker             | `apps/api/src/publishing/public-site.ts`                                                      |
+| A page's figures, cover and pictures       | `apps/api/src/publishing/published-media.ts`                                                  |
+| The public picture route                   | `apps/api/src/publishing/public-media.ts`                                                     |
+| The cover's colours (shared with editor)   | `packages/document/src/page-cover.ts` `coverThemeFrom`                                        |
 | The router's `/kb` line                    | `apps/router/src/index.ts`                                                                    |
 | The dialog                                 | `apps/editor/components/publishing/`                                                          |
 | The limit's words and its refusal          | `apps/editor/lib/publishing/publish-limit.ts`                                                 |
@@ -45,7 +48,7 @@ an identifier of this feature.
 
 - **P1 One capability check.** `publishingOffered({ ownerId, teamId })` answers `true`. The api's routes refuse
   `403 publishing_unavailable` when it is false, the state read says `offered`, and the editor's menu row reads
-  `offered`. How many an owner publishes is the tier's count (P28 to P32), never this check.
+  `offered`. How many an owner publishes is the tier's count (P28 to P30, P37 and P38), never this check.
 - **P2 Who.** The Editor's routes need `grant.role === 'edit'` on the whole knowledgebase (`tabScope === null`), an
   account (`accountUserId`), and no API token (`403 needs_a_person`). Everyone else: `403 forbidden`. A Community
   visit's grant is `view`, so it is refused too.
@@ -91,8 +94,8 @@ an identifier of this feature.
   its id are dropped and its text kept; a footnote is a numbered reference to a list at the foot. Lists nest by
   level (numbered, bulleted, to-do with a disabled checkbox), code is `<pre><code>`, a divider `<hr>`, a table a
   `<table>` (its header row `<thead>`), a contents block the page's headings (to its depth) linked by anchor. A zone
-  (a picture, chart or drawing) and a page break draw nothing. Heading anchors are made from their text, unique in
-  the page.
+  is the figure P31 draws for it (nothing when it has none); a page break draws nothing. Heading anchors are made
+  from their text, unique in the page.
 - **P12 Page links** to a page in the snapshot link to `/kb/<site>/<address>` (the front page to `/kb/<site>`); any
   other is its text.
 - **P13 The description**: the writing's text after the title, whitespace collapsed, cut at a word to 160 characters
@@ -105,6 +108,26 @@ an identifier of this feature.
 - **P15 The front page.** `/kb/<site>` serves the first page in the snapshot's order; its own address redirects there
   (`301`). The canonical of the front page is `/kb/<site>`.
 - **P16 Previous and Next** follow the snapshot's order (depth first), across levels.
+- **P31 A zone's figure** (`zoneFigure`, Work Tracker 1346): the zone's rect where it last stood
+  (`zoneCanvasRect` over the tab's laid out pages) and its elements (`zoneMemberIds`), drawn by the shared renderer
+  (`renderElementsToSvg`) in the knowledgebase's style (`tabInKnowledgeStyle`), framed to the rect with no
+  background, inked for a light page; a zone never laid out, or holding nothing, draws nothing. The SVG sits in
+  `<figure class="zone zone-<object|drawing> align-<left|center|right>[ wrap-<left|right>]">`, its `width` and
+  `height` the zone's, scaled down to the column by CSS, `role="img"` with the elements' alt text
+  (`imageAltTextOf`) as its `aria-label`, else `aria-hidden="true"`. A drawing zone sits on a white card in the dark
+  appearance, as its ink is a light page's. Icons and stickers are drawn as the preview draws them.
+- **P32 A page's pictures** (`published_media`): the gallery ids (`imageRefIds`) of the elements in the page's zones
+  and of its cover picture, kept to those the knowledgebase may serve (`servableImageIds`, one query per drawn
+  batch). The renderer's image href for each is `/kb/<site>/media/<encodeURIComponent(id)>`; any other id keeps its
+  placeholder. Each drawn page's rows are replaced in the refresh's batch; a page leaving the site deletes its rows;
+  Unpublish deletes them all.
+- **P33 A page's cover** (`published_pages.cover`, HTML): a picture is `<div class="cover"><img src="/kb/<site>/
+media/<id>" alt="" ...></div>` placed by its focus (`object-position: 50% <focus>%`), its credit in a
+  `<span class="credit">`, only when P32 kept it; a gradient or an animated cover is the band painted
+  `linear-gradient(<angle>deg, <from>, <to>)` from `coverFill(cover, coverThemeFrom(theme, accent))`, only hex
+  colours and a finite angle written (an animated cover is its gradient, still). No cover is `''`.
+- **P34 Restyle.** A change to the knowledgebase's style marks every published page dirty (trigger
+  `published_pages_restyled`), as P31 and P33 draw in it.
 
 - **P28 The count** (`published-gauge.ts`, spec "Tiers"): with Pro on, the subscription service's
   `publicKnowledgebases` gauge holds one key per published knowledgebase, its document id. The routes read the
@@ -120,11 +143,11 @@ an identifier of this feature.
 'publicKnowledgebases'`, `used`, `max` (and `guest` for a guest's), nothing written. The service refusing the
   request itself (`refusedByService`) throws: a server error, never a limit. Unmetered (out of reach) publishes with
   the mark NULL. A write that fails after the claim releases it. A PUT on a site that serves never claims.
-- **P31 Counting again.** The dialog's first read (a GET with no `root`), and the room's daily upkeep, claim again
+- **P37 Counting again.** The dialog's first read (a GET with no `root`), and the room's daily upkeep, claim again
   for a site that exists (the add is idempotent at the service): a site from before takes its place, one refused
   takes it when the owner has room, and the answer's `used` is the owner's count. A GET carries `usage: { used?,
 limit }` and `owner` (or `guest: true`), absent with Pro off; `used` only when a claim answered.
-- **P32 Giving back.** Unpublish releases (whether or not a site was there). The room's purge releases before its
+- **P38 Giving back.** Unpublish releases (whether or not a site was there). The room's purge releases before its
   storage goes. A move (the room's head write naming a new owner or team) releases from the old owner, reads the
   new owner's tier and claims, unless the mark is 0; each is logged and never throws.
 
@@ -142,16 +165,18 @@ preview: { root, pages: { id, title }[], leftOut: { id, title, reason }[] } }`. 
 address_taken`, `409 publish_limit_reached` (Pro on, P30: `{ error, message, limit, used, max, guest? }`); `429
 rate_limited` (the write limiter).
 - `PublishingState` with Pro on also carries `usage?: { used?: number; limit: number | null }`, `owner?` (the
-  payer's scope) and `guest?: true` (P31).
+  payer's scope) and `guest?: true` (P37).
 - Public routes (`apps/api/src/publishing/public-site.ts`, GET and HEAD only, `405` otherwise; no Authorization or
   cookie is read):
   - `/kb/<site>` and `/kb/<site>/<page>` → `text/html`; a moved site or page → `301`; none → `404` page.
   - `/kb/<site>/search?q=` → `text/html`, results or none.
   - `/kb/<site>/sitemap.xml` → `application/xml`.
+  - `/kb/<site>/media/<id>` (P35) → the picture's bytes, its stored type; `304` to a browser's `If-None-Match`
+    holding its `ETag`; `404` (an empty body) for anything P35 refuses; `429` over the limit (P36).
 - The room's RPC `publishedRead(documentId, read)`, `read` one of `{ kind: 'page', address: string | null }`,
-  `{ kind: 'search', query }`, `{ kind: 'sitemap' }`, answers `PublishedAnswer`:
-  `{ status: 'none' }`, `{ status: 'moved', address }` or `{ status: 'ok', site, page?, results?, pages? }` with
-  only published fields. `site` is `{ address, name, style, noindex, showWriters, tree: { address, title, icon,
+  `{ kind: 'search', query }`, `{ kind: 'sitemap' }`, `{ kind: 'media', imageId }`, answers `PublishedAnswer`:
+  `{ status: 'none' }`, `{ status: 'moved', address }`, `{ status: 'media' }` (the picture may be served) or
+  `{ status: 'ok', site, page?, results?, pages? }` with only published fields; a page carries its `cover` HTML. `site` is `{ address, name, style, noindex, showWriters, tree: { address, title, icon,
 parent }[] }`.
 
 ## Data and persistence
@@ -160,12 +185,17 @@ Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EX
 
 | Table                      | Columns                                                                                                                              |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `published_site`           | `id` (1), `address`, `root`, `noindex`, `show_writers`, `published_by`, `published_at`, `stale`, `counted` (P29; step 41)            |
+| `published_site`           | `id` (1), `address`, `root`, `noindex`, `show_writers`, `published_by`, `published_at`, `stale`, `counted` (P29; step 45)            |
 | `published_pages`          | `tab` PK, `address` UNIQUE, `parent`, `position`, `title`, `icon`, `description`, `html`, `text`, `writers` (JSON names), `saved_at` |
 | `published_addresses`      | `address` PK, `tab`: every address a page of the site has had                                                                        |
 | `published_site_addresses` | `address` PK, `held_at`: every site address this knowledgebase holds at the registry                                                 |
 | `published_dirty`          | `tab` PK                                                                                                                             |
 | `published_fts`            | FTS5 (`tab` UNINDEXED, `title`, `text`), the search tokenizer the knowledge index uses                                               |
+| `published_media`          | `image`, `tab`, PK (`image`, `tab`): the pictures each published page places (P32)                                                   |
+
+A second schema step (V44, Work Tracker 1346) adds `published_media`, the column `published_pages.cover` (TEXT, default
+`''`) and the trigger P34, and marks every page already published dirty, so a site published before it shows its
+pictures at its next read.
 
 - `counted` is added by its own step (`document-schema.ts` V41, `publishedCountedStep`), asking `PRAGMA
 table_info` before its `ALTER`, as V15 does. Every site there before reads NULL: never counted.
@@ -185,7 +215,7 @@ table_info` before its `ALTER`, as V15 does. Every site there before reads NULL:
   read tries again.
 - **P20** A registry record whose knowledgebase holds no site (unpublished from elsewhere, deleted) reads `404`.
 - **P21** The purge after Publish, an update and Unpublish is best effort: a failed `cache.delete` is logged and the
-  60 second lifetime bounds the rest.
+  60 second lifetime bounds the rest. It names every page's pictures too (`/kb/<site>/media/<id>`).
 
 ## Security and trust
 
@@ -200,6 +230,17 @@ nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
   `429` with `Retry-After: 60`. A query is cut to `SEARCH_MAX_QUERY_CHARS` and made safe by `searchTerms` and
   `ftsExpression`, so nothing typed is read as an FTS operator.
 - The router forwards `/kb/*` to the api as it is; no cookie or Authorization header is read by the public site.
+- **P35 A picture's fetch** (`/kb/<site>/media/<id>`): the site is resolved by the registry (P7; a moved site
+  redirects to the same picture at its new address); its knowledgebase refreshes (P10) and answers `media` only when
+  `published_media` holds the id for a page still in `published_pages` and `servableImageIds` still keeps it, else
+  `none`. Only then are the bytes read (`media.bytes`). An id is 1 to `IMAGE_REF_ID_MAX_LENGTH` characters after
+  percent-decoding, never `data:`; any other is `404` before any lookup. The answer carries
+  `Cache-Control: public, max-age=60`, an `ETag` made from the id, `X-Content-Type-Options: nosniff`,
+  `Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; sandbox` and
+  `Cross-Origin-Resource-Policy: same-origin`, so a picture opened alone runs nothing and another site cannot embed
+  it. Nothing of the picture but its bytes and type is sent.
+- **P36** A picture's fetch the edge has not kept is limited per visitor's network on `SEARCH_RATE_LIMITER` under its
+  own key (`kb-media:<network>`, so its budget is apart from search's); over it `429` with `Retry-After: 60`.
 
 ## Performance and limits
 
@@ -207,8 +248,13 @@ nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
   storage read, then the knowledgebase's) and, when a page changed, one body read and render for that page.
 - A Publish renders every page in scope: at most 500 bodies, read 50 at a time. The render is linear in the
   writing's blocks and runs (P27 holds a 5,000 block page under a CPU budget).
-- No image is drawn: `og:image` is liveknowledge's own social image (`<origin>/opengraph-image`). A card per page
-  (resvg in the api) is a follow-up, held back for its bundle cost (about 2.5 MB of wasm and fonts).
+- No raster image is drawn: `og:image` is liveknowledge's own social image (`<origin>/opengraph-image`). A card per
+  page (resvg in the api) is a follow-up, held back for its bundle cost (about 2.5 MB of wasm and fonts).
+- A zone's figure (P31) is drawn once per page draw, not per read; it is an SVG of its elements alone. The media
+  rows add one `servableImageIds` query per batch of 50 pages and one row per picture. A picture fetch the edge has
+  not kept costs one registry read, one knowledgebase call (two indexed lookups) and one media read; a browser's
+  revalidation (`If-None-Match`) skips the media read. The renderer and the icon art were already in the api's
+  bundle (`thumbnail.ts`), so nothing is added to it.
 
 ## Presentation and UX
 
@@ -234,32 +280,34 @@ nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
 ## Web Experience
 
 - No script; the CSS is inline (one small block); fonts load with `display=swap` and a system fallback, so LCP is the
-  title's text and CLS is nil (no images in the column, the sidebar's width fixed).
+  title's text and CLS is nil (every figure's SVG has its size before its pictures load, the cover's band a fixed
+  height, the sidebar's width fixed).
 
 ## Observability
 
 - `[publishing] published { documentId, pages, leftOut }`, `[publishing] unpublished { documentId }`,
   `[publishing] refresh { documentId, rendered, removed }`, `[publishing] refresh_failed`, `[publishing] purge_failed`.
   `[publishing] refused { reason: 'tier_limit' }` (P30), `[publishing] gauge.sync.failed`, `gauge.leave.failed`,
-  `gauge.move.failed` (P31, P32). Never an address, title or name.
+  `gauge.move.failed` (P37, P38). Never an address, title or name.
 
 ## Testing
 
-| Rule                      | Test                                                                                                                                                                                                                         |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P1                        | `publish-capability.test.ts`; `publishing-routes.test.ts` "is refused when not offered"                                                                                                                                      |
-| P2                        | `publishing-routes.test.ts` "role gating" (Editor, Participant, Viewer, link, page link, agent, stranger)                                                                                                                    |
-| P3, P8, P9                | `publishing-routes.test.ts` "publish, update, unpublish"                                                                                                                                                                     |
-| P4, P18                   | `publish-scope.test.ts`                                                                                                                                                                                                      |
-| P5, P6                    | `publish-address.test.ts`                                                                                                                                                                                                    |
-| P7                        | `site-addresses.test.ts`                                                                                                                                                                                                     |
-| P10, P17, P19             | `published-snapshot.test.ts`                                                                                                                                                                                                 |
-| P11, P12, P13, P22        | `publish-writing.test.ts`                                                                                                                                                                                                    |
-| P14                       | `published-snapshot.test.ts` "writers"                                                                                                                                                                                       |
-| P15, P16, P20, P21, P23   | `public-site.test.ts`                                                                                                                                                                                                        |
-| P26 nothing private leaks | `published-leaks.test.ts`: a knowledgebase with a draft, margin notes, threads, a pending and a rejected page, an owner, verification, an approval and named editors; every public answer is searched for each private value |
-| P27                       | `publish-writing.test.ts` CPU budget                                                                                                                                                                                         |
-| P28 to P32                | `publishing-tier.test.ts`; the editor's `publish-limit.test.ts` and `PublishLimit.test.tsx`                                                                                                                                  |
+| Rule                      | Test                                                                                                                                                                                                                                                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1                        | `publish-capability.test.ts`; `publishing-routes.test.ts` "is refused when not offered"                                                                                                                                                                                                                                         |
+| P2                        | `publishing-routes.test.ts` "role gating" (Editor, Participant, Viewer, link, page link, agent, stranger)                                                                                                                                                                                                                       |
+| P3, P8, P9                | `publishing-routes.test.ts` "publish, update, unpublish"                                                                                                                                                                                                                                                                        |
+| P4, P18                   | `publish-scope.test.ts`                                                                                                                                                                                                                                                                                                         |
+| P5, P6                    | `publish-address.test.ts`                                                                                                                                                                                                                                                                                                       |
+| P7                        | `site-addresses.test.ts`                                                                                                                                                                                                                                                                                                        |
+| P10, P17, P19             | `published-snapshot.test.ts`                                                                                                                                                                                                                                                                                                    |
+| P11, P12, P13, P22        | `publish-writing.test.ts`                                                                                                                                                                                                                                                                                                       |
+| P14                       | `published-snapshot.test.ts` "writers"                                                                                                                                                                                                                                                                                          |
+| P15, P16, P20, P21, P23   | `public-site.test.ts`                                                                                                                                                                                                                                                                                                           |
+| P26 nothing private leaks | `published-leaks.test.ts`: a knowledgebase with a draft, margin notes, threads, a pending and a rejected page, an owner, verification, an approval and named editors; every public answer is searched for each private value                                                                                                    |
+| P27                       | `publish-writing.test.ts` CPU budget                                                                                                                                                                                                                                                                                            |
+| P31 to P36                | `published-media.test.ts`: a published page's picture, drawing and cover show signed out; an unplaced, a left-out and another knowledgebase's picture 404; removing a picture, leaving a page out and Unpublish take it down; a restyle redraws; cache headers, ETag and 304; the rate limit. `publish-writing.test.ts` "zones" |
+| P28 to P30, P37, P38      | `publishing-tier.test.ts`; the editor's `publish-limit.test.ts` and `PublishLimit.test.tsx`                                                                                                                                                                                                                                     |
 
 ## Constants and configuration
 
@@ -271,6 +319,7 @@ nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
 | `PUBLISHED_DESCRIPTION_MAX` | 160   | What search engines show                               |
 | `PREVIEW_PAGES_SHOWN`       | 8     | The dialog's list before "and N more"                  |
 | `PUBLISH_RENDER_BATCH`      | 50    | Bodies read at once during a Publish                   |
+| `COVER_BAND_PX`             | 220   | The cover's height, as the editor's (140 on a phone)   |
 
 ## Defaults ledger
 

@@ -9,7 +9,7 @@ const names: Record<string, string> = { u1: 'Priya Shah', u2: 'Sam Lee' };
 const nameOf = (id: string | undefined) => (id ? names[id] : undefined);
 
 describe('who made the page, in the top row', () => {
-  it('names the creator first, then the editors; an agent by its name, an unknown person as Guest', () => {
+  it('names the creator first, then the editors; an agent for its person, an unknown person as Guest', () => {
     const makers = makersOf(
       [
         { by: 'u1', at: 1, kind: 'human' },
@@ -20,12 +20,12 @@ describe('who made the page, in the top row', () => {
     );
     expect(makers.map((m) => `${m.name}, ${m.role}`)).toEqual([
       'Priya Shah, Created',
-      'Claude, Edited',
+      'Claude for Priya Shah, Edited',
       'Guest, Edited',
     ]);
     render(<PageMakersStackView makers={makers} />);
     expect(screen.getByRole('img', { name: 'Priya Shah, Created' }).textContent).toBe('PS');
-    expect(screen.getByRole('img', { name: 'Claude, Edited' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Claude for Priya Shah, Edited' })).toBeTruthy();
   });
 
   it('counts the rest past the row in a last disc', () => {

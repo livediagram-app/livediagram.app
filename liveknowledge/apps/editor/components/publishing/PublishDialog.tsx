@@ -476,7 +476,8 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
                 </div>
                 <p className={NOTE}>
                   Only saved writing goes public: never drafts, comments, Page Health or pages
-                  waiting for approval. Pictures and drawings stay private for now.
+                  waiting for approval. A page&apos;s pictures, drawings and cover go public with
+                  it.
                 </p>
               </section>
             </>

@@ -18,13 +18,27 @@ import {
   type PublishScope,
   type ScopePage,
 } from '@liveknowledge/knowledge';
-import { parseTabIcon, savedArticlesOf, type Tab } from '@liveknowledge/document';
+import {
+  DEFAULT_KNOWLEDGE_STYLE,
+  ensureMapGeometry,
+  parseTabIcon,
+  savedArticlesOf,
+  type KnowledgeStyle,
+  type Tab,
+} from '@liveknowledge/document';
 import { getTab } from '../db/tabs';
-import { readDocumentOutline } from '../document-room/document-content';
+import { readDocumentMeta, readDocumentOutline } from '../document-room/document-content';
 import { knowledgeDb } from '../knowledge/knowledge-db';
 import { pageFlowOf } from '../knowledge/page-read';
 import { getParticipants } from '../person/profiles';
 import type { DocumentEnv, TabSummaryDTO } from '../types';
+import {
+  pageFigures,
+  pageObjectsOf,
+  publishedMediaPath,
+  servablePictures,
+  type PageFigures,
+} from './published-media';
 
 /** The outline's tabs as the scope reads them: no writing. */
 export const scopePagesOf = (outline: { tabs: readonly TabSummaryDTO[] }): ScopePage[] =>
@@ -110,14 +124,16 @@ export async function heldSiteAddresses(env: DocumentEnv): Promise<string[]> {
 /** The paths of the site as it stands (its front page, every page, its sitemap and search), for the edge purge. */
 export async function publishedPaths(env: DocumentEnv): Promise<string[]> {
   const db = knowledgeDb(env);
-  const [addresses, pages] = await Promise.all([
+  const [addresses, pages, media] = await Promise.all([
     heldSiteAddresses(env),
     db.prepare('SELECT address FROM published_pages').all<{ address: string }>(),
+    db.prepare('SELECT DISTINCT image FROM published_media').all<{ image: string }>(),
   ]);
   const out: string[] = [];
   for (const site of addresses) {
     out.push(`/kb/${site}`, `/kb/${site}/sitemap.xml`);
     for (const p of pages.results) out.push(`/kb/${site}/${p.address}`);
+    for (const m of media.results) out.push(publishedMediaPath(site, m.image));
   }
   return out;
 }
@@ -178,6 +194,7 @@ export async function dropSite(env: DocumentEnv): Promise<void> {
       'published_dirty',
       'published_empty',
       'published_fts',
+      'published_media',
     ].map((table) => db.prepare(`DELETE FROM ${table}`)),
   );
 }
@@ -206,18 +223,29 @@ type Drawn = {
   links: Links;
   savedAt: number;
   editors: string[];
+  cover: string;
+  media: ReadonlySet<string>;
 };
 
-// A page as the site draws it, from its saved writing.
-function draw(tab: Tab, hrefOf: (tabId: string) => string | null, savedAt: number): Drawn {
+// A page as the site draws it, from its saved writing, with its figures and cover (published-media.ts).
+function draw(
+  tab: Tab,
+  hrefOf: (tabId: string) => string | null,
+  savedAt: number,
+  figures: PageFigures,
+): Drawn {
   const flow = pageFlowOf(tab);
   const blocks = flow ? (savedArticlesOf(tab)[flow]?.blocks ?? []) : [];
   const links: Links = {};
-  const writing = publishedWriting(blocks, (tabId) => {
-    const to = hrefOf(tabId);
-    links[tabId] = to;
-    return to;
-  });
+  const writing = publishedWriting(
+    blocks,
+    (tabId) => {
+      const to = hrefOf(tabId);
+      links[tabId] = to;
+      return to;
+    },
+    figures.figure,
+  );
   const icon = parseTabIcon((tab as { icon?: unknown }).icon);
   return {
     tab: tab.id,
@@ -229,6 +257,8 @@ function draw(tab: Tab, hrefOf: (tabId: string) => string | null, savedAt: numbe
     links,
     savedAt,
     editors: [],
+    cover: figures.cover,
+    media: figures.media,
   };
 }
 
@@ -279,7 +309,14 @@ export async function refreshPublished(env: DocumentEnv, documentId: string): Pr
   );
   if (!site.stale && dirty.size === 0) return;
 
-  const outline = await readDocumentOutline(env, documentId);
+  const [outline, meta] = await Promise.all([
+    readDocumentOutline(env, documentId),
+    readDocumentMeta(env, documentId),
+  ]);
+  const look: DrawLook = {
+    site: site.address,
+    style: meta?.knowledgeStyle ?? DEFAULT_KNOWLEDGE_STYLE,
+  };
   const tabs = scopePagesOf(outline);
   const scope = publishableScope(tabs, site.root) ?? { pages: [], leftOut: [] };
   const [rowsRes, historyRes, emptyRes] = await db.batch([
@@ -310,7 +347,7 @@ export async function refreshPublished(env: DocumentEnv, documentId: string): Pr
   const due = scope.pages
     .map((p) => p.id)
     .filter((id) => dirty.has(id) || (!rows.has(id) && !knownEmpty.has(id)));
-  await drawPages(env, documentId, due, firstPass, drawn);
+  await drawPages(env, documentId, due, firstPass, look, drawn);
 
   // The pages found empty leave the site, and their subpages move up.
   const empty = new Set(knownEmpty);
@@ -329,7 +366,7 @@ export async function refreshPublished(env: DocumentEnv, documentId: string): Pr
       const links = drawn.get(id)?.links ?? parseLinks(rows.get(id)?.links ?? '{}');
       return Object.entries(links).some(([tab, to]) => finalPath(tab) !== to);
     });
-  await drawPages(env, documentId, relink, finalPath, drawn);
+  await drawPages(env, documentId, relink, finalPath, look, drawn);
 
   if (site.showWriters) await nameWriters(env, [...drawn.values()]);
 
@@ -340,6 +377,7 @@ export async function refreshPublished(env: DocumentEnv, documentId: string): Pr
       statements.push(
         db.prepare('DELETE FROM published_pages WHERE tab = ?').bind(tab),
         db.prepare('DELETE FROM published_fts WHERE tab = ?').bind(tab),
+        db.prepare('DELETE FROM published_media WHERE tab = ?').bind(tab),
       );
   final.pages.forEach((page, position) => {
     const address = addresses.get(page.id)!;
@@ -361,12 +399,13 @@ export async function refreshPublished(env: DocumentEnv, documentId: string): Pr
       db
         .prepare(
           `INSERT INTO published_pages (tab, address, parent, position, title, icon, description, html, text, writers,
-                                        saved_at, links)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
+                                        saved_at, links, cover)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)
            ON CONFLICT (tab) DO UPDATE SET address = excluded.address, parent = excluded.parent,
              position = excluded.position, title = excluded.title, icon = excluded.icon,
              description = excluded.description, html = excluded.html, text = excluded.text,
-             writers = excluded.writers, saved_at = excluded.saved_at, links = excluded.links`,
+             writers = excluded.writers, saved_at = excluded.saved_at, links = excluded.links,
+             cover = excluded.cover`,
         )
         .bind(
           page.id,
@@ -381,11 +420,19 @@ export async function refreshPublished(env: DocumentEnv, documentId: string): Pr
           JSON.stringify(d.editors),
           d.savedAt,
           JSON.stringify(d.links),
+          d.cover,
         ),
       db.prepare('DELETE FROM published_fts WHERE tab = ?').bind(page.id),
       db
         .prepare('INSERT INTO published_fts (tab, title, text) VALUES (?, ?, ?)')
         .bind(page.id, d.title, d.text),
+      // The pictures this drawing places, and no others (P32).
+      db.prepare('DELETE FROM published_media WHERE tab = ?').bind(page.id),
+      ...[...d.media].map((image) =>
+        db
+          .prepare('INSERT OR IGNORE INTO published_media (image, tab) VALUES (?, ?)')
+          .bind(image, page.id),
+      ),
     );
   });
   statements.push(db.prepare('DELETE FROM published_empty'));
@@ -402,12 +449,17 @@ export async function refreshPublished(env: DocumentEnv, documentId: string): Pr
   });
 }
 
+// The site's address and the knowledgebase's style, which a page's figures and cover are drawn in.
+type DrawLook = { site: string; style: KnowledgeStyle };
+
 // Read and draw `ids`, PUBLISH_RENDER_BATCH bodies at a time, into `drawn`. A page gone since the outline is skipped.
+// Each batch asks once which of its pictures the knowledgebase may serve (P32).
 async function drawPages(
   env: DocumentEnv,
   documentId: string,
   ids: readonly string[],
   hrefOf: (tabId: string) => string | null,
+  look: DrawLook,
   drawn: Map<string, Drawn>,
 ): Promise<void> {
   for (let i = 0; i < ids.length; i += PUBLISH_RENDER_BATCH) {
@@ -416,9 +468,25 @@ async function drawPages(
       Promise.all(batch.map((id) => getTab(env, documentId, id))),
       savedTimes(env, batch),
     ]);
-    for (const tab of tabs) {
-      if (!tab) continue;
-      drawn.set(tab.id, draw(tab, hrefOf, saved.get(tab.id) ?? tab.updatedAt));
+    const pages = tabs.flatMap((tab) =>
+      tab ? [{ ...pageObjectsOf(tab), updatedAt: tab.updatedAt }] : [],
+    );
+    const [servable] = await Promise.all([
+      servablePictures(env, documentId, pages),
+      // A map's land, loaded only when a figure holds one.
+      ...pages.flatMap((p) => [...p.zones.values()].map((zone) => ensureMapGeometry(zone.members))),
+    ]);
+    for (const objects of pages) {
+      const { tab } = objects;
+      drawn.set(
+        tab.id,
+        draw(
+          tab,
+          hrefOf,
+          saved.get(tab.id) ?? objects.updatedAt,
+          pageFigures(objects, look, servable),
+        ),
+      );
     }
   }
 }

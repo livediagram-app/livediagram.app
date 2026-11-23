@@ -2,7 +2,8 @@
 
 A **sheet source** lets an item in one app draw from a range of a sheet in another: a chart in a livedocuments
 document keeps its slices or series in step with a range of a liveplanner Sheet (Work Tracker 940), and so does a chart
-in a livediagram document or a livedesign design (Work Tracker 1133). The chart stays the item's own element, drawn in
+in a livediagram document, a livedesign design or a liveknowledge page (Work Tracker 1133). [Live data](live-data.md)
+grows this into board counts and dashboard metrics, Freeze and tables, on the same rules (Work Tracker 1368). The chart stays the item's own element, drawn in
 the item's theme and exported with it; only its numbers come from the sheet.
 
 The platform holds the part every app would otherwise build again: a door into the sheet app that reads one range and
@@ -17,7 +18,7 @@ the sheet changed. What the reading item shows (the chart) is each reader app's 
 
 - The **source** is the item holding the sheet (a liveplanner plan); the **reader item** is the item whose element
   draws from it (a livedocuments or livediagram document, a livedesign design). Source apps: liveplanner
-  (`SHEET_SOURCE_APPS`). Reader apps: livedocuments, livediagram and livedesign (`SOURCE_WATCH_APPS`).
+  (`SHEET_SOURCE_APPS`). Reader apps: livedocuments, livediagram, livedesign and liveknowledge (`SOURCE_WATCH_APPS`).
 - A **range** is a rectangle of a sheet named by its corners' stable row and column ids (`{r1, c1, r2, c2}`), so it
   grows with rows inserted inside it and follows moves, as liveplanner's own charts name theirs. `cols` may pick some
   of its columns. Typed by a person, a range is A1 text (`B2:E9`), turned into ids by the sheet app when it is read.
@@ -111,4 +112,5 @@ A missed signal costs only freshness: every open of the reader item reads again.
 ## Agents and the CLI
 
 Agents read a linked chart's saved values and its source (the plan's and sheet's names, the range), never live
-values, and do not make links: a link is made in the editor, where the reader's own access is at hand.
+values. An agent may write a link with the plan's ids ([live-data.md](live-data.md) "Agents"): its values stand until
+an Editor who can open the plan opens the item and reads it with their own access.

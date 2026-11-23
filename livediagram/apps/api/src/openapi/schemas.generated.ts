@@ -1830,6 +1830,80 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ChartBoardSource": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "const": "liveplanner",
+        "type": "string"
+      },
+      "boardId": {
+        "type": "string"
+      },
+      "by": {
+        "$ref": "#/components/schemas/LinkBoardCountBy"
+      },
+      "filter": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "person": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "frozen": {
+        "const": true,
+        "type": "boolean"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "board",
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "readAt": {
+        "type": "number"
+      },
+      "series": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "sourceName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "boardId",
+      "by",
+      "itemId",
+      "itemName",
+      "kind",
+      "label",
+      "readAt",
+      "sourceName"
+    ],
+    "type": "object"
+  },
   "ChartLegendPosition": {
     "enum": [
       "top",
@@ -1838,6 +1912,58 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "left"
     ],
     "type": "string"
+  },
+  "ChartMetricSource": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "const": "liveplanner",
+        "type": "string"
+      },
+      "frozen": {
+        "const": true,
+        "type": "boolean"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "metric",
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "metric": {
+        "type": "string"
+      },
+      "readAt": {
+        "type": "number"
+      },
+      "series": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "sourceName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "itemName",
+      "kind",
+      "label",
+      "metric",
+      "readAt",
+      "sourceName"
+    ],
+    "type": "object"
   },
   "ChartPaletteId": {
     "enum": [
@@ -1852,7 +1978,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
-  "ChartSheetSource": {
+  "ChartRangeSource": {
     "additionalProperties": false,
     "properties": {
       "a1": {
@@ -1868,10 +1994,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "frozen": {
+        "const": true,
+        "type": "boolean"
+      },
       "itemId": {
         "type": "string"
       },
       "itemName": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "sheet",
         "type": "string"
       },
       "range": {
@@ -1901,6 +2035,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "readAt": {
         "type": "number"
       },
+      "series": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
       "sheetId": {
         "type": "string"
       },
@@ -1909,16 +2049,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "required": [
+      "a1",
       "app",
       "itemId",
-      "sheetId",
-      "range",
       "itemName",
-      "sheetName",
-      "a1",
-      "readAt"
+      "range",
+      "readAt",
+      "sheetId",
+      "sheetName"
     ],
     "type": "object"
+  },
+  "ChartSheetSource": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/ChartRangeSource"
+      },
+      {
+        "$ref": "#/components/schemas/ChartBoardSource"
+      },
+      {
+        "$ref": "#/components/schemas/ChartMetricSource"
+      }
+    ]
   },
   "ChartVariant": {
     "enum": [
@@ -4683,6 +4836,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "values"
     ],
     "type": "object"
+  },
+  "LinkBoardCountBy": {
+    "enum": [
+      "column",
+      "label",
+      "assignee",
+      "priority"
+    ],
+    "type": "string"
   },
   "LinkCardElement": {
     "additionalProperties": false,
@@ -8288,6 +8450,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "array"
         },
         "type": "array"
+      },
+      "chartSheetSource": {
+        "$ref": "#/components/schemas/ChartSheetSource"
       },
       "colWidths": {
         "items": {

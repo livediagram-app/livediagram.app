@@ -57,6 +57,7 @@ import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from '
 import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
+import type { PlanDataAsk, PlanDataListing, PlanDataRead } from './live-data';
 import type {
   Approval,
   ApprovalCandidate,
@@ -349,6 +350,22 @@ export function createIndexClient({
       options: RequestOptions & { grant?: string | null; watch?: string | null } = {},
     ) =>
       call<SheetRangeRead>(`/items/${enc(itemId)}/sheet-range`, {
+        method: 'POST',
+        body: options.watch ? { ...ask, watch: { itemId: options.watch } } : ask,
+        ...(options.grant ? { grant: options.grant } : {}),
+        signal: options.signal,
+      }),
+
+    // Live data (live-data.md), on the person's own access: a plan's boards, metrics and filter values, and one board's
+    // counts or one metric's rows now. `watch` as readSheetRange's.
+    listPlanData: (itemId: string, options: RequestOptions = {}) =>
+      call<PlanDataListing>(`/items/${enc(itemId)}/plan-data`, { signal: options.signal }),
+    readPlanData: (
+      itemId: string,
+      ask: PlanDataAsk,
+      options: RequestOptions & { grant?: string | null; watch?: string | null } = {},
+    ) =>
+      call<PlanDataRead>(`/items/${enc(itemId)}/plan-data`, {
         method: 'POST',
         body: options.watch ? { ...ask, watch: { itemId: options.watch } } : ask,
         ...(options.grant ? { grant: options.grant } : {}),
