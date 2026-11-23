@@ -13,7 +13,7 @@ import {
   INSTANCE_ID_SEPARATOR,
   MAX_COMPONENT_OVERRIDES,
 } from './components';
-import { isElementKey } from './malformed-ids';
+import { isElementKey } from '@liveworkspace/element-model/malformed-ids';
 
 /** An override's text, at most. */
 export const OVERRIDE_TEXT_MAX = 5_000;

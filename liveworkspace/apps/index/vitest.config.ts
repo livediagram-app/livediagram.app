@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import { UNDER_COVERAGE_ENV } from '@liveworkspace/vitest-config/cpu-time';
 
 export default defineConfig({
   // The Workers runtime's own module, which node has not: the Durable Object base class the webhook dispatcher
@@ -15,6 +16,9 @@ export default defineConfig({
     globals: false,
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // A coverage run tells its workers so, and speed tests leave their CPU budgets to the plain rerun
+    // (`vitest-budgets` in `test:coverage`), as the shared config does (docs/ci.md "Speed budgets").
+    env: process.argv.includes('--coverage') ? { [UNDER_COVERAGE_ENV]: '1' } : {},
     coverage: {
       include: ['src/**/*.ts'],
       exclude: ['**/*.test.ts'],

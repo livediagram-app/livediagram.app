@@ -14,7 +14,7 @@ export {
   isCreditUrl,
   isImageCredit,
   type ImageCredit,
-} from './image-credit';
+} from '@liveworkspace/model-core/image-credit';
 export * from '@liveworkspace/element-model/image-frame';
 export * from './logo-strip';
 export {
@@ -43,7 +43,7 @@ export type {
 // Arrow appearance preset types used by ArrowElement's fields below. The
 // constants + accessors that go with them live in arrow-style.ts; type-only
 // import so the index <-> arrow-style relationship stays erasable, and the
-// whole module is re-exported lower down via `export * from './arrow-style'`.
+// whole module is re-exported lower down via `export * from '@liveworkspace/element-model/arrow-style'`.
 
 // Border preset types used by the boxed-element + arrow field definitions
 // below. The px / dasharray maps + defaults that go with them live in
@@ -107,16 +107,16 @@ import type { Element } from './element-union';
 // --- Type guards -----------------------------------------------------------
 
 export { takesTypedLabel } from './element-types';
-export * from './accent-edge';
-export * from './card';
-export * from './chip';
-export * from './attachment';
-export * from './pointer-note';
-export * from './tag-colours';
-export * from './stack';
-export * from './concept';
-export * from './concept-timeline';
-export * from './concept-ramp';
+export * from '@liveworkspace/element-model/accent-edge';
+export * from '@liveworkspace/element-model/card';
+export * from '@liveworkspace/element-model/chip';
+export * from '@liveworkspace/element-model/attachment';
+export * from '@liveworkspace/element-model/pointer-note';
+export * from '@liveworkspace/element-model/tag-colours';
+export * from '@liveworkspace/element-model/stack';
+export * from '@liveworkspace/element-model/concept';
+export * from '@liveworkspace/element-model/concept-timeline';
+export * from '@liveworkspace/element-model/concept-ramp';
 export * from './shape-variants';
 export * from '@liveworkspace/model-core/title-caption';
 export * from './editor-mode';
@@ -128,16 +128,16 @@ export * from './page-cover';
 export * from './page-icon';
 export * from './page-labels';
 export * from './page-lock';
-export * from './page-of';
-export * from './wordmark';
+export * from '@liveworkspace/element-model/page-of';
+export * from '@liveworkspace/element-model/wordmark';
 export * from './page-content';
 export * from './page-frame';
 export * from './page-ink';
-export * from './page-ink-contrast';
+export * from '@liveworkspace/element-model/page-ink-contrast';
 export * from './label-backdrop';
 export * from './page-ink-ground';
 export * from './text-contrast';
-export * from './page-ink-rules';
+export * from '@liveworkspace/element-model/page-ink-rules';
 export * from './paginate';
 export * from './article-flow';
 export * from './article-table';
@@ -171,47 +171,47 @@ export * from './tab-new-page-background';
 export * from './tab-window';
 
 // --- Re-exported resource modules -----------------------------------------
-export * from './animation';
+export * from '@liveworkspace/model-core/animation';
 export * from './animation-membership';
 export * from '@liveworkspace/model-core/arrow-avoidance';
 export * from './nearest-towards';
 export * from './youtube';
-export * from './arrow-path';
-export * from './arrow-dash';
+export * from '@liveworkspace/element-model/arrow-path';
+export * from '@liveworkspace/element-model/arrow-dash';
 export * from '@liveworkspace/model-core/arrow-label';
-export * from './arrow-label-layout';
+export * from '@liveworkspace/element-model/arrow-label-layout';
 export * from '@liveworkspace/model-core/arrow-label-wrap';
-export * from './arrow-bend';
-export * from './arrow-scale';
+export * from '@liveworkspace/element-model/arrow-bend';
+export * from '@liveworkspace/element-model/arrow-scale';
 export * from '@liveworkspace/model-core/label-font';
 export * from '@liveworkspace/model-core/table-cell-font';
-export * from './arrow-style';
-export * from './er-heads';
+export * from '@liveworkspace/element-model/arrow-style';
+export * from '@liveworkspace/element-model/er-heads';
 export * from '@liveworkspace/model-core/border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
 // Text effects (docs/specs/008-canvas/text-effects.md): gradient presets and the highlight band.
-export * from './text-effects';
-export * from './finish';
-export * from './image-backing';
-export * from './sketch';
-export * from './sketch-element';
-export * from './sketch-backdrop';
-export * from './marker';
-export * from './marker-element';
+export * from '@liveworkspace/element-model/text-effects';
+export * from '@liveworkspace/element-model/finish';
+export * from '@liveworkspace/element-model/image-backing';
+export * from '@liveworkspace/element-model/sketch';
+export * from '@liveworkspace/element-model/sketch-element';
+export * from '@liveworkspace/element-model/sketch-backdrop';
+export * from '@liveworkspace/element-model/marker';
+export * from '@liveworkspace/element-model/marker-element';
 // A face's own parts in its finish (docs/specs/008-canvas/finish.md "Faces").
 export * from '@liveworkspace/model-core/face-finish';
-export * from './marker-face';
-export * from './hand-drawn';
-export * from './drawn-outline-finish';
+export * from '@liveworkspace/element-model/marker-face';
+export * from '@liveworkspace/element-model/hand-drawn';
+export * from '@liveworkspace/element-model/drawn-outline-finish';
 // Which elements can be rotated (a margin note's marker cannot).
-export * from './rotation';
+export * from '@liveworkspace/element-model/rotation';
 export * from '@liveworkspace/model-core/shape-marker';
 // Fixed-size elements.
-export * from './selection-mode';
+export * from '@liveworkspace/model-core/selection-mode';
 export * from './comments';
 export * from './collab-index-rows';
-export * from './comment-thread';
+export * from '@liveworkspace/element-model/comment-thread';
 // The whole-document `liveknowledge.document` envelope and the per-tab JSON and Markdown export (the editor and the
 // CLI's pull files).
 export * from './document-envelope';
@@ -234,42 +234,42 @@ export * from '@liveworkspace/model-core/seeded-random';
 export * from '@liveworkspace/model-core/plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
-export * from './data-shapes';
-export * from './sankey-model';
+export * from '@liveworkspace/element-model/data-shapes';
+export * from '@liveworkspace/element-model/sankey-model';
 // Map (docs/specs/009-elements/map.md): its model and layout; the geometry is the
 // `@liveknowledge/document/map-geometry` subpath, never this barrel.
 export * from './map-model';
 export * from './map-layout';
 export * from './map-geometry-ensure';
-export * from './sankey-layout';
-export * from './sankey-frame';
-export * from './sankey-text';
+export * from '@liveworkspace/element-model/sankey-layout';
+export * from '@liveworkspace/element-model/sankey-frame';
+export * from '@liveworkspace/element-model/sankey-text';
 export * from '@liveworkspace/model-core/code-themes';
-export * from './chart-palettes';
-export * from './chart-frame';
+export * from '@liveworkspace/element-model/chart-palettes';
+export * from '@liveworkspace/element-model/chart-frame';
 export * from './chart-ink';
-export * from './chart-types';
+export * from '@liveworkspace/element-model/chart-types';
 export * from './chart-sheet-source';
-export * from './chart-marks';
-export * from './chart-axis';
-export * from './chart-values';
-export * from './shape-geometry';
+export * from '@liveworkspace/element-model/chart-marks';
+export * from '@liveworkspace/element-model/chart-axis';
+export * from '@liveworkspace/element-model/chart-values';
+export * from '@liveworkspace/element-model/shape-geometry';
 export * from '@liveworkspace/model-core/color-wash';
-export { labelOn } from './readable-colour';
-export * from './quick-swatches';
-export * from './quick-swatch-rederive';
+export { labelOn } from '@liveworkspace/element-model/readable-colour';
+export * from '@liveworkspace/element-model/quick-swatches';
+export * from '@liveworkspace/element-model/quick-swatch-rederive';
 export * from './web-components';
 // A stat's change line and count-up (docs/specs/009-elements/stat-row.md); the quote (docs/specs/009-elements/quote.md);
 // the table's marks and highlighted column (docs/specs/009-elements/comparison-tables.md).
-export * from './stat-count';
+export * from '@liveworkspace/element-model/stat-count';
 export * from './quote';
 export * from './element-images';
-export * from './table-marks';
+export * from '@liveworkspace/element-model/table-marks';
 export * from './colors';
-export * from './template-example';
-export * from './cell-colours';
-export * from './table-header-colours';
-export * from './progress-colours';
+export * from '@liveworkspace/element-model/template-example';
+export * from '@liveworkspace/element-model/cell-colours';
+export * from '@liveworkspace/element-model/table-header-colours';
+export * from '@liveworkspace/element-model/progress-colours';
 export * from '@liveworkspace/model-core/icon-size';
 export * from '@liveworkspace/model-core/progress-label';
 export * from '@liveworkspace/model-core/icon-weight';
@@ -282,18 +282,18 @@ export * from './factories';
 // A template's text sized to its words, one copy for every product.
 export * from '@liveworkspace/element-model/text-fit';
 export * from './text-presets';
-export * from './segment-geometry';
+export * from '@liveworkspace/model-core/segment-geometry';
 export * from './duplicate';
-export * from './polyline';
-export * from './pen-stroke';
+export * from '@liveworkspace/model-core/polyline';
+export * from '@liveworkspace/element-model/pen-stroke';
 export * from '@liveworkspace/model-core/stroke-points';
 export * from '@liveworkspace/model-core/stroke-points-cache';
-export * from './freehand-points';
+export * from '@liveworkspace/element-model/freehand-points';
 export * from '@liveworkspace/model-core/stroke-points-debug';
-export * from './pen-colours';
-export * from './standard-colours';
-export * from './custom-colours';
-export * from './stock-colours';
+export * from '@liveworkspace/element-model/pen-colours';
+export * from '@liveworkspace/element-model/standard-colours';
+export * from '@liveworkspace/element-model/custom-colours';
+export * from '@liveworkspace/element-model/stock-colours';
 export * from './component-factories';
 export * from './table';
 
@@ -306,12 +306,12 @@ export * from './savable';
 export * from './element-fields';
 
 // Deterministic auto-layout for agent-built diagrams and the editor's Auto Layout.
-export * from './auto-layout';
+export * from '@liveworkspace/element-model/auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
-export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
+export { tidyLayoutElements, tidyMindmapFits } from '@liveworkspace/element-model/auto-layout-tidy';
 
 // The layout engine's gaps, which edit operations place and make room by.
-export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
+export { LAYER_GAP, SIBLING_GAP } from '@liveworkspace/element-model/auto-layout-shared';
 // The nodes a layout leaves loose swept into rows, and the room a container keeps round its members.
 export { CONTAINER_PAD, CONTAINER_TOP, sweepEdgelessNodes } from './auto-layout-sweep';
 
@@ -324,9 +324,15 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
-export { borderOf } from './svg-render-border';
-export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
-export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
+export { borderOf } from '@liveworkspace/element-model/svg-render-border';
+export {
+  ELEMENT_FIELD_VALUES,
+  fieldValueIssue,
+} from '@liveworkspace/element-model/element-field-values';
+export {
+  inlineIconGap,
+  inlineIconMetrics,
+} from '@liveworkspace/element-model/svg-render-inline-icon';
 export {
   DOCUMENT_TEXT_PX_MAX,
   DOCUMENT_TEXT_PX_MIN,
@@ -338,17 +344,21 @@ export {
   withPickedTextSize,
   type TextPxRange,
 } from './label-text-scale';
-export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
+export {
+  SKETCH_ART_FILTER_ID,
+  SKETCH_FACE_FILTER,
+  svgSketchArtFilter,
+} from '@liveworkspace/element-model/svg-render-sketch';
 export * from './svg-render-table';
 export { mixHex } from '@liveworkspace/model-core/color-wash';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
 // MCP worker (docs/specs/015-api/mcp-server.md). Resolution in the viewer's appearance stays in apps/editor/lib/themes.ts.
-export * from './theme-graph';
+export * from '@liveworkspace/element-model/theme-graph';
 export * from './themes';
-export * from './theme-halves';
-export * from './theme-presets';
+export * from '@liveworkspace/element-model/theme-halves';
+export * from '@liveworkspace/element-model/theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),
 // used by selection captions and any surface that names what's selected.
@@ -357,27 +367,27 @@ export * from './element-kind-label';
 // The name a boxed element goes by in a list of elements (the Collaborate
 // Panel's rows, the Inbox's rows): its label, a table's first cell,
 // or "Untitled".
-export * from './element-display-label';
+export * from '@liveworkspace/element-model/element-display-label';
 
 // Anchor table, outlines and side choice (docs/specs/008-canvas/arrow-anchors.md).
-export * from './anchors';
-export * from './anchor-layouts';
-export * from './shape-outline';
+export * from '@liveworkspace/element-model/anchors';
+export * from '@liveworkspace/element-model/anchor-layouts';
+export * from '@liveworkspace/element-model/shape-outline';
 export * from '@liveworkspace/model-core/svg-path-outline';
 export * from './shape-hit';
 // The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
-export * from './label-body';
+export * from '@liveworkspace/element-model/label-body';
 export * from './indicator-placement';
-export * from './anchor-choice';
-export * from './arrow-body-drop';
-export * from './geometry';
-export * from './arrow-path-hits';
+export * from '@liveworkspace/element-model/anchor-choice';
+export * from '@liveworkspace/element-model/arrow-body-drop';
+export * from '@liveworkspace/element-model/geometry';
+export * from '@liveworkspace/element-model/arrow-path-hits';
 export * from './arrow-rebind';
-export * from './arrow-endpoint-spread';
-export * from './arrow-orthogonal';
+export * from '@liveworkspace/element-model/arrow-endpoint-spread';
+export * from '@liveworkspace/element-model/arrow-orthogonal';
 // Arrows breaking around intervening boxes at render time (docs/specs/008-canvas/arrow-route-behind.md).
-export * from './arrow-behind';
-export * from './element-grid';
+export * from '@liveworkspace/element-model/arrow-behind';
+export * from '@liveworkspace/element-model/element-grid';
 // The grid over this product's own elements (the shared grid is generic over any element union).
 export type ElementGrid = SharedElementGrid<Element>;
 export type ElementIndex = SharedElementIndex<Element>;
@@ -385,20 +395,20 @@ import type { ElementIndex as SharedElementIndex } from '@liveworkspace/element-
 import type { ElementGrid as SharedElementGrid } from '@liveworkspace/element-model/element-grid';
 // Tab + document name length cap (docs/specs/006-document/name-length.md).
 export * from '@liveworkspace/model-core/names';
-export * from './geometry-snapping';
-export * from './arrow-snapping';
+export * from '@liveworkspace/element-model/geometry-snapping';
+export * from '@liveworkspace/element-model/arrow-snapping';
 export * from '@liveworkspace/element-model/geometry-guides';
 
 // Layer order + union bounds, and the load-time migration of documents saved
 // while groups existed (docs/specs/009-elements/web-components-and-no-groups.md).
-export * from './layer-order';
-export * from './legacy-stroke-points';
+export * from '@liveworkspace/element-model/layer-order';
+export * from '@liveworkspace/element-model/legacy-stroke-points';
 export * from './stored-elements';
 export { isSafeColourValue } from '@liveworkspace/element-model/unsafe-colours';
 export * from './stored-tab';
 export * from './page-looks';
 export * from './continuous-article';
-export { settleTabFields } from './tab-fields';
+export { settleTabFields } from '@liveworkspace/model-core/tab-fields';
 // What a save changed, merged over the stored tab by id (docs/specs/012-collaboration/collab-race-hardening.md).
 export * from './tab-save-changes';
 
@@ -426,7 +436,7 @@ export * from './collab-ledger';
 // shared by the tab-bar renderer, the client save path, and the
 // server route so the contiguous-run invariant has a single
 // implementation.
-export * from './tab-folders';
+export * from '@liveworkspace/element-model/tab-folders';
 
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
@@ -447,14 +457,14 @@ export * from './slide-deck-patch';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';
-export * from './containment';
+export * from '@liveworkspace/element-model/containment';
 export * from '@liveworkspace/model-core/style-keys';
 export * from '@liveworkspace/model-core/tab-names';
 export * from './svg-render-pages';
-export * from './article-draw-ops';
+export * from '@liveworkspace/element-model/article-draw-ops';
 export * from './article-layout-estimate';
 export { lineChars } from './svg-render-web';
-export * from './drawn-count';
+export * from '@liveworkspace/model-core/drawn-count';
 // The a / an rule for copy built around a name, shared with every package above this one.
 export { indefiniteArticle, withArticle } from '@liveworkspace/model-core/indefinite-article';
 export * from './version-changes';

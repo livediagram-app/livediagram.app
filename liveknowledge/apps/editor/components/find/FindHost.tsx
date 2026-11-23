@@ -27,7 +27,7 @@ import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useFindReplace, type FindDeps, type FindDoor } from '@/hooks/editor/useFindReplace';
 import { FindBarLoading } from './FindBarLoading';
-import { findBarTop } from './find-bar-top';
+import { findBarTop } from '@liveworkspace/workbench/components/find/find-bar-top';
 import { useEditorChromeLatest } from '@/app/document/[id]/EditorContext';
 import { sameDepsButWriting } from '@/app/document/[id]/editor-chrome-equal';
 

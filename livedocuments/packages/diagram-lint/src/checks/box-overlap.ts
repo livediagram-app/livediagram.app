@@ -4,7 +4,7 @@
 
 import { queryElementGrid } from '@livedocuments/document';
 import { boxBounds, holdsWholly, isLintBox, overlapDepth } from '../boxes';
-import { LINT_OVERLAP_TOLERANCE_PX } from '../constants';
+import { LINT_OVERLAP_TOLERANCE_PX } from '@liveworkspace/diagram-lint/constants';
 import { padded, refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check } from './types';

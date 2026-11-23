@@ -3,7 +3,7 @@
 // canvas they sit on. Every renderer resolves them here, so the canvas, every export, thumbnail
 // and MCP image draw the same element in the same colour, in either editor mode.
 import type { CanvasSurface } from './colors';
-import { penColourHex, type PenColourName } from './pen-colours';
+import { penColourHex, type PenColourName } from '@liveworkspace/element-model/pen-colours';
 import type { Element } from './index';
 
 type Named = {

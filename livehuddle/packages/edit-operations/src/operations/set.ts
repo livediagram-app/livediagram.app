@@ -5,7 +5,7 @@
 
 import type { EditRejection } from '@livehuddle/api-schema';
 import { isRetiredElement, retiredElementName, type Element } from '@livehuddle/document';
-import { sameValue } from '../equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
 import { retiredElementRefusal } from '../rejections';

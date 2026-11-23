@@ -12,7 +12,7 @@ import {
   type Padding,
 } from './index';
 import { tableKeys } from '@liveworkspace/model-core/table-keys';
-import { PEN_INK } from './pen-colours';
+import { PEN_INK } from '@liveworkspace/element-model/pen-colours';
 
 // These default-resolution helpers drive the editor's rendering
 // fallbacks: every shape, sticky and text element that doesn't

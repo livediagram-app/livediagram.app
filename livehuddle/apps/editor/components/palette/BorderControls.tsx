@@ -1,8 +1,8 @@
 import type { BorderStroke, BorderStyle } from '@livehuddle/document';
 import { BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
+import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 
 // The Border category's two grids: Strength and Pattern. Its Radius grid served only the square, and left with the

@@ -3,7 +3,7 @@
 // the card shows exactly what the tab will. Several cards share one page, so the exporter's fixed pattern id is made
 // unique per look.
 import type { ArrowElement, Element, Tab } from '@liveknowledge/document';
-import { animatedPatternStill } from '@/lib/animated-pattern-still';
+import { animatedPatternStill } from '@liveworkspace/workbench/lib/animated-pattern-still';
 import { EXPORT_PATTERN_COLOR, renderTabToSvg } from '@/lib/export-tab';
 import { FINISH_PREVIEW_ELEMENTS } from '@/lib/finish-preview';
 import { withLookApplied, type TabLook } from '@/lib/tab-looks';

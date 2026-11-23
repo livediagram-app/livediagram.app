@@ -17,7 +17,7 @@ import {
   RATING_MAX,
   type ShapeElement,
 } from '@livedocuments/document';
-import { animClass, animSpeedVars } from '@/lib/icons';
+import { animClass, animSpeedVars } from '@liveworkspace/workbench/lib/icons';
 
 const STAR_PATH =
   'M12 2.6l2.7 5.47 6.04.88-4.37 4.26 1.03 6.02L12 16.85 6.6 19.23l1.03-6.02L3.26 8.95l6.04-.88z';

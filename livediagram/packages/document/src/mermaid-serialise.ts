@@ -5,8 +5,8 @@
 //
 // Named for the family already here: ./mermaid-shared, ./mermaid-er,
 // ./mermaid-state.
-import { boxCentre, smallestHolder } from './containment';
-import { ARROW_THICKNESS_PX } from './arrow-style';
+import { boxCentre, smallestHolder } from '@liveworkspace/element-model/containment';
+import { ARROW_THICKNESS_PX } from '@liveworkspace/element-model/arrow-style';
 import type { ArrowElement, Element, ElementLink } from './index';
 import { visibleLayerElements, type Layer } from './layers';
 import { chartTextLines } from './chart-text';

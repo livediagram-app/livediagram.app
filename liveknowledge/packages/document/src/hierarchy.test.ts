@@ -1,7 +1,7 @@
 import { createPinnedArrow, createShape } from './factories';
 import type { Element } from './index';
 import { describe, expect, it } from 'vitest';
-import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
+import { assignBranches, branchOfArrow, ROOT_BRANCH } from '@liveworkspace/element-model/hierarchy';
 import { MAX_ELEMENTS_PER_TAB } from './validate';
 
 // Helper: a square with a fixed id so tests can assert on the branch map.

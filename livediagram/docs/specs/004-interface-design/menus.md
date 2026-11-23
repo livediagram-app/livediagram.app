@@ -65,6 +65,9 @@ There is one Tab stop: focus lives on one item at a time and the arrow keys move
 | Escape                   | Close the menu holding focus (only the submenu, when in one) and return focus to what opened it       |
 | Tab, Shift+Tab           | Close the whole menu and move to the control after (before) where focus was when it opened            |
 
+- **A space inside a search is part of it.** While letters typed in the last half second are
+  still building a search, a space joins it ("move t" finds Move to Trash) and never presses
+  the row the search reached; with no search under way, Space presses the focused item.
 - **Focus moves into the menu on open**, however it was opened: to the checked entry of a
   one-of-a-set menu, else the first item. A menu opened by hovering (the zoom presets) is the one
   exception: hover is not asking for the keyboard, so focus stays where it was.

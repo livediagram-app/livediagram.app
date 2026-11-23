@@ -27,13 +27,16 @@ import {
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
-import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
+import {
+  captionBandAlignY,
+  captionBandClass,
+} from '@liveworkspace/workbench/components/primitives/icon-band';
 import { SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-paint-path';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { PieceArt, hasPieceArt } from '@/components/canvas/PieceArt';
-import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
+import { isCssNativeBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
@@ -42,7 +45,7 @@ import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFac
 import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
+import { useIsSketchBackdrop } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip, SentCardBadge } from '@/components/canvas/element-badges';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';

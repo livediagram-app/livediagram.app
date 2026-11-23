@@ -13,9 +13,9 @@ Scope, by file:
 | File                                                                      | Role                                                                      |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | `packages/document/src/editor-mode.ts`                                    | `EditorMode`; Draw mode is `mode === 'draw'` (editor-modes blueprint)     |
-| `packages/document/src/whiteboard.ts`                                     | Tokens, backgrounds, `WHITEBOARD_INKED_SHAPES`, `nearestBorderStroke`     |
+| `../packages/element-model/src/whiteboard.ts`                             | Tokens, backgrounds, `WHITEBOARD_INKED_SHAPES`, `nearestBorderStroke`     |
 | `packages/document/src/whiteboard-stroke.ts`                              | Stroke geometry: `strokeTouchesBrush`, `eraseStrokePart`                  |
-| `packages/document/src/pen-stroke.ts`                                     | The pen's ink: perfect-freehand options, outline path, centre line        |
+| `../packages/element-model/src/pen-stroke.ts`                             | The pen's ink: perfect-freehand options, outline path, centre line        |
 | `packages/document/src/factories.ts`                                      | `freehandGeometry`: a freehand's box and points, shared with the live ink |
 | `apps/editor/lib/live-stroke.ts`                                          | `LiveStroke`: one stroke's raw samples, pressures and subscribers         |
 | `apps/editor/components/canvas/useWhiteboardPenGesture.ts`                | The whiteboard pen gesture: capture, pressure, commit                     |
@@ -170,7 +170,7 @@ same in Diagram mode and to every collaborator ([One look](../../007-editor/edit
 - A pen stroke and a text box with no colour of their own draw in Ink in both modes; nothing is
   written for them.
 - Every colour stored by name is drawn in its version for the canvas surface
-  (`resolveStockColours(el, surface)`, `packages/document/src/stock-colours.ts`), through
+  (`resolveStockColours(el, surface)`, `../packages/element-model/src/stock-colours.ts`), through
   `createStockColourProjector` (`apps/editor/lib/stock-colour-projector.ts`, a per-object cache, so an
   unchanged element keeps its identity) on the canvas, and in every export, thumbnail and image.
 

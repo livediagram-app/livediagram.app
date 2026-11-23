@@ -9,7 +9,7 @@ Scope, by file:
 
 | File                                                                     | Role                                                                                        |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `packages/document/src/image-credit.ts`                                  | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`                               |
+| `../packages/model-core/src/image-credit.ts`                             | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`                               |
 | `packages/document/src/element-types.ts`                                 | `ImageElement.credit`                                                                       |
 | `packages/document/src/validate.ts`                                      | Image branch calls `isImageCredit` on `credit`                                              |
 | `apps/editor/lib/upload-image.ts`                                        | `PickedImage`: what every picker tab hands back                                             |
@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/editor/components/panels/ImageSearchPane.tsx`                      | The Search tab's form, grid, states and footer credit                                       |
 | `apps/editor/components/panels/ImagePicker.tsx`                          | Third tab; `onSelect(image: PickedImage)` carries the credit                                |
 | `apps/editor/hooks/canvas/useEditorImages.ts`                            | `applyImageToElement` sets / drops `credit`; detach drops it                                |
-| `apps/editor/components/palette/ImageCreditRow.tsx`                      | Credit line, mounted in `ElementContentSections`' Image section                             |
+| `../packages/workbench/src/components/palette/ImageCreditRow.tsx`        | Credit line, mounted in `ElementContentSections`' Image section                             |
 | `apps/editor/lib/telemetry-manifest.ts`                                  | `Element·Searched` in the emitted-pairs manifest                                            |
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/content.ts   | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing                                   |
 | liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts  | Sentences for the two events                                                                |
@@ -193,7 +193,7 @@ Pick failure copy (`pickFailureMessage`):
 - Form: `TextInput` with placeholder "Search openly licensed images" (`type="search"`), `Button`
   "Search". Autofocus when the tab mounts.
 - Idle: "Find openly licensed photos and illustrations from Openverse."
-- Loading (`ImageSearchLoader.tsx`, motion in `app/image-search-loader.css`): a new search swaps the
+- Loading (`ImageSearchLoader.tsx`, motion in `packages/workbench/src/styles/image-search-loader.css`): a new search swaps the
   grid for `SKELETON_TILES_FIRST` (8) `SkeletonTiles` (`aria-busy`, `data-image-search-skeleton`), each
   `skeletonClass(n)` (one of four tints, the `lvd-search-skeleton` glint at phase `n × 0.09s`) over
   `PlaceholderArt`; `SearchingStatus` "Searching Openverse for “<query>”…" with the orbiting lens.

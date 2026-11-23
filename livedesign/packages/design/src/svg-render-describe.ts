@@ -10,9 +10,9 @@ import type {
   ResolveIconArt,
   ResolveStickerArt,
 } from '@liveworkspace/element-model/export-shape';
-import type { ResolveTabWindow } from './tab-window';
-import type { TagColour } from './tag-colours';
-import { imageCornerPx } from './drawn-outline-finish';
+import type { ResolveTabWindow } from '@liveworkspace/element-model/tab-window';
+import type { TagColour } from '@liveworkspace/element-model/tag-colours';
+import { imageCornerPx } from '@liveworkspace/element-model/drawn-outline-finish';
 import { imageDrawsCover } from '@liveworkspace/element-model/image-frame';
 import {
   defaultFillColor,
@@ -23,23 +23,28 @@ import {
   type CanvasSurface,
 } from './colors';
 import { fontIdsUsed, resolveFontStack } from './fonts';
-import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
+import {
+  elementFontId,
+  isFinish,
+  resolveFinish,
+  type Finish,
+} from '@liveworkspace/element-model/finish';
 import { hasRichFormatting } from '@liveworkspace/model-core/rich-text';
 import { iconCaptionBand } from '@liveworkspace/model-core/icon-size';
-import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
+import { fontSizeFor, labelMaxWidth } from '@liveworkspace/element-model/svg-render-primitives';
 import { labelTextScale } from './label-text-scale';
-import { isSelfDrawingShape } from './data-shapes';
-import { isWebComponentShape } from './web-components';
-import type { ExportLabel, ExportRun } from './svg-render-labels';
+import { isSelfDrawingShape } from '@liveworkspace/element-model/data-shapes';
+import { isWebComponentShape } from '@liveworkspace/element-model/web-components';
+import type { ExportLabel, ExportRun } from '@liveworkspace/element-model/svg-render-labels';
 import { PADDING_PX } from './index';
-import { pageBodyTop } from './svg-render-page';
-import { borderOf } from './svg-render-border';
-import { chipColours, chipLookOf, isChipShape } from './chip';
+import { pageBodyTop } from '@liveworkspace/element-model/svg-render-page';
+import { borderOf } from '@liveworkspace/element-model/svg-render-border';
+import { chipColours, chipLookOf, isChipShape } from '@liveworkspace/element-model/chip';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from '@liveworkspace/model-core/label-font';
-import { resolveStockColours } from './stock-colours';
+import { resolveStockColours } from '@liveworkspace/element-model/stock-colours';
 import { DEFAULT_BACKGROUND_COLOR } from '@liveworkspace/model-core/canvas-colors';
-import { labelBodyInset } from './label-body';
+import { labelBodyInset } from '@liveworkspace/element-model/label-body';
 
 export const EXPORT_PADDING = 32;
 // A tab that stores no canvas colour is on the Default theme: its light canvas.

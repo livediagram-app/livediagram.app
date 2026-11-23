@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { labelTypographyClass } from './label-style';
+import { labelTypographyClass } from '@liveworkspace/workbench/components/label-editor/label-style';
 
 // Zero layout shift on entering text-edit (the design rule: double-click means "type", not "watch the text
 // jump").

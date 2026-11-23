@@ -1009,6 +1009,10 @@ Requests carry `X-Livediagram-Client: cli` and `User-Agent: livediagram-cli/<ver
 Every suite runs on fakes (an in-memory `CliIo`: stdout, stderr, stdin, TTY flags, env, clock and its timers, room sockets, SIGINT, files, fetch and
 WebSocket) with a fixed clock; none waits on a real timer or the network.
 
+The suites every product's CLI shares (the keychain, credentials, config, transport, debug log, `workbench pair`,
+`workbench open` and sign-in) are written once, in `../packages/cli-kit/src/testing/suites/`; the test files named
+below run them over this CLI's own modules.
+
 | Spec rule                                                                                                              | Test                                                                                                                                                                            |
 | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Resource then verb; the `doc` alias; `el` and `edit` with their verbs                                                  | `apps/cli/src/dispatch/dispatch.test.ts`                                                                                                                                        |

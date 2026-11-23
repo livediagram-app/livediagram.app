@@ -3,7 +3,7 @@
 // a list is bulleted or numbered, and which marks a run carries.
 
 import type { ArticleListKind, ArticleParagraphStyle, ArticleRun } from '@liveknowledge/document';
-import { child, intAttr, kids, type XmlElement } from './xml';
+import { child, intAttr, kids, type XmlElement } from '@liveworkspace/office-files/xml';
 
 /** What a paragraph style makes in the article. */
 export type ParagraphRole = { style?: ArticleParagraphStyle; code?: true };

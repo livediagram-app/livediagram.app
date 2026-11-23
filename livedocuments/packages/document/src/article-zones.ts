@@ -8,7 +8,7 @@ import {
   type ArticleFlow,
   type ArticleZoneBlock,
 } from './article-flow';
-import { buildElementIndex } from './geometry';
+import { buildElementIndex } from '@liveworkspace/element-model/geometry';
 import { elementAnchorPoint } from './page-content';
 import { pagesOf, layOutPages, type LaidOutPage, type PageRect } from './page';
 import { isBoxed, type Element, type Tab } from './index';

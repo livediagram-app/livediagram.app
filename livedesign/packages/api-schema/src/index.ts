@@ -193,7 +193,7 @@ export type ShareLink = {
 export { sha256Hex } from '@liveworkspace/api-schema/sha256';
 export { pkceChallenge } from '@liveworkspace/api-kit/oauth';
 // The digest itself, for a hash that is not hex (docs/specs/016-platform/secure-context.md).
-export { sha256 } from './sha256-digest';
+export { sha256 } from '@liveworkspace/model-core/sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see @liveworkspace/api-kit/bytes).

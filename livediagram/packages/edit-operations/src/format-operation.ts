@@ -4,7 +4,7 @@
 // of two or more compound selectors: the line form joins every non-single member word into one selector.
 
 import { isSingleWord } from './selectors';
-import { tokeniseLine } from './tokenise';
+import { tokeniseLine } from '@liveworkspace/edit-operations/tokenise';
 import type { EditOperation, FieldValue, Fields, Placement } from './types';
 import { FLAG_MEMBERS } from './vocabulary';
 

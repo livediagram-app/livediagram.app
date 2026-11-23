@@ -8,7 +8,7 @@ import {
   type Reaction,
 } from '@livediagram/document';
 
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { tint } from '@/lib/element-tint';
 
 // The face of a Reaction Pad (docs/specs/009-elements/reaction-pad.md): a big pressable glyph over a

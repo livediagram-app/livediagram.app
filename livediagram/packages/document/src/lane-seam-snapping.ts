@@ -1,5 +1,5 @@
 import { isBoxed, type Element, type ElementId } from './index';
-import type { LaneGutterEdge, LaneLike } from './lane-gutter';
+import type { LaneGutterEdge, LaneLike } from '@liveworkspace/element-model/lane-gutter';
 import { rotationOf } from './rotation';
 
 // Snapping for a lane's title seam (docs/specs/009-elements/lane.md), the line between its heading

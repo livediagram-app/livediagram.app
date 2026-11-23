@@ -22,7 +22,7 @@ import {
   type SankeyLabel,
   type ShapeElement,
 } from '@liveknowledge/document';
-import { animClass, animSpeedVars } from '@/lib/icons';
+import { animClass, animSpeedVars } from '@liveworkspace/workbench/lib/icons';
 import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';
 
 type Hover = { kind: 'band'; index: number } | { kind: 'node'; index: number };

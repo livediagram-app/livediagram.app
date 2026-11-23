@@ -92,7 +92,7 @@ account). What follows records how livediagram uses them; where it describes liv
 storing tokens itself, the account-level design below supersedes it.
 
 - **Verifying.** An `lwt_` bearer is checked with liveworkspace (`POST /api/account/internal/tokens/verify`,
-  client-credentials) by `createTokenChecker` in `apps/api/src/db/api-tokens.ts`. A verified token is cached for
+  client-credentials) by `createTokenChecker` in `../packages/auth-client/src/api-tokens.ts`. A verified token is cached for
   a minute per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
   liveworkspace refuses gets `401 invalid_token`; if liveworkspace can't be reached, `503 accounts_unavailable`
   with `Retry-After: 5`.
@@ -153,7 +153,7 @@ alongside the account access token and the guest token:
    non-expired row → the request's owner id is the row's `owner_id`; stamp
    `last_used_at`. The column means "the last request this token made, to
    within a minute": a request writes it only when the stored value is older
-   than `LAST_USED_STAMP_WINDOW_MS` (60 s, `apps/api/src/db/api-tokens.ts`),
+   than `LAST_USED_STAMP_WINDOW_MS` (60 s, `../packages/auth-client/src/api-tokens.ts`),
    checked again in the UPDATE's WHERE, so a burst of MCP tool calls (3 to 6
    api requests each) costs one write a minute rather than one per request.
    Its only reader, the Settings token card, works at day grain. (A token and a JWT can't both be the bearer.) An `lwt_`
@@ -308,7 +308,7 @@ already has 10 live (non-revoked, non-expired) tokens: enough for any real
 integration set, low enough to keep the list + table tidy. Revoking or letting
 one expire frees a slot. The count is part of the INSERT itself (one
 `INSERT ... SELECT ... WHERE (SELECT COUNT(*) ...) < 10` statement in
-`apps/api/src/db/api-tokens.ts`), so concurrent mints, from the Explorer and
+`../packages/auth-client/src/api-tokens.ts`), so concurrent mints, from the Explorer and
 the OAuth exchange alike, can never take an account past 10; a refused mint
 logs `[api-tokens] mint refused: owner at the token cap` and answers `409
 token_limit_reached`.
@@ -484,7 +484,7 @@ hardening landed first:
      explains why the owner id can't be it and why leaving the key claimable
      costs nothing.
 3. ✅ API tokens (`expires_at` fixed to +6 months), kept by liveworkspace accounts and
-   checked here (`db/api-tokens.ts`), signed-in-only `/api/tokens` routes (the team-route
+   checked here (`../packages/auth-client/src/api-tokens.ts`), signed-in-only `/api/tokens` routes (the team-route
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`): the management
    UI ([§3.6](#36-management-the-settings-dialogs-api-tokens-category)); it

@@ -33,14 +33,15 @@ import {
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { AnimationSections } from '@/components/palette/AnimationSections';
-import { ShadowSection } from '@/components/palette/ShadowSection';
-import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
+import { ShadowSection } from '@liveworkspace/workbench/components/palette/ShadowSection';
+import { resolveOwnFinish } from '@liveworkspace/workbench/components/palette/FinishSection';
+import { FinishSection } from '@/components/palette/FinishSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { BorderControls } from '@/components/palette/BorderControls';
 import { AccentEdgeRow } from '@/components/palette/AccentEdgeRow';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
-import { inkSwatch, shownColour } from '@/components/palette/ink-row';
+import { inkSwatch, shownColour } from '@liveworkspace/workbench/components/palette/ink-row';
 import { useTextContrast } from '@/hooks/ui/useTextContrast';
 
 // The multi-selection menu's style + motion sections (docs/specs/008-canvas/canvas-and-palette.md), each

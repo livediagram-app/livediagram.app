@@ -15,7 +15,7 @@ import {
 } from '@livehuddle/document';
 import type { Fit } from './labels';
 import { kindOf, labelOf } from './element-text';
-import { sameValue as same } from './equality';
+import { sameValue as same } from '@liveworkspace/edit-operations/equality';
 import { ALIAS_FIELDS } from './fields';
 import { fillValue } from './colours';
 import type { MoveReason, Touch } from './state';

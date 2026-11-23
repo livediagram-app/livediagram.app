@@ -4,7 +4,7 @@ Derived from [The stack](../stack.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as
 
 | File                                                  | Role                                                      |
 | ----------------------------------------------------- | --------------------------------------------------------- |
-| `packages/project/src/stack.ts`                       | Fields, bounds, children, the layout, `settleStacks`      |
+| `../packages/element-model/src/stack.ts`              | Fields, bounds, children, the layout, `settleStacks`      |
 | `packages/project/src/containment.ts`                 | `stack` joins `CONTAINER_KINDS`                           |
 | `apps/editor/lib/settle-tabs.ts`                      | Settles stacks per changed tab (after keys, before chips) |
 | `packages/project/src/stored-tab.ts`                  | Settles stacks on read                                    |

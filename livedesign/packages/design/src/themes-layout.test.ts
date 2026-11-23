@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { getBuiltInTheme, themedForTab } from './themes';
-import { themeHalf } from './theme-halves';
+import { themeHalf } from '@liveworkspace/element-model/theme-halves';
 import { isLightColor } from './colors';
 import type { Element } from './index';
 

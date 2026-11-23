@@ -5,7 +5,7 @@ import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { ArrowElement } from '@liveplanner/project';
 import { SelectionChromeLayer } from './element-parts';
-import { SelectedArrowHandles } from './SelectedArrowHandles';
+import { SelectedArrowHandles } from '@liveworkspace/workbench/components/canvas/SelectedArrowHandles';
 import {
   ArrowGripsPortal,
   BoxGripsPortal,

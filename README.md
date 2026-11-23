@@ -1,7 +1,7 @@
 # liveworkspace
 
-The monorepo for liveworkspace and its products, livediagram, liveplanner, livedocuments and
-livedesign, plus what they share.
+The monorepo for the liveworkspace platform and its six products, livediagram, liveplanner, livedocuments,
+livedesign, livehuddle and liveknowledge, plus what they share.
 
 ```
 packages/        shared by every product (@liveworkspace/*)
@@ -12,7 +12,7 @@ livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
-livehuddle/      livehuddle.app: meetings and workshops, forked from livediagram in-tree
+livehuddle/      livehuddle.app: meeting in Spaces (avatars, rooms, calls), forked from livediagram in-tree
 liveknowledge/   liveknowledge.app: a team knowledgebase, for people and for AI, forked from livedocuments in-tree
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 scripts/         the root's git hooks, ts-source-hooks.mjs (Node type stripping for repo scripts), and the parts every product's e2e stack shares (scripts/e2e-stack)
@@ -67,5 +67,5 @@ issue. [SECURITY.md](SECURITY.md) has the policy, and the specs are in
 
 Every product deploys from here, from the root `.github/`, to the liveworkspace Cloudflare account
 each `wrangler.toml` pins. Staging follows `main`, and production is a manual gate that ships what
-staging runs. A deploy builds and ships only the Workers a change reaches. The products' own
-`.github/` folders are inert. [docs/ci.md](docs/ci.md#deploys) has the details.
+staging runs. A deploy builds and ships only the Workers a change reaches. The products have no
+`.github/` folders of their own. [docs/ci.md](docs/ci.md#deploys) has the details.

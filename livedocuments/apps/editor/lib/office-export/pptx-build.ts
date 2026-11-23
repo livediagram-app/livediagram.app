@@ -22,10 +22,19 @@ import {
   type PageRect,
   type Tab,
 } from '@livedocuments/document';
-import { ooxmlColour, NO_PAINT } from './ooxml-colour';
+import { ooxmlColour, NO_PAINT } from '@liveworkspace/office-files/ooxml-colour';
 import { emuBox, nativeSlideItem, type SlidePlacement } from './pptx-native';
-import type { PptxBackground, PptxDeck, PptxItem, PptxSlide } from './pptx-types';
-import { throwIfCancelled, yieldToBrowser, type ExportProgress } from './progress';
+import type {
+  PptxBackground,
+  PptxDeck,
+  PptxItem,
+  PptxSlide,
+} from '@liveworkspace/office-files/pptx-types';
+import {
+  throwIfCancelled,
+  yieldToBrowser,
+  type ExportProgress,
+} from '@liveworkspace/office-files/progress';
 import { slideOfPage } from './summary';
 
 /** Draws what a native shape cannot: a picture of some of a page's elements, or of its background alone. */
@@ -209,5 +218,5 @@ export async function buildDeck(
     progress.onProgress?.(slides.length / input.pages.length);
     await yieldToBrowser();
   }
-  return { title: input.title, ...size, slides };
+  return { title: input.title, app: 'livedocuments', ...size, slides };
 }

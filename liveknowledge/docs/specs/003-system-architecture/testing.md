@@ -112,6 +112,21 @@ export default defineProject({ test: { environment: 'jsdom' } });
   and broke the rest of the file with it.
 - **A test never waits out a real delay.** A retry pause, backoff or flush
   timer runs under `vi.useFakeTimers()`, settled with `vi.runAllTimersAsync()`.
+- **The editor's tests read dates as en-GB, at UTC.** The app words a date in the reader's own locale and time
+  zone, so a test that names one ("12 Nov") would read differently on a runner (en-US, UTC) and on each
+  developer's machine: "Nov 12" under en-US, "11 Nov" for a timestamp near midnight west of Greenwich. Two setup
+  files in `apps/editor/vitest.config.ts` pin both before any test file loads,
+  `apps/editor/test/en-gb-locale.ts` and `apps/editor/test/utc-time-zone.ts`, and
+  `apps/editor/vitest.setup.test.tsx` fails if either is dropped. A test about another locale or zone passes
+  it to the formatter. A test whose wording depends on today ("today", "this week", "3 days ago", or a date
+  this year, which reads without its year: "Verified 8 Nov") also pins the clock,
+  `vi.useFakeTimers({ toFake: ['Date'] })` and `vi.setSystemTime` at midday, or passes `now` in: on the
+  machine's own clock, two such tests would have failed every run from 1 January 2027.
+- **A long test names its own timeout.** Vitest stops a test after 5 s of wall-clock time, which counts the
+  time it waits for a core. A test that does seconds of real work (a property test over hundreds of
+  elements, 500 rendered rows) sets `{ timeout: 30_000 }` on its `describe`, or passes a timeout as the
+  test's last argument where one test of the file is the long one, there only to stop a hang; what it may
+  cost is a CPU budget, above.
 - **A guard that scans source files filters by text before parsing.** It
   skips a file that lacks a token every violation needs, and parses each file
   once per test file, never once per test.
@@ -170,7 +185,7 @@ functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 | Files                                                                     | Why                                                                                                                                            |
 | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/auth/**`                                                             | Decides WHO a request is: access-token checks, guest-id signatures, api tokens, the read/edit gates                                            |
-| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                            | Mint, resolve and revoke the credentials that act as an account                                                                                |
+| `../packages/auth-client/src/api-tokens.ts`, `src/routes/tokens.ts`       | Mint, resolve and revoke the credentials that act as an account                                                                                |
 | `src/routes/document-grant.ts` (room tickets: `@liveworkspace/index-app`) | The index's grant as the room ticket, and settling a request's grant before it reaches the document                                            |
 | `src/routes/share.ts`                                                     | The only unauthenticated read path into a document                                                                                             |
 | `src/db/image-refs.ts`, `src/db/image-grants.ts`, `src/media.ts`          | Which images a document places and may serve, and so what the media service hears before its daily sweep ([Images](../009-elements/images.md)) |

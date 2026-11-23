@@ -16,7 +16,7 @@ import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
+import { SketchFilterDefs } from '@liveworkspace/workbench/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';

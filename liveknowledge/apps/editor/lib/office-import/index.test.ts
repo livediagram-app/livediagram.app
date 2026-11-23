@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { articlesOf, pagesOf } from '@liveknowledge/document';
 import type { ImportImageSession } from '../import-images';
 import { importOfficeFile, officeErrorMessage, tabBytes, type OfficeImportStage } from './index';
-import { OfficeImportError, type OfficeImportFailure } from './errors';
+import { OfficeImportError, type OfficeImportFailure } from '@liveworkspace/office-files/errors';
 import {
   asBlob,
   makeDocx,
@@ -11,7 +11,7 @@ import {
   googleDocsSampleDocx,
   powerPointSampleDeck,
   wordSampleDocx,
-} from './test-fixtures';
+} from '@liveworkspace/office-files/test-fixtures';
 
 const session = (): ImportImageSession => ({
   store: vi.fn(async () => ({

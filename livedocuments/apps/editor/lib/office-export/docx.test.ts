@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { layOutPages, pagesOf, withArticleFlow } from '@livedocuments/document';
 import { readDocx, type DocxBlock as ReadBlock } from '../office-import/docx';
-import { openOfficePackage } from '../office-import/package';
-import { openZip } from '../office-import/zip';
-import { parseXml } from '../office-import/xml';
+import { openOfficePackage } from '@liveworkspace/office-files/package';
+import { openZip } from '@liveworkspace/office-files/zip';
+import { parseXml } from '@liveworkspace/office-files/xml';
 import { articleFlowsInOrder, buildDocx, docxLook, zoneCount } from './docx-build';
 import { docxBody } from './docx-body';
 import type { DocxBlock } from './docx-types';

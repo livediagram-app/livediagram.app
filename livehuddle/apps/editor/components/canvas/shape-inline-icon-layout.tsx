@@ -17,9 +17,9 @@ import {
   labelRunPx,
   labelTextStyleCss,
   TEXT_ALIGN,
-} from '@/components/canvas/label-style';
+} from '@liveworkspace/workbench/components/label-editor/label-style';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
-import { ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
+import { ShapeMarkerGlyph } from '@liveworkspace/workbench/components/canvas/ShapeMarker';
 import { HoverCard } from '@livehuddle/ui';
 
 // Inline-icon + marker + label layout for a shape, split out of

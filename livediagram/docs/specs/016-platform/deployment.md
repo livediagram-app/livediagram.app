@@ -46,7 +46,7 @@ CI is the gate you check before deploying to production, but it does **not** tri
 
 `staging:check` runs `wrangler deploy --dry-run --env staging` for the three workers that carry bindings (api, mcp, router). Wrangler does not inherit bindings into a named environment, so a binding missing from an `[env.staging]` block, or a `service =` that lost its `-staging` suffix, pointing the staging router at **production**, is neither a type error nor a test failure. Without this step the first sign of either is a deploy.
 
-The root `e2e.yml` runs livediagram's smoke build and three smoke shards, its sites audit and its signed-in specs through `e2e-product.yml` when a change reaches the editor ([End-to-end tests](../003-system-architecture/e2e-smoke.md)).
+The root `e2e.yml` runs livediagram's smoke build and three smoke shards, and its signed-in specs through `e2e-product.yml` when a change reaches the editor ([End-to-end tests](../003-system-architecture/e2e-smoke.md)). Its sites audit runs on a plan of its own, when its marketing, the help centre or the Community changes (docs/ci.md "Workflows").
 
 No workflow runs the canvas performance probe; it runs by hand ([Canvas performance](../008-canvas/canvas-performance.md)).
 

@@ -95,7 +95,7 @@ on the button from putting two hundred spans on the canvas.
 
 ## Drawing it
 
-A **canvas and a particle system**, in `lib/reaction-particles.ts` (pure
+A **canvas and a particle system**, in `packages/workbench/src/lib/reaction-particles.ts` (pure
 physics) plus `ReactionBurst.tsx` (surface, clock, cleanup).
 
 A dozen emoji spans on one CSS keyframe cannot be made good. Every particle

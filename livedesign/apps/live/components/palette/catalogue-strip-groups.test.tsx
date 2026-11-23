@@ -2,7 +2,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { ICON_CATEGORIES } from '@/lib/icons';
+import { ICON_CATEGORIES } from '@liveworkspace/workbench/lib/icons';
 import { CatalogueGroupTile, catalogueStripGroups } from './catalogue-strip-groups';
 import { BrowseStartGroup, PaletteCategoryBrowser } from './PaletteCategoryBrowser';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';

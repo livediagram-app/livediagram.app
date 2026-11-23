@@ -7,10 +7,10 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | Spec term            | Identifier                                                                                                                                                                                      |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | colour picker        | `ColourPicker` (`apps/editor/components/colour/ColourPicker.tsx`)                                                                                                                               |
-| swatch               | `ColourSwatch`, `SwatchChip` (`apps/editor/components/colour/ColourSwatch.tsx`)                                                                                                                 |
+| swatch               | `ColourSwatch`, `SwatchChip` (`../packages/workbench/src/components/colour/ColourSwatch.tsx`)                                                                                                   |
 | standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`../packages/element-model/src/standard-colours.ts`)                                                                              |
 | tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                             |
-| theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/project/src/quick-swatches.ts`)                                                                                |
+| theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`../packages/element-model/src/quick-swatches.ts`)                                                                       |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/project`), `projectColours(...)` (`apps/editor/lib/project-colours.ts`), `useProjectColours()` (`apps/editor/hooks/ui/`) |
 | custom colour editor | `CustomColourEditor` (`packages/workbench/src/components/colour/CustomColourEditor.tsx`)                                                                                                        |
 | skins                | inline `ColourPicker`; row (`ColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                                |
@@ -115,7 +115,7 @@ ColourPicker({
 - `Tab.customColours?: string[]` (`packages/project/src/tab-type.ts`), read with `customColoursOf(tab)` (lower-case
   `#rrggbb`, deduped, anything else dropped, at most `CUSTOM_COLOURS_MAX` = 12) and written with
   `withCustomColour(tab, hex)` (moves `hex` to the front, caps; returns the tab itself when nothing changes), both in
-  `packages/project/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.
+  `../packages/element-model/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.
 - `addCustomColour(hex)` on the editor state (`hooks/editor/useAddCustomColour.ts`): `tickTabs` on the active tab
   (no history step), a no-op without edit rights or when nothing changes. `ColourPicker` calls it, lower-cased, on the
   custom editor's **Use**, before `onPick`; outside an `EditorContext` there is none.
@@ -124,7 +124,7 @@ ColourPicker({
   (= `CUSTOM_COLOURS_MAX`). Never reads elements. `useProjectColours(offered?)` memoises on the
   editor's `tabs`, the active tab id and the joined `offered`; with no editor context, `[]`. `ColourPicker` also leaves
   out of Custom Colours any colour another group offers.
-- `stableColours(shown, next, max)` (`components/colour/colour-options.ts`): colours in `next` not in `shown` go
+- `stableColours(shown, next, max)` (`../packages/workbench/src/components/colour/colour-options.ts`): colours in `next` not in `shown` go
   first, then `shown` in its order, capped at `max`; returns `shown` itself when nothing is new. `ColourPicker` holds
   `shown` in state from mount (the in-force colour first, then `yours`) and re-derives it each render, frozen while
   the custom editor is open so its live preview adds nothing until **Use**. Unmounting (closing) resets it.

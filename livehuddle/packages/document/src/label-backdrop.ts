@@ -3,7 +3,7 @@
 // are every product's (@liveworkspace/model-core/label-backdrop); this binds them to this package's colours. Pure.
 import { labelInks } from '@liveworkspace/model-core/label-backdrop';
 import { canvasSurface, contrastRatio, defaultFillColor, defaultTextColor } from './colors';
-import { reachContrast } from './readable-colour';
+import { reachContrast } from '@liveworkspace/element-model/readable-colour';
 import type { BoxedElement, Element } from './index';
 
 export { LABEL_BACKDROP_CONTRAST } from '@liveworkspace/model-core/label-backdrop';

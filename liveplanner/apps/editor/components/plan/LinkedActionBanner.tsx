@@ -2,7 +2,7 @@
 
 // The banner a linked card's item panel opens with (docs/specs/026-plan/linked-boards.md "On the board"): which action
 // the card is, where it is, and the way to it.
-import { ActionMenuIcon } from '@/components/palette/context-menu-icons';
+import { ActionMenuIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 export function LinkedActionBanner({
   tabName,

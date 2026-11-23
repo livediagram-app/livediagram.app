@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { PathElement, PathNode } from './element-types';
-import { isCompoundPath, pathContours, pathElementD } from './path-element';
+import {
+  isCompoundPath,
+  pathContours,
+  pathElementD,
+} from '@liveworkspace/element-model/path-element';
 import { svgPathElementShape } from './svg-render-shapes';
 import { elementValidationIssue } from './validate';
 import { pathTouchesBrush } from './whiteboard-stroke';

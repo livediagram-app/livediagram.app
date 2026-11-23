@@ -28,7 +28,7 @@ import { MenuAccordionSection } from '@liveworkspace/workbench/components/primit
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { PickerIcon, RevealIcon } from '@/components/palette/palette-icons';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 

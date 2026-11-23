@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CARD_TAG_MAX, clampCardTag } from './card';
-import { SANKEY_NAME_MAX, cleanSankeyName } from './sankey-model';
+import { CARD_TAG_MAX, clampCardTag } from '@liveworkspace/element-model/card';
+import { SANKEY_NAME_MAX, cleanSankeyName } from '@liveworkspace/element-model/sankey-model';
 
 // Capped names are cut by the shared cutText (@liveworkspace/model-core/text-cut): a plain `slice` at the cap left half
 // an emoji (a lone surrogate), drawn as a replacement box and stored as U+FFFD.

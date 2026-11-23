@@ -89,7 +89,7 @@ What differs from a frame is presentation only:
 ## Aligning the title re-orients the lane
 
 The gutter is the title's backdrop, so it runs along whichever **edge the
-title is pinned to** (`laneGutterEdge` in `livediagram/packages/document/src/lane-gutter.ts`, drawn by `LaneGutter.tsx`):
+title is pinned to** (`laneGutterEdge` in `../packages/element-model/src/lane-gutter.ts`, drawn by `LaneGutter.tsx`):
 
 | Title alignment           | Gutter                                          |
 | ------------------------- | ----------------------------------------------- |

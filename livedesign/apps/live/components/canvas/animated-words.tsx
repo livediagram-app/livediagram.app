@@ -1,7 +1,7 @@
 // Splitting a label's words for the Text animation set (docs/specs/028-animation/element-animations.md
 // "Text"). A label animates letter by letter, word by word, or as one block, depending on the
 // animation and on how long the label is; each unit is a span carrying its index (`--i`), which the
-// keyframes in app/motion-text.css read against the label's progress. Nothing here runs per frame:
+// keyframes in @liveworkspace/workbench/styles/motion-text.css read against the label's progress. Nothing here runs per frame:
 // the split happens once per label change and CSS does the rest.
 //
 // The split never changes what is read or copied: the label keeps its full text as its accessible

@@ -22,7 +22,7 @@ import {
   type CanvasSurface,
   type Finish,
 } from '@livedocuments/document';
-import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
+import { isCssNativeBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { NOTE_INK } from '@/lib/article/article-note-look';
 

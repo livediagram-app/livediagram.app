@@ -24,13 +24,16 @@
 
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
-import type { ElementAction, ElementActionStatus } from './element-action';
+import type {
+  ElementAction,
+  ElementActionStatus,
+} from '@liveworkspace/element-model/element-action';
 import {
   threadResolved,
   threadWithComment,
   threadWithEdit,
   threadWithoutComment,
-} from './comment-thread';
+} from '@liveworkspace/element-model/comment-thread';
 import type { ChecklistItem } from './data-shapes';
 import {
   RESPONSES_MAX,

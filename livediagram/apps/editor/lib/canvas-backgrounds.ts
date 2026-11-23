@@ -2,7 +2,7 @@
 // (@liveworkspace/workbench/lib/canvas-backgrounds), bound once over this editor's patterns and seasonal motifs.
 import type { BackgroundPattern } from '@livediagram/document';
 import { createCanvasBackgrounds } from '@liveworkspace/workbench/lib/canvas-backgrounds';
-import { seasonalPatternTile } from '@/lib/seasonal-patterns';
+import { seasonalPatternTile } from '@liveworkspace/workbench/lib/seasonal-patterns';
 
 export { safeCssColor, worldPatternOrigin } from '@liveworkspace/workbench/lib/canvas-backgrounds';
 

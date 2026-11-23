@@ -34,7 +34,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe('ER ends on the canvas', () => {
   it('defines a shared marker per ER end, drawn from the shared glyph', async () => {
-    const { ArrowDefs } = await import('./arrow-defs');
+    const { ArrowDefs } = await import('@liveworkspace/workbench/components/canvas/arrow-defs');
     const { container } = render(
       <svg>
         <ArrowDefs />

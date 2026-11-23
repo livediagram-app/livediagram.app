@@ -7,18 +7,18 @@
 // tidied. Input is untrusted JSON: anything not shaped like the field it claims
 // to be is left for isValidTab to judge.
 
-import { anchorPrimarySide } from './anchors';
+import { anchorPrimarySide } from '@liveworkspace/element-model/anchors';
 import { asText } from '@liveworkspace/model-core/as-text';
-import { orthogonalBends } from './arrow-orthogonal';
+import { orthogonalBends } from '@liveworkspace/element-model/arrow-orthogonal';
 import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
-import { CODE_LANGUAGES } from './data-shapes';
+import { CODE_LANGUAGES } from '@liveworkspace/element-model/data-shapes';
 import { isCodeThemeId } from '@liveworkspace/model-core/code-themes';
-import { variantFitsKind } from './chart-types';
-import { settleChips } from './attachment';
+import { variantFitsKind } from '@liveworkspace/element-model/chart-types';
+import { settleChips } from '@liveworkspace/element-model/attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
 import { migrateStoredElementsUnsettled } from './stored-elements';
-import { normalizeTable } from './table';
+import { normalizeTable } from '@liveworkspace/element-model/table';
 import { coerceShapeKind } from './validate';
 import type { Element as DocElement, TableElement } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
@@ -33,9 +33,13 @@ import {
   SANKEY_UNIT_MAX,
   SANKEY_VALUE_LABELS,
   SANKEY_VALUE_MAX,
-} from './sankey-model';
-import { readSankeyNumber } from './sankey-text';
-import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
+} from '@liveworkspace/element-model/sankey-model';
+import { readSankeyNumber } from '@liveworkspace/element-model/sankey-text';
+import {
+  CONCEPT_ROWS,
+  isConceptShape,
+  type ConceptShape,
+} from '@liveworkspace/element-model/concept';
 import { cutText } from './text-cut';
 
 type Raw = Record<string, unknown>;

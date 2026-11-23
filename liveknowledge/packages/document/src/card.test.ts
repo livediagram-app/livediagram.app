@@ -163,14 +163,14 @@ describe('card export', () => {
 
 describe('card lines and inline icons', () => {
   it('switches the title and meta line on with starting words and off entirely', async () => {
-    const { withCardLine } = await import('./card');
+    const { withCardLine } = await import('@liveworkspace/element-model/card');
     expect(withCardLine(card({ pageTitle: undefined }), 'pageTitle', true).pageTitle).toBe('Title');
     expect(withCardLine(card(), 'pageTitle', true).pageTitle).toBe('Payments');
     expect('pageSubtitle' in withCardLine(card(), 'pageSubtitle', false)).toBe(false);
   });
 
   it('turns on Tile media when an icon lands on a card with none', async () => {
-    const { withInlineIcon } = await import('./card');
+    const { withInlineIcon } = await import('@liveworkspace/element-model/card');
     expect(withInlineIcon(card({ cardMedia: undefined }), 'zap').cardMedia).toBe('tile');
     expect(withInlineIcon(card({ cardMedia: 'badge' }), 'zap').cardMedia).toBe('badge');
     const sq = withInlineIcon(createShape('square', 0, 0), 'zap', 'left');

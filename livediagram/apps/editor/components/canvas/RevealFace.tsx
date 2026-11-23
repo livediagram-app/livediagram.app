@@ -17,7 +17,7 @@
 // completely — pointer-events included, so the content underneath is editable
 // — leaving one small Hide pill to put it back.
 
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { REVEAL_COVER_BASE } from '@livediagram/document';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';

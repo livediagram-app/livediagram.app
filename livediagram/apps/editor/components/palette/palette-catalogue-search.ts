@@ -4,7 +4,7 @@
 // tiles: a catalogue the mode's palette offers is this mode's, the rest another mode's.
 import type { EditorMode, Element } from '@livediagram/document';
 import { paletteRank, type IconDef, type StickerDef, type TechIconDef } from '@liveworkspace/icons';
-import { getLineArtIconCatalog } from '@/lib/icons';
+import { getLineArtIconCatalog } from '@liveworkspace/workbench/lib/icons';
 import { getStickerCatalog } from '@liveworkspace/workbench/lib/stickers';
 import { getLoadedTechIconCatalog } from '@liveworkspace/workbench/lib/icon-registry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';

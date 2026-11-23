@@ -2,7 +2,7 @@
 // `edge-crossings`, and the drawing's extent.
 
 import { contentBounds, pathsCross, type ElementId, type Rect } from '@liveknowledge/document';
-import { LINT_MAX_ARROWS } from './constants';
+import { LINT_MAX_ARROWS } from '@liveworkspace/diagram-lint/constants';
 import type { LintContext } from './context';
 
 export type Crossings = {

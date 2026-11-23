@@ -19,7 +19,7 @@ import {
   type ShapeElement,
   type ShapeKind,
 } from '@livediagram/document';
-import { PresetsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { PresetsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   ArrowPresets,
   ChartPalettePresets,

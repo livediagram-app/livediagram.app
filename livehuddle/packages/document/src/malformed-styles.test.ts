@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { migrateIncomingTab } from './stored-tab';
-import { dropMalformedStyles } from './malformed-styles';
+import { dropMalformedStyles } from '@liveworkspace/element-model/malformed-styles';
 import { renderElementsToSvg } from './svg-render';
 import type { Element, Tab } from './index';
 

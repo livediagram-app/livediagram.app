@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GameBall, GameEventOp } from '@livehuddle/api-schema';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   applyPongEvent,
   arrivalMs,
@@ -296,6 +296,6 @@ describe('what a screen shows', () => {
     const ms = cpuMsOf(() => {
       for (let i = 0; i < 100_000; i += 1) ballShown(open, 1000 + (i % 2000));
     });
-    expect(ms).toBeLessThan(200);
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
   });
 });

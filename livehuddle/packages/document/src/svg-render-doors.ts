@@ -11,7 +11,7 @@ import { WINDOW_LIGHT, windowArt } from './window-art';
 import type { CanvasSurface } from './colors';
 import { FURNITURE_PANEL_STROKE, FURNITURE_RAIL_OPACITY, FURNITURE_RAIL_STROKE } from './seating';
 import { ROOM_TONES, ROOM_WALL, WALL_EDGE } from './office';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import type { Face } from './svg-render-face-kit';
 import type { BackWallDoor } from './back-wall-doors';
 

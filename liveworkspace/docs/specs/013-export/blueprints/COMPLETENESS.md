@@ -14,3 +14,11 @@
 - [x] Constants and configuration
 - [x] Assets and external resources
 - [x] Defaults ledger
+
+## office-files
+
+- [x] Domain and naming
+- [x] Interfaces and contracts
+- [x] Security and trust
+- [x] Performance and limits
+- [x] Testing

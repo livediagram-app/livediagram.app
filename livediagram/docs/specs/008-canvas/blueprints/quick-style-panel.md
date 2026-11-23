@@ -8,12 +8,12 @@ Scope, by file:
 
 | File                                                                          | Role                                                                                                             |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/quick-swatches.ts`                                     | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
+| `../packages/element-model/src/quick-swatches.ts`                             | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
 | `packages/document/src/colors.ts`                                             | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`                    | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
 | `packages/document/src/validate.ts`                                           | Rejects a swatch field that is not a slot                                                                        |
-| `packages/document/src/quick-swatch-rederive.ts`                              | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
-| `packages/document/src/theme-graph.ts`                                        | The four theme walks call the re-derive last                                                                     |
+| `../packages/element-model/src/quick-swatch-rederive.ts`                      | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
+| `../packages/element-model/src/theme-graph.ts`                                | The four theme walks call the re-derive last                                                                     |
 | `apps/editor/lib/style-presets.ts`                                            | Hand-set colour and presets clear the matching binding                                                           |
 | `apps/editor/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |
 | `apps/editor/lib/format-painter.ts`, `format-config.ts`                       | The painter carries a binding only together with its colour                                                      |
@@ -25,7 +25,7 @@ Scope, by file:
 | `../packages/workbench/src/hooks/ui/useQuickStylePlacement.ts`                | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | `apps/editor/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
 | `apps/editor/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
-| `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
+| `packages/workbench/src/lib/swatch-overrides.ts`                              | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
 | `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | `apps/editor/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
 | `apps/editor/app/document/[id]/editor-state/useEditorStyle.ts`                | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |

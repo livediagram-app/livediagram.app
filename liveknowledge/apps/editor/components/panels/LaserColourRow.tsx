@@ -8,8 +8,8 @@
 import { useState } from 'react';
 import { ChevronIcon } from '@liveworkspace/workbench/components/primitives/ChevronIcon';
 import { ColourPopover } from '@/components/colour/ColourPopover';
-import { SwatchChip } from '@/components/colour/ColourSwatch';
-import { standardGroup } from '@/components/colour/colour-options';
+import { SwatchChip } from '@liveworkspace/workbench/components/colour/ColourSwatch';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import {

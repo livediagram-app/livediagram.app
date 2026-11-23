@@ -8,7 +8,7 @@ import {
   DECISION_STATUS_LABELS,
   DEFAULT_DECISION_STATUS,
 } from './collab-shapes';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { mixHex } from './svg-render-face-kit';
 import { svgTemperature } from './svg-render-temperature';
 import {

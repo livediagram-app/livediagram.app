@@ -32,7 +32,7 @@ import { PagesClusterStrip } from './PagesClusterStrip';
 import { InspectClusterSegment } from './inspect/InspectClusterSegment';
 import { FlowClusterSegment } from './FlowClusterSegment';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
-import { ThemeStrip } from '@/components/canvas/ThemeStrip';
+import { ThemeStrip } from '@liveworkspace/workbench/components/canvas/ThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import { Fragment, useCallback, useRef } from 'react';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
@@ -56,7 +56,7 @@ import { loadPhotoChrome } from '@/lib/editor-deferred-code';
 import { usePhotoStripTools } from './usePhotoStripTools';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
+import { useSnapGuides } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 
 // A photo page's chrome shows only while one is in focus, so its code loads on demand
 // (lib/editor-deferred-code.ts).

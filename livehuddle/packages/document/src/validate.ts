@@ -19,11 +19,15 @@ import type { Element, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ANCHOR_FRACTIONS } from './retired-arrow';
-import { isPenColourName } from './pen-colours';
+import { isPenColourName } from '@liveworkspace/element-model/pen-colours';
 import { ADDER_KEY_LENGTH } from '@liveworkspace/model-core/adder';
 import { isQuickSwatchSlot } from './quick-swatches';
-import { isImageCredit } from './image-credit';
-import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
+import { isImageCredit } from '@liveworkspace/model-core/image-credit';
+import {
+  ELEMENT_KEY_FIELDS,
+  ELEMENT_KEY_MAX,
+  isElementKey,
+} from '@liveworkspace/element-model/malformed-ids';
 import { shapeValidationIssue } from './validate-shape';
 import {
   FONT_WEIGHTS,
@@ -33,7 +37,7 @@ import {
   LETTER_SPACING_MIN,
   TEXT_ARC_MAX,
   TEXT_CASES,
-} from './wordmark';
+} from '@liveworkspace/element-model/wordmark';
 import {
   type ElementValidationIssue,
   type FieldCheck,

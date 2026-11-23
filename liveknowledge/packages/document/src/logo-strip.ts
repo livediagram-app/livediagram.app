@@ -4,7 +4,7 @@
 import { createImage } from './factories';
 import type { Element, ElementId, ImageElement, ShapeElement } from './index';
 import { createShape } from './shape-factory';
-import { isStack, layoutStack, stackChildren } from './stack';
+import { isStack, layoutStack, stackChildren } from '@liveworkspace/element-model/stack';
 
 import {
   LOGO_H,

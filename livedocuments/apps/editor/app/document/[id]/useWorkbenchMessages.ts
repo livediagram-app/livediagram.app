@@ -17,7 +17,7 @@ import { computeRefs, resolveRef, type Tab } from '@livedocuments/document';
 import { selectionReference } from '@livedocuments/document-views';
 import { setAppearanceOverride } from '@livedocuments/ui';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
-import type { RevealStore } from '@/lib/changeset-reveals';
+import type { RevealStore } from '@liveworkspace/workbench/lib/changeset-reveals';
 import { selectionIds, type SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 export function useWorkbenchMessages(opts: {

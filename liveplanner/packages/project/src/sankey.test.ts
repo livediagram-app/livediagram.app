@@ -10,14 +10,14 @@ import {
   SANKEY_DEFAULT_FLOWS,
   SANKEY_MAX_FLOWS,
   type SankeyFlow,
-} from './sankey-model';
-import { sankeyBandPath, sankeyLayout } from './sankey-layout';
+} from '@liveworkspace/element-model/sankey-model';
+import { sankeyBandPath, sankeyLayout } from '@liveworkspace/element-model/sankey-layout';
 import {
   parseSankeyText,
   readSankeyNumber,
   SANKEY_LINE_MAX,
   sankeyFlowsToText,
-} from './sankey-text';
+} from '@liveworkspace/element-model/sankey-text';
 
 const AREA = { x: 0, y: 0, w: 600, h: 300 };
 const flow = (from: string, to: string, value: number): SankeyFlow => ({ from, to, value });

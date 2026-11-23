@@ -5,7 +5,7 @@
 // 4.5:1 or more, where the shared 3:1 walk (label-backdrop.ts) drew all three as one dim grey. Pure.
 import { contrastRatio } from './colors';
 import { LABEL_BACKDROP_CONTRAST, backdropBehind, labelBackdrops } from './label-backdrop';
-import { reachContrast } from './readable-colour';
+import { reachContrast } from '@liveworkspace/element-model/readable-colour';
 import type { Element } from './index';
 
 /** Walked inks kept, keyed by ink, paper and target: a design repeats a handful of greys. Cleared whole when full;

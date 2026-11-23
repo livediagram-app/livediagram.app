@@ -10,7 +10,7 @@ import {
   withStackPicturesGreyscale,
 } from './logo-strip';
 import { createComponent, COMPONENT_SIZE } from './component-factories';
-import { settleStacks } from './stack';
+import { settleStacks } from '@liveworkspace/element-model/stack';
 import type { Element, ImageElement, ShapeElement } from './index';
 
 // docs/specs/009-elements/logo-strip.md

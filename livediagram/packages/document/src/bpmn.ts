@@ -6,7 +6,7 @@
 import type { ArrowElement } from './arrow-types';
 import type { ShapeElement } from './element-types';
 import type { ShapeKind } from './shape-kind';
-import type { ShapeGeometry } from './shape-geometry';
+import type { ShapeGeometry } from '@liveworkspace/element-model/shape-geometry';
 
 export const BPMN_EVENT_SYMBOLS = [
   'start',

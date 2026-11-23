@@ -6,7 +6,7 @@
 // re-introduce the runtime module cycle this split avoided.)
 
 import type { Element, Tab } from './index';
-import type { ElementAction } from './element-action';
+import type { ElementAction } from '@liveworkspace/element-model/element-action';
 import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
 import type { CommentReaction } from '@liveworkspace/model-core/comment-reactions';
 import { isComment } from './element-deltas';

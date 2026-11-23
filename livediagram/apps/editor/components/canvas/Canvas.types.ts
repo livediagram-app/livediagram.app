@@ -1,4 +1,4 @@
-import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
+import type { SnapGuideStore } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import type { Dispatch, SetStateAction } from 'react';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
@@ -22,10 +22,9 @@ import type { CanvasEditProps } from './Canvas.edit.types';
 import type { CanvasPanelProps } from './Canvas.panels.types';
 import type { CanvasSessionProps } from './Canvas.session.types';
 
-// A connection-point marker shown while dragging an arrow endpoint: the
-// world-space position of a nearby shape's anchor, with `active` set on the
-// one the endpoint is currently snapped to. Rendered by CanvasChrome.
-export type SnapTarget = { x: number; y: number; active: boolean };
+// The snap marker CanvasChrome draws (@liveworkspace/workbench/lib/canvas-snap.ts), re-exported so importers keep
+// resolving.
+export type { SnapTarget } from '@liveworkspace/workbench/lib/canvas-snap';
 
 // The props no one group holds: the tab and its view, selection, menus, the Explorer and the chrome's gates.
 type CanvasCoreProps = {

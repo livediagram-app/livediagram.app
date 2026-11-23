@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { handDrawnArrow, handDrawnElementPaint } from './hand-drawn';
-import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
-import { MARKER_LINE_PX } from './finish';
+import { handDrawnArrow, handDrawnElementPaint } from '@liveworkspace/element-model/hand-drawn';
+import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from '@liveworkspace/element-model/marker';
+import { MARKER_LINE_PX } from '@liveworkspace/element-model/finish';
 import { createSticky, createTable } from './factories';
 import { createShape } from './shape-factory';
 import { renderElementsToSvg } from './index';
-import { sketchBackdropIds } from './sketch-backdrop';
+import { sketchBackdropIds } from '@liveworkspace/element-model/sketch-backdrop';
 
 // docs/specs/008-canvas/finish.md "Sketch" and "Marker": one door to both pens, for the canvas and the export.
 

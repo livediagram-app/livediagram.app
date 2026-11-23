@@ -64,6 +64,19 @@ function pricing(service: Service, account: AccountKnown) {
 
 const gbp = (amount: number) => formatPrice(amount, 'GBP');
 
+// Waits here poll a cheap lookup (a selector, a card's text), never a role query over the page: the page is about
+// 1,600 nodes, a role query over it costs around 100 ms on a busy machine against the wait's 50 ms poll, and polls
+// run back to back leave the render they wait for no time. The role is asserted once the wait is over.
+
+/** The comparison table, found by selector for use inside a wait. */
+const comparison = () => document.querySelector('[role="table"]') as HTMLElement;
+
+/** The page's alert, once it is shown. */
+async function shownAlert(): Promise<HTMLElement> {
+  await waitFor(() => expect(document.querySelector('[role="alert"]')).not.toBeNull());
+  return screen.getByRole('alert');
+}
+
 describe('with Pro off', () => {
   beforeEach(() => setProForTests(false));
 
@@ -164,20 +177,13 @@ describe('the pricing page, signed in', () => {
     cleanup();
     aiKey.answer = { ok: true, data: { key: null } };
     pricing({}, 'in');
-    await waitFor(() =>
-      expect(byoCell(screen.getByRole('table', { name: 'What each tier allows' }))).toBe(
-        'Not Configured',
-      ),
-    );
+    await waitFor(() => expect(byoCell(comparison())).toBe('Not Configured'));
     cleanup();
     // The account API could not say: the cell stays quiet rather than guess.
     aiKey.answer = { ok: false, status: 503, error: 'unavailable' };
     pricing({}, 'in');
-    await waitFor(() =>
-      expect(byoCell(screen.getByRole('table', { name: 'What each tier allows' }))).toBe(
-        'Not applicable',
-      ),
-    );
+    await waitFor(() => expect(byoCell(comparison())).toBe('Not applicable'));
+    expect(screen.getByRole('table', { name: 'What each tier allows' })).toBe(comparison());
     aiKey.answer = { ok: true, data: { key: null } };
   });
 
@@ -285,7 +291,7 @@ describe('the pricing page, signed in', () => {
   it('a subscription that cannot be read says so, with the way to try again', async () => {
     const service: Service = { down: true };
     const { calls, card } = pricing(service, 'in');
-    const alert = await screen.findByRole('alert');
+    const alert = await shownAlert();
     expect(alert.textContent).toContain('Couldn’t load your subscription');
     expect(
       within(card('pro')).getByRole<HTMLButtonElement>('button', { name: 'Get Pro' }).disabled,
@@ -304,7 +310,7 @@ describe('the pricing page, signed in', () => {
     const button = within(card('pro')).getByRole('button', { name: 'Get Pro' });
     await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false));
     fireEvent.click(button);
-    expect((await screen.findByRole('alert')).textContent).toContain('This is already subscribed.');
+    expect((await shownAlert()).textContent).toContain('This is already subscribed.');
     expect(navigate).not.toHaveBeenCalled();
   });
 });

@@ -165,9 +165,11 @@ marketing decision, not part of this card.
 
 ## Keeping the two products from drifting
 
-Two copies of what both products carry will drift. Since step 10 that is the Portal, Bring Focus and the Link card,
-the Selection Mode buttons, the Session strip's Timer and Vote, the Reaction Pads, the facilitator baton and
-follow-me; the rest of Workshop mode is livediagram's alone. Since livediagram's Work Tracker #650 (2026-11-09),
+Two copies of what both products carry will drift. That is now Bring Focus and the Link card, the Selection Mode
+buttons, the facilitator baton and follow-me; the rest of Workshop mode is livediagram's alone. The Session strip
+(its Timer, Vote and Poll), the Reaction Pads, comments, assigned actions and the Collaborate Panel left livehuddle
+(Work Tracker #714 and [Not in livehuddle](../002-project-scope/not-in-livehuddle.md)), and the Portal left
+livediagram for livehuddle (Work Tracker 1318), so none of them has a second copy to drift. Since livediagram's Work Tracker #650 (2026-11-09),
 Avatar mode, the Spaces templates and every avatar-only piece (Chair, Desk, Sofa, the office pieces, Fence, Avatar
 Pad, turning and seats) are livehuddle's alone: livediagram keeps a stored one as a "Moved to livehuddle" placeholder
 and drops the old avatar ops unread (livediagram's
@@ -176,8 +178,8 @@ copy left to drift. Four rules keep the rest small:
 
 1. **One copy of what can be shared.** The realtime room's shapes live once, in `packages/`. The avatar core
    (`@livehuddle/avatar`, step 1) moves into livehuddle with #650's second part, since only livehuddle uses it; the
-   reaction bursts both products throw stay shared.
-2. **The next extraction is named now.** The Session strip's Timer, Bring Focus and the facilitator baton
+   reaction bursts stay shared in `@liveworkspace/model-core/reaction-bursts`.
+2. **The next extraction is named now.** Bring Focus and the facilitator baton
    are the next candidates (the Collaborate elements were, until step 10 took them out of livehuddle). Their pure parts move to a
    `@liveworkspace/session-tools` package the first time a change has to land in both products, instead of being
    made twice.

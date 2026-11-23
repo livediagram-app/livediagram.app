@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { GAME_INPUT_MS, type GameEventOp } from '@livehuddle/api-schema';
 import type { GameSeats } from './game-seats';
 import { arrivalMs, ballAt, endOf, PONG, silentAfter } from './ping-pong';
@@ -370,6 +370,6 @@ describe('PongSession: cost', () => {
         s.ball(2_000 + (i % 400));
       }
     });
-    expect(ms).toBeLessThan(300);
+    expect(ms).toBeLessThan(cpuBudgetMs(300));
   });
 });

@@ -10,7 +10,7 @@ import {
   thumbnailKey,
   type ThumbnailEntry,
 } from '@/lib/thumbnail-cache';
-import { ThumbnailLoader } from './ThumbnailLoader';
+import { ThumbnailLoader } from '@liveworkspace/workbench/components/panels/ThumbnailLoader';
 
 // A cached SVG snapshot of a design (docs/specs/006-design/design-snapshots.md) so you can recognise it
 // without opening it. Shared by every Explorer surface that lists

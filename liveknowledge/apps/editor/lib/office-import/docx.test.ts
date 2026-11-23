@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ArticleBlock } from '@liveknowledge/document';
 import { readDocx, type DocxBlock } from './docx';
-import { OfficeImportError } from './errors';
-import { openOfficePackage } from './package';
+import { OfficeImportError } from '@liveworkspace/office-files/errors';
+import { openOfficePackage } from '@liveworkspace/office-files/package';
 import {
   drawing,
   googleDocsSampleDocx,
@@ -13,7 +13,7 @@ import {
   styled,
   wordSampleDocx,
   type DocxOptions,
-} from './test-fixtures';
+} from '@liveworkspace/office-files/test-fixtures';
 
 const read = async (opts: DocxOptions) =>
   readDocx(await openOfficePackage(await makeDocx(opts), 'word'));

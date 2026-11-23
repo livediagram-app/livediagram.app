@@ -3,10 +3,14 @@
 // each colour's hue and moving its lightness to the role's place in that appearance. Both halves are then tuned to the
 // contrast floor (text on its fill 4.5:1, outlines and arrows on the canvas 3:1). Pure and memoised per theme object.
 import { canvasSurface, contrastRatio } from './colors';
-import { hexOklch, oklchHex } from './pen-colours';
+import { hexOklch, oklchHex } from '@liveworkspace/element-model/pen-colours';
 import { DEFAULT_SCHEME_ID, defaultScheme, type Appearance, type ThemeDefinition } from './themes';
 import type { ShapeKind } from './index';
-import { reachContrast, THEME_LINE_CONTRAST, THEME_TEXT_CONTRAST } from './readable-colour';
+import {
+  reachContrast,
+  THEME_LINE_CONTRAST,
+  THEME_TEXT_CONTRAST,
+} from '@liveworkspace/element-model/readable-colour';
 import { legacyShapeColorPresets, shapeColorPresets } from './theme-presets';
 
 type Role = 'background' | 'pattern' | 'fill' | 'stroke' | 'text';

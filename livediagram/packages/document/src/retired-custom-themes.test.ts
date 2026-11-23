@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { dropCustomTheme, isRetiredCustomThemeId } from './retired-custom-themes';
+import {
+  dropCustomTheme,
+  isRetiredCustomThemeId,
+} from '@liveworkspace/element-model/retired-custom-themes';
 import { migrateIncomingTab, migrateStoredTab } from './stored-tab';
-import { getBuiltInTheme } from './themes';
+import { getBuiltInTheme } from '@liveworkspace/element-model/themes';
 import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_PATTERN_COLOR,

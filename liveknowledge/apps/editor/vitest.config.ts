@@ -35,6 +35,7 @@ export default defineProject({
     // test/no-document-grants.ts keeps the index's grant requests out of every stubbed fetch but their own tests'.
     setupFiles: [
       './test/en-gb-locale.ts',
+      './test/utc-time-zone.ts',
       '@liveworkspace/vitest-config/react-cleanup',
       './test/no-document-grants.ts',
     ],

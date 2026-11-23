@@ -22,8 +22,8 @@ import {
 import { OptionRows } from '@liveworkspace/workbench/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
-import { MENU_ICON_PX } from './context-menu-icons';
-import { DataMenuGlyph } from './context-menu-rows';
+import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { MIND_FLOW_ICON, MIND_OUTLINE_ICON, MIND_SPACING_ICON } from './mind-map-menu-glyphs';
 
 const OutlineGlyph = lucideGlyph(lucideListTree, MENU_ICON_PX);

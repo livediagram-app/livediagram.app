@@ -7,7 +7,7 @@ import { libraryLast } from '@liveworkspace/workbench/components/palette/library
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
-import { getLineArtIconCatalog } from '@/lib/icons';
+import { getLineArtIconCatalog } from '@liveworkspace/workbench/lib/icons';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
 import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';

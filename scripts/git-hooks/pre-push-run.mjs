@@ -127,22 +127,23 @@ const seconds = (/** @type {number} */ ms) => `${Math.round(ms / 1000)} s`;
  * @param {NodeJS.ProcessEnv} env
  * @param {number} pool
  * @param {typeof CONSOLE} [io]  where it says what happened (the tests pass their own)
+ * @param {string} [tag]  what each line starts with (the quick run has its own)
  */
-export async function runSteps(root, steps, env, pool, io = CONSOLE) {
+export async function runSteps(root, steps, env, pool, io = CONSOLE, tag = '[pre-push]') {
   const started = Date.now();
   /** @type {string[]} */
   const failed = [];
   const fail = (/** @type {Step} */ step, /** @type {number | string | null} */ status) => {
     failed.push(step.label);
-    io.error(`[pre-push] failed: ${step.label} (exit ${status})`);
+    io.error(`${tag} failed: ${step.label} (exit ${status})`);
   };
   let stopped = false;
   for (const step of steps.filter((s) => !s.parallel)) {
     if (step.skip) {
-      io.log(`[pre-push] skipped: ${step.label}`);
+      io.log(`${tag} skipped: ${step.label}`);
       continue;
     }
-    io.log(`[pre-push] ${step.label}`);
+    io.log(`${tag} ${step.label}`);
     const run = spawnSync(step.cmd, step.args, {
       cwd: root,
       stdio: 'inherit',
@@ -156,12 +157,13 @@ export async function runSteps(root, steps, env, pool, io = CONSOLE) {
     }
   }
   const tests = stopped ? [] : steps.filter((s) => s.parallel);
-  if (tests.length > 0) io.log(`[pre-push] ${tests.length} test runs, ${pool} at a time`);
+  if (tests.length > 0) io.log(`${tag} ${tests.length} test runs, ${pool} at a time`);
   await pooled(
     tests.map((step) => async () => {
       const run = await runQuietly(root, step, env);
       if (run.status === 0) {
-        io.log(`[pre-push] passed in ${seconds(run.ms)}: ${step.label}`);
+        if (step.show) io.write(run.output);
+        io.log(`${tag} passed in ${seconds(run.ms)}: ${step.label}`);
         return;
       }
       io.write(run.output);
@@ -170,11 +172,14 @@ export async function runSteps(root, steps, env, pool, io = CONSOLE) {
     pool,
   );
   if (failed.length > 0) {
-    io.error(`[pre-push] ${failed.length} failed in ${seconds(Date.now() - started)}:`);
-    for (const label of failed) io.error(`[pre-push]   ${label}`);
-    io.error('[pre-push] fix them, or push with --no-verify to leave it to CI');
+    io.error(`${tag} ${failed.length} failed in ${seconds(Date.now() - started)}:`);
+    // In the steps' own order, whichever test run ended first.
+    const order = steps.map((step) => step.label);
+    failed.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    for (const label of failed) io.error(`${tag}   ${label}`);
+    io.error(`${tag} fix them, or push with --no-verify to leave it to CI`);
     return 1;
   }
-  io.log(`[pre-push] passed in ${seconds(Date.now() - started)}`);
+  io.log(`${tag} passed in ${seconds(Date.now() - started)}`);
   return 0;
 }

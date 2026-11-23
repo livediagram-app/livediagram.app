@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { handDrawnElementPaint } from './hand-drawn';
-import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
+import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from '@liveworkspace/element-model/marker';
 import { MARKER_LINE_PX } from './finish';
 import { createSticky } from './factories';
 import { createShape } from './shape-factory';

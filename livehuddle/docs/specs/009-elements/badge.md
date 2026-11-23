@@ -137,4 +137,4 @@ longer than 24 characters is refused with `invalid_result`, naming the element a
 label is at most 24 characters`). A step's label over 3 is refused the same way. Only the elements a write touches are
 checked, so a document that already holds a longer label (made before the cap was enforced) still takes edits to its
 other elements, and the editor's own saves are never refused for it (`chipLabelIssue` in
-`livediagram/packages/document/src/chip.ts`, run by the agent write paths alone).
+`../packages/element-model/src/chip.ts`, run by the agent write paths alone).

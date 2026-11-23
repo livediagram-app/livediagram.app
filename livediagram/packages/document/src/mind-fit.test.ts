@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './factories';
-import { MIND_SIBLING_GAP_Y } from './mind-flow';
+import { MIND_SIBLING_GAP_Y } from '@liveworkspace/element-model/mind-flow';
 import { fitMindNodeHeight } from './mind-fit';
 import { planMindGrowth, type MindGrowthPlan } from './mind-grow';
 import { isMindTreeTidy } from './mind-layout';

@@ -1,14 +1,7 @@
 'use client';
 
-import {
-  lazy,
-  Suspense,
-  useCallback,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from 'react';
+import { useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
 import { proOn } from '../flag';
 import { SUBSCRIPTION_LOADING, SUBSCRIPTION_SIGNED_OUT } from '../state';
 import {
@@ -22,16 +15,18 @@ import {
 } from './context';
 
 // Everything that asks the service or draws a dialog is the driver's, in its own chunk: a page carries only this
-// shell, which is a context and a few lines of state.
+// shell, which is a context and a few lines of state. Once the driver's code is in (`preloadUpgradeDialog`), it is
+// drawn with the shell's own render, as a static import would be (lazyPanel): no suspended render in between,
+// which a busy page could starve. A driver that cannot be fetched (offline) leaves the hooks at `loading`.
 const loadDriver = () => import('./SubscriptionDriver');
-const SubscriptionDriver = lazy(() =>
-  loadDriver().then((m) => ({ default: m.SubscriptionDriver })),
+const SubscriptionDriver = lazyPanel('subscription-driver', () =>
+  loadDriver().then((m) => m.SubscriptionDriver),
 );
 
 /** Fetches the provider's working half and its dialogs ahead of time (a test warming its imports, a pointer
  *  reaching Upgrade). */
 export async function preloadUpgradeDialog(): Promise<void> {
-  const driver = await loadDriver();
+  const [driver] = await Promise.all([loadDriver(), SubscriptionDriver.preload()]);
   await driver.loadUpgradeDialogs();
 }
 
@@ -121,11 +116,7 @@ function Shell({ children, ...props }: SubscriptionProviderProps) {
   return (
     <SubscriptionContext value={live ?? pending}>
       {children}
-      {interactive ? (
-        <Suspense fallback={null}>
-          <SubscriptionDriver {...props} dialogs={dialogs} onHost={setLive} />
-        </Suspense>
-      ) : null}
+      {interactive ? <SubscriptionDriver {...props} dialogs={dialogs} onHost={setLive} /> : null}
     </SubscriptionContext>
   );
 }

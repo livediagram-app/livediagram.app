@@ -6,7 +6,7 @@ import { cornerRadiusPx } from '@liveworkspace/model-core/border-style';
 import type { Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { ShapeElement } from './index';
 import { SHAPE_GEOMETRY_KINDS } from './shape-kind';
-import { shapeGeometry } from './shape-geometry';
+import { shapeGeometry } from '@liveworkspace/element-model/shape-geometry';
 import {
   CSS_DEFAULT_RADIUS_PX,
   ellipseRing,
@@ -16,7 +16,7 @@ import {
   type OutlineSegments,
 } from './shape-hit';
 import type { ShapeKind } from './shape-kind';
-import { boxFit } from './svg-shape-fit';
+import { boxFit } from '@liveworkspace/element-model/svg-shape-fit';
 
 // The CSS-drawn kinds whose area is their (rounded) box.
 const AREA_BOX_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>(['square', 'circle', 'stadium']);

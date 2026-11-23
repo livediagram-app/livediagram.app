@@ -27,7 +27,10 @@ import {
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
-import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
+import {
+  ArrowLineControls,
+  ArrowPointerControls,
+} from '@liveworkspace/workbench/components/canvas/arrow-controls';
 import {
   ContextMenu,
   ContextMenuDivider,
@@ -45,7 +48,7 @@ import {
   TableGlyph,
   TextColourIcon,
   TextGlyph,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,
@@ -72,7 +75,7 @@ import { MultiPlacementSections } from './MultiPlacementSections';
 import { MultiStyleSections } from './MultiStyleSections';
 import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { inkSwatch, shownColour } from '@/components/palette/ink-row';
+import { inkSwatch, shownColour } from '@liveworkspace/workbench/components/palette/ink-row';
 
 type MultiSelectionContextMenuProps = {
   props: EditorContextMenuProps;

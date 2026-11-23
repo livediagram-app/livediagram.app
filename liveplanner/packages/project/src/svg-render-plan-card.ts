@@ -21,7 +21,7 @@ import {
   openBlockersOf,
 } from '@liveplanner/items';
 import { FLAG_COLOUR } from './plan-palette';
-import { r2 } from './svg-render-primitives';
+import { r2 } from '@liveworkspace/element-model/svg-render-primitives';
 import { text as faceText, wrapLines } from './svg-render-face-kit';
 import {
   BIT_GAP,
