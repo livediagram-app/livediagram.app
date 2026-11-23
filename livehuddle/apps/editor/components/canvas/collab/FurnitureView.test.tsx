@@ -54,7 +54,7 @@ describe('FurnitureView seats', () => {
           sitters={[{ ...SAM, seat: 0, scale }]}
         />,
       );
-      const top = getByText('Sam').style.top;
+      const top = getByText('Sam').closest<HTMLElement>('[data-seat-pill]')!.style.top;
       unmount();
       return top;
     };

@@ -6,7 +6,7 @@
 
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { lucidePause, lucideShieldCheck } from '@liveworkspace/icons/lucide';
-import { Button, lucideGlyph, Tooltip } from '@livehuddle/ui';
+import { Button, Chip, lucideGlyph, Tooltip } from '@livehuddle/ui';
 import { formatArcadeScore } from '@/lib/arcade/arcade-format';
 import { arcadePlaceLine } from '@/lib/arcade/arcade-post';
 import type { MoonMailGame } from './useMoonMail';
@@ -101,8 +101,8 @@ function Strip({ game }: { game: MoonMailGame }) {
           {formatArcadeScore(strip.score)}
         </span>
       </div>
-      <span
-        className={`rounded-full px-1.5 py-px text-[12px] font-semibold tabular-nums ${
+      <Chip
+        className={`px-1.5 py-px text-[12px] font-semibold tabular-nums ${
           strip.streak > 1
             ? 'bg-amber-100 text-amber-800 dark:bg-amber-400/15 dark:text-amber-200'
             : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-200'
@@ -110,7 +110,7 @@ function Strip({ game }: { game: MoonMailGame }) {
       >
         <span aria-hidden>×{strip.streak}</span>
         <span className="sr-only">Streak times {strip.streak}</span>
-      </span>
+      </Chip>
       <span
         className="ml-auto flex items-center gap-0.5"
         role="img"

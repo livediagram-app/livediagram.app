@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, type Ref } from 'react';
 import { tabHasDrawing, type Tab } from '@livehuddle/document';
-import { isTextEditFocused } from '@livehuddle/ui';
+import { Chip, isTextEditFocused } from '@livehuddle/ui';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
@@ -104,9 +104,12 @@ export function SplitStaticPane({
         <span className="truncate text-sm font-semibold text-slate-800 dark:text-slate-100">
           {tab.name}
         </span>
-        <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+        <Chip
+          caps
+          className="bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+        >
           Live
-        </span>
+        </Chip>
       </div>
     </section>
   );

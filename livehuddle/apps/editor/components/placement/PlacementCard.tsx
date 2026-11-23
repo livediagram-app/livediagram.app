@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Glyph } from '@livehuddle/ui';
+import { Chip, Glyph } from '@livehuddle/ui';
 
 // The pieces a placement level is built from (docs/specs/006-document/offline-mode.md, docs/specs/013-workspace/folders.md, docs/specs/006-document/save-locations.md):
 // the selectable destination card, the inline New Folder card, their
@@ -221,15 +221,15 @@ export function PlacementCard({
   const row = layout === 'list';
   const enter = enterProps(layout, enterIndex);
   const badge = count ? (
-    <span
-      className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
+    <Chip
+      className={`px-1.5 py-0.5 text-[10px] font-semibold leading-none ${
         selected
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/25 dark:text-brand-200'
           : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
       }`}
     >
       {count} {count === 1 ? 'Subfolder' : 'Subfolders'}
-    </span>
+    </Chip>
   ) : null;
   return (
     <button

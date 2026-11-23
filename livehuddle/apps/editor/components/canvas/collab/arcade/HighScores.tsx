@@ -6,7 +6,7 @@
 
 import { useId } from 'react';
 import { lucideTrophy } from '@liveworkspace/icons/lucide';
-import { CompactEmptyState, lucideGlyph } from '@livehuddle/ui';
+import { Chip, CompactEmptyState, lucideGlyph } from '@livehuddle/ui';
 import type { ArcadeScore } from '@livehuddle/document';
 import { formatArcadeScore } from '@/lib/arcade/arcade-format';
 
@@ -69,9 +69,9 @@ export function HighScores({
                   {s.name}
                 </span>
                 {myKey !== null && s.by === myKey ? (
-                  <span className="shrink-0 rounded-full bg-brand-100 px-1.5 text-[11px] font-semibold text-brand-700 dark:bg-brand-400/15 dark:text-brand-200">
+                  <Chip className="bg-brand-100 px-1.5 text-[11px] font-semibold text-brand-700 dark:bg-brand-400/15 dark:text-brand-200">
                     You
-                  </span>
+                  </Chip>
                 ) : null}
                 <span className="ml-auto shrink-0 font-semibold tabular-nums text-slate-800 dark:text-slate-100">
                   {formatArcadeScore(s.score)}

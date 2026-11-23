@@ -376,7 +376,7 @@ function Welcome({ element }: { element: ShapeElement }) {
             }}
           >
             <BellGlyph />
-            {rung ? 'Rang' : 'Ring Bell'}
+            <span className="text-optical-line">{rung ? 'Rang' : 'Ring Bell'}</span>
           </button>
         </span>
       </Overlay>

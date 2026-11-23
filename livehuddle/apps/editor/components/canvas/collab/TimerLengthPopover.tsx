@@ -53,13 +53,13 @@ export function TimerLengthPopover({
               type="button"
               aria-pressed={minutes === m}
               onClick={() => pick(m)}
-              className={`flex-1 cursor-pointer whitespace-nowrap rounded-full border px-1 py-1 text-[12px] font-semibold tabular-nums transition-colors ${
+              className={`flex flex-1 cursor-pointer items-center justify-center whitespace-nowrap rounded-full border px-1 py-1 text-[12px] font-semibold tabular-nums transition-colors ${
                 minutes === m
                   ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/20 dark:text-brand-100'
                   : 'border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700'
               }`}
             >
-              {m} min
+              <span className="text-optical-line">{m} min</span>
             </button>
           ))}
         </div>
