@@ -72,9 +72,7 @@ describe('importMigrated (the migration door into a document)', () => {
       meta: true,
     });
     expect(r.counter.transactions - before).toBe(1);
-    expect(
-      one(r.db, 'SELECT name, presentation, created_at, saved_at FROM document'),
-    ).toEqual({
+    expect(one(r.db, 'SELECT name, presentation, created_at, saved_at FROM document')).toEqual({
       name: 'Article',
       presentation: '{"slides":[]}',
       created_at: 100,

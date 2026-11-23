@@ -147,9 +147,7 @@ describe('diffView (R17, VW36)', () => {
       { since: 41, rev: 47 },
       { budget: 40, door: 'mcp' },
     );
-    expect(text.split('\n').at(-1)).toMatch(
-      /^… \d changes? hidden: read_design \{"budget":\d+\}$/,
-    );
+    expect(text.split('\n').at(-1)).toMatch(/^… \d changes? hidden: read_design \{"budget":\d+\}$/);
     expect(json.changes.length).toBeLessThan(6);
   });
 });

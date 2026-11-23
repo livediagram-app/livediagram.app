@@ -104,9 +104,7 @@ describe('design and tab names through the MCP SDK', () => {
       name: 'rename_design',
       arguments: { designId: 'd1', tabId: 't1', name: LONG },
     });
-    const renamed = sent.filter(
-      (s) => s.method === 'PUT' && s.path === '/designs/d1/tabs/t1/name',
-    );
+    const renamed = sent.filter((s) => s.method === 'PUT' && s.path === '/designs/d1/tabs/t1/name');
     expect(renamed.at(-1)?.body?.name).toBe(CAPPED);
     const text = (result.content as { type: string; text: string }[])[0]!.text;
     expect(JSON.parse(text)).toHaveProperty('name', CAPPED);

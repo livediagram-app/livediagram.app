@@ -107,11 +107,7 @@ describe('hasBoardLook', () => {
 describe('the editor mode catalogue', () => {
   it('lists every mode once, in order, with the words the interface shows', () => {
     expect(EDITOR_MODE_CATALOGUE.map((m) => m.id)).toEqual(EDITOR_MODES);
-    expect(EDITOR_MODES.map(editorModeLabel)).toEqual([
-      'Diagram',
-      'Draw',
-      'Workshop',
-    ]);
+    expect(EDITOR_MODES.map(editorModeLabel)).toEqual(['Diagram', 'Draw', 'Workshop']);
     for (const m of EDITOR_MODE_CATALOGUE) expect(m.description.length).toBeGreaterThan(0);
   });
 });

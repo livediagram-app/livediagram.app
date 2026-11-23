@@ -170,7 +170,31 @@ describe('tools/list', () => {
       'read_with_app_tool',
       'change_with_app_tool',
     ]);
-    expect(calls).toEqual([]);
+  });
+
+  it('names each kind’s tools in list_app_tools, read-only apart, so one call fetches the schemas', async () => {
+    const response = await rpc('tools/list', {});
+    const { result } = await response.json<{
+      result: { tools: { name: string; description: string }[] };
+    }>();
+    const description = result.tools.find((t) => t.name === 'list_app_tools')!.description;
+    expect(description).toMatch(/plan: reads [^;]*list_cards[^;]*; changes [^.]*change_cards/);
+    expect(description).toContain('knowledgebase: reads');
+    down = 'livedocuments';
+    forgetCatalogues();
+    const without = await rpc('tools/list', {});
+    const tools = (
+      await without.json<{ result: { tools: { name: string; description: string }[] } }>()
+    ).result.tools;
+    expect(tools).toHaveLength(10);
+    expect(tools.find((t) => t.name === 'list_app_tools')!.description).not.toContain('doc: reads');
+  });
+
+  it('lists the other names when a guessed tool name is wrong', async () => {
+    const listed = await tool('list_app_tools', { kind: 'plan', tools: ['read_plan_sheet'] });
+    const value = listed.structuredContent as { unknown: string[]; available: { name: string }[] };
+    expect(value.unknown).toEqual(['read_plan_sheet']);
+    expect(value.available.map((t) => t.name)).toContain('read_sheet');
   });
 
   it('lists every renamed editing tool with tools=all', async () => {
@@ -275,6 +299,25 @@ describe('routing', () => {
       app: 'liveplanner',
       name: 'list_items',
     });
+  });
+
+  it('puts a ref where the app wants its own id, from the verb, the arguments or the kind’s name', async () => {
+    await tool('read_with_app_tool', { tool: 'list_cards', ref: 'plan:P1' });
+    await tool('read_with_app_tool', { tool: 'list_cards', arguments: { ref: 'plan:P2' } });
+    await tool('read_with_app_tool', { tool: 'list_cards', arguments: { plan: 'P3' } });
+    await tool('read_with_app_tool', { tool: 'list_cards', arguments: { projectId: 'plan:P4' } });
+    await tool('read_with_app_tool', {
+      tool: 'list_cards',
+      arguments: { projectId: 'P5' },
+      ref: 'plan:P9',
+    });
+    expect(calls.filter((c) => c.method === 'tools/call').map((c) => c.args)).toEqual([
+      { projectId: 'P1' },
+      { projectId: 'P2' },
+      { projectId: 'P3' },
+      { projectId: 'P4' },
+      { projectId: 'P5' },
+    ]);
   });
 
   it('refuses an unknown editing tool in words', async () => {

@@ -102,7 +102,10 @@ describe('LayerRowMenu', () => {
       expect(button(name).parentElement?.attributes.length).toBeGreaterThan(0);
     fireEvent.click(button('Clear Layer'));
     expect(
-      screen.getByRole('alertdialog', { name: 'Clear the 3 elements on “Notes”?', description: 'The layer stays.' }),
+      screen.getByRole('alertdialog', {
+        name: 'Clear the 3 elements on “Notes”?',
+        description: 'The layer stays.',
+      }),
     ).toBeTruthy();
   });
 
@@ -117,7 +120,10 @@ describe('LayerRowMenu', () => {
     const p = renderMenu();
     fireEvent.click(button('Clear Layer'));
     expect(
-      screen.getByRole('alertdialog', { name: 'Clear the 3 elements on “Notes”?', description: 'The layer stays.' }),
+      screen.getByRole('alertdialog', {
+        name: 'Clear the 3 elements on “Notes”?',
+        description: 'The layer stays.',
+      }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
     expect(p.onClear).toHaveBeenCalledOnce();

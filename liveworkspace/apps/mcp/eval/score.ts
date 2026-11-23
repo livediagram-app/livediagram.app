@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { APPS, appById, type AppId, type AppSpec } from '../src/apps';
 import { buildAppCatalogue, type AppCatalogue, type ListedTool } from '../src/catalogue';
-import { CORE_NAMES, CORE_TOOLS, runCore, textResult, type CoreContext } from '../src/core';
+import { CORE_NAMES, coreToolsWith, runCore, textResult, type CoreContext } from '../src/core';
 import { INSTRUCTIONS } from '../src/server';
 import type { ArgMatch, EvalRequest, Expected } from './requests';
 
@@ -65,7 +65,9 @@ export function setupOf(world: World, setup: Setup): { tools: ModelTool[]; syste
     ).join('\n\n');
     return { tools, system };
   }
-  const core = CORE_TOOLS.map((t) => modelTool(t.name, t));
+  const core = coreToolsWith(APPS.map((spec) => world.catalogues.get(spec.app)!)).map((t) =>
+    modelTool(t.name, t),
+  );
   const extra =
     setup === 'one-all'
       ? APPS.flatMap((spec) =>

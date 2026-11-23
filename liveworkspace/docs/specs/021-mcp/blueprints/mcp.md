@@ -57,6 +57,13 @@ name still without a subject word gets the insert noun after its verb. Subject w
 knowledge, knowledgebase, card, sheet, board, form, article, item (and plurals). A tool whose title ends
 "(deprecated)" or whose description starts "Deprecated:" is left out. Descriptions open `For <noun phrase> (<app>).`
 
+Default listing: `coreToolsWith(catalogues)`, the core verbs with each reachable app's tool names in
+`list_app_tools`' description (`<kind>: reads …; changes ….`), so a cold isolate's first `tools/list` reads each
+app's tool list once (in parallel, then cached); an app that can't be reached is left out of the names. A
+`list_app_tools` call with an unknown name answers `available` (every name and `readOnly`). `withAppId`: for a tool
+whose schema has the app's id argument, a ref (`ref` on the verb, or `ref`, the kind's name or `id` in the
+arguments, when the schema has no such property) becomes that argument, and a ref given as the id loses its prefix.
+
 `create_item` defaults: deck `blank-slide-deck`, article `blank-article`, infographic `blank-infographic`, plan
 `kanban`; any other kind with no template gets one blank tab (`tabs: [{ elements: [] }]`); a knowledgebase takes
 `template` itself, never `tabs`.

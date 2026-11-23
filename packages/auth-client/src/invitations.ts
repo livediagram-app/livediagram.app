@@ -42,7 +42,12 @@ async function fetchInvitations(
   userId: string,
   fetcher: typeof fetch,
 ): Promise<PendingInvitation[]> {
-  const response = await call(credentials, '/invitations', { method: 'POST', body: { userId } }, fetcher);
+  const response = await call(
+    credentials,
+    '/invitations',
+    { method: 'POST', body: { userId } },
+    fetcher,
+  );
   if (!response.ok) throw new Error(`invitations failed: ${response.status}`);
   const { invitations } = (await response.json()) as { invitations?: unknown };
   return Array.isArray(invitations) ? (invitations as PendingInvitation[]) : [];

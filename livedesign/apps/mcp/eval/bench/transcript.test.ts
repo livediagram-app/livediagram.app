@@ -166,9 +166,10 @@ describe('metricsOf', () => {
 describe('designIdsIn', () => {
   it('reads ids from designId fields and design links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
-    expect(
-      designIdsIn(`"designId": "${DOC}" https://livedesign.app/design/${other}`),
-    ).toEqual([DOC, other]);
+    expect(designIdsIn(`"designId": "${DOC}" https://livedesign.app/design/${other}`)).toEqual([
+      DOC,
+      other,
+    ]);
     expect(designIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });
 });

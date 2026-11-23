@@ -300,9 +300,7 @@
                 "ref": "e6d7"
               },
               "label": "HTTPS",
-              "style": [
-                "dashed"
-              ]
+              "style": ["dashed"]
             }
           ],
           "children": [],

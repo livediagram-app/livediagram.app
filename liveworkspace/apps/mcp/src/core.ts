@@ -28,6 +28,11 @@ const APP_TOOL_INPUT = {
   properties: {
     tool: { type: 'string', description: 'The tool’s name, as list_app_tools gives it.' },
     arguments: { type: 'object', description: 'Its arguments, as its input schema says.' },
+    ref: {
+      type: 'string',
+      description:
+        'The item it works on, as a ref ("plan:<id>"): it goes in as the tool’s own id argument, so that can be left out.',
+    },
   },
   required: ['tool'],
   additionalProperties: false,
@@ -403,9 +408,70 @@ async function listAppTools(ctx: CoreContext, args: Record<string, unknown>): Pr
       readOnly: isReadOnly(t),
       inputSchema: t.inputSchema,
     })),
-    ...(unknown.length ? { unknown } : {}),
+    ...(unknown.length
+      ? {
+          unknown,
+          // A guessed name still finds its tool in this one call: every name this kind has.
+          available: catalogue.tools.map((t) => ({ name: t.name, readOnly: isReadOnly(t) })),
+        }
+      : {}),
   };
   return { ...textResult(value), structuredContent: value };
+}
+
+/**
+ * The core verbs, with list_app_tools naming every editing tool each kind has (read-only ones apart), so an assistant
+ * can ask for the schemas it needs in one call rather than listing the names first. Without catalogues: as they are.
+ */
+export function coreToolsWith(catalogues: readonly AppCatalogue[]): ListedTool[] {
+  if (catalogues.length === 0) return [...CORE_TOOLS];
+  const lines = catalogues.map((c) => {
+    const reads = c.tools.filter(isReadOnly).map((t) => t.name);
+    const changes = c.tools.filter((t) => !isReadOnly(t)).map((t) => t.name);
+    return `${c.spec.kind}: reads ${reads.join(', ')}; changes ${changes.join(', ')}.`;
+  });
+  return CORE_TOOLS.map((tool) =>
+    tool.name === 'list_app_tools'
+      ? {
+          ...tool,
+          description: `${tool.description} Each kind’s tools, to name in tools:\n${lines.join('\n')}`,
+        }
+      : tool,
+  );
+}
+
+// The item an editing tool works on, said as the app wants it: a ref (on the verb, in the arguments, or under the
+// kind's own name) becomes the tool's id argument, and a ref given as that id loses its "<kind>:" prefix.
+function withAppId(
+  spec: AppSpec,
+  tool: ListedTool,
+  given: Record<string, unknown>,
+  ref: unknown,
+): Record<string, unknown> {
+  const properties =
+    (tool.inputSchema as { properties?: Record<string, unknown> }).properties ?? {};
+  if (!(spec.idParam in properties)) return given;
+  const args = { ...given };
+  const current = args[spec.idParam];
+  const asRef = (value: unknown) => {
+    const parsed = parseRef(value);
+    return parsed && parsed.spec.app === spec.app ? parsed.id : null;
+  };
+  if (typeof current === 'string') {
+    const id = asRef(current);
+    if (id) args[spec.idParam] = id;
+    return args;
+  }
+  for (const key of ['ref', spec.kind, 'id']) {
+    const value = args[key];
+    if (typeof value !== 'string' || key in properties) continue;
+    args[spec.idParam] = asRef(value) ?? value;
+    delete args[key];
+    return args;
+  }
+  const id = asRef(ref);
+  if (id) args[spec.idParam] = id;
+  return args;
 }
 
 // What a tool does, in a line: its description's first sentence after the "For a ..." opening.
@@ -420,7 +486,7 @@ export function firstSentence(description: string): string {
 export async function appOfTool(
   ctx: CoreContext,
   name: string,
-): Promise<{ spec: AppSpec; appTool: string; readOnly: boolean } | null> {
+): Promise<{ spec: AppSpec; appTool: string; readOnly: boolean; tool: ListedTool } | null> {
   for (const spec of ctx.allowed) {
     // An app that can't be reached has no tools to find; the others are still looked through.
     const catalogue = await ctx.catalogue(spec).catch((err: unknown) => {
@@ -429,7 +495,7 @@ export async function appOfTool(
     });
     const appTool = catalogue?.toApp.get(name);
     const listed = catalogue?.tools.find((t) => t.name === name);
-    if (appTool && listed) return { spec, appTool, readOnly: isReadOnly(listed) };
+    if (appTool && listed) return { spec, appTool, readOnly: isReadOnly(listed), tool: listed };
   }
   return null;
 }
@@ -459,7 +525,7 @@ async function callEditingTool(
     args.arguments && typeof args.arguments === 'object'
       ? (args.arguments as Record<string, unknown>)
       : {};
-  return ctx.call(found.spec, found.appTool, toolArgs);
+  return ctx.call(found.spec, found.appTool, withAppId(found.spec, found.tool, toolArgs, args.ref));
 }
 
 /** Runs a core verb; null when the name is not one. */

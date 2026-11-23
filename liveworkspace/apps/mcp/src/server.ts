@@ -11,7 +11,14 @@ import { serverIdentity } from '@liveworkspace/mcp-kit/listing';
 import type { AppSpec } from './apps';
 import { appCatalogue, callAppTool, TokenRefused, type ToolResult } from './app-client';
 import type { ListedTool } from './catalogue';
-import { CORE_NAMES, CORE_TOOLS, appOfTool, runCore, textResult, type CoreContext } from './core';
+import {
+  CORE_NAMES,
+  appOfTool,
+  coreToolsWith,
+  runCore,
+  textResult,
+  type CoreContext,
+} from './core';
 import type { Env } from './env';
 import { LISTING } from './listing';
 
@@ -50,7 +57,6 @@ function context(env: Env, state: RequestState): CoreContext {
 }
 
 async function listed(ctx: CoreContext, all: boolean): Promise<ListedTool[]> {
-  if (!all) return [...CORE_TOOLS];
   // An app that can't be reached is left out rather than failing the whole list.
   const catalogues = await Promise.all(
     ctx.allowed.map((spec) =>
@@ -61,7 +67,9 @@ async function listed(ctx: CoreContext, all: boolean): Promise<ListedTool[]> {
       }),
     ),
   );
-  return [...CORE_TOOLS, ...catalogues.flatMap((c) => c?.tools ?? [])];
+  const found = catalogues.filter((c) => c !== null);
+  // By default the core verbs only, list_app_tools naming each kind's tools; with tools=all, every tool too.
+  return [...coreToolsWith(found), ...(all ? found.flatMap((c) => c.tools) : [])];
 }
 
 async function called(

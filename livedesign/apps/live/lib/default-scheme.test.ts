@@ -1,10 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import {
-  DEFAULT_BACKGROUND_COLOR,
-  canvasSurface,
-  createShape,
-  type Tab,
-} from '@livedesign/design';
+import { DEFAULT_BACKGROUND_COLOR, canvasSurface, createShape, type Tab } from '@livedesign/design';
 import { resetAppearanceForTests, setAppearance } from '@livedesign/ui';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, ShapeElement, StickyElement, TextElement } from '@livedocuments/document';
+import type {
+  ArrowElement,
+  ShapeElement,
+  StickyElement,
+  TextElement,
+} from '@livedocuments/document';
 import { getTheme } from './themes';
 import { resetElementColours } from './reset-colours';
 

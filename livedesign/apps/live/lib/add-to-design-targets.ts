@@ -16,7 +16,5 @@ export function addToDesignTargets<D extends { id: string; ownerId: string }>(in
   isOwner: boolean;
 }): D[] {
   if (input.isOffline || input.workbench || !input.isOwner) return [];
-  return input.designList.filter(
-    (d) => d.id !== input.designId && d.ownerId !== OFFLINE_OWNER_ID,
-  );
+  return input.designList.filter((d) => d.id !== input.designId && d.ownerId !== OFFLINE_OWNER_ID);
 }

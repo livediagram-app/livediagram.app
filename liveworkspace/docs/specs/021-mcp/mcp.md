@@ -41,7 +41,11 @@ server is shaped to pick better than five servers, and the eval says whether it 
 
 2. **Editing tools, on demand.** Each app's other tools (diagram elements, board cards, sheet cells, article
    writing, knowledgebase pages) come back from `list_app_tools(kind)`, each marked `readOnly` or not, and run through
-   `read_with_app_tool` or `change_with_app_tool`. An assistant normally sees ten tools, not about 150. A client with its own tool search (it defers tool definitions until
+   `read_with_app_tool` or `change_with_app_tool`. An assistant normally sees ten tools, not about 150.
+   So that finding a tool takes one call, not two, `list_app_tools`' description names every kind's tools, reads
+   and changes apart (about 1,250 tokens more); a name it gets wrong answers with the names it has. And the item a
+   tool works on can be given as a ref, on the verb (`ref`) or in its arguments: it goes in as the app's own id
+   argument (`projectId`, `documentId`, `designId`), which is the argument assistants most often got wrong. A client with its own tool search (it defers tool definitions until
    needed) connects to `/mcp?tools=all` instead: that lists the core verbs and every editing tool, each callable
    by name.
 

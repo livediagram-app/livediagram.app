@@ -163,9 +163,7 @@ test('a workspace frame is its own approval, browses the Explorer, and opens des
   expect(doc.status).toBe(200);
   expect(doc.body.design.folderId).toBe(folderId);
   // The frame never left its page: its address is the frame's own.
-  expect(page.frames().some((f) => f.url().includes(`/embed/workbench/design/${made}`))).toBe(
-    true,
-  );
+  expect(page.frames().some((f) => f.url().includes(`/embed/workbench/design/${made}`))).toBe(true);
 });
 
 test('a workspace ticket on a folder starts the frame there', async ({

@@ -43,9 +43,7 @@ describe('pasteTranslation into the view', () => {
       from: { kind: 'free', x: 0, y: 0 },
       to: { kind: 'free', x: 1000, y: 0 },
     } as unknown as Element;
-    expect(pasteTranslation([shape('s', 0, 0), arrow], view).dx).toBe(
-      10_600 - 500,
-    );
+    expect(pasteTranslation([shape('s', 0, 0), arrow], view).dx).toBe(10_600 - 500);
   });
 
   it('leaves out an arrow end pinned to an element that was not copied', () => {

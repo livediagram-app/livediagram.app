@@ -7,11 +7,7 @@
 import { workbench } from '../bindings';
 import { getOnline } from './online-status';
 import { reloadWhenSaved } from './reload-when-saved';
-import {
-  createNavigationIntents,
-  recoverFromChunkError,
-  type ChunkRecovery,
-} from './stale-chunks';
+import { createNavigationIntents, recoverFromChunkError, type ChunkRecovery } from './stale-chunks';
 import { hasUnsavedWork } from './unsaved-work';
 import { debugLog } from './debug-log';
 

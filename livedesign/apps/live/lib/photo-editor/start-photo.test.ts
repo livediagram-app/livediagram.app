@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  encodePngStream,
-  psdFromPhoto,
-  writePsd,
-  type PixelLayer,
-} from '@livedesign/photo-engine';
+import { encodePngStream, psdFromPhoto, writePsd, type PixelLayer } from '@livedesign/photo-engine';
 import { harness, photoOf, pixel, solid } from './photo-test-utils';
 import {
   fitToCap,

@@ -105,10 +105,7 @@ describe('parseWorkbenchMessage', () => {
     ['a ticket of the wrong shape', { type: 'livedesign:ticket', v: 1, ticket: 'short' }],
     ['a ticket that is not a string', { type: 'livedesign:ticket', v: 1, ticket: 42 }],
     ['a reveal with no refs', { type: 'livedesign:reveal', v: 1, refs: [] }],
-    [
-      'a reveal with too many refs',
-      { type: 'livedesign:reveal', v: 1, refs: Array(21).fill('a') },
-    ],
+    ['a reveal with too many refs', { type: 'livedesign:reveal', v: 1, refs: Array(21).fill('a') }],
     ['a reveal with an empty ref', { type: 'livedesign:reveal', v: 1, refs: [''] }],
     ['a reveal with an overlong ref', { type: 'livedesign:reveal', v: 1, refs: ['x'.repeat(65)] }],
     ['a reveal whose refs are not a list', { type: 'livedesign:reveal', v: 1, refs: 'a' }],
@@ -223,10 +220,7 @@ describe('parseWorkbenchMessage, workspace scope', () => {
       'a workspace ready with an unknown role',
       { type: 'livedesign:ready', v: 1, scope: 'workspace', role: 'admin' },
     ],
-    [
-      'a ready of another scope',
-      { type: 'livedesign:ready', v: 1, scope: 'galaxy', role: 'edit' },
-    ],
+    ['a ready of another scope', { type: 'livedesign:ready', v: 1, scope: 'galaxy', role: 'edit' }],
     ['a place with no view', { ...place, view: '' }],
     ['a place with a fractional count', { ...place, designCount: 1.5 }],
     ['a place with a numeric folder', { ...place, folderId: 7 }],

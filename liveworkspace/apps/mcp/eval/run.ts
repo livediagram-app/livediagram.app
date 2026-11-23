@@ -1,7 +1,7 @@
 // The tool-pick eval, run by hand (liveworkspace/docs/specs/021-mcp/mcp.md "The tool-pick eval"): every request
 // against the five app servers side by side, the one MCP's nine core verbs, and the one MCP with every tool listed,
 // on Claude Opus 5.5 and Claude Haiku 5.5. Nothing runs: each call is answered by the eval (list_app_tools as the
-// Worker would, anything else with a stub), up to four calls a request. Needs ANTHROPIC_API_KEY (or another
+// Worker would, anything else with a stub), up to six calls a request. Needs ANTHROPIC_API_KEY (or another
 // credential the SDK finds) in the environment, never in the repo.
 //
 //   corepack pnpm --filter @liveworkspace/mcp-service eval [--count] [--models opus,haiku] [--only id,id] [--setups apps,one]
@@ -23,7 +23,8 @@ import {
 } from './score';
 
 const MODELS: Record<string, string> = { opus: 'claude-opus-5-5', haiku: 'claude-haiku-5-5' };
-const MAX_CALLS = 4;
+// Six turns: room to read an item, find a tool and use it, in every setup alike.
+const MAX_CALLS = 6;
 
 // Dollars per million tokens (platform pricing, 2026-11): input, output, cache read, 5-minute cache write. Haiku 5.5
 // has a second card for prompts over 100K tokens.

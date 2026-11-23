@@ -11,14 +11,25 @@ import { driveKeyBytes } from './crypto';
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
-export type DriveState = { sub: string; redirectUri: string; returnTo: string; exp: number; nonce: string };
+export type DriveState = {
+  sub: string;
+  redirectUri: string;
+  returnTo: string;
+  exp: number;
+  nonce: string;
+};
 
 async function signingKey(secret: string, usage: 'sign' | 'verify'): Promise<CryptoKey | null> {
   const raw = driveKeyBytes(secret);
   if (!raw) return null;
   const base = await crypto.subtle.importKey('raw', raw, 'HKDF', false, ['deriveKey']);
   return crypto.subtle.deriveKey(
-    { name: 'HKDF', hash: 'SHA-256', salt: new Uint8Array(0), info: enc.encode('liveworkspace drive state') },
+    {
+      name: 'HKDF',
+      hash: 'SHA-256',
+      salt: new Uint8Array(0),
+      info: enc.encode('liveworkspace drive state'),
+    },
     base,
     { name: 'HMAC', hash: 'SHA-256', length: 256 },
     false,
@@ -33,7 +44,11 @@ export async function signDriveState(
 ): Promise<string> {
   const key = await signingKey(secret, 'sign');
   if (!key) throw new Error('DRIVE_TOKEN_KEY is not a 32-byte base64 key');
-  const payload: DriveState = { ...input, exp: now + DRIVE_STATE_TTL_MS, nonce: randomBase64Url(16) };
+  const payload: DriveState = {
+    ...input,
+    exp: now + DRIVE_STATE_TTL_MS,
+    nonce: randomBase64Url(16),
+  };
   const body = bytesToBase64Url(enc.encode(JSON.stringify(payload)));
   return `${body}.${bytesToBase64Url(await crypto.subtle.sign('HMAC', key, enc.encode(body)))}`;
 }
@@ -51,7 +66,8 @@ export async function verifyDriveState(
   const key = await signingKey(secret, 'verify');
   const sigBytes = base64ToBytes(sig);
   if (!key || !sigBytes) return null;
-  if (!(await crypto.subtle.verify('HMAC', key, new Uint8Array(sigBytes), enc.encode(body)))) return null;
+  if (!(await crypto.subtle.verify('HMAC', key, new Uint8Array(sigBytes), enc.encode(body))))
+    return null;
   const bytes = base64ToBytes(body);
   if (!bytes) return null;
   let payload: Partial<DriveState>;

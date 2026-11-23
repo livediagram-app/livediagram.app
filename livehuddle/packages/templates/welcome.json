@@ -4,11 +4,7 @@
   "startBlankHref": "/new?start=blank",
   "allTemplatesHref": "/new",
   "searchHref": "/new?q=",
-  "fan": [
-    "virtual-office",
-    "team-pod",
-    "all-hands-hall"
-  ],
+  "fan": ["virtual-office", "team-pod", "all-hands-hall"],
   "blanks": [
     {
       "id": "blank-session",

@@ -16,9 +16,18 @@ export class GoogleOAuthError extends Error {
   }
 }
 
-type TokenResponse = { access_token?: string; refresh_token?: string; expires_in?: number; error?: string };
+type TokenResponse = {
+  access_token?: string;
+  refresh_token?: string;
+  expires_in?: number;
+  error?: string;
+};
 
-async function postForm(c: GoogleConfig, url: string, form: Record<string, string>): Promise<Response> {
+async function postForm(
+  c: GoogleConfig,
+  url: string,
+  form: Record<string, string>,
+): Promise<Response> {
   try {
     return await timedFetch(c)(url, {
       method: 'POST',
@@ -41,7 +50,8 @@ async function tokenCall(
   });
   const body = (await res.json().catch(() => ({}))) as TokenResponse;
   if (!res.ok) {
-    if (body.error === 'invalid_grant') throw new GoogleOAuthError('invalid_grant', 'invalid_grant');
+    if (body.error === 'invalid_grant')
+      throw new GoogleOAuthError('invalid_grant', 'invalid_grant');
     throw new GoogleOAuthError('failed', `${res.status} ${body.error ?? ''}`.trim());
   }
   if (!body.access_token || typeof body.expires_in !== 'number') {
@@ -56,7 +66,11 @@ export async function exchangeCode(
   redirectUri: string,
   now: number,
 ): Promise<{ accessToken: string; refreshToken: string | null; expiresAt: number }> {
-  const body = await tokenCall(c, { grant_type: 'authorization_code', code, redirect_uri: redirectUri });
+  const body = await tokenCall(c, {
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: redirectUri,
+  });
   return {
     accessToken: body.access_token,
     refreshToken: body.refresh_token ?? null,
@@ -99,6 +113,7 @@ export async function fetchGoogleAccountId(c: GoogleConfig, accessToken: string)
   }
   const body = (await res.json().catch(() => ({}))) as { user?: { permissionId?: unknown } };
   const id = body.user?.permissionId;
-  if (!res.ok || typeof id !== 'string' || !id) throw new GoogleOAuthError('failed', `about ${res.status}`);
+  if (!res.ok || typeof id !== 'string' || !id)
+    throw new GoogleOAuthError('failed', `about ${res.status}`);
   return id;
 }

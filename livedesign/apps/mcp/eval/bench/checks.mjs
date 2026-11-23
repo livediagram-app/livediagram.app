@@ -13,9 +13,7 @@ function asRegex(word) {
 // ---- what was made ---------------------------------------------------------------------------------------------
 
 export function tabsOf(snap) {
-  return (snap.designs ?? []).flatMap((d) =>
-    (d.tabs ?? []).map((t) => ({ ...t, designId: d.id })),
-  );
+  return (snap.designs ?? []).flatMap((d) => (d.tabs ?? []).map((t) => ({ ...t, designId: d.id })));
 }
 
 export function elementsOf(snap) {

@@ -108,12 +108,12 @@ is refused.
 
 ## Testing
 
-| Rule                                                        | Test                                                |
-| ----------------------------------------------------------- | --------------------------------------------------- |
-| Card ids stay aligned, id-less entries padded, replay no-op | `packages/document/src/element-deltas.test.ts`      |
-| Yield takes the newest pending card for a peer's            | `packages/document/src/element-deltas.test.ts`      |
-| Two posters racing for the 300th card converge              | `packages/document/src/idea-box-race.test.ts`       |
-| Merge keeps ids with cards; validation bounds ids           | `element-deltas.test.ts`, `collab-shapes.test.ts`   |
+| Rule                                                        | Test                                                  |
+| ----------------------------------------------------------- | ----------------------------------------------------- |
+| Card ids stay aligned, id-less entries padded, replay no-op | `packages/document/src/element-deltas.test.ts`        |
+| Yield takes the newest pending card for a peer's            | `packages/document/src/element-deltas.test.ts`        |
+| Two posters racing for the 300th card converge              | `packages/document/src/idea-box-race.test.ts`         |
+| Merge keeps ids with cards; validation bounds ids           | `element-deltas.test.ts`, `collab-shapes.test.ts`     |
 | A peer delta yields only with a pending post                | `apps/editor/app/document/[id]/room-op-apply.test.ts` |
 | Post lifecycle: answered, quiet, refused with notice        | `apps/editor/hooks/collab/useIdeaPosts.test.tsx`      |
 
