@@ -27,7 +27,8 @@ everything runs, never because a shared package it uses changed (its E2E the sam
 deploy. None is held today: livehuddle was held until its launch (Work Tracker #189) and liveknowledge until
 2026-11-22, and both now run, test, run their E2E and deploy like any product. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
-change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
+change touches something every workspace leans on without turbo seeing it as theirs: `.github/` (but for a
+guard's baseline list, which only its guard reads: "Before a push"), the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
 Prettier config and ignore file, or a product folder's own `package.json`, `tsconfig.base.json` or
 Prettier files.
@@ -429,6 +430,11 @@ so a deterministic failure shows up on the machine in minutes rather than on CI 
 coverage floors and E2E are CI's: running them on every push took up to half an hour, loaded a machine
 several agents share, and timed out tests the change never touched.
 
+Measured on a quiet machine (2026-11-23, a change to three shared packages and all six editors): about
+eleven minutes, 82% of it the test runs, one after another; lint and type check were 18%, most of it
+replayed from turbo's cache. So the test runs go a few at a time, a change that reaches most of a suite
+leaves that suite to CI, and the telemetry chart tests run once.
+
 - `pnpm install` installs it: the root `prepare` script runs `scripts/git-hooks/install.mjs`, which
   points `core.hooksPath` at the tracked `.githooks/` (for every worktree of the repository). It skips,
   saying so, when `CI` is set or outside a git work tree, and it never rewrites a `core.hooksPath` that is
@@ -439,9 +445,11 @@ several agents share, and timed out tests the change never touched.
   packages and what they depend on (`pnpm install --frozen-lockfile --ignore-scripts --filter=<name>...`).
   A root with no `node_modules` gets a root-only install first, because the planner runs turbo.
   `--ignore-scripts` keeps `prepare` from running, so `core.hooksPath` stays as it is.
-- `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs` (tests: `pre-push.test.mjs`, on the
-  platform's CI script tests). It takes the merge base with `origin/main` and asks CI's planner
-  (`ci-plan.mjs`) which groups the change reaches. It runs, stopping at the first failing step:
+- `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs` (the plan; `pre-push-run.mjs` runs it; tests:
+  `pre-push.test.mjs`, on the platform's CI script tests). It takes the merge base with `origin/main` and asks CI's planner
+  (`ci-plan.mjs`) which groups the change reaches. It runs every step and lists all that failed at the
+  end, so one push shows everything there is to fix (a failed install alone ends the run: nothing after
+  it could pass):
   - once: the copies guard, the file size guard and the markup guard;
   - per group, as `ci.yml`'s Checks job does: lint and type check, the format check and the
     speed-budget guard;
@@ -449,9 +457,23 @@ several agents share, and timed out tests the change never touched.
     one, and a changed test itself), then its guard tests, which scan files and so are never "related":
     the tests at its root and in `app/`, `lib/small-text-contrast.test.ts` and an api's `src/openapi`
     tests (stale generated schemas);
+  - **a change that reaches most of a suite leaves it to CI.** Before anything runs the hook asks vitest
+    what each changed workspace's change reaches (`vitest list --filesOnly --changed <merge base>`, a
+    second or two each, four at once). Where that is 80% or more of a workspace's test files, and it has
+    20 or more, the related run would be the whole suite (a change to `packages/explorer`'s `errors.ts`
+    reached all 124 of its test files): only the workspace's changed tests run, the hook says how many
+    files the change reaches, and CI runs the suite, as it does anyway. A workspace vitest cannot answer
+    for runs what `related` finds, uncapped;
+  - once, when the push changes a product's code: the site's metric-emitters test for each such product
+    (a telemetry event with no chart), in one run. Where the site itself changed, the tests of that kind
+    its change reaches join that run and its related run leaves them out, so none runs twice (six ran
+    twice, 14,000 tests, when six catalogue files changed);
   - when the push deletes or renames a file: every help edition's `repo-paths-in-docs` test (`liveworkspace/apps/help/editions/<app>/tests`).
-- When half the cores are already busy, each test run is capped at two workers, so a starved CPU
-  doesn't fail timing tests.
+- **The test runs go a few at a time**, after the checks: one for every four cores, three at most, each
+  with an even share of the cores as its workers, its output kept until it ends (a pass is one line, a
+  failure prints in full).
+- When half the cores are already busy, the test runs go one at a time and each is capped at two workers,
+  so a starved CPU doesn't fail timing tests.
 - It checks only a push of the checked-out `HEAD` (`git push origin HEAD:<branch>` included); a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.
 - One run at a time on the machine: a push made while another's checks are running waits its turn,
@@ -460,6 +482,10 @@ several agents share, and timed out tests the change never touched.
   `PATH`. `git push --no-verify` skips it; CI still runs everything, E2E included.
 - A change to something every workspace leans on (`.github/`, the root config) reaches every group's
   lint, type check and format, as on CI; turbo's cache replays what hasn't changed.
+  A guard's baseline list (`.github/scripts/*-baseline.txt`) is the exception, here and on CI
+  (`ci-run-all.mjs`): only its own guard reads it, so it forces nothing. Where such a change reaches no
+  platform workspace, `@liveworkspace/vitest-config` stands in, so the platform's Checks job still runs
+  the guards and the CI script tests on it.
 
 ## Deploys
 

@@ -1,8 +1,15 @@
 'use client';
 
-import type { PointerEvent } from 'react';
+import { useRef, type PointerEvent } from 'react';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
-import { HoverCard, Tooltip, GlyphDisc, withArticle } from '@livediagram/ui';
+import {
+  HoverCard,
+  Tooltip,
+  GlyphDisc,
+  onScreenTranslate,
+  useKeepOnScreen,
+  withArticle,
+} from '@livediagram/ui';
 import type { Corner } from '@/lib/photo-boxes';
 
 // What a SELECTED box offers (docs/specs/021-event-storming/event-storming.md Phase 9): its tick, a handle on each
@@ -43,6 +50,13 @@ export function BoxEditControls({
   onDelete: () => void;
 }) {
   const unzoom = `scale(${1 / zoom})`;
+  // The toolbar hangs above the box's left edge, so a box near the right of a phone slides it left, and one at the
+  // top of the screen flips it under the box (@liveworkspace/ui's useKeepOnScreen): measured once as the box is
+  // selected, never per frame.
+  const bar = useRef<HTMLDivElement>(null);
+  const slide = onScreenTranslate(
+    useKeepOnScreen(bar, true, { scale: zoom, anchor: () => bar.current?.parentElement }),
+  );
   return (
     <>
       {CORNERS.map(({ corner, left, top, cursor }) => (
@@ -59,8 +73,9 @@ export function BoxEditControls({
         role="toolbar"
         aria-label="Correct this box"
         onPointerDown={stop}
+        ref={bar}
         className="pointer-events-auto absolute bottom-full left-0 z-30 flex items-center gap-1 whitespace-nowrap pb-2"
-        style={{ transform: unzoom, transformOrigin: 'bottom left' }}
+        style={{ transform: slide ? `${slide} ${unzoom}` : unzoom, transformOrigin: 'bottom left' }}
       >
         <div className="flex items-center gap-1 rounded-full bg-slate-900/90 p-1 shadow-lg">
           <button
