@@ -66,7 +66,7 @@ shows on a desktop only, where the strip has room: on a phone or a narrow window
 the start screen. It shows where the start screen's entry would, and only there. A press opens the same Connect list
 (role, both ways, Find a file, Recent) in a centred dialog; a connection made there adds its tab at the end of the bar,
 loose, and opens it, as from the start screen, with no empty tab to give way. Closing the dialog leaves nothing
-behind. livediagram offers it (Work Tracker 1374).
+behind. livediagram, liveplanner, livedocuments and livedesign offer it (Work Tracker 1374); livehuddle does not yet.
 
 Who may connect:
 
@@ -209,7 +209,7 @@ so with Try Again.
 
 ## A tab's own name
 
-An app may let an Editor name a connected tab as any tab (livediagram does, Work Tracker 1374): its menu's **Rename**,
+An app may let an Editor name a connected tab as any tab (livediagram, liveplanner, livedocuments and livedesign do, Work Tracker 1374): its menu's **Rename**,
 or a double-click on the open tab, opens the tab's name field in place. The name is this host's label for the tab and
 nothing more: the target keeps its own name, and nothing is written to it.
 

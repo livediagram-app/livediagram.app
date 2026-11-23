@@ -340,18 +340,24 @@ the tab menu's connected mode for an Editor, nothing for a Viewer).
   name). `useConnectedTabActions`' Connect Again goes through `followedConnectedTab`.
 - **`ConnectedTab`** takes `targetName`: given, the name's Tooltip reads "Connected to <targetName>" whatever its
   width (`TabFrame`'s new `tooltip`), and the screen reader's phrase ends with it.
-- **The editor (livediagram)**: `Tab.targetName`; its tab actions' `renameTab` runs `renamedConnectedTab` on a
+- **The editors (livediagram, liveplanner, livedocuments, livedesign; livehuddle not yet)**, each alike: `Tab.targetName`; its tab actions' `renameTab` runs `renamedConnectedTab` on a
   connected tab (`Tab·Changed·ConnectedName`, or `ConnectedNameReset` when it follows again) and `followConnectedTab(id, name)`
   runs `followedConnectedTab` with no event, which `ConnectedTabHost` hands the page as its `onRename`, the page's
   `name` being `targetNameOf(tab)`; its tab pill gives a connected tab the rename field (an empty commit allowed) and
   `targetName`; its connected menu gains Rename first; its tab bar passes `onConnect` from `useConnectFileDialog`
   (`components/connect/useConnectFileDialog.tsx`, the start entry's rules from `useConnectHost`), which mounts the
-  dialog and counts `Tab·Opened·ConnectButton`. Its api keeps the stored `targetName` on a tab-scoped save
-  (`tab-put-route.ts`), and its room's `scopedRenames` drops a scoped `tab-meta` that sets or clears `targetName`.
+  dialog and counts `Tab·Opened·ConnectButton`; `editor-view.ts` hands `followConnectedTab` on where an app's context
+  is built from it. The apis keep the stored `targetName` on a tab-scoped save and refuse it in a scoped room patch:
+  livediagram's `tab-put-route.ts` and room `scopedRenames`; livedocuments' and livedesign's `tab-put-route.ts` and
+  room-scope `renamesTab` (a whole `tab` op from a scoped session relays without `name` or `targetName`);
+  liveplanner's `tab-structure.ts` (`structureChange` counts it as the name, `keepStoredStructure` puts it back, the
+  room's stored-tab cache reads it) and `room-structure-gate.ts`. livediagram, livedocuments and livedesign declare
+  `Tab.targetName` in their document type; liveplanner's `Tab` type gains it once PR #2138, which regenerates its
+  api's OpenAPI file, has merged (the field rides its tab body meanwhile, typed by the shared helpers).
 
 Its tests: `tab-connection.test.ts` (every rename and follow case), `TabStrip` (the button, its absence read-only and
 without `onConnect`), `ConnectFileDialog` (closes on connect and on its close), `ConnectedTab` (the tooltip and phrase),
-and livediagram's (the rename and follow, the connected menu's Rename, the double-click, the button by role, the
+and each editor's (the rename and follow, the connected menu's Rename, the double-click, the button by role, the
 scoped save and patch).
 
 ## Data and persistence
