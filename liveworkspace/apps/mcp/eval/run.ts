@@ -4,7 +4,7 @@
 // Worker would, anything else with a stub), up to four calls a request. Needs ANTHROPIC_API_KEY (or another
 // credential the SDK finds) in the environment, never in the repo.
 //
-//   corepack pnpm --filter @liveworkspace/mcp-service eval [--models opus,haiku] [--only id,id] [--setups apps,one]
+//   corepack pnpm --filter @liveworkspace/mcp-service eval [--count] [--models opus,haiku] [--only id,id] [--setups apps,one]
 //
 // Writes eval/results/<date>.json (every call) and prints the summary; eval/RESULTS.md keeps the last summary.
 import Anthropic from '@anthropic-ai/sdk';
@@ -135,6 +135,16 @@ async function toolListTokens(model: string, setup: Setup): Promise<number> {
     messages: [{ role: 'user', content: 'hi' }],
   });
   return counted.input_tokens - bare.input_tokens;
+}
+
+// --count: only the tool lists' token counts (count_tokens costs nothing), to price a run before making it.
+if (process.argv.includes('--count')) {
+  for (const model of models)
+    for (const setup of setups)
+      console.log(
+        JSON.stringify({ model, setup, toolListTokens: await toolListTokens(model, setup) }),
+      );
+  process.exit(0);
 }
 
 const summary: Record<string, unknown>[] = [];
