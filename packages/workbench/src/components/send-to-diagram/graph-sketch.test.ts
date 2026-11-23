@@ -93,4 +93,29 @@ describe('sketchGraph', () => {
     });
     expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
+
+  it('lays a graph down or across, whichever fills a wide preview more', () => {
+    // One step fanning out to five: down it is a wide strip; across it is nearer the preview's shape.
+    const fan = {
+      nodes: [{ id: 'r', label: 'Root' }].concat(
+        Array.from({ length: 5 }, (_, i) => ({ id: `c${i}`, label: `Child ${i}` })),
+      ),
+      edges: Array.from({ length: 5 }, (_, i) => ({ from: 'r', to: `c${i}` })),
+    };
+    const at = (s: ReturnType<typeof sketchGraph>, id: string) => s.boxes.find((b) => b.id === id)!;
+    const down = sketchGraph(fan);
+    expect(at(down, 'r').y).toBeLessThan(at(down, 'c0').y);
+    const fitted = sketchGraph(fan, 2.2);
+    expect(at(fitted, 'r').x).toBeLessThan(at(fitted, 'c0').x);
+    expect(at(fitted, 'c0').x).toBe(at(fitted, 'c4').x);
+    // A short chain already fits: it stays down.
+    const chain = {
+      nodes: [
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+      ],
+      edges: [{ from: 'a', to: 'b' }],
+    };
+    expect(at(sketchGraph(chain, 0.5), 'a').y).toBeLessThan(at(sketchGraph(chain, 0.5), 'b').y);
+  });
 });

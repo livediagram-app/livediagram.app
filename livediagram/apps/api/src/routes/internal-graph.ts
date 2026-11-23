@@ -88,11 +88,14 @@ export type GraphDoorResult =
 /**
  * Send to Diagram's write. No `itemId`: a new canvas, `owner`'s personal item at the top of their library. With one: a
  * new tab at its end (a fresh id), or `tabId` redrawn, in the canvas's room as `owner`'s changeset (graph-tab.ts).
+ * Either way the answer names the tab drawn.
  */
 export async function documentFromGraph(
   env: Env,
   input: DiagramFromGraphInput,
-  room: (id: string) => Pick<DocumentRoomClient, 'drawGraphTab'> = (id) => documentRoom(env, id),
+  room: (id: string) => Pick<DocumentRoomClient, 'drawGraphTab' | 'outline'> = (id) =>
+    documentRoom(env, id),
+  importFile: typeof importDocumentFileFor = importDocumentFileFor,
 ): Promise<GraphDoorResult> {
   if (input.itemId) {
     const tabId = input.tabId ?? crypto.randomUUID();
@@ -108,5 +111,14 @@ export async function documentFromGraph(
   }
   const file = graphDocumentFile(input);
   if (file === null) return { status: 'invalid_graph' };
-  return importDocumentFileFor(env, { owner: input.owner, folderId: null, name: input.name, file });
+  const made = await importFile(env, {
+    owner: input.owner,
+    folderId: null,
+    name: input.name,
+    file,
+  });
+  if (made.status !== 'ok') return made;
+  // The import gives the tab a fresh id: read it back, so sending again can update this tab.
+  const tabId = (await room(made.id).outline()).tabs[0]?.id;
+  return tabId ? { ...made, tabId } : made;
 }

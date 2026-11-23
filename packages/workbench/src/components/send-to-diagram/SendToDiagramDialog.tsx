@@ -149,7 +149,11 @@ export function SendToDiagramDialog({
     try {
       const target =
         where.mode === 'update'
-          ? { itemId: where.send.diagram.id, tabId: where.send.tabId }
+          ? {
+              itemId: where.send.diagram.id,
+              // A send that never learnt its tab adds a new one rather than failing.
+              ...(where.send.tabId ? { tabId: where.send.tabId } : {}),
+            }
           : where.mode === 'tab' && where.item
             ? { itemId: where.item.id }
             : null;
@@ -236,7 +240,7 @@ export function SendToDiagramDialog({
             <div
               role="radiogroup"
               aria-label="Kind of diagram"
-              className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+              className="grid grid-cols-2 gap-2 sm:grid-cols-3"
             >
               {DIAGRAM_KINDS.map((k, index) => {
                 const on = kind === k.kind;
@@ -268,8 +272,8 @@ export function SendToDiagramDialog({
                       sibling?.focus();
                     }}
                     tabIndex={on ? 0 : -1}
-                    className={`group flex min-h-11 min-w-0 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:cursor-default disabled:opacity-60 ${
-                      index === 0 ? 'col-span-2 sm:col-span-1' : ''
+                    className={`group flex min-h-11 min-w-0 cursor-pointer items-center gap-2.5 rounded-xl border px-2.5 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:cursor-default disabled:opacity-60 ${
+                      index === 0 ? 'col-span-full' : ''
                     } ${
                       on
                         ? 'border-brand-500 bg-brand-50 shadow-[0_0_0_1px_var(--color-brand-500)] dark:border-brand-400 dark:bg-brand-500/10 dark:shadow-[0_0_0_1px_var(--color-brand-400)]'
@@ -330,7 +334,12 @@ export function SendToDiagramDialog({
                   {phase === 'drafting' ? 'Reading…' : 'Draw Again'}
                 </button>
               </div>
-              <div className="h-56 overflow-hidden rounded-xl border border-slate-200 bg-slate-50/70 p-2 dark:border-slate-700/70 dark:bg-slate-800/40">
+              <div
+                role="region"
+                aria-label="Preview of the diagram"
+                tabIndex={0}
+                className="h-56 overflow-auto overscroll-contain rounded-xl border border-slate-200 bg-slate-50/70 p-2 focus-visible:outline-2 focus-visible:outline-brand-500 dark:border-slate-700/70 dark:bg-slate-800/40"
+              >
                 <DiagramSketch graph={shown} />
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">

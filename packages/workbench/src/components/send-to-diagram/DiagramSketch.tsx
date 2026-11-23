@@ -7,6 +7,8 @@ import type { DiagramSendGraph } from '@liveworkspace/index-client';
 import { SKETCH_BOX_H, SKETCH_BOX_W, sketchGraph, type SketchBox } from './graph-sketch';
 
 const LABEL_CHARS = 20;
+// Never drawn smaller than this, so a long flow's labels stay readable: its box scrolls instead.
+const MIN_SCALE = 0.8;
 const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
 function Box({ box }: { box: SketchBox }) {
@@ -44,8 +46,9 @@ function Box({ box }: { box: SketchBox }) {
   );
 }
 
-export function DiagramSketch({ graph }: { graph: DiagramSendGraph }) {
-  const sketch = useMemo(() => sketchGraph(graph), [graph]);
+// The preview's box is about twice as wide as it is tall (SendToDiagramDialog's h-56 across the dialog).
+export function DiagramSketch({ graph, fit = 2.2 }: { graph: DiagramSendGraph; fit?: number }) {
+  const sketch = useMemo(() => sketchGraph(graph, fit), [graph, fit]);
   const marker = `sketch-arrow-${useId().replace(/:/g, '')}`;
   return (
     <svg
@@ -55,6 +58,7 @@ export function DiagramSketch({ graph }: { graph: DiagramSendGraph }) {
       viewBox={`0 0 ${sketch.width} ${sketch.height}`}
       preserveAspectRatio="xMidYMid meet"
       className="h-full w-full"
+      style={{ minWidth: sketch.width * MIN_SCALE, minHeight: sketch.height * MIN_SCALE }}
     >
       <defs>
         <marker

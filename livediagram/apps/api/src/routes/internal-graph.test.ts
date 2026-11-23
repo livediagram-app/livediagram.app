@@ -116,12 +116,37 @@ describe('documentFromGraph', () => {
     ).resolves.toEqual({ status: 'invalid_graph' });
     warn.mockRestore();
   });
+
+  it("answers a new canvas's tab, read back after the import, so sending again can update it", async () => {
+    const outline = vi.fn(async () => ({ tabs: [{ id: 'fresh-tab' }] }) as never);
+    const room = vi.fn(() => ({ drawGraphTab: vi.fn(), outline }));
+    const importFile = vi.fn(async () => ({ status: 'ok', id: 'doc-new' }) as const);
+    await expect(documentFromGraph({} as never, input, room, importFile)).resolves.toEqual({
+      status: 'ok',
+      id: 'doc-new',
+      tabId: 'fresh-tab',
+    });
+    expect(room).toHaveBeenCalledWith('doc-new');
+    const refused = vi.fn(async () => ({ status: 'too_large' }) as const);
+    await expect(documentFromGraph({} as never, input, room, refused)).resolves.toEqual({
+      status: 'too_large',
+    });
+    const empty = vi.fn(() => ({
+      drawGraphTab: vi.fn(),
+      outline: vi.fn(async () => ({ tabs: [] }) as never),
+    }));
+    await expect(documentFromGraph({} as never, input, empty, importFile)).resolves.toEqual({
+      status: 'ok',
+      id: 'doc-new',
+    });
+  });
 });
 
 describe('documentFromGraph into an existing canvas', () => {
   const drawing = (status: 'ok' | 'not_found' = 'ok') => {
     const drawGraphTab = vi.fn(async () => ({ status }) as const);
-    return { drawGraphTab, room: vi.fn(() => ({ drawGraphTab })) };
+    const outline = vi.fn();
+    return { drawGraphTab, room: vi.fn(() => ({ drawGraphTab, outline })) };
   };
 
   it('draws a new tab with a fresh id, its caption linked, as the owner', async () => {

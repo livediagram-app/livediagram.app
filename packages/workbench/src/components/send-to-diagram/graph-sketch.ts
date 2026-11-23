@@ -7,6 +7,7 @@ import type { DiagramSendGraph, DiagramSendShape } from '@liveworkspace/index-cl
 export const SKETCH_BOX_W = 132;
 export const SKETCH_BOX_H = 40;
 const GAP_ALONG = 56;
+const GAP_ALONG_ACROSS = 96;
 const GAP_ACROSS = 24;
 const PAD = 16;
 const RING = 170;
@@ -102,7 +103,8 @@ function layered(graph: DiagramSendGraph, across: boolean): SketchBox[] {
     const l = layer.get(n.id) ?? 0;
     const i = slot.get(l) ?? 0;
     slot.set(l, i + 1);
-    const along = l * ((across ? SKETCH_BOX_W : SKETCH_BOX_H) + GAP_ALONG);
+    // Across, an arrow's label sits in the gap between layers: room for it there.
+    const along = l * (across ? SKETCH_BOX_W + GAP_ALONG_ACROSS : SKETCH_BOX_H + GAP_ALONG);
     const side = i * ((across ? SKETCH_BOX_H : SKETCH_BOX_W) + GAP_ACROSS);
     return {
       id: n.id,
@@ -241,11 +243,25 @@ function sequence(graph: DiagramSendGraph): Sketch {
   };
 }
 
-/** The graph's sketch, in its own units (the SVG scales it to fit). */
-export function sketchGraph(graph: DiagramSendGraph): Sketch {
+// How much of a frame of this width-to-height ratio a sketch of width by height fills, scaled to fit it.
+const fill = (w: number, h: number, ratio: number) => Math.min(ratio / (w / h), w / h / ratio);
+
+/** The graph's sketch, in its own units (the SVG scales it to fit). With `fit` (the preview's width over its height),
+ *  a layered graph is laid down or across, whichever fills that frame more, so a long flow stays readable; livediagram
+ *  still draws it in the graph's own direction. */
+export function sketchGraph(graph: DiagramSendGraph, fit?: number): Sketch {
   if (graph.style === 'sequence') return sequence(graph);
-  const boxes =
-    graph.style === 'mindmap' ? rings(graph) : layered(graph, graph.direction === 'right');
+  let boxes: SketchBox[];
+  if (graph.style === 'mindmap') boxes = rings(graph);
+  else {
+    boxes = layered(graph, graph.direction === 'right');
+    if (fit) {
+      const other = layered(graph, graph.direction !== 'right');
+      const a = framed(boxes);
+      const b = framed(other);
+      if (fill(b.width, b.height, fit) > fill(a.width, a.height, fit)) boxes = other;
+    }
+  }
   const { width, height } = framed(boxes);
   const at = new Map(boxes.map((b) => [b.id, b] as const));
   const lines = graph.edges.flatMap((e) => {

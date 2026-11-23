@@ -42,7 +42,9 @@ function Card({
   line,
   onPick,
   mode,
+  wide = false,
 }: {
+  wide?: boolean;
   on: boolean;
   icon: ReactNode;
   title: string;
@@ -57,7 +59,7 @@ function Card({
       aria-checked={on}
       data-where={mode}
       onClick={onPick}
-      className={`${CARD} ${on ? CARD_ON : CARD_OFF}`}
+      className={`${CARD} ${wide ? 'sm:col-span-2' : ''} ${on ? CARD_ON : CARD_OFF}`}
     >
       <span
         className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition ${on ? ICON_ON : ICON_OFF}`}
@@ -120,14 +122,17 @@ function DiagramList({
   const list: Listed = listed?.key === settled ? listed.list : { state: 'loading' };
   return (
     <div className="flex flex-col gap-2" data-diagram-list="">
-      <SearchInput
-        value={query}
-        onChange={setQuery}
-        placeholder="Search your diagrams"
-        ariaLabel="Search your diagrams"
-        clearAriaLabel="Clear the search"
-        clearDescription="Clear the diagram search."
-      />
+      <div className="flex">
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="Search your diagrams"
+          ariaLabel="Search your diagrams"
+          clearAriaLabel="Clear the search"
+          clearDescription="Clear the diagram search."
+          size="row"
+        />
+      </div>
       <div
         role="listbox"
         aria-label="Your diagrams"
@@ -208,11 +213,12 @@ export function DiagramWhere({
       <div
         role="radiogroup"
         aria-label="Where to draw it"
-        className={`grid grid-cols-1 gap-2 ${earlier ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}
+        className="grid grid-cols-1 gap-2 sm:grid-cols-2"
       >
         {earlier ? (
           <Card
             mode="update"
+            wide
             on={choice.mode === 'update'}
             icon={<UpdateGlyph />}
             title="Update"
