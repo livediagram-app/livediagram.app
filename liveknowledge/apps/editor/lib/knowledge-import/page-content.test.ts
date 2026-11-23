@@ -27,6 +27,21 @@ const blocksOf = (tab: ReturnType<typeof make>): ArticleBlock[] =>
   tab.articles![KNOWLEDGEBASE_FLOW]!.blocks;
 
 describe('importedPageTab', () => {
+  it('stores a starter page’s icon and cover as the page’s own, and drops what the pickers could not show', () => {
+    const dressed = make({ page: plannedPage('p1', { icon: 'rocket', cover: 'theme-glow' }) });
+    expect(dressed.icon).toEqual({ iconId: 'rocket' });
+    expect(dressed.cover).toEqual({ gradient: 'theme-glow' });
+    expect(isValidTab(dressed)).toBe(true);
+    const bad = make({
+      page: plannedPage('p1', { icon: 'Not An Id', cover: 'https://x.test/a.png' }),
+    });
+    expect(bad).not.toHaveProperty('icon');
+    expect(bad).not.toHaveProperty('cover');
+    const plain = make();
+    expect(plain).not.toHaveProperty('icon');
+    expect(plain).not.toHaveProperty('cover');
+  });
+
   it('makes a knowledgebase page: one article, its Title the page name, under its parent', () => {
     const tab = make({
       markdown: '## Steps\n\n- One\n- Two',

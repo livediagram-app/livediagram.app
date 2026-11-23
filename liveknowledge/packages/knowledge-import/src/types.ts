@@ -59,6 +59,10 @@ export type PlannedPage = {
   /** Other files the page links to, as plain names (v1 stores no files). */
   attachments: string[];
   warnings: PageWarning[];
+  /** A line-art page icon's id; a starter structure's pages carry one, an import's never do. */
+  icon?: string;
+  /** A built-in theme gradient cover (`theme-<name>`); the same. */
+  cover?: string;
 };
 
 export type SkipReason = 'outside-archive' | 'page-failed' | 'page-too-large' | 'picture-too-large';

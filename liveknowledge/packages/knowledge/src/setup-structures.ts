@@ -13,6 +13,7 @@ import { OPERATIONS_STRUCTURES } from './structures/operations';
 import { PERSONAL_STRUCTURES } from './structures/personal';
 import { PRODUCT_STRUCTURES } from './structures/product';
 import type { SetupStructure, StructureGroup, StructurePage } from './structures/shape';
+import { styleStructure } from './structures/looks';
 import { TEAM_STRUCTURES } from './structures/team';
 
 export type { SetupStructure, StructureGroup, StructurePage } from './structures/shape';
@@ -72,7 +73,7 @@ export const SETUP_STRUCTURES: readonly SetupStructure[] = [
   ...COMMUNITY_STRUCTURES,
   ...EDUCATION_STRUCTURES,
   ...PERSONAL_STRUCTURES,
-];
+].map(styleStructure);
 
 // The outline as a model's reply has it: every page an object with its own id and its parent's.
 function replyOf(structure: SetupStructure): string {
@@ -86,6 +87,8 @@ function replyOf(structure: SetupStructure): string {
         title: page.title,
         summary: page.summary,
         headings: page.headings,
+        icon: page.icon,
+        cover: page.cover,
       });
       walk(page.pages, id);
     }

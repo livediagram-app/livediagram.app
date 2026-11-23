@@ -213,6 +213,16 @@ describe('the plan the write path is handed', () => {
     expect(setupPlan([reviewPages(TREE)[1]!]).pages[0]!.parentKey).toBeNull();
   });
 
+  it('carries a page’s icon and cover onto the planned page, and none where there is none', () => {
+    const [bare, dressed] = setupPlan([
+      ...reviewPages(TREE).slice(0, 1),
+      { ...reviewPages(TREE)[3]!, icon: 'rocket', cover: 'theme-dawn' },
+    ]).pages;
+    expect(bare).not.toHaveProperty('icon');
+    expect(bare).not.toHaveProperty('cover');
+    expect(dressed).toMatchObject({ icon: 'rocket', cover: 'theme-dawn' });
+  });
+
   it('writes what a model sent as words: nothing Markdown or HTML reads as more', () => {
     expect(plainLine('<script>alert(1)</script>')).toBe('<script>alert\\(1\\)</script>');
     expect(plainLine('[x](javascript:alert(1))')).toBe('\\[x\\]\\(javascript:alert\\(1\\)\\)');

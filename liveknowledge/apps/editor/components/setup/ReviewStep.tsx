@@ -8,6 +8,7 @@ import { TextInput } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import type { PageTreeRefusal } from '@liveknowledge/document';
 import { SETUP_MAX_TITLE_CHARS } from '@liveknowledge/knowledge';
+import { PageIconGlyph } from '@/components/page-icon/PageIconGlyph';
 import { setupLimitText, titleOf, type ReviewPage } from '@/lib/knowledge-setup/setup-tree';
 import { UNDO_NOTE } from '@/lib/knowledge-setup/setup-words';
 import { SetupPageIcon } from './setup-icons';
@@ -78,7 +79,11 @@ export function ReviewStep({
               aria-hidden
               className="flex h-7 shrink-0 items-center text-slate-400 pointer-coarse:h-9"
             >
-              <SetupPageIcon />
+              {page.icon ? (
+                <PageIconGlyph icon={{ iconId: page.icon }} size={14} />
+              ) : (
+                <SetupPageIcon />
+              )}
             </span>
             <span className="flex min-w-0 flex-1 flex-col">
               <input
