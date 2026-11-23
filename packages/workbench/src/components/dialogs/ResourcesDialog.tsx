@@ -9,7 +9,15 @@
 // dialog too, under a back bar that leads back to the options. Only what has no step here (the note's own panel, the
 // comment thread, Assign Action) opens another surface, the dialog closing first.
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
-import { BackBar, Glyph } from '@liveworkspace/ui';
+import {
+  BackBar,
+  Glyph,
+  closeDialogSlot,
+  openDialogSlot,
+  setDialogSlotNode,
+  useDialogSlot,
+} from '@liveworkspace/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { resourcesHeroArt } from '@liveworkspace/ui/dialog-hero-art/resources';
 import type { ResourceChoice, ResourceOption } from '../palette/element-resources';
@@ -18,7 +26,7 @@ import { Dialog } from './Dialog';
 const FOCUS =
   'outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-brand-400 dark:focus-visible:ring-offset-slate-900';
 // An option on the first screen: a tile, lifted a little under the pointer. One the element already has is tinted.
-const TILE = `group relative flex min-h-[9.75rem] w-full cursor-pointer flex-col rounded-2xl border p-4 text-left transition-[border-color,background-color,box-shadow,transform] duration-micro hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${FOCUS}`;
+const TILE = `group relative flex min-h-[9.5rem] w-full cursor-pointer flex-col items-center rounded-2xl border p-4 text-center transition-[border-color,background-color,box-shadow,transform] duration-micro hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${FOCUS}`;
 const TILE_OFF =
   'border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/60';
 const TILE_ON =
@@ -64,6 +72,45 @@ export function ResourcesDialog({
   const [step, setStep] = useState<string | null>(null);
   const open = options.find((o) => o.key === screen && o.choices?.length) ?? null;
   const stepped = open?.choices?.find((c) => c.key === step && c.panel) ?? null;
+  // An option whose own surface is a dialog (Assign an Action) draws inside this one, as a screen of it: the dialog
+  // slot it opens is claimed by that dialog, which then renders here instead of over us (dialog-slot.ts).
+  const [asked, setAsked] = useState<{ key: string; seq: number } | null>(null);
+  const slot = useDialogSlot();
+  // Hosting lasts while the slot it opened is still there and its dialog has not closed itself (saved, cancelled):
+  // read from the slot, so the list comes back by itself.
+  const hosted = asked && slot?.seq === asked.seq && !slot.released ? asked : null;
+  const hostedOption = hosted ? (options.find((o) => o.key === hosted.key) ?? null) : null;
+  const askedSeq = asked?.seq ?? null;
+  const released = askedSeq !== null && slot?.seq === askedSeq && slot.released;
+  // Its dialog let go: the slot is done with. And closed with a dialog still inside: the slot goes with us.
+  useEffect(() => {
+    if (released && askedSeq !== null) closeDialogSlot(askedSeq);
+  }, [released, askedSeq]);
+  useEffect(
+    () => () => {
+      if (askedSeq !== null) closeDialogSlot(askedSeq);
+    },
+    [askedSeq],
+  );
+  const host = (o: ResourceOption) => {
+    const seq = openDialogSlot();
+    setAsked({ key: o.key, seq });
+    o.run();
+  };
+  const leaveHosted = () => {
+    if (!hosted) return;
+    // The dialog's own way out (it may ask about unsaved work); with none yet, the slot alone.
+    if (slot?.claimed) return slot.claimed.close();
+    closeDialogSlot(hosted.seq);
+  };
+  // Where the hosted dialog draws: one callback per slot, so React hands the node over once.
+  const hostedSeq = hosted?.seq ?? null;
+  const slotNode = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (hostedSeq !== null) setDialogSlotNode(hostedSeq, node);
+    },
+    [hostedSeq],
+  );
   const body = useRef<HTMLDivElement>(null);
   // Where focus goes after a move between screens: the back bar going in, the row left coming back.
   // Unset until the first move, so opening the dialog leaves focus where the shell puts it.
@@ -119,8 +166,9 @@ export function ResourcesDialog({
       titleId={titleId}
       size="md"
       phoneSheet
-      // One height on every screen, so the card never jumps as the list gives way to an option and its step.
-      className="h-[30rem] max-h-[85vh]"
+      // One height for the list and an option's screens, so the card never jumps between them. A whole form drawn
+      // inside (Assign an Action) gets the room it needs instead of a scrollbar.
+      className={hostedOption ? 'min-h-[35rem] max-h-[92vh]' : 'h-[35rem] max-h-[90vh]'}
     >
       <HeroDialogHeader
         art={resourcesHeroArt}
@@ -132,15 +180,41 @@ export function ResourcesDialog({
       />
       <div
         ref={body}
-        data-resources-screen={stepped ? `${open!.key}/${stepped.key}` : open ? open.key : 'list'}
+        data-resources-screen={
+          hostedOption
+            ? `${hostedOption.key}/dialog`
+            : stepped
+              ? `${open!.key}/${stepped.key}`
+              : open
+                ? open.key
+                : 'list'
+        }
         className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-4 sm:px-6 sm:py-5"
       >
-        {open && stepped ? (
+        {hosted && hostedOption ? (
+          <div className="flex min-h-0 flex-1 flex-col motion-safe:animate-fade-in">
+            <BackBar label="Resources" current={hostedOption.name} onClick={leaveHosted} />
+            {/* Where the option's own dialog draws. It bleeds to the panel's edges, as its sections bring their own
+                side padding. */}
+            <div
+              ref={slotNode}
+              data-resource-dialog={hostedOption.key}
+              // Its sections carry 16px sides of their own, so it steps out by exactly that: its fields line up
+              // with the back bar. Its slim header row (a lone help link here) is left out, and its footer is a
+              // dialog's: the buttons side by side at the right, not Tools' stacked full-width pair.
+              className="-mx-4 -mb-4 flex min-h-0 flex-1 flex-col overflow-y-auto sm:-mb-5 [&_[data-dialog-inline-header]]:hidden [&_[data-tool-footer]]:flex-row [&_[data-tool-footer]]:justify-end [&_[data-tool-footer]]:gap-2 [&_[data-tool-footer]]:px-4 [&_[data-tool-footer]]:py-3 [&_[data-tool-footer]>*]:w-auto!"
+            />
+          </div>
+        ) : open && stepped ? (
           <div
             key={`${open.key}/${stepped.key}`}
             className="flex min-h-0 flex-1 flex-col motion-safe:animate-fade-in"
           >
-            <BackBar label={open.name} current={stepped.label} onClick={backToOption} />
+            <BackBar
+              label={open.name}
+              current={stepped.crumb ?? stepped.label}
+              onClick={backToOption}
+            />
             {/* The step says when it is done (a link saved, a tab picked): back to the list, which now shows it. */}
             {stepped.panel!(done)}
           </div>
@@ -149,7 +223,8 @@ export function ResourcesDialog({
         ) : (
           <OptionList
             options={options}
-            onPick={(o) => (o.choices?.length ? enter(o) : leaveFor(o.run))}
+            elementName={elementName}
+            onPick={(o) => (o.choices?.length ? enter(o) : o.inline ? host(o) : leaveFor(o.run))}
           />
         )}
       </div>
@@ -160,71 +235,77 @@ export function ResourcesDialog({
 // The first screen: each option a tile, two across (one on a phone).
 function OptionList({
   options,
+  elementName,
   onPick,
 }: {
   options: readonly ResourceOption[];
+  elementName: string;
   onPick: (o: ResourceOption) => void;
 }) {
   return (
-    <div
-      role="group"
-      aria-label="Resources"
-      data-element-resources=""
-      onKeyDown={moveBetweenRows}
-      className="grid grid-cols-1 gap-3 motion-safe:animate-fade-in sm:grid-cols-2"
-    >
-      {options.map((o) => {
-        const drills = !!o.choices?.length;
-        return (
-          <button
-            key={o.key}
-            type="button"
-            data-row=""
-            data-option={o.key}
-            data-resource-drills={drills ? '' : undefined}
-            className={`${TILE} ${o.on ? TILE_ON : TILE_OFF}`}
-            onClick={() => onPick(o)}
-          >
-            <span className="flex w-full items-start justify-between gap-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-4 motion-safe:animate-fade-in">
+      {/* What Resources are, over the options. */}
+      <Callout tone="info">
+        Attach an action, comments, a link or a note to this {elementName}.
+      </Callout>
+      <div
+        role="group"
+        aria-label="Resources"
+        data-element-resources=""
+        onKeyDown={moveBetweenRows}
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+      >
+        {options.map((o) => {
+          const drills = !!o.choices?.length;
+          return (
+            <button
+              key={o.key}
+              type="button"
+              data-row=""
+              data-option={o.key}
+              data-resource-drills={drills ? '' : undefined}
+              className={`${TILE} ${o.on ? TILE_ON : TILE_OFF}`}
+              onClick={() => onPick(o)}
+            >
+              {o.on ? (
+                <span data-resource-on="" className={`${BADGE} absolute right-3 top-3`}>
+                  Added
+                </span>
+              ) : null}
               <span
                 aria-hidden
                 className={`${PLATE} size-11 rounded-xl [&_svg]:size-5 ${o.on ? PLATE_ON : PLATE_OFF}`}
               >
                 {o.icon}
               </span>
-              {o.on ? (
-                <span data-resource-on="" className={BADGE}>
-                  Added
-                </span>
-              ) : null}
-            </span>
-            <span className="mt-3 text-[15px] font-semibold leading-5 text-slate-900 dark:text-slate-50">
-              {o.name}
-            </span>
-            {/* What it has now, once it has one; until then, what it is. */}
-            <span
-              data-resource-state=""
-              className={`mt-0.5 line-clamp-2 break-words text-[13px] leading-[18px] ${
-                o.on ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-400'
-              }`}
-            >
-              {o.on ? o.state : o.detail}
-            </span>
-            <span
-              data-resource-verb=""
-              className="mt-auto flex items-center gap-1 pt-3 text-[13px] font-semibold text-brand-700 dark:text-brand-300"
-            >
-              {o.label}
-              <span
-                aria-hidden
-                className="transition-transform duration-micro group-hover:translate-x-0.5 motion-reduce:transition-none"
-              >
-                <ChevronGlyph />
+              <span className="mt-3 text-[15px] font-semibold leading-5 text-slate-900 dark:text-slate-50">
+                {o.name}
               </span>
-            </span>
-          </button>
-        );
-      })}
+              {/* What it has now, once it has one; until then, what it is. */}
+              <span
+                data-resource-state=""
+                className={`mt-0.5 line-clamp-2 break-words text-[13px] leading-[18px] ${
+                  o.on ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                {o.on ? o.state : o.detail}
+              </span>
+              <span
+                data-resource-verb=""
+                className="mt-auto flex items-center justify-center gap-1 pt-3 text-[13px] font-semibold text-brand-700 dark:text-brand-300"
+              >
+                {o.label}
+                <span
+                  aria-hidden
+                  className="transition-transform duration-micro group-hover:translate-x-0.5 motion-reduce:transition-none"
+                >
+                  <ChevronGlyph />
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -242,6 +323,7 @@ function OptionScreen({
   const choices = option.choices ?? [];
   const keeps = choices.filter((c) => !c.removes);
   const removes = choices.filter((c) => c.removes);
+  const many = keeps.length > 4;
   return (
     <div className="flex min-h-0 flex-1 flex-col motion-safe:animate-fade-in">
       <BackBar label="Resources" current={option.name} onClick={onBack} />
@@ -272,43 +354,49 @@ function OptionScreen({
         onKeyDown={moveBetweenRows}
         className="flex min-h-0 flex-1 flex-col gap-2"
       >
-        {keeps.map((c) => (
-          <button
-            key={c.key}
-            type="button"
-            data-row=""
-            data-choice={c.key}
-            aria-current={c.current ? 'true' : undefined}
-            className={CHOICE}
-            onClick={() => onChoose(c)}
-          >
-            <span
-              aria-hidden
-              className={`${PLATE} size-10 rounded-[11px] [&_svg]:size-[18px] ${c.current ? PLATE_ON : PLATE_OFF}`}
+        {/* Many options (a link's places: a web address, a tab, a file of each product) sit two across, so the
+            screen never scrolls for them. */}
+        <div className={many ? 'grid grid-cols-1 gap-2 sm:grid-cols-2' : 'flex flex-col gap-2'}>
+          {keeps.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              data-row=""
+              data-choice={c.key}
+              aria-current={c.current ? 'true' : undefined}
+              className={`${CHOICE} ${many ? 'gap-3! p-3!' : ''}`}
+              onClick={() => onChoose(c)}
             >
-              {c.icon}
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-semibold leading-5 text-slate-900 dark:text-slate-50">
-                {c.label}
+              <span
+                aria-hidden
+                className={`${PLATE} size-10 rounded-[11px] [&_svg]:size-[18px] ${c.current ? PLATE_ON : PLATE_OFF}`}
+              >
+                {c.icon}
               </span>
-              <span className="truncate text-[13px] leading-[18px] text-slate-500 dark:text-slate-400">
-                {c.detail}
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-sm font-semibold leading-5 text-slate-900 dark:text-slate-50">
+                  {c.title ?? c.label}
+                </span>
+                <span className="truncate text-[13px] leading-[18px] text-slate-500 dark:text-slate-400">
+                  {c.detail}
+                </span>
               </span>
-            </span>
-            {c.current ? (
-              <span data-choice-current="" className={BADGE}>
-                Current
-              </span>
-            ) : null}
-            <span
-              aria-hidden
-              className="shrink-0 text-slate-400 transition-[color,transform] duration-micro group-hover:translate-x-0.5 group-hover:text-brand-600 motion-reduce:transition-none dark:group-hover:text-brand-300"
-            >
-              <ChevronGlyph />
-            </span>
-          </button>
-        ))}
+              {c.current ? (
+                <span data-choice-current="" className={BADGE}>
+                  Current
+                </span>
+              ) : null}
+              {many ? null : (
+                <span
+                  aria-hidden
+                  className="shrink-0 text-slate-400 transition-[color,transform] duration-micro group-hover:translate-x-0.5 group-hover:text-brand-600 motion-reduce:transition-none dark:group-hover:text-brand-300"
+                >
+                  <ChevronGlyph />
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
         {removes.length ? (
           <div className="mt-auto flex flex-col gap-1 pt-2">
             {removes.map((c) => (

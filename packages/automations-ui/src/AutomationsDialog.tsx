@@ -704,6 +704,8 @@ export function AutomationsDialog({
       onClose={close}
       titleId={titleId}
       size="3xl"
+      // A screen of its own on a phone, not a drawer (a top-level dialog).
+      phoneSheet={false}
       className="flex flex-col overflow-hidden sm:h-[min(52rem,calc(100dvh-2rem))] sm:w-[min(67.5rem,calc(100vw-2rem))] sm:max-w-none max-h-[calc(100dvh-2rem)] max-sm:h-dvh max-sm:max-h-dvh"
     >
       {view && !view.tab ? (

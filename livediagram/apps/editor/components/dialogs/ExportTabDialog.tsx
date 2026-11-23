@@ -96,8 +96,7 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'mermaid',
     title: 'Mermaid',
-    description:
-      'This tab as Mermaid flowchart text. Keeps every connection. Copy it or save a .mmd.',
+    description: 'This tab as Mermaid text. Copy it or save a .mmd.',
   },
   {
     kind: 'markdown',
@@ -107,8 +106,7 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'excalidraw',
     title: 'Excalidraw',
-    description:
-      'An .excalidraw scene to open at excalidraw.com. Rich shapes simplify to labelled boxes.',
+    description: 'A scene for excalidraw.com. Rich shapes become boxes.',
   },
   {
     kind: 'png',

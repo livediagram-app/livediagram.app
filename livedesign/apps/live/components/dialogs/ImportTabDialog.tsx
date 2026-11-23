@@ -38,15 +38,13 @@ const FORMATS: {
   {
     key: 'json',
     title: 'JSON',
-    description:
-      'A livedesign tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
+    description: 'A tab exported from livedesign (.json). Restored exactly.',
     placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livedesign.tab",\n  "tab": { … }\n}',
   },
   {
     key: 'svg',
     title: 'SVG',
-    description:
-      'A logo, icon or mark (.svg). Arrives as shapes you can recolour and reshape. Paste it or pick a file.',
+    description: 'A logo, icon or mark (.svg), as shapes you can edit.',
     placeholder:
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">\n  <path d="…" />\n</svg>',
   },

@@ -17,6 +17,9 @@ import {
   onMouseHover,
   useRevertOnUnmount,
 } from '@liveworkspace/workbench/components/primitives/hover-preview';
+import { ElementRowsDialog } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
+import { elementSettingsHeroArt } from '@liveworkspace/ui/dialog-hero-art/element-settings';
+import { elementKindLabel } from '@livediagram/document';
 import {
   EVENT_STORMING_NOTES,
   eventStormingKindOf,
@@ -163,6 +166,45 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
       action();
       onClose();
     };
+    // Its own settings, opened from the menu's row named for it: the same sections in a dialog, laid open
+    // (canvas-and-palette.md "An element's own settings open in a dialog"). The menu is not drawn under it.
+    if (menu.mode === 'element' && menu.tools) {
+      const sankeyTarget = target.type === 'shape' && target.shape === 'sankey';
+      return (
+        <ElementRowsDialog
+          art={elementSettingsHeroArt}
+          {...(sankeyTarget
+            ? {
+                size: '2xl' as const,
+                title: 'Configure Sankey',
+                subtitle: 'Its flows, and how it draws them.',
+              }
+            : {
+                title: elementKindLabel(target),
+                subtitle: 'What only this kind of element has.',
+              })}
+          onClose={onClose}
+        >
+          <div data-context-menu="" className="-mx-6 -my-4 text-sm">
+            <ElementAppearanceSections
+              props={props}
+              target={target}
+              onClose={onClose}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps}
+              colorProps={colorProps}
+              textColorHandlers={textColorHandlers}
+              fillColorHandlers={fillColorHandlers}
+              headerFillHandlers={headerFillHandlers}
+              arrowheadColorHandlers={arrowheadColorHandlers}
+              strokeColorHandlers={strokeColorHandlers}
+              afterGroup
+              toolsOnly
+            />
+          </div>
+        </ElementRowsDialog>
+      );
+    }
     return (
       <ContextMenu
         position={position}

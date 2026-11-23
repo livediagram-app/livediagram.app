@@ -16,6 +16,18 @@ The attachments it used to hold at its left (Action, Comment, Link, Note) are th
 
 ## Resources
 
+**Everything in Resources happens inside its dialog** (owner, 2026-11-23). The list has a short line saying what
+Resources are, over the options as centred tiles. **Assign an Action** opens as a screen of the dialog under a back
+bar (its own dialog draws in the slot the screen holds, never over it). **Link** offers a web address, a tab, then a
+file of each product, this app's first, each named by the product's logo and wordmark over what it calls a file
+(livediagram Canvas, liveplanner Plan, livedocuments Document, livedesign Design, livehuddle Space); a product's
+step lists that person's recent files of it with a search, and every one reads the same when empty ("No plans
+yet"), when nothing matches (the shared no-matches line with Clear) and when the list could not be read (Try
+Again). Another product's file is linked by its address.
+A product's step is named on the back bar by what it calls a file alone ("Knowledgebase"), and its messages
+write that word as the product does ("No Knowledgebases Yet"). The list's opening line is one short sentence
+("Attach an action, comments, a link or a note to this Square.").
+
 What attaches to the element sits behind one **Resources** row, always the menu's last. It looks like its neighbours
 and wears the small window mark of a row that opens a dialog
 ([A category that opens a dialog](canvas-and-palette.md)): a press closes the menu and opens the **Resources** modal
@@ -121,6 +133,13 @@ Every editor (livediagram, liveplanner, livedocuments, livedesign) opens the sam
 - Tests: `ElementMenuQuickBar.test.tsx`, `EditorContextMenu.plan-attachments.test.tsx`.
 
 ## Kind tools (owner, 2026-11-16)
+
+**Collaboration elements bring their main controls** (owner, 2026-11-23). What a collaboration element's own
+"..." menu does is also a kind tool, so it is in the Quick Style panel's Tools row and the menu's bar: a quiz's
+**Edit Question**, **Start**, **Lock Now**, **Reveal Answer** and **Reset** (whichever its phase allows), an agenda's
+**Reset Agenda**, a done check's **Clear My Mark** and **Reset Everyone**, an idea box's **Empty the Box**, a
+temperature check's **Reset Answers**, and a Q&A board's **Clear the Spotlight** and **Empty the Board**. The face
+says what it can do now, so the tools follow it; a Viewer and a locked element get none.
 
 An element kind's own verbs are not on the floating selection toolbar, which keeps the same buttons on every element.
 They sit in a bar of glyph buttons at the top of the element menu, above its first category: a mind node's Add Child and

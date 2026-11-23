@@ -105,7 +105,7 @@ export function TidyUpPopover({
       popoverOpen
       popoverAnchor={anchor}
       asPopover
-      popoverWidth="w-80"
+      popoverWidth="w-96"
       dismissOnOutside
       onPopoverClose={onClose}
     >

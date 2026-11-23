@@ -75,7 +75,7 @@ locked import.
 ## How it's triggered: the Import dialog
 
 The per-tab **"Import…"** action (tab ellipsis menu) opens an **Import
-dialog**, the mirror of the Export dialog. Both lay their format cards out three across, two across on a phone
+dialog**, the mirror of the Export dialog. A card's description is one short sentence, three or four lines at most on the card (owner, 2026-11-23: nobody reads eight). Both lay their format cards out three across, two across on a phone
 (three left each card about 110px wide there). Above the cards a warning says the import replaces the tab and Undo
 brings it back. The warning is on this first screen only: a format's own step, reached from it, does not repeat it (a dialog offered one format opens at that step, which then carries it). The Mermaid, Excalidraw and draw.io cards show the tool's own logo in its brand colour (`brand-logos.tsx` in `@liveworkspace/workbench`); livediagram's own JSON, Markdown and Infrastructure keep a text badge. The user picks the format:
 

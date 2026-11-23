@@ -65,8 +65,7 @@ const FORMATS: FormatEntry[] = [
     key: 'json',
     kind: 'text',
     title: 'JSON',
-    description:
-      'A livedocuments tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
+    description: 'A tab exported from livedocuments (.json). Restored exactly.',
     placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livedocuments.tab",\n  "tab": { … }\n}',
   },
   {

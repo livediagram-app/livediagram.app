@@ -22,6 +22,12 @@ import {
   lucideList,
   lucideListChecks,
   lucideCode,
+  lucideEraser,
+  lucideEye,
+  lucideLock,
+  lucidePencil,
+  lucidePlay,
+  lucideRotateCcw,
   lucideListTree,
   lucideMessagesSquare,
   lucideRows2,
@@ -31,6 +37,7 @@ import {
 import { lucideGlyph } from '@livediagram/ui';
 import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
 import type { LibrarySaveDraft } from '@liveworkspace/workbench/components/library/LibraryProvider';
+import type { FaceControl, FaceControlIcon } from '@/components/canvas/collab/face-controls';
 import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import {
   FlowchartStepButtons,
@@ -71,6 +78,8 @@ export type ElementKindTools = {
   editor?: KindEditor;
   // A table's structure (docs/specs/008-canvas/canvas-and-palette.md): a row at its foot, a column at its right.
   table?: { onAddRow: () => void; onAddColumn: () => void };
+  // A collaboration element's main controls (face-controls.ts): Edit Question, Start, Reveal Answer, Reset.
+  controls?: readonly FaceControl[];
   // The element as a Library item (liveworkspace/docs/specs/006-media/libraries.md).
   saveToLibrary?: () => LibrarySaveDraft | null;
 };
@@ -89,6 +98,7 @@ const hasAny = (t: ElementKindTools) =>
   !!t.cardinality ||
   !!t.editor ||
   !!t.table ||
+  !!t.controls?.length ||
   !!t.saveToLibrary;
 
 /** The canvas: the selected element's kind tools, or none. Set before paint (a layout effect), so a menu opened in the
@@ -205,6 +215,15 @@ const KIND_EDITORS: Record<
   },
 };
 
+const CONTROL_ICONS: Record<FaceControlIcon, ReactNode> = {
+  edit: icon(lucidePencil),
+  start: icon(lucidePlay),
+  lock: icon(lucideLock),
+  reveal: icon(lucideEye),
+  reset: icon(lucideRotateCcw),
+  clear: icon(lucideEraser),
+};
+
 /** The kind tools as toolbar buttons, each named in its hover card. */
 const SAVE_BUTTON =
   'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
@@ -273,6 +292,11 @@ export function ElementKindToolButtons({
           {KIND_EDITORS[tools.editor.kind].icon}
         </PopoverButton>
       ) : null}
+      {tools.controls?.map((c) => (
+        <PopoverButton key={c.key} label={c.label} description={c.description} onClick={c.run}>
+          {CONTROL_ICONS[c.icon]}
+        </PopoverButton>
+      ))}
       {tools.flowchartStep ? (
         // Its own closing rule is dropped here: Save to Library sits apart at the right.
         <span className="contents [&>[aria-hidden]:last-child]:hidden">
@@ -303,6 +327,7 @@ export function hasKindVerbs(t: ElementKindTools): boolean {
     !!t.flowchartStep ||
     !!t.cardinality ||
     !!t.editor ||
-    !!t.table
+    !!t.table ||
+    !!t.controls?.length
   );
 }

@@ -29,6 +29,7 @@ import {
   ElementMenuItem,
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
+import { usePublishFaceControls } from '@/components/canvas/collab/face-controls';
 
 export function IdeaBoxFace({
   element,
@@ -64,6 +65,15 @@ export function IdeaBoxFace({
   // Ideas past this index arrived after the box first painted, and slide in.
   const [initialCount] = useState(cards.length);
 
+  usePublishFaceControls(element.id, [
+    onClear && {
+      key: 'clear',
+      label: 'Empty the Box',
+      description: 'Remove every idea in it.',
+      icon: 'clear',
+      run: onClear,
+    },
+  ]);
   const menu =
     onClear || onOpenSettings ? (
       <ElementEllipsisMenu kind="command" label="Idea box options" color={textColor} align="left">

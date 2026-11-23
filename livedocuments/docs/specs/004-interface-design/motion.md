@@ -137,6 +137,11 @@ arrows' space from the first frame ([Canvas and palette](../008-canvas/canvas-an
 
 ## Rows that come and go
 
+**On the canvas too** (owner, 2026-11-23). A concept graphic's row (a chevron stage, a pyramid tier, a cycle step, a
+layer) eases in about its own middle when it is added, and the rows that stay settle when one is removed. Only a
+change to the graphic's own rows moves anything: selecting it, or its first paint, moves nothing. Reduced motion
+skips both.
+
 A list people add rows to and remove rows from never jumps. A new row slides in and grows from nothing, so the rows
 under it ease down; a removed row slides out and shrinks, and only then leaves the list (`slide-row-in` and
 `slide-row-out`, micro). This holds for **every** list with an add or a remove control: an entity's fields, a

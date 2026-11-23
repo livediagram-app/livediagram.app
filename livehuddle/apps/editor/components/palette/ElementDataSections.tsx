@@ -13,9 +13,9 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import { changesType, hasBuiltInDoorway } from '@livehuddle/document';
+import { changesType, elementKindLabel, hasBuiltInDoorway } from '@livehuddle/document';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
-import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import { MenuToolsSection } from '@liveworkspace/workbench/components/primitives/MenuToolsSection';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { StageMenuSection } from '@/components/palette/StageMenuSection';
 import { ReceptionistMenuSection } from '@/components/palette/ReceptionistMenuSection';
@@ -45,6 +45,8 @@ type ElementDataSectionsProps = {
   isChair: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
+  // The menu, or the element's settings dialog (the sections alone, laid open).
+  surface?: 'menu' | 'dialog';
 };
 
 export function ElementDataSections({
@@ -52,9 +54,14 @@ export function ElementDataSections({
   target,
   isPortal,
   isChair,
-  sectionProps,
-  flyoutProps,
+  sectionProps: menuSectionProps,
+  surface = 'menu',
 }: ElementDataSectionsProps) {
+  // In the element's settings dialog every section lies open: there is room, and nothing to fold away.
+  const sectionProps: typeof menuSectionProps =
+    surface === 'dialog'
+      ? () => ({ open: true, onToggle: () => {}, flush: true })
+      : menuSectionProps;
   const shapeTarget = target.type === 'shape' ? target : null;
   // A Door's, Rug's, Corridor's or Meeting Table's type (docs/specs/009-elements/office.md "A piece's type").
   const retypes = !!shapeTarget && changesType(shapeTarget.shape) && !!props.onSetPieceType;
@@ -77,7 +84,12 @@ export function ElementDataSections({
   return (
     <>
       {showTools ? (
-        <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
+        <MenuToolsSection
+          title={elementKindLabel(target)}
+          icon={<ToolsMenuGlyph />}
+          onOpen={props.onOpenTools}
+          inline={surface === 'dialog'}
+        >
           {/* First, as the piece's biggest choice: which of its kind it is. */}
           {retypes && shapeTarget ? (
             <PieceTypeMenuSection
@@ -179,7 +191,7 @@ export function ElementDataSections({
               sectionProps={sectionProps('portal-target')}
             />
           ) : null}
-        </MenuFlyoutSection>
+        </MenuToolsSection>
       ) : null}
     </>
   );

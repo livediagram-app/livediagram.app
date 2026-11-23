@@ -46,7 +46,8 @@ import type { ColourPalette } from '@/components/palette/context-menu-input-rows
 import type { ShapeColorPreset } from '@/lib/themes';
 
 export type EditorContextMenuState =
-  | { mode: 'element'; elementId: string; x: number; y: number }
+  // `tools`: the element's own settings are open in their dialog, in the menu's place.
+  | { mode: 'element'; elementId: string; x: number; y: number; tools?: boolean }
   // A whole multi-selection or group was right-clicked — actions apply to
   // everything selected.
   | { mode: 'multi'; x: number; y: number }
@@ -65,6 +66,8 @@ export type EditorContextMenuProps = {
   // (for the element menu) and read its link / note state.
   elements: Element[];
   onClose: () => void;
+  // Opens the element's own settings in their dialog (MenuToolsSection).
+  onOpenTools: () => void;
   // The element currently in text-edit mode, if any. While the menu rides
   // alongside the editor (docs/specs/008-canvas/canvas-and-palette.md) the target's label is still uncommitted
   // (text commits on blur), so label-gated categories (Text: Typography /

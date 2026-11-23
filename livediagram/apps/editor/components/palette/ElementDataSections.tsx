@@ -16,9 +16,9 @@
 import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
 import dynamic from 'next/dynamic';
 import {
+  elementKindLabel,
   bpmnSymbolOf,
   isChipShape,
-  isConceptShape,
   LINE_DEFAULT_SERIES,
   chartRamp,
   chartTypeOf,
@@ -35,7 +35,7 @@ import { MindMapMenuSections } from './MindMapMenuSections';
 import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
-import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import { MenuToolsSection } from '@liveworkspace/workbench/components/primitives/MenuToolsSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { DecisionMenuSection, EstimateMenuSection } from '@/components/palette/CollabMenuSections';
 
@@ -98,6 +98,8 @@ type ElementDataSectionsProps = {
   isDecision: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
+  // The menu, or the element's settings dialog (the sections alone, laid open).
+  surface?: 'menu' | 'dialog';
 };
 
 // Row editors re-seed their draft when handed a different array, so the fallbacks for an element
@@ -125,9 +127,15 @@ export function ElementDataSections({
   isEstimate,
   isAgenda,
   isDecision,
-  sectionProps,
+  sectionProps: menuSectionProps,
   flyoutProps,
+  surface = 'menu',
 }: ElementDataSectionsProps) {
+  // In the element's settings dialog every section lies open: there is room, and nothing to fold away.
+  const sectionProps: typeof menuSectionProps =
+    surface === 'dialog'
+      ? () => ({ open: true, onToggle: () => {}, flush: true })
+      : menuSectionProps;
   const shapeTarget = target.type === 'shape' ? target : null;
   // What an uncoloured slice / series shows as, so the swatches in the data
   // rows match the chart: the ladder the canvas draws with (chartRamp, docs/specs/009-elements/pie-chart.md).
@@ -146,8 +154,8 @@ export function ElementDataSections({
     (shapeTarget ? !!bpmnSymbolOf(shapeTarget) : false) ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
-    shapeTarget?.shape === 'sequence' ||
-    (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
+    // A sequence diagram has its row only for someone who may open its dialog.
+    (shapeTarget?.shape === 'sequence' && !!props.onEditSequence) ||
     isProgress ||
     isRating ||
     isChart ||
@@ -168,18 +176,27 @@ export function ElementDataSections({
     !!props.flowchart;
   return (
     <>
-      {/* Animation sits straight under Appearance, on every element (owner, 2026-11-23); what is the element's
+      {surface === 'dialog' ? null : (
+        <>
+          {/* Animation sits straight under Appearance, on every element (owner, 2026-11-23); what is the element's
           own (its Tools, or the one row that opens its dialog) follows under a rule, as a table's Table row does. */}
-      <AnimationSections
-        elements={[target]}
-        keyPrefix=""
-        sectionProps={sectionProps}
-        flyoutProps={flyoutProps}
-        handlers={props}
-      />
-      {showTools ? <MenuGroupSeparator /> : null}
+          <AnimationSections
+            elements={[target]}
+            keyPrefix=""
+            sectionProps={sectionProps}
+            flyoutProps={flyoutProps}
+            handlers={props}
+          />
+          {showTools ? <MenuGroupSeparator /> : null}
+        </>
+      )}
       {showTools ? (
-        <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
+        <MenuToolsSection
+          title={elementKindLabel(target)}
+          icon={<ToolsMenuGlyph />}
+          onOpen={props.onOpenTools}
+          inline={surface === 'dialog'}
+        >
           {/* Progress (docs/specs/009-elements/progress.md) — the percentage; how the fill animates is the
             Animation row's Progress category. Only for progress bars / rings. */}
           {isProgress ? (
@@ -356,7 +373,8 @@ export function ElementDataSections({
               target={shapeTarget}
               handlers={props.sankey}
               sectionProps={sectionProps}
-              flyoutProps={flyoutProps('sankey')}
+              onOpen={props.onOpenTools}
+              inline={surface === 'dialog'}
               onPreviewTextSize={props.onPreviewTextSize}
               onPreviewEnd={props.onPreviewStyleEnd}
             />
@@ -439,7 +457,7 @@ export function ElementDataSections({
               ) : null}
             </MenuAccordionSection>
           ) : null}
-        </MenuFlyoutSection>
+        </MenuToolsSection>
       ) : null}
       {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
             element takes, such as Shape Animation and Text Animation for a labelled shape. */}

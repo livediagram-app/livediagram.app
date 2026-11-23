@@ -84,8 +84,7 @@ flows without a route and the diagrams beyond the first. Its subtitle: "Here's h
 
 ## Where
 
-The Import to Tab dialog's **BPMN** card, after draw.io: "A .bpmn file from Camunda, bpmn.io, Signavio or any BPMN
-2.0 modeler. Keeps every event, task, gateway, pool and flow where the modeler drew it." The file picker offers
+The Import to Tab dialog's **BPMN** card, after draw.io: "A .bpmn file from any BPMN 2.0 modeler, laid out as drawn." The file picker offers
 `.bpmn` and `.xml`.
 
 ## Share roles

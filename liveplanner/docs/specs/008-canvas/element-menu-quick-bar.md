@@ -25,6 +25,18 @@ the foot of the menu. Those categories are gone: the quick bar is their one plac
 
 ## Resources
 
+**Everything in Resources happens inside its dialog** (owner, 2026-11-23). The list has a short line saying what
+Resources are, over the options as centred tiles. **Assign an Action** opens as a screen of the dialog under a back
+bar (its own dialog draws in the slot the screen holds, never over it). **Link** offers a web address, a tab, then a
+file of each product, this app's first, each named by the product's logo and wordmark over what it calls a file
+(livediagram Canvas, liveplanner Plan, livedesign Design and the rest); a product's
+step lists that person's recent files of it with a search, and every one reads the same when empty ("No plans
+yet"), when nothing matches (the shared no-matches line with Clear) and when the list could not be read (Try
+Again). Another product's file is linked by its address.
+A product's step is named on the back bar by what it calls a file alone ("Knowledgebase"), and its messages
+write that word as the product does ("No Knowledgebases Yet"). The list's opening line is one short sentence
+("Attach an action, comments, a link or a note to this Square.").
+
 What attaches to the element sits behind one **Resources** row, always the menu's last. It looks like its neighbours
 and wears the small window mark of a row that opens a dialog
 ([A category that opens a dialog](canvas-and-palette.md)): a press closes the menu and opens the **Resources** modal

@@ -5,6 +5,8 @@
 // reads the list to know whether to draw its Resources row, and the Resources dialog draws it. An option is offered
 // when its handler is given, so an app without comments (or links, or notes) leaves that handler out.
 import type { ReactNode } from 'react';
+import { BrandMark } from '@liveworkspace/brand';
+import { APP_ITEMS, APP_NAMES, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { Glyph, lucideGlyph } from '@liveworkspace/ui';
 import {
   lucideFileText,
@@ -28,6 +30,11 @@ const RemoveGlyph = lucideGlyph(lucideTrash2, MENU_ICON_PX);
 export type ResourceChoice = {
   key: string;
   label: string;
+  // Its short name on its own step's back bar, where the full one says more than the bar needs ("Knowledgebase",
+  // not "liveknowledge Knowledgebase").
+  crumb?: string;
+  // The name as it is drawn, where it is more than its words (a product's wordmark); `label` stays its name.
+  title?: ReactNode;
   // The line under the name.
   detail: string;
   icon: ReactNode;
@@ -60,6 +67,9 @@ export type ResourceOption = {
   preview?: string;
   // What the row does when it has no options of its own: it opens the option's own surface.
   run: () => void;
+  // Its own surface is a dialog, which then draws inside the Resources dialog as a screen of it (under a back bar)
+  // rather than as a second dialog over it (the dialog slot, as Tools hosts a tool).
+  inline?: boolean;
   // Its own options. With any, the row opens a screen of them inside the dialog instead of running.
   choices?: ResourceChoice[];
 };
@@ -73,33 +83,71 @@ export function ResourcesMenuGlyph() {
   );
 }
 
-/** A place a link can go to, as the app's link picker names it. `kinds` are the link kinds it holds. */
+/** A place a link can go to. `kinds` are the link kinds it holds; `app` is the product whose files it lists. */
 export type ResourceLinkMode<M extends string> = {
   mode: M;
   label: string;
   detail: string;
   kinds: readonly string[];
+  app?: AppName;
+  // Another product's file is linked by its address, which starts with this.
+  urlPrefix?: string;
 };
 
+/** Where a file of `app` opens: the link another product's element carries to it. */
+export const appFileUrl = (app: AppName, id: string): string =>
+  `${siteOfApp(app).url}${APP_ITEMS[app].itemPath}${encodeURIComponent(id)}`;
+
+/** The mode that lists another product's files. */
+export type AppLinkMode = `app:${AppName}`;
+
 /**
- * The link picker's three places: a web address, a tab, and the app's own file (a canvas, a plan, a design), named
- * as the picker names it.
+ * A link's places: a web address, a tab, then a file of each product (this app's first), each named by the product
+ * and what it calls its file: "livediagram Canvas", "liveplanner Plan". This app's own file keeps its own link kind
+ * (`fileMode`); another product's is linked by its address.
  */
-export function resourceLinkModes<M extends string>(file: {
-  mode: M;
-  label: string;
-  detail: string;
-}): ResourceLinkMode<'url' | 'tab' | M>[] {
+export function appLinkModes<M extends string>(
+  here: AppName,
+  fileMode: M,
+): ResourceLinkMode<'url' | 'tab' | M | AppLinkMode>[] {
+  const apps = [here, ...APP_NAMES.filter((app) => app !== here)];
   return [
     { mode: 'url', label: 'External URL', detail: 'A page on the web', kinds: ['url'] },
     {
       mode: 'tab',
       label: 'Tab',
-      detail: 'Another tab, or an element on one',
+      detail: 'A tab or an element',
       kinds: ['tab', 'element'],
     },
-    { ...file, kinds: [file.mode] },
+    ...apps.map((app): ResourceLinkMode<M | AppLinkMode> => {
+      const { noun } = APP_ITEMS[app];
+      // What the product calls its file, under its wordmark.
+      const detail = noun;
+      return app === here
+        ? { mode: fileMode, label: `${app} ${noun}`, detail, kinds: [fileMode], app }
+        : {
+            mode: `app:${app}`,
+            label: `${app} ${noun}`,
+            detail,
+            kinds: [],
+            app,
+            urlPrefix: `${siteOfApp(app).url}${APP_ITEMS[app].itemPath}`,
+          };
+    }),
   ];
+}
+
+// A product's file as a choice is named by the product's wordmark ("live" light, its word strong); what it calls
+// a file is the line under it.
+function AppFileTitle({ app }: { app: AppName }) {
+  return (
+    <span className="flex items-baseline gap-1.5">
+      <span className="tracking-tight">
+        <span className="font-normal text-slate-500 dark:text-slate-400">live</span>
+        {app.replace(/^live/, '')}
+      </span>
+    </span>
+  );
 }
 
 /** Where a link goes, in a line: a web address without its scheme, a tab by name, a file by name. */
@@ -165,6 +213,7 @@ export function elementResourceOptions<M extends string>(
       icon: <ActionMenuIcon />,
       on: !!action,
       detail: 'Work assigned to someone',
+      inline: true,
       state: action ? `${ACTION_STATE[action.status ?? ''] ?? ''}${action.name}` : 'No action yet',
       run: () => onAssignAction(id),
     });
@@ -192,7 +241,16 @@ export function elementResourceOptions<M extends string>(
     const modes = h.linkModes ?? [];
     const choices: ResourceChoice[] = [];
     // A link of a kind no place here names (a screen of a prototype) is still edited where it was made.
-    if (link && !modes.some((m) => kind !== undefined && m.kinds.includes(kind)))
+    if (
+      link &&
+      !modes.some(
+        (m) =>
+          (kind !== undefined && m.kinds.includes(kind)) ||
+          (kind === 'url' &&
+            !!m.urlPrefix &&
+            !!(link as { url?: string }).url?.startsWith(m.urlPrefix)),
+      )
+    )
       choices.push({
         key: 'edit',
         label: 'Edit Link',
@@ -200,13 +258,29 @@ export function elementResourceOptions<M extends string>(
         icon: <EditGlyph />,
         run: () => onLinkElement(id),
       });
+    // A link to another product's file is a web address that starts with that product's files' address.
+    const url = (link as { url?: string } | undefined)?.url;
+    const byAddress = modes.find(
+      (m) => kind === 'url' && !!m.urlPrefix && !!url?.startsWith(m.urlPrefix),
+    );
     for (const m of modes)
       choices.push({
         key: m.mode,
         label: m.label,
+        ...(m.app ? { title: <AppFileTitle app={m.app} />, crumb: APP_ITEMS[m.app].noun } : {}),
         detail: m.detail,
-        icon: m.mode === 'url' ? <WebGlyph /> : m.mode === 'tab' ? <TabGlyph /> : <FileGlyph />,
-        current: !!link && kind !== undefined && m.kinds.includes(kind),
+        icon: m.app ? (
+          <BrandMark app={m.app} className="size-5" />
+        ) : m.mode === 'url' ? (
+          <WebGlyph />
+        ) : m.mode === 'tab' ? (
+          <TabGlyph />
+        ) : (
+          <FileGlyph />
+        ),
+        current: byAddress
+          ? m === byAddress
+          : !!link && kind !== undefined && m.kinds.includes(kind),
         run: () => onLinkElement(id, m.mode),
         ...(h.linkPanel ? { panel: (done: () => void) => h.linkPanel!(m.mode, done) } : {}),
       });

@@ -40,6 +40,7 @@ import { useInsertionSlot } from '@/lib/insertion-preview';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useElementTourOffer } from '@/lib/element-tour-offer';
 import { ElementTourOffer } from '@/components/tour/ElementTourOffer';
+import { useFaceControls } from '@/components/canvas/collab/face-controls';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -113,7 +114,10 @@ export function CanvasSelectionToolbars({
       : props.canEditMindOutline?.(selected.id) && props.onEditMindOutline
         ? { kind: 'outline' as const, open: () => props.onEditMindOutline!(selected.id) }
         : (props.kindEditor?.(selected) ?? null);
+  // A collaboration element's own main controls, as its face offers them now.
+  const faceControls = useFaceControls(readOnly || selectedLocked ? null : selected?.id);
   usePublishElementKindTools(selected?.id ?? null, {
+    ...(faceControls.length ? { controls: faceControls } : {}),
     ...((!readOnly || !!props.participantPalette) &&
     !selectedLocked &&
     selected &&

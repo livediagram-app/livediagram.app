@@ -2,12 +2,23 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   describeElementLink,
   elementResourceOptions,
-  resourceLinkModes,
+  appFileUrl,
+  appLinkModes,
+  type ResourceLinkMode,
   type ResourceTarget,
 } from './element-resources';
 
 // Each product's docs/specs/008-canvas/element-menu-quick-bar.md "Resources".
-const MODES = resourceLinkModes({ mode: 'file', label: 'Canvas', detail: 'Another canvas' });
+const MODES: ResourceLinkMode<'url' | 'tab' | 'file'>[] = [
+  { mode: 'url', label: 'External URL', detail: 'A page on the web', kinds: ['url'] },
+  {
+    mode: 'tab',
+    label: 'Tab',
+    detail: 'Another tab, or an element on one',
+    kinds: ['tab', 'element'],
+  },
+  { mode: 'file', label: 'Canvas', detail: 'Another canvas', kinds: ['file'] },
+];
 const SQUARE: ResourceTarget = { id: 'sq', type: 'shape' };
 
 describe('elementResourceOptions', () => {
@@ -134,5 +145,32 @@ describe('describeElementLink', () => {
     );
     expect(describeElementLink({ kind: 'project', projectId: 'p', name: 'Launch' })).toBe('Launch');
     expect(describeElementLink({ kind: 'screen' })).toBe('Linked');
+  });
+});
+
+// element-menu-quick-bar.md "Resources": a link may go to a file of any product.
+describe('appLinkModes', () => {
+  const modes = appLinkModes('livediagram', 'document');
+
+  it('offers a web address, a tab, then a file of each product, this app first under its own kind', () => {
+    expect(modes.slice(0, 3).map((m) => [m.mode, m.label])).toEqual([
+      ['url', 'External URL'],
+      ['tab', 'Tab'],
+      ['document', 'livediagram Canvas'],
+    ]);
+    const planner = modes.find((m) => m.app === 'liveplanner')!;
+    expect(planner.mode).toBe('app:liveplanner');
+    expect(planner.label).toBe('liveplanner Plan');
+    expect(appFileUrl('liveplanner', 'p 1').startsWith(planner.urlPrefix!)).toBe(true);
+  });
+
+  it('marks another product as current for a link to one of its files, not External URL', () => {
+    const link = { kind: 'url', url: appFileUrl('liveplanner', 'p1') };
+    const [linkOption] = elementResourceOptions(
+      { ...SQUARE, link },
+      { onLinkElement: () => {}, linkModes: modes },
+    );
+    const current = linkOption!.choices!.filter((c) => c.current).map((c) => c.key);
+    expect(current).toEqual(['app:liveplanner']);
   });
 });

@@ -227,16 +227,15 @@ export function LayersPanel({
           <span className="text-xs text-slate-500 dark:text-slate-400">
             {layers.length} {layers.length === 1 ? 'layer' : 'layers'}
           </span>
-          <HoverCard title="New Layer" description="Add a layer above the active one.">
-            <button
-              type="button"
-              onClick={onAddLayer}
-              className={`flex h-8 items-center gap-1.5 rounded-lg bg-brand-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
-            >
-              <PlusIcon />
-              New Layer
-            </button>
-          </HoverCard>
+          {/* No hover card: the button says what it does. */}
+          <button
+            type="button"
+            onClick={onAddLayer}
+            className={`flex h-8 items-center gap-1.5 rounded-lg bg-brand-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
+          >
+            <PlusIcon />
+            New Layer
+          </button>
         </div>
         <ul
           ref={listRef}

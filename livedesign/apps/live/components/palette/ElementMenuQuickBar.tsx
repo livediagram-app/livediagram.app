@@ -8,7 +8,8 @@
 import { elementSendItem } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import {
   elementResourceOptions,
-  resourceLinkModes,
+  appLinkModes,
+  type AppLinkMode,
   type ResourceOption,
 } from '@liveworkspace/workbench/components/palette/element-resources';
 import type { ReactNode } from 'react';
@@ -20,11 +21,8 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
 // The Resources options offered on `target`, in order: what attaches to it. A link card and a video take their link from
 // their own Link category, so Link is not offered on them (elementResourceOptions).
-const LINK_MODES = resourceLinkModes({
-  mode: 'design',
-  label: 'Design',
-  detail: 'Another design of yours',
-});
+// A link's places: a web address, a tab, then a file of each product, this app's first.
+const LINK_MODES = appLinkModes('livedesign', 'design');
 export function quickBarItems(
   target: BoxedElement,
   props: Pick<
@@ -36,13 +34,17 @@ export function quickBarItems(
     onRemoveNote?: (elementId: string) => void;
     tabs?: readonly { id: string; name: string }[];
     // A link place's own step inside the dialog (ResourceLinkPanel).
-    linkPanel?: (mode: 'url' | 'tab' | 'design', done: () => void) => ReactNode;
+    linkPanel?: (mode: 'url' | 'tab' | 'design' | AppLinkMode, done: () => void) => ReactNode;
   },
 ): ResourceOption[] {
-  const options = elementResourceOptions(target, {
+  const options = elementResourceOptions<(typeof LINK_MODES)[number]['mode']>(target, {
     onAssignAction: props.onAssignAction,
     onOpenComments: props.onOpenComments,
-    onLinkElement: props.onLinkElement,
+    // The link picker knows this app's own places; another product's files are picked in the dialog's own step.
+    onLinkElement:
+      props.onLinkElement &&
+      ((id, mode) =>
+        props.onLinkElement?.(id, mode?.startsWith('app:') ? undefined : (mode as never))),
     onOpenNote: props.onOpenNote,
     onRemoveLink: props.onRemoveLink,
     onRemoveNote: props.onRemoveNote,

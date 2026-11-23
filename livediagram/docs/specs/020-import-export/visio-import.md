@@ -190,8 +190,7 @@ It sits after `shape-unmatched` in the report's order. Every draw.io rule a Visi
 
 ## UI
 
-- **Import dialog.** An eighth format card, **Visio**, after draw.io: "A .vsdx from Visio, or a Lucidchart diagram
-  exported as Visio (VSDX). Keeps shapes, text, connections and pages." Its file icon reads `vsdx`. The file is binary,
+- **Import dialog.** An eighth format card, **Visio**, after draw.io: "A .vsdx from Visio, or one exported from Lucidchart." Its file icon reads `vsdx`. The file is binary,
   so its panel has no paste box: a drop target ("Drop a .vsdx file here, or choose one") that opens the picker when
   pressed and takes a dropped file, one line under it ("From Lucidchart: File, Export, Visio (VSDX), then import that
   file."), the format's help link in the footer and **Choose a File**. The picker accepts `.vsdx`, `.vsdm` and the

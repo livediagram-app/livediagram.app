@@ -20,8 +20,11 @@ export function ElementRowsDialog({
   title,
   subtitle,
   onClose,
+  size = 'md',
   children,
 }: {
+  // Wider for a dialog of settings laid out in two columns (a Sankey's Configure).
+  size?: 'md' | '2xl';
   art: HeroArt;
   title: string;
   subtitle: string;
@@ -36,7 +39,7 @@ export function ElementRowsDialog({
     onClose();
   };
   return (
-    <Dialog open onClose={close} titleId={titleId} size="md" phoneSheet className="max-h-[85vh]">
+    <Dialog open onClose={close} titleId={titleId} size={size} phoneSheet className="max-h-[85vh]">
       <HeroDialogHeader
         art={art}
         titleId={titleId}

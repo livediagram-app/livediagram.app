@@ -22,8 +22,8 @@ import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
 import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
+  elementKindLabel,
   isChipShape,
-  isConceptShape,
   LINE_DEFAULT_SERIES,
   chartRamp,
   chartTypeOf,
@@ -39,7 +39,7 @@ import {
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
-import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import { MenuToolsSection } from '@liveworkspace/workbench/components/primitives/MenuToolsSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { DecisionMenuSection } from '@/components/palette/CollabMenuSections';
@@ -123,6 +123,8 @@ type ElementDataSectionsProps = {
   isDecision: boolean;
   sectionProps: Scaffold['sectionProps'];
   flyoutProps: Scaffold['flyoutProps'];
+  // The menu, or the element's settings dialog (the sections alone, laid open).
+  surface?: 'menu' | 'dialog';
 };
 
 // Row editors re-seed their draft when handed a different array, so the fallbacks for an element
@@ -144,9 +146,15 @@ export function ElementDataSections({
   isSessionButton,
   isPicker,
   isDecision,
-  sectionProps,
+  sectionProps: menuSectionProps,
   flyoutProps,
+  surface = 'menu',
 }: ElementDataSectionsProps) {
+  // In the element's settings dialog every section lies open: there is room, and nothing to fold away.
+  const sectionProps: typeof menuSectionProps =
+    surface === 'dialog'
+      ? () => ({ open: true, onToggle: () => {}, flush: true })
+      : menuSectionProps;
   const shapeTarget = target.type === 'shape' ? target : null;
   const covering = useCoversCanvas(target.id);
   // What an uncoloured slice / series shows as, so the swatches in the data
@@ -165,8 +173,8 @@ export function ElementDataSections({
     shapeTarget?.shape === 'boundary' ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
-    shapeTarget?.shape === 'sequence' ||
-    (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
+    // A sequence diagram has its row only for someone who may open its dialog.
+    (shapeTarget?.shape === 'sequence' && !!props.onEditSequence) ||
     isProgress ||
     isRating ||
     isChart ||
@@ -209,22 +217,31 @@ export function ElementDataSections({
           sectionProps={sectionProps}
         />
       ) : null}
-      {/* Animation sits straight under Appearance, on every element (owner, 2026-11-23); what is the element's
+      {surface === 'dialog' ? null : (
+        <>
+          {/* Animation sits straight under Appearance, on every element (owner, 2026-11-23); what is the element's
           own (its Tools, or the one row that opens its dialog) follows under a rule, as a table's Table row does. */}
-      {/* Animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"): the element's own animation category (an icon's, a chart's, an
+          {/* Animation (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"): the element's own animation category (an icon's, a chart's, an
             arrow's). None while it covers the canvas (maximised, or Fill Tab): it does not animate there. */}
-      {covering ? null : (
-        <AnimationSections
-          elements={[target]}
-          keyPrefix=""
-          sectionProps={sectionProps}
-          flyoutProps={flyoutProps}
-          handlers={props}
-        />
+          {covering ? null : (
+            <AnimationSections
+              elements={[target]}
+              keyPrefix=""
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps}
+              handlers={props}
+            />
+          )}
+          {showTools ? <MenuGroupSeparator /> : null}
+        </>
       )}
-      {showTools ? <MenuGroupSeparator /> : null}
       {showTools ? (
-        <MenuFlyoutSection title="Tools" icon={<ToolsMenuGlyph />} {...flyoutProps('tools')}>
+        <MenuToolsSection
+          title={elementKindLabel(target)}
+          icon={<ToolsMenuGlyph />}
+          onOpen={props.onOpenTools}
+          inline={surface === 'dialog'}
+        >
           {/* Progress (docs/specs/009-elements/progress.md) — the percentage; how the fill animates is the
             Animation row's Progress category. Only for progress bars / rings. */}
           {isProgress ? (
@@ -428,7 +445,8 @@ export function ElementDataSections({
               target={shapeTarget}
               handlers={props.sankey}
               sectionProps={sectionProps}
-              flyoutProps={flyoutProps('sankey')}
+              onOpen={props.onOpenTools}
+              inline={surface === 'dialog'}
               onPreviewTextSize={props.onPreviewTextSize}
               onPreviewEnd={props.onPreviewStyleEnd}
             />
@@ -506,7 +524,7 @@ export function ElementDataSections({
               ) : null}
             </MenuAccordionSection>
           ) : null}
-        </MenuFlyoutSection>
+        </MenuToolsSection>
       ) : null}
       {/* Colours — text / background / border swatches. Boxed elements that
             support colours (excludes images). Icons included: Text tints a

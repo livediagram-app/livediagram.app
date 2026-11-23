@@ -70,12 +70,14 @@ describe('quickBarItems', () => {
     const items = quickBarItems(has, h);
     const link = items.find((i) => i.key === 'link')!;
     expect(link.state).toBe('example.com');
-    expect(link.choices?.map((c) => [c.key, !!c.current])).toEqual([
+    // A web address, a tab, this app's own file first among every product's, and Remove last.
+    expect(link.choices?.slice(0, 3).map((c) => [c.key, !!c.current])).toEqual([
       ['url', true],
       ['tab', false],
       ['document', false],
-      ['remove', false],
     ]);
+    expect(link.choices?.some((c) => c.key.startsWith('app:'))).toBe(true);
+    expect(link.choices?.at(-1)?.key).toBe('remove');
     link.choices?.find((c) => c.key === 'tab')?.run();
     expect(h.onLinkElement).toHaveBeenCalledWith('sq', 'tab');
     link.choices?.find((c) => c.key === 'remove')?.run();
@@ -86,11 +88,12 @@ describe('quickBarItems', () => {
     // Nothing to choose between until it is written: the row opens it.
     const bare = quickBarItems(square(), h);
     expect(bare.find((i) => i.key === 'note')?.choices).toBeUndefined();
-    expect(bare.find((i) => i.key === 'link')?.choices?.map((c) => c.key)).toEqual([
-      'url',
-      'tab',
-      'document',
-    ]);
+    expect(
+      bare
+        .find((i) => i.key === 'link')
+        ?.choices?.slice(0, 3)
+        .map((c) => c.key),
+    ).toEqual(['url', 'tab', 'document']);
   });
 
   it('leaves Add Link to a link card’s own Link category', () => {

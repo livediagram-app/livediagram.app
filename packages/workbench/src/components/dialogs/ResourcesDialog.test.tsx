@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { resetDialogSlot } from '@liveworkspace/ui';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   elementResourceOptions,
-  resourceLinkModes,
+  type ResourceLinkMode,
   type ResourceTarget,
 } from '../palette/element-resources';
 import { ResourcesDialog } from './ResourcesDialog';
@@ -11,7 +12,16 @@ import { ResourcesDialog } from './ResourcesDialog';
 // Each product's docs/specs/008-canvas/element-menu-quick-bar.md "Resources".
 afterEach(cleanup);
 
-const MODES = resourceLinkModes({ mode: 'file', label: 'Canvas', detail: 'Another canvas' });
+const MODES: ResourceLinkMode<'url' | 'tab' | 'file'>[] = [
+  { mode: 'url', label: 'External URL', detail: 'A page on the web', kinds: ['url'] },
+  {
+    mode: 'tab',
+    label: 'Tab',
+    detail: 'Another tab, or an element on one',
+    kinds: ['tab', 'element'],
+  },
+  { mode: 'file', label: 'Canvas', detail: 'Another canvas', kinds: ['file'] },
+];
 const handlers = () => ({
   onAssignAction: vi.fn(),
   onOpenComments: vi.fn(),
@@ -53,6 +63,8 @@ const screenName = () =>
   document.querySelector('[data-resources-screen]')?.getAttribute('data-resources-screen');
 
 describe('ResourcesDialog', () => {
+  afterEach(() => resetDialogSlot());
+
   it('wears the hero header and lists each option with what it is and what the element has', () => {
     open(LINKED);
     expect(screen.getByRole('heading', { name: 'Resources' })).toBeTruthy();
@@ -84,12 +96,27 @@ describe('ResourcesDialog', () => {
 
   it('runs an option with no options of its own, closing the dialog first', () => {
     const { h, order } = open();
+    expect(option('comment').querySelector('[data-resource-verb]')?.textContent).toBe(
+      'Add Comment',
+    );
+    fireEvent.click(option('comment'));
+    expect(h.onOpenComments).toHaveBeenCalledWith('sq');
+    expect(order).toEqual(['close', 'run']);
+  });
+
+  it('opens Assign an Action as a screen of the dialog, under a back bar, and stays open', () => {
+    const { h, onClose } = open();
     expect(option('action').querySelector('[data-resource-verb]')?.textContent).toBe(
       'Assign Action',
     );
     fireEvent.click(option('action'));
+    // Its own dialog draws in the slot this screen holds for it, never over the Resources dialog.
     expect(h.onAssignAction).toHaveBeenCalledWith('sq');
-    expect(order).toEqual(['close', 'run']);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screenName()).toBe('action/dialog');
+    expect(document.querySelector('[data-resource-dialog="action"]')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^Resources/ }));
+    expect(screenName()).toBe('list');
   });
 
   it('opens a note not written yet straight away, and a written one on its own screen', () => {

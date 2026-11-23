@@ -193,6 +193,8 @@ export function HistoryDialog({
       onClose={onClose}
       ariaLabel={`History of ${title}`}
       size="xl"
+      // A screen of its own on a phone, not a drawer (a top-level dialog).
+      phoneSheet={false}
       className="sm:max-h-[min(46rem,calc(100dvh-4rem))]"
     >
       <HistoryHeader item={item} titleId={titleId} onClose={onClose} />

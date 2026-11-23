@@ -24,12 +24,13 @@ import { createPortal } from 'react-dom';
 import { DialogDismissContext, type DialogDismiss } from './dialog-dismiss';
 import {
   DialogInlineContext,
+  DialogPhoneSheetContext,
   claimDialogSlot,
   openSlotSeq,
   releaseDialogSlot,
   slotIsFor,
-  useDialogSlot,
   type ClaimedDialog,
+  useDialogSlot,
 } from './dialog-slot';
 
 // The shared modal shell (packages/ui, so the public sites use it too; the editor wraps it with its modal
@@ -95,6 +96,8 @@ export type DialogProps = {
   // it down to close, instead of filling the screen (docs/specs/007-editor/editor-app.md "Working
   // dialogs rise as sheets on a phone"). A centred card from sm up either way. 'tall': a sheet as tall as a sheet
   // grows (the screen below the top bar), for a dialog that is a whole screen of work (the rule builder).
+  // The default (owner, 2026-11-23: most modals are drawers on a phone). `false` is for the few top-level
+  // dialogs that are a screen of their own there (Share, Automations, Settings, History, Search): full screen.
   phoneSheet?: boolean | 'tall';
   // Where focus lands on open: the first control (default), or the panel itself ('container') when the
   // first control is not where anyone starts.
@@ -185,7 +188,7 @@ export function Dialog({
   closeOnEscape = true,
   className,
   backdrop = 'dim',
-  phoneSheet = false,
+  phoneSheet = true,
   initialFocus = 'first',
   resizeTransition,
   beforeClose,
@@ -358,7 +361,9 @@ export function Dialog({
         <SheetHandle handleProps={sheet.handleProps} className="relative z-10 sm:hidden" />
       ) : null}
       <DialogInlineContext value={false}>
-        <DialogDismissContext value={requestClose}>{children}</DialogDismissContext>
+        <DialogPhoneSheetContext value={!!phoneSheet}>
+          <DialogDismissContext value={requestClose}>{children}</DialogDismissContext>
+        </DialogPhoneSheetContext>
       </DialogInlineContext>
     </div>
   );
