@@ -96,9 +96,9 @@ function StartAgainPill({
         <button
           type="button"
           onClick={onReopen}
-          className="cursor-pointer rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+          className="inline-flex cursor-pointer items-center rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
         >
-          Show Templates
+          <span className="text-optical-line">Show Templates</span>
         </button>
       </TopCenterBanner>
     </div>

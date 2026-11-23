@@ -5,7 +5,7 @@
 // is the account's, whichever app the panel opened in. Reads `GET /push/devices` when it is first shown; registers the
 // push-only service worker only when Turn On is pressed.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, ConfirmDialog, relativeSince } from '@liveworkspace/ui';
+import { Button, Chip, ConfirmDialog, relativeSince } from '@liveworkspace/ui';
 import { PUSH_DEVICES_PATH } from '@liveworkspace/settings/push';
 import { useSettingsUiKit } from '../kit';
 import { SettingsRowShell } from '../SettingsRowShell';
@@ -199,9 +199,9 @@ export function PhoneNotificationsRow({
                   <div className="flex flex-wrap items-center gap-x-2 text-sm text-slate-700 dark:text-slate-200">
                     <span className="truncate">{device.label}</span>
                     {device.id === thisDevice ? (
-                      <span className="rounded-full bg-brand-50 px-1.5 py-px text-[11px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
+                      <Chip className="bg-brand-50 px-1.5 py-px text-[11px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
                         This Device
-                      </span>
+                      </Chip>
                     ) : null}
                   </div>
                   <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400">

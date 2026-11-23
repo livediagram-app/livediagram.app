@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { articleHref, categoryHref, type Category } from '@liveworkspace/help-registry';
-import { buttonClassName, ButtonContent, GlyphDisc } from '@liveworkspace/ui';
+import { buttonClassName, ButtonContent, Chip, GlyphDisc } from '@liveworkspace/ui';
 import type { HelpHomeLayout } from '../lib/home';
 import type { HelpSite } from '../site';
 import { CategoryArt, CategoryCard, guideCount } from './CategoryCard';
@@ -94,14 +94,18 @@ export function HelpHome({
       {/* No breadcrumb bar: the home is the trail's root (liveworkspace/docs/specs/017-help/help-centre.md). */}
       <HelpHero home title={title} lede={lede}>
         <div className="mx-auto mt-5 flex flex-wrap justify-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)">
-            <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
+          <Chip
+            icon={<span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />}
+            className="gap-2 border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)"
+          >
             {`${articles.length} guides`}
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)">
-            <span aria-hidden className="size-1.5 rounded-full bg-brand-500" />
+          </Chip>
+          <Chip
+            icon={<span aria-hidden className="size-1.5 rounded-full bg-brand-500" />}
+            className="gap-2 border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)"
+          >
             {note}
-          </span>
+          </Chip>
         </div>
         <div className="mx-auto mt-8 max-w-2xl">
           <SearchInput large />
@@ -115,9 +119,9 @@ export function HelpHome({
             <Link
               key={t.path}
               href={articleHref(articleAt(site, t.path))}
-              className="relative rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-sm text-(--hero-chip-text) transition-colors touch-target-y hover:border-(--hero-chip-border-hover)"
+              className="relative inline-flex items-center rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-sm text-(--hero-chip-text) transition-colors touch-target-y hover:border-(--hero-chip-border-hover)"
             >
-              {t.label}
+              <span className="text-optical-line">{t.label}</span>
             </Link>
           ))}
         </nav>

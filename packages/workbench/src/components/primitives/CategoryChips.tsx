@@ -66,9 +66,9 @@ export function CategoryChips({
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
             }`}
           >
-            {c.label}
+            <span className="text-optical-line">{c.label}</span>
             <span
-              className={`tabular-nums text-[10px] ${on ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}
+              className={`text-optical-line tabular-nums text-[10px] ${on ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}`}
             >
               {c.count}
             </span>

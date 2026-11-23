@@ -1,5 +1,6 @@
 import { DeferredPreviewFan } from '@liveworkspace/template-previews/deferred-preview-fan';
 import type { ComponentType } from 'react';
+import { Chip } from '@liveworkspace/ui';
 import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '../lib/band-classes';
 import type { TemplateShelf } from './TemplateGallery';
 
@@ -50,9 +51,9 @@ export function CategoryTiles<Id extends string, T extends { kind: string }>({
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {start.label}
                 </span>
-                <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
+                <Chip className="bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
                   {start.note}
-                </span>
+                </Chip>
               </span>
             </a>
           </li>
@@ -72,9 +73,9 @@ export function CategoryTiles<Id extends string, T extends { kind: string }>({
                   <span className="sr-only">Show </span>
                   {group.label}
                 </span>
-                <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
+                <Chip className="bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
                   {group.templates.length} {group.templates.length === 1 ? 'template' : 'templates'}
-                </span>
+                </Chip>
               </span>
             </button>
           </li>

@@ -10,8 +10,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import {
   Button,
+  Chip,
   ConfirmPopover,
   EmptyState,
+  GlyphDisc,
   LinkIcon,
   Portal,
   PublicLinkPopover,
@@ -340,12 +342,13 @@ function WalkthroughCard({
               <rect width="100%" height="100%" fill={`url(#wt-dots-${entry.id})`} />
             </svg>
             {compact ? null : (
-              <span
+              <GlyphDisc
                 aria-hidden
-                className="absolute left-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/20 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur-sm"
+                size={36}
+                className="absolute left-3 top-3 bg-white/20 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur-sm"
               >
                 {initial}
-              </span>
+              </GlyphDisc>
             )}
             <span
               className={`relative flex ${
@@ -355,20 +358,22 @@ function WalkthroughCard({
               {loading ? <Spinner /> : <PlayGlyph size={compact ? 14 : 22} className="ml-0.5" />}
             </span>
             {compact ? null : (
-              <span className="absolute bottom-2.5 left-3 inline-flex items-center gap-1 rounded-full bg-black/35 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
-                {entry.screen || entry.camera ? <CameraGlyph /> : <MicGlyph />}
+              <Chip
+                icon={entry.screen || entry.camera ? <CameraGlyph /> : <MicGlyph />}
+                className="absolute bottom-2.5 left-3 bg-black/35 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm"
+              >
                 {entry.screen ? 'Video' : entry.camera ? 'Camera' : 'Voice'}
-              </span>
+              </Chip>
             )}
-            <span
-              className={`absolute rounded-full bg-black/45 font-semibold tabular-nums text-white backdrop-blur-sm ${
+            <Chip
+              className={`absolute bg-black/45 font-semibold tabular-nums text-white backdrop-blur-sm ${
                 compact
                   ? 'bottom-1 right-1 px-1.5 text-[10px]'
                   : 'bottom-2.5 right-3 px-2 py-0.5 text-[11px]'
               }`}
             >
               {clockOf(entry.durationMs)}
-            </span>
+            </Chip>
           </button>
         }
         {failed ? (

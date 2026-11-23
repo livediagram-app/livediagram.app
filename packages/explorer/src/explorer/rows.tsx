@@ -8,7 +8,7 @@ import { memo, useCallback, useMemo } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownFolderPreview } from '../data/useFolderPreviews';
 import type { ShownItem } from '../data/overlay';
-import { CountBadge } from '@liveworkspace/ui';
+import { Chip, CountBadge } from '@liveworkspace/ui';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { RelativeTimeChip } from '../ui/RelativeTimeChip';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
@@ -247,12 +247,12 @@ export function FolderCount({
   const count = subfolders + (items ?? 0);
   if (count === 0 && elsewhere)
     return (
-      <span
+      <Chip
         data-folder-elsewhere={elsewhere}
-        className={`inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300 ${className ?? ''}`}
+        className={`bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300 ${className ?? ''}`}
       >
         {elsewhereLabel(elsewhere)}
-      </span>
+      </Chip>
     );
   if (count === 0) return null;
   const label = folderCountLabel(subfolders, items, words);

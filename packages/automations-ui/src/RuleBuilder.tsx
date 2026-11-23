@@ -14,7 +14,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AUTOMATION_NAME_MAX, type AutomationTemplatePickAt } from '@liveworkspace/automations';
-import { Button, Switch, formatRelativeTimeShort } from '@liveworkspace/ui';
+import { Button, Chip, Switch, formatRelativeTimeShort } from '@liveworkspace/ui';
 import { useToast } from '@liveworkspace/workbench/hooks/ui/useToast';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { AutomationRefusal } from './automations-client';
@@ -278,9 +278,9 @@ export function RuleBuilder({
             onChange={(next) => void toggle(next)}
           />
         ) : (
-          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <Chip className="bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             Off
-          </span>
+          </Chip>
         )}
       </nav>
       {rule && !phone ? (

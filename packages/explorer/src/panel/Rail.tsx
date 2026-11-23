@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Chip } from '@liveworkspace/ui';
 import { inboxBadge } from '../explorer/inbox/sections';
 import { useExplorer } from '../explorer/context';
 import { MyWorkMenu } from '../explorer/menus';
@@ -315,12 +316,12 @@ function RailEntry({
           </span>
         ) : null}
         {badge ? (
-          <span
+          <Chip
             aria-hidden
-            className="rounded-full bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
+            className="bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
           >
             {badge}
-          </span>
+          </Chip>
         ) : null}
       </button>
     </li>

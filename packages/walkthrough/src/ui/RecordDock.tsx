@@ -7,7 +7,7 @@
 // and for the save card, at the bottom centre of the canvas.
 
 import { WALKTHROUGH_MAX_MS } from '@liveworkspace/media/walkthrough';
-import { Button, ConfirmPopover } from '@liveworkspace/ui';
+import { Button, ConfirmPopover, GlyphDisc } from '@liveworkspace/ui';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -95,13 +95,14 @@ export function RecordDock({ walkthroughs }: { walkthroughs: Walkthroughs }) {
 export function Countdown({ n }: { n: number }) {
   return (
     <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
-      <span
+      <GlyphDisc
         key={n}
         aria-live="assertive"
-        className="flex h-28 w-28 animate-[walkthrough-count_1s_ease-out] items-center justify-center rounded-full bg-slate-900/80 text-6xl font-semibold tabular-nums text-white shadow-2xl backdrop-blur motion-reduce:animate-none"
+        size={112}
+        className="animate-[walkthrough-count_1s_ease-out] bg-slate-900/80 text-6xl font-semibold tabular-nums text-white shadow-2xl backdrop-blur motion-reduce:animate-none"
       >
         {n}
-      </span>
+      </GlyphDisc>
     </div>
   );
 }

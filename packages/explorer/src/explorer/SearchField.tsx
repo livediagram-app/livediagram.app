@@ -384,7 +384,7 @@ export function SearchField({
                   : 'bg-brand-50 text-brand-800 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-100 dark:ring-brand-400/50'
               } ${picked ? 'outline-2 outline-offset-1 outline-brand-500' : ''}`}
             >
-              <span>
+              <span className="text-optical-line">
                 <span className="sr-only">Filter </span>
                 {pill.label}
                 {pill.note ? <span className="sr-only">, not applied: {pill.note}</span> : null}

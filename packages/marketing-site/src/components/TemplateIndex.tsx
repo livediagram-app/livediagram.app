@@ -1,5 +1,5 @@
 import { lucideChevronDown } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@liveworkspace/ui';
+import { Chip, lucideGlyph } from '@liveworkspace/ui';
 
 const ChevronIcon = lucideGlyph(lucideChevronDown, 16);
 
@@ -40,9 +40,9 @@ export function TemplateIndex<T extends IndexedTemplate>({
     <details className="group">
       <summary className="inline-flex cursor-pointer list-none items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-slate-700 transition marker:hidden hover:bg-white hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 pointer-coarse:py-3 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-brand-300 [&::-webkit-details-marker]:hidden">
         Every Template A to Z
-        <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        <Chip className="bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
           {templates.length}
-        </span>
+        </Chip>
         <span className="text-slate-500 transition-transform group-open:rotate-180 motion-reduce:transition-none dark:text-slate-400">
           <ChevronIcon />
         </span>

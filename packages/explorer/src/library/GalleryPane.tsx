@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { IMAGE_ACCEPT_ATTR } from '@liveworkspace/api-schema/image-limits';
-import { Button, ConfirmDialog, EmptyState, HoverCard } from '@liveworkspace/ui';
+import { Button, Chip, ConfirmDialog, EmptyState, HoverCard } from '@liveworkspace/ui';
 import { MadeByAiChip } from '../explorer/badges';
 import { TrashIcon } from '../ui/icons';
 import { ImageIcon, UploadIcon } from '../ui/library-icons';
@@ -318,12 +318,12 @@ function GalleryCard({
             title="In Library"
             description="A Library item holds this image, so it stays used while the item is kept."
           >
-            <span
+            <Chip
               tabIndex={0}
-              className="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
+              className="bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
             >
               In Library
-            </span>
+            </Chip>
           </HoverCard>
         ) : null}
         {held && usage.length === 0 ? null : usage.length === 0 ? (
@@ -335,12 +335,12 @@ function GalleryCard({
                 : 'Nothing of yours, in any app, places this image.'
             }
           >
-            <span
+            <Chip
               tabIndex={0}
-              className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+              className="bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400"
             >
               {unchecked ? 'Couldn’t check' : 'Not used'}
-            </span>
+            </Chip>
           </HoverCard>
         ) : (
           <button
@@ -349,7 +349,7 @@ function GalleryCard({
             aria-expanded={open}
             className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 transition hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-300 dark:hover:bg-brand-500/25"
           >
-            Used in {countOf(usage, kindMany)}
+            <span className="text-optical-line">Used in {countOf(usage, kindMany)}</span>
           </button>
         )}
       </div>

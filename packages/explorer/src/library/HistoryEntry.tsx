@@ -4,6 +4,7 @@
 // dialog"): an event, or a run of one kind by one person folded into one entry that opens to list them.
 
 import { memo, useId, useState } from 'react';
+import { Chip } from '@liveworkspace/ui';
 import { ChevronDownIcon } from '../ui/icons';
 import { FOCUS_RING } from '../ui/classes';
 import { eventIcon } from './event-icons';
@@ -72,9 +73,9 @@ export const HistoryEntry = memo(function HistoryEntry({
           <p className="min-w-0 flex-1 text-sm font-medium text-slate-900 dark:text-slate-100">
             {eventLabel(event)}
             {many > 1 ? (
-              <span className="ml-1.5 inline-flex items-center rounded-full bg-slate-100 px-1.5 py-px align-[1px] text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <Chip className="ml-1.5 bg-slate-100 px-1.5 py-px align-[1px] text-[11px] font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                 {many} times
-              </span>
+              </Chip>
             ) : null}
           </p>
           <span className={`shrink-0 text-xs tabular-nums ${MUTED}`}>

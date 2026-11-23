@@ -91,10 +91,10 @@ describe('ChipField', () => {
         ariaLabel="Chips"
       />,
     );
-    const bad = screen.getByText('not an address').closest('span')!;
+    const bad = screen.getByText('not an address').parentElement!;
     expect(bad.dataset['invalidChip']).toBe('true');
     expect(bad.textContent).toContain('not an email address');
-    const good = screen.getByText('ok@example.com').closest('span')!;
+    const good = screen.getByText('ok@example.com').parentElement!;
     expect(good.dataset['invalidChip']).toBeUndefined();
   });
 });

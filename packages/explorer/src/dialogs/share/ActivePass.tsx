@@ -10,7 +10,7 @@ import type { App, ShareLink } from '@liveworkspace/index-client';
 import { BrandMark } from '@liveworkspace/brand';
 import { timeLeftCompact } from '../../time';
 import { scopeWords } from '../../words';
-import { Button, ConfirmPopover, HoverCard, Select, Tooltip } from '@liveworkspace/ui';
+import { Button, Chip, ConfirmPopover, HoverCard, Select, Tooltip } from '@liveworkspace/ui';
 import { CheckIcon, CopyIcon, LinkIcon, LockIcon, TrashIcon } from '../../ui/icons';
 import { CopyMenu } from './CopyMenu';
 import { CodeGlyph, ImageGlyph, MarkdownGlyph, SmallClockGlyph } from './glyphs';
@@ -149,13 +149,13 @@ export function ActivePass({
                 title="Expiring pass"
                 description={`Issued for ${LIFETIMES[link.expiry]}. When it runs out the link stops working and moves to Expired, where you can extend it.`}
               >
-                <span
+                <Chip
                   data-share-countdown=""
-                  className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30"
+                  icon={<SmallClockGlyph />}
+                  className="bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-500/30"
                 >
-                  <SmallClockGlyph />
                   {timeLeftCompact(link.expiresAt - now)}
-                </span>
+                </Chip>
               </HoverCard>
             ) : (
               <span className="font-medium">{LIFETIMES.never}</span>

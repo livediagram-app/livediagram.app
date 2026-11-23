@@ -118,9 +118,9 @@ export function TagInput({
                 field.current?.refocus();
                 apply(commitTag(tags, tag));
               }}
-              className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
+              className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
             >
-              #{tag}
+              <span className="text-optical-line">#{tag}</span>
             </button>
           ))}
         </div>

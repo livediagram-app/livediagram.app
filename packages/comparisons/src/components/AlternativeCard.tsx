@@ -45,7 +45,7 @@ export function AlternativeCard({ alt, mark }: { alt: Alternative; mark: Mark })
               <span className="text-brand-700 dark:text-brand-300">
                 <CheckIcon size={12} />
               </span>
-              {chip}
+              <span className="text-optical-line">{chip}</span>
             </span>
           ))}
         </span>

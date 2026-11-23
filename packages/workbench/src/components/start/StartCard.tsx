@@ -5,6 +5,7 @@
 // in. Shared by a start's groups and its search results, a template's and a Community tile's alike.
 import type { ReactNode } from 'react';
 import { communityStartBadgeStyle } from '@liveworkspace/community-ui/start';
+import { Chip } from '@liveworkspace/ui';
 
 /** The start's colours a card paints with (each editor's components/start/start-palette StartPalette). */
 type StartPalette = {
@@ -71,21 +72,22 @@ function StartCard({
               {card.name}
             </span>
             {card.badge ? (
-              <span
-                className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
+              <Chip
+                caps
+                className="px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
                 // The accent's tint, its ink deepened until it reads at AA (community-ui start-badge.ts).
                 style={communityStartBadgeStyle(palette.focus, palette.surface)}
               >
                 {card.badge}
-              </span>
+              </Chip>
             ) : null}
             {card.tag ? (
-              <span
-                className="ml-auto shrink-0 rounded-full border px-1.5 py-px text-[10px] font-semibold tabular-nums"
+              <Chip
+                className="ml-auto border px-1.5 py-px text-[10px] font-semibold tabular-nums"
                 style={{ borderColor: palette.border, color: palette.muted }}
               >
                 {card.tag}
-              </span>
+              </Chip>
             ) : null}
           </span>
           <span

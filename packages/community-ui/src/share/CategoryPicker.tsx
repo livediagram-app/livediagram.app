@@ -80,7 +80,7 @@ export function CategoryPicker({
               disabled={disabled}
               onClick={() => onChange(category.id)}
               onKeyDown={(e) => onKeyDown(e, index)}
-              className={`rounded-full border px-3 py-1 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${
                 checked
                   ? 'border-brand-700 bg-brand-700 text-white shadow-sm shadow-brand-500/25 dark:border-brand-500 dark:bg-brand-600'
                   : invalid
@@ -88,7 +88,7 @@ export function CategoryPicker({
                     : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800'
               }`}
             >
-              {category.label}
+              <span className="text-optical-line">{category.label}</span>
             </button>
           );
         })}

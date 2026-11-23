@@ -10,6 +10,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 import type { AutomationRuleSummary, AutomationSummaryLine } from '@liveworkspace/automations';
 import {
   Button,
+  Chip,
   CompactEmptyState,
   DialogCloseButton,
   formatRelativeTimeShort,
@@ -205,15 +206,15 @@ function RuleLines({
 function OnChip({ rule }: { rule: AutomationRuleSummary }) {
   const on = rule.on && !rule.paused;
   return (
-    <span
-      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[12px] font-medium ${
+    <Chip
+      className={`px-2 py-0.5 text-[12px] font-medium ${
         on
           ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
           : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
       }`}
     >
       {on ? 'On' : rule.paused ? 'Paused' : 'Off'}
-    </span>
+    </Chip>
   );
 }
 
