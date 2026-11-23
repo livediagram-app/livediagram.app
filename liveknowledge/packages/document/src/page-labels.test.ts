@@ -29,7 +29,7 @@ describe('a label', () => {
   it('keeps a name trimmed, its spaces made one, within 40 characters', () => {
     expect(labelName('  Product   Team ')).toBe('Product Team');
     expect(labelName('x'.repeat(LABEL_NAME_MAX))).toHaveLength(LABEL_NAME_MAX);
-    for (const bad of ['', '   ', 'x'.repeat(LABEL_NAME_MAX + 1), 'a\u0007b', 3, null])
+    for (const bad of ['', '   ', 'x'.repeat(LABEL_NAME_MAX + 1), 'a\u0007b', 'a,b', 3, null])
       expect(labelName(bad)).toBeUndefined();
   });
 

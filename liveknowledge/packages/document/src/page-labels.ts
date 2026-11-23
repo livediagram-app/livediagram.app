@@ -41,10 +41,10 @@ export function isLabelColour(v: unknown): v is LabelColour {
   );
 }
 
-/** A name as kept: NFC, trimmed, each run of white space one space; undefined when empty, too long or holding a
- *  control character. */
+/** A name as kept: NFC, trimmed, each run of white space one space; undefined when empty, too long, or holding a
+ *  control character or a comma (a comma separates the labels of a search's scope). */
 export function labelName(raw: unknown): string | undefined {
-  if (typeof raw !== 'string' || CONTROL.test(raw)) return undefined;
+  if (typeof raw !== 'string' || CONTROL.test(raw) || raw.includes(',')) return undefined;
   const name = raw.normalize('NFC').replace(SPACES, ' ').trim();
   return name.length > 0 && name.length <= LABEL_NAME_MAX ? name : undefined;
 }
@@ -148,7 +148,7 @@ export type LabelRefusal =
 /** What each refusal says, in words a person reads. */
 export const LABEL_REFUSAL_WORDS: Record<LabelRefusal, string> = {
   invalid_label_id: 'A label id is 1 to 40 letters, digits, - or _.',
-  invalid_label_name: `A label's name is 1 to ${LABEL_NAME_MAX} characters.`,
+  invalid_label_name: `A label's name is 1 to ${LABEL_NAME_MAX} characters, with no comma.`,
   invalid_label_colour: "A label's colour is a standard colour's name or #rrggbb.",
   label_name_taken: 'A label is already called that.',
   label_limit: `This knowledgebase has ${MAX_KNOWLEDGEBASE_LABELS} labels, the most it can hold.`,

@@ -167,13 +167,19 @@ export const search = defineVerb({
       .max(SEARCH_MAX_LIMIT)
       .optional()
       .describe(`At most this many results (default ${SEARCH_MAX_LIMIT})`),
+    labels: z
+      .string()
+      .min(1)
+      .optional()
+      .describe('Only pages carrying any of these labels, by name, comma separated'),
   }),
   output: z.object(searchPagesOutput).omit({ next: true }),
   listKey: 'results',
   run: async (ctx, input) => {
     const id = await knowledgebaseOf(ctx, input.doc);
     const found = await ctx.api.json<KnowledgeSearchResponse>(
-      `${knowledgePath(id, 'search')}?q=${encodeURIComponent(input.query.join(' '))}`,
+      `${knowledgePath(id, 'search')}?q=${encodeURIComponent(input.query.join(' '))}` +
+        (input.labels ? `&labels=${encodeURIComponent(input.labels)}` : ''),
     );
     const shown = found.results.slice(0, input.limit ?? SEARCH_MAX_LIMIT);
     return {
@@ -202,7 +208,7 @@ export const search = defineVerb({
     positionals: ['doc', '...query'],
     examples: [
       'liveknowledge search Handbook when do we deploy',
-      'liveknowledge search Handbook rollback --limit 3 --json',
+      'liveknowledge search Handbook rollback --limit 3 --labels Engineering --json',
     ],
     prints: 'each result’s page, headings and trust, then its passage',
   },

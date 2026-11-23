@@ -43,7 +43,7 @@ Derived from [The page surface](../page-surface.md) "Page labels" and [Search an
 
 - `GET /api/documents/<id>/labels`: `{ labels: [{ id, name, colour, pages }] }`, every role, most used first.
 - `POST labels` `{ name, colour?, id? }`: `201 { label, labels }`. No colour: `nextLabelColour`. No id: `newLabelId()`.
-- `PATCH labels/<label>` `{ name?, colour? }`: `{ label, labels }`; nothing to change is `400 invalid_body`.
+- `PUT labels/<label>` `{ name?, colour? }`: `{ label, labels }`; nothing to change is `400 invalid_body`.
 - `DELETE labels/<label>`: `{ labels }`.
 - Writes are a Writer's (`writesPages`); a token below `write` scope, a Viewer and a link visitor are `403`. A refusal is
   `400` (`invalid_*`), `404 unknown_label`, or `409` (`label_name_taken`, `label_limit`), each with words.

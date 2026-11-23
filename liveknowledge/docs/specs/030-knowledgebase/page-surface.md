@@ -230,7 +230,7 @@ Owner, 2026-11-21 (Work Tracker 1343): "The page tree gives one way to organise 
 (team, product, audience, Onboarding) that cuts across sections." Built in [blueprint](blueprints/page-labels.md).
 
 - **What a label is.** The knowledgebase's own: a **name** (1 to 40 characters, its spaces trimmed and runs of them
-  made one, unique ignoring case) and a **colour**. A knowledgebase holds at most 100 labels and a page carries at
+  made one, no comma since a comma separates the labels a search names, unique ignoring case) and a **colour**. A knowledgebase holds at most 100 labels and a page carries at
   most 10. A label means the same on every page: renaming it or changing its colour changes it everywhere at once.
 - **Where they are kept.** The labels themselves (each an id, its name and its colour) are kept once, with the
   knowledgebase's settings (`knowledgeSettings.labels`, beside the Review Period); a page keeps only which of them it
