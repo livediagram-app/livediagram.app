@@ -26,6 +26,7 @@ import {
   lucideTable,
   lucideUsers,
   lucideSend,
+  lucideWorkflow,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@liveknowledge/ui';
 import type { ReactNode } from 'react';
@@ -177,6 +178,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'send-to-plan': (
     <Glyph>
       <Prims prims={lucideSend} />
+    </Glyph>
+  ),
+  // Words drawn as boxes and arrows: Send to Diagram (liveworkspace/docs/specs/004-index/send-to-diagram.md).
+  'send-to-diagram': (
+    <Glyph>
+      <Prims prims={lucideWorkflow} />
     </Glyph>
   ),
   'live-presence': (

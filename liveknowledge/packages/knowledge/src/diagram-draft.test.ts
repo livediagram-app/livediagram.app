@@ -63,6 +63,27 @@ describe('parseDiagramDraft', () => {
       edges: [{ from: 'a', to: 'b' }],
     });
   });
+  it('reads a sequence with its messages in order, repeats kept, whatever style the model named', () => {
+    const seq = JSON.stringify({
+      title: 'Sign in',
+      style: 'flow',
+      direction: 'down',
+      nodes: [
+        { id: 'u', label: 'User', shape: null, note: null, role: null, group: null },
+        { id: 's', label: 'Server', shape: null, note: null, role: null, group: null },
+      ],
+      edges: [
+        { from: 'u', to: 's', label: 'Sign in', line: 'solid' },
+        { from: 's', to: 'u', label: 'Token', line: 'dashed' },
+        { from: 'u', to: 's', label: 'Fetch', line: 'solid' },
+      ],
+      groups: [],
+    });
+    const graph = parseDiagramDraft(seq, 'sequence');
+    expect(graph?.style).toBe('sequence');
+    expect(graph?.edges.map((e) => e.label)).toEqual(['Sign in', 'Token', 'Fetch']);
+  });
+
   it("lets a chosen kind's layout win", () => {
     expect(parseDiagramDraft(reply, 'mindmap')).toMatchObject({
       style: 'mindmap',

@@ -9,6 +9,7 @@ import type { DiagramFromGraphInput } from '@liveworkspace/index-client';
 import type { ImportResult } from '@liveworkspace/index-app';
 import { engineLog } from '../changesets/log';
 import { importDocumentFileFor } from './internal-file';
+import { documentRoom, type DocumentRoomClient } from '../document-client';
 import type { Env } from '../types';
 
 /** The graph as livediagram's graph input takes it. */
@@ -47,12 +48,8 @@ export function linkCaption(elements: readonly Element[], caption: string, url: 
   });
 }
 
-/** The canvas's file, or null when the engine refuses the graph. */
-export function graphDocumentFile(
-  input: DiagramFromGraphInput,
-  documentId = 'graph',
-): string | null {
-  const tabId = 'graph';
+/** The graph compiled and its caption linked: the tab's elements, or null when the engine refuses it. */
+export function graphTab(input: DiagramFromGraphInput, documentId = 'graph', tabId = 'graph') {
   const compiled = applyReplace(
     null,
     { graph: graphInputOf(input) },
@@ -62,10 +59,19 @@ export function graphDocumentFile(
     console.warn('[internal] graph refused', { code: compiled.errors[0]?.code });
     return null;
   }
-  const tab = {
+  return {
     ...compiled.tab,
     elements: linkCaption(compiled.tab.elements, input.caption, input.link),
   };
+}
+
+/** The canvas's file, or null when the engine refuses the graph. */
+export function graphDocumentFile(
+  input: DiagramFromGraphInput,
+  documentId = 'graph',
+): string | null {
+  const tab = graphTab(input, documentId);
+  if (!tab) return null;
   return documentToEnvelopeText(
     { id: documentId, name: input.name, presentation: null },
     [tab],
@@ -73,13 +79,33 @@ export function graphDocumentFile(
   );
 }
 
-export type GraphDoorResult = ImportResult | { status: 'invalid_graph' };
+export type GraphDoorResult =
+  | ImportResult
+  | { status: 'ok'; id: string; tabId: string }
+  | { status: 'invalid_graph' }
+  | { status: 'not_found' };
 
-/** The new canvas, as `owner`'s personal item at the top of their library. */
+/**
+ * Send to Diagram's write. No `itemId`: a new canvas, `owner`'s personal item at the top of their library. With one: a
+ * new tab at its end (a fresh id), or `tabId` redrawn, in the canvas's room as `owner`'s changeset (graph-tab.ts).
+ */
 export async function documentFromGraph(
   env: Env,
   input: DiagramFromGraphInput,
+  room: (id: string) => Pick<DocumentRoomClient, 'drawGraphTab'> = (id) => documentRoom(env, id),
 ): Promise<GraphDoorResult> {
+  if (input.itemId) {
+    const tabId = input.tabId ?? crypto.randomUUID();
+    const tab = graphTab(input, input.itemId, tabId);
+    if (!tab) return { status: 'invalid_graph' };
+    const outcome = await room(input.itemId).drawGraphTab({
+      tabId,
+      name: input.name,
+      elements: tab.elements,
+      owner: input.owner,
+    });
+    return outcome.status === 'ok' ? { status: 'ok', id: input.itemId, tabId } : outcome;
+  }
   const file = graphDocumentFile(input);
   if (file === null) return { status: 'invalid_graph' };
   return importDocumentFileFor(env, { owner: input.owner, folderId: null, name: input.name, file });

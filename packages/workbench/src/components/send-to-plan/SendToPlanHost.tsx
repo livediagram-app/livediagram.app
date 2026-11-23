@@ -14,6 +14,7 @@ import {
   type DiagramDrafter,
   type DiagramSendRequest,
 } from '../send-to-diagram/send-to-diagram-entry';
+import { elementDiagramSends, setDiagramSendSource } from '../send-to-diagram/diagram-send-store';
 
 const SendToDiagramDialog = lazy(() =>
   import('../send-to-diagram/SendToDiagramDialog').then((m) => ({
@@ -68,6 +69,13 @@ export function SendToPlanHost({
 
   useEffect(() => (live ? onSendToPlan(setRequest) : undefined), [live]);
 
+  // The diagram chips' read, only for an app that drafts diagrams.
+  const diagramLive = live && diagram ? live : null;
+  useEffect(() => {
+    setDiagramSendSource(diagramLive, code ? { code } : null);
+    return () => setDiagramSendSource(null);
+  }, [diagramLive, code]);
+
   useEffect(() => {
     if (!live || !diagram) return undefined;
     setDiagramDrafter(diagram);
@@ -88,6 +96,11 @@ export function SendToPlanHost({
           source={{ app, itemId: live }}
           sourceTitle={title}
           drafter={diagram}
+          earlier={
+            diagramRequest.elementId
+              ? (elementDiagramSends(diagramRequest.elementId)[0] ?? null)
+              : null
+          }
           onClose={() => setDiagramRequest(null)}
         />
       </Suspense>

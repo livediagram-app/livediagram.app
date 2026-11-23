@@ -4,6 +4,8 @@ import {
   DIAGRAM_SEND_GROUPS_MAX,
   DIAGRAM_SEND_LABEL_MAX,
   DIAGRAM_SEND_NODES_MAX,
+  diagramSendElement,
+  diagramSendRef,
   isDiagramSendKind,
   readDiagramFromGraphInput,
   readDiagramSendAsk,
@@ -189,4 +191,83 @@ it('isDiagramSendKind', () => {
   expect(isDiagramSendKind('mindmap')).toBe(true);
   expect(isDiagramSendKind('pie')).toBe(false);
   expect(isDiagramSendKind(3)).toBe(false);
+});
+
+describe('a sequence graph', () => {
+  const sequence = {
+    style: 'sequence',
+    nodes: [
+      { id: 'u', label: 'User' },
+      { id: 's', label: 'Server', group: 'g' },
+    ],
+    edges: [
+      { from: 'u', to: 's', label: 'Sign in' },
+      { from: 's', to: 'u', label: 'Token', line: 'dashed' },
+      { from: 'u', to: 's', label: 'Fetch' },
+    ],
+    groups: [{ id: 'g', label: 'Back end' }],
+  };
+
+  it('keeps repeated messages in order and drops groups', () => {
+    const read = readDiagramSendGraph(sequence);
+    expect(read?.style).toBe('sequence');
+    expect(read?.edges.map((e) => e.label)).toEqual(['Sign in', 'Token', 'Fetch']);
+    expect(read?.groups).toBeUndefined();
+    expect(read?.nodes[1]).toEqual({ id: 's', label: 'Server' });
+  });
+
+  it('keeps one arrow a pair on any other style', () => {
+    expect(readDiagramSendGraph({ ...sequence, style: 'flow' })?.edges).toHaveLength(2);
+  });
+
+  it('offers Sequence as a kind', () => {
+    expect(isDiagramSendKind('sequence')).toBe(true);
+  });
+});
+
+describe('a send into an existing diagram', () => {
+  const ask = {
+    name: 'Flow',
+    graph,
+    source: { app: 'liveknowledge', itemId: 'kb1', tabId: 't', elementId: 'e', label: 'Page' },
+  };
+
+  it('reads a new tab and a redraw target', () => {
+    expect(readDiagramSendAsk({ ...ask, target: { itemId: 'd1' } })?.target).toEqual({
+      itemId: 'd1',
+    });
+    expect(readDiagramSendAsk({ ...ask, target: { itemId: 'd1', tabId: 'tab' } })?.target).toEqual({
+      itemId: 'd1',
+      tabId: 'tab',
+    });
+    expect(readDiagramSendAsk(ask)?.target).toBeUndefined();
+  });
+
+  it('refuses a target that does not read', () => {
+    expect(readDiagramSendAsk({ ...ask, target: { itemId: '' } })).toBeNull();
+    expect(readDiagramSendAsk({ ...ask, target: 'd1' })).toBeNull();
+    expect(readDiagramSendAsk({ ...ask, target: { itemId: 'd1', tabId: 7 } })).toBeNull();
+  });
+
+  it('reads the door body with an item and a tab, never a tab alone', () => {
+    const body = {
+      owner: 'user_a',
+      name: 'Flow',
+      graph,
+      caption: 'From KB',
+      link: 'https://example.com/x',
+    };
+    expect(readDiagramFromGraphInput({ ...body, itemId: 'd1', tabId: 't1' })).toMatchObject({
+      itemId: 'd1',
+      tabId: 't1',
+    });
+    expect(readDiagramFromGraphInput({ ...body, tabId: 't1' })).toBeNull();
+    expect(readDiagramFromGraphInput({ ...body, itemId: 5 })).toBeNull();
+  });
+
+  it('keys a place by its tab and element', () => {
+    expect(diagramSendRef('t', 'e')).toBe('t:e');
+    expect(diagramSendRef(null, 'e')).toBe(':e');
+    expect(diagramSendElement('t:e')).toBe('e');
+  });
 });

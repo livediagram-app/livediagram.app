@@ -56,12 +56,16 @@ export const DIAGRAM_KIND_GUIDE: Record<
   { ask: string; style?: DiagramSendGraph['style']; direction?: DiagramSendGraph['direction'] }
 > = {
   auto: {
-    ask: 'Choose the diagram that shows these words best: a flowchart for steps or a process, a mind map for ideas around one topic, an org chart for people and who they report to, an architecture diagram for systems and how they talk, a timeline for events in order. Set style and direction to suit it.',
+    ask: 'Choose the diagram that shows these words best: a flowchart for steps or a process, a sequence diagram for who sends what to whom in order, a mind map for ideas around one topic, an org chart for people and who they report to, an architecture diagram for systems and how they talk, a timeline for events in order. Set style and direction to suit it.',
   },
   flowchart: {
     ask: 'Draw a flowchart: each step a box, each decision a diamond with its outcomes as labelled arrows ("Yes", "No"), the start and the end circles, data or documents as parallelogram or document shapes.',
     style: 'flow',
     direction: 'down',
+  },
+  sequence: {
+    ask: 'Draw a sequence diagram: each person, team or system taking part a box (no groups), and each message between them an arrow in the order it happens, labelled with what is sent or asked; a reply is a dashed arrow back. The same two may exchange several messages.',
+    style: 'sequence',
   },
   mindmap: {
     ask: 'Draw a mind map: one central box for the main topic, its main ideas as boxes linked from it, and their details linked from those. Keep labels short.',
@@ -96,11 +100,11 @@ Rules:
 - shape is one of ${DIAGRAM_SEND_SHAPES.join(', ')}, or null for a plain box.
 - role is a person's job title for an org chart, else null. group is the id of a group the box sits in, else null.
 - line is "dashed" for an optional, async or weak link, else "solid".
-- style is "flow" (steps and systems), "tree" (a hierarchy) or "mindmap" (ideas round one topic); direction is "down" or "right".
+- style is "flow" (steps and systems), "tree" (a hierarchy), "mindmap" (ideas round one topic) or "sequence" (messages between participants in order, where arrows keep their order and may repeat); direction is "down" or "right".
 - title is a short name for the whole diagram.
 
 Reply with one JSON object only, no other words:
-{"title": string, "style": "flow"|"tree"|"mindmap", "direction": "down"|"right", "nodes": [{"id": string, "label": string, "shape": string|null, "note": string|null, "role": string|null, "group": string|null}], "edges": [{"from": string, "to": string, "label": string|null, "line": "solid"|"dashed"}], "groups": [{"id": string, "label": string}]}`;
+{"title": string, "style": "flow"|"tree"|"mindmap"|"sequence", "direction": "down"|"right", "nodes": [{"id": string, "label": string, "shape": string|null, "note": string|null, "role": string|null, "group": string|null}], "edges": [{"from": string, "to": string, "label": string|null, "line": "solid"|"dashed"}], "groups": [{"id": string, "label": string}]}`;
 
 /** The user message: the kind asked for, the page's title and the words, fenced. */
 export function diagramMessage(input: DiagramDraftInput): string {
@@ -126,7 +130,7 @@ export const DIAGRAM_REPLY_SCHEMA = {
   type: 'object',
   properties: {
     title: { type: 'string' },
-    style: { type: 'string', enum: ['flow', 'tree', 'mindmap'] },
+    style: { type: 'string', enum: ['flow', 'tree', 'mindmap', 'sequence'] },
     direction: { type: 'string', enum: ['down', 'right'] },
     nodes: {
       type: 'array',
@@ -232,9 +236,14 @@ export function parseDiagramDraft(
   const from = text.indexOf('{');
   if (from < 0) return undefined;
   const whole = parsed(text.slice(from, text.lastIndexOf('}') + 1));
-  const graph = readDiagramSendGraph(whole);
-  if (!graph) return undefined;
   const guide = DIAGRAM_KIND_GUIDE[kind];
+  // The kind's style read first, so a sequence keeps its repeated messages whatever style the model named.
+  const graph = readDiagramSendGraph(
+    guide.style && whole && typeof whole === 'object' && !Array.isArray(whole)
+      ? { ...whole, style: guide.style }
+      : whole,
+  );
+  if (!graph) return undefined;
   return {
     ...graph,
     ...(guide.style ? { style: guide.style } : {}),

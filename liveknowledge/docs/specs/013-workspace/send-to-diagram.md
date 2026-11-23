@@ -16,8 +16,11 @@ The same words [Send to Plan](send-to-plan.md) sends, from the same places, each
 
 Send to Plan wears liveplanner's logo and Send to Diagram livediagram's, on every entry and pill (owner, 2026-11-23).
 
-The diagram is named after the page ("Onboarding diagram"), and its caption reads "From <knowledgebase>, <page>",
-linking back to the block the words start in (`#t=<tab>&el=<block>`).
+The diagram (or its new tab) is named after the page ("Onboarding diagram"), and its caption reads "From
+<knowledgebase>, <page>", linking back to the block the words start in (`#t=<tab>&el=<block>`). The block then shows
+the platform's diagram chip after its last word, beside Send to Plan's chip when it has one, and the picker opens on
+**Update** for it next time (the platform's "Sending again"). A text element on a page's canvas shows no chip: its
+diagram is reached from the picker's Update.
 
 ## The draft
 
@@ -28,6 +31,8 @@ person's own, else built-in AI (Workers AI, the model Describe Structure asks). 
 set has their key answer first, as their primary; without one, built-in AI answers. Nothing is written: the editor hands
 the graph to the index.
 
+- **The kinds**: the platform's seven. Sequence asks for the people and systems taking part and the messages between
+  them in order, drawn as lifelines (`style: sequence`).
 - **The model is told** the kind asked for, the page's title and the words, fenced as material, never instructions; its
   reply is read strictly (`parseDiagramDraft`, then the platform's `readDiagramSendGraph`) and placed only as labels.
   A chosen kind's layout wins over the model's. On built-in AI a reply that does not read is asked once more with fixed
@@ -51,4 +56,5 @@ the graph to the index.
 ## Telemetry
 
 The platform's Send to Diagram events (`UI·Opened·SendToDiagram`, `UI·Created·SendToDiagram`,
-`UI·Refused·SendToDiagram`), charted as the Send to Diagram stack beside Send to Plan's.
+`UI·Refused·SendToDiagram`, `UI·Used·SendToDiagram`, `UI·Opened·SentDiagram`), charted as the Send to Diagram
+stack beside Send to Plan's.

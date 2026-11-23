@@ -3,6 +3,7 @@
 // Shapes and their readers only; the route is the index's, the door livediagram's.
 
 import { isApp, type App } from './constants';
+import type { Item } from './types';
 
 // The spec's Limits.
 export const DIAGRAM_SEND_WORDS_MAX = 8_000;
@@ -11,6 +12,10 @@ export const DIAGRAM_SEND_EDGES_MAX = 120;
 export const DIAGRAM_SEND_GROUPS_MAX = 12;
 export const DIAGRAM_SEND_LABEL_MAX = 120;
 export const DIAGRAM_SEND_NOTE_MAX = 400;
+/** A source's newest sends one read takes, for its chips. */
+export const DIAGRAM_SEND_READ_MAX = 200;
+/** Distinct diagrams one read checks the reader's access on. */
+export const DIAGRAM_SEND_DIAGRAMS_CHECKED_MAX = 20;
 
 const ID_MAX = 64;
 const ITEM_ID_MAX = 200;
@@ -19,6 +24,7 @@ const ITEM_ID_MAX = 200;
 export const DIAGRAM_SEND_KINDS = [
   'auto',
   'flowchart',
+  'sequence',
   'mindmap',
   'orgchart',
   'architecture',
@@ -62,7 +68,8 @@ export type DiagramSendGroup = { id: string; label: string };
 
 export type DiagramSendGraph = {
   title?: string;
-  style?: 'flow' | 'tree' | 'mindmap';
+  // `sequence`: the nodes are its participants and the edges its messages, in order.
+  style?: 'flow' | 'tree' | 'mindmap' | 'sequence';
   direction?: 'down' | 'right';
   nodes: DiagramSendNode[];
   edges: DiagramSendEdge[];
@@ -79,12 +86,38 @@ export type DiagramSendSource = {
   label: string;
 };
 
-/** What the editor asks the index: a new diagram, named, drawn from the graph. */
+/** Where an existing diagram takes the graph: a new tab at its end, or (with `tabId`) that tab redrawn. */
+export type DiagramSendTarget = { itemId: string; tabId?: string | null };
+
+/** What the editor asks the index: a diagram (new, or a tab of one the person may edit), drawn from the graph. */
 export type DiagramSendAsk = {
   name: string;
   graph: DiagramSendGraph;
   source: DiagramSendSource;
+  target?: DiagramSendTarget;
 };
+
+/** One place's send, as its chip shows it: the diagram (its current name) and the tab drawn. */
+export type DiagramSend = {
+  id: string;
+  // `tab:element` of the source place.
+  ref: string;
+  diagram: { id: string; title: string };
+  tabId: string;
+  // The diagram, opened on its tab.
+  link: string;
+  at: number;
+};
+
+export type DiagramSendAnswer = { item: Item; link: string; send: DiagramSend };
+export type DiagramSendsRead = { sends: DiagramSend[] };
+
+/** A place's key among a source's sends. */
+export const diagramSendRef = (tabId: string | null, elementId: string | null): string =>
+  `${tabId ?? ''}:${elementId ?? ''}`;
+
+/** The element a send's ref names. */
+export const diagramSendElement = (ref: string): string => ref.split(':')[1] ?? '';
 
 /** What the index asks livediagram's door to make, for `owner`. */
 export type DiagramFromGraphInput = {
@@ -94,6 +127,9 @@ export type DiagramFromGraphInput = {
   // The caption under the title, and the address it links to.
   caption: string;
   link: string;
+  // An existing diagram: a new tab named `name` at its end, or `tabId` redrawn.
+  itemId?: string;
+  tabId?: string;
 };
 
 export const DIAGRAM_FROM_GRAPH_PATH = '/api/internal/items/from-graph';
@@ -115,9 +151,11 @@ const idOf = (v: unknown): string | null =>
  */
 export function readDiagramSendGraph(v: unknown): DiagramSendGraph | null {
   if (!isRecord(v) || !Array.isArray(v.nodes)) return null;
+  // A sequence's messages may repeat between the same two, and it has no groups.
+  const sequence = v.style === 'sequence';
   const groups: DiagramSendGroup[] = [];
   const groupIds = new Set<string>();
-  if (Array.isArray(v.groups)) {
+  if (Array.isArray(v.groups) && !sequence) {
     for (const g of v.groups) {
       if (groups.length >= DIAGRAM_SEND_GROUPS_MAX) break;
       if (!isRecord(g)) continue;
@@ -162,7 +200,7 @@ export function readDiagramSendGraph(v: unknown): DiagramSendGraph | null {
       const to = idOf(e.to);
       if (!from || !to || from === to || !nodeIds.has(from) || !nodeIds.has(to)) continue;
       const key = `${from}\u0000${to}`;
-      if (seen.has(key)) continue;
+      if (!sequence && seen.has(key)) continue;
       seen.add(key);
       const label = clean(e.label, DIAGRAM_SEND_LABEL_MAX);
       edges.push({
@@ -175,7 +213,9 @@ export function readDiagramSendGraph(v: unknown): DiagramSendGraph | null {
   }
   const title = clean(v.title, DIAGRAM_SEND_LABEL_MAX);
   const style =
-    v.style === 'flow' || v.style === 'tree' || v.style === 'mindmap' ? v.style : undefined;
+    v.style === 'flow' || v.style === 'tree' || v.style === 'mindmap' || sequence
+      ? (v.style as DiagramSendGraph['style'])
+      : undefined;
   const direction = v.direction === 'down' || v.direction === 'right' ? v.direction : undefined;
   const used = new Set(nodes.map((n) => n.group).filter(Boolean));
   const kept = groups.filter((g) => used.has(g.id));
@@ -210,13 +250,29 @@ function readSource(v: unknown): DiagramSendSource | null {
   };
 }
 
+const itemIdOf = (x: unknown): string | null =>
+  typeof x === 'string' && x && x.length <= ITEM_ID_MAX ? x : null;
+
+// `undefined` for no target, null for one that does not read.
+function readTarget(v: unknown): DiagramSendTarget | null | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (!isRecord(v)) return null;
+  const itemId = itemIdOf(v.itemId);
+  if (!itemId) return null;
+  if (v.tabId === undefined || v.tabId === null) return { itemId };
+  const tabId = itemIdOf(v.tabId);
+  return tabId ? { itemId, tabId } : null;
+}
+
 /** The editor's ask as the index takes it, or null. */
 export function readDiagramSendAsk(v: unknown): DiagramSendAsk | null {
   if (!isRecord(v)) return null;
   const name = clean(v.name, DIAGRAM_SEND_LABEL_MAX);
   const graph = readDiagramSendGraph(v.graph);
   const source = readSource(v.source);
-  return name && graph && source ? { name, graph, source } : null;
+  const target = readTarget(v.target);
+  if (!name || !graph || !source || target === null) return null;
+  return { name, graph, source, ...(target ? { target } : {}) };
 }
 
 /** The door's body as livediagram takes it, or null. */
@@ -229,5 +285,17 @@ export function readDiagramFromGraphInput(v: unknown): DiagramFromGraphInput | n
     typeof v.link === 'string' && /^https?:\/\//.test(v.link) && v.link.length <= 2_000
       ? v.link
       : null;
-  return name && graph && caption && link ? { owner: v.owner, name, graph, caption, link } : null;
+  if (!name || !graph || !caption || !link) return null;
+  const itemId = v.itemId === undefined ? undefined : itemIdOf(v.itemId);
+  const tabId = v.tabId === undefined ? undefined : itemIdOf(v.tabId);
+  if (itemId === null || tabId === null || (tabId && !itemId)) return null;
+  return {
+    owner: v.owner,
+    name,
+    graph,
+    caption,
+    link,
+    ...(itemId ? { itemId } : {}),
+    ...(tabId ? { tabId } : {}),
+  };
 }

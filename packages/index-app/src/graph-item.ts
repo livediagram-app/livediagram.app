@@ -24,12 +24,14 @@ export async function graphDoor(
   }
   if (result.status !== 'ok') {
     console.warn('[internal] graph item refused', { status: result.status });
-    return json({ error: result.status }, result.status === 'too_large' ? 413 : 422);
+    const status = result.status === 'too_large' ? 413 : result.status === 'not_found' ? 404 : 422;
+    return json({ error: result.status }, status);
   }
   console.info('[internal] graph item made', {
     id: result.id,
+    into: input.tabId ? 'tab' : input.itemId ? 'new-tab' : 'new',
     nodes: input.graph.nodes.length,
     edges: input.graph.edges.length,
   });
-  return json({ id: result.id }, 201);
+  return json({ id: result.id, ...(result.tabId ? { tabId: result.tabId } : {}) }, 201);
 }

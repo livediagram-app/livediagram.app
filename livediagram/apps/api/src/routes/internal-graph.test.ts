@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { parseDocumentEnvelope } from '@livediagram/document';
 import type { DiagramFromGraphInput } from '@liveworkspace/index-client';
-import { documentFromGraph, graphDocumentFile, graphInputOf, linkCaption } from './internal-graph';
+import {
+  documentFromGraph,
+  graphDocumentFile,
+  graphInputOf,
+  graphTab,
+  linkCaption,
+} from './internal-graph';
 
 const input: DiagramFromGraphInput = {
   owner: 'user_1',
@@ -109,5 +115,78 @@ describe('documentFromGraph', () => {
       }),
     ).resolves.toEqual({ status: 'invalid_graph' });
     warn.mockRestore();
+  });
+});
+
+describe('documentFromGraph into an existing canvas', () => {
+  const drawing = (status: 'ok' | 'not_found' = 'ok') => {
+    const drawGraphTab = vi.fn(async () => ({ status }) as const);
+    return { drawGraphTab, room: vi.fn(() => ({ drawGraphTab })) };
+  };
+
+  it('draws a new tab with a fresh id, its caption linked, as the owner', async () => {
+    const { drawGraphTab, room } = drawing();
+    const result = await documentFromGraph({} as never, { ...input, itemId: 'doc-9' }, room);
+    expect(room).toHaveBeenCalledWith('doc-9');
+    const write = (drawGraphTab.mock.calls[0] as unknown as [Record<string, unknown>])[0];
+    expect(write).toMatchObject({ name: 'Onboarding diagram', owner: 'user_1' });
+    expect(typeof write.tabId).toBe('string');
+    expect(result).toEqual({ status: 'ok', id: 'doc-9', tabId: write.tabId });
+    const linked = (write.elements as { link?: { url: string } }[]).filter((e) => e.link);
+    expect(linked.map((e) => e.link?.url)).toEqual([input.link]);
+  });
+
+  it('redraws the tab named, and passes a missing canvas on', async () => {
+    const { drawGraphTab, room } = drawing();
+    await expect(
+      documentFromGraph({} as never, { ...input, itemId: 'doc-9', tabId: 'tab-2' }, room),
+    ).resolves.toEqual({ status: 'ok', id: 'doc-9', tabId: 'tab-2' });
+    expect(drawGraphTab).toHaveBeenCalledWith(expect.objectContaining({ tabId: 'tab-2' }));
+    const gone = drawing('not_found');
+    await expect(
+      documentFromGraph({} as never, { ...input, itemId: 'doc-9' }, gone.room),
+    ).resolves.toEqual({ status: 'not_found' });
+  });
+
+  it('never reaches the room for a graph that cannot be drawn', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { room } = drawing();
+    await expect(
+      documentFromGraph(
+        {} as never,
+        {
+          ...input,
+          itemId: 'doc-9',
+          graph: { style: 'lanes', nodes: [{ id: 'a', label: 'A' }], edges: [] } as never,
+        },
+        room,
+      ),
+    ).resolves.toEqual({ status: 'invalid_graph' });
+    expect(room).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});
+
+describe('a sequence graph', () => {
+  it('compiles as lifelines and messages, its caption linked', () => {
+    const tab = graphTab({
+      ...input,
+      graph: {
+        style: 'sequence',
+        nodes: [
+          { id: 'u', label: 'User' },
+          { id: 's', label: 'Server' },
+        ],
+        edges: [
+          { from: 'u', to: 's', label: 'Sign in' },
+          { from: 's', to: 'u', label: 'Token', line: 'dashed' },
+          { from: 'u', to: 's', label: 'Fetch' },
+        ],
+      },
+    });
+    expect(tab).not.toBeNull();
+    const labels = tab!.elements.map((e) => (e as { label?: string }).label).filter(Boolean);
+    expect(labels).toEqual(expect.arrayContaining(['User', 'Server', 'Sign in', 'Token', 'Fetch']));
+    expect(tab!.elements.some((e) => (e as { link?: unknown }).link)).toBe(true);
   });
 });

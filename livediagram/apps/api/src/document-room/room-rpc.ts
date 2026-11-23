@@ -26,6 +26,7 @@ import {
 } from './document-content';
 import { DOCUMENT_OUTBOX } from './document-outbox';
 import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
+import { writeGraphTab, type GraphTabOutcome, type GraphTabWrite } from './graph-tab';
 import { hasDocumentSchema } from './document-schema';
 import { documentShares, type ShareAnswer, type ShareMessage } from './tab-shares';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
@@ -158,6 +159,17 @@ export async function addConnectedTab(
     if (op) room.broadcastOrderedSystemOp(op);
   }
   return outcome;
+}
+
+// Send to Diagram's tab (graph-tab.ts): a new tab or one redrawn, as the person who sent, through the changeset path.
+export async function drawGraphTab(
+  room: DocumentRoom,
+  documentId: string,
+  write: GraphTabWrite,
+): Promise<GraphTabOutcome> {
+  room.bindDocument(documentId);
+  if (!room.hasSchema()) return { status: 'not_found' };
+  return writeGraphTab(room.requireEnv(), documentId, write, (p) => room.state.waitUntil(p));
 }
 
 // Whether the canvas places this image (on one tab, for a tab-scoped visitor) and may serve it

@@ -35,6 +35,16 @@ describe('the graph door', () => {
     expect(run).toHaveBeenCalledWith(BODY);
   });
 
+  it('draws into an existing item, answering the tab', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const run = making({ status: 'ok', id: 'D1', tabId: 'T1' });
+    const body = { ...BODY, itemId: 'D1', tabId: 'T1' };
+    const res = await send(request(body), { fromGraph: run });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({ id: 'D1', tabId: 'T1' });
+    expect(run).toHaveBeenCalledWith(body);
+  });
+
   it('is a 404 for an app without it, and refuses another key', async () => {
     expect((await send(request(BODY), {})).status).toBe(404);
     expect((await send(request(BODY, 'drive-key'), { fromGraph: making() })).status).not.toBe(201);
@@ -60,6 +70,9 @@ describe('the graph door', () => {
     ).toBe(422);
     expect((await send(request(BODY), { fromGraph: making({ status: 'too_large' }) })).status).toBe(
       413,
+    );
+    expect((await send(request(BODY), { fromGraph: making({ status: 'not_found' }) })).status).toBe(
+      404,
     );
     const broken = vi.fn(async () => {
       throw new Error('down');

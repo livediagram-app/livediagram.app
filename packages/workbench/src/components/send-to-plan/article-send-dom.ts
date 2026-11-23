@@ -61,9 +61,9 @@ export function glyphDom(prims: readonly IconPrim[], size: number): SVGSVGElemen
 }
 
 // `article-chrome`: what an article's export and thumbnail leave out (the writing's own chrome).
-const CHIP =
+export const CHIP =
   'article-sent-chip article-chrome ml-1.5 inline-flex h-5 max-w-48 cursor-pointer select-none items-center gap-1 rounded-full border px-1.5 align-[0.1em] font-sans text-[11px] font-medium leading-none not-italic no-underline transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300';
-const CHIP_OPEN =
+export const CHIP_OPEN =
   'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700';
 const CHIP_DONE =
   'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-200';

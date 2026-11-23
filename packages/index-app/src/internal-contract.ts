@@ -204,7 +204,10 @@ export type TemplateInput = {
 };
 
 export type GraphItemResult =
-  | { status: 'ok'; id: string }
+  // `tabId`: the tab drawn (absent for a new item's first tab, which the app names itself).
+  | { status: 'ok'; id: string; tabId?: string }
+  // An existing item (`itemId`) the app holds nothing for.
+  | { status: 'not_found' }
   | { status: 'invalid_graph' }
   | { status: 'invalid_file' }
   | { status: 'too_large' };

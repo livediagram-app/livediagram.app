@@ -58,7 +58,7 @@ import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
-import type { DiagramSendAsk } from './diagram-sends';
+import type { DiagramSendAnswer, DiagramSendAsk, DiagramSendsRead } from './diagram-sends';
 import type { PlanDataAsk, PlanDataListing, PlanDataRead } from './live-data';
 import type {
   Approval,
@@ -370,9 +370,19 @@ export function createIndexClient({
       }),
     newPlanForSend: (name: string) =>
       call<{ item: Item }>('/plan-sends/plans', { method: 'POST', body: { name } }),
-    // Send to Diagram (send-to-diagram.md): a new livediagram diagram of the person's own, drawn from a graph.
+    // Send to Diagram (send-to-diagram.md): a livediagram diagram drawn from a graph (a new one of the person's own, a new
+    // tab in one they may edit, or a tab redrawn), and a source's sends (only those whose diagram the reader can open).
     sendToDiagram: (ask: DiagramSendAsk) =>
-      call<{ item: Item; link: string }>('/diagram-sends/diagrams', { method: 'POST', body: ask }),
+      call<DiagramSendAnswer>('/diagram-sends/diagrams', { method: 'POST', body: ask }),
+    diagramSends: (
+      sourceId: string,
+      options: RequestOptions & { share?: ShareAccess | null } = {},
+    ) =>
+      call<DiagramSendsRead>(`/items/${enc(sourceId)}/diagram-sends`, {
+        share: options.share ?? null,
+        signal: options.signal,
+        bounded: true,
+      }),
 
     // Live data (live-data.md), on the person's own access: a plan's boards, metrics and filter values, and one board's
     // counts or one metric's rows now. `watch` as readSheetRange's.

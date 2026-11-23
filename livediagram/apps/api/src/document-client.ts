@@ -5,6 +5,7 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
+import type { GraphTabOutcome, GraphTabWrite } from './document-room/graph-tab';
 import type {
   AutomationStepAnswer,
   AutomationStepDoorCall,
@@ -116,6 +117,8 @@ export type DocumentRoomClient = {
   notifyMention(input: MentionNotice): Promise<boolean>;
   // The index's reverse write of a connected tab (document-room/connected-tab.ts).
   addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  // Send to Diagram's new or redrawn tab (document-room/graph-tab.ts).
+  drawGraphTab(write: GraphTabWrite): Promise<GraphTabOutcome>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the
   // join recorded, and what another holder (`from`) sends.
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
@@ -145,6 +148,7 @@ export function documentRoom(
     exportComments: () => room.exportComments(documentId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(documentId, write),
+    drawGraphTab: (write) => room.drawGraphTab(documentId, write),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     grantOwnImages: (ids, personId) => room.grantOwnImages(documentId, ids, personId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
@@ -186,6 +190,7 @@ export type DocumentRoomRpc = {
   exportComments(documentId: string): Promise<ExportCommentsResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
   addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  drawGraphTab(documentId: string, write: GraphTabWrite): Promise<GraphTabOutcome>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   grantOwnImages(documentId: string, ids: string[], personId: string): Promise<number>;
   exportCopy(
