@@ -1,12 +1,14 @@
 'use client';
 
-// Describe a Rule (liveplanner/docs/specs/026-plan/automations.md "Describe a Rule"): the person's words, up to 500
-// characters, the app's examples that fill the box, the AI cost line, then Draft Rule (or Ctrl / ⌘ Enter). While it
+// Describe a Rule (liveplanner/docs/specs/026-plan/automations.md "Describe a Rule"): the app's examples that fill the
+// box, above it, then the person's words, up to 500 characters, the source line (which AI drafts it, and a way to add
+// a key of their own), then Draft Rule (or Ctrl / ⌘ Enter). While it
 // drafts the box is read-only and the button busy; Cancel stops waiting (the ask still counts). A draft goes to
 // `onDrafted` (the dialog opens it in the builder, unsaved and off); a refusal is said under the box in the api's
 // fixed words, the text kept to change. The model's own words are never shown.
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { AI_DRAFT_PROMPT_MAX, AUTOMATION_AI_PER_DAY } from '@liveworkspace/automations';
 import {
   Button,
@@ -14,12 +16,11 @@ import {
   DialogFooter,
   DialogHeader,
   SparkleIcon,
-  TextArea,
 } from '@liveworkspace/ui';
-import { Callout } from '@liveworkspace/ui/callout';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { AiNote } from './AiNote';
+import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import { AutomationRefusal } from './automations-client';
+import { DescribePrompt } from './DescribePrompt';
 import { useAutomationsKit } from './kit-context';
 import type { RuleBody, RuleStart } from './types';
 
@@ -41,12 +42,11 @@ export function DescribeRuleDialog({
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
+  // A key that failed on the last ask, for the source line to say so and offer to fix it.
+  const [keyFailure, setKeyFailure] = useState<AiKeyFailure | null>(null);
   const box = useRef<HTMLTextAreaElement>(null);
   // The ask under way: an answer to one cancelled, or replaced, is dropped.
   const asking = useRef(0);
-  const noteId = useId();
-  const saidId = useId();
-  const examplesId = useId();
   const prompt = text.trim();
   useEffect(() => {
     box.current?.focus();
@@ -60,12 +60,14 @@ export function DescribeRuleDialog({
     const mine = ++asking.current;
     setBusy(true);
     setSaid(null);
+    setKeyFailure(null);
     try {
       const drafted = await draft(prompt);
       if (mine === asking.current) onDrafted(drafted);
     } catch (error) {
       if (mine !== asking.current) return;
       setSaid(error instanceof AutomationRefusal ? error.message : DESCRIBE_FAILED);
+      setKeyFailure(error instanceof AutomationRefusal ? error.aiKey : null);
       box.current?.focus();
     } finally {
       if (mine === asking.current) setBusy(false);
@@ -89,72 +91,30 @@ export function DescribeRuleDialog({
       >
         <DialogCloseButton onClick={cancel} />
       </DialogHeader>
-      <div data-describe-rule="" className="flex flex-col gap-3 px-6 py-5">
-        <TextArea
-          ref={box}
-          aria-label="Describe the rule"
-          aria-describedby={said ? `${saidId} ${noteId}` : noteId}
-          aria-invalid={said ? true : undefined}
-          rows={4}
-          maxLength={AI_DRAFT_PROMPT_MAX}
-          value={text}
-          readOnly={busy}
-          placeholder={placeholder}
-          onChange={(e) => {
-            setText(e.target.value);
-            setSaid(null);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-              e.preventDefault();
-              void submit();
-            }
-          }}
-          className="resize-none"
-        />
-        <div className="-mt-1 flex justify-end">
-          <span
-            aria-live="polite"
-            className="text-[12px] tabular-nums text-slate-500 dark:text-slate-400"
-          >
-            {text.length} / {AI_DRAFT_PROMPT_MAX}
-          </span>
-        </div>
-        <div role="group" aria-labelledby={examplesId} className="flex flex-col gap-2">
-          <span
-            id={examplesId}
-            className="text-[12px] font-medium text-slate-500 dark:text-slate-400"
-          >
-            Try an Example
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {examples.map((e) => (
-              <Button
-                key={e.label}
-                variant="secondary"
-                size="xs"
-                disabled={busy}
-                onClick={() => {
-                  setText(e.text);
-                  setSaid(null);
-                  box.current?.focus();
-                }}
-              >
-                {e.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-        {said ? (
-          <Callout tone="warning" size="md" role="alert">
-            <span id={saidId}>{said}</span>
-          </Callout>
-        ) : null}
-        <AiNote id={noteId}>
-          Uses AI: counts toward this {kit.plumbing.words.item}&rsquo;s {AUTOMATION_AI_PER_DAY} AI
-          steps a day.
-        </AiNote>
-      </div>
+      <DescribePrompt
+        ref={box}
+        dataAttr="data-describe-rule"
+        label="Describe the rule"
+        text={text}
+        onText={(t) => {
+          setText(t);
+          setSaid(null);
+        }}
+        max={AI_DRAFT_PROMPT_MAX}
+        placeholder={placeholder}
+        examples={examples}
+        busy={busy}
+        said={said}
+        saidOnSource={keyFailure !== null}
+        source={(id) => (
+          <WorkbenchAiSource
+            id={id}
+            failure={keyFailure}
+            allowance={`Counts toward this ${kit.plumbing.words.item}’s ${AUTOMATION_AI_PER_DAY} AI steps a day.`}
+          />
+        )}
+        onSubmit={() => void submit()}
+      />
       <DialogFooter>
         <Button variant="secondary" size="sm" onClick={cancel}>
           Cancel

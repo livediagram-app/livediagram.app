@@ -29,6 +29,7 @@ export type {
 // was made and last used (null before Make Secret). Never the secret or its hash. The shapes, and the Audit Trail's
 // filters, are every app's (@liveworkspace/automations).
 import type { AutomationHookInfo } from '@liveworkspace/automations';
+import type { AiKeyFailureBody } from './plan-drafts';
 
 export type {
   AutomationHookInfo,
@@ -172,6 +173,8 @@ export const AUTOMATION_ERRORS = [
   'automation_draft_unreadable',
   'automation_ai_capped',
   'automation_ai_unavailable',
+  // Describe a Rule on the person's key, or the plan's team's: refused by the provider or unopenable (422).
+  'ai_key_failed',
 ] as const;
 export type AutomationError = (typeof AUTOMATION_ERRORS)[number];
 
@@ -180,4 +183,6 @@ export interface AutomationErrorBody {
   error: AutomationError;
   path?: string;
   message?: string;
+  // `ai_key_failed` (Describe a Rule on a key): whose key, its provider and the kind, never the key.
+  aiKey?: AiKeyFailureBody;
 }

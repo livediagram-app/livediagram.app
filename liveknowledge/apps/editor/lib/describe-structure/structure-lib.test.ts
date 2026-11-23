@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ArticleBlock } from '@liveknowledge/document';
 import { withStructureAtTop } from './structure-draft';
-import { structureAiLine, structureFailureWords, structurePlaceholder } from './structure-words';
+import { structureFailureWords, structurePlaceholder } from './structure-words';
 
 // docs/specs/030-knowledgebase/describe-to-set-up.md "Describe Structure on a page".
 
@@ -51,24 +51,6 @@ describe('withStructureAtTop', () => {
 });
 
 describe('the words', () => {
-  it("says the person's choice of built-in AI over a key, else what Ask says", () => {
-    const keyed = { hasKey: true, builtIn: true };
-    expect(structureAiLine(null, 'key')).toBeNull();
-    expect(structureAiLine(keyed, 'built-in')).toBe('Uses built-in AI');
-    expect(structureAiLine(keyed, 'key')).toBe("Uses this knowledgebase's key");
-    expect(structureAiLine({ hasKey: false, builtIn: true, uses: 'team' }, 'key')).toBe(
-      "Uses your team's key",
-    );
-    expect(structureAiLine({ hasKey: false, builtIn: true, uses: 'personal' }, 'key')).toBe(
-      'Uses your key',
-    );
-    expect(structureAiLine({ hasKey: false, builtIn: true, uses: 'team' }, 'built-in')).toBe(
-      'Uses built-in AI',
-    );
-    expect(structureAiLine({ hasKey: false, builtIn: true }, 'built-in')).toBe('Uses built-in AI');
-    expect(structureAiLine({ hasKey: false, builtIn: false }, 'key')).toBeNull();
-  });
-
   it('builds the placeholder from the title', () => {
     expect(structurePlaceholder(' Deploys ')).toBe('What goes on “Deploys”, in your own words.');
     expect(structurePlaceholder('')).toBe('In your own words.');

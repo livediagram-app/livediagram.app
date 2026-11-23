@@ -9,15 +9,12 @@ import { Button, DialogCloseButton, DialogFooter, DialogHeader } from '@liveknow
 import { Callout } from '@liveworkspace/ui/callout';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
+import { SETUP_BUILT_IN_PER_PERSON_PER_DAY } from '@liveknowledge/knowledge';
+import { KnowledgeAiSource, saidOnLine } from '@/components/ask/KnowledgeAiSource';
 import { useAiSettingsState, useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import type { SetupMode } from '@/lib/knowledge-setup/setup-open';
-import {
-  createLabel,
-  setupAiLine,
-  setupFailureWords,
-  setupTitle,
-} from '@/lib/knowledge-setup/setup-words';
+import { createLabel, setupFailureWords, setupTitle } from '@/lib/knowledge-setup/setup-words';
 import { DescribeStep } from './DescribeStep';
 import { ReviewStep } from './ReviewStep';
 import { SetupCreating, SetupDone, SetupSuggesting } from './SetupStates';
@@ -90,12 +87,17 @@ function SetupDialogBody({
 
   // Read only for the line that says which AI answers: nothing waits for it, and the api decides.
   const ready = settings.status === 'ready' ? settings.settings : null;
-  const aiLine = setupAiLine(ready);
   // The request and the run end with the dialog; while pages are being made it does not close under the person.
   const close = flow.step === 'creating' ? flow.cancelCreate : onClose;
   const failure = flow.failure
     ? setupFailureWords(flow.failure.kind, { provider: flow.failure.provider ?? ready?.provider })
     : null;
+
+  // Describe to Set Up always has built-in AI (describe-to-set-up.md "The model").
+  const lineState = ready
+    ? ({ status: 'ready', settings: { ...ready, builtIn: true } } as const)
+    : null;
+  const onLine = lineState !== null && saidOnLine(lineState, session.rights.manageAi, flow.failure);
 
   let body;
   if (flow.step === 'suggesting') body = <SetupSuggesting />;
@@ -115,7 +117,11 @@ function SetupDialogBody({
   else
     body = (
       <>
-        {failure ? (
+        {failure && onLine ? (
+          <span role="alert" className="sr-only">
+            {failure.title}. {failure.text}
+          </span>
+        ) : failure ? (
           <Callout
             tone="warning"
             size="md"
@@ -134,10 +140,17 @@ function SetupDialogBody({
           onSubmit={flow.suggest}
           adding={mode === 'add'}
         />
-        {aiLine ? (
-          <p className="-mt-2 text-xs text-slate-600 dark:text-slate-400" data-setup-ai="">
-            {aiLine}
-          </p>
+        {lineState ? (
+          <div className="-mt-1" data-setup-ai="">
+            <KnowledgeAiSource
+              state={lineState}
+              who={who}
+              documentId={documentId}
+              manageAi={session.rights.manageAi}
+              allowance={`${SETUP_BUILT_IN_PER_PERSON_PER_DAY} set-ups a person a day.`}
+              failure={flow.failure}
+            />
+          </div>
         ) : null}
       </>
     );

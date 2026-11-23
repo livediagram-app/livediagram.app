@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { withAccountHost } from '../../test/account-host';
+import { AI_KEY_CHANGED_EVENT } from '../../ai-source/ai-source-model';
 import { AiKeyPanel } from './AiKeyPanel';
 import { aiKeyPath, modelLabel, type AiKeysAnswer, type AiKeyState } from './ai-keys';
 
@@ -132,7 +133,12 @@ describe('Settings › AI, your own key', () => {
     expect(container.querySelector('input[type=password], form')).toBeNull();
     expect(input.className).toContain('[-webkit-text-security:disc]');
     type(input, KEY);
+    // Every source line reads again when Settings changes a key (ai-keys.md "The source line").
+    const heard = vi.fn();
+    window.addEventListener(AI_KEY_CHANGED_EVENT, heard);
     await press('Save Key');
+    window.removeEventListener(AI_KEY_CHANGED_EVENT, heard);
+    expect(heard).toHaveBeenCalledTimes(1);
     expect(writes()).toEqual([
       {
         url: '/api/account/ai-key',

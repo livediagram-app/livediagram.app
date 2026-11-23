@@ -114,6 +114,7 @@ over this app's kinds, with pictures of its own in the pickers:
 - **Add a Tab from a Template** offers the templates New Tab does.
 - The Templates gallery holds the table above in four sections: **Keep It Safe**, **Rooms and Meetings**, **The
   Suggestion Box** and **Stay in the Loop**.
+- Which AI ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)): Describe a Rule runs on the person's own key, or the Space's team's, when one applies, else built-in AI, and its dialog shows the source line with Try an Example above the box; Summarise with AI always runs on built-in AI, and its panel says so.
 - Describe a Rule offers examples a Space fits, the headline one first ("Reset this Space to a snapshot every night",
   "When everyone leaves a room, put it back as it was", "Tell Slack when someone arrives in an empty room").
 - The empty state's **How Rules Work** opens the help centre's Automations article (`/help/tools/automations`).

@@ -44,8 +44,10 @@ type | null, newTab | null, changedTab | null, newSheet | null }`, the shape `st
 
 - `POST /api/form-drafts`, its own segment in `index.ts`, the manifest and the error-telemetry route list. Signed in
   (`ctx.verifiedUserId`), else 403 `form_draft_needs_account` for a guest and 401 for nobody; a prompt of 1 to 500
-  (400 `form_draft_invalid`); `aiClient` (503 `form_draft_unavailable`, not set up); `spendPlanDraft` (the shared
-  count; 429 `form_draft_capped`, 503 when unreadable); then `askForDraft` (below). Logs `[form-draft]` with answer,
+  (400 `form_draft_invalid`); `draftAi(ctx, null, …)` (Describe a Plan's: the person's own key, else
+  `aiClient`, 503 `form_draft_unavailable` when not set up; 422 `ai_key_failed` for a refused key); on built-in AI
+  only, `spendPlanDraft` (the shared count; 429 `form_draft_capped`, 503 when unreadable); then `askForDraft`
+  (below). Logs `[form-draft]` with answer,
   asks, tookMs, refused path, sections and questions.
 - `apps/api/src/routes/draft-asks.ts` `askForDraft({ client, gateway, request, read, onAsk })`: the ask, `readAiReply`,
   the reader and the one retry with the check's words, shared with `plan-drafts.ts` (which now uses it).
@@ -54,8 +56,9 @@ type | null, newTab | null, changedTab | null, newSheet | null }`, the shape `st
 
 ## Editor
 
-- `components/describe/DescribePrompt.tsx`: the box, its count, the examples, the refusal and the AI line, and
-  `DescribeSignIn` (the nudge), shared by `DescribePlanDialog` and `DescribeFormDialog`.
+- `components/describe/DescribePrompt.tsx`: re-exports `@liveworkspace/automations-ui/DescribePrompt` (Try an Example
+  above the box, its count, the refusal and the source line slot), and `DescribeSignIn` (the nudge), shared by
+  `DescribePlanDialog` and `DescribeFormDialog`.
 - `components/forms/describe-form/`: `form-draft-client.ts` (`draftForm`, `FormDraftRefusal`), `DescribeFormDialog`
   (words, then Check Your Form), `FormDraftPreview` (the questions as `QuestionView` draws them, disabled, and the
   Responses Go To menu), `DescribeFormHost` (bound to the editor: signed in, the targets, Create Form through

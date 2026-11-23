@@ -32,9 +32,11 @@ The name is **Describe a Plan**, apart from the marketing site's **Build with AI
 - It opens the **Describe a Plan** dialog (a sheet on a phone): the line "Say what you're planning: the stages work
   moves through and what each card should hold. You check the plan before anything is made.", a text box ("A hiring
   pipeline with Applied, Screen, Interview and Offer, and a Candidate card with Role, Salary Band and Interview Date"),
-  its count ("120 / 500"), three example chips that fill the box (**Customer Onboarding**, **Grant Applications**,
-  **Home Renovation**), the line "Uses AI: plans and forms share 10 drafts a day.", then **Cancel** and **Draft Plan** (also
-  Ctrl or ⌘ Enter). Draft Plan is disabled while the box is empty.
+  with **Try an Example** above it (owner, 2026-11-22: "the try an example bits in the describe with AI screens should
+  be above the textbox, not below it"): three example chips that fill the box and put the cursor in it (**Customer
+  Onboarding**, **Grant Applications**, **Home Renovation**). Under the box, its count ("120 / 500") and the source
+  line ([Which AI drafts it](#which-ai-drafts-it)), then **Cancel** and **Draft Plan** (also Ctrl or ⌘ Enter). Draft
+  Plan is disabled while the box is empty.
 - While it drafts, the button reads **Drafting…** with a spinner and the box is read-only; Cancel stops waiting (the
   call still counts). It takes a few seconds.
 
@@ -160,9 +162,23 @@ dialog's own words have.
 - Whatever the model answers, the most it can do is put a preview of names in front of the person who asked. The
   route itself writes nothing but its count.
 
+## Which AI drafts it
+
+The platform's rule ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#in-the-apps)):
+
+- The draft runs on the person's own key when they have one (Settings › AI), else on built-in AI. No plan exists
+  yet, so no team key applies. An API token or a workbench session drafts on built-in AI.
+- The source line under the box (`AiSource`) says which: **Built-in AI** with "Plans and forms share 10 drafts a
+  day", or **Your Key** with the provider and model and "No daily limits". **Use Your Own Key** (on built-in AI) or
+  **Change** (on a key) opens Settings on its AI category over the dialog, which stays open with what was typed; on
+  closing Settings the line, and the next Draft Plan, follow what was chosen, with no reload.
+- On a key, a draft counts toward none of the 10 a day. A key the provider refuses (revoked, out of credit, a model it
+  can't use) is said on the line with **Fix Key** and in the refusal under the box, in fixed words; the draft never
+  goes to built-in AI instead.
+
 ## Limits and cost
 
-- A person describes at most **10 plans a day** (UTC) whatever their asks, counted per account wherever they ask, so
+- On built-in AI, a person describes at most **10 plans a day** (UTC) whatever their asks, counted per account wherever they ask, so
   one account can never spend the deployment's AI on its own. The 10 are shared with [Describe a
   Form](../030-forms/describe-a-form.md): one AI budget per account, plans and forms together. Every call also rides the shared AI limits: the
   15-second wait, the AI Gateway's spend limit when `AI_GATEWAY` is set ([AI actions → Cost](automations.md#cost)),

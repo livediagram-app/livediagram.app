@@ -5560,6 +5560,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "usesModelLabel": {
         "description": "`usesModel`'s name (\"Claude Fable 5.2\"), for \"Answer With\".",
         "type": "string"
+      },
+      "usesProvider": {
+        "$ref": "#/components/schemas/KnowledgeAiProvider",
+        "description": "The provider of the key that answers (a team's or a person's may differ from `provider`, the knowledgebase's own), for the source line; with `usesModel`."
       }
     },
     "required": [
