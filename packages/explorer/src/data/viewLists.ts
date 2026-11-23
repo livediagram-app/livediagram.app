@@ -346,6 +346,11 @@ export function homeEmptyLine(lowerMany: string, other = false): string {
   return `The ${other ? 'other ' : ''}${lowerMany} you open will gather here.`;
 }
 
+/** Home's one empty state for the whole view, when every section is empty (one-explorer.md "Nothing on Home"). */
+export function homeNothingLine(lowerMany: string): string {
+  return `The ${lowerMany} you make, open or have shared with you gather here.`;
+}
+
 /** Why a card is there: "Opened 12 times" for a most used one (its opens in the window; "Used on 5 days" from an
  * index that counts only days); otherwise "Opened 2 hours ago" (or when it last changed, for one never opened). */
 export function jumpBackInLine(

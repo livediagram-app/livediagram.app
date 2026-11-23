@@ -221,6 +221,16 @@ describe('<ExplorerPanel>', () => {
     const only = makeItem(1, { lastOpenedAt: 5_000_000 });
     renderPanel(createFakeIndex({ items: [only] }), { current: only, currentId: only.id });
     expect(await screen.findByText('Nothing else yet')).toBeTruthy();
+    // One empty state for the pane, under no heading.
+    expect(screen.queryByRole('heading', { name: 'Recent' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Most Used' })).toBeNull();
+  });
+
+  it('says No plans yet once, under no heading, with nothing opened at all', async () => {
+    renderPanel(createFakeIndex({ items: [] }));
+    expect(await screen.findByText('No plans yet')).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Recent' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Most Used' })).toBeNull();
   });
 
   // Beside a rail the current card heads the rail (owner, 2026-11-16) and the notice spans the top above it.
