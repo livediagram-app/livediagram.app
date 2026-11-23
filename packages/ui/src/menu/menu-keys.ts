@@ -33,14 +33,19 @@ const MOVES: Record<string, MenuMove> = {
   End: 'last',
 };
 
-/** What a key press means to a command menu, or null to leave it to the browser. */
+/**
+ * What a key press means to a command menu, or null to leave it to the browser. `searching` is a typeahead search
+ * still building (typeaheadActive): a space typed inside one joins it ("move t" finds Move to Trash), where with no search under way
+ * it presses the focused row.
+ */
 export function menuKeyIntent(
   e: MenuKeyEvent,
-  at: { inSubmenu: boolean; onSubmenuTrigger: boolean },
+  at: { inSubmenu: boolean; onSubmenuTrigger: boolean; searching?: boolean },
 ): MenuKeyIntent | null {
   if (e.ctrlKey || e.metaKey || e.altKey) return null;
   const move = MOVES[e.key];
   if (move) return { kind: 'move', to: move };
+  if (e.key === ' ' && at.searching) return { kind: 'type', char: ' ' };
   if (e.key === 'Enter' || e.key === ' ') return { kind: 'activate' };
   if (e.key === 'ArrowRight') return at.onSubmenuTrigger ? { kind: 'enter-submenu' } : null;
   if (e.key === 'ArrowLeft') return at.inSubmenu ? { kind: 'leave-submenu' } : null;
@@ -63,10 +68,14 @@ export function moveIndex(current: number, count: number, to: MenuMove): number 
 
 export type TypeaheadState = { query: string; at: number };
 
+/** Whether a typeahead search is still building at `now`: something typed, inside the reset window. */
+export function typeaheadActive(state: TypeaheadState, now: number): boolean {
+  return state.query !== '' && now - state.at < MENU_TYPEAHEAD_RESET_MS;
+}
+
 /** The search after one more typed character: it builds inside the reset window, else restarts. */
 export function typeaheadQuery(prev: TypeaheadState, char: string, now: number): TypeaheadState {
-  const fresh = prev.query === '' || now - prev.at >= MENU_TYPEAHEAD_RESET_MS;
-  return { query: fresh ? char : prev.query + char, at: now };
+  return { query: typeaheadActive(prev, now) ? prev.query + char : char, at: now };
 }
 
 /**

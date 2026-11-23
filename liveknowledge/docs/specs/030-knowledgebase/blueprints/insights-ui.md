@@ -73,7 +73,8 @@ Below `lg` they are one column. The content is at most `max-w-7xl`, centred, `px
   `verifiedParts` (verified, Review Due and never verified, as shares of `total`). `now` is read once per render
   of the band. Bars are HTML flex pieces (no SVG scaling), so a thin share keeps a 2px minimum and rounds cleanly.
 - **Needs Attention** (`NeedsAttention`): an `InsightsSection` "Needs Attention" with a `SegmentedToggle` ("Show": All,
-  Questions, Disagreements, Edits) as its action (under its heading on a phone). `attentionItems(overview,
+  Questions, Disagreements, Edits) as its action (under its heading on a phone; too narrow for one row, it wraps whole
+  segments, as every `SegmentedToggle` does). `attentionItems(overview,
 filter)` orders the rows: conflicts by `foundAt` newest first, suggestions by `createdAt` newest first, questions
   by `asked` most first then `lastAt`. Each row is an `li` with an eyebrow (the kind's icon and word: "Pages
   Disagree", "Suggested Edit", "Unanswered Question") over the row the kind draws (`ConflictRow`, `SuggestionRow`,

@@ -29,6 +29,7 @@ import {
   initialIndex,
   menuKeyIntent,
   moveIndex,
+  typeaheadActive,
   typeaheadIndex,
   typeaheadQuery,
   type MenuInitialFocus,
@@ -272,6 +273,8 @@ export function useMenu({
       const intent = menuKeyIntent(e, {
         inSubmenu,
         onSubmenuTrigger: current?.getAttribute('aria-haspopup') === 'menu',
+        // A space inside a search joins it rather than pressing the row the search reached.
+        searching: typeaheadActive(typeahead.current, performance.now()),
       });
       if (!intent) return;
       e.preventDefault();
