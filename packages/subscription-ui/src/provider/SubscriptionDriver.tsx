@@ -1,6 +1,7 @@
 'use client';
 
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
 import {
   createSubscriptionBrowserClient,
   type LimitKey,
@@ -37,17 +38,19 @@ import {
 import { SubscribedNotice } from './SubscribedNotice';
 
 // The dialogs are their own chunks, fetched the first time one opens: a page that only shows a badge or a meter
-// carries none of the comparison.
-const UpgradeDialog = lazy(() =>
-  import('../upgrade/UpgradeDialog').then((m) => ({ default: m.UpgradeDialog })),
+// carries none of the comparison. Once a dialog's code is in (an earlier open, or `loadUpgradeDialogs`), a press
+// draws it in the press's own commit, as a static import would (lazyPanel), with no suspended render in between
+// for React to hold back or for a busy page to starve.
+const UpgradeDialog = lazyPanel('upgrade-dialog', () =>
+  import('../upgrade/UpgradeDialog').then((m) => m.UpgradeDialog),
 );
-const AskAdminDialog = lazy(() =>
-  import('../upgrade/AskAdminDialog').then((m) => ({ default: m.AskAdminDialog })),
+const AskAdminDialog = lazyPanel('ask-admin-dialog', () =>
+  import('../upgrade/AskAdminDialog').then((m) => m.AskAdminDialog),
 );
 
-/** Fetches the dialogs' code ahead of the press. */
+/** Fetches the dialogs' code ahead of the press. Never rejects. */
 export async function loadUpgradeDialogs(): Promise<void> {
-  await Promise.all([import('../upgrade/UpgradeDialog'), import('../upgrade/AskAdminDialog')]);
+  await Promise.all([UpgradeDialog.preload(), AskAdminDialog.preload()]);
 }
 
 /** The dialogs the provider's shell holds open, and how they close. */
@@ -351,12 +354,8 @@ export function SubscriptionDriver({
 
   return (
     <>
-      {upgrade || askAdmin ? (
-        <Suspense fallback={null}>
-          {upgrade ? <UpgradeDialog target={upgrade} onClose={closeUpgrade} /> : null}
-          {askAdmin ? <AskAdminDialog target={askAdmin} onClose={closeAskAdmin} /> : null}
-        </Suspense>
-      ) : null}
+      {upgrade ? <UpgradeDialog target={upgrade} onClose={closeUpgrade} /> : null}
+      {askAdmin ? <AskAdminDialog target={askAdmin} onClose={closeAskAdmin} /> : null}
       {welcomed ? (
         <SubscribedNotice
           tier={welcomed.tier}
