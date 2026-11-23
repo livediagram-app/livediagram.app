@@ -233,8 +233,11 @@ nothing more: the target keeps its own name, and nothing is written to it.
 ## Embedding it live
 
 A connected tab only goes to its file. To show the file live, read-only, inside the host, an Editor places a
-[live embed](live-embeds.md) and picks it from Choose a File, which lists the host's connected files first. A live
-embed never uses the connection's pass: each reader sees the file with their own access, or its snapshot.
+[live embed](live-embeds.md) with Embed File, which lists the host's connected files first. Embed File asks the role
+as this list does and, for a file the person may share that is not yet connected, connects it one way at that role
+(a connected tab like any other, made through the same door) before embedding it (Work Tracker 1375). A live embed
+never uses the connection's pass: each reader sees the file with their own access, or its snapshot; the tab is the
+way in for the rest.
 
 ## Removing
 
