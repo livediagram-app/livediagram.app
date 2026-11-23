@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { createShape, settleStacks, type Element, type ShapeElement } from './index';
+import { createShape } from './testing/elements';
+import { settleStacks } from './stack';
+import { type Element, type ShapeElement } from './element';
 
 // docs/specs/009-elements/blueprints/stack.md "Performance and limits": settling runs at every commit, so a large
 // board with stacks must stay cheap. 2,000 loose boxes and 20 stacks of 10 children, already laid out (the common case:

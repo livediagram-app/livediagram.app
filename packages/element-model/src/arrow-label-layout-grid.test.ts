@@ -1,20 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { seededRandom } from '@liveworkspace/model-core/seeded-random';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import {
-  DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
+import { DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
   arrowLabelPass,
   labelClaimGrid,
   layoutArrowLabel,
   layoutArrowLabels,
   type ArrowLabelLayout,
-  type ArrowLabelLayoutOptions,
-} from './arrow-label-layout';
+  type ArrowLabelLayoutOptions, } from './arrow-label-layout';
 import { arrowPolyline } from './arrow-path-hits';
-import { createArrow, createPinnedArrow } from './factories';
+import { createArrow, createPinnedArrow } from './testing/elements';
 import { elementIndexFor } from './geometry';
-import { createShape } from './shape-factory';
-import type { Element } from './index';
+import { createShape } from './testing/elements';
+import type { Element } from './element';
 
 // docs/specs/008-canvas/canvas-performance.md "Arrow labels ask their neighbourhood": the label pass asks grids of
 // the boxes and the placed labels, and gives exactly the places the scan over every box and label gave.

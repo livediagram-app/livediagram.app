@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { autoLayoutElements } from './auto-layout';
-import { createShape, createPinnedArrow } from './factories';
-import type { ArrowElement, BoxedElement, Element, ShapeElement } from './index';
+import { createShape, createPinnedArrow } from './testing/elements';
+import type { ArrowElement, BoxedElement, Element, ShapeElement } from './element';
 
 // Same fixtures as auto-layout.test.ts: explicit ids + messy geometry so the
 // styles prove they recompute everything.

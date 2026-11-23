@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { withFacingBends } from './arrow-orthogonal';
-import type { Element } from './index';
+import type { Element } from './element';
 
 // docs/specs/008-canvas/layout-cleanup.md "Angled lines bend twice": an agent's board of thousands of facing arrows is
 // bent in near-linear time. Scanning every box and every placed run for each arrow took 1.8 s on this board.

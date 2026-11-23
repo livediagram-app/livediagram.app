@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { autoLayoutElements } from './auto-layout';
 import { reanchorArrow } from './auto-layout-shared';
-import { createPinnedArrow, createShape } from './factories';
-import type { ArrowElement, BoxedElement, Element, ShapeElement } from './index';
+import { createPinnedArrow, createShape } from './testing/elements';
+import type { ArrowElement, BoxedElement, Element, ShapeElement } from './element';
 
 // docs/specs/008-canvas/layout-cleanup.md: long edges keep a lane, nodes sit by their neighbours,
 // plain chains run straight, and flow edges leave and land on the flow faces.

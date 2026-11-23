@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { arrowEndpointSpread, spreadOverBase } from './arrow-endpoint-spread';
-import { createShape } from './factories';
-import type { ArrowElement, Element, Endpoint } from './index';
+import { createShape } from './testing/elements';
+import type { ArrowElement, Element, Endpoint } from './element';
 
 // A drag preview's board is the document's index with the dragged elements replaced (spreadOverBase,
 // docs/specs/008-canvas/blueprints/drag-preview.md "Performance and limits"): its fans are placed again only where

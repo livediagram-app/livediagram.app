@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { canvasSurface, contrastRatio } from './colors';
-import {
-  THEME_LINE_CONTRAST,
+import { canvasSurface, contrastRatio } from './colour-math';
+import { THEME_LINE_CONTRAST,
   THEME_TEXT_CONTRAST,
   themeColourMap,
-  themeHalf,
-} from './theme-halves';
+  themeHalf, } from './theme-halves';
 import { shapeColorPresets } from './theme-presets';
-import { THEMES } from './themes-data';
+import { THEMES } from './retired-uml';
 import type { Appearance, ThemeDefinition } from './themes';
 
 // docs/specs/011-theme/light-and-dark.md "Contrast": every theme, in both halves, meets WCAG 2.2 AA. Text on its fill

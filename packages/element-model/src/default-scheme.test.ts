@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SCHEME_ID, getBuiltInTheme, THEMES } from './themes';
+import { DEFAULT_SCHEME_ID, getBuiltInTheme } from './themes';
+import { THEMES } from './retired-uml';
 
 // The Default colour scheme (docs/specs/008-canvas/canvas-and-palette.md): one scheme, two appearances. It used to
 // be two separate entries — "Basic" leading the catalogue and "Charcoal"

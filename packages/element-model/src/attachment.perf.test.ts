@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { createShape, settleChips, type Element, type ShapeElement } from './index';
+import { createShape } from './testing/elements';
+import { settleChips } from './attachment';
+import { type Element, type ShapeElement } from './element';
 
 // docs/specs/009-elements/blueprints/badge.md "Performance and limits": settling runs on every commit and every tick
 // (a drag landing, a nudge), so a large board with chips must settle inside a frame's slack. The worst case is every
@@ -28,7 +30,7 @@ function board(boxes: number, chips: number): Element[] {
   return els;
 }
 
-// Untimed warm-up passes, then the fastest of a few timed ones, as mind-connector-route.perf.test.ts does:
+// Untimed warm-up passes, then the fastest of a few timed ones, as the other perf tests do:
 // `cpuUsage` bills a pass for V8 compiling and collecting on its background threads, so the CI coverage job (an
 // instrumented build on a shared runner) measured 58 ms with one warm-up against 11 to 17 ms locally.
 const WARM_UP_PASSES = 3;

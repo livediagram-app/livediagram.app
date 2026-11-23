@@ -1,14 +1,11 @@
 // Puts a task's pictures into one run's image gallery before the run (a task's `gallery`: the user has uploaded
-// these). Each picture is uploaded to liveworkspace's local media service as livedesign's api uploads one
+// these). Each picture is uploaded to liveworkspace's local media service as the product's api uploads one
 // (liveworkspace/docs/specs/006-media/media.md "The API": `POST /api/media/app/images?owner=`), so it lands in the run's account's
 // gallery exactly as an upload would. MEDIA_URL and MEDIA_KEY are the api's own (its .dev.vars), or the environment's.
 // Each run gets its own account, so its own copies: an image belongs to one owner.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const HERE = dirname(fileURLToPath(import.meta.url));
+import { join } from 'node:path';
 
 // A PNG's size, from its IHDR chunk (bytes 16 to 23, big-endian).
 export function pngSize(bytes) {
@@ -34,8 +31,9 @@ function devVar(apiDir, name) {
 }
 
 // Seeds each owner's `pictures` ([{ file, name }], files under fixtures/), all before a round starts, so none is
-// uploaded while runs are talking to the server. Answers each owner's gallery as listed.
-export async function seedGalleries(apiDir, wanted) {
+// uploaded while runs are talking to the server. Answers each owner's gallery as listed. `app` is the product's
+// name on the media service ('livedocuments.app') and `fixturesDir` the folder its pictures are in.
+export async function seedGalleries(apiDir, wanted, { app, fixturesDir }) {
   const media = (devVar(apiDir, 'MEDIA_URL') ?? 'http://localhost:8792/api/media').replace(
     /\/+$/,
     '',
@@ -51,13 +49,13 @@ export async function seedGalleries(apiDir, wanted) {
     // The last picture first, so newest first is the order given.
     for (let i = pictures.length - 1; i >= 0; i--) {
       const p = pictures[i];
-      const bytes = readFileSync(join(HERE, 'fixtures', p.file));
+      const bytes = readFileSync(join(fixturesDir, p.file));
       const { width, height } = pngSize(bytes);
       const res = await fetch(`${media}/app/images?owner=${encodeURIComponent(owner)}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${key}`,
-          'X-Media-App': 'livedesign.app',
+          'X-Media-App': app,
           'Content-Type': 'image/png',
           'X-Image-Width': String(width),
           'X-Image-Height': String(height),
