@@ -1,6 +1,6 @@
 // The calendar feed's iCalendar writer (docs/specs/026-plan/calendar-feed.md "How it answers"; RFC 5545).
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { escapeText, foldLine, icsDate, icsStamp, writeCalendar, type FeedEvent } from './ics';
 
 const octets = (s: string) => new TextEncoder().encode(s).length;
@@ -46,7 +46,7 @@ describe('foldLine', () => {
 
   it('folds a very long line in linear time', () => {
     const line = 'é'.repeat(200_000);
-    expect(cpuMsOf(() => foldLine(line))).toBeLessThan(1500);
+    expect(cpuMsOf(() => foldLine(line))).toBeLessThan(cpuBudgetMs(1500));
   });
 });
 

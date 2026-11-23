@@ -2,7 +2,7 @@
 // allow: 50,000 filled cells, 20,000 of them formulas. CI machines are slower and shared, so the asserted budget
 // is a multiple of the laptop target.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { Workbook } from './workbook';
 import { cellKey, type Sheet } from '../sheet';
 import { compileFormula } from '../formula/stored';
@@ -88,9 +88,9 @@ describe('performance', () => {
     console.info(
       `[sheets perf] full ${full.toFixed(0)} ms, chain change ${change.toFixed(1)} ms, local change ${small.toFixed(2)} ms`,
     );
-    expect(full).toBeLessThan(400 * CI_FACTOR);
-    expect(change).toBeLessThan(100 * CI_FACTOR);
-    expect(small).toBeLessThan(5 * CI_FACTOR);
+    expect(full).toBeLessThan(cpuBudgetMs(400 * CI_FACTOR));
+    expect(change).toBeLessThan(cpuBudgetMs(100 * CI_FACTOR));
+    expect(small).toBeLessThan(cpuBudgetMs(5 * CI_FACTOR));
     // The budgets above are CPU time; the wall clock only bounds a hung run. On a loaded CI runner
     // building the 50,000-cell sheet outran vitest's default 5 s while its CPU budget still held.
   }, 30_000);

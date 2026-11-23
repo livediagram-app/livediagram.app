@@ -1,4 +1,4 @@
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it, vi } from 'vitest';
 import type { LastSeenInput } from './last-seen-copies';
 import {
@@ -406,6 +406,6 @@ describe('createLastSeenFollower', () => {
     const ms = cpuMsOf(() => {
       for (let i = 0; i < 10_000; i++) follower.followMeta('user_a', 'd1', { name: 'Plan', tabs });
     });
-    expect(ms).toBeLessThan(500);
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
 });

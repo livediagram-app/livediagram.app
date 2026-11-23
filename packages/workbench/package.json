@@ -840,7 +840,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf node_modules .turbo",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage && vitest-budgets"
   },
   "peerDependencies": {
     "next": "^16.4.6",

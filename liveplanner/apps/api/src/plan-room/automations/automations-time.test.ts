@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   addDays,
+  clockWords,
   defaultCatalogue,
   localDay,
   weekdayOf,
@@ -39,6 +40,7 @@ beforeEach(async () => {
   expect(put.status).toBeLessThan(300);
 });
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   endRepeatWorld();
 });
@@ -53,9 +55,10 @@ const runs = async (query = '') =>
 // The last quarter hour, as a rule's time in UTC, fixed when each test starts: read live, a test that ran across a
 // quarter hour made its rule for one moment and expected the next.
 let pinned = 0;
-beforeEach(() => {
+const pin = () => {
   pinned = Math.floor(Date.now() / QUARTER) * QUARTER;
-});
+};
+beforeEach(pin);
 const moment = () => pinned;
 const clock = (ms: number) => new Date(ms).toISOString().slice(11, 16);
 const today = () => localDay(moment(), 'UTC');
@@ -95,12 +98,33 @@ describe('a Scheduled rule', () => {
     expect(run).toMatchObject({ result: 'done', card: { id: a.id } });
     expect(run!.steps[0]).toEqual({
       kind: 'trigger',
-      text: `Automation · Every Day at ${clock(moment()).replace(/^0/, '')}`,
+      // In the product's own words: 12:00 reads "Noon" and 0:00 "Midnight", whatever hour this runs at.
+      text: `Automation · Every Day at ${clockWords(clock(moment()))}`,
     });
     // The row moved on to the next moment; the same moment again runs nothing.
     expect(nextAt(rule.id)).toBeGreaterThan(Date.now());
     await wake(rule);
     expect(await runs()).toHaveLength(1);
+  });
+
+  // The two named times and the quarter hours either side of the day's end (liveworkspace/docs/specs/018-automations
+  // "Scheduled reads its time as a clock ... and its two named times as words"): the hours a test run by the wall
+  // clock met for only a quarter of an hour a day.
+  it.each([
+    ['2026-11-23T12:07:00Z', 'Noon'],
+    ['2026-11-23T00:07:00Z', 'Midnight'],
+    ['2026-11-30T23:59:30Z', '23:45'],
+    ['2026-11-23T09:20:00Z', '9:15'],
+  ])('says its time in words when the clock reads %s: at %s', async (now, words) => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(now));
+    pin();
+    const a = await w.make('A', { title: 'One' });
+    const rule = await daily();
+    await wake(rule);
+    expect((await card(a.id)).fields['flagged']).toBe(true);
+    const [run] = await runs();
+    expect(run!.steps[0]).toEqual({ kind: 'trigger', text: `Automation · Every Day at ${words}` });
   });
 
   it('after missing days runs only the latest moment, once, and drops one more than a day late', async () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { fillSeries } from './fill';
 import { csvSafeField, isCsvPhoneNumber, parseCsv, toCsv } from './csv';
 import { serialFromDate } from './dates';
@@ -191,7 +191,7 @@ describe('CSV', () => {
     const field = `-${' '.repeat(100_000)}x`;
     let safe = '';
     // CPU time (docs/ci.md "Speed budgets"): a linear check, well under the budget; a backtracking one is not.
-    expect(cpuMsOf(() => (safe = csvSafeField(field)))).toBeLessThan(50);
+    expect(cpuMsOf(() => (safe = csvSafeField(field)))).toBeLessThan(cpuBudgetMs(50));
     expect(safe).toBe(`'${field}`);
   });
   // A phone number holds no formula, so a download keeps its + as quoted text with no ' (sheet.md "CSV").
@@ -212,7 +212,7 @@ describe('CSV', () => {
     const field = `+${' '.repeat(100_000)}x`;
     let safe = '';
     // CPU time (docs/ci.md "Speed budgets"): a linear check, well under the budget; a backtracking one is not.
-    expect(cpuMsOf(() => (safe = csvSafeField(field)))).toBeLessThan(50);
+    expect(cpuMsOf(() => (safe = csvSafeField(field)))).toBeLessThan(cpuBudgetMs(50));
     expect(safe).toBe(`'${field}`);
   });
 });
