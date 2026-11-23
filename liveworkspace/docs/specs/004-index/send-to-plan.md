@@ -71,7 +71,7 @@ thread's first comment, the action's name. Read left to right by a tokenizer (ne
   "on" ("by Friday", the next one). A date before today is kept as written.
 - **Description**: every word sent, then a line back: "From <source title>, <place> (<app>): <link>", the link opening
   the source at the exact place (`#t=<tab>&el=<element>`, with `&open=comments` or `&open=action` for a thread or an
-  action), its app's own address (`appSiteOrigin`).
+  action; a plan card's thread as `#item=<card>&thread=<id>`), its app's own address (`appSiteOrigin`).
 
 ## The card
 
