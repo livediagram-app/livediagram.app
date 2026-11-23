@@ -6,6 +6,7 @@
   "sideEffects": false,
   "exports": {
     "./bin": "./src/bin.ts",
+    "./capabilities": "./src/capabilities.ts",
     "./cli-error": "./src/cli-error.ts",
     "./config-file": "./src/config-file.ts",
     "./credentials": "./src/credentials.ts",
@@ -25,6 +26,7 @@
     "./paths": "./src/paths.ts",
     "./png": "./src/png.ts",
     "./product": "./src/product.ts",
+    "./profiles": "./src/profiles.ts",
     "./testing/fake-io": "./src/testing/fake-io.ts",
     "./testing/suites/config": "./src/testing/suites/config.ts",
     "./testing/suites/credentials": "./src/testing/suites/credentials.ts",
