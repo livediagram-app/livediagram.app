@@ -11,7 +11,7 @@ import {
   zipEntries,
   type ArchiveEntry,
 } from '@liveknowledge/knowledge-import';
-import { openZipFile } from '@/lib/office-import/zip';
+import { openZipFile } from '@liveworkspace/office-files/zip';
 
 /** A picked archive. `open` lists it afresh each time it is planned, so a plan can be made again for another
  *  destination; `bytes` is the size known before anything is opened, when there is one. */

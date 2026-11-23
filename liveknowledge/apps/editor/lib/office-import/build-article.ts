@@ -25,7 +25,7 @@ import {
 } from '@liveknowledge/document';
 import type { DocxBlock, OfficePicture } from './docx';
 import type { PictureOutcome } from './store-images';
-import { zipKey } from './zip';
+import { zipKey } from '@liveworkspace/office-files/zip';
 
 // A picture with no size anywhere: a modest landscape box the owner can resize.
 const FALLBACK_W = 320;

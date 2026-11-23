@@ -174,7 +174,7 @@ Each failure is named and shown in the panel; nothing on the tab changes.
 The import is tested against files the apps themselves wrote, kept unchanged in
 `apps/editor/lib/office-import/real-files/` beside their licences and a README naming each one's source: Word
 paragraphs, styles, tables and runs in other faces, and a PowerPoint slide with placeholders and one of named
-typefaces. Builders in `test-fixtures.ts` still cover what no small real file shows (tracked changes, footnotes,
+typefaces. Builders in `../packages/office-files/src/test-fixtures.ts` still cover what no small real file shows (tracked changes, footnotes,
 hidden slides). A Google Docs and a Google Slides export are added the same way once the owner supplies them.
 
 ## Performance

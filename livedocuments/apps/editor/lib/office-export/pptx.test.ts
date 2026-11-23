@@ -8,14 +8,14 @@ import {
   type Element,
   type Tab,
 } from '@livedocuments/document';
-import { openOfficePackage } from '../office-import/package';
+import { openOfficePackage } from '@liveworkspace/office-files/package';
 import { readPptx } from '../office-import/pptx';
-import { openZip } from '../office-import/zip';
-import { parseXml } from '../office-import/xml';
+import { openZip } from '@liveworkspace/office-files/zip';
+import { parseXml } from '@liveworkspace/office-files/xml';
 import { buildDeck, cutTo, deckSize, placementFor, backgroundKind } from './pptx-build';
-import { MediaStore, writePptx } from './pptx-write';
-import { themeFontsOf } from './ooxml-theme';
-import type { PptxDeck, PptxRun, PptxShape } from './pptx-types';
+import { MediaStore, writePptx } from '@liveworkspace/office-files/pptx-write';
+import { themeFontsOf } from '@liveworkspace/office-files/ooxml-theme';
+import type { PptxDeck, PptxRun, PptxShape } from '@liveworkspace/office-files/pptx-types';
 import { everyKindDeck, fakeDrawer, ONE_PIXEL_PNG } from './test-tabs';
 
 // docs/specs/020-import-export/office-export.md "PowerPoint: one slide a page": the deck read back through the
@@ -365,6 +365,7 @@ describe('PowerPoint export', () => {
   it('writes a slide’s note cards a paragraph each, in a notes slide that names its slide', async () => {
     const bytes = writePptx({
       title: 'A & B',
+      app: 'livedocuments',
       cx: 12_192_000,
       cy: 6_858_000,
       slides: [
@@ -413,6 +414,7 @@ describe('PowerPoint export', () => {
     });
     const bytes = writePptx({
       title: 'T',
+      app: 'livedocuments',
       cx: 12_192_000,
       cy: 6_858_000,
       slides: [slide(jpeg), slide(sameAgain)],
@@ -461,6 +463,7 @@ describe('the deck theme fonts', () => {
     };
     return {
       title: 'T',
+      app: 'livedocuments',
       cx: 9_144_000,
       cy: 6_858_000,
       slides: [{ background: null, items: [shape] }],

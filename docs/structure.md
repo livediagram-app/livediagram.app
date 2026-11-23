@@ -44,6 +44,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client, the Library
 │  ├─ migration                the move from the historical livediagram.app: the payload contract and the splitter
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig), and the dev entry every app's dev script runs (scripts/next-dev.mjs, which refuses a busy port)
+│  ├─ office-files             Word and PowerPoint files read and written, for livedocuments and liveknowledge: the zip and XML readers, the opened package, a slide's shapes, the PowerPoint writer and the package both writers share
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
 │  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser, and an animated background's moving parts, and a page's background edit: pages and form covers
 │  ├─ prettier-config          the formatting settings, for the root and every product

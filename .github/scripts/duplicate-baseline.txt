@@ -168,22 +168,7 @@ livedocuments/apps/editor/lib/explorer-thumbnail.tsx	liveknowledge/apps/editor/l
 livedocuments/apps/editor/lib/find/find-highlight-store.ts	liveknowledge/apps/editor/lib/find/find-highlight-store.ts
 livedocuments/apps/editor/lib/find/find-matches.ts	liveknowledge/apps/editor/lib/find/find-matches.ts
 livedocuments/apps/editor/lib/find/find-text.ts	liveknowledge/apps/editor/lib/find/find-text.ts
-livedocuments/apps/editor/lib/office-export/docx-write.ts	liveknowledge/apps/editor/lib/office-export/docx-write.ts
-livedocuments/apps/editor/lib/office-export/ooxml-colour.ts	liveknowledge/apps/editor/lib/office-export/ooxml-colour.ts
-livedocuments/apps/editor/lib/office-export/ooxml-fonts.ts	liveknowledge/apps/editor/lib/office-export/ooxml-fonts.ts
-livedocuments/apps/editor/lib/office-export/pptx-parts.ts	liveknowledge/apps/editor/lib/office-export/pptx-parts.ts
-livedocuments/apps/editor/lib/office-export/pptx-slide-xml.ts	liveknowledge/apps/editor/lib/office-export/pptx-slide-xml.ts
-livedocuments/apps/editor/lib/office-export/pptx-types.ts	liveknowledge/apps/editor/lib/office-export/pptx-types.ts
-livedocuments/apps/editor/lib/office-export/pptx-write.ts	liveknowledge/apps/editor/lib/office-export/pptx-write.ts
-livedocuments/apps/editor/lib/office-export/progress.ts	liveknowledge/apps/editor/lib/office-export/progress.ts
-livedocuments/apps/editor/lib/office-import/limits.ts	liveknowledge/apps/editor/lib/office-import/limits.ts
-livedocuments/apps/editor/lib/office-import/package.ts	liveknowledge/apps/editor/lib/office-import/package.ts
-livedocuments/apps/editor/lib/office-import/pptx-shapes.ts	liveknowledge/apps/editor/lib/office-import/pptx-shapes.ts
 livedocuments/apps/editor/lib/office-import/store-images.ts	liveknowledge/apps/editor/lib/office-import/store-images.ts
-livedocuments/apps/editor/lib/office-import/tally.ts	liveknowledge/apps/editor/lib/office-import/tally.ts
-livedocuments/apps/editor/lib/office-import/test-fixtures.ts	liveknowledge/apps/editor/lib/office-import/test-fixtures.ts
-livedocuments/apps/editor/lib/office-import/text-fit.ts	liveknowledge/apps/editor/lib/office-import/text-fit.ts
-livedocuments/apps/editor/lib/office-import/xml.ts	liveknowledge/apps/editor/lib/office-import/xml.ts
 livedocuments/apps/editor/lib/own-picture.ts	liveknowledge/apps/editor/lib/own-picture.ts
 livedocuments/apps/editor/lib/page-tidy-check/page-tidy-check.worker.ts	liveknowledge/apps/editor/lib/page-tidy-check/page-tidy-check.worker.ts
 livedocuments/apps/editor/lib/page-tidy-guard.ts	liveknowledge/apps/editor/lib/page-tidy-guard.ts
@@ -208,7 +193,6 @@ livedocuments/packages/document/scripts/build-world-map.mjs	liveknowledge/packag
 livedocuments/packages/document/src/animation-membership.ts	liveknowledge/packages/document/src/animation-membership.ts
 livedocuments/packages/document/src/arrow-rebind.ts	liveknowledge/packages/document/src/arrow-rebind.ts
 livedocuments/packages/document/src/article-bands.ts	liveknowledge/packages/document/src/article-bands.ts
-livedocuments/packages/document/src/article-draw-ops.ts	liveknowledge/packages/document/src/article-draw-ops.ts
 livedocuments/packages/document/src/article-flow-ops.ts	liveknowledge/packages/document/src/article-flow-ops.ts
 livedocuments/packages/document/src/article-footnotes.ts	liveknowledge/packages/document/src/article-footnotes.ts
 livedocuments/packages/document/src/article-intake.ts	liveknowledge/packages/document/src/article-intake.ts
@@ -263,7 +247,6 @@ livedocuments/packages/document/src/slide-deck-pages.ts	liveknowledge/packages/d
 livedocuments/packages/document/src/slide-deck-patch.ts	liveknowledge/packages/document/src/slide-deck-patch.ts
 livedocuments/packages/document/src/slide-deck.ts	liveknowledge/packages/document/src/slide-deck.ts
 livedocuments/packages/document/src/slide-notes-merge.ts	liveknowledge/packages/document/src/slide-notes-merge.ts
-livedocuments/packages/document/src/stat-count.ts	liveknowledge/packages/document/src/stat-count.ts
 livedocuments/packages/document/src/svg-render-body.ts	liveknowledge/packages/document/src/svg-render-body.ts
 livedocuments/packages/document/src/svg-render-boxed.ts	liveknowledge/packages/document/src/svg-render-boxed.ts
 livedocuments/packages/document/src/svg-render-describe.ts	liveknowledge/packages/document/src/svg-render-describe.ts
@@ -281,7 +264,6 @@ livedocuments/packages/document/src/validate-shape.ts	liveknowledge/packages/doc
 livedocuments/packages/document/src/version-changes.ts	liveknowledge/packages/document/src/version-changes.ts
 livedocuments/packages/edit-operations/src/parse-line.ts	liveknowledge/packages/edit-operations/src/parse-line.ts
 livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
-livedocuments/packages/template-previews/src/article-preview-parts.tsx	liveknowledge/packages/template-previews/src/article-preview-parts.tsx
 livedocuments/packages/templates/src/article-templates-2.ts	liveknowledge/packages/templates/src/article-templates-2.ts
 livedocuments/packages/templates/src/beside-offers.ts	liveknowledge/packages/templates/src/beside-offers.ts
 livedocuments/packages/templates/src/page-layouts-set-compare.ts	liveknowledge/packages/templates/src/page-layouts-set-compare.ts

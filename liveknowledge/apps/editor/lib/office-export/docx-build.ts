@@ -29,10 +29,14 @@ import {
   type LaidOutPage,
   type Tab,
 } from '@liveknowledge/document';
-import { fontFaceName } from './ooxml-colour';
+import { fontFaceName } from '@liveworkspace/office-files/ooxml-colour';
 import type { PageDrawer } from './pptx-build';
 import type { DocxBlock, DocxDocument, DocxLook } from './docx-types';
-import { throwIfCancelled, yieldToBrowser, type ExportProgress } from './progress';
+import {
+  throwIfCancelled,
+  yieldToBrowser,
+  type ExportProgress,
+} from '@liveworkspace/office-files/progress';
 
 // The ink and muted text of a light page (docs/specs/007-editor/article-pages.md "Type"): Word's page is white.
 const INK = '1E293B';

@@ -7,7 +7,7 @@ import {
   type ArticleAlign,
   type ArticleRun,
 } from '@livedocuments/document';
-import { child, kids, type XmlElement } from './xml';
+import { child, kids, type XmlElement } from '@liveworkspace/office-files/xml';
 
 // A to-do's box at the start of a paragraph, as Word's check boxes and the Word export write it, and whether it is
 // ticked (docs/specs/020-import-export/office-import.md "Word becomes an article").

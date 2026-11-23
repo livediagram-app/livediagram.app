@@ -47,6 +47,7 @@
     "@liveworkspace/marketing-site": "workspace:^",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
+    "@liveworkspace/office-files": "workspace:*",
     "@liveworkspace/page-background": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/settings-ui": "workspace:*",
