@@ -270,6 +270,22 @@ own commit. Measured the same way: 388,681 to 375,932 bytes (379.6 to 367.1 KiB)
 saved and 13,188 under. `/` is unchanged at 212,832 bytes. `dialogs-lazy-load.test.ts` keeps them out of a static
 import. The budget stays at 380 KiB.
 
+**The header's menus and Pro leave `/` (2026-11-23, Pro).** Pro took `/` from 212,832 bytes on main to 216,995
+(211.9 KiB, 13 scripts; 212.1 KiB in CI, over its 212 KiB budget). Two things in the header, which is on every
+page, did it. The Product and Support menus (`components/HeaderMenus.tsx`) replaced four links the server drew, and
+as a client component brought their rows, seven glyphs and the open menu into the first load. And the account
+control (`components/AccountControl.tsx`) imported `SiteSubscription` statically, so a visitor's page carried the
+provider's shell, its hooks and `lib/subscription.ts`. Now `HeaderMenus.tsx` is the two buttons alone, with the
+pages each leads to (`header-menu-pages.ts`) so a button still reads as current; the open menu is
+`HeaderMenuSurface.tsx`, a `lazyPanel` fetched as a pointer or focus reaches a button, so a press opens it in its
+own commit. The account control fetches `SiteSubscription` only once someone is known to be signed in, and only
+with Pro on: the unseen Guest button holds the place until it lands, a failed fetch draws the menu without a
+provider, and in the Explorer, whose shell already has the provider around the page, the control adds none
+(`subscribed`). Measured the same way: 216,995 to 214,699 bytes (211.9 to 209.7 KiB), 13 to 12 scripts, 2,296 bytes
+saved; `/explorer` 370.9 to 370.7 KiB (379,623 bytes). What `/` still carries over main, about 1.9 KiB, is the two
+menu buttons as client code, the Pro flag and the account menu's lazy Pro parts. `app/first-load-lazy.test.ts`
+keeps both imports dynamic. The budget stays at 212 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from

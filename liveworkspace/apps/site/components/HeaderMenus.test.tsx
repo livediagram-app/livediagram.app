@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // liveworkspace/docs/specs/010-site/site.md "The header": Product and Support menus; Pricing only with Pro on; the
 // row for the page you are on is marked current.
@@ -9,7 +9,13 @@ const state = vi.hoisted(() => ({ pro: true, path: '/pricing' }));
 vi.mock('@liveworkspace/subscription-ui/flag', () => ({ proOn: () => state.pro }));
 vi.mock('next/navigation', () => ({ usePathname: () => state.path }));
 
-const { HeaderMenus } = await import('./HeaderMenus');
+const { HeaderMenus, preloadHeaderMenus } = await import('./HeaderMenus');
+const { headerMenuPages } = await import('./header-menu-pages');
+
+// The open menu is a chunk of its own, fetched as a pointer or focus reaches a button: in by the press, as here.
+beforeAll(async () => {
+  await preloadHeaderMenus();
+}, 60_000);
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -74,6 +80,23 @@ describe('HeaderMenus', () => {
     const rows = open('Support');
     expect(rows.map((row) => row.getAttribute('href'))).toEqual(['/help', '/status', '/telemetry']);
     expect(rows.map((row) => row.getAttribute('aria-current'))).toEqual(['page', null, null]);
+  });
+
+  it.each([true, false])('each button knows its menu’s pages without the rows (Pro %s)', (pro) => {
+    // The buttons mark themselves on one of their pages from header-menu-pages.ts; the rows are the lazy surface's.
+    state.pro = pro;
+    act(() => root.render(<HeaderMenus />));
+    for (const name of ['Product', 'Support'] as const) {
+      const hrefs = open(name).map((row) => row.getAttribute('href')!);
+      expect(hrefs.filter((href) => !href.includes('#'))).toEqual(headerMenuPages(name));
+      act(() => trigger(name).click());
+    }
+  });
+
+  it('marks the button of the menu the page is in', () => {
+    act(() => root.render(<HeaderMenus />));
+    expect(trigger('Product').className).toContain('text-slate-900 dark:text-white');
+    expect(trigger('Support').className).not.toContain('text-slate-900 dark:text-white');
   });
 
   it('closes when a row is chosen', () => {

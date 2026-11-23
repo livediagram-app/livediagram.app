@@ -42,7 +42,8 @@ Every page has the same header: the liveworkspace wordmark, with the site switch
 - **Sign In, or the account menu**, stays on the bar, never inside a menu.
 
 Each menu opens on click, Enter, Space or Down Arrow (the shared menu button), its rows an icon, a name and a
-one-line hint, as the account menu's are; a row for the page you are on is marked as current. Below 768px (a phone or a narrow window) only the wordmark and the account control show; the footer has the
+one-line hint, as the account menu's are; a row for the page you are on is marked as current. Only the two buttons
+load with the page: the open menu's code is fetched as a pointer or focus reaches a button. Below 768px (a phone or a narrow window) only the wordmark and the account control show; the footer has the
 rest. The
 Appearance toggle is never in the header: it is on the rail. The sign-in pages served under an app's own
 address wear that app's logo in place of the wordmark, linking to the app's home, with that app highlighted in the

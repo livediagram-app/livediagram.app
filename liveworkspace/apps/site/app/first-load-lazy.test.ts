@@ -57,6 +57,26 @@ describe('every page’s first load', () => {
   });
 });
 
+describe('the header on every page’s first load', () => {
+  it('the Product and Support menus load their rows only when one is approached', () => {
+    // The rows, their icons and the open menu took `/` past its budget (2026-11-23): only the two buttons are static.
+    const menus = read('components/HeaderMenus.tsx');
+    expect(staticImports(menus)).not.toContain('./HeaderMenuSurface');
+    expect(menus).toContain("import('./HeaderMenuSurface')");
+    expect(staticImports(read('components/header-menu-pages.ts'))).toEqual([
+      '@liveworkspace/subscription-ui/flag',
+    ]);
+  });
+
+  it('the account control loads the subscription provider only for someone signed in', () => {
+    const control = read('components/AccountControl.tsx');
+    expect(staticImports(control).filter((p) => /subscription/i.test(p))).toEqual([
+      '@liveworkspace/subscription-ui/flag',
+    ]);
+    expect(control).toContain("import('@/components/subscription/SiteSubscription')");
+  });
+});
+
 describe('Pro in the Explorer’s first load', () => {
   it('the upload ceiling reads Largest Image alone, not the whole limits table', () => {
     // The gallery's upload check is on the Explorer's first load: importing TIER_LIMITS there put the table (about
