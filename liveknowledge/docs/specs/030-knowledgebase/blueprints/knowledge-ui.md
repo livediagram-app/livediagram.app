@@ -238,6 +238,15 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
 - **The editor.** `PageMakersBadges` (`components/knowledge/PageMakersBadges.tsx`), in `PageMetaRowView` after the
   reading time: two pills of the meta row's own size, neutral (`slate`), each with a `HoverCard` from
   `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`). A page without a row draws neither.
+- **An agent for its person.** Every named surface words an `ai` stamp with `agentForPerson(stamp.agent, nameOf(stamp.by),
+  fallback)` (`@liveworkspace/workbench/components/ai-writer/agent-for-person`, shared with the approval line and
+  Version History): the pills' hover cards ("Created by Claude for Priya Shah through MCP on 12 Nov", fallback "an
+  agent"), the header's discs (`makersOf`, "Claude for Priya Shah, Created", fallback "An Agent") and Page Health's
+  foot. The foot's `StampRow` (`PageHealthCard.tsx`) takes a `PageStamp` `{ at, by?, agent? }` (`agent` the name
+  `stampOf` in `PageRail.tsx` carries for an `ai` stamp, the suggestion's excepted): the person's disc, the name line
+  "Claude for Priya Shah", then the shared `AiWriterMark` ("Created by AI", "Edited by AI"), and under it "Created 3
+  hours ago". An accepted suggestion's stamp reads "Claude, accepted by Priya Shah" with the same mark. Tests:
+  `page-makers.test.ts`, `PageMakersStack.test.tsx`, `PageActivity.test.tsx`.
 - **Tests.** `page-writer.test.ts` (V18 on a room at V17 with rows, every kind of writer), `routes/page-cover.test.ts`
   (every kind stamped through the routes, the suggestion's),
   `knowledge-page-routes.test.ts` (Page Health answers them; an agent's write shows as one),

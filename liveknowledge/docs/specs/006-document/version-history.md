@@ -38,12 +38,15 @@ This Version) is read without the draft: looking at, copying or restoring a vers
 
 | Kind      | When                                                                                                                                                                                                                                                                                                                                                               | Who it names                 |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
-| `save`    | **Each Save of a page.** A write that changes a page's saved writing and leaves no draft on it (a person's Save, an agent's write to a page nobody is editing, a restore) keeps the page as it now stands, after the write lands. Draft keystrokes, Cancel and Discard change no saved writing and keep nothing. Every write path meets it, as the idle one does.  | The person who saved         |
+| `save`    | **Each Save of a page.** A write that changes a page's saved writing and leaves no draft on it (a person's Save, an agent's write to a page nobody is editing, a restore) keeps the page as it now stands, after the write lands. Draft keystrokes, Cancel and Discard change no saved writing and keep nothing. Every write path meets it, as the idle one does.  | The person who saved; an agent's write names the agent for its person ("Claude for Priya Shah") |
 | `idle`    | **After about 30 minutes idle.** The first write to a tab that had not changed for `VERSION_IDLE_MS` (30 minutes) keeps the tab as it stood, before the write lands, unless it held an open draft then (a draft is never kept). Every write path meets it: an editor's save, a delta save, a Participant's writing, a changeset, a revert, a restore, a migration. | Nobody                       |
-| `agent`   | **Before an agent's changeset.** Before the first changeset of an agent's burst on a tab: one from an API token with no changeset from the same token on that tab in the last `VERSION_AGENT_BURST_MS` (10 minutes). An assistant's run of edits is one version before it, never one per edit. An agent's page change or article write counts as its changeset.    | The person whose token wrote |
-| `restore` | **Before a restore.** The content a restore replaces, so the restore can be undone.                                                                                                                                                                                                                                                                                | The person who restored      |
+| `agent`   | **Before an agent's changeset.** Before the first changeset of an agent's burst on a tab: one from an API token with no changeset from the same token on that tab in the last `VERSION_AGENT_BURST_MS` (10 minutes). An assistant's run of edits is one version before it, never one per edit. An agent's page change or article write counts as its changeset.    | The agent for the person whose token wrote ("Claude for Priya Shah") |
+| `restore` | **Before a restore.** The content a restore replaces, so the restore can be undone.                                                                                                                                                                                                                                                                                | The person who restored; an agent's restore names the agent for its person |
 | `manual`  | **Name This Version.** The tab's current content, named. Naming an older version names that one instead (no copy).                                                                                                                                                                                                                                                 | The person who named it      |
 
+- **An agent's mark.** A version an agent's write kept (its `save`, the `agent` one before its burst, a `restore` it
+  ran) stores the agent's name beside its person (`author_agent`, schema step V43), so the rail can say "Claude for
+  Priya Shah". Versions kept before V43 have none and name the person alone.
 - **One per revision.** A moment that would keep a revision already kept keeps nothing new (an `idle` version and
   an `agent` one at the same revision are one version). Naming the current content when a named version already holds
   it renames that one. Where only an automatic version holds it, the named one is kept in the snapshots' store and the
@@ -200,10 +203,16 @@ it has no Make a Copy.
 - **The rail.** **Now** first (the tab as it is), then the versions newest first under day headings (Today,
   Yesterday, the weekday within the week, then the date). Each row: its time, its name or its kind in words
   ("Saved", "Automatic", "Before an AI edit", "Before restoring"), and who it names. The selected row is marked current.
+  An agent's version names the agent and the person it acted for, "Claude for Priya Shah", with the AI sparkle beside
+  it (owner 2026-11-22: "Same within the history tool"), as liveplanner's history marks an agent's change: the
+  sparkle's tooltip and accessible name say what the agent did ("Saved by AI", "Edited by AI" on a version kept
+  before an AI edit, "Restored by AI"). A person's version names the person, with no sparkle. Versions kept before the
+  agent column (schema step V43) name the person alone: nothing is guessed.
   Named versions carry their name in the row's own weight; **Only Named Versions** filters to them.
 - **Name This Version** (Editor) sits at the rail's head and names the current content; a row's **Name** (and
   **Rename**, **Remove Name**) edits a version's name in place, in the row.
-- **The selected version** shows under the bar: its time, kind and author, the summary line ("Compared with now: 3
+- **The selected version** shows under the bar: its time, kind and author (an agent's as the rail names it, with the
+  sparkle), the summary line ("Compared with now: 3
   changed, 2 removed, 1 added · 1 page added · the writing changed"), **Show Changes**, and for an Editor **Restore
   This Version** and **Make a Copy**. Restore asks first, in place ("Restore this version? The tab changes for
   everyone; you can undo it."), never in a separate dialog.
@@ -228,8 +237,10 @@ it has no Make a Copy.
 | POST   | `/api/documents/:id/tabs/:tabId/versions/:versionId/restore` | grant (edit)                 | `{ restored: { tabId, rev, changesetId, undoVersionId } }`, or `{ restored: null }` when the content was already the tab's |
 | POST   | `/api/documents/:id/tabs/:tabId/versions/:versionId/copy`    | grant (edit), not a tab link | `{ name? }` → `201 { tab: { id, name, rev } }`                                                                             |
 
-`VersionSummary` is `{ id, tabId, rev, kind, name, author: { name, color } | null, savedAt, createdAt, bytes,
-elementCount }`. Refusals: `404 not_found` (no such tab or version, or a tab outside a tab link), `403` (below the
+`VersionSummary` is `{ id, tabId, rev, kind, name, author: { name, color, agent? } | null, savedAt, createdAt, bytes,
+elementCount }`. `author.name` is always the person; `agent` is the agent's name when an agent's write kept the
+version, named as the page's Created and Updated name it (the client's name the MCP server or the CLI sends, else the
+token's). Refusals: `404 not_found` (no such tab or version, or a tab outside a tab link), `403` (below the
 gate), `400 invalid_name` (a name of nothing), `409 too_many_names`, `409 tab_busy`, `409 elements_held` (an agent),
 `413 tab_too_large` (a copy past the cap).
 
