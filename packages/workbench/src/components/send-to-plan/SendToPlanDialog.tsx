@@ -21,9 +21,8 @@ import {
   SegmentedToggle,
   Select,
   TextInput,
-  lucideGlyph,
 } from '@liveworkspace/ui';
-import { lucideCircleCheck } from '@liveworkspace/icons/lucide';
+import { Callout } from '@liveworkspace/ui/callout';
 import { workbench } from '../../bindings';
 import { useToast } from '../../hooks/ui/useToast';
 import { indexClient } from '../../lib/index-client';
@@ -38,7 +37,6 @@ import { chipWords, openSentCard } from './SentChip';
 
 const PLAN_LIST_LIMIT = 30;
 const SEARCH_SETTLE_MS = 250;
-const DoneGlyph = lucideGlyph(lucideCircleCheck, 16);
 const LABEL = 'text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400';
 
 type Client = Pick<
@@ -281,25 +279,16 @@ export function SendToPlanDialog({
       >
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-6 gap-y-5 overflow-y-auto px-6 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
           {existing ? (
-            <div
-              role="status"
-              data-already-sent=""
-              ref={showBanner}
-              className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm text-emerald-900 sm:col-span-2 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100"
-            >
-              <DoneGlyph aria-hidden className="shrink-0" />
-              <span className="min-w-0 flex-1">
+            <div ref={showBanner} data-already-sent="" className="sm:col-span-2">
+              <Callout
+                tone="success"
+                size="md"
+                role="status"
+                action={{ label: 'Open Card', onSelect: () => openSentCard(existing) }}
+              >
                 Already sent: <span className="font-semibold">{existing.card.title}</span> ·{' '}
                 {chipWords(existing)}. Sending again makes another card.
-              </span>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => openSentCard(existing)}
-              >
-                Open Card
-              </Button>
+              </Callout>
             </div>
           ) : null}
           <section className="flex min-w-0 flex-col gap-2" aria-label="Plan">

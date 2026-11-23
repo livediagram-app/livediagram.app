@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode, Ref } from 'react';
 
 // A pill (or a rectangular badge) holding an optional leading icon and a label
 // (docs/specs/004-interface-design/optical-alignment.md). The label centres its cap band through
@@ -15,6 +15,8 @@ export type ChipProps = {
   caps?: boolean;
   // A pill by default; 'sm' is a rectangular badge (4px corners).
   radius?: 'full' | 'sm';
+  // The chip's outer span, for a caller that measures or positions it.
+  ref?: Ref<HTMLSpanElement>;
   children: ReactNode;
 } & HTMLAttributes<HTMLSpanElement>;
 
