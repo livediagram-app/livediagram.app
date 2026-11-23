@@ -83,8 +83,12 @@ export async function serveDesignSnapshots(
   ctx: DesignRouteContext,
   handle: () => Promise<Response>,
 ): Promise<Response> {
-  const [api, collection, designId, ...rest] = ctx.segments;
-  if (api !== 'api' || collection !== 'designs' || !designId) return handle();
+  // By index, and the rest as a slice: the drift test's sweep follows which segments a request reads
+  // (docs/specs/015-api/api-documentation.md "Drift test"), and a rest pattern reads them all.
+  const { segments } = ctx;
+  const designId = segments[2];
+  if (segments[0] !== 'api' || segments[1] !== 'designs' || !designId) return handle();
+  const rest = segments.slice(3);
   const answer = await serveSnapshots({
     db: ctx.env.DESIGN_DB,
     itemId: designId,
