@@ -11,13 +11,7 @@ import {
   type StandingGrant,
 } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
-import { planSendHere } from './plan-send-door';
-import type {
-  PlanSendDoorAnswer,
-  PlanSendDoorCall,
-  SourceChange,
-} from '@liveworkspace/index-client';
-import { tellSourceChanged } from '@liveworkspace/index-app';
+import { planSendHere, sourceChangedHere } from './plan-send-door';
 import { roomFetch } from './plan-room-fetch';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveplanner/api-schema';
@@ -131,7 +125,7 @@ import {
   roomSentCards,
   type SheetRangeAsk,
 } from './plan-room-doors';
-import type { PlanDataAsk } from '@liveworkspace/index-client';
+import type { PlanDataAsk, PlanSendDoorCall, SourceChange } from '@liveworkspace/index-client';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -624,17 +618,13 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // Send to Plan's cards, the person's grant checked by the internal door (plan-send-door.ts).
-  planSend(planId: string, call: PlanSendDoorCall): Promise<PlanSendDoorAnswer> {
+  planSend(planId: string, call: PlanSendDoorCall) {
     return planSendHere(this, planId, call);
   }
 
   // Cards this plan's threads sent to another plan changed: every open session reads its chips again.
   async sourceChanged(planId: string, change: SourceChange): Promise<void> {
-    tellSourceChanged(
-      { bind: (id) => this.bindPlan(id), broadcast: (f) => this.broadcast(f) },
-      planId,
-      change,
-    );
+    sourceChangedHere(this, planId, change);
   }
 
   // One call to a rule's address. An id nothing has written answers 401 and stays empty; a stored plan's schema is

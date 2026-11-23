@@ -16,7 +16,12 @@ import {
   withDefaultStatuses,
   type ItemFields,
 } from '@liveplanner/items';
-import type { PlanSendDoorAnswer, PlanSendDoorCall } from '@liveworkspace/index-client';
+import { tellSourceChanged } from '@liveworkspace/index-app';
+import type {
+  PlanSendDoorAnswer,
+  PlanSendDoorCall,
+  SourceChange,
+} from '@liveworkspace/index-client';
 import { appendItemHistory } from '../db/item-history';
 import { getItemStoreHead, insertItems, listItems } from '../db/items';
 import { planTabs } from '../routes/plan-route';
@@ -26,6 +31,15 @@ import { automationDeps } from './automations/plan-room-automations';
 import { readPlanOutline } from './plan-content';
 import type { PlanRoom } from './plan-room';
 import { bindStoredPlan } from './plan-room-content';
+
+// The room's side of the `source-changed` door: bind the plan, then tell every open session.
+export function sourceChangedHere(room: PlanRoom, planId: string, change: SourceChange): void {
+  tellSourceChanged(
+    { bind: (id) => room.bindPlan(id), broadcast: (f) => room.broadcast(f) },
+    planId,
+    change,
+  );
+}
 
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
