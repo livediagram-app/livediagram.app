@@ -8,13 +8,13 @@ import {
 } from '@liveknowledge/document';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
-import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
+import { isCssNativeBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import type { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import type { useSketchPaint } from '@/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
-import type { useTagColours } from '@/components/canvas/TagColoursContext';
+import type { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import type { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';

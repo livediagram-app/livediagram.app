@@ -8,7 +8,7 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 | `packages/design/src/web-components.ts`                                                              | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
 | `packages/design/src/svg-render-concept.ts`                                                          | `svgConcept`: the headless body (rest frame)                                 |
 | `packages/design/src/concept-timeline.ts`, `svg-render-timeline.ts`                                  | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
-| `apps/live/components/canvas/ConceptTimelineBody.tsx`, `concept-row-layer.tsx`                       | The Timeline's face body; `ConceptRowLayer`, one animated row layer          |
+| `../packages/workbench/src/components/canvas/ConceptTimelineBody.tsx`, `concept-row-layer.tsx`       | The Timeline's face body; `ConceptRowLayer`, one animated row layer          |
 | `packages/design/src/element-normalise.ts`                                                           | `railToTimeline`: a saved timeline rail's points into milestones             |
 | `packages/design/src/shape-variants.ts`                                                              | `pyramid` + `funnel` / `inverted` variants                                   |
 | `apps/live/components/canvas/ConceptFace.tsx`                                                        | Canvas face: rows, in-place lines, the Cycle's centre label                  |

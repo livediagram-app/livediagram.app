@@ -50,7 +50,7 @@ text.
 - Data model: `ShapeElement.marker?: ShapeMarker` and
   `ShapeElement.markerSize?: TextSize` (`../packages/model-core/src/shape-marker.ts`
   defines the `ShapeMarker` union + `SHAPE_MARKERS` order).
-- The glyph is one component, `ShapeMarkerGlyph` (`apps/editor/components/canvas/ShapeMarker.tsx`),
+- The glyph is one component, `ShapeMarkerGlyph` (`../packages/workbench/src/components/canvas/ShapeMarker.tsx`),
   shared by the canvas renderer and the context-menu tiles; the circles carry a
   fixed fill, the checkbox tints with the element's text colour.
 - Rendering reuses the shape's icon+label flex layout (`ShapeInlineIconLayout`

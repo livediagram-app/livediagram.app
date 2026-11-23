@@ -16,7 +16,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { AgendaStep, type StepState } from './agenda/AgendaStep';

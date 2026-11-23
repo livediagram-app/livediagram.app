@@ -27,7 +27,7 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                                     |
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                                          |
 | `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
-| `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                     | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                                |
+| `../packages/workbench/src/components/canvas/ElementEllipsisMenu.tsx`       | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                                |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                                            |
 | `../packages/workbench/src/components/chrome/AuthControls.tsx`              | Account command menu                                                                                                        |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                                      |
@@ -253,7 +253,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx`    |
 | Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`              |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/editor/e2e/menu-keyboard.spec.ts`                                     |
-| Element quick menu kinds                                                                   | `apps/editor/components/canvas/ElementEllipsisMenu.test.tsx`                    |
+| Element quick menu kinds                                                                   | `../packages/workbench/src/components/canvas/ElementEllipsisMenu.test.tsx`      |
 | Shape tiles are named                                                                      | `apps/editor/lib/element-names.test.ts`                                         |
 | Signed-in account menu by keyboard                                                         | e2e `apps/editor/e2e/signed-in/menu-keyboard.spec.ts`                           |
 | Contrast and optical audits still pass                                                     | e2e `contrast-audit.spec.ts`, `optical-audit.spec.ts`                           |

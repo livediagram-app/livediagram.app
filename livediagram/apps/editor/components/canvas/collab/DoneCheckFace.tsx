@@ -13,7 +13,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 
 // The face of a Done check (docs/specs/012-collaboration/done-check.md): everyone marks themselves finished, and
 // the card shows who has and who has not.

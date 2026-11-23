@@ -13,7 +13,7 @@ import {
   plural,
 } from '@livediagram/document';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
-import { nearestCssBorderStyle } from '@/components/canvas/border-css';
+import { nearestCssBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import {
   TableAxisMenuPortal,
   TableAxisTriggers,

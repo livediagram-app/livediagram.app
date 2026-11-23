@@ -7,7 +7,7 @@
 // animation (`pieAnim` -> lvd-pie-*) + legend toggle. The line + point group
 // animates; the axes + x-labels stay still.
 
-import { LineChartAxis } from './ChartAxis';
+import { LineChartAxis } from '@liveworkspace/workbench/components/canvas/ChartAxis';
 import {
   AREA_FILL_OPACITY,
   chartValueFontPx,

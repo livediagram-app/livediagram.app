@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/editor/lib/export-tab.ts`                                | PNG / PDF rasterise arrows from `svgArrow`; SVG export shares one pass                   |
 | `components/canvas/Minimap.tsx`                                | One pass, with its own mask-id prefix                                                    |
 | `livediagram/apps/editor/components/canvas/ArrowView.tsx`      | Knockout mask on the line + halo; renders the layout it is given                         |
-| `livediagram/apps/editor/components/canvas/ArrowLabel.tsx`     | Multi-line SVG caption; textarea editor laid out by the same engine                      |
+| `packages/workbench/src/components/canvas/ArrowLabel.tsx`      | Multi-line SVG caption; textarea editor laid out by the same engine                      |
 
 ## Domain and naming
 

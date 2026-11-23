@@ -26,7 +26,7 @@ import {
   type TextSize,
 } from '@livediagram/document';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
-import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
+import { ElementSettingsButton } from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';

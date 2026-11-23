@@ -39,7 +39,7 @@ import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { iconMakesRoomForLabel } from '@/components/primitives/icon-band';
-import { StickerView } from '@/components/canvas/StickerView';
+import { StickerView } from '@liveworkspace/workbench/components/canvas/StickerView';
 import { SKETCH_TILE_FILTER_ID } from '@liveworkspace/workbench/components/palette/palette-tile-finish';
 import { SketchArtPicture } from '@/components/canvas/SketchArtPicture';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';

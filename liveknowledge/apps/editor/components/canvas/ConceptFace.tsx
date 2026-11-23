@@ -32,7 +32,7 @@ import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ChevronStageControls } from '@/components/canvas/ConceptRowBar';
 import { ConceptRowLayer } from '@liveworkspace/workbench/components/canvas/concept-row-layer';
-import { ConceptTimelineBody } from './ConceptTimelineBody';
+import { ConceptTimelineBody } from '@liveworkspace/workbench/components/canvas/ConceptTimelineBody';
 
 type Props = {
   element: ShapeElement & { shape: ConceptShape };

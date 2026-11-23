@@ -18,7 +18,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { CollabPanel } from './collab-chrome';
 import { MoodBars } from './temperature/MoodBars';
 import { MoodButtons } from './temperature/MoodButtons';

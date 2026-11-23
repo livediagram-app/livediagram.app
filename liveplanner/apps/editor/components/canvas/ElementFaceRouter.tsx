@@ -12,7 +12,7 @@ import {
   elementKindLabel,
   isCollabPanelShape,
 } from '@liveplanner/project';
-import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
+import { ElementSettingsButton } from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ActionPanelFace } from '@/components/canvas/ActionPanelFace';

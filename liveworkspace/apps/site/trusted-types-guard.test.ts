@@ -51,6 +51,7 @@ const htmlExpressions = (source: string) => [...source.matchAll(/\{\.\.\.htmlPro
 // (JSON with < escaped). Everything else goes through sanitizedHtml.
 const BUILDER_MARKUP = [
   'packages/ui/src/random-uuid-boot.ts',
+  'packages/workbench/src/components/canvas/StickerView.tsx',
   'packages/workbench/src/components/canvas/face-finish-ink.ts',
   'packages/workbench/src/components/dialogs/tab-style/LooksCarousel.tsx',
 ];

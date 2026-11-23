@@ -19,8 +19,12 @@ import { sameArrowViewFrame, sameRects, type ArrowViewFrame } from './arrow-view
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
-import { ArrowHeadMarker, arrowheadMarkerId, markersTakeLineColour } from './arrow-defs';
-import { ArrowLabel } from './ArrowLabel';
+import {
+  ArrowHeadMarker,
+  arrowheadMarkerId,
+  markersTakeLineColour,
+} from '@liveworkspace/workbench/components/canvas/arrow-defs';
+import { ArrowLabel } from '@liveworkspace/workbench/components/canvas/ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowGripsPortal } from './ArrowGripsPortal';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';

@@ -3,7 +3,7 @@
 // they keep their own strokes rather than the house icon weight
 // (docs/specs/004-interface-design/iconography.md, "Art").
 
-import { ErGlyphMarks } from '@/components/canvas/arrow-defs';
+import { ErGlyphMarks } from '@liveworkspace/workbench/components/canvas/arrow-defs';
 import { BORDER_STROKE_PX } from '@livediagram/document';
 import type {
   ArrowEnds,

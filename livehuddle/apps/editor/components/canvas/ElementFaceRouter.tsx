@@ -15,7 +15,7 @@ import {
   type TextAlignY,
   type TextSize,
 } from '@livehuddle/document';
-import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
+import { ElementSettingsButton } from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';

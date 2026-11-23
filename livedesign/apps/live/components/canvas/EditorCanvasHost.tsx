@@ -1,6 +1,6 @@
 'use client';
 
-import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
+import { TagColoursProvider } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { canvasSurface, PEN_INK } from '@livedesign/design';

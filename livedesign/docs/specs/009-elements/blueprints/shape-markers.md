@@ -6,22 +6,22 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                         | Role                                                                       |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `../packages/model-core/src/shape-marker.ts`                 | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
-| `packages/design/src/element-types.ts`                       | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
-| `packages/design/src/data-shapes.ts`                         | `isSelfDrawingShape`: the menu gate                                        |
-| `apps/live/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
-| `apps/live/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
-| `apps/live/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`          | Inline layout for an icon or a marker, after the face branches             |
-| `apps/live/components/palette/context-menu-rows.tsx`         | `MarkerTiles`: None + five tiles, the Size row                             |
-| `apps/live/components/palette/ElementAppearanceSections.tsx` | Single-element gate `showMarkers`, Text flyout placement                   |
-| `apps/live/components/palette/MultiSelectionContextMenu.tsx` | Multi-selection gate `markerSrc`                                           |
-| `apps/live/lib/style-presets.ts`                             | `applyMarkerToEl`, `applyMarkerSizeToEl`                                   |
-| `apps/live/hooks/canvas/useStylePreview.ts`                  | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
-| `apps/live/hooks/canvas/useShapeStyleSetters.ts`             | `setMarkerSelected`, `setMarkerSizeSelected`                               |
-| `apps/live/lib/editor-commands-selection.ts`                 | Command-palette "Add … Marker" / "Clear Marker" [QE12]                     |
+| File                                                          | Role                                                                       |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `../packages/model-core/src/shape-marker.ts`                  | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
+| `packages/design/src/element-types.ts`                        | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
+| `packages/design/src/data-shapes.ts`                          | `isSelfDrawingShape`: the menu gate                                        |
+| `../packages/workbench/src/components/canvas/ShapeMarker.tsx` | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
+| `apps/live/components/canvas/shape-inline-icon-layout.tsx`    | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
+| `apps/live/components/canvas/BoxedElementView.tsx`            | Resolves `marker` (none for self-drawing shapes)                           |
+| `apps/live/components/canvas/ElementFaceRouter.tsx`           | Inline layout for an icon or a marker, after the face branches             |
+| `apps/live/components/palette/context-menu-rows.tsx`          | `MarkerTiles`: None + five tiles, the Size row                             |
+| `apps/live/components/palette/ElementAppearanceSections.tsx`  | Single-element gate `showMarkers`, Text flyout placement                   |
+| `apps/live/components/palette/MultiSelectionContextMenu.tsx`  | Multi-selection gate `markerSrc`                                           |
+| `apps/live/lib/style-presets.ts`                              | `applyMarkerToEl`, `applyMarkerSizeToEl`                                   |
+| `apps/live/hooks/canvas/useStylePreview.ts`                   | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
+| `apps/live/hooks/canvas/useShapeStyleSetters.ts`              | `setMarkerSelected`, `setMarkerSizeSelected`                               |
+| `apps/live/lib/editor-commands-selection.ts`                  | Command-palette "Add … Marker" / "Clear Marker" [QE12]                     |
 
 ## Domain and naming
 

@@ -21,7 +21,7 @@ import {
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import { ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
+import { ShapeMarkerGlyph } from '@liveworkspace/workbench/components/canvas/ShapeMarker';
 import { HoverCard } from '@livediagram/ui';
 
 // Inline-icon + marker + label layout for a shape, split out of

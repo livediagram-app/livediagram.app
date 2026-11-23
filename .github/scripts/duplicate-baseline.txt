@@ -110,8 +110,6 @@ livedocuments/apps/editor/components/canvas/PagesClusterStrip.tsx	liveknowledge/
 livedocuments/apps/editor/components/canvas/PresentingContext.tsx	liveknowledge/apps/editor/components/canvas/PresentingContext.tsx
 livedocuments/apps/editor/components/canvas/QuickStyleBarSlot.tsx	liveknowledge/apps/editor/components/canvas/QuickStyleBarSlot.tsx
 livedocuments/apps/editor/components/canvas/article/PageBands.tsx	liveknowledge/apps/editor/components/canvas/article/PageBands.tsx
-livedocuments/apps/editor/components/canvas/article/page-toolbar-placement.ts	liveknowledge/apps/editor/components/canvas/article/page-toolbar-placement.ts
-livedocuments/apps/editor/components/canvas/article/useTouchPagePan.ts	liveknowledge/apps/editor/components/canvas/article/useTouchPagePan.ts
 livedocuments/apps/editor/components/canvas/boxed-element-style.ts	liveknowledge/apps/editor/components/canvas/boxed-element-style.ts
 livedocuments/apps/editor/components/canvas/canvas-main-style.ts	liveknowledge/apps/editor/components/canvas/canvas-main-style.ts
 livedocuments/apps/editor/components/canvas/collab/comment/MentionContext.tsx	liveknowledge/apps/editor/components/canvas/collab/comment/MentionContext.tsx

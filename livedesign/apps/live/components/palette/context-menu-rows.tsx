@@ -12,7 +12,10 @@ import { SizeButton } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
 
-import { MARKER_LABELS, ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
+import {
+  MARKER_LABELS,
+  ShapeMarkerGlyph,
+} from '@liveworkspace/workbench/components/canvas/ShapeMarker';
 import { withNone } from '@/components/palette/context-menu-tiles';
 
 // Stable no-op for ColourRow callers that don't supply a preview-end handler,

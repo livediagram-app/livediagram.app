@@ -33,7 +33,7 @@ import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { useTagColours } from '@/components/canvas/TagColoursContext';
+import { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
