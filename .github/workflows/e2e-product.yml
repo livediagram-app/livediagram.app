@@ -6,6 +6,10 @@ name: E2E (one product)
 on:
   workflow_call:
     inputs:
+      playwright-image:
+        description: The Playwright container image every job runs in, matching the lockfile (e2e.yml's plan).
+        type: string
+        required: true
       product:
         description: The product's folder (livediagram, liveplanner, livedesign, livedocuments, livehuddle, liveknowledge).
         type: string
@@ -65,7 +69,7 @@ jobs:
     timeout-minutes: 10
     # The shards' container, so the Turbopack cache this job restores and saves builds as it always has.
     container:
-      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      image: ${{ inputs.playwright-image }}
       options: --user 1001 --ipc=host
     defaults:
       run:
@@ -78,6 +82,7 @@ jobs:
         uses: ./.github/actions/e2e-setup
         with:
           editor: ${{ inputs.editor }}
+          image: ${{ inputs.playwright-image }}
 
       - name: Restore build cache
         uses: ./.github/actions/next-cache-restore
@@ -91,11 +96,11 @@ jobs:
       - name: Build editor app
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} build
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/next-build-cold-retry.sh" pnpm --filter ${{ inputs.editor }} build
 
       - name: Build liveworkspace's site (the Explorer)
         if: inputs.smoke-explorer
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/next-build-cold-retry.sh" pnpm --filter @liveworkspace/site build
 
       # The run's one guest build saves its cache (on main only).
       - name: Save build cache
@@ -128,7 +133,7 @@ jobs:
     # Twice the 5-minute budget: a hung shard stops well before GitHub's six hours.
     timeout-minutes: 10
     container:
-      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      image: ${{ inputs.playwright-image }}
       options: --user 1001 --ipc=host
     defaults:
       run:
@@ -146,6 +151,7 @@ jobs:
         uses: ./.github/actions/e2e-setup
         with:
           editor: ${{ inputs.editor }}
+          image: ${{ inputs.playwright-image }}
 
       # The Smoke build's exports, back at their paths from the repository root.
       - name: Download the exports
@@ -180,7 +186,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
-      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      image: ${{ inputs.playwright-image }}
       options: --user 1001 --ipc=host
     defaults:
       run:
@@ -193,6 +199,7 @@ jobs:
         uses: ./.github/actions/e2e-setup
         with:
           editor: ${{ inputs.editor }}
+          image: ${{ inputs.playwright-image }}
 
       - name: Name the cache folders
         id: paths
@@ -220,21 +227,21 @@ jobs:
       - name: Build the editor
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} build
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/next-build-cold-retry.sh" pnpm --filter ${{ inputs.editor }} build
 
       # The one help centre (liveworkspace/apps/help), built once as this product's scope into its out/, which the
       # stack serves under /help (scripts/e2e-stack/stack.mjs).
       - name: Build the help centre for this product
         env:
           HELP_SCOPE: ${{ inputs.product }}
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/help build:scope
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/next-build-cold-retry.sh" pnpm --filter @liveworkspace/help build:scope
 
       - name: Build marketing
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @${{ inputs.product }}/marketing build
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/next-build-cold-retry.sh" pnpm --filter @${{ inputs.product }}/marketing build
 
       - name: Build liveworkspace's site (the Explorer)
         if: inputs.sites-explorer
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/next-build-cold-retry.sh" pnpm --filter @liveworkspace/site build
 
       - name: Run sites audit
         run: pnpm --filter ${{ inputs.editor }} test:e2e:sites
@@ -264,7 +271,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     container:
-      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      image: ${{ inputs.playwright-image }}
       options: --user 1001 --ipc=host
     defaults:
       run:
@@ -277,6 +284,7 @@ jobs:
         uses: ./.github/actions/e2e-setup
         with:
           editor: ${{ inputs.editor }}
+          image: ${{ inputs.playwright-image }}
 
       # The signed-in build keeps its cache in the same folder as the guest build, under its own name.
       - name: Restore build cache
@@ -288,12 +296,12 @@ jobs:
       # Sign-in is a build-time switch: the specs run against their own export with the test-only auth
       # bridge and the stack standing in for the accounts Worker; no account or secret is involved.
       - name: Build editor app with sign-in on
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} build:signed-in
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/next-build-cold-retry.sh" pnpm --filter ${{ inputs.editor }} build:signed-in
 
       # Its e2e export (.next/out-e2e, which the signed-in stack serves), reading the specs' session as the account.
       - name: Build liveworkspace's site (the Explorer)
         if: inputs.signed-in-explorer
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/site build:e2e
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/next-build-cold-retry.sh" pnpm --filter @liveworkspace/site build:e2e
 
       - name: Run signed-in specs
         run: pnpm --filter ${{ inputs.editor }} test:e2e:signed-in

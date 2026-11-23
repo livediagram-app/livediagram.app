@@ -32,6 +32,7 @@ jobs:
       actions: write
     outputs:
       e2e: ${{ steps.plan.outputs.e2e }}
+      playwright-image: ${{ steps.playwright.outputs.image }}
     steps:
       - name: Check out
         uses: actions/checkout@v7
@@ -59,6 +60,19 @@ jobs:
           HEAD: ${{ github.sha }}
         run: node .github/scripts/main-base.mjs
 
+      # The e2e jobs' container image, from the Playwright version the lockfile holds, so a Playwright bump
+      # (Dependabot's included) moves the image with it rather than failing every e2e job on a stale tag.
+      - name: Find Playwright's image
+        id: playwright
+        run: |
+          set -euo pipefail
+          versions="$(grep -oE "^  '@playwright/test@[0-9]+\.[0-9]+\.[0-9]+'" pnpm-lock.yaml | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | sort -u)"
+          if [ "$(printf '%s\n' "${versions}" | grep -c .)" -ne 1 ]; then
+            echo "::error::Expected one @playwright/test version in pnpm-lock.yaml, found: ${versions//$'\n'/, }"
+            exit 1
+          fi
+          echo "image=mcr.microsoft.com/playwright:v${versions}-noble" >> "${GITHUB_OUTPUT}"
+
       # A pull request against its base; a push to main against the step above. A manual run has no
       # base and runs everything.
       - name: Plan
@@ -85,6 +99,7 @@ jobs:
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: livediagram
       editor: '@livediagram/editor'
       editor-dir: apps/editor
@@ -110,6 +125,7 @@ jobs:
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: liveplanner
       editor: '@liveplanner/editor'
       editor-dir: apps/editor
@@ -131,6 +147,7 @@ jobs:
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: livedesign
       editor: '@livedesign/live'
       editor-dir: apps/live
@@ -151,6 +168,7 @@ jobs:
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: livedocuments
       editor: '@livedocuments/editor'
       editor-dir: apps/editor
@@ -169,6 +187,7 @@ jobs:
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: livehuddle
       editor: '@livehuddle/editor'
       editor-dir: apps/editor
@@ -193,6 +212,7 @@ jobs:
       actions: write
     uses: ./.github/workflows/e2e-product.yml
     with:
+      playwright-image: ${{ needs.plan.outputs.playwright-image }}
       product: liveknowledge
       editor: '@liveknowledge/editor'
       editor-dir: apps/editor
