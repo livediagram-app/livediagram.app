@@ -6,6 +6,7 @@
 
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder, Level } from '@liveworkspace/index-client';
+import { Chip } from '@liveworkspace/ui';
 import type { ShownItem } from '../data/overlay';
 import { ConfirmDialog } from './lazy-dialogs';
 import { LIST_CARD, LIST_HEADER } from '../ui/classes';
@@ -174,12 +175,12 @@ const SharedRow = memo(function SharedRow({
       >
         {owner}
       </span>
-      <span
+      <Chip
         data-role-chip=""
-        className="inline-flex w-fit items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
+        className="w-fit bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30"
       >
         {ROLE_CHIP[item.access]}
-      </span>
+      </Chip>
       <span className="hidden min-w-0 items-center sm:flex">
         <RelativeTimeChip at={item.updatedAt} />
       </span>

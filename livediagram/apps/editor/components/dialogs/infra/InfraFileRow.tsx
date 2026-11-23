@@ -4,7 +4,7 @@
 // Escape there closes the box, not the dialog.
 
 import { useId, useState } from 'react';
-import { Button, Tooltip, lucideGlyph } from '@livediagram/ui';
+import { Button, Tooltip, lucideGlyph, Chip } from '@livediagram/ui';
 import {
   lucideClipboardPaste,
   lucideFileUp,
@@ -93,11 +93,9 @@ export function InfraFileRow({
           {entry.name}
         </span>
         {showState ? (
-          <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${STATE_TONE[state]}`}
-          >
+          <Chip className={`px-2 py-0.5 text-[11px] font-medium ${STATE_TONE[state]}`}>
             {state}
-          </span>
+          </Chip>
         ) : null}
         {/* On a phone the update panel's three actions take a line of their own under the name, every row alike,
             rather than wrapping row by row as each state chip's width happens to allow. */}

@@ -49,9 +49,9 @@ export function PostMeta({ post }: { post: CommunityPost }) {
             <li key={tag}>
               <Link
                 href={tagHref(tag)}
-                className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors duration-micro hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-500/50 dark:hover:text-brand-200"
+                className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 transition-colors duration-micro hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-500/50 dark:hover:text-brand-200"
               >
-                #{tag}
+                <span className="text-optical-line">#{tag}</span>
               </Link>
             </li>
           ))}

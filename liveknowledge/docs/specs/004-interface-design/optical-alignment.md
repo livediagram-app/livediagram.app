@@ -99,7 +99,9 @@ Existing ad-hoc shapes move onto these primitives. A new shape that frames a gly
 - **A snap guard** holds the browser to that whole-pixel baseline, so the audit's correction fails
   loudly if the browser ever paints text differently.
 - **A static guard** fails when a circle or chip framing text bypasses the primitives or the
-  utility, naming the file and line.
+  utility, naming the file and line. A chip is any padded pill label, button or link, whatever its
+  height: a status pill moves onto **Chip**, a pill control keeps its element and centres its label
+  like a button label. A layout box shaped as a pill (a banner, a toast) is the audit's to judge.
 - **The icon geometry check** belongs to [Iconography](iconography.md): catalogue icons off-centre
   by more than the tolerance fail there, unless they are a logged exception.
 

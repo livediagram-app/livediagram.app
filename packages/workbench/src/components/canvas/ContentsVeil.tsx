@@ -50,7 +50,7 @@ export function ContentsVeil({
         } ${on ? 'scale-100' : 'scale-90'}`}
       >
         {large ? <EyeOffLarge /> : <EyeOffSmall />}
-        {word ? 'Hidden' : null}
+        {word ? <span className="text-optical-line">Hidden</span> : null}
       </span>
     </span>
   );

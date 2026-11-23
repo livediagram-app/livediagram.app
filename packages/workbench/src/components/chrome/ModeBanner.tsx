@@ -64,9 +64,9 @@ export function ModeBanner({
       <button
         type="button"
         onClick={onAction}
-        className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+        className="inline-flex items-center rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
       >
-        {actionLabel}
+        <span className="text-optical-line">{actionLabel}</span>
       </button>
     </TopCenterBanner>
   );

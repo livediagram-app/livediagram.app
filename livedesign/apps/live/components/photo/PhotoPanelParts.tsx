@@ -20,7 +20,7 @@ import {
   lucideType,
   lucideWand,
 } from '@liveworkspace/icons/lucide';
-import { CompactEmptyState, lucideGlyph } from '@livedesign/ui';
+import { CompactEmptyState, lucideGlyph, Chip } from '@livedesign/ui';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { PhotoHistory } from '@/lib/photo-editor/photo-history';
 import { usePhotoPointer } from '@/lib/photo-editor/photo-pointer';
@@ -236,9 +236,12 @@ export function PhotoHistoryTab({ photo }: { photo: PhotoEditorView }) {
                   {e.label}
                 </span>
                 {here ? (
-                  <span className="shrink-0 rounded-full bg-brand-700 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white dark:bg-brand-600">
+                  <Chip
+                    caps
+                    className="bg-brand-700 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-white dark:bg-brand-600"
+                  >
                     Now
-                  </span>
+                  </Chip>
                 ) : null}
               </button>
             </li>

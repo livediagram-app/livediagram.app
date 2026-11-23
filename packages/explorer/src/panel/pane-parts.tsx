@@ -4,7 +4,7 @@
 // one row, one section heading, one thumbnail size, one icon tile, one skeleton and one empty state, so every
 // section reads as the same surface whatever it lists.
 import type { KeyboardEvent, ReactNode } from 'react';
-import { EmptyState } from '@liveworkspace/ui';
+import { Chip, EmptyState } from '@liveworkspace/ui';
 
 // A row's thumbnail box: the item's snapshot at the pane's size, framed like a little page.
 export const PANE_THUMB_BOX =
@@ -337,9 +337,9 @@ export function FolderPreview({ icon, count }: { icon: ReactNode; count: string 
   return (
     <span className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 via-white to-sky-50 text-brand-700 dark:from-brand-500/20 dark:via-slate-900 dark:to-sky-500/10 dark:text-brand-300 [&_svg]:h-9 [&_svg]:w-9">
       {icon}
-      <span className="absolute bottom-1.5 left-2 rounded-full bg-white/90 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 shadow-sm dark:bg-slate-800/90 dark:text-slate-300">
+      <Chip className="absolute bottom-1.5 left-2 bg-white/90 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 shadow-sm dark:bg-slate-800/90 dark:text-slate-300">
         {count}
-      </span>
+      </Chip>
     </span>
   );
 }

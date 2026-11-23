@@ -28,8 +28,8 @@ describe('StickyWindowBar on a phone', () => {
   it('shows the short name below sm and the full one from sm, named in full', () => {
     for (const w of WINDOW_META) {
       expect(html).toContain(`aria-label="${w.label}"`);
-      expect(html).toContain(`<span class="sm:hidden">${w.short}</span>`);
-      expect(html).toContain(`<span class="max-sm:hidden">${w.label}</span>`);
+      expect(html).toContain(`<span class="text-optical-line sm:hidden">${w.short}</span>`);
+      expect(html).toContain(`<span class="text-optical-line max-sm:hidden">${w.label}</span>`);
     }
   });
 

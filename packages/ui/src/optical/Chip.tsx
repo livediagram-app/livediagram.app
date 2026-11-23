@@ -1,10 +1,12 @@
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode, Ref } from 'react';
 
 // A pill (or a rectangular badge) holding an optional leading icon and a label
 // (docs/specs/004-interface-design/optical-alignment.md). The label centres its cap band through
 // `text-optical-line`, which keeps a full line box, so the chip keeps the height its padding gives it; pin
 // `height` only where a fixed size is part of the design. A caps label gives back the letter-space after
-// its last letter; set `--optical-tracking` on the chip when its tracking is not the default 0.05em.
+// its last letter; set `--optical-tracking` on the chip when its tracking is not the default 0.05em. The icon
+// and label sit `gap-1` apart unless the caller's class names its own gap: Tailwind orders `gap-0.5` before
+// `gap-1`, so a caller's tighter gap would otherwise lose.
 export type ChipProps = {
   height?: number;
   // A leading icon, sized by the caller; it renders as the chip's first child so optical-edges can pull it
@@ -13,6 +15,8 @@ export type ChipProps = {
   caps?: boolean;
   // A pill by default; 'sm' is a rectangular badge (4px corners).
   radius?: 'full' | 'sm';
+  // The chip's outer span, for a caller that measures or positions it.
+  ref?: Ref<HTMLSpanElement>;
   children: ReactNode;
 } & HTMLAttributes<HTMLSpanElement>;
 
@@ -26,10 +30,11 @@ export function Chip({
   style,
   ...rest
 }: ChipProps) {
+  const gap = /(^|\s)gap-/.test(className) ? '' : ' gap-1';
   return (
     <span
       data-optical="chip"
-      className={`optical-edges inline-flex shrink-0 items-center gap-1 [&>svg]:block ${radius === 'full' ? 'rounded-full' : 'rounded'} ${className}`}
+      className={`optical-edges inline-flex shrink-0 items-center${gap} [&>svg]:block ${radius === 'full' ? 'rounded-full' : 'rounded'} ${className}`}
       style={height === undefined ? style : { height, ...style }}
       {...rest}
     >

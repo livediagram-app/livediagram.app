@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import type { Approval } from '@liveworkspace/index-client';
-import { Button, PictureDisc } from '@liveworkspace/ui';
+import { Button, Chip, PictureDisc } from '@liveworkspace/ui';
 import { dateFormat } from '@liveworkspace/ui/date-format';
 import { HelpLink } from '../dialogs/share/HelpLink';
 import { SECTION_LABEL } from '../dialogs/share/parts';
@@ -111,9 +111,9 @@ function ApprovalStatusView({
         <div className="flex flex-wrap items-center gap-2">
           {words ? <ApprovalPill {...words} /> : null}
           {approval.snapshotId ? (
-            <span className="rounded-full bg-slate-100 px-2 py-px text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <Chip className="bg-slate-100 px-2 py-px text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               Snapshot saved
-            </span>
+            </Chip>
           ) : null}
         </div>
         <p className="text-sm text-slate-700 dark:text-slate-200">
@@ -124,9 +124,9 @@ function ApprovalStatusView({
               {', due '}
               <strong className="font-semibold">{dueWords(approval.due)}</strong>
               {open && isOverdue(approval.due) ? (
-                <span className="ml-1.5 rounded-full bg-rose-100 px-1.5 py-px text-[11px] font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200">
+                <Chip className="ml-1.5 bg-rose-100 px-1.5 py-px text-[11px] font-semibold text-rose-700 dark:bg-rose-500/20 dark:text-rose-200">
                   Overdue
-                </span>
+                </Chip>
               ) : null}
             </>
           ) : null}

@@ -263,9 +263,9 @@ export function HomeHero({
                   <button
                     type="button"
                     onClick={() => onAsk(example.documentId, example.question)}
-                    className="max-w-full cursor-pointer truncate rounded-full border border-slate-300 bg-white px-3 py-1.5 text-[13px] text-slate-700 motion-safe:transition-colors motion-safe:duration-micro hover:border-brand-500 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 phone:min-h-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-white"
+                    className="inline-flex max-w-full cursor-pointer items-center truncate rounded-full border border-slate-300 bg-white px-3 py-1.5 text-[13px] text-slate-700 motion-safe:transition-colors motion-safe:duration-micro hover:border-brand-500 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 phone:min-h-11 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-white"
                   >
-                    {example.question}
+                    <span className="text-optical-line min-w-0 truncate">{example.question}</span>
                   </button>
                 </li>
               ))}

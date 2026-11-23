@@ -76,7 +76,7 @@ export function StudioSegmented<T extends string>({
                 : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-white'
             }`}
           >
-            {o.label}
+            <span className="text-optical-line max-w-full truncate">{o.label}</span>
           </button>
         );
       })}

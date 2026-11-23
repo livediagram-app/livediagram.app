@@ -12,6 +12,7 @@ function scan(source: string, dir = 'components') {
 }
 
 const DISC = 'flex h-5 w-5 items-center justify-center rounded-full';
+const CHIP = 'inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px]';
 
 describe('optical guard', () => {
   it('flags bare text in a fixed-height centring circle', () => {
@@ -76,11 +77,38 @@ describe('optical guard', () => {
     expect(scan(src)).toHaveLength(1);
   });
 
-  it('leaves the primitives, unrounded and unsized shapes alone', () => {
+  it('leaves the primitives, unrounded shapes and unpadded pills alone', () => {
     expect(
       scan(
-        `export const A = () => <><GlyphDisc className="${DISC}">W</GlyphDisc><span className="flex h-5 items-center rounded-md">W</span><span className="rounded-full items-center px-2">W</span></>;`,
+        `export const A = () => <><GlyphDisc className="${DISC}">W</GlyphDisc><Chip className="${CHIP}">W</Chip><span className="flex h-5 items-center rounded-md px-2">W</span><span className="rounded-full items-center">W</span></>;`,
       ),
     ).toEqual([]);
+  });
+
+  it('flags a hand-rolled chip of any height: a padded pill span, button or link', () => {
+    const v = scan(`export const A = ({ n }: { n: number }) => (
+  <>
+    <span className="${CHIP}">Live</span>
+    <button type="button" className="${CHIP}">{n}</button>
+    <a href="/" className="${CHIP}">Open</a>
+    <Link href="/" className="rounded-full pl-2 pr-3">Open</Link>
+  </>
+);`);
+    expect(v.map((x) => `${x.line} ${x.snippet}`)).toEqual(['3 Live', '4 {n}', '5 Open', '6 Open']);
+  });
+
+  it('accepts a chip whose label goes through the line utility or ButtonContent', () => {
+    expect(
+      scan(`export const A = () => (
+  <>
+    <span className="${CHIP}"><span className="text-optical-line">Live</span></span>
+    <button type="button" className="${CHIP}"><ButtonContent>Stop</ButtonContent></button>
+  </>
+);`),
+    ).toEqual([]);
+  });
+
+  it('leaves a padded pill layout box (a div banner) to the audit', () => {
+    expect(scan(`export const A = () => <div className="${CHIP}">Saved</div>;`)).toEqual([]);
   });
 });

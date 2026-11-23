@@ -153,8 +153,10 @@ export function Apps() {
                         className="relative touch-target-y inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2"
                         style={{ backgroundColor: app.deep, outlineColor: app.deep }}
                       >
-                        {app.action}
-                        <span aria-hidden>→</span>
+                        <span className="text-optical-line">{app.action}</span>
+                        <span aria-hidden className="text-optical-line">
+                          →
+                        </span>
                       </a>
                     </div>
                   </div>

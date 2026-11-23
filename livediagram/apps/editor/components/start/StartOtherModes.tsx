@@ -5,7 +5,7 @@
 // saying where it leads ("Opens in Workshop"). At most OTHER_MODE_CARDS_MAX a mode, then Show All. Choosing one lands
 // it on the tab, which switches to the template's mode. The host keys it on the search, so a new search starts folded.
 import { useState, type CSSProperties } from 'react';
-import { CountBadge, EDITOR_MODE_ICONS } from '@livediagram/ui';
+import { CountBadge, EDITOR_MODE_ICONS, Chip } from '@livediagram/ui';
 import { communityStartBadgeStyle } from '@liveworkspace/community-ui/start';
 import { editorModeLabel, type EditorMode } from '@livediagram/document';
 import type { StartPalette } from './start-palette';
@@ -21,15 +21,15 @@ export type StartPanelElsewhere = { mode: EditorMode; cards: readonly StartPanel
 function OpensIn({ mode, palette }: { mode: EditorMode; palette: StartPalette }) {
   const Icon = EDITOR_MODE_ICONS[mode];
   return (
-    <span
+    <Chip
       aria-hidden
-      className="mt-1 inline-flex items-center gap-1 rounded-full px-1.5 py-px text-[11px] font-medium"
+      icon={<Icon size={11} />}
+      className="mt-1 px-1.5 py-px text-[11px] font-medium"
       // A lighter tint than a badge's, its ink deepened until it reads at AA (community-ui start-badge.ts).
       style={communityStartBadgeStyle(palette.focus, palette.surface, 10)}
     >
-      <Icon size={11} />
       Opens in {editorModeLabel(mode)}
-    </span>
+    </Chip>
   );
 }
 

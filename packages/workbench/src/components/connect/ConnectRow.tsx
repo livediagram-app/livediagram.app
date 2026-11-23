@@ -119,7 +119,7 @@ export function RowEnd({
     return (
       <span className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--cp-column)] px-2 py-0.5 text-[11px] font-semibold text-[var(--cp-text)]">
         <CheckGlyph />
-        Connected
+        <span className="text-optical-line">Connected</span>
       </span>
     );
   if (kind === 'busy')
@@ -133,7 +133,7 @@ export function RowEnd({
     return lock ? (
       <span className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--cp-column)] px-2 py-0.5 text-[11px] font-semibold text-[var(--cp-muted)]">
         <LockGlyph />
-        {lock}
+        <span className="text-optical-line">{lock}</span>
       </span>
     ) : null;
   // A plus that wakes on hover and focus; a touch screen, with no hover, always shows it.

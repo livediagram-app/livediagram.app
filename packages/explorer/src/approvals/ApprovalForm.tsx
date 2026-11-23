@@ -11,7 +11,7 @@ import {
   IndexError,
   type Approval,
 } from '@liveworkspace/index-client';
-import { Button, DateInput, PictureDisc, TextArea, TextInput } from '@liveworkspace/ui';
+import { Button, Chip, DateInput, PictureDisc, TextArea, TextInput } from '@liveworkspace/ui';
 import { SECTION_LABEL } from '../dialogs/share/parts';
 import { initials } from '../library/person-name';
 import { personName } from './approval-words';
@@ -204,9 +204,9 @@ export function ApprovalForm({
                         <span className="min-w-0 flex-1 truncate text-sm text-slate-800 dark:text-slate-100">
                           {name}
                         </span>
-                        <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                        <Chip className="bg-slate-100 px-1.5 py-px text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                           {VIA_WORDS[p.via]}
-                        </span>
+                        </Chip>
                       </label>
                     </li>
                   );

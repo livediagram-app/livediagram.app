@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { tint } from '@/components/plan/plan-card-parts';
+import { Chip } from '@liveplanner/ui';
 import { communityStartBadgeStyle } from '@liveworkspace/community-ui/start';
 
 export type StartPanelCard = {
@@ -64,22 +65,23 @@ function StartCard({
               {card.name}
             </span>
             {card.badge ? (
-              <span
-                className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
+              <Chip
+                caps
+                className="px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
                 // The accent's tint, its ink deepened until it reads at AA on it (community-ui start-badge.ts): the
                 // violet accent alone read 4.43:1 there.
                 style={communityStartBadgeStyle(palette.focus, palette.surface)}
               >
                 {card.badge}
-              </span>
+              </Chip>
             ) : null}
             {card.tag ? (
-              <span
-                className="ml-auto shrink-0 rounded-full border px-1.5 py-px text-[10px] font-semibold tabular-nums"
+              <Chip
+                className="ml-auto border px-1.5 py-px text-[10px] font-semibold tabular-nums"
                 style={{ borderColor: palette.border, color: palette.muted }}
               >
                 {card.tag}
-              </span>
+              </Chip>
             ) : null}
           </span>
           <span

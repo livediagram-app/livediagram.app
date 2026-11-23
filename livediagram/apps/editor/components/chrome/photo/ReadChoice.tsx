@@ -81,11 +81,11 @@ export function ReadChoice({
           disabled={short}
           onClick={() => onChoose(false)}
         >
-          <span>{readWithAiLabel(notes)}</span>
-          <span className="font-normal opacity-80">· {usesAiCredits(cost)}</span>
+          <span className="text-optical-line">{readWithAiLabel(notes)}</span>
+          <span className="text-optical-line font-normal opacity-80">· {usesAiCredits(cost)}</span>
         </PillButton>
         <PillButton data-testid="photo-read-device" onClick={() => onChoose(true)}>
-          {READ_ON_DEVICE_LABEL}
+          <span className="text-optical-line">{READ_ON_DEVICE_LABEL}</span>
         </PillButton>
       </div>
       <div data-testid="photo-read-choice-words" className="text-slate-300">

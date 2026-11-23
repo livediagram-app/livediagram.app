@@ -99,7 +99,7 @@ export const StageView = memo(function StageView({
               className="flex shrink-0 items-center gap-1 rounded-full bg-brand-700 py-0.5 pr-2.5 pl-2 text-[11px] font-semibold text-white dark:bg-brand-600 shadow-md motion-safe:animate-fade-in"
             >
               <MegaphoneIcon />
-              Everyone Can Hear You
+              <span className="text-optical-line">Everyone Can Hear You</span>
             </span>
           ) : null}
         </div>

@@ -8,6 +8,7 @@ import {
 } from '@livehuddle/api-schema';
 import {
   Button,
+  Chip,
   DialogCloseButton,
   DialogHeader,
   IDENTITY_FILL,
@@ -152,17 +153,17 @@ const VisitRow = memo(function VisitRow({ visit, now }: { visit: AttendanceVisit
             {visit.name || 'Someone'}
           </span>
           {badges.map((b) => (
-            <span
+            <Chip
               key={b}
-              className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+              className="bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
             >
               {b}
-            </span>
+            </Chip>
           ))}
           {visit.leftAt === null ? (
-            <span className="rounded-full bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
+            <Chip className="bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
               Here Now
-            </span>
+            </Chip>
           ) : null}
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400">{visitTimes(visit)}</p>

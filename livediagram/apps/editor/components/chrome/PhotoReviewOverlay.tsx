@@ -482,14 +482,18 @@ export function PhotoReviewOverlay({
               onOpen={(file) => void openLabel(file)}
             />
           ) : null}
-          <PillButton onClick={onCancel}>Cancel</PillButton>
+          <PillButton onClick={onCancel}>
+            <span className="text-optical-line">Cancel</span>
+          </PillButton>
           <PillButton
             tone="primary"
             onClick={confirm}
             disabled={edits.ticked.size === 0}
             data-tour-id="photo-add"
           >
-            Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
+            <span className="text-optical-line">
+              Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
+            </span>
           </PillButton>
         </div>
       </div>
