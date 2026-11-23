@@ -73,7 +73,7 @@ export function InvitesPane() {
       return next;
     });
     if (!result.ok) {
-      toast.error(teamErrorMessage(result.error));
+      toast.error(`${invite.teamName}: ${teamErrorMessage(result.error)}`);
       return;
     }
     if (result.value.status === 'joined') {

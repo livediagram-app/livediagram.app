@@ -24,6 +24,11 @@ scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap�
   ceiling; where they would not, the advice is dropped first ("Could not add “Logos” to “Roadmap”.").
 - **A blank or unknown name falls back to the generic word**: "Design deleted", "Could not move the design. Try
   again.", "moved to the team library". The surface never shows empty quotes.
+- **A page is named too**: its own name in quotes, else where it stands ("Split Page 2 into 3 pages. Undo puts it
+  back.", "“Cover” is locked. Unlock it to change its background.").
+- **Every toast says what it was about**, because the notification list shows it later with no screen round it:
+  "Couldn’t save “Roadmap”. Check your connection.", never "Couldn’t save."; with no name in reach it names the kind
+  of thing ("this design", "the Inspect link").
 - **Where it went is named too**: the folder, or My Work. A team is named when the surface knows it, else "the
   team library".
 - The wording lives in one place per family, so every surface says the same: `apps/live/lib/write-failure-copy.ts`

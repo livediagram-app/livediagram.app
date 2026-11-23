@@ -62,7 +62,7 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
   pages are edited today. There is one draft a page, never one each.
 - **Everyone joins** (owner, 2026-11-21: "Everyone joins edit mode", "except viewers of course"): when someone starts
   editing a page, everyone else on that page who may edit (Editor, Participant) enters edit mode with them, and sees
-  their typing live, with a note "Priya started editing. You're editing with them." Opening a page someone is editing
+  their typing live, with a note "Priya started editing “Release Process”. You're editing with them." Opening a page someone is editing
   joins them the same way. A Viewer or link visitor stays reading the saved page. Only a newcomer pulls: after Cancel,
   the people still editing never pull you back until someone else starts.
 - The page title is part of the draft: a renamed title reaches the page tree when the draft is saved.
@@ -82,7 +82,7 @@ editing share live (everyone who may edit joins them) and that no Viewer sees un
 - **Save** makes the draft the saved page for everyone: readers see it at once, search and agents read it, the
   Updated stamp (verification.md "Created and Updated") moves to the person who pressed Save, "Changed since
   verified" is worked out against it, and the draft is gone. Everyone else still in edit mode stays in edit mode on
-  the new saved page, with a toast "Priya saved the page". The person who saved sees a toast naming the page, "Release Process
+  the new saved page, with a toast "Priya saved “Release Process”". The person who saved sees a toast naming the page, "Release Process
   Saved" (owner 2026-11-21; a title past 60 characters is cut, "Page Saved" with none).
 - **Ask Everyone to Read Again** (a Required Reading page, an Editor; [Required Reading](required-reading.md)): a
   toggle in the draft bar, left of Cancel. Saving with it on asks everyone to read the page again; a save without it

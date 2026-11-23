@@ -74,13 +74,19 @@ export function styleAllTabs<T extends { id: string; locked?: boolean }>(
 }
 
 /** The toast after Apply to All Tabs: how many tabs took the style, and which kept their own. */
-export function styleAllMessage({ styled, locked, unloaded }: StyleAllOutcome): string {
+export function styleAllMessage(
+  { styled, locked, unloaded }: StyleAllOutcome,
+  // The tab the style came from, as a toast names it (toastName), so the line says whose it was.
+  source?: string | null,
+): string {
   const tabs = (n: number, kind = '') => `${n} ${kind}${n === 1 ? 'tab' : 'tabs'}`;
   const own = (n: number) => (n === 1 ? 'its own' : 'their own');
   const parts = [
     styled === 0
-      ? 'No other tab took this style.'
-      : `Applied this tab’s style to ${tabs(styled, 'other ')}.`,
+      ? source
+        ? `No other tab took the style of ${source}.`
+        : 'No other tab took this style.'
+      : `Applied ${source ? `the style of ${source}` : 'this tab’s style'} to ${tabs(styled, 'other ')}.`,
   ];
   if (locked > 0) parts.push(`${tabs(locked, 'locked ')} kept ${own(locked)}.`);
   if (unloaded > 0) parts.push(`${tabs(unloaded)} couldn’t load and kept ${own(unloaded)}.`);

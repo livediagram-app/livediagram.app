@@ -160,7 +160,7 @@ describe('the Make Sizes dialog', () => {
       message: string;
       actions: { label: string; onSelect: () => void }[];
     };
-    expect(spec.message).toBe('Made 2 sizes.');
+    expect(spec.message).toBe('Made 2 sizes of the photo.');
     expect(spec.actions.map((a) => a.label)).toEqual(['Export All Sizes']);
     spec.actions[0]!.onSelect();
     expect(exportAllSizes).toHaveBeenCalledWith('');
@@ -187,7 +187,7 @@ describe('the Make Sizes dialog', () => {
     fireEvent.click(make());
     await waitFor(() => expect(second.onClose).toHaveBeenCalled());
     expect(toastApi.action.mock.calls.at(-1)![0]).toMatchObject({
-      message: 'Made 1 size.',
+      message: 'Made 1 size of the photo.',
       actions: [],
     });
   });

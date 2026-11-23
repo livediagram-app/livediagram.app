@@ -35,7 +35,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 type Pending = { seq: number; action: QaAction; actor: QaActor };
 
 // What a post the server refused at the cap says (docs/specs/012-collaboration/qa-board.md "The face", Adding).
-export const QA_BOARD_FULL_MESSAGE = 'The board filled up before your note landed.';
+export const QA_BOARD_FULL_MESSAGE = 'The Q&A board filled up before your note landed.';
 type Base = { notes: QaNote[]; rev: number };
 
 const keyOf = (tabId: string, elementId: string) => `${tabId}\u0000${elementId}`;
@@ -201,8 +201,8 @@ export function useQaBoard({
         isVoteLimitError(err)
           ? VOTE_LIMIT_MESSAGE
           : isParticipantQaAction(action)
-            ? 'That didn’t reach the board. Try again in a moment.'
-            : 'Couldn’t update the board. Try again in a moment.',
+            ? 'That didn’t reach the Q&A board. Try again in a moment.'
+            : 'Couldn’t update the Q&A board. Try again in a moment.',
       );
       return true;
     }

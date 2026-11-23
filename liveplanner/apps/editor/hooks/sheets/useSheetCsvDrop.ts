@@ -7,6 +7,7 @@ import { createShape } from '@liveplanner/project';
 import type { BoxedElement } from '@liveplanner/project';
 import { placeNewSheet } from '@/lib/sheet-seeds';
 import { track } from '@/lib/telemetry';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
 // Big enough for any CSV a sheet can hold (10,000 rows by 200 columns of short values); larger is refused.
 export const SHEET_CSV_DROP_BYTES_MAX = 8 * 1024 * 1024;
@@ -43,7 +44,8 @@ export function useSheetCsvDrop({
   return (file, at) => {
     if (!isSheetCsvFile(file)) return dropOther(file, at);
     if (blocked) return;
-    if (file.size > SHEET_CSV_DROP_BYTES_MAX) return toast('That file is too large for a sheet');
+    if (file.size > SHEET_CSV_DROP_BYTES_MAX)
+      return toast(`${toastName(file.name) ?? 'That file'} is too large for a sheet`);
     void file.text().then((csv) => {
       const planSheet = placeNewSheet({ title: csvFileTitle(file.name), csv });
       addBoxedAt(at.x, at.y, (x, y) => ({ ...createShape('plan-sheet', x, y), planSheet }));

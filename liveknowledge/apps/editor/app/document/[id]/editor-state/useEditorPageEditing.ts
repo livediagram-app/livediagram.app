@@ -16,6 +16,7 @@ import {
   type Tab,
 } from '@liveknowledge/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { mayEditPage } from '@/lib/page-edit/page-edit-roles';
 import {
@@ -313,7 +314,9 @@ export function useEditorPageEditing({
     resetHistory();
     enter(activeId);
     flashMode('edit');
-    toast.info(`${newcomer.name} started editing. You're editing with them.`);
+    toast.info(
+      `${newcomer.name} started editing ${toastName(realOf(activeId)?.name) ?? 'this page'}. You're editing with them.`,
+    );
     // oxlint-disable-next-line react/exhaustive-deps -- runs when the people editing, the page or the role change
   }, [editorsHere, activeId, mayEdit]);
 
@@ -325,7 +328,7 @@ export function useEditorPageEditing({
       onPeerSaved((tabId, name) => {
         if (editingNow.current !== tabId) return;
         debugLog('[page-edit] peer saved', { tabId });
-        toast.info(`${name} saved the page`);
+        toast.info(`${name} saved ${toastName(realOf(tabId)?.name) ?? 'the page'}`);
       }),
     [toast],
   );

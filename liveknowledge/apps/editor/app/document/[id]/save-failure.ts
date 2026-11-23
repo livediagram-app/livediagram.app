@@ -3,7 +3,7 @@ import { ApiError, SessionTokenUnavailableError } from '@/lib/api-client';
 
 // What a refused save says, a tab's or the deck's (editor-persistence.ts, deck-save-failure.ts).
 export const SAVE_FORBIDDEN_MESSAGE =
-  'You can no longer edit this. Export a copy to keep your changes.';
+  'You can no longer edit this knowledgebase. Export a copy to keep your changes.';
 export const SAVE_SIGNED_OUT_MESSAGE =
   'Your sign-in has lapsed, so changes aren’t saving. Sign in again.';
 

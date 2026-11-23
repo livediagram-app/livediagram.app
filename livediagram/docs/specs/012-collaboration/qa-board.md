@@ -203,7 +203,7 @@ theme's text colour where it doesn't (a pale yellow stroke on a cream card).
   refused at the cap keeps its draft. That holds when the board filled up
   between the viewer's last look and the post, too: the server answers with
   the board as it stands, the new note left out, so the optimistic note goes,
-  the toast says **The board filled up before your note landed.**, and the
+  the toast says **The Q&A board filled up before your note landed.**, and the
   draft goes back in the field (unless something new was typed meanwhile),
   where the full board now holds it with the field off. The toggle is a switch named
   "Anonymous" in both states, its state in `aria-checked`; the visible text

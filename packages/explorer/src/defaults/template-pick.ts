@@ -12,6 +12,7 @@ import {
   type Folder,
   type IndexClient,
 } from '@liveworkspace/index-client';
+import { quoted } from '../quoted';
 
 const KEY = 'liveworkspace:template-pick-handoff';
 
@@ -69,7 +70,8 @@ const MAX_FOLDER_PAGES = 50;
 
 /**
  * Moves the item to its template's default folder, the same precedence as a create (the template's key, then the
- * app's). Resolves the toast's words ("Moved to Boards, your default folder for Kanban plans.") or null when it
+ * app's). Resolves the toast's words ("Moved “Roadmap” to Boards, your default folder for Kanban
+ * plans.") or null when it
  * stayed where it was.
  */
 export async function moveOnTemplatePick(
@@ -107,7 +109,7 @@ export async function moveOnTemplatePick(
       // Already there (the app's default and the template's are the same folder): nothing to move.
       if (folder.id === item.folderId && folder.teamId === item.teamId) return null;
       await client.updateItem(at.itemId, { folderId: folder.id, teamId: folder.teamId });
-      return `Moved to ${folder.name}, your default folder for ${at.noun(key)}.`;
+      return `Moved ${quoted(item.title || 'Untitled')} to ${folder.name}, your default folder for ${at.noun(key)}.`;
     }
     return null;
   } catch {

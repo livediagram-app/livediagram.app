@@ -39,7 +39,10 @@ export function useShareLinks(
   client: IndexClient,
   itemId: string,
   onError: (text: string) => void,
+  // The item's name in quotes (“Roadmap”), so a refusal names what it was about.
+  named?: string,
 ): ShareLinksState {
+  const forItem = named ? ` for ${named}` : '';
   const [links, setLinks] = useState<ShareLink[]>([]);
   const [passwordSet, setPasswordSet] = useState(false);
   const [signIn, setSignInState] = useState<ShareSignInRule>(SHARE_SIGN_IN_OFF);
@@ -80,13 +83,13 @@ export function useShareLinks(
         setLinks((all) => [link, ...all]);
         return link;
       } catch (e) {
-        onError(failureText(e, 'Couldn’t make a link. Try again.'));
+        onError(failureText(e, `Couldn’t make a link${forItem}. Try again.`));
         return null;
       } finally {
         setBusy(false);
       }
     },
-    [client, itemId, onError],
+    [client, itemId, onError, forItem],
   );
 
   const replace = (link: ShareLink) =>
@@ -139,11 +142,11 @@ export function useShareLinks(
             return next as ShareLink;
           }),
         );
-        onError(failureText(e, 'Couldn’t change that link. Try again.'));
+        onError(failureText(e, `Couldn’t change that link${forItem}. Try again.`));
         return false;
       }
     },
-    [client, onError],
+    [client, onError, forItem],
   );
 
   const revoke = useCallback<ShareLinksState['revoke']>(
@@ -161,11 +164,11 @@ export function useShareLinks(
             all.some((l) => l.code === code) ? all : [...all.slice(0, at), old, ...all.slice(at)],
           );
         }
-        onError(failureText(e, 'Couldn’t turn that link off. Try again.'));
+        onError(failureText(e, `Couldn’t turn that link off${forItem}. Try again.`));
         return false;
       }
     },
-    [client, onError],
+    [client, onError, forItem],
   );
 
   const extend = useCallback<ShareLinksState['extend']>(
@@ -175,11 +178,11 @@ export function useShareLinks(
         replace(link);
         return true;
       } catch (e) {
-        onError(failureText(e, 'Couldn’t extend that link. Try again.'));
+        onError(failureText(e, `Couldn’t extend that link${forItem}. Try again.`));
         return false;
       }
     },
-    [client, onError],
+    [client, onError, forItem],
   );
 
   const setPassword = useCallback<ShareLinksState['setPassword']>(
@@ -190,13 +193,13 @@ export function useShareLinks(
         setPasswordSet(res.passwordSet);
         return true;
       } catch (e) {
-        onError(failureText(e, 'Couldn’t change the password. Try again.'));
+        onError(failureText(e, `Couldn’t change the password${forItem}. Try again.`));
         return false;
       } finally {
         setBusy(false);
       }
     },
-    [client, itemId, onError],
+    [client, itemId, onError, forItem],
   );
 
   const setSignIn = useCallback<ShareLinksState['setSignIn']>(
@@ -207,13 +210,13 @@ export function useShareLinks(
         setSignInState(res.signIn);
         return true;
       } catch (e) {
-        onError(failureText(e, 'Couldn’t change who can open the passes. Try again.'));
+        onError(failureText(e, `Couldn’t change who can open the passes${forItem}. Try again.`));
         return false;
       } finally {
         setBusy(false);
       }
     },
-    [client, itemId, onError],
+    [client, itemId, onError, forItem],
   );
 
   return {

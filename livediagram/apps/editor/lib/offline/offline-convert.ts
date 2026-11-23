@@ -163,7 +163,7 @@ export function syncFailureMessage(e: unknown): string {
   if (e instanceof OfflineSyncIncompleteError)
     return 'This canvas kept changing while syncing. Your copy is safe: try again soon.';
   return e instanceof ApiError && e.status === 413
-    ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
+    ? 'Canvas too large to sync, usually a big image on a tab. Shrink it and try again.'
     : 'Could not sync this canvas. Check your connection and try again.';
 }
 

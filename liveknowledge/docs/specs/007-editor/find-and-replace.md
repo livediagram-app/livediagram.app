@@ -101,8 +101,8 @@ missing.
   locked").
 - **Replace All** swaps every replaceable match at once, as **one edit**: one undo step takes every
   one of them back. Matches are found again from the tab as it is at that moment, so nothing typed
-  since the last search is lost or swapped blind. A toast says what happened: "Replaced 12 matches.",
-  and with held ones, "Replaced 8 matches. 4 matches in text you can't edit were left as they are."
+  since the last search is lost or swapped blind. A toast says what happened: "Replaced 12 matches in “Onboarding”.",
+  and with held ones, "Replaced 8 matches in “Onboarding”. 4 matches in text you can't edit were left as they are."
 - **Formatting is kept**: the new words take the formatting of the first character they replace
   (bold stays bold, a link stays a link, a comment's tint stays on its text).
 - An empty Replace With deletes the matches. A text box that sizes to its words fits its new words.

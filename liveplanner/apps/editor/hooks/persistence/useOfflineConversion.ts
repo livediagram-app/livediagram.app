@@ -1,6 +1,7 @@
 'use client';
 
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { useToast } from '@/hooks/ui/useToast';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
@@ -77,7 +78,9 @@ export function useOfflineConversions(ownerId: string | null) {
       // Stays on the server (aborts roll the local copy back). A conversion already running
       // reports for itself.
       if (e instanceof ConversionInProgressError) return;
-      toast.error('Couldn’t take this offline. It stays safe on the server.');
+      toast.error(
+        `Couldn’t take ${toastName(liveDoc.name) ?? 'this plan'} offline. It stays safe on the server.`,
+      );
     }
   };
 

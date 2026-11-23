@@ -167,8 +167,8 @@ invalid_name`. Renames the named version holding the stored revision (either sto
 - **VH17 copy.** A new tab id (`crypto.randomUUID()`), the version's body under it without `locked` or the live element fields, named the request's name or `<tab name>
 (copy)`, capped; written by `writeChangeset` with no stored tab at `nextOrderIndex(document.tabs)`.
 - **VH18 editor restore.** The panel marks the tab as its own restore (`own-restores.ts`) for the request, so the
-  relayed changeset raises no changeset toast on the restorer's screen; it then shows "Restored the version kept
-  <when>" with Undo, which restores `undoVersionId` the same way and reads "Restore undone".
+  relayed changeset raises no changeset toast on the restorer's screen; it then shows "Restored “<page>” to the
+  version kept <when>" with Undo, which restores `undoVersionId` the same way and reads "Restore of “<page>” undone".
 - **VH28 an agent's version on screen.** `VersionRow` and `VersionDetail` draw an author with `agent` as
   `agentForPerson(agent, name)` ("Claude for Priya Shah", `@liveworkspace/workbench/components/ai-writer/agent-for-person`)
   and the shared `AiWriterMark` sparkle after it, worded by `aiVersionWords(kind)` (`version-words.ts`: `save` "Saved
@@ -183,15 +183,15 @@ invalid_name`. Renames the named version holding the stored revision (either sto
 
 ## Errors and edge cases
 
-| Case                                 | Handling                                                               |
-| ------------------------------------ | ---------------------------------------------------------------------- |
-| Version of another tab, or gone      | 404 `not_found`                                                        |
-| Tab deleted while the panel is open  | The list read 404s: the panel says "This tab is gone."                 |
-| Restore of content equal to now      | 200 `{ restored: null }`; the panel says "Already the current version" |
-| Tab changes during a restore         | Retry from the read; 409 `tab_busy` after the attempts                 |
-| Copy past the tab cap                | 413 `tab_too_large`                                                    |
-| A version body that no longer parses | 404 on read and restore, logged `[versions] refused` `unreadable`      |
-| 26th name                            | 409 `too_many_names`                                                   |
+| Case                                 | Handling                                                                           |
+| ------------------------------------ | ---------------------------------------------------------------------------------- |
+| Version of another tab, or gone      | 404 `not_found`                                                                    |
+| Tab deleted while the panel is open  | The list read 404s: the panel says "This tab is gone."                             |
+| Restore of content equal to now      | 200 `{ restored: null }`; the panel says "Already the current version of “<page>”" |
+| Tab changes during a restore         | Retry from the read; 409 `tab_busy` after the attempts                             |
+| Copy past the tab cap                | 413 `tab_too_large`                                                                |
+| A version body that no longer parses | 404 on read and restore, logged `[versions] refused` `unreadable`                  |
+| 26th name                            | 409 `too_many_names`                                                               |
 
 ## Security and trust
 

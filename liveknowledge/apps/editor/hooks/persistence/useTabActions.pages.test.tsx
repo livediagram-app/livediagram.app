@@ -230,7 +230,9 @@ describe('deleting a page', () => {
     const s = setup({ tabs: locked });
     await act(() => s.actions().deleteTab('b'));
     expect(s.deps.confirm).not.toHaveBeenCalled();
-    expect(s.deps.toast.error).toHaveBeenCalledWith('Unlock the page before deleting it.');
+    expect(s.deps.toast.error).toHaveBeenCalledWith(
+      expect.stringMatching(/^Unlock .+ before deleting it\.$/),
+    );
   });
 });
 

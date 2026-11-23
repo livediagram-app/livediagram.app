@@ -16,6 +16,7 @@ import {
 } from '@liveknowledge/document';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import type { EditorCapabilities } from '@/lib/editor-capabilities';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { pageInView } from '@/lib/page-contents';
@@ -381,7 +382,8 @@ export function useFindReplace(deps: FindDeps): FindView {
     deps.commitActiveTab((t) => (t === seen ? out.tab : replaceAllIn(t, fit).tab));
     debugLog('[find] replaced', { count: out.count, held: out.held });
     if (out.count > 0) track('UI', 'Used', 'FindReplaceAll');
-    const done = `Replaced ${plural(out.count, 'match', 'matches')}`;
+    // The page is named, so the line still reads in the notification list.
+    const done = `Replaced ${plural(out.count, 'match', 'matches')} in ${toastName(seen.name) ?? 'the page'}`;
     deps.notify(
       out.held > 0
         ? `${done}. ${plural(out.held, 'match', 'matches')} in text you can't edit ${out.held === 1 ? 'was' : 'were'} left as ${out.held === 1 ? 'it is' : 'they are'}.`

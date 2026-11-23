@@ -107,7 +107,7 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
   session's presence (`editing`, clamped to `MAX_TAB_ID_LEN`) and sends the roster again; never relayed as sent.
   Dropped from a session whose role is not `edit`.
 - `{ kind: 'page-saved', tabId: string }`: the sender just saved that page. Relayed to the others; a receiver shows
-  "<name> saved the page" with the sender's roster name. Dropped from a session whose role is not `edit`.
+  "<name> saved “<page>”" with the sender's roster name. Dropped from a session whose role is not `edit`.
 
 ## Data and persistence
 
@@ -213,7 +213,7 @@ Room frames (`packages/api-schema/src/room-messages.ts`, presence: never ordered
   the others' discs and Page Info step out of the row while editing (the meta row's note still names who is editing).
 - **The question** is the shared confirm dialog, centred: title "Discard your changes to this page?", message
   "Nobody else is editing it, so your changes go for good.", **Discard Changes** and **Keep Editing**.
-- **Toasts**: "<name> saved the page" (info) to everyone else editing it; "Page saved" to the saver.
+- **Toasts**: "<name> saved “<page>”" (info) to everyone else editing it; "Page saved" to the saver.
 - **Keys**: `E` while reading (not in a field, no modifier) is Edit; `Mod-S` while editing is Save (and never the
   browser's Save Page); `Escape` while editing with the caret not in a menu or dialog is Cancel, unless something
   else takes that Escape (the canvas letting go of a drawing's selection or closing a label edit, which mark the key

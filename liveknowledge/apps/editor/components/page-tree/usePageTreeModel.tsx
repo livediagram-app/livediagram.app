@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import { readClosedPages, writeClosedPages } from '@/lib/page-tree-open';
 import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useReviewEvery } from '@/components/knowledge-settings/useReviewEvery';
 import { useKnowledgeActions } from '@/components/knowledge/usePageKnowledge';
 import { pageKnowledgeStore } from '@/lib/knowledge/page-knowledge-store';
@@ -107,9 +108,10 @@ export function usePageTreeModel(): PageTreeModel {
           editor.sessionShareCode,
         );
         track('UI', 'Used', 'CopyPageLink');
+        const page = toastName(editor.tabs.find((t) => t.id === id)?.name) ?? 'the page';
         navigator.clipboard.writeText(link).then(
-          () => toast.success('Link copied'),
-          () => toast.error('Could not copy the link.'),
+          () => toast.success(`Link to ${page} copied`),
+          () => toast.error(`Could not copy the link to ${page}.`),
         );
       },
     }),

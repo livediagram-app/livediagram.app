@@ -501,10 +501,10 @@ viewportZoom })` holds `press` (the last press on a compound path while nothing 
   point it strays furthest at (the middle one for a bulge, or both ends become corners when none is
   between). Null when not simplifiable, when nothing would go, or still straying after the passes.
   `usePathTool`'s `onSimplify` commits it as one `edit` on the contour and clears the selection, or
-  toasts "Already as simple as it gets."
+  toasts "This path is already as simple as it gets."
 - Edit Points on a stroke (`CanvasSelectionToolbars`): for a `freehand` that `isTidyable`, with an
   editor (`useOptionalEditorContext`), `tidyUpSelected()` (now returns whether it tidied) then
-  `onBeginEdit(id)` and the toast "Tidied into a path so its points can be edited."; the popover's
+  `onBeginEdit(id)` and the toast "Drawing tidied into a path so its points can be edited."; the popover's
   `editPointsDescription` says "Tidy this drawing into a path, then adjust its points."
 
 ### Export
@@ -638,7 +638,7 @@ gen:openapi`).
 | Edit points on a combined path                        | One contour at a time (`usePathContour`)                                          |
 | A contour edited until too few nodes                  | Contour dropped, edit mode left; the last contour takes the path                  |
 | A peer removes the contour being edited               | `reshapeContour` leaves the path; the index clamps to the contours left           |
-| Simplify finds nothing to drop                        | Toast "Already as simple as it gets."                                             |
+| Simplify finds nothing to drop                        | Toast "This path is already as simple as it gets."                                |
 | Edit Points on a stroke Tidy cannot change            | Nothing opens (no toast; the button is offered only for tidyable strokes)         |
 | Logo kit export fails                                 | `[logo-kit]` warn; the dialog shows the error                                     |
 | A kit face cannot be fetched                          | `OutlineError('font')`, the panel says which face; no kit                         |

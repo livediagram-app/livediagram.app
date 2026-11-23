@@ -89,7 +89,7 @@ export function unusedImageWords(n: number) {
       : `${n} images aren’t used anywhere else. Delete them from storage? It can’t be undone.`,
     keepLabel: one ? 'Keep: leave the image in storage' : `Keep: leave the ${n} images in storage`,
     deleteLabel: one ? 'Delete from Storage: the image' : `Delete from Storage: ${n} images`,
-    deleted: one ? 'Deleted from storage' : `${n} images deleted from storage`,
+    deleted: one ? 'Image deleted from storage' : `${n} images deleted from storage`,
     // Always Delete from Storage's notice, so it never happens silently.
     autoDeleted: one
       ? 'The image wasn’t used anywhere else, so it was deleted from storage.'

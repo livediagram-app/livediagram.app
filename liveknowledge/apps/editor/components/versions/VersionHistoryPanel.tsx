@@ -8,6 +8,7 @@
 import { useId, useMemo, useRef, useState } from 'react';
 import { versionChanges, type Tab } from '@liveknowledge/document';
 import { Button, CloseIcon, Select, useEscape, useFocusTrap } from '@liveknowledge/ui';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import { track } from '@/lib/telemetry';
 import { NOW, VersionRail } from './VersionRail';
@@ -68,6 +69,8 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
       ? { removed: new Set(changes.removed), changed: new Set(changes.changed) }
       : null;
   const tabName = tabs.find((t) => t.id === tabId)?.name ?? nowTab?.name ?? '';
+  // The page as a toast names it, so the line still reads in the notification list.
+  const pageWords = toastName(tabName) ?? 'the page';
   const imageContext = useMemo(
     () => ({ ownerId: who.ownerId, documentId, shareCode: who.shareCode }),
     [who.ownerId, who.shareCode, documentId],
@@ -85,7 +88,11 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
       return;
     }
     track('Version', 'Undone', 'Editor');
-    toast.action({ key: `version-restore-${tabId}`, message: 'Restore undone', actions: [] });
+    toast.action({
+      key: `version-restore-${tabId}`,
+      message: `Restore of ${pageWords} undone`,
+      actions: [],
+    });
   };
 
   const restore = async () => {
@@ -96,13 +103,13 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
       return;
     }
     if (outcome.kind === 'unchanged') {
-      toast.info('Already the current version');
+      toast.info(`Already the current version of ${pageWords}`);
       return;
     }
     setSelected(NOW);
     toast.action({
       key: `version-restore-${tabId}`,
-      message: `Restored the version kept ${whenWords(version.savedAt, now)}`,
+      message: `Restored ${pageWords} to the version kept ${whenWords(version.savedAt, now)}`,
       actions: [
         {
           label: 'Undo',
@@ -132,7 +139,7 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
         ],
       });
     } catch {
-      toast.error('The copy could not be made. Try again.');
+      toast.error(`The copy of ${pageWords} could not be made. Try again.`);
     }
   };
 

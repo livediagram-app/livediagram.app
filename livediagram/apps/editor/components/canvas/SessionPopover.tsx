@@ -1,5 +1,8 @@
 'use client';
 
+import { timerHeroArt } from '@liveworkspace/ui/dialog-hero-art/timer';
+import { voteHeroArt } from '@liveworkspace/ui/dialog-hero-art/vote';
+import { pollHeroArt } from '@/components/panels/PollHeroArt';
 import type { ReactNode } from 'react';
 import type { Element, TabVote } from '@livediagram/document';
 import type { DockAnchor } from '@/lib/canvas-chrome';
@@ -161,6 +164,9 @@ export function SessionPopover({
   );
 }
 
+// Each Session tool's popover wears its own hero header (dialog-hero-header.md).
+const SESSION_HERO_ART = { Timer: timerHeroArt, Vote: voteHeroArt, Poll: pollHeroArt };
+
 // A Studio pane in a popover over its strip button. While somebody else facilitates, the pane is
 // disabled under the same note the Studio shows (docs/specs/012-collaboration/facilitator.md).
 function SessionToolPopover({
@@ -171,7 +177,7 @@ function SessionToolPopover({
   facilitatedBy,
   children,
 }: {
-  title: string;
+  title: keyof typeof SESSION_HERO_ART;
   help: HelpArticleKey;
   anchor?: DockAnchor;
   onClose: () => void;
@@ -182,6 +188,7 @@ function SessionToolPopover({
   return (
     <MovablePanel
       title={title}
+      hero={{ art: SESSION_HERO_ART[title] }}
       helpArticle={help}
       position={null}
       defaultCorner="bottom-right"

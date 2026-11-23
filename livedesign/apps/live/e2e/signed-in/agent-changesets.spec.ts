@@ -78,7 +78,7 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
 
   // The toast's Undo reverts the changeset, for the person and in storage.
   await toast.getByRole('button', { name: "Undo Webber Takken's changes" }).click();
-  await expect(page.getByRole('status').filter({ hasText: /^Undone/ })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: /^Undid .+ change/ })).toBeVisible();
   await expect(square).toHaveCount(0);
   await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toEqual(['api']);
   expect(pageErrors).toEqual([]);

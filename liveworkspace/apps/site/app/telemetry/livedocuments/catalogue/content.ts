@@ -404,7 +404,7 @@ export const FILES_CONNECTED_BOTH_WAYS: Metric = {
   action: 'Added',
   type: 'ConnectedBoth',
   title: 'Connected Both Ways',
-  blurb: 'A file connected with Add connection to both files, so it gained a tab back here too.',
+  blurb: 'A file connected with Connect both files, so it gained a tab back here too.',
 };
 
 export const FILES_CONNECTED_AGAIN: Metric = {

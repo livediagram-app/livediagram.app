@@ -220,12 +220,14 @@ export function AutomationsDialog({
       });
     }
   };
-  const failed = (what: string) => (error: unknown) => {
+  // `verb` and the rule's name say what failed ("Couldn’t delete “Tidy Up”."), so the toast
+  // reads right later.
+  const failed = (what: string, verb: string, name: string) => (error: unknown) => {
     debugLog(`[automations] ${what}.failed`, { error: String(error) });
     toast.error(
       error instanceof AutomationRefusal
         ? error.message
-        : 'That didn’t work. Check your connection and try again.',
+        : `Couldn’t ${verb} “${name}”. Check your connection and try again.`,
     );
   };
 
@@ -236,11 +238,14 @@ export function AutomationsDialog({
       void withBusy(rule.id, async () => {
         await api.toggle(rule.id, enabled);
         track(enabled ? 'rule_on' : 'rule_off');
-      }).catch(failed('toggle')),
+      }).catch(failed('toggle', enabled ? 'turn on' : 'turn off', rule.name)),
     onDuplicate: () =>
       void api
         .duplicate(rule.id)
-        .then((copy) => toast.success(`Made ${copy.name}`), failed('duplicate')),
+        .then(
+          (copy) => toast.success(`Made the rule “${copy.name}”`),
+          failed('duplicate', 'duplicate', rule.name),
+        ),
     onRunLog: () => onTarget({ view: 'runs', ruleId: rule.id }),
     onFixConnection: () => onTarget({ view: 'connections' }),
     onTakeOver: () =>
@@ -249,13 +254,16 @@ export function AutomationsDialog({
         await api.save(rule.id, { name, trigger, conditions, steps, chain, timeZone });
         await api.toggle(rule.id, true);
         track('rule_taken_over');
-        toast.success(`${rule.name} now runs as you`);
-      }).catch(failed('take over')),
+        toast.success(`The rule “${rule.name}” now runs as you`);
+      }).catch(failed('take over', 'take over', rule.name)),
     onDelete: () =>
-      void api.remove(rule.id).then(() => {
-        track('rule_deleted');
-        toast.info(`Deleted ${rule.name}`);
-      }, failed('delete')),
+      void api.remove(rule.id).then(
+        () => {
+          track('rule_deleted');
+          toast.info(`Deleted the rule “${rule.name}”`);
+        },
+        failed('delete', 'delete', rule.name),
+      ),
   });
 
   const openRunSubject = openSubject

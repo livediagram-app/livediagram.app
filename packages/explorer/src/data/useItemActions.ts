@@ -86,7 +86,7 @@ export function createItemActions({
       return true;
     } catch (e) {
       undo();
-      toast.error(failureText(e, fallback));
+      toast.error(failureText(e, fallback, named(item)));
       return false;
     }
   }
@@ -99,7 +99,7 @@ export function createItemActions({
         item,
         { title: next },
         () => client.updateItem(item.id, { title: next }),
-        'Couldn’t rename it. Try again.',
+        `Couldn’t rename ${named(item)}. Try again.`,
       );
       if (ok) onRenamed?.(item, next);
       return ok;
@@ -109,7 +109,9 @@ export function createItemActions({
         item,
         { hiddenFromRecent: hidden },
         () => (hidden ? client.hideFromRecent(item.id) : client.showInRecent(item.id)),
-        hidden ? 'Couldn’t hide it from Recent.' : 'Couldn’t show it in Recent again.',
+        hidden
+          ? `Couldn’t hide ${named(item)} from Recent.`
+          : `Couldn’t show ${named(item)} in Recent again.`,
       ),
     move: async (item, to) => {
       // The index drops the folder when an item changes team; send the team only when it changes. Out of Archived,
@@ -221,7 +223,7 @@ export function createItemActions({
         toast.show(`Made ${quoted(copy.title)}.`, { tone: 'success' });
         return copy;
       } catch (e) {
-        toast.error(failureText(e, 'Couldn’t duplicate it. Try again.'));
+        toast.error(failureText(e, `Couldn’t duplicate ${named(item)}. Try again.`, named(item)));
         return null;
       }
     },
@@ -230,7 +232,7 @@ export function createItemActions({
         item,
         { gone: true },
         () => client.removeShared(item.id),
-        'Couldn’t remove it from Shared With Me.',
+        `Couldn’t remove ${named(item)} from Shared With Me.`,
       ),
     emptyTrash: async ({ teamId, app }) => {
       try {

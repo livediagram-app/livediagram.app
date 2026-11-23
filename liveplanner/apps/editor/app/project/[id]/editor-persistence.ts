@@ -1,6 +1,7 @@
 import type { SavedItemTypes } from '@/lib/api/item-types';
 import { getOnline } from '@liveworkspace/workbench/lib/online-status';
-import { useEffect, useState } from 'react';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
+import { useEffect, useRef, useState } from 'react';
 
 import { UNTITLED_PROJECT_NAME } from '@liveplanner/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
@@ -44,6 +45,12 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     return () => window.clearTimeout(id);
   }, [importError]);
 
+  // The name a failed save's toast says, read when it is raised (a rename never raises it again).
+  const nameRef = useRef(projectName);
+  useEffect(() => {
+    nameRef.current = projectName;
+  }, [projectName]);
+
   // Surface a toast when an autosave fails (network / 5xx). Nothing else
   // shows the 'error' status, and a failed save risks lost work, so it
   // gets the bottom-centre toast. Fires on the transition into 'error';
@@ -54,7 +61,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
       // "Offline"): the changes are only in this tab until the connection is back.
       toast.error(
         getOnline()
-          ? 'Couldn’t save your changes. Check your connection.'
+          ? `Couldn’t save ${toastName(nameRef.current) ?? 'this plan'}. Check your connection.`
           : 'You’re offline. Keep this tab open to save when you reconnect.',
       );
     }
@@ -73,7 +80,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
       toast.error('This tab is too big to save. Move some of it to another tab.');
     }
     if (saveStatus === 'forbidden') {
-      toast.error('You can no longer edit this. Export a copy to keep your changes.');
+      toast.error('You can no longer edit this plan. Export a copy to keep your changes.');
     }
   }, [saveStatus, toast]);
 

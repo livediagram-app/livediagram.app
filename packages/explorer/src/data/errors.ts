@@ -1,15 +1,19 @@
 import { IndexError, SHARE_DOMAINS_MAX, SHARE_PASSWORD_MIN } from '@liveworkspace/index-client';
 
 // A refusal from the index, said in words a person can act on.
-export function failureText(error: unknown, fallback: string): string {
+// `subject` names what was acted on (“Roadmap”), so a refusal still reads right in the
+// notification list later.
+export function failureText(error: unknown, fallback: string, subject?: string): string {
   if (error instanceof IndexError) {
     switch (error.code) {
       case 'forbidden':
       case 'not_team_member':
-        return 'You can’t change that here.';
+        return `You can’t change ${subject ?? 'that'} here.`;
       case 'not_found':
       case 'folder_not_found':
-        return 'That’s gone: it was moved or deleted elsewhere.';
+        return subject
+          ? `${subject} is gone: it was moved or deleted elsewhere.`
+          : 'That’s gone: it was moved or deleted elsewhere.';
       case 'folder_exists':
         return 'A folder with that name is already here.';
       case 'cycle':

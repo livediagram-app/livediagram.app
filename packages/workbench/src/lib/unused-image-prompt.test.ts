@@ -224,7 +224,7 @@ describe('the answers', () => {
     h.press('Delete from Storage');
     await flush();
     expect(h.remove.mock.calls).toEqual([['b']]);
-    expect(h.last().message).toBe('Deleted from storage');
+    expect(h.last().message).toBe('Image deleted from storage');
 
     const back = harness();
     await back.offer(['a']);

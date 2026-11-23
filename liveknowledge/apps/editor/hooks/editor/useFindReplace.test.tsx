@@ -143,7 +143,9 @@ describe('useFindReplace', () => {
     act(() => s.find().replaceAll());
     expect(s.deps.commits).toBe(1);
     expect(s.find().count).toBe(0);
-    expect(s.deps.notify).toHaveBeenCalledWith('Replaced 12 matches.');
+    expect(s.deps.notify).toHaveBeenCalledWith(
+      expect.stringMatching(/^Replaced 12 matches in .+\.$/),
+    );
     expect(track).toHaveBeenCalledWith('UI', 'Used', 'FindReplaceAll');
   });
 

@@ -150,7 +150,7 @@ A version opens **read-only**. Nobody edits a version; they restore it, copy it,
   never deletes a comment on something it keeps.
 - **Before it lands**, the content it replaces is kept as a `restore` version, so the restore can be undone even
   after the toast has gone. A restore of a version whose content is the tab's own changes nothing and says so.
-- **Undo.** The restorer's own screen says "Restored the version kept <when>" with **Undo**, which restores that
+- **Undo.** The restorer's own screen says "Restored “<page>” to the version kept <when>" with **Undo**, which restores that
   `restore` version: the whole tab put back exactly, pages and writing included, as another change everyone sees.
   Everyone else gets the changeset toast ("Webber changed 12 elements: Restored a version · Show · Undo"), whose
   Undo is the per-changeset revert: elements changed since are kept, as for any changeset. Personal Ctrl+Z never

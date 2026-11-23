@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import { reactionFailureText } from '@/lib/knowledge/page-feedback-words';
 import { ownCommentKey } from '@/lib/page-threads/own-comment-key';
@@ -85,7 +86,9 @@ export function usePageReactions(): PageReactionsView {
           { emoji, by: ownKey, name: self.name.trim() || 'Someone' },
           on,
         )
-        .catch((err: unknown) => toast.error(reactionFailureText(err, on)));
+        .catch((err: unknown) =>
+          toast.error(reactionFailureText(err, on, toastName(editor.activeTab?.name))),
+        );
     },
     [chrome, canReact, ownKey, toast],
   );

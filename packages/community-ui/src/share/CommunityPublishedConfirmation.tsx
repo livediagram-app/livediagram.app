@@ -42,7 +42,7 @@ export function CommunityPublishedConfirmation({
       await navigator.clipboard.writeText(absolute);
       flash(true);
     } catch {
-      notify('Couldn’t copy the link. Copy it from the post instead.', 'error');
+      notify('Couldn’t copy the Community link. Copy it from the post instead.', 'error');
     }
   };
 

@@ -42,7 +42,7 @@ app's logo stacked, overlapping, where a row's icon goes, the host's too) lists 
   before the file. No line shows under it; a screen reader hears what it means with the control: "Anyone who can open
   this <host kind> can edit the file you connect." A file whose app does not offer the chosen role (livehuddle has no
   Viewer) is listed but cannot be picked while it is chosen, saying so ("livehuddle has no Viewer role").
-- **Add connection to both files**: off by default, with no line under it; a screen reader hears what it does, or
+- **Connect both files**: off by default, with no line under it; a screen reader hears what it does, or
   why it cannot be turned on, with the switch. In a start panel drawn in its tab's theme, the switch takes the theme's
   colours on and off, as the panel's other switches do.
 - **Find a file**: narrows the list by name as the person types.
@@ -64,7 +64,7 @@ press from anywhere rather than New Tab, then Connect File. It is the liveworksp
 small, its light or dark look following the bar's) in a button the size of Add tab, its tooltip "Connect a File". It
 shows on a desktop only, where the strip has room: on a phone or a narrow window it is gone and Connect File stays on
 the start screen. It shows where the start screen's entry would, and only there. A press opens the same Connect list
-(role, both ways, Find a file, Recent) in a centred dialog; a connection made there adds its tab at the end of the bar,
+(role, both ways, Find a file, Recent) in a centred dialog under the dialog hero header ([dialog-hero-header.md](dialog-hero-header.md): two files joined by a link, the title Connect File and its line), in every app, liveknowledge's sidebar Connect File too; a connection made there adds its tab at the end of the bar,
 loose, and opens it, as from the start screen, with no empty tab to give way. Closing the dialog leaves nothing
 behind. livediagram, liveplanner, livedocuments and livedesign offer it (Work Tracker 1374); livehuddle does not yet.
 

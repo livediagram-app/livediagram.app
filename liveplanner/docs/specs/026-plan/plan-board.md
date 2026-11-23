@@ -678,8 +678,8 @@ In Plan mode:
       entry is already the card's.
     - **Copy Card Link** in the ⋯ menu copies the card's address, for every role: `/project/<plan id>` with the share
       code it was opened with (`?s=<code>`, so someone on the same share link can follow it), then
-      `#t=<tab>&item=<card id>`. The menu closes and a toast says "Link copied"; a copy the browser refuses
-      says "Couldn't copy the link". A copied link only opens for someone who may already see the plan.
+      `#t=<tab>&item=<card id>`. The menu closes and a toast says "Link to “Fix login” copied"; a copy the browser
+      refuses says "Couldn’t copy the link to “Fix login”". A copied link only opens for someone who may already see the plan.
     - Only the editor's own address carries the card: an embed and the liveworkspace workbench frame keep their
       addresses as they are (as the tab pin does).
   - **Parent** is a Card field (item-types.md "Card fields"): its control's open arrow opens the parent, and a

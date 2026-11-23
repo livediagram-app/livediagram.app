@@ -10,6 +10,7 @@ import type { App } from '@liveworkspace/index-client';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 import { reverseUnreachedWords } from '@liveworkspace/workbench/components/connect/connect-again';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -123,9 +124,11 @@ export function useConnectedRows(): {
         void answerOf(id).then((answer) => {
           if (!answer) return;
           if (answer.state.kind !== 'ready') return sayWhy(answer.state, answer.app);
+          const file =
+            toastName(chrome.get().tabs.find((t) => t.id === id)?.name) ?? 'the connected file';
           navigator.clipboard.writeText(answer.state.href).then(
-            () => toast.success('Link copied'),
-            () => toast.error('Could not copy the link.'),
+            () => toast.success(`Link to ${file} copied`),
+            () => toast.error(`Could not copy the link to ${file}.`),
           );
         });
       },

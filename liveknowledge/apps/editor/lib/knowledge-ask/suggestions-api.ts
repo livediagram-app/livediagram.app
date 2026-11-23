@@ -51,12 +51,18 @@ const FALLBACK: Record<OverviewAction, string> = {
 };
 
 /** A refused AI Knowledge action in words, from its code and status. */
-export function overviewFailureText(err: unknown, action: OverviewAction): string {
+export function overviewFailureText(
+  err: unknown,
+  action: OverviewAction,
+  page?: string | null,
+): string {
   if (err instanceof ApiError) {
     if (err.code === 'suggestion_stale')
       return 'The page has changed since this was suggested, so it no longer fits. Open the page to make the change by hand, or dismiss it.';
     if (err.status === 403) return 'Only an Editor can do this.';
     if (err.code === 'tab_busy') return 'The page was being saved. Try again.';
   }
-  return FALLBACK[action];
+  // `page` (its quoted name) names the page a suggested edit is for, for a toast read later.
+  const said = FALLBACK[action];
+  return page ? said.replace('The edit could', `The edit to ${page} could`) : said;
 }

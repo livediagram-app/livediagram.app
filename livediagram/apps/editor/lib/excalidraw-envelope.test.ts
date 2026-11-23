@@ -87,11 +87,11 @@ describe('readExcalidrawEnvelope', () => {
   });
 
   it.each([
-    ['not-json', 'nope', "This isn't valid JSON."],
-    ['not-object', '[1,2]', 'Expected a JSON object at the top level.'],
-    ['not-object', 'null', 'Expected a JSON object at the top level.'],
+    ['not-json', 'nope', "This Excalidraw scene isn't valid JSON."],
+    ['not-object', '[1,2]', 'Expected an Excalidraw JSON object at the top level.'],
+    ['not-object', 'null', 'Expected an Excalidraw JSON object at the top level.'],
     ['not-excalidraw', '{"type":"other","elements":[]}', 'excalidraw'],
-    ['no-elements', '{"type":"excalidraw"}', 'Scene is missing its elements array.'],
+    ['no-elements', '{"type":"excalidraw"}', 'Excalidraw scene is missing its elements array.'],
     ['no-elements', '{"type":"excalidraw/clipboard","elements":{}}', 'elements'],
   ])('rejects %s', (rejection, text, message) => {
     const r = readExcalidrawEnvelope(text);

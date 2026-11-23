@@ -13,6 +13,7 @@
 // local Dismiss, which hides their own panel without ending anything —
 // the escape hatch if the host disconnects mid-poll.
 
+import { pollHeroArt } from './PollHeroArt';
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
@@ -62,6 +63,7 @@ export function PollPanel({
     <MovablePanel
       helpArticle="sessionPolls"
       title="Poll"
+      hero={{ art: pollHeroArt }}
       position={null}
       defaultCorner="bottom-right"
       onMoveTo={NO_MOVE}

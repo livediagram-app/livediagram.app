@@ -94,7 +94,7 @@ export function CommunityPublishDialog({
       const type = communityCategoryType(host.app, saved.category);
       if (editing) {
         host.track?.('Changed', type);
-        notify('Listing saved', 'success');
+        notify(`Community listing “${saved.title}” saved`, 'success');
         onClose();
       } else {
         host.track?.('Shared', type);

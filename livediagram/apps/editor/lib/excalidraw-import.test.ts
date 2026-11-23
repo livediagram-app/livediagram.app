@@ -671,7 +671,7 @@ describe('Excalidraw import on a whiteboard', () => {
   it('refuses what it cannot read with the envelope message', () => {
     expect(build('{"type":"excalidraw/clipboard"}', 'whiteboard')).toEqual({
       ok: false,
-      error: 'Scene is missing its elements array.',
+      error: 'Excalidraw scene is missing its elements array.',
     });
   });
 });

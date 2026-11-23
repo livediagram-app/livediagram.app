@@ -7,6 +7,7 @@ import { Button } from '@liveplanner/ui';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { findMatches, replaceAll, type FindOptions } from '@liveplanner/sheets';
 import { track } from '@/lib/telemetry';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useSheetController } from './sheet-controller';
 import { useSheetActions } from './useSheetActions';
 import { HEADER_PX } from './SheetHeader';
@@ -169,7 +170,9 @@ export function SheetFindBar() {
             onClick={() => {
               const r = replaceAll(c.workbook, c.sheet.id, query, by, opts);
               if (r.count) c.write({ kind: 'cells', cells: r.cells }, 'Replace');
-              c.notify(`Replaced ${r.count} cell${r.count === 1 ? '' : 's'}`);
+              c.notify(
+                `Replaced ${r.count} cell${r.count === 1 ? '' : 's'} in ${toastName(c.sheet.title) ?? 'the sheet'}`,
+              );
             }}
           >
             Replace All

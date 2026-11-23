@@ -457,7 +457,7 @@ build):
   Trail's `reloadRef` (`RunLog` registers it while mounted: it reads `listRuns` for its current filters and
   replaces the runs only if the filters are unchanged, resolving `false` on a failure and leaving the runs as
   they were). Until both settle the button is `busy` and the glyph `animate-spin motion-reduce:animate-none`; a
-  `false` toasts `REFRESH_FAILED` ("Couldn't refresh. Check your connection and try again."). Neither read
+  `false` toasts `REFRESH_FAILED` ("Couldn't refresh Automations. Check your connection and try again."). Neither read
   publishes `loading` over a `ready` list or swaps the runs for the skeleton, so nothing blanks. It never touches
   the builder: the builder reads its rule once, as it mounts.
 - **A change answered during a read** (`use-automations.ts` `change`): the entry is marked `stale` when a read is

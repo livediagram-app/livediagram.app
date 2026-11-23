@@ -254,7 +254,7 @@ describe('an Editor’s cover controls', () => {
     expect(page.cover()).toBeUndefined();
     expect(track).toHaveBeenCalledWith('Element', 'Deleted', 'Cover');
     const [message, options] = toast.info.mock.calls[0]!;
-    expect(message).toBe('Cover removed');
+    expect(message).toMatch(/^Cover removed from /);
     act(() => (options as { action: { onSelect: () => void } }).action.onSelect());
     expect(page.cover()).toEqual(PICTURE);
   });

@@ -7,7 +7,10 @@ describe('a refused change’s message', () => {
   it('names a too-long title with its limit, and falls back for the rest', () => {
     expect(refusalMessage('title_too_long')).toContain(String(ITEM_TITLE_MAX));
     expect(refusalMessage('fields_too_large')).toMatch(/too large/);
-    expect(refusalMessage('something_new')).toBe("Couldn't save that change");
+    expect(refusalMessage('something_new')).toBe('Couldn’t save the change to that card');
+    expect(refusalMessage('something_new', '“Fix login”')).toBe(
+      'Couldn’t save the change to “Fix login”',
+    );
   });
 
   it('names the cap when a plan is full, and a named refusal or the generic line otherwise', () => {
@@ -15,8 +18,10 @@ describe('a refused change’s message', () => {
       'This plan already holds 5,000 cards, the most it can',
     );
     expect(writeFailureMessage({ code: 'title_too_long' })).toBe(refusalMessage('title_too_long'));
-    expect(writeFailureMessage(new Error('offline'))).toBe("Couldn't save that change");
-    expect(writeFailureMessage(null)).toBe("Couldn't save that change");
+    expect(writeFailureMessage(new Error('offline'))).toBe('Couldn’t save the change to that card');
+    expect(writeFailureMessage(null, undefined, '3 cards')).toBe(
+      'Couldn’t save the change to 3 cards',
+    );
   });
 
   it('names a field refused past its limit as the card shows it, and a full plan in plain words', () => {

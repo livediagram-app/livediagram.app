@@ -33,8 +33,8 @@ describe('PasswordSection', () => {
   });
 
   // Work Tracker 1023: Password Set, the field and the lock's reason hung outside the card on a guide rule.
-  it('keeps Password Set, the new password field and the lock reason inside the Password Protection card', () => {
-    const card = () => screen.getByText('Password Protection').closest('.rounded-xl')!;
+  it('keeps Password Set, the new password field and the lock reason inside Password Protection’s own rows', () => {
+    const card = () => screen.getByText('Password Protection').closest('section')!;
     const { rerender } = render(<PasswordSection passwordSet busy={false} onSet={vi.fn()} />);
     expect(card().contains(screen.getByText('Password Set'))).toBe(true);
     expect(card().contains(screen.getByRole('button', { name: 'Remove' }))).toBe(true);

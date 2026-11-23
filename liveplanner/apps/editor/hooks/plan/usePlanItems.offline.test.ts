@@ -164,7 +164,7 @@ describe('usePlanItems offline', () => {
     });
     await act(async () => setOnline(true));
     await waitFor(() => expect(waitingChangeCount()).toBe(0));
-    expect(onError).toHaveBeenCalledWith("Couldn't save that change");
+    expect(onError).toHaveBeenCalledWith(expect.stringContaining('Couldn’t save the change to'));
     expect(warn).toHaveBeenCalledWith('[offline-queue] items.replay-refused', expect.anything());
     await waitFor(() => expect(title(result)).toBe('A'));
   });
@@ -241,7 +241,7 @@ describe('usePlanItems offline, by role', () => {
     });
     expect(ok).toBe(false);
     expect(waitingChangeCount()).toBe(0);
-    expect(onError).toHaveBeenCalledWith("Couldn't save that change");
+    expect(onError).toHaveBeenCalledWith(expect.stringContaining('Couldn’t save the change to'));
   });
 
   it('no role given: nothing waits', async () => {

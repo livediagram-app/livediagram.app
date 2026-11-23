@@ -191,7 +191,7 @@ describe('the picker', () => {
     expect(icon()).toBeUndefined();
     expect(track).toHaveBeenCalledWith('Element', 'Deleted', 'PageIcon');
     const [message, options] = toast.info.mock.calls[0]!;
-    expect(message).toBe('Icon removed');
+    expect(message).toMatch(/^Icon removed from /);
     const undo = (options as { action: { onSelect: () => void } }).action;
     act(() => {
       undo.onSelect();

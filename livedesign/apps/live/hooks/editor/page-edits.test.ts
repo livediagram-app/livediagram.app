@@ -461,7 +461,7 @@ describe('Fit to Content page edits', () => {
     h.edits().splitPage('f');
     const pages = pagesOf(h.tab());
     expect(pages).toHaveLength(2);
-    expect(h.toastInfo).toHaveBeenCalledWith('Split into 2 pages. Undo puts it back.');
+    expect(h.toastInfo).toHaveBeenCalledWith('Split Page 1 into 2 pages. Undo puts it back.');
     expect(h.onGoTo).toHaveBeenLastCalledWith(pages[0]!.id);
   });
 
@@ -481,7 +481,7 @@ describe('Fit to Content page edits', () => {
       toastInfo,
     });
     edits.splitPage('f');
-    expect(toastInfo).toHaveBeenCalledWith('Split into 2 pages. Undo puts it back.');
+    expect(toastInfo).toHaveBeenCalledWith('Split Page 1 into 2 pages. Undo puts it back.');
     const [after] = later[0]!([tab]);
     expect(onGoTo).toHaveBeenLastCalledWith(pagesOf(after)[0]!.id);
   });
@@ -523,7 +523,7 @@ describe('Fit to Content page edits', () => {
     const h = harness(fitTab([box('a', 0), box('b', 40)]));
     h.edits().splitPage('f');
     expect(pagesOf(h.tab())).toHaveLength(1);
-    expect(h.toastInfo).toHaveBeenCalledWith('This page is one group: nothing to split.');
+    expect(h.toastInfo).toHaveBeenCalledWith('Page 1 is one group: nothing to split.');
     expect(h.onGoTo).not.toHaveBeenCalled();
   });
 

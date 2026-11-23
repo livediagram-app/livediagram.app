@@ -77,13 +77,13 @@ export function threadRefusalMessage(code: string | null): string {
     case 'item_not_found':
       return 'That card is gone';
     case 'forbidden':
-      return 'You can’t do that here';
+      return 'You can’t change that thread here';
     case 'thread_has_others':
       return 'Others have commented on this thread: resolve it instead';
     case 'field_invalid':
       return 'That card’s type no longer has that Comments field';
     default:
-      return "Couldn't save that comment";
+      return "Couldn't save that card comment";
   }
 }
 

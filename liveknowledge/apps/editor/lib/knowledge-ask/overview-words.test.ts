@@ -129,6 +129,9 @@ describe('what AI Knowledge says', () => {
     expect(overviewFailureText(new Error('x'), 'dismiss-question')).toBe(
       'The question could not be dismissed. Try again.',
     );
+    expect(overviewFailureText(new Error('x'), 'accept-suggestion', '“Onboarding”')).toBe(
+      'The edit to “Onboarding” could not be accepted. Try again.',
+    );
   });
 });
 

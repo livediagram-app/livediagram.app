@@ -153,7 +153,7 @@ forms do" and "The gradients offered should be related to the knowledgebases the
 - **On a page with a cover**, resting the pointer on the band shows, at its bottom right, **Change Cover**,
   **Reposition** (pictures only) and **Remove** (a trash icon), each a small frosted button with a tooltip; the
   keyboard reaches them too. Change Cover opens the cover menu; Remove takes the cover away at once, with an Undo in
-  the toast that says so ("Cover removed").
+  the toast that says so ("Cover removed from “Onboarding”").
 - **Reposition** puts the band in a reposition state: the picture can be dragged up and down to choose which part
   shows (its focus, 0 the top and 100 the bottom of the picture, 50 when unset), the cursor a grab hand, a line
   "Drag the picture to reposition" across the band, and **Save Position** and **Cancel** in place of the hover
@@ -208,7 +208,7 @@ should be to the right of Add Cover under the title."
   last 16 picks and shows only when it has some. Icons are the catalogue's categories, found by their names and
   words. A pick sets the icon and closes the picker. The arrow keys move through the grid, Enter picks, Escape
   closes. An empty search says "No emoji match" or "No icons match".
-- **Remove** takes the icon away at once, with an Undo in the toast that says so ("Icon removed").
+- **Remove** takes the icon away at once, with an Undo in the toast that says so ("Icon removed from “Onboarding”").
 - **Who changes it.** The cover's rule: an Editor or a Participant, and only in edit mode. A Viewer and a link
   visitor see the icon, in the page and the tree, and none of its controls. The room and the api refuse an icon from
   anyone else, as they refuse a cover.

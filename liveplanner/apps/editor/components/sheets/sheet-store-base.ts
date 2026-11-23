@@ -307,7 +307,7 @@ export class SheetStoreBase {
   protected refused(e: unknown, sheetId: string): void {
     const code = e instanceof ApiError ? e.code : null;
     debugLog('[sheets] sheets.write.failed', { error: code });
-    this.deps.toast(sheetRefusalMessage(code));
+    this.deps.toast(sheetRefusalMessage(code, this.sheet(sheetId)?.title));
     if (code === 'sheet_not_found') {
       this.drop(sheetId);
       this.notify();

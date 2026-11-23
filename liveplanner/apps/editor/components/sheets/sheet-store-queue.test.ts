@@ -263,7 +263,7 @@ describe('the sheet store, offline', () => {
     await s.loadTab('t1');
     await s.settle();
     await tick();
-    expect(toast).toHaveBeenCalledWith("Couldn't save that change");
+    expect(toast).toHaveBeenCalledWith(expect.stringMatching(/^Couldn’t save the change to /));
     expect(queue.count()).toBe(0);
     expect(s.workbook('t1').value('sheet0001', 0, 0)).toBeNull();
   });

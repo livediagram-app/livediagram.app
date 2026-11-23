@@ -33,6 +33,7 @@ import { sideChromeInsets } from '@/lib/side-chrome-insets';
 import { pageInView } from '@/lib/page-contents';
 import { topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
 import { themeAccent, themeBackgroundPresets, type ThemeBackgroundPreset } from '@/lib/page-paint';
@@ -379,7 +380,9 @@ export function usePagesMode(deps: {
     const placed = withContentOnAPage(activeTab);
     if (!placed) return;
     commitTabs((ts) => ts.map((t) => (t.id === tabId ? (withContentOnAPage(t) ?? t) : t)));
-    deps.toastInfo('Put onto a page that fits it. Undo takes the page away.');
+    deps.toastInfo(
+      `Put ${toastName(activeTab.name) ?? 'the tab'} onto a page that fits it. Undo takes the page away.`,
+    );
     track('Tab', 'Changed', 'PageFitToContent');
     debugLog('[page] content put onto a page', {
       tabId,

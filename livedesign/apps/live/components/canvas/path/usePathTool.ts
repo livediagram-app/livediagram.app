@@ -260,7 +260,7 @@ export function usePathTool({
           if (!shape) return;
           const simpler = simplifyContour(pathAnchors(shape), shape.closed);
           if (!simpler) {
-            toast.info('Already as simple as it gets.');
+            toast.info('This path is already as simple as it gets.');
             return;
           }
           edit.clearSelection();

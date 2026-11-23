@@ -5,6 +5,7 @@
 // its button in Plan mode's bottom-right cluster. Edit and Add Card Type open the type editor, Duplicate opens it on a
 // new type filled from that one. One list:
 // no type is set apart from another. Someone who may only view sees the list.
+import { cardTypesHeroArt } from './CardTypesHeroArt';
 import { AddCardTypeButton } from './AddCardTypeButton';
 import { useMemo } from 'react';
 import type { DockAnchor } from '@/lib/canvas-chrome';
@@ -131,6 +132,12 @@ export function CardTypesPanel({
   return (
     <MovablePanel
       title="Card Types"
+      hero={{
+        art: cardTypesHeroArt,
+        subtitle: 'The kinds of card this plan uses.',
+        // The line stops short of the art in the bottom right.
+        className: 'sm:pr-[7.5rem]',
+      }}
       helpArticle="planCardTypes"
       position={null}
       defaultCorner="bottom-right"

@@ -18,6 +18,7 @@ import { pageKnowledgeStore } from '@/lib/knowledge/page-knowledge-store';
 import { suggestionsView, type SuggestionsViewState } from '@/lib/knowledge/page-suggestions-view';
 import { suggestionRights, type SuggestionRights } from '@/lib/knowledge/suggestion-rights';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { track } from '@/lib/telemetry';
 
 const NONE: readonly KnowledgeSuggestion[] = [];
@@ -83,7 +84,9 @@ export function usePageSuggestions(): PageSuggestions {
           () => {
             pageKnowledgeStore.dropSuggestion(docId, s.tab, s.id);
             if (suggestionsView.get().showing === s.id) suggestionsView.show(null);
-            toast.success(verb === 'accept' ? 'Edit accepted.' : 'Edit dismissed.');
+            const page =
+              toastName(chrome.get().tabs.find((t) => t.id === s.tab)?.name) ?? 'the page';
+            toast.success(`Edit to ${page} ${verb === 'accept' ? 'accepted' : 'dismissed'}.`);
           },
           (err: unknown) => {
             // Already decided elsewhere: it is gone, which is what was asked.
@@ -91,7 +94,13 @@ export function usePageSuggestions(): PageSuggestions {
               pageKnowledgeStore.dropSuggestion(docId, s.tab, s.id);
               return;
             }
-            toast.error(overviewFailureText(err, `${verb}-suggestion`));
+            toast.error(
+              overviewFailureText(
+                err,
+                `${verb}-suggestion`,
+                toastName(chrome.get().tabs.find((t) => t.id === s.tab)?.name),
+              ),
+            );
           },
         )
         .finally(() => {

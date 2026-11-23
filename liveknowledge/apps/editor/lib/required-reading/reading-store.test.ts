@@ -188,5 +188,12 @@ describe('reading words', () => {
     );
     for (const act of ['confirm', 'stop', 'again', 'remind'] as const)
       expect(readingFailureText(new Error('x'), act)).toMatch(/Try again/);
+    // Named, so the toast still reads in the notification list.
+    expect(remindText({ outcome: 'sent', sent: 5 }, '“Onboarding”')).toBe(
+      'Reminded 5 people to read “Onboarding”.',
+    );
+    for (const act of ['confirm', 'set', 'stop', 'remind'] as const)
+      expect(readingFailureText(new Error('x'), act, '“Onboarding”')).toContain('“Onboarding”');
+    expect(readingFailureText(new Error('x'), 'again', '“Onboarding”')).toMatch(/Page Info/);
   });
 });

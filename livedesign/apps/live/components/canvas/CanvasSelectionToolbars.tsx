@@ -155,7 +155,7 @@ export function CanvasSelectionToolbars({
                         if (props.pendingDraw) props.onCancelDraw();
                         if (!editor.tidyUpSelected()) return;
                         props.onBeginEdit(selected.id);
-                        toast.info('Tidied into a path so its points can be edited.');
+                        toast.info('Drawing tidied into a path so its points can be edited.');
                       }
                     : undefined
             }

@@ -213,7 +213,9 @@ describe('a page’s knowledge in the editor', () => {
     openDetails();
     fireEvent.click(railButton('Verify'));
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith('The page could not be verified. Try again.'),
+      expect(toast.error).toHaveBeenCalledWith(
+        expect.stringMatching(/ could not be verified\. Try again\.$/),
+      ),
     );
     expect(screen.queryByText(/^Verified/)).toBeNull();
     expect(within(rail()).getAllByRole('button', { name: 'Verify' })).toHaveLength(1);

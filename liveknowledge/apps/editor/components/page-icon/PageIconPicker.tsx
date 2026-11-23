@@ -20,6 +20,8 @@ import { ResponsivePopover, SegmentedToggle, TextInput } from '@liveknowledge/ui
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { getLoadedIconCatalog } from '@liveworkspace/workbench/lib/icon-registry';
 import { ICON_CATEGORIES, iconsInCategory, type IconDef } from '@/lib/icons';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
+import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useToast } from '@/hooks/ui/useToast';
 import type { EmojiEntry, EmojiGroup } from './emoji-catalogue';
 import { PageIconGlyph } from './PageIconGlyph';
@@ -298,6 +300,7 @@ function PickerBody({
 }) {
   const setIcon = useSetPageIcon();
   const toast = useToast();
+  const chrome = useEditorChromeStore();
   const [kind, setKind] = useState<Kind>(icon && 'iconId' in icon ? 'icons' : 'emoji');
   const [query, setQuery] = useState('');
   const [pointed, setPointed] = useState<Choice | null>(null);
@@ -325,7 +328,8 @@ function PickerBody({
     const was = icon;
     close();
     setIcon(undefined);
-    toast.info('Icon removed', {
+    // The page is named, so the line still reads in the notification list.
+    toast.info(`Icon removed from ${toastName(chrome.get().activeTab?.name) ?? 'the page'}`, {
       action: {
         label: 'Undo',
         ariaLabel: 'Undo Removing the Icon',

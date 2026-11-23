@@ -3,6 +3,7 @@
 // Contents as a popover (docs/specs/007-editor/pages-mode.md "Contents"), a bottom sheet on a phone:
 // the shared popover (@liveworkspace/workbench/components/canvas/PageContentsPanel) in this editor's
 // MovablePanel and its Add Page. Docked, Contents is PageContentsSidebar.
+import { contentsHeroArt } from '@liveworkspace/ui/dialog-hero-art/contents';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -47,6 +48,7 @@ export function PageContentsPanel({
       frame={(body, headerActions) => (
         <MovablePanel
           title="Contents"
+          hero={{ art: contentsHeroArt }}
           position={null}
           defaultCorner="bottom-right"
           onMoveTo={NO_MOVE}

@@ -301,7 +301,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // page. The lazy fetch resolves in well under a second; asking the
     // user to retry beats silently duplicating nothing.
     if (!isTabLoaded(id)) {
-      toast.error('That page is still loading. Try again in a moment.');
+      toast.error(`${toastName(src.name) ?? 'That page'} is still loading. Try again in a moment.`);
       return;
     }
     // Re-mint ids (arrow endpoints remapped): element ids must be
@@ -339,8 +339,9 @@ export function useTabActions(deps: TabActionsDeps) {
     }
     // A locked page is protected: its writing can't be deleted, so the page that holds it can't be deleted out
     // from under it either, nor with a page above it. Unlock it first.
-    if (tabs.some((t) => gone.has(t.id) && t.locked === true)) {
-      toast.error('Unlock the page before deleting it.');
+    const locked = tabs.find((t) => gone.has(t.id) && t.locked === true);
+    if (locked) {
+      toast.error(`Unlock ${toastName(locked.name) ?? 'the page'} before deleting it.`);
       return;
     }
     const subpages = subpageCount(tabs, id);

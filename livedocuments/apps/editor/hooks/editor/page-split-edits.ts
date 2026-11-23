@@ -14,6 +14,7 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { track } from '@/lib/telemetry';
 import { cardOverflowNow } from '@/lib/flashcard-overflow-store';
 
@@ -52,18 +53,21 @@ export function pageSplitEdits({
     }
     // Read from the tab as it is, as Duplicate reads its copy's id.
     const before = pagesOf(tab);
+    const at = before.findIndex((p) => p.id === pageId);
+    // The page as its toasts name it: its own name, or where it stands.
+    const named = toastName(before[at]?.name) ?? (at < 0 ? 'This page' : `Page ${at + 1}`);
     const split = withPageSplit(tab, pageId);
     const made = split ? split.pages.length - before.length + 1 : 0;
-    const first = split?.pages[before.findIndex((p) => p.id === pageId)]?.id;
+    const first = split?.pages[at]?.id;
     // The split names its new pages afresh each time, so the one read is the one stored (unless the tab moved on).
     if (made > 0) commitTab((t) => (t === tab ? split : withPageSplit(t, pageId)));
     if (made === 0) {
-      toastInfo('This page is one group: nothing to split.');
+      toastInfo(`${named} is one group: nothing to split.`);
       debugLog('[page] split: one group', { tabId, pageId });
       return;
     }
     track('Tab', 'Changed', 'PagesLaidOut');
-    toastInfo(`Split into ${made} pages. Undo puts it back.`);
+    toastInfo(`Split ${named} into ${made} pages. Undo puts it back.`);
     if (first) onGoTo(first);
     debugLog('[page] page split', { tabId, pageId, pages: made });
   };

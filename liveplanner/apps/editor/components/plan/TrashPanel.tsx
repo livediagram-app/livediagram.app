@@ -6,6 +6,7 @@
 // buttons on its right. Delete Forever asks first (the workspace Trash's ConfirmPopover); Empty Trash, in the header
 // row, deletes them all at once. An empty Trash is a small popover holding the small empty state. A popover above
 // its button in Plan mode's bottom-right cluster.
+import { trashHeroArt } from './TrashHeroArt';
 import { useMemo, useState } from 'react';
 import { cardRefIn } from './card-ref';
 import {
@@ -69,6 +70,7 @@ export function TrashPanel({
   return (
     <MovablePanel
       title="Trash"
+      hero={{ art: trashHeroArt }}
       helpArticle="planCards"
       position={null}
       defaultCorner="bottom-right"

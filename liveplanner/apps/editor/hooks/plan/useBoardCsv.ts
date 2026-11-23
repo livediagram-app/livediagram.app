@@ -22,7 +22,7 @@ import { track } from '@/lib/telemetry';
 // The file picker's filter: what Import CSV… reads.
 export const BOARD_CSV_ACCEPT = '.csv,.tsv,text/csv,text/tab-separated-values';
 // What the board says when the cards could not be written.
-export const BOARD_CSV_FAILED = 'Couldn’t add the cards';
+export const BOARD_CSV_FAILED = 'Couldn’t add the cards from the CSV file';
 // The largest file Import CSV reads (plan-board.md "CSV"): the CSV reader's 10,000 rows at about 500 bytes each. A
 // larger file is refused before it is read.
 export const BOARD_CSV_MAX_BYTES = 5 * 1024 * 1024;

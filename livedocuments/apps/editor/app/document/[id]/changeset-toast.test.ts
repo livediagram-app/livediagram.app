@@ -92,8 +92,10 @@ describe('touchedIdsOf and undoneCopy', () => {
   });
 
   it('says what an Undo left', () => {
-    expect(undoneCopy(0)).toBe('Undone');
-    expect(undoneCopy(1)).toBe('Undone, 1 kept because it changed since');
-    expect(undoneCopy(2)).toBe('Undone, 2 kept because they changed since');
+    expect(undoneCopy('Webber', 0)).toBe("Undid Webber's change");
+    expect(undoneCopy('Webber', 1)).toBe("Undid Webber's change, 1 kept because it changed since");
+    expect(undoneCopy('Webber', 2)).toBe(
+      "Undid Webber's change, 2 kept because they changed since",
+    );
   });
 });

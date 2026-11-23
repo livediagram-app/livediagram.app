@@ -563,8 +563,12 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   outlook.com, icloud.com and the like), where it is null; the dialog starts its domain box with it. A team item's
   answer also carries `teamName`, the team's name as the asker's own token names it (its `teams` claim), or null when
   the token names none (a delegated caller); the Team tab says it.
-- **The Share dialog's Sign In card** (`packages/explorer` `SignInSection`), under Password Protection, in the same
-  settings-card look: **Require Sign In** ("Only people signed in to a liveworkspace account can open a pass. No
+- **The Share dialog's access card**: Password Protection, Require Sign In and Anybody With Email Address Domain are
+  three rows of one settings card, a hairline between them and no section rule, each with an icon tile (a lock, a
+  person, an at sign), its words and its switch. Password Protection and Require Sign In carry a help icon beside
+  their name (a hover card saying what it does, opening the help article), never a Learn More link.
+- **The Share dialog's Sign In rows** (`packages/explorer` `SignInSection`), under Password Protection in that card:
+  **Require Sign In** ("Only people signed in to a liveworkspace account can open a pass. No
   guests.") with its switch, and beneath it, in the same card, **Anybody With Email Address Domain** ("Only accounts
   with a verified email at these domains, such as @acme.com.") with its own switch, which opens a domain box (several
   domains, spaces or commas between them, `@` optional) with **Save**; a name that is no domain is named under the box
@@ -576,8 +580,13 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   first in the tab row (Team, Passes, the host's, Approval); a personal item opens on Passes as before, with no Team
   tab. The tab says everyone in the team, by name (the host's `teamName`, else the share answer's), can already open the item, with nothing to issue, shows the item's own
   address (the editor link a member opens, `itemUrl`) in a read-only field with **Copy Link**, notes that the link
-  grants nothing (someone outside the team who opens it sees Not Found), and ends with **Share With Someone Outside
-  the Team**, which switches to Passes in one click. The host's own start (`initialView: 'app'`, the Share legend's
+  grants nothing (someone outside the team who opens it sees Not Found), and under it lists **Team Members**: the
+  team's joined members (the host's `loadTeamMembers`, read when the tab first shows), each with their disc, name,
+  "you" on the reader's own row, email and role (Admin or Member), admins first then by name. Invitations not yet
+  accepted are left out, since they can't open the item yet. While it reads, placeholder rows; where the host has no
+  read or it fails, the list is left out and the rest of the tab stands. A footer stays at the bottom of the tab
+  while its content scrolls: **Sharing outside the team?** ("Issue a pass for non-team members to access this
+  <item>.") with **Issue a Pass**, which switches to Passes in one click. The host's own start (`initialView: 'app'`, the Share legend's
   Everyone stop) and the Approval badge still win; Show Me still starts on Passes. Sharing is the owner's and a joined
   member's (no link level grants it), so a link visitor of any level, Editor, Participant or Viewer, never opens the
   dialog and never sees the tab.

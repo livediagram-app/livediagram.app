@@ -260,7 +260,7 @@ describe('refusals in words', () => {
       'field_invalid',
     ])
       expect(threadRefusalMessage(code)).not.toBe(threadRefusalMessage(null));
-    expect(threadRefusalMessage(null)).toBe("Couldn't save that comment");
+    expect(threadRefusalMessage(null)).toBe("Couldn't save that card comment");
   });
 });
 

@@ -55,9 +55,9 @@ export function changesetToastCopy(toast: ChangesetToast): string {
   return `${toast.name} changed ${elements}${toast.summary ? `: ${toast.summary}` : ''}`;
 }
 
-export function undoneCopy(kept: number): string {
-  if (kept === 0) return 'Undone';
-  return `Undone, ${kept} kept because ${kept === 1 ? 'it' : 'they'} changed since`;
+export function undoneCopy(name: string, kept: number): string {
+  if (kept === 0) return `Undid ${name}'s change`;
+  return `Undid ${name}'s change, ${kept} kept because ${kept === 1 ? 'it' : 'they'} changed since`;
 }
 
 // Every element a changeset touched: its element ops' ids, or the list an oversize relay carries.

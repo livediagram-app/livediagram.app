@@ -127,7 +127,9 @@ describe('pasting an Excalidraw copy on the canvas', () => {
       'text/plain': '{"type":"excalidraw/clipboard","elements":',
     });
     expect(event.defaultPrevented).toBe(true);
-    await vi.waitFor(() => expect(h.toast.error).toHaveBeenCalledWith("This isn't valid JSON."));
+    await vi.waitFor(() =>
+      expect(h.toast.error).toHaveBeenCalledWith("This Excalidraw scene isn't valid JSON."),
+    );
     expect(h.insertBoardScene).not.toHaveBeenCalled();
   });
 
@@ -201,7 +203,9 @@ describe('pasting an Excalidraw file', () => {
     const h = harness();
     paste(document.body, {}, [new File(['nope'], 'b.excalidraw')]);
     await settle();
-    await vi.waitFor(() => expect(h.toast.error).toHaveBeenCalledWith("This isn't valid JSON."));
+    await vi.waitFor(() =>
+      expect(h.toast.error).toHaveBeenCalledWith("This Excalidraw scene isn't valid JSON."),
+    );
     expect(h.insertBoardScene).not.toHaveBeenCalled();
   });
 });

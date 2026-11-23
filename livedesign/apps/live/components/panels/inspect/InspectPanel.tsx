@@ -19,6 +19,7 @@ import { lucideDownload, lucideLink } from '@liveworkspace/icons/lucide';
 import { Button, lucideGlyph, useCopiedFlash } from '@livedesign/ui';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { useInspectSession } from '@/components/canvas/inspect/InspectSessionContext';
@@ -99,7 +100,7 @@ export function InspectPanel({
       flash(key);
       track('UI', 'Copied', type);
     } else {
-      toast.error('Couldn’t copy that. Try again.');
+      toast.error('Couldn’t copy from Inspect. Try again.');
     }
   };
   // Every value the panel shows, in its order: the layout, the spacing, then the rest.
@@ -126,7 +127,9 @@ export function InspectPanel({
         surface: (target.page && pageSurface(target.page)) ?? 'light',
       });
     } catch {
-      toast.error('Couldn’t export that element. Try again.');
+      toast.error(
+        `Couldn’t export ${toastName(inspectElementName(target.el)) ?? 'that element'}. Try again.`,
+      );
     } finally {
       setBusy(null);
     }

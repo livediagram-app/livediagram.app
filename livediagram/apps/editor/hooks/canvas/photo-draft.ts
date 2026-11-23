@@ -157,7 +157,7 @@ export const ERROR_TOASTS: Record<string, string> = {
   origin_not_allowed: 'Reading photos is not available from here.',
   rate_limited: 'Too many photos just now. Wait a moment and try again.',
   ai_quota: 'The model key is out of quota. Try later, or raise its limit.',
-  ai_error: 'The reader could not finish. Try again in a moment.',
+  ai_error: 'The photo reader could not finish. Try again in a moment.',
   ai_key_failed: 'Your AI key could not read the notes. Fix it in Settings › AI, then try again.',
 };
 

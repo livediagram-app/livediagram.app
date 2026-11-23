@@ -105,8 +105,8 @@ export function TabFolderStates() {
   );
 }
 
-/** Organise in Tab Folder: a full-width row per folder, each in its colour with its tab count and a colour
- *  button, the tab's own folder marked Current, then New Folder. */
+/** Organise in Tab Folder: New Folder first, then No Folder and a full-width row per folder, each in its colour with
+ *  its tab count and a colour button, the tab's own folder marked Current. */
 export function AddToFolderMenu() {
   const W = 420;
   const H = 272;
@@ -120,10 +120,10 @@ export function AddToFolderMenu() {
         <Label x={rx} y={dy + 48} size={10} tone="muted">
           File this tab into a folder on the tab bar. Same name means same folder.
         </Label>
-        <FolderRow x={rx} y={dy + 60} w={rw} name="No Folder" sub="Loose on the bar" tone={null} />
-        <FolderRow x={rx} y={dy + 98} w={rw} name="Plans" sub="3 tabs" tone="rose" current />
-        <FolderRow x={rx} y={dy + 136} w={rw} name="Back office" sub="2 tabs" tone="violet" />
-        <FolderRow x={rx} y={dy + 174} w={rw} name="New Folder" tone={null} dashed />
+        <FolderRow x={rx} y={dy + 60} w={rw} name="New Folder" tone={null} dashed />
+        <FolderRow x={rx} y={dy + 98} w={rw} name="No Folder" sub="Loose on the bar" tone={null} />
+        <FolderRow x={rx} y={dy + 136} w={rw} name="Plans" sub="3 tabs" tone="rose" current />
+        <FolderRow x={rx} y={dy + 174} w={rw} name="Back office" sub="2 tabs" tone="violet" />
       </Dialog>
     </Scene>
   );

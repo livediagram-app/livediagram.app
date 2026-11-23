@@ -2,9 +2,9 @@
 
 // Organise in Tab Folder's list (docs/specs/006-document/tab-folders.md "Membership UX"), the same in every editor:
 // full-width rows, one column at every width, so a long folder name shows in full (it wraps, never cut to a few
-// letters). No Folder first, a row per folder in bar order (its colour, its stacked glyph, its name, how many tabs it
-// holds, Current on the tab's own, and its colour button), New Folder last (a dashed row that becomes an inline
-// editor: name, optional colour, Add). Pressing a row moves the tab; the colour button never does.
+// letters). New Folder first (owner, 2026-11-23: a dashed row that becomes an inline editor: name, optional colour,
+// Add), then No Folder and a row per folder in bar order (its colour, its stacked glyph, its name, how many tabs it
+// holds, Current on the tab's own, and its colour button). Pressing a row moves the tab; the colour button never does.
 
 import { useId, useRef, useState, type ReactNode } from 'react';
 import { lucideFolderX, lucidePlus } from '@liveworkspace/icons/lucide';
@@ -217,7 +217,7 @@ export type TabFolderListProps = {
   onEscapeHeld?: (held: boolean) => void;
 };
 
-/** The Organise in Tab Folder list: No Folder, every folder, New Folder. */
+/** The Organise in Tab Folder list: New Folder, No Folder, every folder. */
 export function TabFolderList({
   folders,
   currentFolder,
@@ -239,6 +239,16 @@ export function TabFolderList({
 
   return (
     <ul aria-label="Tab folders" className="flex flex-col gap-1">
+      <NewFolderRow
+        folders={folders}
+        onCreate={(name, colour) => {
+          hold('new', false);
+          onMoveToFolder(name, colour);
+          onDone();
+        }}
+        onEditingChange={(editing) => hold('new', editing)}
+        onColourOpenChange={(open) => hold('colour:new', open)}
+      />
       <Row
         dataName="none"
         current={currentFolder === null}
@@ -286,16 +296,6 @@ export function TabFolderList({
           />
         );
       })}
-      <NewFolderRow
-        folders={folders}
-        onCreate={(name, colour) => {
-          hold('new', false);
-          onMoveToFolder(name, colour);
-          onDone();
-        }}
-        onEditingChange={(editing) => hold('new', editing)}
-        onColourOpenChange={(open) => hold('colour:new', open)}
-      />
     </ul>
   );
 }

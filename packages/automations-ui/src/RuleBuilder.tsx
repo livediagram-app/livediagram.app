@@ -169,12 +169,15 @@ export function RuleBuilder({
       setSaved(bodyOf(next));
       setBody((held) => (held === sent ? bodyOf(next) : held));
       setFault(null);
-      toast.success(`Saved ${next.name}`);
+      toast.success(`Saved the rule “${next.name}”`);
       onSaved(next);
     } catch (error) {
       debugLog('[automations] save.failed', { error: String(error) });
       if (error instanceof AutomationRefusal) refused(error);
-      else toast.error('The rule didn’t save. Check your connection and try again.');
+      else
+        toast.error(
+          `${sent.name ? `The rule “${sent.name}”` : 'The rule'} didn’t save. Check your connection and try again.`,
+        );
     } finally {
       setSaving(false);
     }
@@ -189,7 +192,9 @@ export function RuleBuilder({
     } catch (error) {
       debugLog('[automations] toggle.failed', { error: String(error) });
       toast.error(
-        error instanceof AutomationRefusal ? said(error) : 'The rule didn’t change. Try again.',
+        error instanceof AutomationRefusal
+          ? said(error)
+          : `The rule “${rule.name}” didn’t change. Try again.`,
       );
     } finally {
       setToggling(false);

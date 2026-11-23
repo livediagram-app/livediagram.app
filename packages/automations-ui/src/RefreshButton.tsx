@@ -8,7 +8,7 @@
 import { Button, RefreshIcon, Tooltip } from '@liveworkspace/ui';
 
 export const REFRESH_NAME = 'Refresh';
-export const REFRESH_FAILED = 'Couldn’t refresh. Check your connection and try again.';
+export const REFRESH_FAILED = 'Couldn’t refresh Automations. Check your connection and try again.';
 
 export function RefreshButton({ busy, onRefresh }: { busy: boolean; onRefresh: () => void }) {
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 // Connect File (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting", "How it looks"): the
-// list a start screen shows in its content area. The role (Editor unless changed) and Add connection to both files
+// list a start screen shows in its content area. The role (Editor unless changed) and Connect both files
 // above Find a file and the person's Recent across every app; one press on a row connects it. The app does the connect
 // (`onConnect`, usually through connectFile) and moves to the new tab; this list holds the row busy meanwhile and, on a
 // failure, says why on the row. Painted from the start panel's palette (`ink`), else the app's light or dark look.
@@ -193,7 +193,7 @@ export function ConnectPicker({
             offColor={ink ? THEMED_OFF_TRACK : undefined}
             className="min-h-9 rounded-[10px] border border-[var(--cp-border)] px-3 py-1.5 text-[13px] font-medium hover:bg-[var(--cp-hover)] disabled:hover:bg-transparent"
           >
-            Add connection to both files
+            Connect both files
           </SwitchRow>
           <p id={bothLineId} className="sr-only">
             {bothWaysLine(hostKind, hostManaged)}

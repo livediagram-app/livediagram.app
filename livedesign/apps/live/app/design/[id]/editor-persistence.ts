@@ -1,4 +1,6 @@
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { getOnline } from '@liveworkspace/workbench/lib/online-status';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useEffect, useState } from 'react';
 
 import { UNTITLED_DESIGN_NAME } from '@livedesign/templates';
@@ -21,6 +23,8 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [designName, setDesignName] = useState(UNTITLED_DESIGN_NAME);
+  // Read by the failed-save toast, which names the design; a rename alone raises no toast.
+  const designNameRef = useLatest(designName);
   // The browser tab's title follows the name in editor-page.tsx (useBrowserTabTitle).
 
   // Brief error string surfaced by the Import-tab flow when the
@@ -46,7 +50,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
       // "Offline"): the changes are only in this tab until the connection is back.
       toast.error(
         getOnline()
-          ? 'Couldn’t save your changes. Check your connection.'
+          ? `Couldn’t save ${toastName(designNameRef.current) ?? 'your changes'}. Check your connection.`
           : 'You’re offline. Keep this tab open to save when you reconnect.',
       );
     }
@@ -67,7 +71,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     if (saveStatus === 'forbidden') {
       toast.error('You can no longer edit this. Export a copy to keep your changes.');
     }
-  }, [saveStatus, toast]);
+  }, [saveStatus, toast, designNameRef]);
 
   return {
     saveStatus,

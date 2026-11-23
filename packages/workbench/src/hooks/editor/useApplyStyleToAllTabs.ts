@@ -5,8 +5,15 @@
 // restyles every other tab from the active one in ONE history-pushing commit (one undo step), and says what happened.
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { styleAllMessage, styleAllTabs, type StyleAllOutcome } from '../../lib/tab-style-to-all';
+import { toastName } from '../../lib/toast-name';
 
-export type StyleableTab = { id: string; locked?: boolean; elements: readonly unknown[] };
+export type StyleableTab = {
+  id: string;
+  locked?: boolean;
+  // Named in the toast, where the editor's tabs carry one.
+  name?: string | null;
+  elements: readonly unknown[];
+};
 
 type Deps<T extends StyleableTab> = {
   // Only an Editor of the whole document may: false for a Participant, a Viewer, or a tab-scoped session.
@@ -34,9 +41,10 @@ export function useApplyStyleToAllTabs<T extends StyleableTab>(
   // The commit's updater runs as React renders it, not when it is queued, so its outcome is told from an effect
   // once that render has landed.
   const outcomeRef = useRef<StyleAllOutcome | null>(null);
+  const sourceNameRef = useRef<string | null>(null);
   const [landed, setLanded] = useState(0);
   const tell = useEffectEvent((outcome: StyleAllOutcome) => {
-    deps.notify(styleAllMessage(outcome));
+    deps.notify(styleAllMessage(outcome, toastName(sourceNameRef.current)));
     if (outcome.styled > 0) deps.onApplied?.(outcome);
   });
   useEffect(() => {
@@ -61,6 +69,7 @@ export function useApplyStyleToAllTabs<T extends StyleableTab>(
           (t) => isTabLoaded(t.id) || t.elements.length > 0,
         );
         outcomeRef.current = done.outcome;
+        sourceNameRef.current = ts.find((t) => t.id === activeId)?.name ?? null;
         return done.tabs;
       });
       setLanded((n) => n + 1);

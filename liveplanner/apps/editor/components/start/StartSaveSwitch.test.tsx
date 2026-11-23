@@ -128,7 +128,7 @@ describe('StartSaveSwitch', () => {
     view();
     await act(async () => fireEvent.click(screen.getByRole('switch')));
     expect(toast.error).toHaveBeenCalledWith(
-      'Couldn’t move this to this browser. It stays safe on the server.',
+      'Couldn’t move this plan to this browser. It stays safe on the server.',
     );
     expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('true');
   });

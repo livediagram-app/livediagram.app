@@ -2,7 +2,8 @@
 // The Share dialog's Team tab and Sign In card (one-explorer-contracts.md "Sharing and access", Work Tracker 1330,
 // 1331 and 1338): where a team item opens, its link and the way to Passes; Require Sign In and email domains, typed,
 // checked and saved, the team item's suggested domain, and the host's lock.
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   IndexError,
@@ -101,7 +102,10 @@ describe('the Team tab', () => {
 
   it('takes the sharer to Passes in one click, to share with someone outside the team', async () => {
     renderDialog({ item: TEAM_ITEM });
-    fireEvent.click(screen.getByRole('button', { name: 'Share With Someone Outside the Team' }));
+    // The footer under the tab's content: its words, in the item's own.
+    expect(screen.getByText('Sharing outside the team?')).toBeTruthy();
+    expect(screen.getByText('Issue a pass for non-team members to access this plan.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Issue a Pass' }));
     expect(screen.getByRole('tab', { name: 'Passes' }).getAttribute('aria-selected')).toBe('true');
     expect(
       await screen.findByText(/No passes yet\. Only the team can open this plan/),
@@ -109,6 +113,95 @@ describe('the Team tab', () => {
     // And back.
     fireEvent.click(screen.getByRole('tab', { name: 'Team' }));
     expect(screen.getByText('Everyone in the team can already open this plan')).toBeTruthy();
+  });
+
+  it('lists the team’s joined members under the link: admins first, the reader marked, invitations left out', async () => {
+    const loadTeamMembers = vi.fn(
+      async () =>
+        [
+          {
+            id: 'm1',
+            userId: 'u1',
+            name: 'Zed Young',
+            email: 'zed@acme.com',
+            role: 'member',
+            status: 'joined',
+          },
+          {
+            id: 'm2',
+            userId: 'u2',
+            name: null,
+            email: 'anna.smith@acme.com',
+            role: 'admin',
+            status: 'joined',
+          },
+          {
+            id: 'm3',
+            userId: null,
+            name: null,
+            email: 'new@acme.com',
+            role: 'member',
+            status: 'invited',
+          },
+          {
+            id: 'm4',
+            userId: 'u4',
+            name: 'Bo',
+            email: null,
+            role: 'member',
+            status: 'joined',
+            self: true,
+          },
+        ] as const,
+    );
+    renderDialog({ item: TEAM_ITEM, loadTeamMembers, viewerUserId: 'u1' });
+    expect(screen.getByRole('status', { name: 'Loading team members' })).toBeTruthy();
+    const list = await screen.findByRole('list');
+    const rows = within(list).getAllByRole('listitem');
+    expect(rows.map((r) => r.getAttribute('data-share-team-member'))).toEqual(['m2', 'm4', 'm1']);
+    expect(within(rows[0]!).getByText('Anna Smith')).toBeTruthy();
+    expect(within(rows[0]!).getByText('Admin')).toBeTruthy();
+    expect(within(rows[0]!).queryByText('you')).toBeNull();
+    // The read's own mark, and the viewer's account id where the read has none.
+    expect(within(rows[1]!).getByText('you')).toBeTruthy();
+    expect(within(rows[2]!).getByText('you')).toBeTruthy();
+    expect(within(rows[2]!).getByText('zed@acme.com')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /Team Members/ }).textContent).toContain('3');
+    // Read once, however often the tab is shown again.
+    fireEvent.click(screen.getByRole('tab', { name: 'Passes' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Team' }));
+    expect(await screen.findByRole('list')).toBeTruthy();
+    expect(loadTeamMembers).toHaveBeenCalledTimes(1);
+  });
+
+  // React's development double mount ran the hook's cleanup before the read answered, and the list never left its
+  // skeleton (seen in a browser, 2026-11-23).
+  it('shows the members under StrictMode’s double mount', async () => {
+    const fake = fakeClient();
+    render(
+      <StrictMode>
+        <ShareDialog
+          client={fake.client}
+          item={TEAM_ITEM}
+          shareUrl={(l) => `https://x.test/s/${l.code}`}
+          onClose={vi.fn()}
+          notify={vi.fn()}
+          loadTeamMembers={async () => [
+            { id: 'm1', name: 'Zed Young', email: null, role: 'admin', status: 'joined' },
+          ]}
+        />
+      </StrictMode>,
+    );
+    expect(await screen.findByText('Zed Young')).toBeTruthy();
+  });
+
+  it('leaves the list out where the host has no read, or it fails, the rest of the tab standing', async () => {
+    renderDialog({ item: TEAM_ITEM });
+    expect(screen.queryByText('Team Members')).toBeNull();
+    cleanup();
+    renderDialog({ item: TEAM_ITEM, loadTeamMembers: () => Promise.reject(new Error('offline')) });
+    await waitFor(() => expect(screen.queryByText('Team Members')).toBeNull());
+    expect(screen.getByRole('button', { name: 'Issue a Pass' })).toBeTruthy();
   });
 
   it('names the team from the index’s share answer when the host does not (an editor)', async () => {
@@ -138,7 +231,7 @@ describe('the Team tab', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Copy Link' }));
     await waitFor(() =>
       expect(notify).toHaveBeenCalledWith(
-        'Couldn’t copy the link. Select it to copy it yourself.',
+        'Couldn’t copy the plan link. Select it to copy it yourself.',
         'error',
       ),
     );
@@ -169,6 +262,21 @@ describe('the Team tab', () => {
 });
 
 describe('the Sign In card', () => {
+  it('draws the password, sign-in and email domain rules as three rows of one card, each help a hover icon', async () => {
+    renderDialog({ helpHref: (article) => `https://help.test/${article}` });
+    const card = screen.getByRole('region', { name: 'Who can open passes' });
+    const names = within(card)
+      .getAllByRole('switch')
+      .map((s) => s.getAttribute('aria-labelledby'));
+    expect(names).toEqual(['share-password-label', 'share-sign-in-label', 'share-domains-label']);
+    // One card: the three rows share one bordered box, with no rule of the section's between them.
+    expect(card.querySelectorAll('.rounded-xl.border')).toHaveLength(1);
+    expect(within(card).queryByRole('link', { name: /Learn More/ })).toBeNull();
+    const help = within(card).getByRole('link', { name: 'How share passwords work' });
+    expect(help.getAttribute('href')).toBe('https://help.test/sharePasswords');
+    expect(help.textContent).toBe('?');
+  });
+
   it('turns Require Sign In on and off, reading back what the index stored', async () => {
     const { set } = renderDialog();
     await waitFor(() =>

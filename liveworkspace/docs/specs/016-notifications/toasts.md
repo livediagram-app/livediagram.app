@@ -34,6 +34,11 @@ The copy is written to fit. A message is one short sentence, or two very short o
 ("Couldn't duplicate that canvas. Try again."). Aim for about 50 characters, so it sits on one line on a laptop with
 its actions; never over 90. Filler ("Please", "so your recent changes", a restated reason) is cut first.
 
+- **A message stands on its own** (owner, 2026-11-23). The bell lists it later with nothing around it, so it says
+  what happened to which thing: the thing by name in curly quotes where the name is known ("“Roadmap” deleted",
+  "Couldn’t rename tab “Q3”. Try again."), else at least its kind ("Share link copied", never "Copied"; "Couldn’t
+  save the card.", never "Couldn’t save."). Naming it never makes the message long: the name replaces "that canvas"
+  or "it", and a long name is cut as the feature's other toasts cut it.
 - **Messages are sentence case**, ending with a full stop when they are a sentence with advice, and without one when
   they are a bare confirmation ("“Roadmap” deleted", "“Roadmap” moved to “Plans”").
 - **Action labels are Title Case** and one or two words ("Undo", "Show", "Reload", "Try Again"). A label that needs

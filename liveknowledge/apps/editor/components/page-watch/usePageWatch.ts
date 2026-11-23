@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { PageWatchScope } from '@liveknowledge/api-schema';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import { watchFailureText } from '@/lib/knowledge/page-feedback-words';
 import { pageWatchStore, type PageWatchEntry } from '@/lib/page-watch/page-watch-store';
@@ -77,7 +78,7 @@ export function usePageWatch(tab?: string): PageWatchView {
                 ? `Watching ${name}. You'll hear when it changes.`
                 : `Stopped watching ${name}.`,
             ),
-          (err: unknown) => toast.error(watchFailureText(err, scope !== null)),
+          (err: unknown) => toast.error(watchFailureText(err, scope !== null, toastName(name))),
         );
     },
     [chrome, canWatch, pageId, toast],

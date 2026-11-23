@@ -14,6 +14,16 @@ describe('copyCardLink', () => {
     expect(writeText).toHaveBeenCalledWith('https://x/project/p#t=t&item=i');
   });
 
+  it('names the card by its title, copied or refused', async () => {
+    vi.stubGlobal('navigator', { clipboard: { writeText: () => Promise.resolve() } });
+    const notify = vi.fn();
+    copyCardLink('link', notify, 'Fix login');
+    await vi.waitFor(() => expect(notify).toHaveBeenCalledWith('Link to “Fix login” copied'));
+    vi.stubGlobal('navigator', {});
+    copyCardLink('link', notify, 'Fix login');
+    expect(notify).toHaveBeenCalledWith('Couldn’t copy the link to “Fix login”');
+  });
+
   it('says when the browser refuses', async () => {
     vi.stubGlobal('navigator', { clipboard: { writeText: () => Promise.reject(new Error('no')) } });
     const notify = vi.fn();

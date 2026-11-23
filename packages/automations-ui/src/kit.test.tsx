@@ -161,7 +161,7 @@ describe('the screen over an app’s kit', () => {
       steps: [{ kind: 'take_snapshot', name: 'Clean board' }],
       chain: false,
     });
-    expect(toast.success).toHaveBeenCalledWith('Saved Tidy Up');
+    expect(toast.success).toHaveBeenCalledWith('Saved the rule “Tidy Up”');
     // The saved rule is the one open now.
     expect(shown()).toMatchObject({ view: 'rule', ruleId: 'r2' });
     void track;

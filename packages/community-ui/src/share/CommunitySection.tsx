@@ -76,10 +76,15 @@ export function CommunitySection({
 
   const remove = async () => {
     setRemoving(true);
+    // Read before it goes: the post is gone once the removal lands.
+    const title = post?.title;
     try {
       await onRemove();
       host.track?.('Removed', 'Post');
-      notify('Removed from the Community', 'success');
+      notify(
+        title ? `Removed “${title}” from the Community` : 'Removed from the Community',
+        'success',
+      );
       focusNext.current = 'share';
       setConfirming(false);
     } catch (err) {

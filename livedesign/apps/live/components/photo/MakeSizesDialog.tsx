@@ -11,6 +11,7 @@ import { nextPageId, type Page } from '@livedesign/design';
 import { Button, DialogHeader, lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livedesign/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
@@ -195,17 +196,19 @@ export function MakeSizesDialog({
       return;
     }
     const designName = editor?.designName ?? '';
+    // The design the sizes are of, as the toasts name it.
+    const photoName = toastName(designName) ?? 'the photo';
     const exportAll = photo.exportAllSizes;
     toast.action({
       key: 'photo-make-sizes',
-      message: `Made ${made.length} ${made.length === 1 ? 'size' : 'sizes'}.`,
+      message: `Made ${made.length} ${made.length === 1 ? 'size' : 'sizes'} of ${photoName}.`,
       actions: exportAll
         ? [
             {
               label: 'Export All Sizes',
               onSelect: () =>
                 void exportAll(designName).catch(() =>
-                  toast.error('The sizes could not be exported. Try again.'),
+                  toast.error(`Couldn’t export the sizes of ${photoName}. Try again.`),
                 ),
             },
           ]

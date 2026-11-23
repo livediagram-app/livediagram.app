@@ -20,6 +20,7 @@
 // happy accident for a dot-vote, and the turnout numbers below answer the
 // question the host actually has ("is everyone done?") without it.
 
+import { voteHeroArt } from '@liveworkspace/ui/dialog-hero-art/vote';
 import { votesSpentBy, type Element, type TabVote } from '@livediagram/document';
 import { describeOne } from '@/lib/element-names';
 import { dotsLeftText } from '@/lib/vote-by-key';
@@ -106,6 +107,7 @@ export function VotePanel({
     <MovablePanel
       helpArticle="sessionVoting"
       title="Vote"
+      hero={{ art: voteHeroArt }}
       position={null}
       defaultCorner="bottom-right"
       onMoveTo={NO_MOVE}

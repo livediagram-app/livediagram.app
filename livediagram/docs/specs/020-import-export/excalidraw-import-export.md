@@ -71,10 +71,10 @@ image). The parser accepts all three:
   fields are ignored).
 - A text longer than `EXCALIDRAW_MAX_SCENE_CHARS` is refused **before**
   `JSON.parse`: _"This Excalidraw scene is too large to import."_
-- Named rejections, each with its message: not JSON (_"File isn't valid
-  JSON."_), not an object (_"Expected a JSON object at the top level."_), not
+- Named rejections, each with its message: not JSON (_"This Excalidraw scene isn't valid
+  JSON."_), not an object (_"Expected an Excalidraw JSON object at the top level."_), not
   Excalidraw (_"This isn't an Excalidraw scene (missing "type": "excalidraw")."_),
-  no elements (_"Scene is missing its elements array."_), too large (above).
+  no elements (_"Excalidraw scene is missing its elements array."_), too large (above).
 - A missing or malformed `files` reads as empty.
 - `isDeleted` elements are skipped without a note (they are not content).
 

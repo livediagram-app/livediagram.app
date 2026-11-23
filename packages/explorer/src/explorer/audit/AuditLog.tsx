@@ -156,7 +156,7 @@ function AuditBody({
       }
       if (done.capped) {
         toast.show(
-          `Saved the newest ${done.rows.toLocaleString()} events. Narrow the dates to export the rest.`,
+          `Saved the newest ${done.rows.toLocaleString()} audit events. Narrow the dates to export the rest.`,
         );
       }
     } catch {

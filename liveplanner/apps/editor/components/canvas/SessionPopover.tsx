@@ -1,5 +1,7 @@
 'use client';
 
+import { timerHeroArt } from '@liveworkspace/ui/dialog-hero-art/timer';
+import { voteHeroArt } from '@liveworkspace/ui/dialog-hero-art/vote';
 import type { ReactNode } from 'react';
 import type { Element, TabVote } from '@liveplanner/project';
 import type { DockAnchor } from '@/lib/canvas-chrome';
@@ -111,6 +113,9 @@ export function SessionPopover({
   );
 }
 
+// Each Session tool's popover wears its own hero header (dialog-hero-header.md).
+const SESSION_HERO_ART = { Timer: timerHeroArt, Vote: voteHeroArt };
+
 // A Studio pane in a popover over its strip button.
 function SessionToolPopover({
   title,
@@ -119,7 +124,7 @@ function SessionToolPopover({
   onClose,
   children,
 }: {
-  title: string;
+  title: keyof typeof SESSION_HERO_ART;
   help: HelpArticleKey;
   anchor?: DockAnchor;
   onClose: () => void;
@@ -128,6 +133,7 @@ function SessionToolPopover({
   return (
     <MovablePanel
       title={title}
+      hero={{ art: SESSION_HERO_ART[title] }}
       helpArticle={help}
       position={null}
       defaultCorner="bottom-right"

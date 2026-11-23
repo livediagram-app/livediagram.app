@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import type { PageThreadChange } from '@liveknowledge/api-schema';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import { commentFailureText } from '@/lib/knowledge/page-feedback-words';
 import { ownCommentKey } from '@/lib/page-threads/own-comment-key';
@@ -113,7 +114,7 @@ export function usePageComments(): PageCommentsView {
         trackChange(next);
         return true;
       } catch (err) {
-        toast.error(commentFailureText(err, next.op));
+        toast.error(commentFailureText(err, next.op, toastName(editor.activeTab?.name)));
         return false;
       }
     },

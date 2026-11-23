@@ -62,7 +62,7 @@ describe('dropping a CSV file on the canvas', () => {
     const file = new File(['a'], 'big.csv');
     Object.defineProperty(file, 'size', { value: SHEET_CSV_DROP_BYTES_MAX + 1 });
     big.drop(file, { x: 0, y: 0 });
-    expect(big.toast).toHaveBeenCalledWith('That file is too large for a sheet');
+    expect(big.toast).toHaveBeenCalledWith('“big.csv” is too large for a sheet');
     const blocked = setup({ blocked: true });
     blocked.drop(new File(['a'], 'a.csv'), { x: 0, y: 0 });
     await flush();

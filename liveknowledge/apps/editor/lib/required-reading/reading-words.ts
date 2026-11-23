@@ -30,10 +30,12 @@ export function bannerLine(round: number, askedAt: number, now: number): string 
 export const confirmedToast = (page: string) => `Thanks. You've confirmed you read ${page}.`;
 
 /** Remind's answer, as its toast. */
-export function remindText(result: ReadingRemindResult): string {
+export function remindText(result: ReadingRemindResult, page?: string | null): string {
   switch (result.outcome) {
     case 'sent':
-      return `Reminded ${people(result.sent)}.`;
+      return page
+        ? `Reminded ${people(result.sent)} to read ${page}.`
+        : `Reminded ${people(result.sent)}.`;
     case 'already_sent':
       return 'Everyone not yet read was reminded this week.';
     case 'nobody_pending':
@@ -75,8 +77,16 @@ const FALLBACK: Record<ReadingAct, string> = {
   remind: 'The reminders could not be sent. Try again.',
 };
 
+// The same lines naming the page (its quoted name), for a toast read later in the notification list.
+const FALLBACK_ON: Partial<Record<ReadingAct, (page: string) => string>> = {
+  confirm: (page) => `Your confirmation for ${page} could not be saved. Try again.`,
+  set: (page) => `Required Reading could not be saved for ${page}. Try again.`,
+  stop: (page) => `Required Reading could not be stopped for ${page}. Try again.`,
+  remind: (page) => `The reminders for ${page} could not be sent. Try again.`,
+};
+
 /** A refused change, in words. */
-export function readingFailureText(err: unknown, act: ReadingAct): string {
+export function readingFailureText(err: unknown, act: ReadingAct, page?: string | null): string {
   if (err instanceof ApiError && err.code && REFUSED[err.code]) return REFUSED[err.code]!;
-  return FALLBACK[act];
+  return (page && FALLBACK_ON[act]?.(page)) || FALLBACK[act];
 }
