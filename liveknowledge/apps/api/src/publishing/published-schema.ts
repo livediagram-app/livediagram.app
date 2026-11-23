@@ -69,7 +69,7 @@ const MEDIA = [
   'INSERT OR IGNORE INTO published_dirty (tab) SELECT tab FROM published_pages',
 ];
 
-/** The schema step for a page's pictures (document-schema.ts V42), after V36. Asks before the ALTER, as V16 does, so
+/** The schema step for a page's pictures (document-schema.ts V44), after V36. Asks before the ALTER, as V16 does, so
  *  it runs again harmlessly. */
 export function publishedMediaSchemaStep(exec: Exec): void {
   const columns = (exec('PRAGMA table_info(published_pages)') as { toArray(): { name: unknown }[] })

@@ -457,9 +457,10 @@ const V40 = suggestionsOutboxStep;
 // docs/specs/030-knowledgebase/watching.md). Additive, IF NOT EXISTS.
 const V41 = pageWatchSchemaStep;
 
-// Step 42: the pictures each published page places, its cover as drawn, and a restyle redrawing the site
-// (publishing/published-schema.ts; docs/specs/030-knowledgebase/publishing.md "Pictures on the public site").
-const V42 = publishedMediaSchemaStep;
+// Step 44: the pictures each published page places, its cover as drawn, and a restyle redrawing the site
+// (publishing/published-schema.ts; docs/specs/030-knowledgebase/publishing.md "Pictures on the public site"). Follows
+// V42 and V43 once those land; guarded, so it runs again harmlessly.
+const V44 = publishedMediaSchemaStep;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
@@ -495,7 +496,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V39,
   V40,
   V41,
-  V42,
+  V44,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

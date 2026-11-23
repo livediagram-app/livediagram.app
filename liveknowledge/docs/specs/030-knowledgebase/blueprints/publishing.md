@@ -166,7 +166,7 @@ Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EX
 | `published_fts`            | FTS5 (`tab` UNINDEXED, `title`, `text`), the search tokenizer the knowledge index uses                                               |
 | `published_media`          | `image`, `tab`, PK (`image`, `tab`): the pictures each published page places (P32)                                                   |
 
-A second schema step (Work Tracker 1346) adds `published_media`, the column `published_pages.cover` (TEXT, default
+A second schema step (V44, Work Tracker 1346) adds `published_media`, the column `published_pages.cover` (TEXT, default
 `''`) and the trigger P34, and marks every page already published dirty, so a site published before it shows its
 pictures at its next read.
 
