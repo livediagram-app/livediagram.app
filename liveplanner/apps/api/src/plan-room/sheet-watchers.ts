@@ -3,6 +3,7 @@
 // from its last read, at most SHEET_WATCHERS_PER_SOURCE of them, and gathers the changes to watched Sheets for
 // SHEET_CHANGE_SETTLE_MS before telling the index once, which tells each watching item's app. Ids only, never values.
 import {
+  PLAN_DATA_CARDS,
   SHEET_CHANGE_SHEETS_MAX,
   SHEET_WATCHERS_MAX,
   type IndexAppClient,
@@ -27,6 +28,15 @@ const SCHEMA = `CREATE TABLE IF NOT EXISTS sheet_watches (
   until INTEGER NOT NULL,
   PRIMARY KEY (watcher, sheet_id)
 )`;
+
+// The watch ids a relayed op changes: a `sheets` op its Sheet; any card or card-type change the plan's cards, which
+// every board and metric source reads (liveworkspace/docs/specs/004-index/live-data.md "Keeping in step").
+export function watchIdsOfOp(op: unknown): string[] {
+  const o = op as { kind?: unknown; sheetId?: unknown } | null;
+  if (o?.kind === 'sheets' && typeof o.sheetId === 'string') return [o.sheetId];
+  if (o?.kind === 'items' || o?.kind === 'item-types') return [PLAN_DATA_CARDS];
+  return [];
+}
 
 const chunks = <T>(list: readonly T[], size: number): T[][] =>
   Array.from({ length: Math.ceil(list.length / size) }, (_, i) =>

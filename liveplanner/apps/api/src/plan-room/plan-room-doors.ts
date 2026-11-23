@@ -37,11 +37,17 @@ import type { ConnectedTabWrite } from '@liveworkspace/index-client';
 import { exportPlanComments, exportPlanTables } from './plan-export';
 import { answerPlanRequest, isPlanCreate, type RouteIdentity } from './plan-route';
 import type { PlanRoom } from './plan-room';
-import type { SheetListResult, SheetRangeResult } from '@liveworkspace/index-app';
-import type { SheetRangeAsk } from '@liveworkspace/index-client';
+import type {
+  PlanDataListResult,
+  PlanDataResult,
+  SheetListResult,
+  SheetRangeResult,
+} from '@liveworkspace/index-app';
+import { PLAN_DATA_CARDS, type PlanDataAsk, type SheetRangeAsk } from '@liveworkspace/index-client';
 import { indexAppClient } from '../index-service';
 import { SheetWatches } from './sheet-watchers';
 import { listPlanSheets, readPlanSheetRange } from './sheet-source';
+import { listPlanData, readPlanData } from './plan-data-source';
 
 export type { SheetRangeAsk };
 import { ensureSchema, noteWrite } from './plan-room-content';
@@ -429,5 +435,27 @@ export async function readSheetRange(
   room.bindPlan(planId);
   const result = await readPlanSheetRange(room.requireEnv(), planId, ask);
   if (result.status === 'ok' && watcher) room.sheetWatches.watch(planId, ask.sheetId, watcher);
+  return result;
+}
+
+// A chart or table in another app counting this plan's cards (liveworkspace/docs/specs/004-index/live-data.md): the
+// plan's boards, metrics and filter values for a picker, and one board's counts or one metric's rows, with a watch on
+// the plan's cards for the item that asked (plan-data-source.ts).
+export async function planDataList(room: PlanRoom, planId: string): Promise<PlanDataListResult> {
+  if (room.holdsNothing()) return { status: 'not_found' };
+  room.bindPlan(planId);
+  return listPlanData(room.requireEnv(), planId);
+}
+
+export async function planData(
+  room: PlanRoom,
+  planId: string,
+  ask: PlanDataAsk,
+  watcher: string | null,
+): Promise<PlanDataResult> {
+  if (room.holdsNothing()) return { status: 'not_found' };
+  room.bindPlan(planId);
+  const result = await readPlanData(room.requireEnv(), planId, ask);
+  if (result.status === 'ok' && watcher) room.sheetWatches.watch(planId, PLAN_DATA_CARDS, watcher);
   return result;
 }

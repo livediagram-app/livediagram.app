@@ -42,9 +42,9 @@ import { readContentTabRows, readPlanHead } from './plan-content';
 // shows the one the api's renders and agents use.
 export const EXPORT_LOCALE = 'en-GB';
 
-type StoredTab = { id: string; name: string; kind: Tab['kind']; elements: readonly Element[] };
+export type StoredTab = { id: string; name: string; kind: Tab['kind']; elements: readonly Element[] };
 
-async function readTabs(env: PlanEnv, planId: string): Promise<StoredTab[]> {
+export async function readTabs(env: PlanEnv, planId: string): Promise<StoredTab[]> {
   return (await readContentTabRows(env, planId, null)).map((row) => {
     const body = migrateStoredTab(JSON.parse(row.data) as Omit<Tab, 'id' | 'name'>);
     return { id: row.id, name: row.name, kind: body.kind, elements: body.elements ?? [] };
@@ -60,14 +60,14 @@ const boardSetupsOf = (elements: readonly Element[]): unknown[] =>
 
 // What every board and Sheet reads from the plan as the editor's PlanContext holds it: its cards, card types, the
 // statuses its boards name (each once, the first board's name winning, in tab order) and their done rule.
-type PlanReads = {
+export type PlanReads = {
   items: ReadonlyMap<string, Item>;
   types: readonly ItemTypeDef[];
   statusNames: ReadonlyMap<string, string>;
   isDone: IsDoneStatus;
 };
 
-async function planReads(
+export async function planReads(
   env: PlanEnv,
   planId: string,
   itemTypes: ItemTypeCatalogue | null,

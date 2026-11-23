@@ -10,6 +10,7 @@ import {
   SHEET_WATCH_TTL_MS,
   SHEET_WATCHERS_PER_SOURCE,
   SheetWatches,
+  watchIdsOfOp,
 } from './sheet-watchers';
 
 let now = 1_000_000;
@@ -153,5 +154,16 @@ describe('the room relay', () => {
     );
     expect(res?.status).toBe(204);
     expect(seen).toEqual([op]);
+  });
+});
+
+describe('the ops that change a watch', () => {
+  it("marks a Sheet's own id, and the plan's cards for any card or card-type change", () => {
+    expect(watchIdsOfOp({ kind: 'sheets', sheetId: 's1' })).toEqual(['s1']);
+    expect(watchIdsOfOp({ kind: 'items', upserts: [], removed: ['c1'], rev: 2 })).toEqual(['cards']);
+    expect(watchIdsOfOp({ kind: 'item-types', itemTypes: {} })).toEqual(['cards']);
+    expect(watchIdsOfOp({ kind: 'sheets' })).toEqual([]);
+    expect(watchIdsOfOp({ kind: 'tab-meta' })).toEqual([]);
+    expect(watchIdsOfOp(null)).toEqual([]);
   });
 });
