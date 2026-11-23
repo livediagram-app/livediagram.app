@@ -151,4 +151,18 @@ describe('Home leaves out an empty section', () => {
     expect(section('new')).toBeNull();
     expect(nothing()).toBeNull();
   });
+
+  it('counts a card trashed here out of its space, asking Spaces again once the index takes it', async () => {
+    const index = createFakeIndex({ items: [makeItem(1), makeItem(2)] });
+    renderHome(index);
+    const mine = () => document.querySelector('[data-space-tile="mine"]');
+    await waitFor(() => expect(mine()?.textContent).toContain('2 plans'));
+    const asked = index.count('spacePreviews');
+    const newSection = section('new') as HTMLElement;
+    fireEvent.click(within(newSection).getByRole('button', { name: 'Menu for Item 1' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Move to Trash|Delete/ }));
+    await waitFor(() => expect(mine()?.textContent).toContain('1 plan'));
+    expect(mine()?.textContent).not.toContain('2 plans');
+    expect(index.count('spacePreviews')).toBe(asked + 1);
+  });
 });

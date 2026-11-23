@@ -9,7 +9,7 @@
 // space holds anything (and Offline holds nothing) the section is left out, as Home's other empty ones are; HomePane
 // holds the read (useHomeSpaces) so it knows when every section is empty ("Nothing on Home").
 
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { APP_KINDS, type SpacePreview } from '@liveworkspace/index-client';
 import { useSpacePreviews, type SpacePreviews } from '../data/useSpacePreviews';
 import { usePersonName } from '../data/usePeople';
@@ -72,10 +72,23 @@ export type HomeSpacesState = {
 };
 
 export function useHomeSpaces(): HomeSpacesState {
-  const { app, client, filter, epoch, teams } = useExplorer();
+  const { app, client, filter, epoch, teams, overlay } = useExplorer();
   const shownApp = filter === 'all' ? null : app;
   const teamsKey = useMemo(() => teams.map((t) => t.id).join(','), [teams]);
-  const previews = useSpacePreviews({ client, app: shownApp, epoch, teamsKey });
+  // A card trashed, archived, moved or restored here changes what a space holds: once the index has taken it, the
+  // previews are asked again (keeping the tiles on screen until the answer lands), so a count never lags the cards.
+  const placed = useSyncExternalStore(
+    overlay.subscribe,
+    overlay.placesSettled,
+    overlay.placesSettled,
+  );
+  const previews = useSpacePreviews({
+    client,
+    app: shownApp,
+    epoch,
+    teamsKey,
+    placed,
+  });
   const spaces = useMemo(() => orderSpaces(teams, previews.byTeam), [teams, previews.byTeam]);
   // Offline after the teams, while it holds anything (one-explorer.md "Offline, a Space"): read from this
   // browser, so it costs no request.

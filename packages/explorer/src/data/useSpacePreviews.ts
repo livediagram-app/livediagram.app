@@ -2,7 +2,8 @@
 
 // What Home's Spaces tiles show of each space (the index's `GET /spaces/previews`, liveworkspace/docs/specs/004-index/
 // one-explorer.md "Spaces, on Home"): every space's newest items and how many it holds, in one request for them all.
-// Asked again for a new filter, a re-read of the lists (the epoch), a change to the person's teams, or Try again; a
+// Asked again for a new filter, a re-read of the lists (the epoch), a change to the person's teams, a card's change of
+// place the index has taken, or Try again; a
 // superseded read is cancelled rather than left to land late. A re-read in the same filter keeps the tiles it has
 // until it lands, so a rename elsewhere never flashes them back to placeholders.
 
@@ -31,6 +32,7 @@ export function useSpacePreviews({
   app,
   epoch,
   teamsKey,
+  placed = 0,
 }: {
   client: IndexClient;
   // The app shown (its items only), or null for every app's.
@@ -38,9 +40,11 @@ export function useSpacePreviews({
   epoch: number;
   // The person's teams, as one string: a team made, joined or left asks again.
   teamsKey: string;
+  // The changes of place the index has taken (overlay.placesSettled): a card trashed or moved asks again.
+  placed?: number;
 }): SpacePreviews {
   const [tries, setTries] = useState(0);
-  const key = `${app ?? '*'}|${epoch}|${teamsKey}|${tries}`;
+  const key = `${app ?? '*'}|${epoch}|${teamsKey}|${placed}|${tries}`;
   const [answer, setAnswer] = useState<Answer | null>(null);
 
   useEffect(() => {

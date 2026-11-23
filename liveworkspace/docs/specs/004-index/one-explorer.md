@@ -334,7 +334,9 @@ panel keeps its own Home without it, and a first run shows its starting points i
   All N Workspaces**), so "Spaces" never heads tiles that each count "3 spaces". The tiles, their links and their
   order are the same as everywhere else.
 - **The read.** One `GET /spaces/previews` ([contracts](one-explorer-contracts.md#folders-and-defaults)) per
-  filter, asked with Home's other reads and again whenever they are (an epoch), never per space.
+  filter, asked with Home's other reads and again whenever they are (an epoch), and again once the index takes a
+  change of place made here (an item trashed, archived, moved or restored, `overlay.placesSettled`), keeping the tiles
+  on screen until it answers, so a tile's count never lags the cards; never per space.
 - **Offline.** Where the Explorer reads this browser's store (an app's own address), Offline's tile
   follows the teams while it holds anything ([Offline, a Space](#offline-a-space)): the browser glyph on
   the teal disc, a mosaic of up to four of its newest items, each the app's picture of a local item
@@ -351,7 +353,9 @@ open or have shared with you gather here.", and **New Plan** (each app's kind; u
 which makes one where the header's New does. It waits for every read: while any is out, each section shows its
 placeholders, so the empty state never flashes in before a section that has something. A failed read is not
 "nothing": Recent says "Couldn’t load Home." with **Try again**, and Spaces its own notice, as above. A first run
-(the host's welcome, nothing the person can open yet) shows its starting points instead, as always. The moment
+(the host's welcome, nothing the person can open yet) shows its starting points instead, as always, and that
+includes someone whose items are all archived or in the Trash (neither counts as something they can open), since
+the welcome already offers a first action; this empty state is for a host without a welcome. The moment
 anything arrives (an item made in another tab, a share), its section takes the empty state's place.
 
 What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, Offline,
