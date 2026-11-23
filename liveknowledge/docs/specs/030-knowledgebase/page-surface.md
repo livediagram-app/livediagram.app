@@ -45,7 +45,8 @@ replaces what the fork still shows around the writing.
 - **Above the writing:** the page's cover when it has one ("The cover"), the breadcrumb, the page's icon when it
   has one ("The page icon") to the left of the Title, the Title (40 px,
   bold, tight tracking), then the meta row ([Verification](verification.md); a **Suggested Edits** pill after its
-  verified badge while agents' edits wait, [AI Knowledge](ai-knowledge.md) "On the page"). **Beside it** on a wide window, the right rail (Page Health, then On This Page, then Suggested Edits while any wait, then AI Context, a hairline between each section, owner 2026-11-22; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
+  verified badge while agents' edits wait, [AI Knowledge](ai-knowledge.md) "On the page"; the page's labels last,
+  "Page labels"). **Beside it** on a wide window, the right rail (Page Health, then On This Page, then Suggested Edits while any wait, then AI Context, a hairline between each section, owner 2026-11-22; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
   and only where the page keeps its full width beside it (1,400 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
@@ -222,6 +223,79 @@ should be to the right of Add Cover under the title."
   a tree of 500 pages renders no row for a change that is not its own.
 - **Telemetry:** `Element` `Added` `PageIcon` when an icon is set on a page with none, `Element` `Changed`
   `PageIcon` when it is changed, `Element` `Deleted` `PageIcon` when it is removed.
+
+## Page labels
+
+Owner, 2026-11-21 (Work Tracker 1343): "The page tree gives one way to organise pages; teams also need a second one
+(team, product, audience, Onboarding) that cuts across sections." Built in [blueprint](blueprints/page-labels.md).
+
+- **What a label is.** The knowledgebase's own: a **name** (1 to 40 characters, its spaces trimmed and runs of them
+  made one, unique ignoring case) and a **colour**. A knowledgebase holds at most 100 labels and a page carries at
+  most 10. A label means the same on every page: renaming it or changing its colour changes it everywhere at once.
+- **Where they are kept.** The labels themselves (each an id, its name and its colour) are kept once, with the
+  knowledgebase's settings (`knowledgeSettings.labels`, beside the Review Period); a page keeps only which of them it
+  carries (`Tab.labels`, the labels' ids). So a rename, a new colour or a deleted label is **one write**, whatever
+  the number of pages that carry it: no page is rewritten or re-saved. A page's label whose label was deleted reads
+  as none.
+- **On the page.** The page's labels stand in the meta row, after its other notes: each a small pill, its colour as a
+  dot before its name, in the label's own words. Pressing one **filters the page tree** to that label ("The label
+  filter"), opening the tree where it is folded to its rail, and the Pages sheet on a phone. Its hover card says
+  "Show Pages Labelled <name>".
+- **Adding and changing them.** For whoever may label the page, **Add Label** (a tag icon) sits after Add Cover and
+  Add Icon, the same quiet ghost button, with a hover card "Add a label to group this page with others, across
+  sections."; on a page that has labels it is a small **Edit Labels** button (a tag and a plus) after its pills.
+  Both open the **label picker**, a popover (a sheet on a phone) titled **Labels**:
+  - a field, **Find or Create a Label**, that takes the focus as it opens;
+  - the knowledgebase's labels, those on the most pages first (then by name), each a row with its dot, its name,
+    how many pages carry it, and a tick when this page does. Pressing a row puts the label on the page or takes it
+    off, at once, and the picker stays open for the next. These are the **suggestions**: only labels already in use
+    are offered, so a team keeps to one word for one thing;
+  - what is typed narrows the list (a label whose name starts with it first, then one that holds it); where no
+    label is called that, the first row is **Create "<what was typed>"**, which makes the label, in the next
+    colour of the standard colours not yet taken, and puts it on the page. Enter does the highlighted row; Up and
+    Down move; Escape closes;
+  - each row's **Edit Label** button (a pencil, at its end on hover or focus, always on touch) opens the label in
+    place under the shared back bar: its **Name** (a rename, kept as it is typed when Enter or Done is pressed),
+    its **Colour** (the one colour picker: the standard colours, and colours of one's own) and **Delete Label**, which
+    asks first ("Delete the Label <name>?", "It comes off the N pages that carry it. This cannot be undone.");
+  - a name already taken by another label, ignoring case, is refused in place ("A label is already called that.");
+    the 101st label and an 11th on one page are refused in words ("This knowledgebase has 100 labels, the most it
+    can hold." and "A page carries at most 10 labels.").
+- **Who changes them.** An Editor or a Participant (a page's writers), whenever the page is shown to them: labelling
+  is how pages are found, not how a page looks, so it is not held to edit mode as the cover and the icon are. Putting
+  a label on, taking it off, making, renaming, recolouring and deleting one are all theirs. A Viewer and a link
+  visitor see the pills, and pressing one filters their tree too; they have no Add Label, Edit Labels or picker. The
+  room and the api refuse a label change from anyone else.
+- **It is saved at once**, as the icon is: not part of the draft. Everyone with the knowledgebase open sees it change,
+  in the page, the tree's filter and the picker.
+- **The label filter.** The page tree can show only the pages carrying one or more labels:
+  - **Filter by Label** (a tag icon) stands at the right of the tree's Pages heading, where the knowledgebase has
+    labels, with a tooltip. It opens a menu of the labels (most used first), each with a tick, to add or take away;
+    pressing a page's label pill sets the filter to that label alone.
+  - While a filter is on, a bar under the heading says **Labelled** and shows each label of it as a pill with a
+    remove button ("Remove the Filter <name>"), then **Clear**. The filter button shows how many labels it holds.
+  - The tree then shows the pages that carry **any** of the labels, and the pages above them, so each keeps its
+    place: those above are drawn quieter (they are the way there, not results) and opened, whatever was closed.
+    Nothing else changes: the rows, their buttons, the drag and the keys work as without a filter.
+  - Where no page carries them: "No pages have these labels." and **Clear Filter**.
+  - **Search follows it.** This Knowledgebase, the search panel's first group, finds only those pages while the
+    filter is on; its heading says so ("Labelled Engineering") with a button that clears it
+    ([Search and Ask](search-and-ask.md#search)).
+  - The filter is this person's, in this browser tab, for this knowledgebase: it is not kept, so a reload shows every
+    page again. A label deleted while it filters leaves the filter.
+- **Ask and agents** can be told to answer from the pages of a label only ([Search and Ask](search-and-ask.md)).
+  `read_page` and `list_pages` carry each page's labels by name.
+- **Exports.** A copy of the knowledgebase, its Drive file and a snapshot carry the labels and which pages carry
+  them. The PDF, Word and Markdown exports leave them out: they are the writing.
+- **Offline.** A knowledgebase kept Offline keeps its labels in this browser, and labels, filters and searches the
+  same way.
+- **Cost.** A page with no labels draws nothing for them. The tree reads each page's labels from the page summaries,
+  as it reads its icon, so a filter needs no request and no page's writing; working out what a filter shows is one
+  pass over the pages (500 at most), done when the filter or the pages change, and a row renders only when what it
+  shows changes. A rename is one write and one message to the open editors.
+- **Telemetry:** `Element` `Added` `Label` when a label is put on a page, `Element` `Deleted` `Label` when it is taken
+  off; `Element` `Changed` `Label` for a rename or a new colour; `UI` `Used` `LabelFilter` when a filter is set
+  (from the menu or a pill).
 
 ## The footer
 
@@ -410,6 +484,12 @@ per-page and no per-tab style.
 Changing the Knowledgebase Style is Editor only: a Participant is never offered it and the api refuses its style
 write ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)). Everyone sees the same look. A page's
 cover and its icon are changed by an Editor or a Participant, and seen by everyone.
+
+| Labels                                                       | Editor | Participant | Viewer |
+| ------------------------------------------------------------ | ------ | ----------- | ------ |
+| See a page's labels, filter the tree and search by them      | yes    | yes         | yes    |
+| Put a label on a page or take it off                         | yes    | yes         | no     |
+| Make, rename, recolour or delete a label                     | yes    | yes         | no     |
 
 ## Performance
 
