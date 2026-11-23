@@ -469,8 +469,8 @@ leaves that suite to CI, and the telemetry chart tests run once.
 - `.githooks/pre-push` runs `scripts/git-hooks/pre-push.mjs` (the plan; `pre-push-run.mjs` runs it; tests:
   `pre-push.test.mjs`, on the platform's CI script tests). It takes the merge base with `origin/main` and asks CI's planner
   (`ci-plan.mjs`) which groups the change reaches. It runs every step and lists all that failed at the
-  end, so one push shows everything there is to fix (a failed install alone ends the run: nothing after
-  it could pass):
+  end, in the steps' own order, so one push shows everything there is to fix (a failed install alone ends
+  the run: nothing after it could pass):
   - once: the copies guard, the file size guard and the markup guard;
   - per group, as `ci.yml`'s Checks job does: lint and type check, the format check and the
     speed-budget guard;
@@ -492,16 +492,21 @@ leaves that suite to CI, and the telemetry chart tests run once.
     (`scripts/git-hooks/pre-push-guards.mjs`). That is the Callout guard for a change to any `.tsx`,
     next-config's scans for any script, the site's style guards for a change under `packages/`, and
     the help centre's edition guards (its repo paths, UI labels and naming tests) for any change. All
-    of them together took 20 s here at a load of 36;
+    of them together took 20 s here at a load of 36. Guard tests get a minute each (`--testTimeout`):
+    they assert what they find, not how long it took, and at a load of 100 `git grep` alone passed
+    vitest's 5 s;
   - **the repo guards on the push merged with `origin/main`**, when `main` has commits the push lacks
     (`scripts/git-hooks/merged-guards.mjs`). CI checks that merge, not the branch, so a branch can
     pass alone and fail there: `main` gained a guard, another pull request merged an offender, or
     both sides added the same code. The hook fetches `origin/main` (20 s at most, skipped without a
     network), merges without touching the branch or the work tree (`git merge-tree`), checks the
-    result out as a temporary worktree, and runs the copies, file size and markup guards and every
-    reading suite's scan tests there, on this worktree's `node_modules`. A merge with conflicts is
-    skipped and says so. Measured: 9 s to check out, 3 s for the three guards, 4 s to remove, plus
-    the scan tests;
+    result out as a temporary worktree, and runs the copies, file size and markup guards and the
+    reading suites' guard tests there, on this worktree's `node_modules` (linked in for every
+    workspace). A suite with five scan tests or fewer runs them all (next-config's scans, the Callout
+    guard); a large one runs its `*guard.test.*` files only, and no `.tsx` test runs there (its setup
+    file resolves outside the temporary tree). Every suite's scan tests took 104 s of CPU time, so the
+    rest stay with the push's own run and CI. A merge with conflicts is skipped and says so. Measured:
+    30 s of CPU time; 23 s at a load of 50 on 10 cores, 69 s at a load of 90;
   - the CI script tests (`.github/scripts/*.test.mjs`, `scripts/git-hooks/*.test.mjs`, 4 s), when the
     push changes a file in either folder;
   - **a change that reaches most of a suite leaves it to CI.** Before anything runs the hook asks vitest

@@ -4,8 +4,9 @@
 // touched the same baseline list. This makes that merge in a temporary worktree and runs, in it:
 //
 // - the copies, file size and markup guards (plain scripts, no modules needed);
-// - the scan tests of every suite turbo.json declares as reading other workspaces (pre-push-guards.mjs), with
-//   this worktree's node_modules linked in.
+// - the guard tests of every suite turbo.json declares as reading other workspaces (pre-push-guards.mjs: the
+//   Callout guard, the site's style guards, next-config's tree scans ...), with this worktree's node_modules
+//   linked in.
 //
 // A merge with conflicts cannot be checked and says so. Nothing is written to the branch or the work tree: the
 // merge is a commit no ref points at, and the worktree is removed at the end.
@@ -40,14 +41,23 @@ export function mergedTree(run) {
   return { skip: 'this git cannot merge without a work tree (2.38 or newer can)' };
 }
 
+/** A suite with this many scan tests or fewer runs them all in the merged tree; a larger one only its named guards. */
+export const MERGED_ALL_MAX = 5;
+
 /**
- * The scan tests that can run in the merged tree: not a `.tsx` test, which renders, and whose setup file
- * (`@liveworkspace/vitest-config/react-cleanup`) resolves through the linked modules to this worktree, outside
- * the root Vite serves files from. Those stay with the push's own run and CI.
+ * The scan tests to run in the merged tree, of one suite's.
+ * - Never a `.tsx` test: it renders, and its setup file (`@liveworkspace/vitest-config/react-cleanup`) resolves
+ *   through the linked modules to this worktree, outside the root Vite serves files from.
+ * - A suite with a handful runs them all (next-config's tree scans, the Callout guard's neighbours); a large
+ *   one (the site's 31, the help centre's 43: 104 s of CPU time for every suite's, measured) only its
+ *   `*guard.test.*` files. The rest ran on the push alone and run on CI.
  * @param {string[]} tests
  */
 export function mergedTests(tests) {
-  return tests.filter((file) => !/\.[jt]sx$/.test(file));
+  const plain = tests.filter((file) => !/\.[jt]sx$/.test(file));
+  return plain.length <= MERGED_ALL_MAX
+    ? plain
+    : plain.filter((file) => /guard\.test\.[cm]?[jt]s$/.test(file));
 }
 
 /** @param {string} cwd @param {string[]} args */

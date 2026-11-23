@@ -178,7 +178,7 @@ test('a merge is checked when git wrote its tree, and skipped with the reason ot
   );
 });
 
-test('the merged tree runs the scan tests that do not render', () => {
+test('the merged tree runs a small suite whole and a large one by its named guards, never a test that renders', () => {
   assert.deepEqual(
     mergedTests([
       'a-guard.test.ts',
@@ -188,6 +188,13 @@ test('the merged tree runs the scan tests that do not render', () => {
     ]),
     ['a-guard.test.ts', 'history-state.test.js'],
   );
+  const large = [
+    'a-guard.test.ts',
+    'b.guard.test.mjs',
+    ...[1, 2, 3, 4, 5].map((n) => `lib/reads-${n}.test.ts`),
+  ];
+  assert.deepEqual(mergedTests(large), ['a-guard.test.ts', 'b.guard.test.mjs']);
+  assert.equal(mergedTests(large.slice(0, 5)).length, 5);
 });
 
 test("the site's build is one step, off unless asked for", () => {
