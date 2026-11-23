@@ -7,7 +7,11 @@
 // header, a Gantt row).
 import { ColourField } from '@/components/colour/ColourField';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { colourName, noColour, standardGroup } from '@/components/colour/colour-options';
+import {
+  colourName,
+  noColour,
+  standardGroup,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 
 // Colours Plan offered before the standard colours, so a card still holding one is named by its word.

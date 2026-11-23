@@ -77,4 +77,4 @@ An added Technology icon counts as `Element·Added·TechIcon` (`lib/element-tele
 
 `packages/project/src/svg-render.test.ts` (the fixed size and every band), `geometry.test.ts` (anchoring on the mark),
 `malformed-ids.test.ts` (keys are text), `collab-shapes.test.ts` (alignment places the caption),
-`apps/editor/components/primitives/icon-band.test.ts` (the CSS bands match the export).
+`../packages/workbench/src/components/primitives/icon-band.test.ts` (the CSS bands match the export).

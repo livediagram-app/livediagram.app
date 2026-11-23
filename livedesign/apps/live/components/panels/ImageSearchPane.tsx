@@ -20,7 +20,7 @@ import {
   SKELETON_TILES_MORE,
   SkeletonTiles,
   skeletonClass,
-} from './ImageSearchLoader';
+} from '@liveworkspace/workbench/components/panels/ImageSearchLoader';
 import { Callout } from '@liveworkspace/ui/callout';
 
 // The image picker's Search tab (docs/specs/009-elements/image-search.md "The

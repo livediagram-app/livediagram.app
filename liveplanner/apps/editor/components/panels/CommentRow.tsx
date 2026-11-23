@@ -31,7 +31,7 @@ import {
 } from '@liveplanner/ui';
 import { lucidePencil } from '@liveworkspace/icons/lucide';
 import type { Comment, CommentMention } from '@liveplanner/project';
-import { MentionText } from '@/components/primitives/MentionText';
+import { MentionText } from '@liveworkspace/workbench/components/primitives/MentionText';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { conversationRailClass } from '@/components/plan/threads/timeline-parts';

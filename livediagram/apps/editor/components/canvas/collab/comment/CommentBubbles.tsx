@@ -6,7 +6,7 @@
 import type { Comment } from '@livediagram/document';
 import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { relativeSince } from '@/lib/relative-time';
-import { MentionText } from '@/components/primitives/MentionText';
+import { MentionText } from '@liveworkspace/workbench/components/primitives/MentionText';
 import { reactionDef, reactionGroups } from '@liveworkspace/model-core/comment-reactions';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, stopPointer } from '../qa/qa-parts';

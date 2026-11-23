@@ -48,7 +48,7 @@ import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { BoardColourRow, QuickPenRows } from './QuickPenRows';
 import { QuickHighlighterRows } from './QuickHighlighterRows';
 import { QuickMoreColours } from './QuickMoreColours';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import {
   QUICK_BORDER_PX,

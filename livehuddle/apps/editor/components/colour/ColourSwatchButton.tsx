@@ -5,7 +5,7 @@
 // popover. A pick closes it and hands focus back to the trigger.
 import { useState, type ReactNode } from 'react';
 import { Tooltip } from '@livehuddle/ui';
-import { SwatchChip } from './ColourSwatch';
+import { SwatchChip } from '@liveworkspace/workbench/components/colour/ColourSwatch';
 import { ColourPopover } from './ColourPopover';
 import type { ColourPickerProps } from './ColourPicker';
 

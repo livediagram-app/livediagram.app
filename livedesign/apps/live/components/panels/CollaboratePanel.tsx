@@ -13,8 +13,11 @@ import type {
   MovablePanelPopoverProps,
 } from '@/components/primitives/MovablePanel.types';
 import { CountBadge } from '@livedesign/ui';
-import { KindChips, SideTabs } from '@/components/panels/collaborate/CollaborateControls';
-import { CollaborateEmpty } from '@/components/panels/collaborate/CollaborateEmpty';
+import {
+  KindChips,
+  SideTabs,
+} from '@liveworkspace/workbench/components/panels/collaborate/CollaborateControls';
+import { CollaborateEmpty } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateEmpty';
 import {
   ActionRowItem,
   CommentRowItem,

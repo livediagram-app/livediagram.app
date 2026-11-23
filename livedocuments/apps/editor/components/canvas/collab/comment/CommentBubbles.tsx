@@ -8,7 +8,7 @@ import { Glyph, GlyphDisc, IDENTITY_FILL, PictureDisc, identityVars } from '@liv
 import { useOwnPicture } from '@/lib/own-picture';
 import { reactionDef, reactionGroups } from '@liveworkspace/model-core/comment-reactions';
 import { relativeSince } from '@/lib/relative-time';
-import { MentionText } from '@/components/primitives/MentionText';
+import { MentionText } from '@liveworkspace/workbench/components/primitives/MentionText';
 import { tint } from '@/lib/element-tint';
 
 // Your own bubbles in the accent, read from `--collab-accent` where a scope sets it.

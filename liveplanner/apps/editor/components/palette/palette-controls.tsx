@@ -5,8 +5,11 @@ import { useState } from 'react';
 import { HoverCard, Tooltip } from '@liveplanner/ui';
 import type { StandardTone } from '@liveplanner/project';
 import { ColourPopover } from '@/components/colour/ColourPopover';
-import { SwatchChip } from '@/components/colour/ColourSwatch';
-import { standardGroup, standardOptions } from '@/components/colour/colour-options';
+import { SwatchChip } from '@liveworkspace/workbench/components/colour/ColourSwatch';
+import {
+  standardGroup,
+  standardOptions,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';

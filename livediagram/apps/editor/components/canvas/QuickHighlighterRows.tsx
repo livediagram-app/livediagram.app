@@ -15,7 +15,7 @@ import type { QuickHighlighterStyle } from '@/lib/quick-style-highlighter';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 import { QuickMoreColours } from './QuickMoreColours';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 
 // The widths drawn with the border-width previews, thinnest first.
 const WIDTH_PREVIEW: Record<HighlighterWidthId, 'thin' | 'medium' | 'thick'> = {

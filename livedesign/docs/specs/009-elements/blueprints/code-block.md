@@ -6,28 +6,28 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                         | Role                                                                                          |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| `packages/design/src/data-shapes.ts`                         | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
-| `../packages/model-core/src/code-themes.ts`                  | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
-| `packages/design/src/element-types.ts`                       | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
-| `packages/design/src/shape-factory.ts`                       | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
-| `packages/design/src/colors.ts`                              | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
-| `packages/design/src/validate.ts`                            | Snippet length, closed language set, closed scheme ids                                        |
-| `packages/design/src/svg-render-shapes.ts`                   | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
-| `apps/live/lib/code-tokens.ts`                               | `tokenizeCode`: the lazy tokenizer chunk                                                      |
-| `apps/live/lib/code-highlight-registry.ts`                   | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
-| `apps/live/components/canvas/CodeBlockView.tsx`              | Canvas card, badge, placeholder, highlighted lines                                            |
-| `apps/live/components/dialogs/CodeEditDialog.tsx`            | Edit code dialog                                                                              |
-| `apps/live/components/dialogs/EditorElementDialogs.tsx`      | Mounts the dialog for `codeEditOpenForId`                                                     |
-| `apps/live/components/canvas/useBoxedElementGestures.ts`     | Double-click routes a code block to `onEditCode`                                              |
-| `apps/live/components/palette/ElementDataSections.tsx`       | The Code section (Tools flyout)                                                               |
-| `apps/live/components/palette/context-menu-data-editors.tsx` | `CodeSummary`: line count, language, Edit Code, Wrap toggle                                   |
-| `apps/live/components/palette/PresetSections.tsx`            | `CodeThemePresetsSection` in the Style band                                                   |
-| `apps/live/lib/style-presets.ts`                             | `applyCodeThemeToEl`                                                                          |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setCodeSelected`, `setCodeWrapSelected`                                                      |
-| `apps/live/hooks/canvas/useStylePreview.ts`                  | `previewCodeTheme`, `commitCodeTheme`                                                         |
-| `apps/live/components/palette/tile-defs/tool-tiles.tsx`      | Tile `tools:code-block`, section `components`                                                 |
+| File                                                              | Role                                                                                          |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `packages/design/src/data-shapes.ts`                              | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
+| `../packages/model-core/src/code-themes.ts`                       | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
+| `packages/design/src/element-types.ts`                            | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
+| `packages/design/src/shape-factory.ts`                            | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |
+| `packages/design/src/colors.ts`                                   | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
+| `packages/design/src/validate.ts`                                 | Snippet length, closed language set, closed scheme ids                                        |
+| `packages/design/src/svg-render-shapes.ts`                        | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
+| `apps/live/lib/code-tokens.ts`                                    | `tokenizeCode`: the lazy tokenizer chunk                                                      |
+| `apps/live/lib/code-highlight-registry.ts`                        | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
+| `apps/live/components/canvas/CodeBlockView.tsx`                   | Canvas card, badge, placeholder, highlighted lines                                            |
+| `../packages/workbench/src/components/dialogs/CodeEditDialog.tsx` | Edit code dialog                                                                              |
+| `apps/live/components/dialogs/EditorElementDialogs.tsx`           | Mounts the dialog for `codeEditOpenForId`                                                     |
+| `apps/live/components/canvas/useBoxedElementGestures.ts`          | Double-click routes a code block to `onEditCode`                                              |
+| `apps/live/components/palette/ElementDataSections.tsx`            | The Code section (Tools flyout)                                                               |
+| `apps/live/components/palette/context-menu-data-editors.tsx`      | `CodeSummary`: line count, language, Edit Code, Wrap toggle                                   |
+| `apps/live/components/palette/PresetSections.tsx`                 | `CodeThemePresetsSection` in the Style band                                                   |
+| `apps/live/lib/style-presets.ts`                                  | `applyCodeThemeToEl`                                                                          |
+| `apps/live/hooks/canvas/useDataShapeSetters.ts`                   | `setCodeSelected`, `setCodeWrapSelected`                                                      |
+| `apps/live/hooks/canvas/useStylePreview.ts`                       | `previewCodeTheme`, `commitCodeTheme`                                                         |
+| `apps/live/components/palette/tile-defs/tool-tiles.tsx`           | Tile `tools:code-block`, section `components`                                                 |
 
 ## Domain and naming
 

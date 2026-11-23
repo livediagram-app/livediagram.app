@@ -22,7 +22,7 @@ Scope, by file:
 | `apps/editor/components/panels/ImageSearchPane.tsx`                            | The Search tab's form, grid, states and footer credit                                       |
 | `apps/editor/components/panels/ImagePicker.tsx`                                | Third tab; `onSelect(image: PickedImage)` carries the credit                                |
 | `apps/editor/hooks/canvas/useEditorImages.ts`                                  | `applyImageToElement` sets / drops `credit`; detach drops it                                |
-| `apps/editor/components/palette/ImageCreditRow.tsx`                            | Credit line, mounted in `ElementContentSections`' Image section                             |
+| `../packages/workbench/src/components/palette/ImageCreditRow.tsx`              | Credit line, mounted in `ElementContentSections`' Image section                             |
 | `apps/editor/lib/telemetry-manifest.ts`                                        | `Element·Searched` in the emitted-pairs manifest                                            |
 | `../liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/content.ts`  | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing                                   |
 | `../liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts` | Sentences for the two events                                                                |

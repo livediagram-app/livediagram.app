@@ -27,7 +27,7 @@ import type {
 } from '@liveplanner/project';
 import { HoverCard } from '@liveplanner/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 

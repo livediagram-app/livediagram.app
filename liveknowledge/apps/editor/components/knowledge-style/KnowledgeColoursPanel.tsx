@@ -11,7 +11,10 @@ import { SECTION_LABEL } from '@liveworkspace/workbench/components/dialogs/tab-s
 import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { easedStyleChange as eased } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup, themeOptions } from '@/components/colour/colour-options';
+import {
+  standardGroup,
+  themeOptions,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { knowledgeThemeAccent } from '@/lib/knowledge-style/knowledge-accent';

@@ -16,7 +16,7 @@ import {
   pieValueLabels,
   type ShapeElement,
 } from '@liveknowledge/document';
-import { ChartValues } from '@/components/primitives/ChartValues';
+import { ChartValues } from '@liveworkspace/workbench/components/primitives/ChartValues';
 import { chartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@liveworkspace/workbench/hooks/canvas/useChartHover';
 import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';

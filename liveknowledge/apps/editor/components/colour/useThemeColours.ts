@@ -7,7 +7,10 @@ import { useContext, useMemo } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
 import { useKnowledgeStyle } from '@/lib/knowledge-style/knowledge-style-store';
-import { themeOptions, type ColourOption } from './colour-options';
+import {
+  themeOptions,
+  type ColourOption,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 
 const NONE: readonly ColourOption[] = [];
 

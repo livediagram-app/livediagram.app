@@ -4,7 +4,11 @@ import { type IconPosition, type StandardTone } from '@livedocuments/document';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ColourPopover } from '@/components/colour/ColourPopover';
-import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
+import {
+  noColour,
+  standardGroup,
+  themeOptions,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import type { TextContrastProbe } from '@/lib/text-contrast-probe';
 

@@ -23,9 +23,9 @@ Scope, by file:
 | `apps/live/components/palette/SankeyMenuSection.tsx`                                  | The Sankey flyout: Flows, Bands, Layout, Labels, Leftovers, Text sections                                             |
 | `apps/live/components/dialogs/SankeyFlowsDialog.tsx`                                  | Flows dialog shell, tabs, preview, import                                                                             |
 | `apps/live/components/dialogs/SankeyFlowsTable.tsx`                                   | Table tab: steps, node groups, Add a Flow area, leftover switches                                                     |
-| `apps/live/components/dialogs/SankeyFlowRow.tsx`                                      | One row: → To, Amount, Send On, remove (a loose row adds its From)                                                    |
+| `../packages/workbench/src/components/dialogs/SankeyFlowRow.tsx`                      | One row: → To, Amount, Send On, remove (a loose row adds its From)                                                    |
 | `apps/live/lib/sankey-flow-levels.ts`                                                 | `flowLevels` (rows into steps and node groups), `flowTotals`, `flowNodeColors`                                        |
-| `apps/live/components/palette/sankey-menu-glyphs.tsx`                                 | The Display option glyphs (on the raw-SVG art allowlist)                                                              |
+| `../packages/workbench/src/components/palette/sankey-menu-glyphs.tsx`                 | The Display option glyphs (on the raw-SVG art allowlist)                                                              |
 | `apps/live/components/dialogs/SankeyNodeStrip.tsx`                                    | Node chips and rename                                                                                                 |
 | `apps/live/components/tour/SankeyFlowsTour.tsx`, `sankey-flows-tour-steps.ts`         | Show Me on the Flows dialog, binding the workbench's `createSankeyFlowsTour`: button, stage, steps fixed at the press |
 | `apps/live/components/tour/sankey-element-tour-steps.ts`, `ElementTourHost.tsx`       | The Sankey element tour ([Element tours](../../007-editor/element-tours.md)): steps, the parts lifted, the host       |

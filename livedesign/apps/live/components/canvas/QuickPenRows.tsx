@@ -12,7 +12,7 @@ import { WHITEBOARD_PEN_WIDTHS } from '@/lib/whiteboard-prefs';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 import { QuickMoreColours } from './QuickMoreColours';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ColourChip, ValueGlyph } from './quick-style-icons';
 

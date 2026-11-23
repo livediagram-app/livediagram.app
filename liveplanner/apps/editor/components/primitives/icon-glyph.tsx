@@ -11,7 +11,7 @@ import {
 } from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
 
-import { iconBandClass } from '@/components/primitives/icon-band';
+import { iconBandClass } from '@liveworkspace/workbench/components/primitives/icon-band';
 
 import {
   PLACEHOLDER_ICON,

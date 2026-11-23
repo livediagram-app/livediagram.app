@@ -2,19 +2,19 @@
 
 Derived from [The sequence diagram](../sequence-diagram.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                          | Role                                                      |
-| ------------------------------------------------------------- | --------------------------------------------------------- |
-| `packages/project/src/sequence-element.ts`                    | Fields, bounds, writes, the diagram it describes          |
-| `packages/project/src/svg-render-sequence.ts`                 | The picture: `layoutSequence` drawn and fitted to the box |
-| `apps/editor/components/canvas/SequenceFace.tsx`              | Canvas face (the same picture), the Play wipe             |
-| `apps/editor/components/palette/SequenceMenuSection.tsx`      | Summary, Edit Sequence, Numbered                          |
-| `packages/project/src/sequence-text.ts`                       | The Text tab: rows as lines and back                      |
-| `apps/editor/components/dialogs/SequenceDialog.tsx`           | The dialog: tabs, draft, preview, footer                  |
-| `apps/editor/components/dialogs/SequenceParticipantStrip.tsx` | Participant chips and the open chip's editor              |
-| `apps/editor/components/dialogs/SequenceMessageList.tsx`      | Numbered message rows, Add Message                        |
-| `../packages/workbench/src/components/dialogs/DialogTabs.tsx` | The tab bar, shared with the Sankey Flows dialog          |
-| `apps/editor/hooks/canvas/useSequenceSetters.ts`              | The dialog's writes, one commit each                      |
-| `apps/editor/lib/sequence-edit.ts`                            | `canEditSequence`: an Editor, on an unlocked diagram      |
+| File                                                                        | Role                                                      |
+| --------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `packages/project/src/sequence-element.ts`                                  | Fields, bounds, writes, the diagram it describes          |
+| `packages/project/src/svg-render-sequence.ts`                               | The picture: `layoutSequence` drawn and fitted to the box |
+| `apps/editor/components/canvas/SequenceFace.tsx`                            | Canvas face (the same picture), the Play wipe             |
+| `apps/editor/components/palette/SequenceMenuSection.tsx`                    | Summary, Edit Sequence, Numbered                          |
+| `packages/project/src/sequence-text.ts`                                     | The Text tab: rows as lines and back                      |
+| `apps/editor/components/dialogs/SequenceDialog.tsx`                         | The dialog: tabs, draft, preview, footer                  |
+| `../packages/workbench/src/components/dialogs/SequenceParticipantStrip.tsx` | Participant chips and the open chip's editor              |
+| `../packages/workbench/src/components/dialogs/SequenceMessageList.tsx`      | Numbered message rows, Add Message                        |
+| `../packages/workbench/src/components/dialogs/DialogTabs.tsx`               | The tab bar, shared with the Sankey Flows dialog          |
+| `apps/editor/hooks/canvas/useSequenceSetters.ts`                            | The dialog's writes, one commit each                      |
+| `apps/editor/lib/sequence-edit.ts`                                          | `canEditSequence`: an Editor, on an unlocked diagram      |
 
 ## Domain and naming
 

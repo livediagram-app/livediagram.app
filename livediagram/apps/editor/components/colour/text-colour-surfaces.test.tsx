@@ -15,7 +15,7 @@ import { QuickMoreColours } from '@/components/canvas/QuickMoreColours';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';
 import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
-import { standardGroup } from './colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 
 // docs/specs/004-interface-design/colour-picker.md "Reading on its ground": every picker that colours
 // text judges it, the Quick Style bar's Text colour More colours, the rich-text toolbar's Text colour and a

@@ -8,7 +8,7 @@
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { Tooltip, Glyph } from '@livedesign/ui';
-import { SwatchChip } from '@/components/colour/ColourSwatch';
+import { SwatchChip } from '@liveworkspace/workbench/components/colour/ColourSwatch';
 import { colourKeyTarget } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { QUICK_TARGET_PX } from './quick-style-metrics';
 

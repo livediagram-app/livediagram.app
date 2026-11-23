@@ -5,7 +5,7 @@
 // opening the picker in a popover under it. A pick closes it and hands focus back to the trigger.
 import { useState } from 'react';
 import { ChevronDownIcon } from '@liveplanner/ui';
-import { SwatchChip } from './ColourSwatch';
+import { SwatchChip } from '@liveworkspace/workbench/components/colour/ColourSwatch';
 import { ColourPopover } from './ColourPopover';
 import type { ColourPickerProps } from './ColourPicker';
 

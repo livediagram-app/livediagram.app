@@ -7,7 +7,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | Spec term            | Identifier                                                                                                                                                                              |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | colour picker        | `ColourPicker` (`apps/live/components/colour/ColourPicker.tsx`)                                                                                                                         |
-| swatch               | `ColourSwatch`, `SwatchChip` (`apps/live/components/colour/ColourSwatch.tsx`)                                                                                                           |
+| swatch               | `ColourSwatch`, `SwatchChip` (`../packages/workbench/src/components/colour/ColourSwatch.tsx`)                                                                                           |
 | standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`../packages/element-model/src/standard-colours.ts`)                                                                      |
 | tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                     |
 | theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/design/src/quick-swatches.ts`)                                                                         |

@@ -21,7 +21,7 @@ import { MenuAccordionSection } from '@liveworkspace/workbench/components/primit
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
-import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
+import { ImageCreditRow } from '@liveworkspace/workbench/components/palette/ImageCreditRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';

@@ -11,7 +11,10 @@ import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import { useTextContrast } from '@/hooks/ui/useTextContrast';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { MoreColoursGlyph } from '@/components/colour/MoreColoursGlyph';
-import type { ColourGroup, ColourOption } from '@/components/colour/colour-options';
+import type {
+  ColourGroup,
+  ColourOption,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 
 const NONE: readonly Element[] = [];
 

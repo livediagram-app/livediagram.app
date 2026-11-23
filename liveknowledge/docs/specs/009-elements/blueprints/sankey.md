@@ -23,9 +23,9 @@ Scope, by file:
 | `apps/editor/components/palette/SankeyMenuSection.tsx`                          | The Sankey flyout: Flows, Bands, Layout, Labels, Leftovers, Text sections                                             |
 | `apps/editor/components/dialogs/SankeyFlowsDialog.tsx`                          | Flows dialog shell, tabs, preview, import                                                                             |
 | `apps/editor/components/dialogs/SankeyFlowsTable.tsx`                           | Table tab: steps, node groups, Add a Flow area, leftover switches                                                     |
-| `apps/editor/components/dialogs/SankeyFlowRow.tsx`                              | One row: → To, Amount, Send On, remove (a loose row adds its From)                                                    |
+| `../packages/workbench/src/components/dialogs/SankeyFlowRow.tsx`                | One row: → To, Amount, Send On, remove (a loose row adds its From)                                                    |
 | `apps/editor/lib/sankey-flow-levels.ts`                                         | `flowLevels` (rows into steps and node groups), `flowTotals`, `flowNodeColors`                                        |
-| `apps/editor/components/palette/sankey-menu-glyphs.tsx`                         | The Display option glyphs (on the raw-SVG art allowlist)                                                              |
+| `../packages/workbench/src/components/palette/sankey-menu-glyphs.tsx`           | The Display option glyphs (on the raw-SVG art allowlist)                                                              |
 | `apps/editor/components/dialogs/SankeyNodeStrip.tsx`                            | Node chips and rename                                                                                                 |
 | `apps/editor/components/tour/SankeyFlowsTour.tsx`, `sankey-flows-tour-steps.ts` | Show Me on the Flows dialog, binding the workbench's `createSankeyFlowsTour`: button, stage, steps fixed at the press |
 | `apps/editor/lib/sankey-flow-rows.ts`                                           | Draft rows, reasons copy, balance notes, paste, `rowFrom`, `withTrailingBlank`                                        |

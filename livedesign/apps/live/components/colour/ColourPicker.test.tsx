@@ -5,7 +5,11 @@ import { penColourHex, standardColours } from '@livedesign/design';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
 import { ColourPicker, type ColourPickerProps } from './ColourPicker';
-import { noColour, stableColours, standardGroup } from './colour-options';
+import {
+  noColour,
+  stableColours,
+  standardGroup,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { colourKeyTarget } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { COLOUR_PICKER_WIDTH } from '@liveworkspace/workbench/components/colour/colour-metrics';
 

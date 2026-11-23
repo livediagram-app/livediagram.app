@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { HoverCard, Tooltip } from '@livehuddle/ui';
 import type { StandardTone } from '@livehuddle/document';
 import { ColourPopover } from '@/components/colour/ColourPopover';
-import { SwatchChip } from '@/components/colour/ColourSwatch';
+import { SwatchChip } from '@liveworkspace/workbench/components/colour/ColourSwatch';
 import { standardGroup, standardOptions } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';

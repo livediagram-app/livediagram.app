@@ -16,7 +16,7 @@ import { autoCurves, autoLevels } from '@/lib/photo-editor/adjust-auto';
 import { cancelNeutral, pickNeutral, useNeutralPicking } from '@/lib/photo-editor/neutral-pick';
 import { track } from '@/lib/telemetry';
 import { histogramPath } from './usePhotoHistogram';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import {

@@ -11,7 +11,7 @@ import {
 } from '@liveknowledge/document';
 import { Glyph } from '@liveknowledge/ui';
 
-import { iconBandClass } from '@/components/primitives/icon-band';
+import { iconBandClass } from '@liveworkspace/workbench/components/primitives/icon-band';
 
 import {
   PLACEHOLDER_ICON,

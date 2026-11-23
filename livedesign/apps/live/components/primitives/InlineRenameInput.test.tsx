@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { InlineRenameInput } from './InlineRenameInput';
+import { InlineRenameInput } from '@liveworkspace/workbench/components/primitives/InlineRenameInput';
 
 afterEach(cleanup);
 

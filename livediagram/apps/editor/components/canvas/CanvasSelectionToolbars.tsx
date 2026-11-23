@@ -26,7 +26,7 @@ import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelecti
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { selectionMoving, useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
+import { FloatingToolbar } from '@liveworkspace/workbench/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { libraryDraftOf } from '@/lib/library-draft';
 import { WEB_ROW_ACTION } from '@/lib/web-row-actions';

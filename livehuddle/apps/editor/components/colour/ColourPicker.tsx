@@ -15,7 +15,7 @@ import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { YOUR_COLOURS_MAX } from '@/lib/document-colours';
 import { CustomColourEditor } from '@liveworkspace/workbench/components/colour/CustomColourEditor';
 import { MoreColoursGlyph } from './MoreColoursGlyph';
-import { ColourSwatch } from './ColourSwatch';
+import { ColourSwatch } from '@liveworkspace/workbench/components/colour/ColourSwatch';
 import { COLOUR_PICKER_WIDTH } from '@liveworkspace/workbench/components/colour/colour-metrics';
 import {
   hexOption,

@@ -13,7 +13,7 @@ import {
 } from '@livedesign/photo-engine';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { fillSelection, type FillContents } from '@/lib/photo-editor/edit-ops';

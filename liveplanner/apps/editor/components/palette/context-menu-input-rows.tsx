@@ -4,7 +4,11 @@ import { type IconPosition, type StandardTone } from '@liveplanner/project';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ColourPopover } from '@/components/colour/ColourPopover';
-import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
+import {
+  noColour,
+  standardGroup,
+  themeOptions,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 
 // Shared by every editor; re-exported for the rows that import it from here.

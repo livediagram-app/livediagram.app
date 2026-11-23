@@ -5,8 +5,11 @@ import { useState } from 'react';
 import { HoverCard, Tooltip } from '@livediagram/ui';
 import type { StandardTone } from '@livediagram/document';
 import { ColourPopover } from '@/components/colour/ColourPopover';
-import { SwatchChip } from '@/components/colour/ColourSwatch';
-import { standardGroup, standardOptions } from '@/components/colour/colour-options';
+import { SwatchChip } from '@liveworkspace/workbench/components/colour/ColourSwatch';
+import {
+  standardGroup,
+  standardOptions,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';

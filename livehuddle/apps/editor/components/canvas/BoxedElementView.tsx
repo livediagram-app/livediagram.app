@@ -27,7 +27,10 @@ import {
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
-import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
+import {
+  captionBandAlignY,
+  captionBandClass,
+} from '@liveworkspace/workbench/components/primitives/icon-band';
 import { SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-paint-path';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';

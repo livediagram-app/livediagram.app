@@ -8,7 +8,7 @@ import {
   type PieSlice,
 } from '@livediagram/document';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { NumberDraftInput } from '@/components/primitives/NumberDraftInput';

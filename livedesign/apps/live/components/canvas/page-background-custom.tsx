@@ -8,7 +8,10 @@ import { useState } from 'react';
 import type { PageFill } from '@livedesign/design';
 import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardOptions, type ColourGroup } from '@/components/colour/colour-options';
+import {
+  standardOptions,
+  type ColourGroup,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 
 // The gradient Angle slider's step, in degrees.

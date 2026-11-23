@@ -15,7 +15,7 @@ import {
 } from '@liveworkspace/workbench/components/colour/colour-metrics';
 import { TEXT_GRADIENTS, textGradientCss, textGradientOf } from '@livedocuments/document';
 import { ColourPicker } from '@/components/colour/ColourPicker';
-import { noColour, standardGroup } from '@/components/colour/colour-options';
+import { noColour, standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { toolbarButtonClass } from '@/components/rich-text/toolbar-chrome';

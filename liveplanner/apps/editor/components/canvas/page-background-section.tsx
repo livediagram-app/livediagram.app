@@ -37,7 +37,10 @@ import { CustomGradientEditor, PAGE_COLOUR_GROUPS, RAINBOW } from './page-backgr
 import { AnimatedBackgroundChoices } from './page-background-animated';
 import { BackgroundKinds } from './page-background-kinds';
 import { ColourPicker } from '@/components/colour/ColourPicker';
-import { noColour, type ColourOption } from '@/components/colour/colour-options';
+import {
+  noColour,
+  type ColourOption,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useThemeColours } from '@/components/colour/useThemeColours';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';
 
