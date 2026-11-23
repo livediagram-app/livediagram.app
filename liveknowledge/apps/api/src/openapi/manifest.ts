@@ -584,6 +584,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tokenUsable: true,
     query: [
       { name: 'q', required: true, description: 'The words to look for, at most 200 characters.' },
+      {
+        name: 'labels',
+        required: false,
+        description:
+          "Only the pages carrying any of these labels: label ids or names (ignoring case), comma separated. A label the knowledgebase does not have is 400 `unknown_label`.",
+      },
     ],
     responseSchema: 'KnowledgeSearchResponse',
     statuses: [200, 400, 401, 403, 404, 410, 429],
@@ -624,6 +630,56 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: 'KnowledgeSettingsRequest',
     responseSchema: 'KnowledgeSettingsResponse',
     statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/labels',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "The knowledgebase's labels (page-surface.md \"Page labels\"): each its id, name, colour (a standard colour's name or `#rrggbb`) and how many pages carry it, most used first. Every role.",
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'KnowledgeLabelsResponse',
+    statuses: [200, 401, 403, 404, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/labels',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Make a label: a name (1 to 40 characters, unique ignoring case), and optionally a colour and an id. An Editor or a Participant. 409 `label_name_taken` or `label_limit` (100); one row written, told to every open editor.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'CreateLabelRequest',
+    responseSchema: 'KnowledgeLabelChangeResponse',
+    statuses: [201, 400, 401, 403, 404, 405, 409, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/labels/{labelId}',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Rename or recolour a label. One row written whatever the number of pages carrying it: no page is rewritten. An Editor or a Participant.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'UpdateLabelRequest',
+    responseSchema: 'KnowledgeLabelChangeResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/labels/{labelId}',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Delete a label: every page carrying it reads as without it, and none is rewritten. An Editor or a Participant.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'KnowledgeLabelChangeResponse',
+    statuses: [200, 401, 403, 404, 405, 410],
   },
   {
     method: 'GET',

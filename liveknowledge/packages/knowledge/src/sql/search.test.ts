@@ -185,6 +185,18 @@ describe('search', () => {
     expect(search('deploy', { exceptTab: 'never' })!.every((f) => f.tab !== 'never')).toBe(true);
   });
 
+  it('looks only at the pages of a label scope, in one bound parameter (search-and-ask.md "By label")', () => {
+    const { search } = seeded();
+    const all = search('deploy')!.map((f) => f.tab);
+    expect(new Set(all).size).toBeGreaterThan(1);
+    expect(new Set(search('deploy', { onlyTabs: ['due'] })!.map((f) => f.tab))).toEqual(
+      new Set(['due']),
+    );
+    expect(search('deploy', { onlyTabs: [] })).toEqual([]);
+    const statement = searchPassages('deploy', { now: 0, reviewEvery: 90, onlyTabs: ['a', 'b'] })!;
+    expect(statement.params.filter((p) => p === '["a","b"]')).toHaveLength(1);
+  });
+
   it('folds diacritics and case', () => {
     const { search } = seeded();
     expect(search('CAFE')!.map((f) => f.tab)).toEqual(['ageless']);

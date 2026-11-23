@@ -7,6 +7,7 @@ import { withKnowledgebasePage } from './knowledgebase-page';
 import { withoutPageLooks } from './page-looks';
 import { withSettledCover } from './page-cover';
 import { withSettledIcon } from './page-icon';
+import { withSettledLabels } from './page-labels';
 import { migrateRetiredPattern } from './retired-patterns';
 import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
@@ -25,8 +26,8 @@ export function migrateStoredTab<
   // suggestion"), here so the plain tab JSON a Community visitor or an agent reads never carries one.
   // A page's own background, style and lock are not in liveknowledge (./page-looks): read without them.
   // An article that arrives on paper sheets reads as one continuous page (./continuous-article).
-  // A page's cover and its icon keep what of them is valid (./page-cover, ./page-icon).
-  const settled = withSettledIcon(
+  // A page's cover, its icon and its labels keep what of them is valid (./page-cover, ./page-icon, ./page-labels).
+  const settled = withSettledLabels(withSettledIcon(
     withSettledCover(
       withArticleContinuous(
         withoutPageLooks(
@@ -34,7 +35,7 @@ export function migrateStoredTab<
         ),
       ),
     ),
-  );
+  ));
   if (!Array.isArray(settled.elements)) return settled;
   // Stacks lay out last (docs/specs/009-elements/stack.md), over the settled elements.
   const elements = settleStacks(migrateStoredElements(settled.elements));

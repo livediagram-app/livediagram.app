@@ -1416,6 +1416,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ai": {
         "$ref": "#/components/schemas/AskAiChoice"
       },
+      "labels": {
+        "description": "Answer only from the pages carrying any of these labels, each an id or a name (search-and-ask.md \"By label\").",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "question": {
         "type": "string"
       },
@@ -3459,6 +3466,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "theme-ink"
     ],
     "type": "string"
+  },
+  "CreateLabelRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../labels`: a new label (no colour: the next one; no id: the api makes one). A Writer's.",
+    "properties": {
+      "colour": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "type": "object"
   },
   "CreatePageRequest": {
     "additionalProperties": false,
@@ -5934,6 +5960,83 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "KnowledgeLabelChangeResponse": {
+    "additionalProperties": false,
+    "description": "What a label write answers: the label made or changed (absent after a delete), and every label now.",
+    "properties": {
+      "label": {
+        "$ref": "#/components/schemas/KnowledgeLabelWire"
+      },
+      "labels": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeLabelWire"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "labels"
+    ],
+    "type": "object"
+  },
+  "KnowledgeLabelWire": {
+    "additionalProperties": false,
+    "description": "One of the knowledgebase's labels (page-surface.md \"Page labels\"): its colour a standard colour's name (\"blue\") or a custom `#rrggbb`. Kept with the settings, so a rename is one write and no page's.",
+    "properties": {
+      "colour": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "colour"
+    ],
+    "type": "object"
+  },
+  "KnowledgeLabelsResponse": {
+    "additionalProperties": false,
+    "description": "`GET .../labels`: the labels, most used first, each with how many pages carry it.",
+    "properties": {
+      "labels": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "colour": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "pages": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "colour",
+            "id",
+            "name",
+            "pages"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "labels"
+    ],
+    "type": "object"
+  },
   "KnowledgeLineSpacing": {
     "enum": [
       "compact",
@@ -6298,6 +6401,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/AgentPageIcon",
         "description": "The page's icon (page-surface.md \"The page icon\"): an emoji or a catalogue icon."
       },
+      "labels": {
+        "description": "The page's labels by name (page-surface.md \"Page labels\"); absent for none.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "leftOut": {
         "type": "number"
       },
@@ -6379,6 +6489,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "depth": {
         "type": "number"
+      },
+      "labels": {
+        "description": "The page's labels by name (page-surface.md \"Page labels\"); absent for none.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "owner": {
         "description": "The owner's account id.",
@@ -6711,6 +6828,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "What a knowledgebase decides for every page (verification.md \"The Review Period\"): how long after it was last verified a page comes due for review. In a document read, the `document-meta` op and the routes below.",
     "properties": {
+      "labels": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeLabelWire"
+        },
+        "type": "array"
+      },
       "reviewEvery": {
         "$ref": "#/components/schemas/KnowledgeReviewEvery"
       }
@@ -11740,6 +11863,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "knowledge": {
         "$ref": "#/components/schemas/TabKnowledge"
       },
+      "labels": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "layers": {
         "items": {
           "$ref": "#/components/schemas/Layer"
@@ -12028,6 +12157,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "knowledge": {
         "$ref": "#/components/schemas/TabKnowledge"
       },
+      "labels": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "layers": {
         "items": {
           "$ref": "#/components/schemas/Layer"
@@ -12114,6 +12249,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "knowledge": {
         "$ref": "#/components/schemas/TabKnowledge"
+      },
+      "labels": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "name": {
         "type": "string"
@@ -13030,6 +13171,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "url"
     ],
+    "type": "object"
+  },
+  "UpdateLabelRequest": {
+    "additionalProperties": false,
+    "description": "`PUT .../labels/<label>`: a rename, a new colour, or both. A Writer's.",
+    "properties": {
+      "colour": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
     "type": "object"
   },
   "VersionCopyResponse": {

@@ -95,7 +95,8 @@ export async function readDocumentOutline(
       `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection,
               CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.parent') END AS parent,
               CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.knowledge') END AS knowledge,
-              CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.icon') END AS icon
+              CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.icon') END AS icon,
+              CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.labels') END AS labels
          FROM document_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.document_id = ?
@@ -251,6 +252,22 @@ export async function setKnowledgeSettings(
   // The next review to wait for moved (knowledge-emails.ts): the room looks again.
   env.REVIEW_PERIOD_CHANGED?.();
   return true;
+}
+
+// The settings with new labels (page-surface.md "Page labels"): one row written, no page rewritten, and no review to
+// look at again (the period did not move). False when the document is not started.
+export async function setKnowledgeLabels(
+  env: DocumentEnv,
+  documentId: string,
+  settings: KnowledgeSettings,
+  savedAt: number,
+): Promise<boolean> {
+  const res = await env.DOCUMENT_DB.prepare(
+    'UPDATE document SET knowledge_settings = ?, saved_at = ? WHERE id = ? AND created_at > 0',
+  )
+    .bind(storedKnowledgeSettings(settings), savedAt, documentId)
+    .run();
+  return (res.meta.changes ?? 0) > 0;
 }
 
 // A rename (and its save time) on a started document; false when the document is not started.
