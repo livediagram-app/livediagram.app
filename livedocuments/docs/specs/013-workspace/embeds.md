@@ -83,8 +83,11 @@ element made from the palette's **Live Embed** tile (`embedProvider: 'live'`), d
 ## Live embeds of a document
 
 Another app's item can show a document live, read-only, inside it ([Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md),
-Work Tracker 930). The frame is this app's [workbench embed](workbench-embeds.md) (`/embed/workbench?d=<id>`) opened by
+Work Tracker 930). The frame is this app's [workbench embed](workbench-embeds.md) (`/embed/workbench?d=<id>&live=1`) opened by
 an **embed ticket**: minted by the host page with the reader's own access, always at the view level, bound to the host
-app's origin, and renewed through the host before its 30 minutes run out. The page is the workbench page as it is, at
-a view session: the editor read-only, with Open in livedocuments one click away. A reader without their own access never
+app's origin, and renewed through the host before its 30 minutes run out. The page is the workbench page at a view session,
+in this embed's look rather than the workbench's (`live=1`, Work Tracker 1386): the document alone, read-only, opened
+on its page, with the zoom controls and, for several tabs, the tab switcher ("What renders" above), and no header, footer
+(Tools, Settings, Inbox), tab bar, palette, panels, Map, tour or Open in livedocuments badge, as the host's own row holds
+**Open**. A developer tool's workbench (no `live=1`) keeps the workbench's chrome. A reader without their own access never
 reaches this frame: the host shows its snapshot instead.

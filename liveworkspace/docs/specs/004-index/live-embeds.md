@@ -95,8 +95,20 @@ A frame is a whole app, so the host keeps their number small:
 
 ## The frame
 
-The host frames `<target origin>/embed/workbench?d=<itemId>#ticket=<ticket>`: the target app's own workbench page, which
-redeems the ticket, binds to the host's origin and shows the item at the view level ([workbench embeds](../011-workbench/workbench.md)).
+The host frames `<target origin>/embed/workbench?d=<itemId>&live=1#ticket=<ticket>`: the target app's own workbench
+page, which redeems the ticket, binds to the host's origin and shows the item at the view level ([workbench
+embeds](../011-workbench/workbench.md)). `live=1` (`LIVE_EMBED_FRAME_PARAM`, added by the host to the ticket's path)
+tells the page it is a live embed's frame, not a developer tool's workbench (Work Tracker 1386).
+
+**The item only.** A live embed's frame shows the item and nothing of the editor around it: no Map, no footer (Tools,
+Settings, Inbox, Open in <App>), no tab bar, palette, panels, tour, start panels or Quick Style, and no full screen. It
+takes the share-code embed's look (each app's `docs/specs/013-workspace/embeds.md` "What renders", for example
+[livediagram's](../../../../livediagram/docs/specs/013-workspace/embeds.md)): the item, the zoom controls and, for an item of several tabs, the small tab switcher, with no link-out
+badge, as the host's own row (the name, Live, **Open**) is the only way out. It lands fitted: a canvas or a design
+fits its content, a plan shows its board, a document its page. The workbench page without `live=1` (a developer
+tool's workbench) keeps the workbench's chrome. The flag is presentation only: the session is still the embed
+session, at the view level, whatever the address says.
+
 The host answers the frame's messages as its workbench: `<app>:hello` with `<app>:hello-ack` (named after the host
 app), and `<app>:renew` with a fresh ticket (`<app>:ticket`), minted again with the reader's own access, so a reader
 who loses access loses the frame at the next renewal at the latest. Messages from any other origin, or any other frame,

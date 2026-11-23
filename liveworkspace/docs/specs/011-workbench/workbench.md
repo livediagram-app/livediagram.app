@@ -157,7 +157,12 @@ reading in one of our own apps, so there is nothing to approve.
   per person by `WORKBENCH_LIMITER` (`workbench-embed:<personId>`). The index is asked for the person's own grant on
   the item (`ownerItemAccess`): `404 not_found` out of reach, `410 <noun>_trashed` in the Trash, `503
 index_unavailable` when it cannot answer. A guest token mints for the guest's own access, as an account's does. The answer, `201 { ticket, path, expiresAt }`, gives the frame's path
-  (`/embed/workbench?d=<itemId>`), which the host puts on the target's origin, and the ticket for its fragment.
+  (`/embed/workbench?d=<itemId>`), which the host puts on the target's origin with `&live=1` added (the frame flag,
+  [Live embeds "The frame"](../004-index/live-embeds.md#the-frame)), and the ticket for its fragment.
+- **The frame shows the item only.** The workbench page opened with `live=1` is a live embed's frame: it shows the item
+  in the share-code embed's look, without the workbench's chrome (no Map, footer, Tools, Settings, Inbox, tab bar,
+  palette, panels or tour). Without the flag the page is a developer tool's workbench and keeps its chrome. The flag
+  changes presentation only, never the session's level or reach.
 - **The embed pairing.** The ticket hangs on one pairing per target app and host origin in the person's store, made on
   the first mint: `token_id` is `embed` (`EMBED_TOKEN_ID`), which no API token can be, `scope` is the item scope and its
   name "Live embeds". It is never listed in Settings > API tokens, never ended by a token's revocation or a dead-token

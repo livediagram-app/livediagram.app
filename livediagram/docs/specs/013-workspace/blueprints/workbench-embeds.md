@@ -34,7 +34,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | `assignAppLocation(href)`, `setAppNavigationInterceptor(fn)`      | The app's one way to leave a page, which a workspace frame takes over    |
 | `WORKBENCH_ENDED_CLOSE` 4006                                      | The room's close code for a session whose pairing or token ended         |
 | `selectionReference(input)`                                       | The selection reference text, in `@livediagram/document-views`           |
-| `EditorSurface = 'app' \| 'embed' \| 'workbench'`                 | The editor's surface                                                     |
+| `EditorSurface = 'app' \| 'embed' \| 'workbench' \| 'live-embed'` | The editor's surface                                                     |
 
 ## Scope, by file
 
@@ -110,28 +110,28 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 
 ## Domain and naming
 
-| Term                | Identifier                                                      | Meaning                                                                           |
-| ------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Workbench           | the frame's parent, known by its origin                         | A developer tool that frames the editor beside an agent                           |
-| Workbench name      | `name` (pairing, request), `hello-ack.name`                     | The tool's display name ("Acme Editor"), shown in copy, never enforced            |
-| Origin              | `parseWorkbenchOrigin`                                          | `scheme://host[:port]`, the enforced identity of a workbench                      |
-| Pairing             | `WorkbenchPairing`                                              | A token and an origin its owner approved (liveworkspace's)                        |
-| Unpair              | `apiUnpairWorkbench`                                            | Removing a pairing and ending its sessions                                        |
-| Workbench ticket    | `#ticket=` in the frame URL                                     | Single-use, one-minute credential that opens one session (liveworkspace mints it) |
-| Workbench session   | `lvw_` secret; `WorkbenchContext`                               | The frame acting as the person                                                    |
-| Session level       | `WorkbenchRole` (`role` on the wire)                            | The token's level on the document, never above the person's own access            |
-| Confinement         | `workbenchRouteVerdict`, `403 workbench_confined`               | What a session may reach                                                          |
-| Workbench page      | `/embed/workbench`, `WorkbenchPage`, `WorkbenchPhase`           | The frameable page that binds and hosts the editor                                |
-| Binding             | `hello` / `hello-ack`                                           | Proof that the parent is the minting origin                                       |
-| Renewal             | `livediagram:renew` / `livediagram:ticket`                      | A fresh ticket redeemed before the session expires                                |
-| Workbench message   | `type` `livediagram:*`, `v: 1`                                  | One `postMessage` between the page and its workbench                              |
-| Selection reference | `selectionReference()`, `{ text, count }`                       | The text a workbench attaches to the person's message                             |
-| Editor surface      | `EditorSurface` `'app' \| 'embed' \| 'workbench'`               | Where the editor runs; `workbench` is a distinct surface                          |
-| Ended               | `WorkbenchEndReason` `expired`, `revoked`, `trashed`, `refused` | Why a page stopped editing                                                        |
-| Scope               | `WorkbenchScope` `document`, `workspace`                        | What a ticket, session or pairing reaches: one document, or the workspace         |
-| Workspace frame     | `/embed/workbench/explorer[...]`, `WorkspaceFrame`              | The Explorer inside a workbench, under a workspace session                        |
-| Place               | `WorkspacePlace`, `livediagram:place`                           | Where a workspace frame is: an Explorer view, or a document                       |
-| Frame address       | `workspaceFramePath(place)`                                     | A place's path inside the frame, walked by the frame's own history                |
+| Term                | Identifier                                                        | Meaning                                                                                                                                                                                              |
+| ------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Workbench           | the frame's parent, known by its origin                           | A developer tool that frames the editor beside an agent                                                                                                                                              |
+| Workbench name      | `name` (pairing, request), `hello-ack.name`                       | The tool's display name ("Acme Editor"), shown in copy, never enforced                                                                                                                               |
+| Origin              | `parseWorkbenchOrigin`                                            | `scheme://host[:port]`, the enforced identity of a workbench                                                                                                                                         |
+| Pairing             | `WorkbenchPairing`                                                | A token and an origin its owner approved (liveworkspace's)                                                                                                                                           |
+| Unpair              | `apiUnpairWorkbench`                                              | Removing a pairing and ending its sessions                                                                                                                                                           |
+| Workbench ticket    | `#ticket=` in the frame URL                                       | Single-use, one-minute credential that opens one session (liveworkspace mints it)                                                                                                                    |
+| Workbench session   | `lvw_` secret; `WorkbenchContext`                                 | The frame acting as the person                                                                                                                                                                       |
+| Session level       | `WorkbenchRole` (`role` on the wire)                              | The token's level on the document, never above the person's own access                                                                                                                               |
+| Confinement         | `workbenchRouteVerdict`, `403 workbench_confined`                 | What a session may reach                                                                                                                                                                             |
+| Workbench page      | `/embed/workbench`, `WorkbenchPage`, `WorkbenchPhase`             | The frameable page that binds and hosts the editor                                                                                                                                                   |
+| Binding             | `hello` / `hello-ack`                                             | Proof that the parent is the minting origin                                                                                                                                                          |
+| Renewal             | `livediagram:renew` / `livediagram:ticket`                        | A fresh ticket redeemed before the session expires                                                                                                                                                   |
+| Workbench message   | `type` `livediagram:*`, `v: 1`                                    | One `postMessage` between the page and its workbench                                                                                                                                                 |
+| Selection reference | `selectionReference()`, `{ text, count }`                         | The text a workbench attaches to the person's message                                                                                                                                                |
+| Editor surface      | `EditorSurface` `'app' \| 'embed' \| 'workbench' \| 'live-embed'` | Where the editor runs; `workbench` is a distinct surface; `live-embed` is a live embed's frame: the workbench session in the share embed's look (`embedMode` and `workbenchMode`, Work Tracker 1386) |
+| Ended               | `WorkbenchEndReason` `expired`, `revoked`, `trashed`, `refused`   | Why a page stopped editing                                                                                                                                                                           |
+| Scope               | `WorkbenchScope` `document`, `workspace`                          | What a ticket, session or pairing reaches: one document, or the workspace                                                                                                                            |
+| Workspace frame     | `/embed/workbench/explorer[...]`, `WorkspaceFrame`                | The Explorer inside a workbench, under a workspace session                                                                                                                                           |
+| Place               | `WorkspacePlace`, `livediagram:place`                             | Where a workspace frame is: an Explorer view, or a document                                                                                                                                          |
+| Frame address       | `workspaceFramePath(place)`                                       | A place's path inside the frame, walked by the frame's own history                                                                                                                                   |
 
 Banned: "workspace" for a document-scope frame, and "scope" for anything but `WorkbenchScope` here (the end of
 access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing (a repository link

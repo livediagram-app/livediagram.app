@@ -50,6 +50,14 @@ Work Tracker 930.
 | minted                                                                   | `201 { ticket, path, expiresAt }`                                |
 
 - `path` is `/embed/workbench?d=<itemId>`; the client takes only a path starting `/embed/workbench?`.
+- The host frames `liveEmbedFramePath(path)`: the path with `live=1` (`LIVE_EMBED_FRAME_PARAM`) added
+  (`packages/workbench/src/lib/editor-surface.ts`). Each target app's workbench page reads it with
+  `workbenchSurfaceOf(search)`: `'live-embed'` with the flag, else `'workbench'`. `surfaceFlags('live-embed')` is
+  `embedMode` and `workbenchMode` both on, `appChrome` off: the share embed's look (EmbedChrome, no header, footer,
+  tab bar, panels, tours, Quick Style or Map, Hand tool, read-only open) over the workbench's session and load. The
+  editor's `Session·Opened` is not counted for it (the host counts `Canvas·Used·LiveEmbed`).
+- `EmbedChrome` draws its Open in <App> badge only with a share code, so a live embed's frame (none) shows the tab
+  switcher alone; livediagram's canvas lands on Fit to Screen in any embed (`embedMode`), never the phone focus.
 - Redeem (`POST sessions` at the target app) uses `sessionTokenFacts`: for `EMBED_TOKEN_ID`, read-only and no expiry
   of its own, so the role is `view` and the session lasts `LIVE_EMBED_SESSION_TTL_MS`.
 - The app's session check (`POST internal/workbench/session`) uses `sessionTokenFacts` likewise: `level: 'view'`.
@@ -132,19 +140,20 @@ originHost, kind }`.
 
 ## Testing
 
-| Rule                                                                              | Test                                                          |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| own access, view level, origin, guests, refusals, limit, pairing hidden and swept | accounts `workbench.test.ts` "live embed tickets"             |
-| field checks                                                                      | element-model `live-item.test.ts`, each host's validate tests |
-| Community drops the link                                                          | community `redact.test.ts`                                    |
-| ticket client                                                                     | `live-embed-ticket.test.ts`                                   |
-| slots and on-screen loading                                                       | `live-embed-slots.test.ts`, `useLiveEmbedSlot.test.tsx`       |
-| frame messages, renewal, ended                                                    | `useLiveEmbedFrame.test.tsx`                                  |
-| every face state, inert frame, nesting                                            | `LiveEmbedView.test.tsx`                                      |
-| choosing, pasting, code dropped                                                   | `choose-live-embed.test.ts`, `LiveEmbedPicker.test.tsx`       |
-| poster sizing and encoding                                                        | `live-poster.test.ts`                                         |
-| addresses and share links                                                         | `live-embed-target.test.ts`                                   |
-| exports draw the poster                                                           | each host's `svg-render` export test                          |
+| Rule                                                                              | Test                                                             |
+| --------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| own access, view level, origin, guests, refusals, limit, pairing hidden and swept | accounts `workbench.test.ts` "live embed tickets"                |
+| field checks                                                                      | element-model `live-item.test.ts`, each host's validate tests    |
+| Community drops the link                                                          | community `redact.test.ts`                                       |
+| ticket client                                                                     | `live-embed-ticket.test.ts`                                      |
+| slots and on-screen loading                                                       | `live-embed-slots.test.ts`, `useLiveEmbedSlot.test.tsx`          |
+| frame messages, renewal, ended                                                    | `useLiveEmbedFrame.test.tsx`                                     |
+| the frame flag and the item-only look                                             | `editor-surface.test.ts`, each target's `WorkbenchPage.test.tsx` |
+| every face state, inert frame, nesting                                            | `LiveEmbedView.test.tsx`                                         |
+| choosing, pasting, code dropped                                                   | `choose-live-embed.test.ts`, `LiveEmbedPicker.test.tsx`          |
+| poster sizing and encoding                                                        | `live-poster.test.ts`                                            |
+| addresses and share links                                                         | `live-embed-target.test.ts`                                      |
+| exports draw the poster                                                           | each host's `svg-render` export test                             |
 
 ## Constants and configuration
 
