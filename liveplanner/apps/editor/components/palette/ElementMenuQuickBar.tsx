@@ -5,51 +5,45 @@
 // Assign Action, Add Link and Add Note at the left (an element that has one says so, tinted, and the button reads
 // View / Edit; no Add Comment: comment threads on canvas elements are retired, docs/specs/026-plan/plan-mode.md); Clear Styles alone at the right, apart from them, as it changes the element's look rather
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
-import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
+import {
+  elementResourceOptions,
+  resourceLinkModes,
+  type ResourceOption,
+} from '@liveworkspace/workbench/components/palette/element-resources';
+import type { ReactNode } from 'react';
 import { type BoxedElement, type Element } from '@liveplanner/project';
 import { Glyph, Tooltip } from '@liveplanner/ui';
-import {
-  ActionMenuIcon,
-  LinkMenuIcon,
-  NoteMenuIcon,
-} from '@/components/palette/context-menu-icons';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-// The items the bar offers on `target`, in order: what attaches to it. A link card and a video take their link from
-// their own Link category, so the generic Add Link is not offered on them.
+// The Resources options offered on `target`, in order: what attaches to it. A link card and a video take their link from
+// their own Link category, so Link is not offered on them (elementResourceOptions).
+const LINK_MODES = resourceLinkModes({
+  mode: 'project',
+  label: 'Plan',
+  detail: 'Another plan of yours',
+});
 export function quickBarItems(
   target: BoxedElement,
-  props: Pick<EditorContextMenuProps, 'onAssignAction' | 'onLinkElement' | 'onOpenNote'>,
-): ResourceItem[] {
-  const items: ResourceItem[] = [
-    {
-      key: 'action',
-      detail: 'What a click on it does',
-      label: target.action ? 'View Action' : 'Assign Action',
-      icon: <ActionMenuIcon />,
-      on: !!target.action,
-      run: () => props.onAssignAction(target.id),
-    },
-  ];
-  if (target.type !== 'link-card' && target.type !== 'video')
-    items.push({
-      key: 'link',
-      detail: 'A page or tab it opens',
-      label: target.link ? 'Edit Link' : 'Add Link',
-      icon: <LinkMenuIcon />,
-      on: !!target.link,
-      run: () => props.onLinkElement(target.id),
-    });
-  items.push({
-    key: 'note',
-    detail: 'Words kept behind it',
-    label: target.note ? 'Edit Note' : 'Add Note',
-    icon: <NoteMenuIcon />,
-    on: !!target.note,
-    run: () => props.onOpenNote(target.id),
+  props: Pick<EditorContextMenuProps, 'onAssignAction' | 'onLinkElement' | 'onOpenNote'> & {
+    // The Resources dialog's own: what takes a link or a note off, and the tabs a link may name.
+    onRemoveLink?: () => void;
+    onRemoveNote?: (elementId: string) => void;
+    tabs?: readonly { id: string; name: string }[];
+    // A link place's own step inside the dialog (ResourceLinkPanel).
+    linkPanel?: (mode: 'url' | 'tab' | 'project', done: () => void) => ReactNode;
+  },
+): ResourceOption[] {
+  return elementResourceOptions(target, {
+    onAssignAction: props.onAssignAction,
+    onLinkElement: props.onLinkElement,
+    onOpenNote: props.onOpenNote,
+    onRemoveLink: props.onRemoveLink,
+    onRemoveNote: props.onRemoveNote,
+    linkModes: LINK_MODES,
+    linkPanel: props.linkPanel,
+    tabs: props.tabs,
   });
-  return items;
 }
 
 const BUTTON =

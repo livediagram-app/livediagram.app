@@ -141,6 +141,16 @@ A picker's first paint does not animate: the template picker's open shelf plays 
 arrows' space from the first frame ([Canvas and palette](../008-canvas/canvas-and-palette.md)
 "Templates section"), so nothing shifts as the modal arrives.
 
+## Rows that come and go
+
+A list people add rows to and remove rows from never jumps. A new row slides in and grows from nothing, so the rows
+under it ease down; a removed row slides out and shrinks, and only then leaves the list (`slide-row-in` and
+`slide-row-out`, micro). This holds for **every** list with an add or a remove control: an entity's fields, a
+checklist's rows, a legend's, a form's options. `useRowMotion` (`@liveworkspace/workbench/hooks/ui/useRowMotion`)
+does it for a list keyed by index: `rowProps(i)` on each row's wrapper, `enter(i)` as a row is added, `leave(i,
+commit)` in place of removing it. A row carries its own bottom padding rather than the list a gap, so its spacing
+leaves with it. Reduced motion makes the change at once.
+
 ## Layout stability
 
 Shortening motion changes when things settle, never where. Chrome motion animates `opacity` and

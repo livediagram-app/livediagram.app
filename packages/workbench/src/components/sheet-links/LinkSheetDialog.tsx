@@ -9,15 +9,15 @@
 import { useEffect, useEffectEvent, useId, useState } from 'react';
 import {
   Button,
-  CloseIcon,
   CompactEmptyState,
-  DialogHeader,
   DialogFooter,
   NoMatches,
   PlanIcon,
   SegmentedToggle,
   SheetLinkIcon,
 } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { linkSheetHeroArt } from '@liveworkspace/ui/dialog-hero-art/link-sheet';
 import {
   sourceKindOf,
   type ChartSheetSource,
@@ -135,6 +135,7 @@ export function LinkSheetDialog({
 }) {
   const rangeId = useId();
   const rangeHintId = useId();
+  const titleId = useId();
   const current = chart.chartSheetSource;
   const isTable = isLiveTable(chart);
   const [query, setQuery] = useState('');
@@ -425,27 +426,15 @@ export function LinkSheetDialog({
     }).leftOut > 0;
 
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      ariaLabel="Data From a Plan"
-      size="xl"
-      phoneSheet
-      className="max-h-[90vh]"
-    >
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} size="xl" phoneSheet className="max-h-[90vh]">
+      <HeroDialogHeader
+        art={linkSheetHeroArt}
+        titleId={titleId}
         title="Data From a Plan"
         subtitle={`Keep this ${isTable ? 'table' : 'chart'} in step with one of your plans.`}
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <CloseIcon size={18} />
-        </button>
-      </DialogHeader>
+        onClose={onClose}
+        underHandle
+      />
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-5 gap-y-4 overflow-y-auto px-6 py-4 sm:grid-cols-2">
         {/* Across both columns, so each label holds one line; on a narrow screen a whole segment wraps, never a word. */}
         <section className="flex min-w-0 flex-col gap-2 sm:col-span-2">

@@ -1,6 +1,11 @@
 import { useId, useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
+import {
+  BrandLogo,
+  POWERPOINT_LOGO,
+  WORD_LOGO,
+} from '@liveworkspace/workbench/components/dialogs/brand-logos';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
 import { FileImportPanel } from './FileImportPanel';
@@ -182,12 +187,15 @@ function ImportChooser({
 }) {
   return (
     <>
-      {/* Destructive-action warning — this overwrites the tab. */}
-      <Callout tone="warning" className="mb-4">
-        This replaces everything on{' '}
-        <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-        content. Undo brings it back.
-      </Callout>
+      {/* Destructive-action warning: this overwrites the tab. On the dialog's first screen only: a format's
+          own step, reached from it, does not say it again. */}
+      {activeFormat && !single ? null : (
+        <Callout tone="warning" className="mb-4">
+          This replaces everything on{' '}
+          <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
+          content. Undo brings it back.
+        </Callout>
+      )}
       {activeFormat?.kind === 'file' ? (
         <FileImportPanel
           // A fresh panel per format, so a stale error never carries across.
@@ -247,7 +255,10 @@ function ImportChooser({
 }
 
 function FormatIcon({ kind }: { kind: Format }) {
-  const label = { json: 'json', markdown: 'md', word: 'docx', powerpoint: 'pptx' }[kind];
+  // Word and PowerPoint show their logos; our own JSON and Markdown keep a text badge.
+  if (kind === 'word') return <BrandLogo mark={WORD_LOGO} />;
+  if (kind === 'powerpoint') return <BrandLogo mark={POWERPOINT_LOGO} />;
+  const label = kind === 'markdown' ? 'md' : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

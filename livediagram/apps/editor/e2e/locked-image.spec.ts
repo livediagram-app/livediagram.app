@@ -25,7 +25,7 @@ const emptyImage = (id: string, x: number, locked = false) => ({
 async function pickPicture(page: Page, id: string) {
   const box = page.locator(`[data-element-id="${id}"]`);
   await box.getByRole('button', { name: 'Select Image' }).click();
-  const picker = page.getByRole('dialog', { name: 'Image picker' });
+  const picker = page.getByRole('dialog', { name: 'Image', exact: true });
   await picker.locator('input[type="file"]').first().setInputFiles(PNG);
   await expect(picker).toBeHidden();
   await expect(box.locator('img')).toHaveCount(1);

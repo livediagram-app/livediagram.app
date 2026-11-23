@@ -24,7 +24,7 @@ import {
 } from '@liveplanner/ui';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { PlanModal, SheetRow } from './PlanModal';
-import { PlanTypeGlyph } from './plan-type-glyph';
+import { repeatHeroArt } from './RepeatHeroArt';
 import { draftProblem, draftRule, repeatDraft, toggleDay, untilFor } from './repeat-draft';
 
 const EVERY_LABEL: Record<RepeatEvery, string> = {
@@ -82,16 +82,7 @@ export function RepeatDialog({
       ? [...statuses, { status: draft.status, name: draft.status }]
       : statuses;
   return (
-    <PlanModal
-      label="Repeat"
-      onClose={onClose}
-      header={
-        <h2 className="flex items-center gap-2 truncate text-[15px] font-semibold text-slate-900 dark:text-slate-100">
-          <PlanTypeGlyph glyph="repeat" size={15} />
-          Repeat
-        </h2>
-      }
-    >
+    <PlanModal art={repeatHeroArt} title="Repeat" onClose={onClose}>
       <form
         onSubmit={(e) => {
           e.preventDefault();

@@ -11,8 +11,6 @@ import {
   type ShapeElement,
 } from '@livedocuments/document';
 import { Glyph } from '@livedocuments/ui';
-import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
@@ -45,23 +43,28 @@ const CONCEPT_TITLE: Record<ConceptShape, string> = {
   'timeline-rail': 'Timeline',
 };
 
-// A concept graphic's own section (docs/specs/009-elements/concept-graphics.md): a pyramid's variant, a hub's spokes.
+// A concept graphic's own settings (docs/specs/009-elements/concept-graphics.md): a pyramid's variant, a hub's spokes,
+// shown at the head of its dialog, over its rows (ElementRowsDialogs).
 // Its Concept animation is a category of the menu's Animation row (ElementAnimationTiles). The rows have their own Rows section, like a web component's.
-export function ConceptMenuSection({
+/** What a concept graphic is called: its menu row and its dialog. */
+export const conceptTitle = (shape: ConceptShape): string => CONCEPT_TITLE[shape];
+
+/** Whether the graphic has settings of its own (a pyramid's shape, a hub's spokes). */
+export const hasConceptSettings = (target: ShapeElement & { shape: ConceptShape }): boolean =>
+  target.shape === 'pyramid' || target.shape === 'hub';
+
+export function ConceptSettings({
   target,
   ops,
-  sectionProps,
 }: {
   target: ShapeElement & { shape: ConceptShape };
-  ops: ElementStyleOps;
-  sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
+  ops: Pick<ElementStyleOps, 'commit' | 'preview' | 'end'>;
 }) {
   const variant = target.shape === 'pyramid' ? pyramidVariantOf(target) : null;
-  const title = CONCEPT_TITLE[target.shape];
   // Only a pyramid and a hub have settings of their own; the others' section would be empty.
   if (!variant && target.shape !== 'hub') return null;
   return (
-    <MenuAccordionSection title={title} icon={<DataMenuGlyph />} {...sectionProps('concept')}>
+    <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
       {target.shape === 'hub' ? (
         <MenuToggleRow
           label="Spokes"
@@ -89,6 +92,6 @@ export function ConceptMenuSection({
           </BorderGrid>
         </div>
       ) : null}
-    </MenuAccordionSection>
+    </div>
   );
 }

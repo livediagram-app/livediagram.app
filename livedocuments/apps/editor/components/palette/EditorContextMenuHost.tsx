@@ -126,7 +126,8 @@ function OpenEditorContextMenu() {
     setChartTypeSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
-    setCodeWrapSelected,
+    setRowsEditorOpenFor,
+    setResourcesOpenForId,
     setLegendItemsSelected,
     sankey,
     setSankeyFlowsOpenForId,
@@ -135,7 +136,6 @@ function OpenEditorContextMenu() {
     can,
     setChecklistItemsSelected,
     toggleChecklistItem,
-    setWebRowsSelected,
     setHeroCaptionSelected,
     commitShapeColorPreset,
     previewShapeColorPreset,
@@ -321,7 +321,10 @@ function OpenEditorContextMenu() {
       onSetChartType={setChartTypeSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
-      onSetCodeWrap={setCodeWrapSelected}
+      onEditRows={(id, kind) => {
+        closeContextMenu();
+        setRowsEditorOpenFor({ id, kind });
+      }}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
       build={buildSlide ? { slideElements: buildSlide } : undefined}
@@ -329,7 +332,6 @@ function OpenEditorContextMenu() {
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
-      onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
       onApplyShapeColorPreset={commitShapeColorPreset}
@@ -404,6 +406,10 @@ function OpenEditorContextMenu() {
       onToggleTableZebra={setTableZebraSelected}
       onOpenComments={openComments}
       onAssignAction={openAssignAction}
+      onOpenResources={(id) => {
+        closeContextMenu();
+        setResourcesOpenForId(id);
+      }}
       onDeleteElement={deleteSelected}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))

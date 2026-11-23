@@ -12,8 +12,8 @@
 // second copy of this would drift on the first behaviour fix.
 
 import { useButtonLabels } from '@/components/canvas/SelectionPopoverButton';
-import { useEffect, useRef, useState } from 'react';
-import { ChevronDownIcon, HoverCard, useClickOutside } from '@livediagram/ui';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ChevronDownIcon, HoverCard, Portal, useClickOutside } from '@livediagram/ui';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // preventDefault on mousedown keeps focus + the live selection in the
@@ -26,8 +26,12 @@ const CHEVRON = <ChevronDownIcon size={12} />;
 // Where the open menu hangs: under its own trigger ('self'), or under the nearest positioned toolbar card with the
 // trigger's left edge ('toolbar'), for a dropdown inside a strip that scrolls sideways, whose clip would cut the menu
 // off. The menu keeps its static left there, which ignores the strip's scroll, so it is pulled back by that scroll
-// on opening, and closes if the strip scrolls while it is open.
-export type ToolbarDropdownMenuAnchor = 'self' | 'toolbar';
+// on opening, and closes if the strip scrolls while it is open. 'portal': under its trigger but drawn on the page
+// itself, for a dropdown inside a surface that clips (the element menu, whose bar holds a cardinality list wider
+// than the menu): nothing cuts it off, it is kept on screen, and it closes on a scroll or a resize.
+export type ToolbarDropdownMenuAnchor = 'self' | 'toolbar' | 'portal';
+
+const EDGE = 8;
 
 export function ToolbarDropdown({
   label,
@@ -50,7 +54,48 @@ export function ToolbarDropdown({
   // How far the strips between the trigger and the toolbar card are scrolled, read on opening.
   const [scrolled, setScrolled] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
-  useClickOutside(rootRef, () => setOpen(false), open);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const portalled = menuAnchor === 'portal';
+  useClickOutside(rootRef, () => setOpen(false), open && !portalled);
+  // A portalled menu: where it stands (measured before paint, so it never flashes at the corner), and its own
+  // outside press, which counts the menu as inside though it is not under the trigger in the page.
+  const [at, setAt] = useState<{ left: number; top: number } | null>(null);
+  useLayoutEffect(() => {
+    if (!open || !portalled) return;
+    const trigger = rootRef.current?.getBoundingClientRect();
+    const menu = menuRef.current?.getBoundingClientRect();
+    if (!trigger || !menu) return;
+    const below = trigger.bottom + 4;
+    setAt({
+      left: Math.round(
+        Math.max(EDGE, Math.min(trigger.left, window.innerWidth - menu.width - EDGE)),
+      ),
+      // Under the trigger; above it when there is no room below.
+      top: Math.round(
+        below + menu.height + EDGE <= window.innerHeight
+          ? below
+          : Math.max(EDGE, trigger.top - 4 - menu.height),
+      ),
+    });
+  }, [open, portalled]);
+  useEffect(() => {
+    if (!open || !portalled) return;
+    const onDown = (e: PointerEvent) => {
+      const t = e.target;
+      if (!(t instanceof Node)) return;
+      if (rootRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
+    };
+    const close = () => setOpen(false);
+    document.addEventListener('pointerdown', onDown, true);
+    document.addEventListener('scroll', close, { capture: true, passive: true });
+    window.addEventListener('resize', close);
+    return () => {
+      document.removeEventListener('pointerdown', onDown, true);
+      document.removeEventListener('scroll', close, { capture: true });
+      window.removeEventListener('resize', close);
+    };
+  }, [open, portalled]);
   const toggle = () => {
     const root = rootRef.current;
     if (!open && menuAnchor === 'toolbar' && root) {
@@ -59,6 +104,8 @@ export function ToolbarDropdown({
         x += n.scrollLeft;
       setScrolled(x);
     }
+    // A portalled menu is placed afresh each time it opens.
+    setAt(null);
     setOpen((o) => !o);
   };
   useEffect(() => {
@@ -91,7 +138,26 @@ export function ToolbarDropdown({
           {hideChevron ? null : CHEVRON}
         </button>
       </HoverCard>
-      {open ? (
+      {open && portalled ? (
+        <Portal>
+          <div
+            ref={menuRef}
+            role="listbox"
+            // The element menu counts a press here as inside it (its flyout marker), and the canvas never sees it.
+            data-menu-flyout=""
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setOpen(false)}
+            style={{
+              left: at?.left ?? 0,
+              top: at?.top ?? 0,
+              visibility: at ? 'visible' : 'hidden',
+            }}
+            className={`fixed z-[var(--z-popover)] rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 ${menuClassName}`}
+          >
+            {children}
+          </div>
+        </Portal>
+      ) : open ? (
         <div
           role="listbox"
           // An option click bubbles here and closes the menu after its own

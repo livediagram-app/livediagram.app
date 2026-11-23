@@ -160,8 +160,9 @@ a webhook is a connection, managed on the **Connections** tab inside Automations
 ### Always there
 
 A tool that would work for this person but for an account or for where the item lives **always shows** in Tools
-(owner, 2026-11-16), so everyone can find it, with small badges beside its name saying everything it needs, in order:
-**Sign In** (it needs an account), then **Sync Plan** (the app's own noun: Sync Canvas, Sync Document, Sync Design,
+(owner, 2026-11-16), so everyone can find it, with small round icon badges beside its name saying everything it needs, in order (icons, not words, which widened
+the row; each badge's words are its tooltip and its name for a screen reader):
+**Sign In**, a door with an arrow in (it needs an account), then **Sync Plan**, a cloud with an arrow up (the app's own noun: Sync Canvas, Sync Document, Sync Design,
 Sync Space; it needs the item saved to the server). Signed out on an item kept Offline, it wears both. A press opens
 that tool's gate in its place, in Automations' shape, on the first thing it needs: Sign In leaves for the sign-in page
 and comes back with the tool open; Sync syncs in place and goes on to the tool. Where neither would help (a share-link holder for a tool only an

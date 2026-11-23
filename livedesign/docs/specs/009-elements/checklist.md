@@ -41,3 +41,11 @@ undoable: like a dot or an answer, they are the room's, not an edit.
 ## Telemetry
 
 `track('Element', 'Added', 'Checklist')` at the add handler. Box toggles deliberately don't track (high-frequency, low-signal).
+
+## The Checklist dialog
+
+The element menu's **Checklist** row (Tools flyout) opens the rows in the Checklist dialog, where a row has room: a
+tick box, the task and a remove button per row, then Add Row. It is a centred modal, a bottom sheet on a phone,
+under the dialog hero header. Each change saves as it is made (leaving an input saves it; a tick, a remove and an
+add save at once), so Done closes and undo takes a change back. Rows slide in and out as they are added and
+removed ([Motion](../004-interface-design/motion.md) "Rows that come and go").

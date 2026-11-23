@@ -9,6 +9,7 @@ import {
 } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { withStyleOfTab, withThemeApplied } from './tab-theme-apply';
+import { buildTemplatedTab } from './template-builders';
 
 // Applying a theme to a tab (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel").
 const shape = (over: Partial<ShapeElement> = {}): Element => ({
@@ -64,6 +65,50 @@ describe('withThemeApplied', () => {
 });
 
 // docs/specs/011-theme/light-and-dark.md "A theme never sinks a label into what is behind it".
+// docs/specs/009-elements/lane.md "A lane in the tab's theme": the lanes of a laned flowchart follow the tab's
+// theme whole, heading strip included, when the template is built and on every pick after.
+describe('flowchart lanes in the tab’s theme', () => {
+  const lanesOf = (tab: Tab) =>
+    tab.elements.filter((e): e is ShapeElement => e.type === 'shape' && e.shape === 'lane');
+
+  it.each(['swimlane', 'approval-workflow'] as const)(
+    'a %s built in a theme, then restyled, has every lane in the theme',
+    (kind) => {
+      const built = buildTemplatedTab(kind, 'forest', 't', 'Flow');
+      const forest = getTheme('forest');
+      expect(lanesOf(built).length).toBeGreaterThan(1);
+      for (const lane of lanesOf(built)) {
+        expect(lane.strokeColor).toBe(forest.elementStroke);
+        expect(lane.headerFill).toBeUndefined();
+      }
+      for (const appearance of ['light', 'dark'] as const) {
+        const sunset = getTheme('sunset', appearance);
+        for (const lane of lanesOf(withThemeApplied(built, 'sunset', appearance))) {
+          expect(lane.fillColor).toBe(sunset.elementFill);
+          expect(lane.strokeColor).toBe(sunset.elementStroke);
+          expect(lane.headerFill).toBeUndefined();
+        }
+      }
+    },
+  );
+
+  it('a pick heals a lane saved with a themed border and the heading it was built with', () => {
+    const forest = getTheme('forest', 'light');
+    const stale = shape({
+      shape: 'lane',
+      fillColor: forest.elementFill!,
+      strokeColor: forest.elementStroke!,
+      headerFill: '#f3e8ff',
+    });
+    const out = withThemeApplied(
+      { id: 't', name: 'T', theme: 'forest', elements: [stale] },
+      'sunset',
+      'light',
+    );
+    expect(lanesOf(out)[0]!.headerFill).toBeUndefined();
+  });
+});
+
 describe('labels a pick sank', () => {
   it('stores an ink that reads on the canvas the pick turned dark', () => {
     const caption = {

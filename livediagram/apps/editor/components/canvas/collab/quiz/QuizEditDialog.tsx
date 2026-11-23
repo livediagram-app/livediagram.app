@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
+import { useId, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import {
   clampQuizSeconds,
   compactQuizOptions,
@@ -12,8 +12,10 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import type { QuizDraft } from '@/hooks/canvas/useQuizElements';
+import { quizEditHeroArt } from './QuizEditHeroArt';
 
 // Edit Quiz (docs/specs/012-collaboration/quiz.md): the question, its answers
 // with one marked correct, and how long the round stays open.
@@ -45,6 +47,7 @@ export function QuizEditDialog({
   onClose: () => void;
   onSave: (draft: QuizDraft) => void;
 }) {
+  const titleId = useId();
   const [question, setQuestion] = useState(element.label ?? '');
   const [rows, setRows] = useState<string[]>(() => seedRows(element));
   const [correct, setCorrect] = useState(element.quizCorrect ?? 0);
@@ -71,37 +74,34 @@ export function QuizEditDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} ariaLabel="Edit Quiz" size="md">
+    <Dialog open={open} onClose={onClose} titleId={titleId} size="md">
       {/* A React portal still bubbles its events up the REACT tree, which here
           is the canvas element that owns the card. A double-click to select a
           word in an answer would otherwise put the element into label edit,
           which unmounts the face and this dialog with it (the same trap the
-          ellipsis menu documents). */}
+          ellipsis menu documents). The two wrappers pass the panel's corner radius down, so the hero
+          header's band still follows the panel's top corners. */}
       <div
+        className="[border-radius:inherit]"
         onClick={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
       >
         <form
+          className="[border-radius:inherit]"
           onSubmit={(e) => {
             e.preventDefault();
             save();
           }}
         >
-          <DialogHeader
+          <HeroDialogHeader
+            art={quizEditHeroArt}
+            titleId={titleId}
             title="Edit Quiz"
             subtitle="One question, two to six answers. Saving resets the round."
-          >
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-            >
-              <CloseIcon size={16} />
-            </button>
-          </DialogHeader>
+            onClose={onClose}
+          />
           <div className="flex flex-col gap-4 px-6 py-5">
             <label className="block">
               <span className={labelClass}>Question</span>

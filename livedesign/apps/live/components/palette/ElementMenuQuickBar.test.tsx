@@ -41,6 +41,39 @@ describe('quickBarItems', () => {
     ]);
   });
 
+  // "Resources": the dialog's rows say what the element has, and Link and a written Note have options of their own.
+  it('says what the element has now, and gives Link its places and a written Note its own options', () => {
+    const h = { ...handlers(), onRemoveLink: vi.fn(), onRemoveNote: vi.fn() };
+    const has = square({
+      link: { kind: 'url', url: 'https://example.com/' },
+      note: 'Remember\nthis',
+    });
+    const items = quickBarItems(has, h);
+    const link = items.find((i) => i.key === 'link')!;
+    expect(link.state).toBe('example.com');
+    expect(link.choices?.map((c) => [c.key, !!c.current])).toEqual([
+      ['url', true],
+      ['tab', false],
+      ['design', false],
+      ['remove', false],
+    ]);
+    link.choices?.find((c) => c.key === 'tab')?.run();
+    expect(h.onLinkElement).toHaveBeenCalledWith('sq', 'tab');
+    link.choices?.find((c) => c.key === 'remove')?.run();
+    expect(h.onRemoveLink).toHaveBeenCalledTimes(1);
+    const note = items.find((i) => i.key === 'note')!;
+    expect(note.state).toBe('Remember');
+    expect(note.choices?.map((c) => c.key)).toEqual(['edit', 'remove']);
+    // Nothing to choose between until it is written: the row opens it.
+    const bare = quickBarItems(square(), h);
+    expect(bare.find((i) => i.key === 'note')?.choices).toBeUndefined();
+    expect(bare.find((i) => i.key === 'link')?.choices?.map((c) => c.key)).toEqual([
+      'url',
+      'tab',
+      'design',
+    ]);
+  });
+
   it('leaves Add Link to a link card’s own Link category', () => {
     const card = { ...square(), type: 'link-card' } as unknown as BoxedElement;
     expect(quickBarItems(card, handlers()).map((i) => i.key)).toEqual([

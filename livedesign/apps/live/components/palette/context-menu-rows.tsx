@@ -32,10 +32,10 @@ import { TOOLBAR_CONTROL_REST } from '@liveworkspace/workbench/components/chrome
 // resolving.
 export {
   ChecklistRowsEditor,
-  CodeSummary,
   LegendDataEditor,
   LineDataSummary,
   PieDataEditor,
+  PieDataSummary,
 } from './context-menu-data-editors';
 export {
   ChartMenuGlyph,

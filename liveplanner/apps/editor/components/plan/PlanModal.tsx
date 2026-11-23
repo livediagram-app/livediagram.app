@@ -1,28 +1,44 @@
 'use client';
 
-// The item panel's shell (docs/specs/026-plan/blueprints/plan-board.md "Presentation and UX"):
-// PlanModal, a centred modal over the editor with a header, a scrolling body and a footer, rising
-// from the bottom with a grab handle on a phone, through the shared Dialog. With the row and field
-// styles the Plan forms share.
-import type { ReactNode } from 'react';
+// The Plan forms' shell (docs/specs/026-plan/blueprints/plan-board.md "Presentation and UX"):
+// PlanModal, a centred modal over the editor with the dialog hero header (the caller's art and
+// title), a scrolling body and a footer, rising from the bottom with a grab handle on a phone,
+// through the shared Dialog. With the row and field styles the Plan forms share.
+import { useId, type ReactNode } from 'react';
+import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { DialogCloseButton } from '@liveplanner/ui';
 
 type ShellProps = {
-  label: string;
+  // The hero header's art, the caller's own (<Dialog>HeroArt.tsx beside it).
+  art: HeroArt;
+  // The dialog's name: the header's title, and what the panel is labelled by.
+  title: string;
+  // One line under the title.
+  subtitle?: ReactNode;
   onClose: () => void;
-  header: ReactNode;
   children: ReactNode;
   footer?: ReactNode;
 };
 
-function ShellParts({ onClose, header, children, footer }: ShellProps) {
+function ShellParts({
+  art,
+  title,
+  subtitle,
+  onClose,
+  children,
+  footer,
+  titleId,
+}: ShellProps & { titleId: string }) {
   return (
     <>
-      <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-700">
-        <div className="min-w-0 flex-1">{header}</div>
-        <DialogCloseButton compact onClick={onClose} />
-      </div>
+      <HeroDialogHeader
+        art={art}
+        titleId={titleId}
+        title={title}
+        subtitle={subtitle}
+        onClose={onClose}
+        underHandle
+      />
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">{children}</div>
       {footer ? (
         <div className="border-t border-slate-200 px-4 py-2.5 text-[11px] text-slate-500 dark:border-slate-700 dark:text-slate-400">
@@ -34,16 +50,17 @@ function ShellParts({ onClose, header, children, footer }: ShellProps) {
 }
 
 export function PlanModal(props: ShellProps) {
+  const titleId = useId();
   return (
     <Dialog
       open
       onClose={props.onClose}
-      ariaLabel={props.label}
+      titleId={titleId}
       size="lg"
       phoneSheet
       className="max-h-[min(44rem,calc(100dvh-2rem))] overflow-hidden"
     >
-      <ShellParts {...props} />
+      <ShellParts {...props} titleId={titleId} />
     </Dialog>
   );
 }

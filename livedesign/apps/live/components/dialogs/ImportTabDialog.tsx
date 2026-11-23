@@ -148,9 +148,10 @@ function ImportChooser({
         <Callout tone="info" className="mb-4">
           The shapes land on the page you are on, fitted to it.
         </Callout>
-      ) : (
+      ) : activeFormat && !single ? null : (
         // Destructive-action warning: a JSON import overwrites the tab. Named for JSON, so it never reads as if the
-        // SVG card beside it replaced the tab too (svg-import.md).
+        // SVG card beside it replaced the tab too (svg-import.md). On the dialog's first screen only: the JSON step
+        // reached from it does not say it again.
         <Callout tone="warning" className="mb-4">
           A JSON import replaces everything on{' '}
           <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported

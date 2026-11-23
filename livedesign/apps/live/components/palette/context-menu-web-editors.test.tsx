@@ -17,26 +17,20 @@ import {
   ConceptRowsEditor,
   hasWebRowsSection,
   TextRowsEditor,
-  WebRowsMenuSection,
+  WebRowsEditor,
 } from './context-menu-web-editors';
 
 afterEach(cleanup);
 
-const open = () => ({ open: true, onToggle: () => {}, flush: true });
-
 function renderSection(shape: Parameters<typeof createShape>[0], patch: object = {}) {
   const onSetRows = vi.fn<(rows: WebRows) => void>();
   render(
-    <WebRowsMenuSection
-      target={{ ...createShape(shape, 0, 0), ...patch }}
-      sectionProps={open}
-      onSetRows={onSetRows}
-    />,
+    <WebRowsEditor target={{ ...createShape(shape, 0, 0), ...patch }} onSetRows={onSetRows} />,
   );
   return onSetRows;
 }
 
-describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
+describe('WebRowsEditor (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
   it('only the row-carrying kinds get a section', () => {
     expect(hasWebRowsSection(createShape('stat-row', 0, 0))).toBe(true);
     expect(hasWebRowsSection(createShape('process', 0, 0))).toBe(true);

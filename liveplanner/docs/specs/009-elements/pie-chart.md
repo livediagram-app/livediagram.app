@@ -234,3 +234,15 @@ match it. The dot and row pitch scale with it.
 Self-drawing (`isSelfDrawingShape`), so no centred label editing, and its wrapper
 paints no box; `LegendView` draws the card from the element's fill + stroke, and
 `svgLegendShape` draws the same thing for exports and thumbnails.
+
+## The Chart Data and Legend dialogs
+
+A pie, column or bar chart's rows are edited in the **Chart Data** dialog, not in the menu: the Data category
+lists each row's colour, label and value and has **Edit Data**, which opens it (a line chart's Edit Data opens its
+grid, as before). Per row the dialog has the colour, the label, the value and a remove button, then Add Slice.
+
+A legend's rows are edited in the **Legend** dialog, opened by the menu's **Legend** row: a colour, a word and a
+remove button per row, then Add Row. Its text size and palette stay in the menu's **Legend Style** category.
+
+Both are centred modals, bottom sheets on a phone, under the dialog hero header; each change saves as it is made,
+and rows slide in and out ([Motion](../004-interface-design/motion.md) "Rows that come and go").

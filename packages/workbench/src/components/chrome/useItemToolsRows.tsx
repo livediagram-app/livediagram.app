@@ -11,17 +11,17 @@ import { useDeferredAuth } from '../providers/deferred-auth';
 import { useSavedLook } from './AuthControls';
 import { accountAvatarFill, accountInitials } from '../../lib/account-avatar';
 import { explorerAccounts } from '../../lib/explorer-accounts';
-import { useMemo, useState, type ComponentType, type ReactNode } from 'react';
+import { useId, useMemo, useState, type ComponentType, type ReactNode } from 'react';
 import {
   ButtonContent,
-  DialogCloseButton,
-  DialogHeader,
   Glyph,
   buttonClassName,
   holdDialogSlot,
   leaveToolsWithDialog,
   useDialogDismiss,
 } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { toolGateHeroArt } from '@liveworkspace/ui/dialog-hero-art/tool-gate';
 import { Dialog } from '../dialogs/Dialog';
 import { DialogFooter } from '../dialogs/DialogFooter';
 import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
@@ -354,6 +354,7 @@ function SignInDialog({
 }) {
   const { signInHref } = useAuthHrefs();
   const copy = SIGN_IN[tool];
+  const titleId = useId();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const word = noun.toLowerCase();
@@ -375,10 +376,13 @@ function SignInDialog({
     }
   };
   return (
-    <Dialog open onClose={onClose} ariaLabel={copy.title} size="md">
-      <DialogHeader title={copy.title}>
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+    <Dialog open onClose={onClose} titleId={titleId} size="md">
+      <HeroDialogHeader
+        art={toolGateHeroArt}
+        titleId={titleId}
+        title={copy.title}
+        onClose={onClose}
+      />
       <div
         data-tools-sign-in={tool}
         className="flex flex-col items-center gap-4 px-6 py-7 text-center"

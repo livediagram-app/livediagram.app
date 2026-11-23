@@ -107,6 +107,12 @@ export function CanvasSelectionToolbars({
   // Mind map (docs/specs/009-elements/mind-node.md): Add Child / Add Sibling, not on a locked node (growing re-lays the
   // map); a Participant grows maps too. Flowchart (docs/specs/009-elements/flowchart.md): Add Step / Add Branch, Step
   // Type and Lane. A relationship joining two entities: its cardinality presets.
+  const kindEditor =
+    readOnly || selectedLocked || !selected
+      ? null
+      : props.canEditMindOutline?.(selected.id) && props.onEditMindOutline
+        ? { kind: 'outline' as const, open: () => props.onEditMindOutline!(selected.id) }
+        : (props.kindEditor?.(selected) ?? null);
   usePublishElementKindTools(selected?.id ?? null, {
     ...((!readOnly || !!props.participantPalette) &&
     !selectedLocked &&
@@ -144,6 +150,12 @@ export function CanvasSelectionToolbars({
             onAdd: () => props.onAppendWebRow?.(selected.id),
           },
         }
+      : {}),
+    // The element's own edit dialog, where it has one and this person may open it.
+    ...(kindEditor ? { editor: kindEditor } : {}),
+    // A table grows from here too: a row at its foot, a column at its right (the ring's adds, as buttons).
+    ...(!readOnly && !selectedLocked && selected?.type === 'table'
+      ? { table: { onAddRow: props.onAddTableRow, onAddColumn: props.onAddTableColumn } }
       : {}),
     // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): at the bar's right, apart from the rest.
     saveToLibrary: readOnly || !selected ? undefined : () => libraryDraftOf([selected]),

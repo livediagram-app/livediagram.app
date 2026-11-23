@@ -32,12 +32,11 @@ import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 // resolving.
 export {
   ChecklistRowsEditor,
-  CodeSummary,
   LegendDataEditor,
   LineDataSummary,
   PieDataEditor,
+  PieDataSummary,
 } from './context-menu-data-editors';
-export { EntityFieldsEditor } from './EntityFieldsEditor';
 export {
   ChartMenuGlyph,
   DataMenuGlyph,

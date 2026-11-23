@@ -7,10 +7,12 @@
 // Existing draw it; what to offer, and what a pick does, is theirs.
 
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { DialogCloseButton, lucideGlyph, useEscape } from '@liveplanner/ui';
+import { lucideGlyph, useEscape } from '@liveplanner/ui';
 import { lucideSearch } from '@liveworkspace/icons/lucide';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { cardPickerHeroArt } from './CardPickerHeroArt';
 import type { PickCard } from './card-picker';
 
 const SearchIcon = lucideGlyph(lucideSearch, 14);
@@ -75,6 +77,7 @@ function CardRow<R extends CardPickerRow>({
 export function CardPickerDialog<R extends CardPickerRow>({
   title,
   description,
+  art = cardPickerHeroArt,
   cards,
   query,
   onQuery,
@@ -87,6 +90,8 @@ export function CardPickerDialog<R extends CardPickerRow>({
 }: {
   title: string;
   description: ReactNode;
+  // The hero header's art: the picker's own, or its host's (Test on a Card).
+  art?: HeroArt;
   // The rows to draw, already narrowed by the search (useCardPickerSearch).
   cards: readonly R[];
   query: string;
@@ -103,6 +108,7 @@ export function CardPickerDialog<R extends CardPickerRow>({
   onClose: () => void;
 }) {
   const searchId = useId();
+  const titleId = useId();
   const searchRef = useRef<HTMLInputElement>(null);
   // The search is focused on open with a mouse; on a touch screen the keyboard would cover the list.
   useEffect(() => {
@@ -114,22 +120,18 @@ export function CardPickerDialog<R extends CardPickerRow>({
     <Dialog
       open
       onClose={onClose}
-      ariaLabel={title}
+      titleId={titleId}
       size="md"
       closeOnEscape={false}
       className="max-h-[85vh]"
     >
-      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-5 pb-3 pt-5 dark:border-slate-800">
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
-          <p className="mt-0.5 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">
-            {description}
-          </p>
-        </div>
-        <div className="-mt-1 flex shrink-0 items-center">
-          <DialogCloseButton onClick={onClose} />
-        </div>
-      </div>
+      <HeroDialogHeader
+        art={art}
+        titleId={titleId}
+        title={title}
+        subtitle={description}
+        onClose={onClose}
+      />
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="px-5 pt-3">
           <label htmlFor={searchId} className="sr-only">

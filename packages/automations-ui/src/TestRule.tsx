@@ -7,8 +7,10 @@
 // to pick (it runs on the item alone). An app that picks what to test on (liveplanner: a card) draws its own picker
 // first, then TestRuleResult.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Button, DialogCloseButton, DialogFooter } from '@liveworkspace/ui';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { Button, DialogFooter } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { testRuleHeroArt } from '@liveworkspace/ui/dialog-hero-art/test-rule';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { AutomationRefusal } from './automations-client';
@@ -72,7 +74,8 @@ export function useTestRun<Body extends RuleBody>({
   return { phase, run, reset };
 }
 
-/** The test's result: what it ran on, then the run's result, how long it took and its steps. */
+/** The test's result: the hero header (dialog-hero-header.md) naming the test and what it ran on, then the run's
+ *  result, how long it took and its steps. */
 export function TestRuleResult({
   title,
   subject,
@@ -93,17 +96,16 @@ export function TestRuleResult({
   onClose: () => void;
 }) {
   const { sentence } = useAutomationsKit();
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel={title} size="lg">
-      <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-4 pt-6 dark:border-slate-800">
-        <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
-          {subject ? (
-            <p className="mt-1 truncate text-sm text-slate-600 dark:text-slate-400">{subject}</p>
-          ) : null}
-        </div>
-        <DialogCloseButton onClick={onClose} />
-      </div>
+    <Dialog open onClose={onClose} titleId={titleId} size="lg">
+      <HeroDialogHeader
+        art={testRuleHeroArt}
+        titleId={titleId}
+        title={title}
+        subtitle={subject}
+        onClose={onClose}
+      />
       <div className="flex flex-col gap-3 px-6 py-5" aria-live="polite">
         {phase.at === 'running' ? (
           <p role="status" className="text-sm text-slate-600 dark:text-slate-300">

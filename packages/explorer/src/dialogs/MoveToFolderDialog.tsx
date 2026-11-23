@@ -3,9 +3,11 @@
 // liveplanner's MoveToFolderDialog: "Move “<name>”", the placement browser, Cancel and Move Here. It takes
 // plain folders and teams, so a host can use it without the rest of the Explorer.
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Button } from '@liveworkspace/ui';
-import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { moveToFolderHeroArt } from '@liveworkspace/ui/dialog-hero-art/move-to-folder';
+import { Dialog, DialogFooter } from '../ui/Dialog';
 import type { CreateTeam, FindTeam } from '../teams/RefreshTeamsButton';
 import {
   PlacementBrowser,
@@ -70,10 +72,13 @@ export function MoveToFolderDialog({
     onClose();
   };
   const teamList = teams ?? [];
+  const titleId = useId();
   return (
     <Dialog onClose={onClose} ariaLabel="Move to folder" size="lg" className="max-h-[80vh]">
-      <DialogHeader
-        title={`Move “${subjectName}”`}
+      <HeroDialogHeader
+        art={moveToFolderHeroArt}
+        titleId={titleId}
+        title={<span title={subjectName}>{`Move “${subjectName}”`}</span>}
         subtitle={
           subtitle ??
           (subjectKind === 'folder'
@@ -82,9 +87,8 @@ export function MoveToFolderDialog({
               ? 'Pick a destination folder or team.'
               : 'Pick a destination folder.')
         }
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        onClose={onClose}
+      />
       <div className="flex-1 overflow-y-auto px-5 py-4">
         <PlacementBrowser
           placement={placement}

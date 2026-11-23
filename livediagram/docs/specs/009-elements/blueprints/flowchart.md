@@ -155,9 +155,11 @@ Positions are rounded to whole pixels (memory: fit lands on whole pixels).
   its old centre, then the layout.
 - `setFlowchartDirection(elements, id, direction)`: every step's `flowDirection`, then the layout in
   that direction.
-- `addFlowchartLane(elements, id, laneIds)`: unlaned: two lanes `Lane 1`, `Lane 2` and every step's
-  `flowLaneId` set to the first; laned: one lane `Lane <n+1>` at the end (cross position past the
-  last). Then the layout.
+- `addFlowchartLane(elements, id, laneIds, opts?)`: unlaned: two lanes `Lane 1`, `Lane 2` and every
+  step's `flowLaneId` set to the first; laned: one lane `Lane <n+1>` at the end (cross position past
+  the last). Then the layout. The shape factory makes a lane bare, so `opts.dressLane(lane)` gives each
+  new lane the tab's theme colours (`dressFlowchartLane` in `apps/editor/lib/flowchart-dress.ts`, over
+  `deriveNewBoxedColours`, passed by `useFlowchartSetters.addLaneSelected`); absent leaves it as made.
 - `moveStepToLane(elements, stepId, laneId)`: `flowLaneId`, then the layout.
 - `relayoutFlowchart(elements, id)`: the layout as is (Tidy Flowchart, and after any structural change
   the editor detects).

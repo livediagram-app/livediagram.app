@@ -5,10 +5,10 @@
 // be; Custom with its own width and height; Select All and Clear; the room the tab has left. Make adds a
 // new photo page for each tick in one edit, and a toast offers Export All Sizes. For an Editor who may
 // add pages.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { lucideCheck } from '@liveworkspace/icons/lucide';
 import { nextPageId, type Page } from '@livedesign/design';
-import { Button, DialogHeader, lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livedesign/ui';
+import { Button, lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livedesign/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -25,6 +25,8 @@ import {
 } from '@/lib/photo-editor/make-sizes';
 import { encodePreview, previewRaster } from '@/lib/photo-editor/preview';
 import { photoUploads } from '@/lib/photo-editor/upload-queue';
+import { makeSizesHeroArt } from './MakeSizesHeroArt';
+import { PhotoDialogHero } from './PhotoDialogHero';
 import { NumberField } from './PhotoSizeDialogs';
 import { usePhotoPreviewUrl } from './usePhotoPreviewUrl';
 
@@ -115,6 +117,7 @@ export function MakeSizesDialog({
   const s = photo.session!;
   const editor = useOptionalEditorContext();
   const toast = useToast();
+  const titleId = useId();
   const [ticks] = useState(() => sizeTicks.get());
   const [room] = useState(photo.photoRoom);
   // Kept in order, never past the room.
@@ -218,15 +221,21 @@ export function MakeSizesDialog({
     <Dialog
       open
       onClose={onClose}
-      ariaLabel="Make Sizes"
+      titleId={titleId}
       size="lg"
       phoneSheet
       backdrop="desktop-light"
       className="flex max-h-[90vh] flex-col"
     >
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): one photo standing in three formats. */}
+      <PhotoDialogHero
+        art={makeSizesHeroArt}
+        titleId={titleId}
         title="Make Sizes"
-        subtitle={`Now ${W} x ${H} px. Each size becomes a new photo page, the picture scaled to fill it and cropped about the centre.`}
+        line={`Now ${W} x ${H} px. Each size becomes a new photo page, the picture scaled to fill it and cropped about the centre.`}
+        short={`Now ${W} x ${H} px. Each size becomes a new photo page.`}
+        sheet
+        onClose={onClose}
       />
       <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-6 py-4">
         <div className="flex items-center justify-between gap-2">

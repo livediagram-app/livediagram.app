@@ -19,26 +19,20 @@ import {
   ConceptRowsEditor,
   hasWebRowsSection,
   TextRowsEditor,
-  WebRowsMenuSection,
+  WebRowsEditor,
 } from './context-menu-web-editors';
 
 afterEach(cleanup);
 
-const open = () => ({ open: true, onToggle: () => {}, flush: true });
-
 function renderSection(shape: Parameters<typeof createShape>[0], patch: object = {}) {
   const onSetRows = vi.fn<(rows: WebRows) => void>();
   render(
-    <WebRowsMenuSection
-      target={{ ...createShape(shape, 0, 0), ...patch }}
-      sectionProps={open}
-      onSetRows={onSetRows}
-    />,
+    <WebRowsEditor target={{ ...createShape(shape, 0, 0), ...patch }} onSetRows={onSetRows} />,
   );
   return onSetRows;
 }
 
-describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
+describe('WebRowsEditor (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
   it('only the row-carrying kinds get a section', () => {
     expect(hasWebRowsSection(createShape('stat-row', 0, 0))).toBe(true);
     expect(hasWebRowsSection(createShape('process', 0, 0))).toBe(true);
@@ -116,9 +110,7 @@ describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-grou
     const commit = vi.fn<(map: ElementMap, type: string) => void>();
     const ops = { preview: vi.fn(), end: vi.fn(), commit, burst: vi.fn(), commitTab: vi.fn() };
     const target = createShape('stat-row', 0, 0);
-    render(
-      <WebRowsMenuSection target={target} sectionProps={open} onSetRows={vi.fn()} ops={ops} />,
-    );
+    render(<WebRowsEditor target={target} onSetRows={vi.fn()} ops={ops} />);
     const toggle = screen.getByRole('button', { name: /Count Up When Presented/ });
     expect(toggle.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(toggle);
@@ -127,14 +119,7 @@ describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-grou
     expect(off.statCountUp).toBe(false);
     cleanup();
     const commitOn = vi.fn<(map: ElementMap, type: string) => void>();
-    render(
-      <WebRowsMenuSection
-        target={off}
-        sectionProps={open}
-        onSetRows={vi.fn()}
-        ops={{ ...ops, commit: commitOn }}
-      />,
-    );
+    render(<WebRowsEditor target={off} onSetRows={vi.fn()} ops={{ ...ops, commit: commitOn }} />);
     fireEvent.click(screen.getByRole('button', { name: /Count Up When Presented/ }));
     expect('statCountUp' in commitOn.mock.calls[0]![0](off)).toBe(false);
     // Not a stat row: left alone.

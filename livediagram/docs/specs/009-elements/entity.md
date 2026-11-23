@@ -116,7 +116,7 @@ pins to the entity as a whole, as on any shape. When the entity moves past the o
 and stays on its field. An end on an anchor at the top or bottom, a field index past the last field, or a field
 scrolled out of the box falls back to the plain anchor.
 
-Removing a field from the Fields menu or in place lets go of any end pinned to it (the end stays on the entity)
+Removing a field from the Fields dialog or in place lets go of any end pinned to it (the end stays on the entity)
 and moves ends on the fields after it up by one, so every end keeps its field.
 
 ### Cardinality ends
@@ -132,16 +132,37 @@ One to Zero or Many. Each sets both ends at once; the arrow menu's per-end shape
 
 ## The box follows its fields
 
-The editor changes an entity's fields from the Fields menu, from in-place editing and from the ring. Each change
+The editor changes an entity's fields from the Fields dialog, from in-place editing and from the ring. Each change
 resizes the box to its fields: the height that shows every row ("Authored size" in the blueprint), plus whatever
 extra height the person had given it before. So adding a field never hides it below the box, and removing one
 never leaves an empty tail, while a box someone stretched on purpose keeps its extra room.
 
-## The Fields menu
+## The Fields dialog
 
-The rows also live in a **Fields** section in the right-click menu (under the Tools flyout, where the other
-data-shape editors sit), mirroring the checklist's row editor: a key button that cycles the key, a name input, a
-type input, a remove button, and Add Field.
+The rows also live in a **Fields dialog**: a centred modal, a bottom sheet on a phone, under the dialog hero header
+([Dialog hero header](../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md); its art is an entity rising
+from the band's foot, its first field's key in the accent). Per field it has a key dropdown, a name input, a type input and a remove button, then Add Field, at a size a finger lands on (a
+row of key, name and type had no room in the 224px menu, where it used to be an inline section). Each change saves
+as it is made, as in place: leaving an input saves it, a key, a remove and an add save at once. So there is no
+Cancel: **Done** closes, closing any other way saves the input being typed in first, and undo takes a change back.
+
+**The key dropdown** (`EntityKeyPicker`) is a button showing the key's glyph alone, as the entity draws it (a dashed
+ring for no key). Pressing it opens a menu of every key, each glyph beside its name: No Key, Primary Key, Foreign
+Key, Primary and Foreign Key, Unique Key, the one in force ticked and the others showing their short form (PK, FK,
+PK FK, UK). The names are in the menu only, never on the dialog's rows: the menu is where the glyphs are learnt.
+
+**Rows slide in and out**: Add Field's row grows in and a removed row shrinks away before it leaves the list
+([Motion](../004-interface-design/motion.md) "Rows that come and go").
+
+Two things open it, for an Editor on an unlocked entity:
+
+- The **Fields** row in the right-click menu (under the Tools flyout, where the other data-shape editors sit). The
+  row keeps its place and name; its trailing mark is a small window rather than a chevron or an ellipsis, saying it
+  opens a dialog ([Canvas and palette](../008-canvas/canvas-and-palette.md) "A category that opens a dialog"). The
+  menu closes as the dialog opens.
+- **Edit Fields**, the entity's kind tool: in the bar at the top of its element menu and in the Quick Style panel's
+  Tools row, as a mind node's Add Child and Add Sibling are
+  ([Element menu quick bar](../008-canvas/element-menu-quick-bar.md) "Kind tools").
 
 ## Not two compartments
 
@@ -170,11 +191,11 @@ floor so an entity at the 16px size keeps a 30px band.
 
 ## Share roles
 
-| Role        | May                                                                                  |
-| ----------- | ------------------------------------------------------------------------------------ |
-| Editor      | Everything above: edit fields in place and in the menu, the ring's adds, cardinality |
-| Participant | Nothing entity-specific: reshaping a diagram is an Editor's ([Share roles][roles])   |
-| Viewer      | Looks: the keys, stripes and field-pinned relationships render; nothing is a control |
+| Role        | May                                                                                    |
+| ----------- | -------------------------------------------------------------------------------------- |
+| Editor      | Everything above: edit fields in place and in the dialog, the ring's adds, cardinality |
+| Participant | Nothing entity-specific: reshaping a diagram is an Editor's ([Share roles][roles])     |
+| Viewer      | Looks: the keys, stripes and field-pinned relationships render; nothing is a control   |
 
 [roles]: ../013-workspace/share-roles.md
 

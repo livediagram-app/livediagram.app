@@ -1,4 +1,5 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
+import type { RowsEditorKind } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
 import type { EventStormingNoteKind } from '@livediagram/document';
 import type {
   AnimationSpeed,
@@ -14,8 +15,6 @@ import type {
   ChartLegendPosition,
   ChartType,
   ChecklistItem,
-  EntityField,
-  FieldRemap,
   AgendaItem,
   DecisionStatus,
   EstimateScale,
@@ -197,8 +196,9 @@ export type EditorContextMenuProps = {
   // Code block (docs/specs/009-elements/code-block.md): open the code edit modal for the given element
   // (same too-big-for-the-menu rationale as the line chart's grid).
   onEditCodeBlock: (elementId: string) => void;
+  // Opens an element's rows in their dialog: a checklist's, a legend's, a chart's slices.
+  onEditRows: (elementId: string, kind: RowsEditorKind) => void;
   // Long-line wrapping on a code block (docs/specs/009-elements/code-block.md), on by default.
-  onSetCodeWrap: (wrap: boolean) => void;
   // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array, committed in one step.
   onSetLegendItems: (items: LegendItem[]) => void;
   // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
@@ -237,11 +237,11 @@ export type EditorContextMenuProps = {
   // Tick one row, as the on-canvas checkbox does: a delta the room merges,
   // not a rewrite of every row (docs/specs/012-collaboration/collab-race-hardening.md).
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  onSetEntityFields: (fields: EntityField[], remap?: FieldRemap) => void;
+  // Opens the Fields dialog (docs/specs/009-elements/entity.md "The Fields dialog").
+  onEditEntityFields: (elementId: string) => void;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.
-  onSetWebRows: (rows: import('@livediagram/document').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
   // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
   onSetButtonMode: (mode: import('@livediagram/document').SelectionMode) => void;
@@ -401,6 +401,9 @@ export type EditorContextMenuProps = {
   // tile, shown for everyone (signed-out users can self-assign). Opens
   // the assign dialog (no action yet) or the action popover (one exists).
   onAssignAction: (elementId: string) => void;
+  // Opens the Resources dialog for the element (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"). The
+  // host closes the menu first, so the menu never stays drawn over it.
+  onOpenResources: (elementId: string) => void;
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed, Line + Pointer for arrows). The format setters

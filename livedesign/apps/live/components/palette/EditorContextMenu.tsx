@@ -59,7 +59,8 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementMenuQuickBar, quickBarItems } from './ElementMenuQuickBar';
-import { ResourcesFlyout } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
+import { ResourcesMenuGlyph } from '@liveworkspace/workbench/components/palette/element-resources';
+import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
 import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
@@ -326,12 +327,15 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           labelFillHandlers={labelFillHandlers}
         />
         {/* Resources (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"): what attaches to the element,
-            in one flyout laid out as Appearance's Finish list, the menu's last category. Arrows take none. */}
-        <ResourcesFlyout
-          items={showCollaborateGroup && isBoxed(target) ? quickBarItems(target, props) : []}
-          flyout={flyoutProps('resources')}
-          onClose={onClose}
-        />
+            the menu's last row, opening the Resources dialog (the host closes the menu as it opens). Arrows take
+            none, and with nothing to offer the row is not drawn. */}
+        {showCollaborateGroup && isBoxed(target) && quickBarItems(target, props).length ? (
+          <MenuDialogSection
+            title="Resources"
+            icon={<ResourcesMenuGlyph />}
+            onOpen={() => props.onOpenResources(target.id)}
+          />
+        ) : null}
       </ContextMenu>
     );
   }

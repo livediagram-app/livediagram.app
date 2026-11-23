@@ -4,8 +4,8 @@
 // (width and height in px or %, the chain keeping the shape, the resampling), Canvas Size (the new size
 // about an anchor, the new area's fill) and Rotate (any angle, the canvas growing to hold it). OK is
 // one edit; the page takes the new size.
-import { useState } from 'react';
-import { Button, DialogHeader } from '@livedesign/ui';
+import { useId, useState } from 'react';
+import { Button } from '@livedesign/ui';
 import { ANCHORS, type Anchor, type Interpolation } from '@livedesign/photo-engine';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
@@ -16,6 +16,10 @@ import { canvasSize, imageSize, rotateAny, sizeRefused } from '@/lib/photo-edito
 import { photoTools } from '@/lib/photo-editor/tool-state';
 import { track } from '@/lib/telemetry';
 import { OptionChoice, OptionToggle } from './photo-controls';
+import { photoCanvasSizeHeroArt } from './PhotoCanvasSizeHeroArt';
+import { PhotoDialogHero } from './PhotoDialogHero';
+import { photoImageSizeHeroArt } from './PhotoImageSizeHeroArt';
+import { photoRotateHeroArt } from './PhotoRotateHeroArt';
 
 const FIELD =
   'w-24 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm tabular-nums dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100';
@@ -78,9 +82,17 @@ export function ImageSizeDialog({
     if (chain) setW(Math.max(1, Math.round((px / H) * W)));
   };
   const refused = sizeRefused(w, h);
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel="Image Size" backdrop="desktop-light">
-      <DialogHeader title="Image Size" subtitle={`Now ${W} x ${H} px. Every layer is resampled.`} />
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): the photo scaled to a new size. */}
+      <PhotoDialogHero
+        art={photoImageSizeHeroArt}
+        titleId={titleId}
+        title="Image Size"
+        line={`Now ${W} x ${H} px. Every layer is resampled.`}
+        onClose={onClose}
+      />
       <div className="flex flex-col gap-3 px-6 py-4">
         <NumberField label="Width" value={shownW} onChange={setWidth} unit={percent ? '%' : 'px'} />
         <NumberField
@@ -156,6 +168,7 @@ export function CanvasSizeDialog({
   const [fill, setFill] = useState<Fill>('transparent');
   const [colour, setColour] = useState('#ffffff');
   const refused = sizeRefused(w, h);
+  const titleId = useId();
   const fillHex =
     fill === 'transparent'
       ? null
@@ -165,10 +178,15 @@ export function CanvasSizeDialog({
           ? photoTools.get().background
           : colour;
   return (
-    <Dialog open onClose={onClose} ariaLabel="Canvas Size" backdrop="desktop-light">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): the photo inside a wider canvas, and the anchor. */}
+      <PhotoDialogHero
+        art={photoCanvasSizeHeroArt}
+        titleId={titleId}
         title="Canvas Size"
-        subtitle={`Now ${W} x ${H} px. The layers keep their pixels; the photo's edges move.`}
+        line={`Now ${W} x ${H} px. The layers keep their pixels; the photo's edges move.`}
+        short={`Now ${W} x ${H} px. The photo's edges move.`}
+        onClose={onClose}
       />
       <div className="flex flex-col gap-3 px-6 py-4">
         <NumberField label="Width" value={w} onChange={(v) => setW(Math.round(v))} unit="px" />
@@ -243,11 +261,17 @@ export function RotateDialog({ photo, onClose }: { photo: PhotoEditorView; onClo
   const s = photo.session!;
   const [angle, setAngle] = useState(0);
   const [clockwise, setClockwise] = useState(true);
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel="Rotate" backdrop="desktop-light">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): the photo turned about its centre. */}
+      <PhotoDialogHero
+        art={photoRotateHeroArt}
+        titleId={titleId}
         title="Rotate"
-        subtitle="The photo turns by the angle, the canvas growing to hold it."
+        line="The photo turns by the angle, the canvas growing to hold it."
+        short="The canvas grows to hold the turned photo."
+        onClose={onClose}
       />
       <div className="flex flex-col gap-3 px-6 py-4">
         <NumberField

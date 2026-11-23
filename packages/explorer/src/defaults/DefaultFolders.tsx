@@ -6,10 +6,12 @@
 // top cannot be chosen (only a folder inside the team). The Explorer opens it as a dialog; a host's Settings page
 // renders <DefaultFoldersSettings> with the same rows.
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import type { App, Folder, IndexClient } from '@liveworkspace/index-client';
 import { Button } from '@liveworkspace/ui';
-import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { defaultFoldersHeroArt } from '@liveworkspace/ui/dialog-hero-art/default-folders';
+import { Dialog, DialogFooter } from '../ui/Dialog';
 import { FolderOutlineIcon } from '../ui/icons';
 import { ToastProvider, useToast } from '../ui/Toasts';
 import {
@@ -191,14 +193,22 @@ export function DefaultFolderPickerDialog({
     onClose();
   };
   const title = `Default folder for new ${entry.noun}`;
+  const titleId = useId();
   return (
-    <Dialog onClose={onClose} ariaLabel={title} size="lg" className="max-h-[80vh]">
-      <DialogHeader
+    <Dialog
+      onClose={onClose}
+      ariaLabel={title}
+      titleId={titleId}
+      size="lg"
+      className="max-h-[80vh]"
+    >
+      <HeroDialogHeader
+        art={defaultFoldersHeroArt}
+        titleId={titleId}
         title={title}
         subtitle={`New ${entry.noun} you make without choosing a place are saved here.`}
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        onClose={onClose}
+      />
       <div className="flex-1 overflow-y-auto px-5 py-4">
         <PlacementBrowser
           placement={placement}
@@ -245,14 +255,16 @@ export function DefaultFoldersDialog({ onClose }: { onClose: () => void }) {
     }),
     [folders, teams],
   );
+  const titleId = useId();
   return (
-    <Dialog onClose={onClose} ariaLabel="Default Folders" size="md">
-      <DialogHeader
+    <Dialog onClose={onClose} ariaLabel="Default Folders" titleId={titleId} size="md">
+      <HeroDialogHeader
+        art={defaultFoldersHeroArt}
+        titleId={titleId}
         title="Default Folders"
         subtitle={`Where new ${kind.lowerMany} go when you make one without choosing a place.`}
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        onClose={onClose}
+      />
       <div className="px-5 py-4">
         <DefaultFoldersList
           entries={entries}

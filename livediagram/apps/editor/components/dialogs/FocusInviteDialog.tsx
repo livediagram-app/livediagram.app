@@ -12,7 +12,10 @@
 // Escape and the backdrop both decline, like the poll's Skip: dismissing is a
 // real answer, not a silent drop.
 
+import { useId } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { focusInviteHeroArt } from '@liveworkspace/ui/dialog-hero-art/focus-invite';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 export function FocusInviteDialog({
@@ -26,17 +29,22 @@ export function FocusInviteDialog({
   onAccept: () => void;
   onDismiss: () => void;
 }) {
+  const titleId = useId();
   if (!from) return null;
   return (
-    <Dialog open onClose={onDismiss} ariaLabel="Someone wants you to look at something" size="sm">
+    <Dialog open onClose={onDismiss} titleId={titleId} size="sm">
+      {/* The close declines, like Escape and the backdrop. */}
+      <HeroDialogHeader
+        art={focusInviteHeroArt}
+        titleId={titleId}
+        title="Bring Focus"
+        onClose={onDismiss}
+      />
       <div className="flex flex-col gap-3 p-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
-            Bring Focus
-          </span>
-          <h2 className="text-base font-semibold leading-snug text-slate-800 dark:text-slate-100">
+          <p className="text-base font-semibold leading-snug text-slate-800 dark:text-slate-100">
             {from} wants you to look at something
-          </h2>
+          </p>
           <p className="text-[13px] leading-snug text-slate-500 dark:text-slate-400">
             This will move your view to where they are pointing, keeping your zoom. Your view is
             your own again straight afterwards.

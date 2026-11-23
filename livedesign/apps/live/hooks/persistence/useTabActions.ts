@@ -343,7 +343,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // (one commit), which the message notes.
     const ok = await confirm({
       title: 'Reset This Canvas?',
-      message: 'Every element on this tab is removed. Undo (Cmd/Ctrl-Z) brings it back.',
+      message: 'Every element on this tab is removed. Undo brings it back.',
       confirmLabel: 'Reset canvas',
     });
     if (!ok) return;

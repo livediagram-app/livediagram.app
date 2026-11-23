@@ -1,23 +1,24 @@
 import {
-  ENTITY_KEY_LABELS,
   ENTITY_MAX_FIELDS,
   ENTITY_MAX_TEXT,
   entityFieldView,
-  nextEntityKey,
   removedFieldRemap,
   type EntityField,
   type FieldRemap,
 } from '@livediagram/document';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
-import { EntityKeyGlyph } from '@/components/canvas/entity/EntityKeyGlyph';
-import {
-  MENU_ADD_ROW_BUTTON,
-  MENU_CELL_INPUT,
-} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
+import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';
+import { EntityKeyPicker } from './EntityKeyPicker';
+import { CloseIcon } from '@livediagram/ui';
 
-// The Fields section (docs/specs/009-elements/entity.md "The Fields menu"): per field a key button that
-// cycles the key, the name, the type and a remove button, then Add Field. Mirrors the checklist's row
-// editor: typing changes a draft, leaving an input saves it, a key, a remove and an add save at once.
+// The Fields dialog's rows (docs/specs/009-elements/entity.md "The Fields dialog"): per field a key dropdown
+// (EntityKeyPicker), the name, the type and a remove button, then Add Field. Typing changes a draft, leaving an
+// input saves it, a key, a remove and an add save at once. Sized for a dialog: 36px controls, 14px text (16px
+// on a phone, the app's anti-zoom rule), so a finger lands on each.
+const CELL =
+  'h-9 min-w-0 rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100';
+const SQUARE =
+  'flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-md transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 export function EntityFieldsEditor({
   fields,
   onChange,
@@ -27,84 +28,87 @@ export function EntityFieldsEditor({
 }) {
   // Fields written before keys existed read with their key (entityFieldView), and save that way.
   const [rows, setRows] = useFollowingDraft(fields, (f) => f.map(entityFieldView));
+  // Rows slide in and out (docs/specs/004-interface-design/motion.md "Rows that come and go").
+  const motion = useRowMotion();
   return (
-    <div className="px-2 py-1.5">
-      <div className="flex flex-col gap-1">
+    <div>
+      {rows.length === 0 ? (
+        <p className="pb-3 text-sm text-slate-500 dark:text-slate-400">
+          No fields yet. Add the first one below.
+        </p>
+      ) : null}
+      <div className="flex flex-col">
         {rows.map((f, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <button
-              type="button"
-              aria-label={`Field ${i + 1} key: ${f.key ? ENTITY_KEY_LABELS[f.key] : 'None'}. Change key`}
-              onClick={() => {
-                const key = nextEntityKey(f.key);
-                onChange(
-                  rows.map((s, j) => {
-                    if (j !== i) return s;
-                    const { key: _old, ...rest } = s;
-                    return key ? { ...rest, key } : rest;
-                  }),
-                );
-              }}
-              className={`flex h-5 w-7 shrink-0 cursor-pointer items-center justify-center rounded border text-slate-400 transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
-                f.key
-                  ? 'border-slate-200 dark:border-slate-700'
-                  : 'border-dashed border-slate-200 dark:border-slate-700'
-              }`}
-            >
-              {f.key ? (
-                <EntityKeyGlyph fieldKey={f.key} color="currentColor" />
-              ) : (
-                <span className="text-[9px] font-medium opacity-60">key</span>
-              )}
-            </button>
-            <input
-              className={`${MENU_CELL_INPUT} flex-1`}
-              value={f.name}
-              placeholder="name"
-              aria-label={`Field ${i + 1} name`}
-              maxLength={ENTITY_MAX_TEXT}
-              onChange={(e) =>
-                setRows((r) => r.map((s, j) => (j === i ? { ...s, name: e.target.value } : s)))
-              }
-              onBlur={() => onChange(rows)}
-            />
-            <input
-              className={`${MENU_CELL_INPUT} w-[5.5rem] font-mono`}
-              value={f.type ?? ''}
-              placeholder="type"
-              aria-label={`Field ${i + 1} type`}
-              maxLength={ENTITY_MAX_TEXT}
-              onChange={(e) =>
-                setRows((r) =>
-                  // Empty stores as undefined, so a row without a type
-                  // round-trips identically to one that never had one.
-                  r.map((s, j) => (j === i ? { ...s, type: e.target.value || undefined } : s)),
-                )
-              }
-              onBlur={() => onChange(rows)}
-            />
-            <button
-              type="button"
-              aria-label="Remove field"
-              // A relationship pinned to this field lets go; ones on later fields follow them up.
-              onClick={() =>
-                onChange(
-                  rows.filter((_, j) => j !== i),
-                  removedFieldRemap(i),
-                )
-              }
-              className="flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
-            >
-              ×
-            </button>
+          // Its own bottom padding, not a gap on the list, so a row sliding out takes its spacing with it.
+          <div key={i} {...motion.rowProps(i)}>
+            <div className="flex items-center gap-2 pb-2">
+              <EntityKeyPicker
+                index={i}
+                value={f.key}
+                onPick={(key) =>
+                  onChange(
+                    rows.map((s, j) => {
+                      if (j !== i) return s;
+                      const { key: _old, ...rest } = s;
+                      return key ? { ...rest, key } : rest;
+                    }),
+                  )
+                }
+              />
+              <input
+                className={`${CELL} flex-1`}
+                value={f.name}
+                placeholder="Name"
+                aria-label={`Field ${i + 1} name`}
+                maxLength={ENTITY_MAX_TEXT}
+                onChange={(e) =>
+                  setRows((r) => r.map((s, j) => (j === i ? { ...s, name: e.target.value } : s)))
+                }
+                onBlur={() => onChange(rows)}
+              />
+              <input
+                className={`${CELL} w-28 font-mono sm:w-36`}
+                value={f.type ?? ''}
+                placeholder="type"
+                aria-label={`Field ${i + 1} type`}
+                maxLength={ENTITY_MAX_TEXT}
+                onChange={(e) =>
+                  setRows((r) =>
+                    // Empty stores as undefined, so a row without a type
+                    // round-trips identically to one that never had one.
+                    r.map((s, j) => (j === i ? { ...s, type: e.target.value || undefined } : s)),
+                  )
+                }
+                onBlur={() => onChange(rows)}
+              />
+              <button
+                type="button"
+                aria-label={`Remove field ${i + 1}`}
+                // A relationship pinned to this field lets go; ones on later fields follow them up.
+                onClick={() =>
+                  motion.leave(i, () =>
+                    onChange(
+                      rows.filter((_, j) => j !== i),
+                      removedFieldRemap(i),
+                    ),
+                  )
+                }
+                className={`${SQUARE} text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200`}
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
       <button
         type="button"
         disabled={rows.length >= ENTITY_MAX_FIELDS}
-        onClick={() => onChange([...rows, { name: '' }])}
-        className={MENU_ADD_ROW_BUTTON}
+        onClick={() => {
+          motion.enter(rows.length);
+          onChange([...rows, { name: '' }]);
+        }}
+        className="mt-1 inline-flex h-9 w-full items-center justify-center rounded-md border border-dashed border-slate-300 text-sm font-medium text-slate-600 transition enabled:cursor-pointer enabled:hover:border-brand-400 enabled:hover:bg-brand-50/50 enabled:hover:text-brand-700 disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:enabled:hover:border-brand-500 dark:enabled:hover:bg-brand-500/10 dark:enabled:hover:text-brand-200"
       >
         Add Field
       </button>

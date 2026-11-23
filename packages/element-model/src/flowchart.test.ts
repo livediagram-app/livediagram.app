@@ -545,6 +545,20 @@ describe('lanes', () => {
     }
   });
 
+  it('Add Lane dresses each new lane as the product asks, and leaves the lanes already there', () => {
+    const c = chart();
+    const dressLane = (lane: ShapeElement) => ({ ...lane, strokeColor: '#15803d' });
+    const two = addFlowchartLane(c.els, c.start, ['l1', 'l2'], { dressLane });
+    expect(flowchartLanes(two, c.start).map((l) => l.strokeColor)).toEqual(['#15803d', '#15803d']);
+    const three = addFlowchartLane(two, c.start, ['l3', 'unused'], {
+      dressLane: (lane) => ({ ...lane, strokeColor: '#c2410c' }),
+    });
+    expect(box(three, 'l3').strokeColor).toBe('#c2410c');
+    expect(box(three, 'l1').strokeColor).toBe('#15803d');
+    // Undressed, a lane is as the shape factory made it.
+    expect(box(addFlowchartLane(c.els, c.start, ['l1', 'l2']), 'l1').strokeColor).toBeUndefined();
+  });
+
   it('a later Add Lane appends one more', () => {
     const c = chart();
     const two = addFlowchartLane(c.els, c.start, ['l1', 'l2']);

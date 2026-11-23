@@ -6,6 +6,7 @@
 // (@liveworkspace/workbench TabFolderDialog, docs/specs/006-document/tab-folders.md).
 
 import { useState } from 'react';
+import { tabAddToHeroArt } from '@liveworkspace/ui/dialog-hero-art/tab-add-to';
 import { OrganiseDialogFrame } from '@liveworkspace/workbench/components/dialogs/OrganiseDialogFrame';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { CompactEmptyState, NoMatches } from '@livehuddle/ui';
@@ -66,6 +67,7 @@ export function AddTabToDocumentDialog({
   );
   return (
     <OrganiseDialogFrame
+      art={tabAddToHeroArt}
       title="Add to Another Space"
       sub="Link this tab into another space. It stays one live tab: edits show in both places."
       onClose={onClose}

@@ -44,6 +44,39 @@ import {
 // Consecutive frames agreeing on the position before the tracker stops.
 const SETTLE_FRAMES = 3;
 
+// How long a mouse rests on a flyout row before it opens (docs/specs/008-canvas/canvas-and-palette.md "A flyout
+// row opens on hover"): long enough that a pointer crossing the row on its way elsewhere opens nothing.
+export const HOVER_OPEN_MS = 120;
+
+// How long the mouse may be off a hover-opened flyout (its row, its panel and the flyouts inside it) before it
+// closes: enough to cross the gap to the panel, or to cut a corner over the rows beside it.
+export const HOVER_CLOSE_MS = 400;
+
+// Every open flyout, so a row opening on hover can close the ones beside it (a click gets that from each
+// flyout's outside-press listener; a hover has no press to hear), and so a flyout can tell that the pointer
+// is in a flyout nested inside it.
+type OpenFlyout = {
+  trigger: { current: HTMLElement | null };
+  panel: { current: HTMLElement | null };
+  yieldTo: (opening: HTMLElement) => void;
+};
+const openFlyouts = new Set<OpenFlyout>();
+
+const FLYOUT_PANEL = '[data-menu-flyout]';
+
+// Whether `target` is on the flyout's row, in its panel, or in a flyout opened from inside its panel.
+function onFlyout(target: Element, trigger: HTMLElement | null, panel: HTMLElement | null) {
+  if (trigger?.contains(target)) return true;
+  let el = target.closest(FLYOUT_PANEL);
+  while (el) {
+    if (el === panel) return true;
+    const at = el;
+    const owner = [...openFlyouts].find((f) => f.panel.current === at);
+    el = owner?.trigger.current?.closest(FLYOUT_PANEL) ?? null;
+  }
+  return false;
+}
+
 // The menu a flyout row sits in, of either kind (docs/specs/004-interface-design/menus.md).
 const HOST_MENU = `[${MENU_SURFACE_ATTR}]`;
 
@@ -215,6 +248,91 @@ function Flyout({
     },
     [controlled, open, onToggle, depth],
   );
+
+  // Hover-open, mouse on a wide screen only. The timer is the hover intent; hoverOpened marks a row its hover
+  // opened, so the click that often follows keeps it open instead of toggling it shut.
+  const hoverTimer = useRef<number | null>(null);
+  const hoverOpened = useRef(false);
+  const keepOnClick = useRef(false);
+  const cancelHover = useCallback(() => {
+    if (hoverTimer.current === null) return;
+    window.clearTimeout(hoverTimer.current);
+    hoverTimer.current = null;
+  }, []);
+  useEffect(() => cancelHover, [cancelHover]);
+  useEffect(() => {
+    if (!open) hoverOpened.current = false;
+  }, [open]);
+  // While open, close for another row opening on hover, unless that row sits inside this panel.
+  useEffect(() => {
+    if (!open) return;
+    const yieldTo = (opening: HTMLElement) => {
+      if (opening === triggerRef.current || panelRef.current?.contains(opening)) return;
+      setOpen(false);
+    };
+    const entry: OpenFlyout = { trigger: triggerRef, panel: panelRef, yieldTo };
+    openFlyouts.add(entry);
+    return () => {
+      openFlyouts.delete(entry);
+    };
+  }, [open, setOpen]);
+  // A flyout its hover opened closes once the mouse has been off it for HOVER_CLOSE_MS. A press on it (its
+  // row, its panel, a flyout inside it) pins it: from then on it is in use, and closes as a clicked one does,
+  // so a picker or popover opened from its panel never loses the panel behind it.
+  useEffect(() => {
+    if (!open) return;
+    let timer: number | null = null;
+    const stay = () => {
+      if (timer === null) return;
+      window.clearTimeout(timer);
+      timer = null;
+    };
+    const leave = () => {
+      if (timer !== null || !hoverOpened.current) return;
+      timer = window.setTimeout(() => {
+        timer = null;
+        if (hoverOpened.current) setOpen(false);
+      }, HOVER_CLOSE_MS);
+    };
+    const on = (e: Event) =>
+      e.target instanceof Element && onFlyout(e.target, triggerRef.current, panelRef.current);
+    const onOver = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      if (on(e)) stay();
+      else leave();
+    };
+    // The mouse leaving the window altogether.
+    const onOut = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && e.relatedTarget === null) leave();
+    };
+    const onDown = (e: PointerEvent) => {
+      if (!on(e)) return;
+      // On the row itself, the click this press becomes must not toggle shut what the hover just opened.
+      if (hoverOpened.current && e.target instanceof Node && triggerRef.current?.contains(e.target))
+        keepOnClick.current = true;
+      hoverOpened.current = false;
+      stay();
+    };
+    document.addEventListener('pointerover', onOver);
+    document.addEventListener('pointerout', onOut);
+    document.addEventListener('pointerdown', onDown, true);
+    return () => {
+      stay();
+      document.removeEventListener('pointerover', onOver);
+      document.removeEventListener('pointerout', onOut);
+      document.removeEventListener('pointerdown', onDown, true);
+    };
+  }, [open, setOpen]);
+  const openOnHover = () => {
+    hoverTimer.current = null;
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    for (const flyout of [...openFlyouts]) flyout.yieldTo(trigger);
+    hoverOpened.current = true;
+    place(null);
+    setOpen(true);
+    onOpen?.();
+  };
 
   // Place the flyout beside the trigger row: to the right when it fits, else
   // to the left. Top-aligned with the row; when the panel would overflow the
@@ -411,7 +529,22 @@ function Flyout({
         ref={setTrigger}
         type="button"
         {...itemProps}
+        onPointerEnter={(e) => {
+          // A pressed button is a drag passing over the row, not a hover.
+          if (e.pointerType !== 'mouse' || e.buttons !== 0 || isMobile || open) return;
+          cancelHover();
+          hoverTimer.current = window.setTimeout(openOnHover, HOVER_OPEN_MS);
+        }}
+        onPointerLeave={cancelHover}
         onClick={() => {
+          cancelHover();
+          // A press pinned it (keepOnClick), or the keyboard clicked a row the hover opened.
+          if (open && (keepOnClick.current || hoverOpened.current)) {
+            keepOnClick.current = false;
+            hoverOpened.current = false;
+            return;
+          }
+          keepOnClick.current = false;
           const next = !open;
           place(null);
           setOpen(next);

@@ -10,6 +10,13 @@ import { reportHasLosses } from '@/lib/board-scene/report';
 import { ImportImageReport } from './ImportImageReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
 import { importFileTypes } from '@/lib/import-file-types';
+import {
+  BrandLogo,
+  DRAWIO_LOGO,
+  EXCALIDRAW_LOGO,
+  MERMAID_LOGO,
+  type BrandLogoMark,
+} from '@liveworkspace/workbench/components/dialogs/brand-logos';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 import type { DiagramSources } from '@livediagram/document';
@@ -293,12 +300,15 @@ function ImportChooser({
       {onUpdate && infra?.sources ? (
         <InfraSourcesCard sources={infra.sources} onUpdate={onUpdate} />
       ) : null}
-      {/* Destructive-action warning — this overwrites the tab. */}
-      <Callout tone="warning" className="mb-4">
-        This replaces everything on{' '}
-        <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-        content. Undo brings it back.
-      </Callout>
+      {/* Destructive-action warning: this overwrites the tab. On the dialog's first screen only: a format's
+          own step, reached from it, does not say it again. */}
+      {activeFormat && !single ? null : (
+        <Callout tone="warning" className="mb-4">
+          This replaces everything on{' '}
+          <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
+          content. Undo brings it back.
+        </Callout>
+      )}
       {activeFormat?.key === 'infra' && infra ? (
         <InfraImportPanel
           note={note}
@@ -357,23 +367,18 @@ function ImportChooser({
   );
 }
 
+const FORMAT_LOGOS: Partial<Record<Format, BrandLogoMark>> = {
+  mermaid: MERMAID_LOGO,
+  excalidraw: EXCALIDRAW_LOGO,
+  drawio: DRAWIO_LOGO,
+};
+
 function FormatIcon({ kind }: { kind: Format }) {
-  const label =
-    kind === 'mermaid'
-      ? 'mmd'
-      : kind === 'markdown'
-        ? 'md'
-        : kind === 'excalidraw'
-          ? 'excali'
-          : kind === 'drawio'
-            ? 'drawio'
-            : kind === 'visio'
-              ? 'vsdx'
-              : kind === 'bpmn'
-                ? 'bpmn'
-                : kind === 'infra'
-                  ? 'infra'
-                  : 'json';
+  // A tool with a logo shows it; livediagram's own JSON, Markdown and infrastructure files, and the formats with no
+  // mark of their own, keep a text badge.
+  const logo = FORMAT_LOGOS[kind];
+  if (logo) return <BrandLogo mark={logo} />;
+  const label = kind === 'markdown' ? 'md' : kind === 'visio' ? 'vsdx' : kind;
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

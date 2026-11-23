@@ -1,20 +1,14 @@
 'use client';
 
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useId, useState } from 'react';
 import {
   ATTENDANCE_RETENTION_DAYS,
   type AttendanceVisit,
   type TabAttendanceResponse,
 } from '@livehuddle/api-schema';
-import {
-  Button,
-  DialogCloseButton,
-  DialogHeader,
-  IDENTITY_FILL,
-  PictureDisc,
-  identityVars,
-} from '@livehuddle/ui';
+import { Button, IDENTITY_FILL, PictureDisc, identityVars } from '@livehuddle/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { initialsOf } from '@/lib/identity';
 import { useRelativeNow } from '@/lib/relative-time';
@@ -25,13 +19,12 @@ import {
   visitTimes,
   type LiveNames,
 } from '@/lib/tab-attendance';
+import { tabAttendanceHeroArt } from './TabAttendanceHeroArt';
 
 // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"; blueprint "Presentation and
 // UX"): who was in the tab and when, by day, newest first. Opened from the tab menu by an Editor or a Participant;
 // read fresh each time it opens, then kept in step with the room's roster: a rename or a recolour reaches the open
 // visits of that person at once, and only their rows re-render (Work Tracker 825).
-
-const TITLE_ID = 'tab-attendance-title';
 
 type Load =
   { state: 'loading' } | { state: 'error' } | { state: 'ready'; visits: AttendanceVisit[] };
@@ -45,6 +38,7 @@ type TabAttendanceDialogProps = {
 };
 
 export function TabAttendanceDialog({ tabName, load, onClose, live }: TabAttendanceDialogProps) {
+  const titleId = useId();
   const [loaded, setLoaded] = useState<Load>({ state: 'loading' });
   // A visit still open counts its time up while the dialog stays open.
   const now = useRelativeNow();
@@ -73,17 +67,18 @@ export function TabAttendanceDialog({ tabName, load, onClose, live }: TabAttenda
     <Dialog
       open
       onClose={onClose}
-      titleId={TITLE_ID}
+      titleId={titleId}
       size="md"
       className="max-h-[min(36rem,calc(100dvh-2rem))]"
     >
-      <DialogHeader
-        title={<span id={TITLE_ID}>Attendance</span>}
+      <HeroDialogHeader
+        art={tabAttendanceHeroArt}
+        titleId={titleId}
+        title="Attendance"
         subtitle={`${tabName} · Last ${ATTENDANCE_RETENTION_DAYS} days`}
-      >
-        <HelpArticleLink article="tabAttendance" size="md" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        actions={<HelpArticleLink article="tabAttendance" size="md" />}
+        onClose={onClose}
+      />
       <div className="scrollbar-slim flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 py-4">
         {loaded.state === 'loading' ? <LoadingRows /> : null}
         {loaded.state === 'error' ? (

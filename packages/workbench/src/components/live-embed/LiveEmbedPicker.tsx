@@ -4,16 +4,12 @@
 // first, then this file's connected files, then the person's Recent across the apps, the host left out. One press
 // chooses: the row holds busy while the snapshot is drawn, then the dialog closes with the choice. The rows are the
 // Connect list's (ConnectRow), in its ink.
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { IndexClient, Item } from '@liveworkspace/index-client';
 import { isLiveEmbedApp } from '@liveworkspace/element-model/live-item';
-import {
-  Button,
-  CompactEmptyState,
-  DialogCloseButton,
-  DialogHeader,
-  lucideGlyph,
-} from '@liveworkspace/ui';
+import { Button, CompactEmptyState, lucideGlyph } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { liveEmbedPickerHeroArt } from '@liveworkspace/ui/dialog-hero-art/live-embed-picker';
 import {
   lucideClock,
   lucideLink,
@@ -40,6 +36,10 @@ const RetryGlyph = lucideGlyph(lucideRefreshCw, 14);
 // How many connected files are looked up by id (a host holds at most 50 connected tabs; the first few are shown).
 export const LIVE_PICKER_CONNECTED_MAX = 8;
 
+// The header's one line; it is cut short where the dialog is narrow, so the whole of it stays a hover away.
+const SUBTITLE =
+  'Show a canvas, plan, page or design here, live and read-only. Everyone sees it with their own access.';
+
 const appearanceNow = (): 'light' | 'dark' =>
   document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 
@@ -60,6 +60,7 @@ export function LiveEmbedPicker({
   onChoose: (choice: LiveEmbedChoice) => void;
   onClose: () => void;
 }) {
+  const titleId = useId();
   const [openedAt] = useState(() => Date.now());
   const now = nowGiven ?? openedAt;
   const files = useRecentFiles(client, hostId);
@@ -140,16 +141,17 @@ export function LiveEmbedPicker({
   );
 
   return (
-    <Dialog open onClose={onClose} ariaLabel="Choose a File" size="lg" className="max-h-[90vh]">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} size="lg" className="max-h-[90vh]">
+      <HeroDialogHeader
+        art={liveEmbedPickerHeroArt}
+        titleId={titleId}
         title="Choose a File"
-        subtitle="Show a canvas, plan, page or design here, live and read-only. Everyone sees it with their own access."
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        subtitle={SUBTITLE}
+        onClose={onClose}
+      />
       <div
         data-live-embed-picker=""
-        className={`flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-2 text-[var(--cp-text)] ${CONNECT_DEFAULT_INK}`}
+        className={`flex flex-1 flex-col overflow-y-auto px-6 pb-6 pt-4 text-[var(--cp-text)] ${CONNECT_DEFAULT_INK}`}
         style={inkStyle(undefined)}
       >
         <form

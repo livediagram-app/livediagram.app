@@ -4,6 +4,7 @@
 // editor: the tab menu's row opens it, and its list (TabFolderList) files the tab into a folder, takes it out of one,
 // makes a new one and sets a folder's colour.
 import { useState } from 'react';
+import { tabFolderHeroArt } from '@liveworkspace/ui/dialog-hero-art/tab-folder';
 import { OrganiseDialogFrame } from '../dialogs/OrganiseDialogFrame';
 import { TabFolderList, type TabFolderListProps } from './TabFolderList';
 
@@ -14,6 +15,7 @@ export function AddTabToFolderDialog({
   const [escapeHeld, setEscapeHeld] = useState(false);
   return (
     <OrganiseDialogFrame
+      art={tabFolderHeroArt}
       title="Organise in Tab Folder"
       sub="File this tab into a folder on the tab bar. Same name means same folder."
       onClose={onClose}

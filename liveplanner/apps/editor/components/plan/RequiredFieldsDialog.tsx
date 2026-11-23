@@ -21,6 +21,7 @@ import { CustomFieldEditor } from './CustomFieldEditor';
 import { LinkedCardField } from './LinkedCardField';
 import { ItemDetailsRow } from './ItemPanelLayout';
 import { PlanModal } from './PlanModal';
+import { requiredFieldsHeroArt } from './RequiredFieldsHeroArt';
 import { usePlan } from './PlanContext';
 
 export function RequiredFieldsDialog({
@@ -50,15 +51,7 @@ export function RequiredFieldsDialog({
   };
   const items = plan?.items ?? new Map();
   return (
-    <PlanModal
-      label={`New ${type.label}`}
-      onClose={() => onDone(null)}
-      header={
-        <h2 className="truncate text-[15px] font-semibold text-slate-900 dark:text-slate-100">
-          New {type.label}
-        </h2>
-      }
-    >
+    <PlanModal art={requiredFieldsHeroArt} title={`New ${type.label}`} onClose={() => onDone(null)}>
       <form
         onSubmit={(e) => {
           e.preventDefault();

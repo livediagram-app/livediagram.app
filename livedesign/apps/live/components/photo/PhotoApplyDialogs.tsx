@@ -4,8 +4,8 @@
 // "The Adjust tab" applied): the settings, previewing live on the photo (Preview, on), a progress bar
 // for a filter past half a second, Reset, Cancel and OK (one edit). The photo shows through, so the
 // preview is seen as it is made.
-import { useEffect, useState } from 'react';
-import { Button, DialogHeader } from '@livedesign/ui';
+import { useEffect, useId, useState } from 'react';
+import { Button } from '@livedesign/ui';
 import {
   ADJUSTMENTS,
   adjustmentName,
@@ -26,6 +26,9 @@ import { track } from '@/lib/telemetry';
 import { AdjustmentEditor } from './AdjustmentEditor';
 import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';
 import { FilterPointPicker, FilterPreviewSquare } from './FilterPreview';
+import { photoAdjustHeroArt } from './PhotoAdjustHeroArt';
+import { PhotoDialogHero } from './PhotoDialogHero';
+import { photoFilterHeroArt } from './PhotoFilterHeroArt';
 import { useApplyPreview } from './useApplyPreview';
 import { usePhotoHistogram } from './usePhotoHistogram';
 
@@ -157,13 +160,20 @@ function RasterizeFirst({
 }) {
   'use no memo'; // It reads the mutable photo session as it renders (PhotoSession).
   const s = photo.session!;
+  const titleId = useId();
   const layer = s.layer(s.active);
   const kind = layer?.layerKind === 'text' ? 'a text layer' : 'a fill layer';
   return (
-    <Dialog open onClose={onClose} ariaLabel={what} backdrop="desktop-light" phoneSheet>
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light" phoneSheet>
+      {/* The hero of what was asked for: the filter's, or the adjustment's. */}
+      <PhotoDialogHero
+        art={reopen.kind === 'adjust' ? photoAdjustHeroArt : photoFilterHeroArt}
+        titleId={titleId}
         title={what}
-        subtitle={`${layer?.name ?? 'This layer'} is ${kind}. Rasterize it to work its pixels.`}
+        line={`${layer?.name ?? 'This layer'} is ${kind}. Rasterize it to work its pixels.`}
+        short={`Rasterize ${kind.replace(/^a /, 'this ')} to work its pixels.`}
+        sheet
+        onClose={onClose}
       />
       <DialogFooter>
         <span className="flex-1" />
@@ -253,6 +263,7 @@ export function FilterDialog({
   );
   const [preview, setPreview] = useState(true);
   const [busy, setBusy] = useState(false);
+  const titleId = useId();
   const run = useApplyPreview(photo, { kind: 'filter', id, params }, preview);
   if (run.refused === 'rasterize')
     return (
@@ -265,8 +276,16 @@ export function FilterDialog({
     );
   if (run.refused) return <Refused photo={photo} message={run.refused} onClose={onClose} />;
   return (
-    <Dialog open onClose={onClose} ariaLabel={def.name} backdrop="desktop-light" phoneSheet>
-      <DialogHeader title={def.name} subtitle="Previewed on the photo as you change it." />
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light" phoneSheet>
+      {/* The dialog hero header (dialog-hero-header.md): the photo, before and after. */}
+      <PhotoDialogHero
+        art={photoFilterHeroArt}
+        titleId={titleId}
+        title={def.name}
+        line="Previewed on the photo as you change it."
+        sheet
+        onClose={onClose}
+      />
       <div className="flex max-h-[50vh] flex-col gap-3 overflow-y-auto px-6 py-4">
         {def.params.length === 0 ? (
           <p className="text-sm text-slate-600 dark:text-slate-300">This filter has no settings.</p>
@@ -319,6 +338,7 @@ export function AdjustDialog({
     structuredClone(ADJUSTMENTS[id].defaults),
   );
   const [preview, setPreview] = useState(true);
+  const titleId = useId();
   const run = useApplyPreview(photo, { kind: 'adjust', id, params }, preview);
   // Taken as the dialog opens: its preview is written into the layer it reads.
   const histogram = usePhotoHistogram(photo, {
@@ -332,8 +352,17 @@ export function AdjustDialog({
     );
   if (run.refused) return <Refused photo={photo} message={run.refused} onClose={onClose} />;
   return (
-    <Dialog open onClose={onClose} ariaLabel={name} backdrop="desktop-light" phoneSheet>
-      <DialogHeader title={name} subtitle="Applied to the active layer, within the selection." />
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light" phoneSheet>
+      {/* The dialog hero header (dialog-hero-header.md): a tone curve over the histogram. */}
+      <PhotoDialogHero
+        art={photoAdjustHeroArt}
+        titleId={titleId}
+        title={name}
+        line="Applied to the active layer, within the selection."
+        short="On the active layer, within the selection."
+        sheet
+        onClose={onClose}
+      />
       <div className="flex max-h-[55vh] flex-col gap-3 overflow-y-auto px-6 py-4">
         <AdjustmentEditor id={id} params={params} onChange={setParams} histogram={histogram} />
         <OptionToggle label="Preview" on={preview} onChange={setPreview} />

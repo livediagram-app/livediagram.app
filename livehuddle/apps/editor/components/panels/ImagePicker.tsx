@@ -1,8 +1,10 @@
 'use client';
 
-import { CountBadge, DialogCloseButton } from '@livehuddle/ui';
+import { CountBadge } from '@livehuddle/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { imagePickerHeroArt } from '@liveworkspace/ui/dialog-hero-art/image-picker';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { apiDeleteImage, type ImageSummary } from '@/lib/api-client';
 import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
@@ -57,6 +59,7 @@ export function ImagePicker({
   onSelect,
   onClose,
 }: ImagePickerProps) {
+  const titleId = useId();
   const [tab, setTab] = useState<'upload' | 'gallery' | 'search'>('upload');
   const {
     gallery,
@@ -147,14 +150,16 @@ export function ImagePicker({
     <Dialog
       open
       onClose={onClose}
-      ariaLabel="Image picker"
+      titleId={titleId}
       size="2xl"
       className="max-h-[calc(100dvh-2rem)]"
     >
-      <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Image</h2>
-        <DialogCloseButton compact onClick={onClose} />
-      </header>
+      <HeroDialogHeader
+        art={imagePickerHeroArt}
+        titleId={titleId}
+        title="Image"
+        onClose={onClose}
+      />
       <nav className="flex gap-1 border-b border-slate-200 px-4 pt-3 dark:border-slate-800">
         <TabButton active={tab === 'upload'} onClick={() => setTab('upload')}>
           Upload

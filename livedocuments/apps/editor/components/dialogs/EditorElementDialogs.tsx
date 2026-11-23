@@ -42,6 +42,14 @@ const LineDataDialog = dynamic(
   () => import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
   { ssr: false },
 );
+const ElementRowsDialogs = dynamic(
+  () => import('@/components/dialogs/ElementRowsDialogs').then((m) => m.ElementRowsDialogs),
+  { ssr: false },
+);
+const ElementResourcesDialog = dynamic(
+  () => import('@/components/dialogs/ElementResourcesDialog').then((m) => m.ElementResourcesDialog),
+  { ssr: false },
+);
 const CodeEditDialog = dynamic(
   () => import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
   { ssr: false },
@@ -73,6 +81,7 @@ export function EditorElementDialogs() {
       !!s.cellLinkPickerOpenFor ||
       !!s.lineDataOpenForId ||
       !!s.codeEditOpenForId ||
+      !!s.rowsEditorOpenFor ||
       !!s.sankeyFlowsOpenForId ||
       !!s.mapDialogOpenForId ||
       !!s.imagePickerOpenFor,
@@ -101,7 +110,11 @@ function OpenEditorElementDialogs() {
     setLineDataOpenForId,
     codeEditOpenForId,
     setCodeSelected,
+    setCodeWrapSelected,
     setCodeEditOpenForId,
+    rowsEditorOpenFor,
+    setRowsEditorOpenFor,
+    resourcesOpenForId,
     sankeyFlowsOpenForId,
     setSankeyFlowsOpenForId,
     sankey,
@@ -135,6 +148,11 @@ function OpenEditorElementDialogs() {
         lineDataOpenForId,
         () => setLineDataOpenForId(null),
         (el) => !isReadOnly && el.type === 'shape',
+      ],
+      [
+        rowsEditorOpenFor?.id ?? null,
+        () => setRowsEditorOpenFor(null),
+        (el) => !isReadOnly && (el.type === 'shape' || el.type === 'table') && !el.locked,
       ],
       [
         codeEditOpenForId,
@@ -282,6 +300,11 @@ function OpenEditorElementDialogs() {
           })()
         : null}
       {/* Code block edit modal (docs/specs/009-elements/code-block.md): edits the block whose id is open. */}
+      {/* An element's rows in their dialog: a checklist's, a legend's, a chart's slices. */}
+      {rowsEditorOpenFor !== null && !isReadOnly ? <ElementRowsDialogs /> : null}
+      {/* Resources dialog (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"): an Editor's, as the menu
+          row that opens it is. */}
+      {resourcesOpenForId !== null && !isReadOnly ? <ElementResourcesDialog /> : null}
       {codeEditOpenForId !== null && !isReadOnly
         ? (() => {
             const el = activeTab.elements.find((e) => e.id === codeEditOpenForId);
@@ -290,6 +313,8 @@ function OpenEditorElementDialogs() {
               <CodeEditDialog
                 code={el.code ?? ''}
                 language={el.codeLanguage ?? 'plain'}
+                wrap={el.codeWrap !== false}
+                onSetWrap={setCodeWrapSelected}
                 onCommit={setCodeSelected}
                 onClose={() => setCodeEditOpenForId(null)}
               />

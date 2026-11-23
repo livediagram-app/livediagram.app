@@ -21,11 +21,14 @@ import {
 import {
   DialogCloseButton,
   Glyph,
+  Tooltip,
+  lucideGlyph,
   closeDialogSlot,
   openDialogSlot,
   setDialogSlotNode,
   useDialogSlot,
 } from '@liveworkspace/ui';
+import { lucideCloudUpload, lucideLogIn } from '@liveworkspace/icons/lucide';
 import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { toolsHeroArt } from '@liveworkspace/ui/dialog-hero-art/tools';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from './chrome-button';
@@ -126,8 +129,39 @@ const PLATE =
   'flex size-10 shrink-0 items-center justify-center rounded-[11px] bg-[var(--hero-soft)] text-[var(--hero-accent)] shadow-[inset_0_0_0_1px_var(--hero-faint)] transition-colors duration-micro group-hover:bg-[var(--hero-wash)] group-hover:shadow-[inset_0_0_0_1px_var(--hero-line)] group-focus-visible:bg-[var(--hero-wash)] [&_svg]:size-[18px]';
 
 // What a tool needs first (Sign In, Sync Plan): a quiet pill beside its name, in the row's own ink.
+// A badge is an icon, not its words (owner, 2026-11-23): the words widened every row they sat on. The words stay as
+// the badge's name, for a screen reader and the tooltip.
 const BADGE =
-  'shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-semibold leading-4 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700';
+  'flex size-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700';
+
+const SignInBadgeIcon = lucideGlyph(lucideLogIn, 12);
+const SyncBadgeIcon = lucideGlyph(lucideCloudUpload, 12);
+
+// "Sign In" is a door; "Sync <Item>" (the app's own noun) is a cloud to send it to. A badge with other words keeps them.
+function ToolBadge({ badge }: { badge: string }) {
+  const icon =
+    badge === 'Sign In' ? (
+      <SignInBadgeIcon />
+    ) : badge.startsWith('Sync ') ? (
+      <SyncBadgeIcon />
+    ) : null;
+  if (!icon)
+    return (
+      <span
+        data-tools-badge=""
+        className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-1.5 py-px text-[10px] font-semibold leading-4 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700"
+      >
+        {badge}
+      </span>
+    );
+  return (
+    <Tooltip label={badge}>
+      <span data-tools-badge="" role="img" aria-label={badge} className={BADGE}>
+        {icon}
+      </span>
+    </Tooltip>
+  );
+}
 
 function Chevron() {
   return (
@@ -497,9 +531,7 @@ export function ChromeToolsMenu({
                                         {item.label}
                                       </span>
                                       {item.badges?.map((badge) => (
-                                        <span key={badge} data-tools-badge="" className={BADGE}>
-                                          {badge}
-                                        </span>
+                                        <ToolBadge key={badge} badge={badge} />
                                       ))}
                                     </span>
                                     <span className="truncate text-xs leading-snug text-slate-500 dark:text-slate-400">

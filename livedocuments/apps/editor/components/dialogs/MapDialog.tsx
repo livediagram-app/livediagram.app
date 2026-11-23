@@ -6,9 +6,10 @@
 // preview is never the only way in. The dialog edits a draft; Done writes it as one undo step,
 // Cancel or Escape leaves the map as it was.
 
-import { useMemo, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader, Select } from '@livedocuments/ui';
+import { useId, useMemo, useState } from 'react';
+import { Button, Select } from '@livedocuments/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import {
   cleanPinLabel,
@@ -32,6 +33,7 @@ import { useMapGeometry } from '@/lib/map-geometry-loader';
 import { cleanMapPatch, type MapPatch } from '@/hooks/canvas/useMapSetters';
 import { MapSearchField, matchCountries, matchPlaces } from '@/components/dialogs/MapSearchField';
 import { MapPinRows } from '@/components/dialogs/MapPinRows';
+import { mapHeroArt } from '@/components/dialogs/MapHeroArt';
 
 type Mode = 'countries' | 'pins';
 const MODES: readonly { id: Mode; label: string }[] = [
@@ -68,6 +70,7 @@ export function MapDialog({
   onCommit: (patch: MapPatch) => void;
   onClose: () => void;
 }) {
+  const titleId = useId();
   const geometry = useMapGeometry();
   // What the map held when the dialog opened, so Done can tell whether anything changed.
   const [initial] = useState<MapPatch>(() => ({
@@ -137,14 +140,15 @@ export function MapDialog({
         : 'Click the map to drop a pin there.';
 
   return (
-    <Dialog open onClose={onClose} ariaLabel="Edit map" size="3xl" className="max-h-[92vh]">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} size="3xl" className="max-h-[92vh]">
+      <HeroDialogHeader
+        art={mapHeroArt}
+        titleId={titleId}
         title="Edit Map"
         subtitle="Choose what it shows, pick out countries and pin places."
-      >
-        <HelpArticleLink article="maps" variant="labelled" />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        actions={<HelpArticleLink article="maps" variant="labelled" />}
+        onClose={onClose}
+      />
       <div className="grid min-h-0 flex-1 gap-5 overflow-y-auto px-6 py-4 sm:grid-cols-[minmax(0,1fr)_17rem]">
         <div className="min-w-0">
           <SegmentedRadio

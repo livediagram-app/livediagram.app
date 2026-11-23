@@ -4,6 +4,7 @@ import { withArticle } from '@livediagram/ui';
 import dynamic from 'next/dynamic';
 import {
   isBoxed,
+  isEntity,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   EMBED_PROVIDER_HINT,
@@ -43,8 +44,20 @@ const MindOutlineDialog = dynamic(
   () => import('@/components/dialogs/MindOutlineDialog').then((m) => m.MindOutlineDialog),
   { ssr: false },
 );
+const ElementRowsDialogs = dynamic(
+  () => import('@/components/dialogs/ElementRowsDialogs').then((m) => m.ElementRowsDialogs),
+  { ssr: false },
+);
+const ElementResourcesDialog = dynamic(
+  () => import('@/components/dialogs/ElementResourcesDialog').then((m) => m.ElementResourcesDialog),
+  { ssr: false },
+);
 const CodeEditDialog = dynamic(
   () => import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
+  { ssr: false },
+);
+const EntityFieldsDialog = dynamic(
+  () => import('@/components/dialogs/EntityFieldsDialog').then((m) => m.EntityFieldsDialog),
   { ssr: false },
 );
 const SequenceDialog = dynamic(
@@ -86,7 +99,14 @@ export function EditorElementDialogs() {
     setLineDataOpenForId,
     codeEditOpenForId,
     setCodeSelected,
+    setCodeWrapSelected,
     setCodeEditOpenForId,
+    rowsEditorOpenFor,
+    setRowsEditorOpenFor,
+    resourcesOpenForId,
+    entityFieldsOpenForId,
+    setEntityFieldsOpenForId,
+    setEntityFieldsSelected,
     sankeyFlowsOpenForId,
     setSankeyFlowsOpenForId,
     sequenceOpenForId,
@@ -125,9 +145,19 @@ export function EditorElementDialogs() {
         (el) => !isReadOnly && el.type === 'shape',
       ],
       [
+        rowsEditorOpenFor?.id ?? null,
+        () => setRowsEditorOpenFor(null),
+        (el) => !isReadOnly && (el.type === 'shape' || el.type === 'table') && !el.locked,
+      ],
+      [
         codeEditOpenForId,
         () => setCodeEditOpenForId(null),
         (el) => !isReadOnly && el.type === 'shape',
+      ],
+      [
+        entityFieldsOpenForId,
+        () => setEntityFieldsOpenForId(null),
+        (el) => !isReadOnly && isEntity(el) && !el.locked,
       ],
       [
         sankeyFlowsOpenForId,
@@ -298,6 +328,11 @@ export function EditorElementDialogs() {
         />
       ) : null}
       {/* Code block edit modal (docs/specs/009-elements/code-block.md): edits the block whose id is open. */}
+      {/* An element's rows in their dialog: a checklist's, a legend's, a chart's slices. */}
+      {rowsEditorOpenFor !== null && !isReadOnly ? <ElementRowsDialogs /> : null}
+      {/* Resources dialog (docs/specs/008-canvas/element-menu-quick-bar.md "Resources"): an Editor's, as the menu
+          row that opens it is. */}
+      {resourcesOpenForId !== null && !isReadOnly ? <ElementResourcesDialog /> : null}
       {codeEditOpenForId !== null && !isReadOnly
         ? (() => {
             const el = activeTab.elements.find((e) => e.id === codeEditOpenForId);
@@ -306,8 +341,25 @@ export function EditorElementDialogs() {
               <CodeEditDialog
                 code={el.code ?? ''}
                 language={el.codeLanguage ?? 'plain'}
+                wrap={el.codeWrap !== false}
+                onSetWrap={setCodeWrapSelected}
                 onCommit={setCodeSelected}
                 onClose={() => setCodeEditOpenForId(null)}
+              />
+            );
+          })()
+        : null}
+      {/* Fields dialog (docs/specs/009-elements/entity.md "The Fields dialog"): an Editor's, on an unlocked entity. */}
+      {entityFieldsOpenForId !== null && !isReadOnly
+        ? (() => {
+            const el = activeTab.elements.find((e) => e.id === entityFieldsOpenForId);
+            if (!el || !isEntity(el) || el.locked) return null;
+            return (
+              <EntityFieldsDialog
+                name={el.label ?? ''}
+                fields={el.entityFields ?? []}
+                onChange={setEntityFieldsSelected}
+                onClose={() => setEntityFieldsOpenForId(null)}
               />
             );
           })()

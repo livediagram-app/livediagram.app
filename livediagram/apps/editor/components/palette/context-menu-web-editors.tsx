@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   CONCEPT_LABEL_MAX,
   CONCEPT_NOTE_MAX,
@@ -20,12 +20,11 @@ import {
   type StatItem,
   type WebRows,
 } from '@livediagram/document';
-import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
+import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
+import { conceptTitle } from '@/components/palette/ConceptMenuSection';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
-import {
-  MENU_ADD_ROW_BUTTON,
-  MENU_CELL_INPUT,
-} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
+import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
+import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';
 import { moveRow } from '@liveworkspace/workbench/lib/move-row';
 
 // The web components' row editors (docs/specs/009-elements/web-components-and-no-groups.md), in the Tools flyout beside the
@@ -34,7 +33,10 @@ import { moveRow } from '@liveworkspace/workbench/lib/move-row';
 // rows are added, removed and reordered, bounded to each kind's min and max.
 
 const rowButton =
-  'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800';
+  'flex h-9 w-8 shrink-0 items-center justify-center rounded-md text-base leading-none text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-200';
+// A row's cell at a dialog's size: 36px tall, 14px text (16px on a phone, the app's anti-zoom rule).
+const CELL =
+  'h-9 min-w-0 rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100';
 
 // Up / down / remove for one row.
 function RowControls({
@@ -113,32 +115,40 @@ function RowListEditor<T>({
   onChange: (rows: T[]) => void;
   cells: (row: T, index: number, edit: RowCellProps<T>) => ReactNode;
 }) {
-  const [rows, setRows] = useState<T[]>(initial);
+  // Follows the element's rows when they change elsewhere (an edit on the canvas), keeping what is being typed.
+  const [rows, setRows] = useFollowingDraft<T[]>(initial);
+  // Rows slide in and out (docs/specs/004-interface-design/motion.md "Rows that come and go").
+  const motion = useRowMotion();
   return (
-    <div className="px-2 py-1.5">
-      <div className="flex flex-col gap-1">
+    <div>
+      <div className="flex flex-col">
         {rows.map((row, i) => (
-          <div key={i} className="flex items-center gap-1">
-            {cells(row, i, {
-              update: (edit) => setRows((r) => r.map((x, j) => (j === i ? edit(x) : x))),
-              commit: () => onChange(rows),
-            })}
-            <RowControls
-              index={i}
-              count={rows.length}
-              min={min}
-              noun={noun}
-              onMove={(to) => onChange(moveRow(rows, i, to))}
-              onRemove={() => onChange(rows.filter((_, j) => j !== i))}
-            />
+          <div key={i} {...motion.rowProps(i)}>
+            <div className="flex items-center gap-1.5 pb-2">
+              {cells(row, i, {
+                update: (edit) => setRows((r) => r.map((x, j) => (j === i ? edit(x) : x))),
+                commit: () => onChange(rows),
+              })}
+              <RowControls
+                index={i}
+                count={rows.length}
+                min={min}
+                noun={noun}
+                onMove={(to) => onChange(moveRow(rows, i, to))}
+                onRemove={() => motion.leave(i, () => onChange(rows.filter((_, j) => j !== i)))}
+              />
+            </div>
           </div>
         ))}
       </div>
       <button
         type="button"
         disabled={rows.length >= max}
-        onClick={() => onChange([...rows, newRow(rows.length)])}
-        className={MENU_ADD_ROW_BUTTON}
+        onClick={() => {
+          motion.enter(rows.length);
+          onChange([...rows, newRow(rows.length)]);
+        }}
+        className="mt-1 inline-flex h-9 w-full items-center justify-center rounded-md border border-dashed border-slate-300 text-sm font-medium text-slate-600 transition enabled:cursor-pointer enabled:hover:border-brand-400 enabled:hover:bg-brand-50/50 enabled:hover:text-brand-700 disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:enabled:hover:border-brand-500 dark:enabled:hover:bg-brand-500/10 dark:enabled:hover:text-brand-200"
       >
         {addLabel}
       </button>
@@ -165,7 +175,7 @@ function StatsEditor({
       cells={(st, i, { update, commit }) => (
         <>
           <input
-            className={`${MENU_CELL_INPUT} w-[4.5rem]`}
+            className={`${CELL} w-24`}
             value={st.value}
             placeholder="value"
             aria-label={`Stat ${i + 1} value`}
@@ -174,7 +184,7 @@ function StatsEditor({
             onBlur={commit}
           />
           <input
-            className={`${MENU_CELL_INPUT} flex-1`}
+            className={`${CELL} flex-1`}
             value={st.caption}
             placeholder="caption"
             aria-label={`Stat ${i + 1} caption`}
@@ -219,7 +229,7 @@ export function TextRowsEditor({
       onChange={onChange}
       cells={(text, i, { update, commit }) => (
         <input
-          className={`${MENU_CELL_INPUT} flex-1`}
+          className={`${CELL} flex-1`}
           value={text}
           placeholder={noun}
           aria-label={`${noun} ${i + 1}`}
@@ -261,7 +271,7 @@ export function ConceptRowsEditor({
       cells={(row, i, { update, commit }) => (
         <>
           <input
-            className={`${MENU_CELL_INPUT} flex-1`}
+            className={`${CELL} flex-1`}
             value={row.label}
             placeholder={noun}
             aria-label={`${noun} ${i + 1}`}
@@ -271,7 +281,7 @@ export function ConceptRowsEditor({
           />
           {notes ? (
             <input
-              className={`${MENU_CELL_INPUT} w-[4.5rem]`}
+              className={`${CELL} w-24`}
               value={row.note ?? ''}
               placeholder="note"
               aria-label={`${noun} ${i + 1} note`}
@@ -286,35 +296,51 @@ export function ConceptRowsEditor({
   );
 }
 
-// The one section a row-carrying web component shows, or nothing for any
-// other element.
+// What the element's rows are called, or null for an element that has none: the menu row's name and the dialog's.
+export function webRowsTitle(target: ShapeElement): string | null {
+  if (target.shape === 'stat-row') return 'Stats';
+  if (target.shape === 'process') return 'Steps';
+  if (target.shape === 'site-header') return 'Links';
+  // A concept graphic's row is named for the graphic: its dialog holds its settings as well as its rows.
+  if (isConceptShape(target.shape) && target.shape !== 'chevrons')
+    return conceptTitle(target.shape);
+  if (target.shape === 'card') return 'Tags';
+  return null;
+}
+
+// The one row a row-carrying element shows in its menu (canvas-and-palette.md "A category that opens a dialog"):
+// named for its rows (Stats, Steps, Links, Tags) or, for a concept graphic, for the graphic (Layer Stack, Pyramid, Funnel, Cycle ...), it opens them in their dialog. Nothing for any other element.
 export function WebRowsMenuSection({
   target,
-  sectionProps,
+  onOpen,
+}: {
+  target: ShapeElement;
+  onOpen: () => void;
+}) {
+  const title = webRowsTitle(target);
+  if (!title) return null;
+  return <MenuDialogSection title={title} icon={<DataMenuGlyph />} onOpen={onOpen} flush />;
+}
+
+// The rows themselves, in their dialog (ElementRowsDialogs): the editor for whichever rows the element carries.
+export function WebRowsEditor({
+  target,
   onSetRows,
 }: {
   target: ShapeElement;
-  sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
   onSetRows: (rows: WebRows) => void;
 }) {
   if (target.shape === 'stat-row') {
     return (
-      <MenuAccordionSection title="Stats" icon={<DataMenuGlyph />} {...sectionProps('stats')}>
-        {/* Keyed on the rows so a change from elsewhere (an inline edit, the
-            ring's Add) resets the local draft rather than being shadowed by it. */}
-        <StatsEditor
-          key={JSON.stringify(target.stats ?? [])}
-          stats={target.stats ?? []}
-          onChange={(stats) => onSetRows({ stats })}
-        />
-      </MenuAccordionSection>
+      <>
+        <StatsEditor stats={target.stats ?? []} onChange={(stats) => onSetRows({ stats })} />
+      </>
     );
   }
   if (target.shape === 'process') {
     return (
-      <MenuAccordionSection title="Steps" icon={<DataMenuGlyph />} {...sectionProps('steps')}>
+      <>
         <TextRowsEditor
-          key={JSON.stringify(target.processSteps ?? [])}
           rows={target.processSteps ?? []}
           min={PROCESS_MIN_STEPS}
           max={PROCESS_MAX_STEPS}
@@ -323,14 +349,13 @@ export function WebRowsMenuSection({
           nextRow={(n) => `Step ${n + 1}`}
           onChange={(processSteps) => onSetRows({ processSteps })}
         />
-      </MenuAccordionSection>
+      </>
     );
   }
   if (target.shape === 'site-header') {
     return (
-      <MenuAccordionSection title="Links" icon={<DataMenuGlyph />} {...sectionProps('links')}>
+      <>
         <TextRowsEditor
-          key={JSON.stringify(target.navLinks ?? [])}
           rows={target.navLinks ?? []}
           min={0}
           max={NAV_LINKS_MAX}
@@ -339,16 +364,15 @@ export function WebRowsMenuSection({
           nextRow={() => 'Link'}
           onChange={(navLinks) => onSetRows({ navLinks })}
         />
-      </MenuAccordionSection>
+      </>
     );
   }
   // Chevrons edit their stages on the canvas (ConceptRowBar), so they have no Rows section.
   if (isConceptShape(target.shape) && target.shape !== 'chevrons') {
     const bounds = CONCEPT_ROWS[target.shape];
     return (
-      <MenuAccordionSection title="Rows" icon={<DataMenuGlyph />} {...sectionProps('concept-rows')}>
+      <>
         <ConceptRowsEditor
-          key={JSON.stringify(target.conceptRows ?? [])}
           rows={target.conceptRows ?? []}
           min={bounds.min}
           max={bounds.max}
@@ -356,14 +380,13 @@ export function WebRowsMenuSection({
           notes={conceptDrawsNotes(target)}
           onChange={(conceptRows) => onSetRows({ conceptRows })}
         />
-      </MenuAccordionSection>
+      </>
     );
   }
   if (target.shape === 'card') {
     return (
-      <MenuAccordionSection title="Tags" icon={<DataMenuGlyph />} {...sectionProps('tags')}>
+      <>
         <TextRowsEditor
-          key={JSON.stringify(target.tags ?? [])}
           rows={target.tags ?? []}
           min={0}
           max={CARD_TAGS_MAX}
@@ -373,7 +396,7 @@ export function WebRowsMenuSection({
           maxLength={CARD_TAG_MAX}
           onChange={(tags) => onSetRows({ tags })}
         />
-      </MenuAccordionSection>
+      </>
     );
   }
   return null;
