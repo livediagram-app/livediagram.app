@@ -194,7 +194,14 @@ export function storedWritingText(sql: ItemSql, tab: string): string | null {
 }
 
 /** `trust` counts the pages whose verification changed. */
-export type Settled = { pages: number; indexed: IndexedPage[]; queued: number; trust: number };
+export type Settled = {
+  pages: number;
+  indexed: IndexedPage[];
+  queued: number;
+  trust: number;
+  /** Tabs that settled as no page: a page gone, or a connected file (a source's set may have moved). */
+  removed: number;
+};
 
 // Settle the marked pages of one kind (`queued` 0: this write's; 1: the alarm's), at most `limit`.
 function settleMarked(sql: ItemSql, queued: 0 | 1, limit: number): Settled {
@@ -203,9 +210,11 @@ function settleMarked(sql: ItemSql, queued: 0 | 1, limit: number): Settled {
     .toArray() as { tab: string; tries: number }[];
   const indexed: IndexedPage[] = [];
   let trust = 0;
+  let removed = 0;
   for (const { tab, tries } of marked) {
     const outcome = settlePage(sql, tab, indexed);
     if (outcome === 'trust' || outcome === 'indexed-trust') trust++;
+    if (outcome === 'removed') removed++;
     if (outcome === 'unreadable' && tries + 1 < SETTLE_MAX_TRIES) {
       sql.exec('UPDATE knowledge_dirty SET tries = tries + 1, queued = 1 WHERE tab = ?', tab);
       continue;
@@ -213,7 +222,7 @@ function settleMarked(sql: ItemSql, queued: 0 | 1, limit: number): Settled {
     if (outcome === 'unreadable') console.warn('[knowledge] page left out of the index', { tab });
     sql.exec('DELETE FROM knowledge_dirty WHERE tab = ?', tab);
   }
-  return { pages: marked.length, indexed, queued: 0, trust };
+  return { pages: marked.length, indexed, queued: 0, trust, removed };
 }
 
 /** Settle what this write marked; pages past SETTLE_INLINE_MAX are queued for the alarm. */
@@ -243,6 +252,8 @@ export type KnowledgeIndexEvents = {
   onIndexed?: (pages: readonly IndexedPage[]) => void;
   /** A page's verification changed (the review check may have a new date to wait for). */
   onTrust?: () => void;
+  /** A tab settled as no page (a page gone, a connected file added or removed): the sources' set may have moved. */
+  onRemoved?: () => void;
 };
 
 /** The database hooks with the index kept in step (see the head of this file). */
@@ -255,6 +266,7 @@ export function withKnowledgeIndex(
     if (settled.queued > 0) events.onQueued?.();
     if (settled.indexed.length > 0) events.onIndexed?.(settled.indexed);
     if (settled.trust > 0) events.onTrust?.();
+    if (settled.removed > 0) events.onRemoved?.();
   };
   return {
     ensureSchema: hooks.ensureSchema,

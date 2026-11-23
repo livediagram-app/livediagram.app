@@ -198,4 +198,7 @@ export type DocumentEnv = Env &
     // The outbox holds a key a quiet write's trigger wrote (a suggested edit's, knowledge/suggestions-changed.ts):
     // the room arms its drain as after a content write, without counting an edit.
     OUTBOX_OWED?: () => void;
+    // The room owes its sources' work (docs/specs/030-knowledgebase/search-and-ask.md "Sources";
+    // knowledge/source-work.ts) at `dueAt`: key `~sync` the set's look, else one source's read. Absent outside a room.
+    SOURCES_OWED?: (key: string, dueAt: number) => void;
   };

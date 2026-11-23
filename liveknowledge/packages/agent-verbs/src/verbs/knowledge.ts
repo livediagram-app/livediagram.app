@@ -11,6 +11,7 @@ import type {
   KnowledgePageReadResponse,
   KnowledgePagesResponse,
   KnowledgeSearchResponse,
+  KnowledgeSourceHit,
   MovePageResponse,
   PagesAnswer,
   SuggestEditResponse,
@@ -151,6 +152,16 @@ export const pages = defineVerb({
   },
 });
 
+// A source hit as search_pages answers it (search-and-ask.md "Sources"): the match marks dropped, the day it was read.
+const sourceHitOf = (h: KnowledgeSourceHit) => ({
+  app: h.app,
+  item: h.itemName,
+  itemId: h.itemId,
+  place: h.title,
+  snippet: h.snippet.replaceAll('\u0002', '').replaceAll('\u0003', ''),
+  asOf: new Date(h.readAt).toISOString().slice(0, 10),
+});
+
 export const search = defineVerb({
   id: 'search',
   summary: 'Find passages',
@@ -191,10 +202,11 @@ export const search = defineVerb({
         ...resultTrustOf(r),
       })),
       more: found.results.length - shown.length,
+      ...(found.sources?.length ? { sources: found.sources.map(sourceHitOf) } : {}),
     };
   },
   text: (o) =>
-    o.results.length === 0
+    o.results.length === 0 && !o.sources?.length
       ? ['no passage matches (recorded as a question the knowledgebase could not answer)']
       : [
           ...o.results.flatMap((r) => [
@@ -202,6 +214,10 @@ export const search = defineVerb({
             ...(r.passage ? [`  ${r.passage.replace(/\n+/g, '\n  ')}`] : []),
           ]),
           ...(o.more > 0 ? [`${o.more} more: raise --limit`] : []),
+          ...(o.sources ?? []).map(
+            (h) =>
+              `${h.item} > ${h.place}  (${h.app}, as of ${h.asOf}, not verified)\n  ${h.snippet}`,
+          ),
         ],
   quiet: (o) => o.results.map((r) => r.page),
   cli: {

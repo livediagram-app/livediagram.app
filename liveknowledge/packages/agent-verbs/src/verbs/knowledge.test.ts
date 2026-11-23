@@ -230,6 +230,38 @@ describe('search', () => {
     ]);
   });
 
+  // search-and-ask.md "Sources": the reader's own source hits after the pages, marked not verified.
+  it('lists the items of other apps the reader can open after the pages', async () => {
+    const sources = [
+      {
+        app: 'livediagram',
+        itemId: 'd1',
+        itemName: 'Checkout Flow',
+        title: 'Payments',
+        place: { tabId: 't1' },
+        snippet: 'pays through \u0002Stripe\u0003',
+        readAt: Date.UTC(2026, 10, 20),
+      },
+    ];
+    const { ctx } = setup({ [`${base}/search?q=stripe`]: { results: [], sources } });
+    const out = await run(search, ctx, { doc: DOC_A, query: ['stripe'] });
+    expect(out).toMatchObject({
+      sources: [
+        {
+          app: 'livediagram',
+          item: 'Checkout Flow',
+          itemId: 'd1',
+          place: 'Payments',
+          snippet: 'pays through Stripe',
+          asOf: '2026-11-20',
+        },
+      ],
+    });
+    expect(search.text!(out)).toEqual([
+      'Checkout Flow > Payments  (livediagram, as of 2026-11-20, not verified)\n  pays through Stripe',
+    ]);
+  });
+
   it('narrows to the pages of the labels --labels names', async () => {
     const { ctx, api } = setup({
       [`${base}/search?q=a&labels=Engineering%2COps`]: { results: [passage()] },

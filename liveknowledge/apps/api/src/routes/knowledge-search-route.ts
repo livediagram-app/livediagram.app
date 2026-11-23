@@ -16,6 +16,7 @@ import {
 import type { KnowledgeSearchResult } from '@liveknowledge/api-schema';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { readerOf } from '../knowledge/knowledge-caller';
+import { searchSourceHits } from '../knowledge/ask-source-read';
 import { labelScopeOf, labelsParam } from '../knowledge/label-scope';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { openConflictPages, pageTrustOf } from '../knowledge/page-read';
@@ -73,6 +74,10 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
   const found = statement ? (await rowsOf<SearchRow>(ctx.env, statement)).map(foundPassage) : [];
   // A link confined to one page (tab-scoped-share-links.md) finds only what that page holds.
   const results = grant.tabScope === null ? found : found.filter((r) => r.tab === grant.tabScope);
+  // The sources the reader can open themselves (search-and-ask.md "Sources"), after the pages; none for a guest, a
+  // link reader or a label scope.
+  const sources = scope ? [] : await searchSourceHits(ctx, grant, route.document.id, query);
+  const withSources = sources.length > 0 ? { sources } : {};
   const reader = readerOf(ctx);
   if (reader.kind === 'agent') {
     // An agent's results carry what it needs to judge them without a second request (knowledgebase-for-agents.md):
@@ -107,12 +112,15 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
     );
     const key = questionKey(query);
     // A scoped search that finds nothing proves nothing of the rest of the knowledgebase: no question is recorded.
-    const asked = results.length === 0 && key && !scope ? [{ key, question: query.trim() }] : [];
+    const asked =
+      results.length === 0 && sources.length === 0 && key && !scope
+        ? [{ key, question: query.trim() }]
+        : [];
     const fresh = await newQuestions(ctx, asked);
     if (asked.length > 0) notes.push(...upsertQuestion(key, query.trim(), reader, now));
     await runAll(ctx.env, notes);
     await queueNewQuestions(ctx, fresh);
-    return json({ results: answered });
+    return json({ results: answered, ...withSources });
   }
-  return json({ results: results.map(searchResultOf) });
+  return json({ results: results.map(searchResultOf), ...withSources });
 }

@@ -136,6 +136,13 @@ import {
   type SiteAddressAnswer,
   type SiteAddressOp,
 } from '../publishing/site-addresses';
+import {
+  SOURCE_SYNC_KEY,
+  SOURCE_SYNC_SOON_MS,
+  oweSourceWork,
+  takeSourceChange,
+} from '../knowledge/source-work';
+import type { KnowledgeSourceChange } from '@liveworkspace/index-client';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -333,6 +340,13 @@ export class DocumentRoom extends DurableObject<Env> {
       oweWork(state.storage.sql, { kind: 'watch', key, dueAt, payload: '' });
       this.knowledge.wake(dueAt);
     };
+    // A connected tab came or went, or a page was removed: the room looks at its set of sources soon
+    // (knowledge/source-work.ts); one look however many tabs a write touched.
+    const oweSources = (key: string, dueAt: number) => {
+      oweSourceWork(state.storage.sql, key, dueAt);
+      this.knowledge.wake(dueAt);
+    };
+    this.knowledge.onRemoved = () => oweSources(SOURCE_SYNC_KEY, Date.now() + SOURCE_SYNC_SOON_MS);
     this.knowledge.work = async (now) =>
       this.roomEnv && this.documentId
         ? runKnowledgeWork(this.roomEnv, state.storage.sql, this.documentId, now)
@@ -372,6 +386,7 @@ export class DocumentRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
           REVIEW_PERIOD_CHANGED: oweReviewCheck,
           WATCH_OWED: oweWatch,
+          SOURCES_OWED: oweSources,
           OUTBOX_OWED: () => noteOutboxOwed(this),
         }
       : undefined;
@@ -524,6 +539,18 @@ export class DocumentRoom extends DurableObject<Env> {
       documentId,
       change,
     );
+  }
+
+  // A source of this knowledgebase changed or went (the index's knowledge-source-changed door,
+  // liveworkspace/docs/specs/004-index/knowledge-sources.md "Keeping in step"): a source gone is dropped now, a changed
+  // one read again after a minute, an item not yet read sends the room to look at its set. A room never started
+  // takes nothing.
+  async knowledgeSourceChanged(documentId: string, change: KnowledgeSourceChange): Promise<void> {
+    this.bindDocument(documentId);
+    if (!this.storedSchema()) return;
+    ensureSchema(this);
+    const dueAt = takeSourceChange(this.state.storage.sql, change, Date.now());
+    if (dueAt !== null) this.knowledge.wake(dueAt);
   }
 
   joined(documentId: string, personId: string, level?: AccessLevel): Promise<void> {

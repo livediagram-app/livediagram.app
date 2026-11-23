@@ -102,6 +102,18 @@ export type FoundPassage = {
   verifiedAt?: number;
   /** bm25: lower is a better match. */
   rank: number;
+  /** A chunk of another app's item, not a page (search-and-ask.md "Sources"): `tab` is then the item's id, `title`
+   *  its name and `headings` the place's name (a tab's or a card's). Never verified. */
+  source?: PassageSource;
+};
+
+/** Where a source chunk is from: the item, its app, the place it opens at (the door's, as JSON) and when it was read. */
+export type PassageSource = {
+  app: string;
+  itemId: string;
+  itemName: string;
+  place: string;
+  readAt: number;
 };
 
 /** The search statement for words already made safe, or undefined when there are none to look for. */

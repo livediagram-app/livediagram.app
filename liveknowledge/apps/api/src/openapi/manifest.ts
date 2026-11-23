@@ -992,6 +992,30 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
+    method: 'GET',
+    path: '/documents/{id}/ai/sources',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'What the knowledgebase reads besides its pages: Connected Items on or off, the team folder, and each source with its state.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'KnowledgeSources',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/ai/sources',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Change the Sources, as `{ connected?, folderId?, folderName? }`; a folder only on a team knowledgebase. Editor only.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'KnowledgeSources',
+    statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  {
     method: 'POST',
     path: '/documents/{id}/ask',
     segment: 'documents',
