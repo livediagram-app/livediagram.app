@@ -10,9 +10,11 @@
 
 import { fenceStaleWrite, requestGeneration, stampGeneration } from './fence';
 import { SNAPSHOTS_KEPT, SNAPSHOT_NAME_MAX } from './limits';
+import { keptWhileUnknown, type SnapshotRetention } from './retention';
 import { keptIdsOf, revertToSnapshot, type RevertRefusal, type SnapshotDoor } from './revert';
 import {
   deleteSnapshot,
+  dropSnapshotsBefore,
   listSnapshots,
   readGeneration,
   takeSnapshot,
@@ -48,6 +50,10 @@ export type ServeSnapshots = {
   door: () => SnapshotDoor;
   /** The app's own handlers, for every request that is not a snapshot route. */
   handle: () => Promise<Response>;
+  /** With Pro on, what the item's owner's tier keeps (`snapshotRetention`); null or left out with Pro off, where the
+   *  latest SNAPSHOTS_KEPT stay until pushed out. Asked only by a route that lists or takes. */
+  retention?: () => Promise<SnapshotRetention | null>;
+  now?: () => number;
 };
 
 function json(body: unknown, status = 200, extra: Record<string, string> = {}): Response {
@@ -148,24 +154,69 @@ export async function answerSnapshotRoute(opts: ServeSnapshots): Promise<Respons
   const door = opts.door();
   // SN35: the snapshots the item's rules name, read once a request.
   const keptIds = await keptIdsOf(door);
+  if (route.kind === 'delete') {
+    if (keptIds.includes(route.id)) {
+      console.info('[snapshots] refused', { itemId, snapshotId: route.id, reason: 'kept' });
+      return refusal('snapshot_kept', 409);
+    }
+    if (!(await deleteSnapshot(db, itemId, route.id))) return refusal('not_found', 404);
+    console.info('[snapshots] deleted', { itemId, snapshotId: route.id });
+    return new Response(null, { status: 204 });
+  }
+  // What the owner's tier keeps (Pro on), read once for a route that lists, takes or reverts; a delete never asks.
+  const retention = (await opts.retention?.()) ?? null;
+  const maxAgeMs = retention?.maxAgeMs ?? null;
+  // A snapshot past its time goes as the list is read or one is taken, never under a revert to it, and never one a
+  // rule names.
+  const dropExpired = async () => {
+    if (maxAgeMs !== null) {
+      await dropSnapshotsBefore(db, itemId, (opts.now ?? Date.now)() - maxAgeMs, keptIds);
+    }
+  };
   if (route.kind === 'list') {
+    await dropExpired();
     const named = new Set(keptIds);
+    const snapshots = await listSnapshots(db, itemId);
     const body: SnapshotListResponse = {
-      snapshots: (await listSnapshots(db, itemId)).map((s) => ({ ...s, kept: named.has(s.id) })),
-      kept: SNAPSHOTS_KEPT,
+      snapshots: snapshots.map((s) => {
+        const kept = named.has(s.id);
+        // One a rule names is kept beside the tier's count and never ages out.
+        return maxAgeMs === null || kept
+          ? { ...s, kept }
+          : { ...s, kept, expiresAt: s.createdAt + maxAgeMs };
+      }),
+      kept: !retention
+        ? SNAPSHOTS_KEPT
+        : retention.known
+          ? retention.keep
+          : keptWhileUnknown(snapshots.length - named.size),
+      ...(retention?.known ? { retention: { days: retention.days, owner: retention.owner } } : {}),
     };
     return json(body);
   }
+  // A tier not known keeps the fewest any tier does, and drops nothing a tier that keeps more left (retention.ts).
+  const keep = !retention
+    ? {}
+    : {
+        keep: retention.known
+          ? retention.keep
+          : keptWhileUnknown(
+              (await listSnapshots(db, itemId)).filter((s) => !keptIds.includes(s.id)).length,
+            ),
+      };
   if (route.kind === 'take') {
     const name = await bodyName(request);
     const text = await door.exportFile();
     if (text === null) return refusal('not_found', 404);
+    await dropExpired();
     const taken = await takeSnapshot(db, {
       itemId,
       text,
       name,
       kind: 'manual',
       author: caller.person,
+      ...keep,
+      ...(opts.now ? { now: opts.now() } : {}),
       keptIds,
     });
     if (!taken.ok) {
@@ -178,17 +229,13 @@ export async function answerSnapshotRoute(opts: ServeSnapshots): Promise<Respons
       kind: 'manual',
       bytes: taken.snapshot.bytes,
     });
-    const body: SnapshotTakeResponse = { snapshot: taken.snapshot };
+    const body: SnapshotTakeResponse = {
+      snapshot:
+        maxAgeMs === null
+          ? taken.snapshot
+          : { ...taken.snapshot, expiresAt: taken.snapshot.createdAt + maxAgeMs },
+    };
     return json(body, 201);
-  }
-  if (route.kind === 'delete') {
-    if (keptIds.includes(route.id)) {
-      console.info('[snapshots] refused', { itemId, snapshotId: route.id, reason: 'kept' });
-      return refusal('snapshot_kept', 409);
-    }
-    if (!(await deleteSnapshot(db, itemId, route.id))) return refusal('not_found', 404);
-    console.info('[snapshots] deleted', { itemId, snapshotId: route.id });
-    return new Response(null, { status: 204 });
   }
   const result = await revertToSnapshot({
     db,
@@ -196,6 +243,8 @@ export async function answerSnapshotRoute(opts: ServeSnapshots): Promise<Respons
     snapshotId: route.id,
     door,
     author: caller.person,
+    ...keep,
+    ...(opts.now ? { now: opts.now() } : {}),
   });
   if (!result.ok) return refusal(...REVERT_REFUSALS[result.reason]);
   const body: SnapshotRevertResponse = { reverted: result.reverted };

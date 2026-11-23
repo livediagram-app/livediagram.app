@@ -6,9 +6,14 @@
 // (lib/open-settings.ts), so the dialog it sits in stays open underneath, and counts its two events. The item's team
 // and whether the person is signed in come from the editor, which says them once (ai-source-scope.ts).
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
-import { AiSource, useAiSource, type AiSourceEvent } from '@liveworkspace/settings-ui/ai-source';
+import {
+  AiSource,
+  useAiSource,
+  type AiSourceEvent,
+  type AiSourceLine,
+} from '@liveworkspace/settings-ui/ai-source';
 import { workbench } from '../../bindings';
 import { requestOpenSettings } from '../../lib/open-settings';
 import { accountDoor, useEditorAiScope } from './ai-source-scope';
@@ -29,6 +34,9 @@ export type WorkbenchAiSourceProps = {
   // Where the scope does not reach: said here instead.
   teamId?: string | null;
   signedIn?: boolean;
+  // Told which AI the line shows as it changes, for a dialog whose metering applies to built-in AI alone (Pro's AI
+  // credits: a key spends none).
+  onKind?: (kind: AiSourceLine['kind']) => void;
 };
 
 export function WorkbenchAiSource({
@@ -37,6 +45,7 @@ export function WorkbenchAiSource({
   id,
   teamId,
   signedIn,
+  onKind,
 }: WorkbenchAiSourceProps) {
   const editor = useEditorAiScope();
   const signed = signedIn ?? editor.signedIn;
@@ -47,5 +56,8 @@ export function WorkbenchAiSource({
     openSettings: openAiSettings,
     track,
   });
+  useEffect(() => {
+    onKind?.(line?.kind ?? 'loading');
+  }, [line?.kind, onKind]);
   return <AiSource line={line} act={act} allowance={allowance} id={id} />;
 }

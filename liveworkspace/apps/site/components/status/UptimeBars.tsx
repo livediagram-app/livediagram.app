@@ -17,6 +17,7 @@ import {
   stateOfLetter,
   stripSummary,
 } from '@/lib/status/history';
+import { Chip } from '@liveworkspace/ui';
 import { TIME } from '@liveworkspace/ui/date-format';
 import { STATE_LOOK } from './status-ui';
 
@@ -157,12 +158,12 @@ function DayTip({
       <p className="font-semibold text-slate-900 dark:text-white">{formatDay(day.day)}</p>
       {look && Icon ? (
         <p className="mt-1.5 flex items-center justify-between gap-2">
-          <span
-            className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${look.badge}`}
+          <Chip
+            icon={<Icon />}
+            className={`px-1.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${look.badge}`}
           >
-            <Icon />
             {day.worst === 'up' ? 'Up all day' : `Worst: ${look.word}`}
-          </span>
+          </Chip>
           <span className="font-mono tabular-nums text-slate-700 dark:text-slate-200">
             {day.uptime === null ? '' : `${formatUptime(day.uptime)} up`}
           </span>

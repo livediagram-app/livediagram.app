@@ -6,6 +6,7 @@
 // of two. Choosing is the dialog's to act on: with a key saved it asks before the key is replaced.
 import { useId, type ReactNode } from 'react';
 import type { KnowledgeAiProvider, KnowledgeAiSettings } from '@liveknowledge/api-schema';
+import { Chip } from '@liveknowledge/ui';
 import { providerWords } from '@/lib/knowledge-ask/provider-words';
 import { BuiltInAiIcon, KeyIcon, ProviderRingIcon, ProviderSparkIcon } from './ask-icons';
 
@@ -121,9 +122,9 @@ export function AiChoiceRows<Id extends string>({
                   {label}
                 </span>
                 {pill ? (
-                  <span className="shrink-0 rounded-full bg-emerald-50 px-1.5 py-px text-[11px] font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/30">
+                  <Chip className="bg-emerald-50 px-1.5 py-px text-[11px] font-semibold text-emerald-800 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/30">
                     {pill}
-                  </span>
+                  </Chip>
                 ) : null}
               </span>
               <span className="block text-xs leading-5 text-slate-600 dark:text-slate-400">
@@ -186,6 +187,7 @@ export type AiSource = 'built-in' | 'own-key';
 export function AiSourcePicker({
   chosen,
   builtIn,
+  credits = false,
   disabled,
   labelledBy,
   onChoose,
@@ -193,6 +195,8 @@ export function AiSourcePicker({
   chosen: AiSource;
   /** Whether this server has built-in AI. */
   builtIn: boolean;
+  /** Pro is on: built-in AI spends the owner's AI credits (tiers.md). */
+  credits?: boolean;
   disabled?: boolean;
   labelledBy: string;
   onChoose: (source: AiSource) => void;
@@ -204,7 +208,11 @@ export function AiSourcePicker({
         {
           id: 'built-in',
           label: 'Built-In AI',
-          about: builtIn ? 'No key to add. Daily limits apply.' : 'Not set up on this server.',
+          about: !builtIn
+            ? 'Not set up on this server.'
+            : credits
+              ? 'No key to add. Uses AI credits.'
+              : 'No key to add. Daily limits apply.',
           icon: <BuiltInAiIcon />,
           ...(builtIn ? { pill: 'Included' } : { unavailable: true }),
         },

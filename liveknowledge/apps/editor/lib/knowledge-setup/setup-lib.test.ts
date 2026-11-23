@@ -1,5 +1,10 @@
 // Describe to Set Up's pure parts (docs/specs/030-knowledgebase/describe-to-set-up.md): when a knowledgebase is
 // empty, the Review step's ticks and titles, the limits, the plan the write path is handed, and the words.
+import {
+  forgetKnowledgeTiersForTests,
+  setKnowledgeTier,
+  setOpenPagesBound,
+} from '@/lib/knowledge-tier';
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { KNOWLEDGEBASE_FLOW, MAX_KNOWLEDGEBASE_PAGES, type Tab } from '@liveknowledge/document';
@@ -180,6 +185,20 @@ describe('the Review step', () => {
         existing: MAX_KNOWLEDGEBASE_PAGES - 4,
       }),
     ).toBeNull();
+    // The owner's limit leaves less room than the fixed bound: held to that, in the plan's words.
+    setKnowledgeTier('kb', { pagesMax: MAX_KNOWLEDGEBASE_PAGES, pagesLimit: 500, historyDays: 30 });
+    setOpenPagesBound('kb', { max: 4, account: { limit: 500, whose: 'yours' } });
+    expect(setupLimitRefusal(pages, top)).toBe('page_limit');
+    expect(setupLimitText('page_limit')).toBe(
+      'Free holds 500 pages across your Knowledgebases, and these would pass that. Untick some pages to make room.',
+    );
+    setOpenPagesBound('kb', { max: 4, account: { limit: 5000, whose: 'team' } });
+    expect(setupLimitText('page_limit')).toBe(
+      'Pro for Teams holds 5,000 pages across this team’s Knowledgebases, and these would pass that. Untick some pages to make room.',
+    );
+    setOpenPagesBound('kb', { max: 4, account: { limit: 7, whose: 'yours' } });
+    expect(setupLimitText('page_limit')).toContain('Your plan holds 7 pages');
+    forgetKnowledgeTiersForTests();
     // Three levels under a page five deep are level eight; under one six deep they pass it.
     expect(setupLimitRefusal(pages, { existing: 10, replacing: false, parentDepth: 5 })).toBeNull();
     expect(setupLimitRefusal(pages, { existing: 10, replacing: false, parentDepth: 6 })).toBe(

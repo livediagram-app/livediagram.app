@@ -17,7 +17,11 @@ const LIST: Alternative[] = [
     h1: 'A free, open-source Google Slides alternative',
     lede: 'Google Slides is the presentation tool most people already have open. livedocuments makes decks a little differently: start each slide from a ready-made layout, keep the article, the one-pager and the deck as tabs of one document, and present any page of them, with your team editing alongside you.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free with a Google account' },
+      {
+        label: 'Price',
+        us: 'Free, every feature (a few limits rise on paid plans)',
+        them: 'Free with a Google account',
+      },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
       {
         label: 'Start without an account',
@@ -75,7 +79,7 @@ const LIST: Alternative[] = [
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
       '41 templates to start from, from a launch keynote and a class lesson to a board update.',
-      'Free and MIT-licensed, with no paid tier.',
+      'Free and MIT-licensed, with no feature behind a paywall.',
     ],
     sections: [
       {
@@ -101,7 +105,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Free, open and no account needed',
         paragraphs: [
-          'Slides is free with a Google account. livedocuments needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed with no paid tier. When a deck has to travel, export it as an editable PowerPoint file that opens in Slides, PowerPoint and Keynote, any page as a PNG, SVG or a print-ready PDF, or the whole deck as an animated GIF.',
+          'Slides is free with a Google account. livedocuments needs no account at all: open the editor and start, and a guest’s document stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed, and every feature works on the free plan. When a deck has to travel, export it as an editable PowerPoint file that opens in Slides, PowerPoint and Keynote, any page as a PNG, SVG or a print-ready PDF, or the whole deck as an animated GIF.',
         ],
       },
     ],
@@ -124,7 +128,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Is livedocuments free?',
-        a: 'Yes. It is MIT-licensed open source with a free hosted version, every feature included, and no paid tier. You can even use it without creating an account at all.',
+        a: 'Yes. It is MIT-licensed open source with a free hosted version, every feature on the free plan, and no trial or card. You can even use it without creating an account at all.',
       },
     ],
   },

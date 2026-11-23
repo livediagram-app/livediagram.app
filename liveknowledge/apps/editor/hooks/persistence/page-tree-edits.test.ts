@@ -1,4 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import {
+  forgetKnowledgeTiersForTests,
+  setKnowledgeTier,
+  setOpenPagesBound,
+} from '@/lib/knowledge-tier';
 import type { Element, Tab } from '@liveknowledge/document';
 import {
   deletePageMessage,
@@ -105,6 +110,13 @@ describe('what a person reads', () => {
   });
   it('says why the tree refuses', () => {
     expect(pageTreeRefusalText('page_limit')).toBe('A knowledgebase holds 500 pages at most.');
+    // At the owner's Knowledgebase Pages, the notice's own words.
+    setKnowledgeTier('kb', { pagesMax: 500, pagesLimit: 500, historyDays: 30 });
+    setOpenPagesBound('kb', { max: 3, account: { limit: 500, whose: 'yours' } });
+    expect(pageTreeRefusalText('page_limit')).toBe(
+      'You have 500 pages, the most Free holds across your Knowledgebases.',
+    );
+    forgetKnowledgeTiersForTests();
     expect(pageTreeRefusalText('depth_limit')).toBe('Pages nest 8 levels deep at most.');
     expect(pageTreeRefusalText('own_subtree')).toBe('A page cannot move inside its own subpages.');
     expect(pageTreeRefusalText('unknown_page')).toBe('That page is no longer here.');

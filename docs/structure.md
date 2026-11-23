@@ -9,6 +9,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ agent-verbs              the parts of every product's CLI and MCP verbs that read no element union: addressing, refusals, argv lines
 │  ├─ ai                       the one model call every app's server makes (liveworkspace/docs/specs/003-accounts/ai-keys.md): the providers and their models, the provider-neutral request, `callModel` over built-in Workers AI, Anthropic and OpenAI (streamed), their failures in words, the key check and the fixed provider hosts
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
+│  ├─ ask                      Ask AI in every app but liveknowledge (liveworkspace/docs/specs/020-ask/ask.md): the passages, the request and the answer's reader (shared with liveknowledge's Ask), the `/api/ask` route and built-in AI's daily count, the tool in the footer's Tools
 │  ├─ app-doors                the platform's calls on each app's internal doors (export, import, link), for the Drive mirror and the data export
 │  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, a write body's byte cap, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, a Durable Object alarm's one-second floor, the server renders' image embedder (`embedImages`), the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
@@ -51,6 +52,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ render-png               SVG to PNG with resvg and the Inter fonts, for every api, mcp and cli
 │  ├─ settings                 the settings scopes, shared keys, and each app's catalogue as plain data
 │  ├─ settings-ui              the one Settings panel (this app or All) every app's Settings and liveworkspace.app open
+│  ├─ subscription             the subscription contract: tiers, limits, prices, wire shapes, the apps' client and the pages' client
+│  ├─ subscription-ui          the Pro badge, meters, upgrade dialog and Subscription settings every app shows
 │  ├─ snapshots                manual save points in every app: the store in each item's object, the five kept, revert and its fence, the footer button and dialog
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher, and the one profile picture URL rule (`/picture`)
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
@@ -72,6 +75,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/help                www.liveworkspace.app/help and every app's /help: the one help centre, six static builds behind one Worker
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
+│  ├─ apps/subscription        liveworkspace.app/api/subscription: tiers, entitlements, meters and billing for every app, own D1
 │  ├─ apps/media               liveworkspace.app/api/media and /api/previews: every app's images and previews, own D1 and R2
 │  ├─ apps/index               liveworkspace.app/api/index: every app's items for the One Explorer, own D1
 │  ├─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
@@ -167,6 +171,7 @@ liveworkspace/
 │  ├─ telemetry                    every product's anonymous events; the dashboard is the site's /telemetry
 │  ├─ community                    every product's Community listings (liveworkspace/docs/specs/007-community)
 │  ├─ media                        every product's uploaded images and previews (liveworkspace/docs/specs/006-media)
+│  ├─ subscription                 every product's tiers, limits and billing (liveworkspace/docs/specs/019-subscription)
 │  ├─ status                       hourly checks of every service and 90 days of history (liveworkspace/docs/specs/009-status)
 │  ├─ index                        the One Explorer's index: every product's items, folders and sharing in one place
 │  ├─ drive                        the Google Drive mirror, for every product

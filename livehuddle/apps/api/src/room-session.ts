@@ -45,6 +45,10 @@ export type SessionAttachment = {
   //   - `keyMinted`: the collab key was minted here, the upgrade naming none (a session with no identity). Its first
   //     hello's `visitor` secret then gives it its browser's key instead (visitor-key.ts), and this is cleared.
   keyMinted?: boolean;
+  //   - `keyVisitor`: the collab key was made from the browser's own visitor secret (visitor-key.ts), which a browser
+  //     chooses: it tells one browser's visits apart for the roster, and is never a person the room may count on
+  //     (the call meter counts such a session by its connection, calls/call-meter.ts).
+  keyVisitor?: boolean;
   //   - `verifiedName`: the person's presence name (docs/specs/014-identity/auth-and-guest-access.md "Presence
   //     names"), their profile's name as the api read it at the upgrade (X-Verified-Name), moved on by a rename the
   //     api relays (`/presence-name`). The hello's name is never read. Absent with no identity, or no profile.

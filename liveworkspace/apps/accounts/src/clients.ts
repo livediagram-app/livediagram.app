@@ -27,6 +27,21 @@ function isLoopback(uri: string): boolean {
   }
 }
 
+// The redirect URIs as given, plus `/auth/guest` on each of their origins: where the guest hand-off returns
+// (guests.ts matches it exactly). Added here so a client can't be registered without it, which fails every
+// signed-out visit to the app with `invalid_redirect_uri` while signed-in ones work.
+export function withGuestReturns(redirectUris: readonly string[]): string[] {
+  const all = new Set(redirectUris);
+  for (const uri of redirectUris) {
+    try {
+      all.add(`${new URL(uri).origin}/auth/guest`);
+    } catch {
+      // Not a URL: left for Better Auth to refuse.
+    }
+  }
+  return [...all];
+}
+
 interface RegisterBody {
   name?: unknown;
   redirectUris?: unknown;
@@ -52,9 +67,11 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
   // `?? {}` too: a body of `null` parses, and reading its fields would answer 500 instead of 400.
   const body = ((await request.json().catch(() => null)) ?? {}) as RegisterBody;
   const name = typeof body.name === 'string' ? body.name.trim() : '';
-  const redirectUris = Array.isArray(body.redirectUris)
-    ? body.redirectUris.filter((uri): uri is string => typeof uri === 'string')
-    : [];
+  const redirectUris = withGuestReturns(
+    Array.isArray(body.redirectUris)
+      ? body.redirectUris.filter((uri): uri is string => typeof uri === 'string')
+      : [],
+  );
   const resource = typeof body.resource === 'string' ? body.resource : '';
   const app = body.app;
   if (

@@ -577,6 +577,30 @@ with `open: true` and the publish `POST` share `notReadyToOpen` (`form-link-rout
 - Settings (`person/settings.ts`): `notifyFormResponses` (default on), liveplanner's own scope at the accounts Worker.
 - `LIVE_ROUTE_SEGMENTS` += `form`; `pageViewPath('/form/…')` is `/form`; `API_ROUTE_RESOURCES` += `forms`.
 
+### Tiers (Pro)
+
+Spec "Abuse and limits → Tiers". The plan's tier is the room's `PlanTier` (026-plan/blueprints/automations.md "Tiers
+(Pro)").
+
+- **Storage**: plan schema V41's `month` (`YYYY-MM`) and `month_count` on `form_links` now hold the month the
+  owner's Form Responses were found used in and the limit met then (2026-11-22: the count moved to the subscription
+  service, over every form the owner has). `formMonthFull(link, { key, limit })` is true while the key matches and
+  the limit met is at least the owner's limit now; `markFormMonthFull` writes them on a refused spend. No migration.
+- **The claim** (`db/forms.ts` `claimResponseNumber`): the number within the hourly cap and the Response Limit only;
+  `releaseResponseNumber` gives it back.
+- **Closed** (`packages/forms/src/public.ts`): `ClosedReason` `monthly_limit`, answered by `closedReason` when
+  `state.monthFull` is set and nothing of the form's own closes it; `closedBySettings` is unchanged.
+  `MONTHLY_LIMIT_MESSAGE` (limits.ts) is the public page's words; the public read (`routes/forms.ts`) sends it in
+  `message`.
+- **The response** (`forms/respond.ts`): `formMonthOf` is null with Pro off and for a plan with no owner (a guest's,
+  nobody's). `isClosed` reads the link's mark (rechecking the owner's limits once first). `claimNumber` claims the
+  number, then spends one `formResponses` (ItemTier `spend`): refused at the limit, the number goes back, the link is
+  marked and the answer is `409 form_closed`; refused by the service, the number goes back and the answer is `429
+form_busy`. Nothing is reported to the service any more.
+- **The link read** (`routes/form-link-routes.ts`): with Pro on, `month: { limit, full }` and `owner`.
+- **Cost**: one spend call per counted response, nothing per page view.
+- Tests: `forms/respond-tier.test.ts`, `packages/forms/src/public.test.ts`.
+
 ## 12. Live: the Form tab
 
 | File                                                                                                                                             | Contract                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |

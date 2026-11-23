@@ -14,7 +14,7 @@ import {
   type Item,
 } from '@liveworkspace/index-client';
 import type { ShownFolderPreview } from '../data/useFolderPreviews';
-import { EmptyStateArt } from '@liveworkspace/ui';
+import { Chip, EmptyStateArt } from '@liveworkspace/ui';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { useExplorer } from './context';
 
@@ -78,9 +78,9 @@ export function FolderMosaic({
             ) : null,
           )}
         </span>
-        <span className="absolute rounded-full border border-slate-200 bg-white/95 px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-200">
+        <Chip className="absolute border border-slate-200 bg-white/95 px-2.5 py-1 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-200">
           {elsewhereLabel(elsewhere.itemCount)}
-        </span>
+        </Chip>
       </span>
     );
   }

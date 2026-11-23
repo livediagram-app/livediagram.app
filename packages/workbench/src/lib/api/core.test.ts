@@ -316,6 +316,15 @@ describe('the response helpers', () => {
     expect(report.markReported).toHaveBeenCalledWith(err);
   });
 
+  it('keeps a refusal whose body is not JSON, with no body', async () => {
+    const { core, report } = setup();
+    const err = await core
+      .expectOk(new Response('Bad Gateway', { status: 502 }), 'load')
+      .catch((e: unknown) => e);
+    expect(err).toMatchObject({ status: 502, body: null });
+    expect(report.apiError).toHaveBeenCalledWith(502, 'load', null);
+  });
+
   it('leaves an expected refusal unreported', async () => {
     const { core, report } = setup();
     await expect(

@@ -125,7 +125,9 @@ export function RecentIncidents({
           onClick={() => setAll((v) => !v)}
           className="relative touch-target-y mt-3 inline-flex cursor-pointer items-center rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors duration-micro hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:focus-visible:outline-white"
         >
-          {all ? `Show the latest ${SHOWN}` : `Show all ${incidents.length}`}
+          <span className="text-optical-line">
+            {all ? `Show the latest ${SHOWN}` : `Show all ${incidents.length}`}
+          </span>
         </button>
       ) : null}
     </section>

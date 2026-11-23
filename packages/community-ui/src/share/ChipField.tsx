@@ -120,7 +120,7 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
                 : 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200'
             }`}
           >
-            {chipText(chip)}
+            <span className="text-optical-line">{chipText(chip)}</span>
             {bad ? <span className="sr-only">, {invalidChipNote}</span> : null}
             {readOnly ? null : (
               <button

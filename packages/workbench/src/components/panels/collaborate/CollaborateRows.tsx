@@ -6,7 +6,14 @@
 // element; the check is its own button beside it (buttons don't nest).
 
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import { CheckIcon, CommentIcon, HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@liveworkspace/ui';
+import {
+  CheckIcon,
+  Chip,
+  CommentIcon,
+  HoverCard,
+  SOLID_BRAND_DARK,
+  GlyphDisc,
+} from '@liveworkspace/ui';
 import { IDENTITY_FILL, identityVars } from '../../../lib/identity-fill';
 import { formatRelativeTimeCompact } from '@liveworkspace/ui/relative-time';
 import { initialsOf } from '@liveworkspace/model-core/names';
@@ -161,11 +168,11 @@ export function ActionRowItem({
         </span>
       </span>
       {row.mine ? (
-        <span
-          className={`mt-px shrink-0 rounded-full bg-brand-700 px-1.5 py-0.5 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+        <Chip
+          className={`mt-px bg-brand-700 px-1.5 py-0.5 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
         >
           You
-        </span>
+        </Chip>
       ) : (
         <HoverCard title={row.assigneeName} description="Assignee">
           <GlyphDisc

@@ -20,6 +20,7 @@ import { personAiKey } from '@liveworkspace/auth-client/ai-key';
 import { accountCredentials } from '../auth/accounts';
 import { aiError, CORS_HEADERS, json } from '../responses';
 import { chatCompletions, providerOf } from '../ai-client';
+import { chargeRead } from './ai-credits';
 import { aiGate } from './ai-gate';
 import { buildReadNotesPrompt, READ_NOTES_SCHEMA } from './ai-read-prompt';
 import type { RouteContext } from './context';
@@ -77,6 +78,16 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   }
 
   if (own.status === 'key') return readOnKey(own, crops);
+  // With Pro on, the read's AI credits are spent here, before the model is called, from the diagram's owner
+  // (docs/specs/021-event-storming/note-reader.md "AI credits (Pro)"). With Pro off this asks nothing.
+  const charge = await chargeRead(ctx, body);
+  if ('refused' in charge) return charge.refused;
+  // A request that spent and then failed still hands back its pass, so the read's other batches are not charged
+  // again for a model that stumbled (note-reader.md "What a read costs").
+  const failed = (error: 'ai_error' | 'ai_quota') =>
+    json(charge.credits ? { error, credits: charge.credits } : { error }, {
+      status: error === 'ai_quota' ? 429 : 502,
+    });
 
   // The gate has already refused a deployment with no usable provider.
   const provider = providerOf(env)!;
@@ -110,7 +121,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
       '[ai/read-notes] provider call failed:',
       err instanceof Error ? err.message : String(err),
     );
-    return aiError();
+    return failed('ai_error');
   }
 
   if (!res.ok) {
@@ -124,8 +135,8 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
     // A key that has run out for the day is not "try again in a moment": it is
     // "try again tomorrow, or raise the limit". Passing it through as one more
     // ai_error sends the author back to retry something that cannot work yet.
-    if (res.status === 429) return json({ error: 'ai_quota' }, { status: 429 });
-    return aiError();
+    if (res.status === 429) return failed('ai_quota');
+    return failed('ai_error');
   }
 
   let payload: unknown;
@@ -144,7 +155,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
       console.error(
         `[ai/read-notes] answer truncated: finish_reason=length model=${model} crops=${crops.length} max_tokens=${MAX_TOKENS} — raise MAX_TOKENS or send fewer crops`,
       );
-      return aiError();
+      return failed('ai_error');
     }
     if (!raw) {
       payload = null;
@@ -154,7 +165,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
         // A malformed answer has to be diagnosable: log what the model actually
         // said (truncated), then fail rather than hand back a silent empty list.
         console.error(`[ai/read-notes] unparseable content: ${raw.slice(0, 300)}`);
-        return aiError();
+        return failed('ai_error');
       }
     }
   } catch (err) {
@@ -162,7 +173,7 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
       '[ai/read-notes] provider returned unparseable content:',
       err instanceof Error ? err.message : String(err),
     );
-    return aiError();
+    return failed('ai_error');
   }
 
   const answer = collate(
@@ -171,7 +182,9 @@ export async function handleAiReadNotes(ctx: RouteContext): Promise<Response> {
   );
   const legible = answer.texts.filter((t) => t.legible).length;
   console.info(`[ai/read-notes] ok model=${model} crops=${crops.length} legible=${legible}`);
-  return json(answer, { headers: CORS_HEADERS });
+  return json(charge.credits ? { ...answer, credits: charge.credits } : answer, {
+    headers: CORS_HEADERS,
+  });
 }
 
 // The model is asked for JSON and given JSON mode, but a reasoning model still

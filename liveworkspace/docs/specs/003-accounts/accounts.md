@@ -1023,7 +1023,8 @@ host-only, this step can go too.
 
 **Redirect URIs.** Every app's client already has its `www.` callbacks registered beside the bare ones
 (`/api/auth/callback` and `/auth/guest` on both hosts; checked read-only on production on 2026-10-26).
-`scripts/register-client.ts` takes both, and new clients are registered with both. Google's callback moves with
+`scripts/register-client.ts` takes both, and new clients are registered with both; the guest return is added for
+each origin at registration. Google's callback moves with
 `BASE_URL`, so `https://www.liveworkspace.app/api/auth/callback/google` must be an authorised redirect URI of the
 Google client before the accounts Worker deploys (the bare one stays).
 
@@ -1416,6 +1417,11 @@ the devices, the `push…` switches and the VAPID key, and sends what an app han
   for no such team. One query. The app shows it only to someone its token says is in the team, and an
   app sends a mention or an assignment only to these people (`teamTargets`), never to anyone a request
   names.
+- **Several teams' member counts.** `POST /api/account/internal/teams/member-counts` `{ teamIds }` (1 to 50 ids of
+  1 to 100 characters, `readTeamMemberCounts`) answers `{ counts: { [teamId]: joined } }`: how many people have
+  joined each team, nothing else (no names, no addresses), and a deleted or unknown team left out. One query,
+  however many teams. For a caller that shows a count beside each of a person's teams (the subscription service's
+  Settings, Subscription) and must not ask once a team.
 - **Once only.** The milestone and the first share go once per account and app, claimed here
   (`milestones/claim`, above) before the email goes. The rest are the app's to keep once only, where its
   item lives (liveplanner keeps them in each plan's own store): at most one "someone joined" email per
@@ -1709,6 +1715,7 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/settings/write`      | `{ owner, app, patch: { all?, app? } }` → `{ all, app, updatedAt }`                                                              |
 | `POST /api/account/internal/settings/notify`     | `{ owners, app, keys }` (up to 100 accounts, 8 `notify…` keys) → `{ settings }`                                                  |
 | `POST /api/account/internal/teams/members`       | `{ teamId }` → `{ team, members }`, joined and invited, or 404                                                                   |
+| `POST /api/account/internal/teams/member-counts` | `{ teamIds }` (up to 50) → `{ counts }`, joined people a team, deleted or unknown teams left out                                 |
 | `POST /api/account/internal/profiles/read`       | `{ ids }` (up to 100) → `{ profiles: Profile[] }`, the ids found                                                                 |
 | `POST /api/account/internal/profiles/write`      | `{ owner, name?, color? }` → `{ profile }`; null clears a field                                                                  |
 | `POST /api/account/internal/sightings`           | `{ userId }` → `{ first }`, for the client's own app                                                                             |

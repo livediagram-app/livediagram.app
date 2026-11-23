@@ -15,6 +15,7 @@ import {
 import { validateFields } from './fields';
 import {
   ITEM_ATTACHMENTS_MAX,
+  ITEM_ATTACHMENT_BYTES_LEGACY,
   ITEM_ATTACHMENT_BYTES_MAX,
   ITEM_ATTACHMENT_NAME_MAX,
 } from './limits';
@@ -84,6 +85,28 @@ describe('an Attachments value', () => {
     });
     const over = Array.from({ length: ITEM_ATTACHMENTS_MAX + 1 }, (_, i) => pic(`p${i}`));
     expect(validateFields({ attachments: over }, 'patch')).toMatchObject({ ok: false });
+  });
+
+  it('is held to a tighter size bound where the caller keeps one (the api with Pro off)', () => {
+    const bounds = { attachmentBytesMax: ITEM_ATTACHMENT_BYTES_LEGACY };
+    const small = pic('a', { size: ITEM_ATTACHMENT_BYTES_LEGACY });
+    const big = pic('b', { size: ITEM_ATTACHMENT_BYTES_LEGACY + 1 });
+    // At the bound it passes; one byte over, on any attachment, the whole write is refused by its field.
+    expect(validateFields({ attachments: [small] }, 'patch', bounds)).toEqual({
+      ok: true,
+      fields: { attachments: [small] },
+    });
+    expect(validateFields({ attachments: [small, big] }, 'patch', bounds)).toEqual({
+      ok: false,
+      error: 'field_value_invalid',
+      field: 'attachments',
+    });
+    // The same picture without the bound is within the store's own.
+    expect(validateFields({ attachments: [big] }, 'patch')).toMatchObject({ ok: true });
+    // A write without attachments, or one already refused, is left as it was.
+    expect(validateFields({ title: 'Plan' }, 'patch', bounds)).toMatchObject({ ok: true });
+    expect(validateFields({ attachments: [] }, 'patch', bounds)).toMatchObject({ ok: false });
+    expect(validateFields({ title: 'Plan' }, 'patch', {})).toMatchObject({ ok: true });
   });
 });
 

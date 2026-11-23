@@ -24,6 +24,7 @@ import type { AutomationResult, AutomationRunsQuery } from '../../types';
 import type { Obj } from '../../validate-read';
 import { makeHookSecret } from '../automation-incoming';
 import { listRuns } from '../automation-log';
+import { runsUsedBody } from '../tier';
 import { runItemRule, type ItemRunState } from './run';
 import {
   json,
@@ -97,6 +98,13 @@ export async function testRule(g: Gated): Promise<Response> {
 
 const manual = (rule: ItemRule): boolean => rule.trigger.kind === 'manual' && rule.enabled;
 
+/** The owner's month of runs is used: 429 in the tier's numbers, until the first of next month (UTC). */
+function runsUsedRefusal(deps: Pick<Gated['deps'], 'store' | 'tier'>): Response {
+  const now = Date.now();
+  const used = runsUsedBody(deps.store, deps.tier, now);
+  return json(used.body, 429, { 'Retry-After': String(used.retryAfter) });
+}
+
 export async function runRuleNow(g: Gated, read: ItemRule): Promise<Response> {
   if (!manual(read)) return refuse(409, 'automation_not_manual');
   const raw = await readBody(g.request);
@@ -120,9 +128,11 @@ export async function runRuleNow(g: Gated, read: ItemRule): Promise<Response> {
   const state: ItemRunState = { outline: null, today: 0 };
   const run = await runItemRule(g.deps, state, held, event);
   if (run) return json({ run } satisfies AutomationRunResponse<ItemRun>);
+  if (state.monthUsed) return runsUsedRefusal(g.deps);
   if (state.spent) {
     const now = Date.now();
     const midnight = (Math.floor(now / DAY_MS) + 1) * DAY_MS;
+    // The item's own bound: no tier named, nothing offered.
     return json({ error: 'automation_budget_spent' }, 429, {
       'Retry-After': String(Math.max(1, Math.ceil((midnight - now) / 1000))),
     });

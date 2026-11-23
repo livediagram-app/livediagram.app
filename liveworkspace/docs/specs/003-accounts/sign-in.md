@@ -165,15 +165,15 @@ What a deploy never writes, set once per environment and kept across deploys:
      --accounts https://www.liveworkspace.app \
      --name livediagram \
      --app livediagram.app \
-     --redirect https://www.livediagram.app/auth/callback \
-     --redirect https://livediagram.app/auth/callback \
-     --redirect https://livediagram.app/auth/guest \
+     --redirect https://www.livediagram.app/api/auth/callback \
+     --redirect https://livediagram.app/api/auth/callback \
      --resource https://livediagram.app/api
    ```
 
-   `https://<app>/auth/guest` is where the guest hand-off returns
-   ([accounts.md](accounts.md#guests)); an app registered before it needs it added to its
-   client's `redirectUris`. `--app` is the app the client is, which keeps it to that app's own
+   Give the callback on every origin the app serves (`www.` and bare). `<origin>/auth/guest` is where the guest
+   hand-off returns ([accounts.md](accounts.md#guests)), matched exactly, so registering adds it for each origin
+   given: a client without it answers every signed-out visit with `invalid_redirect_uri` while signed-in ones
+   work. A client registered before that needs it added to its `redirectUris`. `--app` is the app the client is, which keeps it to that app's own
    settings and records ([accounts.md](accounts.md#which-app-a-client-is)); a client
    registered without one is given it with `scripts/map-clients.ts`.
 

@@ -58,19 +58,24 @@ export async function planImport(
   const room = Math.max(0, limits.pages - (options.existingPages ?? 0));
   let found = 0;
   for (const file of listing.files.values()) if (reader.isPage(file.path)) found++;
-  if (found > room) return blocked({ reason: 'too-many-pages', found, room });
+  const trim = options.trimToRoom === true && room > 0;
+  if (found > room && !trim) return blocked({ reason: 'too-many-pages', found, room });
 
   const used = new Set<string>();
   const context: ReadContext = { listing, limits, skipped: summary.skipped, used };
   const drafts = await reader.read(context);
   // And after: a folder nobody owns and a database with no page of its own are pages too.
-  if (drafts.length > room)
+  if (drafts.length > room && !trim)
     return blocked({ reason: 'too-many-pages', found: drafts.length, room });
 
   const depth = Math.max(1, limits.depth - (options.parentDepth ?? 0));
   const keys = new Map<string, string>();
   const titles = new Set<string>();
-  const keyed: KeyedDraft[] = arrangeTree(drafts, depth).map(({ item, parent, flattened }, at) => {
+  // Trimmed, the first that fit in the tree's own order, where a parent comes before its subpages.
+  const arranged = arrangeTree(drafts, depth);
+  const kept = arranged.length > room ? arranged.slice(0, room) : arranged;
+  if (kept.length < arranged.length) summary.leftOut = arranged.length - kept.length;
+  const keyed: KeyedDraft[] = kept.map(({ item, parent, flattened }, at) => {
     const key = `p${at + 1}`;
     keys.set(item.id, key);
     if (flattened) {

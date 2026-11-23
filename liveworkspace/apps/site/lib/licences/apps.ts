@@ -14,11 +14,12 @@ export const LICENCE_APPS: readonly LicenceApp[] = [
   { id: 'media', label: 'Media', side: 'server', bundler: 'worker' },
   { id: 'redirect', label: 'Bare-domain redirect', side: 'server', bundler: 'worker' },
   { id: 'status', label: 'Status', side: 'server', bundler: 'worker' },
+  { id: 'subscription', label: 'Subscription', side: 'server', bundler: 'worker' },
   { id: 'telemetry', label: 'Telemetry', side: 'server', bundler: 'worker' },
 ];
 
-/** The page's line about the services, named from the table above so it can't fall behind it: "Accounts, …, Status
- *  and Telemetry". */
+/** The page's line about the services, named from the table above so it can't fall behind it: "Accounts, …,
+ *  Subscription and Telemetry". */
 export function serverServices(apps: readonly LicenceApp[] = LICENCE_APPS): string {
   const names = apps.filter((a) => a.side === 'server').map((a) => a.label);
   return names.length < 2

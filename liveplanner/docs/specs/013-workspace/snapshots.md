@@ -34,6 +34,14 @@ As the platform spec's table, through this app's edit gate on the whole plan ([S
 Editor of the whole plan takes, reverts and deletes; a tab-scoped link, a Participant and a Viewer see nothing (404);
 an API token is refused (403).
 
+## With Pro on
+
+What is kept follows the plan's **owner's** tier, whoever takes the snapshot
+([Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md) "With Pro on"): the latest five, each for
+7 days, on Free; the latest 50 with no age limit on Pro and Pro for Teams. The owner is the index's grant's (the team
+for a team's plan), and only a tier the subscription service confirmed is applied: an owner the grant does not name,
+or a service out of reach, drops nothing. With Pro off the latest five are kept, as always.
+
 ## In History
 
 Snapshots live inside **History** in the footer's **Tools** menu ([The footer's Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md)

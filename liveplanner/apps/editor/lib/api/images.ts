@@ -6,6 +6,15 @@
 
 import { INDEX_GRANT_HEADER, sha256Hex } from '@liveplanner/api-schema';
 import {
+  imageCeilingLabel,
+  imageLimitRefusalOf,
+  imageLimitSentence,
+  imageSizeHint,
+  imageUploadCeiling,
+  type ImageLimitRefusal,
+} from '@liveworkspace/subscription-ui/images';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
+import {
   ACCEPTED_IMAGE_TYPES,
   isAcceptedImageType,
   MAX_IMAGE_BYTES,
@@ -74,18 +83,41 @@ export const IMAGE_UPLOAD_MESSAGES: Record<ImageUploadFailure, string> = {
  *  server has no media service, so the control offers no upload). */
 export class ImageUploadError extends Error {
   readonly code: ImageUploadFailure;
-  constructor(code: ImageUploadFailure) {
-    super(IMAGE_UPLOAD_MESSAGES[code]);
+  /** With Pro on, the tier's limit the server refused the upload for (liveworkspace/docs/specs/006-media/media.md
+   *  "With Pro on"), which a control draws as the shared notice (ImageUploadLimit); null for any other failure. */
+  readonly limit: ImageLimitRefusal | null;
+  // `words`: a tier's limit in the server's own numbers (Pro on), in place of the code's fixed line.
+  constructor(code: ImageUploadFailure, words?: string, limit: ImageLimitRefusal | null = null) {
+    super(words ?? IMAGE_UPLOAD_MESSAGES[code]);
     this.name = 'ImageUploadError';
     this.code = code;
+    this.limit = limit;
   }
 }
 
+/** The line under an upload control saying what it takes: "PNG, JPEG, WebP or GIF, up to 10 MB" with Pro off. With
+ *  Pro on it names no size: what this person may send here is the server's to say, from their tier and the plan's
+ *  owner's (docs/specs/026-plan/item-types.md "Image fields"). */
+export function imageUploadHint(): string {
+  const hint = imageSizeHint(IMAGE_TYPES_WORDS, MAX_IMAGE_MB);
+  // The kit joins the size with a space; this app's hint has always had a comma there.
+  return hint === IMAGE_TYPES_WORDS ? hint : `${IMAGE_TYPES_WORDS}, up to ${MAX_IMAGE_MB} MB`;
+}
+const IMAGE_TYPES_WORDS = 'PNG, JPEG, WebP or GIF';
+
 /** The client-side gate, before anything is sent: the type, the size and an empty file. Throws ImageUploadError.
- *  The api and the service check again; this is for a fast, plain answer while picking. */
+ *  The api and the service check again; this is for a fast, plain answer while picking. With Pro on a file passes up
+ *  to what any tier takes (25 MB): the limit for this person in this plan is the server's, which refuses before it
+ *  reads the body and says its number. */
 export function checkImageFile(file: Blob): void {
   if (!isAcceptedImageType(file.type)) throw new ImageUploadError('unsupported_type');
-  if (file.size > MAX_IMAGE_BYTES) throw new ImageUploadError('file_too_large');
+  if (file.size > imageUploadCeiling(MAX_IMAGE_BYTES)) {
+    // With Pro on the ceiling is the most any tier takes, so no upgrade helps: the sentence says so.
+    throw new ImageUploadError(
+      'file_too_large',
+      `That image is over ${imageCeilingLabel(MAX_IMAGE_MB)}${proOn() ? ', the largest that can be uploaded' : ''}.`,
+    );
+  }
   if (file.size === 0) throw new ImageUploadError('empty_file');
 }
 
@@ -144,8 +176,13 @@ export async function apiUploadImage(
   } catch (err) {
     if (signal?.aborted) throw signal.reason;
     const code = err instanceof ApiError ? err.code : null;
+    // With Pro on the service refuses by the uploader's tier and says its limit (liveworkspace/docs/specs/006-media/
+    // media.md "With Pro on"): the words carry that number, never this file's own cap.
+    const limit = err instanceof ApiError ? imageLimitRefusalOf(err.body) : null;
     throw new ImageUploadError(
       code && SERVER_FAILURES.has(code) ? (code as ImageUploadFailure) : 'upload_failed',
+      limit ? imageLimitSentence(limit) : undefined,
+      limit,
     );
   }
 }

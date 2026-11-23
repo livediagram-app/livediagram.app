@@ -151,3 +151,43 @@ describe('a refused field value', () => {
     });
   });
 });
+
+// With Pro off nothing changes (liveworkspace 019 "The flag"): a card's attachment may state no more than the 10 MiB
+// a picture could be before Pro. With Pro on, what any tier's upload may be (25 MB).
+describe('an attachment’s stated size', () => {
+  const picture = (size: number) => ({
+    attachments: [{ id: 'img_1', name: 'shot.png', size, type: 'image/png' }],
+  });
+  const LEGACY = 10 * 1024 * 1024;
+
+  it('is held to the legacy 10 MiB with Pro off, on a create, a change and a move', async () => {
+    expect((await make(picture(LEGACY))).status).toBe(201);
+    const over = await make(picture(LEGACY + 1));
+    expect(over.status).toBe(400);
+    expect(over.body).toMatchObject({ error: 'field_value_invalid', field: 'attachments' });
+    const id = (await make({})).body.item.id;
+    expect((await patch(id, picture(20_000_000))).body).toMatchObject({
+      error: 'field_value_invalid',
+      field: 'attachments',
+    });
+    const many = await call<Answer>({
+      path: '/items/bulk',
+      body: {
+        items: [
+          {
+            type: 'task',
+            fields: { title: 'Two', ...picture(20_000_000) },
+            place: { status: 'todo' },
+          },
+        ],
+      },
+    });
+    expect(many.status).toBe(400);
+  });
+
+  it('is what any tier’s upload may be with Pro on', async () => {
+    (sql.env as unknown as { PRO_ENABLED: string }).PRO_ENABLED = 'true';
+    expect((await make(picture(20_000_000))).status).toBe(201);
+    expect((await make(picture(25_000_001))).status).toBe(400);
+  });
+});

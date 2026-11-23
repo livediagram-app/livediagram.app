@@ -16,8 +16,13 @@ export class FormDraftRefusal extends DraftRefusal<FormDraftError> {
   }
 }
 
-/** Drafts a form from the person's words, as `ownerId`. */
-export function draftForm(ownerId: string, prompt: string): Promise<FormDraftResponse> {
+/** Drafts a form from the person's words, as `ownerId`, for the plan `projectId` (whose owner's AI credit it spends;
+ *  with no plan open yet, the person's own). */
+export function draftForm(
+  ownerId: string,
+  prompt: string,
+  projectId: string | null,
+): Promise<FormDraftResponse> {
   return postDraft<FormDraftResponse, FormDraftError>(
     'form-drafts',
     ownerId,
@@ -25,5 +30,6 @@ export function draftForm(ownerId: string, prompt: string): Promise<FormDraftRes
     FORM_DRAFT_ERRORS,
     (status, code, message) => new FormDraftRefusal(status, code, message),
     'draft form',
+    projectId ? { projectId } : {},
   );
 }

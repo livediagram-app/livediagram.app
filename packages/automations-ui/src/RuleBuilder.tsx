@@ -14,7 +14,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { AUTOMATION_NAME_MAX, type AutomationTemplatePickAt } from '@liveworkspace/automations';
-import { Button, Switch, formatRelativeTimeShort } from '@liveworkspace/ui';
+import { Button, Chip, Switch, formatRelativeTimeShort } from '@liveworkspace/ui';
 import { useToast } from '@liveworkspace/workbench/hooks/ui/useToast';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { AutomationRefusal } from './automations-client';
@@ -23,6 +23,7 @@ import type { AutomationsScope } from './kit';
 import { useAutomationsKit, useAutomationsScreen, type KeptRule } from './kit-context';
 import { PhoneRuleFoot, PhoneRuleHeader, RULE_SWITCH_NAME } from './PhoneRuleChrome';
 import { refusalWords } from './refusal-words';
+import { useAutomationsTier } from './tier/automations-tier';
 import { RuleContextProvider, type RuleContext } from './rule-context';
 import {
   addAction,
@@ -146,7 +147,13 @@ export function RuleBuilder({
     setFault(null);
   };
 
-  const said = (r: AutomationRefusal) => refusalWords(r, words.item, kit.sentence.refusalPicks);
+  // The item's rule limit as the list answered it, and who is reading: a full item said in the tier's own numbers.
+  const tier = useAutomationsTier();
+  const said = (r: AutomationRefusal) =>
+    refusalWords(r, words.item, kit.sentence.refusalPicks, {
+      max: tier?.rulesMax,
+      voice: tier?.item.voice,
+    });
 
   const refused = (r: AutomationRefusal) => {
     const path = r.path ?? (r.code === 'automation_name_taken' ? 'name' : '');
@@ -278,9 +285,9 @@ export function RuleBuilder({
             onChange={(next) => void toggle(next)}
           />
         ) : (
-          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          <Chip className="bg-slate-100 px-2 py-0.5 text-[12px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             Off
-          </span>
+          </Chip>
         )}
       </nav>
       {rule && !phone ? (

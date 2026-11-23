@@ -249,7 +249,7 @@ export function LinkedCardField({
                       onClick={() => onOpen(card.id)}
                       className="flex min-w-0 cursor-pointer items-center gap-1 rounded-full py-0.5 pl-1.5 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:hover:text-brand-300"
                     >
-                      {body}
+                      <>{body}</>
                     </button>
                   </Tooltip>
                 ) : (

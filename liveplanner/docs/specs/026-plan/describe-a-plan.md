@@ -196,6 +196,15 @@ The platform's rule ([ai-keys.md "In the apps"](../../../../liveworkspace/docs/s
   stored. A count that can't be read refuses the ask ("The AI couldn't answer just now"), so a fault never lifts the
   cap.
 
+- **AI Credits** (only with [Pro on](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)): each draft spends one of the signed-in person's AI credits for the month,
+  after the day's count and before the model is asked (its second ask rides it); it is never given back. With none
+  left the draft is refused, and its place in the day's 10 is given back (used credits never cost a day's drafts): **429** `plan_draft_credits_used`, "This month's AI credits are used", carrying `limit`
+  (`aiCreditsPerMonth`), `used` and `max`. If the subscription service refuses the app's own request, the draft is not made uncounted: **503** `plan_draft_unavailable`, with no offer to upgrade. The 10 a day stay in force on every tier. A plan described is not yet
+  anyone's, so the credit is always the person's own, never a team's. Under its AI line the dialog says "A draft uses
+  1 AI credit." beside a meter of the person's credits left this month. With none left (their own usage, or the
+  refusal) it shows "This month's AI credits are used. They start again on 1 December.", for someone on Free also
+  "Pro has 1,000 a month." with **Upgrade to Pro**, and Draft Plan is off.
+
 ## Telemetry
 
 `UI · Opened · PlanDescribe` (the dialog), `Plan · Created · PlanDraft` (a plan made from a draft),

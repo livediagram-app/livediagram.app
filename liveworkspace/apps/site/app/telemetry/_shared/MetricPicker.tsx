@@ -2,7 +2,7 @@
 
 import { useCallback, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Glyph, CloseIcon } from '@livediagram/ui';
-import { BackBar, TextInput } from '@liveworkspace/ui';
+import { BackBar, Chip, TextInput } from '@liveworkspace/ui';
 import { eventLabel, titleCase } from './event-vocab';
 import { useCategoryColor } from './useCategoryColor';
 import { SearchGlyph } from './glyphs';
@@ -329,9 +329,9 @@ export function MetricPicker({
                       {row.meta}
                     </span>
                   ) : null}
-                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                  <Chip className="bg-slate-100 px-2 py-0.5 text-xs font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                     {row.count.toLocaleString()}
-                  </span>
+                  </Chip>
                   {row.branch ? <Chevron /> : null}
                 </li>
               ))}

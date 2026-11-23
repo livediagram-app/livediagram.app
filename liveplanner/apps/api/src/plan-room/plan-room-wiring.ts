@@ -1,20 +1,30 @@
-// What the room's constructor (plan-room.ts) wires up: the env's PLAN_ROOM answering this object's own id,
-// the plan's owner and team kept from its grants, a Participant's writes, and the surface the internal endpoints act
-// on. Each takes the room.
+// What the room's constructor (plan-room.ts) wires up: the env the plan's code runs with, its PLAN_ROOM answering
+// this object's own id, the plan's owner and team kept from its grants, a Participant's writes, and the surface the
+// internal endpoints act on. Each takes the room.
 import { createItemHeadSync, type ItemHeadSync } from '@liveworkspace/index-app';
 import { watchIdsOfOp } from './sheet-watchers';
 import { RoomParticipantWrites } from '../room-participant';
 import { type InternalRoom } from '../room-internal';
 import type { PlanRoom } from './plan-room';
+import type { Env, PlanEnv } from '../types';
+import { RoadmapMemo } from '../roadmap/roadmap-memo';
+import { RemovalGuard } from './removal-guard-store';
 import { ensureSchema, noteWrite } from './plan-room-content';
 import {
   closeAllIfTrashed,
+  closeAllReverted,
   closeSessionsOfChangedLink,
   closeSessionsForAccessChange,
   sequenceMutation,
   sendTo,
 } from './plan-room-sockets';
-import { handleAgentPresence, clearAgentsFor, liveSessions } from './plan-room-presence';
+import {
+  handleAgentPresence,
+  clearAgentsFor,
+  liveSessions,
+  roomPeople,
+} from './plan-room-presence';
+import { moveRoadmapGauge } from '../roadmap/roadmap-gauge';
 
 // This env's PLAN_ROOM, answering this plan's own id with this object: the code shared with the worker (a
 // project read's outline, the room relays) then calls straight in rather than through a stub.
@@ -37,6 +47,26 @@ export function localNamespace(
   });
 }
 
+// The env the plan's code runs with in the room: the worker's bindings, the plan's own SQLite as `PLAN_DB`, and
+// what only the room can answer (who is connected, the automations queue, the removal guard, the roadmap memo).
+export function roomEnv(room: PlanRoom, env: Env): PlanEnv {
+  const storage = room.state.storage;
+  return {
+    ...env,
+    PLAN_DB: room.db.asD1(),
+    PLAN_ROOM: localNamespace(room, env.PLAN_ROOM),
+    ROOM_PEOPLE: () => roomPeople(room),
+    AUTOMATIONS: room.automations,
+    TIER: room.tier,
+    REMOVAL_GUARD: new RemovalGuard(storage),
+    SNAPSHOT_REVERTED: () => closeAllReverted(room),
+    // Stamped with SQLite's change count, which every write in this room moves, whichever path made it.
+    ROADMAP_MEMO: new RoadmapMemo(() =>
+      Number(storage.sql.exec('SELECT total_changes() AS n').toArray()[0]?.n ?? 0),
+    ),
+  };
+}
+
 // The plan's owner and team as its own row keeps them (@liveworkspace/index-app item-head.ts).
 export function roomHead(room: PlanRoom): ItemHeadSync {
   const state = room.state;
@@ -53,6 +83,10 @@ export function roomHead(room: PlanRoom): ItemHeadSync {
       return row ? { ownerId: row.owner_id, teamId: row.team_id ?? null } : null;
     },
     write: async (h) => {
+      // The owner the plan is leaving, whose count its roadmaps come off (roadmap/roadmap-gauge.ts; Pro on only).
+      // Null for a guest's plan, which the service never counted.
+      const moving = room.tier.on;
+      const from = moving ? room.tier.scope() : null;
       // A team or owner change re-pushes the plan's cards (plan-schema.ts outbox_cards_plan).
       state.storage.sql.exec(
         'UPDATE plan SET owner_id = ?, team_id = ? WHERE id = ?',
@@ -64,6 +98,8 @@ export function roomHead(room: PlanRoom): ItemHeadSync {
       noteWrite(room);
       // A new owner or team can open or close a Community post: it asks where it stands now.
       if (room.communityAt !== null) room.communityAt = Date.now();
+      if (moving && room.planId !== null)
+        state.waitUntil(moveRoadmapGauge(room.tier, state.storage.sql, room.planId, from));
     },
   });
 }

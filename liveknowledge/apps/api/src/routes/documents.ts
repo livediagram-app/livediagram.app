@@ -3,6 +3,15 @@
 // Trash are the index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are
 // answered from it (document-index-routes.ts).
 
+import { pageCount } from '@liveknowledge/document';
+import {
+  countPages,
+  knowledgePagesMax,
+  knowledgeTierInfo,
+  pagesRefused,
+  pageTreeConflict,
+  workerTierOf,
+} from '../knowledge/tier-limits';
 import { notePageWrites } from '../knowledge/page-authors';
 import { writerOf } from '../knowledge/page-writer';
 import { pageCreatorOf } from '../knowledge/knowledge-caller';
@@ -43,15 +52,7 @@ import {
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import { relinkListedPages } from '../document-room/page-trash';
 import { scopeRefusalOf, withAgentGrant } from '../knowledge/agent-grants';
-import {
-  badRequest,
-  conflict,
-  CORS_HEADERS,
-  forbidden,
-  json,
-  notFound,
-  payloadTooLarge,
-} from '../responses';
+import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import {
   placedEntries,
   readStoredPages,
@@ -349,6 +350,15 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
             return payloadTooLarge();
           }
         }
+        // A knowledgebase made with its pages (tiers.md): the fixed bound, then its creator's Knowledgebase Pages
+        // over all of theirs, since the creator owns it. Asked only with Pro on.
+        const pages = pageCount(body.tabs);
+        if (pages > knowledgePagesMax()) return pageTreeConflict('page_limit');
+        if (pages > 0) {
+          const tier = await workerTierOf(env, { ownerId: owner, teamId: ctx.grant?.team ?? null });
+          const over = await countPages(tier, body.id, pages);
+          if (over) return pagesRefused(tier, over);
+        }
       }
       // A create is the index's item made a moment ago (or, for an API client, by the worker on its behalf): its
       // grant must be for this document, at edit. A document already started is a re-commit of its owner's own id, never
@@ -475,7 +485,10 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       );
       // The overview view (docs/specs/024-agents/document-views.md), after the same gate and scope.
       if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope, grant.community);
-      return json({ document: liveDoc });
+      // With Pro on, the figures the knowledgebase's tier sets (tiers.md), the same for everyone who opens it.
+      const tier = grant.community ? null : await workerTierOf(env, d);
+      const knowledgeTier = knowledgeTierInfo(tier);
+      return json({ document: liveDoc, ...(knowledgeTier ? { knowledgeTier } : {}) });
     }
     if (request.method === 'PUT') {
       // Body: { name?, tabIds?, tabs?, presentation? }: name renames the document here (the index's title is the editor's own call,
@@ -540,10 +553,10 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
       const places = placed.some((entry) => Object.hasOwn(entry, 'parent'));
       const storedPages = places ? await readStoredPages(env, id) : [];
       if (places) {
-        const refused = tabListRefusal(storedPages, placed);
+        const refused = tabListRefusal(storedPages, placed, knowledgePagesMax());
         if (refused) {
           console.warn('[document-save] page tree refused', { documentId: id, reason: refused });
-          return conflict(refused);
+          return pageTreeConflict(refused);
         }
       }
       const deck = readDeckWrite(body);

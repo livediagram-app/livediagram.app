@@ -1,13 +1,14 @@
+import { spendAskIn } from '@liveworkspace/ask/server';
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
+import type { ItemTier } from '@liveworkspace/subscription';
 import type { SourceChange } from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livediagram/api-schema';
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomLedgerStore } from '@liveworkspace/api-kit/room-ledger-store';
 import {
-  ledgerEntryKeys,
   ledgerKey,
   ledgerPrefix,
   recordInLedger,
@@ -24,7 +25,7 @@ import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import type { InternalRoom } from '../room-internal';
 import type { FacilitatorState } from '../facilitator';
-import { RoomFacilitator } from '../room-facilitator';
+import type { RoomFacilitator } from '../room-facilitator';
 import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import type { CommunityAuthor } from '@livediagram/api-schema';
 import { documentHasTab } from '../db/tabs';
@@ -36,6 +37,7 @@ import {
   type ExportQuery,
   type ExportResult,
 } from '@liveworkspace/index-app';
+import { giveBackOwnerReadIn, takeOwnerReadIn } from './owner-reads';
 import { hasDocumentSchema } from './document-schema';
 import {
   importDocumentCopy,
@@ -81,15 +83,14 @@ import {
   roomHeadSync,
 } from './room-content-state';
 import { ORDER_STATE_KEY, restoreRoom } from './room-restore';
+import { newFacilitator, newInternalRoom, newRoomTier } from './room-wiring';
 import * as rpc from './room-rpc';
 import { community, communityListing, communityPostTitle } from './room-community';
 import { renewGrant, roomFetch } from './room-grants';
 import { roomServiceStatus, type RoomServiceStatus } from './room-service-status';
 import {
   broadcast,
-  closeAllIfTrashed,
   closeAllReverted,
-  closeSessionsForAccessChange,
   closeSessionsOfChangedLink,
   closeSockets,
   frameFor,
@@ -106,11 +107,8 @@ import {
   broadcastPresence,
   clearAgentsFor,
   dropSession,
-  handleAgentPresence,
-  liveSessions,
   noteMultiplayer,
   roomPeople,
-  socketByPresence,
 } from './room-roster';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
@@ -274,6 +272,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // The document's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they hear,
   // and what waits to run on the alarm.
   readonly automations: ItemEngine;
+  // The item's tier (liveworkspace/docs/specs/019-subscription/subscription.md "Who pays for an item"): what its
+  // Automations allow and spend, read from its owner. With Pro off it asks nothing and every limit is the legacy one.
+  readonly tier: ItemTier;
   // The comment and action triggers' watch over each tab's threads.
   readonly collab: CollabWatch;
   // The canvas's owner and team, kept from every grant the room is handed (a socket's ticket, a renewal, an API
@@ -346,6 +347,7 @@ export class DocumentRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
+    this.tier = newRoomTier(this);
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = roomHeadSync(this);
     this.participantWrites = new RoomParticipantWrites({
@@ -357,31 +359,8 @@ export class DocumentRoom extends DurableObject<Env> {
       readLedger: (tabId) => this.ledger.read(tabId),
     });
     this.poll = new RoomLivePoll(state.storage);
-    this.internal = {
-      broadcastSystemOp: (op) => this.broadcastSystemOp(op),
-      broadcastOrderedSystemOp: (op) => this.broadcastOrderedSystemOp(op),
-      closeSessionsOfChangedLink: (op) => this.closeSessionsOfChangedLink(op),
-      closeAllIfTrashed: (op) => closeAllIfTrashed(this, op),
-      clearAgentsFor: (op) => this.clearAgentsFor(op),
-      closeSessionsForAccessChange: (close) => closeSessionsForAccessChange(this, close),
-      purge: () => this.purge(),
-      handleAgentPresence: (req, u) => handleAgentPresence(this, req, u),
-      handleQaWrite: (req) => this.handleQaWrite(req),
-      sequenceMutation: (from, op) => this.sequenceMutation(from, op),
-      readSelections: (tabId, person) => this.selections.read(tabId, liveSessions(this), person),
-      readLedger: (tabId, since) => this.ledger.read(tabId, since),
-      readLedgerEntries: (tabId, want) => this.ledger.readKeys(tabId, ledgerEntryKeys(tabId, want)),
-      epoch: () => this.epoch,
-    };
-    this.baton = new RoomFacilitator({
-      storage: state.storage,
-      broadcast: (payload, except) => this.broadcast(payload, except),
-      sendTo: (ws, payload) => this.sendTo(ws, payload),
-      sendToPresence: (presenceId, payload) => this.sendToPresence(presenceId, payload),
-      socketByPresence: (presenceId) => socketByPresence(this, presenceId),
-      readSession: (ws) => this.readSession(ws),
-      armAlarm: () => this.armAlarm(),
-    });
+    this.internal = newInternalRoom(this);
+    this.baton = newFacilitator(this);
     this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
     this.serviceStatus = roomServiceStatus(this);
@@ -694,6 +673,19 @@ export class DocumentRoom extends DurableObject<Env> {
     return purge(this, documentId);
   }
 
+  // One more photo read charged to this diagram's owner by someone else today, or false at the day's cap
+  // (owner-reads.ts; note-reader.md "A collaborator's reads"). Asked only with Pro on.
+  takeOwnerRead(documentId: string, day: string, cap: number): Promise<boolean> {
+    this.bindDocument(documentId);
+    return takeOwnerReadIn(this.state.storage, day, cap);
+  }
+
+  // The day's slot back for a read the owner's credits refused (owner-reads.ts).
+  giveBackOwnerRead(documentId: string, day: string): Promise<void> {
+    this.bindDocument(documentId);
+    return giveBackOwnerReadIn(this.state.storage, day);
+  }
+
   // Put a mutation into the ordered stream: a seq, the catch-up log, every
   // socket but the sender's, and the ledger. One path for a peer's op and for
   // one the worker made (docs/specs/012-collaboration/collab-race-hardening.md), so the two can't drift. Returns the seq.
@@ -750,6 +742,13 @@ export class DocumentRoom extends DurableObject<Env> {
 
   armAlarm(): void {
     armAlarm(this);
+  }
+
+  // ---------- RPC: Ask AI's built-in allowance (@liveworkspace/ask/server daily-count.ts) -------------------------
+
+  // Only on an account's `~ask-ai:` instance, never an item's: one storage key, no schema made or read.
+  spendAsk(day: string, cap: number): Promise<boolean> {
+    return spendAskIn(this.state.storage, day, cap);
   }
 
   override alarm(): Promise<void> {

@@ -5,7 +5,7 @@
 // "2 Resolved", then a composer to start one. A writer with no threads sees the composer under an empty state; a
 // Viewer with none sees nothing at all. Outside the writing: never in the draft, search or what agents read of it.
 import { useMemo, useState } from 'react';
-import { lucideGlyph } from '@liveknowledge/ui';
+import { Chip, lucideGlyph } from '@liveknowledge/ui';
 import { lucidePlus } from '@liveworkspace/icons/lucide';
 import type { PageThread, PageThreadChange } from '@liveknowledge/api-schema';
 import { useRelativeNow } from '@/lib/relative-time';
@@ -73,12 +73,12 @@ export function PageCommentsView({
       >
         Comments
         {open.length > 0 ? (
-          <span
+          <Chip
             data-open-count=""
-            className="rounded-full bg-slate-100 px-1.5 py-px text-[11px] font-semibold tabular-nums tracking-normal text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+            className="bg-slate-100 px-1.5 py-px text-[11px] font-semibold tabular-nums tracking-normal text-slate-600 dark:bg-slate-800 dark:text-slate-300"
           >
             {open.length}
-          </span>
+          </Chip>
         ) : null}
       </h2>
       <div className="mt-3 flex flex-col gap-3">

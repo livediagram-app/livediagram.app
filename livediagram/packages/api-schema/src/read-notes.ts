@@ -16,7 +16,38 @@ export type NoteCrop = {
   image: string;
 };
 
-export type ReadNotesRequest = { crops: NoteCrop[] };
+export type ReadNotesRequest = {
+  crops: NoteCrop[];
+  // With Pro on (docs/specs/021-event-storming/note-reader.md "AI credits (Pro)"): the diagram the notes are read
+  // into, whose owner pays the read's AI credits; this read's id; how many notes the photo has (1 to
+  // PHOTO_MAX_NOTES), which is what the read costs, one credit for every 24; and the pass an earlier request of the
+  // same read was given, so the read is paid for once. A server with Pro off reads none of them.
+  documentId?: string;
+  read?: string;
+  notes?: number;
+  pass?: string;
+};
+
+/** What a counted read says back: who paid (`p:<accountId>` or `t:<teamId>`), the read's pass for its later
+ *  requests, the credits the read cost, and, for the payer or a member of the paying team, what is used of the month
+ *  and its limit. A request that spent and then failed carries it too, beside its `error`. */
+export type ReadCredits = {
+  owner: string;
+  pass?: string;
+  cost?: number;
+  used?: number;
+  max?: number;
+};
+
+/** `429 ai_credits_used`: the payer has used the month's AI credits. `used` and `max`, the numbers the service
+ *  answered, are for the payer and the paying team's members alone; anyone else charged to them reads the state. */
+export type ReadCreditsRefusal = {
+  error: 'ai_credits_used';
+  limit: 'aiCreditsPerMonth';
+  used?: number;
+  max?: number;
+  owner: string;
+};
 
 export type NoteText = {
   id: number;
@@ -29,7 +60,11 @@ export type NoteText = {
   legible: boolean;
 };
 
-export type ReadNotesResponse = { texts: NoteText[] };
+export type ReadNotesResponse = {
+  texts: NoteText[];
+  // Present only when the read spent, or had spent, an AI credit (Pro on, and somebody to charge).
+  credits?: ReadCredits;
+};
 
 // How many crops go in one request. Small enough that one unreadable image
 // cannot cost a whole run, big enough that a wall section is a handful of

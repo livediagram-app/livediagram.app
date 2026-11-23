@@ -23,8 +23,10 @@ export type {
 import type { AutomationsAi } from '@liveworkspace/automations/room';
 import type { PlanAutomations } from './plan-room/automations/automation-queue';
 import type { PlanRoom } from './plan-room/plan-room';
+import type { PlanTier } from './plan-room/tier/plan-tier';
 import type { RemovalGuard } from './plan-room/removal-guard-store';
 import type { RoadmapMemo } from './roadmap/roadmap-memo';
+import type { SubscriptionFetcher } from '@liveworkspace/subscription';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
@@ -86,6 +88,15 @@ export type Env = {
   // leaves the plan's previews to lapse, and /api/images answers 503 images_unavailable.
   MEDIA_URL?: string;
   MEDIA_KEY?: string;
+  // Pro (liveworkspace/docs/specs/019-subscription/subscription.md): the four vars `subscriptionClientOf(env,
+  // 'liveplanner.app')` reads. PRO_ENABLED is the flag (`true`, `1` or `on`; unset is off, and nothing asks the service);
+  // SUBSCRIPTION_KEY is liveplanner's secret on the subscription service (wrangler secret put), the same value as its
+  // SUBSCRIPTION_KEY_LIVEPLANNER; SUBSCRIPTION_URL names a service that is not production's; SUBSCRIPTION is the
+  // service binding, the public route when it is absent.
+  PRO_ENABLED?: string;
+  SUBSCRIPTION_KEY?: string;
+  SUBSCRIPTION_URL?: string;
+  SUBSCRIPTION?: SubscriptionFetcher;
   // liveplanner's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
   // same value as the service's DRIVE_KEY_LIVEPLANNER: it opens the internal export door (its `file` format) and the
   // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
@@ -186,6 +197,9 @@ export type PlanEnv = Env & {
   ROOM_PEOPLE?: () => ReadonlySet<string>;
   AUTOMATIONS?: PlanAutomations;
   REMOVAL_GUARD?: RemovalGuard;
+  // The plan's tier (plan-room/tier/plan-tier.ts; docs/specs/026-plan/automations.md "Tiers"): its owner's limits, held
+  // by the room. Absent outside the room; with Pro off it asks nothing and every limit is the legacy one.
+  TIER?: PlanTier;
   // A snapshot's revert landed (docs/specs/013-workspace/snapshots.md): the room forgets its ledger and closes every
   // socket with SNAPSHOT_REVERTED_CLOSE.
   SNAPSHOT_REVERTED?: (generation: number) => void;

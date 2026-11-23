@@ -1,4 +1,5 @@
 import { parseCallSession, type NudgeOp } from '@livehuddle/api-schema';
+import { unverifiedPerson } from '../calls/call-meter';
 import { openSessionToken } from '../calls/call-tokens';
 import type { CallSessionHolder } from '../calls/room-calls';
 import { decideNudge } from '../room-nudge';
@@ -61,7 +62,56 @@ export async function noteCallSession(
     return;
   }
   const current = room.readSession(ws);
-  if (current) ws.serializeAttachment({ ...current, callSession: parsed.sessionId });
+  if (!current) return;
+  // The owner's month of call minutes is used (call-minutes.md "When the minutes are used"): no connection holds a
+  // call session until a join is admitted again, so a browser that ignores the room's word proves nothing here.
+  if (!parsed.left && room.callMeter.paused) {
+    console.warn('[calls] session refused: minutes used');
+    return;
+  }
+  if (parsed.left) {
+    // A metered call saying it left (docs/specs/012-collaboration/call-minutes.md "The wire"): no longer in the call,
+    // and its session is closed at Realtime. With Pro off nobody sends one, and one sent is dropped.
+    if (!room.callMeter.on) return;
+    if (current.callSession === parsed.sessionId) {
+      ws.serializeAttachment({ ...current, callSession: null });
+    }
+    room.callMeter.left(parsed.sessionId);
+    return;
+  }
+  ws.serializeAttachment({ ...current, callSession: parsed.sessionId });
+  room.callMeter.proved(parsed.sessionId, current.callSession ?? null);
+}
+
+// Who a session is to the call meter (calls/call-meter.ts; call-minutes.md "What counts"). Someone signed in to an
+// account is their collab key, which the api derived from the account: one person across their tabs and reconnects.
+// Nobody else is a person the room can count on, and each is held to the meter's cap on people without an account: a
+// guest by their collab key (the api derived it from their guest id, so their tabs are one), a link visitor by the
+// connection, never by the key their browser's own secret gave (visitors sharing one secret would be one person,
+// never charged, and one visitor with many secrets would be many).
+export function callPersonOf(session: SessionAttachment): string {
+  const ownKey = session.collabKey && !session.keyMinted && !session.keyVisitor;
+  if (ownKey && session.account) return session.collabKey!;
+  return unverifiedPerson(ownKey ? session.collabKey! : session.presenceId);
+}
+
+// Every call session a connection holds now, with the person holding it (the call meter's count).
+export function callSessionHolders(room: DocumentRoom): Map<string, string> {
+  const held = new Map<string, string>();
+  for (const ws of room.state.getWebSockets()) {
+    const session = room.readSession(ws);
+    if (session?.callSession) held.set(session.callSession, callPersonOf(session));
+  }
+  return held;
+}
+
+// Every connection lets go of its call session (the owner's month of call minutes is used): the hearing check then
+// knows no subscriber, so nobody hears anybody until a join is admitted and a session proven again.
+export function endCallSessions(room: DocumentRoom): void {
+  for (const ws of room.state.getWebSockets()) {
+    const session = room.readSession(ws);
+    if (session?.callSession) ws.serializeAttachment({ ...session, callSession: null });
+  }
 }
 
 // Every hello'd session as the calls read it. A closing socket's position went with its close (dropSession).

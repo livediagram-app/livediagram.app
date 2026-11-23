@@ -308,6 +308,7 @@ export * from './table-game';
 export * from './suggestions';
 export * from './tab-attendance';
 export * from './calls-mode';
+export * from './call-minutes';
 export * from './changesets';
 export * from './telemetry-schema';
 export * from '@liveworkspace/api-schema/timing-telemetry';

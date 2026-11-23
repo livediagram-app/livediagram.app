@@ -21,7 +21,9 @@ import {
   MAX_NOTIFY_OWNERS,
   MAX_NOTIFY_KEYS,
   isNotifyKey,
+  MAX_MEMBER_COUNT_TEAMS,
   readNotifySettings,
+  teamMemberCounts,
   teamPeople,
 } from '../notify.ts';
 import {
@@ -339,6 +341,20 @@ export async function handleInternal(
     }
     const found = await teamPeople(db, teamId);
     return found ? json(found) : error(404, 'not_found');
+  }
+
+  // How many people have joined each of several teams, in one read: for a caller that shows a count beside each of
+  // a person's teams and must not ask once a team. No names, no addresses.
+  if (route === 'POST teams/member-counts') {
+    const { teamIds } = await readBody(request);
+    if (
+      !Array.isArray(teamIds) ||
+      !teamIds.every((id) => typeof id === 'string' && id.length > 0 && id.length <= 100)
+    ) {
+      return error(400, 'team_ids_required');
+    }
+    if (teamIds.length > MAX_MEMBER_COUNT_TEAMS) return error(400, 'too_many_teams');
+    return json({ counts: await teamMemberCounts(db, teamIds as string[]) });
   }
 
   // The teams an account is in now, for an app whose token claim may be older than a team made or joined a

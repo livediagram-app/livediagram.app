@@ -8,7 +8,7 @@
 // picks.
 
 import { useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { Button, useMediaQuery } from '@liveworkspace/ui';
+import { Button, Chip, useMediaQuery } from '@liveworkspace/ui';
 import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
@@ -19,6 +19,8 @@ export type PickerTile<K extends string> = {
   line: string;
   icon: ReactNode;
   scene: ReactNode;
+  // A mark after the name (the Pro badge on an action the owner's tier does not include).
+  badge?: ReactNode;
 };
 
 export type PickerSection<K extends string> = {
@@ -26,6 +28,8 @@ export type PickerSection<K extends string> = {
   name: string;
   // A note beside the group's name (AI's daily allowance).
   note?: string;
+  // The note tells of a limit reached (no AI credits left this month): amber, as every meter at its limit.
+  noteAtLimit?: boolean;
   // Why the group's tiles are dimmed: the rule holds all it may of them.
   full?: string;
   // A pill after the group's name ("New").
@@ -225,9 +229,9 @@ export function TilePicker<K extends string>({
                 type="button"
                 aria-pressed={active === n.id}
                 onClick={() => jump(n.id)}
-                className={`h-[30px] shrink-0 cursor-pointer rounded-full border px-3 text-[12px] font-medium transition ${active === n.id ? CHIP_ON : CHIP_OFF}`}
+                className={`inline-flex h-[30px] shrink-0 cursor-pointer items-center rounded-full border px-3 text-[12px] font-medium transition ${active === n.id ? CHIP_ON : CHIP_OFF}`}
               >
-                {n.name}
+                <span className="text-optical-line">{n.name}</span>
               </button>
             ))}
           </div>
@@ -288,9 +292,9 @@ export function TilePicker<K extends string>({
                     >
                       {s.name}
                       {s.badge ? (
-                        <span className="rounded-full bg-brand-100 px-1.5 py-px text-[10px] font-semibold normal-case tracking-normal text-brand-700 dark:bg-brand-500/20 dark:text-brand-200">
+                        <Chip className="bg-brand-100 px-1.5 py-px text-[10px] font-semibold normal-case tracking-normal text-brand-700 dark:bg-brand-500/20 dark:text-brand-200">
                           {s.badge}
-                        </span>
+                        </Chip>
                       ) : null}
                     </h3>
                     {s.full ? (
@@ -298,7 +302,14 @@ export function TilePicker<K extends string>({
                         {s.full}
                       </span>
                     ) : s.note ? (
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <span
+                        data-picker-note={s.noteAtLimit ? 'limit' : ''}
+                        className={`text-[11px] ${
+                          s.noteAtLimit
+                            ? 'font-medium text-amber-700 dark:text-amber-300'
+                            : 'text-slate-500 dark:text-slate-400'
+                        }`}
+                      >
                         {s.note}
                       </span>
                     ) : null}
@@ -323,10 +334,11 @@ export function TilePicker<K extends string>({
                             <span className="flex min-w-0 flex-col gap-0.5">
                               <span className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-900 dark:text-slate-50">
                                 {t.name}
+                                {t.badge}
                                 {t.key === current ? (
-                                  <span className="rounded-full bg-brand-100 px-1.5 py-px text-[10px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200">
+                                  <Chip className="bg-brand-100 px-1.5 py-px text-[10px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200">
                                     Current
-                                  </span>
+                                  </Chip>
                                 ) : null}
                               </span>
                               <span className="text-[12px] leading-snug text-slate-500 dark:text-slate-400">

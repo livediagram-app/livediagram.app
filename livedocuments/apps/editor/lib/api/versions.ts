@@ -4,6 +4,7 @@ import {
   CLIENT_HEADER,
   type VersionCopyResponse,
   type VersionListResponse,
+  type VersionRetentionInfo,
   type VersionNameResponse,
   type VersionReadResponse,
   type VersionRestoreResponse,
@@ -35,13 +36,31 @@ const headers = (who: Who, json = false) =>
     extra: { [CLIENT_HEADER]: 'editor' },
   });
 
+// What the server said of how long the owner's tier keeps automatic versions, beside the list it came with
+// (docs/specs/006-document/version-history.md "With Pro on"). Kept by the list itself, so the list stays the plain
+// array every caller reads.
+const RETENTION = new WeakMap<readonly VersionSummary[], VersionRetentionInfo>();
+
+/** The retention a version list was answered with, or null: Pro off, or a tier not known. */
+export function versionRetentionOf(
+  versions: readonly VersionSummary[],
+): VersionRetentionInfo | null {
+  return RETENTION.get(versions) ?? null;
+}
+
 export async function apiListVersions(
   who: Who,
   documentId: string,
   tabId: string,
 ): Promise<VersionSummary[]> {
   const res = await apiFetch(versionsUrl(documentId, tabId), { headers: await headers(who) });
-  return (await expectOk<VersionListResponse>(res, 'list versions', expected)).versions;
+  const { versions, retention } = await expectOk<VersionListResponse>(
+    res,
+    'list versions',
+    expected,
+  );
+  if (retention) RETENTION.set(versions, retention);
+  return versions;
 }
 
 export async function apiReadVersion(

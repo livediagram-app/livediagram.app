@@ -18,6 +18,7 @@ import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { Divider } from '@/components/palette/strip-rail-items';
 import { CallNames } from './CallSegment';
 import { CallStripGroup } from './CallStripGroup';
+import { CallMinutesHost } from './minutes/CallMinutesHost';
 import { PopOutSegment } from './PopOutSegment';
 import { ScreenShareStripGroup, useScreenSharing } from './ScreenShareStripGroup';
 
@@ -52,6 +53,9 @@ export function CallDock({
       className={`pointer-events-none row-start-1 flex w-max justify-center ${lifted ? 'col-start-3 justify-self-end' : 'col-start-2'}`}
       style={uiScaleStyle(scale)}
     >
+      {/* The owner's call minutes running low, hung over the card, and the dialog once they are used
+          (docs/specs/012-collaboration/call-minutes.md "What people see"). Nothing with Pro off. */}
+      <CallMinutesHost />
       <div
         data-floating-panel=""
         data-panel-translucent=""

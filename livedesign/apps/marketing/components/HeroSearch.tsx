@@ -146,7 +146,7 @@ export function HeroSearch() {
                   </span>
                   {t.categoryLabel ? (
                     <span className="hidden shrink-0 items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 sm:inline-flex">
-                      {t.categoryLabel}
+                      <span className="text-optical-line">{t.categoryLabel}</span>
                     </span>
                   ) : null}
                 </a>

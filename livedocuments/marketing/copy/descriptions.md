@@ -20,7 +20,7 @@ For HTML `<meta name="description">` and search snippets.
 Alternate:
 
 > Write articles, build slide decks and lay out infographics with your team in
-> real time. No sign-up wall, no paid tier. Open source. [131]
+> real time. No sign-up wall, no card needed. Open source. [133]
 
 ---
 
@@ -60,8 +60,8 @@ For Product Hunt, app store short descriptions, README intros.
 > actions. Start from 23 templates, recolour every page with one of twenty-four
 > themes, and share view or edit links any time.
 >
-> It is MIT-licensed, free for everyone with no paid tier, and open for anyone
-> to read. [103 words]
+> It is MIT-licensed, every feature works on the free plan, and it is open for
+> anyone to read. [105 words]
 
 ---
 
@@ -93,8 +93,8 @@ For longer listing bodies and "about this project" sections.
 > AI assistants and scripts can work on documents too, through the MCP server,
 > the CLI and the API.
 >
-> livedocuments is MIT-licensed and free for everyone, with no paid tier and no
-> plan for one. [237 words]
+> livedocuments is MIT-licensed and free to use: every feature works on the free plan, with no
+> trial. [237 words]
 
 ---
 
@@ -158,8 +158,8 @@ detailed GitHub / Product Hunt write-up.
 > #### Free, open, and yours
 >
 > livedocuments is MIT-licensed and publicly viewable. The hosted version at
-> livedocuments.app is free for everyone, with no paid tier and no plan to
-> introduce one. If we ship it, every user gets it. The open-source core never
-> calls home and never gates features behind a license check.
+> livedocuments.app is free for everyone, with no trial and no card; every feature
+> works on the free plan, and paid plans raise a few limits. The open-source
+> core never calls home and never gates features behind a license check.
 >
-> Write it, present it, share it. [404 words]
+> Write it, present it, share it. [406 words]

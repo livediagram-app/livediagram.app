@@ -18,6 +18,7 @@ import { openSetup } from '@/lib/knowledge-setup/setup-open';
 import { pageIsUntouched } from '@/lib/knowledge-setup/setup-empty';
 import { takeTitleFocus, wantTitleFocus } from '@/lib/page-title-focus';
 import { track } from '@/lib/telemetry';
+import { useToast } from '@/hooks/ui/useToast';
 
 // The start (docs/specs/030-knowledgebase/describe-to-set-up.md "The start screen") carries every template's preview:
 // loaded the first time a new knowledgebase offers it, never on the editor's first load.
@@ -37,20 +38,41 @@ async function pickStructure(
   documentId: string,
   replaceId: string,
   id: string,
+  refused: (words: string) => void,
 ) {
-  const [{ createStructure }, { reviewPages }, { setupStructure, structureSuggestion }] =
-    await Promise.all([
-      import('@/components/setup/create-structure'),
-      import('@/lib/knowledge-setup/setup-tree'),
-      import('@liveknowledge/knowledge'),
-    ]);
+  const [
+    { createStructure },
+    { pagesHeldWords, reviewPages, setupLimitRefusal },
+    { setupStructure, structureSuggestion },
+    { pageCount },
+    { whenOpenPagesBound },
+  ] = await Promise.all([
+    import('@/components/setup/create-structure'),
+    import('@/lib/knowledge-setup/setup-tree'),
+    import('@liveknowledge/knowledge'),
+    import('@liveknowledge/document'),
+    import('@/lib/knowledge-tier'),
+  ]);
   const structure = setupStructure(id);
   if (!structure) return;
   const suggestion = structureSuggestion(structure);
+  const pages = reviewPages(suggestion.pages);
+  // The owner's Knowledgebase Pages first (tiers.md): a structure that would pass them makes nothing, and says why,
+  // rather than pages the server would refuse to keep. Asked once the owner's usage has come, or after a moment.
+  await whenOpenPagesBound(4000);
+  const over = setupLimitRefusal(pages, {
+    existing: pageCount(chrome.get().tabs),
+    replacing: true,
+    parentDepth: 0,
+  });
+  if (over) {
+    refused(`${pagesHeldWords()}, so ${suggestion.name}’s ${pages.length} pages don’t fit.`);
+    return;
+  }
   await createStructure({
     chrome,
     documentId,
-    pages: reviewPages(suggestion.pages),
+    pages,
     name: suggestion.name,
     from: 'FromStructure',
     replaceId,
@@ -63,6 +85,7 @@ export function EditorStartPanels() {
   const chrome = useEditorChromeStore();
   const documentId = () => chrome.get().documentId;
   const tabId = useEditorChrome((s) => s.activeTab.id);
+  const toast = useToast();
   // Whether the page has writing (someone else wrote, an import landed): read once per page object.
   const written = useEditorChrome((s) => s.hydrated && !pageIsUntouched(s.activeTab));
   const mayShow = useEditorChrome(templateStartShownOf);
@@ -87,7 +110,8 @@ export function EditorStartPanels() {
   const chooseStructure = (id: string) => {
     close(false);
     const knowledgebase = documentId();
-    if (knowledgebase) void pickStructure(chrome, knowledgebase, tabId, id);
+    if (knowledgebase)
+      void pickStructure(chrome, knowledgebase, tabId, id, (words) => toast.error(words));
   };
   const chooseQueued = useEffectEvent((id: string, known: boolean) => {
     takeStructurePick(tabId);

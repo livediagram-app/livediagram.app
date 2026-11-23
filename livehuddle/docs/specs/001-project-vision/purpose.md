@@ -87,8 +87,8 @@ The full list is in [v1 scope](../002-project-scope/v1-scope.md).
   tools. That is livediagram.
 - **Not a document, presentation, design or planning tool.** No Page element, slide decks or presenting, no logos,
   boards of cards or spreadsheets: those are livedocuments, livedesign and liveplanner.
-- **Not a paid product.** Free and open source like every liveworkspace product: no tier, no billing, no feature flags
-  gating the core.
+- **No feature held back.** Free and open source like every liveworkspace product: every feature works on Free, and
+  Pro, where it is on, only raises a few limits.
 
 ## Boundaries that have moved
 

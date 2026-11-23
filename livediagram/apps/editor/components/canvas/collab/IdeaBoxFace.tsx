@@ -7,7 +7,7 @@
 // one. A box that shows you your own card tells the room what you wrote the
 // moment somebody watches you type it.
 
-import { CountBadge } from '@livediagram/ui';
+import { CountBadge, Chip } from '@livediagram/ui';
 import { useState } from 'react';
 import { IDEA_MAX_CARDS, IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/document';
 import { CollabPanel, tint } from './collab-chrome';
@@ -162,12 +162,12 @@ export function IdeaBoxFace({
 // element exists to give.
 function AnonymousBadge() {
   return (
-    <span
-      className="pointer-events-auto inline-flex items-center gap-1 rounded-full py-0.5 pl-1 pr-2 text-[10px] font-semibold"
+    <Chip
+      icon={<MaskGlyph size={11} />}
+      className="pointer-events-auto py-0.5 pl-1 pr-2 text-[10px] font-semibold"
       style={{ color: QA_ACCENT_INK, backgroundColor: tint(QA_ACCENT, 0.14) }}
     >
-      <MaskGlyph size={11} />
       Anonymous
-    </span>
+    </Chip>
   );
 }

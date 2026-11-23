@@ -1,4 +1,5 @@
 import { setCommunityState } from '@/lib/community-state-store';
+import { setReadOwner } from '@/lib/reading/read-credits';
 import type {
   LastSeenCopy,
   LastSeenFirstTab,
@@ -90,6 +91,8 @@ function showDocument(
   setDocumentShareable(fetched.shareable);
   setCommunityState(fetched.id, fetched.communityState ?? null);
   setDocumentTeamId(fetched.teamId ?? null);
+  // Who owns it, so a photo read into it knows whether it can be charged at all (a guest's diagram never is).
+  setReadOwner(fetched.id, { owner: fetched.ownerId, team: fetched.teamId ?? null });
   setDocumentShareCode(fetched.shareCode);
   setDocumentOwnerName(fetched.ownerName ?? null);
 }

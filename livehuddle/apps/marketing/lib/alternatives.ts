@@ -32,16 +32,16 @@ const LIST: Alternative[] = [
   {
     slug: 'gather',
     name: 'Gather',
-    highlights: ['Free, no tiers', 'No sign-up to create', 'Any browser, no install'],
+    highlights: ['Free, no trial', 'No sign-up to create', 'Any browser, no install'],
     title: 'Gather alternative for a virtual office · livehuddle',
     description:
-      'A free, open-source Gather alternative: walk your team round a virtual office as characters, meet in rooms, no account, no install and no per-seat plan.',
+      'A free, open-source Gather alternative: walk your team round a virtual office as characters, meet in rooms, no account, no install and no trial.',
     h1: 'The free, open-source Gather alternative',
     lede: 'Gather made the pixel-art virtual office popular: walk up to a teammate and the call starts. livehuddle is a virtual office in the same spirit, free and open source, that anyone opens from a link without an account: walk up to someone and you hear each other, turn on a camera or share a screen, and step into a room for a private word.',
     rows: [
       {
         label: 'Price',
-        us: 'Free, every feature',
+        us: 'Free, every feature (a few limits rise on paid plans)',
         them: 'Paid per member after a 30-day free trial',
       },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, a hosted product' },
@@ -84,7 +84,7 @@ const LIST: Alternative[] = [
       'Calendar sync, so a scheduled meeting opens in the right room.',
     ],
     usBest: [
-      'Free for everyone and MIT-licensed, with no per-seat pricing, no trial that runs out, no team-size limit on a plan, and nothing to upgrade to.',
+      'Free for everyone and MIT-licensed, with every feature on the free plan, no trial that runs out and no card.',
       'Open a link and you are in, with no sign-up, even to create a Space or to talk, and nothing to install.',
       'Walk up to someone and you hear them: voices fade as you walk away, a camera or a shared screen shows as a bubble above your character, and a room’s walls keep its call private.',
       'Walk the office in 3D: walls stand up with framed doorways and windows, characters stand upright, and the walls in front of you fade as you near a room.',
@@ -121,9 +121,9 @@ const LIST: Alternative[] = [
         ],
       },
       {
-        heading: 'Free means free, and open',
+        heading: 'Free to start, and open',
         paragraphs: [
-          'livehuddle has no paid tier and no plan to introduce one: every user gets every feature at livehuddle.app. The whole codebase is MIT-licensed and public, so anyone can read exactly how it works. A guest’s new Space is kept in their browser until they press Share, which syncs it in one step, and accounts are optional.',
+          'livehuddle keeps no feature behind a paywall: every feature works on the free plan at livehuddle.app, and paid plans raise a few limits, such as call minutes. The whole codebase is MIT-licensed and public, so anyone can read exactly how it works. A guest’s new Space is kept in their browser until they press Share, which syncs it in one step, and accounts are optional.',
         ],
       },
     ],
@@ -142,14 +142,14 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Is livehuddle really free?',
-        a: 'Yes. Every feature is free for everyone, with no paid tier and no team-size limit on a plan. The code is MIT-licensed and public.',
+        a: 'Yes. Every feature works on the free plan, with no trial and no card; paid plans raise a few limits, such as call minutes. The code is MIT-licensed and public.',
       },
     ],
   },
   {
     slug: 'kumospace',
     name: 'Kumospace',
-    highlights: ['Free, every feature', 'No sign-up to create', 'Share roles built in'],
+    highlights: ['Free, no trial', 'No sign-up to create', 'Share roles built in'],
     title: 'Kumospace alternative for a virtual office · livehuddle',
     description:
       'A free, open-source Kumospace alternative: a virtual office and all-hands hall your team walks round as characters, from a link, with no account needed.',
@@ -158,7 +158,7 @@ const LIST: Alternative[] = [
     rows: [
       {
         label: 'Price',
-        us: 'Free, every feature',
+        us: 'Free, every feature (a few limits rise on paid plans)',
         them: 'Free for up to 5 members, then $16 per member a month',
       },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, a hosted product' },
@@ -201,7 +201,7 @@ const LIST: Alternative[] = [
       'Furniture and decor you can customise for an office that looks its best.',
     ],
     usBest: [
-      'Free for everyone and MIT-licensed: no plan limits on people, guests, floors or rooms, and nothing to upgrade to.',
+      'Free for everyone and MIT-licensed: no limits on people, guests, floors or rooms, on any plan.',
       'Open a link and walk in, with no sign-up, even to create a Space or to talk, and nothing to install.',
       'Voices fade as you walk away, cameras and shared screens show as bubbles above the characters, and a meeting room’s walls keep its call private.',
       'Walk the office in 3D: walls stand up with framed doorways and windows, characters stand upright, and the walls in front of you fade as you near a room.',
@@ -237,7 +237,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Free, open and yours',
         paragraphs: [
-          'There is no paid tier and no plan to introduce one. The whole codebase is MIT-licensed and public. Anyone can create a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. Export a tab as PNG, SVG, a PDF with real, selectable text, or a JSON file that imports back, and script the rest with the free REST API.',
+          'Every feature works on the free plan, with no trial and no card. The whole codebase is MIT-licensed and public. Anyone can create a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. Export a tab as PNG, SVG, a PDF with real, selectable text, or a JSON file that imports back, and script the rest with the free REST API.',
         ],
       },
     ],

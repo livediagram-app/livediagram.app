@@ -18,7 +18,7 @@ import {
   namedStatus,
   blocksHeading,
 } from '@liveplanner/items';
-import { ChevronRightIcon, NoMatches, PlusIcon, Select, lucideGlyph } from '@liveplanner/ui';
+import { ChevronRightIcon, Chip, NoMatches, PlusIcon, Select, lucideGlyph } from '@liveplanner/ui';
 import { lucideLink } from '@liveworkspace/icons/lucide';
 import type { LinkedGroup } from '@liveplanner/items';
 import { PersonDisc } from './PersonDisc';
@@ -241,9 +241,9 @@ export function LinkedCardGroup({
         className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-slate-800 dark:text-slate-100"
       >
         {heading}
-        <span className="rounded-full bg-slate-100 px-1.5 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+        <Chip className="bg-slate-100 px-1.5 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
           {group.cards.length}
-        </span>
+        </Chip>
       </h3>
       {group.cards.length === 0 ? (
         emptyNote ? (

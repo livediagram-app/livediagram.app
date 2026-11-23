@@ -79,10 +79,16 @@
 @source '../../../../packages/settings-ui/src';
 /* The editor code every editor shares (@liveworkspace/workbench) carries its own utility classes. */
 @source '../../../../packages/workbench/src';
+/* Pro's badge, meters, notices and upgrade dialog (@liveworkspace/subscription-ui). They draw only with
+ * NEXT_PUBLIC_PRO_ENABLED on, but the classes are generated either way. */
+@source '../../../../packages/subscription-ui/src';
+@source not '../../../../packages/subscription-ui/src/**/*.test.tsx';
 @source '../../../../packages/capture/src';
 @source '../../../../packages/walkthrough/src';
 /* The Automations screen and builder every app shares (@liveworkspace/automations-ui). */
 @source '../../../../packages/automations-ui/src';
+/* Ask AI, the tool every app's Tools holds (@liveworkspace/ask). */
+@source '../../../../packages/ask/src';
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating

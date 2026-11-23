@@ -850,9 +850,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'Start a proximity-audio Realtime session for this browser (docs/specs/012-collaboration/proximity-audio.md): its session id, a private session token, short-lived TURN servers and whether it may speak. 503 `calls_off` while calls are off.',
+      "Start a proximity-audio Realtime session for this browser (docs/specs/012-collaboration/proximity-audio.md): its session id, a private session token, short-lived TURN servers and whether it may speak. 503 `calls_off` while calls are off; with Pro on, 429 `calls_minutes_used` once the Space's owner has used the month's call minutes.",
     auth: 'guest-or-clerk',
-    statuses: [200, 400, 403, 404, 410, 502, 503],
+    statuses: [200, 400, 403, 404, 410, 429, 502, 503],
   },
   {
     method: 'POST',
@@ -891,6 +891,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: "Close this session's subscriptions or its microphone, by mid.",
     auth: 'guest-or-clerk',
     statuses: [200, 400, 403, 404, 410, 502, 503],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/calls/minutes',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "The Space's owner's call minutes this month (docs/specs/012-collaboration/call-minutes.md): whether calls are counted, whose month they count against, what is used and the limit (for the owner and the owning team, and for anyone once the limit is met), and whether calls are paused. `{ metered: false }` with Pro off.",
+    auth: 'guest-or-clerk',
+    statuses: [200, 403, 404, 410],
   },
   // ---- Folders ----
   {
@@ -1231,6 +1241,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
 
   // ---- Preferences ----
+  {
+    method: 'POST',
+    path: '/ask',
+    segment: 'ask',
+    tag: 'Documents',
+    summary:
+      'Ask AI: a question (up to 1,000 characters) answered from the passages of an open space that are sent with it (up to 200, 24,000 characters), streamed as server-sent events: `delta` pieces of the answer, then `done` with the passages it cites, or `error`. Runs on the caller’s own AI key, or their team’s, when one applies, else on built-in AI. Nothing is saved. Signed in only (a guest is refused); an account asks up to 30 questions a day on built-in AI.',
+    auth: 'clerk',
+    statuses: [200, 400, 401, 403, 405, 422, 429, 503],
+  },
   {
     method: 'GET',
     path: '/preferences',

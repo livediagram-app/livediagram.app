@@ -10,7 +10,7 @@ import {
   SETUP_PER_KNOWLEDGEBASE_PER_DAY,
   SETUP_PER_PERSON_PER_HOUR,
 } from '@liveknowledge/knowledge';
-import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
+import { AI_UNAVAILABLE_KINDS, askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
 import type { SetupMode } from './setup-open';
 
 export const SETUP_BUTTON = 'Describe to Set Up';
@@ -65,7 +65,9 @@ const MODEL_KINDS = new Set([
   'overloaded',
   'model-unavailable',
   'refused',
-  'ask_unavailable',
+  ...AI_UNAVAILABLE_KINDS,
+  'ai_credits_used',
+  'ai_by_others_limit',
 ]);
 
 export function setupFailureWords(
@@ -76,11 +78,13 @@ export function setupFailureWords(
     // Only an Editor has this dialog, so the way into AI Settings is always theirs.
     const words = askFailureWords(kind, { manageAi: true, provider: opts.provider });
     return {
-      title:
-        kind === 'ask_unavailable' ? 'Describe to Set Up Is Not Available Right Now' : words.title,
+      title: AI_UNAVAILABLE_KINDS.has(kind)
+        ? 'Describe to Set Up Is Not Available Right Now'
+        : words.title,
       text: words.text
         .replace(/\bask again\b/g, 'try again')
-        .replace(/\bAsking again\b/g, 'Trying again'),
+        .replace(/\bAsking again\b/g, 'Trying again')
+        .replace(/\bAsk again\b/g, 'Try again'),
       step:
         words.step === 'ai-settings'
           ? 'ai-settings'

@@ -146,7 +146,7 @@ function NewChart({
               onClick={() => setKind(k)}
               className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[12px] transition ${kind === k ? `border-brand-400 ${ON} dark:border-brand-500/60` : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}`}
             >
-              {CHART_TYPE_LABELS[k]}
+              <span className="text-optical-line">{CHART_TYPE_LABELS[k]}</span>
             </button>
           ))}
         </div>

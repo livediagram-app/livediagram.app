@@ -233,9 +233,9 @@ Workspaces are managed with **pnpm** (the monorepo root's `pnpm-workspace.yaml` 
 See [Open source + distribution](docs/specs/002-project-scope/open-source-and-business-model.md).
 
 - The codebase is **MIT-licensed** and **publicly viewable**.
-- A free hosted version runs alongside at livedocuments.app. **No paid tier and no plan to introduce one.**
+- A free hosted version runs alongside at livedocuments.app. Pro, a subscription that raises limits, is the platform's and sits behind `PRO_ENABLED`, off by default ([Subscription](../liveworkspace/docs/specs/019-subscription/subscription.md)).
 - Keep every outside service optional (no required SaaS calls, no license checks gating the core editor). The accounts Worker is optional: with its settings unset the api worker degrades to pure-guest mode, and the editor (which always offers sign-in) keeps working.
-- No "Pro features" flags, no billing integration. If we ship it, every user gets it.
+- No billing code and no tier checks of the product's own. A limit that varies by tier comes from `@liveworkspace/subscription`, is checked on the server against the item's owner, and falls back to the legacy cap when Pro is off. With Pro off nothing Pro is shown.
 
 ## Secrets policy
 

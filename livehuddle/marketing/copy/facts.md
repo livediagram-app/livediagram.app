@@ -75,7 +75,8 @@ The unit of value is the group in the room.
 ## Open source and price
 
 - MIT-licensed and publicly viewable.
-- Hosted free at livehuddle.app. No paid tier and no plan to introduce one.
+- Hosted free at livehuddle.app, every feature on the free plan, no trial or card.
+  Pro raises a few limits, such as call minutes; don't lead with it.
 - Sign-in through liveworkspace accounts is optional; without it a guest gets
   the full editor, and a new Space stays in their browser until they press
   Share.
@@ -98,7 +99,8 @@ the Next.js frontends.
   meet-first refocus (Work Tracker #423); livediagram has them.
 - Conflict-free (CRDT) editing. Edits to different elements merge; two people
   changing the same element at the same moment is last-writer-wins, by design.
-- A paid tier, or any feature reserved for one.
+- That there is no paid tier, or any feature reserved for one (Pro only raises
+  limits). Don't lead with Pro either.
 
 ## Links
 

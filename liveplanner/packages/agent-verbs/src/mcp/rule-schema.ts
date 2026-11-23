@@ -60,7 +60,7 @@ const ruleBody = z
     ...readBack,
   })
   .describe(
-    'A whole rule. It starts off until it has a trigger and an action, then on. A plan holds up to 50 rules.',
+    'A whole rule. It starts off until it has a trigger and an action, then on. A plan holds a limited number of rules: one too many is refused, naming the limit.',
   );
 
 const ruleChange = z.discriminatedUnion('op', [
@@ -194,8 +194,12 @@ export const listRulesOutput = {
     .array(listedRun)
     .optional()
     .describe('The Audit Trail, newest first, when runs was asked.'),
-  runsToday: z.number().describe('Runs today (UTC) that count toward the day’s limit.'),
-  runsPerDay: z.number().describe('The day’s limit.'),
+  runsToday: z
+    .number()
+    .describe('Runs today (UTC) that count toward this plan’s daily safety cap.'),
+  runsPerDay: z
+    .number()
+    .describe('This plan’s daily safety cap (the owner’s monthly runs are counted apart).'),
   count: z.number().describe('How many rules are listed.'),
   url,
 };

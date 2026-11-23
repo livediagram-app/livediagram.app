@@ -10,8 +10,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import {
   Button,
+  Chip,
   ConfirmPopover,
   EmptyState,
+  GlyphDisc,
   LinkIcon,
   Portal,
   PublicLinkPopover,
@@ -26,6 +28,7 @@ import { lucide } from '../ui/icons';
 import { WalkthroughIcon } from '../ui/library-icons';
 import { SIDEBAR_LABELS } from '../views';
 import { useLibraryHost } from './context';
+import { LibraryUsage } from './LibraryUsage';
 import type { WalkthroughEntry, WalkthroughsHost } from './types';
 
 // The index's lookup takes this many ids a call.
@@ -196,43 +199,66 @@ export function WalkthroughsContent({
         </button>
       </div>
     );
+  const usage = host.usage?.() ?? null;
+  const meter = usage ? (
+    <LibraryUsage
+      kind="walkthroughs"
+      used={usage.stored}
+      limit={usage.storedLimit}
+      maxMs={usage.maxMs}
+      owner={usage.owner}
+      compact={compact}
+      className={
+        compact
+          ? 'mb-3 border-b border-slate-100 pb-3 dark:border-slate-800'
+          : // In line with what follows: the grid's own inset, or the empty state's edge.
+            `${load.entries.length > 0 ? 'mx-4 sm:mx-6' : ''} mb-5 border-b border-slate-100 pb-4 dark:border-slate-800`
+      }
+    />
+  ) : null;
   if (load.entries.length === 0)
     return (
-      <EmptyState
-        compact={compact}
-        icon={<WalkthroughIcon size={compact ? 20 : 28} />}
-        title="No walkthroughs yet"
-        description={`Record one from Tools on any ${kind.lowerOne}: it collects here to watch again or tidy away.`}
-      />
+      <>
+        {meter}
+        <EmptyState
+          compact={compact}
+          icon={<WalkthroughIcon size={compact ? 20 : 28} />}
+          title="No walkthroughs yet"
+          description={`Record one from Tools on any ${kind.lowerOne}: it collects here to watch again or tidy away.`}
+        />
+      </>
     );
   return (
-    <ul aria-label={SIDEBAR_LABELS.walkthroughs} data-walkthroughs-grid="" className={grid}>
-      {load.entries.map((entry) => (
-        <WalkthroughCard
-          key={entry.id}
-          entry={entry}
-          item={items.get(entry.item) ?? null}
-          host={host}
-          playing={playing === entry.id}
-          onPlay={(on) => setPlaying(on ? entry.id : null)}
-          compact={compact}
-          onChanged={(next) =>
-            setLoad((l) =>
-              l.state === 'ready'
-                ? { state: 'ready', entries: l.entries.map((e) => (e.id === next.id ? next : e)) }
-                : l,
-            )
-          }
-          onDeleted={() =>
-            setLoad((l) =>
-              l.state === 'ready'
-                ? { state: 'ready', entries: l.entries.filter((e) => e.id !== entry.id) }
-                : l,
-            )
-          }
-        />
-      ))}
-    </ul>
+    <>
+      {meter}
+      <ul aria-label={SIDEBAR_LABELS.walkthroughs} data-walkthroughs-grid="" className={grid}>
+        {load.entries.map((entry) => (
+          <WalkthroughCard
+            key={entry.id}
+            entry={entry}
+            item={items.get(entry.item) ?? null}
+            host={host}
+            playing={playing === entry.id}
+            onPlay={(on) => setPlaying(on ? entry.id : null)}
+            compact={compact}
+            onChanged={(next) =>
+              setLoad((l) =>
+                l.state === 'ready'
+                  ? { state: 'ready', entries: l.entries.map((e) => (e.id === next.id ? next : e)) }
+                  : l,
+              )
+            }
+            onDeleted={() =>
+              setLoad((l) =>
+                l.state === 'ready'
+                  ? { state: 'ready', entries: l.entries.filter((e) => e.id !== entry.id) }
+                  : l,
+              )
+            }
+          />
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -340,12 +366,13 @@ function WalkthroughCard({
               <rect width="100%" height="100%" fill={`url(#wt-dots-${entry.id})`} />
             </svg>
             {compact ? null : (
-              <span
+              <GlyphDisc
                 aria-hidden
-                className="absolute left-3 top-3 flex size-9 items-center justify-center rounded-full bg-white/20 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur-sm"
+                size={36}
+                className="absolute left-3 top-3 bg-white/20 text-sm font-semibold text-white ring-1 ring-white/30 backdrop-blur-sm"
               >
                 {initial}
-              </span>
+              </GlyphDisc>
             )}
             <span
               className={`relative flex ${
@@ -355,20 +382,22 @@ function WalkthroughCard({
               {loading ? <Spinner /> : <PlayGlyph size={compact ? 14 : 22} className="ml-0.5" />}
             </span>
             {compact ? null : (
-              <span className="absolute bottom-2.5 left-3 inline-flex items-center gap-1 rounded-full bg-black/35 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
-                {entry.screen || entry.camera ? <CameraGlyph /> : <MicGlyph />}
+              <Chip
+                icon={entry.screen || entry.camera ? <CameraGlyph /> : <MicGlyph />}
+                className="absolute bottom-2.5 left-3 bg-black/35 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm"
+              >
                 {entry.screen ? 'Video' : entry.camera ? 'Camera' : 'Voice'}
-              </span>
+              </Chip>
             )}
-            <span
-              className={`absolute rounded-full bg-black/45 font-semibold tabular-nums text-white backdrop-blur-sm ${
+            <Chip
+              className={`absolute bg-black/45 font-semibold tabular-nums text-white backdrop-blur-sm ${
                 compact
                   ? 'bottom-1 right-1 px-1.5 text-[10px]'
                   : 'bottom-2.5 right-3 px-2 py-0.5 text-[11px]'
               }`}
             >
               {clockOf(entry.durationMs)}
-            </span>
+            </Chip>
           </button>
         }
         {failed ? (

@@ -349,6 +349,7 @@ export default function NewDocumentPage() {
             title={createError.title}
             message={createError.message}
             retryLabel={createError.actionLabel}
+            retryIcon={createError.action === 'retry'}
             onRetry={() => {
               if (createError.action === 'choose') {
                 // The refused placement would be refused again: reopen the wizard without it.

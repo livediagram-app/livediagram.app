@@ -95,6 +95,9 @@ device.
 ## Security
 
 - Auth required: an account access token or a guest token.
+- With Pro on, a read also spends AI credits of the month, one for every 24 of its notes, from the owner of the
+  diagram it is read into, after the gate and before the model is called ([AI credits (Pro)](#ai-credits-pro)). With
+  Pro off nothing of that runs.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional: absent on
   deployments falls through to "allow".
 - A daily cap on the whole deployment's reader requests, last in the gate, so a caller the
@@ -123,17 +126,21 @@ device.
 
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`:
 
-| Token                | Status | When                                                          |
-| -------------------- | ------ | ------------------------------------------------------------- |
-| `crops_invalid`      | 400    | The body is not a list of valid crops.                        |
-| `sign_in_required`   | 401    | The deployment requires sign-in for the reader.               |
-| `origin_not_allowed` | 403    | The request came from an origin the worker does not serve.    |
-| `method_not_allowed` | 405    | Anything but a `POST`.                                        |
-| `crops_too_large`    | 413    | Too many crops, or a crop over `CROP_MAX_BYTES`.              |
-| `rate_limited`       | 429    | The caller's per-IP request budget is spent.                  |
-| `ai_quota`           | 429    | The model key has spent its quota, or the day's cap is spent. |
-| `ai_error`           | 502    | The upstream model call failed or answered unusably.          |
-| `ai_not_configured`  | 503    | No model key on this deployment (the default).                |
+| Token                | Status | When                                                            |
+| -------------------- | ------ | --------------------------------------------------------------- |
+| `crops_invalid`      | 400    | The body is not a list of valid crops.                          |
+| `read_required`      | 400    | With Pro on, a read that would spend a credit names no read.    |
+| `notes_required`     | 400    | With Pro on, a charged read does not say how many notes it has. |
+| `notes_exceeded`     | 400    | With Pro on, a crop is a note the read did not pay for.         |
+| `sign_in_required`   | 401    | The deployment requires sign-in for the reader.                 |
+| `origin_not_allowed` | 403    | The request came from an origin the worker does not serve.      |
+| `method_not_allowed` | 405    | Anything but a `POST`.                                          |
+| `crops_too_large`    | 413    | Too many crops, or a crop over `CROP_MAX_BYTES`.                |
+| `rate_limited`       | 429    | The caller's per-IP request budget is spent.                    |
+| `ai_quota`           | 429    | The model key has spent its quota, or the day's cap is spent.   |
+| `ai_credits_used`    | 429    | With Pro on, the payer's month of AI credits is used.           |
+| `ai_error`           | 502    | The upstream model call failed or answered unusably.            |
+| `ai_not_configured`  | 503    | No model key on this deployment (the default).                  |
 
 A request with no identity at all gets the worker-wide `bad_request` 400 every owner-scoped
 route sends.
@@ -156,3 +163,168 @@ Set the keys via `wrangler secret put <the key var>` for production; drop them i
 
 `AI / Used / PhotoNotes`, once per committed import (the editor fires it, because the route
 cannot know whether the author kept the result).
+
+## AI credits (Pro)
+
+Status: being built, local only, with the rest of Pro
+([Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)).
+
+With Pro on (the api worker's `PRO_ENABLED`), reading a photo spends AI credits of the month's AI Credits (Free 50,
+Pro 1,000, Pro for Teams 500 a member, pooled): **one for every 24 notes or part of 24, one at least**
+(`photoReadCredits` in `@liveworkspace/subscription`, the platform's table in
+[Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md) "What an AI operation costs").
+A note is read six to a request, so 24 notes is four requests: a 10-note photo is 1 credit, 30 notes 2, the 400
+notes one photo may yield 17. The person sees the cost before the read starts, and may read on the device for
+nothing instead ([What the editor shows](#what-the-editor-shows)). With Pro off nothing here exists: the route spends
+nothing, asks the subscription service nothing and answers exactly as described above, and the editor draws and
+sends nothing new.
+
+### What a read costs
+
+A read is one photo: every batch of its notes, and any note read again in the review, together. The server holds
+that, not the browser:
+
+- **A charged read says how many notes it has.** Every request of a charged read carries `notes`, the notes found
+  in the photo (a whole number, 1 to `PHOTO_MAX_NOTES`, 400). A charged request without it, or with anything else, is
+  refused `400 notes_required` and spends nothing. With Pro off, or a read charged to nobody, `notes` is not read.
+- The first request of a read spends **`photoReadCredits(notes)` before the model is called**. Its answer carries a
+  **read pass**: a signature over who paid, the read's id, the paid note count and when it lapses, 10 minutes later.
+- Every later request of the same read (the other batches, a box read again) presents the pass and spends nothing.
+  A pass that has lapsed, or is for another payer, another read or another note count, is ignored: that request is a
+  new read, spends `photoReadCredits(notes)` and is given a new pass.
+- **A request is bounded by what was paid.** The detector numbers a photo's notes from 0, and the review numbers the
+  boxes drawn by hand from -1 down. Every crop of a charged request must be one of the read's notes, `0 ≤ id <
+notes`, or a drawn box within what the credits paid for, `-24 × credits ≤ id < 0`. A crop outside is refused
+  `400 notes_exceeded` before anything is spent: a pass for 10 notes is never a pass for note 50.
+- **A charged read names itself.** A request that would spend a credit and carries no read id (or one that is not
+  an id) is refused `400 read_required`: without an id there is no pass, and every request would spend.
+- **A request that spent and then failed still hands back its pass** (`credits` beside the error), so the read's
+  other batches are not charged again for a model that stumbled.
+- **The pass is never signed with the app's subscription key itself.** A browser holds the pass, so its signing key
+  is one derived for this purpose alone, `HMAC(SUBSCRIPTION_KEY, "livediagram:read-pass:v1")`.
+- The editor sends the first batch alone, and the next ones one at a time until it holds the pass, then two at a
+  time.
+
+**What a lying browser can and cannot get.** The pass is a stateless signature, so the server does not count the
+crops a pass has carried: a browser can present the same pass again. It can never read without spending (no pass
+without a spend), never read a note outside the count it paid for, and never declare fewer than 1 or more than 400
+notes. What it can do is declare few notes, pay for them, and send the same note ids again with other pictures
+until the pass lapses: at most what the per-IP limiter lets through in 10 minutes (200 requests), each at most six
+crops, for the credits it paid. That is exactly today's bound for one credit, so the price by count is never weaker
+than one credit a read; an honest editor always declares the photo's real count, and an honest read costs what it
+says.
+
+### Who pays
+
+The owner of the diagram the notes are read into, never the person reading.
+
+- **A reader without an account is charged to nobody**, whatever they read into: their own diagram, none, or
+  someone else's through a share link. They keep the behaviour from before Pro (the per-IP limiter and the day's cap
+  bound them), are never told an owner, and can never spend anyone's credit. An Editor link handed to the world is
+  not a way into its owner's month.
+- For a reader who is signed in, the request names its diagram (`documentId`). The api asks the index for the
+  caller's grant on it, exactly as a document route does. With an Editor's grant, the credit is the diagram's
+  owner's, by the one rule every app follows ([Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)
+  "Who pays for an item"): the team's for a team's diagram, else the person who owns it. A team's diagram spends the
+  team's, also when the reader has Pro of their own.
+- **A guest's diagram** (its owner has no account) is never sent to the subscription service: a read into it spends
+  nobody's credit, the gate alone bounds it, and nobody is offered an upgrade there.
+- With no diagram named, no Editor's grant on it, or a grant that names no owner, the credit is the signed-in
+  reader's own.
+- Nothing the request says about a tier, a limit or an owner is read.
+
+### A collaborator's reads
+
+A signed-in Editor who is not the diagram's owner, nor a member of its owning team, spends the owner's credits. So
+the diagram takes at most **20 such reads a UTC day** (`OWNER_READS_BY_OTHERS_PER_DAY`), counted over everyone who
+is not its owner: a long workshop's worth of photos, as liveplanner's 20 AI drafts a day per plan is. A typical
+photo is 1 or 2 credits; the most one read can cost is 17 (400 notes).
+
+- The count is the diagram's own: one storage key in its room (`ai-owner-reads`, the day and its count), taken
+  before the credit is spent. No new binding or migration.
+- Past it the request answers `429 ai_quota`, the day's cap's own answer, so the editor reads the photo on the
+  device and says AI is resting for today. Nothing of the owner's is spent.
+- A read already paid for finishes on its pass: only a new read is counted.
+- A read the owner's credits refuse (their month is used, or the service refuses the api) gives its slot back:
+  only a read that spent a credit uses up one of the day's 20.
+- The owner's own reads, and the owning team's, are never counted against it.
+- If the diagram's room cannot be asked the read is refused the same way: this guards someone else's credits, and
+  the photo is still read on the device.
+
+The per-IP limiter and the deployment's daily cap stay in force on every tier, before the credit: a request they
+refuse spends nothing.
+
+### When the credits are used
+
+- The first request of a read answers `429 { error: 'ai_credits_used', limit: 'aiCreditsPerMonth', owner, used?,
+max? }` and the model is not called. `used` and `max` are the payer's own numbers: sent to the payer and the
+  paying team's members alone. (Only someone signed in is ever charged, so `owner` never reaches a signed-out
+  visitor.)
+- The editor reads the photo on the device instead, as it does when the day's cap is spent, so the import still
+  finishes.
+- If the subscription service cannot be reached the read goes ahead (the client's rule): the reader never stops
+  because the service is down.
+
+### What the editor shows
+
+**Before the read: the choice.** With Pro on, once the stickies are found and before anything is sent, a read the
+editor expects to be charged asks how to read. Charged means: the reader is signed in, the server reader is available
+(`aiEnabled`), and the diagram is not a guest's (its owner, as the document load named it, is an account or a team;
+`itemPayer` in `@liveworkspace/subscription`). Above the review's Cancel and Add, a panel:
+
+- **Read 30 Notes with AI · Uses 2 AI credits** (the primary; the cost is `usesAiCredits`). Under it, what is left
+  for the diagram's owner or the owning team where this person may know it ("38 of 50 left this month", from the
+  owner's usage as the subscription kit reads it, or the count the last read of this diagram answered; a
+  collaborator is told no number). The number is the photo's found notes, the cost `photoReadCredits` of it: the
+  same number the server spends.
+- **Read on This Device** (secondary): the on-device reader, which spends nothing and sends nothing, with the quiet
+  "On this device: free, nothing is sent, fewer words read right."
+- **Too few left.** When fewer credits are left than the read uses, the AI choice is disabled and says why: "Uses 2
+  AI credits, and 1 is left this month." When none are left the panel shows the kit's used notice ("This month's AI
+  credits are used. They start again on 1 December."), with the offer for whoever may take it (**Upgrade to Pro**,
+  **Upgrade Team**, **Ask an Admin**, nothing for anyone else), and Read on This Device stays.
+- Nothing is read until a choice is made; a box moved or drawn meanwhile is read again on the device.
+
+An uncharged read (Pro off, a reader who is not signed in, a guest's diagram, no server reader) shows no choice and
+starts at once, exactly as before. If the server's word differs from the editor's guess (it charges nobody), the read
+simply goes ahead and no line is drawn.
+
+**During and after.** On the review, with the other status lines, only with Pro on and only once the api has said the
+read is counted:
+
+- **Uses 2 AI credits.** A quiet line while the photo is read, "Used 2 AI credits" once it has been: the real count
+  for this read. For the diagram's owner or the owning team it also says what is left ("38 of 50 left this month"),
+  in the numbers the api answered. A collaborator and a guest read the cost alone.
+- **Used.** In place of "AI is resting for today": **This Month's 50 AI Credits Are Used**, "They come back on 1
+  December. This photo is being read on this device instead.", then for the owner or a team admin "Pro has 1,000 a
+  month." with **Upgrade to Pro** (Upgrade Team for a team), and for a team's member **Ask an Admin**. Everyone
+  else reads "This month's AI credits are used. This photo is being read on this device instead." with no number,
+  no offer and nothing about the owner's tier.
+- **A box read again** after an AI read goes to the AI while the read's pass holds, and spends nothing. Once the pass
+  has lapsed (10 minutes), or for a read made on the device, it is read on the device: a re-read never spends
+  without asking.
+
+The date is the first of next month (UTC), as the reader's locale writes it.
+
+### The wire
+
+- `ReadNotesRequest` gains `documentId?`, `read?` (the read's id: 8 to 64 of `A-Z a-z 0-9 _ -`), `notes?` (the
+  photo's found notes, 1 to 400) and `pass?`. The editor sends them only with Pro on.
+- `ReadNotesResponse` gains `credits?: { owner, pass, used?, max? }` when the read was counted: the payer's scope
+  (`p:<accountId>` or `t:<teamId>`), the read pass, and what is used and the limit for the payer themself or a
+  member of the paying team. A charged request that failed after its spend carries the same `credits` beside its
+  `error`.
+
+| Token             | Status | When                                                                   |
+| ----------------- | ------ | ---------------------------------------------------------------------- |
+| `ai_credits_used` | 429    | Pro is on and the payer has used the month's AI credits (first batch). |
+
+### Cost
+
+With Pro off: nothing more. With Pro on, a read's first request makes one index grant read (when it names a
+diagram and carries no grant) and one spend at the subscription service; every later request of the read verifies
+the pass (one HMAC) and makes no request.
+
+The choice before a charged read loads with the review (the review's own chunk, never the first load) and reads
+the owner's usage through the subscription kit already mounted for the credits line: no request of its own to the
+api, and nothing with Pro off.

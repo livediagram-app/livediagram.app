@@ -96,6 +96,7 @@ import {
 import { prefetchPreview, renderPreview } from '@/lib/explorer/previews';
 import { loadPlatformWelcome, loadWelcome } from '@/lib/explorer/welcome';
 import { ExplorerBottomBar, EXPLORER_FLOOR } from './ExplorerBottomBar';
+import { SiteSubscription } from '@/components/subscription/SiteSubscription';
 import { ExplorerHeader } from './ExplorerHeader';
 import {
   ARCHIVED_PARAM,
@@ -385,117 +386,121 @@ export function ExplorerShell() {
 
   if (!ready) return null;
   return (
-    <div
-      data-explorer-app={arrived.app ?? undefined}
-      className="flex min-h-dvh flex-col bg-slate-50 dark:bg-slate-950"
-      style={FLOOR}
-    >
-      {identity && !itemArrival.pending ? (
-        <Explorer
-          key={identity.sub}
-          app={app}
-          client={client}
-          view={itemArrival.view}
-          onNavigate={onNavigate}
-          itemHref={itemHref}
-          onCreate={onCreate}
-          {...(host ? {} : { newApps: APP_NAMES })}
-          renderThumbnail={renderPreview}
-          drive={drive}
-          prefetchThumbnail={prefetchPreview}
-          Link={ExplorerLink}
-          teams={teams}
-          viewerId={identity.sub}
-          shareUrl={shareUrl}
-          share={share}
-          teamsHost={teamsHost}
-          filter={shownFilter}
-          onFilterChange={setFilter}
-          header={header}
-          helpHref={helpHref}
-          trashedOnArrival={trashed}
-          archivedOnArrival={archived}
-          arrivedItem={itemArrival.arrivedItem}
-          welcome={welcome}
-          templateHref={templateHref}
-          sidebarLinks={sidebarLinks}
-          thisBrowser={thisBrowser}
-          allLabel="All Apps"
-          // In no app there is no app to narrow to: every app's work, and no switch naming one.
-          showAppFilter={arrived.app !== null}
-          renderAppLogo={renderAppLogo}
-          // A guest is named people too: accounts answers this browser's guest for names alone.
-          accounts={accounts}
-          signedIn={signedIn}
-          signInHref={explorerSignInHref}
-          signUpHref={explorerSignUpHref}
-          arrivalNotice={notice}
-          inbox={inbox}
-          gallery={library.gallery}
-          shapeLibraries={library.shapeLibraries}
-          walkthroughs={library.walkthroughs}
-          imports={imports}
-          itemMenu={itemMenu}
-          heroHidden={settings.heroHidden}
-          onHideHero={settings.onHideHero}
-          onHome={trackHome}
-          onOrganise={trackOrganise}
-          lensTemplates={lensTemplatesFor(app)}
-          defaultFolderOptions={defaultFolderOptionsFor(app)}
-          onLensSelected={trackLens}
-          onViewToggled={trackViewToggled}
-        />
-      ) : (
-        <>
-          <ExplorerHeader app={arrived.app} search={null} settings={settingsControl} />
-          {/* Until the person is known (seconds on a slow session), the Explorer's own shape rather than a blank page. */}
-          {failed ? <ExplorerUnreachable onRetry={retryIdentity} /> : <ExplorerSkeleton />}
-        </>
-      )}
-      <ExplorerBottomBar
-        appName={arrived.app ? siteOfApp(arrived.app).name : null}
-        onOpenSearch={openSearch}
-        onPrepareSearch={prepareSearch}
-        settingsHref={null}
-        onOpenSettings={hasSettings ? openSettings : undefined}
-        onPrepareSettings={hasSettings ? prepareSettings : undefined}
-        settingsKept={signedIn ? 'account' : 'browser'}
-      />
-      {shownSettings && signedIn ? (
-        <Suspense fallback={null}>
-          <SiteSettingsDialog
-            key={`${shownSettings.app}:${shownSettings.scope}:${shownSettings.categoryId}`}
-            app={shownSettings.app}
-            initialScope={shownSettings.scope}
-            initialCategoryId={shownSettings.categoryId}
-            initialSectionId={settingsAt ? null : settingsSection}
-            onClose={closeSettings}
-          />
-        </Suspense>
-      ) : shownSettings && guestSettingsApp && identity ? (
-        <Suspense fallback={null}>
-          <SiteSettingsDialog
-            app={guestSettingsApp}
-            guest={{ ownerId: identity.sub, signInHref: explorerSignInHref }}
-            onClose={closeSettings}
-          />
-        </Suspense>
-      ) : null}
-      {searchOpen ? (
-        <Suspense fallback={null}>
-          <ExplorerSearch
+    // Pro around the whole page (site.md "The Explorer"): the Library's usage and limit notices know the tier too, not
+    // only the account menu. Nothing is asked until the person is known, and nothing for a guest.
+    <SiteSubscription account={signedIn ? 'in' : identity ? 'out' : 'checking'}>
+      <div
+        data-explorer-app={arrived.app ?? undefined}
+        className="flex min-h-dvh flex-col bg-slate-50 dark:bg-slate-950"
+        style={FLOOR}
+      >
+        {identity && !itemArrival.pending ? (
+          <Explorer
+            key={identity.sub}
+            app={app}
             client={client}
-            app={shownFilter === 'app' ? app : null}
+            view={itemArrival.view}
+            onNavigate={onNavigate}
             itemHref={itemHref}
+            onCreate={onCreate}
+            {...(host ? {} : { newApps: APP_NAMES })}
+            renderThumbnail={renderPreview}
+            drive={drive}
+            prefetchThumbnail={prefetchPreview}
+            Link={ExplorerLink}
             teams={teams}
+            viewerId={identity.sub}
+            shareUrl={shareUrl}
+            share={share}
+            teamsHost={teamsHost}
+            filter={shownFilter}
+            onFilterChange={setFilter}
+            header={header}
+            helpHref={helpHref}
+            trashedOnArrival={trashed}
+            archivedOnArrival={archived}
+            arrivedItem={itemArrival.arrivedItem}
+            welcome={welcome}
+            templateHref={templateHref}
+            sidebarLinks={sidebarLinks}
+            thisBrowser={thisBrowser}
+            allLabel="All Apps"
+            // In no app there is no app to narrow to: every app's work, and no switch naming one.
+            showAppFilter={arrived.app !== null}
             renderAppLogo={renderAppLogo}
-            helpApp={arrived.app}
+            // A guest is named people too: accounts answers this browser's guest for names alone.
+            accounts={accounts}
             signedIn={signedIn}
-            onOpen={openResult}
-            onClose={closeSearch}
+            signInHref={explorerSignInHref}
+            signUpHref={explorerSignUpHref}
+            arrivalNotice={notice}
+            inbox={inbox}
+            gallery={library.gallery}
+            shapeLibraries={library.shapeLibraries}
+            walkthroughs={library.walkthroughs}
+            imports={imports}
+            itemMenu={itemMenu}
+            heroHidden={settings.heroHidden}
+            onHideHero={settings.onHideHero}
+            onHome={trackHome}
+            onOrganise={trackOrganise}
+            lensTemplates={lensTemplatesFor(app)}
+            defaultFolderOptions={defaultFolderOptionsFor(app)}
+            onLensSelected={trackLens}
+            onViewToggled={trackViewToggled}
           />
-        </Suspense>
-      ) : null}
-    </div>
+        ) : (
+          <>
+            <ExplorerHeader app={arrived.app} search={null} settings={settingsControl} />
+            {/* Until the person is known (seconds on a slow session), the Explorer's own shape rather than a blank page. */}
+            {failed ? <ExplorerUnreachable onRetry={retryIdentity} /> : <ExplorerSkeleton />}
+          </>
+        )}
+        <ExplorerBottomBar
+          appName={arrived.app ? siteOfApp(arrived.app).name : null}
+          onOpenSearch={openSearch}
+          onPrepareSearch={prepareSearch}
+          settingsHref={null}
+          onOpenSettings={hasSettings ? openSettings : undefined}
+          onPrepareSettings={hasSettings ? prepareSettings : undefined}
+          settingsKept={signedIn ? 'account' : 'browser'}
+        />
+        {shownSettings && signedIn ? (
+          <Suspense fallback={null}>
+            <SiteSettingsDialog
+              key={`${shownSettings.app}:${shownSettings.scope}:${shownSettings.categoryId}`}
+              app={shownSettings.app}
+              initialScope={shownSettings.scope}
+              initialCategoryId={shownSettings.categoryId}
+              initialSectionId={settingsAt ? null : settingsSection}
+              onClose={closeSettings}
+            />
+          </Suspense>
+        ) : shownSettings && guestSettingsApp && identity ? (
+          <Suspense fallback={null}>
+            <SiteSettingsDialog
+              app={guestSettingsApp}
+              guest={{ ownerId: identity.sub, signInHref: explorerSignInHref }}
+              onClose={closeSettings}
+            />
+          </Suspense>
+        ) : null}
+        {searchOpen ? (
+          <Suspense fallback={null}>
+            <ExplorerSearch
+              client={client}
+              app={shownFilter === 'app' ? app : null}
+              itemHref={itemHref}
+              teams={teams}
+              renderAppLogo={renderAppLogo}
+              helpApp={arrived.app}
+              signedIn={signedIn}
+              onOpen={openResult}
+              onClose={closeSearch}
+            />
+          </Suspense>
+        ) : null}
+      </div>
+    </SiteSubscription>
   );
 }

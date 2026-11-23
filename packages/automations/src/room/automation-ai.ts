@@ -67,6 +67,11 @@ export function countAiAsk(sql: Sql, now: number): void {
   if (first) sql.exec('DELETE FROM automation_ai_days WHERE day < ?', day - DAY_MS);
 }
 
+// One of the day's AI asks given back: a call counted and then not made (the owner's AI credits refused it).
+export function giveBackAiAsk(sql: Sql, now: number): void {
+  sql.exec('UPDATE automation_ai_days SET asks = MAX(0, asks - 1) WHERE day = ?', midnight(now));
+}
+
 // The rules Describe a Rule drafted today (UTC): each draft's first ask.
 export function draftsToday(sql: Sql, now: number): number {
   const row = sql

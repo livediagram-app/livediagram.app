@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { lucideGlyph } from '@liveworkspace/ui';
+import { Chip, lucideGlyph } from '@liveworkspace/ui';
 import { lucideCheck, lucideChevronRight } from '@liveworkspace/icons/lucide';
 
 // A tour's start panel body (livediagram docs/specs/007-editor/watch-it-built.md "The start panel"; liveplanner
@@ -79,18 +79,20 @@ export function TourTopics<Id extends string>({
                     {t.title}
                   </span>
                   {t.meta ? (
-                    <span
+                    <Chip
                       data-tour-topic-meta=""
-                      className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-1.5 py-px text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                      className="whitespace-nowrap bg-slate-100 px-1.5 py-px text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                     >
                       {t.meta}
-                    </span>
+                    </Chip>
                   ) : null}
                   {t.taken ? (
-                    <span className="inline-flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-full bg-emerald-50 px-1.5 py-px text-[11px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300">
-                      <TickIcon />
+                    <Chip
+                      icon={<TickIcon />}
+                      className="gap-0.5 whitespace-nowrap bg-emerald-50 px-1.5 py-px text-[11px] font-medium text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300"
+                    >
                       Done
-                    </span>
+                    </Chip>
                   ) : null}
                 </span>
                 <span className="mt-0.5 block text-[12.5px] leading-snug text-slate-600 dark:text-slate-300">

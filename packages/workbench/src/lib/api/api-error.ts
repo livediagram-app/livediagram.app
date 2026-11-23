@@ -14,11 +14,15 @@ export class ApiError extends Error {
   readonly action: string;
   readonly status: number;
   readonly code: string | null;
-  constructor(action: string, status: number, code: string | null) {
+  // The refusal's JSON body as the api answered it, or null when it had none: a refusal that says more than its code
+  // (a tier's limit, with the number) is read from here.
+  readonly body: unknown;
+  constructor(action: string, status: number, code: string | null, body: unknown = null) {
     super(`${action} failed: ${status}`);
     this.name = 'ApiError';
     this.action = action;
     this.status = status;
     this.code = code;
+    this.body = body;
   }
 }

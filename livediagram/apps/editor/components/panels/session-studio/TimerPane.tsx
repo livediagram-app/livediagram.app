@@ -23,6 +23,7 @@ import { DIAL_LAP_MINUTES, dialFraction, formatMinutesLabel } from './session-st
 import { TimerDial, type DialTone } from './TimerDial';
 import { TimerSetupBody } from './TimerSetupBody';
 import { PauseGlyph, PlayGlyph, RestartGlyph, StopGlyph, TransportButton } from './studio-ui';
+import { Chip } from '@livediagram/ui';
 
 const EXTENSIONS = [
   { ms: 30_000, label: '+30s' },
@@ -98,8 +99,13 @@ function LiveTimer({
             ? `Countdown · ${formatMinutesLabel(Math.round((timer.durationMs ?? 0) / 60_000))}`
             : 'Stopwatch'}
         </span>
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+        <Chip
+          icon={
+            timer.running && !done ? (
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden />
+            ) : null
+          }
+          className={`px-2 py-0.5 text-[10px] font-semibold ${
             done
               ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'
               : timer.running
@@ -107,11 +113,8 @@ function LiveTimer({
                 : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
           }`}
         >
-          {timer.running && !done ? (
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden />
-          ) : null}
           {status}
-        </span>
+        </Chip>
       </div>
       <TimerDial
         fraction={fraction}

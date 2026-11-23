@@ -23,7 +23,7 @@ import { REVEAL_COVER_BASE } from '@livediagram/document';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { tint } from '@/lib/element-tint';
 import { LockGlyph } from '@/components/canvas/collab/qa/qa-parts';
-import { Glyph, GlyphDisc } from '@livediagram/ui';
+import { Glyph, GlyphDisc, Chip } from '@livediagram/ui';
 
 // The cover's base comes from the PAPER under it (REVEAL_COVER_BASE, shared
 // with the headless renderer; docs/specs/009-elements/reveal-zone.md "The look").
@@ -83,7 +83,7 @@ export function RevealFace({
           className="pointer-events-auto absolute right-2 top-2 flex cursor-pointer items-center gap-1 rounded-full bg-slate-900/75 px-2.5 py-1 text-[10px] font-semibold text-white shadow-lg ring-1 ring-white/10 backdrop-blur transition hover:bg-slate-900/90"
         >
           <EyeOffIcon />
-          Hide
+          <span className="text-optical-line">Hide</span>
         </button>
       </div>
     );
@@ -129,12 +129,12 @@ export function RevealFace({
       >
         {label.trim() || 'Hidden'}
       </span>
-      <span
-        className="relative rounded-full px-2.5 py-1 text-[10.5px] font-semibold"
+      <Chip
+        className="relative px-2.5 py-1 text-[10.5px] font-semibold"
         style={{ color: textColor, backgroundColor: tint(textColor, 0.07) }}
       >
         {gesture} to reveal
-      </span>
+      </Chip>
     </button>
   );
 }

@@ -146,8 +146,8 @@ export function CommentBubbles({
                           className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-px"
                           style={{ backgroundColor: tint(textColor, 0.08) }}
                         >
-                          {reactionDef(r.emoji).emoji}
-                          <span className="opacity-70">{r.count}</span>
+                          <span className="text-optical-line">{reactionDef(r.emoji).emoji}</span>
+                          <span className="text-optical-line opacity-70">{r.count}</span>
                         </span>
                       ))}
                     </span>

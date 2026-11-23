@@ -3,7 +3,9 @@
 //
 // A circle or pill that centres a glyph must centre the glyph's cap band, not its line box. So a
 // fixed-height, fully rounded, centring element may not hold text directly: the text goes through
-// the `text-optical-centre` utility, or the shape is one of the shared primitives.
+// the `text-optical-centre` utility, or the shape is one of the shared primitives. A chip (a padded
+// pill span, button or link with a short label) is held to the same rule whatever its height: its label
+// goes through `Chip`, `ButtonContent` or the `text-optical-line` utility.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -53,6 +55,9 @@ const ROUND = /(^|\s)rounded-full(\s|$)/;
 const CENTRING =
   /(^|\s)(items-center|justify-center|place-items-center|place-content-center)(\s|$)/;
 const FIXED_HEIGHT = /(^|\s)(h|size)-(\d|\[)/;
+// A chip: a pill an inline element (not a layout box) pads round its label.
+const CHIP_TAGS = new Set(['span', 'button', 'a', 'Link', 'label']);
+const PADDED = /(^|\s)(px|pl|pr|ps|pe)-/;
 // An identifier that names an icon is taken at its word; anything else may be text.
 const ICON_NAME = /(icon|glyph|svg)/i;
 
@@ -168,7 +173,9 @@ export function checkOpticalAlignment({ root }: { root: string }): OpticalViolat
         );
         const sized =
           FIXED_HEIGHT.test(text) || /\b(height|width)\b/.test(style?.getText(sf) ?? '');
-        if (!PRIMITIVES.has(tag) && ROUND.test(text) && CENTRING.test(text) && sized) {
+        const disc = CENTRING.test(text) && sized;
+        const chip = CHIP_TAGS.has(tag) && PADDED.test(text);
+        if (!PRIMITIVES.has(tag) && ROUND.test(text) && (disc || chip)) {
           const bare = bareText(node.children, sf);
           if (bare) {
             violations.push({
@@ -190,7 +197,7 @@ export function formatViolations(violations: OpticalViolation[]): string {
   return violations
     .map(
       (v) =>
-        `${v.file}:${v.line}  ${v.snippet}  (wrap in text-optical-centre, or use GlyphDisc / Chip)`,
+        `${v.file}:${v.line}  ${v.snippet}  (use GlyphDisc / Chip / ButtonContent, or wrap in text-optical-centre / text-optical-line)`,
     )
     .join('\n');
 }

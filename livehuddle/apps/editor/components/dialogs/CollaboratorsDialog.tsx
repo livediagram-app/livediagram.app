@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { Tab } from '@livehuddle/document';
-import { Button } from '@livehuddle/ui';
+import { Button, Chip } from '@livehuddle/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { collaboratorsHeroArt } from '@liveworkspace/ui/dialog-hero-art/collaborators';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -58,6 +58,9 @@ type CollaboratorsDialogProps = {
   onTakeFacilitation: () => void;
   onStepDown: () => void;
   onClose: () => void;
+  // Drawn under the roster, over the footer: the Space's Call Minutes, for its owner and the owning team
+  // (docs/specs/012-collaboration/call-minutes.md "What people see"). Absent, nothing.
+  below?: ReactNode;
 };
 
 const TITLE_ID = 'collaborators-dialog-title';
@@ -81,6 +84,7 @@ export function CollaboratorsDialog({
   onTakeFacilitation,
   onStepDown,
   onClose,
+  below,
 }: CollaboratorsDialogProps) {
   // Keeps each row's "Active 2 mins ago" honest while the modal stays open.
   const now = useRelativeNow();
@@ -100,6 +104,7 @@ export function CollaboratorsDialog({
       onClose={onClose}
       titleId={TITLE_ID}
       size="md"
+      phoneSheet
       className="max-h-[min(36rem,calc(100dvh-2rem))]"
     >
       {/* The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the presence stack's band,
@@ -130,9 +135,9 @@ export function CollaboratorsDialog({
                 {group.tab?.name ?? 'Another Tab'}
               </h3>
               {group.isActive ? (
-                <span className="shrink-0 rounded-full bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
+                <Chip className="bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
                   You&apos;re Here
-                </span>
+                </Chip>
               ) : group.tab ? (
                 <Button
                   variant="secondary"
@@ -165,12 +170,12 @@ export function CollaboratorsDialog({
                         {participantBadges(p, selfId, selfRole, followingId, {
                           isFacilitator: isSelf ? isFacilitator : p.id === facilitatorId,
                         }).map((b) => (
-                          <span
+                          <Chip
                             key={b}
-                            className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                            className="bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                           >
                             {b}
-                          </span>
+                          </Chip>
                         ))}
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -233,6 +238,7 @@ export function CollaboratorsDialog({
           </section>
         ))}
       </div>
+      {below}
       {/* Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md): the Settings switch,
           one click away when a session gets busy, and only on a tab that draws cursors. */}
       <HideCursorsFooter />

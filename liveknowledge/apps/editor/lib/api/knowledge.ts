@@ -281,8 +281,11 @@ export function apiKnowledgeOverview(
   who: KnowledgeCaller,
   documentId: string,
   signal?: AbortSignal,
+  // With Pro on, the days Most Read covers (tiers.md "AI Knowledge History"); the api clamps it to what is kept.
+  days?: number,
 ): Promise<KnowledgeOverviewResponse> {
-  return read(who, knowledgeUrl(documentId, 'knowledge'), 'read knowledge overview', signal);
+  const url = knowledgeUrl(documentId, 'knowledge') + (days ? `?days=${days}` : '');
+  return read(who, url, 'read knowledge overview', signal);
 }
 
 /** Record a question nobody could answer; answers its group's key. */

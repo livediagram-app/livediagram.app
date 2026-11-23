@@ -4,10 +4,12 @@
 // ledger and closes every socket so each open editor reloads onto the reverted Space.
 
 import type { Tab } from '@livehuddle/document';
+import { knownItemOwnerScope } from '@liveworkspace/media';
 import {
   serveSnapshots,
   type SnapshotCaller,
   type SnapshotDoor,
+  snapshotRetention,
 } from '@liveworkspace/snapshots/server';
 import { replaceTabs } from '../db/tabs';
 import { authorOf } from '../routes/changesets';
@@ -80,6 +82,14 @@ export async function serveDocumentSnapshots(
     caller: () => snapshotCaller(ctx, documentId),
     door: () => documentSnapshotDoor(ctx.env, documentId),
     handle,
+    // With Pro on, what the owner's tier keeps (liveworkspace/docs/specs/014-snapshots/snapshots.md "With Pro on"): the
+    // owner is the index's grant's, and nothing is asked with Pro off.
+    retention: () =>
+      snapshotRetention(
+        ctx.env,
+        'livehuddle.app',
+        knownItemOwnerScope(ctx.grant?.item === documentId ? ctx.grant : null),
+      ),
   });
   // Snapshot Taken (docs/specs/013-workspace/automations.md): a person's take, never a rule's own or a revert's
   // safety snapshot.

@@ -11,6 +11,7 @@ import {
   type BoardField,
   type QuickFilter,
 } from '@liveplanner/items';
+import { Chip } from '@liveplanner/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import type { PlanPalette } from '../plan-palette';
 import { PRESSABLE } from './board-widget-parts';
@@ -200,9 +201,9 @@ function ValueRow({
           {value.share}%
         </span>
       )}
-      <span className="shrink-0 rounded-full bg-slate-100 px-1.5 text-[11px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      <Chip className="bg-slate-100 px-1.5 text-[11px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
         {value.count}
-      </span>
+      </Chip>
     </button>
   );
 }

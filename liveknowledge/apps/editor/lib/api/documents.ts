@@ -1,5 +1,6 @@
 // Document-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket.
 // Listing, copying, deleting and sharing documents are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
+import { setKnowledgeTier } from '@/lib/knowledge-tier';
 import { isPasswordRefusal } from '@liveworkspace/workbench/lib/api/core';
 import {
   INDEX_GRANT_HEADER,
@@ -75,6 +76,8 @@ async function _apiLoadDocument(ownerId: string, id: string): Promise<LiveDoc | 
   // api error (share-password.md "Reopened by its own address").
   const body = await expectOkOrNull<DocumentResponse>(res, 'load', isPasswordRefusal);
   if (body?.document) indexTitles.set(id, body.document.name);
+  // With Pro on, what the knowledgebase's tier sets (tiers.md); cleared by a read that carries none.
+  setKnowledgeTier(id, body?.knowledgeTier ?? null);
   return body?.document ?? null;
 }
 

@@ -108,9 +108,11 @@ export function PhoneRuleHeader({
         ) : (
           <HoverCard title="Off" description="A rule starts off. Save it, then switch it on.">
             <span className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-[12px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              <span className="font-semibold">Off</span>
-              <span aria-hidden>·</span>
-              <span>Not Saved</span>
+              <span className="text-optical-line font-semibold">Off</span>
+              <span aria-hidden className="text-optical-line">
+                ·
+              </span>
+              <span className="text-optical-line">Not Saved</span>
             </span>
           </HoverCard>
         )}

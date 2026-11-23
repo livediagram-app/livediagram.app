@@ -1,3 +1,4 @@
+import { spendAskIn } from '@liveworkspace/ask/server';
 import {
   ItemDb,
   type ItemHeadSync,
@@ -14,6 +15,8 @@ import type {
   AutomationTargetDescription,
 } from '@liveworkspace/index-client';
 import { itemAutomationStep, itemAutomationTarget } from './automations/cross-app-door';
+import { roomTier } from '@liveworkspace/automations/room';
+import type { ItemTier } from '@liveworkspace/subscription';
 import { tellSourceChanged } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livedocuments/api-schema';
@@ -255,6 +258,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // The document's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they hear,
   // and what waits to run on the alarm.
   readonly automations: ItemEngine;
+  // The item's tier (liveworkspace/docs/specs/019-subscription/subscription.md "Who pays for an item"): what its
+  // Automations allow and spend, read from its owner. With Pro off it asks nothing and every limit is the legacy one.
+  readonly tier: ItemTier;
   // The comment and action triggers' watch over each tab's threads.
   readonly collab: CollabWatch;
 
@@ -308,6 +314,15 @@ export class DocumentRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
+    this.tier = roomTier({
+      app: 'livedocuments.app',
+      env: () => this.roomEnv ?? null,
+      sql: () => this.state.storage.sql,
+      ready: () => this.schemaReady,
+      table: 'document',
+      id: () => this.documentId,
+      defer: (work) => this.state.waitUntil(work),
+    });
     this.drainEnv = this.roomEnv
       ? {
           ...this.roomEnv,
@@ -706,6 +721,13 @@ export class DocumentRoom extends DurableObject<Env> {
   }
 
   /** Agent entries past their expiry go; the outbox pushes and the upkeep runs when due. Safe to call early. */
+  // ---------- RPC: Ask AI's built-in allowance (@liveworkspace/ask/server daily-count.ts) -------------------------
+
+  // Only on an account's `~ask-ai:` instance, never an item's: one storage key, no schema made or read.
+  spendAsk(day: string, cap: number): Promise<boolean> {
+    return spendAskIn(this.state.storage, day, cap);
+  }
+
   override async alarm(): Promise<void> {
     const expired = await this.agents.sweep();
     for (const r of expired) agentPresenceLog('expired', r);

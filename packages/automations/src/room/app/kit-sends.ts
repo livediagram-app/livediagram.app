@@ -14,13 +14,14 @@ export interface ItemSendsDoor {
   pushAutomationSends(
     itemId: string,
     messages: Pick<Message, 'key' | 'webhookId' | 'rule' | 'subject' | 'text' | 'at'>[],
+    opts?: { check?: boolean },
   ): Promise<{ results: Awaited<ReturnType<Sends['push']>> }>;
 }
 
 export function kitSends(client: ItemSendsDoor | null): Sends | null {
   if (!client) return null;
   return {
-    push: async (itemId, messages) =>
+    push: async (itemId, messages, opts) =>
       (
         await client.pushAutomationSends(
           itemId,
@@ -32,6 +33,7 @@ export function kitSends(client: ItemSendsDoor | null): Sends | null {
             text: m.text,
             at: m.at,
           })),
+          ...(opts?.check ? [{ check: true }] : []),
         )
       ).results,
   };

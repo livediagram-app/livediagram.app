@@ -32,6 +32,7 @@ import {
 } from '@liveworkspace/api-kit/request-failure';
 import { writeBodyCap } from './limits';
 import { withCappedBody } from '@liveworkspace/api-kit/request-body';
+import { imageGateBytes, leavesImageUploadUnread } from '@liveworkspace/api-kit/image-upload';
 import { handleImages } from './routes/images';
 import { handleWalkthroughs } from './routes/walkthroughs';
 import { handleAccount } from './routes/account';
@@ -53,6 +54,7 @@ import { handleFolders } from './routes/folders';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
+import { handleAsk } from './routes/ask';
 import { handleAutomationHook } from './routes/automation-hook-routes';
 import { handleEmailOptOut } from './routes/email-optout-route';
 import { handleCalendarFeed } from './routes/calendar-feed-route';
@@ -216,16 +218,26 @@ async function routeApiRequest(
     // An Image field's upload carries raw bytes with its own, larger cap (docs/specs/026-plan/item-types.md
     // "Image fields"; the route answers file_too_large with limitBytes), and a whole plan's file its own (the route
     // answers too_large): writeBodyCap.
-    const cap = writeBodyCap(request.method, segments.length, segments[1], segments[3]);
+    const cap = writeBodyCap(
+      request.method,
+      segments.length,
+      segments[1],
+      segments[3],
+      imageGateBytes(env),
+    );
     if (Number.isFinite(len) && len > cap) {
       return payloadTooLarge();
     }
     // A body that declares no length (a chunked upload, where Number(null) is 0) passes the check above, and
     // the routes read a body whole, so the body itself is read here through a byte counter that stops at the
     // same cap and answers the same 413, whatever the headers say (docs/specs/015-api/api.md "Rate limiting").
-    const capped = await withCappedBody(request, cap);
-    if (!capped) return payloadTooLarge();
-    request = capped;
+    // With Pro on an upload is not read here: its route holds it to the uploader's own limit, from their entitlement,
+    // before a byte is read (liveworkspace/docs/specs/006-media/media.md "With Pro on").
+    if (!leavesImageUploadUnread(env, request.method, segments)) {
+      const capped = await withCappedBody(request, cap);
+      if (!capped) return payloadTooLarge();
+      request = capped;
+    }
   }
   // Room-ticket mints (docs/specs/015-api/api.md) are exempt like /api/events: the mint
   // is the auth handshake for opening the realtime room, and a 429 —
@@ -367,6 +379,9 @@ async function routeApiRequest(
       return await handleFormDrafts(ctx);
     case 'trash':
       return await handleTrash(ctx);
+    // Ask AI (liveworkspace/docs/specs/020-ask/ask.md): a question answered from the open item's own words.
+    case 'ask':
+      return await handleAsk(ctx);
     case 'preferences':
       return await handlePreferences(ctx);
     case 'participants':

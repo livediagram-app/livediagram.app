@@ -2,6 +2,7 @@
 // blueprint item-engine.md "The kit"): its kinds, how to read the item, and how to do what the shared steps and its
 // own steps do. Everything a run touches outside the item's own Automations tables goes through here.
 import type { App, CrossAppChain } from '@liveworkspace/index-client';
+import type { ItemTier } from '@liveworkspace/subscription';
 import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import type {
   ItemEvent,
@@ -128,6 +129,9 @@ export interface ItemDeps {
   wake(): void;
   // Whether a rule that is on hears a kind the SQL triggers feed: only then does a writer's window matter.
   fed(): boolean;
+  // The item's tier (@liveworkspace/subscription ItemTier), with Pro on: what a run's AI steps and messages spend
+  // from. Null with Pro off. The day's runs and the rules are the store's, which the tier keeps.
+  tier?: ItemTier | null;
 }
 
 export type { ItemFillContext };

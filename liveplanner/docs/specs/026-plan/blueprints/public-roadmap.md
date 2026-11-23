@@ -264,3 +264,35 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
 ## Defaults ledger
 
 D127 to D130 and D137 to D139 in [DEFAULTS.md](DEFAULTS.md).
+
+## Tiers (Pro)
+
+Spec "Tiers". The plan's tier is the room's `PlanTier` (blueprints/automations.md "Tiers (Pro)"); the count is the
+subscription service's `publicRoadmaps` gauge, one key per roadmap: `<plan id>:<board id>`.
+
+- `roadmap/roadmap-gauge.ts`: `claimRoadmap` (the gauge's `add`; an existing key is a success), `releaseRoadmap`,
+  `syncRoadmapGauge` (adds every row whose board is there, removes every row's whose board has gone, each key told
+  again at most once a minute: `PlanTier.told`), `syncPlanRoadmaps` (the upkeep's), `releaseTabRoadmaps`,
+  `leaveRoadmapGauge` (the purge's) and `moveRoadmapGauge` (every row from the old owner to the new).
+- `roadmap-routes.ts`: `put` claims before `publishRoadmap` for a board not yet published and refuses 409
+  `roadmap_limit_reached` with the marker; a settings change claims nothing. `remove` releases. `list` syncs and
+  answers `usage` (`used` is what the service last told this room, `PlanTier.gaugeUsed`; absent until it has asked)
+  and `owner`. A sync's refused add is ignored: nothing is unpublished.
+- The plan's purge (`plan-room-content.ts`) releases every row before the storage goes; the head's write
+  (`plan-room-wiring.ts` `roomHead`) moves them when the owner or team changes; a deleted tab's rows are released
+  where the tab is deleted (`project-subresource-routes.ts`); the daily upkeep (`maintain`) syncs, so a board deleted
+  from the canvas gives its place back within a day.
+- **The counted mark.** `roadmaps.counted` (plan schema step V42, `roadmap-store.ts`): 1 holds a place, 0 holds
+  none, NULL was never counted. `syncRoadmapGauge(tier, planId, rows, there, mark)` takes the rows oldest first: a
+  row whose board is there claims (a key already held is a success) and is marked by the answer (`markOfClaim`: the
+  service's own answer only, never an out-of-reach or refused request, which leave the mark as it is); a row whose
+  board has gone is marked 0 and released. `roadmapServes(tier, row)` is the public read's one check
+  (`roadmap-public.ts` `answerRoadmap`, before anything else is read): with Pro on a row marked 0 is
+  `roadmapMissed('uncounted')`, the same 404 as every miss. The list leaves such a row out, and `put` on one asks
+  for its place first and keeps its code. `moveRoadmapGauge` runs the same claim at the new owner, in the room's
+  own SQL. A guest's plan counts by the marks alone (`PlanTier.claim`'s `held`).
+- With Pro off none of these make a call, and no mark is read: every row answers.
+- Cost: the public read adds no query (the mark rides the row it already reads). A list or publish makes at most
+  one gauge call per row a minute (`PlanTier.told`, whatever the answer was), and one D1 write per mark that
+  changed.
+- Tests: `routes/roadmap-tier.test.ts`.

@@ -149,7 +149,8 @@ export async function handleDescribeStructure(
       ? 'chosen'
       : await applyingAi(env, document.id, askerOf(ctx, document.teamId));
   // A key that does not open, or accounts that could not answer, is refused as Ask refuses it (isAiRefusal).
-  if (isAiRefusal(ai)) return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
+  if (isAiRefusal(ai))
+    return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai], { reason: ai });
   const log = { documentId: document.id };
   if (typeof ai === 'string') {
     const client = builtInAi(env);
