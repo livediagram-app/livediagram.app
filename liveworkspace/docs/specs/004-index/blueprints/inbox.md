@@ -78,7 +78,8 @@ reads the Inbox costs a few bytes for 14 days.
 ### The item's outbox (`@liveworkspace/index-app` `outbox.ts`)
 
 Keys written in the item's own SQLite in the transaction of the change: `summary` (key `''`), `tab` (the tab id),
-`edit` (`<person>@<time>`, one per person). The room's alarm drains on idle: 2 s after a write, at least 60 s between
+`edit` (`<person>@<time>`, one per person; an agent's write for the person `<person>\x1f<via>\x1f<agent>@<time>`, one per
+person and agent, drained as an `edited` with `agent`). The room's alarm drains on idle: 2 s after a write, at least 60 s between
 drains, retried after 60 s on failure; up to 50 tabs and `APP_EVENTS_MAX` (100) editors a drain, 6 pushes in flight,
 `more` drained straight after. A key written again meanwhile stays for the next drain. An item the index doesn't hold
 takes no push (the key is done). Each `tab` key's push is `capCollabPush` of the tab's rows, one request whatever

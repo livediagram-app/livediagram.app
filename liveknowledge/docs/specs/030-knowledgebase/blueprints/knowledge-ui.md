@@ -241,7 +241,7 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
   reading time: two pills of the meta row's own size, neutral (`slate`), each opening an `AnchoredPopover` (no hover card: the meta row's labelled
   buttons have none, owner 2026-11-23) of `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`); 20 px tall, with a 44 px tap on touch (`MAKER_PILL_TOUCH`: `relative touch-target-y`). A page without a row draws neither.
 - **An agent for its person.** Every named surface words an `ai` stamp with `agentForPerson(stamp.agent, nameOf(stamp.by),
-fallback)` (`@liveworkspace/workbench/components/ai-writer/agent-for-person`, shared with the approval line and
+fallback)` (`@liveworkspace/ui/agent-for-person`, shared with the approval line and
   Version History): the pills' hover cards ("Created by Claude for Priya Shah through MCP on 12 Nov", fallback "an
   agent"), the header's discs (`makersOf`, "Claude for Priya Shah, Created", fallback "An Agent") and Page Health's
   foot. The foot's `StampRow` (`PageHealthCard.tsx`) takes a `PageStamp` `{ at, by?, agent? }` (`agent` the name

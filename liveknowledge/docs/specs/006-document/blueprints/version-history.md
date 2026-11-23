@@ -170,7 +170,7 @@ invalid_name`. Renames the named version holding the stored revision (either sto
   relayed changeset raises no changeset toast on the restorer's screen; it then shows "Restored the version kept
   <when>" with Undo, which restores `undoVersionId` the same way and reads "Restore undone".
 - **VH28 an agent's version on screen.** `VersionRow` and `VersionDetail` draw an author with `agent` as
-  `agentForPerson(agent, name)` ("Claude for Priya Shah", `@liveworkspace/workbench/components/ai-writer/agent-for-person`)
+  `agentForPerson(agent, name)` ("Claude for Priya Shah", `@liveworkspace/ui/agent-for-person`)
   and the shared `AiWriterMark` sparkle after it, worded by `aiVersionWords(kind)` (`version-words.ts`: `save` "Saved
   by AI", `agent` "Edited by AI", `restore` "Restored by AI", `manual` "Named by AI", `idle` "Changed by AI"). A
   person's author keeps their colour dot and name.

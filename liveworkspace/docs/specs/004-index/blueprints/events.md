@@ -20,11 +20,11 @@ Scope, by file:
 
 | Type                                                            | Source                            | Id                                               | Shown in History to              |
 | --------------------------------------------------------------- | --------------------------------- | ------------------------------------------------ | -------------------------------- |
-| `created`, `synced`                                             | `insertItem`                      | a UUID                                           | everyone who reaches it directly |
+| `created { source?, agent?, via?, copiedFrom? }`, `synced`      | `insertItem`                      | a UUID                                           | everyone who reaches it directly |
 | `renamed { from }`, `moved { folderName, teamId, fromTeamId? }` | `PATCH /items/:id`                | a UUID                                           | everyone who reaches it directly |
 | `trashed`, `restored`                                           | delete, restore                   | a UUID                                           | everyone who reaches it directly |
 | `shared { level, public? }`, `unshared`                         | link routes                       | a UUID                                           | everyone who reaches it directly |
-| `edited`                                                        | `PUT /app/items/:id/events`       | `ed:<item>:<key>:<day>`                          | everyone who reaches it directly |
+| `edited { agent?, via? }`                                       | `PUT /app/items/:id/events`       | `ed:<item>:<key>:<day>[:<via>:<agent>]`          | everyone who reaches it directly |
 | `commented { reply? }`                                          | collab push                       | `cm:<item>:<tab>:<element>:<count>`              | everyone who reaches it directly |
 | `comment_resolved`                                              | collab push                       | `cr:<item>:<tab>:<element>:<count>`              | everyone who reaches it directly |
 | `action_assigned`                                               | collab push                       | `aa:<item>:<tab>:<element>:<action>:<key>`       | everyone who reaches it directly |
@@ -55,9 +55,12 @@ Timeline (0017 deletes their rows): `share_link_expiring`, `image_uploaded`, `ta
 
 ### Reports from apps and accounts
 
-- `PUT /app/items/:id/events`, from the item's app: `{ events: [{ type: 'edited', actorId, actorName?, at }] }` (at
-  most 100). One event per person and day, the latest time kept; each also a use day (Most Used). `204`;
-  `400 invalid_events`.
+- `PUT /app/items/:id/events`, from the item's app: `{ events: [{ type: 'edited', actorId, actorName?, agent?, at }] }` (at
+  most 100). One event per person and day, the latest time kept; each also a use day (Most Used). An agent's edit
+  (`agent: { name, via }`, `parseItemAgent`) is one event per person, agent and day: its id adds `:<via>:<agent>` (the
+  name lowercased) to the person's, and its detail is `{ agent, via }`. `204`; `400 invalid_events`.
+- `POST /items` `agent` (`parseItemAgent`, the same rule): `insertItem`'s `created` detail gains `agent` and `via`
+  beside `source`; a malformed one is `400 invalid_agent`.
 - `POST /internal/events`, from accounts (`MERGE_KEY`):
   `{ events: [{ id (≤ 300), type, actorId?, actorName?, title, at, detail? }] }` (1 to 100). One or two statements;
   resent ids change nothing new. Detail at most 12 string keys, values cut to 500; title cut to 200; actor name to
@@ -109,7 +112,7 @@ closes, and that person's old `favourited` events go. Made by `0017_events.sql` 
 
 | Test                                                        | Pins                                                                                                                                                                                                                                                                                                                                      |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/events.test.ts` (24)          | what the index records; what apps report (and the old images report's 204); collaboration; accounts' team events (both paths, dropped kinds, refusals); one item's History (who reads it, 404 otherwise, favourites, 30 days, paging, the plan); the bound; the daily sweep (cap, order, a realistic day and a worst-case backlog, timed) |
+| `liveworkspace/apps/index/src/events.test.ts` (27)          | what the index records; what apps report (and the old images report's 204); collaboration; accounts' team events (both paths, dropped kinds, refusals); one item's History (who reads it, 404 otherwise, favourites, 30 days, paging, the plan); the bound; the daily sweep (cap, order, a realistic day and a worst-case backlog, timed) |
 | `liveworkspace/apps/index/src/events-migration.test.ts` (4) | 0017 on a database of every migration before it: rows kept and deleted, indexes, cascades, foreign keys, D1-safe                                                                                                                                                                                                                          |
 | `liveworkspace/apps/index/src/event-key.test.ts` (2)        | the key: stable per person, different between people, fixed-length hex; each person keyed once                                                                                                                                                                                                                                            |
 | `liveworkspace/apps/index/src/visitors.test.ts` (2)         | visitors in History, the owner's alone                                                                                                                                                                                                                                                                                                    |
