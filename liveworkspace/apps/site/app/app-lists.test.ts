@@ -60,7 +60,7 @@ describe('lists of the apps', () => {
   });
 
   it('the privacy policy has a part for every app under App by app', () => {
-    const source = readFileSync(resolve(__dirname, 'privacy/page.tsx'), 'utf8');
+    const source = readFileSync(resolve(__dirname, 'privacy/app-sections.tsx'), 'utf8');
     for (const site of APP_SITES) expect(source, site.id).toContain(`app: '${site.id}'`);
   });
 });
