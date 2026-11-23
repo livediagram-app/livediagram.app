@@ -27,28 +27,31 @@ livehuddle room: hello / tab-focus / close ── 1.5 s settle ─▶ PUT /app/i
 
 ## Wire (`@liveworkspace/index-client`, src/item-calls.ts)
 
-| Shape              | Fields                                                                                                              |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| `ItemCall`         | `id`, `spaceId`, `link` (the Space's Participant link), `people`, `names`, `startedAt`, `endedAt` (null while live), `live` |
-| `ItemMeeting`      | `ItemCall` and `summary: {title, link} \| null`, `plan: {id, title, link} \| null`, `you` (the reader hosted it)    |
-| `ItemCallsRead`    | `{live: ItemCall \| null, meetings: ItemMeeting[]}`                                                                 |
-| `ItemCallStart`    | `{call: ItemCall, started: boolean}`                                                                                |
-| `SpaceCall`        | `{id, item: {app, id, title, link}, host: boolean, live, startedAt, summary, plan, summaryDefault: {id, title} \| null}` |
-| `CallPeoplePush`   | `{people: number, names: string[]}`: livehuddle's room's push                                                       |
-| `CallSummaryAsk`   | `{knowledgebase: id, title, body}`                                                                                  |
-| `CallInviteAsk`    | `{people: id[]}` (1 to `ITEM_CALL_INVITES_MAX`)                                                                     |
-| `InboxCallInvite`  | `{id, app, itemId, itemTitle, byName, at, live}`, in `InboxResponse.calls`                                          |
+| Shape             | Fields                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `ItemCall`        | `id`, `spaceId`, `link` (the Space's Participant link), `people`, `names`, `startedAt`, `endedAt` (null while live), `live`     |
+| `ItemMeeting`     | `ItemCall` and `summary: {title, link} \| null`, `plan: {id, title, link} \| null`, `you` (the reader hosted it)                |
+| `ItemCallsRead`   | `{live: ItemCall \| null, meetings: ItemMeeting[]}`                                                                             |
+| `ItemCallStart`   | `{call: ItemCall, started: boolean}`                                                                                            |
+| `SpaceCall`       | `{id, item: {app, id, title, link}, host: boolean, live, names, startedAt, summary, plan, summaryDefault: {id, title} \| null}` |
+| `CallPeoplePush`  | `{people: number, names: string[]}`: livehuddle's room's push                                                                   |
+| `CallSummaryAsk`  | `{knowledgebase: id, title, body}`                                                                                              |
+| `CallInviteAsk`   | `{people: id[]}` (1 to `ITEM_CALL_INVITES_MAX`)                                                                                 |
+| `InboxCallInvite` | `{id, app, itemId, itemTitle, itemTeamId, byName, at, live}`, in `InboxResponse.calls`                                          |
 
 - `SourceChange` gains `calls?: true`; `app` may then be `livehuddle` and `sheetIds` and `cards` empty.
   `readSourceChange` takes it.
 - `readCallPeoplePush`, `readCallSummaryAsk`, `readCallInviteAsk` check a body; anything over a cap or of the wrong
   type is null. Names are trimmed, cut at 80 characters, blanks dropped, at most `ITEM_CALL_NAMES_MAX`.
 - `itemCallTabName(itemId)` is `lw-call-<id>` (the call's tab); `itemTabName(itemId)` is `lw-item-<id>` (the item's).
+- `@liveworkspace/index-client/browser` `call-tabs.ts`: `namedTab`, `isBlank`, `sendTab` (the opener cut),
+  `focusOrOpen(name, url)` and `nameItemTab(itemId)`, shared by the workbench, the Explorer's Inbox and livehuddle.
 - Constants as the spec's Limits table, plus `ITEM_CALL_START_GRACE_MS` (120,000: a call nobody has joined yet still
   counts as the item's call, so two quick presses never make two), `ITEM_CALL_TEMPLATE` (`team-pod`), and
   `ITEM_CALL_NAME_SUFFIX` (" Call").
 - `IndexClient.startItemCall(itemId, share?)`, `IndexClient.itemCalls(itemId, share?)`, `IndexClient.spaceCall(spaceId,
-  share?)`, `IndexClient.sendCallSummary(spaceId, ask)`, `IndexClient.inviteToCall(spaceId, ask)`;
+share?)`, `IndexClient.sendCallSummary(spaceId, ask)`, `IndexClient.callInvitePeople(spaceId, share?)` (`GET
+/items/:space/call/people`: `{teamId, people}`, who Invite may name), `IndexClient.inviteToCall(spaceId, ask)`;
   `IndexAppClient.callPeople(spaceId, push)`.
 
 ## The index (liveworkspace/apps/index)
@@ -69,6 +72,7 @@ item_calls (id TEXT PK 'ic_'+20, item_id → items CASCADE, space_id UNIQUE → 
             ended_at NULL, summary_item_id → items SET NULL, summary_link, summary_title, plan_id → items SET NULL,
             updated_at)
   INDEX (item_id, started_at DESC)
+  INDEX (host_id)  -- the account purge
 item_call_invites (id TEXT PK 'ci:'+sha256(call, person), call_id → item_calls CASCADE, person_id, by_name, at)
   INDEX (person_id, at DESC)
 ```
@@ -94,12 +98,12 @@ A call is **live** when `ended_at IS NULL AND (people > 0 OR started_at >= now -
 - `POST /items/:space/call/summary`: the host alone (`host_id`), limiter; the knowledgebase `loadItem(edit)` as the
   host through the cross-app step (`takeTargetedStep` in automation-steps.ts, factored out of `pushAutomationStep`)
   with a `kb_page` step `{target, title, body}`, rule `{id: 'call-summary', name: 'Meeting Summary'}`, from `{title:
-  <item title>, url: <the item's address>}`. On `ok`, the row keeps the page's link and title, and the item is told.
+<item title>, url: <the item's address>}`. On `ok`, the row keeps the page's link and title, and the item is told.
 - `POST /items/:space/call/invite`: an account in the call's Space (view on it) who reaches the item; limiter; each
   person must reach the whole item (`checkNameable` from approval-people.ts); one `item_call_invites` row each
   (`INSERT OR IGNORE`, so asking twice writes nothing new), `by_name` the inviter's token name.
 - `PUT /app/items/:space/call-people` (livehuddle's key only, the Space livehuddle's): `UPDATE … RETURNING item_id,
-  people_before`; names merged in order, first come, at most `ITEM_CALL_NAMES_MAX`; `people > 0` sets `live_at` and
+people_before`; names merged in order, first come, at most `ITEM_CALL_NAMES_MAX`; `people > 0` sets `live_at` and
   clears `ended_at`; `0` sets `ended_at`. When the count moved, the item's app is told through `source-changed`.
 - Send to Plan's `sendToPlan` (plan-sends.ts): when the source is a call's Space, each card's description gains the
   line back to the item, and the row keeps `plan_id`; the item is told.
@@ -120,13 +124,17 @@ A call is **live** when `ended_at IS NULL AND (people > 0 OR started_at >= now -
 
 ## Every editor
 
-- `packages/workbench/src/components/item-call/`: `ItemCallButton` (the Call button and the pill, drawn in
-  `EditorCornerActions`' `call` slot), `item-call-store.ts` (one read on mount, again on each `source-changed` frame
-  with `calls`, aborted on unmount; no timer), `item-call-tabs.ts` (the named tabs), `MeetingsTool.tsx` and
-  `useMeetingsToolRow` (the Tools row, published through the Tools door; the list is read only once it opens).
-- Each app passes `call={<ItemCallButton … />}` to its corner card, and mounts `useMeetingsToolRow` with its
-  ItemToolsHost. Neither pulls any call code: the button is under 3 kB and loads with the corner card.
-- The item's tab names itself `itemTabName(itemId)` while the button is mounted, so Open Item in the call finds it.
+- `packages/workbench/src/components/item-call/`: `ItemCallButton` (the Call button, and the pill only while
+  `people > 0`, drawn in `EditorCornerActions`' `call` slot), `item-call-store.ts` (one read on mount, again on each
+  `source-changed` frame with `calls` and when the tab comes back into view, aborted on unmount; no timer),
+  `ItemCallHost.tsx` (names the open item to the store, names the tab, publishes the Meetings Tools row through the
+  Tools door), `MeetingsDialog.tsx` (lazy: the list is read only once it opens) and `ItemAppMark.tsx` (an item's app
+  by its logo, shared with livehuddle's Open Item).
+- Each app passes `call={<ItemCallButton />}` to its corner card and mounts `ItemCallHost` beside `SendToPlanHost`.
+  The button and host are the only call code in the item's tab; Meetings' dialog loads on its first open.
+- The item's tab names itself `itemTabName(itemId)` while the host is mounted, so Open Item in the call finds it.
+- The Explorer's Inbox: a `CallInvite` entry under the `calls` filter (`k:<id>` key), its pane `CallInvitePane.tsx`
+  (`itemCalls(itemId)` once on open; Join Call is `focusOrOpen(itemCallTabName(itemId), link)`), and a `call` notice.
 
 ## Tests
 

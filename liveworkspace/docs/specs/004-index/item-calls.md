@@ -39,7 +39,7 @@ Here: a livehuddle call about this <noun>, in a new tab."
 
 ## Joining
 
-While a call about the item is live, **Call** becomes a pill in its place: a pulsing green dot, "3 in Call", and
+While a call about the item has someone in it, **Call** becomes a pill in its place: a pulsing green dot, "3 in Call", and
 **Join**. Its hover card names who is in it ("Call in progress, 3 people: Ana, Bo and Cy").
 
 - **Join** opens the call in its tab (bringing it to the front when it is already open).
@@ -49,7 +49,7 @@ While a call about the item is live, **Call** becomes a pill in its place: a pul
 - **Live, never polled.** The Space's room tells the index how many people are in it and their names, at most once a
   `ITEM_CALL_SETTLE_MS` (1.5 s) of changes. When the count changes the index tells the item's room through its app's
   `source-changed` door (`{app: livehuddle, itemId: <space>, calls: true}`), the room tells its open sessions, and each
-  reads the item's calls again with its own access. Every open of the item reads them once. A missed signal costs only
+  reads the item's calls again with its own access. Every open of the item reads them once, and again when its tab comes back into view. A missed signal costs only
   freshness.
 - A call whose last person leaves has ended: the pill goes back to **Call**, and the item's Meetings list it. Someone
   who opens the Space again later brings it back to live.
@@ -58,7 +58,8 @@ While a call about the item is live, **Call** becomes a pill in its place: a pul
 
 In the call, **Invite** lists the people who reach the whole item (the same list [Approvals](./approvals.md) names
 approvers from) and invites the ones picked, at most 10 a press. Each gets an Inbox row in every app, "Ana invited you
-to a call about Launch Plan", which opens the item, where **Join** waits; an open editor shows it as an Inbox notice
+to a call about Launch Plan", whose reading pane reads the call as it stands and has **Join Call** while it is on
+("The call has ended" after); an open editor shows it as an Inbox notice
 ([Inbox notices](./inbox-notices.md)). An invite is listed under the Inbox's **Calls** filter for a day, marked Live
 while the call is, and never counted in the Inbox's badge. Only accounts who reach the item can be invited; anyone
 else is refused before any row is written.
@@ -96,23 +97,23 @@ host's choice alone, off until they turn it on, with a notice to everyone in the
 
 ## Who may do what
 
-| Who                                       | Start | Join          | Invite | Wrap Up    | Meetings |
-| ----------------------------------------- | ----- | ------------- | ------ | ---------- | -------- |
-| Editor, Participant, Viewer (an account)  | Yes   | Yes           | Yes    | The host's | Yes      |
-| A guest holding the item's link           | No    | Yes, as guest | No     | No         | Yes      |
+| Who                                        | Start | Join          | Invite | Wrap Up    | Meetings |
+| ------------------------------------------ | ----- | ------------- | ------ | ---------- | -------- |
+| Editor, Participant, Viewer (an account)   | Yes   | Yes           | Yes    | The host's | Yes      |
+| A guest holding the item's link            | No    | Yes, as guest | No     | No         | Yes      |
 | Offline, embed, workbench frame, Community | No    | No            | No     | No         | No       |
 
 ## Limits
 
-| Limit                   | Value  | What it bounds                                                          |
-| ----------------------- | ------ | ----------------------------------------------------------------------- |
-| `ITEM_CALL_SETTLE_MS`   | 1,500  | How often a Space's room tells the index who is in its call             |
-| `ITEM_CALL_NAMES_MAX`   | 50     | Names a meeting keeps (everyone who joined, first come)                 |
-| `ITEM_CALLS_READ_MAX`   | 20     | Meetings an item's read answers, newest first                           |
-| `ITEM_CALL_CHECKS_MAX`  | 10     | Knowledgebases and plans a read checks the reader's access to          |
-| `ITEM_CALL_INVITES_MAX` | 10     | People one Invite names                                                 |
-| `ITEM_CALL_INVITE_DAYS` | 1      | Days an invite stays in the Inbox                                       |
-| Starts, invites, wraps  | 10/m   | The kit run limiter (`KIT_RUN_LIMITER`), under `item-call:<person>`     |
+| Limit                   | Value | What it bounds                                                      |
+| ----------------------- | ----- | ------------------------------------------------------------------- |
+| `ITEM_CALL_SETTLE_MS`   | 1,500 | How often a Space's room tells the index who is in its call         |
+| `ITEM_CALL_NAMES_MAX`   | 50    | Names a meeting keeps (everyone who joined, first come)             |
+| `ITEM_CALLS_READ_MAX`   | 20    | Meetings an item's read answers, newest first                       |
+| `ITEM_CALL_CHECKS_MAX`  | 10    | Knowledgebases and plans a read checks the reader's access to       |
+| `ITEM_CALL_INVITES_MAX` | 10    | People one Invite names                                             |
+| `ITEM_CALL_INVITE_DAYS` | 1     | Days an invite stays in the Inbox                                   |
+| Starts, invites, wraps  | 10/m  | The kit run limiter (`KIT_RUN_LIMITER`), under `item-call:<person>` |
 
 ## Cost
 
@@ -135,7 +136,9 @@ Built-in AI for the summary is Ask AI's allowance ([Ask AI](../020-ask/ask.md) "
 
 Each app sends these under its own name through the workbench's `track`, in the UI category, typed by the feature and
 never by an item or a person: `UI·Started·ItemCall` (a call started), `UI·Opened·ItemCall` (Join pressed),
-`UI·Refused·ItemCall` (a start turned away) and `UI·Opened·Meetings` (Meetings opened). livehuddle sends
+`UI·Refused·ItemCall` (a start turned away), `UI·Opened·Meetings` (Meetings opened) and `UI·Opened·MeetingSummary` (a
+summary opened from Meetings). livehuddle sends
 `UI·Opened·CallItem` (Open Item), `UI·Created·CallSummary` (a summary written to a knowledgebase),
 `UI·Used·CallSummaryAi` (Write With AI) and `UI·Created·CallInvite` (an Invite sent). Charted on the site's telemetry
-page as the Calls stack in every app (`apps/site/app/telemetry/_shared/item-call-metrics.ts`).
+page (`apps/site/app/telemetry/_shared/item-call-metrics.ts`) as the Start a Call Here stack in every app but
+livehuddle, and as the Calls About Items stack in livehuddle.

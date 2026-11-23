@@ -25,9 +25,9 @@ ellipsis, as one button, **Open Item**, which brings the item's tab back to the 
 from), or opens the item in a new tab when that tab is gone. Its hover card reads "This call is about <item> in
 <app>. Open Item takes you back to it." Then:
 
-- **Invite** (an account who reaches the item): a popover listing the people who reach the whole item, with a search
-  once there are more than eight, each a check row; **Send Invites** sends an Inbox row to each picked
-  (the platform's "Invites"), and a toast says "Invited 2 people". On a phone, a bottom sheet.
+- **Invite** (an account who reaches the item): a centred dialog listing the people who reach the whole item, the
+  team's members first, each a check row, at most 10 picked; **Send Invites** sends an Inbox row to each picked
+  (the platform's "Invites"), and a toast says "Invited 2 people".
 - **Wrap Up** (the host alone): opens the Wrap Up dialog below.
 
 On joining, everyone sees one toast: "This call is about <item>. It isn't recorded." livehuddle records nothing.
@@ -60,11 +60,11 @@ The dialog closes on **Done**, Escape or the close button; nothing is lost by cl
 
 ## Who sees what
 
-| Role                                   | The item and Open Item | Invite | Wrap Up |
-| -------------------------------------- | ---------------------- | ------ | ------- |
+| Role                                    | The item and Open Item | Invite | Wrap Up |
+| --------------------------------------- | ---------------------- | ------ | ------- |
 | The host (an Editor of their own Space) | Yes                    | Yes    | Yes     |
-| A Participant (an account)             | Yes                    | Yes    | No      |
-| A guest                                | Yes                    | No     | No      |
+| A Participant (an account)              | Yes                    | Yes    | No      |
+| A guest                                 | Yes                    | No     | No      |
 
 A Space that is no call, or one opened Offline, in an embed or through the Community, shows none of it.
 

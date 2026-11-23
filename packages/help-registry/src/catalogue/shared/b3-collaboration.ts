@@ -43,6 +43,24 @@ export const articles: Article[] = [
     ],
   },
   {
+    slug: 'start-a-call',
+    title: 'Start a Call Here',
+    description:
+      'Start a livehuddle video call about what you have open, then send its summary and actions on.',
+    keywords:
+      'call video call meeting huddle talk join in call meetings invite wrap up summary minutes notes knowledgebase actions plan start a call here livehuddle zoom meet',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
+  },
+  {
     slug: 'facilitator',
     title: 'Facilitator',
     description: 'Give one person the tools that run a live session, and hand the role on.',
