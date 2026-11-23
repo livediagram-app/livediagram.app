@@ -57,6 +57,7 @@
     "./tab-order": "./src/tab-order.ts",
     "./tab-swap": "./src/tab-swap.ts",
     "./testing/changeset-plans-suite": "./src/testing/changeset-plans-suite.ts",
+    "./testing/product-api-suites": "./src/testing/product-api-suites.ts",
     "./testing/service-d1": "./src/testing/service-d1.ts",
     "./testing/sqlite-d1": "./src/testing/sqlite-d1.ts",
     "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",
