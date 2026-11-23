@@ -77,9 +77,10 @@ const NOT_A_BOX =
 // A className on a line of its own belongs to the tag opened a few lines above (prettier's wrap of a long chip).
 const NOT_A_BOX_TAG = /^\s*<(?:Chip|span|button|Button|li)\b[^>]*$/;
 function openedAsNotABox(lines: string[], i: number): boolean {
-  if (!/^\s*className=/.test(lines[i])) return false;
+  if (!/^\s*className=/.test(lines[i] ?? '')) return false;
   for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
-    if (/^\s*</.test(lines[j])) return NOT_A_BOX_TAG.test(lines[j]);
+    const above = lines[j] ?? '';
+    if (/^\s*</.test(above)) return NOT_A_BOX_TAG.test(above);
   }
   return false;
 }
