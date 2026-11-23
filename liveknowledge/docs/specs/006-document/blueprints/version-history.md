@@ -245,7 +245,7 @@ idle and agent captures inside SQL are logged by the restore and copy that read 
 | VH14, VH16   | `apps/api/src/versions/restore-tab.test.ts`                                                                       |
 | VH17         | `apps/api/src/routes/versions.test.ts` (copy)                                                                     |
 | VH18, VH19   | `apps/editor/components/versions/*.test.tsx`                                                                      |
-| VH25-VH27    | `apps/api/src/db/versions.test.ts` (step, stamp, by line), `apps/api/src/routes/agent-authorship.test.ts` |
+| VH25-VH27    | `apps/api/src/db/versions.test.ts` (step, stamp, by line), `apps/api/src/routes/agent-authorship.test.ts`         |
 | VH28         | `apps/editor/components/versions/VersionHistoryPanel.test.tsx` (an agent's row and detail)                        |
 | VH20-VH23    | `apps/api/src/db/named-versions.test.ts`, `apps/api/src/routes/versions.test.ts` (old store only, new only, both) |
 | VH24         | `apps/api/src/document-room/document-room-store.test.ts`                                                          |

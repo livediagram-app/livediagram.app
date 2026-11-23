@@ -371,6 +371,37 @@ describe('Page Health', () => {
     rerender(<Rail {...props()} />);
     expect(container.querySelectorAll('[data-page-stamp]')).toHaveLength(0);
   });
+
+  // verification.md "An agent acting for a person": the agent for its person, with the AI sparkle.
+  it("names an agent's stamp as the agent for its person, with the sparkle saying what it did", () => {
+    const { container, rerender } = renderRail(
+      <Rail
+        {...props({
+          created: { at: NOW - 3 * DAY, by: 'Priya Nair', agent: { name: 'Claude' } },
+          updated: { at: NOW - 3 * 60_000, by: 'Priya Nair', agent: { accepted: true } },
+        })}
+      />,
+    );
+    const rows = [...container.querySelectorAll<HTMLElement>('[data-page-stamp]')];
+    expect(rows.map((r) => r.dataset.stampKind)).toEqual(['ai', 'ai']);
+    expect(rows[0]!.textContent).toMatch(/^PNClaude for Priya NairCreated 3 days ago/);
+    expect(rows[1]!.textContent).toMatch(/^PNAn agent, accepted by Priya NairUpdated 3 mins ago/);
+    expect(screen.getByRole('img', { name: 'Created by AI' })).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Edited by AI' })).toBeTruthy();
+    // A person's later save is theirs again, with no sparkle.
+    rerender(
+      <Rail
+        {...props({
+          created: { at: NOW - 3 * DAY, by: 'Priya Nair', agent: { name: 'Claude' } },
+          updated: { at: NOW - 60_000, by: 'Sam Lee' },
+        })}
+      />,
+    );
+    const later = [...container.querySelectorAll<HTMLElement>('[data-page-stamp]')];
+    expect(later[1]!.dataset.stampKind).toBe('human');
+    expect(later[1]!.textContent).toMatch(/^SLSam LeeUpdated/);
+    expect(screen.queryByRole('img', { name: 'Edited by AI' })).toBeNull();
+  });
 });
 
 describe('On This Page', () => {

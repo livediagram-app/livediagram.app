@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makerPills, makerWords } from './page-makers';
+import { makerPills, makerWords, railStampOf } from './page-makers';
 
 // docs/specs/030-knowledgebase/verification.md "Made by a person or an agent".
 const NOW = Date.UTC(2026, 10, 21, 12);
@@ -37,10 +37,10 @@ describe('who made and edited a page, in words', () => {
         nameOf,
         NOW,
       ).description,
-    ).toBe('Created by Claude through MCP on 12 Nov');
+    ).toBe('Created by Claude for Priya Shah through MCP on 12 Nov');
     expect(
       makerWords({ by: 'u1', at: NOW, kind: 'ai', via: 'cli' }, 'created', nameOf, NOW).description,
-    ).toMatch(/^Created by an agent through the CLI on /);
+    ).toMatch(/^Created by an agent for Priya Shah through the CLI on /);
     const edited = makerWords(
       { by: 'u1', at: NOW - HOUR, kind: 'ai', via: 'api' },
       'updated',
@@ -48,7 +48,18 @@ describe('who made and edited a page, in words', () => {
       NOW,
     );
     expect(edited.label).toBe('AI Edited');
-    expect(edited.description).toBe('Last edited by an agent through the API, 1 hour ago');
+    expect(edited.description).toBe(
+      'Last edited by an agent for Priya Shah through the API, 1 hour ago',
+    );
+    // A person nobody here can name: the agent alone.
+    expect(
+      makerWords(
+        { by: 'gone', at: NOW, kind: 'ai', agent: 'Claude', via: 'mcp' },
+        'updated',
+        nameOf,
+        NOW,
+      ).description,
+    ).toBe('Last edited by Claude through MCP, just now');
   });
 
   it('says an accepted suggestion is the agent’s, and who accepted it', () => {
@@ -68,6 +79,36 @@ describe('who made and edited a page, in words', () => {
         NOW,
       ).description,
     ).toBe('Created by an agent, from a suggestion an Editor accepted on 3 Jan 2025');
+  });
+});
+
+// Page Health's foot (verification.md "An agent acting for a person").
+describe('railStampOf', () => {
+  it('names the person, and an agent with the agent that wrote for them', () => {
+    expect(railStampOf(undefined, nameOf)).toBeUndefined();
+    expect(railStampOf({ by: 'u1', at: 5, kind: 'human' }, nameOf)).toEqual({
+      at: 5,
+      by: 'Priya Shah',
+    });
+    expect(
+      railStampOf({ by: 'u1', at: 5, kind: 'ai', agent: 'Claude', via: 'mcp' }, nameOf),
+    ).toEqual({
+      at: 5,
+      by: 'Priya Shah',
+      agent: { name: 'Claude', accepted: false },
+    });
+    expect(railStampOf({ by: 'u1', at: 5, kind: 'ai', via: 'suggestion' }, nameOf)).toEqual({
+      at: 5,
+      by: 'Priya Shah',
+      agent: { accepted: true },
+    });
+    // A rule's step writes as its author, a person.
+    expect(
+      railStampOf(
+        { by: 'u1', at: 5, kind: 'human', agent: 'Nightly in Ops', via: 'automation' },
+        nameOf,
+      ),
+    ).toEqual({ at: 5, by: 'Priya Shah' });
   });
 });
 

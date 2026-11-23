@@ -6,6 +6,7 @@
 import { PageRailSuggestions } from './suggestions/PageRailSuggestions';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
+import { railStampOf as stampOf } from '@/lib/knowledge/page-makers';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
@@ -23,7 +24,7 @@ import { useSlideOut } from '@/lib/ui/use-slide-out';
 import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
-import { PageActivity, PageHealthCard, type PageStamp } from './PageHealthCard';
+import { PageActivity, PageHealthCard } from './PageHealthCard';
 import { PageWatchButton } from '@/components/page-watch/PageWatchButton';
 import { ReviewPeriodButton } from '@/components/knowledge-settings/ReviewPeriodButton';
 import { useSettingsOffered } from '@/components/knowledge-settings/useSettingsOffered';
@@ -49,12 +50,6 @@ export const PAGE_RAIL_ATTR = 'data-page-rail';
 const READING_LINE_PX = 160;
 
 const NO_HEADINGS: readonly PageHeading[] = [];
-
-/** A created or updated stamp, its person named where the editor can. */
-const stampOf = (
-  stamp: { by: string; at: number } | undefined,
-  nameOf: (id: string | undefined) => string | undefined,
-): PageStamp | undefined => (stamp ? { at: stamp.at, by: nameOf(stamp.by) } : undefined);
 
 type Writing = { flow: string; headings: readonly PageHeading[] };
 

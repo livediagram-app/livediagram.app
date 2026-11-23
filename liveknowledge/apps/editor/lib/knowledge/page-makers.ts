@@ -1,10 +1,41 @@
 // Who made a page and who changed it last, a person or an agent (docs/specs/030-knowledgebase/verification.md "Made
 // by a person or an agent"): the words of the meta row's two pills and their hover cards. Pure.
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
+import { agentForPerson } from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
 import { relativeSince } from '@/lib/relative-time';
 import { shortDate } from './page-trust';
 
 export type MakerWhich = 'created' | 'updated';
+
+/** Who did something to the page, and when, as Page Health's foot draws it. `by` is a name the editor could resolve;
+ *  `agent` the agent that wrote for them, `accepted` when they accepted its suggestion (verification.md "An agent
+ *  acting for a person"). */
+export type PageStamp = {
+  at: number;
+  by?: string | undefined;
+  agent?: { name?: string | undefined; accepted?: boolean } | undefined;
+};
+
+/** A created or updated stamp for Page Health's foot: its person named where the editor can, an agent's with the
+ *  agent that wrote. A rule's step writes as its author, a person. */
+export const railStampOf = (
+  stamp: PageAuthorStamp | undefined,
+  nameOf: (id: string | undefined) => string | undefined,
+): PageStamp | undefined =>
+  stamp
+    ? {
+        at: stamp.at,
+        by: nameOf(stamp.by),
+        ...(stamp.kind === 'ai'
+          ? {
+              agent: {
+                ...(stamp.agent ? { name: stamp.agent } : {}),
+                accepted: stamp.via === 'suggestion',
+              },
+            }
+          : {}),
+      }
+    : undefined;
 
 export type MakerWords = {
   kind: 'human' | 'ai';
@@ -45,7 +76,13 @@ export function makerWords(
   const ai = stamp.kind === 'ai';
   const label = `${ai ? 'AI' : 'Human'} ${which === 'created' ? 'Generated' : 'Edited'}`;
   const person = nameOf(stamp.by);
-  const writer = ai ? (stamp.agent ?? 'an agent') : (person ?? 'a person');
+  // An agent names the person it wrote for (verification.md "An agent acting for a person"); an accepted suggestion's
+  // person is the Editor who accepted, said after it.
+  const writer = ai
+    ? stamp.via === 'suggestion'
+      ? (stamp.agent ?? 'an agent')
+      : agentForPerson(stamp.agent, person, 'an agent')
+    : (person ?? 'a person');
   const door = ai && stamp.via && stamp.via !== 'suggestion' ? ` through ${DOOR[stamp.via]}` : '';
   const accepted =
     ai && stamp.via === 'suggestion' ? `, from a suggestion ${person ?? 'an Editor'} accepted` : '';

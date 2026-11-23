@@ -29,6 +29,12 @@ import {
   MakerPersonIcon,
 } from './knowledge-icons';
 import { RequestIcon } from './approval/feedback-icons';
+import type { PageStamp } from '@/lib/knowledge/page-makers';
+import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
+import {
+  AN_AGENT,
+  agentForPerson,
+} from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
 import { ReadByAgentsButton } from './ReadByAgents';
 import { Collapse } from './Collapse';
 import type { PageAgentReads } from '@liveknowledge/api-schema';
@@ -37,8 +43,8 @@ import type { KnowledgePerson } from './usePageKnowledge';
 const NO_OWNER = '';
 const DAY_MS = 86_400_000;
 
-/** Who did something to the page, and when. `by` is a name the editor could resolve. */
-export type PageStamp = { at: number; by?: string | undefined };
+/** Who did something to the page, and when (lib/knowledge/page-makers.ts). */
+export type { PageStamp } from '@/lib/knowledge/page-makers';
 
 export type PageHealthCardProps = {
   trust: PageTrust;
@@ -261,14 +267,32 @@ function Disc({ name, size = 'size-6' }: { name: string | undefined; size?: stri
 }
 
 function StampRow({ what, stamp, now }: { what: string; stamp: PageStamp; now: number }) {
+  // A guest's stamp, and one written before guests were named so, reads "Guest" (owner 2026-11-21).
+  const person = !stamp.by || stamp.by === 'Someone' ? 'Guest' : stamp.by;
+  const { agent } = stamp;
+  // An agent's names the person it wrote for, "Claude for Priya Shah", with the AI sparkle as liveplanner's history
+  // draws it (verification.md "An agent acting for a person").
+  const name = agent
+    ? agent.accepted
+      ? `${agent.name || AN_AGENT}, accepted by ${person}`
+      : agentForPerson(agent.name, person)
+    : person;
   // Two lines, so a whole name fits the rail: who, then what they did and when.
   return (
-    <div data-page-stamp="" className="flex min-h-9 items-center gap-2.5">
-      <Disc name={!stamp.by || stamp.by === 'Someone' ? 'Guest' : stamp.by} />
+    <div
+      data-page-stamp=""
+      data-stamp-kind={agent ? 'ai' : 'human'}
+      className="flex min-h-9 items-center gap-2.5"
+    >
+      <Disc name={person} />
       <span className="min-w-0 flex-1 leading-4">
-        <span className="block truncate text-[13px] font-medium text-slate-800 dark:text-slate-200">
-          {/* A guest's stamp, and one written before guests were named so, reads "Guest" (owner 2026-11-21). */}
-          {!stamp.by || stamp.by === 'Someone' ? 'Guest' : stamp.by}
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate text-[13px] font-medium text-slate-800 dark:text-slate-200">
+            {name}
+          </span>
+          {agent ? (
+            <AiWriterMark words={`${what === 'Created' ? 'Created' : 'Edited'} by AI`} />
+          ) : null}
         </span>
         <span className="block text-[11px] text-slate-500 dark:text-slate-400">
           {what}{' '}
