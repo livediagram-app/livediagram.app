@@ -6,7 +6,7 @@ import { handleAsk } from './ask';
 import { makeTestRouteContext } from './test-route-context';
 
 // Whose key applies (ai-keys.md "Every AI feature honours the choice"): built-in AI unless a test says otherwise.
-const keyFor = vi.hoisted(() => vi.fn(async (): Promise<unknown> => null));
+const keyFor = vi.hoisted(() => vi.fn<(...args: unknown[]) => Promise<unknown>>(async () => null));
 vi.mock('@liveworkspace/auth-client/ai-key', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@liveworkspace/auth-client/ai-key')>()),
   personAiKey: keyFor,
