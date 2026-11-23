@@ -36,7 +36,7 @@ import { emailMarksSchemaStep } from '../knowledge/email-marks';
 import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
-import { publishedSchemaStep } from '../publishing/published-schema';
+import { publishedMediaSchemaStep, publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
 import { pageWatchSchemaStep } from '../knowledge/page-watch';
@@ -457,6 +457,10 @@ const V40 = suggestionsOutboxStep;
 // docs/specs/030-knowledgebase/watching.md). Additive, IF NOT EXISTS.
 const V41 = pageWatchSchemaStep;
 
+// Step 42: the pictures each published page places, its cover as drawn, and a restyle redrawing the site
+// (publishing/published-schema.ts; docs/specs/030-knowledgebase/publishing.md "Pictures on the public site").
+const V42 = publishedMediaSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -491,6 +495,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V39,
   V40,
   V41,
+  V42,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
