@@ -5,9 +5,9 @@
 // does; shown after a short dwell, gone when the pointer leaves. It reads nothing from the network: the state comes
 // from the page list, and the first lines from the page's writing when this editor already holds it.
 import { savedArticlesOf } from '@liveknowledge/document';
-import { useEffect, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { EditorView } from 'prosemirror-view';
-import { Portal } from '@liveknowledge/ui';
+import { OVERLAY_MAX_WIDTH, Portal, onScreenTranslate, useKeepOnScreen } from '@liveknowledge/ui';
 import type { EditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { firstLines } from '@/lib/knowledge/page-link-pick';
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
@@ -23,6 +23,7 @@ const WIDTH = 288;
 type Hover = {
   left: number;
   top: number;
+  link: HTMLElement;
   // Absent for a link to a page that is gone.
   page: { title: string; mark: TrustMark | undefined; lines: string } | undefined;
 };
@@ -35,6 +36,10 @@ export function PageLinkHoverCard({
   store: EditorChromeStore;
 }) {
   const [hover, setHover] = useState<Hover | null>(null);
+  // Hung from the link's left edge: a link near the right of a phone slides it left, one near the foot of the screen
+  // flips it above the link (@liveworkspace/ui's useKeepOnScreen), measured once per card, never per pointer move.
+  const card = useRef<HTMLDivElement>(null);
+  const slide = onScreenTranslate(useKeepOnScreen(card, hover, { anchor: () => hover?.link }));
   useEffect(() => {
     const dom = viewRef.current?.dom;
     if (!dom) return;
@@ -54,8 +59,9 @@ export function PageLinkHoverCard({
         const r = link.getBoundingClientRect();
         const tab = store.get().tabs.find((t) => t.id === page);
         setHover({
-          left: Math.max(8, Math.min(r.left, window.innerWidth - WIDTH - 8)),
+          left: r.left,
           top: r.bottom + 6,
+          link,
           page: tab && {
             title: tab.name || 'Untitled Page',
             mark: trustMark(
@@ -90,7 +96,14 @@ export function PageLinkHoverCard({
       <div
         role="tooltip"
         data-page-link-card=""
-        style={{ left: hover.left, top: hover.top, width: WIDTH }}
+        ref={card}
+        style={{
+          left: hover.left,
+          top: hover.top,
+          width: WIDTH,
+          maxWidth: OVERLAY_MAX_WIDTH,
+          transform: slide,
+        }}
         className="pointer-events-none fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border border-slate-200 bg-white p-3 text-[13px] leading-5 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
       >
         {page ? (

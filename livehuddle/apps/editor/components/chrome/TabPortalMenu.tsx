@@ -1,4 +1,5 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { useMenuDismiss } from '@liveworkspace/workbench/hooks/ui/useMenuDismiss';
@@ -49,6 +50,7 @@ export function PortalMenu({
   onClearContent,
   onImport,
   onExport,
+  onSendStickies,
   onCopyTo,
   selfId,
   otherDocuments,
@@ -78,6 +80,9 @@ export function PortalMenu({
   onClearContent: () => void;
   onImport: () => void;
   onExport: () => void;
+  // Send to Plan's Send All (docs/specs/013-workspace/send-to-plan.md): absent when the tab has no sticky with words or
+  // this session cannot send.
+  onSendStickies?: (() => void) | null;
   onCopyTo: (targetDocumentId: string) => void;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
@@ -379,6 +384,17 @@ export function PortalMenu({
               <MenuGroupSeparator />
               <MenuActionRow plain icon={<FileImportIcon />} label="Import" onClick={onImport} />
               <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
+              {onSendStickies ? (
+                <MenuActionRow
+                  plain
+                  icon={<SendToPlanMenuIcon />}
+                  label="Send Stickies to Plan"
+                  onClick={() => {
+                    onSendStickies();
+                    onClose();
+                  }}
+                />
+              ) : null}
               <MenuActionRow
                 plain
                 icon={<ClearIcon />}

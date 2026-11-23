@@ -5,6 +5,7 @@
 // Assign Action, Add Comment, Add Link and Add Note at the left (an element that has one says so, tinted, and the
 // button reads View / Edit); Clear Styles alone at the right, apart from them, as it changes the element's look rather
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
+import { elementSendItem } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
 import { type BoxedElement, type Element } from '@livedesign/design';
 import { Tooltip } from '@livedesign/ui';
@@ -64,6 +65,10 @@ export function quickBarItems(
     on: !!target.note,
     run: () => props.onOpenNote(target.id),
   });
+  // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner, while this session
+  // may send.
+  const send = elementSendItem(target);
+  if (send) items.push(send);
   return items;
 }
 

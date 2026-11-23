@@ -1137,3 +1137,10 @@ main:has(> [data-canvas-cover]) > [data-canvas-content] [data-selection-grips] {
     border-bottom-right-radius: 0.75rem;
   }
 }
+
+/* A live embed's frame shows the file alone (liveworkspace/docs/specs/004-index/live-embeds.md "The frame", Work
+   Tracker 1386): no zoom controls either. The frame takes no pointer until Use the file, lands fitted, and pinch and
+   Ctrl-scroll still zoom; with nothing in its corners, no bar of the host page can sit over them. */
+[data-live-embed-frame] [data-zoom-cluster] {
+  display: none;
+}

@@ -87,6 +87,18 @@ describe('the template file', () => {
     }
   });
 
+  it("makes a bare Kanban (Send to Plan's New Plan): its Board tab alone, with no example cards", () => {
+    const whole = parseProjectEnvelope(templateProjectFile('kanban', 'Full')!);
+    const file = templateProjectFile('kanban', 'Plans from Retro', { bare: true })!;
+    const bare = parseProjectEnvelope(file);
+    if (!whole.ok || !bare.ok) throw new Error('unreadable');
+    expect(whole.envelope.project.tabs.length).toBeGreaterThan(1);
+    expect(whole.envelope.project.items?.length ?? 0).toBeGreaterThan(0);
+    expect(bare.envelope.project.tabs.map((t) => t.name)).toEqual(['Board']);
+    expect(bare.envelope.project.items ?? []).toEqual([]);
+    expect(readProjectFile(file).ok).toBe(true);
+  });
+
   it('has no file for a kind the app has no template of', () => {
     expect(templateProjectFile('no-such-template', 'Apollo')).toBeNull();
   });

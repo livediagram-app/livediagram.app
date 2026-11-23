@@ -39,7 +39,7 @@ export function useEditorFollowing({
   fromComments: EditorCommentsSlice;
   fromViewport: EditorViewportSlice;
 }) {
-  const { hydrated, loadedTabIds, warmTabId, toast, workbenchMode } = fromDocument;
+  const { embedMode, hydrated, loadedTabIds, warmTabId, toast, workbenchMode } = fromDocument;
   const { activeId, setActiveId } = fromSelection;
   const { followerIds, followingRef, livePresence, remoteViewports, roomRef, sharePasswordGate } =
     fromCollaboration;
@@ -52,6 +52,7 @@ export function useEditorFollowing({
     centreOn,
     fitToBounds,
     isCentredOn,
+    fitToScreen,
     landOnTab,
     viewport,
   } = fromViewport;
@@ -158,7 +159,10 @@ export function useEditorFollowing({
     tabLoaded: loadedTabIds.has(activeId),
     warmTabId,
     fitToScreen: () => {
-      landOnTab();
+      // An embed shows the whole canvas, fitted to its frame, never a phone's focus on one element: a narrow frame is
+      // not a phone (liveworkspace/docs/specs/004-index/live-embeds.md "The frame", Work Tracker 1386).
+      if (embedMode) fitToScreen();
+      else landOnTab();
       focusLanding.afterTabFit(activeId);
     },
     skipFitForTabRef: skipTabFitRef,

@@ -18,6 +18,7 @@ import { redactTabForCommunity } from '@liveworkspace/community/app';
 import { FROM_FORM_FIELD, type FormDefinition } from '@liveplanner/forms';
 import {
   FROM_EMAIL_FIELD,
+  SENT_FROM_FIELD,
   customFieldOf,
   isItemPerson,
   readItemTypeCatalogue,
@@ -95,7 +96,8 @@ function fieldsForCommunity(item: Item, type: ItemTypeDef): ItemFields {
   }
   const out: ItemFields = {};
   for (const [id, value] of Object.entries(item.fields)) {
-    if (PEOPLE_FIELDS.has(id)) continue;
+    // A sent card's source names another item (items.md "Sent From").
+    if (PEOPLE_FIELDS.has(id) || id === SENT_FROM_FIELD) continue;
     const kind = customFieldOf(type, id)?.kind;
     if (kind && PEOPLE_KINDS.has(kind)) continue;
     if (holdsPeople(value)) continue;

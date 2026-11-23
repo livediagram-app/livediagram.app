@@ -10,6 +10,7 @@
 // focus-preservation detail.
 
 import { AlignmentGrid } from '@/components/palette/palette-controls';
+import { SendWordsButton } from '@liveworkspace/workbench/components/send-to-plan/SendWordsButton';
 import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import {
@@ -166,6 +167,17 @@ export function RichTextToolbar({
           gradient={active.gradient}
           onApply={onEffect}
         />
+      ) : null}
+      {/* Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): the words picked, or the whole text. */}
+      {element ? (
+        <>
+          {TOOLBAR_DIVIDER}
+          <SendWordsButton
+            elementId={element.id}
+            wholeText={typeof element.label === 'string' ? element.label : ''}
+            className={toolbarButtonClass(false)}
+          />
+        </>
       ) : null}
     </div>
   );

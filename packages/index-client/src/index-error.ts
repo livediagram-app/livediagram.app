@@ -16,12 +16,16 @@ export class IndexError extends Error {
   // The domains a `sign_in_required` or `domain_not_allowed` refusal names (a share's sign-in rule), or null: what the
   // visitor's restricted page says the item is restricted to.
   readonly domains: string[] | null;
+  // The rest of a Send to Plan refusal's body (send-to-plan.md "Sending again"): an `already_sent`'s `send`, a
+  // `plan_refused`'s `code` and `reason`. Null for every other refusal.
+  readonly detail: Readonly<Record<string, unknown>> | null;
   constructor(
     status: number,
     code: string,
     retryAfterMs: number | null = null,
     link: string | null = null,
     domains: string[] | null = null,
+    detail: Readonly<Record<string, unknown>> | null = null,
   ) {
     super(`index: ${status} ${code}`);
     this.name = 'IndexError';
@@ -30,8 +34,12 @@ export class IndexError extends Error {
     this.retryAfterMs = retryAfterMs;
     this.link = link;
     this.domains = domains;
+    this.detail = detail;
   }
 }
+
+// The refusals whose body says more than its code (IndexError `detail`).
+const DETAILED = new Set(['already_sent', 'plan_refused']);
 
 // The longest share code a refusal's `link` is read as: codes are 14 characters, so anything longer is not one.
 const REFUSAL_LINK_MAX = 64;
@@ -81,6 +89,9 @@ export function refusal(res: Response, parsed: unknown): IndexError {
     retryAfterMsOf(res.headers?.get('Retry-After')),
     typeof link === 'string' && link !== '' && link.length <= REFUSAL_LINK_MAX ? link : null,
     refusalDomainsOf(domains),
+    typeof error === 'string' && DETAILED.has(error) && parsed && typeof parsed === 'object'
+      ? (parsed as Record<string, unknown>)
+      : null,
   );
 }
 

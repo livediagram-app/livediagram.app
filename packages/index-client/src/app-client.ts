@@ -19,6 +19,7 @@ import type {
 import type { UpdatePush } from './updates';
 import type { AutomationSend, AutomationSendResult, CardMove } from './webhooks';
 import type { AutomationStepAnswer, AutomationStepPush } from './automation-steps';
+import type { AgentSentFrom, PlanCardChange, SentFrom } from './plan-sends';
 import { appConnectionPath } from './connections';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 import { enc, IndexError, refusal } from './index-error';
@@ -124,6 +125,26 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       post(`/items/${enc(itemId)}/automation-steps`, push),
     // Connected tabs (connected-tabs.md): the tab holding a connection is in the host now (confirm), or has left it
     // (remove, which deletes the connection's pass). Each answers 204 whether or not it matched.
+    // Send to Plan (send-to-plan.md): a plan's sent cards changed, so the index updates its sends and tells each
+    // source; and an agent's cards with a source, filled in and recorded where the person can read the source (null
+    // where they cannot).
+    planCardsChanged: (planId: string, cards: readonly PlanCardChange[]) =>
+      post<{ told: number }>(`/items/${enc(planId)}/plan-cards`, { cards }),
+    recordPlanSends: (
+      planId: string,
+      person: string,
+      cards: readonly {
+        id: string;
+        title: string;
+        column: string;
+        done: boolean;
+        sentFrom: AgentSentFrom;
+      }[],
+    ) =>
+      post<{ sentFrom: (SentFrom | null)[] }>(`/items/${enc(planId)}/plan-sends`, {
+        person,
+        cards,
+      }),
     confirmConnection: (hostId: string, connectionId: string, tabId: string) =>
       send('PUT', appConnectionPath(hostId, connectionId, tabId)),
     removeConnection: (hostId: string, connectionId: string, tabId: string) =>

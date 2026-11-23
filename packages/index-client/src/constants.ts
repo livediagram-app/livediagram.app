@@ -459,6 +459,12 @@ export const INDEX_ERRORS = [
   // database failing on its side (503 with Retry-After), or anything else (500).
   'storage_unavailable',
   'internal_error',
+  // Send to Plan (send-to-plan.md): the place already has a live card in this plan (409, with the send), a source
+  // holding as many sends as it may, the plan's own refusal (422, its reason), a plan that could not be made.
+  'already_sent',
+  'source_full',
+  'plan_refused',
+  'plan_unavailable',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
 

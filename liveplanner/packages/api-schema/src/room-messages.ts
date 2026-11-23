@@ -187,6 +187,9 @@ export type ServerMessage =
   | CursorMessage
   | FormatMessage
   | GrantRenewMessage
+  // Cards this plan sent to another plan changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"): ids
+  // only; each session reads its chips again with its own access.
+  | SourceChangedMessage
   // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
   // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab key").
   | CollabKeyMessage
@@ -227,6 +230,13 @@ export type ClientMessage =
 // for a fresh one ROOM_GRANT_ASK_BEFORE_MS before it does, and drops the socket (GRANT_LAPSED_CLOSE) when none
 // came by then. `expiresAt`: when the session's grant runs out, epoch ms.
 export type GrantRenewMessage = { kind: 'grant-renew'; expiresAt: number };
+export type SourceChangedMessage = {
+  kind: 'source-changed';
+  app: 'liveplanner';
+  itemId: string;
+  sheetIds: string[];
+  cards?: string[];
+};
 
 // A fresh grant for this session, the index's ES256 JWT (or the api's room ticket, for a client that has no
 // grant of its own). The room checks it as it checked the first, and keeps the session to what it now allows.
@@ -439,6 +449,7 @@ export type RoomIncoming =
   | CursorMessage
   | FormatMessage
   | GrantRenewMessage
+  | SourceChangedMessage
   // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
   | CollabKeyMessage
   | OpRefusedMessage;

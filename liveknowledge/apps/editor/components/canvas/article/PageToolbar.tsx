@@ -56,6 +56,10 @@ import {
 import { articleCountsOf } from '@/lib/article/article-word-count';
 import { selectNextLongSentence } from '@/lib/article/article-long-sentences';
 import { track } from '@/lib/telemetry';
+import { articleSendPick } from '@liveworkspace/workbench/components/send-to-plan/article-sent';
+import { canSendHere } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
+import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
+import { sendArticleWords } from '@liveworkspace/workbench/components/send-to-plan/article-send-dom';
 import {
   tableCommand,
   tableCommandBlock,
@@ -378,6 +382,20 @@ export function PageToolbar({
       >
         <ActionIcon />
       </Button>
+      {canSendHere() ? (
+        <>
+          <Divider />
+          <Button
+            label="Send to Plan"
+            description="Make a card in liveplanner from the words picked, or this paragraph or item."
+            disabled={!articleSendPick(handle.state())}
+            why="Put the caret in some words first."
+            onPress={() => sendArticleWords(articleSendPick(handle.state()))}
+          >
+            <SendToPlanMenuIcon size={16} />
+          </Button>
+        </>
+      ) : null}
     </div>
   );
 

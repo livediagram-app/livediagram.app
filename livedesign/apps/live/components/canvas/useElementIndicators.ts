@@ -20,7 +20,9 @@ import { inlineIconGap, inlineIconMetrics } from '@/components/canvas/shape-inli
 import {
   buildIndicatorItems,
   type IndicatorItem,
+  type SentCardIndicator,
 } from '@liveworkspace/workbench/components/canvas/indicator-items';
+import { useSentCardIndicator } from '@liveworkspace/workbench/components/send-to-plan/sent-card-indicator';
 import { useIndicatorLayout, type IndicatorLayout } from './useIndicatorLayout';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useScreenLinkMarker, type ScreenLinkMarker } from './screen-link-pages';
@@ -56,6 +58,8 @@ export function elementIndicatorItems(
   showComments = true,
   // The element's screen link marker, when its link is one (useScreenLinkMarker).
   screen: ScreenLinkMarker | null = null,
+  // The card Send to Plan made from the element (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
+  card?: SentCardIndicator,
 ): ScreenIndicatorItem[] {
   const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
   // A link card IS its link; an annotation's marker is its note. A done action stops showing.
@@ -85,6 +89,7 @@ export function elementIndicatorItems(
           color: presenceColourOf(assigneeName, assignee.color),
         }
       : undefined,
+    card,
     comments: {
       count: showComments ? activeCommentCount(element.commentThread) : 0,
       onOpen: () => onOpenComments(element.id),
@@ -114,6 +119,7 @@ export function useElementIndicators(
     handlers,
     useCommentBadges(),
     useScreenLinkMarker(element),
+    useSentCardIndicator(element.id),
   );
   const shape = element.type === 'shape' ? element.shape : undefined;
   // A circle or a pill is fully round however its corner preset reads.
