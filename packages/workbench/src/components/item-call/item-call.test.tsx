@@ -24,7 +24,7 @@ import { useToolsDoorItems } from '../chrome/tools-door';
 import { ItemCallButton, startCall } from './ItemCallButton';
 import { canCall, ItemCallHost } from './ItemCallHost';
 import { setCallSource } from './item-call-store';
-import { focusOrOpen, isBlank, nameItemTab } from './item-call-tabs';
+import { focusOrOpen, isBlank, nameItemTab } from '@liveworkspace/index-client/browser';
 import { meetingLength, meetingWhen, meetingWho } from './MeetingsDialog';
 
 const LINK = 'https://www.livehuddle.app/document/shared?s=abc';

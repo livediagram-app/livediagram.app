@@ -10,6 +10,7 @@ import type {
   InboxForm,
   InboxSuggestion,
   InboxThread,
+  InboxCallInvite,
   InboxUpdate,
 } from '@liveworkspace/index-client';
 import type { Located } from '../../types';
@@ -24,6 +25,8 @@ export type InboxSections = {
   requests: InboxAccessRequest[];
   suggestions: InboxSuggestion[];
   updates: InboxUpdate[];
+  // Invites to calls about items (item-calls.md "Invites"): listed under Calls, never counted.
+  calls: InboxCallInvite[];
 };
 
 const NONE: InboxSections = {
@@ -34,6 +37,7 @@ const NONE: InboxSections = {
   requests: [],
   suggestions: [],
   updates: [],
+  calls: [],
 };
 
 // With no viewer id (signed out), every open action reads as theirs.
@@ -51,6 +55,7 @@ export function inboxSections(data: InboxData | null, viewerId: string | null): 
     requests: (data.accessRequests ?? []).filter((r) => !viewerId || r.requesterId !== viewerId),
     suggestions: data.suggestions ?? [],
     updates: data.updates ?? [],
+    calls: data.calls ?? [],
   };
 }
 
@@ -117,7 +122,8 @@ export type InboxReason =
   | { kind: 'responses'; label: string }
   | { kind: 'access'; label: 'Wants access' }
   | { kind: 'suggestion'; label: 'Suggested an edit' }
-  | { kind: 'update'; label: string };
+  | { kind: 'update'; label: string }
+  | { kind: 'call'; label: 'Invited you to a call' };
 
 /** Why a thread is on the page: a mention is the most direct reason, so it wins; then the item being theirs, until
  *  they reply themselves; then that they are in it: someone else wrote last (Replied to you), or they did (You

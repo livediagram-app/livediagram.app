@@ -12,7 +12,7 @@ import { workbench } from '../../bindings';
 import type { ChromeToolsItem } from '../chrome/ChromeToolsMenu';
 import { usePublishToolsItems } from '../chrome/tools-door';
 import { setCallSource } from './item-call-store';
-import { nameItemTab } from './item-call-tabs';
+import { nameItemTab } from '@liveworkspace/index-client/browser';
 
 const MeetingsDialog = lazy(() =>
   import('./MeetingsDialog').then((m) => ({ default: m.MeetingsDialog })),

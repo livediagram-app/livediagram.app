@@ -185,7 +185,7 @@ export async function tellItemCalls(
 /** The reader's call invites from the last ITEM_CALL_INVITE_DAYS, newest first, on items not in the Trash. */
 export function invitesQuery(personId: string, now: number): { sql: string; args: unknown[] } {
   return {
-    sql: `SELECT v.id, i.app, i.id AS item_id, i.title AS item_title, v.by_name, v.at,
+    sql: `SELECT v.id, i.app, i.id AS item_id, i.title AS item_title, i.team_id AS item_team_id, v.by_name, v.at,
         c.people, c.started_at, c.ended_at
       FROM item_call_invites v JOIN item_calls c ON c.id = v.call_id JOIN items i ON i.id = c.item_id
       WHERE v.person_id = ? AND v.at >= ? AND i.trashed_at IS NULL
@@ -201,6 +201,7 @@ export const inviteOf =
     app: r['app'] as InboxCallInvite['app'],
     itemId: String(r['item_id']),
     itemTitle: String(r['item_title'] ?? ''),
+    itemTeamId: r['item_team_id'] == null ? null : String(r['item_team_id']),
     byName: String(r['by_name']),
     at: Number(r['at']),
     live: isLive(

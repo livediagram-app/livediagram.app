@@ -5,6 +5,7 @@
 import type {
   InboxAccessRequest,
   InboxAction,
+  InboxCallInvite,
   InboxForm,
   InboxSuggestion,
   InboxThread,
@@ -26,6 +27,8 @@ export const requestKey = (r: Pick<InboxAccessRequest, 'id'>) => `r:${r.id}`;
 export const suggestionKey = (
   r: Pick<InboxSuggestion, 'app' | 'itemId' | 'tabId' | 'suggestionId'>,
 ) => `g:${r.app}:${r.itemId}:${r.tabId}:${r.suggestionId}`;
+/** A call invite's: its id, the key its notice opens the Inbox at. */
+export const callKey = (r: Pick<InboxCallInvite, 'id'>) => `k:${r.id}`;
 /** An update's: its app, item and id, the key its notice opens the Inbox at. */
 export const updateKey = (r: Pick<InboxUpdate, 'app' | 'itemId' | 'id'>) =>
   `u:${r.app}:${r.itemId}:${r.id}`;
@@ -52,6 +55,8 @@ export function settledOf(e: InboxEntry): InboxSettled {
       return { key: suggestionKey(e.row), at: e.row.createdAt };
     case 'Update':
       return { key: updateKey(e.row), at: e.row.latestAt };
+    case 'CallInvite':
+      return { key: callKey(e.row), at: e.row.at };
   }
 }
 
@@ -73,5 +78,6 @@ export function withoutSettled(data: InboxData, settled: ReadonlyMap<string, num
     ...(data.updates
       ? { updates: data.updates.filter((u) => kept(updateKey(u), u.latestAt)) }
       : {}),
+    ...(data.calls ? { calls: data.calls.filter((c) => kept(callKey(c), c.at)) } : {}),
   };
 }

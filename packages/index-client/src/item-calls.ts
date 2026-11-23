@@ -78,6 +78,7 @@ export type InboxCallInvite = {
   app: App;
   itemId: string;
   itemTitle: string;
+  itemTeamId: string | null;
   byName: string;
   at: number;
   live: boolean;

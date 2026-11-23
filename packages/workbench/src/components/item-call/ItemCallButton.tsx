@@ -19,7 +19,7 @@ import { useToast } from '../../hooks/ui/useToast';
 import { indexClient } from '../../lib/index-client';
 import { CORNER_BTN, CORNER_TONE } from '../chrome/EditorCornerActions';
 import { refreshItemCalls, useItemCalls, type CallSource } from './item-call-store';
-import { focusOrOpen, isBlank, namedTab, sendTab } from './item-call-tabs';
+import { focusOrOpen, isBlank, namedTab, sendTab } from '@liveworkspace/index-client/browser';
 
 const VideoGlyph = lucideGlyph(lucideVideo, 14);
 

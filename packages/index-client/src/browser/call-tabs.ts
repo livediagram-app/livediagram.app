@@ -5,7 +5,7 @@
 // `window.open('', name)` finds the named tab, or opens a blank one. A blank one is ours (same origin, about:blank):
 // it is sent on to the call, its opener cut. One already in the call is livehuddle's (another origin), so reading
 // where it is throws: it is only focused.
-import { itemTabName } from '@liveworkspace/index-client';
+import { itemTabName } from '../item-calls';
 
 /** A tab named `name`: the one there, or a new blank one. Opened in the press itself, so no popup blocker stops it. */
 export function namedTab(name: string): Window | null {

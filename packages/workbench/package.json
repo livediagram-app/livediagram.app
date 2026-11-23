@@ -584,7 +584,6 @@
     "./components/item-call/ItemCallButton": "./src/components/item-call/ItemCallButton.tsx",
     "./components/item-call/ItemCallHost": "./src/components/item-call/ItemCallHost.tsx",
     "./components/item-call/item-call-store": "./src/components/item-call/item-call-store.ts",
-    "./components/item-call/item-call-tabs": "./src/components/item-call/item-call-tabs.ts",
     "./components/send-to-plan/article-send-dom": "./src/components/send-to-plan/article-send-dom.ts",
     "./components/send-to-plan/article-sent": "./src/components/send-to-plan/article-sent.ts",
     "./components/send-to-plan/SendPlanList": "./src/components/send-to-plan/SendPlanList.tsx",

@@ -10,6 +10,7 @@ import { relativeSince, useNow } from '../../time';
 import { CommentIcon } from '../../ui/icons';
 import { kindWords, siteOf } from '../../words';
 import { CardStatusChip } from '../badges';
+import { CallInviteBody } from './CallInvitePane';
 import { CardGlyph, Lead, reasonIcon, reasonTone, type EntryFacts } from './InboxRows';
 import { firstName, type InboxEntry } from './sections';
 
@@ -56,6 +57,9 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
       break;
     case 'Suggestion':
       sentence = `${f.who} suggested an edit`;
+      break;
+    case 'CallInvite':
+      sentence = `${who} invited you to a call about ${f.item}`;
       break;
   }
   return (
@@ -258,6 +262,8 @@ export function Body({
           <SuggestionBody entry={entry} />
         </Suspense>
       );
+    case 'CallInvite':
+      return <CallInviteBody entry={entry} />;
     case 'FormResponses': {
       const r = entry.row;
       return (

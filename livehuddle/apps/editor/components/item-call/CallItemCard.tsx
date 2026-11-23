@@ -13,7 +13,7 @@ import {
   CORNER_TONE,
 } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
 import { ItemAppMark } from '@liveworkspace/workbench/components/item-call/ItemAppMark';
-import { focusOrOpen } from '@liveworkspace/workbench/components/item-call/item-call-tabs';
+import { focusOrOpen } from '@liveworkspace/index-client/browser';
 import type { Tab } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
