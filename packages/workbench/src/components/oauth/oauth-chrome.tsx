@@ -68,10 +68,13 @@ export function ReadOnlyAccessToggle({
   noun,
   readOnly,
   onChange,
+  line,
 }: {
   noun: string;
   readOnly: boolean;
   onChange: (readOnly: boolean) => void;
+  // A page's own wording after the label, in place of the full one.
+  line?: string;
 }) {
   return (
     <button
@@ -81,9 +84,9 @@ export function ReadOnlyAccessToggle({
       className="mt-4 flex w-full cursor-pointer items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm dark:border-slate-700"
     >
       <span className="min-w-0 text-slate-600 dark:text-slate-300">
-        <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span>:
-        let it find and view your {noun}, but not create, edit, delete, or share them. Leave off for
-        full read + write.
+        <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span>:{' '}
+        {line ??
+          `let it find and view your ${noun}, but not create, edit, delete, or share them. Leave off for full read + write.`}
       </span>
       <span className="mt-0.5 shrink-0">
         <Switch presentational size="sm" checked={readOnly} />

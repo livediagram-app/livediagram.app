@@ -161,8 +161,8 @@ describe('connect', () => {
 
 describe('handOverError', () => {
   it('says what to do for each failure', () => {
-    expect(handOverError('expired')).toContain('Start the connection again');
+    expect(handOverError('expired')).toContain('Start again');
     expect(handOverError('token_limit')).toContain('API Tokens');
-    expect(handOverError('failed')).toContain('Couldn’t finish');
+    expect(handOverError('failed')).toContain('Couldn’t connect');
   });
 });

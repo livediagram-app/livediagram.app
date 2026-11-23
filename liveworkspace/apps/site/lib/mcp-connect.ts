@@ -119,10 +119,10 @@ async function retireReplaced(newId: string, name: string, replaces: unknown): P
 export function handOverError(reason: 'expired' | 'token_limit' | 'failed'): string {
   switch (reason) {
     case 'expired':
-      return 'This request has expired. Start the connection again from your AI tool.';
+      return 'This request expired. Start again from your AI tool.';
     case 'token_limit':
-      return 'Your account holds 20 API Tokens, the most it can. Revoke one below, then choose Connect again.';
+      return 'You have 20 API Tokens, the most allowed. Revoke one below to connect.';
     default:
-      return 'Couldn’t finish connecting. Start the connection again from your AI tool.';
+      return 'Couldn’t connect. Start again from your AI tool.';
   }
 }

@@ -5,9 +5,7 @@ import { BackBar, Button, usePageRestore } from '@liveworkspace/ui';
 import {
   OauthHelpLink,
   ReadOnlyAccessToggle,
-  UnverifiedAppBadge,
-  UnverifiedDestination,
-  VerifiedDestination,
+  OauthWarning,
 } from '@liveworkspace/workbench/components/oauth/oauth-chrome';
 import { TokenLimitListLazy } from '@liveworkspace/workbench/components/oauth/TokenLimitListLazy';
 import { Callout } from '@liveworkspace/ui/callout';
@@ -115,8 +113,7 @@ function ConsentCard() {
     return (
       <AccountCard narrow>
         <AccountHeading title="This link has expired">
-          We couldn’t find the connection request this link points to. Start the connection again
-          from your AI tool.
+          Start the connection again from your AI tool.
         </AccountHeading>
         <OauthHelpLink />
       </AccountCard>
@@ -128,7 +125,7 @@ function ConsentCard() {
     return (
       <AccountCard narrow>
         <AccountHeading title={`Sign in to connect ${client}`}>
-          Sign in to your liveworkspace account to connect an AI tool to your apps.
+          Sign in to connect it to your apps.
         </AccountHeading>
         <a
           href={signInHref(window.location.pathname + window.location.search)}
@@ -191,14 +188,13 @@ function ConsentCard() {
         <strong className="break-all text-slate-900 dark:text-slate-100">
           <bdi>{client}</bdi>
         </strong>{' '}
-        wants to act as you in your liveworkspace apps. Approving creates an API token you can
-        revoke any time in Settings › API Tokens.
+        wants access to your liveworkspace apps. Revoke it any time in Settings.
       </AccountHeading>
       {room ? (
         <>
           {freed ? (
             <Callout tone="success" role="status">
-              There’s room for one more token now. Choose Connect.
+              There’s room now. Choose Connect.
             </Callout>
           ) : (
             <Alert tone="error">{error}</Alert>
@@ -213,21 +209,28 @@ function ConsentCard() {
         </>
       ) : (
         <>
-          {request.verified ? null : (
-            <div className="-mt-2 mb-1">
-              <UnverifiedAppBadge />
-            </div>
-          )}
           {request.verified ? (
             request.redirectHost ? (
-              <VerifiedDestination host={request.redirectHost} />
+              <Callout tone="info" className="mt-3">
+                Access goes to <strong>{request.redirectHost}</strong>.
+              </Callout>
             ) : null
           ) : (
-            <UnverifiedDestination client={client} host={request.redirectHost} />
+            <OauthWarning title={`${client} isn’t made by liveworkspace.`}>
+              <p>
+                {request.redirectHost ? (
+                  <>
+                    Access goes to{' '}
+                    <strong className="break-all font-mono">{request.redirectHost}</strong>.{' '}
+                  </>
+                ) : null}
+                Only continue if you started this.
+              </p>
+            </OauthWarning>
           )}
           <fieldset className="mt-5">
             <legend className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-              The apps it can use
+              Apps it can use
             </legend>
             <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
               {apps.map((a) => (
@@ -253,7 +256,12 @@ function ConsentCard() {
               ))}
             </ul>
           </fieldset>
-          <ReadOnlyAccessToggle noun="items" readOnly={readOnly} onChange={setReadOnly} />
+          <ReadOnlyAccessToggle
+            noun="items"
+            readOnly={readOnly}
+            onChange={setReadOnly}
+            line="view your items, but not change them."
+          />
           {error ? (
             <div className="mt-4">
               <Alert tone="error">{error}</Alert>
