@@ -88,12 +88,16 @@ export function WorkbenchPage() {
   }
   // A live embed's frame (`live=1`) runs the editor in the share embed's look, the item only; a developer tool's
   // workbench keeps its chrome (liveworkspace/docs/specs/004-index/live-embeds.md "The frame", Work Tracker 1386).
+  // The mark lets the stylesheet leave out the zoom controls too, so no host bar can sit over them (globals.css).
+  const surface = session.scope === 'workspace' ? null : workbenchSurfaceOf(window.location.search);
   return (
     <WorkbenchAuthBridge session={session}>
-      {session.scope === 'workspace' ? (
+      {surface === null ? (
         <WorkspaceFrame />
       ) : (
-        <EditorPage surface={workbenchSurfaceOf(window.location.search)} />
+        <div data-live-embed-frame={surface === 'live-embed' ? '' : undefined} className="contents">
+          <EditorPage surface={surface} />
+        </div>
       )}
     </WorkbenchAuthBridge>
   );

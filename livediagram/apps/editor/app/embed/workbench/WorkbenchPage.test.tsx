@@ -145,6 +145,7 @@ describe('WorkbenchPage', () => {
     harness.port = fakePort();
     render(<WorkbenchPage />);
     expect(screen.getByText('editor workbench as Webber ended null')).toBeTruthy();
+    expect(document.querySelector('[data-live-embed-frame]')).toBeNull();
   });
 
   it("mounts the editor in the embed's look for a live embed's frame (Work Tracker 1386)", () => {
@@ -154,6 +155,7 @@ describe('WorkbenchPage', () => {
     window.history.replaceState(null, '', '/embed/workbench?d=doc-1&live=1');
     render(<WorkbenchPage />);
     expect(screen.getByText('editor live-embed as Webber ended null')).toBeTruthy();
+    expect(document.querySelector('[data-live-embed-frame]')).toBeTruthy();
     window.history.replaceState(null, '', '/');
   });
 
