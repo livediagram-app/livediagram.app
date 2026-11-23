@@ -188,6 +188,11 @@ export function snapLeadingAxis(
   return anchoredBounds(candidate, handle, candidate.width * s, candidate.height * s);
 }
 
+// A turned or fixed-size member, for unionResizeMember. One shared empty value stands for "neither", so a
+// member resized without options (every call in a pointer move) allocates nothing.
+type UnionResizeOptions = { rotation?: number; keepSize?: boolean };
+const NO_OPTIONS: UnionResizeOptions = Object.freeze({});
+
 // Group-resize math: given the union bounding box at drag start,
 // the same union after `nextBounds` runs against the drag, and the
 // corner the user is pulling, scale a single member's start bounds
@@ -210,7 +215,7 @@ export function unionResizeMember(
   unionStart: ShapeBounds,
   unionNext: ShapeBounds,
   corner: 'nw' | 'ne' | 'sw' | 'se',
-  opts: { rotation?: number; keepSize?: boolean } = {},
+  opts: UnionResizeOptions = NO_OPTIONS,
 ): ShapeBounds {
   const sx = unionNext.width / Math.max(unionStart.width, 1);
   const sy = unionNext.height / Math.max(unionStart.height, 1);
