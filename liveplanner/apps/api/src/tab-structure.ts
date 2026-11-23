@@ -9,7 +9,14 @@ type FormTargets = {
   sheet?: { tabId?: unknown } | undefined;
 };
 /** The parts of a tab this module reads. */
-export type StructuredTab = { name?: unknown; elements?: readonly object[]; form?: unknown };
+// `targetName`: a connected tab's file name kept beside a name of its own (liveworkspace/docs/specs/004-index/
+// connected-tabs.md "A tab's own name"), part of its name.
+export type StructuredTab = {
+  name?: unknown;
+  targetName?: unknown;
+  elements?: readonly object[];
+  form?: unknown;
+};
 
 const idOf = (el: object): string | null => {
   const id = (el as LooseElement).id;
@@ -66,6 +73,7 @@ export function structureChange(
   scope: string,
 ): 'name' | 'reach' | 'form' | null {
   if (stored && next.name !== undefined && next.name !== stored.name) return 'name';
+  if (stored && next.targetName !== stored.targetName) return 'name';
   if (!sameReach(reachIndex(stored?.elements), reachIndex(next.elements))) return 'reach';
   if (formLeavesTab(stored?.form, next.form, scope)) return 'form';
   return null;
@@ -135,7 +143,11 @@ export function keepStoredStructure<T extends StructuredTab & { elements: readon
   }
   for (const [id, el] of storedById) if (storedReach.has(id) && !seen.has(id)) elements.push(el);
   const out = { ...next, elements } as T;
-  if (stored) out.name = stored.name;
+  if (stored) {
+    out.name = stored.name;
+    if (stored.targetName === undefined) delete out.targetName;
+    else out.targetName = stored.targetName;
+  }
   if ('form' in next) out.form = formKeepingTargets(stored?.form, next.form, scope);
   return out;
 }

@@ -11,7 +11,8 @@ import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search
 import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { PlanCornerActions } from '@/components/chrome/EditorHeader';
-import { TabBar } from '@/components/chrome/TabBar';
+// The tab bar with Connect a File beside its + (connected-tabs.md "From the tab bar").
+import { TabBarWithConnect } from '@/components/connect/useConnectFileDialog';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { WorkbenchBackButton, WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -140,7 +141,7 @@ export function renderEditorTabBar(
   return anyWelcomeOpen || zenMode || embedMode ? null : (
     <LandscapeBarFold shown={barsShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
-        <TabBar
+        <TabBarWithConnect
           workbenchBack={
             workbenchFrame
               ? (labelled) => (

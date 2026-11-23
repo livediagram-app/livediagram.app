@@ -87,6 +87,9 @@ type TabBarProps = {
   activeTabHasContent: boolean;
   onSelect: (id: string) => void;
   onAdd: () => void;
+  // Connect a File right of + (liveworkspace/docs/specs/004-index/connected-tabs.md "From the tab bar"): given only
+  // where connecting can work (useConnectFileDialog); a desktop's alone.
+  onConnect?: (() => void) | undefined;
   onRename: (id: string, name: string) => void;
   onDuplicate: (id: string) => void;
   onDelete: (id: string) => void;
@@ -154,6 +157,7 @@ export function TabBar({
   activeTabHasContent,
   onSelect,
   onAdd,
+  onConnect,
   onRename,
   onDuplicate,
   onDelete,
@@ -342,6 +346,7 @@ export function TabBar({
           readOnly={readOnly}
           renderTab={renderTabPill}
           onAdd={onAdd}
+          {...(onConnect ? { onConnect } : {})}
           onReorder={onReorder}
           onRenameFolder={onRenameFolder}
           renderRenameField={(field) => (
