@@ -11,7 +11,7 @@
 //   BASE=<sha or empty> HEAD=<sha> node .github/scripts/ci-plan.mjs
 //
 // With no BASE (a manual run, the nightly run, a new branch's first push) or a change to CI itself
-// or to the root's shared config, everything runs. Writes `groups`, `editors`, `e2e`, `deploys` and
+// or to the root's shared config (ci-run-all.mjs; a guard's baseline list is not one), everything runs. Writes `groups`, `editors`, `e2e`, `deploys` and
 // `any` to $GITHUB_OUTPUT when it is set, and prints the plan either way.
 //
 // The deploys (docs/ci.md "Deploys") read the same answer with PLAN_MODE=deploy and BASE set to the
@@ -24,6 +24,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { readersReached, repoReaders } from './ci-readers.mjs';
+import { GUARD_DATA_HOST, forcesAll, isGuardData } from './ci-run-all.mjs';
 import { deployGroups, groupOf } from './deploy-group.mjs';
 
 // turbo without installing the workspace (it reads only the manifests and the lockfile). Locally:
@@ -89,19 +90,6 @@ const GROUPS = [
 // The editor suites are split three ways, as each product's CI did (most of a product's tests).
 const EDITOR_SHARDS = 3;
 
-// Changing one of these can break any workspace without turbo seeing it as theirs: run everything.
-const RUN_ALL = [
-  /^\.github\//,
-  /^package\.json$/,
-  /^pnpm-workspace\.yaml$/,
-  /^turbo\.json$/,
-  /^tsconfig\.base\.json$/,
-  /^prettier\.config\.js$/,
-  /^\.prettierignore$/,
-  /^\.npmrc$/,
-  /^(livediagram|liveplanner|livedesign|livedocuments|livehuddle|liveknowledge)\/(package\.json|tsconfig\.base\.json|prettier\.config\.js|\.prettierignore)$/,
-];
-
 // Deploys ignore what only CI and formatting read.
 const DEPLOY_IGNORES = [/^\.github\//, /prettier\.config\.js$/, /\.prettierignore$/];
 const deployMode = process.env.PLAN_MODE === 'deploy';
@@ -134,9 +122,7 @@ const changed = noBase ? [] : changedFiles();
 if (noBase) reason = 'no base commit: everything';
 else {
   const forcing = changed.filter(
-    (file) =>
-      RUN_ALL.some((re) => re.test(file)) &&
-      !(deployMode && DEPLOY_IGNORES.some((re) => re.test(file))),
+    (file) => forcesAll(file) && !(deployMode && DEPLOY_IGNORES.some((re) => re.test(file))),
   );
   if (forcing.length) {
     all = true;
@@ -160,6 +146,19 @@ if (!all && !deployMode) {
       if (found) packages.push(found);
     }
     reason += `, plus the suites reading it (${missing.join(', ')})`;
+  }
+}
+
+// A guard's baseline list (ci-run-all.mjs) is data, so it forces nothing; where the change reaches no
+// platform workspace, one small one stands in, so the platform's Checks job still runs the guards on it.
+if (!all && !deployMode && changed.some(isGuardData)) {
+  const platform = GROUPS.find((g) => g.group === 'platform').dirs;
+  if (!packages.some((p) => platform.some((dir) => `${p.path}/`.startsWith(dir)))) {
+    const host = turboPackages(false).find((p) => p.name === GUARD_DATA_HOST);
+    if (host) {
+      packages.push(host);
+      reason += `, plus ${GUARD_DATA_HOST} for the guards' baseline`;
+    }
   }
 }
 

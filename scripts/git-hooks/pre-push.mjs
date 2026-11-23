@@ -3,7 +3,8 @@
 // failure surfaces on the machine in minutes. It asks CI's own planner (.github/scripts/ci-plan.mjs)
 // which product groups the change reaches for lint, type check, format and the guards, and runs only the
 // tests that import a changed file, plus the guard tests that scan files. Whole suites, coverage and
-// E2E are CI's.
+// E2E are CI's. The test runs go a few at a time, a change that reaches most of a suite leaves that suite
+// to CI, and every failing step is reported in one run.
 //
 //   .githooks/pre-push -> node scripts/git-hooks/pre-push.mjs (the push's refs on stdin)
 //   node scripts/git-hooks/pre-push.mjs --dry-run   prints the steps for HEAD without running them
@@ -13,12 +14,20 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { availableParallelism, loadavg, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { reachOf, runSteps } from './pre-push-run.mjs';
+
+export { listedTests, pooled } from './pre-push-run.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const BASE_REF = 'origin/main';
 const ZERO_SHA = /^0+$/;
 
-/** @typedef {{ label: string, cmd: string, args: string[], env?: Record<string, string> }} Step */
+/**
+ * A step. `parallel` steps (the test runs) go a few at a time after the rest; a `stop` step (an install)
+ * ends the run when it fails, since nothing after it could pass; a `skip` step runs nothing and says why.
+ * @typedef {{ label: string, cmd: string, args: string[], env?: Record<string, string>,
+ *   parallel?: boolean, stop?: boolean, skip?: boolean }} Step
+ */
 /**
  * @typedef {{ group: string, filters: string, format: string, base: string }} Group
  */
@@ -101,6 +110,7 @@ export function rootInstallStep(rootHasModules) {
     label: 'install the root modules the planner needs',
     cmd: 'pnpm',
     args: ['install', '--frozen-lockfile', '--ignore-scripts', '--filter=.'],
+    stop: true,
   };
 }
 
@@ -132,11 +142,13 @@ export function installStep({ groups }, changes, { workspaceOf, hasModules }) {
     label: `install missing modules (${missing.length} without node_modules)`,
     cmd: 'pnpm',
     args: ['install', '--frozen-lockfile', '--ignore-scripts', ...[...new Set(filters)]],
+    stop: true,
   };
 }
 
 /** A source or test file vitest can trace imports from. */
 const CODE = /\.[cm]?[jt]sx?$/;
+const TEST_FILE = /\.test\.[cm]?[jt]sx?$/;
 
 /**
  * @typedef {{ status: string, path: string }} Change  one line of `git diff --name-status`
@@ -148,28 +160,29 @@ const CODE = /\.[cm]?[jt]sx?$/;
  *   helpApps: () => HelpRepoPaths[],
  *   emitterTest: (product: string) => { ws: Workspace, file: string } | null,
  *   maxWorkers?: number,
+ *   reach?: (ws: Workspace) => Reach | null,
  * }} TestContext
+ * @typedef {{ related: string[], total: number }} Reach  the test files a workspace's change reaches
+ *   (relative to it), and how many it has; null where vitest could not say
  */
 
+/** A suite this small always runs what the change reaches: the cap saves nothing there. */
+export const CAP_MIN_FILES = 20;
+/** Reaching this share of a workspace's test files is the suite, near enough: CI runs it. */
+export const CAP_SHARE = 0.8;
+
+/** The site's test, per product, that every telemetry event has a chart. */
+const EMITTERS_TEST = /^app\/telemetry\/[^/]+\/metric-emitters\.test\.ts$/;
+const EMITTERS_GLOB = 'app/telemetry/*/metric-emitters.test.ts';
+
 /**
- * The tests a push reaches, per workspace it changes:
- * - `vitest related` on its changed code files, which runs every test that imports them (and a changed
- *   test itself);
- * - its guard tests, which scan files rather than import them, so `related` never picks them up (an
- *   app's root and `app/` tests, `lib/small-text-contrast.test.ts`, and an api's `src/openapi` tests,
- *   which catch stale generated schemas);
- * - when the push changes a product's code, the site's metric-emitters test for that product, which
- *   fails when a telemetry event has no chart;
- * - when the push deletes or renames a file, the help centre's repo-paths tests (one per app's edition),
- *   which check each repo path a help article cites.
- * Paths are relative to the workspace, as vitest takes them from there. `maxWorkers` caps each run on a
- * busy machine.
+ * The workspaces a push changes that run vitest, each with its changed code files (relative to it), by
+ * folder. Deleted files are left out.
  * @param {Change[]} changes
- * @param {TestContext} ctx
- * @returns {Step[]}
+ * @param {(file: string) => Workspace | null} workspaceOf
+ * @returns {{ ws: Workspace, files: Set<string> }[]}
  */
-export function testSteps(changes, { workspaceOf, guardTests, helpApps, emitterTest, maxWorkers }) {
-  const workers = maxWorkers ? [`--maxWorkers=${maxWorkers}`] : [];
+export function touchedWorkspaces(changes, workspaceOf) {
   /** @type {Map<string, { ws: Workspace, files: Set<string> }>} */
   const touched = new Map();
   for (const change of changes) {
@@ -180,55 +193,157 @@ export function testSteps(changes, { workspaceOf, guardTests, helpApps, emitterT
     touched.set(ws.dir, entry);
     if (CODE.test(change.path)) entry.files.add(path.posix.relative(ws.dir, change.path));
   }
-  /** @type {Step[]} */
-  const steps = [];
-  for (const { ws, files } of [...touched.values()].sort((a, b) =>
-    a.ws.dir.localeCompare(b.ws.dir),
-  )) {
-    if (files.size > 0)
-      steps.push({
-        label: `${ws.name}: tests the change reaches`,
-        cmd: 'pnpm',
-        args: [
-          '--filter',
-          ws.name,
-          'exec',
-          'vitest',
-          'related',
-          ...[...files].sort(),
-          '--run',
-          '--passWithNoTests',
-          ...workers,
-        ],
-      });
-    const guards = guardTests(ws.dir);
-    if (guards.length > 0)
-      steps.push({
-        label: `${ws.name}: guard tests`,
-        cmd: 'pnpm',
-        args: ['--filter', ws.name, 'exec', 'vitest', 'run', ...guards, ...workers],
-      });
-  }
+  return [...touched.values()].sort((a, b) => a.ws.dir.localeCompare(b.ws.dir));
+}
+
+/**
+ * How many test runs go at once: one on a busy machine (half the cores in use), else one per four cores,
+ * three at most, so each keeps cores of its own and timing tests hold.
+ * @param {number} cores
+ * @param {number} load  the one-minute load average
+ */
+export function testPool(cores, load) {
+  if (load >= cores / 2) return 1;
+  return Math.min(3, Math.max(1, Math.floor(cores / 4)));
+}
+
+/**
+ * The workers each test run may use: two on a busy machine, an even share of the cores when several run
+ * at once, vitest's own choice for one run on a quiet machine.
+ * @param {number} cores
+ * @param {number} load
+ * @returns {number | undefined}
+ */
+export function testWorkers(cores, load) {
+  if (load >= cores / 2) return 2;
+  const pool = testPool(cores, load);
+  return pool > 1 ? Math.max(2, Math.floor(cores / pool)) : undefined;
+}
+
+/**
+ * The tests a push reaches, per workspace it changes:
+ * - `vitest related` on its changed code files, which runs every test that imports them (and a changed
+ *   test itself); when that is most of its suite (`CAP_SHARE` of `CAP_MIN_FILES` test files or more, by
+ *   `reach`), only the changed tests run and the suite is left to CI, which runs it whole anyway;
+ * - its guard tests, which scan files rather than import them, so `related` never picks them up (an
+ *   app's root and `app/` tests, `lib/small-text-contrast.test.ts`, and an api's `src/openapi` tests,
+ *   which catch stale generated schemas);
+ * - when the push changes a product's code, the site's metric-emitters test for that product, which
+ *   fails when a telemetry event has no chart: one run for every such product, and for those the site's
+ *   own change reaches, which its related run then leaves out, so none runs twice;
+ * - when the push deletes or renames a file, the help centre's repo-paths tests (one per app's edition),
+ *   which check each repo path a help article cites.
+ * Paths are relative to the workspace, as vitest takes them from there. `maxWorkers` caps each run.
+ * Every test step is `parallel`.
+ * @param {Change[]} changes
+ * @param {TestContext} ctx
+ * @returns {Step[]}
+ */
+export function testSteps(
+  changes,
+  { workspaceOf, guardTests, helpApps, emitterTest, maxWorkers, reach },
+) {
+  const workers = maxWorkers ? [`--maxWorkers=${maxWorkers}`] : [];
+  const touched = touchedWorkspaces(changes, workspaceOf);
   const products = new Set(
     changes
       .filter((c) => !c.status.startsWith('D') && CODE.test(c.path))
       .map((c) => c.path.split('/')[0] ?? ''),
   );
+  // The emitters tests to run, once each: a changed product's, and those the site's own change reaches.
+  /** @type {{ ws: Workspace, files: Set<string>, names: Set<string> } | null} */
+  let emitters = null;
   for (const product of [...products].sort()) {
-    const emitters = emitterTest(product);
-    if (emitters)
+    const found = emitterTest(product);
+    if (!found) continue;
+    emitters ??= { ws: found.ws, files: new Set(), names: new Set() };
+    emitters.files.add(found.file);
+    emitters.names.add(product);
+  }
+  /** @type {Step[]} */
+  const steps = [];
+  for (const { ws, files } of touched) {
+    const reached = files.size > 0 ? (reach?.(ws) ?? null) : null;
+    const filter = ['--filter', ws.name, 'exec', 'vitest'];
+    if (files.size > 0) {
+      const capped =
+        reached !== null &&
+        reached.total >= CAP_MIN_FILES &&
+        reached.related.length / reached.total >= CAP_SHARE;
+      // The site's related run leaves the emitters tests to their own step, which runs every one it reaches.
+      let exclude = /** @type {string[]} */ ([]);
+      if (reached && emitters && emitters.ws.dir === ws.dir) {
+        for (const file of reached.related) {
+          if (!EMITTERS_TEST.test(file)) continue;
+          emitters.files.add(file);
+          emitters.names.add(file.split('/')[2] ?? file);
+        }
+        exclude = ['--exclude', EMITTERS_GLOB];
+      }
+      if (capped) {
+        const of = `${reached.related.length} of ${reached.total} test files`;
+        const tests = [...files].filter((f) => TEST_FILE.test(f) && !EMITTERS_TEST.test(f)).sort();
+        if (tests.length > 0)
+          steps.push({
+            label: `${ws.name}: its changed tests (the change reaches ${of}, CI runs the suite)`,
+            cmd: 'pnpm',
+            args: [...filter, 'run', ...tests, ...workers],
+            parallel: true,
+          });
+        else
+          steps.push({
+            label: `${ws.name}: the change reaches ${of}, CI runs the suite`,
+            cmd: '',
+            args: [],
+            skip: true,
+          });
+      } else
+        steps.push({
+          label: `${ws.name}: tests the change reaches`,
+          cmd: 'pnpm',
+          args: [
+            ...filter,
+            'related',
+            ...[...files].sort(),
+            '--run',
+            '--passWithNoTests',
+            ...exclude,
+            ...workers,
+          ],
+          parallel: true,
+        });
+    }
+    const guards = guardTests(ws.dir);
+    if (guards.length > 0)
       steps.push({
-        label: `${product}: every telemetry event has a chart`,
+        label: `${ws.name}: guard tests`,
         cmd: 'pnpm',
-        args: ['--filter', emitters.ws.name, 'exec', 'vitest', 'run', emitters.file, ...workers],
+        args: [...filter, 'run', ...guards, ...workers],
+        parallel: true,
       });
   }
+  if (emitters)
+    steps.push({
+      label: `every telemetry event has a chart (${[...emitters.names].sort().join(', ')})`,
+      cmd: 'pnpm',
+      args: [
+        '--filter',
+        emitters.ws.name,
+        'exec',
+        'vitest',
+        'run',
+        ...[...emitters.files].sort(),
+        ...workers,
+      ],
+      parallel: true,
+    });
   if (changes.some((c) => c.status.startsWith('D') || c.status.startsWith('R')))
     for (const help of helpApps())
       steps.push({
         label: `${help.ws.name}: repo paths in help articles`,
         cmd: 'pnpm',
         args: ['--filter', help.ws.name, 'exec', 'vitest', 'run', ...help.tests, ...workers],
+        parallel: true,
       });
   return steps;
 }
@@ -303,8 +418,6 @@ function workspaceOf(file) {
   }
   return null;
 }
-
-const TEST_FILE = /\.test\.[cm]?[jt]sx?$/;
 
 /**
  * A workspace's guard tests, relative to it: the tests at its root and in `app/`,
@@ -433,7 +546,7 @@ function takeLock() {
   }
 }
 
-function main() {
+async function main() {
   const dryRun = process.argv.includes('--dry-run');
   if (!dryRun) {
     const shas = pushedShas(readFileSync(0, 'utf8'));
@@ -480,12 +593,22 @@ function main() {
     }),
   );
   const changes = parseNameStatus(git('diff', '--name-status', '-M', base, 'HEAD'));
-  // Half the cores busy already: cap each test run, so a starved CPU doesn't fail timing tests.
-  const busy = loadavg()[0] >= availableParallelism() / 2;
   const install = installStep(plan, changes, {
     workspaceOf,
     hasModules: (dir) => existsSync(path.join(ROOT, dir, 'node_modules')),
   });
+  const cores = availableParallelism();
+  const load = loadavg()[0] ?? 0;
+  // What each changed workspace's change reaches, asked of vitest before anything runs (a second or two each,
+  // several at once). A worktree still missing modules is not asked: its test runs go uncapped.
+  const reaches = install
+    ? new Map()
+    : await reachOf(
+        ROOT,
+        touchedWorkspaces(changes, workspaceOf).filter((t) => t.files.size > 0),
+        base,
+        env,
+      );
   const steps = [
     ...(install ? [install] : []),
     ...prePushSteps(plan),
@@ -494,7 +617,10 @@ function main() {
       guardTests,
       helpApps,
       emitterTest,
-      maxWorkers: busy ? 2 : undefined,
+      // A busy machine (half the cores in use) caps each run, so a starved CPU doesn't fail timing tests;
+      // runs going side by side share the cores evenly.
+      maxWorkers: testWorkers(cores, load),
+      reach: (ws) => reaches.get(ws.dir) ?? null,
     }),
   ];
   if (steps.length === 0) {
@@ -502,7 +628,10 @@ function main() {
     return 0;
   }
   if (dryRun) {
-    for (const step of steps) console.log(`${step.label}: ${step.cmd} ${step.args.join(' ')}`);
+    for (const step of steps)
+      console.log(
+        step.skip ? `skipped: ${step.label}` : `${step.label}: ${step.cmd} ${step.args.join(' ')}`,
+      );
     return 0;
   }
   const release = takeLock();
@@ -513,35 +642,12 @@ function main() {
     return 0;
   }
   try {
-    return runSteps(steps, env);
+    return await runSteps(ROOT, steps, env, testPool(cores, load));
   } finally {
     release();
   }
 }
 
-/**
- * @param {Step[]} steps
- * @param {NodeJS.ProcessEnv} env
- */
-function runSteps(steps, env) {
-  const started = Date.now();
-  for (const step of steps) {
-    console.log(`[pre-push] ${step.label}`);
-    const run = spawnSync(step.cmd, step.args, {
-      cwd: ROOT,
-      stdio: 'inherit',
-      env: { ...env, TURBO_TELEMETRY_DISABLED: '1', ...step.env },
-    });
-    if (run.status !== 0) {
-      console.error(`[pre-push] failed: ${step.label} (exit ${run.status ?? run.signal})`);
-      console.error('[pre-push] fix it, or push with --no-verify to leave it to CI');
-      return 1;
-    }
-  }
-  console.log(`[pre-push] passed in ${Math.round((Date.now() - started) / 1000)} s`);
-  return 0;
-}
-
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  process.exitCode = main();
+  process.exitCode = await main();
 }
