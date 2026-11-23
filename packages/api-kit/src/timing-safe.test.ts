@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { timingSafeEqual } from './timing-safe';
+import { bearerMatches, timingSafeEqual } from './timing-safe';
 
 describe('timingSafeEqual', () => {
   it('returns true for identical strings', async () => {
@@ -21,5 +21,21 @@ describe('timingSafeEqual', () => {
 
   it('is order-independent (a,b) === (b,a)', async () => {
     expect(await timingSafeEqual('left', 'right')).toBe(await timingSafeEqual('right', 'left'));
+  });
+});
+
+describe('bearerMatches', () => {
+  const req = (auth?: string) =>
+    new Request('https://x.test/', auth === undefined ? {} : { headers: { Authorization: auth } });
+
+  it('takes the key as a Bearer only', async () => {
+    expect(await bearerMatches(req('Bearer k1'), 'k1')).toBe(true);
+    expect(await bearerMatches(req('Bearer k2'), 'k1')).toBe(false);
+    expect(await bearerMatches(req('k1'), 'k1')).toBe(false);
+    expect(await bearerMatches(req(), 'k1')).toBe(false);
+  });
+
+  it('never matches an empty Bearer, even against an empty key', async () => {
+    expect(await bearerMatches(req('Bearer '), '')).toBe(false);
   });
 });

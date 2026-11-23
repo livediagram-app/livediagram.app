@@ -17,7 +17,8 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // And the public fetch, its address checks, the unfurl's host guard and its per-hop fetch: a gap there lets a typed URL
 // or a redirect reach a private network.
 // And the room client: a gap there drops a relay, or fails a save the room could not answer. And the access
-// closer: a gap there leaves an ended pairing's sockets open.
+// closer: a gap there leaves an ended pairing's sockets open. And the restore door and its key check: a gap there
+// lets someone other than the operator wind a room back, or a restore go unlogged.
 export default defineProject({
   test: {
     coverage: {
@@ -56,6 +57,8 @@ export default defineProject({
           lines: 100,
         },
         'src/room-ledger-store.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/room-restore.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/timing-safe.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-roster.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/sealed.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/typed-text.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },

@@ -359,7 +359,7 @@ a notice queue's two lines are literals in its own file, written by `notice-queu
 | `packages/index-app/src/tabs.ts`                    | An item's tabs alone (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "An item's tabs"): `GET /api/<items>/:id/tabs` answers `{ tabs: [{ id, name, kind }] }`, in the item's …                            |
 | `packages/index-app/src/teams.ts`                   | Team access for an app on the index (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"): an app keeps no copy of teams.                                                                                        |
 | `packages/index-app/src/testing.ts`                 | Tests only (`@liveworkspace/index-app/testing`): node:sqlite stand-ins for what the kit's Durable Objects run on.                                                                                                      |
-| `packages/index-app/src/timing-safe.ts`             | Constant-time string comparison for keys and share secrets: both sides are hashed (so length is hidden and the compared buffers are always 32 bytes) and the digests diffe…                                            |
+| `packages/index-app/src/timing-safe.ts`             | Re-exports `@liveworkspace/api-kit/timing-safe` (the restore door's key check too): constant-time string comparison for keys and share secrets, hashed first…                                                          |
 | `packages/index-app/src/worker-http.ts`             | Small pieces every liveworkspace service Worker answers with (index, media, Community, telemetry), kept once.                                                                                                          |
 
 ## Constants and configuration: the Worker
@@ -635,18 +635,18 @@ feature file names the suites that pin it; these pin the Worker as a whole.
 fails below the floor in `liveworkspace/apps/index/vitest.config.ts` (a little under what the Worker measures: 94
 statements, 91 branches, 96 functions, 97 lines), then the speed budgets. CI runs it for the workspace. Raise the floor as gaps close, never lower it:
 
-| Test                                                   | Pins                                                                                                                                                            |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/delegate.test.ts` (5)    | an app acting for a person: its own items only, refused without the key or for a guest                                                                          |
-| `liveworkspace/apps/index/src/drive.test.ts` (11)      | the Drive mirror's reach, the `drive_mirrored` flag, the change signal                                                                                          |
-| `liveworkspace/apps/index/src/fresh-teams.test.ts` (2) | a team made or joined since the token was minted                                                                                                                |
-| `liveworkspace/apps/index/src/workbench.test.ts` (5)   | accounts acting for a workbench token's account; `POST /internal/workbench-close`                                                                               |
-| `liveworkspace/apps/index/src/http.test.ts` (3)        | `readObject`: oversized, cut off, not an object                                                                                                                 |
-| `liveworkspace/apps/index/src/codec.test.ts` (5)       | `isId`, `isPartId`, ids on the wire                                                                                                                             |
-| `liveworkspace/apps/index/src/compound.test.ts` (2)    | the test database refuses what D1 refuses, and runs a nested union of any length (`unionAll` itself: `packages/api-kit/src/d1-compound.test.ts`)                |
-| `liveworkspace/apps/index/src/app.test.ts` (15)        | app pushes, the Inbox, the guest merge, the daily purge, the empty clean-up, merges told to apps                                                                |
-| `packages/index-client/src/*.test.ts`                  | the client's routes and errors, the constants, grant verification, browser guest tokens, held grants, token teams                                               |
-| `packages/index-app/src/*.test.ts`                     | each app's side: doors, outbox, grants on requests, room tickets, teams, purges, tabs, tab shares, forms, notifier, migration door, import, export, timing-safe |
+| Test                                                   | Pins                                                                                                                                               |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/delegate.test.ts` (5)    | an app acting for a person: its own items only, refused without the key or for a guest                                                             |
+| `liveworkspace/apps/index/src/drive.test.ts` (11)      | the Drive mirror's reach, the `drive_mirrored` flag, the change signal                                                                             |
+| `liveworkspace/apps/index/src/fresh-teams.test.ts` (2) | a team made or joined since the token was minted                                                                                                   |
+| `liveworkspace/apps/index/src/workbench.test.ts` (5)   | accounts acting for a workbench token's account; `POST /internal/workbench-close`                                                                  |
+| `liveworkspace/apps/index/src/http.test.ts` (3)        | `readObject`: oversized, cut off, not an object                                                                                                    |
+| `liveworkspace/apps/index/src/codec.test.ts` (5)       | `isId`, `isPartId`, ids on the wire                                                                                                                |
+| `liveworkspace/apps/index/src/compound.test.ts` (2)    | the test database refuses what D1 refuses, and runs a nested union of any length (`unionAll` itself: `packages/api-kit/src/d1-compound.test.ts`)   |
+| `liveworkspace/apps/index/src/app.test.ts` (15)        | app pushes, the Inbox, the guest merge, the daily purge, the empty clean-up, merges told to apps                                                   |
+| `packages/index-client/src/*.test.ts`                  | the client's routes and errors, the constants, grant verification, browser guest tokens, held grants, token teams                                  |
+| `packages/index-app/src/*.test.ts`                     | each app's side: doors, outbox, grants on requests, room tickets, teams, purges, tabs, tab shares, forms, notifier, migration door, import, export |
 
 ## Defaults ledger
 
