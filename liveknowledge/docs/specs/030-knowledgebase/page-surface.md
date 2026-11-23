@@ -243,7 +243,7 @@ Owner, 2026-11-21 (Work Tracker 1343): "The page tree gives one way to organise 
   "Show Pages Labelled <name>".
 - **Adding and changing them.** For whoever may label the page, **Add Label** (a tag icon) sits after Add Cover and
   Add Icon, the same quiet ghost button, with a hover card "Add a label to group this page with others, across
-  sections."; on a page that has labels it is a small **Edit Labels** button (a tag and a plus) after its pills.
+  sections."; on a page that has labels it is a small **Edit Labels** button (a plus) after its pills.
   Both open the **label picker**, a popover (a sheet on a phone) titled **Labels**:
   - a field, **Find or Create a Label**, that takes the focus as it opens;
   - the knowledgebase's labels, those on the most pages first (then by name), each a row with its dot, its name,
@@ -485,11 +485,11 @@ Changing the Knowledgebase Style is Editor only: a Participant is never offered 
 write ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)). Everyone sees the same look. A page's
 cover and its icon are changed by an Editor or a Participant, and seen by everyone.
 
-| Labels                                                       | Editor | Participant | Viewer |
-| ------------------------------------------------------------ | ------ | ----------- | ------ |
-| See a page's labels, filter the tree and search by them      | yes    | yes         | yes    |
-| Put a label on a page or take it off                         | yes    | yes         | no     |
-| Make, rename, recolour or delete a label                     | yes    | yes         | no     |
+| Labels                                                  | Editor | Participant | Viewer |
+| ------------------------------------------------------- | ------ | ----------- | ------ |
+| See a page's labels, filter the tree and search by them | yes    | yes         | yes    |
+| Put a label on a page or take it off                    | yes    | yes         | no     |
+| Make, rename, recolour or delete a label                | yes    | yes         | no     |
 
 ## Performance
 

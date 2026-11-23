@@ -222,8 +222,8 @@
 - [x] Performance and limits
 - [x] Presentation and UX
 - [x] Accessibility
-- [ ] Web Experience
-- [ ] Observability
+- [x] Web Experience
+- [x] Observability
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
