@@ -449,13 +449,11 @@ describe('the Settings panel, opened on a section', () => {
     );
     await open(null, { initialScope: 'all', initialCategoryId: 'account:tokens' });
     await until(() =>
-      document
-        .querySelector('[data-settings-cell="tokens"]')
-        ?.textContent?.includes('No tokens yet'),
+      document.querySelector('[data-settings-cell="tokens"]')?.textContent?.includes('No Tokens'),
     );
     const cell = document.querySelector('[data-settings-cell="tokens"]')!;
     expect(cell.textContent).toContain('Make a Token');
-    expect(cell.textContent).toContain('No tokens yet');
+    expect(cell.textContent).toContain('No Tokens');
     expect(fetchMock.mock.calls.filter(([url]) => url === '/api/account/tokens')).toHaveLength(1);
   });
 

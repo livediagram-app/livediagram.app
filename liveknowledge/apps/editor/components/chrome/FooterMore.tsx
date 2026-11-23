@@ -53,6 +53,8 @@ export function FooterMore({ children }: { children: ReactNode }) {
         role="group"
         aria-label="More"
         hidden={!open}
+        // Named for the page's floating Edit buttons, which step aside while it is open (PageEditBar).
+        data-footer-more-tray=""
         className="absolute bottom-full right-0 z-[var(--z-popover)] mb-2 flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 [&[hidden]]:hidden"
       >
         {children}

@@ -1,6 +1,6 @@
 'use client';
 
-import { CountBadge } from '@livedesign/ui';
+import { CountBadge, Button } from '@livedesign/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { imagePickerHeroArt } from '@liveworkspace/ui/dialog-hero-art/image-picker';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
@@ -11,6 +11,7 @@ import { addImageFileForDesign, ImageUploadError, type PickedImage } from '@/lib
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useImageGallery } from '@/hooks/ui/useImageGallery';
 import { GalleryEmpty } from '@liveworkspace/workbench/components/panels/GalleryEmpty';
+import { GalleryLoading } from '@liveworkspace/workbench/components/panels/GalleryLoading';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
@@ -42,7 +43,7 @@ type ImagePickerProps = {
   forElementId: string | null;
   // The image currently attached to that element (if any). When
   // truthy AND onRemove is provided, the picker renders a footer
-  // "Remove from element" action that detaches the image from
+  // "Remove Image" action that detaches the image from
   // the element without touching the gallery copy.
   currentImageId?: string | null;
   onRemove?: () => void;
@@ -139,7 +140,7 @@ export function ImagePicker({
       title: `Delete "${image.originalName ?? 'image'}"?`,
       message:
         'This image will be permanently removed from your gallery. This can’t be undone, and any element still using it will show a broken-image placeholder.',
-      confirmLabel: 'Delete image',
+      confirmLabel: 'Delete Image',
     });
     if (!ok) return;
     try {
@@ -178,7 +179,8 @@ export function ImagePicker({
           </TabButton>
         </nav>
       )}
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      {/* As tall as the Upload tab on every tab, so the centred dialog keeps its height as tabs change. */}
+      <div className={`min-h-0 flex-1 overflow-y-auto p-4 ${uploadOnly ? '' : 'min-h-56'}`}>
         {tab === 'upload' ? (
           <div ref={uploadZone}>
             <ImageDropZone
@@ -219,13 +221,9 @@ export function ImagePicker({
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
             Detaches the image from this element. The gallery copy is kept.
           </p>
-          <button
-            type="button"
-            onClick={onRemove}
-            className="rounded-md border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-          >
-            Remove from element
-          </button>
+          <Button variant="secondary" size="xs" className="shrink-0" onClick={onRemove}>
+            Remove Image
+          </Button>
         </footer>
       ) : null}
     </Dialog>
@@ -251,7 +249,7 @@ function GalleryGrid({
     return <Callout tone="error">{error}</Callout>;
   }
   if (!gallery) {
-    return <p className="text-xs text-slate-500 dark:text-slate-400">Loading…</p>;
+    return <GalleryLoading />;
   }
   if (gallery.length === 0) {
     return <GalleryEmpty description="Drop one in the Upload tab and it will show up here." />;

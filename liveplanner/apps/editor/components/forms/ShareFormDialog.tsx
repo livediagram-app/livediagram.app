@@ -204,9 +204,9 @@ export function ShareFormDialog({
             </>
           )}
           {link.error ? (
-            <p role="alert" className="text-[13px] text-red-700 dark:text-red-400">
+            <Callout tone="error" role="alert">
               {link.error}
-            </p>
+            </Callout>
           ) : null}
         </div>
       )}

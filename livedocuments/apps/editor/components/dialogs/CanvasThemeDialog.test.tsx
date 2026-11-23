@@ -308,7 +308,7 @@ describe('CanvasThemeDialog New Page Background', () => {
     expect(pages.onSet).toHaveBeenCalledWith({});
   });
 
-  it('with one chosen, offers the background and Apply to Every Page, and Like the Page Before clears it', () => {
+  it('with one chosen, offers the background and Apply to All, and Like the Page Before clears it', () => {
     const pages = panel({ newPageBackground: { fill: mint } });
     fireEvent.click(document.querySelector('[data-new-page-background-all]')!);
     expect(pages.onApplyToEveryPage).toHaveBeenCalledTimes(1);

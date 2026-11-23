@@ -9,7 +9,7 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { HeroDialogHeader, type HeroArt } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { Chip, lucideGlyph, useEscape } from '@liveplanner/ui';
+import { Chip, lucideGlyph, useEscape, CompactEmptyState, NoMatches, PlanCardsIcon } from '@liveplanner/ui';
 import { lucideSearch } from '@liveworkspace/icons/lucide';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { cardPickerHeroArt } from './CardPickerHeroArt';
@@ -98,7 +98,7 @@ export function CardPickerDialog<R extends CardPickerRow>({
   onQuery: (query: string) => void;
   // The list's accessible name ("Cards in this plan").
   listLabel: string;
-  // Said when there are no cards to offer at all (a search matching nothing says "No cards match.").
+  // The line under "No cards" when there are none to offer at all (a search matching nothing says so itself).
   emptyText: string;
   // Each row names its card's type (a list of several types).
   showType?: boolean;
@@ -158,10 +158,10 @@ export function CardPickerDialog<R extends CardPickerRow>({
                 <CardRow key={c.itemId} card={c} showType={showType} onPick={onPick} />
               ))}
             </ul>
+          ) : query.trim() ? (
+            <NoMatches things="cards" query={query} size="regular" />
           ) : (
-            <p className="px-2 py-2 text-[13px] text-slate-500 dark:text-slate-400">
-              {query.trim() ? 'No cards match.' : emptyText}
-            </p>
+            <CompactEmptyState icon={<PlanCardsIcon />} title="No cards" description={emptyText} />
           )}
         </div>
       </div>

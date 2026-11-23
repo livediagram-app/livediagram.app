@@ -104,7 +104,7 @@ export function GapArt() {
         </Txt>
         <g className="kb-in" style={at(1)}>
           <Button x={40} y={64} w={120} filled>
-            Draft a Page From What We Know
+            Draft a Page
           </Button>
         </g>
       </Sheet>

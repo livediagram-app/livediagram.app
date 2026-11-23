@@ -7,26 +7,11 @@
 // Cancel or Escape leaves the map as it was.
 
 import { useId, useMemo, useState } from 'react';
-import { Button, Select } from '@livedocuments/ui';
+import { Button, Select, CloseIcon } from '@livedocuments/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
-import {
-  cleanPinLabel,
-  inkOn,
-  mapLandColour,
-  mapPaperColour,
-  MAP_HIGHLIGHTS_MAX,
-  MAP_PIN_LABEL_MAX,
-  MAP_PINS_MAX,
-  MAP_REGION_LABELS,
-  MAP_REGIONS,
-  unprojectPoint,
-  type MapGeometry,
-  type MapPin,
-  type MapRegion,
-  type ShapeElement,
-} from '@livedocuments/document';
+import { cleanPinLabel, inkOn, mapLandColour, mapPaperColour, MAP_HIGHLIGHTS_MAX, MAP_PIN_LABEL_MAX, MAP_PINS_MAX, MAP_REGION_LABELS, MAP_REGIONS, unprojectPoint, type MapGeometry, type MapPin, type MapRegion, type ShapeElement } from '@livedocuments/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { MapDrawing } from '@/components/canvas/MapDrawing';
 import { useMapGeometry } from '@/lib/map-geometry-loader';
@@ -255,7 +240,7 @@ export function MapDialog({
                         aria-hidden
                         className="text-optical-line text-slate-500 dark:text-slate-400"
                       >
-                        ×
+                        <CloseIcon size={12} />
                       </span>
                     </button>
                   </li>

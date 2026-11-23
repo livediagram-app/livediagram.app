@@ -1,15 +1,8 @@
-import {
-  ENTITY_MAX_FIELDS,
-  ENTITY_MAX_TEXT,
-  entityFieldView,
-  removedFieldRemap,
-  type EntityField,
-  type FieldRemap,
-} from '@livediagram/document';
+import { CloseIcon } from '@livediagram/ui';
+import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, entityFieldView, removedFieldRemap, type EntityField, type FieldRemap } from '@livediagram/document';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';
 import { EntityKeyPicker } from './EntityKeyPicker';
-import { CloseIcon } from '@livediagram/ui';
 
 // The Fields dialog's rows (docs/specs/009-elements/entity.md "The Fields dialog"): per field a key dropdown
 // (EntityKeyPicker), the name, the type and a remove button, then Add Field. Typing changes a draft, leaving an

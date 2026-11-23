@@ -197,9 +197,9 @@ export function GithubView({
           </Button>
         </div>
         {changeError ? (
-          <p role="alert" className="-mt-4 text-[12px] font-medium text-red-700 dark:text-red-300">
+          <Callout tone="error" role="alert">
             {changeError}
-          </p>
+          </Callout>
         ) : null}
         <GithubRepositories key={c.connectedAt} scope={scope} connection={c} phone={phone} />
         <div className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800">

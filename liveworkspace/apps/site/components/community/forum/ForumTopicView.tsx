@@ -1,5 +1,6 @@
 'use client';
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -138,9 +139,9 @@ export function ForumTopicView({
               : `${replies.length} ${communityPlural(replies.length, 'Reply', 'Replies')}`}
           </h2>
           {answerError ? (
-            <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
+            <Callout tone="error" role="alert">
               {answerError}
-            </p>
+            </Callout>
           ) : null}
           {replies.length > 0 ? (
             <ol className="flex flex-col gap-3">

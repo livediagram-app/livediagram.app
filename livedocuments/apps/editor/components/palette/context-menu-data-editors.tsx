@@ -1,12 +1,5 @@
-import {
-  CHECKLIST_MAX_ITEMS,
-  CHECKLIST_MAX_TEXT,
-  PIE_PALETTE,
-  type ChecklistItem,
-  type LegendItem,
-  type LineSeries,
-  type PieSlice,
-} from '@livedocuments/document';
+import { CloseIcon } from '@livedocuments/ui';
+import { CHECKLIST_MAX_ITEMS, CHECKLIST_MAX_TEXT, PIE_PALETTE, type ChecklistItem, type LegendItem, type LineSeries, type PieSlice } from '@livedocuments/document';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
@@ -119,7 +112,7 @@ export function PieDataEditor({
                 onClick={() => motion.leave(i, () => onChange(rows.filter((_, j) => j !== i)))}
                 className={REMOVE_ROW}
               >
-                ×
+                <CloseIcon size={12} />
               </button>
             </div>
           </div>
@@ -191,7 +184,7 @@ export function LegendDataEditor({
                 onClick={() => motion.leave(i, () => onChange(rows.filter((_, j) => j !== i)))}
                 className={REMOVE_ROW}
               >
-                ×
+                <CloseIcon size={12} />
               </button>
             </div>
           </div>
@@ -349,7 +342,7 @@ export function ChecklistRowsEditor({
                 onClick={() => motion.leave(i, () => onChange(rows.filter((_, j) => j !== i)))}
                 className={REMOVE_ROW}
               >
-                ×
+                <CloseIcon size={12} />
               </button>
             </div>
           </div>

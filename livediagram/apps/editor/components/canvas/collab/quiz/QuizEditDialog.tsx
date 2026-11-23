@@ -1,16 +1,8 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { Button } from '@livediagram/ui';
-import {
-  clampQuizSeconds,
-  compactQuizOptions,
-  QUIZ_MAX_OPTIONS,
-  QUIZ_OPTION_MAX_TEXT,
-  QUIZ_SECONDS_CHOICES,
-  quizOptionLetter,
-  type ShapeElement,
-} from '@livediagram/document';
+import { Button, CloseIcon, Select } from '@livediagram/ui';
+import { clampQuizSeconds, compactQuizOptions, QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT, QUIZ_SECONDS_CHOICES, quizOptionLetter, type ShapeElement } from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
@@ -158,7 +150,7 @@ export function QuizEditDialog({
                       onClick={() => removeRow(i)}
                       className="flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
                     >
-                      ×
+                      <CloseIcon size={12} />
                     </button>
                   </div>
                 ))}
@@ -175,17 +167,18 @@ export function QuizEditDialog({
             </fieldset>
             <label className="block">
               <span className={labelClass}>Time Limit</span>
-              <select
+              <Select
                 value={seconds}
                 onChange={(e) => setSeconds(Number(e.target.value))}
-                className={`${fieldClass} mt-1`}
+                className="mt-1 w-full"
+                selectClassName="px-2.5 text-sm"
               >
                 {secondChoices.map((s) => (
                   <option key={s} value={s}>
                     {s < 60 ? `${s} seconds` : s % 60 === 0 ? `${s / 60} min` : `${s} seconds`}
                   </option>
                 ))}
-              </select>
+              </Select>
             </label>
           </div>
           <DialogFooter>

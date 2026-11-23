@@ -78,7 +78,7 @@ describe('the comments at a page’s foot, by role', () => {
       expect(screen.getByRole('heading', { name: /Comments/ }).textContent).toBe('Comments1');
       // With a thread to answer, a new thread is behind a quiet button; the thread ends in its own reply line.
       expect(screen.queryByLabelText('Add a comment')).toBeNull();
-      fireEvent.click(screen.getByRole('button', { name: 'Start a New Thread' }));
+      fireEvent.click(screen.getByRole('button', { name: 'New Thread' }));
       fireEvent.change(screen.getByLabelText('Add a comment'), { target: { value: 'New point' } });
       fireEvent.click(screen.getByRole('button', { name: 'Comment' }));
       await waitFor(() => expect(change).toHaveBeenCalledWith({ op: 'start', text: 'New point' }));

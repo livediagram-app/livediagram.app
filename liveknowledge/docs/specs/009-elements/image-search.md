@@ -106,7 +106,7 @@ type ImageElement = {
 - **Set on pick.** Picking a search result sets `credit`, and `alt` to the picture's title when
   the element has no alt text yet (as an upload does with its file name).
 - **Cleared on change.** Attaching any other image (upload, gallery, another search result) replaces
-  or removes `credit`, and **Remove from element** removes it, so a credit never describes a picture
+  or removes `credit`, and **Remove Image** removes it, so a credit never describes a picture
   that is no longer there.
 - **Shown in the Image panel.** The element's **Image** section shows a **Credit** line: the credit
   text, a **Source** link and, when known, a **Licence** link, both opening in a new tab.

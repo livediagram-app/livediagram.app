@@ -7,6 +7,7 @@
 // renders <DefaultFoldersSettings> with the same rows.
 
 import { useId, useMemo, useState } from 'react';
+import { Callout } from '@liveworkspace/ui/callout';
 import type { App, Folder, IndexClient } from '@liveworkspace/index-client';
 import { Button } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
@@ -14,24 +15,13 @@ import { defaultFoldersHeroArt } from '@liveworkspace/ui/dialog-hero-art/default
 import { Dialog, DialogFooter } from '../ui/Dialog';
 import { FolderOutlineIcon } from '../ui/icons';
 import { ToastProvider, useToast } from '../ui/Toasts';
-import {
-  PlacementBrowser,
-  parsePlacement,
-  placementValue,
-  type PickerFolder,
-  type PickerTeam,
-} from '../dialogs/PlacementBrowser';
+import { PlacementBrowser, parsePlacement, placementValue, type PickerFolder, type PickerTeam } from '../dialogs/PlacementBrowser';
 import { useFolderStore } from '../data/useFolders';
 import { useExplorer } from '../explorer/context';
 import type { LensOption } from '../lens';
 import type { OrganiseTelemetry, TeamRef } from '../types';
 import { kindWords } from '../words';
-import {
-  defaultEntries,
-  destinationOf,
-  type DefaultEntry,
-  type DefaultFolderOption,
-} from './entries';
+import { defaultEntries, destinationOf, type DefaultEntry, type DefaultFolderOption } from './entries';
 import { usePlacementDefaults, type PlacementDefaultsStore } from './usePlacementDefaults';
 
 type Lists = {
@@ -63,9 +53,9 @@ export function DefaultFoldersList({
   const teamName = (id: string | null) => (id ? (names.get(id) ?? 'Team') : null);
   if (defaults.status === 'failed') {
     return (
-      <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+      <Callout tone="error" role="alert">
         Couldn’t load your default folders.
-      </p>
+      </Callout>
     );
   }
   const ready = defaults.status === 'ready' && !loading;

@@ -404,8 +404,8 @@ describe.each(ROLES)('as %s', (role) => {
   it(`${writer ? 'offers' : 'hides'} every writer's action, and shows everything else`, async () => {
     await open(role);
     const conflicts = section('Needs Attention');
-    expect(has(conflicts, 'Release Process Is Right, Fix the Other')).toBe(writer);
-    expect(has(conflicts, 'Hotfixes Is Right, Fix the Other')).toBe(writer);
+    expect(has(conflicts, 'Release Process Is Right')).toBe(writer);
+    expect(has(conflicts, 'Hotfixes Is Right')).toBe(writer);
     expect(has(conflicts, 'Not a Conflict')).toBe(writer);
     expect(has(conflicts, 'Ask Both Owners')).toBe(writer);
     expect(has(section('Knowledge Health'), 'Remind the Owners')).toBe(writer);
@@ -445,12 +445,10 @@ describe('an Editor’s actions', () => {
   it('opens the other page to fix, whichever is right', async () => {
     await open();
     const conflicts = section('Needs Attention');
-    fireEvent.click(
-      conflicts.getByRole('button', { name: 'Release Process Is Right, Fix the Other' }),
-    );
+    fireEvent.click(conflicts.getByRole('button', { name: 'Release Process Is Right' }));
     // The other page, at the passage that disagrees (it opened the page alone before, at its top).
     expect(vi.mocked(goToBlock).mock.calls[0]!.slice(1)).toEqual(['p2', 'b3']);
-    fireEvent.click(conflicts.getByRole('button', { name: 'Hotfixes Is Right, Fix the Other' }));
+    fireEvent.click(conflicts.getByRole('button', { name: 'Hotfixes Is Right' }));
     expect(vi.mocked(goToBlock).mock.calls[1]!.slice(1)).toEqual(['p1', 'b7']);
   });
 

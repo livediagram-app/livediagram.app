@@ -214,7 +214,7 @@ from then on.
 fill and a pattern, never a picture, or `{}` for the plain paper. With one, a new page (added, added like another, or
 the first page as its kind is chosen, unless it already wears one) starts on it rather than on the page before's, a
 logo page on its fill alone; a photo page takes none. Absent, the carry-over above. Read via `newPageBackgroundOf`
-(`packages/design/src/tab-new-page-background.ts`); Apply to Every Page is `pagesGivenNewPageBackground`
+(`packages/design/src/tab-new-page-background.ts`); Apply to All is `pagesGivenNewPageBackground`
 (`pages-background-copy.ts`). It rides the tab like any tab setting, so no storage changes.
 
 **A new page's background.** A new page with nothing to carry over starts on the plain paper, and a

@@ -7,7 +7,7 @@ import { useId, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { OTHER_ANSWER, OTHER_MAX, type PublicQuestion } from '@liveplanner/forms';
 import { fromLocalInput, localInputValue } from '@liveplanner/items';
-import { PlusIcon, Tooltip } from '@liveplanner/ui';
+import { ChevronDownIcon, PlusIcon, Tooltip } from '@liveplanner/ui';
 
 // The one colour picker (docs/specs/004-interface-design/colour-picker.md), loaded only when Custom is opened, so a
 // form without a Colour question, or a respondent who takes a swatch, never downloads it.
@@ -165,27 +165,37 @@ export function Dropdown({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <select
-        id={controlId}
-        className={`${FIELD} ${invalid ? FIELD_BAD : FIELD_OK} max-w-md cursor-pointer`}
-        value={value}
-        disabled={disabled}
-        aria-invalid={invalid || undefined}
-        aria-describedby={describedBy}
-        aria-required={q.required || undefined}
-        onChange={(e) => {
-          onChange(e.target.value);
-          onBlur?.();
-        }}
-      >
-        <option value="">Choose…</option>
-        {(q.options ?? []).map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-        {q.other ? <option value={OTHER_ANSWER}>Other…</option> : null}
-      </select>
+      {/* A real select (a phone's own picker, the keyboard) wearing the form's field, with our chevron in place of
+          the browser's arrow. */}
+      <div className="relative max-w-md">
+        <select
+          id={controlId}
+          className={`${FIELD} ${invalid ? FIELD_BAD : FIELD_OK} cursor-pointer appearance-none pr-10`}
+          value={value}
+          disabled={disabled}
+          aria-invalid={invalid || undefined}
+          aria-describedby={describedBy}
+          aria-required={q.required || undefined}
+          onChange={(e) => {
+            onChange(e.target.value);
+            onBlur?.();
+          }}
+        >
+          <option value="">Choose…</option>
+          {(q.options ?? []).map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+          {q.other ? <option value={OTHER_ANSWER}>Other…</option> : null}
+        </select>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+        >
+          <ChevronDownIcon size={14} />
+        </span>
+      </div>
       {value === OTHER_ANSWER ? (
         <input
           type="text"

@@ -594,9 +594,9 @@ export function RoadmapDialog({
           </Callout>
         ) : null}
         {saveFailed ? (
-          <p role="alert" className="text-xs text-rose-700 dark:text-rose-300">
+          <Callout tone="error" role="alert">
             Couldn’t save. Try again.
-          </p>
+          </Callout>
         ) : null}
       </div>
       {state === 'draft' || state === 'published' ? (

@@ -24,7 +24,7 @@ import {
 } from '@/lib/photo-editor/photo-dialog-store';
 import { track } from '@/lib/telemetry';
 import { AdjustmentEditor } from './AdjustmentEditor';
-import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';
+import { OptionChoice, OptionSlider, OptionSwitch } from './photo-controls';
 import { FilterPointPicker, FilterPreviewSquare } from './FilterPreview';
 import { photoAdjustHeroArt } from './PhotoAdjustHeroArt';
 import { PhotoDialogHero } from './PhotoDialogHero';
@@ -74,7 +74,7 @@ function ParamControl({
         />
       );
     case 'toggle':
-      return <OptionToggle label={spec.name} on={value === true} onChange={onChange} />;
+      return <OptionSwitch label={spec.name} on={value === true} onChange={onChange} />;
     case 'point': {
       const p = (value as { x: number; y: number } | undefined) ?? spec.default;
       return (
@@ -302,7 +302,7 @@ export function FilterDialog({
         {run.applying ? (
           <FilterPreviewSquare photo={photo} applying={run.applying} id={id} params={params} />
         ) : null}
-        <OptionToggle label="Preview" on={preview} onChange={setPreview} />
+        <OptionSwitch label="Preview" on={preview} onChange={setPreview} />
       </div>
       <Footer
         progress={run.progress}
@@ -365,7 +365,7 @@ export function AdjustDialog({
       />
       <div className="flex max-h-[55vh] flex-col gap-3 overflow-y-auto px-6 py-4">
         <AdjustmentEditor id={id} params={params} onChange={setParams} histogram={histogram} />
-        <OptionToggle label="Preview" on={preview} onChange={setPreview} />
+        <OptionSwitch label="Preview" on={preview} onChange={setPreview} />
       </div>
       <Footer
         progress={null}

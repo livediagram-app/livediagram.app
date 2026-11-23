@@ -114,7 +114,7 @@ export type NewPageBackgroundSpread<T> = {
   skipped: number;
 };
 
-/** Apply to Every Page: every page of the tab given its new-page background (or put back on the paper when it has
+/** Apply to All: every page of the tab given its new-page background (or put back on the paper when it has
  *  none), as one edit, each re-inked for its new fill in one walk. A logo page takes the fill alone; a photo page
  *  has no background and is passed by; a locked page keeps its own and counts as skipped. */
 export function pagesGivenNewPageBackground<T extends PagesTab>(

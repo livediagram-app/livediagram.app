@@ -141,7 +141,7 @@ src/cross-app/
   use-cross-target.ts     a target's boards, pages, tabs or templates, read once (automationTarget), the newest 10 kept
   cross-app-panels.tsx    the five panels: pickers, field chips (Insert a Field), the live preview
   CrossAppPreview.tsx     the preview: each text as it lands, its values as chips
-  CrossAppRuleCard.tsx    beside the steps: Runs As, Reaches, Limits, Last Runs in the Audit Trail
+  CrossAppRuleCard.tsx    beside the steps: Runs As, Reaches, Limits, View Last Runs
 ```
 
 liveplanner's kit (apps/editor/components/automations) merges the same tiles, group and panels.

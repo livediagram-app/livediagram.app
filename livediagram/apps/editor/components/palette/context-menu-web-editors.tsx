@@ -1,25 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import {
-  CONCEPT_LABEL_MAX,
-  CONCEPT_NOTE_MAX,
-  CONCEPT_ROWS,
-  conceptDrawsNotes,
-  isConceptShape,
-  type ConceptRow,
-  CARD_TAG_MAX,
-  CARD_TAGS_MAX,
-  NAV_LINKS_MAX,
-  PROCESS_MAX_STEPS,
-  PROCESS_MIN_STEPS,
-  STATS_MAX,
-  STATS_MIN,
-  WEB_TEXT_MAX,
-  type ShapeElement,
-  type StatItem,
-  type WebRows,
-} from '@livediagram/document';
+import { ArrowDownIcon, ArrowUpIcon, CloseIcon } from '@livediagram/ui';
+import { CONCEPT_LABEL_MAX, CONCEPT_NOTE_MAX, CONCEPT_ROWS, conceptDrawsNotes, isConceptShape, type ConceptRow, CARD_TAG_MAX, CARD_TAGS_MAX, NAV_LINKS_MAX, PROCESS_MAX_STEPS, PROCESS_MIN_STEPS, STATS_MAX, STATS_MIN, WEB_TEXT_MAX, type ShapeElement, type StatItem, type WebRows } from '@livediagram/document';
 import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
 import { conceptTitle } from '@/components/palette/ConceptMenuSection';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
@@ -63,7 +46,7 @@ function RowControls({
         onClick={() => onMove(index - 1)}
         className={rowButton}
       >
-        ↑
+        <ArrowUpIcon size={12} />
       </button>
       <button
         type="button"
@@ -72,7 +55,7 @@ function RowControls({
         onClick={() => onMove(index + 1)}
         className={rowButton}
       >
-        ↓
+        <ArrowDownIcon size={12} />
       </button>
       <button
         type="button"
@@ -81,7 +64,7 @@ function RowControls({
         onClick={onRemove}
         className={rowButton}
       >
-        ×
+        <CloseIcon size={12} />
       </button>
     </>
   );

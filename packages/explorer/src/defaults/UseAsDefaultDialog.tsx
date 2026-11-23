@@ -10,6 +10,7 @@
 // root is never a default.
 
 import { useId } from 'react';
+import { Callout } from '@liveworkspace/ui/callout';
 import { Button } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { useAsDefaultHeroArt } from '@liveworkspace/ui/dialog-hero-art/use-as-default';
@@ -55,9 +56,9 @@ export function UseAsDefaultDialog({
           New {kind.lowerMany} that open as
         </legend>
         {defaults.status === 'failed' ? (
-          <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+          <Callout tone="error" role="alert">
             Couldn’t load your default folders.
-          </p>
+          </Callout>
         ) : null}
         <ul className="flex flex-col gap-1">
           {defaultEntries.map((entry) => {

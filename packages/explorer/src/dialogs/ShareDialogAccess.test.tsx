@@ -5,12 +5,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  IndexError,
-  SHARE_SIGN_IN_OFF,
-  type IndexClient,
-  type ShareSignInRule,
-} from '@liveworkspace/index-client';
+import { IndexError, SHARE_SIGN_IN_OFF, type IndexClient, type ShareSignInRule } from '@liveworkspace/index-client';
 import { failureText } from '../data/errors';
 import { ShareDialog, type ShareDialogProps } from './ShareDialog';
 import { domainsProblem, domainsText } from './share/SignInSection';

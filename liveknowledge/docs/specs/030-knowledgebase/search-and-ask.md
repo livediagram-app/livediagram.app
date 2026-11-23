@@ -60,7 +60,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   built-in AI's caps ([Built-in AI](#built-in-ai)), and even when the stored key cannot be opened (the person asked
   for built-in AI, so nothing is swapped quietly); `key` with no key set answers on built-in AI, which is what the
   person sees. With a key set, each answer says on its trust line which AI answered ("Built-In AI", or the
-  model). Draft a Page From What We Know, the conflict check and Describe to Set Up keep the key first.
+  model). Draft a Page, the conflict check and Describe to Set Up keep the key first.
 - **Built-in AI's bounds**, since liveknowledge pays for it ([Built-in AI](#built-in-ai)).
 - **The key** is sent once over TLS to the api, encrypted with AES-GCM under the Worker's `AI_KEY_SECRET`, and kept in
   the knowledgebase's Durable Object. It is never sent back to any client: AI Settings shows only "Key Ending 4f2a", **Replace**
@@ -85,7 +85,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   aside, so a page is never called Stale without a why.
 - **It does not guess.** The model is told to say so when the passages do not answer the question or part of it. That
   part is recorded as an unanswered question ([Insights](insights.md)) and shown as a **Knowledge Gap** card
-  with **Draft a Page From What We Know** and, once it has an email of its own (the review emails are built; this
+  with **Draft a Page** and, once it has an email of its own (the review emails are built; this
   one is not), **Ask <owner> to Write It**.
 - **Scope:** an answer reads only pages the asker can open. A follow-up keeps the conversation (up to 10 turns).
   Chats are kept per person, per knowledgebase, in the browser ([The Ask view](#the-ask-view)).
@@ -105,7 +105,7 @@ Owner, 2026-11-21: a person's and a team's own AI key, kept once in liveworkspac
 ([liveworkspace/docs/specs/003-accounts/ai-keys.md](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md)).
 The knowledgebase's own key stays, and comes first.
 
-- **The order**, for Ask, Draft a Page From What We Know and Describe to Set Up: the knowledgebase's own key (AI
+- **The order**, for Ask, Draft a Page and Describe to Set Up: the knowledgebase's own key (AI
   Settings), else its team's key (the knowledgebase's team, when the asker is a joined member), else the asker's own
   key, else built-in AI. Asking for built-in AI (`ai: 'built-in'`) skips the keys, as before.
 - **The conflict check** runs in the background, with no asker whose request could prove who they are, so it uses
@@ -272,7 +272,7 @@ strangers.
   After ten turns the field gives way to a line saying to start a new question.
 - **Save as Page** makes a subpage of a page the person chooses, titled from the question, holding the answer
   without its markers and a Sources list linking each cited page.
-- **Draft a Page From What We Know** makes a top-level page titled from the question whose first line is "Draft,
+- **Draft a Page** makes a top-level page titled from the question whose first line is "Draft,
   Not Verified", then the question as a heading, then a draft from one more Ask call. If that call fails the page
   holds the mark and the heading alone. The draft's Ask call counts against the limits like any question. A title
   made from a question (here and Save as Page) drops a closing full stop, since a Knowledge Gap is a sentence and a

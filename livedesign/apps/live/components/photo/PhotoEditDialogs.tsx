@@ -5,12 +5,7 @@
 // operations" Flatten).
 import { useId, useMemo, useState } from 'react';
 import { Button } from '@livedesign/ui';
-import {
-  BLEND_MODE_GROUPS,
-  BLEND_MODE_NAMES,
-  hexToBytes,
-  type BlendMode,
-} from '@livedesign/photo-engine';
+import { BLEND_MODE_GROUPS, BLEND_MODE_NAMES, hexToBytes, type BlendMode } from '@livedesign/photo-engine';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { standardGroup } from '@/components/colour/colour-options';
@@ -19,15 +14,10 @@ import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { fillSelection, type FillContents } from '@/lib/photo-editor/edit-ops';
 import { flatten } from '@/lib/photo-editor/layer-ops';
 import { setSelection } from '@/lib/photo-editor/mask-ops';
-import {
-  grow,
-  modifySelection,
-  selectColourRange,
-  type ModifyHow,
-} from '@/lib/photo-editor/selection-ops';
+import { grow, modifySelection, selectColourRange, type ModifyHow } from '@/lib/photo-editor/selection-ops';
 import { photoTools } from '@/lib/photo-editor/tool-state';
 import { track } from '@/lib/telemetry';
-import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';
+import { OptionChoice, OptionSlider, OptionSwitch } from './photo-controls';
 import { PhotoDialogHero } from './PhotoDialogHero';
 import { photoFillHeroArt } from './PhotoFillHeroArt';
 import { photoFlattenHeroArt } from './PhotoFlattenHeroArt';
@@ -126,7 +116,7 @@ export function FillDialog({ photo, onClose }: { photo: PhotoEditorView; onClose
               width="w-full"
               onChange={setOpacity}
             />
-            <OptionToggle label="Preserve Transparency" on={keep} onChange={setKeep} />
+            <OptionSwitch label="Preserve Transparency" on={keep} onChange={setKeep} />
           </>
         ) : null}
       </div>

@@ -27,7 +27,7 @@ function fillLabel(
   return colour.motion ? 'Animated' : 'Custom gradient';
 }
 
-/** What Apply to Every Page says it did, by the pages it reached and the locked ones it kept. */
+/** What Apply to All says it did, by the pages it reached and the locked ones it kept. */
 export function everyPageMessage(reached: number, kept: number): string {
   const pages = (n: number) => `${n} ${n === 1 ? 'page' : 'pages'}`;
   const done = `Background applied to ${pages(reached)}.`;

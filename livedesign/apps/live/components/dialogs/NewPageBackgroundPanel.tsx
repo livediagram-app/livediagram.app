@@ -103,7 +103,7 @@ export function NewPageBackgroundPanel({
                 onClick={pages.onApplyToEveryPage}
                 data-new-page-background-all=""
               >
-                Apply to Every Page
+                Apply to All
               </Button>
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                 Gives the {pages.units === 1 ? 'page' : `${pages.units} pages`} this background. A
