@@ -447,7 +447,7 @@ export function LinkSheetDialog({
         </button>
       </DialogHeader>
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-x-5 gap-y-4 overflow-y-auto px-6 py-4 sm:grid-cols-2">
-        {/* Across both columns, so each label holds one line; on a narrow screen a whole segment wraps, never a word. */}
+        {/* Across both columns: the source decides every field under it. The toggle wraps whole segments itself. */}
         <section className="flex min-w-0 flex-col gap-2 sm:col-span-2">
           <h3 className={FIELD_LABEL}>Source</h3>
           <SegmentedToggle
@@ -458,7 +458,7 @@ export function LinkSheetDialog({
             }}
             options={KIND_OPTIONS}
             label="Source"
-            className="flex-wrap self-start [&>button]:whitespace-nowrap"
+            className="self-start"
           />
         </section>
         <section className="flex min-w-0 flex-col gap-2">
