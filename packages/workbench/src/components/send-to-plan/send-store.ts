@@ -128,6 +128,19 @@ function byElement(): NonNullable<typeof indexed> {
 
 const EMPTY: PlanSend[] = [];
 
+/** Listens for any change to the open item's sends (a writing's chips, drawn outside React); answers the unsubscribe. */
+export function onSendsChanged(listener: () => void): () => void {
+  return subscribe(listener);
+}
+
+/** The sends of an element (its sticky, shape or words), or of its thread, newest first; as of now. */
+export function elementSends(
+  elementId: string,
+  of: 'element' | 'thread' = 'element',
+): readonly PlanSend[] {
+  return byElement()[of].get(elementId) ?? EMPTY;
+}
+
 /** The sends of an element (its sticky, shape or words), or of its thread, newest first; live. */
 export function useSends(
   elementId: string | null | undefined,

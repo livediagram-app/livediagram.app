@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
 
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@liveknowledge/document';
 import type { CollabDeepLink } from '@/lib/collab-deep-link';
+import {
+  registerArticleHandle,
+  type ArticleEditorHandle,
+} from '@/lib/article/article-editor-store';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import type { TabLoadState } from './editor-page-helpers';
 
@@ -76,6 +80,53 @@ describe('useCollabDeepLink', () => {
   it('opens a thread’s comments', () => {
     const { calls } = arrive({ at: { tabId: 't1', elementId: 'b1' }, open: 'comments' });
     expect(calls.openComments).toHaveBeenCalledWith('b1');
+  });
+});
+
+describe('useCollabDeepLink: a block of the writing', () => {
+  // A sent paragraph's link names its block (docs/specs/013-workspace/send-to-plan.md "What it sends"): not an
+  // element, so it is sought in the tab's articles, as each lays out, for a second at most.
+  const frames: FrameRequestCallback[] = [];
+  let off: (() => void) | null = null;
+  beforeEach(() => {
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+  });
+  afterEach(() => {
+    off?.();
+    off = null;
+    frames.length = 0;
+    vi.unstubAllGlobals();
+  });
+  const laidOut = (rect: { x: number; y: number; w: number; h: number } | null) => {
+    off = registerArticleHandle({
+      flow: 'f1',
+      rangeRect: (id: string) => (id === 'blk' ? rect : null),
+    } as unknown as ArticleEditorHandle);
+  };
+  const tick = (n: number) => {
+    for (let i = 0; i < n && frames.length > 0; i++) frames.shift()!(0);
+  };
+
+  it('brings the block into view, selecting nothing', () => {
+    laidOut({ x: 5, y: 600, w: 400, h: 24 });
+    const { calls } = arrive({ at: { tabId: 't1', elementId: 'blk' }, open: null });
+    expect(calls.scrollIntoView).toHaveBeenCalledWith(5, 600, 400, 24, { center: true });
+    expect(calls.select).not.toHaveBeenCalled();
+  });
+
+  it('waits for its article to lay it out, and gives up after a second', () => {
+    const { calls } = arrive({ at: { tabId: 't1', elementId: 'blk' }, open: null });
+    tick(5);
+    expect(calls.scrollIntoView).not.toHaveBeenCalled();
+    laidOut({ x: 0, y: 900, w: 300, h: 20 });
+    tick(1);
+    expect(calls.scrollIntoView).toHaveBeenCalledWith(0, 900, 300, 20, { center: true });
+    off?.();
+    off = null;
+    const gone = arrive({ at: { tabId: 't1', elementId: 'blk' }, open: null });
+    tick(100);
+    expect(gone.calls.scrollIntoView).not.toHaveBeenCalled();
+    expect(frames).toHaveLength(0);
   });
 });
 

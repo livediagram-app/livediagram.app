@@ -575,6 +575,7 @@
     "./components/sheet-links/useSheetLinkedCharts": "./src/components/sheet-links/useSheetLinkedCharts.ts",
     "./components/sheet-links/sheet-link-signal": "./src/components/sheet-links/sheet-link-signal.ts",
     "./components/sheet-links/sheet-links": "./src/components/sheet-links/sheet-links.ts",
+    "./components/send-to-plan/article-send-dom": "./src/components/send-to-plan/article-send-dom.ts",
     "./components/send-to-plan/SendPlanList": "./src/components/send-to-plan/SendPlanList.tsx",
     "./components/send-to-plan/SendToPlanButton": "./src/components/send-to-plan/SendToPlanButton.tsx",
     "./components/send-to-plan/SendToPlanDialog": "./src/components/send-to-plan/SendToPlanDialog.tsx",

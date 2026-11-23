@@ -24,6 +24,7 @@ import { slashKey, slashPlugin, type SlashBridge } from '@/lib/article/article-s
 import { type SlashItem } from '@/lib/article/article-slash-items';
 import { setLocalArticleCaret } from '@/lib/article/article-carets-store';
 import { articlePeersPlugin, onlyPeers } from '@/lib/article/article-peers';
+import { articleSentPlugin, onlySent } from '@/lib/article/article-sent';
 import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
 import { noteArticleTyping, releaseArticleHold } from '@/lib/article/article-holds-store';
 import { announceArticleHeld } from '@/lib/article/article-hold-notice';
@@ -182,6 +183,8 @@ export function mountArticleView({
       // Collaborators' holds: outlined, and our typing in them refused with a notice naming the writer
       // (docs/specs/007-editor/article-pages.md "Holding a paragraph").
       articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
+      // Sent blocks' chips, and a reader's Send to Plan under the words picked (docs/specs/013-workspace/send-to-plan.md).
+      articleSentPlugin(isEditable),
       // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
       findHighlightPlugin(() => latest.current.flow),
       // The footnotes' numbers and the breaks above their notes; a press on a reference puts the caret in its note.
@@ -274,7 +277,7 @@ export function mountArticleView({
       if (!v) return;
       v.updateState(v.state.apply(tr));
       // Collaborators' carets and holds arriving change nothing of ours: no commit, no toolbar update.
-      if (onlyPeers(tr) || onlyHolds(tr)) return;
+      if (onlyPeers(tr) || onlyHolds(tr) || onlySent(tr)) return;
       if (tr.docChanged) {
         if (!tr.getMeta('article-remote')) {
           lastLocal.current = Date.now();
