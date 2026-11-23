@@ -13,6 +13,7 @@ import {
 } from '@liveworkspace/subscription';
 import {
   formatDay,
+  formatShortDay,
   preloadUpgradeDialog,
   SubscriptionProvider,
 } from '@liveworkspace/subscription-ui';
@@ -222,7 +223,10 @@ describe('Settings › Subscription, your tier', () => {
     expect(within(tier).queryByRole('img', { name: 'You Have Pro' })).toBeNull();
     expect(within(tier).getByText(`${formatPrice(PRICES.GBP.pro, 'GBP')} a month`)).toBeTruthy();
     fireEvent.click(within(tier).getByRole('button', { name: 'Upgrade to Pro' }));
-    expect(await screen.findByRole('dialog', { name: 'One Upgrade, Every App' })).toBeTruthy();
+    // The dialog's first render in this file: a busy machine takes longer over it than the default second.
+    expect(
+      await screen.findByRole('dialog', { name: 'One Upgrade, Every App' }, { timeout: 5_000 }),
+    ).toBeTruthy();
   });
 
   it('Pro: the badge, the price in the subscription’s own currency, the renewal day and Manage Billing', async () => {
@@ -496,9 +500,10 @@ describe('Settings › Subscription, your teams', () => {
     expect(garden.querySelector('summary')!.textContent).toBe(
       '7 members have asked for Pro for Teams›',
     );
-    expect(garden.textContent).toContain('Bea Lee · Automation Rules · 21 November');
+    // The days are in the reader's locale, so the test words them as this machine's does.
+    expect(garden.textContent).toContain(`Bea Lee · Automation Rules · ${formatShortDay(asked)}`);
     expect(garden.textContent).toContain('“We need more rules.”');
-    expect(garden.textContent).toContain('A member · 20 November');
+    expect(garden.textContent).toContain(`A member · ${formatShortDay(asked - 86_400_000)}`);
     expect(garden.textContent).toContain('and 5 more');
     expect(
       row(teams, 'team_north').querySelector('[data-team-requests] summary')!.textContent,
@@ -506,16 +511,17 @@ describe('Settings › Subscription, your teams', () => {
   });
 
   it('a member who asked today is told so beside the team', async () => {
+    const askedAt = Date.UTC(2026, 10, 21, 9);
     const { tier, teams } = await panel({
       me: meResponse({
-        teams: [
-          team(SIDE, 'Side Projects', 'member', 'free', { askedAt: Date.UTC(2026, 10, 21, 9) }),
-        ],
+        teams: [team(SIDE, 'Side Projects', 'member', 'free', { askedAt })],
       }),
     });
     await ready(tier);
     const side = row(teams, 'team_side');
-    expect(side.querySelector('[data-team-asked]')!.textContent).toBe('You asked on 21 November');
+    expect(side.querySelector('[data-team-asked]')!.textContent).toBe(
+      `You asked on ${formatShortDay(askedAt)}`,
+    );
     expect(side.querySelector('[data-team-requests]')).toBeNull();
   });
 

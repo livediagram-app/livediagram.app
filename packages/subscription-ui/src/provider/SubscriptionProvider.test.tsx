@@ -318,6 +318,9 @@ describe('SubscriptionProvider', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const { rerender } = render(page(0));
     await screen.findByText('You’re on Pro');
+    // The notice starts its clock in an effect, which a slow machine can run after the text is found: let it
+    // start before counting the seconds.
+    await act(async () => {});
     // It rendered every second: each render used to start the clock again, and it never left.
     for (let second = 1; second < SUBSCRIBED_NOTICE_MS / 1000; second += 1) {
       act(() => void vi.advanceTimersByTime(1000));

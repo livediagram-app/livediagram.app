@@ -65,6 +65,9 @@ async function open(who: Who, over: Partial<EmailIntakesResponse>, used = 500) {
     ),
   );
   await screen.findByRole('textbox', { name: 'Board address' });
+  // The dialog starts its reads in effects, which a slow machine can run after the field is found: let them start
+  // before a test moves the clock.
+  await act(async () => {});
   return service;
 }
 

@@ -22,6 +22,7 @@ import {
   AutomationsContext,
   type AutomationsTarget,
 } from '@liveworkspace/automations-ui/AutomationsContext';
+import { monthResetDay } from '@liveworkspace/subscription-ui/item-tier';
 import { setProForTests } from '@liveworkspace/subscription-ui/testing';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import type { Usage } from '@liveworkspace/subscription';
@@ -95,6 +96,9 @@ function open(who: Who, initial?: AutomationsTarget, usage: Usage = {}) {
   render(withPro(<Harness {...(initial ? { initial } : {})} />, service.fetcher));
   return service;
 }
+
+// The day the month's runs start again, as this machine's locale writes it ("1 December", "December 1").
+const USED = `This month’s automation runs are used. Rules run again on ${monthResetDay(Date.now())}.`;
 
 const notices = () => screen.queryAllByRole('status').filter((n) => n.hasAttribute('data-callout'));
 const noticeSaying = (words: string | RegExp) =>
@@ -175,9 +179,7 @@ describe('the Runs This Month meter', () => {
   it('once used turns amber, says when rules run again and offers the owner the upgrade', async () => {
     list('owner');
     open('owner', undefined, { automationRuns: { used: 500 } });
-    const notice = await noticeSaying(
-      /This month’s automation runs are used\. Rules run again on 1 /,
-    );
+    const notice = await noticeSaying(USED);
     expect(notice.textContent).toContain('Pro has 10,000 a month.');
     expect(within(notice).getByRole('button', { name: 'Upgrade to Pro' })).toBeTruthy();
     expect(document.querySelector('[data-usage-meter]')!.getAttribute('data-usage-meter')).toBe(
@@ -340,9 +342,7 @@ describe('Run Rule refused', () => {
       max: 500,
     });
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith(
-        expect.stringMatching(/^This month’s automation runs are used\. Rules run again on 1 /),
-      ),
+      expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(new RegExp(`^${USED}`))),
     );
   });
 

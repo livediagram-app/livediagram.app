@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { formatShortDay } from '../price';
 import { preloadUpgradeDialog } from '../provider/SubscriptionProvider';
 import { useSubscription, useUpgrade } from '../provider/hooks';
 import {
@@ -15,6 +16,10 @@ import {
 
 // subscription.md "Ask an Admin": a team's member sends its admins a request for Pro for Teams, with the limit that
 // prompted it and a note, once a day; Copy Note stays for sending it another way.
+
+// The day they asked, as this machine's locale writes it ("21 November", "November 21"): the dialog words it for
+// the reader's locale, and tier-words.test.ts pins both spellings.
+const ASKED_DAY = formatShortDay(ASKED_AT);
 
 beforeAll(async () => {
   await preloadUpgradeDialog();
@@ -74,7 +79,7 @@ describe('Ask an Admin', () => {
   it('says plainly when they already asked today', async () => {
     await open({ teamRequest: { sent: false, askedAt: ASKED_AT } });
     fireEvent.click(screen.getByRole('button', { name: 'Send Request' }));
-    await screen.findByText('You asked on 21 November. The admins of Garden Club still have it.');
+    await screen.findByText(`You asked on ${ASKED_DAY}. The admins of Garden Club still have it.`);
   });
 
   it('opens saying so when the service already said they asked', async () => {
@@ -83,7 +88,7 @@ describe('Ask an Admin', () => {
         teams: [team(GARDEN, 'Garden Club', 'member', 'free', { askedAt: ASKED_AT })],
       }),
     });
-    expect(screen.getByText(/You asked on 21 November/)).toBeTruthy();
+    expect(screen.getByText(new RegExp(`You asked on ${ASKED_DAY}`))).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Send Request' })).toBeNull();
   });
 

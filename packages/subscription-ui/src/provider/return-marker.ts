@@ -58,5 +58,7 @@ export function stripSubscribedParam(): void {
   const url = new URL(window.location.href);
   if (!url.searchParams.has(SUBSCRIBED_PARAM)) return;
   url.searchParams.delete(SUBSCRIBED_PARAM);
-  window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+  // Null, never Next's own state: Next then copies its state across and its hooks hear the new address
+  // (packages/next-config history-state.test.js).
+  window.history.replaceState(null, '', url.pathname + url.search + url.hash);
 }
