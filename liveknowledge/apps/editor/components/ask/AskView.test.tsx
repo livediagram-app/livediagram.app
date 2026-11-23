@@ -627,6 +627,28 @@ describe('a failure, in words with the next step', () => {
     expect(alert.textContent).not.toContain('Claude');
   });
 
+  it.each([
+    ['personal', 'anthropic', 'Claude Did Not Accept the Key'],
+    ['team', 'openai', 'OpenAI Did Not Accept the Key'],
+  ] as const)(
+    "names the provider of the %s key that answered, never built-in AI's failure",
+    async (uses, usesProvider, title) => {
+      api.apiKnowledgeAi.mockResolvedValue(
+        settings({
+          hasKey: false,
+          keyHint: '',
+          uses,
+          usesProvider,
+          usesModel: 'm',
+          usesModelLabel: 'M',
+        }),
+      );
+      const alert = await fail('bad-key');
+      expect(alert.textContent).toContain(title);
+      expect(alert.textContent).not.toContain('Built-In AI');
+    },
+  );
+
   it('asks again in place', async () => {
     const alert = await fail('overloaded');
     fireEvent.click(within(alert).getByRole('button', { name: 'Ask Again' }));

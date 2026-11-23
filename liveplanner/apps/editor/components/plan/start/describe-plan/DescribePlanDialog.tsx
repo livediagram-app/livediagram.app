@@ -207,6 +207,7 @@ export function DescribePlanDialog({
           examples={DESCRIBE_PLAN_EXAMPLES}
           busy={busy}
           said={said}
+          saidOnSource={keyFailure !== null}
           source={(id) => (
             <WorkbenchAiSource
               id={id}

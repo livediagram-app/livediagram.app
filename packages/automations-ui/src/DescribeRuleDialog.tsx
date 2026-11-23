@@ -105,6 +105,7 @@ export function DescribeRuleDialog({
         examples={examples}
         busy={busy}
         said={said}
+        saidOnSource={keyFailure !== null}
         source={(id) => (
           <WorkbenchAiSource
             id={id}

@@ -169,9 +169,10 @@ describe('the dialog', () => {
     await openFromMenu();
     fireEvent.change(box(), { target: { value: 'Flag overdue cards' } });
     fireEvent.click(draftButton());
-    expect((await screen.findByRole('alert')).textContent).toBe(
-      'Anthropic did not accept the key.',
-    );
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toBe('Anthropic did not accept the key.');
+    // Heard, but drawn once: the source line says it, with Fix Key.
+    expect(alert.classList.contains('sr-only')).toBe(true);
     const line = () => document.querySelector('[data-ai-source-stub]')!;
     expect(line().getAttribute('data-ai-source-stub')).toBe('bad-key');
     fireEvent.click(draftButton());

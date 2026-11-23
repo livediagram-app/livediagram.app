@@ -198,6 +198,7 @@ export function DescribeFormDialog({
           examples={DESCRIBE_FORM_EXAMPLES}
           busy={busy}
           said={said}
+          saidOnSource={keyFailure !== null}
           source={(id) => (
             <WorkbenchAiSource
               id={id}

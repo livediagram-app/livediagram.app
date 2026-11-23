@@ -168,7 +168,8 @@ opened from the dialog (over Ask or AI Knowledge the views' host draws it).
   (`provider`). There is no no-key state, no loading state and no "could not be read" state any more.
 - **Describe.** `TextArea`, focused on open, labelled "What Is This Knowledgebase For?" ("What Pages Should Be
   Added?" when adding). Under it the example, or what stops the description (under 20, over 1,000); the counter
-  shows from 900 characters. Three chips fill the field (Engineering Handbook, Customer Support, Company Handbook).
+  shows from 900 characters. Three chips, **Start From**, sit between the label and the field and fill it, the caret in it (Engineering
+  Handbook, Customer Support, Company Handbook).
   Cmd or Ctrl and Enter sends. Adding sends the existing titles in tree order with their depth (`pageTreeRows`).
 - **The request** (`apiSuggestSetup`): one `POST setup/suggest` with an `AbortController` (Cancel, and the dialog
   going, abort it) joined to a 90 second bound. A failure is a kind, never the route's message:

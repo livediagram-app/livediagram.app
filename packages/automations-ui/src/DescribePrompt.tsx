@@ -25,6 +25,9 @@ export const DescribePrompt = forwardRef<
     busy: boolean;
     // A refusal, in the api's fixed words or the dialog's own.
     said: string | null;
+    // The source line already shows the refusal (a key that failed says so on it, with Fix Key): the alert is then
+    // heard, not drawn twice.
+    saidOnSource?: boolean;
     // The source line: which AI drafts it, given the id the box is described by.
     source: (id: string) => ReactNode;
     onSubmit: () => void;
@@ -32,7 +35,20 @@ export const DescribePrompt = forwardRef<
     dataAttr: string;
   }
 >(function DescribePrompt(
-  { label, text, onText, max, placeholder, examples, busy, said, source, onSubmit, dataAttr },
+  {
+    label,
+    text,
+    onText,
+    max,
+    placeholder,
+    examples,
+    busy,
+    said,
+    saidOnSource = false,
+    source,
+    onSubmit,
+    dataAttr,
+  },
   ref,
 ) {
   const sourceId = useId();
@@ -96,7 +112,11 @@ export const DescribePrompt = forwardRef<
           </span>
         </div>
       </div>
-      {said ? (
+      {said && saidOnSource ? (
+        <span role="alert" id={saidId} className="sr-only">
+          {said}
+        </span>
+      ) : said ? (
         <Callout tone="warning" size="md" role="alert">
           <span id={saidId}>{said}</span>
         </Callout>

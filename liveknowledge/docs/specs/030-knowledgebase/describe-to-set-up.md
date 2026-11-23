@@ -118,7 +118,9 @@ One centred dialog of steady height, in three steps.
 
 1. **Describe.** A text field, "What Is This Knowledgebase For?", with an example under it ("The engineering
    handbook for a 12 person logistics startup: how we ship, on-call, architecture and decisions."), 20 to 1,000
-   characters, and three example chips that fill it. The primary button is **Suggest a Structure**.
+   characters, and three example chips that fill it, above the field (owner, 2026-11-22: "the try an example bits in
+   the describe with AI screens should be above the textbox, not below it"). The primary button is **Suggest a
+   Structure**.
 2. **Review.** The proposed page tree, indented as the sidebar draws it, each page with its title and one line on
    what belongs there. Every row has a checkbox (ticked) and its title can be renamed in place; unticking a page
    unticks its subpages, and ticking one ticks the pages above it. Above the tree: a suggested name for the knowledgebase, used only while it is still

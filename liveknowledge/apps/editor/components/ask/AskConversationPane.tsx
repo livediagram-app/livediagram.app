@@ -24,6 +24,7 @@ import { KnowledgeGapCard } from './KnowledgeGapCard';
 import { openPassage } from './open-passage';
 import { PagePickerDialog } from './PagePickerDialog';
 import { useDraftPage } from './useDraftPage';
+import { aiInUse } from '@/lib/knowledge-ask/ai-settings-words';
 import { answeredByLabel, offersAiChoice, useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
 import { AskAiPicker } from './AskAiPicker';
 import { useAiSettingsState, type AskSession } from './useAskSession';
@@ -60,16 +61,20 @@ export function AskConversationPane({
   const chrome = useEditorChromeStore();
   const toast = useToast();
   const { rights } = session;
-  // Whose key the knowledgebase holds, for a failure that is the provider's own.
+  // Whose key answers (the knowledgebase's, the team's or the asker's own), for a failure that is the provider's own.
   const ai = useAiSettingsState(session.documentId);
   const settings = ai.status === 'ready' ? ai.settings : null;
   // With a key set and built-in AI here, the person chooses which answers (search-and-ask.md "Choosing which AI
   // answers"); else the quiet line says which does.
   const choosing = settings !== null && offersAiChoice(settings);
   const choice = useAskAiChoice(session.who, session.documentId);
+  const uses = settings ? aiInUse(settings) : null;
+  // A team's or a person's key may be another provider's than the knowledgebase's own (`usesProvider`).
   const provider = settings
-    ? settings.hasKey && !(choosing && choice === 'built-in')
-      ? settings.provider
+    ? uses !== null && uses !== 'built-in' && !(choosing && choice === 'built-in')
+      ? uses === 'knowledgebase'
+        ? settings.provider
+        : (settings.usesProvider ?? settings.provider)
       : 'built-in'
     : undefined;
   const last = turns[turns.length - 1];
