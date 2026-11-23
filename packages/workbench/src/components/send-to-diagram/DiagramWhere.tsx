@@ -27,7 +27,7 @@ const CARD_ON =
   'border-brand-500 bg-brand-50 shadow-[0_0_0_1px_var(--color-brand-500)] dark:border-brand-400 dark:bg-brand-500/10 dark:shadow-[0_0_0_1px_var(--color-brand-400)]';
 const CARD_OFF =
   'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:bg-slate-800';
-const ICON_ON = 'bg-brand-600 text-white dark:bg-brand-400 dark:text-slate-900';
+const ICON_ON = 'bg-brand-700 text-white dark:bg-brand-600';
 const ICON_OFF =
   'bg-slate-100 text-slate-500 group-hover:text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200';
 
@@ -134,7 +134,7 @@ function DiagramList({
         className="flex max-h-44 min-h-11 flex-col gap-0.5 overflow-y-auto rounded-xl border border-slate-200 p-1 dark:border-slate-700"
       >
         {list.state === 'loading' ? (
-          <div className="flex flex-col gap-1 p-1" aria-label="Loading your diagrams">
+          <div role="status" className="flex flex-col gap-1 p-1" aria-label="Loading your diagrams">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}

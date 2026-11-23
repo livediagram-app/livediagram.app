@@ -203,6 +203,8 @@ describe("a source's diagram sends", () => {
     const second = await makeItem(ada.auth, { app: 'livediagram', title: 'Second' });
     h.appAnswer = () => Response.json({ id: first.id });
     await send(ada.auth, ask(kb.id));
+    // Two sends in one millisecond: the first made earlier, so the order is the test's, not the clock's.
+    h.db.sql.prepare('UPDATE diagram_sends SET at = at - 1000').run();
     h.appAnswer = () => Response.json({ id: second.id });
     await send(ada.auth, ask(kb.id, { source: { ...ask(kb.id).source, elementId: 'b2' } }));
     const adas = await sendsOf(ada.auth, kb.id);

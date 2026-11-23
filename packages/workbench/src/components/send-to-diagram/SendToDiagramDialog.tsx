@@ -279,7 +279,7 @@ export function SendToDiagramDialog({
                     <span
                       className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition ${
                         on
-                          ? 'bg-brand-600 text-white dark:bg-brand-400 dark:text-slate-900'
+                          ? 'bg-brand-700 text-white dark:bg-brand-600'
                           : 'bg-slate-100 text-slate-500 group-hover:text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200'
                       }`}
                     >

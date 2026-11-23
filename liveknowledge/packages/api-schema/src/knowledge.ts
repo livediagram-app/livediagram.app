@@ -349,6 +349,43 @@ export type PageStructureResponse = {
   provider: KnowledgeSetupProvider;
 };
 
+/** `POST .../pages/<tab>/describe-diagram` (send-to-diagram.md "The draft"): the words picked (at most 8,000
+ *  characters) and the kind of diagram asked for; `auto` lets the model choose. */
+export type DiagramDraftRequest = {
+  words: string;
+  kind: 'auto' | 'flowchart' | 'sequence' | 'mindmap' | 'orgchart' | 'architecture' | 'timeline';
+};
+/** One box of a drafted diagram: plain text, `shape` one of square, circle, diamond, cylinder, parallelogram,
+ *  hexagon or document, `role` an org chart's job title, `group` the id of a group it sits in. */
+export type DiagramDraftNode = {
+  id: string;
+  label: string;
+  shape?: string;
+  note?: string;
+  role?: string;
+  group?: string;
+};
+/** One arrow, between two boxes by id; a sequence's arrows are its messages in order. */
+export type DiagramDraftEdge = {
+  from: string;
+  to: string;
+  label?: string;
+  line?: 'solid' | 'dashed';
+};
+/** The words read as a diagram (the platform's DiagramSendGraph), and which AI answered. Nothing is written: the editor
+ *  hands the graph to the index, which has livediagram draw it. */
+export type DiagramDraftResponse = {
+  graph: {
+    title?: string;
+    style?: 'flow' | 'tree' | 'mindmap' | 'sequence';
+    direction?: 'down' | 'right';
+    nodes: DiagramDraftNode[];
+    edges: DiagramDraftEdge[];
+    groups?: { id: string; label: string }[];
+  };
+  provider: KnowledgeSetupProvider;
+};
+
 /** How an agent connects: the MCP server, the command line, or an API token used directly. */
 export type KnowledgeAgentDoor = 'mcp' | 'cli' | 'token';
 /** One connection of Insights' Connected Agents (insights.md "Connected agents"). What the room knows of

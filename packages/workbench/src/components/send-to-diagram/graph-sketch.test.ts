@@ -1,5 +1,6 @@
 // The picker's preview layout (graph-sketch.ts): layered, rings and lifelines, linear on the largest graph.
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { DiagramSendGraph } from '@liveworkspace/index-client';
 import { SKETCH_BOX_H, SKETCH_BOX_W, sketchGraph } from './graph-sketch';
 
@@ -84,11 +85,12 @@ describe('sketchGraph', () => {
       from: `n${i % 60}`,
       to: `n${(i * 7 + 1) % 60}`,
     })).filter((e) => e.from !== e.to);
-    const started = performance.now();
-    for (let i = 0; i < 50; i++) {
-      sketchGraph({ nodes, edges });
-      sketchGraph({ nodes, edges, style: 'mindmap' });
-    }
-    expect(performance.now() - started).toBeLessThan(500);
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 50; i++) {
+        sketchGraph({ nodes, edges });
+        sketchGraph({ nodes, edges, style: 'mindmap' });
+      }
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(500));
   });
 });

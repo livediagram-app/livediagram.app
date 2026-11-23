@@ -3764,6 +3764,162 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "DiagramDraftEdge": {
+    "additionalProperties": false,
+    "description": "One arrow, between two boxes by id; a sequence's arrows are its messages in order.",
+    "properties": {
+      "from": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "line": {
+        "enum": [
+          "solid",
+          "dashed"
+        ],
+        "type": "string"
+      },
+      "to": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "from",
+      "to"
+    ],
+    "type": "object"
+  },
+  "DiagramDraftNode": {
+    "additionalProperties": false,
+    "description": "One box of a drafted diagram: plain text, `shape` one of square, circle, diamond, cylinder, parallelogram, hexagon or document, `role` an org chart's job title, `group` the id of a group it sits in.",
+    "properties": {
+      "group": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "note": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string"
+      },
+      "shape": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "label"
+    ],
+    "type": "object"
+  },
+  "DiagramDraftRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../pages/<tab>/describe-diagram` (send-to-diagram.md \"The draft\"): the words picked (at most 8,000 characters) and the kind of diagram asked for; `auto` lets the model choose.",
+    "properties": {
+      "kind": {
+        "enum": [
+          "auto",
+          "flowchart",
+          "sequence",
+          "mindmap",
+          "orgchart",
+          "architecture",
+          "timeline"
+        ],
+        "type": "string"
+      },
+      "words": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "words",
+      "kind"
+    ],
+    "type": "object"
+  },
+  "DiagramDraftResponse": {
+    "additionalProperties": false,
+    "description": "The words read as a diagram (the platform's DiagramSendGraph), and which AI answered. Nothing is written: the editor hands the graph to the index, which has livediagram draw it.",
+    "properties": {
+      "graph": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "enum": [
+              "down",
+              "right"
+            ],
+            "type": "string"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/DiagramDraftEdge"
+            },
+            "type": "array"
+          },
+          "groups": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "label"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/DiagramDraftNode"
+            },
+            "type": "array"
+          },
+          "style": {
+            "enum": [
+              "flow",
+              "tree",
+              "mindmap",
+              "sequence"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodes",
+          "edges"
+        ],
+        "type": "object"
+      },
+      "provider": {
+        "$ref": "#/components/schemas/KnowledgeSetupProvider"
+      }
+    },
+    "required": [
+      "graph",
+      "provider"
+    ],
+    "type": "object"
+  },
   "DiffView": {
     "additionalProperties": false,
     "properties": {

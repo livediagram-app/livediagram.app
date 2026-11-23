@@ -62,6 +62,8 @@ export const ROOT_TYPES = [
   'KnowledgeSetupSuggestion',
   'PageStructureRequest',
   'PageStructureResponse',
+  'DiagramDraftRequest',
+  'DiagramDraftResponse',
   'KnowledgeOverviewResponse',
   'KnowledgeEmailResult',
   'ReportGapRequest',

@@ -1030,6 +1030,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429, 502, 503],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/pages/{tabId}/describe-diagram',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Send to Diagram's draft: the words picked on a page (at most 8,000 characters) read as a diagram of the kind asked for (`auto`, `flowchart`, `sequence`, `mindmap`, `orgchart`, `architecture` or `timeline`), answered as a graph of boxes, arrows and groups in plain text, and which AI answered (`provider`). On the key that answers Ask (the knowledgebase's, its team's or the person's own) when one does, else on built-in AI (Workers AI), whose reply is asked once more when it does not read. Nothing is written: the editor hands the graph to the index. A signed-in reader in person: an API token gets 403 `needs_a_person`, a guest is refused. 20 a person an hour, 100 a knowledgebase a day, and on built-in AI 10 a person a day across every knowledgebase. 502 with the failure's kind in words when the model call fails or its reply holds no diagram (`no-diagram`); 503 with no key and no built-in AI.",
+    auth: 'clerk',
+    tokenUsable: false,
+    requestSchema: 'DiagramDraftRequest',
+    responseSchema: 'DiagramDraftResponse',
+    statuses: [200, 400, 401, 403, 404, 405, 410, 429, 502, 503],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/knowledge',
     segment: 'documents',

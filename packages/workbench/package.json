@@ -956,7 +956,14 @@
     "./components/canvas/web/CardFace": "./src/components/canvas/web/CardFace.tsx",
     "./components/canvas/web/SiteHeaderFace": "./src/components/canvas/web/SiteHeaderFace.tsx",
     "./lib/drag-geometry": "./src/lib/drag-geometry.ts",
-    "./hooks/canvas/useSnapGuideState": "./src/hooks/canvas/useSnapGuideState.ts"
+    "./hooks/canvas/useSnapGuideState": "./src/hooks/canvas/useSnapGuideState.ts",
+    "./components/send-to-diagram/DiagramSketch": "./src/components/send-to-diagram/DiagramSketch.tsx",
+    "./components/send-to-diagram/DiagramWhere": "./src/components/send-to-diagram/DiagramWhere.tsx",
+    "./components/send-to-diagram/diagram-chip-dom": "./src/components/send-to-diagram/diagram-chip-dom.ts",
+    "./components/send-to-diagram/diagram-kinds": "./src/components/send-to-diagram/diagram-kinds.tsx",
+    "./components/send-to-diagram/diagram-send-store": "./src/components/send-to-diagram/diagram-send-store.ts",
+    "./components/send-to-diagram/graph-sketch": "./src/components/send-to-diagram/graph-sketch.ts",
+    "./hooks/ui/useSettled": "./src/hooks/ui/useSettled.ts"
   },
   "scripts": {
     "lint": "oxlint",
