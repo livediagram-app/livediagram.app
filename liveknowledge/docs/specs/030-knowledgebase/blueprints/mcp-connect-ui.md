@@ -57,7 +57,7 @@ Derived from [Connect](../mcp-connect.md). The fourth view, on the frame and the
 - **`AccessStep`**: the consent line, then the three rows of `accessRows(role)` (`connect-words.ts`), each an icon,
   its name, what it means and a chip of what this person's connection gets: `editor` (`rights.grantAgents`),
   `participant` (`rights.makePages`) or `viewer`. An Editor gets **Open Connected Agents**
-  (`showKnowledgeView('ai')`); then `reachLine(name)`.
+  (`showKnowledgeView('insights')`); then `reachLine(name)`.
 - **`StatusStep`**: the status of `useConnectStatus`, then the prompt (`firstPrompt(name)`) in a `CodeSnippet`
   labelled "Prompt", whose copy is `track('UI', 'Copied', 'ConnectPrompt')`.
   - `loading`: "Checking…", a `role="status"`.
