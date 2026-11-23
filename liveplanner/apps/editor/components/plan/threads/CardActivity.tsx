@@ -34,7 +34,7 @@ import {
   type ActivityLine,
 } from './activity-words';
 import { aiRunWords } from './activity-ai-words';
-import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
+import { AiWriterMark } from '@liveworkspace/ui/ai-writer-mark';
 import { activityTimeline, type TimelineEntry, type TimelineRun } from './activity-timeline';
 import { AutomationAuthorName } from '@/components/automations/AutomationAuthor';
 import { TimelineDisc, TimelineTime, ValueArrow, ValueChip, railClass } from './timeline-parts';

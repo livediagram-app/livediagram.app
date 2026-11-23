@@ -9,7 +9,7 @@ import { NAME_MAX_LENGTH } from '@liveknowledge/document';
 import { Button, CompactEmptyState, SwitchRow, TextInput } from '@liveknowledge/ui';
 import { HistoryIcon } from './history-tools-item';
 import type { VersionList } from './useVersionHistory';
-import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
+import { AiWriterMark } from '@liveworkspace/ui/ai-writer-mark';
 import {
   aiVersionWords,
   timeOfDay,
