@@ -236,7 +236,8 @@ Describe to Set Up and Describe the Structure.
   and model ("Anthropic · Claude Sonnet 5.5"), never any part of the key, its hint included. "No daily limits" as the
   second line.
 - **Key Needs Attention**: a warning mark and the failure's fixed words ("Claude did not accept the API key"), with
-  **Fix Key**. It shows after a call answered `ai_key_failed`, until the next answer or a change of key.
+  **Fix Key**. It shows after a call answered `ai_key_failed`, until the next answer or a change of key. The words are
+  drawn once, on the line: the dialog's own refusal callout stays out of sight then, still read out as an alert.
 - **Its action**, a quiet text button with a pointer cursor and a tooltip: **Use Your Own Key** on built-in AI,
   **Change** on a key. It opens the Settings panel on the AI category over the open dialog, which stays open
   underneath with what was typed. Escape closes Settings first.
