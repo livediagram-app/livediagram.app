@@ -70,7 +70,7 @@ export function SeriesChips({
                 aria-hidden
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] tabular-nums ${
                   on
-                    ? 'bg-brand-600 text-white dark:bg-brand-400 dark:text-slate-900'
+                    ? 'bg-brand-700 text-white dark:bg-brand-600'
                     : 'border border-dashed border-slate-300 dark:border-slate-600'
                 }`}
               >
