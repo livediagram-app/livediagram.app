@@ -75,7 +75,7 @@ export function EntityKeyPicker({
                 key === value ? (
                   <CheckIcon />
                 ) : key ? (
-                  <span className="font-mono text-[10px] text-slate-400">
+                  <span className="font-mono text-[10px] text-slate-500 dark:text-slate-400">
                     {ENTITY_KEY_LABELS[key]}
                   </span>
                 ) : undefined

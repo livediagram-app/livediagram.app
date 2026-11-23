@@ -389,7 +389,7 @@ function OptionScreen({
               {many ? null : (
                 <span
                   aria-hidden
-                  className="shrink-0 text-slate-400 transition-[color,transform] duration-micro group-hover:translate-x-0.5 group-hover:text-brand-600 motion-reduce:transition-none dark:group-hover:text-brand-300"
+                  className="shrink-0 text-slate-400 transition-[color,transform] duration-micro group-hover:translate-x-0.5 group-hover:text-brand-700 motion-reduce:transition-none dark:group-hover:text-brand-300"
                 >
                   <ChevronGlyph />
                 </span>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { prefersReducedMotion } from '@liveworkspace/ui';
 
 // One concept-graphic row as its own full-size layer (docs/specs/009-elements/concept-graphics.md), so its shape and
 // its words animate as one; `--lvd-cg-i` is its place in reading order and the transform origin its own middle, so a
@@ -19,10 +20,8 @@ const ARRIVE: Keyframe[] = [
 const SETTLE: Keyframe[] = [{ opacity: 0.45 }, { opacity: 1 }];
 const TIMING: KeyframeAnimationOptions = { duration: 220, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' };
 
-const moves = () =>
-  typeof window !== 'undefined' &&
-  !!window.matchMedia &&
-  !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Read in the layout effect only, so never during render; no matchMedia (a test's DOM) moves nothing.
+const moves = () => !!window.matchMedia && !prefersReducedMotion();
 
 export function ConceptRowLayer({
   i,

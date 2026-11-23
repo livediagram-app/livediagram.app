@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type AnimationEvent } from 'react';
+import { prefersReducedMotion } from '@liveworkspace/ui';
 
 // A list people add rows to and remove rows from never jumps (each app's
 // docs/specs/004-interface-design/motion.md "Rows that come and go"): a new row slides in and grows from nothing,
@@ -14,11 +15,8 @@ import { useCallback, useEffect, useRef, useState, type AnimationEvent } from 'r
 // animation, a hidden tab pauses it).
 const LEAVE_FALLBACK_MS = 260;
 
-// No matchMedia (a test's DOM) counts as reduced: the change is immediate.
-const reducedMotion = () =>
-  typeof window === 'undefined' ||
-  !window.matchMedia ||
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Read in handlers only, never during render. No matchMedia (a test's DOM) counts as reduced: the change is immediate.
+const reducedMotion = () => !window.matchMedia || prefersReducedMotion();
 
 export function useRowMotion() {
   const [entering, setEntering] = useState<number | null>(null);

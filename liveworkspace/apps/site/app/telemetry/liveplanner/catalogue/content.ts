@@ -66,8 +66,8 @@ export const LINKS_ADDED = chart(
   'Element',
   'Linked',
   'Links Added',
-  'A link put on an element or a table cell: a web address, another project, or another tab.',
-  { types: ['Url', 'Project', 'Tab'] },
+  'A link put on an element or a table cell: a web address, another project, another tab, or a file in another app.',
+  { types: ['Url', 'Project', 'Tab', 'App'] },
 );
 
 export const LINKS_REMOVED = chart(
