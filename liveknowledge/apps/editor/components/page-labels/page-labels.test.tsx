@@ -32,7 +32,7 @@ import { pageTrust } from '@/lib/knowledge/page-trust';
 import { askLabelScopeStore, labelFilterStore } from '@/lib/page-labels/label-selection-store';
 import { AnsweredFromLabels, AskLabelScope } from './AskLabelScope';
 import { LabelFilterHeading } from './LabelFilterHeading';
-import { matchingLabels } from './LabelPicker';
+import { LabelPickerHost, matchingLabels } from './LabelPicker';
 import { labelDotColours } from './LabelPill';
 import { AddLabelButton, PageLabelsNote, useAddLabel } from './PageLabelsNote';
 import { labelIdsOfTab } from './page-labels-state';
@@ -100,7 +100,13 @@ function mount(
     },
     ...over,
   });
-  const out = renderInEditor(ui, value);
+  const out = renderInEditor(
+    <>
+      {ui}
+      <LabelPickerHost />
+    </>,
+    value,
+  );
   ref.store = out.store;
   return { ...out, ids: () => labelIdsOfTab(out.store.get().activeTab) };
 }
@@ -150,6 +156,28 @@ describe('on the page', () => {
     expect(blue.dark).not.toBe(blue.light);
     expect(labelDotColours('#aa00cc')).toEqual({ light: '#aa00cc', dark: '#aa00cc' });
     expect(labelDotColours('nonsense').light).toBe(labelDotColours('grey').light);
+  });
+});
+
+describe('the picker across the first label', () => {
+  it('stays open when the first label turns Add Label into Edit Labels, and moves to it', async () => {
+    mount(<MetaLabels />);
+    fireEvent.click(screen.getByRole('button', { name: 'Add Label' }));
+    fireEvent.click(document.querySelector('[data-label="lbl_onb"]')!);
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Edit Labels' }).getAttribute('aria-expanded'),
+      ).toBe('true'),
+    );
+    expect(document.querySelector('[data-label-picker]')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Add Label' })).toBeNull();
+  });
+
+  it('closes when the last label comes off and nothing stands to hold it', async () => {
+    mount(<PageLabelsNote />, ['lbl_onb']);
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Labels' }));
+    fireEvent.click(document.querySelector('[data-label="lbl_onb"]')!);
+    await waitFor(() => expect(document.querySelector('[data-label-picker]')).toBeNull());
   });
 });
 

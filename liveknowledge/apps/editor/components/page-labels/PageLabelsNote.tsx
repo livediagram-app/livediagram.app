@@ -7,7 +7,7 @@ import { HoverCard } from '@liveknowledge/ui';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { labelFilterStore } from '@/lib/page-labels/label-selection-store';
 import { track } from '@/lib/telemetry';
-import { LabelPicker, useLabelPicker } from './LabelPicker';
+import { useLabelPicker } from './LabelPicker';
 import { LABEL_PILL, LabelDot } from './LabelPill';
 import { CreateLabelIcon, LabelIcon } from './page-labels-icons';
 import { useLabelsEditable, usePageLabels } from './page-labels-state';
@@ -39,7 +39,6 @@ export function AddLabelButton() {
           Add Label
         </button>
       </HoverCard>
-      <LabelPicker picker={picker} />
     </>
   );
 }
@@ -101,7 +100,6 @@ export function PageLabelsNote() {
               <CreateLabelIcon />
             </button>
           </HoverCard>
-          <LabelPicker picker={picker} />
         </>
       ) : null}
     </span>

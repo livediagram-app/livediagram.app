@@ -4,7 +4,17 @@
 // Labels in the meta row: a popover (a sheet on a phone) titled Labels. A field that finds or creates a label takes
 // the focus; under it the knowledgebase's labels, those on the most pages first, each one press to put on the page or
 // take off, so only labels already in use are suggested. Each row's pencil opens the label in place (LabelEditView).
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent,
+} from 'react';
+import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { labelKey, labelName, type KnowledgeLabel } from '@liveknowledge/document';
 import { ResponsivePopover, TextInput } from '@liveknowledge/ui';
 import { LabelDot } from './LabelPill';
@@ -29,18 +39,44 @@ export type LabelPickerState = {
   close: () => void;
 };
 
+// One picker for the meta row, whichever button opened it: making a page's first label swaps Add Label for the pills
+// and Edit Labels, and the picker stays open across that swap (it "stays open for the next").
+type Shared = { open: boolean; anchor: HTMLElement | null };
+let shared: Shared = { open: false, anchor: null };
+const listeners = new Set<() => void>();
+const setShared = (next: Shared) => {
+  shared = next;
+  for (const listener of listeners) listener();
+};
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+};
+const read = () => shared;
+
 export function useLabelPicker(): LabelPickerState {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const [open, setOpen] = useState(false);
+  const s = useSyncExternalStore(subscribe, read, read);
   return {
-    open,
-    anchor,
-    openFrom: (el) => {
-      setAnchor(el);
-      setOpen(true);
-    },
-    close: () => setOpen(false),
+    open: s.open,
+    anchor: s.anchor,
+    openFrom: (el) => setShared({ open: true, anchor: el }),
+    close: () => setShared({ ...shared, open: false }),
   };
+}
+
+/** The meta row's one picker. Its button gone (Add Label became Edit Labels), it moves to the one that stands now;
+ *  another page, or the row leaving, closes it. */
+export function LabelPickerHost() {
+  const picker = useLabelPicker();
+  const ids = usePageLabelIds();
+  const pageId = useEditorChrome((s) => s.activeTab.id);
+  useLayoutEffect(() => {
+    if (!picker.open || picker.anchor?.isConnected !== false) return;
+    const next = document.querySelector<HTMLElement>('[data-edit-labels], [data-add-label]');
+    setShared(next ? { open: true, anchor: next } : { open: false, anchor: null });
+  }, [ids, picker.open, picker.anchor]);
+  useEffect(() => () => setShared({ open: false, anchor: null }), [pageId]);
+  return <LabelPicker picker={picker} />;
 }
 
 export function LabelPicker({ picker }: { picker: LabelPickerState }) {

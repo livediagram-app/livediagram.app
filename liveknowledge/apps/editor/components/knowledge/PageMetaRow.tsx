@@ -32,7 +32,8 @@ import {
   PageLabelsNote,
   useAddLabel,
 } from '@/components/page-labels/PageLabelsNote';
-import { usePageLabels } from '@/components/page-labels/page-labels-state';
+import { LabelPickerHost } from '@/components/page-labels/LabelPicker';
+import { useLabelsEditable, usePageLabels } from '@/components/page-labels/page-labels-state';
 
 const NO_EDITORS: readonly PageEditor[] = [];
 
@@ -57,6 +58,8 @@ export type PageMetaRowProps = {
   addLabel?: boolean;
   // The page's label pills (and Edit Labels), the row's last note.
   labels?: ReactNode;
+  // The one label picker Add Label and Edit Labels open, kept across their swap (LabelPickerHost).
+  labelPicker?: ReactNode;
   // Who made the page and who changed it last, a person or an agent (verification.md "Made by a person or an
   // agent"), with the names of the people they name.
   makers?: PageMakers;
@@ -81,6 +84,7 @@ export function PageMetaRowView({
   addIcon = false,
   addLabel = false,
   labels,
+  labelPicker,
   makers,
   nameOf = () => undefined,
   verify,
@@ -187,6 +191,7 @@ export function PageMetaRowView({
           {note.node}
         </span>
       ))}
+      {labelPicker}
     </div>
   );
 }
@@ -221,6 +226,7 @@ export function PageMetaRow() {
   const addIcon = coverEditable && !hasIcon;
   const addLabel = useAddLabel();
   const hasLabels = usePageLabels().length > 0;
+  const labelsEditable = useLabelsEditable();
   const health = page.health;
   const approval = useCurrentApprovalMeta();
   const suggestionCount = page.health?.suggestions?.length ?? 0;
@@ -242,6 +248,7 @@ export function PageMetaRow() {
         addIcon={addIcon}
         addLabel={addLabel}
         labels={hasLabels ? <PageLabelsNote /> : undefined}
+        labelPicker={labelsEditable ? <LabelPickerHost /> : undefined}
         {...(health ? { makers: makersOf(health) } : {})}
         nameOf={nameOf}
         approval={approval}
