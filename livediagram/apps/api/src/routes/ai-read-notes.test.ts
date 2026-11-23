@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CROP_MAX_BYTES, READ_MAX_CROPS_PER_REQUEST, type NoteText } from '@livediagram/api-schema';
+import type { KeyAnswer } from '@liveworkspace/ai';
+import { answerEvents, errorResponse, fakeFetch, streamResponse } from '@liveworkspace/ai/testing';
 import { handleAiReadNotes } from './ai-read-notes';
 import type { RouteContext } from './context';
 import type { Env } from '../types';
@@ -9,6 +11,13 @@ import { testPersonStores } from '../test-person-store';
 // gate still guards this route (it is the operator's model budget either way),
 // what counts as a crop, and that EVERY crop that went out gets an answer back
 // — whatever the provider did or did not say.
+
+// Whose key reads the notes (note-reader.md "On your own key"): none unless a test says so.
+const keyFor = vi.hoisted(() => vi.fn(async (): Promise<unknown> => null));
+vi.mock('@liveworkspace/auth-client/ai-key', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@liveworkspace/auth-client/ai-key')>()),
+  personAiKey: keyFor,
+}));
 
 const TINY_JPEG = 'data:image/jpeg;base64,AAAA';
 
@@ -25,6 +34,8 @@ function providerSays(body: unknown, status = 200) {
 const originalFetch = globalThis.fetch;
 beforeEach(() => {
   globalThis.fetch = providerSays({ texts: [] });
+  keyFor.mockReset();
+  keyFor.mockResolvedValue(null);
 });
 afterEach(() => {
   vi.useRealTimers();
@@ -411,5 +422,81 @@ describe('a truncated answer says so', () => {
     expect((await handleAiReadNotes(makeCtx())).status).toBe(502);
     expect(warnings.join(' ')).toMatch(/finish_reason=length|truncated/i);
     spy.mockRestore();
+  });
+});
+
+describe('on the person’s own key', () => {
+  const KEY = 'sk-ant-api03-planted-secret-key-3d3d';
+  const MINE: KeyAnswer = {
+    status: 'key',
+    source: 'account',
+    provider: 'anthropic',
+    model: 'claude-opus-5-5',
+    key: KEY,
+  };
+  const onKey = (respond: () => Response) => {
+    keyFor.mockResolvedValue(MINE);
+    const faked = fakeFetch(respond);
+    globalThis.fetch = faked.fetch;
+    return faked.sent;
+  };
+  const signedIn = (env: Partial<Env> = {}) =>
+    makeCtx({ accountUserId: 'user_a', env: { GOOGLE_AI_STUDIO_API_KEY: undefined, ...env } });
+
+  it('reads the crops on the key’s provider, where the deployment has no model, spending no daily cap', async () => {
+    const reply = { texts: [{ id: 1, text: 'Order placed', legible: true }] };
+    const sent = onKey(() => streamResponse(answerEvents([JSON.stringify(reply)])));
+    const spend = vi.fn();
+    const res = await handleAiReadNotes(
+      signedIn({
+        AI_DAILY_CAP: '0',
+        PERSON_STORE: { idFromName: spend } as unknown as Env['PERSON_STORE'],
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect((await answer(res)).texts).toEqual(reply.texts);
+    expect(keyFor).toHaveBeenCalledWith(null, expect.anything(), null);
+    expect(sent).toHaveLength(1);
+    expect(sent[0]!.headers['x-api-key']).toBe(KEY);
+    const content = (sent[0]!.body['messages'] as { content: { type: string }[] }[])[0]!.content;
+    expect(content.map((part) => part.type)).toEqual(['text', 'text', 'image']);
+    expect(spend).not.toHaveBeenCalled();
+  });
+
+  it('says a key the provider refuses, never reading on the deployment’s model instead', async () => {
+    onKey(() => errorResponse(401, 'authentication_error'));
+    const res = await handleAiReadNotes(signedIn({ GOOGLE_AI_STUDIO_API_KEY: 'deployment-key' }));
+    expect(res.status).toBe(422);
+    const body = await res.json<Record<string, unknown>>();
+    expect(body['error']).toBe('ai_key_failed');
+    expect(body['aiKey']).toEqual({ source: 'account', provider: 'anthropic', kind: 'bad-key' });
+    expect(JSON.stringify(body)).not.toContain(KEY);
+  });
+
+  it('answers a passing failure, or a reply it cannot read, as the reader’s own error', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    onKey(() => errorResponse(529, 'overloaded_error'));
+    expect((await handleAiReadNotes(signedIn())).status).toBe(502);
+    onKey(() => streamResponse(answerEvents(['no json here'])));
+    expect((await handleAiReadNotes(signedIn())).status).toBe(502);
+  });
+
+  it('refuses a key that will not open, and accounts that could not say, before anything is read', async () => {
+    keyFor.mockResolvedValue({ status: 'unreadable', source: 'account' });
+    const unreadable = await handleAiReadNotes(signedIn());
+    expect(unreadable.status).toBe(422);
+    expect((await unreadable.json<Record<string, unknown>>())['aiKey']).toMatchObject({
+      kind: 'unreadable',
+    });
+    keyFor.mockResolvedValue({ status: 'unavailable' });
+    const away = await handleAiReadNotes(signedIn());
+    expect(away.status).toBe(503);
+    expect((await away.json<Record<string, unknown>>())['error']).toBe('ai_error');
+  });
+
+  it('never asks for a key for a guest, or for anything but a read', async () => {
+    await handleAiReadNotes(makeCtx());
+    await handleAiReadNotes(makeCtx({ accountUserId: 'user_a', method: 'GET' }));
+    expect(keyFor).not.toHaveBeenCalled();
   });
 });

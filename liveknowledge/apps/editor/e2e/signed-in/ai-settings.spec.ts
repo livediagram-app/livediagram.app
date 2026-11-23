@@ -83,7 +83,7 @@ test('a saved key shows only its last four characters, is kept nowhere on the pa
   await expect(again.getByRole('radio', { name: /^Built-In AI/ })).toBeChecked();
   await expect(again.getByRole('region', { name: 'Claude API Key' })).toHaveCount(0);
   await again.getByRole('button', { name: 'Done' }).click();
-  await expect(page.locator('[data-ask-ai]')).toContainText('Uses built-in AI');
+  await expect(page.locator('[data-ask-ai]')).toContainText('Built-in AI');
   expectNoPageErrors(pageErrors);
 });
 

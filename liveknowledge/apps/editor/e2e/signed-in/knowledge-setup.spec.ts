@@ -71,7 +71,7 @@ test('a new knowledgebase opens on its start screen, whose Describe to Set Up tu
   const suggested = page.waitForResponse(
     (r) => r.request().method() === 'POST' && /\/setup\/suggest$/.test(new URL(r.url()).pathname),
   );
-  await expect(dialog.locator('[data-setup-ai]')).toHaveText("Uses this knowledgebase's key");
+  await expect(dialog.locator('[data-setup-ai]')).toContainText('This Knowledgebase’s Key');
   await describeAndSuggest(dialog);
   expect((await suggested).ok()).toBe(true);
   expect(((await (await suggested).json()) as { provider: string }).provider).toBe('anthropic');
@@ -132,7 +132,7 @@ test('with no key it runs on built-in AI at once, and on an OpenAI key once one 
   await expect(
     dialog.getByRole('textbox', { name: 'What Is This Knowledgebase For?' }),
   ).toBeVisible();
-  await expect(dialog.locator('[data-setup-ai]')).toHaveText('Uses built-in AI');
+  await expect(dialog.locator('[data-setup-ai]')).toContainText('Built-in AI');
   await expect(dialog.getByRole('button', { name: 'Open AI Settings' })).toHaveCount(0);
   // Built-in AI answers (the stand-in's Workers AI route, as the binding would).
   const builtIn = page.waitForResponse(
@@ -149,7 +149,7 @@ test('with no key it runs on built-in AI at once, and on an OpenAI key once one 
   await saveKey(page, who, id, OPENAI_KEY, 'openai');
   await page.reload();
   await setupButton(page).click();
-  await expect(dialog.locator('[data-setup-ai]')).toHaveText("Uses this knowledgebase's key");
+  await expect(dialog.locator('[data-setup-ai]')).toContainText('This Knowledgebase’s Key');
   const onKey = page.waitForResponse(
     (r) => r.request().method() === 'POST' && /\/setup\/suggest$/.test(new URL(r.url()).pathname),
   );

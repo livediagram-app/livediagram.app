@@ -29,10 +29,17 @@ const notFound = () => new Response('Not found', { status: 404 });
 
 const noStore = (body: unknown, status = 200) => json(body, status);
 
-// The apps whose servers call a model with a key, and so may be handed one (`want: 'key'`): today liveknowledge only
-// (ai-keys.md "Which apps use it"). Every registered app may ask which key applies (`want: 'which'`). An app that
-// adopts the key is added here in the same change.
-export const AI_KEY_READERS: ReadonlySet<string> = new Set(['liveknowledge.app']);
+// The apps whose servers call a model with a key, and so may be handed one (`want: 'key'`): every product, since every
+// AI feature honours the person's choice (ai-keys.md "Every AI feature honours the choice"). Every registered app may
+// ask which key applies (`want: 'which'`). An app that adopts the key is added here in the same change.
+export const AI_KEY_READERS: ReadonlySet<string> = new Set([
+  'livediagram.app',
+  'liveplanner.app',
+  'livedocuments.app',
+  'livedesign.app',
+  'livehuddle.app',
+  'liveknowledge.app',
+]);
 
 type Answer = { source: 'team' | 'account'; provider: KeyProviderId; model: string };
 

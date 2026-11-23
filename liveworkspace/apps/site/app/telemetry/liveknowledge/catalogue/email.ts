@@ -190,6 +190,13 @@ export const WATCH_DIGEST_EMAILS = email(
   'neutral',
 );
 
+export const READING_REMINDER_EMAILS = email(
+  'ReadingReminder',
+  'Required Reading Reminders',
+  'A reminder to read a Required Reading page and confirm, at most once a week a person a page.',
+  'neutral',
+);
+
 export const EMAIL_KIND_METRICS: readonly Metric[] = [
   WELCOME_EMAILS,
   WEEK1_EMAILS,
@@ -217,6 +224,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   OWNERS_REMINDED_EMAILS,
   PAGE_REJECTED_EMAILS,
   WATCH_DIGEST_EMAILS,
+  READING_REMINDER_EMAILS,
 ];
 
 export const EMAILS_SENT: MetricStack = {

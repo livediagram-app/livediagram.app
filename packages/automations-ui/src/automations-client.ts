@@ -4,6 +4,7 @@
 // the api names (one of `errors`, with the `path` of the step at fault) throws AutomationRefusal, an answer the
 // builder shows rather than an error to report.
 
+import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import type {
   AutomationHookInfo,
   AutomationRuleSummary,
@@ -16,12 +17,18 @@ export class AutomationRefusal extends Error {
   readonly status: number;
   readonly code: string;
   readonly path: string | null;
-  constructor(status: number, body: { error: string; path?: string; message?: string }) {
+  // `ai_key_failed` (Describe a Rule on a key): whose key failed and how, for the source line. Never the key.
+  readonly aiKey: AiKeyFailure | null;
+  constructor(
+    status: number,
+    body: { error: string; path?: string; message?: string; aiKey?: AiKeyFailure | null },
+  ) {
     super(body.message ?? body.error);
     this.name = 'AutomationRefusal';
     this.status = status;
     this.code = body.error;
     this.path = body.path ?? null;
+    this.aiKey = body.aiKey ?? null;
   }
 }
 
@@ -92,6 +99,7 @@ export function createAutomationsClient<
         error: body.error,
         ...(typeof body.path === 'string' ? { path: body.path } : {}),
         ...(typeof body.message === 'string' ? { message: body.message } : {}),
+        aiKey: readAiKeyFailure(body),
       });
     } catch {
       return null;

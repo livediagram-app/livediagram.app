@@ -86,8 +86,14 @@ function withBudgetFailover(server: CropReader, device: CropReader): CropReader 
   };
 }
 
-export function selectReader(deps: { aiEnabled: boolean; ownerId: string }): SelectedReader {
-  if (deps.aiEnabled) {
+// `keyed`: the person's own key applies (note-reader.md "On your own key"), so the server reads on it even where the
+// deployment has no model.
+export function selectReader(deps: {
+  aiEnabled: boolean;
+  ownerId: string;
+  keyed?: boolean;
+}): SelectedReader {
+  if (deps.aiEnabled || deps.keyed === true) {
     return { kind: 'server', read: withBudgetFailover(serverReader(deps.ownerId), readInBrowser) };
   }
   return { kind: 'browser', read: readInBrowser };

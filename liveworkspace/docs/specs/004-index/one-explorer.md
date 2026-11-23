@@ -274,11 +274,12 @@ directly after it (`HomePane` in `@liveworkspace/explorer`).
 - **A card** is Home's large card, the one New and Shared With You Recently draw: the item's thumbnail, its name and
   its line, the ⋯ menu, right-click and drag. From `md` each section is a grid, two rows of four from `lg`.
 - **A section with nothing in it is left out**, heading and all, as New is: someone whose opened items are all among
-  Most Used sees no Recent. Only when nothing has been opened at all does Recent stay, holding the Explorer's one
-  empty state ("No plans yet": "The plans you open will gather here."), so Home still says where opened work will
-  gather.
+  Most Used sees no Recent, and someone who has made things but opened none sees New and no Recent. No section
+  ever draws a "No plans yet" of its own; with nothing on Home at all, Home shows one empty state for the whole view
+  ([Nothing on Home](#nothing-on-home) below).
 - **Loading** draws each section's heading over its own placeholders (a grid of large cards from `md`, a strip below
-  it); a section the read finds empty then leaves. **A failed read** draws once: Recent's heading over one
+  it); a section the read finds empty then leaves, and one that gains an item (made, opened or shared here, or on
+  the next read) comes back at once, with no reload. **A failed read** draws once: Recent's heading over one
   "Couldn’t load Home." with **Try again** (which asks again for Home's reads), and no Most Used.
 - **Phones.** Below `md` each section is its own scrolling strip of small tiles (picture and name) under its own
   heading, at most eight; Recent's strip ends with a **See More** tile into the Recent view, in place of the heading's
@@ -312,6 +313,9 @@ panel keeps its own Home without it, and a first run shows its starting points i
   newest items (their Google pictures from the people store, initials otherwise), their names its tooltip.
 - **The filter.** Filtered to one app, the counts, the mosaic and the line are that app's items; under All Apps,
   every app's.
+- **Nothing in any space.** While no space holds anything (every tile would read "No plans yet") and Offline holds
+  nothing, the section is left out, heading and all, as the others are: the sidebar lists the same spaces, and
+  its Spaces heading keeps New Team. Once any space holds an item, every tile shows, the empty ones too.
 - **No teams yet.** Signed in where teams can be run, a dashed **Create a Team** tile follows My Work ("Work
   together on shared plans."): it opens New Team, and goes to the team once made. A guest has My Work, then a
   **Sign In to Use Teams** tile where the host says where signing in is; a deployment without accounts shows My
@@ -330,13 +334,29 @@ panel keeps its own Home without it, and a first run shows its starting points i
   All N Workspaces**), so "Spaces" never heads tiles that each count "3 spaces". The tiles, their links and their
   order are the same as everywhere else.
 - **The read.** One `GET /spaces/previews` ([contracts](one-explorer-contracts.md#folders-and-defaults)) per
-  filter, asked with Home's other reads and again whenever they are (an epoch), never per space.
+  filter, asked with Home's other reads and again whenever they are (an epoch), and again once the index takes a
+  change of place made here (an item trashed, archived, moved or restored, `overlay.placesSettled`), keeping the tiles
+  on screen until it answers, so a tile's count never lags the cards; never per space.
 - **Offline.** Where the Explorer reads this browser's store (an app's own address), Offline's tile
   follows the teams while it holds anything ([Offline, a Space](#offline-a-space)): the browser glyph on
   the teal disc, a mosaic of up to four of its newest items, each the app's picture of a local item
   (`LocalPreview`, drawn in the browser with nothing fetched), "+N" past four, and the line "3 plans · Edited 2 hours
   ago" from the list itself. It needs no request: it shows when the index's previews fail, and while they load it
   waits with the other tiles, so the grid never jumps. It counts among the eight before Show All.
+
+#### Nothing on Home
+
+When every section is empty (nothing made in New, nothing opened for Most Used or Recent, no space holding
+anything, nothing shared with the person recently), Home draws none of their headings and shows one calm empty
+state for the whole view under the hero (or the page header): the clock glyph, "No plans yet", "The plans you make,
+open or have shared with you gather here.", and **New Plan** (each app's kind; under All Apps the app picker's New),
+which makes one where the header's New does. It waits for every read: while any is out, each section shows its
+placeholders, so the empty state never flashes in before a section that has something. A failed read is not
+"nothing": Recent says "Couldn’t load Home." with **Try again**, and Spaces its own notice, as above. A first run
+(the host's welcome, nothing the person can open yet) shows its starting points instead, as always, and that
+includes someone whose items are all archived or in the Trash (neither counts as something they can open), since
+the welcome already offers a first action; this empty state is for a host without a welcome. The moment
+anything arrives (an item made in another tab, a share), its section takes the empty state's place.
 
 What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, Offline,
 in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
@@ -734,8 +754,8 @@ liveworkspace's). There is no Open Page: the full Explorer is the menu button's 
 **The editors' panel's Home** shows the page's two sections, without New, Spaces or Shared With You Recently, each
 under the pane's small section heading: **Most Used** (up to four), then **Recent** (up to four; up to eight while
 nothing is most used yet), its heading carrying **See all** into the Recent view. The open item is left out of both. A
-section with nothing in it is left out, as on the page; with nothing opened at all, Recent holds the pane's empty state
-("No plans yet", or "Nothing else yet" when the open item is the only one). Loading draws each heading over a row of
+section with nothing in it is left out, heading and all, as on the page; with nothing opened at all, the pane shows
+one empty state of its own and no headings ("No plans yet", or "Nothing else yet" when the open item is the only one). Loading draws each heading over a row of
 card placeholders; a failed read draws one "Home could not load." notice with **Try Again**, and no headings. Both
 sections come from one request (`jumpBackInLoader` asking five most used and nine recent): the open item leaves
 before Most Used is cut to four, so it still ends on a full row when the open item is among the most used, and a
@@ -1068,7 +1088,12 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   were about 28 KiB gzipped of `/explorer`'s first load). An item's or folder's ⋯ menu fetches the dialogs it
   offers as it opens, so a press on one of its rows finds the code in and the dialog opens in that press's own
   commit, taking focus as it always has; a dialog opened before its code lands draws once it does. A dialog whose
-  code cannot load draws nothing. `dialogs-lazy-load.test.ts` keeps them out of the first load.
+  code cannot load draws nothing. Since 2026-11-23 the rest of them are out of the first load too: the open dialog's
+  own code (`OpenDialog.tsx`: the confirmations, Change Folder's spaces and This Browser's dialogs), New Team's form
+  and the confirmation Trash and Shared With Me ask (`lazy-dialogs.ts`), with the dialog frame they share. The
+  Explorer keeps only a shell (`Dialogs.tsx`) that draws the open one, and fetches their code once the page is idle
+  (and the open dialog's as a ⋯ menu opens), about 12 KiB gzipped. `dialogs-lazy-load.test.ts` keeps them out of
+  the first load.
 - **The sections most visits never open load when shown.** Inbox, Invites, Gallery and Shape Libraries
   are each fetched from their own chunk (`packages/explorer/src/explorer/lazy-panes.ts`), and the Explorer fetches
   them all once it has drawn and the page is idle, so moving to one later draws it in the move's own commit.

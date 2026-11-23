@@ -36,7 +36,7 @@ export function useEditorEventStorming({
   fromEditing: EditorEditingSlice;
   fromLayers: EditorLayersSlice;
 }) {
-  const { selfParticipant, toast } = fromDocument;
+  const { selfParticipant, toast, accountUserId } = fromDocument;
   const { cancelGesture, markCheckpoint, photoDraftOpenRef } = fromHistory;
   const { activeId, setMultiSelectedIds, setSelectedId } = fromSelection;
   const { activeTab } = fromComments;
@@ -53,6 +53,7 @@ export function useEditorEventStorming({
     activeId,
     ownerId: selfParticipant.id,
     aiEnabled: aiCapable,
+    signedIn: !!accountUserId,
     createBlocked,
     tick,
     markCheckpoint,

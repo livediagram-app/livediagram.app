@@ -21,6 +21,10 @@ describe('selectReader', () => {
     expect(selectReader({ aiEnabled: true, ownerId: 'owner-1' }).kind).toBe('server');
   });
 
+  it('reads through the server on the person’s own key, with no model configured', () => {
+    expect(selectReader({ aiEnabled: false, ownerId: 'owner-1', keyed: true }).kind).toBe('server');
+  });
+
   it('reads in the browser when no model is configured', () => {
     expect(selectReader({ aiEnabled: false, ownerId: 'owner-1' }).kind).toBe('browser');
   });

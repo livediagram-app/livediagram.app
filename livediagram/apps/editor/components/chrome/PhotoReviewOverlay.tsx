@@ -1,5 +1,6 @@
 'use client';
 
+import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
@@ -424,6 +425,15 @@ export function PhotoReviewOverlay({
           and, above them, the unread tip: down here with the choices it is
           about, rather than parked on the photo over notes to draw round. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 p-3">
+        {/* Which AI reads the notes (note-reader.md "On your own key"), and a way to add a key of your own. */}
+        {detection ? (
+          <div data-photo-ai-source="" className="pointer-events-auto w-full max-w-md">
+            <WorkbenchAiSource
+              failure={review.keyFailure ?? null}
+              allowance="Included with livediagram: this deployment’s model, or this device."
+            />
+          </div>
+        ) : null}
         {showUnreadTip && onRetake ? (
           <UnreadTip
             unread={unread}

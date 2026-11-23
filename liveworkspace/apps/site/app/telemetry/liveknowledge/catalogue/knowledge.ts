@@ -290,6 +290,48 @@ export const WATCHES_STOPPED = chart(
   { types: ['WatchPageOff', 'WatchSectionOff'], rising: 'neutral' },
 );
 
+// Required Reading (required-reading.md): a page required or stopped, a confirmation, a reminder and a save that asks
+// everyone again.
+export const READING_REQUIRED = chart(
+  'UI',
+  'Used',
+  'Pages Made Required Reading',
+  'A page an Editor asked everyone, or chosen people, to confirm they read; a change of who counts too.',
+  { types: ['RequiredReadingSet'] },
+);
+
+export const READING_STOPPED = chart(
+  'UI',
+  'Used',
+  'Required Reading Stopped',
+  'A page that stopped being Required Reading, its confirmations cleared.',
+  { types: ['RequiredReadingStopped'], rising: 'neutral' },
+);
+
+export const READS_CONFIRMED = chart(
+  'UI',
+  'Used',
+  'Reads Confirmed',
+  "I've Read This pressed on a Required Reading page.",
+  { types: ['ReadConfirmed'] },
+);
+
+export const READERS_REMINDED = chart(
+  'UI',
+  'Used',
+  'Readers Reminded',
+  'Remind pressed on a Required Reading page, emailing those who have not confirmed.',
+  { types: ['ReadingReminded'], rising: 'neutral' },
+);
+
+export const READING_ASKED_AGAIN = chart(
+  'UI',
+  'Used',
+  'Asked to Read Again',
+  'A Required Reading page saved with Ask Everyone to Read Again, clearing its confirmations.',
+  { types: ['ReadingAskedAgain'], rising: 'neutral' },
+);
+
 export const ISSUES_OPENED_FROM_HEALTH = chart(
   'UI',
   'Used',
@@ -315,6 +357,11 @@ export const VERIFICATION: MetricStack = {
     ISSUES_OPENED_FROM_HEALTH,
     PAGES_WATCHED,
     WATCHES_STOPPED,
+    READING_REQUIRED,
+    READING_STOPPED,
+    READS_CONFIRMED,
+    READERS_REMINDED,
+    READING_ASKED_AGAIN,
   ],
   headline: [PAGES_VERIFIED, STILL_RIGHT_FROM_HOME],
 };

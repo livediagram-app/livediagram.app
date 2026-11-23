@@ -412,7 +412,7 @@ changes nothing and says "Would …".
 | `POST /:ruleId/secret`    | Make Secret, shown once; never a token                        | 409 `automation_not_incoming`                              |
 | `POST /order`             | the list's order                                              |                                                            |
 | `POST /test`              | Test Rule, `{ rule, tab? }`: a dry run                        |                                                            |
-| `POST /draft`             | Describe a Rule                                               | 422, 429 `automation_ai_capped`, 503                       |
+| `POST /draft`             | Describe a Rule, on the caller's key when one applies         | 422, 429 `automation_ai_capped`, 503, 422 `ai_key_failed`  |
 | `GET /runs`               | the Audit Trail, at most 200                                  |                                                            |
 | `GET /summary`            | one rule for any reader (`?rule=` or `?name=`)                | 404 `automation_not_found`                                 |
 
@@ -421,6 +421,12 @@ token only reads (403 `read_only_token`). A token saving or duplicating a rule t
 `automation_needs_a_person`; a token's add naming any connection, its change naming one the held rule does not, or its
 duplicate of a rule naming one (`ruleConnections(rule)`, every non-empty `webhook` field) is 403
 `automation_connection_needs_a_person`; a save that would keep a sixth snapshot is 409 `automation_snapshots_full`.
+
+Describe a Rule's key: the app's caller facts carry `aiKey`, a function that asks accounts (`aiKeyFor`, `want:
+'key'`, the item's team) and answers `ownKeyOf`'s reading, called once per draft and only past the gate and the
+body's checks. `key`: the draft asks through `keyedRunner` and neither reads nor counts the day's AI asks or drafts;
+`built-in`: as before; `refused`: 503 `automation_ai_unavailable` (accounts could not say) or 422 `ai_key_failed` (a
+key that will not open), in fixed words. A key's failure during an ask is 422 `ai_key_failed` with `aiKey`.
 
 A `tab` the item lacks (Test Rule, Run Rule) is 404 `tab_not_found`; a verb a route lacks is 405
 `method_not_allowed`; a path that is none of these answers null, for the app's own chain to go on.

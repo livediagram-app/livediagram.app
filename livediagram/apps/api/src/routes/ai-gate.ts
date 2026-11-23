@@ -20,14 +20,16 @@ import type { RouteContext } from './context';
 // deployment's daily cap counts last, so only a caller every other check
 // admitted spends one of the day's requests.
 //
-// Returns the Response to send, or null when the caller is admitted.
-export async function aiGate(ctx: RouteContext): Promise<Response | null> {
+// Returns the Response to send, or null when the caller is admitted. `keyed`: the person's own key reads the notes
+// (note-reader.md "On your own key"), so the deployment needs no model of its own and no daily budget is spent.
+export async function aiGate(ctx: RouteContext, keyed = false): Promise<Response | null> {
   const { request, env } = ctx;
 
   // No usable provider: no key, or a half-configured generic
   // (ai-provider.ts logs which). Same answer either way: this deployment does
   // not do AI.
-  if (!resolveAiProvider(env)) return json({ error: 'ai_not_configured' }, { status: 503 });
+  if (!keyed && !resolveAiProvider(env))
+    return json({ error: 'ai_not_configured' }, { status: 503 });
 
   // Origin allow-list. Optional: unset accepts any Origin, matching
   // the historical open default. When set, the request's Origin must
@@ -63,7 +65,8 @@ export async function aiGate(ctx: RouteContext): Promise<Response | null> {
 
   // The whole deployment's daily cap (ai-daily-cap.ts). Spent, it answers as a provider out of quota does, so the
   // editor reads the rest on the device and says AI is resting for today.
-  if (!(await spendAiDailyBudget(env))) return json({ error: 'ai_quota' }, { status: 429 });
+  if (!keyed && !(await spendAiDailyBudget(env)))
+    return json({ error: 'ai_quota' }, { status: 429 });
 
   return null;
 }

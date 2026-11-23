@@ -136,6 +136,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone ran a Run by Hand automation rule from the Automations screen.',
   'Document|Toggled|AutomationTakenOver':
     'Someone took over a rule paused on lost access: it now runs as them, and is on again.',
+  'UI|Opened|AiSourceSettings':
+    'Someone pressed Use Your Own Key, Change or Fix Key on an AI feature’s source line, opening Settings › AI.',
+  'UI|Added|AiSourceKey':
+    'Someone added an AI key of their own in Settings › AI after opening it from an AI feature on built-in AI.',
   'UI|Opened|Automations': 'Someone opened the Automations screen from the Tools menu.',
   'UI|Opened|AutomationsOffline':
     'Someone opened Automations on a knowledgebase kept Offline, which asks them to sync it first.',
@@ -886,6 +890,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|WatchSectionOn':
     'Someone started watching a section: a page and every page under it, to hear when they change.',
   'UI|Toggled|WatchSectionOff': 'Someone stopped watching a section.',
+  'UI|Used|RequiredReadingSet':
+    'An Editor made a page Required Reading, for everyone or chosen people, or changed who it asks.',
+  'UI|Used|RequiredReadingStopped': 'An Editor stopped a page being Required Reading.',
+  'UI|Used|ReadConfirmed': "Someone pressed I've Read This on a Required Reading page.",
+  'UI|Used|ReadingReminded':
+    'An Editor or the page owner pressed Remind, emailing those who have not confirmed a Required Reading page.',
+  'UI|Used|ReadingAskedAgain':
+    'An Editor saved a Required Reading page asking everyone to read it again, clearing its confirmations.',
   'UI|Toggled|NotifyWatchDigestOn':
     'Someone switched on the Daily Digest of Watched Pages email in Settings.',
   'UI|Toggled|NotifyWatchDigestOff':

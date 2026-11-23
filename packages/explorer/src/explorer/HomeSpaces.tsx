@@ -5,15 +5,17 @@
 // as Home's large cards are: a mosaic of the space's newest items (FolderMosaic, the folder cards' own), over the
 // space's disc, its name and a line saying how much it holds and when it last changed; a team's adds its member count
 // and the faces behind its newest items. One request for every space (useSpacePreviews). On a phone the tiles are one
-// strip that snaps tile by tile, as Most Used and Recent's is; from `md` a grid of two, of four from `lg`.
+// strip that snaps tile by tile, as Most Used and Recent's is; from `md` a grid of two, of four from `lg`. While no
+// space holds anything (and Offline holds nothing) the section is left out, as Home's other empty ones are; HomePane
+// holds the read (useHomeSpaces) so it knows when every section is empty ("Nothing on Home").
 
-import { useId, useMemo, useState, type ReactNode } from 'react';
+import { useId, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { APP_KINDS, type SpacePreview } from '@liveworkspace/index-client';
-import { useSpacePreviews } from '../data/useSpacePreviews';
+import { useSpacePreviews, type SpacePreviews } from '../data/useSpacePreviews';
 import { usePersonName } from '../data/usePeople';
 import { initialsOf } from '../teams/team-details';
 import { useTeams } from '../teams/context';
-import { NewTeamDialog } from '../teams/NewTeamDialog';
+import { NewTeamDialog } from './lazy-dialogs';
 import { useNow } from '../time';
 import { FOCUS_RING, MUTED, SKELETON } from '../ui/classes';
 import { ChevronDownIcon, MyWorkIcon, PlusIcon, TeamIcon } from '../ui/icons';
@@ -60,25 +62,58 @@ const MOSAIC = `relative h-28 w-full rounded-xl ${THUMB_EDGE}`;
 const CHIP =
   'absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700';
 
-export function HomeSpaces() {
-  const { app, client, filter, epoch, teams, words, viewerId } = useExplorer();
+/** Spaces' read, held by HomePane: the previews, the spaces in order, Offline's, and whether all of it is empty. */
+export type HomeSpacesState = {
+  previews: SpacePreviews;
+  spaces: SpaceEntry[];
+  local: ReturnType<typeof useThisBrowserSpace>;
+  /** Answered, and no space (nor Offline) holds anything: the section is left out. */
+  empty: boolean;
+};
+
+export function useHomeSpaces(): HomeSpacesState {
+  const { app, client, filter, epoch, teams, overlay } = useExplorer();
+  const shownApp = filter === 'all' ? null : app;
+  const teamsKey = useMemo(() => teams.map((t) => t.id).join(','), [teams]);
+  // A card trashed, archived, moved or restored here changes what a space holds: once the index has taken it, the
+  // previews are asked again (keeping the tiles on screen until the answer lands), so a count never lags the cards.
+  const placed = useSyncExternalStore(
+    overlay.subscribe,
+    overlay.placesSettled,
+    overlay.placesSettled,
+  );
+  const previews = useSpacePreviews({
+    client,
+    app: shownApp,
+    epoch,
+    teamsKey,
+    placed,
+  });
+  const spaces = useMemo(() => orderSpaces(teams, previews.byTeam), [teams, previews.byTeam]);
+  // Offline after the teams, while it holds anything (one-explorer.md "Offline, a Space"): read from this
+  // browser, so it costs no request.
+  const local = useThisBrowserSpace();
+  const empty =
+    !previews.loading &&
+    !previews.error &&
+    !local.holds &&
+    spaces.every((s) => (s.preview?.itemCount ?? 0) === 0);
+  return { previews, spaces, local, empty };
+}
+
+export function HomeSpaces({ state }: { state: HomeSpacesState }) {
+  const { app, teams, words, viewerId } = useExplorer();
   const { myTeams, canRun } = useTeams();
   const { signedIn, signInHref } = useExtras();
   const [all, setAll] = useState(false);
   const [newTeam, setNewTeam] = useState(false);
-  const shownApp = filter === 'all' ? null : app;
-  const teamsKey = useMemo(() => teams.map((t) => t.id).join(','), [teams]);
-  const previews = useSpacePreviews({ client, app: shownApp, epoch, teamsKey });
-  const spaces = useMemo(() => orderSpaces(teams, previews.byTeam), [teams, previews.byTeam]);
+  const { previews, spaces, local } = state;
   const members = useMemo(
     () => new Map(myTeams?.teams.map((t) => [t.id, t.memberCount])),
     [myTeams],
   );
   const title =
     APP_KINDS[app] === 'space' ? SPACES_COPY.titleWhereItemsAreSpaces : SPACES_COPY.title;
-  // Offline after the teams, while it holds anything (one-explorer.md "Offline, a Space"): read from this
-  // browser, so it costs no request.
-  const local = useThisBrowserSpace();
   const total = spaces.length + (local.holds ? 1 : 0);
   const overflow = total > SPACES_SHOWN;
   const room = overflow && !all ? SPACES_SHOWN - 1 : total;
@@ -87,6 +122,7 @@ export function HomeSpaces() {
   // With no team yet: where one is made, or where signing in is.
   const guest = !signedIn && Boolean(signInHref);
   const invite = teams.length === 0 ? (canRun ? 'create' : guest ? 'sign-in' : null) : null;
+  if (state.empty) return null;
 
   return (
     <HomeSection id="spaces" title={title} busy={previews.loading}>

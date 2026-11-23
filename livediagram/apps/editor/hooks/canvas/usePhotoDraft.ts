@@ -1,5 +1,7 @@
 'use client';
 
+import { hasOwnAiKey } from '@liveworkspace/workbench/components/ai/ai-source-scope';
+import { ReadKeyFailed } from '@/lib/api/ai';
 import { useCallback, useRef, useState } from 'react';
 import {
   acceptDraft,
@@ -61,6 +63,8 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // Cancel pressed in that window must not land a draft over a board the
   // author has moved on from.
   const runRef = useRef(0);
+  // Whether the person's own key read this run's notes, so a re-read goes the same way.
+  const keyedRef = useRef(false);
   // Whether this session armed the landing's checkpoint, so Discard knows it
   // has a step to cancel back to.
   const checkpointedRef = useRef(false);
@@ -164,9 +168,14 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     async (detection: PhotoDetection, controller: AbortController, run: number) => {
       const current = () => runRef.current === run;
       try {
+        // A deployment with no model still reads on the person's own key: asked here, when a photo is read, never on load.
+        const { aiEnabled, signedIn } = live.current;
+        keyedRef.current = !aiEnabled && signedIn ? await hasOwnAiKey() : false;
+        if (!current()) return;
         const { read } = selectReader({
-          aiEnabled: live.current.aiEnabled,
+          aiEnabled,
           ownerId: live.current.ownerId,
+          keyed: keyedRef.current,
         });
         const answer = await read(detection.crops, {
           signal: controller.signal,
@@ -215,8 +224,9 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       } catch (err) {
         if (controller.signal.aborted || !current()) return;
         const token = err instanceof Error ? err.message : 'ai_error';
+        const keyFailure = err instanceof ReadKeyFailed ? err.aiKey : null;
         setReview((prev) =>
-          prev && prev.detection === detection ? { ...prev, readError: token } : prev,
+          prev && prev.detection === detection ? { ...prev, readError: token, keyFailure } : prev,
         );
         live.current.toastError(ERROR_TOASTS[token] ?? ERROR_TOASTS.ai_error!);
       } finally {
@@ -236,7 +246,11 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     isCurrent: (run) => runRef.current === run,
     enqueue,
     reader: () =>
-      selectReader({ aiEnabled: live.current.aiEnabled, ownerId: live.current.ownerId }).read,
+      selectReader({
+        aiEnabled: live.current.aiEnabled,
+        ownerId: live.current.ownerId,
+        keyed: keyedRef.current,
+      }).read,
     readOptions: readerCallbacks,
     onText: (run, id, read) => {
       if (runRef.current !== run) return;

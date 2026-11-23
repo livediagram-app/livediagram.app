@@ -1,106 +1,15 @@
 'use client';
 
 // The words step of an AI draft (Describe a Plan, docs/specs/026-plan/describe-a-plan.md "Where it starts"; Describe a
-// Form, docs/specs/030-forms/describe-a-form.md "The dialog"): the text box with its count, the example chips that
-// fill it, a refusal said under it, and the AI line; and the sign-in nudge a guest sees in its place. Shared, so the
-// two dialogs ask alike.
+// Form, docs/specs/030-forms/describe-a-form.md "The dialog"): Try an Example above the text box, its count, a refusal
+// said under it, and the source line (@liveworkspace/automations-ui's DescribePrompt); and the sign-in nudge a guest
+// sees in its place. Shared, so the two dialogs ask alike.
 
-import { forwardRef, useId, type ReactNode } from 'react';
-import { Button, SparkleIcon, TextArea } from '@liveplanner/ui';
-import { AiNote } from '@/components/automations/step-panels/AiStepPanel';
-import { Callout } from '@liveworkspace/ui/callout';
+import { forwardRef, type ReactNode } from 'react';
+import { SparkleIcon } from '@liveplanner/ui';
 
-export type DescribeExample = { label: string; text: string };
-
-export const DescribePrompt = forwardRef<
-  HTMLTextAreaElement,
-  {
-    // The box's accessible name ("Describe the plan").
-    label: string;
-    text: string;
-    onText: (text: string) => void;
-    max: number;
-    placeholder: string;
-    examples: readonly DescribeExample[];
-    busy: boolean;
-    // A refusal, in the api's fixed words or the dialog's own.
-    said: string | null;
-    // The AI line ("Uses AI: ...").
-    note: ReactNode;
-    onSubmit: () => void;
-    // The wrapper's data attribute, for tests and shots ("data-describe-plan").
-    dataAttr: string;
-  }
->(function DescribePrompt(
-  { label, text, onText, max, placeholder, examples, busy, said, note, onSubmit, dataAttr },
-  ref,
-) {
-  const noteId = useId();
-  const saidId = useId();
-  const examplesId = useId();
-  const focus = () => (ref && typeof ref === 'object' ? ref.current?.focus() : undefined);
-  return (
-    <div {...{ [dataAttr]: '' }} className="flex flex-col gap-3 px-6 py-5 max-sm:px-4">
-      <TextArea
-        ref={ref}
-        aria-label={label}
-        aria-describedby={said ? `${saidId} ${noteId}` : noteId}
-        aria-invalid={said ? true : undefined}
-        rows={4}
-        maxLength={max}
-        value={text}
-        readOnly={busy}
-        placeholder={placeholder}
-        onChange={(e) => onText(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            onSubmit();
-          }
-        }}
-        className="resize-none"
-      />
-      <div className="-mt-1 flex justify-end">
-        <span
-          aria-live="polite"
-          className="text-[12px] tabular-nums text-slate-500 dark:text-slate-400"
-        >
-          {text.length} / {max}
-        </span>
-      </div>
-      <div role="group" aria-labelledby={examplesId} className="flex flex-col gap-2">
-        <span
-          id={examplesId}
-          className="text-[12px] font-medium text-slate-500 dark:text-slate-400"
-        >
-          Try an Example
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {examples.map((e) => (
-            <Button
-              key={e.label}
-              variant="secondary"
-              size="xs"
-              disabled={busy}
-              onClick={() => {
-                onText(e.text);
-                focus();
-              }}
-            >
-              {e.label}
-            </Button>
-          ))}
-        </div>
-      </div>
-      {said ? (
-        <Callout tone="warning" size="md" role="alert">
-          <span id={saidId}>{said}</span>
-        </Callout>
-      ) : null}
-      <AiNote id={noteId}>{note}</AiNote>
-    </div>
-  );
-});
+// The words step itself is every Describe with AI dialog's, shared with Describe a Rule.
+export { DescribePrompt, type DescribeExample } from '@liveworkspace/automations-ui/DescribePrompt';
 
 /** A guest's nudge in the box's place: the sparkle and the words (Sign In is the dialog's footer). */
 export function DescribeSignIn({ children }: { children: ReactNode }) {

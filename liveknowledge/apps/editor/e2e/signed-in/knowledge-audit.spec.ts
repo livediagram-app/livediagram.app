@@ -31,8 +31,7 @@ async function open(page: Page, screen: Screen): Promise<void> {
     return;
   }
   if (screen !== 'Pages') await openView(page, screen);
-  if (screen === 'Ask')
-    await expect(page.locator('[data-ask-ai]')).toContainText('Uses built-in AI');
+  if (screen === 'Ask') await expect(page.locator('[data-ask-ai]')).toContainText('Built-in AI');
   if (screen === 'AI Knowledge')
     await expect(page.getByRole('region', { name: 'Knowledge Health' })).toBeVisible();
   if (screen === 'Pages') await expect(titleOf(page)).toHaveText('Runbook');

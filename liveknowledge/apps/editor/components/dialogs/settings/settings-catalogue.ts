@@ -715,10 +715,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           on: 'NotifyKnowledgeReviewsOn',
           off: 'NotifyKnowledgeReviewsOff',
         },
-        keywords: 'email review due verify owner remind reminder pages disagree conflict',
+        keywords:
+          'email review due verify owner remind reminder pages disagree conflict required reading read confirm',
         label: 'Knowledgebase Reviews',
         description:
-          'A page you own is due for review, disagrees with another page, or an Editor reminds its owners.',
+          "A page you own is due for review or disagrees with another page, an Editor reminds its owners, or you're reminded to read a Required Reading page.",
       }),
       emailSwitch(
         'notifyWatchDigest',

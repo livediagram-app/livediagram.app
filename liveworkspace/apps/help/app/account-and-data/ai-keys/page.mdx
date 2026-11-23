@@ -48,12 +48,24 @@ When an app calls a model for you, it uses the first of these that is set:
 3. Your own key.
 4. Built-in AI.
 
+A Describe a Plan, Describe a Form or the photo reader asks before any work exists, so only your own key applies there. Automations' AI steps run on their own, with nobody's request behind them, so they always use built-in AI; describing a rule uses your key.
+
+## See Which AI a Feature Uses
+
+Every AI feature shows a small **source line** beside its box: **Built-in AI** with its daily allowance, or **Your Key** or **Your Team's Key** with the provider and model (and "No daily limits"). Your key is never shown, not even its ending.
+
+- **Use Your Own Key**, on built-in AI, opens **Settings › AI** on top of the feature, so what you typed stays put. Add a key, close Settings, and the line reads **Your Key** straight away, with no reload.
+- **Change**, on your key, opens the same place to replace it or pick another model.
+- On a team's key only its admins see **Change**; everyone else is told the team's admins manage it.
+- A key that fails (refused, out of credit, a model it can't use) says so on the line in plain words, with **Fix Key**. The feature never quietly runs on built-in AI instead.
+
 A key that is set but cannot be read is never swapped quietly for the next one: the app says so, and asks you (or the team's admins) to replace it. If the app can't reach your key settings for a moment, it says so too, rather than sending your words to built-in AI.
 
 <AppNote app="liveknowledge">
   A Knowledgebase's [AI Settings](/help/knowledgebase/ai-settings/) say which key answers you there
   ("Uses Your Team's Key", "Uses Your Key", "Uses Built-In AI"), and **Your AI Keys** opens this
-  setting. The background check for [pages that disagree](/help/knowledgebase/pages-that-disagree/)
+  setting. Ask, Describe to Set Up and Describe the Structure show the source line too; on the
+  Knowledgebase's own key, **Change** opens its AI Settings. The background check for [pages that disagree](/help/knowledgebase/pages-that-disagree/)
   uses only the Knowledgebase's own key or built-in AI, never a team's or a person's.
 </AppNote>
 

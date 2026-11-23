@@ -23,6 +23,24 @@ import {
 import { PlanDraftRefusal } from './plan-draft-client';
 import { STARTER_RULES_LEFT_OUT, STARTER_RULES_LINE } from './PlanDraftRules';
 
+// The source line is the workbench's (its own tests: packages/workbench WorkbenchAiSource.test.tsx); here, what the
+// dialog hands it: the allowance and the last ask's key failure.
+vi.mock('@liveworkspace/workbench/components/ai/WorkbenchAiSource', () => ({
+  WorkbenchAiSource: ({
+    allowance,
+    failure,
+    id,
+  }: {
+    allowance?: string;
+    failure?: { kind: string } | null;
+    id?: string;
+  }) => (
+    <p id={id} data-ai-source-stub={failure ? failure.kind : 'none'}>
+      {allowance}
+    </p>
+  ),
+}));
+
 const drafted = (): PlanDraft => ({
   title: 'Hiring Pipeline',
   columns: ['Applied', 'Screen', 'Interview', 'Offer'],
@@ -89,10 +107,14 @@ describe('Describe a Plan: the words', () => {
   it('fills the box from an example, counts it, and drafts with Ctrl Enter', async () => {
     const { draft } = mount();
     expect(button(/Draft Plan/).hasAttribute('disabled')).toBe(true);
+    // Try an Example sits above the box (owner, 2026-11-22), and an example puts the cursor in it.
+    const examples = screen.getByRole('group', { name: 'Try an Example' });
+    expect(examples.compareDocumentPosition(box()) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     fireEvent.click(button(DESCRIBE_PLAN_EXAMPLES[1]!.label));
+    expect(document.activeElement).toBe(box());
     expect((box() as HTMLTextAreaElement).value).toBe(DESCRIBE_PLAN_EXAMPLES[1]!.text);
     expect(screen.getByText(`${DESCRIBE_PLAN_EXAMPLES[1]!.text.length} / 500`)).toBeTruthy();
-    expect(screen.getByText('Uses AI: plans and forms share 10 drafts a day.')).toBeTruthy();
+    expect(screen.getByText('Plans and forms share 10 drafts a day.')).toBeTruthy();
     fireEvent.keyDown(box(), { key: 'Enter', ctrlKey: true });
     expect(draft).toHaveBeenCalledWith(DESCRIBE_PLAN_EXAMPLES[1]!.text);
     await screen.findByText('Check Your Plan');

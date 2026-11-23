@@ -47,7 +47,7 @@ test('with no key, Ask answers on built-in AI, then Accept Answer files the chat
 }) => {
   await signedInKnowledgebase(page);
   await openView(page, 'Ask');
-  await expect(ask(page).locator('[data-ask-ai]')).toContainText('Uses built-in AI');
+  await expect(ask(page).locator('[data-ask-ai]')).toContainText('Built-in AI');
   await send(page, 'What is this knowledgebase for?');
   // No passages match a new knowledgebase: the stand-in answers it as a gap, and the chat is answered.
   const answer = ask(page).getByRole('article', { name: 'Answer' });

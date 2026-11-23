@@ -42,7 +42,7 @@ export function EmptyState({
         {title}
       </Heading>
       <p
-        className={`relative mt-1.5 max-w-sm leading-relaxed text-slate-500 dark:text-slate-400 ${compact ? 'text-xs' : 'text-sm'}`}
+        className={`relative mt-1.5 max-w-sm text-pretty leading-relaxed text-slate-500 dark:text-slate-400 ${compact ? 'text-xs' : 'text-sm'}`}
       >
         {description}
       </p>

@@ -61,6 +61,8 @@ export async function aiKeyFor(
   if (response.status === 409 && body.error === 'ai_key_unreadable' && isSource(body.source)) {
     return { status: 'unreadable', source: body.source };
   }
+  // A deployment that keeps no keys (no AI_KEY_SECRET) has none to apply: built-in AI answers, as Settings says.
+  if (response.status === 503 && body.error === 'ai_keys_unavailable') return { status: 'none' };
   if (!response.ok) return { status: 'unavailable' };
   if (body.source === null) return { status: 'none' };
   if (!isSource(body.source) || !isProvider(body.provider) || typeof body.model !== 'string') {
@@ -77,4 +79,27 @@ export async function aiKeyFor(
     answer.key = body.key;
   }
   return answer;
+}
+
+/** A request's caller, as an app's route context holds it, as far as asking for a key reads it. */
+export type AiKeyCaller = {
+  accountUserId: string | null;
+  token?: unknown;
+  workbench?: unknown;
+  bearer?: string | null;
+};
+
+/** The key that applies to the person a request is from, in `teamId`'s work (liveworkspace/docs/specs/003-accounts/
+ *  ai-keys.md "Every AI feature honours the choice"): asked only for a signed-in person in person, their own bearer
+ *  in hand. Null for anyone else (an API token, a workbench session, a guest, a link visitor) and on a server with no
+ *  accounts to ask (self-hosted): built-in AI answers them. Never throws. */
+export async function personAiKey(
+  credentials: ClientCredentials | null,
+  caller: AiKeyCaller,
+  teamId: string | null | undefined,
+  door: typeof aiKeyFor = aiKeyFor,
+): Promise<AiKeyAnswer | null> {
+  if (!credentials || !caller.accountUserId || caller.token || caller.workbench || !caller.bearer)
+    return null;
+  return door(credentials, { accessToken: caller.bearer, teamId: teamId ?? null, want: 'key' });
 }

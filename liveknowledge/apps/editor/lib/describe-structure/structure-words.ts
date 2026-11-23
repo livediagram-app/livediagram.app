@@ -12,7 +12,6 @@ import {
   STRUCTURE_PER_KNOWLEDGEBASE_PER_DAY,
   STRUCTURE_PER_PERSON_PER_HOUR,
 } from '@liveknowledge/knowledge';
-import { aiInUseLine } from '@/lib/knowledge-ask/ai-settings-words';
 import { offersAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
 import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
 
@@ -36,14 +35,6 @@ export const usesChosenBuiltIn = (
   settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn' | 'uses'> | null,
   choice: AskAiChoice,
 ): boolean => settings !== null && offersAiChoice(settings) && choice === 'built-in';
-
-/** The quiet line under the field saying which AI answers, as Ask says it: nothing until the settings are read. */
-export function structureAiLine(
-  settings: Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn' | 'uses'> | null,
-  choice: AskAiChoice,
-): string | null {
-  return usesChosenBuiltIn(settings, choice) ? 'Uses built-in AI' : aiInUseLine(settings);
-}
 
 export type StructureFailureWords = { title: string; text: string; settings: boolean };
 
