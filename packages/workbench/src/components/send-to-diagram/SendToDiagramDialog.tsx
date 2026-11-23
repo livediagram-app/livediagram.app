@@ -45,7 +45,7 @@ const KINDS: readonly {
   {
     kind: 'mindmap',
     label: 'Mind Map',
-    line: 'Ideas on a topic',
+    line: 'Topic, ideas',
     icon: lucideGlyph(lucideShare2, 18),
   },
   {
