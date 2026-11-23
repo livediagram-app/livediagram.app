@@ -38,6 +38,13 @@ describe('structureFirst', () => {
     expect(
       structureFirst({ kind: 'tab-meta', tabId: 't1', patch: {}, clear: ['name'] }, 't1'),
     ).toBe('drop');
+    // A connected tab's file name beside its own (connected-tabs.md "A tab's own name") is its name too.
+    expect(
+      structureFirst({ kind: 'tab-meta', tabId: 't1', patch: { targetName: 'X' } }, 't1'),
+    ).toBe('drop');
+    expect(
+      structureFirst({ kind: 'tab-meta', tabId: 't1', patch: {}, clear: ['targetName'] }, 't1'),
+    ).toBe('drop');
     expect(
       structureFirst(el({ kind: 'patch', id: 's1', set: { shape: 'plan-board' } }), 't1'),
     ).toBe('drop');

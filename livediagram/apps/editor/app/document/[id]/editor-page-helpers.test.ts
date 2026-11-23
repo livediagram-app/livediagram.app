@@ -35,6 +35,18 @@ describe('createTab', () => {
 });
 
 describe('placeholdersFromSummaries', () => {
+  // A fresh load (liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"): a renamed connected tab
+  // names its file from the first paint, before its body loads.
+  it("carries a renamed connected tab's file name from its summary", () => {
+    const connection = { id: 'cn_abcdefghijklmnopqrstuvwx', app: 'livedesign', itemId: 'd1' };
+    const [renamed, following] = placeholdersFromSummaries([
+      { id: 'a', name: 'Roadmap', connection, targetName: 'Launch plan' },
+      { id: 'b', name: 'Screens', connection },
+    ]);
+    expect(renamed).toMatchObject({ name: 'Roadmap', targetName: 'Launch plan', connection });
+    expect('targetName' in following!).toBe(false);
+  });
+
   it("carries a connected tab's connection, so it shows as one from the first paint", () => {
     const connection = { id: 'cn_abcdefghijklmnopqrstuvwx', app: 'livedesign', itemId: 'd1' };
     const [plain, connected] = placeholdersFromSummaries([

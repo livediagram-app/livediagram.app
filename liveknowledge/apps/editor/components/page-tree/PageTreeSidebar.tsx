@@ -12,6 +12,7 @@ import { MenuJoinBand } from '@liveworkspace/workbench/components/canvas/menu-jo
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
+import { LabelFilterHeading } from '@/components/page-labels/LabelFilterHeading';
 import { PageTree, type PageTreeProps } from './PageTree';
 import { AddToSidebar } from './AddToSidebar';
 import { PAGE_RENAME_FIELD } from './page-tree-row-styles';
@@ -213,9 +214,8 @@ export function PageTreeSidebar({
       <div className="px-3 pt-2">
         <SearchField />
       </div>
-      <p className="px-[18px] pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-        Pages
-      </p>
+      {/* The Pages heading, with Filter by Label and its bar (page-surface.md "The label filter"). */}
+      <LabelFilterHeading only={tree.only} inset="px-[18px]" top="pt-3" />
       {/* The pages, then the Trash as the list's last item, scrolling together (knowledgebases-and-pages.md "The page
           Trash"); the row draws nothing while the Trash is empty. */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-2">

@@ -36,6 +36,10 @@ import { textResult } from './tool-helpers';
 
 const ref = pageRefOf;
 
+// A label scope as the api takes it (page-surface.md "Page labels"): one `labels` value, comma separated.
+const labelsQuery = (labels: readonly string[] | undefined, lead: '?' | '&'): string =>
+  labels?.length ? `${lead}labels=${encodeURIComponent(labels.join(','))}` : '';
+
 export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpGetContext, async (args, extra) => {
     const api = await knowledgeApi(server, env, extra);
@@ -71,7 +75,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListPages, async (args, extra) => {
     const api = await knowledgeApi(server, env, extra);
     const { pages, reviewEvery } = await api.json<KnowledgePagesResponse>(
-      knowledgePath(args.documentId, 'pages'),
+      knowledgePath(args.documentId, 'pages') + labelsQuery(args.labels, '?'),
     );
     let rows = pages;
     if (args.under !== undefined) {
@@ -99,7 +103,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpSearchPages, async (args, extra) => {
     const api = await knowledgeApi(server, env, extra);
     const { results } = await api.json<KnowledgeSearchResponse>(
-      `${knowledgePath(args.documentId, 'search')}?q=${encodeURIComponent(args.query)}`,
+      `${knowledgePath(args.documentId, 'search')}?q=${encodeURIComponent(args.query)}${labelsQuery(args.labels, '&')}`,
     );
     const shown = results.slice(0, args.limit ?? SEARCH_DEFAULT_LIMIT);
     const disputed = shown.some((r) => r.conflictsWith?.length);
@@ -143,6 +147,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
       subpages: page.subpages.map(ref),
       ...(page.cover ? { cover: page.cover } : {}),
       ...(page.icon ? { icon: page.icon } : {}),
+      ...(page.labels ? { labels: page.labels } : {}),
       ...trustFieldsOf(page.trust),
       next:
         (page.leftOut > 0

@@ -50,19 +50,30 @@ export type PageRow = {
   // The page's icon as one plain key (pageIconKey: `e:🚀`, `i:rocket`), null for none: compared by value, so a row
   // renders only when its own icon changes (page-surface.md "The page icon").
   icon: string | null;
+  // Under a label filter (page-surface.md "The label filter"): a page shown only because a match sits under it, drawn
+  // quieter than the matches. False with no filter.
+  context: boolean;
 };
 
 /**
  * The rows on screen, top to bottom: every page not under a closed one. A page with subpages is open unless it is in
  * `closed`; the current page's ancestors are always open, so the page you are on is never folded out of sight.
+ *
+ * Under a label filter, `only` holds the pages that match (page-surface.md "The label filter"): the rows are those
+ * pages and the pages they sit under, every one of those open whatever is closed, so no match is folded away. A row's
+ * subpages then counts the matches under it, and its position and siblings the rows kept, so its chevron and what a
+ * screen reader says fit what is shown. One pass to mark what is kept, one to draw: linear in the pages (times their depth).
  */
 export function visiblePageRows(
   tabs: readonly TreeTab[],
   closed: ReadonlySet<string>,
   activeId: string | null,
+  only: ReadonlySet<string> | null = null,
 ): PageRow[] {
   const forced = new Set(activeId ? pageAncestors(tabs, activeId).map((p) => p.id) : []);
-  const rows = pageTreeRows(tabs);
+  const all = pageTreeRows(tabs);
+  const kept = only ? keptUnderFilter(all, only) : null;
+  const rows = kept ? all.filter((row) => kept.has(row.page.id)) : all;
   // The page at each level above the row being read, for its parent; and how many pages each parent holds.
   const path: string[] = [];
   const counts = new Map<string | undefined, number>();
@@ -86,14 +97,15 @@ export function visiblePageRows(
     foldedBelow = Infinity;
     const { page } = row;
     const connection = connectionOf(page);
-    const open = row.subpages > 0 && (forced.has(page.id) || !closed.has(page.id));
-    if (row.subpages > 0 && !open) foldedBelow = row.depth;
+    const subpages = kept ? kept.get(page.id)! : row.subpages;
+    const open = subpages > 0 && (kept !== null || forced.has(page.id) || !closed.has(page.id));
+    if (subpages > 0 && !open) foldedBelow = row.depth;
     out.push({
       id: page.id,
       name: page.name,
       level: row.depth,
       parent,
-      subpages: row.subpages,
+      subpages,
       open,
       position,
       siblings: counts.get(parent) ?? 1,
@@ -101,9 +113,30 @@ export function visiblePageRows(
       connectionId: connection?.id ?? null,
       app: connection?.app ?? null,
       icon: pageIconKey(page.icon),
+      context: only !== null && !only.has(page.id),
     });
   });
   return out;
+}
+
+/** Under a filter, the pages kept (the matches and every page above one), each with how many matches sit under it
+ *  at every depth. */
+function keptUnderFilter(
+  rows: ReturnType<typeof pageTreeRows>,
+  only: ReadonlySet<string>,
+): Map<string, number> {
+  const kept = new Map<string, number>();
+  const path: string[] = [];
+  for (const row of rows) {
+    path.length = row.depth - 1;
+    path[row.depth - 1] = row.page.id;
+    if (!only.has(row.page.id)) continue;
+    for (let d = 0; d < path.length; d++) {
+      const id = path[d]!;
+      kept.set(id, (kept.get(id) ?? 0) + (d < path.length - 1 ? 1 : 0));
+    }
+  }
+  return kept;
 }
 
 /** What a key pressed on a row asks for. */

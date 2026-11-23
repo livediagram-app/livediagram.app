@@ -108,7 +108,9 @@ export function tabToSummary(
   at: number,
 ): TabSummary {
   const summary = sharedTabToSummary(tab, documentId, orderIndex, at);
-  return tab.parent === undefined ? summary : { ...summary, parent: tab.parent };
+  // And its labels (page-surface.md "Page labels"), so the label filter reads the tree before the page's body loads.
+  const labelled = tab.labels?.length ? { ...summary, labels: tab.labels } : summary;
+  return tab.parent === undefined ? labelled : { ...labelled, parent: tab.parent };
 }
 
 // Project a stored record into the full `LiveDoc` the editor hydrates from.
@@ -164,14 +166,23 @@ export function applyMeta(
     // Absent leaves the stored deck alone; null clears it. Same contract as
     // the server's PUT, so an offline document behaves identically.
     presentation?: string | null;
-    // Absent leaves the stored Review Period alone.
-    knowledgeSettings?: KnowledgeSettings;
+    // Absent leaves the stored settings alone; a field it leaves out (the labels, say) is kept.
+    knowledgeSettings?: Partial<KnowledgeSettings>;
   },
   at: number,
 ): OfflineDocumentRecord {
   const { knowledgeSettings, ...shared } = patch;
   const moved = applyMetaShared(rec, shared, at);
-  const next = knowledgeSettings ? { ...moved, knowledgeSettings, savedAt: at } : moved;
+  const next = knowledgeSettings
+    ? {
+        ...moved,
+        knowledgeSettings: {
+          ...parseKnowledgeSettings(rec.knowledgeSettings),
+          ...knowledgeSettings,
+        },
+        savedAt: at,
+      }
+    : moved;
   // A page's parent rides the metadata save (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"), as on
   // the server: an entry that carries the key places its page.
   const placed = new Map(
@@ -307,7 +318,7 @@ export async function offlineSaveDocumentMeta(
     name?: string;
     tabs?: { id: string; folder?: string; parent?: unknown }[];
     presentation?: string | null;
-    knowledgeSettings?: KnowledgeSettings;
+    knowledgeSettings?: Partial<KnowledgeSettings>;
   },
   now: number,
 ): Promise<void> {

@@ -77,14 +77,21 @@ export function scopedTabOp(
   return { ...o, tab: { ...o.tab, name } };
 }
 
-// Whether a scoped session's op renames its tab: a `tab-meta` patch that sets `name` or clears it.
+// Whether a scoped session's op renames its tab: a `tab-meta` patch that sets `name` or clears it, or a connected
+// tab's `targetName`, the file's name kept beside a name of its own (liveworkspace/docs/specs/004-index/connected-tabs.md
+// "A tab's own name").
 export function scopedRenames(op: unknown, tabScope: string | null): boolean {
   if (tabScope === null) return false;
   const o = op as { kind?: unknown; patch?: unknown; clear?: unknown } | null;
   if (o?.kind !== 'tab-meta') return false;
   const patch = o.patch;
-  if (typeof patch === 'object' && patch !== null && Object.hasOwn(patch, 'name')) return true;
-  return Array.isArray(o.clear) && o.clear.includes('name');
+  if (
+    typeof patch === 'object' &&
+    patch !== null &&
+    (Object.hasOwn(patch, 'name') || Object.hasOwn(patch, 'targetName'))
+  )
+    return true;
+  return Array.isArray(o.clear) && (o.clear.includes('name') || o.clear.includes('targetName'));
 }
 
 // document-meta carries every tab's name and folder. Other tabs keep their id

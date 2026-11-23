@@ -38,6 +38,7 @@ export function placeholdersFromSummaries(
     parent?: string;
     knowledge?: Tab['knowledge'];
     icon?: Tab['icon'];
+    labels?: Tab['labels'];
     connection?: unknown;
   }[],
 ): Tab[] {
@@ -59,6 +60,8 @@ export function placeholdersFromSummaries(
         ...(summary.knowledge !== undefined ? { knowledge: summary.knowledge } : {}),
         // And its icon (page-surface.md "The page icon"), beside its name in the tree before its body loads.
         ...(summary.icon !== undefined ? { icon: summary.icon } : {}),
+        // And its labels (page-surface.md "Page labels"), so the label filter reads the tree from the summaries alone.
+        ...(summary.labels?.length ? { labels: summary.labels } : {}),
       },
       summary,
     ),

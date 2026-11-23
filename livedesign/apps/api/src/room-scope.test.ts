@@ -113,6 +113,11 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
     const rename = { kind: 'tab-meta', tabId: SCOPE, patch: { name: 'Mine now' } };
     expect(scopedSenderMayRelay(rename, SCOPE)).toBe(false);
     expect(scopedSenderMayRelay({ ...rename, patch: {}, clear: ['name'] }, SCOPE)).toBe(false);
+    // A connected tab's file name beside its own (connected-tabs.md "A tab's own name") is its name too.
+    expect(scopedSenderMayRelay({ ...rename, patch: { targetName: 'Plan' } }, SCOPE)).toBe(false);
+    expect(scopedSenderMayRelay({ ...rename, patch: {}, clear: ['targetName'] }, SCOPE)).toBe(
+      false,
+    );
     expect(scopedSenderMayRelay({ ...rename, patch: { theme: 'dark' } }, SCOPE)).toBe(true);
     expect(scopedSenderMayRelay(rename, null)).toBe(true);
   });
@@ -128,6 +133,22 @@ describe('opFromScopedSender (a scoped whole-tab op keeps no name)', () => {
 
   it("drops the name from a scoped session's whole tab", () => {
     expect(opFromScopedSender(op, SCOPE)).toEqual({
+      kind: 'tab',
+      tabId: SCOPE,
+      tab: { id: SCOPE, elements: [] },
+    });
+  });
+
+  // connected-tabs.md "A tab's own name": the file's name kept beside a connected tab's own goes with it.
+  it("drops a connected tab's file name too, alone or with the name", () => {
+    const named = { ...op, tab: { ...op.tab, targetName: 'Launch plan' } };
+    expect(opFromScopedSender(named, SCOPE)).toEqual({
+      kind: 'tab',
+      tabId: SCOPE,
+      tab: { id: SCOPE, elements: [] },
+    });
+    const only = { kind: 'tab', tabId: SCOPE, tab: { id: SCOPE, targetName: 'x', elements: [] } };
+    expect(opFromScopedSender(only, SCOPE)).toEqual({
       kind: 'tab',
       tabId: SCOPE,
       tab: { id: SCOPE, elements: [] },

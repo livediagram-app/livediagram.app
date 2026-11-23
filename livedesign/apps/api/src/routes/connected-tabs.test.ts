@@ -148,6 +148,26 @@ describe('the editor adds a connected tab', () => {
     expect(doc.design.tabs.find((t) => t.id === 't1')?.connection).toBeUndefined();
   });
 
+  // A fresh load (liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"): a renamed connected tab's
+  // summary names its file before its body loads; a tab that follows its file, and a tab of content, carry none.
+  it("names a renamed connected tab's file in the outline, before its body loads", async () => {
+    const db = await design();
+    await addConnected(db);
+    await addConnected(db, 't3', AGAIN);
+    await call(db, 'PUT', '/api/designs/D/tabs/t2', {
+      body: { id: 't2', name: 'Roadmap', targetName: 'Launch plan', elements: [] },
+    });
+    const doc = await (
+      await call(db, 'GET', '/api/designs/D')
+    ).json<{
+      design: { tabs: { id: string; name: string; targetName?: string }[] };
+    }>();
+    const summary = (id: string) => doc.design.tabs.find((t) => t.id === id);
+    expect(summary('t2')).toMatchObject({ name: 'Roadmap', targetName: 'Launch plan' });
+    expect(summary('t3')).not.toHaveProperty('targetName');
+    expect(summary('t1')).not.toHaveProperty('targetName');
+  });
+
   it('keeps it through an autosave that leaves it out, and confirms only a new one', async () => {
     const db = await design();
     await addConnected(db);

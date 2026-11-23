@@ -23,6 +23,9 @@ import type { Element } from './element-union';
 export type Tab = {
   id: TabId;
   name: string;
+  // A connected tab an Editor renamed (liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"): the
+  // file's own name as last seen, while `name` is this plan's label for it. Absent, the name follows the file.
+  targetName?: string;
   kind?: TabKind;
   // A Dashboard tab's rows and slots (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), read via `readDashboard`.
   dashboard?: DashboardLayout;

@@ -89,6 +89,13 @@ describe("the knowledgebase's settings in the file", () => {
     }
   });
 
+  it('carries the labels, with the default period too', () => {
+    const labels = [{ id: 'lbl_a', name: 'Onboarding', colour: '#123abc' }];
+    const envelope = read(text({ reviewEvery: 90, labels }));
+    expect(envelope.document.knowledgeSettings).toEqual({ reviewEvery: 90, labels });
+    expect(copyDocumentEnvelope(envelope).knowledgeSettings).toEqual({ reviewEvery: 90, labels });
+  });
+
   it('leaves the default and anything unknown out, so an old file reads as every 90 days', () => {
     for (const settings of [undefined, { reviewEvery: 90 }, { reviewEvery: 45 }, 'never', null]) {
       expect(written(settings).document).not.toHaveProperty('knowledgeSettings');

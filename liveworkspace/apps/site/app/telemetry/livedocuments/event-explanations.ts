@@ -769,6 +769,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Added|ConnectedAgain':
     'Someone mended a connected tab that opened nothing with Connect Again.',
   'Tab|Opened|Connected': 'Someone opened the file a connected tab stands for.',
+  'Tab|Opened|ConnectButton':
+    'Someone pressed Connect a File on the tab bar, opening the list of files to connect.',
+  'Tab|Changed|ConnectedName':
+    'Someone gave a connected tab a name of its own; the file it stands for keeps its name.',
+  'Tab|Changed|ConnectedNameReset':
+    "Someone renamed a connected tab to nothing, so it follows its file's name again.",
   'Tab|Selected|SideBySideClick':
     'Someone clicked into the other side by side pane, moving the editor (its toolbars and panels) there.',
   'Tab|Selected|SideBySideHover':
