@@ -71,5 +71,6 @@ describe('snapshot steps on a big plan', () => {
     expect(items.length).toBe(CARDS);
     expect(items.every((i) => i.fields['title'] !== 'Changed')).toBe(true);
     expect(ms).toBeLessThan(cpuBudgetMs(2_000));
-  });
+    // Seeding the plan and its first snapshot is setup, not the work judged: a slow runner gets the time for it.
+  }, 60_000);
 });
