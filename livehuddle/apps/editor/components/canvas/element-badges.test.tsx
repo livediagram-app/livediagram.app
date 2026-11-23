@@ -1,7 +1,16 @@
 // @vitest-environment jsdom
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { RemoteSelectorsStrip, remoteSelectorCopy } from '@/components/canvas/element-badges';
+import { act, cleanup, render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { PlanSend } from '@liveworkspace/index-client';
+import {
+  addSends,
+  setSendSource,
+} from '@liveworkspace/workbench/components/send-to-plan/send-store';
+import {
+  RemoteSelectorsStrip,
+  remoteSelectorCopy,
+  SentCardBadge,
+} from '@/components/canvas/element-badges';
 
 // docs/specs/007-editor/editor-app.md "Concurrent-selection lock": each disc takes the pointer so its hover card can
 // open, and a Viewer's disc never claims a lock.
@@ -36,5 +45,38 @@ describe('remoteSelectorCopy', () => {
 
   it('says a Viewer is only looking', () => {
     expect(remoteSelectorCopy({ name: 'Ava', holds: false }).title).toBe('Selected by Ava');
+  });
+});
+
+// docs/specs/013-workspace/send-to-plan.md "The chip": a sent sticky's disc says where its card stands, as every
+// indicator does.
+describe('SentCardBadge', () => {
+  const sent = (id: string, card: Partial<PlanSend['card']>): PlanSend => ({
+    id,
+    ref: 'element:t1:s1:',
+    kind: 'element',
+    plan: { id: 'P', title: 'Party' },
+    card: { id: `c_${id}`, title: 'Order the snacks', column: 'To Do', done: false, ...card },
+    link: 'https://lp/x',
+    at: 1,
+  });
+  afterEach(() => {
+    cleanup();
+    setSendSource(null);
+  });
+
+  it("names the card's column and plan, and done once it is", () => {
+    setSendSource('S', null, { planSends: vi.fn().mockResolvedValue({ sends: [] }) });
+    act(() => addSends([sent('a', {})]));
+    const { getByRole } = render(<SentCardBadge elementId="s1" />);
+    expect(getByRole('button').getAttribute('aria-label')).toBe(
+      'Open the card “Order the snacks”, To Do · Party, in liveplanner',
+    );
+    setSendSource(null);
+    setSendSource('S', null, { planSends: vi.fn().mockResolvedValue({ sends: [] }) });
+    act(() => addSends([sent('b', { column: 'Done', done: true })]));
+    expect(getByRole('button').getAttribute('aria-label')).toBe(
+      'Open the card “Order the snacks”, done, Done · Party, in liveplanner',
+    );
   });
 });

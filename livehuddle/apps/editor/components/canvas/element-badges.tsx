@@ -88,7 +88,7 @@ export function SentCardBadge({ elementId }: { elementId: string }) {
       <HoverCard title={card.title} description={`${card.where}. Opens in liveplanner.`}>
         <button
           type="button"
-          aria-label={`Open the card “${card.title}”${card.done ? ', done' : ''}, in liveplanner`}
+          aria-label={`Open the card “${card.title}”${card.done ? ', done' : ''}, ${card.where}, in liveplanner`}
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();

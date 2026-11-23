@@ -106,40 +106,57 @@ function isoDay(s: string): string | null {
 
 type DateHit = { due: string; from: number; to: number };
 
-// The first date among the tokens: its day and the tokens it spans (to take out of the title).
+// The words that make the date after them a due date ("by Friday", "due 1 Dec").
+const LEADS = ['by', 'due', 'on', 'before'];
+
+// The date a run of tokens starting at `i` writes: its day and its last token, or null.
+function dateAt(
+  list: readonly Token[],
+  i: number,
+  today: Date,
+): { due: string; to: number } | null {
+  const word = list[i]!.text;
+  const lower = word.toLowerCase();
+  const iso = isoDay(word);
+  if (iso) return { due: iso, to: i };
+  if (lower === 'today') return { due: dayOf(today), to: i };
+  if (lower === 'tomorrow') {
+    const t = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    return { due: dayOf(t), to: i };
+  }
+  const next = list[i + 1]?.text;
+  const day = monthDay(word);
+  const monthAfter = next !== undefined ? monthOf(next) : null;
+  if (day !== null && monthAfter !== null) {
+    const due = realDay(today.getFullYear(), monthAfter, day);
+    if (due) return { due, to: i + 1 };
+  }
+  const month = monthOf(word);
+  const dayAfter = next !== undefined ? monthDay(next) : null;
+  if (month !== null && dayAfter !== null) {
+    const due = realDay(today.getFullYear(), month, dayAfter);
+    if (due) return { due, to: i + 1 };
+  }
+  // A weekday: the next one, a week on when it is today.
+  const weekday = weekdayOf(word);
+  if (weekday !== null) {
+    const ahead = (weekday - today.getDay() + 7) % 7 || 7;
+    const t = new Date(today.getFullYear(), today.getMonth(), today.getDate() + ahead);
+    return { due: dayOf(t), to: i };
+  }
+  return null;
+}
+
+// The first due date among the tokens: its day and the tokens it spans (to take out of the title). A date is a due
+// date only right after a lead word (which is taken out with it) or standing alone at the line's very end; anywhere
+// else it is prose ("Every return today starts…") and stays.
 function firstDate(list: readonly Token[], today: Date): DateHit | null {
   for (let i = 0; i < list.length; i += 1) {
-    const word = list[i]!.text;
-    const lower = word.toLowerCase();
-    // "by" or "on" before a date is the date's too.
-    const lead = i > 0 && ['by', 'on', 'due'].includes(list[i - 1]!.text.toLowerCase()) ? i - 1 : i;
-    const iso = isoDay(word);
-    if (iso) return { due: iso, from: lead, to: i };
-    if (lower === 'today') return { due: dayOf(today), from: lead, to: i };
-    if (lower === 'tomorrow') {
-      const t = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-      return { due: dayOf(t), from: lead, to: i };
-    }
-    const next = list[i + 1]?.text;
-    const day = monthDay(word);
-    const monthAfter = next !== undefined ? monthOf(next) : null;
-    if (day !== null && monthAfter !== null) {
-      const due = realDay(today.getFullYear(), monthAfter, day);
-      if (due) return { due, from: lead, to: i + 1 };
-    }
-    const month = monthOf(word);
-    const dayAfter = next !== undefined ? monthDay(next) : null;
-    if (month !== null && dayAfter !== null) {
-      const due = realDay(today.getFullYear(), month, dayAfter);
-      if (due) return { due, from: lead, to: i + 1 };
-    }
-    // A weekday only after "by" or "on": the next one, a week on when it is today.
-    const weekday = weekdayOf(word);
-    if (weekday !== null && lead !== i) {
-      const ahead = (weekday - today.getDay() + 7) % 7 || 7;
-      const t = new Date(today.getFullYear(), today.getMonth(), today.getDate() + ahead);
-      return { due: dayOf(t), from: lead, to: i };
-    }
+    const hit = dateAt(list, i, today);
+    if (!hit) continue;
+    const led = i > 0 && LEADS.includes(list[i - 1]!.text.toLowerCase());
+    if (led) return { due: hit.due, from: i - 1, to: hit.to };
+    if (hit.to === list.length - 1) return { due: hit.due, from: i, to: hit.to };
   }
   return null;
 }

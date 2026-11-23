@@ -68,8 +68,10 @@ thread's first comment, the action's name. Read left to right by a tokenizer (ne
 - **Title**: the first line, at most 120 characters, cut at a word; mentions and the date words taken out.
 - **Mention**: the first `@Name` (or a comment's structured mention) is matched to the plan's people by name, ignoring
   case; no match leaves the card unassigned and says "Nobody in this plan is called <name>".
-- **Due**: the first date written: `2026-12-01`, `1 Dec`, `Dec 1`, `today`, `tomorrow`, or a weekday after "by" or
-  "on" ("by Friday", the next one). A date before today is kept as written.
+- **Due**: the first date written as a due date: `2026-12-01`, `1 Dec`, `Dec 1`, `today`, `tomorrow` or a weekday
+  ("Friday", the next one), right after "by", "due", "on" or "before", or standing alone at the very end of its line
+  ("Launch 1 Dec"). A date anywhere else is ordinary prose ("Every return today starts with a check"): it stays in the
+  title and sets no Due. A date before today is kept as written.
 - **Description**: every word sent, then a line back: "From <source title>, <place> (<app>): <link>", the link opening
   the source at the exact place (`#t=<tab>&el=<element>`, with `&open=comments` or `&open=action` for a thread or an
   action; a plan card's thread as `#item=<card>&thread=<id>`), its app's own address (`appSiteOrigin`).

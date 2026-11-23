@@ -25,14 +25,39 @@ describe('the words read as a card', () => {
     expect(read('Launch on 3rd December').due).toBe('2026-12-03');
     expect(read('Call them today').due).toBe('2026-11-18');
     expect(read('Call them tomorrow').due).toBe('2026-11-19');
-    // A weekday a week on when it is today, and only after by or on.
+    // A weekday a week on when it is today.
     expect(read('Review on Wednesday').due).toBe('2026-11-25');
+    expect(read('Send it before Friday').due).toBe('2026-11-20');
+    expect(read('Call Sam Monday').due).toBe('2026-11-23');
     expect(read('Wednesday review').due).toBeNull();
     // A day before today is kept as written; a day that is no day is not one.
     expect(read('Was due 1 Jan').due).toBe('2026-01-01');
     expect(read('Launch 2026-02-30').due).toBeNull();
     expect(read('Launch 31 Feb').due).toBeNull();
     expect(read('Room 42 of may').due).toBeNull();
+  });
+
+  it('leaves a date in ordinary prose alone: in the title, and no Due', () => {
+    for (const prose of [
+      'Every return today starts with a check of the stock',
+      'Tomorrow we review the stock levels',
+      'The 1 Dec release notes need a proofread',
+      'Friday drinks are cancelled for the team',
+    ])
+      expect(read(prose)).toEqual({ title: prose, mention: null, due: null });
+    // After a lead word a date is a due date, as the spec reads it.
+    expect(read('What we learned on Monday standup was useful')).toEqual({
+      title: 'What we learned standup was useful',
+      mention: null,
+      due: '2026-11-23',
+    });
+    // A date standing alone at the very end, or on a line of its own, is a due date.
+    expect(read('Every return today starts with a check, due 1 Dec')).toEqual({
+      title: 'Every return today starts with a check',
+      mention: null,
+      due: '2026-12-01',
+    });
+    expect(read('Restock the shelves\ntomorrow').due).toBe('2026-11-19');
   });
 
   it('takes the first mention and date even on a later line, keeping the title', () => {
