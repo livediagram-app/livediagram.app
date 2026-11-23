@@ -53,6 +53,7 @@ import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll, sqlOf } from '../knowledge/knowledge-db';
 import { contextPages, knowledgeHealthCounts } from '../knowledge/knowledge-reads';
 import { pageHealthScores } from '../knowledge/page-health-read';
+import { readingOverview } from '../knowledge/reading-overview';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
 import { writesPages } from './context';
@@ -145,6 +146,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     daily,
     mostRead,
     scores,
+    requiredReading,
   ] = await Promise.all([
     rowsOf<AgentReadsRow>(env, countAgentReads(now)),
     seenAgents(env, now),
@@ -163,6 +165,8 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     rowsOf<MostReadRow>(env, countMostRead(now)),
     // Every page's Health Score (verification.md "Health Score"): one statement, no read a page.
     pageHealthScores(env, document.id, every, now),
+    // Required Reading's counts (required-reading.md): two reads, the team at most once.
+    readingOverview(env, document, now),
   ]);
   const scored = [...scores.values()];
   const scoreOf = (tab: string) => {
@@ -228,6 +232,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
       })),
       now,
     ),
+    requiredReading,
     reviewEvery: every,
     hasKey: ai.hasKey,
     hasAi: ai.hasKey || ai.builtIn,

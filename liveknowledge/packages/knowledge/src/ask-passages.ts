@@ -22,7 +22,7 @@ export type AskPassage = {
  *  question has no words. */
 export const askSearch = (
   question: string,
-  options: Pick<SearchOptions, 'now' | 'reviewEvery' | 'exceptTab'>,
+  options: Pick<SearchOptions, 'now' | 'reviewEvery' | 'exceptTab' | 'onlyTabs'>,
 ): SqlStatement | undefined =>
   searchByTerms(contentWords(question), {
     ...options,

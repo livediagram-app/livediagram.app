@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { apiAiReadNotes } from './ai';
+import { apiAiReadNotes, ReadKeyFailed } from './ai';
 
 // Reading sticky crops (docs/specs/021-event-storming/event-storming.md Phase 8). Non-streaming and BATCHED, so what
 // matters is that a run of any size becomes the right requests, that every
@@ -89,6 +89,21 @@ describe('apiAiReadNotes', () => {
       );
       await expect(apiAiReadNotes('o', crops(1))).rejects.toThrow(token);
     }
+  });
+
+  // note-reader.md "On your own key": a failed key stops the run with whose key and how, never the key.
+  it('throws ReadKeyFailed with the failure when the person’s key fails', async () => {
+    const aiKey = { source: 'account', provider: 'openai', kind: 'no-credit' };
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ error: 'ai_key_failed', message: 'x', aiKey }), {
+          status: 422,
+        }),
+    );
+    const err = await apiAiReadNotes('o', crops(12)).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ReadKeyFailed);
+    expect((err as ReadKeyFailed).aiKey).toEqual(aiKey);
+    expect((err as ReadKeyFailed).message).toBe('ai_key_failed');
   });
 
   it('falls back to a usable token when the failure is not our envelope', async () => {

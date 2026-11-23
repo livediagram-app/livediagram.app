@@ -90,6 +90,12 @@ outcome: 'rule', rule }, { prompt, names, timeZone: 'UTC', rules: [] })`, then `
 plan_draft_unavailable` (no binding, a model error, slow, or a count that can't be read: `AI_NOT_SET_UP` or
   `AI_DRAFT_FAILED`).
 - The ask goes through `ask()` (the 15 s race and the gateway) and `readAiReply`, with `AUTOMATION_AI_MODEL`.
+- **Which AI** (`draft-ai.ts` `draftAi(ctx, teamId, unavailable)`): `personAiKey` (`@liveworkspace/auth-client/ai-key`,
+  one `POST /internal/ai-key` over `ACCOUNTS`) for a signed-in person in person, read by `ownKeyOf`
+  (`@liveworkspace/ai`). On a key the ask runs on `keyedRunner(caller)` with `AUTOMATION_KEYED_TIMEOUT_MS` and no
+  gateway, and `spendPlanDraft` is skipped (the count is built-in AI's). A key the provider refuses answers `422
+ai_key_failed` with `aiKey { source, provider, kind }` (`keyFailedResponse`), never built-in AI instead; accounts
+  unreachable is `503 plan_draft_unavailable`. teamId is null: no plan exists yet.
 - **The count** (`plan-draft-count.ts`): one instance of the worker's existing `PLAN_ROOM` namespace per account,
   named `~plan-drafts:<account id>` (no plan id starts with `~`: they are server-minted UUIDs), so there is no new
   binding, class or migration, as livediagram's daily reader cap keeps its count in a reserved `PERSON_STORE`
@@ -120,8 +126,11 @@ All in `apps/editor/components/plan/start/describe-plan/`:
 body: true })`; a `plan_draft_*` body with a `message` throws `PlanDraftRefusal(status, code, message)`, anything
   else goes to `expectOk`.
 - `DescribePlanDialog.tsx`: the shared `Dialog` (`size="xl"`, `phoneSheet`, a column at most 46rem or 90dvh tall),
-  `DialogHeader` with the sparkle, `TextArea` (500, the count), `DESCRIBE_PLAN_EXAMPLES` as secondary `xs` Buttons,
-  `AiNote` ("Uses AI: plans and forms share 10 drafts a day."). States: the words (idle, drafting with `busy` and the box
+  `DialogHeader` with the sparkle, and `DescribePrompt` (`@liveworkspace/automations-ui/DescribePrompt`, shared with
+  Describe a Rule): **Try an Example** (`DESCRIBE_PLAN_EXAMPLES` as secondary `xs` Buttons) above the `TextArea` (500,
+  the count), then the source line, `WorkbenchAiSource` (`@liveworkspace/workbench/components/ai/WorkbenchAiSource`)
+  with the allowance "Plans and forms share 10 drafts a day." and the last ask's `aiKey` failure
+  (`DraftRefusal.aiKey`). States: the words (idle, drafting with `busy` and the box
   read-only, said: a `role="alert"` amber line), the guest's nudge (`DESCRIBE_PLAN_SIGN_IN`, Sign In to
   `signInHref`), and the preview (a draft held in state, the heading focused). A stale answer (after Cancel or
   unmount) is dropped by an ask counter, as Describe a Rule's is. Problems from `planDraftProblems(draft, plan)`,

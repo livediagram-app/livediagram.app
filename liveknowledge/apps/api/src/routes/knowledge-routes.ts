@@ -11,6 +11,8 @@
 //   POST   pages/<tab>/approval                             knowledge-approval-route.ts
 //   GET    pages/<tab>/threads, POST pages/<tab>/threads    knowledge-thread-routes.ts
 //   GET    pages/<tab>/watch, PUT pages/<tab>/watch         knowledge-watch-routes.ts
+//   GET    pages/<tab>/reading, PUT pages/<tab>/reading, POST pages/<tab>/read, POST pages/<tab>/read-again, POST pages/<tab>/remind-readers
+//                                                           knowledge-reading-routes.ts
 //   GET    ai, PUT ai/key, DELETE ai/key, PUT ai/model      knowledge-ai-routes.ts
 //   POST   ask                                              knowledge-ask-route.ts
 //   POST   setup/suggest                                    knowledge-setup-route.ts
@@ -49,6 +51,7 @@ import { handleApproval } from './knowledge-approval-route';
 import { handlePageThreads } from './knowledge-thread-routes';
 import { handlePageReactions } from './knowledge-reaction-routes';
 import { handlePageWatch } from './knowledge-watch-routes';
+import { handlePageReading, READING_PATHS } from './knowledge-reading-routes';
 import { handleAsk } from './knowledge-ask-route';
 import { handleEmailRoutes } from './knowledge-email-routes';
 import { handleOverviewRoutes } from './knowledge-overview-routes';
@@ -60,6 +63,7 @@ import {
 } from './knowledge-page-routes';
 import { handleKnowledgeSearch } from './knowledge-search-route';
 import { handleSettingsRoutes } from './knowledge-settings-routes';
+import { handleLabelRoutes } from './knowledge-label-routes';
 import { handleSetupSuggest } from './knowledge-setup-route';
 import { handleDescribeStructure } from './knowledge-structure-route';
 import { handleSuggest, handleSuggestionRoutes } from './knowledge-suggestion-routes';
@@ -135,6 +139,9 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
   // The page as Markdown, and its place in the tree (knowledge-agent-routes.ts).
   const agent = await handleAgentPageRoute(seen, summary);
   if (agent) return agent;
+  // Required Reading: every reader reads it, its writes are gated inside (required-reading.md "Share roles").
+  if (segments.length === 6 && READING_PATHS.has(segments[5]!))
+    return handlePageReading(ctx, document, grant, tab, segments[5]!);
   if (segments.length !== 6) return notFound();
   if (segments[5] === 'suggestions')
     return method === 'POST' ? handleSuggest(seen, tab) : methodNotAllowed();
@@ -187,6 +194,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       segments[3] === 'ask' ||
       segments[3] === 'knowledge' ||
       segments[3] === 'knowledge-settings' ||
+      segments[3] === 'labels' ||
       segments[3] === 'publishing' ||
       segments[3] === 'questions' ||
       segments[3] === 'pages' ||
@@ -198,6 +206,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       (segments[3] === 'ai' && (segments[4] === 'key' || segments[4] === 'model')) ||
       (segments[3] === 'knowledge' && segments[4] === 'remind-owners') ||
       (segments[3] === 'knowledge-settings' && segments[4] === 'preview') ||
+      segments[3] === 'labels' ||
       (segments[3] === 'setup' && segments[4] === 'suggest') ||
       segments[3] === 'questions' ||
       segments[3] === 'pages'
@@ -213,6 +222,10 @@ function isKnowledgePath(segments: readonly string[]): boolean {
           segments[5] === 'threads' ||
           segments[5] === 'reactions' ||
           segments[5] === 'watch' ||
+          segments[5] === 'reading' ||
+          segments[5] === 'read' ||
+          segments[5] === 'read-again' ||
+          segments[5] === 'remind-readers' ||
           segments[5] === 'suggestions' ||
           segments[5] === 'describe-structure' ||
           segments[5] === 'move')) ||
@@ -262,6 +275,7 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   return (
     (await handlePublishingRoutes(route)) ??
     (await handleSettingsRoutes(route)) ??
+    (await handleLabelRoutes(route)) ??
     (await handleAgentRoutes(route)) ??
     (await handleSuggestionRoutes(route)) ??
     (await handleEmailRoutes(route)) ??

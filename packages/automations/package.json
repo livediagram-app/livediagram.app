@@ -20,6 +20,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/ai": "workspace:^",
     "@liveworkspace/api-schema": "workspace:^",
     "@liveworkspace/email": "workspace:^",
     "@liveworkspace/icons": "workspace:^",

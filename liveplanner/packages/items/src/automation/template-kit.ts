@@ -57,7 +57,9 @@ export type AutomationPick =
   | 'people'
   | 'webhook'
   // A step in another app's target: the plan, knowledgebase, Space or other item it acts on.
-  | 'target';
+  | 'target'
+  // Revert to Snapshot's snapshot: never a template's or a draft's to name.
+  | 'snapshot';
 export const AUTOMATION_PICK_WORDS: Readonly<Record<AutomationPick, string>> = {
   column: 'Pick a column',
   type: 'Pick a card type',
@@ -66,6 +68,7 @@ export const AUTOMATION_PICK_WORDS: Readonly<Record<AutomationPick, string>> = {
   people: 'Pick people',
   webhook: 'Pick a connection',
   target: 'Pick where it goes',
+  snapshot: 'Pick a snapshot',
 };
 
 // A template, its fill and its picks are @liveworkspace/automations' shapes, over a plan's rule and picks.

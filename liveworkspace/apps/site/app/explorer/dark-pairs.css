@@ -6,7 +6,6 @@
 @source inline("dark:bg-amber-400/10");
 @source inline("dark:bg-amber-400/50");
 @source inline("dark:bg-amber-500");
-@source inline("dark:bg-amber-500/15");
 @source inline("dark:bg-emerald-400/10");
 @source inline("dark:bg-emerald-500");
 @source inline("dark:bg-lime-400/20");
@@ -37,12 +36,12 @@
 @source inline("dark:hover:bg-slate-800/70");
 @source inline("dark:hover:text-slate-50");
 @source inline("dark:placeholder:text-slate-500");
-@source inline("dark:ring-amber-400/30");
 @source inline("dark:ring-brand-500/40");
 @source inline("dark:shadow-black/50");
 @source inline("dark:stroke-slate-950");
 @source inline("dark:text-brand-300/80");
 @source inline("dark:text-lime-200");
+@source inline("dark:text-orange-300");
 @source inline("dark:text-red-400");
 @source inline("dark:text-slate-950");
 @source inline("dark:to-slate-950/50");

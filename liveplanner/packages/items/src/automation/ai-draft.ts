@@ -20,6 +20,7 @@ import {
   type AiRequest,
   type Obj,
 } from '@liveworkspace/automations';
+import { STEP_NAME_MAX } from '@liveworkspace/automations/item';
 import { BUILT_IN_FIELD_NAMES } from '../built-in-field-labels';
 import { ITEM_CHECKLIST_TEXT_MAX, ITEM_LABEL_MAX, ITEM_TITLE_MAX } from '../limits';
 import { namedRuleBody, type RuleNames } from './named';
@@ -104,7 +105,7 @@ const SYSTEM =
   `The name: up to ${AUTOMATION_NAME_MAX} characters, Title Case, saying what the rule does. ` +
   'Name columns, card types and fields exactly as "plan" lists them, and people by the name the request uses. ' +
   'Prefer a label from plan.labels when one fits. Never invent a link, an email address, a card id or a webhook: a ' +
-  'notify step’s "webhook" is "". Use only the kinds below, with the fewest steps that do what was asked. ' +
+  'notify step’s "webhook" is "", a revert_snapshot’s "snapshot" is "". Use only the kinds below, with the fewest steps that do what was asked. ' +
   'When "previous" is given, your last rule was refused for that reason: answer the same request again, fixed. ' +
   `TRIGGER: ${RULE_TRIGGER_FORMAT} CONDITIONS: ${RULE_CONDITIONS_FORMAT} STEPS: ${RULE_STEPS_FORMAT}`;
 
@@ -127,6 +128,9 @@ export type AiDraftOutcome =
   | { body: AutomationRuleBody; picks: AutomationTemplatePickAt[] }
   | { refused: { path: string; message: string } };
 
+// A drafted revert's snapshot while the check reads it; '' (a pick) after.
+const SNAPSHOT_HOLE = 'draft-snapshot';
+
 // Each text a step may hold, cleaned in place; an If's and a branch's actions too.
 function cleanStep(s: Obj, own: string): void {
   const t = (key: string, max: number, lines = false) => {
@@ -147,6 +151,14 @@ function cleanStep(s: Obj, own: string): void {
       break;
     case 'create_card':
       t('title', ITEM_TITLE_MAX);
+      break;
+    case 'take_snapshot':
+      t('name', STEP_NAME_MAX);
+      break;
+    case 'revert_snapshot':
+      // A snapshot is never the model's to name (it sees none): a hole the check reads as an id, a pick after it.
+      s['snapshot'] = SNAPSHOT_HOLE;
+      delete s['name'];
       break;
     case 'add_label':
     case 'remove_label':
@@ -179,9 +191,19 @@ function cleanStep(s: Obj, own: string): void {
 /** The reply read: not a rule; a rule that reads, unsaved and off, with what is left to pick; or why it doesn't
  *  read (for the second ask). Only the rule's name, trigger, conditions and steps are read: anything else the reply
  *  holds (on, chain, a time zone, keys of its own) is dropped. */
-export const readAiDraft = (reply: Obj, ctx: AiDraftContext): AiDraftOutcome =>
-  readDraft<AutomationRuleBody>(reply, ctx, {
+export function readAiDraft(reply: Obj, ctx: AiDraftContext): AiDraftOutcome {
+  const out: AiDraftOutcome = readDraft<AutomationRuleBody>(reply, ctx, {
     named: (rule) => namedRuleBody(rule, ctx.names),
     cleanStep,
     read: readRuleBody,
   });
+  if (!('body' in out)) return out;
+  // A revert's snapshot goes back to '' and is the person's to pick.
+  const picks = [...out.picks];
+  const steps = out.body.steps.map((s, i) => {
+    if (s.kind !== 'revert_snapshot' || s.snapshot !== SNAPSHOT_HOLE) return s;
+    picks.push({ path: `steps.${i}`, pick: 'snapshot' });
+    return { ...s, snapshot: '' };
+  });
+  return { body: { ...out.body, steps }, picks };
+}

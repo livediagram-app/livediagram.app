@@ -30,7 +30,7 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX23 | connected-tabs  | the open door allows 60 opens a minute per caller.                                                                                 |
 | IDX24 | connected-tabs  | the reverse write waits at most 5 seconds for the target app before taking the reverse back.                                       |
 | IDX25 | connected-tabs  | Connect Again on a tab that still has a connection replaces it, deleting the old pass.                                             |
-| IDX26 | connected-tabs  | a connected tab's name follows the target's title on open; it is not renamed by hand.                                              |
+| IDX26 | connected-tabs  | a connected tab's name follows the target's title on open, unless an Editor named it (then `targetName` follows instead).          |
 | IDX27 | connected-tabs  | a connection unconfirmed an hour after it was made is swept with its pass, at most 200 every 15 minutes.                           |
 | IDX28 | team-audit-log  | the daily run deletes audit rows past the year, the oldest first, 500 a statement, at most 200 statements or a minute.             |
 | IDX29 | team-audit-log  | a team item deleted for good by the Trash's own 30-day purge writes no audit row; its `trashed` row says who sent it there.        |

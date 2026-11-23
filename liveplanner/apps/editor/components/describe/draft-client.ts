@@ -2,11 +2,14 @@
 // words, answered with a draft. A refusal the api names (one of `codes`) throws a DraftRefusal carrying the api's fixed
 // words, which the dialog says as they are; anything else is a failure the dialog says in its own words.
 
+import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from '@/lib/api/core';
 
 export class DraftRefusal<C extends string = string> extends Error {
   readonly status: number;
   readonly code: C;
+  // `ai_key_failed`: whose key failed and how, for the source line (never the key).
+  aiKey: AiKeyFailure | null = null;
   constructor(status: number, code: C, message: string) {
     super(message);
     this.name = 'DraftRefusal';
@@ -25,7 +28,9 @@ async function refusalOf<C extends string>(
     const code = body.error;
     if (typeof code !== 'string' || !(codes as readonly string[]).includes(code)) return null;
     if (typeof body.message !== 'string') return null;
-    return make(res.status, code as C, body.message);
+    const refusal = make(res.status, code as C, body.message);
+    refusal.aiKey = readAiKeyFailure(body);
+    return refusal;
   } catch {
     return null;
   }

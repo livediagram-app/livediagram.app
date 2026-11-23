@@ -123,8 +123,9 @@ async function downloadAndRemoveCloudCopy(
     ...(liveDoc.presentation ? { presentation: liveDoc.presentation } : {}),
     // Its Knowledgebase Style stays with it; the default is not written down.
     ...carriedKnowledgeStyle(liveDoc.knowledgeStyle),
-    // Its Review Period stays with it; the default is not written down.
-    ...(liveDoc.knowledgeSettings && liveDoc.knowledgeSettings.reviewEvery !== 90
+    // Its Review Period and its labels stay with it; the default (every 90 days, no labels) is not written down.
+    ...(liveDoc.knowledgeSettings &&
+    (liveDoc.knowledgeSettings.reviewEvery !== 90 || liveDoc.knowledgeSettings.labels?.length)
       ? { knowledgeSettings: liveDoc.knowledgeSettings }
       : {}),
   };

@@ -1,5 +1,6 @@
 'use client';
 
+import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import dynamic from 'next/dynamic';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
@@ -103,6 +104,8 @@ export function EditorView() {
   useEffect(() => registerUnsavedWork(hasUnsavedChanges), [hasUnsavedChanges]);
   // F6 moves between the header, palette, canvas, controls and tab bar (canvas-accessibility.md).
   useRegionCycle();
+  // Which team the item is in, for every AI feature's source line (ai-keys.md "The source line").
+  useAiSourceScope(ctx.documentTeamId ?? null, !!ctx.accountUserId);
   const {
     pasteFromClipboard,
     hasClipboard,

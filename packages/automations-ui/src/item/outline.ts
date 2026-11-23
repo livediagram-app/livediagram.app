@@ -16,6 +16,7 @@ import {
 import { useAutomationsAccess } from '../AutomationsContext';
 import { useAutomations } from '../use-automations';
 import { onceStore, type OnceState } from './once-store';
+import { snapshotListStore, useSnapshotList } from './snapshot-list';
 import type {
   ItemAutomationsKitInput,
   ItemSnapshot,
@@ -91,7 +92,7 @@ export function makeUseItemOutline(
     'kinds' | 'plumbing' | 'useItem' | 'snapshots' | 'tabTemplates' | 'indexClient'
   >,
 ): () => ItemUiOutline {
-  const snapshotLists = onceStore<ItemSnapshot>();
+  const snapshotLists = snapshotListStore();
   const connectionLists = onceStore<Named>();
   const templates = input.tabTemplates ?? NO_TEMPLATES;
   const { client } = input.plumbing;
@@ -104,32 +105,17 @@ export function makeUseItemOutline(
     const rules = useAutomations(client, scope, false).data?.rules;
     const named = useMemo(() => listsNamed(rules), [rules]);
 
-    const onSnapshots = useCallback(
-      (listener: () => void) => snapshotLists.subscribe(id, listener),
-      [id],
-    );
     const onConnections = useCallback(
       (listener: () => void) => connectionLists.subscribe(id, listener),
       [id],
     );
-    const getSnapshots = useCallback(() => snapshotLists.get(id), [id]);
     const getConnections = useCallback(() => connectionLists.get(id), [id]);
-    const snapshots = useSyncExternalStore(onSnapshots, getSnapshots, getSnapshots);
     const connections = useSyncExternalStore(onConnections, getConnections, getConnections);
 
     const readSnapshots = useCallback(() => input.snapshots({ id, shareCode }), [id, shareCode]);
-    const ask = useCallback(() => snapshotLists.ask(id, readSnapshots), [id, readSnapshots]);
-    const retry = useCallback(() => snapshotLists.retry(id, readSnapshots), [id, readSnapshots]);
-
     // Both lists live as long as something shows the outline (the screen), and go with it.
-    useEffect(() => {
-      const letGo = [snapshotLists.hold(id), connectionLists.hold(id)];
-      return () => letGo.forEach((release) => release());
-    }, [id]);
-    const wantsSnapshots = named.has('snapshot');
-    useEffect(() => {
-      if (wantsSnapshots) ask();
-    }, [wantsSnapshots, ask]);
+    const snapshots = useSnapshotList(snapshotLists, id, readSnapshots, named.has('snapshot'));
+    useEffect(() => connectionLists.hold(id), [id]);
     // Connections are an account's: a guest's rules are not checked against them.
     const wantsConnections = named.has('connection') && signedIn;
     useEffect(() => {
@@ -149,10 +135,10 @@ export function makeUseItemOutline(
           kinds: input.kinds,
           item,
           templates,
-          snapshots: { status: snapshots.status, list: snapshots.list, ask, retry },
+          snapshots,
           connections,
         }),
-      [item, snapshots, connections, ask, retry],
+      [item, snapshots, connections],
     );
   };
 }

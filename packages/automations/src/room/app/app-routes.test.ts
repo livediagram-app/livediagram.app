@@ -52,6 +52,13 @@ describe('the caller', () => {
     });
     expect(await itemCallerOf(facts({ token: undefined }))).not.toHaveProperty('token');
   });
+
+  it('carries the door to the caller’s AI key, asked only when a feature runs', async () => {
+    const aiKey = vi.fn(async () => ({ status: 'none' as const }));
+    expect((await itemCallerOf(facts({ aiKey }))).aiKey).toBe(aiKey);
+    expect(aiKey).not.toHaveBeenCalled();
+    expect(await itemCallerOf(facts())).not.toHaveProperty('aiKey');
+  });
 });
 
 describe('the routes', () => {

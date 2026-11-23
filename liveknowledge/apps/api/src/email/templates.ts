@@ -42,6 +42,8 @@ export type EmailKind =
   | 'PageRejected'
   // What changed on the pages someone watches, once a day (docs/specs/030-knowledgebase/watching.md).
   | 'WatchDigest'
+  // Remind on a Required Reading page (docs/specs/030-knowledgebase/required-reading.md "Remind").
+  | 'ReadingReminder'
   // A rule's Send Email (docs/specs/013-workspace/automations.md; @liveworkspace/automations/room email.ts).
   | 'AutomationEmail';
 

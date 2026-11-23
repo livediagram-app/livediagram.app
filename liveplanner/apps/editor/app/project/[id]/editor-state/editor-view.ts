@@ -288,6 +288,7 @@ export function buildEditorView(slices: {
     peerRows: commentsSlice.peerRows,
     remoteSelectionsByElement: commentsSlice.remoteSelectionsByElement,
     renameTab: tabsSlice.renameTab,
+    followConnectedTab: tabsSlice.followConnectedTab,
     renameTabFolder: tabsSlice.renameTabFolder,
     moveTabToFolder: tabsSlice.moveTabToFolder,
     removeTabFromFolder: tabsSlice.removeTabFromFolder,

@@ -25,8 +25,15 @@ import {
   type ItemPick,
   type ItemRuleBody,
 } from '../../item';
+import { AI_KEY_FAILED, keyedRunner, ownKeyOf, type AiKeyFailure } from '@liveworkspace/ai';
 import { AUTOMATION_AI_PER_DAY } from '../../limits';
-import { aiToday, ask, countDraftAsk, draftsToday } from '../automation-ai';
+import {
+  AUTOMATION_KEYED_TIMEOUT_MS,
+  aiToday,
+  ask,
+  countDraftAsk,
+  draftsToday,
+} from '../automation-ai';
 import { ITEM_TELEMETRY_ACTION } from './telemetry';
 import { json, readBody, refuse, type Gated } from './route-kit';
 
@@ -35,6 +42,11 @@ export const ITEM_DRAFT_ASKS_MAX = 2;
 
 const say = (status: number, error: AutomationError, message: string, path?: string) =>
   refuse(status, error, { message, ...(path ? { path } : {}) });
+
+// A person's key the provider refused, or that will not open: said in fixed words, with whose it is, so the source
+// line can say so and offer to fix it. Never any part of the key.
+const keyFailed = (aiKey: AiKeyFailure, message: string) =>
+  refuse(422, AI_KEY_FAILED, { message, aiKey });
 
 export async function draftRule(g: Gated): Promise<Response> {
   const raw = await readBody(g.request);
@@ -51,14 +63,24 @@ export async function draftRule(g: Gated): Promise<Response> {
   const timeZone = raw['timeZone'];
   if (!isRuleTimeZone(timeZone))
     return say(400, 'automation_draft_invalid', 'timeZone must name a time zone', 'timeZone');
-  const client = kit.ai.client;
+  // Which AI drafts it (ai-keys.md "Every AI feature honours the choice"): the caller's key, or the item's team's,
+  // else built-in AI. On a key nothing of the item's AI allowance is read or spent.
+  const own = ownKeyOf(g.caller.aiKey ? await g.caller.aiKey() : null);
+  if (own.status === 'refused')
+    return own.reason === 'unreadable'
+      ? keyFailed(own.failure, own.words)
+      : say(503, 'automation_ai_unavailable', own.words);
+  const keyed = own.status === 'key' ? own : null;
+  const client = keyed ? keyedRunner(keyed.caller) : kit.ai.client;
   if (!client) return say(503, 'automation_ai_unavailable', AI_NOT_SET_UP);
   const sql = g.deps.sql();
   const started = Date.now();
   const capped = () => say(429, 'automation_ai_capped', aiCappedWords(kit.itemWord));
-  if (aiToday(sql, started) >= AUTOMATION_AI_PER_DAY) return capped();
-  if (draftsToday(sql, started) >= AI_DRAFT_PER_DAY)
-    return say(429, 'automation_ai_capped', aiDraftCappedWords(kit.itemWord));
+  if (!keyed) {
+    if (aiToday(sql, started) >= AUTOMATION_AI_PER_DAY) return capped();
+    if (draftsToday(sql, started) >= AI_DRAFT_PER_DAY)
+      return say(429, 'automation_ai_capped', aiDraftCappedWords(kit.itemWord));
+  }
 
   const outline = await kit.outline();
   const system = itemDraftSystem(kit.kinds);
@@ -77,20 +99,32 @@ export async function draftRule(g: Gated): Promise<Response> {
   for (let n = 0; n < ITEM_DRAFT_ASKS_MAX; n += 1) {
     // The day's AI asks read again before each ask, with no await before it is counted: a rule's ask made while
     // the item was read counts. A first ask past them is refused; a second is not made, the draft did not read.
-    if (aiToday(sql, Date.now()) >= AUTOMATION_AI_PER_DAY) {
-      if (n === 0) return capped();
-      break;
+    if (!keyed) {
+      if (aiToday(sql, Date.now()) >= AUTOMATION_AI_PER_DAY) {
+        if (n === 0) return capped();
+        break;
+      }
+      countDraftAsk(sql, Date.now(), n > 0);
+      store.aiAsks += 1;
     }
-    countDraftAsk(sql, Date.now(), n > 0);
-    store.aiAsks += 1;
     asks += 1;
     count('AutomationAiDraft');
-    const asked = await ask(
-      client,
-      aiDraftRequest(system, prompt, about, previous),
-      kit.ai.gateway,
-    );
-    if (!asked.ok) return done('failed', say(503, 'automation_ai_unavailable', AI_DRAFT_FAILED));
+    const request = aiDraftRequest(system, prompt, about, previous);
+    const asked = keyed
+      ? await ask(client, request, undefined, AUTOMATION_KEYED_TIMEOUT_MS)
+      : await ask(client, request, kit.ai.gateway);
+    if (!asked.ok) {
+      if (keyed && asked.keyFailure)
+        return done(
+          'key_failed',
+          keyFailed({ source: keyed.source, ...asked.keyFailure }, asked.reason),
+        );
+      // On a key, the provider's fixed words (busy, rate limited); on built-in AI, the draft's.
+      return done(
+        'failed',
+        say(503, 'automation_ai_unavailable', keyed ? asked.reason : AI_DRAFT_FAILED),
+      );
+    }
     const reply = readAiReply(asked.raw);
     if (!reply) {
       previous = { path: 'reply', message: 'the reply must be one JSON object' };

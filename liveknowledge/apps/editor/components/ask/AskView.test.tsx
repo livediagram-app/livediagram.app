@@ -167,7 +167,8 @@ describe('when this session cannot ask', () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
     await open('view');
     expect(screen.getByRole('textbox')).toBeTruthy();
-    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain('Uses built-in AI');
+    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain('Built-in AI');
+    expect(screen.getByRole('button', { name: 'Use Your Own Key, in Settings › AI' })).toBeTruthy();
     cleanup();
     api.apiKnowledgeAi.mockResolvedValue(settings());
     aiSettingsStore.reset();
@@ -182,7 +183,7 @@ describe('when this session cannot ask', () => {
     await open('view');
     expect(screen.queryByRole('group', { name: 'Answer With' })).toBeNull();
     expect(document.querySelector('[data-ask-ai]')!.textContent).toContain(
-      "Uses this knowledgebase's key",
+      'This Knowledgebase’s Key',
     );
   });
 
@@ -624,6 +625,47 @@ describe('a failure, in words with the next step', () => {
     const alert = await fail(kind);
     expect(alert.textContent).toContain(title);
     expect(alert.textContent).not.toContain('Claude');
+  });
+
+  it.each([
+    ['personal', 'anthropic', 'Claude Did Not Accept the Key'],
+    ['team', 'openai', 'OpenAI Did Not Accept the Key'],
+  ] as const)(
+    "names the provider of the %s key that answered, never built-in AI's failure",
+    async (uses, usesProvider, title) => {
+      api.apiKnowledgeAi.mockResolvedValue(
+        settings({
+          hasKey: false,
+          keyHint: '',
+          uses,
+          usesProvider,
+          usesModel: 'm',
+          usesModelLabel: 'M',
+        }),
+      );
+      const alert = await fail('bad-key');
+      expect(alert.textContent).toContain(title);
+      expect(alert.textContent).not.toContain('Built-In AI');
+    },
+  );
+
+  it('turns the source line to Key Needs Attention, with Fix Key, after the key was refused', async () => {
+    // With no built-in AI beside the key there is no choice to make, so the line says which answers.
+    api.apiKnowledgeAi.mockResolvedValue(
+      settings({
+        builtIn: false,
+        hasKey: false,
+        keyHint: '',
+        uses: 'personal',
+        usesProvider: 'anthropic',
+        usesModel: 'm',
+        usesModelLabel: 'M',
+      }),
+    );
+    await fail('no-credit');
+    const line = document.querySelector('[data-ask-ai]')!;
+    expect(line.textContent).toContain('Your Key Needs Attention');
+    expect(within(line as HTMLElement).getByRole('button').textContent).toBe('Fix Key');
   });
 
   it('asks again in place', async () => {

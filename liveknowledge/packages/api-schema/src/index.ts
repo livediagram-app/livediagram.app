@@ -174,6 +174,9 @@ export type TabSummary = {
   // The page's icon (docs/specs/030-knowledgebase/page-surface.md "The page icon"), read out of the body as the parent
   // is, so the page tree shows every page's icon before any body loads; absent for none.
   icon?: Tab['icon'];
+  // The page's labels' ids (docs/specs/030-knowledgebase/page-surface.md "Page labels"), read out of the body as the
+  // icon is, so the tree filters and the api scopes a search before any body loads; absent for none.
+  labels?: string[];
   // Set for a tab outside a tab-scoped visitor's scope (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its name is blanked, its folder dropped, and its content never served.
   outOfScope?: true;
@@ -410,6 +413,7 @@ export * from './publishing';
 export * from './page-threads';
 export * from './page-reactions';
 export * from './page-watch';
+export * from './page-reading';
 export * from './agent-scopes';
 
 // Automations on the wire (./automations.ts): a knowledgebase's rules, their runs and the Incoming Webhook door.

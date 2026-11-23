@@ -290,6 +290,48 @@ export const WATCHES_STOPPED = chart(
   { types: ['WatchPageOff', 'WatchSectionOff'], rising: 'neutral' },
 );
 
+// Required Reading (required-reading.md): a page required or stopped, a confirmation, a reminder and a save that asks
+// everyone again.
+export const READING_REQUIRED = chart(
+  'UI',
+  'Used',
+  'Pages Made Required Reading',
+  'A page an Editor asked everyone, or chosen people, to confirm they read; a change of who counts too.',
+  { types: ['RequiredReadingSet'] },
+);
+
+export const READING_STOPPED = chart(
+  'UI',
+  'Used',
+  'Required Reading Stopped',
+  'A page that stopped being Required Reading, its confirmations cleared.',
+  { types: ['RequiredReadingStopped'], rising: 'neutral' },
+);
+
+export const READS_CONFIRMED = chart(
+  'UI',
+  'Used',
+  'Reads Confirmed',
+  "I've Read This pressed on a Required Reading page.",
+  { types: ['ReadConfirmed'] },
+);
+
+export const READERS_REMINDED = chart(
+  'UI',
+  'Used',
+  'Readers Reminded',
+  'Remind pressed on a Required Reading page, emailing those who have not confirmed.',
+  { types: ['ReadingReminded'], rising: 'neutral' },
+);
+
+export const READING_ASKED_AGAIN = chart(
+  'UI',
+  'Used',
+  'Asked to Read Again',
+  'A Required Reading page saved with Ask Everyone to Read Again, clearing its confirmations.',
+  { types: ['ReadingAskedAgain'], rising: 'neutral' },
+);
+
 export const ISSUES_OPENED_FROM_HEALTH = chart(
   'UI',
   'Used',
@@ -315,6 +357,11 @@ export const VERIFICATION: MetricStack = {
     ISSUES_OPENED_FROM_HEALTH,
     PAGES_WATCHED,
     WATCHES_STOPPED,
+    READING_REQUIRED,
+    READING_STOPPED,
+    READS_CONFIRMED,
+    READERS_REMINDED,
+    READING_ASKED_AGAIN,
   ],
   headline: [PAGES_VERIFIED, STILL_RIGHT_FROM_HOME],
 };
@@ -399,6 +446,14 @@ export const PAGE_LINKS_COPIED = chart(
   { types: ['CopyPageLink'] },
 );
 
+export const LABEL_FILTERS_SET = chart(
+  'UI',
+  'Used',
+  'Label Filters Set',
+  "The page tree filtered by a label, from its Filter by Label menu or a page's label pill.",
+  { types: ['LabelFilter'], rising: 'neutral' },
+);
+
 export const PAGES_RESTORED = chart(
   'UI',
   'Used',
@@ -427,12 +482,13 @@ export const PAGE_NAVIGATION: MetricStack = {
   stack: true,
   title: 'Getting Around',
   blurb:
-    'How people move through a knowledgebase: links between pages followed both ways, headings jumped to, page links copied and the page tree folded.',
+    'How people move through a knowledgebase: links between pages followed both ways, headings jumped to, page links copied, the page tree filtered by label and folded.',
   members: [
     PAGE_LINKS_FOLLOWED,
     BACKLINKS_FOLLOWED,
     ON_THIS_PAGE_JUMPS,
     PAGE_LINKS_COPIED,
+    LABEL_FILTERS_SET,
     PAGES_RESTORED,
     PAGES_DELETED_FOREVER,
     PAGE_TREE_FOLDED,

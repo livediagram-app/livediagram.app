@@ -30,6 +30,10 @@ const WORDS: Readonly<Record<string, string>> = {
     'run takes only a Run from a Card rule (trigger manual) that is on: turn it on, or try another rule with test.',
   automation_budget_spent: `the plan has made its ${AUTOMATION_RUNS_PER_DAY.toLocaleString('en-GB')} runs today: rules run again tomorrow (UTC). test still works.`,
   item_not_found: 'that card is gone or in the Trash. list_items lists the cards.',
+  automation_needs_a_person:
+    'a rule that reverts the plan (revert_snapshot) is saved by a person, in the builder: ask an Editor to add that step there. take_snapshot is yours to add.',
+  automation_snapshots_full:
+    'the plan keeps at most 5 snapshots for its rules: point this rule at a snapshot another rule already reverts to, or change one of those rules first.',
 };
 
 // The body's `path` and `message`. It is JSON: the api client read its `error` from it.

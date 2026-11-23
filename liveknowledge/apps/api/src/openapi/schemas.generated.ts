@@ -1416,6 +1416,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "ai": {
         "$ref": "#/components/schemas/AskAiChoice"
       },
+      "labels": {
+        "description": "Answer only from the pages carrying any of these labels, each an id or a name (search-and-ask.md \"By label\").",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "question": {
         "type": "string"
       },
@@ -3459,6 +3466,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "theme-ink"
     ],
     "type": "string"
+  },
+  "CreateLabelRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../labels`: a new label (no colour: the next one; no id: the api makes one). A Writer's.",
+    "properties": {
+      "colour": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "type": "object"
   },
   "CreatePageRequest": {
     "additionalProperties": false,
@@ -5534,6 +5560,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "usesModelLabel": {
         "description": "`usesModel`'s name (\"Claude Fable 5.2\"), for \"Answer With\".",
         "type": "string"
+      },
+      "usesProvider": {
+        "$ref": "#/components/schemas/KnowledgeAiProvider",
+        "description": "The provider of the key that answers (a team's or a person's may differ from `provider`, the knowledgebase's own), for the source line; with `usesModel`."
       }
     },
     "required": [
@@ -5934,6 +5964,83 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "KnowledgeLabelChangeResponse": {
+    "additionalProperties": false,
+    "description": "What a label write answers: the label made or changed (absent after a delete), and every label now.",
+    "properties": {
+      "label": {
+        "$ref": "#/components/schemas/KnowledgeLabelWire"
+      },
+      "labels": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeLabelWire"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "labels"
+    ],
+    "type": "object"
+  },
+  "KnowledgeLabelWire": {
+    "additionalProperties": false,
+    "description": "One of the knowledgebase's labels (page-surface.md \"Page labels\"): its colour a standard colour's name (\"blue\") or a custom `#rrggbb`. Kept with the settings, so a rename is one write and no page's.",
+    "properties": {
+      "colour": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "colour"
+    ],
+    "type": "object"
+  },
+  "KnowledgeLabelsResponse": {
+    "additionalProperties": false,
+    "description": "`GET .../labels`: the labels, most used first, each with how many pages carry it.",
+    "properties": {
+      "labels": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "colour": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "pages": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "colour",
+            "id",
+            "name",
+            "pages"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "labels"
+    ],
+    "type": "object"
+  },
   "KnowledgeLineSpacing": {
     "enum": [
       "compact",
@@ -6121,6 +6228,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         ],
         "type": "object"
       },
+      "requiredReading": {
+        "description": "Required Reading (required-reading.md): each page asked to be read with its counts, least read first; absent from an older api.",
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeRequiredReadingPage"
+        },
+        "type": "array"
+      },
       "reviewEmails": {
         "additionalProperties": false,
         "description": "The Knowledgebase Reviews emails: whether this deployment sends email, and when the owners were last reminded (Remind the Owners is once a week).",
@@ -6298,6 +6412,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/AgentPageIcon",
         "description": "The page's icon (page-surface.md \"The page icon\"): an emoji or a catalogue icon."
       },
+      "labels": {
+        "description": "The page's labels by name (page-surface.md \"Page labels\"); absent for none.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "leftOut": {
         "type": "number"
       },
@@ -6379,6 +6500,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "depth": {
         "type": "number"
+      },
+      "labels": {
+        "description": "The page's labels by name (page-surface.md \"Page labels\"); absent for none.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "owner": {
         "description": "The owner's account id.",
@@ -6561,6 +6689,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeRequiredReadingPage": {
+    "additionalProperties": false,
+    "description": "A Required Reading page in the AI Knowledge overview: counts, never who.",
+    "properties": {
+      "audience": {
+        "$ref": "#/components/schemas/ReadingAudience"
+      },
+      "done": {
+        "type": "number"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "total": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "tab",
+      "title",
+      "audience",
+      "done",
+      "total"
+    ],
+    "type": "object"
+  },
   "KnowledgeReviewEvery": {
     "enum": [
       30,
@@ -6711,6 +6868,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "What a knowledgebase decides for every page (verification.md \"The Review Period\"): how long after it was last verified a page comes due for review. In a document read, the `document-meta` op and the routes below.",
     "properties": {
+      "labels": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeLabelWire"
+        },
+        "type": "array"
+      },
       "reviewEvery": {
         "$ref": "#/components/schemas/KnowledgeReviewEvery"
       }
@@ -8888,6 +9051,169 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "PageReadingChange": {
+    "additionalProperties": false,
+    "description": "`PUT .../pages/<tab>/reading`: require the page for an audience, change it, or stop (null).",
+    "properties": {
+      "audience": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ReadingAudience"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "people": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "audience"
+    ],
+    "type": "object"
+  },
+  "PageReadingPerson": {
+    "additionalProperties": false,
+    "description": "One person in a page's audience, as an Editor or the page's owner sees them.",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "readAt": {
+        "description": "When they confirmed this round; absent: not yet.",
+        "type": "number"
+      },
+      "remindedAt": {
+        "description": "When they were last reminded of this page.",
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
+  "PageReadingResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "chosen": {
+        "description": "The chosen ids, for the setup panel: only when `manages` and the audience is `people`.",
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "email": {
+        "description": "Whether Remind can send at all (the deployment sends email).",
+        "type": "boolean"
+      },
+      "manages": {
+        "description": "Whether the caller may require, change, stop and ask again: an Editor in person.",
+        "type": "boolean"
+      },
+      "mine": {
+        "additionalProperties": false,
+        "description": "The caller's own state: whether they are asked, and when they confirmed this round.",
+        "properties": {
+          "asked": {
+            "type": "boolean"
+          },
+          "readAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "asked"
+        ],
+        "type": "object"
+      },
+      "people": {
+        "description": "The audience, not yet read first: only when `sees`.",
+        "items": {
+          "$ref": "#/components/schemas/PageReadingPerson"
+        },
+        "type": "array"
+      },
+      "progress": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "done": {
+                "type": "number"
+              },
+              "total": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "done",
+              "total"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "How many of those asked have confirmed, of how many; null when not required."
+      },
+      "remindedAt": {
+        "description": "When anyone was last reminded of this page: only when `sees`.",
+        "type": "number"
+      },
+      "required": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "askedAt": {
+                "type": "number"
+              },
+              "audience": {
+                "$ref": "#/components/schemas/ReadingAudience"
+              },
+              "round": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "audience",
+              "askedAt",
+              "round"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "The page's requirement; null when it is not Required Reading. `round` is 1, then one more each time everyone is asked again, from `askedAt`."
+      },
+      "sees": {
+        "description": "Whether the caller sees who has read it and may Remind: an Editor or the page's owner, in person.",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "required",
+      "mine",
+      "progress",
+      "sees",
+      "manages",
+      "email"
+    ],
+    "type": "object"
+  },
   "PageRect": {
     "additionalProperties": false,
     "properties": {
@@ -10144,6 +10470,105 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "by"
     ],
     "type": "object"
+  },
+  "ReadingAudience": {
+    "description": "Everyone who reads the knowledgebase, or the people an Editor chose.",
+    "enum": [
+      "everyone",
+      "people"
+    ],
+    "type": "string"
+  },
+  "ReadingRemindResult": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "sent",
+            "type": "string"
+          },
+          "sent": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "outcome",
+          "sent"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "nextAt": {
+            "type": "number"
+          },
+          "outcome": {
+            "const": "already_sent",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "nextAt"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "nobody_pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "no_recipients",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "daily_limit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "unavailable",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "`POST .../pages/<tab>/remind-readers`: what was sent, or why nothing was."
   },
   "RefCandidate": {
     "additionalProperties": false,
@@ -11740,6 +12165,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "knowledge": {
         "$ref": "#/components/schemas/TabKnowledge"
       },
+      "labels": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "layers": {
         "items": {
           "$ref": "#/components/schemas/Layer"
@@ -12028,6 +12459,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "knowledge": {
         "$ref": "#/components/schemas/TabKnowledge"
       },
+      "labels": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "layers": {
         "items": {
           "$ref": "#/components/schemas/Layer"
@@ -12114,6 +12551,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "knowledge": {
         "$ref": "#/components/schemas/TabKnowledge"
+      },
+      "labels": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "name": {
         "type": "string"
@@ -13030,6 +13473,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "url"
     ],
+    "type": "object"
+  },
+  "UpdateLabelRequest": {
+    "additionalProperties": false,
+    "description": "`PUT .../labels/<label>`: a rename, a new colour, or both. A Writer's.",
+    "properties": {
+      "colour": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
     "type": "object"
   },
   "VersionCopyResponse": {

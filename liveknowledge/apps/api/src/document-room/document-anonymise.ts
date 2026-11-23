@@ -80,6 +80,16 @@ export async function anonymiseDocument(
     db.prepare(`DELETE FROM page_reactions WHERE ${isAnySql('person')}`).bind(idList),
     // Their watches (docs/specs/030-knowledgebase/watching.md): nobody is left to tell.
     db.prepare(`DELETE FROM page_watchers WHERE ${isAnySql('person')}`).bind(idList),
+    // Their I've Read This marks, and their place on any page's chosen list (required-reading.md "What it is").
+    db.prepare(`DELETE FROM page_read_confirmations WHERE ${isAnySql('person')}`).bind(idList),
+    db
+      .prepare(
+        `UPDATE page_required_reading SET
+           people = (SELECT json_group_array(value) FROM json_each(page_required_reading.people)
+                      WHERE value NOT IN (SELECT value FROM json_each(?1)))
+         WHERE EXISTS (SELECT 1 FROM json_each(page_required_reading.people) WHERE value IN (SELECT value FROM json_each(?1)))`,
+      )
+      .bind(idList),
     // And who they were in what changed on watched pages: their ids and their names leave the updates.
     db
       .prepare(

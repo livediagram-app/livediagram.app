@@ -22,6 +22,7 @@ import {
   isTrashed,
   readRuleBody,
   ruleHasAction,
+  ruleReverts,
   ruleNameTaken,
   needLine,
   ruleNeedItems,
@@ -43,6 +44,8 @@ import type {
   AutomationRunsQuery,
   AutomationsListResponse,
 } from '@liveplanner/api-schema';
+import { ruleSnapshotIds, snapshotsFull } from '@liveworkspace/automations/item';
+import { listSnapshots } from '@liveworkspace/snapshots/server';
 import { getProject } from '../db';
 import { readItem } from '../db/items';
 import { json, methodNotAllowed, noContent } from '../responses';
@@ -137,6 +140,24 @@ async function githubConnected(
   }
 }
 
+// The plan as Needs Attention reads it for these rules: with the plan's snapshot ids when a rule reverts to one (a
+// snapshot gone needs attention), read once. A failed read checks none.
+async function withSnapshots(
+  ctx: PlanRouteContext,
+  projectId: string,
+  plan: AutomationPlan,
+  rules: readonly AutomationRule[],
+): Promise<AutomationPlan> {
+  if (ruleSnapshotIds(rules).length === 0) return plan;
+  try {
+    const ids = new Set((await listSnapshots(ctx.env.PLAN_DB, projectId)).map((s) => s.id));
+    return { ...plan, outline: { ...plan.outline, snapshots: ids } };
+  } catch (error) {
+    console.warn('[automations] snapshots.read.failed', { error: String(error) });
+    return plan;
+  }
+}
+
 function listed(
   hook: PlanAutomations,
   plan: AutomationPlan,
@@ -166,7 +187,12 @@ function listed(
 }
 
 async function answerRule(ctx: PlanRouteContext, g: Gated, rule: AutomationRule, status = 200) {
-  const plan = await readAutomationPlan(ctx.env, g.projectId);
+  const plan = await withSnapshots(
+    ctx,
+    g.projectId,
+    await readAutomationPlan(ctx.env, g.projectId),
+    [rule],
+  );
   const stats = ruleStats(g.hook.sql(), Date.now());
   const hooks = hookInfos(ctx.env, g.projectId, g.hook.sql(), [rule]);
   const github = await githubConnected(ctx, g.projectId, [rule]);
@@ -178,10 +204,15 @@ async function answerRule(ctx: PlanRouteContext, g: Gated, rule: AutomationRule,
 
 async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const now = Date.now();
-  const plan = await readAutomationPlan(ctx.env, g.projectId);
+  const rules = g.hook.store.list();
+  const plan = await withSnapshots(
+    ctx,
+    g.projectId,
+    await readAutomationPlan(ctx.env, g.projectId),
+    rules,
+  );
   const stats = ruleStats(g.hook.sql(), now);
   const nextAts = g.hook.store.nextAts();
-  const rules = g.hook.store.list();
   const hooks = hookInfos(ctx.env, g.projectId, g.hook.sql(), rules);
   const github = await githubConnected(ctx, g.projectId, rules);
   const answer: AutomationsListResponse = {
@@ -247,11 +278,30 @@ async function testSetFieldRefusal(
   return set ? refuse(400, 'automation_invalid', { ...set, path: `rule.${set.path}` }) : null;
 }
 
+// A rule's snapshot steps (spec "Snapshot steps"): only a person saves one that reverts, and the plan keeps at most
+// AUTOMATION_KEPT_SNAPSHOTS_MAX snapshots for its rules. `others`: the plan's other rules, as they stand.
+function snapshotRefusal(
+  g: Gated,
+  body: Pick<AutomationRuleBody, 'steps'>,
+  others: readonly AutomationRule[],
+): Response | null {
+  if (g.ai && ruleReverts(body)) {
+    console.info('[automations] refused', { token: true, reverts: true });
+    return refuse(403, 'automation_needs_a_person', {
+      path: 'steps',
+      message: 'a rule that reverts the plan is saved by a person, in the builder',
+    });
+  }
+  return snapshotsFull([...others, body]) ? refuse(409, 'automation_snapshots_full') : null;
+}
+
 async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const body = await bodyOf(ctx, g.projectId);
   if (body instanceof Response) return body;
   const rules = g.hook.store.list();
   if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
+  const snapped = snapshotRefusal(g, body, rules);
+  if (snapped) return snapped;
   if (ruleNameTaken(body.name, rules))
     return refuse(409, 'automation_name_taken', { path: 'name' });
   const stamp = stampOf(g);
@@ -278,6 +328,12 @@ async function save(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Prom
   if (!held) return notFoundRule();
   if (ruleNameTaken(body.name, g.hook.store.list(), held.id))
     return refuse(409, 'automation_name_taken', { path: 'name' });
+  const snapped = snapshotRefusal(
+    g,
+    body,
+    g.hook.store.list().filter((r) => r.id !== held.id),
+  );
+  if (snapped) return snapped;
   const rule: AutomationRule = {
     ...held,
     ...body,
@@ -314,6 +370,9 @@ async function toggle(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Pr
 async function duplicate(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
   const rules = g.hook.store.list();
   if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
+  // A copy names the same snapshots, so it keeps no more; a token still may not make a rule that reverts.
+  const snapped = snapshotRefusal(g, held, rules);
+  if (snapped) return snapped;
   const { paused: _paused, ...rest } = held;
   const stamp = stampOf(g);
   const rule: AutomationRule = {

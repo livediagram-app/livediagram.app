@@ -26,6 +26,7 @@ import { DescribeStructureButton } from '@/components/describe-structure/Describ
 import { useDescribeStructureOffered } from '@/components/describe-structure/useDescribeStructureOffered';
 import { openDescribeStructure } from '@/lib/describe-structure/structure-open';
 import { track } from '@/lib/telemetry';
+import { ReadAgainToggle } from '@/components/required-reading/ReadAgainToggle';
 
 // Edit, with the page's reactions left of it, and while editing the draft bar, floating at the bottom right of the
 // article zone (docs/specs/030-knowledgebase/editing.md; blueprint "Presentation and UX"). Reads the chrome store a slice at a time, so typing renders it
@@ -192,6 +193,8 @@ export function PageEditBarView({
           ) : null}
         </span>
         {onDescribe ? <DescribeStructureButton onPress={onDescribe} /> : null}
+        {/* Required Reading's ask on Save, left of Cancel (required-reading.md "Where it shows"). */}
+        <ReadAgainToggle />
         <button
           type="button"
           onClick={onCancel}

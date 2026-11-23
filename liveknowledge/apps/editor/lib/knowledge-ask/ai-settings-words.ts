@@ -42,23 +42,10 @@ const IN_USE_WORDS: Record<KnowledgeAiUses, string> = {
   'built-in': 'Built-In AI',
 };
 
-const LINE_WORDS: Record<KnowledgeAiUses, string> = {
-  knowledgebase: "this knowledgebase's key",
-  team: "your team's key",
-  personal: 'your key',
-  'built-in': 'built-in AI',
-};
-
 /** AI Settings' line: "Uses Your Team's Key". Null when nothing can answer. */
 export function aiInUseTitle(settings: UsesSettings | null): string | null {
   const uses = settings ? aiInUse(settings) : null;
   return uses ? `Uses ${IN_USE_WORDS[uses]}` : null;
-}
-
-/** Which AI answers here, for the quiet line under Ask's field and Describe's: none when nothing can. */
-export function aiInUseLine(settings: UsesSettings | null): string | null {
-  const uses = settings ? aiInUse(settings) : null;
-  return uses ? `Uses ${LINE_WORDS[uses]}` : null;
 }
 
 /** Whether any AI answers here: a key (the knowledgebase's, the team's, the person's), or built-in AI. */
