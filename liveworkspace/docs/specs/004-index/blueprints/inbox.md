@@ -137,7 +137,8 @@ verbs go to `…/threads/:elementId/comments` and `…/threads/:elementId/resolv
 
 The pane's Open link (`InboxReader.tsx`) goes through `openInPlace` (`packages/explorer/src/explorer/inbox/open-in-place.ts`):
 a plain click whose href is this page's address but for its fragment (`sameDocument`: same origin, path without a
-trailing slash, and query) pushes the href and reloads, since a client router only moves the hash and the editors read
+trailing slash, and query) replaces the history entry with the href (`replaceState`, as the editors' tab switches
+do) and reloads, since a client router only moves the hash and the editors read
 their deep link once on mount. Modified and non-primary clicks, and any other href, are the host `Link`'s.
 
 An element part's thread (a Sheet cell's, `elementId` `<elementId>:<cell>`) is found in the item's listing

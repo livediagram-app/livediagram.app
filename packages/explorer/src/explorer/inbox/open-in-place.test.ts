@@ -16,7 +16,7 @@ function fakeWin(at: URL = here) {
   };
   location.reload = vi.fn();
   const history = {
-    pushState: vi.fn((_s: unknown, _t: string, url: string) => {
+    replaceState: vi.fn((_s: unknown, _t: string, url: string) => {
       const u = new URL(url);
       Object.assign(location, { href: u.href, pathname: u.pathname, search: u.search });
     }),
@@ -50,12 +50,12 @@ describe('sameDocument', () => {
 });
 
 describe('openInPlace', () => {
-  it('loads the open item’s place in full, keeping Back', () => {
+  it('loads the open item’s place in full, in place of the current history entry', () => {
     const win = fakeWin();
     const e = click();
     expect(openInPlace(e, '/document/kb-1#t=tab-2&el=e1&open=comments', win)).toBe(true);
     expect(e.preventDefault).toHaveBeenCalled();
-    expect(win.history.pushState).toHaveBeenCalledWith(
+    expect(win.history.replaceState).toHaveBeenCalledWith(
       null,
       '',
       'https://liveknowledge.app/document/kb-1#t=tab-2&el=e1&open=comments',
@@ -63,10 +63,10 @@ describe('openInPlace', () => {
     expect(win.location.reload).toHaveBeenCalledTimes(1);
   });
 
-  it('reloads without a new history entry when the address is already the place', () => {
+  it('reloads as it is when the address is already the place', () => {
     const win = fakeWin();
     expect(openInPlace(click(), here.href, win)).toBe(true);
-    expect(win.history.pushState).not.toHaveBeenCalled();
+    expect(win.history.replaceState).not.toHaveBeenCalled();
     expect(win.location.reload).toHaveBeenCalledTimes(1);
   });
 

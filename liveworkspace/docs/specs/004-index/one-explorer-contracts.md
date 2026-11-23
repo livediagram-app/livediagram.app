@@ -1173,7 +1173,8 @@ latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a
   element, `open: 'action' | 'comments'` for the popover, `cardId` for a card, and `threadId` for a card's thread
   (`Activity·Selected`, by row kind). A row on the item already open (the editor's panel, its own item's row) has an
   address that differs from the page's only in its fragment, which a link would move without the editor noticing:
-  Open loads that address in full instead (Back returns to where the person was), and the editor lands its deep link
+  Open loads that address in full instead, in place of the current history entry (as the editors' own tab switches
+  are, since an editor never follows a Back that only moves the fragment), and the editor lands its deep link
   as it lands any other. Another item, this app's or another app's, opens as a link does.
   The rest come from the host's `InboxHost.actions` (`@liveworkspace/explorer/inbox-actions`), asked per row, so no
   page shows a verb it can't carry out:

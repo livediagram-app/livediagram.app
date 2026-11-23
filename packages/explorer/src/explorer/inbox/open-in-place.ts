@@ -25,7 +25,8 @@ export function sameDocument(href: string, here: Location | URL): boolean {
 type Win = Pick<Window, 'location' | 'history'>;
 
 /** A plain click on the pane's Open link (not one opening a new tab or window) whose address is this page's: loads it
- *  in full, keeping Back to where the person was. Answers whether it did; any other click is left to the link. */
+ *  in full. The address replaces the current history entry, as the editors' own tab switches do, since the editors
+ *  never follow a Back that only moves the fragment. Answers whether it did; any other click is left to the link. */
 export function openInPlace(
   event: Pick<
     MouseEvent,
@@ -39,7 +40,7 @@ export function openInPlace(
   if (!sameDocument(href, win.location)) return false;
   event.preventDefault();
   const to = new URL(href, win.location.href).href;
-  if (to !== win.location.href) win.history.pushState(null, '', to);
+  if (to !== win.location.href) win.history.replaceState(null, '', to);
   win.location.reload();
   return true;
 }
