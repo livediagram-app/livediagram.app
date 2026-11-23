@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { cleanSankeyName,
+import {
+  cleanSankeyName,
   SANKEY_MAX_NODES,
   formatSankeyPercent,
   formatSankeyValue,
@@ -8,12 +9,15 @@ import { cleanSankeyName,
   sankeyNodeNames,
   SANKEY_DEFAULT_FLOWS,
   SANKEY_MAX_FLOWS,
-  type SankeyFlow, } from './sankey-model';
+  type SankeyFlow,
+} from './sankey-model';
 import { sankeyBandPath, sankeyLayout } from './sankey-layout';
-import { parseSankeyText,
+import {
+  parseSankeyText,
   readSankeyNumber,
   SANKEY_LINE_MAX,
-  sankeyFlowsToText, } from './sankey-text';
+  sankeyFlowsToText,
+} from './sankey-text';
 
 const AREA = { x: 0, y: 0, w: 600, h: 300 };
 const flow = (from: string, to: string, value: number): SankeyFlow => ({ from, to, value });

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { boundsOfPoints, clamp, distToSegment, pointInRect, rectsIntersect, unionRects, type Rect } from './geometry-primitives';
+import {
+  boundsOfPoints,
+  clamp,
+  distToSegment,
+  pointInRect,
+  rectsIntersect,
+  unionRects,
+  type Rect,
+} from './geometry-primitives';
 
 describe('clamp', () => {
   it('pins a value into the range', () => {

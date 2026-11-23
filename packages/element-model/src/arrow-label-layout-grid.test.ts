@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { seededRandom } from '@liveworkspace/model-core/seeded-random';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
+import {
+  DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
   arrowLabelPass,
   labelClaimGrid,
   layoutArrowLabel,
   layoutArrowLabels,
   type ArrowLabelLayout,
-  type ArrowLabelLayoutOptions, } from './arrow-label-layout';
+  type ArrowLabelLayoutOptions,
+} from './arrow-label-layout';
 import { arrowPolyline } from './arrow-path-hits';
 import { createArrow, createPinnedArrow } from './testing/elements';
 import { elementIndexFor } from './geometry';
