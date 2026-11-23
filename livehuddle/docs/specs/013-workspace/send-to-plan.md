@@ -11,6 +11,9 @@ stickies are its meeting's action items, so they are what it sends.
 
 - **A sticky**: the **Send to Plan** button on its selection toolbar. A Participant's or a Viewer's toolbar holds that
   button alone (every other button there is an Editor's), and shows only on a sticky with words while they may send.
+- **A sticky read while walking**: a walking click opens the sticky's reader and selects nothing, so the reader's
+  footer has **Send to Plan** (for a sticky or a text with words, every role that may send). The reader closes as the
+  picker opens; once sent, the card's chip stands in the footer instead.
 - **A selection of stickies**: the selection's toolbar, **Send to Plan**: one card each, or one card with a checklist.
 - **Send All**: for an Editor, the tab menu's **Send Stickies to Plan**, every sticky on the tab with words, one card each, at most 20
   (the platform's `PLAN_SEND_CARDS_MAX`); a tab with more sends the first 20 in reading order and says so.
@@ -28,12 +31,12 @@ keys.
 
 ## Who sees it
 
-| Role                             | Entry                                                       | Chips |
-| -------------------------------- | ----------------------------------------------------------- | ----- |
-| Editor                           | The selection toolbar, the tab menu's Send Stickies to Plan | Yes   |
-| Participant                      | The selection toolbar, one or several (Send to Plan alone)  | Yes   |
-| Viewer                           | The selection toolbar, one or several (Send to Plan alone)  | Yes   |
-| Guest, Offline, embed, Community | None (the platform's "Who may send")                        | No    |
+| Role                             | Entry                                                                                  | Chips |
+| -------------------------------- | -------------------------------------------------------------------------------------- | ----- |
+| Editor                           | The selection toolbar, a walking reader's footer, the tab menu's Send Stickies to Plan | Yes   |
+| Participant                      | The selection toolbar, one or several (Send to Plan alone); a walking reader's footer  | Yes   |
+| Viewer                           | The selection toolbar, one or several (Send to Plan alone); a walking reader's footer  | Yes   |
+| Guest, Offline, embed, Community | None (the platform's "Who may send")                                                   | No    |
 
 A send needs only read access here: what decides is the person's Edit on the plan they pick, which the picker and the
 index check. A chip shows only to a reader who can open its plan.
