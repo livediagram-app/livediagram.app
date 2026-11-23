@@ -5,7 +5,7 @@ import { tabHasDrawing, type Tab } from '@livehuddle/document';
 import { isTextEditFocused } from '@livehuddle/ui';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
-import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
+import { SPLIT_HOVER_FOCUS_MS } from '@liveworkspace/workbench/lib/split-view';
 import type { CanvasAnchor } from '@liveworkspace/workbench/lib/split-pane-view';
 import {
   TabSvgViewport,

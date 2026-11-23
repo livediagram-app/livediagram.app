@@ -27,7 +27,7 @@ Scope, by file:
 | `apps/editor/components/canvas/QuickStyleBar.tsx`                             | The bar: a toolbar card portalled into the slot, a `TitlePopoverButton` per section                              |
 | `apps/editor/components/canvas/quick-style-sections.tsx`                      | `QUICK_BAR_SECTIONS` (names, titles), `QuickSectionRow`, `QuickSectionIcon`, popover widths                      |
 | `apps/editor/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
-| `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
+| `packages/workbench/src/lib/swatch-overrides.ts`                              | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
 | `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | `packages/workbench/src/components/canvas/SwatchOverridePopover.tsx`          | The right-click popover: picker, hex field, Clear override                                                       |
 | `apps/editor/app/document/[id]/useEditorState.ts`                             | Wires memory into the style hooks and the creation hooks; exposes the bar's view-model and `pages`               |

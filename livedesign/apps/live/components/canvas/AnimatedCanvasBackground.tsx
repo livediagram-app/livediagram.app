@@ -29,7 +29,7 @@ import {
   RINGS_PER_ORIGIN,
   RIPPLE_ORIGINS,
   RIPPLE_RING_VMAX,
-} from '@/lib/animated-pattern-still';
+} from '@liveworkspace/workbench/lib/animated-pattern-still';
 
 type AnimatedCanvasBackgroundProps = {
   variant: AnimatedBackgroundPattern;

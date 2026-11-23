@@ -6,7 +6,7 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useTabEntryEffects } from '../useTabEntryEffects';
 import { useCollabDeepLinkCapture } from '../useCollabDeepLink';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { boundsOfElements } from '@/lib/changeset-reveals';
+import { boundsOfElements } from '@liveworkspace/workbench/lib/changeset-reveals';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorProjectSlice } from './useEditorProject';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

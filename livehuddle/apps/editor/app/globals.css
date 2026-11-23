@@ -16,20 +16,20 @@
 /* The people arrows' nudge and hover (docs/specs/008-canvas/people-arrows.md). */
 @import './people-arrows.css';
 @import './canvas-motion.css';
-@import './motion-shape.css';
-@import './motion-text.css';
-@import './motion-sticky.css';
-@import './motion-media.css';
+@import '@liveworkspace/workbench/styles/motion-shape.css';
+@import '@liveworkspace/workbench/styles/motion-text.css';
+@import '@liveworkspace/workbench/styles/motion-sticky.css';
+@import '@liveworkspace/workbench/styles/motion-media.css';
 /* The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md). */
-@import './auth-motion.css';
-@import './motion-drawing.css';
-@import './thumbnail-loader.css';
-@import './image-search-loader.css';
-@import './split-view.css';
-@import './sketch-face.css';
+@import '@liveworkspace/workbench/styles/auth-motion.css';
+@import '@liveworkspace/workbench/styles/motion-drawing.css';
+@import '@liveworkspace/workbench/styles/thumbnail-loader.css';
+@import '@liveworkspace/workbench/styles/image-search-loader.css';
+@import '@liveworkspace/workbench/styles/split-view.css';
+@import '@liveworkspace/workbench/styles/sketch-face.css';
 @import './face-finish.css';
 @import './label-bidi.css';
-@import './scroll-edge-fade.css';
+@import '@liveworkspace/workbench/styles/scroll-edge-fade.css';
 /* The 3D view while walking (docs/specs/008-canvas/3d-view.md). */
 @import './space-3d.css';
 /* The Automations pictures' motion (docs/specs/013-workspace/automations.md "The screen"), the platform's. */

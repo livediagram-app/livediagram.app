@@ -53,7 +53,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ snapshots                manual save points in every app: the store in each item's object, the five kept, revert and its fence, the footer button and dialog
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher, and the one profile picture URL rule (`/picture`)
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
-│  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
+│  ├─ style-guards             the motion tokens and the motion, optical, touch-target and source-scan guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
 │  ├─ template-previews        the template previews' hover motion, fan and story parts, the template search and catalogue, the templates' inks, and the analysis templates' data, for every editor
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary

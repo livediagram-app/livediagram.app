@@ -25,7 +25,7 @@ Scope, by file:
 | `../packages/workbench/src/hooks/ui/useQuickStylePlacement.ts`                | Measures chrome and the panel, runs the walk, re-runs on chrome change                                           |
 | `apps/editor/components/canvas/QuickStylePanel.tsx`                           | The panel: compact, a fixed width from `panelFrame()`                                                            |
 | `apps/editor/components/canvas/quick-style-rows.tsx`                          | `QuickRadioRow`, swatch and glyph options, roving focus                                                          |
-| `apps/editor/lib/swatch-overrides.ts`                                         | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
+| `packages/workbench/src/lib/swatch-overrides.ts`                              | Pure: apply to a row, the theme-keyed store (set, clear, caps), parse                                            |
 | `apps/editor/hooks/canvas/useSwatchOverrides.ts`                              | The active theme's overrides, read from and written to the synced preferences                                    |
 | `apps/editor/components/canvas/SwatchOverridePopover.tsx`                     | The right-click popover: picker, hex field, Clear override                                                       |
 | `apps/editor/app/document/[id]/editor-state/useEditorStyle.ts`                | Wires memory into the style hooks and the creation hooks; exposes the panel's view-model                         |

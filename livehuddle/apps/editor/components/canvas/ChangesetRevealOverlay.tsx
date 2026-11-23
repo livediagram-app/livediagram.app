@@ -9,7 +9,7 @@ import {
   type Element,
 } from '@livehuddle/document';
 import { useCanvasSurface } from './CanvasSurfaceContext';
-import type { ChangesetReveal, RevealStore } from '@/lib/changeset-reveals';
+import type { ChangesetReveal, RevealStore } from '@liveworkspace/workbench/lib/changeset-reveals';
 
 // The outline an agent's changeset draws around what it touched, in its author's colour
 // (docs/specs/024-agents/blueprints/agent-changesets.md "Presentation and UX", "Accessibility"):

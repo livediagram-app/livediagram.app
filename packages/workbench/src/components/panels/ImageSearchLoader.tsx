@@ -1,7 +1,7 @@
 'use client';
 
 // The image picker's Search tab loaders (docs/specs/009-elements/image-search.md "Loading" and
-// "Picking"); their motion lives in app/image-search-loader.css. While a search runs, placeholder
+// "Picking"); their motion lives in @liveworkspace/workbench/styles/image-search-loader.css. While a search runs, placeholder
 // photos fill the grid with a glint rolling across them under a scanning lens; while a pick is
 // stored, its tile lifts behind a chasing ring and says which stage it is at.
 import type { ReactNode } from 'react';
