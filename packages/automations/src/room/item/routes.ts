@@ -74,5 +74,9 @@ export async function handleItemAutomationRoutes(input: ItemRoutesInput): Promis
   if (door === null) return null;
   if (door === 'method') return methodNotAllowed();
   const g = gate(input);
-  return g instanceof Response ? g : door(g);
+  if (g instanceof Response) return g;
+  // The item's tier's limits, read again when over a minute old, before any route reads one (nothing with Pro off).
+  const { tier } = g.deps;
+  if (tier && !tier.fresh()) await tier.refresh();
+  return door(g);
 }

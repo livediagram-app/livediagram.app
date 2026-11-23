@@ -137,7 +137,7 @@ another product.
 | Repositories                                                    | Doesn't serve a meeting; carries platform wiring livehuddle does not need yet                                                                                               | Later       |
 | Audio calls, video calls, screen sharing                        | Built on Cloudflare Realtime ([Proximity audio](../012-collaboration/proximity-audio.md)), on wherever its secrets are set, under the calls kill switch (Work Tracker #316) | Built       |
 | Calendar invites, recordings, transcripts                       | Each is a product of its own; none is asked for                                                                                                                             | Not planned |
-| A paid tier                                                     | No liveworkspace product has one                                                                                                                                            | Never       |
+| A feature only a paid tier gets                                 | Pro only raises limits ([Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md))                                                              | Never       |
 
 ## The apps livehuddle ships
 

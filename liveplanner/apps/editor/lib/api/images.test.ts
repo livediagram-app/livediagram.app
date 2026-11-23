@@ -4,6 +4,7 @@
 // the read that hands an <img> one shared blob URL per picture, or null when it can't be shown.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
+import { setProForTests } from '@liveworkspace/subscription-ui/testing';
 import { resetDisplayCacheForTests } from '@liveworkspace/workbench/lib/image-display';
 import { __setOfflineBackend, offlinePutRecord } from '../offline/offline-store';
 import { memBackend, testRecord } from '../offline/offline-test-utils';
@@ -19,6 +20,7 @@ const {
   apiImageUrl,
   apiUploadImage,
   checkImageFile,
+  imageUploadHint,
   IMAGE_ACCEPT,
   IMAGE_THUMB_EDGE,
   IMAGE_UPLOAD_MESSAGES,
@@ -429,5 +431,42 @@ describe('apiImageUrl', () => {
       }),
     );
     expect(await apiImageUrl(SCOPE, 'gone')).toBeNull();
+  });
+});
+
+describe('with Pro on (docs/specs/026-plan/item-types.md "Image fields")', () => {
+  afterEach(() => setProForTests(null));
+
+  it('lets a picked file through to what any tier takes, and names no size in the hint', () => {
+    expect(imageUploadHint()).toBe('PNG, JPEG, WebP or GIF, up to 10 MB');
+    setProForTests(true);
+    expect(imageUploadHint()).toBe('PNG, JPEG, WebP or GIF');
+    expect(() => checkImageFile(png(new Uint8Array(MAX_IMAGE_BYTES + 1)))).not.toThrow();
+    expect(() => checkImageFile(png(new Uint8Array(25_000_001)))).toThrow(
+      'That image is over 25 MB, the largest that can be uploaded.',
+    );
+  });
+
+  it('hands on the tier’s limit the server refused for, in the server’s numbers', async () => {
+    setProForTests(true);
+    const body = {
+      error: 'file_too_large',
+      limitBytes: 5_000_000,
+      limit: 5_000_000,
+      current: 7_000_000,
+      owner: 't:team_garden',
+    };
+    answer = () => Response.json(body, { status: 413 });
+    const refused = await apiUploadImage(SCOPE, png()).catch((err: unknown) => err);
+    expect(refused).toBeInstanceOf(ImageUploadError);
+    expect(refused).toMatchObject({
+      code: 'file_too_large',
+      message: 'This image is over 5 MB, the largest that can be uploaded here.',
+      limit: { kind: 'too_large', limit: 5_000_000, current: 7_000_000, owner: 't:team_garden' },
+    });
+    // The same answer read by a build with Pro off is the plain refusal, with no limit to draw.
+    setProForTests(false);
+    const plain = await apiUploadImage(SCOPE, png()).catch((err: unknown) => err);
+    expect(plain).toMatchObject({ message: 'That image is over 10 MB.', limit: null });
   });
 });

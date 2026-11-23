@@ -2,7 +2,7 @@ import { REPO_URL } from '@liveknowledge/ui';
 
 // The landing page's promises (docs/specs/019-marketing/marketing-site.md "Structure" 3): four things
 // that are true of liveknowledge today, under the page's golden rule (no claim the product does not
-// keep). The site is international, so no value names a currency. Each has a short value set large, a title, one line, and, where there is more to read, a
+// keep). The site is international, so no promise names a currency. Each has a title, set in its own light, one line, and, where there is more to read, a
 // link. The art and hues live with the component (components/PromisePrism.tsx).
 
 export type PromiseId = 'no-account' | 'open-source' | 'private' | 'live';
@@ -10,7 +10,6 @@ export type PromiseId = 'no-account' | 'open-source' | 'private' | 'live';
 export type Promise = {
   id: PromiseId;
   // Set large in the card's hue. No Account Needed has none: its title says it all.
-  value?: string;
   title: string;
   line: string;
   link?: { href: string; label: string; external?: boolean };
@@ -24,21 +23,18 @@ export const PROMISES: readonly Promise[] = [
   },
   {
     id: 'open-source',
-    value: 'MIT',
     title: 'Open Source',
-    line: 'Read every line, fork it, make it yours.',
+    line: 'MIT-licensed: read every line, fork it, make it yours.',
     link: { href: REPO_URL, label: 'See the Code', external: true },
   },
   {
     id: 'private',
-    value: '0 trackers',
     title: 'Private by Design',
     line: 'No ads and no third-party analytics, only anonymous first-party counts.',
     link: { href: '#privacy', label: 'How We Handle Data' },
   },
   {
     id: 'live',
-    value: 'Live',
     title: 'Real-Time Collaboration',
     line: 'Share a link and write together, carets and edits in step.',
   },

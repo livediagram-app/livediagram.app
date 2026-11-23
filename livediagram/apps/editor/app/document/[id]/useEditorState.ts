@@ -138,6 +138,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromFollowing,
     fromEditing,
     fromLayers,
+    fromCollaboration,
   });
   const fromTabs = useEditorTabs({
     fromDocument,

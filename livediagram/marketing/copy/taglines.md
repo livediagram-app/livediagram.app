@@ -24,7 +24,7 @@ Classic "tagline" slot on most directories.
 - Real-time diagrams, no sign-in wall. [37]
 - Collaborative diagrams in the browser. [39]
 - Open a link, draw, share. Together. [36]
-- Multiplayer diagramming, free forever. [39]
+- Multiplayer diagramming, free to start. [40]
 - Diagram with your team in real time. [37]
 
 ## Medium, <= 60 characters
@@ -41,8 +41,8 @@ Listing headlines, Open Graph titles, search-result titles.
 Hero subheads, Twitter/X header copy, longer headline fields.
 
 - A collaborative diagram editor that works without signing in: open, draw, share. [80]
-- Real-time multiplayer diagrams and mindmaps. MIT-licensed and free forever. [75]
-- Diagram together in the browser. No sign-in wall, no paid tier, no lock-in. [75]
+- Real-time multiplayer diagrams and mindmaps. MIT-licensed and free to start. [76]
+- Diagram together in the browser. No sign-in wall, no trial, no lock-in. [71]
 
 ## Long, <= 100 characters
 

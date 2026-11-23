@@ -48,6 +48,9 @@ export type PublishedSiteRow = {
   publishedBy: string;
   publishedAt: number;
   stale: boolean;
+  /** Holds a counted place of the owner's Public Knowledgebases (true), holds none (false), or was never counted
+   *  (null). Read only with Pro on (published-gauge.ts). */
+  counted: boolean | null;
 };
 
 export type PublishSettings = Pick<
@@ -63,13 +66,14 @@ type SiteDbRow = {
   published_by: string;
   published_at: number;
   stale: number;
+  counted: number | null;
 };
 
 /** The site's row, or null while nothing is published. */
 export async function readSite(env: DocumentEnv): Promise<PublishedSiteRow | null> {
   const row = await knowledgeDb(env)
     .prepare(
-      'SELECT address, root, noindex, show_writers, published_by, published_at, stale FROM published_site WHERE id = 1',
+      'SELECT address, root, noindex, show_writers, published_by, published_at, stale, counted FROM published_site WHERE id = 1',
     )
     .first<SiteDbRow>();
   if (!row) return null;
@@ -81,7 +85,18 @@ export async function readSite(env: DocumentEnv): Promise<PublishedSiteRow | nul
     publishedBy: row.published_by,
     publishedAt: row.published_at,
     stale: row.stale === 1,
+    counted: row.counted === null ? null : Number(row.counted) === 1,
   };
+}
+
+const markStatement = (db: D1Database, counted: boolean | null) =>
+  db
+    .prepare('UPDATE published_site SET counted = ? WHERE id = 1')
+    .bind(counted === null ? null : counted ? 1 : 0);
+
+/** The site's counted mark set (published-gauge.ts). Nothing while nothing is published. */
+export async function setSiteCounted(env: DocumentEnv, counted: boolean | null): Promise<void> {
+  await markStatement(knowledgeDb(env), counted).run();
 }
 
 /** The site addresses this knowledgebase holds at the registry, the current one included. */
@@ -107,15 +122,18 @@ export async function publishedPaths(env: DocumentEnv): Promise<string[]> {
   return out;
 }
 
-/** Publish, or change what is published: the site's row, the address it now holds, every page drawn again. */
+/** Publish, or change what is published: the site's row, the address it now holds, every page drawn again.
+ *  `counted`, when given, sets the site's counted mark in the same batch (published-gauge.ts); left out, it stays. */
 export async function writeSite(
   env: DocumentEnv,
   documentId: string,
   settings: PublishSettings,
   by: string,
   now: number,
+  counted?: boolean | null,
 ): Promise<void> {
   const db = knowledgeDb(env);
+  const mark = counted === undefined ? [] : [markStatement(db, counted)];
   await db.batch([
     db
       .prepare(
@@ -133,6 +151,7 @@ export async function writeSite(
         by,
         now,
       ),
+    ...mark,
     db
       .prepare('INSERT OR IGNORE INTO published_site_addresses (address, held_at) VALUES (?, ?)')
       .bind(settings.address, now),

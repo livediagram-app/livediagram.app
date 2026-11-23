@@ -485,7 +485,11 @@ deployment of that commit to the `staging` or `production` environment with the 
 `success` status (`deploy-record.mjs`, which every reader goes through). A deploy asks Turborepo which workspaces changed since
 then, with everything depending on them, using the plan CI uses (`ci-plan.mjs`, `PLAN_MODE=deploy`).
 The Workers among them build and deploy, and the rest are left as they are; a held product's Workers (none today)
-are never among them, even with **all**. A Worker none of whose
+are never among them, even with **all**, and neither is a held Worker (`HELD_WORKERS` in `ci-plan.mjs`). One is
+held today: the subscription service (`liveworkspace/apps/subscription`), until its D1 databases exist and their
+ids replace the placeholders in its `wrangler.toml`. It is still linted, typechecked, tested and built like any
+other. Releasing it also means uncommenting the `SUBSCRIPTION` service binding in each api's and media's
+`wrangler.toml`: a binding to a Worker that is not deployed fails the deploy of the Worker that names it. A Worker none of whose
 files or dependencies changed is never rebuilt or redeployed. A change to `.github/` or the Prettier
 config alone deploys nothing. The record is written only when every Worker in the deploy succeeded, so a
 failed one is retried by the next deploy. With no record yet, everything deploys.

@@ -16,10 +16,17 @@ export {
 } from './revert';
 export { fenceStaleWrite, requestGeneration, stampGeneration } from './fence';
 export {
+  RETENTION_UNKNOWN,
+  retentionOf,
+  snapshotRetention,
+  type SnapshotRetention,
+} from './retention';
+export {
   advanceGeneration,
   chunkText,
   clearSnapshotAuthors,
   deleteSnapshot,
+  dropSnapshotsBefore,
   listSnapshots,
   readGeneration,
   readSnapshotText,

@@ -196,6 +196,9 @@ export async function pushAutomationSends(
     queue.push({ id, webhookId: send.webhookId, ahead: place, at: send.at, detail: send.detail });
     return { key: send.key, queued: true };
   });
-  if (queue.length > 0) await automationSendStatement(env.INDEX_DB, itemId, queue, now).run();
+  // `check: true` only asks: the answers a push would get now, with nothing queued (the item's room asks before it
+  // spends the owner's automation runs on the messages).
+  if (queue.length > 0 && body?.check !== true)
+    await automationSendStatement(env.INDEX_DB, itemId, queue, now).run();
   return json({ results });
 }

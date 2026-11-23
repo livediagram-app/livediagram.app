@@ -86,8 +86,22 @@ describe('a refusal in words', () => {
       'Another rule here has this name. Pick another.',
     );
     expect(say('automation_rules_full', null, 'full')).toBe(
-      'This Space has 50 rules, the most it can hold. Delete one to add another.',
+      'This Space has 50 rules, the most a Space can hold. Delete one to add another.',
     );
+    expect(say('automation_runs_used', null, 'used')).toBe(
+      'This month’s automation runs are used. Rules run again on the 1st.',
+    );
+    // With Pro on, the owner's total in the refusal's numbers, or a guest's item's Free 25.
+    const tier = { limit: 'automationRules', used: 25, max: 25 };
+    expect(
+      refusalWords({ code: 'automation_rules_full', path: null, message: '', tier }, 'plan'),
+    ).toBe('Its owner has 25 rules, the most allowed. Delete one to add another.');
+    expect(
+      refusalWords(
+        { code: 'automation_rules_full', path: null, message: '', tier: { ...tier, guest: true } },
+        'plan',
+      ),
+    ).toContain('before you sign in');
     expect(say('automation_condition_unsupported', 'conditions.0', 'x')).toContain(
       'nobody of the Space behind it',
     );

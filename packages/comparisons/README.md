@@ -64,6 +64,7 @@ On comparisons there's a second rule:
 
 - **Be fair about competitors.** Every page includes a "where `<competitor>` is the better pick" section with genuine reasons to choose them. This is non-negotiable: it builds trust, it's honest, and disparaging/one-sided comparison spam is exactly what Google demotes.
 - **State competitor facts qualitatively, not with volatile specifics.** Pricing tiers, exact free-plan limits, and feature lists change. Describe positioning ("free tier, then paid plans"; "desktop-first"; "vast shape libraries"), not numbers that rot. A short dated disclaimer ("comparisons reflect general positioning and may change") sits on each page.
+- **Tell our own price straight.** Every feature works on the free plan; paid plans raise a few limits. A page never says an app has no paid tier, no per-seat plan or nothing to upgrade to, or that every feature is free with no limits, and never leads with Pro. The real contrasts are no feature gating, no account needed, open source, and no caps on documents, people or rooms.
 - **Compete on their ground.** Each page compares the app with the competitor at that competitor's own job. "They are not a `<kind of tool>`" is never a selling point against a tool that does something else. Each app's section below says which job each competitor is compared at.
 - **Claims found false stay out.** Each app's `lib/product-claims.test.ts` holds each phrasing once found untrue of that app, and fails if one comes back on its landing page, its FAQ, a comparison or a comparison's card.
 - **Counts match the catalogue.** A count written out ("23 templates", "61 layouts", "25 logo layouts") must match that app's catalogue; the app's `lib/alternatives.test.ts` reads its template, theme and layout packages and fails until the copy follows a change.
@@ -163,7 +164,7 @@ dashboard on liveworkspace.app shows them under its own app.
   [Meeting rooms and the stage](../../livehuddle/docs/specs/012-collaboration/meeting-rooms-and-stage.md)), on at
   livehuddle.app since 2026-11-05. A page never says livehuddle has no voice or video, or tells a team to run another
   call beside the Space. Desktop apps, calendar integrations and large broadcast events stay theirs.
-- **Our ground**: free with no tiers, MIT open source, no sign-up even to create or to talk, any browser with nothing
+- **Our ground**: every feature on the free plan (paid plans raise a few limits, such as call minutes), MIT open source, no sign-up even to create or to talk, any browser with nothing
   to install, a Space that is also a board (sticky notes, text, stickers, a Timer and a Stopwatch), the three share
   roles, the REST API, Google Drive sync and Offline. livehuddle has no MCP server or CLI, so a page never
   offers one.

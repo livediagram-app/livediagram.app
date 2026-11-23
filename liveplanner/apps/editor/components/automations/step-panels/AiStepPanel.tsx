@@ -12,6 +12,7 @@ import {
 } from '@liveplanner/items';
 import { AiNote } from '@liveworkspace/automations-ui/AiNote';
 import { AiStepSource } from '@liveworkspace/automations-ui/AiStepSource';
+import { AiStepCredits } from '@liveworkspace/automations-ui/tier/AiStepCredits';
 import { outlineFields, type AutomationOutline } from '../automation-outline';
 import {
   ChipToggles,
@@ -94,6 +95,8 @@ export function AiStepPanel({
         </p>
       ) : null}
       <AiCostNote />
+      {/* With Pro on: what a run spends of the plan's owner's AI credits, and what is left. */}
+      <AiStepCredits />
     </div>
   );
 }

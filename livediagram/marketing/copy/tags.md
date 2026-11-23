@@ -5,7 +5,7 @@ Hunt. Ranked by how tightly they fit the product, then split by platform so you
 can paste the right set into each field.
 
 Built from [`facts.md`](facts.md). No tag may imply something the fact sheet
-says not to claim (conflict-free editing, a paid tier): that means no `crdt`
+says not to claim (conflict-free editing, no paid tier): that means no `crdt`
 or `conflict-free`.
 
 ## Ranked by fit

@@ -1,6 +1,7 @@
 // POST .../pages/<tab>/describe-structure from the editor (docs/specs/030-knowledgebase/describe-to-set-up.md
 // "Describe Structure on a page"): one request that answers a page's drafted structure, or why there is none. A
 // failure is a kind the dialog words itself (structure-words.ts): the route's own message is never shown.
+import { refusalKind } from '@/lib/knowledge-ask/ask-failure-words';
 import type {
   KnowledgeAiProvider,
   KnowledgeSetupProvider,
@@ -52,8 +53,7 @@ export async function apiDescribeStructure(
       ? { ok: true, blocks, provider }
       : { ok: false, kind: 'no-structure' };
   }
-  const kind =
-    typeof read?.error === 'string' ? read.error : res.status === 403 ? 'forbidden' : 'other';
+  const kind = refusalKind(read, res.status === 403 ? 'forbidden' : 'other');
   const provider =
     read?.provider === 'anthropic' || read?.provider === 'openai' ? read.provider : undefined;
   return { ok: false, kind, ...(provider ? { provider } : {}) };

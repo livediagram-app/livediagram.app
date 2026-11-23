@@ -31,9 +31,9 @@ marketing/
 - **The pitch is "Meet your team in a Space"**: open a link, walk in, gather
   round the table, no sign-in wall. Lead with it.
 - **Don't overclaim.** The fact sheet's "Do not claim" list (voice or video,
-  the workshop and diagram tools that left, conflict-free editing, a paid
-  tier) is off limits in every format.
-- **Free means free.** MIT-licensed, no paid tier, no plan for
-  one. Say so where the format allows.
+  the workshop and diagram tools that left, conflict-free editing, and that
+  there is no paid tier) is off limits in every format. Don't lead with Pro.
+- **Free means free.** MIT-licensed, every feature on Free, no trial,
+  no card. Say so where the format allows.
 - **Brand color** is sky blue, `#0EA5E9` ("livehuddle blue"). See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

@@ -433,6 +433,31 @@ export async function readTeamPeople(
   };
 }
 
+// The most teams one member-count read names (the accounts Worker's MAX_MEMBER_COUNT_TEAMS).
+export const MAX_MEMBER_COUNT_TEAMS = 50;
+
+// How many people have joined each of these teams, in one call however many teams (at most
+// MAX_MEMBER_COUNT_TEAMS: the caller's to keep to). A team that is deleted or unknown is absent from the answer.
+export async function readTeamMemberCounts(
+  credentials: ClientCredentials,
+  teamIds: readonly string[],
+  fetcher: typeof fetch = fetch,
+): Promise<Record<string, number>> {
+  const response = await call(
+    credentials,
+    '/teams/member-counts',
+    { method: 'POST', body: { teamIds: [...new Set(teamIds)] } },
+    fetcher,
+  );
+  if (!response.ok) throw new Error(`team member counts failed: ${response.status}`);
+  const { counts } = (await response.json()) as { counts?: Record<string, unknown> };
+  const out: Record<string, number> = {};
+  for (const [id, count] of Object.entries(counts ?? {})) {
+    if (typeof count === 'number' && Number.isInteger(count) && count >= 0) out[id] = count;
+  }
+  return out;
+}
+
 // --- Returning guests of the old livediagram.app (docs/migration.md step 6) ---
 
 // What the accounts Worker answered a claim: merged, nothing to merge (`unknown`: never migrated, or a signature or

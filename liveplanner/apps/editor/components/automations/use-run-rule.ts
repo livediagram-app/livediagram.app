@@ -14,6 +14,7 @@ import type { RunRuleChoices } from './RunRuleMenu';
 import { useAutomations } from './use-automations';
 import { goneText } from './needs-words';
 import { nextRunWords } from '@liveworkspace/automations-ui/run-words';
+import { runsSpentToast } from '@liveworkspace/automations-ui/tier/tier-words';
 
 export function useRunRule(itemId: string): RunRuleChoices | null {
   const access = useAutomationsAccess();
@@ -46,7 +47,12 @@ export function useRunRule(itemId: string): RunRuleChoices | null {
           (error: unknown) => {
             debugLog('[automations] run.failed', { error: String(error) });
             toast.error(
-              error instanceof AutomationRefusal ? error.message : `${name} didn’t run. Try again.`,
+              error instanceof AutomationRefusal
+                ? // The plan's runs for the day, or with Pro on the owner's month, are spent.
+                  error.code === 'automation_budget_spent' || error.code === 'automation_runs_used'
+                  ? runsSpentToast(error.code, 'plan', Date.now())
+                  : error.message
+                : `${name} didn’t run. Try again.`,
             );
           },
         );

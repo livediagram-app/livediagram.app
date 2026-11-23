@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { answerMarkdown, answerParts, answerWithoutMarkers, markedParts } from './answer-parts';
-import { askFailureWords } from './ask-failure-words';
+import { askFailureWords, refusalKind } from './ask-failure-words';
 import { answerTrust } from './ask-trust';
 import {
   CHATS_MAX_CHARS,
@@ -143,6 +143,11 @@ describe('a failure in words', () => {
     'question-too-long',
     'no-question',
     'ask_unavailable',
+    'team-key-unreadable',
+    'personal-key-unreadable',
+    'key-settings-unreachable',
+    'ai_credits_used',
+    'ai_by_others_limit',
     'sign_in_required',
     'network',
     'other',
@@ -161,6 +166,41 @@ describe('a failure in words', () => {
     const other = askFailureWords('bad-key', { manageAi: false });
     expect(other.step).toBe('none');
     expect(other.text).toContain('Ask an Editor');
+  });
+  it('says the reason an ask_unavailable refusal names, never another reason’s words', () => {
+    // A personal knowledgebase with no key, accounts out of reach: never "your team's stored key".
+    const kind = refusalKind({ error: 'ask_unavailable', reason: 'shared-unavailable' }, 'other');
+    expect(kind).toBe('key-settings-unreachable');
+    expect(askFailureWords(kind, { manageAi: true })).toEqual({
+      title: 'Ask Is Not Available Right Now',
+      text: "Your AI key settings couldn't be reached just now. Ask again in a moment.",
+      step: 'ask-again',
+    });
+    expect(refusalKind({ error: 'ask_unavailable', reason: 'team-unreadable' }, 'other')).toBe(
+      'team-key-unreadable',
+    );
+    expect(askFailureWords('personal-key-unreadable', { manageAi: true }).text).toBe(
+      'Your AI key could not be read. Replace it in Settings, under AI.',
+    );
+    // The knowledgebase's own key, or an api that names no reason.
+    expect(refusalKind({ error: 'ask_unavailable', reason: 'unreadable' }, 'other')).toBe(
+      'ask_unavailable',
+    );
+    expect(refusalKind({ error: 'ask_unavailable' }, 'other')).toBe('ask_unavailable');
+    expect(askFailureWords('ask_unavailable', { manageAi: true }).text).toBe(
+      "This knowledgebase's AI key could not be read. Replace it in AI Settings.",
+    );
+    expect(refusalKind({ error: 'person-limit' }, 'other')).toBe('person-limit');
+    expect(refusalKind(null, 'forbidden')).toBe('forbidden');
+  });
+  it('says the month’s credits are used, never that something went wrong', () => {
+    const words = askFailureWords('ai_credits_used', { manageAi: true });
+    expect(words.title).toBe("This Month's AI Credits Are Used");
+    expect(words.text).toMatch(/^They start again on 1 [A-Z][a-z]+\.$/);
+    expect(words.step).toBe('none');
+    expect(askFailureWords('ai_by_others_limit', { manageAi: false }).text).toContain(
+      'Try again tomorrow',
+    );
   });
   it('names the hourly and the daily limit', () => {
     expect(askFailureWords('person-limit', { manageAi: false }).title).toBe(

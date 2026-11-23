@@ -13,12 +13,15 @@ import {
   roadmapPath,
   type PublishedRoadmap,
   type RoadmapBoard,
+  type RoadmapError,
+  type RoadmapErrorBody,
   type RoadmapField,
   type RoadmapForm,
   type RoadmapResponse,
   type RoadmapSettings,
   type RoadmapsResponse,
 } from '@liveplanner/api-schema';
+import { refusedByService } from '@liveworkspace/subscription';
 import { getProject } from '../db';
 import { json, methodNotAllowed, noContent } from '../responses';
 import {
@@ -30,11 +33,20 @@ import {
 import {
   publishRoadmap,
   roadmapsOf,
+  setRoadmapCounted,
   setRoadmapSettings,
   unpublishRoadmap,
   type RoadmapRow,
 } from '../roadmap/roadmap-store';
 import { grantOn, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
+import {
+  claimRoadmap,
+  markOfClaim,
+  releaseRoadmap,
+  roadmapServes,
+  syncRoadmapGauge,
+} from '../roadmap/roadmap-gauge';
+import { tierOn } from '../plan-room/tier/plan-tier';
 
 // The longest board id a path names: element ids are far shorter.
 const BOARD_ID_MAX = 200;
@@ -42,9 +54,14 @@ const NO_STORE = { 'Cache-Control': 'no-store' };
 
 const answer = (body: unknown, status = 200) => json(body, { status, headers: NO_STORE });
 
-function refuse(status: number, error: string, reason: string): Response {
+function refuse(
+  status: number,
+  error: RoadmapError,
+  reason: string,
+  more: Omit<RoadmapErrorBody, 'error'> = {},
+): Response {
   console.info('[roadmap] refused', { reason });
-  return answer({ error }, status);
+  return answer({ error, ...more } satisfies RoadmapErrorBody, status);
 }
 
 // The door every route passes: the owner or a team member, in person; or the refusal.
@@ -113,6 +130,46 @@ function settingsOf(
   };
 }
 
+// With Pro on, the plan's roadmaps counted for its owner (the ones from before too, a gone board's given back, one
+// whose board came back asking for its place again), then what the owner holds against their tier's limit, and that
+// owner (spec "Tiers"). A guest's plan names no owner (nobody is offered an upgrade): its own count and `guest`.
+// `rows` come back as the count left them.
+async function countedOf(
+  ctx: PlanRouteContext,
+  projectId: string,
+  rows: readonly RoadmapRow[],
+  there: (boardId: string) => boolean,
+): Promise<{
+  rows: readonly RoadmapRow[];
+  said: Pick<RoadmapsResponse, 'usage' | 'owner' | 'guest'>;
+}> {
+  const tier = await tierOn(ctx.env);
+  if (!tier || (!tier.owner && !tier.guest)) return { rows, said: {} };
+  // An uncounted roadmap whose board is there may fit now (the owner just upgraded): the limits are asked for again.
+  if (rows.some((r) => r.counted === false && there(r.boardId))) await tier.recheck();
+  const marks = new Map<string, boolean>();
+  await syncRoadmapGauge(tier, projectId, rows, there, async (boardId, counted) => {
+    marks.set(boardId, counted);
+    await setRoadmapCounted(ctx.env, projectId, boardId, counted);
+  });
+  const now = rows.map((r) =>
+    marks.has(r.boardId) ? { ...r, counted: marks.get(r.boardId)! } : r,
+  );
+  const limit = tier.limit('publicRoadmaps', null);
+  if (tier.guest) {
+    const used = now.filter((r) => r.counted === true && there(r.boardId)).length;
+    return { rows: now, said: { usage: { used, limit }, guest: true } };
+  }
+  const used = tier.gaugeUsed.get('publicRoadmaps');
+  return {
+    rows: now,
+    said: {
+      usage: { ...(used !== undefined ? { used } : {}), limit },
+      ...(tier.owner ? { owner: tier.owner } : {}),
+    },
+  };
+}
+
 async function list(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const types = await planTypesOf(ctx.env, projectId);
   const [rows, boards, forms] = await Promise.all([
@@ -120,11 +177,14 @@ async function list(ctx: PlanRouteContext, projectId: string): Promise<Response>
     roadmapBoardsOf(ctx.env, projectId, types),
     roadmapFormsOf(ctx.env, projectId),
   ]);
-  // A roadmap whose board has gone is not listed: it answers nobody until its board is published again.
-  const roadmaps = rows
-    .filter((r) => boards.some((b) => b.id === r.boardId))
+  // A roadmap whose board has gone is not listed: it answers nobody until its board is published again. Nor, with
+  // Pro on, is one that holds no counted place: its board reads as not published, with the limit beside it.
+  const there = (boardId: string) => boards.some((b) => b.id === boardId);
+  const counted = await countedOf(ctx, projectId, rows, there);
+  const roadmaps = counted.rows
+    .filter((r) => there(r.boardId) && roadmapServes(ctx.env.TIER, r))
     .map((r) => published(projectId, r));
-  const body: RoadmapsResponse = { roadmaps, boards, forms };
+  const body: RoadmapsResponse = { roadmaps, boards, forms, ...counted.said };
   return answer(body);
 }
 
@@ -143,14 +203,71 @@ async function put(ctx: PlanRouteContext, projectId: string, boardId: string): P
   if (settings instanceof Response) return settings;
   const at = { boardId, tabId: board.tabId };
   const existing = rows.find((r) => r.boardId === boardId);
-  if (existing && (await setRoadmapSettings(ctx.env, projectId, at, settings))) {
+  const tier = await tierOn(ctx.env);
+  // A roadmap that holds no counted place is not published as anyone sees it: Publish asks for its place first.
+  const placeless = !!existing && !roadmapServes(tier, existing);
+  if (existing && !placeless && (await setRoadmapSettings(ctx.env, projectId, at, settings))) {
     console.info('[roadmap] manage', { action: 'changed' });
     const body: RoadmapResponse = {
       roadmap: published(projectId, { ...existing, ...at, settings }),
     };
     return answer(body);
   }
-  const row = await publishRoadmap(ctx.env, projectId, at, settings, Date.now());
+  // With Pro on, one more roadmap for the plan's owner, asked first (the plan's own from before counted before it),
+  // and refused at their tier's limit (spec "Tiers"). A settings change above never asks.
+  let counted: boolean | null = null;
+  if (tier) {
+    const there = (id: string) => boards.some((b) => b.id === id);
+    const marks = new Map(rows.map((r) => [r.boardId, r.counted]));
+    await syncRoadmapGauge(
+      tier,
+      projectId,
+      rows.filter((r) => r.boardId !== boardId),
+      there,
+      async (id, mark) => {
+        marks.set(id, mark);
+        await setRoadmapCounted(ctx.env, projectId, id, mark);
+      },
+    );
+    const held = [...marks].filter(([id, m]) => id !== boardId && m === true && there(id)).length;
+    let claim = await claimRoadmap(tier, projectId, boardId, held);
+    // Refused at the limit: the owner may have upgraded a moment ago, so their limits are asked for once more
+    // (plan-tier.ts `recheck`) before the refusal is answered.
+    if (claim && !claim.ok && !claim.unmetered && (await tier.recheck()))
+      claim = await claimRoadmap(tier, projectId, boardId, held);
+    // The service refused the plan's request (its key, never the owner's roadmaps): nothing is published uncounted,
+    // and it is this Worker's fault to answer for, never a limit to offer an upgrade at.
+    if (claim && refusedByService(claim))
+      throw new Error('the subscription service refused the roadmap claim');
+    if (claim && !claim.ok && claim.limit !== null)
+      return refuse(409, 'roadmap_limit_reached', 'tier_limit', {
+        limit: 'publicRoadmaps',
+        used: claim.used,
+        max: claim.limit,
+        ...(tier.guest ? { guest: true as const } : {}),
+      });
+    // Counted where the service (or a guest's plan itself) said so; one it could not be asked about is claimed at
+    // the next count.
+    counted = markOfClaim(claim);
+  }
+  if (existing && placeless) {
+    // Its place is held again: the same link answers, with these settings.
+    await setRoadmapSettings(ctx.env, projectId, at, settings);
+    await setRoadmapCounted(ctx.env, projectId, boardId, counted);
+    console.info('[roadmap] manage', { action: 'republished' });
+    const body: RoadmapResponse = {
+      roadmap: published(projectId, { ...existing, ...at, settings, counted }),
+    };
+    return answer(body);
+  }
+  let row: RoadmapRow;
+  try {
+    row = await publishRoadmap(ctx.env, projectId, at, settings, Date.now(), counted);
+  } catch (error) {
+    // Nothing was published: the place claimed for it goes back.
+    if (tier) await releaseRoadmap(tier, projectId, boardId);
+    throw error;
+  }
   console.info('[roadmap] manage', { action: 'published' });
   const body: RoadmapResponse = { roadmap: published(projectId, row) };
   return answer(body, 201);
@@ -159,6 +276,9 @@ async function put(ctx: PlanRouteContext, projectId: string, boardId: string): P
 async function remove(ctx: PlanRouteContext, projectId: string, boardId: string) {
   if (await unpublishRoadmap(ctx.env, projectId, boardId))
     console.info('[roadmap] manage', { action: 'unpublished' });
+  // Given back whether or not it was published: taking off a key that is not there changes nothing.
+  const tier = await tierOn(ctx.env);
+  if (tier) await releaseRoadmap(tier, projectId, boardId);
   return noContent();
 }
 

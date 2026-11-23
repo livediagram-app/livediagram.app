@@ -3713,6 +3713,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "guest": {
+        "const": true,
+        "type": "boolean"
+      },
+      "owner": {
+        "$ref": "#/components/schemas/TierOwner"
+      },
       "people": {
         "items": {
           "additionalProperties": false,
@@ -3737,6 +3744,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/AutomationListedRule"
         },
         "type": "array"
+      },
+      "rulesMax": {
+        "type": "number"
       },
       "runsPerDay": {
         "type": "number"
@@ -7457,6 +7467,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FormDraftRequest": {
     "additionalProperties": false,
     "properties": {
+      "projectId": {
+        "type": "string"
+      },
       "prompt": {
         "type": "string"
       }
@@ -7537,6 +7550,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "null"
           }
         ]
+      },
+      "month": {
+        "additionalProperties": false,
+        "properties": {
+          "full": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "limit",
+          "full"
+        ],
+        "type": "object"
+      },
+      "owner": {
+        "$ref": "#/components/schemas/TierOwner"
       },
       "responses": {
         "type": "number"
@@ -16674,6 +16706,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "color"
     ],
     "type": "object"
+  },
+  "TierOwner": {
+    "description": "The owner whose tier an item runs on: `p:<account id>` or `t:<team id>`, as the subscription service names one.",
+    "type": "string"
   },
   "TimerMode": {
     "enum": [

@@ -149,6 +149,73 @@ browser's decode: `@liveworkspace/media`'s `imageDimensions` parses the PNG `IHD
 GIF screen descriptor and the WebP `VP8 `, `VP8L` and `VP8X` headers, without decoding a pixel. A picture whose
 size it cannot read is refused before it is sent.
 
+## With Pro on
+
+With `PRO_ENABLED` off (the default) everything above is as written: 10 MB a file, and the two per-person caps from
+`[vars]`. With it on ([subscription.md](../019-subscription/subscription.md) "Tiers and limits") two limits come from
+a tier instead, and the service works both out itself, from entitlements it reads with its own key:
+
+| Limit         | Free   | Pro   | Pro for Teams | In place of                                                 |
+| ------------- | ------ | ----- | ------------- | ----------------------------------------------------------- |
+| Largest Image | 25 MB  | 25 MB | 25 MB         | The 10 MB cap (a PDF follows the same limit)                |
+| Image Storage | 500 MB | 50 GB | 250 GB        | `IMAGE_MAX_BYTES_PER_OWNER`; `IMAGE_MAX_PER_OWNER` is unset |
+
+**Who pays.** A picture lives in its uploader's gallery, so storage is counted against the uploader, as it always
+was, and the two limits follow two rules:
+
+- **Image Storage is the uploader's own tier's, always** (`p:<account>`; a guest, `guest:<hash>`, is Free; a team's
+  gallery, `team:<id>`, is the team's). The item an upload is for never changes it: the gallery is the uploader's in
+  every app, so a bigger one lent by one item's owner would be storage charged to nobody.
+- **Largest Image is the better of two tiers:** the uploader's own and, when the upload is for an item, that item's
+  owner's (a person or a team), the larger number. Every tier takes 25 MB (owner, 2026-11-23), so today the two are
+  the same; the rule stays so a tier could differ again.
+- **Who is lent the owner's Largest Image.** Only a caller who may add to the item: the app's api names the item's
+  owner for a grant of `edit` or `participate` (the owner's own, a team member's, or a share link the owner made at
+  that level) and for nothing else (`imageUploadAllowance`). A `view` grant, which is all a Community post's public
+  link ever gives, lends nothing, and neither does an item in the Trash.
+
+- The app's Worker, which knows the item, names its owner in `X-Media-Item-Owner` (`p:<accountId>` or `t:<teamId>`),
+  from the index's grant, never from the browser. The service trusts the app's key for it, as it does for the
+  uploader, and reads the tier itself. No tier is ever sent to the service, and any header or field that claims one
+  is ignored. A value that is not an owner scope is ignored too.
+- Both entitlements are read before the body (60 s cache, [subscription.md](../019-subscription/subscription.md)
+  "Entitlement"), so a declared length over the limit is refused before a byte is read, by the service and by each
+  app's api, which works out the same limit the same way (`imageAllowance` in `@liveworkspace/media`). An app's api
+  with Pro on does not buffer an upload before that check, and then reads no more than the limit.
+- The count cap no longer applies; bytes do. Pictures already over a new limit stay: nothing is deleted because a
+  tier changed, and the gallery takes no more until it is under.
+- **What Subscription shows.** The service reports nothing. The subscription service asks it, when a person reads
+  their usage: `POST /app/usage/owners` with `{ owners }` (up to 60 owner scopes), `X-Media-App: subscription` and
+  the key the two share (this service's `SUBSCRIPTION_KEY`), answered `{ usage: { <scope>: { imageStorageBytes,
+walkthroughsStored } } }` from the rows the caps are enforced on, in one batch of two indexed reads. A team's scope
+  is its gallery (`team:<id>`); an owner that holds nothing is absent. So the figure shown is the figure enforced,
+  whatever changed it: an upload, a delete, a release, the retention sweep, a copy, a guest signing up, an account
+  deleted. Only with Pro on; that caller reaches no other route.
+
+The refusals say what the limit is, for the editor to word:
+
+- `413 file_too_large`: `limitBytes` as before, and with Pro on also `limit` (the same number), `current` (the
+  declared size) and `owner` (the scope whose tier set the limit, for the offer; null for a guest).
+- `403 gallery_full`: `reason`, `limit`, `current` as before, and with Pro on also `owner`: the gallery's own owner
+  (null for a guest), whoever owns the item.
+
+`GET /app/images?owner=` also answers `storage: { used, limit, maxImageBytes, owner }` with Pro on (the uploader's own
+tier: a gallery is one person's), which each app's `GET /api/images` passes on, and the image library draws as its
+storage meter: Storage and "312 MB of 500 MB", then "Each image up to 5 MB. Your images in every app count here.", and
+on Free a ProNote, "Free keeps 500 MB, each image up to 5 MB. Pro keeps 50 GB, up to 25 MB each." with See Pro
+(owner, 2026-11-22). With Pro off there is no `storage`.
+
+**What still uses the 10 MB cap.** An email's pictures and PDFs (liveplanner's Email to Board), a picture fetched by
+URL for an agent, an imported file's pictures, and every check with Pro off. An editor's own check before an upload
+is the 25 MB ceiling with Pro on (`IMAGE_UPLOAD_CEILING_BYTES`): the server's answer, not the browser, says what the
+person's limit is.
+
+**In the editors.** The server's refusal is drawn by one shared notice (`ImageLimitNotice`, `@liveworkspace/workbench`):
+"This Image Is Over 5 MB" over "Free takes images up to 5 MB. Pro takes 25 MB." with **See Pro**, and "Image Storage
+Is Full" over "Your images are all safe. Delete some to upload more, or get 50 GB with Pro." with **Upgrade to Pro**
+and **Manage Images**. The offer is only for someone who may upgrade the owner named; anyone else reads the limit and
+nothing more. With Pro off the editors' messages are as they were.
+
 ## References
 
 Each app reports which images its documents place, so the service can tell an image no app places any

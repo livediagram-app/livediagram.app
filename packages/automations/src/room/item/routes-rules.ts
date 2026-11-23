@@ -14,7 +14,8 @@ import {
   type ItemRule,
   type ItemRuleBody,
 } from '../../item';
-import { AUTOMATION_RULES_MAX, AUTOMATION_RUNS_PER_DAY } from '../../limits';
+import { tierRefusal } from '@liveworkspace/subscription';
+import { listTier, recountRules, rulesAtLimit, rulesOverLimit, type RulesFull } from '../tier';
 import { freeRuleName, ruleNameTaken } from '../../validate';
 import { runsToday } from '../automation-log';
 import {
@@ -30,13 +31,29 @@ import {
   type Gated,
 } from './route-kit';
 
+// The owner holds every rule their tier allows (in the tier's own numbers, with Pro on), or the item its own bound
+// (no tier named, nothing offered, but for a guest's item, whose bound is Free's).
+const rulesFull = (g: Gated, full: RulesFull): Response =>
+  refuse(
+    409,
+    'automation_rules_full',
+    full.owner || g.deps.tier?.guest
+      ? tierRefusal(g.deps.tier, 'automationRules', full.used, full.max)
+      : {},
+  );
+
+// Another add or delete landed while the count was asked: what the item holds now is told too.
+function recounted(g: Gated, told: number): void {
+  if (g.deps.store.count() !== told) recountRules(g.deps.tier, g.deps.kit.itemId, g.deps.store);
+}
+
 export async function listRules(g: Gated): Promise<Response> {
   const rules = g.deps.store.list();
   const l = await listingOf(g, rules);
   const answer: AutomationsListResponse<ItemRule, ItemRef> = {
     rules: rules.map((r) => listed(g, r, l)),
     runsToday: runsToday(g.deps.sql(), Date.now()),
-    runsPerDay: AUTOMATION_RUNS_PER_DAY,
+    ...listTier(g.deps.store, g.deps.tier ?? null),
     // What an agent names tabs and people by.
     tabs: l.outline.tabs.map((t) => ({ id: t.id, name: t.name })),
     people: l.outline.people.map((p) => ({ id: p.id, name: p.name })),
@@ -84,10 +101,12 @@ export async function createRule(g: Gated): Promise<Response> {
   if (picked) return picked;
   const { store } = g.deps;
   const rules = store.list();
-  if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
   if (ruleNameTaken(body.name, rules))
     return refuse(409, 'automation_name_taken', { path: 'name' });
   if (snapshotsFull([...rules, body])) return refuse(409, 'automation_snapshots_full');
+  // Asked last: a growing count is recorded once taken.
+  const full = await rulesAtLimit(store, g.deps.tier ?? null, rules.length, g.deps.kit.itemId);
+  if (full) return rulesFull(g, full);
   const stamp = stampOf(g);
   const rule: ItemRule = {
     ...body,
@@ -97,6 +116,7 @@ export async function createRule(g: Gated): Promise<Response> {
     edited: stamp,
   };
   store.insert(rule);
+  recounted(g, rules.length + 1);
   console.info('[automations] rule.made', { trigger: rule.trigger.kind, enabled: rule.enabled });
   return answerRule(g, rule, 201);
 }
@@ -128,6 +148,7 @@ export async function saveRule(g: Gated, read: ItemRule): Promise<Response> {
 
 export function removeRule(g: Gated, held: ItemRule): Promise<Response> {
   g.deps.store.remove(held.id);
+  recountRules(g.deps.tier, g.deps.kit.itemId, g.deps.store);
   return Promise.resolve(noContent());
 }
 
@@ -152,6 +173,12 @@ export async function toggleRule(g: Gated, read: ItemRule): Promise<Response> {
       path: 'steps',
       message: 'pick what the rule still needs before turning it on',
     });
+  // An item over its tier's rules (it kept them when its tier dropped) switches nothing on until it is back within it.
+  if (enabled && !held.enabled) {
+    const count = g.deps.store.count();
+    const full = await rulesOverLimit(g.deps.store, g.deps.tier ?? null, count, g.deps.kit.itemId);
+    if (full) return rulesFull(g, full);
+  }
   const { paused: _paused, ...rest } = held;
   const rule: ItemRule = enabled ? { ...rest, enabled } : { ...held, enabled };
   // Resume clears the failures in a row.
@@ -166,7 +193,8 @@ export async function duplicateRule(g: Gated, held: ItemRule): Promise<Response>
   if (refused) return refused;
   const { store } = g.deps;
   const rules = store.list();
-  if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
+  const full = await rulesAtLimit(store, g.deps.tier ?? null, rules.length, g.deps.kit.itemId);
+  if (full) return rulesFull(g, full);
   const { paused: _paused, ...rest } = held;
   const stamp = stampOf(g);
   const rule: ItemRule = {
@@ -178,6 +206,7 @@ export async function duplicateRule(g: Gated, held: ItemRule): Promise<Response>
     edited: stamp,
   };
   store.insert(rule);
+  recounted(g, rules.length + 1);
   return answerRule(g, rule, 201);
 }
 

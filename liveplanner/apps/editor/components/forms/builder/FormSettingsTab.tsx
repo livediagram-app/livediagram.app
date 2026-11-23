@@ -16,6 +16,7 @@ import { patchForm } from '@liveplanner/forms';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';
 import { DraftText } from './DraftText';
 import { useFormBuilder } from './form-builder-context';
+import { FormMonth } from '../FormMonth';
 
 const BOX =
   'rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[13px] text-slate-800 focus-within:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100';
@@ -62,6 +63,8 @@ export function FormSettingsTab({ link }: { link: FormLinkState }) {
                 : 'Publish the form from Share Form to start taking responses.'}
           </p>
         </div>
+        {/* With Pro on: the month's responses against the owner's tier (forms.md "Tiers"). */}
+        {published ? <FormMonth link={link.link} /> : null}
         <div className="grid grid-cols-[1fr_8.5rem] gap-2 [&>*]:min-w-0">
           <SettingsField label="Close On">
             <div className="flex items-center gap-2">

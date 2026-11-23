@@ -16,13 +16,15 @@ import {
   createFormLink,
   deleteFormLink,
   deleteFormLinkRow,
+  formMonthFull,
   getProject,
   getLiveFormLink,
   getSuspendedFormLink,
   setFormLinkOpen,
+  type FormLinkRow,
 } from '../db';
 import { planBoards, readFormTab, responsesProblem } from '../forms/form-tab';
-import { previewToSheet, respond } from '../forms/respond';
+import { formMonthOf, previewToSheet, respond } from '../forms/respond';
 import { writer } from './item-route-kit';
 import { conflict, forbidden, json, methodNotAllowed, notFound } from '../responses';
 import {
@@ -34,6 +36,17 @@ import {
   requireOwner,
   type PlanRouteContext,
 } from './context';
+
+// With Pro on, the form's month against its plan's owner's tier, and that owner (forms.md "Abuse and limits → Tiers").
+async function monthOf(
+  ctx: PlanRouteContext,
+  live: FormLinkRow | null,
+): Promise<Pick<FormLinkResponse, 'month' | 'owner'>> {
+  const monthly = await formMonthOf(ctx, Date.now());
+  const owner = ctx.env.TIER?.owner;
+  if (!monthly || !owner) return {};
+  return { month: { limit: monthly.limit, full: !!live && formMonthFull(live, monthly) }, owner };
+}
 
 async function answer(
   ctx: PlanRouteContext,
@@ -63,6 +76,7 @@ async function answer(
         (await unseenFormResponses(ctx.env, projectId, tabId, owner, live.responses))),
     suspendedAt: live ? null : (suspended?.suspended_at ?? null),
     canPublish: suspensions < FORM_SUSPENSIONS_MAX,
+    ...(await monthOf(ctx, live)),
   };
   return json(body);
 }

@@ -33,6 +33,7 @@ import { notifyMilestone } from '../email/notifications';
 import { initPlan } from '../plan-room/plan-content';
 import { gateEdit, requireOwner, type PlanRouteContext, readBody } from './context';
 import { makeStarterRules, starterRulesAsked } from './starter-rules';
+import { itemWriteBounds } from './item-bounds';
 import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
 
 // The Plan templates' own card types, so a create's template tabs can bring them (docs/specs/026-plan/plan-templates.md "Card
@@ -134,7 +135,7 @@ export async function createProject(ctx: PlanRouteContext): Promise<Response> {
   }
   // Seed items (docs/specs/026-plan/items.md): an offline project's, on sync. Validated whole
   // before anything is written.
-  const seedItemCreates = readSeedItems(body.items, owner);
+  const seedItemCreates = readSeedItems(body.items, owner, itemWriteBounds(ctx.env));
   if (seedItemCreates instanceof Response) return seedItemCreates;
   // Seed sheets (docs/specs/029-sheets/sheet-store.md "Offline projects", "Copies"), validated the same way.
   // The request's own sheets, then the template's; anything that is not a list is refused below.

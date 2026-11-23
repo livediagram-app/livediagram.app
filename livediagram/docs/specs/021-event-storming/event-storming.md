@@ -1311,6 +1311,13 @@ Decisions from the operator:
   stay blank and are counted ("6 notes could not be read"). Only a run where
   every batch failed is a failure.
 
+- **With Pro on, a charged read asks first.** Once the stickies are found, a read that would spend AI credits
+  (signed in, a server reader, a diagram that is not a guest's) shows a choice on the photo before anything is
+  sent: **Read 30 Notes with AI** with "Uses 2 AI credits" (one credit for every 24 notes) and what is left, or
+  **Read on This Device** for nothing. Too few credits left disables the AI choice and says why; none left shows the
+  used notice with its offer. Nothing is read until one is picked. An uncharged read starts at once, as before
+  ([Note reader](note-reader.md#what-the-editor-shows)).
+
 - **When the free budget is spent, this device reads instead.** A server
   reader that refuses for quota (`ai_quota`, a 429: the provider's key is out
   of quota, or the deployment's [daily cap](note-reader.md#security) is

@@ -10,6 +10,7 @@ import type { SettingsAppId, SettingsRequest, SettingsStore } from './store';
 import { SettingsView, type SettingsFocus } from './SettingsView';
 import { useSettingsResetGeneration } from './reset-settings/reset-signal';
 import { loadCatalogueView } from './settings-panel-preload';
+import { SubscriptionScope } from './account-panels/subscription/SubscriptionScope';
 
 // The All view and the catalogue-driven app view: their own chunk (settings-panel-preload.ts).
 const CatalogueSettingsView = lazy(loadCatalogueView);
@@ -124,6 +125,8 @@ export function SettingsPanel({
   if (shown === 'app' && own && !withShared) {
     return <SettingsView key="app" {...common} categories={own} memoryKey={memoryKey} />;
   }
+  // The Subscription category's cells share one read of the person's subscription (SubscriptionScope).
+  const subscription = account.subscription ?? null;
 
   const catalogueProps: CatalogueSettingsViewProps = {
     ...common,
@@ -140,21 +143,23 @@ export function SettingsPanel({
     memoryKey: memoryKey && shown === 'all' ? `${memoryKey}:all` : memoryKey,
   };
   return (
-    <Suspense
-      fallback={
-        withShared && own ? (
-          // An editor's own settings at once, while the rest of its side loads.
-          <SettingsView {...common} categories={own} memoryKey={memoryKey} />
-        ) : (
-          <SettingsView
-            {...common}
-            categories={[]}
-            placeholder={<div aria-busy className="h-40" />}
-          />
-        )
-      }
-    >
-      <CatalogueSettingsView key={`${shown}:${resets}`} {...catalogueProps} />
-    </Suspense>
+    <SubscriptionScope access={subscription}>
+      <Suspense
+        fallback={
+          withShared && own ? (
+            // An editor's own settings at once, while the rest of its side loads.
+            <SettingsView {...common} categories={own} memoryKey={memoryKey} />
+          ) : (
+            <SettingsView
+              {...common}
+              categories={[]}
+              placeholder={<div aria-busy className="h-40" />}
+            />
+          )
+        }
+      >
+        <CatalogueSettingsView key={`${shown}:${resets}`} {...catalogueProps} />
+      </Suspense>
+    </SubscriptionScope>
   );
 }

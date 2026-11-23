@@ -36,7 +36,7 @@ import { emailMarksSchemaStep } from '../knowledge/email-marks';
 import { pageAnswersSchemaStep } from '../knowledge/page-answers';
 import { pageApprovalsSchemaStep } from '../knowledge/page-approvals';
 import { pageThreadsSchemaStep } from '../knowledge/page-threads';
-import { publishedSchemaStep } from '../publishing/published-schema';
+import { publishedCountedStep, publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
 import { pageWatchSchemaStep } from '../knowledge/page-watch';
@@ -462,6 +462,11 @@ const V41 = pageWatchSchemaStep;
 // docs/specs/030-knowledgebase/required-reading.md). Additive, IF NOT EXISTS.
 const V42 = requiredReadingSchemaStep;
 
+// Step 43: whether a published site holds a counted place of its owner's Public Knowledgebases
+// (publishing/published-gauge.ts; docs/specs/030-knowledgebase/publishing.md "Tiers"). Asks before the ALTER; every
+// site already there reads as never counted.
+const V43 = publishedCountedStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -497,6 +502,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V40,
   V41,
   V42,
+  V43,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

@@ -34,16 +34,18 @@ an identifier of this feature.
 | The public reads, in the room              | `apps/api/src/publishing/published-reads.ts`                                                  |
 | The site address registry                  | `apps/api/src/publishing/site-addresses.ts`                                                   |
 | The Editor's routes                        | `apps/api/src/publishing/publishing-routes.ts`                                                |
+| Public Knowledgebases, the tier's count    | `apps/api/src/publishing/published-gauge.ts`                                                  |
 | The public site, in the worker             | `apps/api/src/publishing/public-site.ts`                                                      |
 | The router's `/kb` line                    | `apps/router/src/index.ts`                                                                    |
 | The dialog                                 | `apps/editor/components/publishing/`                                                          |
+| The limit's words and its refusal          | `apps/editor/lib/publishing/publish-limit.ts`                                                 |
 | The client                                 | `apps/editor/lib/api/publishing.ts`                                                           |
 
 ## Behaviour and state
 
 - **P1 One capability check.** `publishingOffered({ ownerId, teamId })` answers `true`. The api's routes refuse
   `403 publishing_unavailable` when it is false, the state read says `offered`, and the editor's menu row reads
-  `offered`. A tier gate is a change to this function's body alone.
+  `offered`. How many an owner publishes is the tier's count (P28 to P32), never this check.
 - **P2 Who.** The Editor's routes need `grant.role === 'edit'` on the whole knowledgebase (`tabScope === null`), an
   account (`accountUserId`), and no API token (`403 needs_a_person`). Everyone else: `403 forbidden`. A Community
   visit's grant is `view`, so it is refused too.
@@ -104,6 +106,28 @@ an identifier of this feature.
   (`301`). The canonical of the front page is `/kb/<site>`.
 - **P16 Previous and Next** follow the snapshot's order (depth first), across levels.
 
+- **P28 The count** (`published-gauge.ts`, spec "Tiers"): with Pro on, the subscription service's
+  `publicKnowledgebases` gauge holds one key per published knowledgebase, its document id. The routes read the
+  knowledgebase's tier as `WorkerTier` (`knowledge/tier-limits.ts`, which gains `claim` and `release` with
+  ItemTier's shape); the room's own paths (upkeep, purge, a move) use the room's `ItemTier`. A guest's knowledgebase
+  is counted in itself against Free's 1 (`held` 0: it holds one site at most), and never sent to the service.
+- **P29 The mark.** `published_site.counted` is 1 (holds a place), 0 (refused or given back) or NULL (never counted:
+  published before Pro, or while the service was out of reach). `siteServes(on, counted)` is true with Pro off and
+  for any mark but 0; `readPublished` answers `none` for a site that does not serve, and the state read reads it as
+  not published (`published: false`, `site: null`; `defaultAddress` keeps its address).
+- **P30 Publish counts first.** A PUT on a knowledgebase with no site, or one that does not serve, claims its place
+  before anything is written. Refused at the limit: `409 publish_limit_reached` with `limit:
+'publicKnowledgebases'`, `used`, `max` (and `guest` for a guest's), nothing written. The service refusing the
+  request itself (`refusedByService`) throws: a server error, never a limit. Unmetered (out of reach) publishes with
+  the mark NULL. A write that fails after the claim releases it. A PUT on a site that serves never claims.
+- **P31 Counting again.** The dialog's first read (a GET with no `root`), and the room's daily upkeep, claim again
+  for a site that exists (the add is idempotent at the service): a site from before takes its place, one refused
+  takes it when the owner has room, and the answer's `used` is the owner's count. A GET carries `usage: { used?,
+limit }` and `owner` (or `guest: true`), absent with Pro off; `used` only when a claim answered.
+- **P32 Giving back.** Unpublish releases (whether or not a site was there). The room's purge releases before its
+  storage goes. A move (the room's head write naming a new owner or team) releases from the old owner, reads the
+  new owner's tier and claims, unless the mark is 0; each is logged and never throws.
+
 ## Interfaces and contracts
 
 - `GET /api/documents/<id>/publishing[?root=<tab>|all]` → `PublishingState`:
@@ -115,7 +139,10 @@ preview: { root, pages: { id, title }[], leftOut: { id, title, reason }[] } }`. 
   required; a missing or wrong one is `400 invalid_body` naming it.
 - Refusals: `400 invalid_body`, `invalid_address`, `address_reserved`, `unknown_root`, `nothing_to_publish`;
   `403 forbidden`, `needs_a_person`, `publishing_unavailable`; `404` for an unknown knowledgebase; `409
-address_taken`; `429 rate_limited` (the write limiter).
+address_taken`, `409 publish_limit_reached` (Pro on, P30: `{ error, message, limit, used, max, guest? }`); `429
+rate_limited` (the write limiter).
+- `PublishingState` with Pro on also carries `usage?: { used?: number; limit: number | null }`, `owner?` (the
+  payer's scope) and `guest?: true` (P31).
 - Public routes (`apps/api/src/publishing/public-site.ts`, GET and HEAD only, `405` otherwise; no Authorization or
   cookie is read):
   - `/kb/<site>` and `/kb/<site>/<page>` → `text/html`; a moved site or page → `301`; none → `404` page.
@@ -133,13 +160,15 @@ Schema step after the existing ones (`document-schema.ts`), additive, `IF NOT EX
 
 | Table                      | Columns                                                                                                                              |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `published_site`           | `id` (1), `address`, `root`, `noindex`, `show_writers`, `published_by`, `published_at`, `stale`                                      |
+| `published_site`           | `id` (1), `address`, `root`, `noindex`, `show_writers`, `published_by`, `published_at`, `stale`, `counted` (P29; step 41)            |
 | `published_pages`          | `tab` PK, `address` UNIQUE, `parent`, `position`, `title`, `icon`, `description`, `html`, `text`, `writers` (JSON names), `saved_at` |
 | `published_addresses`      | `address` PK, `tab`: every address a page of the site has had                                                                        |
 | `published_site_addresses` | `address` PK, `held_at`: every site address this knowledgebase holds at the registry                                                 |
 | `published_dirty`          | `tab` PK                                                                                                                             |
 | `published_fts`            | FTS5 (`tab` UNINDEXED, `title`, `text`), the search tokenizer the knowledge index uses                                               |
 
+- `counted` is added by its own step (`document-schema.ts` V41, `publishedCountedStep`), asking `PRAGMA
+table_info` before its `ALTER`, as V15 does. Every site there before reads NULL: never counted.
 - Every column is classified **public** (it is what the site shows) except `published_by` and `held_at`, which no
   public read selects. A test (P26) holds the public reads to these columns.
 - A snapshot travels with nothing: a copy, an export, a version, a Drive file and an Offline copy never carry it
@@ -183,6 +212,10 @@ nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
 
 ## Presentation and UX
 
+- **The limit** (`PublishLimit`, Pro on): the shared `LimitNotice` (`limitKey="publicKnowledgebases"`), its
+  sentence from `publishLimitSentence` and its own offer dropped (`offer=""`). Shown above What to Publish while the
+  knowledgebase is not published and the state's `usage` (or a refused Publish's numbers, `publishLimitOf`) is at
+  its limit. The owner's view comes from `useOwnerView(state.owner)`.
 - The dialog (`PublishDialog`): `Dialog size="md" phoneSheet`, the platform's DialogHeader, a steady height. Copy as
   the spec words it. The section picker is the shared `Select`, options in tree order indented by two spaces a
   level. The address is a text field with the fixed prefix beside it and its refusal under it. The options are the
@@ -207,7 +240,8 @@ nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
 
 - `[publishing] published { documentId, pages, leftOut }`, `[publishing] unpublished { documentId }`,
   `[publishing] refresh { documentId, rendered, removed }`, `[publishing] refresh_failed`, `[publishing] purge_failed`.
-  Never an address, title or name.
+  `[publishing] refused { reason: 'tier_limit' }` (P30), `[publishing] gauge.sync.failed`, `gauge.leave.failed`,
+  `gauge.move.failed` (P31, P32). Never an address, title or name.
 
 ## Testing
 
@@ -225,6 +259,7 @@ nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`.
 | P15, P16, P20, P21, P23   | `public-site.test.ts`                                                                                                                                                                                                        |
 | P26 nothing private leaks | `published-leaks.test.ts`: a knowledgebase with a draft, margin notes, threads, a pending and a rejected page, an owner, verification, an approval and named editors; every public answer is searched for each private value |
 | P27                       | `publish-writing.test.ts` CPU budget                                                                                                                                                                                         |
+| P28 to P32                | `publishing-tier.test.ts`; the editor's `publish-limit.test.ts` and `PublishLimit.test.tsx`                                                                                                                                  |
 
 ## Constants and configuration
 

@@ -391,3 +391,53 @@ Google Fonts referenced from drawn SVGs (allowed by the CSP).
 - `MED1`: the same bytes uploaded twice by one owner are one image, answered `deduped: true`.
 - `MED2`: when the app can't draw a picture, a stale private picture is served before a `503`.
 - `MED3`: the unused-image sweep pauses until every keyed app has reported its references.
+
+## With Pro on
+
+From [media.md](../media.md) "With Pro on". With `PRO_ENABLED` off none of this runs: `payerLimits` answers null
+before any request, and every caller keeps the path it had.
+
+| File                                               | Role                                                                                                                                                                                                                                       |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/media/src/payer.ts`                      | `uploaderScope` (account, `team:` gallery, null for a guest), `itemOwnerScope` and `knownItemOwnerScope` (a grant's owner), `betterLimits`, `payerLimits(client, uploader, itemOwner)`, `imageAllowance`, `imageTooLargeBody`              |
+| `packages/media/src/tier-limits.ts`                | `IMAGE_UPLOAD_CEILING_BYTES`, `WALKTHROUGH_CEILING_MS`: the most any tier allows, from `TIER_LIMITS`                                                                                                                                       |
+| `packages/media/src/wire.ts`                       | `MEDIA_ITEM_OWNER_HEADER` (`X-Media-Item-Owner`), `MediaStorage`, `MediaFileTooLarge`, `owner` on `MediaGalleryFull`                                                                                                                       |
+| `liveworkspace/apps/media/src/tier.ts`             | `subscriptionOf(env)` (the service's client, as `liveworkspace.app`), `uploadLimits(env, request, owner)` (reads the header), `ownLimits`                                                                                                  |
+| `liveworkspace/apps/media/src/routes.ts`           | `upload`: `uploadLimits` before the declared-length check; caps `{ maxImages: null, maxBytes: imageStorageBytes }` (the uploader's own tier's). The list answers `storage`. The subscription service's read is handed to `owners-usage.ts` |
+| `liveworkspace/apps/media/src/library/pictures.ts` | A copy into a gallery is held to that gallery's own tier (`ownLimits`)                                                                                                                                                                     |
+| `packages/api-kit/src/image-upload.ts`             | For an app's api: `imageGateBytes(env)`, `leavesImageUploadUnread(env, method, segments)`, `imageUploadAllowance(env, app, uploader, itemGrant)`, `readImageUpload(request, allowance)`, `galleryStorageOf(listed)`                        |
+| `<product>/apps/api/src/index.ts`                  | The gate before the routes: bound `imageGateBytes(env)`, and an upload left unread with Pro on                                                                                                                                             |
+| `<product>/apps/api/src/routes/images.ts`          | `POST /api/images?d=`: the allowance (the `?d=` item's grant, when the caller may add to it), the declared length, `readImageUpload`, `itemOwner` to the service. `GET` passes `storage` on                                                |
+| `packages/subscription-ui/src/images/`             | `imageLimitRefusalOf`, `imageStorageOf`, `imageUploadCeiling`, `imageSizeHint`, `imageCeilingLabel`, `imageLimitSentence`, `imageUploadQuery`; `ImageLimitNotice`                                                                          |
+| `packages/explorer/src/library/`                   | `GalleryHost.storage()` (the last list's), `UploadLimitError`, the meter and the notice in `GalleryPane`                                                                                                                                   |
+
+- **Order in the service's upload.** Type, a missing length, `uploadLimits` (at most two entitlement reads, each on
+  the client's 60 s cache; none for a guest uploading for no item), the declared length against `imageMaxBytes`, the
+  hash shortcut, the storage check, then the body. The insert repeats the byte cap inside its statement.
+- **Two rules, one function.** `betterLimits(own, item)` takes the larger of `imageMaxBytes` and of
+  `walkthroughMaxMs` (what one upload may be), and the uploader's own `imageStorageBytes` and `walkthroughsStored`
+  alone (what they keep). `owner` is the item's owner when its tier ranks above the uploader's, else the uploader's
+  own scope, and names whose tier an offer at Largest Image or Walkthrough Length is for; `storageOwner` is always
+  the uploader's own scope (null for a guest), for an offer at Image Storage or Walkthroughs Stored and for the
+  `owner` of a `gallery_full` or `walkthroughs_full` refusal and of the list's `storage`.
+- **The header.** Read with `isOwnerScope`; the uploader's own scope, or anything that is not a scope, is dropped.
+  An app's api builds it from `itemOwnerScope(grant)` and only for a grant that lets the caller add to the item
+  (`participate` or `edit`, not in the Trash).
+- **What Subscription shows** (`liveworkspace/apps/media/src/owners-usage.ts`). Nothing is reported. `handleApp`
+  hands a request whose `X-Media-App` is `subscription` to `isSubscriptionCaller` (Pro on, and the bearer equal, in
+  constant time, to this Worker's `SUBSCRIPTION_KEY`) before any app's key is tried, and then to `handleOwnersUsage`,
+  which answers `POST /usage/owners` and nothing else (anything else is 404; a wrong key 401). Each scope maps to a
+  media owner (`p:<id>` to `<id>`, `t:<id>` to `team:<id>`), and one batch reads `SUM(byte_size)` from `images`
+  (`images_owner_created_idx`) and `COUNT(*)` from `walkthroughs` (`walkthroughs_owner_idx`), each `GROUP BY owner`
+  over at most 60 owners. An owner with no rows is absent from the answer.
+- **liveplanner.** Its api (`liveplanner/apps/api/src/routes/images.ts` and its body gate) works as the others do,
+  the item being plan `?p=`: one grant read serves the limit and who may upload. A card's attachment may state a
+  size up to the most any tier uploads (`ITEM_ATTACHMENT_BYTES_MAX`, `liveplanner/packages/items/src/limits.ts`).
+- **Kept at 10 MB on every tier.** Email to Board's pictures, an agent's upload (`packages/agent-verbs`: an MCP
+  Worker holds the whole body; its refusal says the limit the api named, which a tier can set under 10 MB) and an
+  imported file's pictures (`packages/workbench/src/lib/import-images`).
+
+Cost of an upload. Pro off: unchanged. Pro on, at an app's api: one grant read when `?d=` is sent (the grant the
+editor already holds is reused where sent), up to two entitlement reads; at the service: the same two reads (its own
+cache), and nothing after the answer. A person reading their usage costs the service one batch of two indexed
+reads.

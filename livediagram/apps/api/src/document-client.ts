@@ -121,6 +121,11 @@ export type DocumentRoomClient = {
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(tabId: string, member: string, seenUpdatedAt: number): Promise<boolean>;
   receiveShares(from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
+  // One more photo read charged to the diagram's owner by someone else today (document-room/owner-reads.ts): false
+  // at the day's cap. Asked only with Pro on.
+  takeOwnerRead(day: string, cap: number): Promise<boolean>;
+  // That read's slot back, when the owner's credits refused it.
+  giveBackOwnerRead(day: string): Promise<void>;
 };
 
 export function documentRoom(
@@ -166,6 +171,8 @@ export function documentRoom(
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
+    takeOwnerRead: (day, cap) => room.takeOwnerRead(documentId, day, cap),
+    giveBackOwnerRead: (day) => room.giveBackOwnerRead(documentId, day),
   };
 }
 
@@ -202,6 +209,8 @@ export type DocumentRoomRpc = {
     code: string,
   ): Promise<{ postId: string; author: CommunityAuthor } | null>;
   joined(documentId: string, personId: string, level?: AccessLevel): Promise<void>;
+  takeOwnerRead(documentId: string, day: string, cap: number): Promise<boolean>;
+  giveBackOwnerRead(documentId: string, day: string): Promise<void>;
   accessRequested(documentId: string, requester: AccessRequester): Promise<void>;
   incomingHook(documentId: string, ruleId: string, call: HookCall): Promise<HookAnswer>;
   automationStep(documentId: string, call: AutomationStepDoorCall): Promise<AutomationStepAnswer>;

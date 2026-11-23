@@ -96,6 +96,30 @@ describe('WorkbenchAiSource', () => {
     expect(document.body.textContent).not.toContain('4f2a');
   });
 
+  it('tells a dialog which AI the line shows as it changes, loading for a guest with no line', async () => {
+    const kinds: string[] = [];
+    const onKind = (kind: string) => kinds.push(kind);
+    const { unmount } = render(
+      <Editor teamId={null} signedIn={false}>
+        <WorkbenchAiSource onKind={onKind} />
+      </Editor>,
+    );
+    await settle();
+    expect(kinds).toEqual(['loading']);
+    unmount();
+    kinds.length = 0;
+    render(
+      <Editor teamId={null} signedIn>
+        <WorkbenchAiSource onKind={onKind} />
+      </Editor>,
+    );
+    await settle();
+    expect(kinds.at(-1)).toBe('built-in');
+    held = { ...held, key: KEY };
+    await act(async () => announceAiKeyChanged());
+    expect(kinds.at(-1)).toBe('key');
+  });
+
   it('names the item’s team’s key from the scope, or the team a dialog says', async () => {
     held = {
       ...held,

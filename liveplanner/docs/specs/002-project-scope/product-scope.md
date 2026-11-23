@@ -69,7 +69,7 @@ These are livediagram's and not liveplanner's; bringing one in is a scope change
 
 ## Non-goals
 
-- No paid tier, billing or feature flags that gate a feature ([Business model + licence](business-model-and-licence.md)).
+- No feature behind a paid tier, billing or a feature flag ([Business model + licence](business-model-and-licence.md)).
 - No public source or outside contributions; liveplanner runs only as the hosted service at liveplanner.app.
 - No connectors to other trackers (GitHub Issues, Jira, Linear) ([Build phase](../005-project-roadmap/prototype-scope.md#later)),
   with one exception: [GitHub pull requests](../026-plan/github-pull-requests.md), through liveplanner's own GitHub

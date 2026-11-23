@@ -46,6 +46,9 @@ describe('a rule’s messages', () => {
         at: 5,
       },
     ]);
+    // A check (Pro's spend, before the real push) says so to the index.
+    await sends.push('item-1', [message], { check: true });
+    expect(push).toHaveBeenLastCalledWith('item-1', expect.any(Array), { check: true });
   });
 });
 

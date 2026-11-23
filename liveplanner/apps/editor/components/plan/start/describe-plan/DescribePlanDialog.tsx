@@ -27,6 +27,11 @@ import {
 import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
+import type { AiSourceLine } from '@liveworkspace/settings-ui/ai-source';
+import { useOwnTier } from '@/components/tier/plan-tier';
+import { AiCreditsLine, AiCreditsNotice } from '@/components/tier/TierParts';
+import { AI_DRAFT_CREDIT } from '@/components/tier/tier-words';
+import { useAiCredits } from '@/components/tier/use-ai-credits';
 import {
   DescribePrompt,
   DescribeSignIn,
@@ -85,11 +90,18 @@ export function DescribePlanDialog({
   onMake: (draft: PlanDraft) => string | null;
   onClose: () => void;
 }) {
+  // With Pro on a draft spends one of the person's own AI credits: the draft is nobody's plan yet.
+  const tier = useOwnTier();
+  const credits = useAiCredits(tier);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
   // A key that failed on the last ask, for the source line to say so and offer to fix it.
   const [keyFailure, setKeyFailure] = useState<AiKeyFailure | null>(null);
+  // AI credits are built-in AI's alone (a key spends none): their notice, line and hold on Draft apply only there, and
+  // while the source line is still loading.
+  const [sourceKind, setSourceKind] = useState<AiSourceLine['kind']>('loading');
+  const builtIn = sourceKind === 'built-in' || sourceKind === 'loading';
   // The draft being checked: the preview shows while there is one.
   const [checking, setChecking] = useState<PlanDraft | null>(null);
   const [makeSaid, setMakeSaid] = useState<string | null>(null);
@@ -133,10 +145,13 @@ export function DescribePlanDialog({
       requestAnimationFrame(() => heading.current?.focus());
     } catch (error) {
       if (mine !== asking.current) return;
-      setSaid(error instanceof PlanDraftRefusal ? error.message : DESCRIBE_PLAN_FAILED);
       setKeyFailure(error instanceof PlanDraftRefusal ? error.aiKey : null);
+      // The month's AI credits are used: the notice says so, with the right way on for this person.
+      if (!credits.take(error))
+        setSaid(error instanceof PlanDraftRefusal ? error.message : DESCRIBE_PLAN_FAILED);
       box.current?.focus();
     } finally {
+      credits.settle();
       if (mine === asking.current) setBusy(false);
     }
   };
@@ -209,12 +224,17 @@ export function DescribePlanDialog({
           said={said}
           saidOnSource={keyFailure !== null}
           source={(id) => (
-            <WorkbenchAiSource
-              id={id}
-              failure={keyFailure}
-              signedIn={signedIn}
-              allowance={`Plans and forms share ${PLAN_DRAFT_PER_DAY} drafts a day.`}
-            />
+            <>
+              {builtIn ? <AiCreditsNotice tier={tier} spent={credits.spent} /> : null}
+              <WorkbenchAiSource
+                id={id}
+                failure={keyFailure}
+                signedIn={signedIn}
+                allowance={`Plans and forms share ${PLAN_DRAFT_PER_DAY} drafts a day.`}
+                onKind={setSourceKind}
+              />
+              {builtIn ? <AiCreditsLine tier={tier} cost={AI_DRAFT_CREDIT} /> : null}
+            </>
           )}
           onSubmit={() => void submit()}
         />
@@ -255,7 +275,7 @@ export function DescribePlanDialog({
               variant="primary"
               size="sm"
               busy={busy}
-              disabled={!prompt}
+              disabled={!prompt || (builtIn && !!credits.spent)}
               onClick={() => void submit()}
             >
               <SparkleIcon size={14} aria-hidden />

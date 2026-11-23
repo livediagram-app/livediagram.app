@@ -394,6 +394,18 @@ describe('ruleRefusalOf', () => {
     expect(ruleRefusalOf(err(429, { error: 'automation_budget_spent' }))!.message).toMatch(
       /1,000 runs today/,
     );
+    expect(ruleRefusalOf(err(409, { error: 'automation_rules_full' }))!.message).toMatch(
+      /holds 50 rules/,
+    );
+    // With Pro on the api names the owner's total and their tier's limit, and the words follow it.
+    const tiered = { limit: 'automationRules', used: 25, max: 25 };
+    expect(ruleRefusalOf(err(409, { error: 'automation_rules_full', ...tiered }))!.message).toMatch(
+      /its owner holds 25 rules across everything they own/,
+    );
+    expect(
+      ruleRefusalOf(err(429, { error: 'automation_runs_used', limit: 'automationRunsPerMonth' }))!
+        .message,
+    ).toMatch(/automation runs for this month are used/);
     expect(ruleRefusalOf(err(409, { error: 'something_else' }))).toEqual({
       code: 'something_else',
       message: 'The api refused it (something_else).',

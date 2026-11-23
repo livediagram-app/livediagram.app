@@ -13,6 +13,7 @@ import type { CallsCaller } from '@/lib/api/calls';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { callSelf, resetCallSelf, setCallActions, setCallSelf, setCallsMode } from './calls-store';
+import { callMinutes, onCallMinutesResumed, resetCallMinutes } from './call-minutes-store';
 import { watchCallMediaSession } from './call-media-session';
 import { canCapture, LocalPreview, type PreviewCapture } from './local-preview';
 import { LocalMic } from './local-mic';
@@ -280,6 +281,7 @@ export function useProximityCall(deps: ProximityCallDeps): void {
       preview.stopAll();
       localMic.stop();
       resetCallSelf();
+      resetCallMinutes();
     };
   }, [preview, localMic]);
 
@@ -322,6 +324,20 @@ export function useProximityCall(deps: ProximityCallDeps): void {
     if (callRef.current && !callRef.current.ended) return;
     const phase = callSelf().phase;
     if (phase === 'error' || phase === 'joining' || callSelf().mode === 'off') return;
+    // The owner's call minutes are used (call-minutes.md): the dock reads Calls Paused until the room says otherwise.
+    if (callMinutes().used !== null) return;
     joinRef.current?.();
   }, [available, deps.tabId]);
+  // Calls start again (next month, or the owner's tier allows more): whoever is in the mode joins again by itself.
+  const availableRef = useRef(available);
+  useEffect(() => {
+    availableRef.current = available;
+  }, [available]);
+  useEffect(
+    () =>
+      onCallMinutesResumed(() => {
+        if (availableRef.current) joinRef.current?.();
+      }),
+    [],
+  );
 }

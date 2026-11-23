@@ -1188,7 +1188,10 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
   ("This plan already holds 5,000 cards, the most it can"). Every card still loads into the editor at once, so the
   cap is set by what the editor reads and draws in good time, not by storage (blueprint
   [item-store.md](blueprints/item-store.md) "Performance and limits").
-- Up to 20 pictures in a card's Attachments ([Attachments](#attachments)), each at most 10 MB.
+- Up to 20 pictures in a card's Attachments ([Attachments](#attachments)), each at most 10 MB; with Pro on, at most
+  what the uploader's or the plan's owner's tier takes ([Image fields](item-types.md#image-fields) "With Pro on"). The
+  store holds an entry's stated size to 25 MB, the most any tier takes, with Pro on, and to the 10 MB it always
+  was with Pro off.
 - Up to 64 KB of fields per item (measured as stored JSON, without its comment threads): room for every built-in
   field at its limit beside a formatted 9,000-character Long Text, whose formatting rides beside it and roughly
   doubles it (owner 2026-11-15, Work Tracker 944; was 16 KB). A write past it is refused with `fields_too_large`. 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A

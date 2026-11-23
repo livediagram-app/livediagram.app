@@ -1,6 +1,8 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
+import { roomTier } from '@liveworkspace/automations/room';
+import type { ItemTier } from '@liveworkspace/subscription';
 import type { SourceChange } from '@liveworkspace/index-client';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@livediagram/api-schema';
@@ -36,6 +38,7 @@ import {
   type ExportQuery,
   type ExportResult,
 } from '@liveworkspace/index-app';
+import { giveBackOwnerReadIn, takeOwnerReadIn } from './owner-reads';
 import { hasDocumentSchema } from './document-schema';
 import {
   importDocumentCopy,
@@ -274,6 +277,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // The document's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they hear,
   // and what waits to run on the alarm.
   readonly automations: ItemEngine;
+  // The item's tier (liveworkspace/docs/specs/019-subscription/subscription.md "Who pays for an item"): what its
+  // Automations allow and spend, read from its owner. With Pro off it asks nothing and every limit is the legacy one.
+  readonly tier: ItemTier;
   // The comment and action triggers' watch over each tab's threads.
   readonly collab: CollabWatch;
   // The canvas's owner and team, kept from every grant the room is handed (a socket's ticket, a renewal, an API
@@ -346,6 +352,15 @@ export class DocumentRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
+    this.tier = roomTier({
+      app: 'livediagram.app',
+      env: () => this.roomEnv ?? null,
+      sql: () => this.state.storage.sql,
+      ready: () => this.schemaReady,
+      table: 'document',
+      id: () => this.documentId,
+      defer: (work) => this.state.waitUntil(work),
+    });
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = roomHeadSync(this);
     this.participantWrites = new RoomParticipantWrites({
@@ -692,6 +707,19 @@ export class DocumentRoom extends DurableObject<Env> {
 
   purge(documentId?: string): Promise<void> {
     return purge(this, documentId);
+  }
+
+  // One more photo read charged to this diagram's owner by someone else today, or false at the day's cap
+  // (owner-reads.ts; note-reader.md "A collaborator's reads"). Asked only with Pro on.
+  takeOwnerRead(documentId: string, day: string, cap: number): Promise<boolean> {
+    this.bindDocument(documentId);
+    return takeOwnerReadIn(this.state.storage, day, cap);
+  }
+
+  // The day's slot back for a read the owner's credits refused (owner-reads.ts).
+  giveBackOwnerRead(documentId: string, day: string): Promise<void> {
+    this.bindDocument(documentId);
+    return giveBackOwnerReadIn(this.state.storage, day);
   }
 
   // Put a mutation into the ordered stream: a seq, the catch-up log, every

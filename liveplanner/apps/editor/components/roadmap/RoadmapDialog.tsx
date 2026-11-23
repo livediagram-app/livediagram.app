@@ -28,6 +28,12 @@ import { typeShowsVotes, withInheritance, withVotesShown } from '@liveplanner/it
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
 import { track } from '@/lib/telemetry';
 import { readRoadmaps, saveRoadmap, unpublishRoadmap } from './roadmap-client';
+import { RoadmapLimitReached } from './roadmap-limit';
+import { tierUsage, usePlanTier } from '@/components/tier/plan-tier';
+import { useTierReread } from '@/components/tier/use-tier-reread';
+import { GuestLimitNote } from '@/components/tier/GuestLimitNote';
+import { roadmapSwapConfirm, type RoadmapHolder } from '@/components/tier/tier-words';
+import { RoadmapLimit } from './RoadmapLimit';
 import { defaultRoadmapSettings, settingsReady } from './roadmap-defaults';
 import type { RoadmapScope } from './roadmap-gate';
 import { roadmapHeroArt } from './RoadmapHeroArt';
@@ -85,6 +91,13 @@ export function RoadmapDialog({
   const [busy, setBusy] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const [confirming, setConfirming] = useState<HTMLElement | null>(null);
+  // With Pro on (spec "Tiers"): the plan's owner as the read named it, a publish their tier refused (in the refusal's
+  // own numbers), and Publish This One Instead waiting on its confirm.
+  const tier = usePlanTier(data?.owner);
+  const [refused, setRefused] = useState<{ used: number; max: number; guest?: boolean } | null>(
+    null,
+  );
+  const [swapping, setSwapping] = useState<HTMLElement | null>(null);
   const { copied, flash } = useCopiedFlash(1800);
   // The types just given Votes, named for the note that says so.
   const [votesAdded, setVotesAdded] = useState<string | null>(null);
@@ -111,6 +124,15 @@ export function RoadmapDialog({
     // oxlint-disable-next-line react/set-state-in-effect -- a fetch from the api: its state lands after the await, never synchronously
     void read();
   }, [read]);
+
+  // The limit recovers without a reload (spec "Tiers"): the list is read again when the owner's tier or what this
+  // person may do changes (an upgrade from the panel) and when the window is looked at again, and a refusal's
+  // numbers from before it are forgotten. Publish stays pressable throughout: the server decides.
+  const reread = useCallback(() => {
+    setRefused(null);
+    void read();
+  }, [read]);
+  useTierReread(tier, reread);
 
   // The pills follow the dialog's list (use-roadmaps-on-boards.ts).
   const roadmaps = data?.roadmaps;
@@ -182,6 +204,18 @@ export function RoadmapDialog({
         : d,
     );
 
+  // After a publish or an unpublish with Pro on: what the owner has published, read again (never worked out here).
+  async function readUsage() {
+    if (!tier.on) return;
+    try {
+      const next = await readRoadmaps(scope);
+      setData((d) => (d && next.usage ? { ...d, usage: next.usage } : d));
+      setRefused(null);
+    } catch {
+      // The count shown stays; the next opening reads it again.
+    }
+  }
+
   async function publish() {
     if (!board || !settings) return;
     let toSave = settings;
@@ -196,9 +230,35 @@ export function RoadmapDialog({
       const { roadmap } = await saveRoadmap(scope, board.id, toSave);
       track('Plan', 'Created', 'Roadmap');
       putRoadmap(roadmap);
+      void readUsage();
+    } catch (error) {
+      // Every roadmap the owner's tier allows is out: the panel says so, in the refusal's numbers.
+      if (error instanceof RoadmapLimitReached)
+        setRefused({ used: error.used, max: error.max, guest: error.guest });
+      else setSaveFailed(true);
+    }
+    setBusy(false);
+  }
+
+  // Publish This One Instead: the plan's other roadmap comes down, then this board goes out in its place.
+  async function swap(other: PublishedRoadmap) {
+    setSwapping(null);
+    setBusy(true);
+    setSaveFailed(false);
+    try {
+      await unpublishRoadmap(scope, other.boardId);
+      track('Plan', 'Ended', 'Roadmap');
+      setData((d) =>
+        d ? { ...d, roadmaps: d.roadmaps.filter((r) => r.boardId !== other.boardId) } : d,
+      );
+      setRefused(null);
     } catch {
       setSaveFailed(true);
+      setBusy(false);
+      return;
     }
+    await publish();
+    // Publish leaves early without a suggestion form it was asked to make first.
     setBusy(false);
   }
 
@@ -238,6 +298,7 @@ export function RoadmapDialog({
       setData((d) =>
         d ? { ...d, roadmaps: d.roadmaps.filter((r) => r.boardId !== board.id) } : d,
       );
+      void readUsage();
     } catch {
       setSaveFailed(true);
     }
@@ -326,6 +387,39 @@ export function RoadmapDialog({
         : published
           ? 'published'
           : 'draft';
+
+  // With Pro on, a board not yet out while every roadmap the owner's tier allows is: the count the api last gave (a
+  // refused publish's, else the list's), never one worked out here. Unknown until the service has said.
+  const usage = tier.on ? data?.usage : undefined;
+  // The api counts the owner's roadmaps only while it syncs this plan's own: a plan with none out says no count.
+  // The owner (or the owning team) then has it from their own subscription.
+  const ownUsage = tier.on ? tierUsage(tier, 'publicRoadmaps') : null;
+  const limitMax = refused?.max ?? usage?.limit ?? null;
+  const limitUsed = refused?.used ?? usage?.used ?? ownUsage?.used;
+  const atLimit =
+    tier.on &&
+    state === 'draft' &&
+    limitMax !== null &&
+    limitUsed !== undefined &&
+    limitUsed >= limitMax;
+  // A guest's plan (the api names no owner): Free's limit, counted in this plan alone, and nobody to offer an
+  // upgrade. The note says to sign in, which makes the plan the person's own.
+  const guestUsage = data?.guest ? data.usage : undefined;
+  const guestAtLimit =
+    state === 'draft' &&
+    (!!refused?.guest ||
+      (!!guestUsage &&
+        guestUsage.limit !== null &&
+        guestUsage.used !== undefined &&
+        guestUsage.used >= guestUsage.limit));
+  // Who holds the places: this plan's own roadmaps (the list is the plan's), or boards of the owner's other plans.
+  const others = data?.roadmaps.filter((r) => r.boardId !== board?.id) ?? [];
+  const other = others.length === 1 ? others[0] : undefined;
+  const holder: RoadmapHolder = other
+    ? { where: 'here', title: other.title }
+    : others.length > 1
+      ? { where: 'here-many' }
+      : { where: 'elsewhere' };
 
   return (
     <Dialog open onClose={onClose} titleId={titleId} size="md" phoneSheet>
@@ -459,6 +553,18 @@ export function RoadmapDialog({
             </a>
           </div>
         ) : null}
+        {atLimit && limitMax !== null && tier.settled ? (
+          <RoadmapLimit
+            tier={tier}
+            max={limitMax}
+            holder={holder}
+            busy={busy || makingForm}
+            onSwap={other && settings && settingsReady(settings) ? setSwapping : undefined}
+          />
+        ) : null}
+        {guestAtLimit ? (
+          <GuestLimitNote sentence="This plan has its one public roadmap. Sign in to keep this plan as your own." />
+        ) : null}
         {(state === 'draft' || state === 'published') && board && settings && data ? (
           <RoadmapSettingsForm
             key={board.id}
@@ -499,6 +605,8 @@ export function RoadmapDialog({
           {state === 'draft' ? (
             <ToolFooterButton
               busy={busy || makingForm}
+              // Never held off by the limit as last read (the owner may have upgraded since): a press asks the
+              // api, which answers with the limit when it still holds.
               disabled={!settings || !settingsReady(settings)}
               onClick={() => void publish()}
             >
@@ -518,6 +626,16 @@ export function RoadmapDialog({
             </>
           ) : null}
         </ToolFooter>
+      ) : null}
+      {swapping && other ? (
+        <ConfirmPopover
+          anchor={swapping}
+          {...roadmapSwapConfirm(other.title)}
+          // Short enough to stay on one line in the confirm; its question names both boards.
+          confirmLabel="Publish Instead"
+          onConfirm={() => void swap(other)}
+          onCancel={() => setSwapping(null)}
+        />
       ) : null}
       {confirming ? (
         <ConfirmPopover

@@ -5,7 +5,7 @@
 // the editor's chrome store one slice at a time. A typing commit changes none of them (`sameTabsForBar` compares the
 // tabs without their writing), so it renders nothing here.
 import { useCallback, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
-import { truncateName } from '@liveknowledge/document';
+import { pageCount, truncateName } from '@liveknowledge/document';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
@@ -22,6 +22,7 @@ import { useApprovalDoor } from '@/components/knowledge/approval/usePageApproval
 import { askApproval } from '@/lib/knowledge/approval-asked';
 import { PageWatchMenuRows } from '@/components/page-watch/PageWatchMenuRows';
 import { useRelativeNow } from '@/lib/relative-time';
+import { useFeedOpenPagesBound } from '@/lib/use-pages-bound';
 import type { PageTreeActions, PageTreeKnowledge, PageTreeProps } from './PageTree';
 import { selectPage } from './select-page';
 import { useConnectedRows } from './useConnectedRows';
@@ -50,6 +51,8 @@ export function usePageTreeModel(): PageTreeModel {
   const chrome = useEditorChromeStore();
   const toast = useToast();
   const tabs = useEditorChrome((s) => s.tabs, sameTabsForBar);
+  // Every page add reads the open knowledgebase's bound, the owner's Knowledgebase Pages included (tiers.md).
+  useFeedOpenPagesBound(pageCount(tabs));
   const activeId = useEditorChrome((s) => s.activeId);
   const name = useEditorChrome((s) => s.documentName);
   const documentId = useEditorChrome((s) => s.documentId);

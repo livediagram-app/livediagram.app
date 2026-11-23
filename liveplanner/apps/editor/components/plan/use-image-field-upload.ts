@@ -1,7 +1,8 @@
 'use client';
 
 // Adding pictures to a Several Images field (docs/specs/026-plan/item-types.md "Image fields"): from the card panel's
-// picker or a drop. Every file is checked before anything is sent (PNG, JPEG, WebP or GIF, up to 10 MB, not empty)
+// picker or a drop. Every file is checked before anything is sent (PNG, JPEG, WebP or GIF, up to 10 MB, not empty;
+// with Pro on up to what any tier takes, and a tier's refusal from the server is kept as `limit` for the shared notice)
 // and gets its own place in the queue, shown as its own tile; files upload one after another, and each joins the end
 // of the field's list as it lands, in one write of the list read from the card as it is then, so a picture someone
 // else added meanwhile is kept. A file refused, past the field's 20, or a picture the field already holds is skipped
@@ -15,6 +16,7 @@ import {
   withImagesAdded,
   type CustomFieldDef,
 } from '@liveplanner/items';
+import type { ImageLimitRefusal } from '@liveworkspace/subscription-ui/images';
 import { ImageUploadError, apiUploadImage, checkImageFile } from '@/lib/api/images';
 import { track } from '@/lib/telemetry';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
@@ -53,6 +55,9 @@ export type ImageFieldUpload = {
   pending: readonly PendingImage[];
   // What was skipped or failed, a line each, from the last files added.
   problems: readonly string[];
+  // A tier's limit the server refused one of the last files for (Pro on): drawn as the shared notice, and left out of
+  // `problems`. Null otherwise, and always with Pro off.
+  limit: ImageLimitRefusal | null;
   add: (files: readonly File[]) => Promise<void>;
   // Stops pending file `key` and takes its tile away, saying nothing.
   cancel: (key: number) => void;
@@ -69,6 +74,7 @@ export function useImageFieldUpload(
   const planRef = usePlanLatest();
   const [pending, setPending] = useState<PendingImage[]>([]);
   const [problems, setProblems] = useState<string[]>([]);
+  const [limit, setLimit] = useState<ImageLimitRefusal | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   // One queue: files added while others upload wait behind them, so the order is the order they were given.
   const queue = useRef<Promise<void>>(Promise.resolve());
@@ -134,6 +140,7 @@ export function useImageFieldUpload(
         fileOf.set(key, file);
       }
       setProblems(said);
+      setLimit(null);
       if (taken.length === 0) return;
       pendingCount.current += taken.length;
       for (const job of taken) live.current.add(job.key);
@@ -187,7 +194,8 @@ export function useImageFieldUpload(
             const refused =
               err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
             if (refused.code === 'images_unavailable') setUnavailable(true);
-            said.push(`${job.name}: ${refused.message}`);
+            if (refused.limit) setLimit(refused.limit);
+            else said.push(`${job.name}: ${refused.message}`);
           } finally {
             stops.current.delete(job.key);
             cancelled.current.delete(job.key);
@@ -207,5 +215,5 @@ export function useImageFieldUpload(
     [canAdd, scope, itemId, fieldId, label, field, planRef, settle],
   );
 
-  return { canAdd, blocked, pending, problems, add, cancel };
+  return { canAdd, blocked, pending, problems, limit, add, cancel };
 }

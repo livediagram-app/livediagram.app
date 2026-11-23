@@ -81,6 +81,20 @@ export interface RouteSpec {
 // are the ONLY hand-written shapes; the payloads they reference come from the
 // generated component schemas.
 const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+// With subscriptions on, what the caller's pictures use of their Image Storage, on the list of their images
+// (liveworkspace/docs/specs/006-media/media.md "With Pro on"); left out with them off.
+const imageStorage = {
+  type: 'object',
+  description:
+    "Only with subscriptions on: what the caller's images use of their tier's Image Storage, in bytes, the largest one image may be, and the owner scope whose tier set them.",
+  properties: {
+    used: { type: 'integer' },
+    limit: { type: 'integer' },
+    maxImageBytes: { type: 'integer' },
+    owner: { type: ['string', 'null'] },
+  },
+  required: ['used', 'limit', 'maxImageBytes', 'owner'],
+};
 const listOf = (key: string, name: string): BodySchema => ({
   type: 'object',
   properties: { [key]: { type: 'array', items: ref(name) } },
@@ -1062,7 +1076,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary: "List the caller's uploaded images.",
     auth: 'guest-or-account',
     tokenUsable: true,
-    responseSchema: listOf('images', 'ImageSummary'),
+    responseSchema: {
+      type: 'object',
+      properties: { images: { type: 'array', items: ref('ImageSummary') }, storage: imageStorage },
+      required: ['images'],
+    },
     statuses: [200, 401, 503],
   },
   {
@@ -1070,7 +1088,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/images',
     segment: 'images',
     tag: 'Images',
-    summary: 'Upload an image (raw bytes; SHA-256 + dimensions in X-Image-* headers).',
+    summary:
+      "Upload an image (raw bytes; SHA-256 + dimensions in X-Image-* headers). 413 file_too_large names the cap in limitBytes; with subscriptions on the cap is a tier's (the better of the caller's and the item owner's) and the refusal also carries limit, current and owner.",
     auth: 'guest-or-account',
     tokenUsable: true,
     requestSchema: { type: 'string', format: 'binary' },

@@ -91,3 +91,28 @@ export async function teamPeople(
     members: (members?.results ?? []) as unknown as TeamPerson[],
   };
 }
+
+// The most teams one member-count read names.
+export const MAX_MEMBER_COUNT_TEAMS = 50;
+
+// How many people have joined each of these teams, for a caller that shows several teams at once (the subscription
+// service's "what would this team pay"): one statement on the team's own index however many teams. A team that is
+// deleted, or was never one, is left out.
+export async function teamMemberCounts(
+  db: D1Database,
+  teamIds: readonly string[],
+): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {};
+  if (teamIds.length === 0) return counts;
+  const { results } = await db
+    .prepare(
+      `SELECT t.id, COUNT(m.id) AS members
+       FROM team t LEFT JOIN team_member m ON m.teamId = t.id AND m.status = 'joined'
+       WHERE t.id IN (SELECT value FROM json_each(?)) AND t.deletedAt IS NULL
+       GROUP BY t.id`,
+    )
+    .bind(JSON.stringify([...new Set(teamIds)]))
+    .all<{ id: string; members: number }>();
+  for (const row of results) counts[row.id] = row.members;
+  return counts;
+}

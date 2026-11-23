@@ -250,3 +250,21 @@ verdict's reason, `made`, `gone`, `refused_sender`, `busy`, `unavailable`), each
 ## Defaults ledger
 
 D131 to D135 in [DEFAULTS.md](DEFAULTS.md).
+
+## Tiers (Pro)
+
+Spec "Tiers". The plan's tier is the room's `PlanTier` (blueprints/automations.md "Tiers (Pro)").
+
+- **The mark** (`plan-room/tier/plan-meters.ts`): the plan's `plan_meters` table (plan schema V41: `plan_id`,
+  `meter`, `period`, `used`; one row a meter, here `EMAIL_METER`) now holds the UTC month (`monthKey`) the owner's
+  month was refused in and the limit met then (2026-11-22: the count moved to the subscription service).
+  `markMonthFull` writes it; `monthFull(env, planId, meter, month, limit)` is true while the month matches and the
+  limit met is at least the limit now. No migration.
+- **Delivery** (`intake-delivery.ts`): with Pro on and an owner, after Who Can Send: a plan marked full is refused
+  `month_limit` (`REJECTIONS.month_limit`) unless a `recheck` raises the limit; then the hour's rates; then one
+  `emailToBoard` spent (ItemTier `spend`). Refused at the limit, the plan is marked and the outcome is `month_limit`;
+  refused by the service, `unavailable`. Nothing is reported to the service any more, and nothing is given back.
+- **The routes** (`email-intake-routes.ts` `list`): with Pro on the answer carries `month: { limit, full }` and
+  `owner`.
+- **Cost**: one spend call per card made, one D1 read per message for the mark.
+- Tests: `email-intake/intake-tier.test.ts`.

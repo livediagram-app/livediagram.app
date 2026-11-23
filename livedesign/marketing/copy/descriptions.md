@@ -21,7 +21,7 @@ For HTML `<meta name="description">` and search snippets.
 Alternate:
 
 > Design logos, wireframes and photos with your team, live. No sign-in wall, no
-> paid tier. Free and open source. [117]
+> trial. Free and open source. [113]
 
 ---
 
@@ -42,7 +42,7 @@ For directory cards and "short pitch" fields.
 > livedesign is a real-time editor for logos, wireframes and photos that works
 > without signing in. Open a link and design with your team: live cursors,
 > comments, templates for each kind of page, and undo that never touches anyone
-> else's work. MIT-licensed and free forever. [42 words]
+> else's work. MIT-licensed and free to start. [43 words]
 
 ---
 
@@ -59,7 +59,7 @@ For Product Hunt, app store short descriptions, README intros.
 > app as wireframes, or touch up a photo in layers with adjustments and filters.
 > Start from a template and export your pages as PDF, PNG or SVG.
 >
-> It is MIT-licensed and free for everyone with no paid tier. [105 words]
+> It is MIT-licensed and free to use, with every feature on the free plan. [107 words]
 
 ---
 
@@ -89,8 +89,8 @@ For longer listing bodies and "about this project" sections.
 > Editor, Participant or Viewer and revoke them whenever you like, and keep everything in tabs
 > and nested folders.
 >
-> livedesign is MIT-licensed, free for everyone with no paid tier and no plan
-> for one. [236 words]
+> livedesign is MIT-licensed, free to use, with every
+> feature on the free plan. [233 words]
 
 ---
 
@@ -145,8 +145,8 @@ detailed GitHub / Product Hunt write-up.
 > #### Free, open, and yours
 >
 > livedesign is MIT-licensed and publicly viewable. The hosted version at
-> livedesign.app is free for everyone, with no paid tier and no plan to
-> introduce one. The open-source core never calls home and never gates features behind
+> livedesign.app is free to use, with every feature on the free plan and
+> no trial. The open-source core never calls home and never gates features behind
 > a license check.
 >
 > Open a link, design together, show it. That is the whole pitch. [443 words]

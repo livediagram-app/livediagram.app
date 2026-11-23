@@ -1,6 +1,7 @@
 // The design's content state for its room (design-room.ts): the schema on first use, the write notes that arm the
 // outbox, the drains to the index and to shared tabs' holders, the daily upkeep, the Community post's checks and
 // the purge. Each takes the room it acts for.
+import { leaveRuleCount } from '@liveworkspace/automations/room';
 import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
@@ -238,6 +239,8 @@ export async function purge(room: DesignRoom, designId?: string): Promise<void> 
   // A design going for good takes its Community post with it: the service hears it is gone.
   if (room.designId !== null && room.storedSchema())
     await leaveCommunity(room.requireEnv(), room.designId);
+  // Its rules leave its owner's total (019 "Meters": item counts). Nothing with Pro off.
+  if (room.designId !== null && room.storedSchema()) await leaveRuleCount(room.tier, room.designId);
   await room.ledger.settled();
   // What the design holds outside its own storage: its photo blobs' markers (and the blobs no other design
   // holds), and its images' references at the media service.

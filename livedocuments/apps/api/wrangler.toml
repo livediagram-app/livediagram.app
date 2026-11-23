@@ -29,6 +29,9 @@ port = 8987
 # unset means production's (https://www.liveworkspace.app/api/telemetry). Locally,
 # `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
+# Pro (liveworkspace/docs/specs/019-subscription/subscription.md "The flag"): off by default, so there are no tiers and
+# nothing asks the subscription service. "true" turns it on, with SUBSCRIPTION_KEY set (wrangler secret put).
+PRO_ENABLED = "false"
 
 # The central index (liveworkspace/docs/specs/004-index/one-explorer.md): where every document is filed and who may open it. The
 # grants this api checks are signed by `${INDEX_ORIGIN}/api/index/jwks`, and the document rooms push their summaries
@@ -240,6 +243,13 @@ service = "liveworkspace-accounts"
 binding = "INDEX"
 service = "liveworkspace-index"
 
+# The subscription service (liveworkspace/docs/specs/019-subscription/subscription.md), for entitlements and spends.
+# COMMENTED OUT until `liveworkspace-subscription` is deployed: a binding to a Worker that does not exist fails
+# this Worker's deploy. Without it the client fetches the service's public route (SUBSCRIPTION_URL).
+# [[services]]
+# binding = "SUBSCRIPTION"
+# service = "liveworkspace-subscription"
+
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livedocuments-api-staging` via
 # `wrangler deploy --env staging`.
@@ -268,6 +278,11 @@ preview_urls = false
 # for production (see the top of this file), and so does TELEMETRY_URL: staging's
 # events go to staging's telemetry service, never into production's published numbers.
 [env.staging.vars]
+# Pro (liveworkspace/docs/specs/019-subscription/subscription.md "The flag"): off by default, so there are no tiers and
+# nothing asks the subscription service. "true" turns it on, with SUBSCRIPTION_KEY set (wrangler secret put).
+PRO_ENABLED = "false"
+# Staging's own subscription service, for when Pro is on.
+SUBSCRIPTION_URL = "https://staging.liveworkspace.app/api/subscription"
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 EMAIL_FROM = "livedocuments <hello@livedocuments.app>"
@@ -349,3 +364,10 @@ service = "liveworkspace-accounts-staging"
 [[env.staging.services]]
 binding = "INDEX"
 service = "liveworkspace-index-staging"
+
+# The subscription service (liveworkspace/docs/specs/019-subscription/subscription.md), for entitlements and spends.
+# COMMENTED OUT until `liveworkspace-subscription-staging` is deployed: a binding to a Worker that does not exist fails
+# this Worker's deploy. Without it the client fetches the service's public route (SUBSCRIPTION_URL).
+# [[env.staging.services]]
+# binding = "SUBSCRIPTION"
+# service = "liveworkspace-subscription-staging"

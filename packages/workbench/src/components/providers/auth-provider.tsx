@@ -30,6 +30,7 @@ import {
   DeferredAuthContext,
   type DeferredAuthState,
 } from './deferred-auth';
+import { SubscriptionMount } from './subscription-mount';
 
 type OnState = { onState: (state: DeferredAuthState) => void };
 
@@ -138,7 +139,8 @@ export function createAuthProvider({
     }, [workbenchRoute, Bridge]);
     return (
       <DeferredAuthContext.Provider value={value}>
-        {children}
+        {/* Pro (subscription-mount.tsx): reads the same auth the children do, so the workbench page asks nothing. */}
+        <SubscriptionMount auth={value}>{children}</SubscriptionMount>
         {unreachable && !workbenchRoute ? (
           <Suspense fallback={null}>
             <AccountUnreachableNotice />

@@ -54,6 +54,14 @@ type | null, newTab | null, changedTab | null, newSheet | null }`, the shape `st
 - `packages/api-schema/src/form-drafts.ts`: `FormDraftRequest`, `FormDraftResponse { draft }`, `FORM_DRAFT_ERRORS`,
   `FormDraftErrorBody`.
 
+- **AI credits**: `spendDraftCredit(env, accountId, payer)` (`routes/draft-credits.ts`), refused `429
+form_draft_credits_used`. The body's optional `projectId` names the plan the form is for: `resolvePlanGrant` must
+  answer an `edit` grant on it that is not in the Trash (else 403 `form_draft_invalid`, path `projectId`; a
+  malformed id 400), and `itemPayer(grant)` gives the payer: the plan's owner, nobody for a guest's plan, the
+  person's own where the grant names no owner or no plan is named. `'unavailable'` (the subscription service
+  refused this Worker's request, `refusedByService`) answers 503 `form_draft_unavailable`. The editor sends the
+  open plan's id (`form-draft-client.ts`). `routes/draft-payer.test.ts` holds who pays.
+
 ## Editor
 
 - `components/describe/DescribePrompt.tsx`: re-exports `@liveworkspace/automations-ui/DescribePrompt` (Try an Example

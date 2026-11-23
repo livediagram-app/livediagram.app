@@ -10,7 +10,7 @@ import type {
   AutomationRunShell,
   AutomationRunsQuery,
 } from '../types';
-import { countAiAsk } from './automation-ai';
+import { countAiAsk, giveBackAiAsk } from './automation-ai';
 import type { Sql } from './sql';
 
 // What the log reads and rewrites of a run, whatever else an app's run holds.
@@ -37,10 +37,13 @@ export const derivedLineId = (ruleId: string, moment: string): string =>
 // A rule's one line a UTC day saying the day's budget is spent, however many of its triggers came after.
 export const budgetLineId = (ruleId: string, now: number): string =>
   `budget:${ruleId}:${utcMidnight(now)}`;
+// A rule's one line a UTC day saying the owner's month of runs is used, however many of its triggers came after.
+export const monthLineId = (ruleId: string, now: number): string =>
+  `month:${ruleId}:${utcMidnight(now)}`;
 // The one line saying the item's wakes gave up after failing again and again (automation-wake.ts).
 export const stoppedLineId = (now: number): string => `stopped:${now}`;
 const NO_LINE =
-  "id NOT LIKE 'burst:%' AND id NOT LIKE 'time:%' AND id NOT LIKE 'derived:%' AND id NOT LIKE 'budget:%' AND id NOT LIKE 'stopped:%'";
+  "id NOT LIKE 'burst:%' AND id NOT LIKE 'time:%' AND id NOT LIKE 'derived:%' AND id NOT LIKE 'budget:%' AND id NOT LIKE 'month:%' AND id NOT LIKE 'stopped:%'";
 
 // Runs today (UTC) that did something, failed or were skipped, pending ones too: what the daily budget counts. A No
 // Match is logged and never counted, nor is one of the Audit Trail's own lines.
@@ -87,13 +90,25 @@ export function claimRun(sql: Sql, id: string, ruleId: string, at: number): bool
 // a Describe a Rule or another run asking meanwhile. The settled row's lines replace these, the same calls marked. A
 // pending row's body is never listed.
 export function markAiAsked(sql: Sql, id: string, asked: number, now: number = Date.now()): void {
+  writeAsked(sql, id, asked);
+  countAiAsk(sql, now);
+}
+
+// The run's row as `asked` AI calls made so far.
+function writeAsked(sql: Sql, id: string, asked: number): void {
   const steps = Array.from({ length: asked }, () => ({ ai: true }));
   sql.exec(
     `UPDATE automation_runs SET body = ? WHERE id = ? AND result = '${PENDING}'`,
     JSON.stringify({ steps }),
     id,
   );
-  countAiAsk(sql, now);
+}
+
+// A call markAiAsked counted that was not made after all: the run's row says `asked` again, and the day's count gives
+// its place back.
+export function unmarkAiAsked(sql: Sql, id: string, asked: number, now: number = Date.now()): void {
+  writeAsked(sql, id, asked);
+  giveBackAiAsk(sql, now);
 }
 
 // A claimed run that never started after all (a chain stop whose conditions did not hold): its row goes, so it

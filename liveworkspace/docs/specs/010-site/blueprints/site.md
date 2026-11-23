@@ -194,7 +194,7 @@ glyph-per-module split (#1525) saved 2.8 KiB. `/explorer` is below its baseline 
 panels moved out of its first load. The page's HTML (51.7 KiB gzipped on `/`) is not part of this budget.
 
 The site's `build` ends with `scripts/first-load-budget.ts` (`lib/first-load/budget.ts`): it sums the same numbers
-from `out/` and fails the build when `/` passes 212 KiB or `/explorer` 380 KiB. `app/first-load-lazy.test.ts` keeps
+from `out/` and fails the build when `/` passes 212 KiB or `/explorer` 382 KiB. `app/first-load-lazy.test.ts` keeps
 the error files' imports light and the check in the build.
 
 **The root error boundary reads light or dark off the page it replaces (2026-11-14, Work Tracker 772).**
@@ -238,6 +238,16 @@ under. The budget stays at 380 KiB; the next addition to the Explorer's first lo
 every first load. The count and its sections are now `inbox/inbox-count.ts`, and the row keys and settling
 `inbox/inbox-keys.ts`; `sections.ts` re-exports both for the Inbox itself. Measured the same way: 389,116 to 387,795
 bytes (378.7 KiB), 18 scripts, 1,325 bytes under. The budget stays at 380 KiB.
+
+**Pro's account menu raises `/explorer` to 382 KiB (2026-11-22, Pro).** The Explorer's account menu now sits inside
+the site's subscription provider (`SiteSubscription`, `packages/subscription-ui/src/provider/SubscriptionProvider.tsx`),
+so its Pro badge and Upgrade to Pro read the person's tier. The provider's first-load half is its context and the
+dialogs' open state; everything that asks the service or draws is the lazy driver, and the menu's Pro parts are their
+own chunk. Measured from production builds on main at #2131: 387,795 bytes (378.7 KiB), 18 scripts, then 390,160
+(381.0 KiB), 19 scripts, with Pro on or off in the build, since the flag is read at run time. Building without the
+provider gives 379.6 KiB, so 1.4 KiB is the provider and 0.9 KiB the menu's lazy Pro parts and the Library's Pro
+reads. Moving the Library's parsing into its panes was tried and cost 0.8 KiB more (a shared chunk). The budget is
+382 KiB; the next addition to the Explorer's first load needs its own saving.
 
 **Closing a toast stays inside the budget (2026-11-20, #2058).** Closing a toast now dismisses it (it fades in place
 and leaves the notification list) and a popover risen from the bottom chrome is a toast floor. The toast provider,

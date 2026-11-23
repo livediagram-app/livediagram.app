@@ -30,7 +30,7 @@ export function AccountTileLink() {
 /** The hero's second promise: "No sign-up needed" says nothing to someone signed in, so they read that it's free. */
 export function SignUpPromise() {
   const session = useSession();
-  return <>{signedIn(session.state) ? 'Free in every app' : 'No sign-up needed'}</>;
+  return <>{signedIn(session.state) ? 'Free to start' : 'No sign-up needed'}</>;
 }
 
 const PRIMARY =

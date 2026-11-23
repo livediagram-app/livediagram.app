@@ -1,6 +1,8 @@
 'use client';
 
 import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
+import dynamic from 'next/dynamic';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
@@ -9,6 +11,7 @@ import { PhotoStatus } from './photo/PhotoStatus';
 import { TruthExport } from './photo/TruthExport';
 import { UNREAD_TIP_SHARE, UnreadTip } from './photo/UnreadTip';
 import { ZoomControls } from './photo/ZoomControls';
+import { PillButton } from './photo/PillButton';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import type { ModelDownload as Download } from '@/lib/reading/download-progress';
 import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protocol';
@@ -21,7 +24,6 @@ import { useReviewBoxes } from './photo/useReviewBoxes';
 import { useRereadOnChange } from './photo/useRereadOnChange';
 import { usePhotoView } from './photo/usePhotoView';
 import { kindOfBox } from './photo/kindOfBox';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import {
   PhotoReviewShowMe,
   PhotoReviewTourStage,
@@ -58,6 +60,12 @@ const REVEAL_BUDGET_MS = 6000;
 // …and a box needs this much of the working image to classify its paper.
 const MIN_BOX_PX = 3;
 
+// The choice before a charged read draws the subscription kit's parts, so it loads only when there is one to make
+// (docs/specs/021-event-storming/note-reader.md "What the editor shows").
+const ReadChoice = dynamic(() => import('./photo/ReadChoice').then((m) => m.ReadChoice), {
+  ssr: false,
+});
+
 const revealStepMs = (boxes: number) =>
   boxes <= 0 ? REVEAL_INTERVAL_MS : Math.min(REVEAL_INTERVAL_MS, REVEAL_BUDGET_MS / boxes);
 
@@ -71,6 +79,8 @@ export function PhotoReviewOverlay({
   readerWhy,
   readerFallback,
   rereading = 0,
+  readChoice,
+  onChooseRead,
   onReread,
   onConfirm,
   onCancel,
@@ -91,6 +101,9 @@ export function PhotoReviewOverlay({
   // Boxes being read again after a move, resize or draw, and the way to ask
   // for that (docs/specs/021-event-storming/event-storming.md Phase 9).
   rereading?: number;
+  // With Pro on, a charged read waiting for the person to choose the AI (at its cost) or this device.
+  readChoice?: { notes: number };
+  onChooseRead?: (onDevice: boolean) => void;
   onReread?: (boxes: DetectedSticky[]) => void;
   // The boxes to land AS THEY STAND — ticked, corrected, drawn — and the
   // words on each.
@@ -425,14 +438,22 @@ export function PhotoReviewOverlay({
           and, above them, the unread tip: down here with the choices it is
           about, rather than parked on the photo over notes to draw round. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 p-3">
-        {/* Which AI reads the notes (note-reader.md "On your own key"), and a way to add a key of your own. */}
+        {/* Which AI reads the notes (note-reader.md "On your own key"), and a way to add a key of your own. With Pro
+            on, built-in AI spends the diagram owner's AI credits ("AI credits (Pro)"). */}
         {detection ? (
           <div data-photo-ai-source="" className="pointer-events-auto w-full max-w-md">
             <WorkbenchAiSource
               failure={review.keyFailure ?? null}
-              allowance="Included with livediagram: this deployment’s model, or this device."
+              allowance={
+                proOn()
+                  ? 'Built-in AI uses the diagram owner’s AI credits. This device reads for free.'
+                  : 'Included with livediagram: this deployment’s model, or this device.'
+              }
             />
           </div>
+        ) : null}
+        {readChoice && onChooseRead ? (
+          <ReadChoice notes={readChoice.notes} onChoose={onChooseRead} />
         ) : null}
         {showUnreadTip && onRetake ? (
           <UnreadTip
@@ -461,22 +482,15 @@ export function PhotoReviewOverlay({
               onOpen={(file) => void openLabel(file)}
             />
           ) : null}
-          <button
-            type="button"
-            onClick={onCancel}
-            className="pointer-events-auto rounded-full border border-white/40 bg-slate-900/70 px-4 py-1.5 text-sm text-white shadow-lg backdrop-blur hover:bg-slate-900/90"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
+          <PillButton onClick={onCancel}>Cancel</PillButton>
+          <PillButton
+            tone="primary"
             onClick={confirm}
             disabled={edits.ticked.size === 0}
             data-tour-id="photo-add"
-            className={`pointer-events-auto rounded-full bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-800 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
-          </button>
+          </PillButton>
         </div>
       </div>
       <PhotoReviewTourStage tour={tour} />

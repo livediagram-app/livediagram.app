@@ -17,6 +17,7 @@ import {
 } from '../plan-room/project-file';
 import { CORS_HEADERS, conflict, forbidden, json, notFound } from '../responses';
 import { grantOn, requireOwner, type PlanRouteContext } from './context';
+import { rulesCopyMax } from '../plan-room/tier/room-tier';
 
 const PROJECT_FILE_SEGMENT = 'file';
 
@@ -52,10 +53,13 @@ async function exportFile(ctx: PlanRouteContext, id: string): Promise<Response> 
 // The body read as a plan's content, or too_large past the cap by its length. Its own function, so the text is let go
 // before the content is written: at the cap it is 20 MB of the plan's object's 128 MB (blueprint plan-file.md
 // "Performance and limits").
-async function readBodyFile(request: Request): Promise<ProjectFileRead | 'too_large'> {
+async function readBodyFile(
+  request: Request,
+  rulesMax: number,
+): Promise<ProjectFileRead | 'too_large'> {
   const text = await request.text();
   if (byteLength(text) > PROJECT_FILE_MAX_BYTES) return 'too_large';
-  return readProjectFile(text);
+  return readProjectFile(text, undefined, { rulesMax });
 }
 
 async function importFile(ctx: PlanRouteContext, id: string): Promise<Response> {
@@ -71,7 +75,7 @@ async function importFile(ctx: PlanRouteContext, id: string): Promise<Response> 
   const declared = Number(ctx.request.headers.get('Content-Length') ?? '0');
   if (declared > PROJECT_FILE_MAX_BYTES) return refuse('too_large', tooLarge());
   if (await getProject(ctx.env, id)) return refuse('exists', conflict('exists'));
-  const read = await readBodyFile(ctx.request);
+  const read = await readBodyFile(ctx.request, rulesCopyMax());
   if (read === 'too_large') return refuse('too_large', tooLarge());
   if (!read.ok)
     return refuse(

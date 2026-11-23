@@ -60,8 +60,10 @@ livedocuments, livedesign and livehuddle.
 
 ## Price and licence
 
-Open source (MIT), and free to start, with no paid tier at launch. Ask runs on
-the team's own AI key, so that usage is paid to its provider.
+Open source (MIT), and free to start, with every feature on Free. Pro raises a
+few limits; don't claim there is no paid tier, and don't lead with Pro. Ask can
+run on the team's own AI key, free on every plan, and that usage is paid to its
+provider.
 
 ## Accounts
 
@@ -76,8 +78,6 @@ account.
 - Databases, page-level permissions, semantic search, public sites with their
   own domain, Google Docs import, attachments other than pictures, a native
   mobile app.
-- A model paid for by liveworkspace for Ask: Ask runs on the team's own Claude or OpenAI key. (Describe to Set Up is
-  the exception: with no key it runs on built-in AI, Cloudflare Workers AI, on liveknowledge's account.)
 - A copy to run on your own servers. It is offered as a hosted service.
 
 ## Words

@@ -764,6 +764,16 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `itemIds` null for a whole-plan copy, the tab's cards for a tab-scoped one), and `importPlanCopy` writes them with
   `copiedGrantsStatement` before the cards (ids over `IMAGE_ID_MAX` dropped, at most `IMAGE_GRANTS_MAX`), so the
   cards' insert queues the copy's `images` report. `importProjectFile` drops any `imageGrants` a file names.
+- Image limits with Pro on: `routes/images.ts` reads the plan's grant once (`resolvePlanGrant`) for the limit
+  (`imageUploadAllowance`, `@liveworkspace/api-kit/image-upload`: the better of the uploader's tier and the plan's
+  owner's, `itemOwnerScope(grant)`) and for who may upload, answers `imageTooLargeBody` before the body is read, reads
+  no more than the limit (`readImageUpload`) and names the owner to the service (`itemOwner`). `index.ts` passes
+  `imageGateBytes(env)` to `writeBodyCap` and skips `withCappedBody` for the upload (`leavesImageUploadUnread`). In
+  the editor `checkImageFile` stops a file at `imageUploadCeiling`, `ImageUploadError.limit` carries
+  `imageLimitRefusalOf(body)`, and `ImageUploadLimit.tsx` draws the kit's `ImageLimitNotice` (loaded when one first
+  shows) under `ImageFieldControl`, `ImageGalleryField`, `AttachmentsField` and the form picker's Upload pane; a
+  board card's drop and Image Search say the sentence instead. Tests: `routes/images-pro.test.ts`,
+  `lib/api/images.test.ts`, `components/plan/ImageUploadLimit.test.tsx`.
 - Attachments (items.md "Attachments"): the pure value and edits in `packages/items/src/attachments.ts`
   (`normaliseAttachments`, `itemAttachments`, `attachmentCover`, `withAttachmentsAdded`, `withCover`,
   `withoutAttachment`, `attachmentSizeText`; caps in `limits.ts`), checked by `validateFields`' `attachments` kind. The

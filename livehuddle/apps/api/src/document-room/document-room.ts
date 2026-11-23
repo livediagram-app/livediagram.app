@@ -1,5 +1,7 @@
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
+import { roomTier } from '@liveworkspace/automations/room';
+import type { ItemTier } from '@liveworkspace/subscription';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -35,6 +37,17 @@ import { documentHasTab } from '../db/tabs';
 import { callsMode } from '../calls/calls-mode';
 import { CallsModeWatch } from '../calls/calls-mode-watch';
 import { RoomCalls, type HearingAnswer, type HearingAsk } from '../calls/room-calls';
+import {
+  CALL_METER_KEY,
+  CallMeter,
+  type CallAdmission,
+  type CallMeterState,
+  type CallMinutesReading,
+  type CallsPayer,
+} from '../calls/call-meter';
+import { callsConfigured } from '../calls/calls-gate';
+import { severSession, type RealtimeEnv } from '../calls/realtime-api';
+import { subscriptionOf } from '../subscription';
 import {
   ItemDb,
   type ExportCommentsResult,
@@ -105,7 +118,12 @@ import { alarm, armAlarm, purge } from './room-lifecycle';
 import { renamePerson } from './room-names';
 import { sweepStaleAttendance } from './room-attendance';
 import { roomMessage } from './room-message';
-import { callSessions, storedTabRev } from './room-call-sessions';
+import {
+  callSessionHolders,
+  callSessions,
+  endCallSessions,
+  storedTabRev,
+} from './room-call-sessions';
 import {
   broadcastPresence,
   clearAgentsFor,
@@ -286,6 +304,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // The Space's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they hear, and
   // what waits to run on the alarm.
   readonly automations: ItemEngine;
+  // The item's tier (liveworkspace/docs/specs/019-subscription/subscription.md "Who pays for an item"): what its
+  // Automations allow and spend, read from its owner. With Pro off it asks nothing and every limit is the legacy one.
+  readonly tier: ItemTier;
 
   // The tab write queue (blueprint SR2): a Participant's writes, one at a time per document. A Durable Object only
   // serialises the synchronous parts of its handlers: while one write is awaiting its store, the runtime happily
@@ -330,6 +351,24 @@ export class DocumentRoom extends DurableObject<Env> {
     sessions: () => callSessions(this),
     readTab: (tabId, knownRev) => storedTabRev(this, tabId, knownRev),
   });
+  // The Space's Call Minutes meter (docs/specs/012-collaboration/call-minutes.md "The meter"; calls/call-meter.ts):
+  // with Pro on, one minute spent from the owner's month for each person in a call, at the start of each minute.
+  // With Pro off it does nothing: no storage, no alarm, no request.
+  readonly callMeter = new CallMeter({
+    client: () => (this.roomEnv ? subscriptionOf(this.roomEnv) : null),
+    now: () => Date.now(),
+    load: () => this.state.storage.get<CallMeterState>(CALL_METER_KEY),
+    save: (state) => void this.state.storage.put(CALL_METER_KEY, state),
+    sessions: () => callSessionHolders(this),
+    end: () => endCallSessions(this),
+    tell: (op) => this.broadcast({ kind: 'op', from: 'system', op }),
+    sever: async (sessionId) => {
+      const env = this.roomEnv;
+      if (env && callsConfigured(env)) await severSession(env as RealtimeEnv, sessionId);
+    },
+    arm: () => this.armAlarm(),
+    defer: (work) => this.state.waitUntil(work),
+  });
   // The sample streams, walking characters and cursors (docs/specs/015-api/api.md "A busy room bounds its
   // presence fan-out"): sent to a character's tab only, and coalesced per socket in a busy room.
   readonly presenceRelay = new PresenceRelay<WebSocket, AvatarRelaySession>({
@@ -371,6 +410,15 @@ export class DocumentRoom extends DurableObject<Env> {
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
+    this.tier = roomTier({
+      app: 'livehuddle.app',
+      env: () => this.roomEnv ?? null,
+      sql: () => this.state.storage.sql,
+      ready: () => this.schemaReady,
+      table: 'document',
+      id: () => this.documentId,
+      defer: (work) => this.state.waitUntil(work),
+    });
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = roomHeadSync(this);
     this.participantWrites = new RoomParticipantWrites({
@@ -432,6 +480,8 @@ export class DocumentRoom extends DurableObject<Env> {
       restoreContentState(this, await state.storage.get<number>(MAINTENANCE_KEY));
       // Visits a restart left open (room-attendance.ts): only when the room starts with nobody connected.
       sweepStaleAttendance(this);
+      // The call meter's minute and the sessions it has still to close (nothing is read with Pro off).
+      await this.callMeter.restore();
       this.armAlarm();
     });
   }
@@ -780,7 +830,29 @@ export class DocumentRoom extends DurableObject<Env> {
     asks: HearingAsk[],
   ): Promise<HearingAnswer[]> {
     this.bindDocument(documentId);
+    // The owner's month of call minutes is used: nobody may receive anything (the route answers 429).
+    if (this.callMeter.paused) return asks.map(() => 'minutes-used');
     return this.calls.hearing(subscriberSession, asks);
+  }
+
+  // The calls routes' question for a publish, a renegotiation and a layer switch, asked only with Pro on: is the
+  // Space's owner's month of call minutes used? (A subscribe learns the same from callsHearing, in its one call.)
+  async callsPaused(documentId: string): Promise<boolean> {
+    this.bindDocument(documentId);
+    return this.callMeter.paused;
+  }
+
+  // The mint route's question before a session (docs/specs/012-collaboration/call-minutes.md "A join is admitted
+  // first"): has the Space's owner call minutes left? Asked only with Pro on.
+  async callsAdmit(documentId: string, owner: CallsPayer): Promise<CallAdmission> {
+    this.bindDocument(documentId);
+    return this.callMeter.admit(owner);
+  }
+
+  // The owner's month of call minutes as the room knows it (the minutes read). Null with Pro off.
+  async callMinutes(documentId: string, owner: CallsPayer): Promise<CallMinutesReading | null> {
+    this.bindDocument(documentId);
+    return this.callMeter.read(owner);
   }
 
   noteMultiplayer(): void {

@@ -47,10 +47,10 @@ export function SecretReveal({
       <p role="status" className="font-semibold text-slate-900 dark:text-white">
         {title}
       </p>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start">
         <code
           ref={secretRef}
-          className="block min-w-0 flex-1 overflow-x-auto rounded-xl bg-white px-3 py-2 font-mono text-sm text-slate-900 ring-1 ring-emerald-200 dark:bg-slate-950 dark:text-white dark:ring-emerald-500/30"
+          className="block min-w-0 flex-1 overflow-x-auto break-all rounded-xl bg-white px-3 py-2 font-mono text-sm text-slate-900 ring-1 ring-emerald-200 dark:bg-slate-950 dark:text-white dark:ring-emerald-500/30"
         >
           {secret}
         </code>

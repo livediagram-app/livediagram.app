@@ -9,7 +9,8 @@
     "./initials": "./src/initials.ts",
     "./placeholder": "./src/placeholder.tsx",
     "./signed-out-notice": "./src/signed-out-notice.tsx",
-    "./site-account": "./src/site-account.tsx"
+    "./site-account": "./src/site-account.tsx",
+    "./menu-parts": "./src/menu-parts.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -21,6 +22,7 @@
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/subscription-ui": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },
   "peerDependencies": {

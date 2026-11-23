@@ -37,7 +37,18 @@ export async function spendPlanDraftIn(
   return true;
 }
 
-type CountRpc = { spendPlanDraft(day: string, cap: number): Promise<boolean> };
+/** The room's side: one draft given back for `day` (it was counted and then never asked, the month's AI credits
+ *  being used). Another day's count is left alone. */
+export async function giveBackPlanDraftIn(storage: CountStorage, day: string): Promise<void> {
+  const at = await storage.get<{ day: string; count: number }>(PLAN_DRAFT_COUNT_KEY);
+  if (at?.day !== day || at.count <= 0) return;
+  await storage.put(PLAN_DRAFT_COUNT_KEY, { day, count: at.count - 1 });
+}
+
+type CountRpc = {
+  spendPlanDraft(day: string, cap: number): Promise<boolean>;
+  giveBackPlanDraft(day: string): Promise<void>;
+};
 
 /**
  * Count one draft for `accountId` against today's cap: `true` to go ahead, `false` at the cap, `'unavailable'` when
@@ -60,5 +71,27 @@ export async function spendPlanDraft(
       err instanceof Error ? err.message : String(err),
     );
     return 'unavailable';
+  }
+}
+
+/**
+ * Give back the draft `spendPlanDraft` counted at `now`, when it was refused before the model was asked (the AI
+ * credit it needed was not there). Never throws: a count that cannot be reached keeps the place.
+ */
+export async function giveBackPlanDraft(
+  env: Pick<Env, 'PLAN_ROOM'>,
+  accountId: string,
+  now: number,
+): Promise<void> {
+  const ns = env.PLAN_ROOM as Env['PLAN_ROOM'] | undefined;
+  if (!ns) return;
+  try {
+    const store = ns.get(ns.idFromName(planDraftCountName(accountId))) as unknown as CountRpc;
+    await store.giveBackPlanDraft(utcDay(now));
+  } catch (err) {
+    console.warn(
+      '[plan-draft] give_back_unavailable',
+      err instanceof Error ? err.message : String(err),
+    );
   }
 }

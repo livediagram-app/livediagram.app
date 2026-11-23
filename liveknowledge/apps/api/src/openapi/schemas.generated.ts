@@ -2269,6 +2269,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "AutomationsListResponse": {
     "additionalProperties": false,
     "properties": {
+      "guest": {
+        "const": true,
+        "type": "boolean"
+      },
+      "owner": {
+        "type": "string"
+      },
       "people": {
         "items": {
           "additionalProperties": false,
@@ -2293,6 +2300,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/AutomationListedRule%3CAutomationRule%2CAutomationNeed%3E"
         },
         "type": "array"
+      },
+      "rulesMax": {
+        "type": "number"
       },
       "runsPerDay": {
         "type": "number"
@@ -6172,6 +6182,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "health": {
         "$ref": "#/components/schemas/KnowledgeHealthCounts"
       },
+      "history": {
+        "additionalProperties": false,
+        "description": "With Pro on (tiers.md \"AI Knowledge History\"): the days of history the owner's tier keeps, the period Most Read covers, and who an upgrade is for. Absent with Pro off, where Most Read covers 7 days.",
+        "properties": {
+          "days": {
+            "type": "number"
+          },
+          "guest": {
+            "const": true,
+            "type": "boolean"
+          },
+          "keptDays": {
+            "type": "number"
+          },
+          "owner": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "keptDays",
+          "days"
+        ],
+        "type": "object"
+      },
       "lowHealth": {
         "description": "Pages With Low Health: the 5 lowest under the Healthy line; absent from an older api.",
         "items": {
@@ -6181,8 +6215,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "notRead": {
         "additionalProperties": false,
-        "description": "Not Read in 90 Days (ai-knowledge.md): the first 10, touched longest ago first, and how many; absent from an older api.",
+        "description": "`days`: the days asked about, 90, or the days the owner's tier keeps reads where fewer; absent from an older api.",
         "properties": {
+          "days": {
+            "type": "number"
+          },
           "pages": {
             "items": {
               "$ref": "#/components/schemas/KnowledgeNotReadPage"
@@ -6978,6 +7015,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "A proposed structure: a name for the knowledgebase and up to 30 pages in tree order. Plain text throughout. `provider`: which AI answered; the route always says, and a structure picked on the start screen has none.",
     "properties": {
+      "credits": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "type": "number"
+          },
+          "used": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "used",
+          "limit"
+        ],
+        "type": "object"
+      },
       "name": {
         "type": "string"
       },
@@ -7154,6 +7207,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "medium",
       "large"
     ],
+    "type": "string"
+  },
+  "KnowledgeTierOwner": {
+    "description": "The owner whose tier a knowledgebase runs on: `p:<account id>` or `t:<team id>`, as the subscription service names one.",
     "type": "string"
   },
   "KnowledgeTreeRow": {
@@ -10387,9 +10444,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "description": "The address a first publish is offered.",
         "type": "string"
       },
+      "guest": {
+        "const": true,
+        "type": "boolean"
+      },
       "offered": {
         "description": "Whether this knowledgebase may be published at all (the capability check).",
         "type": "boolean"
+      },
+      "owner": {
+        "$ref": "#/components/schemas/KnowledgeTierOwner"
       },
       "preview": {
         "$ref": "#/components/schemas/PublishingPreview"
@@ -10406,14 +10470,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "null"
           }
         ]
+      },
+      "usage": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "used": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "limit"
+        ],
+        "type": "object"
       }
     },
     "required": [
-      "offered",
-      "published",
-      "site",
       "defaultAddress",
-      "preview"
+      "offered",
+      "preview",
+      "published",
+      "site"
     ],
     "type": "object"
   },

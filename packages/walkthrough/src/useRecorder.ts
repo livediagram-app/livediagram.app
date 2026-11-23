@@ -19,6 +19,8 @@ import {
   sealWalkthroughEvents,
   WALKTHROUGH_MAX_MS,
   walkthroughMediaType,
+  walkthroughMediaMaxBytes,
+  walkthroughVideoBps,
   type WalkthroughCorner,
   type WalkthroughEvents,
   type WalkthroughSummary,
@@ -118,6 +120,9 @@ export function useRecorder(
   api: WalkthroughApi | null,
   hidden: ReadonlySet<string>,
   onSaved: (walkthrough: WalkthroughSummary) => void,
+  // The longest this person may record here: the server's answer with Pro on (walkthroughs.md "With Pro on"), else
+  // the length a walkthrough always had.
+  maxMs: number = WALKTHROUGH_MAX_MS,
 ) {
   const [phase, setPhase] = useState<RecorderPhase>({ kind: 'off' });
   const [microphone, setMicrophone] = useState<string | null>(null);
@@ -147,10 +152,12 @@ export function useRecorder(
   const hostRef = useRef(host);
   const hiddenRef = useRef(hidden);
   const phaseKind = useRef(phase.kind);
+  const maxMsRef = useRef(maxMs);
   useEffect(() => {
     hostRef.current = host;
     hiddenRef.current = hidden;
     phaseKind.current = phase.kind;
+    maxMsRef.current = maxMs;
   });
   // A recording a limit ended counts once, whichever of the clock or the size check saw it first.
   const limitCounted = useRef(false);
@@ -289,6 +296,10 @@ export function useRecorder(
       recordingRef.current = startRecording({
         stream: filmed,
         camera: true,
+        // A length past ten minutes is filmed at a lower rate, so the whole of it fits one upload.
+        videoBps: walkthroughVideoBps(maxMsRef.current),
+        // And stopped at the bytes its length makes, which is what the service weighs it by.
+        maxBytes: walkthroughMediaMaxBytes(maxMsRef.current),
         onFull: () => {
           refuse('TooLarge');
           void finishRef.current();
@@ -374,7 +385,8 @@ export function useRecorder(
     const started = startRef.current;
     if (!recording || !log || !started) return;
     recordingRef.current = null;
-    const durationMs = Math.min(WALKTHROUGH_MAX_MS, Math.round(now() - started.at));
+    const limit = maxMsRef.current;
+    const durationMs = Math.min(limit, Math.round(now() - started.at));
     const events = log.finish();
     const recorded = await recording.stop();
     stopStream(streamRef.current);
@@ -391,17 +403,20 @@ export function useRecorder(
     void events;
     void fingerprints;
     // A screen recording: its length and nothing to replay (the hidden were never on screen while it filmed).
-    const sealed = sealWalkthroughEvents({
-      v: 1,
-      screen: true,
-      durationMs,
-      camera: streamCamera.current,
-      corner,
-      startTab: started.tab,
-      hidden: [],
-      fingerprints: {},
-      events: [],
-    });
+    const sealed = sealWalkthroughEvents(
+      {
+        v: 1,
+        screen: true,
+        durationMs,
+        camera: streamCamera.current,
+        corner,
+        startTab: started.tab,
+        hidden: [],
+        fingerprints: {},
+        events: [],
+      },
+      limit,
+    );
     autoSave.current = true;
     setPhase({
       kind: 'review',
@@ -454,7 +469,7 @@ export function useRecorder(
       const t = now();
       log.tick(t);
       const elapsed = t - startRef.current!.at;
-      if (elapsed >= WALKTHROUGH_MAX_MS) {
+      if (elapsed >= maxMsRef.current) {
         refuse('TooLong');
         void finishRef.current();
       } else setPhase((p) => (p.kind === 'recording' ? { kind: 'recording', elapsed } : p));
@@ -554,6 +569,7 @@ export function useRecorder(
 
   return {
     phase,
+    maxMs,
     open,
     close,
     start,

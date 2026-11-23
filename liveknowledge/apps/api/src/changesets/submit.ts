@@ -1,4 +1,6 @@
-import { MAX_KNOWLEDGEBASE_PAGES, pageCount } from '@liveknowledge/document';
+import { pageCount } from '@liveknowledge/document';
+import { countPages, knowledgePagesMax, workerTierOf } from '../knowledge/tier-limits';
+import { tierRefusal } from '@liveworkspace/subscription';
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
 import type {
   ChangesetResponse,
@@ -72,13 +74,30 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
       // A changeset that makes a page meets the page limit (docs/specs/030-knowledgebase/blueprints/page-tree.md
       // "The room's check"); it is made at the top level, so no depth is at stake.
-      if (pageCount(document.tabs) >= MAX_KNOWLEDGEBASE_PAGES) {
+      const max = knowledgePagesMax();
+      const pages = pageCount(document.tabs);
+      if (pages >= max) {
         changesetLog('info', '[changeset] page-limit', where);
-        return refusal(
-          409,
-          'page_limit',
-          `a knowledgebase holds at most ${MAX_KNOWLEDGEBASE_PAGES} pages`,
-        );
+        return {
+          status: 409,
+          body: { error: 'page_limit', message: `a knowledgebase holds at most ${max} pages` },
+        };
+      }
+      // The owner's Knowledgebase Pages over all of theirs (tiers.md), told the new count.
+      const tier = await workerTierOf(env, document);
+      const refused = await countPages(tier, document.id, pages + 1);
+      if (refused === 'unavailable')
+        return { status: 503, body: { error: 'unavailable', message: 'try again later' } };
+      if (refused) {
+        changesetLog('info', '[changeset] page-limit', where);
+        return {
+          status: 409,
+          body: {
+            error: 'page_limit',
+            message: `the owner's knowledgebases hold at most ${refused.max} pages`,
+            ...tierRefusal(tier, 'knowledgebasePages', refused.used, refused.max),
+          },
+        };
       }
     }
     const compiled = compile(args, stored, selections);

@@ -37,7 +37,8 @@ marketing/
   infographics or page layouts (those are livedocuments'), no databases,
   page-level permissions, semantic search, public sites or built-in model.
   Never imply they exist.
-- **Free means free.** MIT-licensed, no paid tier, no plan for
-  one. Say so where the format allows.
+- **Free to start.** MIT-licensed, no card, no trial clock. Say so where
+  the format allows. Don't claim there is no paid tier (Pro raises a few
+  limits), and don't lead with Pro.
 - **Brand colour** is lime: accent `#4d7c0f`, tints `#f7fee7` `#ecfccb` `#d9f99d`, dark accent
   `#a3e635`. See [Theme](../docs/specs/004-interface-design/color-scheme.md).

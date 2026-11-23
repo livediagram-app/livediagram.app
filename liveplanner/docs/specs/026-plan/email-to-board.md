@@ -150,6 +150,11 @@ In order; the first that fails decides:
 8. **The address's rates**: at most **100 cards an hour** to one address, and **20 an hour from one sender** to one
    address. Else refused, "Too many messages to this address. Try again later."
 
+9. **The owner's month** (only with Pro on, [Tiers](#tiers)): one of the owner's emails to boards for the UTC month,
+   over every plan they own, spent once the address's rates let the message through. Else refused, "This board is not
+   taking email right now. Try again next month." A plan that already found the month used refuses this way before
+   the address's rates, asking the subscription service nothing.
+
 A refusal is the receiving server's answer during delivery, so the sender's own mail server tells them; liveplanner
 sends nothing back, so a forged sender is never mailed.
 
@@ -182,6 +187,44 @@ A body names Who Can Send as `members` or `anyone`; the board must be one that m
 must be one some board shows. Anything else is
 `400 email_intake_invalid`; a server with no intake domain answers `503 email_intake_unavailable` to every write.
 Every answer is `no-store`.
+
+## Tiers
+
+With Pro off nothing here applies: nothing is counted and the hourly rates above are the only limits. With
+[Pro on](../../../../liveworkspace/docs/specs/019-subscription/subscription.md) each email made into a card spends one
+of the plan's **owner's** Email to Board for the UTC month (Free 500, Pro 10,000, Pro for Teams 5,000 a member,
+pooled), over every plan the owner has (owner, 2026-11-22): a team's for a plan in a team's library, never the
+sender's or the person who turned the address on.
+
+- The spend is made after the address's rates and before the card is made: a refused or dropped message, or one the
+  rates turn away, spends nothing. A card that then could not be made keeps its spend: the service has no refund,
+  and such a failure is rare.
+- The per-plan day count that stood before (owner, 2026-11-22) is gone: the hourly rates (100 cards an hour to an
+  address, 20 from one sender) are the fixed bound on every tier.
+- A guest's plan and a plan that is nobody's yet spend nothing: the hourly rates are all they have.
+- **Out of reach is not refused:** with the service out of reach the mail is taken, uncounted. When it refuses the
+  request (it cannot be checked) the mail is refused as "Couldn't check the sender. Send it again later.", so the
+  sender's server tries again.
+- Past the owner's month a message is refused as the receiving server's answer (step 9), in plain words that name no
+  tier. Nothing is counted against the address as refused. The plan remembers the month it was refused in and the
+  limit met (its `plan_meters` row), so later mail and the dialog read it as used with no call to the service. Mail
+  is taken again on the first of the next month (UTC), or as soon as the owner's tier allows more: a message the
+  plan's mark would refuse asks for the owner's limits once more first, so mail is taken straight after an upgrade.
+- The dialog's `GET` carries `month` (`limit` and `full`) and `owner` (the owner's scope). What the owner used is
+  theirs alone (019 "What a collaborator is told"): the dialog reads it from the owner's own subscription.
+
+### What the dialog shows
+
+Only with Pro on, once any address of the plan is on: to the owner or a member of the owning team, a meter, **Emails
+to boards this month**, of the owner's month over every plan they own ("12 of 500"). Once the `GET` says the month is
+used, or the meter's own count reaches the limit (so the owner never sees a full meter with no word of the mail that
+follows), a notice says "This month's 500 emails to your boards have become cards. More are turned away until 1
+December, and the sender is told." (a team reads "this team's boards"). The plan's owner (or an admin of the owning
+team) also reads "Pro takes 10,000 a month." with **Upgrade to Pro**; another member of the team is pointed at an
+admin with **Ask an Admin**; anyone else reads "This plan's owner has used this month's emails to boards. More are
+turned away until 1 December, and the sender is told." with no number. **See All Limits**, a quiet link under the
+notice for the owner and the owning team, opens Settings at Subscription. While any address is on, the dialog reads
+again every 30 seconds and when the window regains focus, so a month found used shows without reopening.
 
 ## Privacy
 

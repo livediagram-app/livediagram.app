@@ -19,14 +19,14 @@ import {
 import { mediaClient } from '../media';
 import { typesOf } from '@liveplanner/items';
 import { clientIp, clientNetwork } from '@liveworkspace/api-kit/client-ip';
-import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
+import { addFormReport, countSuspendedFormLinks, formMonthFull, suspendFormLink } from '../db';
 import { formPlaceOf, pushFormInbox } from '../forms/form-inbox';
 import { planRoom } from '../plan-client';
 import { identityOf } from '../plan-room/plan-route';
 import { notifyFormSuspended } from '../email/notifications';
 import { responsesProblem } from '../forms/form-tab';
 import { reportServerEvent } from '../server-telemetry';
-import { openFormLink, respond } from '../forms/respond';
+import { formMonthOf, openFormLink, respond } from '../forms/respond';
 import { json, methodNotAllowed, notFound } from '../responses';
 import { readOptionalBody, type PlanRouteContext, type RouteContext } from './context';
 
@@ -48,10 +48,14 @@ async function read(ctx: PlanRouteContext, code: string): Promise<Response> {
   if (!opened) return formNotFound();
   const { link, doc, form, tab } = opened;
   const look = formLook(tab);
+  const now = Date.now();
+  // With Pro on, whether its plan's owner's month of responses was found used (forms.md "Abuse and limits → Tiers").
+  const monthly = await formMonthOf(ctx, now);
   let closed = closedReason(form, {
     open: link.open === 1,
     responses: link.responses,
-    now: Date.now(),
+    now,
+    ...(monthly ? { monthFull: formMonthFull(link, monthly) } : {}),
   });
   // A destination broken since publishing shows as closed: a response could not be made.
   if (!closed && (await responsesProblem(ctx.env, doc.id, form, typesOf(doc.itemTypes))))
@@ -60,7 +64,7 @@ async function read(ctx: PlanRouteContext, code: string): Promise<Response> {
     ? {
         state: 'closed',
         heading: form.heading,
-        message: closedMessageOf(form),
+        message: closedMessageOf(form, closed),
         look,
       }
     : { state: 'open', form: publicForm(form), look };

@@ -14,8 +14,10 @@
 //   PUT    /api/walkthroughs/:id/share?d=    its public link on (its recorder, or an Editor)
 //   DELETE /api/walkthroughs/:id/share?d=    and off
 
+import { WALKTHROUGH_CEILING_MS } from './tier-limits';
 import {
   parseWalkthroughStart,
+  WALKTHROUGH_MAX_MS,
   WALKTHROUGH_MEDIA_MAX_BYTES,
   WALKTHROUGH_START_MAX_BYTES,
   walkthroughMediaType,
@@ -31,6 +33,9 @@ export type WalkthroughAccess = {
   // A tab-scoped link, a Community visit or an item in the Trash: no walkthroughs (they can travel across tabs, and
   // a Community post's visitors are the public).
   closed: boolean;
+  // The item's owner as a subscription scope (`itemOwnerScope` of the grant), for the service to read its tier beside
+  // the recorder's with Pro on (walkthroughs.md "With Pro on"). Left out, the recorder's own tier applies.
+  itemOwner?: string | null;
 };
 
 export type WalkthroughDoorInput = {
@@ -47,6 +52,12 @@ export type WalkthroughDoorInput = {
   access: (itemId: string) => Promise<WalkthroughAccess | null | Response>;
   // The service's calls, or null when this deploy has no media key.
   calls: WalkthroughCalls | null;
+  // Whether Pro is on in this deployment (`proEnabled(env.PRO_ENABLED)`). False: the door holds the legacy length
+  // itself and asks the service for no limits, exactly as before Pro. True, or left out by an app that has not said:
+  // a recorder's list asks the service what they may record, and a start up to the longest any tier records passes
+  // the door for the service to decide. The service knows whether Pro is on, and with it off answers no limits and
+  // holds the legacy length with the same refusal, so a door that has not said is right either way.
+  pro?: boolean;
   request: Request;
   // The app's own JSON answer (its CORS headers on it), and the headers for the media's bytes.
   json: (body: unknown, init?: ResponseInit) => Response;
@@ -115,6 +126,8 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
         ...walkthroughSummary(walkthrough, true, true),
         item: walkthrough.item,
       })),
+      // With Pro on, the person's own tier and count (walkthroughs.md "The Explorer's Walkthroughs").
+      ...(value.limits ? { limits: value.limits } : {}),
     }));
   }
   if (!itemId) return refuse('missing_item', 400);
@@ -127,13 +140,18 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
   const recorder = editor && input.person && owner !== null;
 
   if (route === 'list' && method === 'GET') {
-    const listed = await calls.list(itemId);
+    // Only someone who may record is told what they may record, and nothing is asked for where Pro is known off.
+    const listed =
+      input.pro !== false && recorder && owner !== null
+        ? await calls.list(itemId, { owner, itemOwner: access.itemOwner ?? null })
+        : await calls.list(itemId);
     return passOn(listed, 200, (value) => ({
       walkthroughs: value.walkthroughs.map(({ walkthrough, owner: by }) => {
         const mine = owner !== null && by === owner;
         return walkthroughSummary(walkthrough, mine, mine || editor);
       }),
       canRecord: recorder,
+      ...(value.limits ? { limits: value.limits } : {}),
     }));
   }
 
@@ -152,10 +170,18 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
       return refuse('invalid_body', 400);
     }
     // The item is the one the grant was checked on, whatever the body says.
-    const parsed = parseWalkthroughStart({ ...(body as object), item: itemId });
+    const parsed = parseWalkthroughStart(
+      { ...(body as object), item: itemId },
+      input.pro === false ? WALKTHROUGH_MAX_MS : WALKTHROUGH_CEILING_MS,
+    );
     if (!parsed.ok)
       return refuse(parsed.refusal.body.error, parsed.refusal.status, parsed.refusal.body);
-    return passOn(await calls.start(owner, parsed.start), 201);
+    return passOn(
+      input.pro !== false && access.itemOwner
+        ? await calls.start(owner, parsed.start, access.itemOwner)
+        : await calls.start(owner, parsed.start),
+      201,
+    );
   }
 
   if (route === 'media' && method === 'PUT') {

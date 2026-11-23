@@ -60,7 +60,6 @@ import {
   uploadPlanImageOutput,
   uploadPlanImageShape,
 } from '../mcp/plan-schema';
-import { ITEM_ATTACHMENT_BYTES_MAX } from '@liveplanner/items';
 import { FIELD_LIMITS } from '../plan/api-refusal';
 import { importBoardOutput, importBoardShape } from '../mcp/tracker-schema';
 import {
@@ -269,6 +268,9 @@ export const mcpChangeItems = mcpTool('change_items', {
   outputSchema: changeItemsOutput,
 });
 
+// The largest picture an agent uploads, on every tier (the shared verb's cap, @liveworkspace/agent-verbs
+// images/upload.ts): a card may hold a larger one a person uploaded with Pro.
+const AGENT_IMAGE_UPLOAD_MB = 10;
 export const mcpUploadImage = mcpTool('upload_image', {
   behaviour: 'write',
   // A url is fetched from the open web.
@@ -277,7 +279,7 @@ export const mcpUploadImage = mcpTool('upload_image', {
   description:
     'Upload a picture for a plan’s cards, into the user’s image gallery: its bytes as base64 in data (a data: URL ' +
     'works too), or a public https URL in url for the server to fetch. PNG, JPEG, WebP or GIF, up to ' +
-    `${ITEM_ATTACHMENT_BYTES_MAX / (1024 * 1024)} MB; SVG is refused (render it to PNG first). Answers its id, name, width, height and size; ` +
+    `${AGENT_IMAGE_UPLOAD_MB} MB; SVG is refused (render it to PNG first). Answers its id, name, width, height and size; ` +
     'the same bytes again answer the picture the gallery already holds (deduped). Then place the id on a card with ' +
     'change_items: an Image field or attachments takes {"add": ["<id>"]}. Only an Editor or a Participant of the ' +
     'plan adds its pictures. The gallery shows it as Made by AI.',

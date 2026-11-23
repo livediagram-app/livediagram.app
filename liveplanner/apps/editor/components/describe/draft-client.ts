@@ -3,6 +3,7 @@
 // words, which the dialog says as they are; anything else is a failure the dialog says in its own words.
 
 import { readAiKeyFailure, type AiKeyFailure } from '@liveworkspace/ai/key-failure';
+import { TIER_LIMIT_KEYS, type TierLimitRefusal } from '@liveplanner/api-schema';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from '@/lib/api/core';
 
 export class DraftRefusal<C extends string = string> extends Error {
@@ -10,6 +11,8 @@ export class DraftRefusal<C extends string = string> extends Error {
   readonly code: C;
   // `ai_key_failed`: whose key failed and how, for the source line (never the key).
   aiKey: AiKeyFailure | null = null;
+  // With Pro on, a refusal a tier caused (the month's AI credits): which limit, what is used and its most.
+  tier: TierLimitRefusal | null = null;
   constructor(status: number, code: C, message: string) {
     super(message);
     this.name = 'DraftRefusal';
@@ -24,12 +27,21 @@ async function refusalOf<C extends string>(
   make: (status: number, code: C, message: string) => DraftRefusal<C>,
 ): Promise<DraftRefusal<C> | null> {
   try {
-    const body = (await res.clone().json()) as { error?: unknown; message?: unknown };
+    const body = (await res.clone().json()) as {
+      error?: unknown;
+      message?: unknown;
+      limit?: unknown;
+      used?: unknown;
+      max?: unknown;
+    };
     const code = body.error;
     if (typeof code !== 'string' || !(codes as readonly string[]).includes(code)) return null;
     if (typeof body.message !== 'string') return null;
     const refusal = make(res.status, code as C, body.message);
     refusal.aiKey = readAiKeyFailure(body);
+    const limit = TIER_LIMIT_KEYS.find((key) => key === body.limit);
+    if (limit && typeof body.used === 'number' && typeof body.max === 'number')
+      refusal.tier = { limit, used: body.used, max: body.max };
     return refusal;
   } catch {
     return null;
@@ -44,11 +56,13 @@ export async function postDraft<R, C extends string>(
   codes: readonly C[],
   make: (status: number, code: C, message: string) => DraftRefusal<C>,
   what: string,
+  // More of the request's body: the plan a form is drafted for.
+  more: Record<string, string> = {},
 ): Promise<R> {
   const res = await apiFetch(`${API_BASE}/${path}`, {
     method: 'POST',
     headers: await apiHeaders(ownerId, { body: true }),
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, ...more }),
   });
   if (!res.ok) {
     const refusal = await refusalOf(res, codes, make);

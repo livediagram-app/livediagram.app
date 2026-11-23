@@ -2,12 +2,20 @@
 // item-engine.md "A wake"): one bounded ask of the app's own binding over the item's text (or one tab's), counted
 // against the item's day before its answer comes. Past the day's cap the step is skipped; with no binding, a model
 // that errs or an answer that does not read, it fails with why.
-import { AI_EMPTY, AI_NOT_SET_UP, AI_UNREADABLE, aiCappedWords } from '../../ai';
+import { AI_CREDIT_COSTS, refusedByService } from '@liveworkspace/subscription';
+import {
+  AI_CREDITS_UNCHECKED,
+  AI_CREDITS_USED,
+  AI_EMPTY,
+  AI_NOT_SET_UP,
+  AI_UNREADABLE,
+  aiCappedWords,
+} from '../../ai';
 import { RUN_TAB, readSummary, summariseRequest, type ItemSummarise } from '../../item';
 import { AUTOMATION_AI_PER_DAY } from '../../limits';
 import type { AutomationActionLine } from '../../types';
 import { aiToday, ask } from '../automation-ai';
-import { markAiAsked } from '../automation-log';
+import { markAiAsked, unmarkAiAsked } from '../automation-log';
 import type { ItemDeps } from './kit';
 
 export const AI_NO_TEXT = 'There is no text to summarise';
@@ -50,6 +58,18 @@ export async function runSummarise(
   store.aiAsks += 1;
   state.ai += 1;
   state.aiAsks = store.aiAsks;
+  // With Pro on, one of the owner's AI credits, spent after the day's place is taken (so none is spent on a call the
+  // day's cap then refuses) and before the model is asked. Refused: the place goes back and the step is skipped.
+  if (deps.tier) {
+    const credit = await deps.tier.spend('aiCredits', AI_CREDIT_COSTS.automationSummary);
+    if (credit && !credit.ok) {
+      unmarkAiAsked(sql, run.id, run.asked, run.now);
+      store.aiAsks += 1;
+      state.ai = undefined;
+      const why = refusedByService(credit) ? AI_CREDITS_UNCHECKED : AI_CREDITS_USED;
+      return { line: { kind: 'action', ok: false, text: why }, capped: why };
+    }
+  }
   const asked = await ask(client, summariseRequest(text), kit.ai.gateway);
   if (!asked.ok) return fail(asked.reason, true);
   const summary = readSummary(asked.raw, text);

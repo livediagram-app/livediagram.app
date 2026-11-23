@@ -310,6 +310,10 @@ export function runE2EStack(settings) {
         `INDEX_AUDIENCES:${apiResource}`,
         '--var',
         `INDEX_KEY_${UPPER}:${INDEX_KEY}`,
+        // Pro is off here too, whatever a developer's .dev.vars says: the stack runs no subscription Worker, and with
+        // it off nothing spends Automation Runs (liveworkspace/docs/specs/004-index/webhooks.md).
+        '--var',
+        'PRO_ENABLED:false',
         '--var',
         `APP_ORIGIN_${UPPER}:http://127.0.0.1:${API_PORT}`,
         '--var',
@@ -382,6 +386,10 @@ export function runE2EStack(settings) {
         `INDEX_KEY:${INDEX_KEY}`,
         // The stack's media, never one a developer's .dev.vars names.
         ...mediaVars,
+        // Pro is off (liveworkspace/docs/specs/019-subscription/subscription.md "The flag"), whatever a developer's
+        // .dev.vars says: the stack runs no subscription Worker. A suite that wants Pro names it in `apiVars`.
+        '--var',
+        'PRO_ENABLED:false',
         ...(settings.apiVars ?? []).flatMap((v) => ['--var', v]),
         ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${EDITOR_PORT}`] : []),
       ],

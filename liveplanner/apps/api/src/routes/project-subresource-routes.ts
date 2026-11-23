@@ -43,6 +43,7 @@ import { answerTabView, parseViewQuery } from './project-views-route';
 import { typesOf } from '@liveplanner/items';
 import { pauseFormsFeeding } from '../forms/form-tab';
 import { handleTabLink } from './tab-link-route';
+import { releaseTabRoadmaps } from '../roadmap/roadmap-gauge';
 
 // Tab-content sub-resource routes for /api/projects/<id>/...,
 // split out of projects.ts. Returns a Response when it handles the path, or
@@ -185,6 +186,8 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       // Its form, if it had one, comes off the Inbox and its code stops naming the plan.
       if ((await deleteFormLinksForTab(env, id, tabId)) > 0) await pushFormInbox(env, id, tabId);
       await pauseFormsFeeding(env, id, tabId, typesOf(existing.itemTypes));
+      // Its boards' roadmaps leave the owner's count (roadmap/roadmap-gauge.ts). Nothing with Pro off.
+      await releaseTabRoadmaps(env, id, tabId);
       return noContent();
     }
   }

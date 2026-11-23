@@ -25,7 +25,7 @@ import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/Confi
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useToast } from '@liveworkspace/workbench/hooks/ui/useToast';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { AutomationRefusal } from './automations-client';
+import { AutomationRefusal, type AutomationTierRefusal } from './automations-client';
 import type { AutomationsTarget } from './AutomationsContext';
 import { automationsHeroArt } from './AutomationsHeroArt';
 import { ConnectionsTab } from './ConnectionsTab';
@@ -51,6 +51,26 @@ import { RunsMeter } from './RunsMeter';
 import { localZone, useMinuteClock } from './screen-clock';
 import { ScreenTabs, screenPanelId, screenTabId, type ScreenTab } from './ScreenTabs';
 import { TemplatesGallery } from './TemplatesGallery';
+import {
+  GuestLimitNote,
+  PLAIN_VOICE,
+  useItemTier,
+  useTierReread,
+} from '@liveworkspace/subscription-ui/item-tier';
+import {
+  AutomationsTierContext,
+  automationsTierOf,
+  monthOfRuns,
+  ownerRules,
+} from './tier/automations-tier';
+import { RulesNotice, RunsNotice, TierRunsMeter } from './tier/AutomationsLimits';
+import {
+  addRuleOffWords,
+  duplicateOffWords,
+  guestRulesWords,
+  ruleOnOffWords,
+  rulesFullWords,
+} from './tier/tier-words';
 import type { ListedRule, RuleBody, RuleStart } from './types';
 import { readAutomations, useAutomations } from './use-automations';
 import { useCarriedRule } from './use-carried-rule';
@@ -120,6 +140,17 @@ export function AutomationsDialog({
   // a rule open in the builder keeps its unsaved changes (the builder reads its rule once, as it mounts).
   const runsReload = useRef<RunLogReload | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // The item's limits as the list answered them, and who is looking (liveworkspace 019 "What people see"): with Pro
+  // off the legacy caps and nobody asked. A limit recovers without a reload: the list (its `rulesMax`, which New Rule,
+  // Duplicate, a rule's switch and the templates follow) is read again when the owner's tier changes and when the
+  // window is looked at again. It only reads, so an open rule keeps its unsaved changes.
+  const itemTier = useItemTier(api.data?.owner);
+  const rereadLimits = useCallback(() => void readAutomations(client, scope), [client, scope]);
+  useTierReread(itemTier, rereadLimits);
+  const tier = useMemo(
+    () => (api.data ? automationsTierOf(api.data, itemTier) : null),
+    [api.data, itemTier],
+  );
   const outline: unknown = kit.useOutline();
   const openSubject = kit.audit.open?.useGo();
   const views = useViewsOn(kit.views ?? NO_VIEWS);
@@ -224,7 +255,11 @@ export function AutomationsDialog({
     debugLog(`[automations] ${what}.failed`, { error: String(error) });
     toast.error(
       error instanceof AutomationRefusal
-        ? error.message
+        ? // A rule made elsewhere since the list was read filled the item or the owner's total: said in the
+          // refusal's own numbers with Pro on, else the item's own bound.
+          error.code === 'automation_rules_full'
+          ? rulesRefusedWords(error.tier, what === 'toggle')
+          : error.message
         : 'That didn’t work. Check your connection and try again.',
     );
   };
@@ -241,6 +276,16 @@ export function AutomationsDialog({
       void api
         .duplicate(rule.id)
         .then((copy) => toast.success(`Made ${copy.name}`), failed('duplicate')),
+    // With Pro on, a full item's Duplicate is off and says why, and so is a rule's switch while the item holds more
+    // rules than its tier allows (owner, 2026-11-22): never a press the api refuses.
+    duplicateOff:
+      itemTier.on && full ? duplicateOffWords(fullAt, words.item, fullWhose) : undefined,
+    switchOnOff:
+      itemTier.on && rules.length > rulesMax
+        ? ruleOnOffWords(rules.length, rulesMax, words.item)
+        : itemTier.on && owned && owned.used > owned.limit
+          ? ruleOnOffWords(owned.used, owned.limit, words.item, itemTier.voice.whose)
+          : undefined,
     onRunLog: () => onTarget({ view: 'runs', ruleId: rule.id }),
     onFixConnection: () => onTarget({ view: 'connections' }),
     onTakeOver: () =>
@@ -271,7 +316,33 @@ export function AutomationsDialog({
     track('template_opened', id);
     fromList(() => onTarget({ view: 'rule', ruleId: null, template: id }))();
   };
-  const full = rules.length >= AUTOMATION_RULES_MAX;
+  const rulesMax = tier?.rulesMax ?? AUTOMATION_RULES_MAX;
+  // The owner's rules over everything they own, for the owner and the owning team (their summary): their total at
+  // their tier's limit is full too, so New Rule is off before the api would refuse it.
+  const owned = ownerRules(tier);
+  const itemFull = rules.length >= rulesMax;
+  const ownerFull = !itemFull && !!owned && owned.used >= owned.limit;
+  const full = itemFull || ownerFull;
+  const fullAt = ownerFull ? owned.limit : rulesMax;
+  const fullWhose = ownerFull ? itemTier.voice.whose : null;
+  // With Pro on, New Rule and the templates say why they are off (Duplicate says it in its own words).
+  const addRuleOff =
+    itemTier.on && full ? addRuleOffWords(fullAt, words.item, fullWhose) : undefined;
+  // A guest's item (the api names no owner and says so): Free's limits, and the way on is to sign in.
+  const guestItem = api.data?.guest === true;
+  // The owner's month of runs, for the owner and the owning team; anyone else sees the item's Runs today.
+  const month = monthOfRuns(tier);
+  const rulesRefusedWords = (refused: AutomationTierRefusal | null, toggle: boolean): string => {
+    if (refused?.guest) return guestRulesWords(refused.max, words.item);
+    if (!refused)
+      return toggle
+        ? ruleOnOffWords(rules.length, rulesMax, words.item)
+        : rulesFullWords(rulesMax, rulesMax, PLAIN_VOICE, words.item);
+    return toggle
+      ? ruleOnOffWords(refused.used, refused.max, words.item, itemTier.voice.whose)
+      : rulesFullWords(refused.used, refused.max, itemTier.voice, words.item, true);
+  };
+  const signInHref = kit.connections.useSignInHref();
   const zone = localZone();
   const describe = fromList(() => {
     track('describe_opened');
@@ -327,7 +398,11 @@ export function AutomationsDialog({
   const meter = api.data ? (
     <div className={`flex items-center ${phone ? 'gap-2' : 'gap-1.5'}`}>
       <div className={phone ? 'min-w-0 flex-1' : undefined}>
-        <RunsMeter used={api.data.runsToday} max={api.data.runsPerDay} stacked={phone} />
+        {tier && month ? (
+          <TierRunsMeter tier={tier} month={month} phone={phone} />
+        ) : (
+          <RunsMeter used={api.data.runsToday} max={api.data.runsPerDay} stacked={phone} />
+        )}
       </div>
       <RefreshButton busy={refreshing} onRefresh={refresh} />
     </div>
@@ -400,17 +475,28 @@ export function AutomationsDialog({
     if (target.view === 'templates')
       return (
         <div className={`min-h-0 flex-1 overflow-y-auto ${phone ? 'px-4 py-4' : 'px-6 py-5'}`}>
-          {full ? (
+          {full && guestItem ? (
+            <div className="mb-4">
+              <GuestLimitNote
+                sentence={guestRulesWords(rulesMax, words.item)}
+                signInHref={signInHref}
+              />
+            </div>
+          ) : full && !itemTier.on ? (
             <Callout tone="warning" size="md" className="mb-4">
-              This {words.item} has {AUTOMATION_RULES_MAX} rules, the most it can hold. Delete one
-              to add another.
+              {rulesFullWords(rules.length, rulesMax, PLAIN_VOICE, words.item)}
             </Callout>
           ) : null}
           <p className="mb-4 text-[13px] text-slate-500 dark:text-slate-400">
             Pick one to open it in the builder, filled in from this {words.item}. Nothing is saved
             until you save the rule.
           </p>
-          <TemplatesGallery onPick={pickTemplate} heading="All Templates" disabled={full} />
+          <TemplatesGallery
+            onPick={pickTemplate}
+            heading="All Templates"
+            disabled={full}
+            offReason={addRuleOff}
+          />
         </div>
       );
     if (target.view === 'connections')
@@ -511,6 +597,7 @@ export function AutomationsDialog({
             {viewButtons(false)}
             <NewRuleMenu
               disabled={!api.data || full}
+              offReason={addRuleOff}
               onBlank={newRule}
               onTemplates={openTemplates}
               onDescribe={describe}
@@ -544,8 +631,41 @@ export function AutomationsDialog({
         aria-labelledby={screenTabId(tabsId, screenTab)}
         className="flex min-h-0 flex-1 flex-col"
       >
-        {/* The item spent its runs for the day ("Runs, limits and loops"): the meter is full and says why. */}
-        {api.data && api.data.runsToday >= api.data.runsPerDay ? (
+        {/* With Pro on, the owner's month as it runs low and once it is used ("Runs, limits and loops"). */}
+        {tier && month && api.data ? (
+          <RunsNotice
+            tier={tier}
+            month={month}
+            now={now}
+            className={`mt-3 ${phone ? 'mx-4' : 'mx-6'}`}
+          />
+        ) : null}
+        {/* No rule may be added: New Rule, the templates and Duplicate are off. The owner's total offers the tier
+            above; the item's own 50 offers nothing. */}
+        {tier?.item.on && api.data && full && screenTab !== 'runs' && !guestItem ? (
+          ownerFull ? (
+            <RulesNotice
+              tier={tier}
+              held={owned.used}
+              max={owned.limit}
+              item={words.item}
+              className={`mt-3 ${phone ? 'mx-4' : 'mx-6'}`}
+            />
+          ) : (
+            <Callout
+              tone="warning"
+              size="md"
+              role="status"
+              className={`mt-3 ${phone ? 'mx-4' : 'mx-6'}`}
+            >
+              {rulesFullWords(rules.length, rulesMax, PLAIN_VOICE, words.item)}
+            </Callout>
+          )
+        ) : null}
+        {/* The item spent its fixed runs for the day, on every tier: the meter is full and says why. */}
+        {api.data &&
+        api.data.runsToday >= api.data.runsPerDay &&
+        !(month && month.used >= month.limit) ? (
           <Callout
             tone="warning"
             size="md"
@@ -569,6 +689,7 @@ export function AutomationsDialog({
             <NewRuleMenu
               footer
               disabled={!api.data || full}
+              offReason={addRuleOff}
               onBlank={newRule}
               onTemplates={openTemplates}
               onDescribe={describe}
@@ -627,6 +748,10 @@ export function AutomationsDialog({
         <DescribeRuleDialog
           draft={(prompt) => client.draft(scope, prompt, zone)}
           onDrafted={openDraft}
+          onByHand={() => {
+            setDescribing(false);
+            newRule();
+          }}
           onClose={() => setDescribing(false)}
         />
       ) : null}
@@ -662,7 +787,9 @@ export function AutomationsDialog({
   );
   return (
     <AutomationsScreenContext.Provider value={screen}>
-      {Provider ? <Provider>{dialog}</Provider> : dialog}
+      <AutomationsTierContext value={tier}>
+        {Provider ? <Provider>{dialog}</Provider> : dialog}
+      </AutomationsTierContext>
     </AutomationsScreenContext.Provider>
   );
 }

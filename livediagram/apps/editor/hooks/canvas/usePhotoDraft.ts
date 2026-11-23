@@ -13,6 +13,8 @@ import {
 } from '@livediagram/document';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
 import { selectReader } from '@/lib/reading/select';
+import { readOnDevice, readRun, rereadOnDevice, startReadRun } from '@/lib/reading/read-credits';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 import type { ReadOptions } from '@/lib/reading/types';
 import { usePhotoReread } from './usePhotoReread';
 import { setPhotoDraftView } from '@/lib/photo-draft-preview';
@@ -72,6 +74,13 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
   // The photo as picked, kept for the review's life: a box the author moves
   // is cut again from it, at full resolution.
   const fileRef = useRef<File | null>(null);
+  // A charged read waiting for the person to choose how it is read (docs/specs/021-event-storming/note-reader.md
+  // "What the editor shows"): nothing is sent until they do.
+  const choiceRef = useRef<{
+    detection: PhotoDetection;
+    controller: AbortController;
+    run: number;
+  } | null>(null);
   // One model, one queue: the first read and every re-read take turns.
   const queueRef = useRef<Promise<void>>(Promise.resolve());
   const enqueue = useCallback((job: () => Promise<void>) => {
@@ -176,6 +185,8 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
           aiEnabled,
           ownerId: live.current.ownerId,
           keyed: keyedRef.current,
+          // The person chose to read this photo here: nothing is sent, nothing spent.
+          onDevice: readRun().onDevice,
         });
         const answer = await read(detection.crops, {
           signal: controller.signal,
@@ -245,11 +256,13 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     },
     isCurrent: (run) => runRef.current === run,
     enqueue,
+    // A charged read's box goes to the AI only while its pass holds: a re-read never spends without asking.
     reader: () =>
       selectReader({
         aiEnabled: live.current.aiEnabled,
         ownerId: live.current.ownerId,
         keyed: keyedRef.current,
+        onDevice: rereadOnDevice(),
       }).read,
     readOptions: readerCallbacks,
     onText: (run, id, read) => {
@@ -325,6 +338,11 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       // The detection pipeline (and the sticky detector in it) loads only now, once a photo is
       // picked: most documents never import one (docs/specs/016-platform/web-performance.md).
       let pipeline: typeof import('@/lib/photo-detect') | null = null;
+      // Whether the read will spend AI credits, loaded beside the pipeline. If it cannot load, the choice is still
+      // offered wherever a read could be charged: never a silent spend.
+      const charging = import('@/lib/reading/read-charged')
+        .then((m) => m.readCharged(live.current.signedIn, live.current.aiEnabled))
+        .catch(() => proOn() && live.current.signedIn && live.current.aiEnabled);
       try {
         pipeline = await import('@/lib/photo-detect');
         detection = await pipeline.detectAndCrop(file, { signal: controller.signal });
@@ -358,9 +376,38 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
         return;
       }
 
+      // A new photo is a new read: with Pro on it is paid for once, its re-reads included, and costs what its notes
+      // do (lib/reading/read-credits.ts). The detector numbers the notes from 0.
+      const notes = detection.stickies.reduce((n, s) => Math.max(n, s.id + 1), 0);
+      const charged = await charging;
+      if (!current()) return;
+      startReadRun(notes, charged);
+      if (charged) {
+        // Nothing is read until the person chooses AI (and its cost) or this device (for nothing).
+        choiceRef.current = { detection, controller, run };
+        setState((s) => (s.stage === 'review' ? { ...s, readChoice: { notes } } : s));
+        return;
+      }
       enqueue(() => readWords(detection, controller, run));
     },
     [closeReview, enqueue, fail, nextPaint, readWords, reviewRef, live],
+  );
+
+  // The person's choice for a charged read: the AI, at the cost the choice said, or this device, for nothing.
+  const chooseRead = useCallback(
+    (onDevice: boolean) => {
+      const waiting = choiceRef.current;
+      choiceRef.current = null;
+      if (!waiting || runRef.current !== waiting.run) return;
+      if (onDevice) readOnDevice();
+      setState((s) => {
+        if (s.stage !== 'review') return s;
+        const { readChoice: _chosen, ...rest } = s;
+        return rest;
+      });
+      enqueue(() => readWords(waiting.detection, waiting.controller, waiting.run));
+    },
+    [enqueue, readWords],
   );
 
   // Add the ticked boxes as the on-canvas draft. The one write of the review:
@@ -412,6 +459,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
       // The words on screen are what landed: a re-read still pending is moot.
       runRef.current += 1;
       cancelRereads();
+      choiceRef.current = null;
       fileRef.current = null;
       setReview(null);
       setState({
@@ -430,6 +478,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     abortRef.current?.abort();
     abortRef.current = null;
     cancelRereads();
+    choiceRef.current = null;
     closeReview();
     setState(EMPTY);
   }, [closeReview, cancelRereads]);
@@ -473,6 +522,7 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     abortRef.current?.abort();
     abortRef.current = null;
     cancelRereads();
+    choiceRef.current = null;
     setState(EMPTY);
   }, [cancelRereads]);
 
@@ -489,5 +539,6 @@ export function usePhotoDraft(deps: PhotoDraftDeps): PhotoDraftApi {
     cancelReading,
     rereading,
     reread,
+    chooseRead,
   };
 }

@@ -38,12 +38,35 @@ export function snapshotAuthor(snapshot: SnapshotSummary, viewerId: string | nul
   return snapshot.author.name || 'Someone';
 }
 
-/** The row's second line: who, how long ago, how big. */
+/** When a snapshot on a tier that keeps them for a time is dropped: "Kept until 27 Nov". */
+export function snapshotKeptUntil(expiresAt: number, locale?: string): string {
+  const day = new Date(expiresAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' });
+  return `Kept until ${day}`;
+}
+
+/** The row's second line: who, how long ago, how big, and until when where the owner's tier keeps it for a time. */
 export function snapshotMeta(
   snapshot: SnapshotSummary,
   viewerId: string | null,
   now: number,
+  locale?: string,
 ): string {
   const ago = formatRelativeTime(Math.max(0, now - snapshot.createdAt));
-  return `${snapshotAuthor(snapshot, viewerId)} · ${ago} · ${snapshotSize(snapshot.bytes)}`;
+  const meta = `${snapshotAuthor(snapshot, viewerId)} · ${ago} · ${snapshotSize(snapshot.bytes)}`;
+  return snapshot.expiresAt === undefined
+    ? meta
+    : `${meta} · ${snapshotKeptUntil(snapshot.expiresAt, locale)}`;
+}
+
+/** The quiet line under the snapshots of an item whose owner's tier keeps them for a time (snapshots.md "With Pro
+ *  on"). The server said the days; only Free keeps them for a time. `keeper` is the tier that keeps them: Pro, or Pro
+ *  for Teams for a team's own people, as every other notice on a team's item names it. */
+export function retentionSentence(days: number, keeper = 'Pro'): string {
+  return `Free keeps snapshots for ${days === 1 ? '1 day' : `${days} days`}. ${keeper} keeps them forever.`;
+}
+
+/** The same line for anyone who cannot act on the owner's tier (a collaborator, a signed-out visitor): how long
+ *  snapshots last here, with no tier named, since a collaborator is never told the owner's tier. */
+export function othersRetentionSentence(days: number): string {
+  return `Snapshots here are kept for ${days === 1 ? '1 day' : `${days} days`}.`;
 }

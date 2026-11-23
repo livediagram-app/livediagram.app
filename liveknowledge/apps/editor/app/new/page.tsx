@@ -1,5 +1,6 @@
 'use client';
 
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import dynamic from 'next/dynamic';
 import { useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -330,7 +331,12 @@ export default function NewDocumentPage() {
             title={createError.title}
             message={createError.message}
             retryLabel={createError.actionLabel}
+            retryIcon={createError.action === 'retry'}
             onRetry={() => {
+              if (createError.action === 'explorer') {
+                window.location.assign(explorerHref(''));
+                return;
+              }
               if (createError.action === 'choose') {
                 // The refused placement would be refused again: make it without one.
                 window.location.assign(choosePlacementAgainUrl(window.location.search));

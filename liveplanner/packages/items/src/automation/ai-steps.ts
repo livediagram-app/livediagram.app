@@ -35,6 +35,8 @@ import type { PlannedSegment, RunCarry, Walk } from './plan-walk';
 // The request's shape, the reply's reading, the link rules and the words every app's AI steps say are
 // @liveworkspace/automations' (liveworkspace/docs/specs/018-automations/blueprints/engine.md "AI").
 export {
+  AI_CREDITS_UNCHECKED,
+  AI_CREDITS_USED,
   AI_EMPTY,
   AI_FAILED,
   AI_NOT_ASKED,

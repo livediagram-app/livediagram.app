@@ -44,6 +44,8 @@
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:^",
+    "@liveworkspace/subscription": "workspace:*",
+    "@liveworkspace/subscription-ui": "workspace:*",
     "@liveworkspace/ui": "workspace:^"
   }
 }

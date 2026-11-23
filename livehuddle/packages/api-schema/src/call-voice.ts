@@ -2,6 +2,8 @@
 // presence ops a call adds to the room, their field-by-field parsers (shared by the room's gate and the editor), and
 // the calls mint routes' bodies. Never audio: a level and a locator are all that ride the room.
 
+import type { CallSessionMinutes } from './call-minutes';
+
 /** How loudly a speaker is talking: 0 is stopped, 1 to 4 the quantised level. */
 export type VoiceLevel = 0 | 1 | 2 | 3 | 4;
 export const VOICE_LEVEL_MAX = 4;
@@ -139,6 +141,9 @@ export type CallSessionResponse = {
   canSpeak: boolean;
   // The calls kill switch's mode as the session was minted (never `off`: that refuses the session).
   mode: 'on' | 'audio-only';
+  // With Pro on, while the Space's calls are counted (docs/specs/012-collaboration/call-minutes.md): whose month they
+  // count against, and whether it is running low. Absent otherwise.
+  minutes?: CallSessionMinutes;
 };
 
 export type CallSessionDescription = { type: 'offer' | 'answer'; sdp: string };
@@ -192,7 +197,9 @@ export type CallsErrorCode =
   | 'calls_upstream'
   // Realtime dropped the session (nobody connected to it in time): the browser mints a new one (proximity-audio.md
   // "A session that expires").
-  | 'calls_session_gone';
+  | 'calls_session_gone'
+  // The Space's owner has used the month's call minutes (docs/specs/012-collaboration/call-minutes.md).
+  | 'calls_minutes_used';
 // `paused` and `audio-only` are the calls kill switch's (docs/specs/016-platform/calls-kill-switch.md "The mint
 // route"): everything is paused, or this track's media is while calls are audio only.
 export type CallsOffReason = 'unconfigured' | 'paused' | 'audio-only';

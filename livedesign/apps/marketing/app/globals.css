@@ -34,6 +34,9 @@
 @source '../../../../packages/marketing-site/src';
 /* The header's account menu, shared with liveworkspace.app (@liveworkspace/account-menu). */
 @source '../../../../packages/account-menu/src';
+/* The account menu's Pro badge and Upgrade to Pro (@liveworkspace/subscription-ui), drawn only with Pro on. */
+@source '../../../../packages/subscription-ui/src';
+@source not '../../../../packages/subscription-ui/src/**/*.test.tsx';
 /* The shared template-browse art (PreviewFan, @liveworkspace/template-previews) carries its own utility classes. */
 @source '../../../../packages/template-previews/src/PreviewFan.tsx';
 @source '../../../../packages/template-previews/src/DeferredPreviewFan.tsx';

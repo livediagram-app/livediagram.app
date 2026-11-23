@@ -40,8 +40,8 @@ Listing headlines, Open Graph titles, search-result titles.
 Hero subheads, Twitter/X header copy, longer headline fields.
 
 - A free, real-time editor for articles, slide decks and infographics. [68]
-- Write, present and design on pages together. MIT-licensed and free forever. [75]
-- Articles, decks and infographics in the browser. No sign-up wall, no paid tier. [79]
+- Write, present and design on pages together. MIT-licensed and free to start. [76]
+- Articles, decks and infographics in the browser. No sign-up wall, no card needed. [81]
 
 ## Long, <= 100 characters
 

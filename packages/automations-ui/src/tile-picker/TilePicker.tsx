@@ -19,6 +19,8 @@ export type PickerTile<K extends string> = {
   line: string;
   icon: ReactNode;
   scene: ReactNode;
+  // A mark after the name (the Pro badge on an action the owner's tier does not include).
+  badge?: ReactNode;
 };
 
 export type PickerSection<K extends string> = {
@@ -26,6 +28,8 @@ export type PickerSection<K extends string> = {
   name: string;
   // A note beside the group's name (AI's daily allowance).
   note?: string;
+  // The note tells of a limit reached (no AI credits left this month): amber, as every meter at its limit.
+  noteAtLimit?: boolean;
   // Why the group's tiles are dimmed: the rule holds all it may of them.
   full?: string;
   // A pill after the group's name ("New").
@@ -298,7 +302,14 @@ export function TilePicker<K extends string>({
                         {s.full}
                       </span>
                     ) : s.note ? (
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                      <span
+                        data-picker-note={s.noteAtLimit ? 'limit' : ''}
+                        className={`text-[11px] ${
+                          s.noteAtLimit
+                            ? 'font-medium text-amber-700 dark:text-amber-300'
+                            : 'text-slate-500 dark:text-slate-400'
+                        }`}
+                      >
                         {s.note}
                       </span>
                     ) : null}
@@ -323,6 +334,7 @@ export function TilePicker<K extends string>({
                             <span className="flex min-w-0 flex-col gap-0.5">
                               <span className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-900 dark:text-slate-50">
                                 {t.name}
+                                {t.badge}
                                 {t.key === current ? (
                                   <span className="rounded-full bg-brand-100 px-1.5 py-px text-[10px] font-semibold text-brand-700 dark:bg-brand-500/20 dark:text-brand-200">
                                     Current

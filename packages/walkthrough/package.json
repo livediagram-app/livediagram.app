@@ -20,6 +20,8 @@
     "@liveworkspace/capture": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/subscription": "workspace:*",
+    "@liveworkspace/subscription-ui": "workspace:*",
     "@liveworkspace/ui": "workspace:*",
     "@liveworkspace/workbench": "workspace:*"
   },

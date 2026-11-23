@@ -26,6 +26,10 @@ export const IMAGE_SHA256_HEADER = 'X-Image-Sha256';
 // document's reference at once and remembers the claim, so only that document's own report can let the sweep take
 // it (liveworkspace/docs/specs/006-media/media.md "Uploads"). Left out for a document the server never sees.
 export const MEDIA_DOCUMENT_HEADER = 'X-Media-Document';
+// The owner of the item an upload or a walkthrough is for, as a subscription scope (`p:<accountId>` or `t:<teamId>`),
+// from the index's grant: with Pro on the service reads that owner's tier beside the uploader's and applies the
+// better (media.md "With Pro on"). It names an owner, never a tier, and the app's key vouches for it.
+export const MEDIA_ITEM_OWNER_HEADER = 'X-Media-Item-Owner';
 
 // The tool that uploaded the picture (liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool"): `mcp` for an AI
 // assistant through an app's MCP server, `cli` for the app's command line. Absent, or anything else, is a person's.
@@ -61,7 +65,15 @@ export type MediaImage = {
   source?: ImageSource;
 };
 
-export type MediaListResponse = { images: MediaImage[] };
+// With Pro on: what the owner's pictures use of their own tier's Image Storage, the largest image that tier takes,
+// and the scope an offer is for (null for a guest). Absent with Pro off.
+export type MediaStorage = {
+  used: number;
+  limit: number;
+  maxImageBytes: number;
+  owner: string | null;
+};
+export type MediaListResponse = { images: MediaImage[]; storage?: MediaStorage };
 export type MediaUploadResponse = { image: MediaImage; deduped: boolean };
 // `GET /app/images/<id>`: the image and whose it is.
 export type MediaImageResponse = { image: MediaImage; owner: string };
@@ -118,4 +130,16 @@ export type MediaGalleryFull = {
   reason: 'count' | 'bytes';
   limit: number;
   current: number;
+  // With Pro on: the scope whose tier set the limit, for the offer. Null for a guest.
+  owner?: string | null;
+};
+
+// An image over the largest its uploader may send (413). `limitBytes` always; with Pro on also `limit` (the same
+// number), `current` (the size sent) and `owner`.
+export type MediaFileTooLarge = {
+  error: 'file_too_large';
+  limitBytes: number;
+  limit?: number;
+  current?: number;
+  owner?: string | null;
 };

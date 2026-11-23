@@ -11,11 +11,14 @@ import {
 } from '@liveplanner/items';
 import {
   AutomationStore as RuleStore,
+  LEGACY_AUTOMATION_LIMITS,
+  type AutomationLimits,
   type AutomationStoreKit,
   type Sql,
 } from '@liveworkspace/automations/room';
 
-export type { Sql };
+export type { AutomationLimits, Sql };
+export { LEGACY_AUTOMATION_LIMITS };
 
 export const PLAN_RULES: AutomationStoreKit<AutomationRule, AutomationEventKind> = {
   hears: (rule) => TRIGGER_EVENT_KINDS[rule.trigger.kind],
@@ -24,7 +27,8 @@ export const PLAN_RULES: AutomationStoreKit<AutomationRule, AutomationEventKind>
 };
 
 export class AutomationStore extends RuleStore<AutomationRule, AutomationEventKind> {
-  constructor(sql: () => Sql, ready: () => boolean) {
-    super(sql, ready, PLAN_RULES);
+  // `limits`: the plan's tier's (plan-room/tier/plan-tier.ts); absent, the legacy ones.
+  constructor(sql: () => Sql, ready: () => boolean, limits?: () => AutomationLimits) {
+    super(sql, ready, PLAN_RULES, limits);
   }
 }

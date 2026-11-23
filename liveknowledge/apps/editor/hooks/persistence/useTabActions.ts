@@ -19,6 +19,7 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
+import { openPagesMax } from '@/lib/knowledge-tier';
 import { useEffect, useRef } from 'react';
 import {
   NEW_PAGE_NAME,
@@ -137,7 +138,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // A session that cannot change the knowledgebase's pages adds none, whichever control asked.
     if (!deps.canEditStructure) return;
     // At a limit the controls are disabled with the reason; a shortcut or the command palette hears it here.
-    const refused = pageAddRefusal(tabs, parent);
+    const refused = pageAddRefusal(tabs, parent, openPagesMax());
     if (refused) {
       toast.error(pageTreeRefusalText(refused));
       return;
@@ -162,7 +163,7 @@ export function useTabActions(deps: TabActionsDeps) {
   // where they are. Answers its id, or null when it was not made.
   const addNamedSubpage = (parent: string, name: string): string | null => {
     if (!deps.canEditStructure) return null;
-    const refused = pageAddRefusal(tabs, parent);
+    const refused = pageAddRefusal(tabs, parent, openPagesMax());
     if (refused) {
       toast.error(pageTreeRefusalText(refused));
       return null;
@@ -291,7 +292,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // opens only in its own tab.
     if (!src || connectionOf(src)) return;
     // The copy is one more page under the same parent: no deeper, so only the page limit can refuse it.
-    const refused = pageAddRefusal(tabs, src.parent);
+    const refused = pageAddRefusal(tabs, src.parent, openPagesMax());
     if (refused) {
       toast.error(pageTreeRefusalText(refused));
       return;

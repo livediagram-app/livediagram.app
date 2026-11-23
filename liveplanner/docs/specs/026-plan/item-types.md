@@ -991,6 +991,18 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     from the service, a full gallery ("Your image gallery is full. Delete some images and try again."). A server
     without the media service answers 503: the control then says "Image uploads aren't available here." and
     offers no upload.
+  - **With Pro on** ([media.md](../../../../liveworkspace/docs/specs/006-media/media.md) "With Pro on") the largest
+    picture is a tier's, not 10 MB: the better of the uploader's own tier and the tier of the owner of plan `p` (its
+    team's for a team's plan), so Free takes 5 MB and Pro and Pro for Teams 25 MB, and anyone adding to a team's plan
+    uploads at the team's limits. The api reads both from entitlements and the index's grant, never from the request,
+    refuses a declared length over the limit before it reads the body (`413 file_too_large` with `limit`, `current`
+    and `owner`), and names the plan's owner to the service (`X-Media-Item-Owner`). The control's hint names no size
+    (the limit is the server's to say), a picked file is stopped only past what any tier takes (25 MB), and a tier's
+    refusal draws the shared notice in place of the plain line: "This Image Is Over 5 MB" with **Choose Another** and
+    the offer for whoever may take it, or "Image Storage Is Full". Where several files go at once the notice is drawn
+    once, under the control, and the files that fit still land. A form's cover and picture blocks are uploaded by its
+    builder through the same route, so they follow the same rule; a public form takes no picture from a respondent.
+    With Pro off every word, cap and request above is unchanged.
   - **Who may change it**: an Editor and a Participant (who edit cards) add, replace, remove and reorder pictures; a
     Viewer sees the pictures and opens them, with no Add, Replace, Remove or dragging. Removing a picture (or the
     last of a Several Images field's, which clears it) is one undo step, as any field; the image leaves storage 15

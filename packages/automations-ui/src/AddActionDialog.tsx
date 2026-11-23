@@ -21,6 +21,8 @@ import { useAutomationsKit } from './kit-context';
 import { canAddAi, canAddCrossApp, canAddOutgoing, canAddWait } from './rule-draft';
 import { TilePicker } from './tile-picker/TilePicker';
 import type { RuleBody } from './types';
+import { creditsLeftLine, tierUsage } from '@liveworkspace/subscription-ui/item-tier';
+import { useAutomationsTier } from './tier/automations-tier';
 
 export type PickerWhere = 'top' | 'list' | 'branch';
 
@@ -187,27 +189,37 @@ export function AddActionDialog({
   only?: (key: string) => boolean;
 }) {
   const kit = useAutomationsKit();
+  // The item's tier, with Pro on: AI says what is left of the month's credits to someone who may know.
+  const tier = useAutomationsTier();
+  const credits = useMemo(() => (tier?.item.on ? tierUsage(tier.item, 'aiCredits') : null), [tier]);
   const sections = useMemo(
     () =>
-      pickerGroups(kit, body, where, only).map((g) => ({
-        id: g.id,
-        name: g.name,
-        ...(g.note ? { note: g.note } : {}),
-        ...(g.full ? { full: g.full } : {}),
-        ...(g.badge ? { badge: g.badge } : {}),
-        ...(g.footnote ? { footnote: g.footnote } : {}),
-        tiles: g.kinds.map((k) => {
-          const kind = kit.kinds.actions[k]!;
-          return {
-            key: k,
-            name: kind.name,
-            line: kind.line,
-            icon: <StepTile tone="action" glyph={kind.glyph} size={24} />,
-            scene: kind.scene(g.id),
-          };
-        }),
-      })),
-    [kit, body, where, only],
+      pickerGroups(kit, body, where, only).map((g) => {
+        const ai = credits !== null && g.kinds.some((k) => k.startsWith('ai_'));
+        const note = ai
+          ? [g.note, creditsLeftLine(credits.used, credits.limit)].filter(Boolean).join(' · ')
+          : g.note;
+        return {
+          id: g.id,
+          name: g.name,
+          ...(note ? { note } : {}),
+          ...(ai && credits.used >= credits.limit ? { noteAtLimit: true } : {}),
+          ...(g.full ? { full: g.full } : {}),
+          ...(g.badge ? { badge: g.badge } : {}),
+          ...(g.footnote ? { footnote: g.footnote } : {}),
+          tiles: g.kinds.map((k) => {
+            const kind = kit.kinds.actions[k]!;
+            return {
+              key: k,
+              name: kind.name,
+              line: kind.line,
+              icon: <StepTile tone="action" glyph={kind.glyph} size={24} />,
+              scene: kind.scene(g.id),
+            };
+          }),
+        };
+      }),
+    [kit, body, where, only, credits],
   );
   return (
     <TilePicker

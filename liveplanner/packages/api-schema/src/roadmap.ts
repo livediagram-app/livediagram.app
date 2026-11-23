@@ -4,6 +4,8 @@
 import type { FormLook } from '@liveplanner/project';
 
 /** The optional card fields a roadmap may show (Title always shows). Nothing else about a card is ever sent. */
+import type { TierLimitRefusal, TierOwner } from './tiers';
+
 export const ROADMAP_FIELDS = ['description', 'number', 'type', 'labels', 'start', 'due'] as const;
 export type RoadmapField = (typeof ROADMAP_FIELDS)[number];
 
@@ -69,6 +71,13 @@ export type RoadmapsResponse = {
   roadmaps: PublishedRoadmap[];
   boards: RoadmapBoard[];
   forms: RoadmapForm[];
+  // With Pro on: the roadmaps the plan's owner has published, over all their plans, against their tier's limit, and
+  // that owner.
+  // `used` is what the subscription service last said; absent before this plan has asked it anything.
+  usage?: { used?: number; limit: number | null };
+  owner?: TierOwner;
+  // The plan's owner has no account: the limit is Free's, counted in this plan alone, and no owner is named.
+  guest?: true;
 };
 
 /** PUT /api/projects/:id/roadmaps/:boardId. */
@@ -115,9 +124,14 @@ export const ROADMAP_ERRORS = [
   'roadmap_needs_owner',
   'roadmap_invalid',
   'roadmap_suggestions_public',
+  // Publish with the owner's tier's roadmaps all published (Pro on only): 409, with `limit`, `used` and `max`.
+  'roadmap_limit_reached',
 ] as const;
 export type RoadmapError = (typeof ROADMAP_ERRORS)[number];
 
 /** A roadmap link's page path. */
 export const roadmapPath = (planId: string, code: string): string =>
   `/roadmap/${encodeURIComponent(planId)}/${code}`;
+
+/** A refusal's body. With Pro on, one the owner's tier caused names the limit, what is used and its most. */
+export type RoadmapErrorBody = { error: RoadmapError } & Partial<TierLimitRefusal>;

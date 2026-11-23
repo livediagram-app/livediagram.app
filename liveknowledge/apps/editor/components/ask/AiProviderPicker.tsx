@@ -186,6 +186,7 @@ export type AiSource = 'built-in' | 'own-key';
 export function AiSourcePicker({
   chosen,
   builtIn,
+  credits = false,
   disabled,
   labelledBy,
   onChoose,
@@ -193,6 +194,8 @@ export function AiSourcePicker({
   chosen: AiSource;
   /** Whether this server has built-in AI. */
   builtIn: boolean;
+  /** Pro is on: built-in AI spends the owner's AI credits (tiers.md). */
+  credits?: boolean;
   disabled?: boolean;
   labelledBy: string;
   onChoose: (source: AiSource) => void;
@@ -204,7 +207,11 @@ export function AiSourcePicker({
         {
           id: 'built-in',
           label: 'Built-In AI',
-          about: builtIn ? 'No key to add. Daily limits apply.' : 'Not set up on this server.',
+          about: !builtIn
+            ? 'Not set up on this server.'
+            : credits
+              ? 'No key to add. Uses AI credits.'
+              : 'No key to add. Daily limits apply.',
           icon: <BuiltInAiIcon />,
           ...(builtIn ? { pill: 'Included' } : { unavailable: true }),
         },

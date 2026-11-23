@@ -33,6 +33,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
+import { storedFull } from '../limit-state';
 import { WalkthroughRow } from './WalkthroughRow';
 import type { Walkthroughs, WalkthroughsMenu } from '../useWalkthroughs';
 import { RecordIcon, WalkthroughIcon } from './icons';
@@ -64,6 +65,15 @@ function useLatest<T>(value: T): Latest<T> {
   return store;
 }
 
+// A tier's limit notices (Pro on only), loaded when one first shows: the list is in the editor's first load, and
+// the kit's notice is not.
+const StoredLimitNotice = lazy(() =>
+  import('./limit-notices').then((m) => ({ default: m.StoredLimitNotice })),
+);
+const LengthNote = lazy(() => import('./limit-notices').then((m) => ({ default: m.LengthNote })));
+const LengthLimitNotice = lazy(() =>
+  import('./limit-notices').then((m) => ({ default: m.LengthLimitNotice })),
+);
 /** What the panel calls the open item and how a viewer moves round it: a canvas by default, a knowledgebase's pages
  *  on liveknowledge (sweep 2026-11-21: its panel said "this canvas"). */
 export type WalkthroughWords = { item: string; moving: string };
@@ -226,7 +236,9 @@ export function WalkthroughsPanel({
   const [now] = useState(() => Date.now());
   const [confirming, setConfirming] = useState<{ id: string; anchor: HTMLElement } | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const { list, canRecord, loading: loadingId } = walkthroughs;
+  const { list, canRecord, loading: loadingId, limits, limitStop } = walkthroughs;
+  // With Pro on: the person keeps as many as they may, so the notice stands where Record Walkthrough would.
+  const full = storedFull(limits);
 
   return (
     <div
@@ -247,6 +259,19 @@ export function WalkthroughsPanel({
           ) : null}
         </div>
       )}
+      {limits && limitStop ? (
+        <div className="px-3 pt-3">
+          <Suspense fallback={null}>
+            <LengthLimitNotice
+              limits={limits}
+              onWatch={() => {
+                walkthroughs.play(limitStop);
+                onClose();
+              }}
+            />
+          </Suspense>
+        </div>
+      ) : null}
       {list.length === 0 ? (
         // The tool's explainer (footer-tools-menu.md "Explainers"): nothing recorded yet.
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-5 pt-4">
@@ -282,7 +307,23 @@ export function WalkthroughsPanel({
           ))}
         </ul>
       )}
-      {canRecord ? (
+      {canRecord && limits && !full && !limitStop ? (
+        <div data-walkthroughs-length="">
+          <Suspense fallback={null}>
+            <LengthNote limits={limits} />
+          </Suspense>
+        </div>
+      ) : null}
+      {canRecord && full && limits ? (
+        <div
+          data-walkthroughs-full=""
+          className="border-t border-slate-100 p-3 dark:border-slate-800"
+        >
+          <Suspense fallback={null}>
+            <StoredLimitNotice limits={limits} />
+          </Suspense>
+        </div>
+      ) : canRecord ? (
         // Pinned at the bottom: the list scrolls above it (owner, 2026-11-17).
         <ToolFooter>
           <ToolFooterButton

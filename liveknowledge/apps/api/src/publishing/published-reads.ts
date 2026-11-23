@@ -12,7 +12,9 @@ import {
 import type { KnowledgeStyle } from '@liveknowledge/document';
 import { readDocumentMeta } from '../document-room/document-content';
 import { knowledgeDb } from '../knowledge/knowledge-db';
+import { subscriptionOf } from '../subscription';
 import type { DocumentEnv } from '../types';
+import { siteServes } from './published-gauge';
 import { readSite, refreshPublished } from './published-snapshot';
 
 export type PublishedRead =
@@ -69,6 +71,9 @@ export async function readPublished(
   }
   const site = await readSite(env);
   if (!site) return { status: 'none' };
+  // With Pro on, a site answers only while it holds a counted place of its owner's Public Knowledgebases (spec
+  // "Tiers"): one whose place was refused is the same not-found as any other miss. One mark read, no call.
+  if (!siteServes({ on: subscriptionOf(env).enabled }, site.counted)) return { status: 'none' };
   const db = knowledgeDb(env);
   const [meta, treeRes] = await Promise.all([
     readDocumentMeta(env, documentId),

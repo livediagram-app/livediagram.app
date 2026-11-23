@@ -36,6 +36,7 @@ import {
 } from '@/lib/explorer/app-session';
 import { setSessionColour, signOut, useSession } from '@/lib/session';
 import { settingsStore, type AppId } from '@/lib/app-settings';
+import { SITE_SUBSCRIPTION } from '@/lib/subscription';
 import { pageApp } from '@/lib/explorer/page-app';
 import { setExplorerConsent, setGuestTelemetryChoice } from '@/lib/explorer/telemetry';
 import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry';
@@ -46,7 +47,8 @@ import { settingsErrorMessage } from './settings-ui';
 // The Account section's API Tokens and Download Your Data (@liveworkspace/settings-ui accountPanels), each
 // fetched when its category is first shown: the account API through accountApi (this site's session on
 // liveworkspace.app, the app's token through its router on an app's address).
-const ACCOUNT_PANELS = accountPanels({ request: accountApi });
+// With them, the Subscription category's way to the subscription service (listed only with Pro on in the build).
+const ACCOUNT_PANELS = accountPanels({ request: accountApi, subscription: SITE_SUBSCRIPTION });
 
 // Sign-in and devices on an app's address: the account API's bearer door, through the app's router.
 const APP_SECURITY = bearerAccountSecurity(accountApi, { settingsParam: 'profile' });

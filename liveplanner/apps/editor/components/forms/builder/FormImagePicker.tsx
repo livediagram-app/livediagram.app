@@ -23,6 +23,8 @@ import {
   releaseImageUrl,
   type ImageSummary,
 } from '@/lib/api/images';
+import type { ImageLimitRefusal } from '@liveworkspace/subscription-ui/images';
+import { ImageUploadLimit } from '@/components/plan/ImageUploadLimit';
 import { setImageSearchScope, useImageSearch } from '@/hooks/ui/useImageSearch';
 import { track } from '@/lib/telemetry';
 import { useFormBuilder } from './form-builder-context';
@@ -109,19 +111,25 @@ function UploadPane({ scope, onPick }: { scope: Scope; onPick: (p: FormPicked) =
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // A tier's limit refused the upload (Pro on): drawn as the shared notice in place of the plain line.
+  const [limit, setLimit] = useState<ImageLimitRefusal | null>(null);
   const [over, setOver] = useState(false);
   const upload = async (file: File | undefined) => {
     if (!file || busy) return;
     setBusy(true);
     setError(null);
+    setLimit(null);
     try {
       const { image } = await apiUploadImage(scope, file);
       track('Form', 'Added', 'PictureUpload');
       onPick({ id: image.id });
     } catch (e) {
-      setError(
-        e instanceof ImageUploadError ? e.message : 'The image couldn’t be uploaded. Try again.',
-      );
+      const refused = e instanceof ImageUploadError ? e.limit : null;
+      if (refused) setLimit(refused);
+      else
+        setError(
+          e instanceof ImageUploadError ? e.message : 'The image couldn’t be uploaded. Try again.',
+        );
     } finally {
       setBusy(false);
     }
@@ -176,6 +184,11 @@ function UploadPane({ scope, onPick }: { scope: Scope; onPick: (p: FormPicked) =
           {error}
         </p>
       ) : null}
+      <ImageUploadLimit
+        refusal={limit}
+        onChooseAnother={() => input.current?.click()}
+        className="mt-3"
+      />
     </div>
   );
 }

@@ -10,6 +10,13 @@ import {
   type AcceptedImageType,
 } from '@livehuddle/api-schema';
 import { blobToDataUrl } from '@liveworkspace/workbench/lib/blob-data-url';
+import {
+  imageLimitRefusalOf,
+  imageLimitSentence,
+  imageTooLargeSentence,
+  imageUploadCeiling,
+  type ImageLimitRefusal,
+} from '@liveworkspace/subscription-ui/images';
 
 // Map the api worker's upload error tokens (responses.ts / images.ts)
 // to messages safe to render inline in the picker. The client-side
@@ -47,10 +54,15 @@ export type { PickedImage } from '@liveworkspace/workbench/lib/image-search/pick
 // it inline). Network + server errors get caught + re-thrown with
 // a friendlier message by the wrapping helper so the caller can
 // surface a single field.
+//
+// `limit`: with Pro on, the tier's limit the server refused the upload for (liveworkspace/docs/specs/006-media/
+// media.md "With Pro on"), which the picker draws as the shared notice; null for any other failure.
 export class ImageUploadError extends Error {
-  constructor(message: string) {
+  readonly limit: ImageLimitRefusal | null;
+  constructor(message: string, limit: ImageLimitRefusal | null = null) {
     super(message);
     this.name = 'ImageUploadError';
+    this.limit = limit;
   }
 }
 
@@ -62,8 +74,9 @@ function validateImageFile(file: File): void {
       `Unsupported file type. Use ${IMAGE_TYPES_LABEL} (SVG is rejected for security).`,
     );
   }
-  if (file.size > MAX_IMAGE_BYTES) {
-    throw new ImageUploadError(`Too large. Limit is ${MAX_IMAGE_MB} MB.`);
+  // With Pro on a file passes up to what any tier takes: what this person may send is the server's to say.
+  if (file.size > imageUploadCeiling(MAX_IMAGE_BYTES)) {
+    throw new ImageUploadError(imageTooLargeSentence(MAX_IMAGE_MB));
   }
   if (file.size === 0) {
     throw new ImageUploadError('Empty file.');
@@ -73,7 +86,11 @@ function validateImageFile(file: File): void {
 // Runs the full upload flow for one file picked by the user (via
 // drop, paste, or file input). Returns the uploaded image + the
 // dedupe flag the picker uses to flash "already in your gallery".
-export async function uploadImageFile(ownerId: string, file: File): Promise<UploadResult> {
+export async function uploadImageFile(
+  ownerId: string,
+  file: File,
+  itemId: string | null = null,
+): Promise<UploadResult> {
   validateImageFile(file);
   const bytes = await file.arrayBuffer();
   // SHA-256 dedupe key. The server re-verifies this against the
@@ -93,8 +110,12 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
       width: dims.width,
       height: dims.height,
       originalName: file.name,
+      itemId,
     });
   } catch (e) {
+    // A tier's limit (Pro on): the server's numbers travel with the error, and its words say them.
+    const limit = e instanceof ApiError ? imageLimitRefusalOf(e.body) : null;
+    if (limit) throw new ImageUploadError(imageLimitSentence(limit), limit);
     const mapped = e instanceof ApiError && e.code ? UPLOAD_ERROR_MESSAGES[e.code] : undefined;
     if (mapped) throw new ImageUploadError(mapped);
     const raw = e instanceof Error ? e.message : 'Upload failed.';
@@ -143,7 +164,7 @@ export async function addImageFileForDocument(
   file: File,
 ): Promise<UploadResult> {
   if (documentId && isOfflineIdSync(documentId)) return embedImageFile(file);
-  return uploadImageFile(ownerId, file);
+  return uploadImageFile(ownerId, file, documentId);
 }
 
 // Decode width / height via a transient <img>. The browser parses

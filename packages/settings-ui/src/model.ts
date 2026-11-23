@@ -121,6 +121,8 @@ export type SettingsCategory = {
   label: string;
   // A top-level category's tile, or a sub-category's plain glyph.
   icon?: ReactNode;
+  // A quiet word at the right of the category's row in the rail (Subscription's tier). It may draw nothing.
+  hint?: ReactNode;
   // The top-level category this nests under.
   parent?: string;
   // The heading it is listed under in the rail (SettingsGroupHeading's id), where the panel groups them: Account,

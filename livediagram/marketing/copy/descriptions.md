@@ -6,7 +6,7 @@ field, then trim to taste. Counts in brackets are approximate (characters for
 the short ones, words for the long ones).
 
 Built from [`facts.md`](facts.md). No em dashes. Don't promise conflict-free
-(CRDT) editing or a paid tier (see "Do not claim" in the fact sheet).
+(CRDT) editing or claim there is no paid tier (see "Do not claim" in the fact sheet).
 
 ---
 
@@ -20,7 +20,7 @@ For HTML `<meta name="description">` and search snippets.
 Alternate:
 
 > Build diagrams and mindmaps with your team in real time. No sign-in wall, no
-> paid tier. Open source. [100]
+> trial. Open source. [96]
 
 ---
 
@@ -41,7 +41,7 @@ For directory cards and "short pitch" fields.
 > livediagram is a real-time, multiplayer diagram and mindmap editor that works
 > without signing in. Open a link and start drawing with your team: live
 > cursors, comments, 90 templates, and undo that never touches anyone else's
-> work. MIT-licensed and free forever. [46 words]
+> work. MIT-licensed and free to start. [47 words]
 
 ---
 
@@ -59,7 +59,7 @@ For Product Hunt, app store short descriptions, README intros.
 > templates, recolor everything with 31 themes, and step back any slip with
 > undo. Share links as an editor, participant or viewer any time.
 >
-> It is MIT-licensed and free for everyone, with no paid tier. [106 words]
+> It is MIT-licensed and free to use, with every feature on the free plan. [108 words]
 
 ---
 
@@ -91,8 +91,8 @@ For longer listing bodies and "about this project" sections.
 > or viewer and revoke them whenever you like. Export any tab to JSON, Mermaid,
 > Markdown, Excalidraw, PNG, SVG, or PDF.
 >
-> livediagram is MIT-licensed and free for everyone, with no paid tier and no
-> plan for one. [247 words]
+> livediagram is MIT-licensed and free to use, with every
+> feature on the free plan. [244 words]
 
 ---
 
@@ -149,8 +149,8 @@ detailed GitHub / Product Hunt write-up.
 > #### Free, open, and yours
 >
 > livediagram is MIT-licensed and publicly viewable. The hosted version at
-> livediagram.app is free for everyone, with no paid tier and no plan to
-> introduce one. If you ship it, every user gets it. The open-source core never
+> livediagram.app is free to use, with every feature on the free plan and
+> no trial. The open-source core never
 > calls home and never gates features behind a license check.
 >
-> Open a link, draw, share. That is the whole pitch. [484 words]
+> Open a link, draw, share. That is the whole pitch. [475 words]

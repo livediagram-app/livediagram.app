@@ -309,7 +309,7 @@ export function roomMessage(
 function withVisitorKey(session: SessionAttachment, visitor: unknown): SessionAttachment {
   if (!session.keyMinted || session.presence !== null || !isVisitorSecret(visitor)) return session;
   const { keyMinted: _minted, ...rest } = session;
-  return { ...rest, collabKey: visitorCollabKey(visitor) };
+  return { ...rest, collabKey: visitorCollabKey(visitor), keyVisitor: true };
 }
 
 // Answer a client's `sync` (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): given the last epoch+seq it

@@ -20,6 +20,7 @@ const INDEX_DEV = process.env.INDEX_DEV_ORIGIN ?? 'http://localhost:8793';
 const MEDIA_DEV = process.env.MEDIA_DEV_ORIGIN ?? 'http://localhost:8792';
 const STATUS_DEV = process.env.STATUS_DEV_ORIGIN ?? 'http://localhost:3010';
 const DRIVE_DEV = process.env.DRIVE_DEV_ORIGIN ?? 'http://localhost:3011';
+const SUBSCRIPTION_DEV = process.env.SUBSCRIPTION_DEV_ORIGIN ?? 'http://localhost:8794';
 // The one help centre (liveworkspace/apps/help, `pnpm dev` on 3020), which www.liveworkspace.app/help* routes to in
 // production (liveworkspace/docs/specs/017-help/help-centre.md). It serves its own /help basePath.
 const HELP_DEV = process.env.HELP_DEV_ORIGIN ?? 'http://localhost:3020';
@@ -96,6 +97,11 @@ const nextConfig: NextConfig = {
             // The status page's stored history (liveworkspace/docs/specs/009-status/status.md); `:path*` takes /api/status itself too.
             { source: '/api/status/:path*', destination: `${STATUS_DEV}/api/status/:path*` },
             { source: '/api/drive/:path*', destination: `${DRIVE_DEV}/api/drive/:path*` },
+            // Subscriptions (liveworkspace/docs/specs/019-subscription/subscription.md), from their own Worker.
+            {
+              source: '/api/subscription/:path*',
+              destination: `${SUBSCRIPTION_DEV}/api/subscription/:path*`,
+            },
           ];
           return { beforeFiles, afterFiles, fallback: [] };
         },

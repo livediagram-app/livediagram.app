@@ -6,6 +6,7 @@
 import { SEARCH_TOKENIZER } from '@liveknowledge/knowledge';
 
 type Exec = (query: string) => unknown;
+type ReadExec = (query: string) => { toArray(): Record<string, unknown>[] };
 
 // A trigger's own OR IGNORE gives way to the policy of the statement that fired it (SQLite, "ON CONFLICT"), so the
 // mark selects nothing when the page is already marked, or when nothing is published.
@@ -50,4 +51,18 @@ const TABLES = [
 /** The schema step (document-schema.ts V36). Additive, IF NOT EXISTS. */
 export function publishedSchemaStep(exec: Exec): void {
   for (const statement of TABLES) exec(statement);
+}
+
+/**
+ * The schema step (document-schema.ts V41): `published_site.counted`, whether the site holds a counted place of its
+ * owner's Public Knowledgebases (published-gauge.ts; publishing.md "Tiers"). 1 holds one, 0 holds none, NULL was
+ * never counted, which every site published before reads. Asks before the ALTER, as V15 does.
+ */
+export function publishedCountedStep(exec: ReadExec): void {
+  const have = new Set(
+    exec('PRAGMA table_info(published_site)')
+      .toArray()
+      .map((c) => String(c.name)),
+  );
+  if (!have.has('counted')) exec('ALTER TABLE published_site ADD COLUMN counted INTEGER NULL');
 }

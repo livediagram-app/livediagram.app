@@ -16,12 +16,18 @@ import {
   ACCEPTED_IMAGE_TYPES,
   IMAGE_SOURCE_HEADER,
   imageSourceOf,
-  MAX_IMAGE_BYTES,
+  imageTooLargeBody,
   ORIGINAL_NAME_MAX,
   type MediaClient,
 } from '@liveworkspace/media';
 import {
+  galleryStorageOf,
+  imageUploadAllowance,
+  readImageUpload,
+} from '@liveworkspace/api-kit/image-upload';
+import {
   imageSummary,
+  MEDIA_APP,
   mediaClient,
   mediaImageOwner,
   mediaOwner,
@@ -99,9 +105,22 @@ async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> 
   if (!Number.isFinite(declaredLen) || declaredLen <= 0) {
     return badRequest('missing or invalid Content-Length');
   }
-  if (declaredLen > MAX_IMAGE_BYTES) return tooLarge();
+  // The largest image this caller may send: 10 MB, or with Pro on the better of their own tier and the tier of the
+  // owner of plan `p` (liveworkspace/docs/specs/006-media/media.md "With Pro on"; item-types.md "Image fields"). Read
+  // from their entitlements and the index's grant, never from the request, and checked before a byte of the body is
+  // read. The grant is read once, for the limit and for who may upload.
+  let grantRead: ReturnType<typeof resolvePlanGrant> | undefined;
+  const grantOf = (plan: string) => (grantRead ??= resolvePlanGrant(ctx, plan));
+  const named = await mediaOwner(owner);
+  const allowance = await imageUploadAllowance(env, MEDIA_APP, named, async () => {
+    const grant = planId === null ? null : await grantOf(planId);
+    return grant && !(grant instanceof Response) ? grant : null;
+  });
+  if (declaredLen > allowance.maxBytes) {
+    return json(imageTooLargeBody(allowance, declaredLen), { status: 413 });
+  }
   if (planId !== null) {
-    const refused = await refusedUpload(ctx, planId);
+    const refused = await refusedUpload(ctx, planId, grantOf(planId));
     if (refused) return refused;
   }
   // The hash shortcut answers a bare hash with the gallery row without reading a byte, so only the owner's own
@@ -110,13 +129,14 @@ async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> 
   const headerSha = (request.headers.get('X-Image-Sha256') ?? '').toLowerCase();
   const sha256 =
     !ctx.workbench && !ctx.token && /^[0-9a-f]{64}$/.test(headerSha) ? headerSha : null;
-  // Read whole (at most MAX_IMAGE_BYTES, checked above) so the service gets an exact length.
-  const bytes = await request.arrayBuffer();
-  // Content-Length is the client's word; the body is the truth.
-  if (bytes.byteLength > MAX_IMAGE_BYTES) return tooLarge();
-  const named = await mediaOwner(owner);
+  // Read whole (at most the limit checked above) so the service gets an exact length. Content-Length is the client's
+  // word; the body is the truth.
+  const bytes = await readImageUpload(request, allowance);
+  if (!bytes) return json(imageTooLargeBody(allowance, null), { status: 413 });
   const uploaded = await media.upload({
     owner: named,
+    // The plan's owner, for the service to read its tier beside the uploader's. Only with Pro on.
+    ...(allowance.itemOwner ? { itemOwner: allowance.itemOwner } : {}),
     bytes,
     contentType: declaredType,
     byteSize: bytes.byteLength,
@@ -200,8 +220,13 @@ async function heldOn(ctx: RouteContext, planId: string, grant: PlanGrant | null
 // Who may upload for a plan: whoever may write its cards, by the index's grant, as every item write checks it
 // (routes/item-route-kit.ts). Cards are the plan's, not a tab's, so a Participant confined to one tab uploads for
 // the cards it shows too. Null lets the upload on; otherwise the refusal to answer.
-async function refusedUpload(ctx: RouteContext, planId: string): Promise<Response | null> {
-  const grant = await resolvePlanGrant(ctx, planId);
+async function refusedUpload(
+  ctx: RouteContext,
+  planId: string,
+  // A grant read the caller already made for this plan (the upload's, for its limit).
+  read: ReturnType<typeof resolvePlanGrant> = resolvePlanGrant(ctx, planId),
+): Promise<Response | null> {
+  const grant = await read;
   if (grant instanceof Response) return grant;
   const held = await heldOn(ctx, planId, grant);
   if (!held) return notFound();
@@ -264,7 +289,8 @@ async function gallery(ctx: RouteContext, media: MediaClient): Promise<Response>
   const listed = await media.list(await mediaOwner(owner));
   if (!listed.ok) return serviceAnswer(listed);
   return json(
-    { images: listed.value.images.map(imageSummary) },
+    // With Pro on, what the person's pictures use of their Image Storage, as the service counted it.
+    { images: listed.value.images.map(imageSummary), ...galleryStorageOf(listed.value) },
     { headers: { 'Cache-Control': 'private, no-store' } },
   );
 }
@@ -287,9 +313,6 @@ async function claim(ctx: RouteContext, media: MediaClient, imageId: string): Pr
   await planRoom(ctx.env, planId).grantImage(imageId);
   return json({ ok: true });
 }
-
-const tooLarge = () =>
-  json({ error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
 
 // A refusal from the service, passed on as it came (a full gallery, an unsupported file), except one about this
 // api's own key or the service itself, which the editor can do nothing about.

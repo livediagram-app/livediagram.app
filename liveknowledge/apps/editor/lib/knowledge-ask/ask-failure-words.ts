@@ -9,6 +9,7 @@ import {
   ASK_PER_KNOWLEDGEBASE_PER_DAY,
   ASK_PER_PERSON_PER_HOUR,
 } from '@liveknowledge/knowledge';
+import { creditsResetWords } from '@/lib/knowledge-credits';
 import { providerWords } from './provider-words';
 
 /** What the person can do next: open AI Settings, ask the same question again, or nothing but wait or reword. */
@@ -23,6 +24,31 @@ const BUILT_IN_FAILED: AskFailureWords = {
   text: 'Nothing is wrong with the question. Ask again in a moment.',
   step: 'ask-again',
 };
+
+// An `ask_unavailable` refusal names its reason (search-and-ask.md "The refusal names its reason"): the knowledgebase's
+// own key keeps the code as its kind; the shared keys and accounts out of reach have kinds of their own.
+const UNAVAILABLE_REASONS: Record<string, string> = {
+  'team-unreadable': 'team-key-unreadable',
+  'personal-unreadable': 'personal-key-unreadable',
+  'shared-unavailable': 'key-settings-unreachable',
+};
+
+/** Every kind an `ask_unavailable` refusal becomes: no model can be called here just now. */
+export const AI_UNAVAILABLE_KINDS: ReadonlySet<string> = new Set([
+  'ask_unavailable',
+  ...Object.values(UNAVAILABLE_REASONS),
+]);
+
+/** The kind a refusal's body says: its `error`, made precise by an `ask_unavailable`'s `reason`; else `fallback`. */
+export function refusalKind(
+  read: { error?: unknown; reason?: unknown } | null | undefined,
+  fallback: string,
+): string {
+  if (typeof read?.error !== 'string') return fallback;
+  if (read.error === 'ask_unavailable' && typeof read.reason === 'string')
+    return UNAVAILABLE_REASONS[read.reason] ?? read.error;
+  return read.error;
+}
 
 /** `provider`: which AI answers here (built-in AI, or whose key the knowledgebase holds), named where the failure
  *  is that AI's own. */
@@ -136,12 +162,44 @@ export function askFailureWords(
         step: 'none',
       };
     case 'ask_unavailable':
+      // The knowledgebase's own key (or an api from before reasons were named).
       return {
         title: 'Ask Is Not Available Right Now',
         ...settings(
-          "Your team's stored key could not be read. Replace it in AI Settings.",
-          "Your team's stored key could not be read. Ask an Editor to replace it in AI Settings.",
+          "This knowledgebase's AI key could not be read. Replace it in AI Settings.",
+          "This knowledgebase's AI key could not be read. Ask an Editor to replace it in AI Settings.",
         ),
+      };
+    case 'team-key-unreadable':
+      return {
+        title: 'Ask Is Not Available Right Now',
+        text: "Your team's AI key could not be read. An admin can replace it in Settings, under AI.",
+        step: 'none',
+      };
+    case 'personal-key-unreadable':
+      return {
+        title: 'Ask Is Not Available Right Now',
+        text: 'Your AI key could not be read. Replace it in Settings, under AI.',
+        step: 'none',
+      };
+    case 'key-settings-unreachable':
+      return {
+        title: 'Ask Is Not Available Right Now',
+        text: "Your AI key settings couldn't be reached just now. Ask again in a moment.",
+        step: 'ask-again',
+      };
+    // Built-in AI on AI credits (tiers.md): the notice under the box carries the ways on, so the card only says why.
+    case 'ai_credits_used':
+      return {
+        title: "This Month's AI Credits Are Used",
+        text: `They start again on ${creditsResetWords()}.`,
+        step: 'none',
+      };
+    case 'ai_by_others_limit':
+      return {
+        title: 'Built-In AI Has Had Its Fill Today',
+        text: 'Built-in AI here has had its fill for today. Try again tomorrow, or add your own AI key.',
+        step: 'none',
       };
     case 'sign_in_required':
       return {

@@ -48,6 +48,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). A free hosted version runs at [livehuddle.app](https://livehuddle.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in and Cloudflare Email Service for transactional email, gated on its `send_email` binding), and the editor runs fully without any of them.
+[MIT](LICENSE). A free hosted version runs at [livehuddle.app](https://livehuddle.app); **every feature works on the free plan**, and paid plans raise a few limits ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in and Cloudflare Email Service for transactional email, gated on its `send_email` binding), and the editor runs fully without any of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livehuddle.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

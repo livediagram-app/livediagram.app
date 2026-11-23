@@ -7,6 +7,7 @@ import { SITE_ASSET_PREFIX } from '@liveworkspace/sites/workspace-proxy';
 import { openExplorerBootScript } from '@liveworkspace/sites/open-explorer';
 import { TURNSTILE_ORIGIN } from '@/lib/turnstile';
 import { siteAppearanceBootScript } from '@/lib/appearance/appearance-keys';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 
 // liveworkspace.app (liveworkspace/docs/specs/010-site/site.md). Trusted Types before anything else: the default
 // policy and the violation log, and this site's own scripts, under its asset prefix (next.config.ts),
@@ -22,8 +23,7 @@ const OPEN_EXPLORER_BOOT = trustedConstant(openExplorerBootScript());
 const APPEARANCE_BOOT = trustedConstant(siteAppearanceBootScript());
 
 const TITLE = 'liveworkspace: Live apps for every kind of work';
-const DESCRIPTION =
-  'liveworkspace is a set of real-time apps, each built for one kind of work: livediagram for diagrams and whiteboards, liveplanner for boards, sheets and forms, livedocuments for articles, slides and infographics, livedesign for logos, wireframes and photos, livehuddle for meetings in Spaces, with an avatar for everyone, and liveknowledge for a team knowledgebase, for people and for AI. Completely free, shared by link, no trackers.';
+const DESCRIPTION = `liveworkspace is a set of real-time apps, each built for one kind of work: livediagram for diagrams and whiteboards, liveplanner for boards, sheets and forms, livedocuments for articles, slides and infographics, livedesign for logos, wireframes and photos, livehuddle for meetings in Spaces, with an avatar for everyone, and liveknowledge for a team knowledgebase, for people and for AI. ${proOn() ? 'Free to use' : 'Completely free'}, shared by link, no trackers.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.liveworkspace.app'),

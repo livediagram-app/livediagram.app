@@ -1694,7 +1694,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/ai/read-notes',
     segment: 'ai',
     tag: 'AI',
-    summary: 'Read the handwriting on sticky-note crops cut from a wall photo.',
+    summary:
+      "Read the handwriting on sticky-note crops cut from a wall photo. With Pro on, a read declares its `notes` and spends one AI credit of the diagram's owner's month for every 24 of them before the model is called; 400 `notes_required` or `notes_exceeded` for a missing count or a crop past it, 429 `ai_credits_used` when too few are left.",
     auth: 'guest-or-clerk',
     requestSchema: 'ReadNotesRequest',
     responseSchema: 'ReadNotesResponse',

@@ -357,7 +357,7 @@ the stable collab key (`ParticipantPresence.key`,
 ## 7. Out of scope
 
 Finer-grained scopes (per-project / per-folder grants, per-verb permissions),
-and any billing or quota tiers (the product has no paid tier;
+and any billing or quota tiers (the product keeps no billing of its own;
 [Business model + licence](../002-project-scope/business-model-and-licence.md)). (The one scope there is is
 the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
 OAuth / third-party app authorization is in [MCP server](mcp-server.md).)

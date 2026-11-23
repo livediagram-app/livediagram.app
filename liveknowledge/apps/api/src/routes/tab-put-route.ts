@@ -3,6 +3,14 @@
 // PUT"). A token is refused; the save is merged with every recorded changeset its editor had not
 // seen and with the room's collaboration ledger, then written at the revision it read.
 
+import { pageCount } from '@liveknowledge/document';
+import {
+  countPages,
+  knowledgePagesMax,
+  pagesRefused,
+  pageTreeConflict,
+  workerTierOf,
+} from '../knowledge/tier-limits';
 import { relinkTrashedTab } from '../document-room/page-trash';
 import { SOMEONE, asTabWriter } from '@liveworkspace/automations/room';
 import { pageCreatorOf } from '../knowledge/knowledge-caller';
@@ -160,15 +168,28 @@ export async function writeTabSave(
     // written. A stored page saved where it already sits reads nothing more.
     if (!existingTab || (existingTab.parent ?? undefined) !== (incoming.parent ?? undefined)) {
       // A save holding a connection is a connected row, which never meets the page limit (links-and-embeds.md).
+      // A new page is told to the owner's Knowledgebase Pages too (tiers.md), asked only with Pro on.
+      const [stored, tier] = await Promise.all([
+        readStoredPages(env, id),
+        workerTierOf(env, existing),
+      ]);
       const refused = tabParentRefusal(
-        await readStoredPages(env, id),
+        stored,
         tabId,
         incoming.parent,
         sentConnection !== undefined,
+        knowledgePagesMax(),
       );
       if (refused) {
         console.warn('[tab-save] page tree refused', { documentId: id, tabId, reason: refused });
-        return conflict(refused);
+        return pageTreeConflict(refused);
+      }
+      if (!existingTab && sentConnection === undefined) {
+        const over = await countPages(tier, id, pageCount(stored) + 1);
+        if (over) {
+          console.warn('[tab-save] page tree refused', { documentId: id, tabId, reason: 'pages' });
+          return pagesRefused(tier, over);
+        }
       }
     }
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);

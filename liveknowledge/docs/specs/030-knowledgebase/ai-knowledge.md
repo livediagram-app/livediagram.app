@@ -27,7 +27,7 @@ people.
 ## Reads
 
 The room counts page reads by day, by reader kind (`person` or `agent`) and by agent, in its Durable Object
-(`page_reads`), kept 90 days. A read is one open of a page in the editor, or one `read_page` or search result served
+(`page_reads`), kept 90 days (with Pro on, the owner's AI Knowledge History, [Tiers](tiers.md)). A read is one open of a page in the editor, or one `read_page` or search result served
 to an agent. No reader's identity is kept beyond the agent's name.
 Opening a page in the editor, by its tree, a link or search, is counted as it opens (`GET pages/<tab>/health?opened=1`,
 once a person a page a day), and Page Health's Read This Week is read again on every open, so it moves without a
@@ -40,7 +40,8 @@ nobody read in the last 90 days (Not Read in 90 Days).
 ### Not Read in 90 Days
 
 Owner, 2026-11-21: "isn't that already in AI Knowledge tab? if not add something useful". The pages to update, merge
-or delete: every page with no read, by a person or an agent, in the last 90 days (all `page_reads` keeps). A page
+or delete: every page with no read, by a person or an agent, in the last 90 days (all `page_reads` keeps), or in
+the days the owner's tier keeps reads where fewer (30 on Free, "Not Read in 30 Days"; tiers.md). A page
 made in the last 90 days is left out: it has not had 90 days to be read. Up to 10 are listed, the one touched
 longest ago first (its last edit, else when it was made; a page with neither kept is older than both and leads,
 ties in tree order), each with "Last edited 5 months ago" ("Last edit not kept" with none) and opening its page;

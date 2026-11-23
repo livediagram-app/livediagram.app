@@ -12,6 +12,7 @@ import type {
   AutomationRun,
   AutomationResult,
 } from '@liveplanner/items';
+import type { TierLimitRefusal, TierOwner } from './tiers';
 
 export type {
   AutomationNeed,
@@ -80,14 +81,22 @@ export const AUTOMATION_HOOK_ERRORS = [
   'webhook_json_only',
   'webhook_rate_limited',
   'automation_budget_spent',
+  'automation_runs_used',
 ] as const;
 export type AutomationHookError = (typeof AUTOMATION_HOOK_ERRORS)[number];
 
 export interface AutomationsListResponse {
   rules: AutomationListedRule[];
-  // The Runs today meter.
+  // The plan's runs today against its fixed 1,000 a day, on every tier: a safety cap, never the owner's month.
   runsToday: number;
   runsPerDay: number;
+  // The most rules the plan holds itself (50, or Free's 25 for a guest's plan; the owner's total over everything they
+  // own is asked as a rule is added). Always sent; optional so a reader of an older api still reads.
+  rulesMax?: number;
+  // With Pro on, the owner whose tier the plan runs on, for the editor to ask the subscription service of.
+  owner?: TierOwner;
+  // The plan's owner has no account: Free's limits, no owner named, and nobody to offer an upgrade.
+  guest?: true;
   // The plan's people as rules name them (`assign { person }` takes the id), for agents; the editor reads its own.
   people?: { id: string; name: string }[];
   // The boards' saved filters (each its board's tab, its id and name), for agents' sentences; the editor reads its own.
@@ -158,11 +167,13 @@ export const AUTOMATION_ERRORS = [
   'automation_rules_full',
   'automation_not_found',
   'automation_not_manual',
-  // Run Rule past the day's budget (AUTOMATION_RUNS_PER_DAY): 429, nothing ran.
+  // Run Rule past the plan's fixed runs a day (AUTOMATION_RUNS_PER_DAY): 429, nothing ran.
   'automation_budget_spent',
   // A token's save of a rule holding Revert to Snapshot (403), and a save naming a sixth snapshot kept for rules (409).
   'automation_needs_a_person',
   'automation_snapshots_full',
+  // With Pro on, Run Rule once the owner's month of automation runs is used: 429, with the tier's numbers.
+  'automation_runs_used',
   // Make Secret for a rule whose trigger is not Incoming Webhook: 409.
   'automation_not_incoming',
   // Describe a Rule: an empty or over-long request, or no time zone (400); a request that is not a rule for the plan,
@@ -175,11 +186,14 @@ export const AUTOMATION_ERRORS = [
   'automation_ai_unavailable',
   // Describe a Rule on the person's key, or the plan's team's: refused by the provider or unopenable (422).
   'ai_key_failed',
+  // Describe a Rule with the owner's AI credits for the month used (Pro on only): 429.
+  'automation_ai_credits_used',
 ] as const;
 export type AutomationError = (typeof AUTOMATION_ERRORS)[number];
 
 // A refusal's body: `path` names the part of the rule at fault (`steps.2.text`), for the builder to mark.
-export interface AutomationErrorBody {
+// With Pro on, a refusal the owner's tier caused also names the limit, what is used and its most (tiers.ts).
+export interface AutomationErrorBody extends Partial<TierLimitRefusal> {
   error: AutomationError;
   path?: string;
   message?: string;

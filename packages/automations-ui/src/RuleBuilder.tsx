@@ -23,6 +23,7 @@ import type { AutomationsScope } from './kit';
 import { useAutomationsKit, useAutomationsScreen, type KeptRule } from './kit-context';
 import { PhoneRuleFoot, PhoneRuleHeader, RULE_SWITCH_NAME } from './PhoneRuleChrome';
 import { refusalWords } from './refusal-words';
+import { useAutomationsTier } from './tier/automations-tier';
 import { RuleContextProvider, type RuleContext } from './rule-context';
 import {
   addAction,
@@ -146,7 +147,13 @@ export function RuleBuilder({
     setFault(null);
   };
 
-  const said = (r: AutomationRefusal) => refusalWords(r, words.item, kit.sentence.refusalPicks);
+  // The item's rule limit as the list answered it, and who is reading: a full item said in the tier's own numbers.
+  const tier = useAutomationsTier();
+  const said = (r: AutomationRefusal) =>
+    refusalWords(r, words.item, kit.sentence.refusalPicks, {
+      max: tier?.rulesMax,
+      voice: tier?.item.voice,
+    });
 
   const refused = (r: AutomationRefusal) => {
     const path = r.path ?? (r.code === 'automation_name_taken' ? 'name' : '');

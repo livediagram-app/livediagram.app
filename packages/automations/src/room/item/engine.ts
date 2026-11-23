@@ -4,6 +4,9 @@
 // write, so a write that no rule hears costs one Set lookup. `automation_hears` and `automation_quiet` mirror them
 // for the SQL triggers. The wake also reads what those triggers wrote with no JavaScript run: a settle's due time
 // and a queued tab event.
+import type { ItemTier } from '@liveworkspace/subscription';
+import { LEGACY_AUTOMATION_LIMITS, type AutomationLimits } from '../automation-store';
+import { automationLimitsOf } from '../tier';
 import { nextMoment, type AutomationTimed } from '../../schedule';
 import {
   ITEM_EDIT_EVENT,
@@ -124,7 +127,13 @@ export interface ItemEngineInput {
   kit: () => ItemRoomKit | null;
   // Whether the item is archived or in the Trash.
   putAway: () => boolean;
+  // The item's tier (the room's ItemTier); absent, or with Pro off, every limit is the legacy one.
+  tier?: () => ItemTier | null;
 }
+
+// The item's limits as its tier holds them now: the legacy ones without a tier.
+const tierLimits = (tier: ItemTier | null | undefined): AutomationLimits =>
+  tier ? automationLimitsOf(tier) : LEGACY_AUTOMATION_LIMITS;
 
 export class ItemEngine
   extends ItemAutomations<ItemRule, string, ItemEvent, ItemDeps>
@@ -152,10 +161,19 @@ export class ItemEngine
       arm: input.arm,
       putAway: input.putAway,
       kit: itemStoreKit(input.kinds),
+      ...(input.tier ? { limits: () => tierLimits(input.tier?.()) } : {}),
       deps: () => {
         const kit = input.ready() ? input.kit() : null;
+        const tier = input.tier?.() ?? null;
         return kit
-          ? { kit, sql: input.sql, store: self.engine!.store, wake, fed: () => self.engine!.fed }
+          ? {
+              kit,
+              sql: input.sql,
+              store: self.engine!.store,
+              wake,
+              fed: () => self.engine!.fed,
+              tier: tier?.on ? tier : null,
+            }
           : null;
       },
       schedule: (sql, awake) => new ItemSchedule(sql, awake, () => self.engine!.fed),

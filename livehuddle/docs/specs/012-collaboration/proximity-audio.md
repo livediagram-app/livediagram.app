@@ -222,6 +222,9 @@ The room drops any of them from a Viewer, and drops one that fails its parser, a
   mint route can ask the room who may hear whom ([Meeting rooms and the stage](meeting-rooms-and-stage.md#trust)).
   The room checks the token as the mint route does, keeps the session on the connection, and never relays the op;
   one that fails its parser or its token is dropped. From any level: a Viewer subscribes too.
+  With Pro on, a call whose session is metered also says when it leaves (`left: true` on the same op, with the same
+  proof), and the room tells its connections about the owner's call minutes with a system op, `call-minutes`
+  ([Call minutes](call-minutes.md#the-wire)).
 
 ## The mint route
 
@@ -249,6 +252,10 @@ them), **404** without a grant on the Space, **403 `community_link`** through a 
 visitors never join the Space's room, so they never call in it either), and **403 `calls_listen_only`** for a
 Viewer's publish. The kill switch
 checks every session and track against its mode ([Calls kill switch](../016-platform/calls-kill-switch.md#wired-in)).
+
+With Pro on, the session route also asks the Space's room whether its owner has call minutes left, before it mints
+anything: a Space out of minutes answers **429 `calls_minutes_used`**, and a metered session's answer carries
+`minutes` ([Call minutes](call-minutes.md)). With Pro off the route asks nothing and answers as above.
 
 ### A session that expires
 
@@ -318,6 +325,8 @@ shows no call otherwise (the microphone, camera and screen buttons stay, as a
 Cloudflare charges $0.05 per GB of egress, after the first 1,000 GB each month (SFU and TURN together). Opus at about
 40 kbps is about 0.018 GB per listener-hour. A Space of 30 in groups of 3 to 4 is about 1.6 GB an hour, about $0.08 an
 hour. The equaliser adds no Realtime cost, only small presence messages.
+
+What a Space's calls may use in a month is its owner's Call Minutes, with Pro on ([Call minutes](call-minutes.md)).
 
 ## Telemetry
 

@@ -1734,3 +1734,120 @@ planned, lines, offset)`: after the cross steps, each in order; a test rewrites 
   Take Snapshot named from values; a gone snapshot fails with `gone`; token refused; snapshots full; kept ids; a
   take and revert of 5,000 cards in one run inside a CPU budget (automations-snapshots.perf.test.ts).
 - editor and automations-ui: the tiles, panels, outline list and the plan note.
+
+## Tiers (Pro)
+
+Spec "Tiers". The contract is `@liveworkspace/subscription` (liveworkspace/docs/specs/019-subscription); liveplanner
+adds only what holds a plan's entitlement and where each limit reads it.
+
+### The plan's tier (`apps/api/src/plan-room/tier/`)
+
+- `plan-tier.ts` `PlanTier`: one per `PlanRoom` (`room.tier`), also on the room's env as `PlanEnv.TIER`. It holds the
+  plan's entitlement in memory (`null` with Pro off, and until the first read), the owner's scope it was read for, and
+  when. `limit(key, legacy)` is `limitOf(entitlement, key, legacy)`: a synchronous read, the only thing a hot path
+  does. `fresh()` is true with Pro off, and with Pro on while the entitlement is under 60 s old
+  (`ENTITLEMENT_FRESH_MS`) and the plan's owner has not changed; `refresh()` reads the owner from the room's `plan`
+  row (`owner_id`, `team_id`, `name`: one synchronous SQL read) and asks `client.entitlement(ownerScopeOf(...))`,
+  which never throws. The wake and the hook write `if (!tier.fresh()) await tier.refresh()` so a fresh tier, and
+  every one with Pro off, adds no await at all. `tierOn(env)` (same file) does that for a route: it answers the tier
+  with its limits current, or null with Pro off.
+- **Who pays** is `itemPayer` of the row's owner and team (`@liveworkspace/subscription`, the one rule): an owner's
+  scope, a guest (`tier.guest`: `limit` answers `GUEST_LIMITS`, Free's, and no call is ever made: `spend` refuses a
+  meter Free has none of and counts no other, `claim` counts by the caller's `held`, `report` and `recheck` do
+  nothing), or nobody (every limit the legacy one).
+- `recheck()`: before a refusal at a tier's limit, the client's cached entitlement is forgotten and read again, at
+  most once every `RECHECK_EVERY_MS` (5 s) a room; true when the limits changed, and the caller checks once more
+  (`rulesAtLimit`, Run Rule's budget, the email day, a form's month, a roadmap's place). A spend's or a gauge's own
+  answer naming another tier than the one held makes the held limits stale at once (`heard`).
+- `spend(meter, amount)`, `claim(gauge, key)` and `release(gauge, key)` go to the client for the owner the row
+  names NOW (null where nothing is metered). `report(meter, item, used, name?)` sends `reportItem` through the room's
+  `waitUntil`, at most once a minute per meter and item (`REPORT_EVERY_MS`), the count read only when a report is due.
+- `room-tier.ts`: `roomTier(room)` (the tier on the room's `plan` row), `automationLimitsOf(tier)` and
+  `rulesCopyMax(env)`. `plan-meters.ts`: the plan's own counts (Email to Board's day). `tier-refusal.ts`:
+  `tierRefusal(tier, limit, used, max)`, the marker a refusal carries with Pro on.
+- `apps/api/src/subscription.ts` `subscriptionOf(env)`: `subscriptionClientOf(env, 'liveplanner.app')` on one
+  module-level cache (an isolate's rooms of one owner share one read), with `forgetEntitlementsForTests()`.
+- With Pro off `PlanTier` makes no client call: `fresh()` is true, `limit` answers the legacy value, `spend` and
+  `report` return at once.
+
+### Runs and rules
+
+- `AutomationStore` takes `limits: () => { runsPerDay, rulesMax }` (the room passes the tier's; the legacy constants
+  without one) and exposes `runsPerDay` and `rulesMax` as getters. `runRule`'s claim reads `deps.store.runsPerDay`
+  with no await before the claim, as before; `runAutomationWake`'s held-run settle and `answerHookCall`'s 429 read the
+  same number.
+- The tier is refreshed where an await already stands: `runAutomations` (once a wake, before the time triggers and
+  the run loop), the routes' `gate` (once a request) and `answerHookCall` (once a call, after the secret is proved).
+- `create` and `duplicate` refuse at `store.rulesMax`; with Pro on the 409 and Run Rule's and the hook's 429 carry
+  `limit`, `used` and `max` (`tierRefusal`, tier/tier-refusal.ts). With Pro off the bodies are as they were.
+- `automation-copy.ts`: `copiedRuleStatements` and `rulesFromFile` take `max`. A copy and a file land before the new
+  plan has an owner (plan-copy.ts: `created_at` 0 until its first grant), so their callers pass `rulesCopyMax(env)`:
+  the legacy 50 with Pro off, the largest tier's limit with it on.
+- The list answers `runsPerDay` (the fixed 1,000), `rulesMax` (the fixed 50, Free's 25 for a guest's plan) and,
+  with Pro on, `owner` (`routes/automation-tier.ts` `listTier`). The month's runs used are the subscription service's
+  to say, read by the browser from the owner's summary, never the plan's.
+- Rules: `create`, `duplicate` and Off to On ask `tier.count('rules', planId, held + 1, true)` (or `held` for Off to
+  On, refused while the owner's total is over) after the plan's own 50; a delete tells `tier.recount`.
+- Runs: the runner spends one `automationRuns` through `tier.spend` once the conditions hold, before the first action
+  (never for a resumed run); the month used drops the claim and writes the rule's `month:` line for the day; the
+  wake's state keeps `monthUsed`, so the rest of the wake asks nothing.
+
+### Messages to connections (`automation-sends.ts`)
+
+- `sendMessages` takes `spend?: (amount) => Promise<SpendResult | null>` (the runner passes the tier's with Pro on, nothing
+  for a dry run). Before the push it spends the sendable messages in one call; a refusal that leaves some (the
+  service spends all or nothing) is asked once more for what is left, so a run makes at most two spend calls. The
+  messages past what was spent (each one automation run) are not pushed: their lines read `MESSAGE_RUNS_USED`; when the service refused the request itself (`refusedByService`) every
+  message goes uncounted, with no second call, and the outcome carries `skipped` (never `failed`, so the rule's failures are
+  untouched). The
+  runner ends such a run Skipped with that reason when nothing failed and no Wait holds it.
+
+### AI credits (`automation-ai.ts`, `automation-draft-route.ts`)
+
+- `runAiSteps` takes `spend?: () => Promise<SpendResult | null>`. After the day's cap is checked and before the call is
+  marked it spends one credit; the day's count is read again after that await (another request may have asked), so
+  the mark still follows its read with no await between. A refusal skips the step as the cap does, its line
+  `AI_CREDITS_USED` (`@liveplanner/items`), or `AI_CREDITS_UNCHECKED` when the service refused the request.
+- `draftRule` spends one credit per draft after its two caps pass and before the first ask; refused, 429
+  `automation_ai_credits_used` with the marker, or 503 `automation_ai_unavailable` when the service refused the
+  request.
+- `plan-drafts.ts` and `form-drafts.ts` spend one of the signed-in person's credits (`personScope(accountId)`) after
+  `spendPlanDraft`; refused, 429 `plan_draft_credits_used` / `form_draft_credits_used`. On the person's own key (or
+  the plan's team's, for a rule) nothing is counted or spent: the caps and the credits are built-in AI's alone.
+
+### Reports
+
+- `runAutomations` reports `automationRuns` (the day's count, `reportRuns`) after a wake that ran, Run Rule after
+  its run; `create`, `duplicate` and `remove` report `rules` (`reportRules`). Each through `tier.report`, so at most
+  once a minute.
+
+### The editor
+
+Spec "What the editor shows". Nothing here holds a limit: every number is the api's, and Pro's own parts are the
+kit's (`@liveworkspace/subscription-ui`).
+
+- `apps/editor/components/tier/`: `plan-tier.ts` (`usePlanTier(owner)`: the owner view and, for the owner or the
+  owning team, the owner's usage, from the kit's light half; `on` is false with Pro off in the build or no `owner`
+  from the api; `voice` is how a sentence may name the tier and the tier above), `tier-words.ts` (every sentence, for
+  automations, email, forms and roadmaps), `use-ai-credits.ts` (the month's credits around an AI ask) and
+  `TierParts.tsx` (the offer button, See All Limits, the credits line and notice).
+- `automations-tier.tsx`: the screen's `AutomationsTierContext` (`runsPerDay`, `rulesMax` and the plan's
+  tier), provided by `AutomationsDialog` and read by the builder's panels and pickers. `AutomationsLimits.tsx` (the
+  owner's month of runs meter and the two notices). `AutomationRefusal.tier` and `DraftRefusal.tier` carry a refusal's `limit`, `used` and `max`.
+- Email to Board: `components/email-intake/EmailIntakeMonth.tsx`. Forms: `components/forms/FormMonth.tsx`. Roadmaps:
+  `components/roadmap/RoadmapLimit.tsx` and `roadmap-limit.ts` (`RoadmapLimitReached`, thrown by `saveRoadmap` on the 409).
+- Tests, each for the owner, a team's member and a collaborator, on `apps/editor/test/pro.tsx` (the kit's provider
+  over a service stood in): `components/tier/tier-words.test.ts`, `components/tier/plan-tier.test.tsx`,
+  `components/tier/AiCredits.test.tsx`, `components/automations/AutomationsTier.test.tsx`,
+  `components/email-intake/EmailIntakeMonth.test.tsx`,
+  `components/forms/FormMonth.test.tsx` and `components/roadmap/RoadmapLimit.test.tsx`.
+
+### Tests
+
+- `apps/api/src/plan-room/tier/test-tier.ts`: `fakeSubscription({ 'p:…': 'pro', 't:…': 'team' })`, a fetcher that
+  answers the internal routes as the service does (entitlements by owner, spends and gauges counted against the
+  tier's limits, items' counts summed); `proEnv(env, fake)`, which turns Pro on for a world's env before its plans are
+  made; and `setPlanOwner(db, planId, ownerId, teamId)`. `automationWorld(planId, { pro: fake })` builds a world on it.
+- `automations-tier.test.ts` (runs, rules, the list, the copy cap, what is asked and reported),
+  `automations-tier-spend.test.ts` (runs and their messages, AI credits, Describe a Rule), `packages/subscription/src/item-tier.test.ts` (the
+  tier itself), `routes/draft-credits.test.ts` (Describe a Plan and Describe a Form).

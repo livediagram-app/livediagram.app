@@ -7,11 +7,10 @@ import { StartPlanningCta } from './StartPlanningCta';
 
 // docs/specs/019-marketing/marketing-site.md "Promises" and "Closing CTA".
 describe('the promises', () => {
-  it('shows every promise, each with its value, and the proof links', () => {
+  it('shows every promise, each one label, and the proof links', () => {
     render(<PromisePrism />);
     for (const p of PROMISES) {
       expect(screen.getByText(p.title)).toBeTruthy();
-      if (p.value) expect(screen.getByText(p.value)).toBeTruthy();
     }
     expect(screen.queryByRole('link', { name: /source/i })).toBeNull();
     expect(screen.getByRole('link', { name: /How export works/ }).getAttribute('href')).toBe(

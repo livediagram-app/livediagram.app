@@ -36,6 +36,8 @@ import {
   type DocumentRouteContext,
 } from './context';
 
+import { applyVersionRetention, documentOwnerScope } from '../versions/version-retention';
+
 type Door = 'list' | 'read' | 'name-current' | 'rename' | 'restore' | 'copy';
 
 // Which door the path is, or null when it is not a version route.
@@ -68,7 +70,14 @@ export async function handleVersionRoutes(ctx: DocumentRouteContext): Promise<Re
     : await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId);
   if (!allowed) return refused(ctx, document, door);
   if (!document.tabs.some((t) => t.id === tabId)) return notFound();
-  if (door === 'list') return json({ versions: await listVersions(ctx.env, tabId) });
+  if (door === 'list') {
+    // With Pro on the answer says how long the owner's tier keeps automatic versions, as the room now holds it.
+    const [versions, retention] = await Promise.all([
+      listVersions(ctx.env, tabId),
+      applyVersionRetention(ctx.env, documentOwnerScope(ctx)),
+    ]);
+    return json({ versions, ...(retention ? { retention } : {}) });
+  }
   if (door === 'name-current') return nameCurrent(ctx, document, tabId, owner);
   const version = await getVersion(ctx.env, tabId, segments[6]!);
   if (!version) return notFound();

@@ -42,9 +42,9 @@ describe('image cap', () => {
 describe('docs/specs/021-event-storming/note-reader.md lists the error tokens the reader route emits', () => {
   it('names each one, and invents none', () => {
     // Every file a caller of the reader can receive an envelope from: the
-    // admission gate and the handler. Reading one file would quietly stop
-    // checking most of them.
-    const route = ['ai-gate.ts', 'ai-read-notes.ts']
+    // admission gate, the handler and (with Pro on) the read's credit. Reading
+    // one file would quietly stop checking most of them.
+    const route = ['ai-gate.ts', 'ai-read-notes.ts', 'ai-credits.ts']
       .map((f) => readFileSync(`${ROOT}/apps/api/src/routes/${f}`, 'utf8'))
       .join('\n');
     const spec = readFileSync(`${ROOT}/docs/specs/021-event-storming/note-reader.md`, 'utf8');

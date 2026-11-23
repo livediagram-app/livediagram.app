@@ -21,3 +21,8 @@ MEDIA_KEY=dev-liveknowledge-media-key
 # What the knowledgebases' own AI keys (Claude's or OpenAI's) are sealed under (AI Settings). Unset, no key can be stored and Ask
 # answers ask_unavailable; search and everything else work.
 AI_KEY_SECRET=dev-liveknowledge-ai-key-secret
+# Pro, through the local subscription Worker (liveworkspace/apps/subscription, in `corepack pnpm dev:workspace`): its
+# SUBSCRIPTION_KEY_LIVEKNOWLEDGE. PRO_ENABLED=false (or no line) turns Pro off, as a deployment that sets nothing has it.
+PRO_ENABLED=true
+SUBSCRIPTION_URL=http://localhost:8794/api/subscription
+SUBSCRIPTION_KEY=dev-liveknowledge-subscription-key

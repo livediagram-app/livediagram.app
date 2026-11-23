@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  type CSSProperties,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ComponentType,
-} from 'react';
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
 import { lucideChevronDown, lucideSettings } from '@liveworkspace/icons/lucide';
 import {
   lucideGlyph,
@@ -17,6 +10,8 @@ import {
   useMenuButton,
 } from '@liveworkspace/ui';
 import { ACCOUNT_TRIGGER_CLASS, GUEST_LABEL, GuestAvatar } from './face';
+import { ITEM, ItemBody, type IconComponent } from './menu-item';
+import { AccountProBadge, ProItem } from './pro-parts';
 import { avatarFill, initials } from './initials';
 import { ACCOUNT_PALETTE } from './palette';
 
@@ -32,8 +27,6 @@ import { ACCOUNT_PALETTE } from './palette';
 //
 // The menu keeps the keyboard and focus behaviour every app's menus share (WAI-ARIA Menu Button, from
 // @liveworkspace/ui) and the house icons.
-
-type IconComponent = ComponentType<{ 'aria-hidden'?: boolean; className?: string }>;
 
 const ChevronIcon = lucideGlyph(lucideChevronDown, 16);
 const SettingsIcon = lucideGlyph(lucideSettings, 16);
@@ -175,7 +168,11 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
           <div className="flex items-center gap-3 px-2.5 pt-2 pb-3">
             {avatar(true)}
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-(--account-ink)">{label}</p>
+              <p className="flex min-w-0 items-center gap-2 text-sm font-semibold text-(--account-ink)">
+                <span className="min-w-0 truncate">{label}</span>
+                {/* Solid: this person has Pro (subscription.md "The Pro badge"). Nothing with Pro off. */}
+                {account ? <AccountProBadge /> : null}
+              </p>
               <p className="text-xs text-(--account-hint)">
                 {guest ? 'Not signed in' : 'Your account'}
               </p>
@@ -210,6 +207,8 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
                   icon={SettingsIcon}
                 />
               )}
+              {/* For someone on Free, with Pro on: the way to the upgrade dialog, or to the pricing page. */}
+              <ProItem close={close} />
               <div className="my-1 h-px bg-(--account-line)" />
               <button
                 type="button"
@@ -249,34 +248,6 @@ export function AccountMenu(props: Common & (SignedIn | Guest)) {
 const SIGN_OUT_HINT = 'Every app in this browser';
 // In its place when the sign-out was refused or never got through, so the click is never met with nothing.
 export const SIGN_OUT_REFUSED = 'Couldn’t sign out. Check your connection and try again.';
-
-// An item's row. Its colours are the control's palette (palette.ts), so no later stylesheet can repaint a hovered row.
-// Hovered or focused, the row darkens the hints inside it (--account-hint-hover), which keep AA on the hover fill.
-const ITEM =
-  'flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-sm text-(--account-text) outline-none transition-colors hover:bg-(--account-hover) hover:[--account-hint:var(--account-hint-hover)] focus-visible:bg-(--account-hover) focus-visible:[--account-hint:var(--account-hint-hover)] disabled:cursor-not-allowed disabled:opacity-50';
-
-// An item's name over its hint, its icon in a soft square.
-function ItemBody({
-  icon: Icon,
-  label,
-  hint,
-}: {
-  icon: IconComponent;
-  label: string;
-  hint: string;
-}) {
-  return (
-    <>
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-(--account-tile) text-(--account-tile-ink)">
-        <Icon aria-hidden className="size-4" />
-      </span>
-      <span className="min-w-0">
-        <span className="block font-medium text-(--account-ink)">{label}</span>
-        <span className="block text-xs text-(--account-hint)">{hint}</span>
-      </span>
-    </>
-  );
-}
 
 function PageItem({
   href,

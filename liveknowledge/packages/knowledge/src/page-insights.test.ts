@@ -81,6 +81,16 @@ describe('notReadPages', () => {
     expect(notReadPages([page('due', { createdAt: NOW - 90 * DAY })], NOW).total).toBe(1);
   });
 
+  it('asks about fewer days where the tier keeps fewer, so a read past them never looks like none', () => {
+    // Free keeps 30 days of reads: a page read 40 days ago has no read kept, and is not asked about over 90 days.
+    const pages = [
+      page('quiet', { createdAt: NOW - 100 * DAY }),
+      page('recent', { lastRead: daysBefore(NOW, 29), createdAt: NOW - 100 * DAY }),
+      page('young', { createdAt: NOW - 29 * DAY }),
+    ];
+    expect(notReadPages(pages, NOW, 30).pages.map((p) => p.tab)).toEqual(['quiet']);
+  });
+
   it('lists the first 10 and counts them all', () => {
     const many = Array.from({ length: 14 }, (_x, at) => page(`p${at}`, { order: at }));
     const { pages, total } = notReadPages(many, NOW);

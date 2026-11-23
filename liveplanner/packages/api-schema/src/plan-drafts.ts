@@ -4,6 +4,8 @@
 
 import type { PlanDraft } from '@liveplanner/items';
 
+import type { TierLimitRefusal } from './tiers';
+
 export interface PlanDraftRequest {
   prompt: string;
 }
@@ -27,6 +29,8 @@ export const PLAN_DRAFT_ERRORS = [
   // On the person's own key: the provider refused it (revoked, out of credit, a model it can't use) or it will not
   // open (422), with `aiKey` (ai-keys.md "Every AI feature honours the choice"). Never sent to built-in AI instead.
   'ai_key_failed',
+  // The person's AI credits for the month used (Pro on only): 429, with `limit`, `used` and `max`.
+  'plan_draft_credits_used',
 ] as const;
 export type PlanDraftError = (typeof PLAN_DRAFT_ERRORS)[number];
 
@@ -38,7 +42,7 @@ export type AiKeyFailureBody = {
   kind: 'bad-key' | 'no-credit' | 'model-unavailable' | 'unreadable';
 };
 
-export interface PlanDraftErrorBody {
+export interface PlanDraftErrorBody extends Partial<TierLimitRefusal> {
   error: PlanDraftError;
   path?: string;
   message?: string;

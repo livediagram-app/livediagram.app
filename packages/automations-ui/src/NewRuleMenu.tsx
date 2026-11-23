@@ -2,11 +2,19 @@
 
 // The screen's New Rule (liveplanner/docs/specs/026-plan/automations.md "The Automations screen", "Describe a Rule"): a menu of a
 // Blank Rule, built step by step, Start From a Template, which opens the Templates tab, and Describe a Rule, which
-// drafts one from words with AI. Disabled while the list loads and once the plan holds its 50 rules.
+// drafts one from words with AI. Disabled while the list loads and once the item holds every rule it may (the list's
+// `rulesMax`), saying why with Pro on.
 
 import { ToolFooterButton } from '@liveworkspace/ui';
 import { useState } from 'react';
-import { Button, ChevronDownIcon, PlusIcon, SparkleIcon, lucideGlyph } from '@liveworkspace/ui';
+import {
+  Button,
+  ChevronDownIcon,
+  PlusIcon,
+  SparkleIcon,
+  Tooltip,
+  lucideGlyph,
+} from '@liveworkspace/ui';
 import { lucideFilePlus, lucideLayoutGrid } from '@liveworkspace/icons/lucide';
 import {
   MenuActionRow,
@@ -18,12 +26,15 @@ const TemplateIcon = lucideGlyph(lucideLayoutGrid, 16);
 
 export function NewRuleMenu({
   disabled,
+  offReason,
   onBlank,
   onTemplates,
   onDescribe,
   footer = false,
 }: {
   disabled: boolean;
+  // Why it is off, as its tooltip (the item holds every rule its owner's tier allows), with Pro on.
+  offReason?: string | undefined;
   onBlank: () => void;
   onTemplates: () => void;
   onDescribe: () => void;
@@ -35,33 +46,34 @@ export function NewRuleMenu({
     setAnchor(null);
     go();
   };
+  const trigger = footer ? (
+    <ToolFooterButton
+      aria-haspopup="menu"
+      aria-expanded={anchor !== null}
+      disabled={disabled}
+      onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
+    >
+      <PlusIcon size={12} />
+      New Rule
+      <ChevronDownIcon size={12} />
+    </ToolFooterButton>
+  ) : (
+    <Button
+      variant="primary"
+      size="xs"
+      aria-haspopup="menu"
+      aria-expanded={anchor !== null}
+      disabled={disabled}
+      onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
+    >
+      <PlusIcon size={12} />
+      New Rule
+      <ChevronDownIcon size={12} />
+    </Button>
+  );
   return (
     <>
-      {footer ? (
-        <ToolFooterButton
-          aria-haspopup="menu"
-          aria-expanded={anchor !== null}
-          disabled={disabled}
-          onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
-        >
-          <PlusIcon size={12} />
-          New Rule
-          <ChevronDownIcon size={12} />
-        </ToolFooterButton>
-      ) : (
-        <Button
-          variant="primary"
-          size="xs"
-          aria-haspopup="menu"
-          aria-expanded={anchor !== null}
-          disabled={disabled}
-          onClick={(e) => setAnchor(anchor ? null : e.currentTarget)}
-        >
-          <PlusIcon size={12} />
-          New Rule
-          <ChevronDownIcon size={12} />
-        </Button>
-      )}
+      {disabled && offReason ? <Tooltip label={offReason}>{trigger}</Tooltip> : trigger}
       {anchor ? (
         <PortalMenu
           anchor={anchor}

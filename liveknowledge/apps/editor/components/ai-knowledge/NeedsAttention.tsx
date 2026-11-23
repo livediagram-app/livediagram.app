@@ -11,6 +11,7 @@ import type {
   KnowledgeSuggestion,
 } from '@liveknowledge/api-schema';
 import { CompactEmptyState, SegmentedToggle } from '@liveknowledge/ui';
+import { AI_CREDIT_COSTS, aiCreditsWords } from '@liveworkspace/subscription';
 import { attentionItems, type AttentionFilter } from '@/lib/knowledge-ask/dashboard-figures';
 import {
   AttentionIcon,
@@ -21,11 +22,12 @@ import {
   SuggestionIcon,
   SuggestionSmallIcon,
 } from './ai-knowledge-icons';
-import { AiSection } from './AiSection';
+import { AI_MUTED, AiSection } from './AiSection';
 import { ConflictKeyNote, ConflictRow } from './ConflictRow';
 import { QuestionRow } from './QuestionRow';
 import { SuggestionRow } from './SuggestionRow';
 import { useShowAll } from './useShowAll';
+import { useOpenKnowledgeTier } from '@/lib/use-knowledge-tier';
 
 export const NEEDS_ATTENTION_CAP = 4;
 
@@ -95,7 +97,10 @@ const KIND: Record<
 };
 
 export type NeedsAttentionProps = {
-  overview: Pick<KnowledgeOverviewResponse, 'conflicts' | 'suggestions' | 'questions' | 'hasAi'>;
+  overview: Pick<
+    KnowledgeOverviewResponse,
+    'conflicts' | 'suggestions' | 'questions' | 'hasAi' | 'hasKey'
+  >;
   filter: AttentionFilter;
   onFilter: (filter: AttentionFilter) => void;
   canResolve: boolean;
@@ -117,8 +122,13 @@ export type NeedsAttentionProps = {
   onOpenAiSettings: () => void;
 };
 
+/** What a conflict check costs, said where its findings are: "Each check after an edit uses 1 AI credit." */
+export const conflictCostSentence = (): string =>
+  `Each check after an edit uses ${aiCreditsWords(AI_CREDIT_COSTS.knowledgeConflictCheck)}.`;
+
 export function NeedsAttention(props: NeedsAttentionProps) {
   const { overview, filter, onFilter, busy, now } = props;
+  const tier = useOpenKnowledgeTier();
   const items = attentionItems(overview, filter);
   const { shown, toggle, fold } = useShowAll(items, NEEDS_ATTENTION_CAP);
   // Another kind starts folded.
@@ -147,6 +157,12 @@ export function NeedsAttention(props: NeedsAttentionProps) {
           canManageAi={props.canManageAi}
           onOpenAiSettings={props.onOpenAiSettings}
         />
+      ) : null}
+      {filter === 'conflicts' && overview.hasAi && !overview.hasKey && tier ? (
+        // The check starts itself after an edit, so its cost is said where its findings are (tiers.md).
+        <p role="note" data-conflict-cost="" className={`mb-3 text-xs leading-5 ${AI_MUTED}`}>
+          {conflictCostSentence()}
+        </p>
       ) : null}
       {items.length === 0 ? (
         <CompactEmptyState icon={empty.icon} title={empty.title} description={empty.description} />

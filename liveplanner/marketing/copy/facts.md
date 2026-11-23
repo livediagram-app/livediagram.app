@@ -71,7 +71,9 @@ team, not the individual.
 ## Licence and price
 
 - MIT licensed and open source, in the liveworkspace monorepo.
-- Free at liveplanner.app. No paid tier and no plan to introduce one.
+- Free at liveplanner.app, every feature works on the free plan. Pro, a paid tier, only
+  raises a few limits; no feature is Pro-only. Don't claim there is no paid
+  tier, and don't lead with Pro.
 - No ads and no third-party trackers. Boards and sheets export (CSV, image,
   PDF, Markdown outline), so work is never locked in.
 

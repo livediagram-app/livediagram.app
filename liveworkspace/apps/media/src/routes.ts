@@ -11,6 +11,7 @@ import {
   IMAGE_SHA256_HEADER,
   IMAGE_SOURCE_HEADER,
   imageSourceOf,
+  imageTooLargeBody,
   MEDIA_DOCUMENT_HEADER,
   IMAGE_WIDTH_HEADER,
   isAcceptedFileType,
@@ -28,6 +29,7 @@ import {
   type MediaApp,
   type MediaImage,
   type MediaRefsSync,
+  type PayerLimits,
 } from '@liveworkspace/media';
 import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { MAX_JSON_BYTES } from './config';
@@ -58,6 +60,8 @@ import {
   mergeOwnerWalkthroughs,
 } from './walkthroughs';
 import { deleteOwnerItems, mergeOwnerItems } from './library/store';
+import { ownLimits, uploadLimits } from './tier';
+import { handleOwnersUsage, isSubscriptionCaller } from './owners-usage';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
 const isId = (value: unknown): value is string =>
@@ -158,6 +162,10 @@ export async function handleApp(
   path: string,
 ): Promise<Response> {
   if (await isExportCaller(request, env)) return handleExportReads(request, env, url, path);
+  // The subscription service's one read: what several owners hold, for a person's usage (media.md "With Pro on").
+  if (await isSubscriptionCaller(request, env)) {
+    return handleOwnersUsage(request, env, path, await readJson(request));
+  }
   const app = await callerApp(request, env);
   if (!app) return unauthorized();
   if (!env.MEDIA) return unavailable();
@@ -176,7 +184,22 @@ export async function handleApp(
     // GET /app/images?owner=: the owner's gallery, from every app.
     if (segments.length === 1 && method === 'GET') {
       if (!isId(owner)) return badRequest('invalid_owner');
-      return json({ images: await listImages(env, owner, 'pictures') });
+      // With Pro on the gallery also says what it uses of its owner's Image Storage (media.md "With Pro on").
+      const limits = await ownLimits(env, owner);
+      if (!limits) return json({ images: await listImages(env, owner, 'pictures') });
+      const [images, totals] = await Promise.all([
+        listImages(env, owner, 'pictures'),
+        ownerTotals(env, owner),
+      ]);
+      return json({
+        images,
+        storage: {
+          used: totals.bytes,
+          limit: limits.imageStorageBytes,
+          maxImageBytes: limits.imageMaxBytes,
+          owner: limits.storageOwner,
+        },
+      });
     }
     // POST /app/images?owner=: store a file, or answer the owner's copy of the same bytes.
     if (segments.length === 1 && method === 'POST') {
@@ -340,20 +363,37 @@ const unsupported = () =>
     { error: 'unsupported_type', acceptedTypes: [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_FILE_TYPES] },
     { status: 415 },
   );
-const tooLarge = () =>
-  json({ error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
 
-// The 403 a full gallery answers with, or null when the upload fits.
-function galleryFull(caps: Caps, totals: { count: number; bytes: number }, incoming: number) {
+// The 403 a full gallery answers with, or null when the upload fits. With Pro on it names whose tier set the limit:
+// the gallery's own owner's, whoever owns the item the upload is for.
+function galleryFull(
+  caps: Caps,
+  totals: { count: number; bytes: number },
+  incoming: number,
+  limits: PayerLimits | null,
+) {
+  const whose = limits ? { owner: limits.storageOwner } : {};
   if (caps.maxImages !== null && totals.count >= caps.maxImages) {
     return json(
-      { error: 'gallery_full', reason: 'count', limit: caps.maxImages, current: totals.count },
+      {
+        error: 'gallery_full',
+        reason: 'count',
+        limit: caps.maxImages,
+        current: totals.count,
+        ...whose,
+      },
       { status: 403 },
     );
   }
   if (caps.maxBytes !== null && totals.bytes + incoming > caps.maxBytes) {
     return json(
-      { error: 'gallery_full', reason: 'bytes', limit: caps.maxBytes, current: totals.bytes },
+      {
+        error: 'gallery_full',
+        reason: 'bytes',
+        limit: caps.maxBytes,
+        current: totals.bytes,
+        ...whose,
+      },
       { status: 403 },
     );
   }
@@ -374,7 +414,19 @@ async function upload(
   if (!isAcceptedImageType(declaredType) && !isFile) return unsupported();
   const declaredLength = Number(request.headers.get('Content-Length') ?? '0');
   if (!Number.isFinite(declaredLength) || declaredLength <= 0) return badRequest('missing_length');
-  if (declaredLength > MAX_IMAGE_BYTES) return tooLarge();
+  // With Pro on the largest image is the better of the uploader's tier and the item's owner's, and the gallery's
+  // size is the uploader's own tier's, both read before the body (media.md "With Pro on"); with it off, the caps
+  // this service always had.
+  const limits = await uploadLimits(env, request, owner);
+  const maxBytes = limits ? limits.imageMaxBytes : MAX_IMAGE_BYTES;
+  const tooLarge = (size: number) =>
+    json(
+      imageTooLargeBody({ pro: limits !== null, maxBytes, owner: limits?.owner ?? null }, size),
+      {
+        status: 413,
+      },
+    );
+  if (declaredLength > maxBytes) return tooLarge(declaredLength);
   const document = documentOf(request.headers.get(MEDIA_DOCUMENT_HEADER));
   if (document === false) return badRequest('invalid_document');
   // Every answer with an image, deduped or new, first records the document's reference to it.
@@ -389,12 +441,14 @@ async function upload(
     if (known) return answer(known, true);
   }
 
-  const caps: Caps = {
-    maxImages: parsePositiveCap(env.IMAGE_MAX_PER_OWNER),
-    maxBytes: parsePositiveCap(env.IMAGE_MAX_BYTES_PER_OWNER),
-  };
+  const caps: Caps = limits
+    ? { maxImages: null, maxBytes: limits.imageStorageBytes }
+    : {
+        maxImages: parsePositiveCap(env.IMAGE_MAX_PER_OWNER),
+        maxBytes: parsePositiveCap(env.IMAGE_MAX_BYTES_PER_OWNER),
+      };
   if (caps.maxImages !== null || caps.maxBytes !== null) {
-    const full = galleryFull(caps, await ownerTotals(env, owner), declaredLength);
+    const full = galleryFull(caps, await ownerTotals(env, owner), declaredLength, limits);
     if (full) return full;
   }
 
@@ -412,7 +466,7 @@ async function upload(
 
   const bytes = await request.arrayBuffer();
   // Content-Length is the caller's word; the body is the fact.
-  if (bytes.byteLength > MAX_IMAGE_BYTES) return tooLarge();
+  if (bytes.byteLength > maxBytes) return tooLarge(bytes.byteLength);
   const sniffed = sniffMediaType(new Uint8Array(bytes.slice(0, 16)));
   if (!sniffed || sniffed !== declaredType) return unsupported();
 
@@ -468,7 +522,7 @@ async function upload(
     if (raced) return answer(raced, true);
     // A racing upload filled the gallery after the check above.
     return (
-      galleryFull(caps, await ownerTotals(env, owner), stored.byteLength) ??
+      galleryFull(caps, await ownerTotals(env, owner), stored.byteLength, limits) ??
       json({ error: 'upload_conflict' }, { status: 409 })
     );
   }

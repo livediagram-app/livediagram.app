@@ -223,20 +223,42 @@ As liveplanner's, the same numbers everywhere:
 
 | Limit                                       | Value                                                          |
 | ------------------------------------------- | -------------------------------------------------------------- |
-| Rules per item                              | 50                                                             |
+| Rules per item                              | 50 (with Pro on, also the owner's total; see below)            |
 | Conditions, steps per rule                  | 10, 20                                                         |
-| Runs per item a day (UTC; No Match is free) | 1,000 (past it, one Skipped line a rule a day says so)         |
+| Runs per item a day (UTC; No Match is free) | 1,000 on every tier (past it, one Skipped line a rule a day)   |
 | Triggers waiting                            | 500 (a burst past it is dropped, said once on the Audit Trail) |
 | Rules one change may chain through          | 5                                                              |
 | Failures in a row before a rule pauses      | 10                                                             |
-| Failed wakes in a row before they give up   | 12 (tried again after 1, 2, 4 … minutes, an hour at most)      |
-| Audit Trail                                 | 2,000 runs and 500 No Matches, 30 days                         |
-| Messages through connections per rule       | 5                                                              |
-| AI asks per item a day                      | 100                                                            |
-| Emails to typed-in addresses per item a day | 50                                                             |
-| Waits per rule; runs held waiting           | 3; 500                                                         |
-| Incoming Webhook: body, calls per rule      | 16 KB; 60 a minute                                             |
-| Kept snapshots (named by rules)             | 5                                                              |
+
+With Pro on ([subscription.md](../019-subscription/subscription.md) "Tiers and limits"), Automation Runs and
+Automation Rules are the **owner's**, over everything they own in every app (owner, 2026-11-22), never an item's:
+
+- **Runs a month.** Each run that does something spends one of the owner's Automation Runs through the room's
+  ItemTier, once its trigger and conditions have matched and before its first step acts, so a No Match never spends.
+  Each message a run sends through a connection (Slack, Teams, Send to Webhook) spends one more, before it is handed
+  to the index. A run that goes on after a Wait spent when it started and spends nothing more; a chain stop or a
+  rule changed during a Wait does nothing and costs nothing. Once the month is used, a run never starts: the Audit
+  Trail says so once a rule a UTC day ("This month's automation runs are used", Skipped), never once per trigger,
+  and the rule is not paused. A message the month has none left for is not sent and the run is Skipped with the
+  same words once the rest is done. When the subscription service cannot be reached, or refuses the request, the
+  run goes ahead (the per-item 1,000 a day still bounds it). With Pro off, for a guest's item and for one that is
+  nobody's, nothing is spent. A wake that has been told the month is used asks no more for the rest of it.
+- **Rules held.** Every rule an owner's items hold counts, on or off. Adding or duplicating one is refused when the
+  owner holds every rule their tier allows, and switching a rule that is off on is refused while they hold more
+  than that (409 `automation_rules_full`, with `limit` `automationRules`, `used` the owner's total, `max` and
+  `guest`). Where the service refuses the request itself the rule is added, held by the item's own 50, as runs go
+  ahead uncounted. Owners over the limit keep every rule,
+  running and editable. A guest's item holds at most Free's 25 itself.
+- **The fixed bounds** (50 rules an item, 1,000 runs an item a UTC day and the rest of the table) hold on every tier.
+  They are abuse bounds, never on the pricing page, and their refusals offer no upgrade.
+  | Failed wakes in a row before they give up | 12 (tried again after 1, 2, 4 … minutes, an hour at most) |
+  | Audit Trail | 2,000 runs and 500 No Matches, 30 days |
+  | Messages through connections per rule | 5 |
+  | AI asks per item a day | 100 |
+  | Emails to typed-in addresses per item a day | 50 |
+  | Waits per rule; runs held waiting | 3; 500 |
+  | Incoming Webhook: body, calls per rule | 16 KB; 60 a minute |
+  | Kept snapshots (named by rules) | 5 |
 
 - A run's id is a hash of its trigger and its rule, claimed before anything is done, so a retry never runs a rule
   twice for one trigger.
@@ -245,7 +267,7 @@ As liveplanner's, the same numbers everywhere:
 - **A rule's own changes are never edits**, whatever its chain setting: **Edited, Then Quiet** and **Not Edited
   For** never hear them, so a rule that edits on a quiet stretch never wakes itself, or another such rule, in a loop.
   Its other changes (a tab added, a snapshot taken) start rules as the chain setting says.
-- Past the day's 1,000, nothing runs and the Audit Trail says so once a rule a day ("Daily limit reached: rules run
+- Past the item's 1,000 a day, nothing runs and the Audit Trail says so once a rule a day ("Daily limit reached: rules run
   again tomorrow", Skipped), never once per trigger.
 - A missed time (the room could not wake) runs late when it is under 24 hours late, once; older is skipped and said
   on the Audit Trail.
@@ -263,7 +285,9 @@ As liveplanner's, the same numbers everywhere:
 - **Test Rule** runs the rule now and changes nothing: it shows each condition and step as it would go ("Would post
   to Launch Channel", "Would revert to “Clean board”"). Where the trigger is about a tab it asks which.
 - **Run Rule** runs a **Run by Hand** rule for real, from the rule's row and its menu. liveplanner also offers it on
-  a card. Past the day's runs it is refused (429 `automation_budget_spent`, `Retry-After` until UTC midnight); a run
+  a card. Past the item's 1,000 a day it is refused (429 `automation_budget_spent`, `Retry-After` until UTC midnight,
+  no upgrade); with the owner's month of runs used, 429 `automation_runs_used` with `limit` `automationRunsPerMonth`,
+  `used` and `max`, `Retry-After` until the first of next month (UTC). The Incoming Webhook answers the same; a run
   the room could not start or record is 500 `automation_run_failed`, and Run Rule may be tried again.
 
 ## AI

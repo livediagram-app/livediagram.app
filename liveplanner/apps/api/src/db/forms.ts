@@ -18,10 +18,14 @@ export type FormLinkRow = {
   deleted_at: number | null;
   last_email_at: number | null;
   held_emails: number;
+  // The UTC month (`2026-11`) its owner's month of responses was found used in, and the limit it was used at: '' and 0
+  // until a response is refused for it (Pro on only). See formMonthFull.
+  month: string;
+  month_count: number;
 };
 
 const COLS =
-  'code, project_id, tab_id, open, created_at, responses, hour_start, hour_count, suspended_at, deleted_at, last_email_at, held_emails';
+  'code, project_id, tab_id, open, created_at, responses, hour_start, hour_count, suspended_at, deleted_at, last_email_at, held_emails, month, month_count';
 
 const BASE62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -162,9 +166,32 @@ export async function deleteFormLinksForTab(
 
 const FORM_HOUR_MS = 60 * 60 * 1000;
 
+// A form's month against its plan's owner's tier (docs/specs/030-forms/forms.md "Abuse and limits → Tiers"): the UTC
+// month's key and the most responses the owner's forms may take in it, over every form they own.
+export type FormMonth = { key: string; limit: number };
+
+// Whether the owner's month was used when this link last asked: the link keeps the month (`month`) and the limit
+// (`month_count`) a refused spend met, so the public page reads closed with no call to the subscription service. A new
+// month, or a larger limit (the owner upgraded), opens it again.
+export const formMonthFull = (
+  link: Pick<FormLinkRow, 'month' | 'month_count'>,
+  monthly: FormMonth,
+): boolean => link.month === monthly.key && link.month_count >= monthly.limit;
+
+// The owner's month met a refusal at `limit`: the link reads closed until the month turns or the limit grows.
+export async function markFormMonthFull(
+  env: PlanEnv,
+  code: string,
+  monthly: FormMonth,
+): Promise<void> {
+  await env.PLAN_DB.prepare('UPDATE form_links SET month = ?, month_count = ? WHERE code = ?')
+    .bind(monthly.key, monthly.limit, code)
+    .run();
+}
+
 // Takes the next response number, within the form's hourly cap and its Response Limit (`limit`, null for none or for
-// a preview): one guarded UPDATE, so two responses at once never share a number and neither cap is passed. Null when
-// one is reached (or the link went meanwhile).
+// a preview): one guarded UPDATE, so two responses at once never share a number and no cap is passed. Null when a
+// cap is reached (or the link went meanwhile).
 export async function claimResponseNumber(
   env: PlanEnv,
   code: string,

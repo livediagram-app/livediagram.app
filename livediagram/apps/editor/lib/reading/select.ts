@@ -34,6 +34,10 @@ export type ReaderKind = 'server' | 'browser';
 
 export type SelectedReader = { kind: ReaderKind; read: CropReader };
 
+// The server's answers that mean "not from me this time": the device reads instead. The deployment's budget
+// (`ai_quota`), or, with Pro on, the diagram's owner's AI credits (`ai_credits_used`).
+const SPENT: ReadonlySet<string> = new Set(['ai_quota', 'ai_credits_used']);
+
 const readInBrowser: CropReader = async (crops, opts) => {
   const read = await readCropsInBrowser(crops, opts);
   return read.failure
@@ -65,35 +69,41 @@ function withBudgetFailover(server: CropReader, device: CropReader): CropReader 
     try {
       served = await server(crops, opts);
     } catch (err) {
-      if (!(err instanceof Error) || err.message !== 'ai_quota') throw err;
-      served = { textById: new Map(), unread: crops.length, failure: 'ai_quota' };
+      if (!(err instanceof Error) || !SPENT.has(err.message)) throw err;
+      served = { textById: new Map(), unread: crops.length, failure: err.message };
     }
-    if (served.failure !== 'ai_quota') return served;
+    if (served.failure === undefined || !SPENT.has(served.failure)) return served;
+    // The owner's AI credits (note-reader.md "When the credits are used"): the review's own notice says so, with the
+    // right way on for whoever is looking, so this is neither "AI is resting" nor a quota warning.
+    const credits = served.failure === 'ai_credits_used';
     const rest = crops.filter((c) => !served.textById.has(c.id));
     const already = served.textById.size;
     console.warn(
       `[reader] the free budget is spent; reading ${rest.length} of ${crops.length} notes on this device`,
     );
-    opts.onFallback?.('budget');
+    if (!credits) opts.onFallback?.('budget');
     const here = await device(rest, {
       ...opts,
       onProgress: (n) => opts.onProgress?.(already + n),
     });
     const textById = new Map([...served.textById, ...here.textById]);
+    const fallback = credits ? {} : { fallback: 'budget' as const };
     return here.failure
-      ? { textById, failure: here.failure, detail: here.detail, fallback: 'budget' }
-      : { textById, fallback: 'budget' };
+      ? { textById, failure: here.failure, detail: here.detail, ...fallback }
+      : { textById, ...fallback };
   };
 }
 
 // `keyed`: the person's own key applies (note-reader.md "On your own key"), so the server reads on it even where the
-// deployment has no model.
+// deployment has no model. `onDevice`: the person chose to read on this device, or a charged read's re-read with no
+// live pass ("What the editor shows"), so nothing is sent and nothing spent.
 export function selectReader(deps: {
   aiEnabled: boolean;
   ownerId: string;
   keyed?: boolean;
+  onDevice?: boolean;
 }): SelectedReader {
-  if (deps.aiEnabled || deps.keyed === true) {
+  if (!deps.onDevice && (deps.aiEnabled || deps.keyed === true)) {
     return { kind: 'server', read: withBudgetFailover(serverReader(deps.ownerId), readInBrowser) };
   }
   return { kind: 'browser', read: readInBrowser };

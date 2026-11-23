@@ -26,10 +26,11 @@ export function recordRead(tab: string, reader: Reader, now: number): SqlStateme
   };
 }
 
-/** Drops the reads older than READS_KEPT_DAYS. The room runs it at most once a day. */
-export const pruneReads = (now: number): SqlStatement => ({
+/** Drops the reads older than `days` (READS_KEPT_DAYS, or the owner's AI Knowledge History with Pro on). The room
+ *  runs it at most once a day. */
+export const pruneReads = (now: number, days: number = READS_KEPT_DAYS): SqlStatement => ({
   sql: 'DELETE FROM page_reads WHERE day < ?',
-  params: [daysBefore(now, READS_KEPT_DAYS)],
+  params: [daysBefore(now, days)],
 });
 
 /** How many agents a page's AI Context names. */
@@ -141,9 +142,9 @@ export type MostReadRow = { tab: string; people: number; agents: number };
 /** The pages read most in the last 7 days, people and agents apart, most first then by tab. Twice MOST_READ_PAGES,
  *  so the route still has enough when it leaves out a page that is gone. `+tab` keeps SQLite from grouping by the
  *  tab index, which scans all 90 days: it takes the week as a range of the key (day first) instead. */
-export const countMostRead = (now: number): SqlStatement => ({
+export const countMostRead = (now: number, days = 7): SqlStatement => ({
   sql: `SELECT tab, SUM(CASE WHEN reader_kind = 'person' THEN reads ELSE 0 END) AS people,
       SUM(CASE WHEN reader_kind = 'agent' THEN reads ELSE 0 END) AS agents
     FROM page_reads WHERE day > ? GROUP BY +tab ORDER BY SUM(reads) DESC, tab LIMIT ?`,
-  params: [daysBefore(now, 7), MOST_READ_PAGES * 2],
+  params: [daysBefore(now, days), MOST_READ_PAGES * 2],
 });

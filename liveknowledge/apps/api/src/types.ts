@@ -21,6 +21,7 @@ export type {
   ClientMessage,
 } from '@liveknowledge/api-schema';
 
+import type { SubscriptionFetcher } from '@liveworkspace/subscription';
 import type { ItemHost } from '@liveworkspace/automations/room';
 import type { DocumentRoom } from './document-room/document-room';
 
@@ -96,6 +97,15 @@ export type Env = {
   E2E_CLAUDE_STAND_IN?: string;
   // Per-caller limiter for a knowledgebase's search (GET /api/documents/<id>/search). Absent binding: allowed.
   SEARCH_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Pro (liveworkspace/docs/specs/019-subscription/subscription.md): the four vars `subscriptionClientOf(env,
+  // 'liveknowledge.app')` reads. PRO_ENABLED is the flag (`true`, `1` or `on`; unset is off, and nothing asks the service);
+  // SUBSCRIPTION_KEY is liveknowledge's secret on the subscription service (wrangler secret put), the same value as its
+  // SUBSCRIPTION_KEY_LIVEKNOWLEDGE; SUBSCRIPTION_URL names a service that is not production's; SUBSCRIPTION is the
+  // service binding, the public route when it is absent.
+  PRO_ENABLED?: string;
+  SUBSCRIPTION_KEY?: string;
+  SUBSCRIPTION_URL?: string;
+  SUBSCRIPTION?: SubscriptionFetcher;
   // liveknowledge' secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
   // same value as the service's DRIVE_KEY_LIVEKNOWLEDGE: it opens the internal export door (its `file` format) and
   // the import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.

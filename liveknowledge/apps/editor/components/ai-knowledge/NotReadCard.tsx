@@ -15,27 +15,30 @@ const ROW =
 export function NotReadCard({
   pages,
   total,
+  days,
   now,
   onOpenPage,
 }: {
   pages: readonly KnowledgeNotReadPage[];
   total: number;
+  // 90, or the days the owner's tier keeps reads where fewer (tiers.md "AI Knowledge History").
+  days: number;
   now: number;
   onOpenPage: (tab: string) => void;
 }) {
   return (
     <AiSection
       id="ai-not-read"
-      title="Not Read in 90 Days"
+      title={`Not Read in ${days} Days`}
       icon={<NotReadIcon />}
       count={total}
-      about="Pages nobody opened and no agent read in 90 days: worth updating, merging or deleting."
+      about={`Pages nobody opened and no agent read in ${days} days: worth updating, merging or deleting.`}
     >
       {pages.length === 0 ? (
         <CompactEmptyState
           icon={<NotReadIcon />}
           title="Every Page Was Read"
-          description="Each page older than 90 days was opened, or read by an agent, in that time."
+          description={`Each page older than ${days} days was opened, or read by an agent, in that time.`}
         />
       ) : (
         <>

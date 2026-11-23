@@ -18,3 +18,8 @@ INDEX_KEY=dev-livedocuments-index-key
 # Images, through the local media Worker (liveworkspace/apps/media): its MEDIA_KEY_LIVEDOCUMENTS.
 MEDIA_URL=http://localhost:8792/api/media
 MEDIA_KEY=dev-livedocuments-media-key
+# Pro, through the local subscription Worker (liveworkspace/apps/subscription, in `corepack pnpm dev:workspace`): its
+# SUBSCRIPTION_KEY_LIVEDOCUMENTS. PRO_ENABLED=false (or no line) turns Pro off, as a deployment that sets nothing has it.
+PRO_ENABLED=true
+SUBSCRIPTION_URL=http://localhost:8794/api/subscription
+SUBSCRIPTION_KEY=dev-livedocuments-subscription-key

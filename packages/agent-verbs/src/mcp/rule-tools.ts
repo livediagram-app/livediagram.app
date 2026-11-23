@@ -258,8 +258,12 @@ export function createRuleTools<K extends string>(binding: RuleProduct, idKey: K
         .array(listedRun)
         .optional()
         .describe('The Audit Trail, newest first, when runs was asked.'),
-      runsToday: z.number().describe('Runs today (UTC) that count toward the day’s limit.'),
-      runsPerDay: z.number().describe('The day’s limit.'),
+      runsToday: z
+        .number()
+        .describe('Runs today (UTC) that count toward this item’s daily safety cap.'),
+      runsPerDay: z
+        .number()
+        .describe('This item’s daily safety cap (the owner’s monthly runs are counted apart).'),
       count: z.number().describe('How many rules are listed.'),
       url,
     },

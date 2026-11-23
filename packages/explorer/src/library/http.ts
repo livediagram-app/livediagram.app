@@ -13,8 +13,17 @@ import {
   MAX_IMAGE_MB,
 } from '@liveworkspace/api-schema/image-limits';
 import { isMadeByAiSource } from '@liveworkspace/api-schema/document-source';
+import { formatBytes, isOwnerScope } from '@liveworkspace/subscription';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
+import {
+  imageLimitRefusalOf,
+  imageStorageOf,
+  imageUploadCeiling,
+  type ImageStorage,
+} from '@liveworkspace/subscription-ui/images';
 import { APP_ITEMS, isAppName, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { ShapePreview } from './ShapePreview';
+import { UploadLimitError } from './upload-limit-error';
 import type {
   GalleryHost,
   GalleryImage,
@@ -24,6 +33,7 @@ import type {
   ShapeLibrary,
   WalkthroughEntry,
   WalkthroughsHost,
+  WalkthroughUsage,
 } from './types';
 
 const ACCEPTED: readonly string[] = ACCEPTED_IMAGE_TYPES;
@@ -31,10 +41,13 @@ const ACCEPTED: readonly string[] = ACCEPTED_IMAGE_TYPES;
 class LibraryError extends Error {
   readonly status: number;
   readonly code: string | null;
-  constructor(status: number, code: string | null) {
+  // The refusal as the api answered it: a tier's limit says its numbers there.
+  readonly body: unknown;
+  constructor(status: number, code: string | null, body: unknown = null) {
     super(`library: ${status}${code ? ` ${code}` : ''}`);
     this.status = status;
     this.code = code;
+    this.body = body;
   }
 }
 
@@ -52,7 +65,7 @@ async function call(
   const res = await fetch(url, { ...init, headers, signal });
   if (!res.ok && res.status !== 503) {
     const body = (await res.json().catch(() => null)) as { error?: string } | null;
-    throw new LibraryError(res.status, body?.error ?? null);
+    throw new LibraryError(res.status, body?.error ?? null, body);
   }
   return res;
 }
@@ -64,7 +77,11 @@ export function uploadRefusal(e: unknown): string {
     case 'unsupported_type':
       return `That file type isn’t supported. Use a ${IMAGE_TYPES_LABEL}.`;
     case 'file_too_large':
-      return `That image is too large. Images can be up to ${MAX_IMAGE_MB} MB.`;
+      // With Pro on this is a file past what any tier takes: a tier's own limit is the server's to say, and is drawn
+      // as the shared notice (UploadLimitError).
+      return `That image is too large. Images can be up to ${
+        proOn() ? formatBytes(imageUploadCeiling(MAX_IMAGE_BYTES)) : `${MAX_IMAGE_MB} MB`
+      }.`;
     case 'gallery_full':
       return 'Your gallery is full. Delete an image to make room.';
     default:
@@ -123,11 +140,15 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
   const base = `${origin}${path}`;
   const item = APP_ITEMS[app];
   const itemUrl = (id: string) => `${origin}${item.itemPath}${encodeURIComponent(id)}`;
+  // What the last list said the gallery uses of its owner's Image Storage (Pro on only).
+  let storage: ImageStorage | null = null;
   return {
+    storage: () => storage,
     list: async (signal) => {
       const res = await call(token, base, {}, signal);
       if (res.status === 503) return null;
-      const body = (await res.json()) as { images: WireImage[] };
+      const body = (await res.json()) as { images: WireImage[]; storage?: unknown };
+      storage = imageStorageOf(body.storage);
       return body.images.map((i): GalleryImage => ({
         id: i.id,
         name: i.originalName ?? null,
@@ -172,8 +193,9 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
     upload: async (file) => {
       if (!ACCEPTED.includes(file.type))
         throw new Error(uploadRefusal(new LibraryError(415, 'unsupported_type')));
-      // Over the media service's cap: refused before the file is decoded, read or sent.
-      if (file.size > MAX_IMAGE_BYTES)
+      // Over the media service's cap (with Pro on, over what any tier takes): refused before the file is decoded,
+      // read or sent.
+      if (file.size > imageUploadCeiling(MAX_IMAGE_BYTES))
         throw new Error(uploadRefusal(new LibraryError(413, 'file_too_large')));
       try {
         const { width, height } = await imageSize(file);
@@ -186,6 +208,8 @@ function galleryHost(app: AppName, path: string, token: Token, origin: string): 
         if (file.name) headers.set('X-Image-Original-Name', encodeURIComponent(file.name));
         await call(token, base, { method: 'POST', headers, body: bytes });
       } catch (e) {
+        const limit = e instanceof LibraryError ? imageLimitRefusalOf(e.body) : null;
+        if (limit) throw new UploadLimitError(uploadRefusal(e), limit);
         throw new Error(uploadRefusal(e));
       }
     },
@@ -262,17 +286,39 @@ function shapeLibrariesHost(path: string, token: Token, origin: string): ShapeLi
   };
 }
 
+/** The list's `limits` as the library's meter takes them (walkthroughs.md "The Explorer's Walkthroughs"), or null with
+ *  Pro off or anything malformed. */
+export function walkthroughUsageOf(value: unknown): WalkthroughUsage | null {
+  if (!value || typeof value !== 'object') return null;
+  const v = value as Record<string, unknown>;
+  const count = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n) && n >= 0;
+  if (!count(v.stored) || !count(v.maxMs)) return null;
+  const storedLimit = v.storedLimit;
+  if (storedLimit !== null && !count(storedLimit)) return null;
+  const owner = v.storedOwner ?? v.owner;
+  return {
+    stored: v.stored,
+    storedLimit,
+    maxMs: v.maxMs,
+    owner: isOwnerScope(owner) ? owner : null,
+  };
+}
+
 /** The person's walkthroughs over the app's door (`<path>?mine=1`, `<path>/<id>/media?d=`, `<path>/<id>?d=`). */
 function walkthroughsHost(path: string, token: Token, origin: string): WalkthroughsHost {
   const base = `${origin}${path}`;
+  let usage: WalkthroughUsage | null = null;
   const at = (entry: WalkthroughEntry, rest = '') =>
     `${base}/${encodeURIComponent(entry.id)}${rest}?d=${encodeURIComponent(entry.item)}`;
   return {
     list: async (signal) => {
       const res = await call(token, `${base}?mine=1`, {}, signal);
       if (!res.ok) return [];
-      return ((await res.json()) as { walkthroughs: WalkthroughEntry[] }).walkthroughs;
+      const body = (await res.json()) as { walkthroughs: WalkthroughEntry[]; limits?: unknown };
+      usage = walkthroughUsageOf(body.limits);
+      return body.walkthroughs;
     },
+    usage: () => usage,
     media: async (entry, signal) => (await call(token, at(entry, '/media'), {}, signal)).blob(),
     remove: async (entry) => {
       await call(token, at(entry), { method: 'DELETE' });

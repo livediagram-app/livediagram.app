@@ -19,7 +19,7 @@ import {
   readHookBody,
   webhookValues,
 } from '../../incoming';
-import { AUTOMATION_QUEUE_MAX, AUTOMATION_RUNS_PER_DAY } from '../../limits';
+import { AUTOMATION_QUEUE_MAX } from '../../limits';
 import { WEBHOOK_VALUE_PREFIX, webhookPathOf } from '../../webhook-paths';
 import { optOutAddress } from '../automation-addresses';
 import {
@@ -35,6 +35,7 @@ import {
   type HookCall,
 } from '../automation-incoming';
 import { runsToday } from '../automation-log';
+import { runsUsedBody } from '../tier';
 import type { ItemEngine } from './engine';
 import type { ItemRoomKit } from './kit';
 import { ITEM_TELEMETRY_ACTION } from './telemetry';
@@ -169,15 +170,23 @@ export async function answerItemHook(
       retryAfter: hookRetryAfter(minute.since, now),
     };
   }
-  if (runsToday(sql, now) >= AUTOMATION_RUNS_PER_DAY) {
+  const used = runsToday(sql, now);
+  if (used >= deps.store.runsPerDay) {
     log('budget');
     tally(kit, 'AutomationHookBudget');
     const midnight = (Math.floor(now / DAY_MS) + 1) * DAY_MS;
+    // The item's own bound: no tier named, nothing offered.
     return {
       status: 429,
       body: { error: 'automation_budget_spent' },
       retryAfter: Math.max(1, Math.ceil((midnight - now) / 1000)),
     };
+  }
+  // The owner's month of runs, as the room last heard it refused (within the minute): the call would run nothing.
+  if (deps.store.monthUsed(now)) {
+    log('month');
+    tally(kit, 'AutomationHookMonthUsed');
+    return { status: 429, ...runsUsedBody(deps.store, deps.tier, now) };
   }
   const read = readHookBody<string>(hookJson(call.body), {
     key: 'tab',

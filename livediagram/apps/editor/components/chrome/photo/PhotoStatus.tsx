@@ -4,6 +4,7 @@ import type { ModelDownload as Download } from '@/lib/reading/download-progress'
 import { ModelDownload } from './ModelDownload';
 import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protocol';
 import type { ReaderFallback } from '@/lib/reading/types';
+import { ReadCreditsHost } from './ReadCreditsHost';
 
 // Why the reader is on the processor, said in the author's terms.
 const PROCESSOR_WHY: Record<ProcessorReason, string> = {
@@ -19,7 +20,7 @@ const PROCESSOR_WHY: Record<ProcessorReason, string> = {
 // float in a fixed row at the top of the frame, so one appearing or going
 // never moves anything else.
 
-function Pill({
+export function Pill({
   tone = 'quiet',
   testId,
   children,
@@ -143,6 +144,9 @@ export function PhotoStatus({
           Reading {rereading} changed {rereading === 1 ? 'note' : 'notes'}…
         </Pill>
       ) : null}
+      {/* With Pro on, the read's AI credit: what it costs, or that the month's are used (note-reader.md "What the
+          editor shows"). Nothing with Pro off. */}
+      <ReadCreditsHost reading={reading} />
       {readerFallback === 'budget' ? (
         // Whose budget it was (the deployment's key, its daily cap, or the author's free
         // share) is deliberately not said.

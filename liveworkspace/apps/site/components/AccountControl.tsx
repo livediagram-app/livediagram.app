@@ -2,6 +2,7 @@
 
 import { lazy, Suspense, useCallback, useMemo, useState, useSyncExternalStore } from 'react';
 import { AccountMenu } from '@liveworkspace/account-menu';
+import { SiteSubscription } from '@/components/subscription/SiteSubscription';
 import { signInHref, signUpHref } from '@/lib/accounts';
 import { signOut, useSession } from '@/lib/session';
 
@@ -46,7 +47,9 @@ export function AccountControl({ settings = null }: { settings?: SettingsControl
   if (session.state === 'in') {
     const panel = settings ?? own;
     return (
-      <>
+      // The menu's Pro badge and Upgrade to Pro, and the Settings panel's Subscription, share one read of the
+      // person's subscription (nothing is asked, or drawn, with Pro off).
+      <SiteSubscription account="in">
         <AccountMenu
           name={session.name}
           fullName={session.fullName}
@@ -62,7 +65,7 @@ export function AccountControl({ settings = null }: { settings?: SettingsControl
             <SiteSettingsDialog app={null} onClose={close} />
           </Suspense>
         ) : null}
-      </>
+      </SiteSubscription>
     );
   }
 

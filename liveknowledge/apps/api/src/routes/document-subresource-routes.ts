@@ -23,6 +23,9 @@ import { handleTabRender } from './tab-render-route';
 import { handleKnowledgeRoutes } from './knowledge-routes';
 import { handlePageTrashRoutes } from './page-trash-routes';
 import { goesToTrash, trashPage } from '../document-room/page-trash';
+import { readStoredPages } from '../document-room/page-tree-store';
+import { workerTierOf } from '../knowledge/tier-limits';
+import { pageCount } from '@liveknowledge/document';
 import { countRead } from '../knowledge/knowledge-reads';
 import { readsDraft } from '../knowledge/page-draft-reads';
 import { withoutDraft } from '@liveknowledge/document';
@@ -231,6 +234,16 @@ export async function handleDocumentSubresources(
               ? { id: owner, name: ctx.token ? ctx.token.name || 'An agent' : author.name }
               : null,
         });
+      // One page fewer, told to the owner's Knowledgebase Pages without waiting (tiers.md). Asked only with Pro on.
+      if (toTrash) {
+        const tier = await workerTierOf(env, existing);
+        if (tier) {
+          const pages = pageCount(await readStoredPages(env, id));
+          const told = tier.recount('pages', id, pages);
+          if (ctx.waitUntil) ctx.waitUntil(told);
+          else await told;
+        }
+      }
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();
     }

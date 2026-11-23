@@ -34,6 +34,9 @@ globs = ["**/*.ttf", "**/*.otf"]
 #   ACCOUNTS_KEY_MEDIA accounts' ACCOUNTS_KEY_MEDIA: the daily run asks which teams are deleted, so their Libraries
 #   and galleries go (liveworkspace/docs/specs/006-media/libraries.md "Account and guest lifecycle").
 [vars]
+# Pro (liveworkspace/docs/specs/019-subscription/subscription.md "The flag"): off by default, so there are no tiers and
+# nothing asks the subscription service. "true" turns it on, with SUBSCRIPTION_KEY set (wrangler secret put).
+PRO_ENABLED = "false"
 # Per person, across every app: 500 images and 1 GB (a full-window screenshot is 0.3 to 1.1 MB, so 1 GB holds
 # the 500 with room to spare).
 IMAGE_MAX_PER_OWNER = "500"
@@ -63,6 +66,13 @@ service = "liveworkspace-index"
 binding = "ACCOUNTS"
 service = "liveworkspace-accounts"
 
+# The subscription service (liveworkspace/docs/specs/019-subscription/subscription.md), for entitlements and spends.
+# COMMENTED OUT until `liveworkspace-subscription` is deployed: a binding to a Worker that does not exist fails
+# this Worker's deploy. Without it the client fetches the service's public route (SUBSCRIPTION_URL).
+# [[services]]
+# binding = "SUBSCRIPTION"
+# service = "liveworkspace-subscription"
+
 # Its own database, apart from accounts, telemetry, the Community and every app's own data.
 [[d1_databases]]
 binding = "MEDIA_DB"
@@ -88,6 +98,11 @@ routes = [
 workers_dev = false
 
 [env.staging.vars]
+# Pro (liveworkspace/docs/specs/019-subscription/subscription.md "The flag"): off by default, so there are no tiers and
+# nothing asks the subscription service. "true" turns it on, with SUBSCRIPTION_KEY set (wrangler secret put).
+PRO_ENABLED = "false"
+# Staging's own subscription service, for when Pro is on.
+SUBSCRIPTION_URL = "https://staging.liveworkspace.app/api/subscription"
 IMAGE_MAX_PER_OWNER = "500"
 IMAGE_MAX_BYTES_PER_OWNER = "1073741824"
 WALKTHROUGH_MAX_PER_OWNER = "50"
@@ -107,6 +122,13 @@ service = "liveworkspace-index-staging"
 [[env.staging.services]]
 binding = "ACCOUNTS"
 service = "liveworkspace-accounts-staging"
+
+# The subscription service (liveworkspace/docs/specs/019-subscription/subscription.md), for entitlements and spends.
+# COMMENTED OUT until `liveworkspace-subscription-staging` is deployed: a binding to a Worker that does not exist fails
+# this Worker's deploy. Without it the client fetches the service's public route (SUBSCRIPTION_URL).
+# [[env.staging.services]]
+# binding = "SUBSCRIPTION"
+# service = "liveworkspace-subscription-staging"
 
 [[env.staging.d1_databases]]
 binding = "MEDIA_DB"

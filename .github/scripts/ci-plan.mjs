@@ -232,11 +232,17 @@ const TIER_OF = new Map([
 const HELD_PRODUCTS = new Set(
   GROUPS.filter((g) => g.held).flatMap((g) => g.dirs.map((d) => d.replace(/\/$/, ''))),
 );
+// A Worker that must not deploy yet, though the rest of its group does. The subscription service
+// (liveworkspace/docs/specs/019-subscription/subscription.md) waits for its D1 databases, which the owner creates
+// before its first deploy: its wrangler.toml holds placeholder ids until then, and a deploy would fail on them. To
+// release it: put the real ids in its wrangler.toml, remove it here, and uncomment the SUBSCRIPTION service binding
+// in each api's and media's wrangler.toml (docs/ci.md "Deploys").
+const HELD_WORKERS = new Set(['liveworkspace/apps/subscription']);
 function deployOf(p) {
   const toml = `${p.path}/wrangler.toml`;
   if (!existsSync(toml)) return null;
   const product = p.path.split('/')[0];
-  if (HELD_PRODUCTS.has(product)) return null;
+  if (HELD_PRODUCTS.has(product) || HELD_WORKERS.has(p.path)) return null;
   const config = readFileSync(toml, 'utf8');
   const app = p.path.split('/').pop();
   const d1 = existsSync(`${p.path}/migrations`)

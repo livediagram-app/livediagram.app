@@ -22,8 +22,12 @@ import {
   type GalleryFilter,
 } from './gallery-filter';
 import type { GalleryHost, GalleryImage, GalleryUsage, GalleryUse } from './types';
+import { UploadLimitError } from './upload-limit-error';
 import { quoted } from '../quoted';
 import { Callout } from '@liveworkspace/ui/callout';
+import { ImageLimitNotice } from '@liveworkspace/subscription-ui';
+import { LibraryUsage } from './LibraryUsage';
+import type { ImageLimitRefusal, ImageStorage } from '@liveworkspace/subscription-ui/images';
 
 type Loaded =
   | { status: 'loading' }
@@ -163,6 +167,10 @@ export function GalleryContent({
       ) : null}
       <div className={host.upload ? 'mt-4' : ''}>
         {error ? <Note>{error}</Note> : null}
+        <StorageMeter
+          storage={loaded.status === 'ready' ? (host.storage?.() ?? null) : null}
+          compact={compact}
+        />
         {loaded.status === 'loading' ? (
           <ul className={grid} aria-busy="true" aria-label="Loading images">
             {[0, 1, 2, 3].map((i) => (
@@ -381,6 +389,23 @@ function GalleryCard({
   );
 }
 
+/** What the gallery uses of its owner's Image Storage, as the server counted it (media.md "With Pro on"): the kit's
+ *  meter, over the images. Nothing with Pro off, where the host has no storage to say. */
+function StorageMeter({ storage, compact }: { storage: ImageStorage | null; compact: boolean }) {
+  if (!storage) return null;
+  return (
+    <LibraryUsage
+      kind="images"
+      used={storage.used}
+      limit={storage.limit}
+      maxImageBytes={storage.maxImageBytes}
+      owner={storage.owner}
+      compact={compact}
+      className="mb-4 border-b border-slate-100 pb-3.5 dark:border-slate-800"
+    />
+  );
+}
+
 /** Drop, paste or choose an image; the host checks and stores it, and its refusal is said as it is. */
 function UploadZone({
   upload,
@@ -395,15 +420,19 @@ function UploadZone({
   const [busy, setBusy] = useState(false);
   const [over, setOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // A tier's limit refused it (Pro on): drawn as the shared notice in place of the plain line.
+  const [limit, setLimit] = useState<ImageLimitRefusal | null>(null);
   const send = async (file: File | null | undefined) => {
     if (!file || busy) return;
     setError(null);
+    setLimit(null);
     setBusy(true);
     try {
       await upload(file);
       onUploaded();
     } catch (e) {
-      setError(e instanceof Error && e.message ? e.message : 'Upload failed.');
+      if (e instanceof UploadLimitError) setLimit(e.limit);
+      else setError(e instanceof Error && e.message ? e.message : 'Upload failed.');
     } finally {
       setBusy(false);
     }
@@ -451,6 +480,14 @@ function UploadZone({
         <p role="alert" className="mt-2 text-xs text-rose-700 dark:text-rose-300">
           {error}
         </p>
+      ) : null}
+      {limit ? (
+        <ImageLimitNotice
+          refusal={limit}
+          className="mt-3"
+          // This is where images are managed, so a full gallery needs no way here; a file too large picks another.
+          onChooseAnother={limit.kind === 'too_large' ? () => input.current?.click() : undefined}
+        />
       ) : null}
     </div>
   );

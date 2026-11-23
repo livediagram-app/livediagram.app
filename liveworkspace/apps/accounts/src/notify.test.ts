@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { isNotifyKey, readNotifySettings, teamPeople } from './notify.ts';
+import { isNotifyKey, readNotifySettings, teamMemberCounts, teamPeople } from './notify.ts';
 import { answerInvitation, createTeam, deleteTeam, inviteMember, type Actor } from './teams.ts';
 import { addUser, testD1 } from './test-d1.ts';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
@@ -107,5 +107,31 @@ describe('teamPeople', () => {
     await deleteTeam(db, ADA, teamId);
     expect(await teamPeople(db, teamId)).toBeNull();
     expect(await teamPeople(db, 'no-such-team')).toBeNull();
+  });
+});
+
+describe('teamMemberCounts', () => {
+  it('counts the joined people of several teams in one read, and leaves out a deleted or unknown team', async () => {
+    const design = await createTeam(db, ADA, 'Counted Design');
+    const solo = await createTeam(db, ADA, 'Counted Solo');
+    const gone = await createTeam(db, ADA, 'Counted Gone');
+    if (!design.ok || !solo.ok || !gone.ok) throw new Error('team not made');
+    const bea = await inviteMember(db, ADA, design.value.id, BEA.email, 'member');
+    if (!bea.ok) throw new Error(bea.error);
+    await answerInvitation(db, BEA, bea.value.member.id, true);
+    // Invited, not joined: never counted.
+    await inviteMember(db, ADA, design.value.id, 'cy@example.com', 'member');
+    await deleteTeam(db, ADA, gone.value.id);
+
+    expect(
+      await teamMemberCounts(db, [
+        design.value.id,
+        solo.value.id,
+        design.value.id,
+        gone.value.id,
+        'no-such-team',
+      ]),
+    ).toEqual({ [design.value.id]: 2, [solo.value.id]: 1 });
+    expect(await teamMemberCounts(db, [])).toEqual({});
   });
 });

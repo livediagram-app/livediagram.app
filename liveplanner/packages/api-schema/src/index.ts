@@ -332,6 +332,8 @@ export * from './room-messages';
 export * from './changesets';
 export * from './items';
 export * from './flow';
+// Tier limits (docs/specs/026-plan/automations.md "Tiers").
+export * from './tiers';
 export * from './automations';
 export * from './plan-drafts';
 export * from './form-drafts';

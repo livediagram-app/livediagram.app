@@ -259,7 +259,7 @@ An open API magnifies the cost of weak input handling, so every caller's input i
 ## 5. Out of scope
 
 Finer-grained scopes (per-document / per-folder grants, per-verb permissions)
-and any billing or quota tiers (the product has no paid tier,
+and any billing or quota tiers (billing and tier limits are the platform's,
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope is
 the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
 OAuth and third-party app authorization are in [MCP server](mcp-server.md).)

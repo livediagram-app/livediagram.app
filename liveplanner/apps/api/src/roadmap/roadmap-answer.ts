@@ -18,7 +18,8 @@ export const publicAnswer = (body: unknown, status = 200): Response =>
 export const publicRefusal = (error: RoadmapError | 'method_not_allowed', status: number) =>
   publicAnswer({ error }, status);
 
-export type MissReason = 'malformed' | 'no_plan' | 'unknown_code' | 'no_board' | 'voting_off';
+export type MissReason =
+  'malformed' | 'no_plan' | 'unknown_code' | 'no_board' | 'voting_off' | 'uncounted';
 
 /** The one answer for every roadmap that is not there now, its reason logged. */
 export function roadmapMissed(reason: MissReason): Response {

@@ -23,6 +23,9 @@
 @source '../../../../packages/account-menu/src';
 /* The Settings panel: the shared Settings view, and livediagram's dialog close button. */
 @source '../../../../packages/settings-ui/src';
+/* Pro's own parts (the badge, the meters, the upgrade dialog), which the account menu and the Settings panel draw. */
+@source '../../../../packages/subscription-ui/src';
+@source not '../../../../packages/subscription-ui/src/**/*.test.tsx';
 /* An app's own Delete Account dialog, which the Settings panel opens on that app's address (Work Tracker 1228). */
 @source '../../../../packages/workbench/src/components/dialogs/DeleteAccountDialog.tsx';
 /* The design system every app shares (@liveworkspace/ui): the Tooltip and HoverCard with the hint surface they
@@ -31,6 +34,9 @@
 /* The shared /licences page body (liveworkspace/docs/specs/010-site/site.md "Licences"). */
 @source '../../../../packages/marketing-site/src/components/licences';
 @source '../../../../packages/marketing-site/src/components/BrowserWindow.tsx';
+/* The pricing page's illustrated hero. */
+@source '../../../../packages/marketing-site/src/components/PageHero.tsx';
+@source '../../../../packages/marketing-site/src/components/faq/FaqItem.tsx';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */
 :root {

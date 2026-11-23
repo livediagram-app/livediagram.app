@@ -22,6 +22,12 @@ CREATE TABLE IF NOT EXISTS roadmaps (
 CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
 `;
 
+// Whether the roadmap holds a counted place of its owner's Public Roadmaps (roadmap-gauge.ts; spec "Tiers"): 1 once
+// the count took it, 0 once its place was given back or refused (it answers nobody with Pro on until it holds one
+// again), NULL for one never counted (published before Pro, or while the service could not be reached), which
+// answers until its first count. With Pro off the mark is never read. Plan schema step V42, asked before the ALTER.
+export const ROADMAPS_COUNTED_COLUMN = 'ALTER TABLE roadmaps ADD COLUMN counted INTEGER NULL';
+
 // The vote cap's window.
 const HOUR_MS = 3_600_000;
 
@@ -32,11 +38,23 @@ export type RoadmapRow = {
   code: string;
   settings: RoadmapSettings;
   createdAt: number;
+  /** Holds a counted place (true), holds none (false), or was never counted (null). Read only with Pro on. */
+  counted: boolean | null;
 };
 
-type Row = { board_id: string; tab_id: string; code: string; settings: string; created_at: number };
+type Row = {
+  board_id: string;
+  tab_id: string;
+  code: string;
+  settings: string;
+  created_at: number;
+  counted: number | null;
+};
 
-const COLS = 'board_id, tab_id, code, settings, created_at';
+const COLS = 'board_id, tab_id, code, settings, created_at, counted';
+
+const markOf = (counted: boolean | null): number | null =>
+  counted === null ? null : counted ? 1 : 0;
 
 const fromRow = (r: Row): RoadmapRow => ({
   boardId: r.board_id,
@@ -44,23 +62,38 @@ const fromRow = (r: Row): RoadmapRow => ({
   code: r.code,
   settings: JSON.parse(r.settings) as RoadmapSettings,
   createdAt: r.created_at,
+  counted: r.counted === null || r.counted === undefined ? null : Number(r.counted) === 1,
 });
 
-/** The board published with a fresh code. */
+/** The board published with a fresh code. `counted`: whether its place was counted (null where nothing counted it). */
 export async function publishRoadmap(
   env: PlanEnv,
   planId: string,
   at: { boardId: string; tabId: string },
   settings: RoadmapSettings,
   now: number,
+  counted: boolean | null = null,
 ): Promise<RoadmapRow> {
   const code = newRoadmapCode();
   await env.PLAN_DB.prepare(
-    `INSERT INTO roadmaps (plan_id, board_id, tab_id, code, settings, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO roadmaps (plan_id, board_id, tab_id, code, settings, created_at, counted)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   )
-    .bind(planId, at.boardId, at.tabId, code, JSON.stringify(settings), now)
+    .bind(planId, at.boardId, at.tabId, code, JSON.stringify(settings), now, markOf(counted))
     .run();
-  return { ...at, code, settings, createdAt: now };
+  return { ...at, code, settings, createdAt: now, counted };
+}
+
+/** The roadmap's counted mark set (roadmap-gauge.ts). */
+export async function setRoadmapCounted(
+  env: PlanEnv,
+  planId: string,
+  boardId: string,
+  counted: boolean | null,
+): Promise<void> {
+  await env.PLAN_DB.prepare('UPDATE roadmaps SET counted = ? WHERE plan_id = ? AND board_id = ?')
+    .bind(markOf(counted), planId, boardId)
+    .run();
 }
 
 /** A published roadmap's settings changed, its code kept; whether it was published. */

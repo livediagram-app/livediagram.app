@@ -11,7 +11,7 @@
 
 import { accessPauseWords, isAccessPause } from '@liveworkspace/automations/cross-app';
 import { AUTOMATION_FAILURES_TO_PAUSE } from '@liveworkspace/automations';
-import { Button, Switch, lucideGlyph } from '@liveworkspace/ui';
+import { Button, Switch, Tooltip, lucideGlyph } from '@liveworkspace/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { useAutomationsKit } from './kit-context';
 import { SentenceChips } from './SentenceChips';
@@ -32,6 +32,10 @@ export type RuleRowActions = {
   onRun?: (() => void) | undefined;
   onToggle: (enabled: boolean) => void;
   onDuplicate: () => void;
+  // With Pro on: why Duplicate is off (the item holds every rule its tier allows), and why a rule that is off cannot
+  // be switched on (it holds more than the tier allows), each said as the control's tooltip.
+  duplicateOff?: string | undefined;
+  switchOnOff?: string | undefined;
   onRunLog: () => void;
   onDelete: () => void;
   // Opens the screen's Connections tab, for a rule paused on one.
@@ -190,14 +194,24 @@ export function RuleRow({
   const tone = quiet ? 'text-slate-500 dark:text-slate-400' : 'text-slate-700 dark:text-slate-200';
   const paused = !!rule.paused;
   const surface = paused ? 'rounded-lg bg-amber-50 dark:bg-amber-500/10' : '';
-  const toggle = (
+  // Off, and the item over its tier's rules: the switch stays off and says why (never a press the api refuses).
+  const held = !rule.enabled && actions.switchOnOff ? actions.switchOnOff : null;
+  const switchEl = (
     <Switch
       size="sm"
       checked={rule.enabled}
       busy={busy}
       label={rule.name}
+      disabled={held !== null}
       onChange={actions.onToggle}
     />
+  );
+  const toggle = held ? (
+    <Tooltip label={held}>
+      <span className="inline-flex">{switchEl}</span>
+    </Tooltip>
+  ) : (
+    switchEl
   );
   if (phone)
     return (
@@ -235,6 +249,7 @@ export function RuleRow({
             onRun={actions.onRun}
             onEdit={actions.onOpen}
             onDuplicate={actions.onDuplicate}
+            duplicateOff={actions.duplicateOff}
             onRunLog={actions.onRunLog}
             onDelete={actions.onDelete}
           />
@@ -282,6 +297,7 @@ export function RuleRow({
           onRun={actions.onRun}
           onEdit={actions.onOpen}
           onDuplicate={actions.onDuplicate}
+          duplicateOff={actions.duplicateOff}
           onRunLog={actions.onRunLog}
           onDelete={actions.onDelete}
         />

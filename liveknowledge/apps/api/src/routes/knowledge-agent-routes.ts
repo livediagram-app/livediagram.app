@@ -11,6 +11,13 @@
 //   PUT  /api/documents/<id>/agents/<token>/scopes what an API token may do here: an Editor in person
 // Reading is every role's. A page read here is counted as `GET tabs/<tab>` counts it. `<tab>`, `parent` and `before`
 // take a page's id, or its title when one page alone has it.
+import {
+  countPages,
+  knowledgePagesMax,
+  pagesRefused,
+  pageTreeConflict,
+  workerTierOf,
+} from '../knowledge/tier-limits';
 import { asTabWriter, queueAgentChanged } from '@liveworkspace/automations/room';
 import { routeWho } from '../document-room/automations/knowledge-who';
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
@@ -372,8 +379,15 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
   if (!linked) return invalid('invalid_page_ids', '"pageIds" maps a title to a page id (a UUID).');
   const id = body?.id ?? crypto.randomUUID();
   if (document.tabs.some((t) => t.id === id)) return conflict('page_exists');
-  const refusal = tabParentRefusal(await readStoredPages(ctx.env, document.id), id, under);
-  if (refusal) return conflict(refusal);
+  const [stored, tier] = await Promise.all([
+    readStoredPages(ctx.env, document.id),
+    workerTierOf(ctx.env, document),
+  ]);
+  const refusal = tabParentRefusal(stored, id, under, false, knowledgePagesMax());
+  if (refusal) return pageTreeConflict(refusal);
+  // The owner's Knowledgebase Pages over all of theirs (tiers.md).
+  const over = await countPages(tier, document.id, pageCount(stored) + 1);
+  if (over) return pagesRefused(tier, over);
   const existing = pageByTitleIn(
     pagesOf(document).map((t) => ({ id: t.id, name: t.name, parent: t.parent })),
   );

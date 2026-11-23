@@ -15,6 +15,7 @@ import {
 } from './document-room-sockets';
 import { handleAgentPresence, clearAgentsFor, liveSessions } from './document-room-presence';
 import { readHolds } from './document-room-holds';
+import { moveSiteGauge } from '../publishing/published-gauge';
 
 // This env's DOCUMENT_ROOM, answering this document's own id with this object: the code shared with the worker (a
 // document read's outline, the room relays) then calls straight in rather than through a stub.
@@ -53,6 +54,10 @@ export function roomHead(room: DocumentRoom): ItemHeadSync {
       return row ? { ownerId: row.owner_id ?? '', teamId: row.team_id ?? null } : null;
     },
     write: async (h) => {
+      // The owner the knowledgebase is leaving, whose count its published site comes off (publishing/
+      // published-gauge.ts; Pro on only). Null for a guest's, which the service never counted.
+      const moving = room.tier.on;
+      const from = moving ? room.tier.scope() : null;
       state.storage.sql.exec(
         'UPDATE document SET owner_id = ?, team_id = ? WHERE id = ?',
         h.ownerId,
@@ -63,6 +68,8 @@ export function roomHead(room: DocumentRoom): ItemHeadSync {
       noteWrite(room);
       // A new owner or team can open or close a Community post: it asks where it stands now.
       if (room.communityAt !== null) room.communityAt = Date.now();
+      if (moving && room.documentId !== null)
+        state.waitUntil(moveSiteGauge(room.tier, state.storage.sql, room.documentId, from));
     },
   });
 }

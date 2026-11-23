@@ -41,7 +41,7 @@ export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
           Your next huddle is one click away
         </h2>
         <p className="mx-auto mt-5 max-w-lg text-pretty text-lg leading-relaxed text-slate-300">
-          No sign-up, no paywall, nothing to install. Open a Space, walk in, and share the link when
+          No sign-up, no card, nothing to install. Open a Space, walk in, and share the link when
           the team is ready to join you.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">

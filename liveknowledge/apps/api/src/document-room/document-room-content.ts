@@ -1,6 +1,9 @@
 // The document's content state for its room (document-room.ts): the schema on first use, the write notes that arm the
 // outbox, the drains to the index and to shared tabs' holders, the daily upkeep, the Community post's checks and
 // the purge. Each takes the room it acts for.
+import { roomHeadOf } from '@liveworkspace/automations/room';
+import { confirmedHistoryDays, leaveItemCounts } from '../knowledge/tier-limits';
+import { subscriptionOf } from '../subscription';
 import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
@@ -31,6 +34,7 @@ import type { DocumentRoom } from './document-room';
 import { closeSockets } from './document-room-sockets';
 import { pruneKnowledge } from '../knowledge/room-knowledge';
 import { dropStaleDrafts } from './draft-upkeep';
+import { leaveSiteGauge, syncSiteGauge } from '../publishing/published-gauge';
 import { knowledgeWorkDueAt } from '../knowledge/knowledge-work';
 
 // The document's own daily upkeep: old changesets go.
@@ -164,10 +168,23 @@ export async function maintain(room: DocumentRoom, now: number): Promise<void> {
     // Automatic versions past their age on tabs nobody has edited since (docs/specs/006-document/version-history.md).
     const pruned = await deleteOldVersions(env, now - VERSION_AUTO_MAX_AGE_MS);
     if (pruned > 0) console.info('[versions] pruned', { documentId, deleted: pruned });
-    // Reads past 90 days, counters past their window, questions past the cap (blueprint "Wiring").
-    pruneKnowledge(room.state.storage.sql, now);
+    // Reads past the owner's AI Knowledge History (90 days with Pro off), counters past their window, questions
+    // past the cap (blueprint "Wiring"; tiers.md).
+    const head = roomHeadOf({
+      sql: () => room.state.storage.sql,
+      ready: () => room.schemaReady,
+      table: 'document',
+      id: () => room.documentId,
+    });
+    const days = await confirmedHistoryDays(subscriptionOf(env), {
+      ownerId: head?.ownerId ?? null,
+      teamId: head?.teamId ?? null,
+    });
+    pruneKnowledge(room.state.storage.sql, now, days);
     // Drafts nobody has touched for 30 days (docs/specs/030-knowledgebase/editing.md).
     dropStaleDrafts(room.state.storage.sql, now);
+    // With Pro on, the published site as its owner's count should hold it (publishing/published-gauge.ts).
+    await syncSiteGauge(env, room.tier, documentId);
   } catch (error) {
     console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
   }
@@ -243,6 +260,12 @@ export async function purge(room: DocumentRoom, documentId?: string): Promise<vo
   // A document going for good takes its Community post with it: the service hears it is gone.
   if (room.documentId !== null && room.storedSchema())
     await leaveCommunity(room.requireEnv(), room.documentId);
+  // Its published site leaves its owner's count (publishing/published-gauge.ts). Nothing with Pro off.
+  if (room.documentId !== null && room.storedSchema())
+    await leaveSiteGauge(room.tier, room.state.storage.sql, room.documentId);
+  // Its pages and rules leave its owner's counts (019 "Meters": item counts). Nothing with Pro off.
+  if (room.documentId !== null && room.storedSchema())
+    await leaveItemCounts(room.tier, room.documentId);
   await room.ledger.settled();
   await disarmRoomAlarm(room.state.storage);
   await room.state.storage.deleteAll();

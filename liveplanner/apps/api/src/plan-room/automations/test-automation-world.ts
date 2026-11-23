@@ -5,6 +5,7 @@
 import { presetSetup, type AutomationRuleBody, type AutomationRule } from '@liveplanner/items';
 import type { RouteIdentity } from '../plan-route';
 import { createPlan, repeatWorld, type RepeatWorld } from '../test-repeat-world';
+import { proEnv, type FakeSubscription } from '../tier/test-tier';
 
 export type Caller =
   | 'owner'
@@ -112,8 +113,14 @@ export const ruleBody = (r: Partial<AutomationRuleBody> = {}): AutomationRuleBod
   ...r,
 });
 
-export async function automationWorld(planId = 'A'): Promise<AutomationWorld> {
+// `pro`: Pro on against a stand-in subscription service (tier/test-tier.ts), for the world's every plan; absent, Pro
+// is off, as it is by default.
+export async function automationWorld(
+  planId = 'A',
+  opts: { pro?: FakeSubscription } = {},
+): Promise<AutomationWorld> {
   const w = repeatWorld();
+  if (opts.pro) proEnv(w.env, opts.pro);
   await createPlan(w, planId);
   const tab = {
     id: 't1',

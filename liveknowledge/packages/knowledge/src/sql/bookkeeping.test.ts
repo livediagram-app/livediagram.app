@@ -191,6 +191,25 @@ describe('page reads', () => {
       { day: dayOf(NOW) },
     ]);
   });
+
+  it('keeps the days it is given (the owner’s AI Knowledge History)', () => {
+    const db = knowledgeDb();
+    db.run([
+      recordRead('tab-1', { kind: 'person' }, NOW - 31 * DAY),
+      recordRead('tab-1', { kind: 'person' }, NOW - 30 * DAY),
+    ]);
+    db.run(pruneReads(NOW, 30));
+    expect(db.rows('SELECT day FROM page_reads')).toEqual([{ day: dayOf(NOW - 30 * DAY) }]);
+  });
+
+  it('reads Most Read over the period it is given', () => {
+    const db = knowledgeDb();
+    db.run([recordRead('old', { kind: 'person' }, NOW - 20 * DAY)]);
+    expect(db.all<MostReadRow>(countMostRead(NOW))).toEqual([]);
+    expect(db.all<MostReadRow>(countMostRead(NOW, 30))).toEqual([
+      { tab: 'old', people: 1, agents: 0 },
+    ]);
+  });
 });
 
 describe('questions nobody could answer', () => {

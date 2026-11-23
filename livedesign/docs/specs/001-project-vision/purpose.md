@@ -79,8 +79,8 @@ never arrives.
 - **Not a facilitation tool.** No Q&A, polls or quizzes.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline
   Mode is a per-design choice, not the default posture (see below).
-- **Not a paid product, ever.** No tier, no billing, no feature flags gating the
-  core editor ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+- **No paid features.** No tier, no billing, no feature flags gating a
+  feature; Pro, where it is on, only raises limits ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## Boundaries that have moved
 
@@ -116,7 +116,7 @@ making pages together need this?".
 ## How it ships
 
 livedesign is **open source** (MIT) and also runs as a **hosted product**, free
-for everyone, no paid tier. The whole codebase is publicly viewable. See
+for everyone, every feature on the free plan. The whole codebase is publicly viewable. See
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md).
 
 The editor is **always available without signing in**: a visitor can make a

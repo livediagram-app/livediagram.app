@@ -1,0 +1,126 @@
+name = "liveworkspace-subscription"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# global_fetch_strictly_public: a fetch() to another Worker's route on this zone (liveworkspace.app) isn't routed to
+# that Worker without it (docs/specs/009-status/status.md "Where the checks go").
+compatibility_flags = ["global_fetch_strictly_public"]
+# Only its API, /api/subscription, on liveworkspace.app (liveworkspace/docs/specs/019-subscription/subscription.md).
+# The pages (Settings, the pricing page, the mock checkout and portal) are the site's and the apps'.
+routes = [
+  { pattern = "www.liveworkspace.app/api/subscription*", zone_name = "liveworkspace.app" },
+  { pattern = "liveworkspace.app/api/subscription*", zone_name = "liveworkspace.app" },
+]
+workers_dev = false
+
+# Secrets (wrangler secret put): each app's Worker key, sent as a bearer token on the internal routes.
+#   SUBSCRIPTION_KEY_LIVEDIAGRAM    shared with livediagram's api Worker as SUBSCRIPTION_KEY
+#   SUBSCRIPTION_KEY_LIVEPLANNER    shared with liveplanner's api Worker as SUBSCRIPTION_KEY
+#   SUBSCRIPTION_KEY_LIVEDOCUMENTS  shared with livedocuments' api Worker as SUBSCRIPTION_KEY
+#   SUBSCRIPTION_KEY_LIVEDESIGN     shared with livedesign's api Worker as SUBSCRIPTION_KEY
+#   SUBSCRIPTION_KEY_LIVEHUDDLE     shared with livehuddle's api Worker as SUBSCRIPTION_KEY
+#   SUBSCRIPTION_KEY_LIVEKNOWLEDGE  shared with liveknowledge's api Worker as SUBSCRIPTION_KEY
+#   SUBSCRIPTION_KEY_LIVEWORKSPACE  shared with the platform's own Workers (media) as SUBSCRIPTION_KEY
+# And, for a team's seats (its joined members, src/seats.ts), an OAuth client at accounts:
+#   ACCOUNTS_CLIENT_ID, ACCOUNTS_CLIENT_SECRET
+# Without them a team's seats are the minimum (3), or whatever the mock portal set, and a team's checkout, portal and
+# billing changes answer 503 `accounts_unavailable`: who a team's admins are is asked of accounts, never read from a
+# token alone.
+[vars]
+ENVIRONMENT = "production"
+# Pro is off by default (subscription.md "The flag"): every route answers 404 until this is "true".
+PRO_ENABLED = "false"
+# Stripe, with Managed Payments (subscription.md "Stripe"). It exists only once it has everything it needs: the
+# secrets STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET (wrangler secret put) and the two Prices below. Until then
+# checkout and the portal answer 503 `billing_unavailable`. The mock NEVER runs in production, whatever this says.
+BILLING_PROVIDER = "stripe"
+# PLACEHOLDER: the live Prices' ids (price_...), from `node scripts/stripe-setup.mjs` with the live key.
+STRIPE_PRICE_PRO = ""
+STRIPE_PRICE_TEAM = ""
+# PLACEHOLDER: the portal configuration (bpc_...) the setup script makes. Empty opens the account's default.
+STRIPE_PORTAL_CONFIGURATION = ""
+# Where media answers what each owner holds (Image Storage, Walkthroughs Stored), with the key the two Workers share
+# (src/media-usage.ts). The service binding below is used when it is there.
+MEDIA_URL = "https://www.liveworkspace.app/api/media"
+# Where the mock checkout and portal pages live: the site.
+SITE_ORIGIN = "https://www.liveworkspace.app"
+# The account check (subscription.md "The subscription Worker"): access tokens are checked offline against
+# `${ACCOUNTS_URL}/api/auth`'s keys, addressed to any app API, as the index, Drive and the Community's Forum check them.
+ACCOUNTS_URL = "https://www.liveworkspace.app"
+INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api,https://livehuddle.app/api"
+
+# Hourly: the sweep renews the mock provider's subscriptions, marks lapsed ones ended, drops expired mock sessions and
+# old counters, and sets a few subscribed teams' seats from their joined members (src/sweep.ts).
+[triggers]
+crons = ["17 * * * *"]
+
+# Its own database, apart from accounts, telemetry and every app's own data.
+# PLACEHOLDER: the owner creates this database before the first deploy
+# (`wrangler d1 create liveworkspace-subscription`) and puts its id here. Until then this Worker is in no deploy list
+# (docs/ci.md "Deploys"). Local development needs no id: `wrangler d1 migrations apply liveworkspace-subscription --local`.
+[[d1_databases]]
+binding = "SUBSCRIPTION_DB"
+database_name = "liveworkspace-subscription"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# The budget for the mock provider's pages (per network) and for starting a checkout or opening the portal (per
+# account): counted at Cloudflare's edge, so it holds across isolates.
+[[ratelimits]]
+name = "SUBSCRIPTION_RATE_LIMITER"
+namespace_id = "1111"
+simple = { limit = 60, period = 60 }
+
+# Accounts, which access tokens' key set and a team's members are fetched through (src/account.ts, src/seats.ts): a
+# Worker's fetch to another Worker's route on its own zone can stall. Without it the public route is used.
+[[services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts"
+
+# Media, asked what each owner holds when a person reads their usage (src/media-usage.ts). Without it MEDIA_URL is
+# fetched.
+[[services]]
+binding = "MEDIA"
+service = "liveworkspace-media"
+
+[env.staging]
+name = "liveworkspace-subscription-staging"
+routes = [{ pattern = "staging.liveworkspace.app/api/subscription*", zone_name = "liveworkspace.app" }]
+workers_dev = false
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+PRO_ENABLED = "false"
+# Staging keeps the mock provider, for trying billing without a card. Its own controls are bounded (a renewal only
+# near the period's end, seats up to a team's 200).
+BILLING_PROVIDER = "mock"
+MEDIA_URL = "https://staging.liveworkspace.app/api/media"
+SITE_ORIGIN = "https://staging.liveworkspace.app"
+ACCOUNTS_URL = "https://staging.liveworkspace.app"
+INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api,https://staging.livehuddle.app/api"
+
+[env.staging.triggers]
+crons = ["17 * * * *"]
+
+# PLACEHOLDER: the owner creates this database before the first staging deploy
+# (`wrangler d1 create liveworkspace-subscription-staging`) and puts its id here.
+[[env.staging.d1_databases]]
+binding = "SUBSCRIPTION_DB"
+database_name = "liveworkspace-subscription-staging"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[env.staging.ratelimits]]
+name = "SUBSCRIPTION_RATE_LIMITER"
+namespace_id = "2111"
+simple = { limit = 60, period = 60 }
+
+# Bindings don't inherit into an environment: the accounts binding (above), restated.
+[[env.staging.services]]
+binding = "ACCOUNTS"
+service = "liveworkspace-accounts-staging"
+
+[[env.staging.services]]
+binding = "MEDIA"
+service = "liveworkspace-media-staging"

@@ -54,6 +54,8 @@ result for a click whose obvious meaning is "tell me about this person".
   The title mark is two people. Help and the close sit at the right.
 - The title's line counts the room: "3 people across 2 tabs", or "Just you so far"
   when nobody else has joined yet.
+- On a phone the dialog is a bottom sheet as tall as what it holds (at most 85% of the screen), never the whole
+  screen, so a room of one is a short sheet rather than a blank page.
 - View-role visitors get the full modal: it mutates nothing, and following is
   already allowed for them ([Follow-me viewport](follow-me-viewport.md)).
 - Available wherever the presence stack is, which is only a shared or team

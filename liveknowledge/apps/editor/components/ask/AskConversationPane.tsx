@@ -4,6 +4,8 @@
 // question a dark bubble at the right, each answer a card, a Knowledge Gap card for each part no page covers, the
 // question field at the foot, and beside them the passages of the answer showing. Nothing here renders while an
 // answer streams: the stream draws itself (StreamingAnswer) and the turn list is the same list until it ends.
+import { AiCreditsNotice, useAiCreditsLine, useAiCreditsUsedUp } from './AiCreditsNotice';
+import { openAiSettingsFrom } from './AiSettingsButton';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AskSource } from '@liveknowledge/api-schema';
 import { ASK_BUILT_IN_PER_PERSON_PER_DAY, ASK_MAX_TURNS } from '@liveknowledge/knowledge';
@@ -77,6 +79,11 @@ export function AskConversationPane({
         : (settings.usesProvider ?? settings.provider)
       : 'built-in'
     : undefined;
+  // With Pro on, built-in AI spends one of the owner's AI credits a question (tiers.md): the source line's allowance
+  // says so, and once they are used up the notice says it all, with no line under it.
+  const creditLine = useAiCreditsLine(session.documentId);
+  const onBuiltIn = provider === 'built-in';
+  const usedUp = useAiCreditsUsedUp(session.documentId);
   const last = turns[turns.length - 1];
   // The last answer's failure, for the source line (a key the provider refused); one per turn, gone with the next.
   const lastFailure = useMemo(
@@ -257,17 +264,28 @@ export function AskConversationPane({
                 }}
               />
             )}
+            {onBuiltIn ? (
+              <div className="mt-2">
+                <AiCreditsNotice
+                  documentId={session.documentId}
+                  doing="ask"
+                  onAddKey={rights.manageAi ? openAiSettingsFrom : undefined}
+                />
+              </div>
+            ) : null}
             <p className="mt-1.5 text-center text-xs text-slate-600 dark:text-slate-400">
               Answers come from this knowledgebase alone. Check the sources before you rely on one.
             </p>
-            {choosing ? null : (
+            {choosing || (onBuiltIn && usedUp) ? null : (
               <div data-ask-ai="" className="mx-auto mt-2 w-full max-w-xl">
                 <KnowledgeAiSource
                   state={ai}
                   who={session.who}
                   documentId={session.documentId}
                   manageAi={rights.manageAi}
-                  allowance={`${ASK_BUILT_IN_PER_PERSON_PER_DAY} questions a person a day.`}
+                  allowance={
+                    creditLine ?? `${ASK_BUILT_IN_PER_PERSON_PER_DAY} questions a person a day.`
+                  }
                   failure={lastFailure}
                 />
               </div>

@@ -9,7 +9,17 @@ import { lucideLock } from '@liveworkspace/icons/lucide';
 
 const LockGlyph = lucideGlyph(lucideLock, 15);
 
-export function FormLockedStrip({ onEdit, busy }: { onEdit: () => void; busy: boolean }) {
+export function FormLockedStrip({
+  onEdit,
+  busy,
+  paused = false,
+}: {
+  onEdit: () => void;
+  busy: boolean;
+  // With Pro on, its month of responses is full (FormMonth.tsx): live but taking none until the month starts again,
+  // so the strip never says it takes responses.
+  paused?: boolean;
+}) {
   return (
     <div
       role="status"
@@ -18,9 +28,13 @@ export function FormLockedStrip({ onEdit, busy }: { onEdit: () => void; busy: bo
     >
       <LockGlyph aria-hidden className="shrink-0 text-slate-500 dark:text-slate-400" />
       <p className="min-w-0 flex-1 leading-snug">
-        <span className="font-semibold">Taking responses, so it can’t be changed.</span>{' '}
+        <span className="font-semibold">
+          {paused ? 'Live, so it can’t be changed.' : 'Taking responses, so it can’t be changed.'}
+        </span>{' '}
         <span className="text-slate-500 dark:text-slate-400">
-          Edit Form stops it taking responses while you edit; its link stays the same.
+          {paused
+            ? 'Edit Form unlocks it while you edit; its link stays the same.'
+            : 'Edit Form stops it taking responses while you edit; its link stays the same.'}
         </span>
       </p>
       <Button

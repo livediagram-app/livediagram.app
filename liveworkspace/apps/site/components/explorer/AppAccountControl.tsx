@@ -11,6 +11,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { AccountMenu, SignedOutHereNotice } from '@liveworkspace/account-menu';
 import type { SettingsControl } from '@/components/AccountControl';
+import { SiteSubscription } from '@/components/subscription/SiteSubscription';
 import {
   appAccount,
   appSignInHref,
@@ -71,18 +72,21 @@ function AppAccount({ settings }: { settings: SettingsControl | null }) {
 
   if (typeof state === 'object')
     return (
-      <AccountMenu
-        name={state.name}
-        fullName={state.fullName}
-        colour={state.colour}
-        picture={state.picture}
-        // Before the Explorer knows who is here, Settings is this address's Explorer with the panel open.
-        {...(settings
-          ? { onOpenSettings: settings.onOpen, onPrepareSettings: settings.onPrepare }
-          : {})}
-        // Every app in this browser signs out with it, through the accounts site's hop (app-session.ts).
-        onSignOut={() => appSignOut()}
-      />
+      // The menu's Pro badge and Upgrade to Pro, over liveworkspace's subscription service (nothing with Pro off).
+      <SiteSubscription account="in">
+        <AccountMenu
+          name={state.name}
+          fullName={state.fullName}
+          colour={state.colour}
+          picture={state.picture}
+          // Before the Explorer knows who is here, Settings is this address's Explorer with the panel open.
+          {...(settings
+            ? { onOpenSettings: settings.onOpen, onPrepareSettings: settings.onPrepare }
+            : {})}
+          // Every app in this browser signs out with it, through the accounts site's hop (app-session.ts).
+          onSignOut={() => appSignOut()}
+        />
+      </SiteSubscription>
     );
   const checking = state === 'checking';
   return (

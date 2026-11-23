@@ -44,6 +44,10 @@ export type RevertInput = {
   door: SnapshotDoor;
   /** Who the safety snapshot is by: the person reverting, or a rule (`automationAuthor(rule.name)`). */
   author: SnapshotAuthor | null;
+  /** With Pro on: how many snapshots the owner's tier keeps (SN31), applied to the safety snapshot. */
+  keep?: number;
+  /** The clock, for a test. */
+  now?: number;
 };
 
 /** Why nothing changed: the snapshot is gone, the item was never started, the snapshot (or the file it holds) can't
@@ -77,6 +81,8 @@ export async function revertToSnapshot(input: RevertInput): Promise<RevertResult
     kind: 'before-revert',
     author: input.author,
     keptIds: await keptIdsOf(door),
+    ...(input.keep !== undefined ? { keep: input.keep } : {}),
+    ...(input.now !== undefined ? { now: input.now } : {}),
   });
   if (!safety.ok) return refuse('too_large', 'safety-too-large');
   const replaced = await door.replaceContent(text);

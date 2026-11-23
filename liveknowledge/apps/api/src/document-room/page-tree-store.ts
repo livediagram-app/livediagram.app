@@ -53,8 +53,13 @@ export function readStoredPagesSync(
 }
 
 // A proposed tree judged whole: every page sits where it was asked to (its parent is a page of this knowledgebase,
-// not itself, and closes no cycle), and the limits hold.
-function proposedRefusal(next: readonly TreePage[]): PageTreeRefusal | null {
+// not itself, and closes no cycle), and the limits hold. A knowledgebase already over `max` (its owner moved down a
+// tier, tiers.md) is refused only a change that adds pages: a move or a reorder of what it holds is taken.
+function proposedRefusal(
+  next: readonly TreePage[],
+  stored: readonly TreePage[],
+  max: number,
+): PageTreeRefusal | null {
   // Only a page holds subpages: a parent that is a connected row is no page of this knowledgebase.
   const ids = new Set(next.filter((p) => p.connection !== true).map((p) => p.id));
   const read = pageParents(next);
@@ -63,7 +68,9 @@ function proposedRefusal(next: readonly TreePage[]): PageTreeRefusal | null {
     if (!ids.has(page.parent)) return 'unknown_page';
     if (read.get(page.id) !== page.parent) return 'own_subtree';
   }
-  return pageTreeRefusal(next);
+  const count = pageCount(next);
+  if (count > max && count > pageCount(stored)) return 'page_limit';
+  return pageTreeRefusal(next, Number.POSITIVE_INFINITY);
 }
 
 /**
@@ -76,6 +83,7 @@ export function tabParentRefusal(
   parent: unknown,
   // The write holds a connection: a new tab is a connected row, which never meets the page limit.
   connected = false,
+  max: number = MAX_KNOWLEDGEBASE_PAGES,
 ): PageTreeRefusal | null {
   const asked = parent === undefined || parent === null ? undefined : parseTabParent(parent);
   // Anything that is no id (a number, an empty or overlong string) names no page.
@@ -83,11 +91,11 @@ export function tabParentRefusal(
   const held = stored.find((p) => p.id === tabId);
   if (held && held.parent === asked) return null;
   const isRow = connected || held?.connection === true;
-  if (!held && !isRow && pageCount(stored) >= MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
+  if (!held && !isRow && pageCount(stored) >= max) return 'page_limit';
   const placed: StoredPage = asked === undefined ? { id: tabId } : { id: tabId, parent: asked };
   if (isRow) placed.connection = true;
   const next = held ? stored.map((p) => (p.id === tabId ? placed : p)) : [...stored, placed];
-  return proposedRefusal(next);
+  return proposedRefusal(next, stored, max);
 }
 
 /** A request's tab list as the entries that may place a page: every object with a text id. */
@@ -135,6 +143,7 @@ export function treeFromEntries(
 export function tabListRefusal(
   stored: readonly StoredPage[],
   entries: readonly PlacedEntry[],
+  max: number = MAX_KNOWLEDGEBASE_PAGES,
 ): PageTreeRefusal | null {
   // Only the tabs the document stores: an entry for any other places nothing (the save writes none for it either).
   const known = new Set(stored.map((p) => p.id));
@@ -143,20 +152,24 @@ export function tabListRefusal(
     entries.filter((entry) => known.has(entry.id)),
   );
   if (invalid) return 'unknown_page';
-  return changed ? proposedRefusal(next) : null;
+  return changed ? proposedRefusal(next, stored, max) : null;
 }
 
 /**
  * What an Editor's room op would do to the tree, or null when it may be relayed: a whole `tab`, a `tab-meta` patch
  * that sets or clears `parent`, or a `document-meta` list. Any other op is not the tree's.
  */
-export function treeOpRefusal(stored: readonly StoredPage[], op: unknown): PageTreeRefusal | null {
+export function treeOpRefusal(
+  stored: readonly StoredPage[],
+  op: unknown,
+  max: number = MAX_KNOWLEDGEBASE_PAGES,
+): PageTreeRefusal | null {
   const o = (op ?? {}) as Record<string, unknown>;
   if (o.kind === 'tab') {
     const tab = (o.tab ?? {}) as Record<string, unknown>;
     const id = typeof o.tabId === 'string' ? o.tabId : tab.id;
     const connected = typeof tab.connection === 'object' && tab.connection !== null;
-    return typeof id === 'string' ? tabParentRefusal(stored, id, tab.parent, connected) : null;
+    return typeof id === 'string' ? tabParentRefusal(stored, id, tab.parent, connected, max) : null;
   }
   if (o.kind === 'tab-meta') {
     if (typeof o.tabId !== 'string') return null;
@@ -165,10 +178,16 @@ export function treeOpRefusal(stored: readonly StoredPage[], op: unknown): PageT
     if (!Object.hasOwn(patch, 'parent') && !cleared) return null;
     // A patch for a tab the room has not stored yet is its first save's to judge.
     if (!stored.some((p) => p.id === o.tabId)) return null;
-    return tabParentRefusal(stored, o.tabId, Object.hasOwn(patch, 'parent') ? patch.parent : null);
+    return tabParentRefusal(
+      stored,
+      o.tabId,
+      Object.hasOwn(patch, 'parent') ? patch.parent : null,
+      false,
+      max,
+    );
   }
   if (o.kind === 'document-meta' && Array.isArray(o.tabs)) {
-    return tabListRefusal(stored, placedEntries(o.tabs));
+    return tabListRefusal(stored, placedEntries(o.tabs), max);
   }
   return null;
 }

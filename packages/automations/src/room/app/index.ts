@@ -15,3 +15,4 @@ export * from './worker-doors';
 export * from './app-routes';
 export * from './openapi';
 export * from './email';
+export * from './room-tier';

@@ -156,8 +156,9 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   if (caller.scope && !caller.scopeTakesNew) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const read = readCreate(body, caller.owner);
-  if (typeof read === 'string') return rejectedRead(read, bodyValue(body, 'fields'), 'create');
+  const read = readCreate(body, caller.owner, caller.bounds);
+  if (typeof read === 'string')
+    return rejectedRead(read, bodyValue(body, 'fields'), 'create', undefined, caller.bounds);
   // Votes, threads and a key come back only with an Editor's undo: a Participant makes a fresh card.
   const restores = read.votes !== undefined || restoresThreads(read) || read.key !== undefined;
   if (restores && !(await isItemEditor(ctx, caller))) return forbidden();
@@ -291,8 +292,9 @@ async function patch(ctx: PlanRouteContext, projectId: string, itemId: string): 
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readItemPatch(body);
-  if (typeof input === 'string') return rejectedRead(input, body.set, 'patch');
+  const input = readItemPatch(body, caller.bounds);
+  if (typeof input === 'string')
+    return rejectedRead(input, body.set, 'patch', undefined, caller.bounds);
   return writeItem(
     ctx,
     caller,
@@ -311,8 +313,9 @@ async function move(ctx: PlanRouteContext, projectId: string, itemId: string): P
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readItemMove(body);
-  if (typeof input === 'string') return rejectedRead(input, body.set, 'patch');
+  const input = readItemMove(body, caller.bounds);
+  if (typeof input === 'string')
+    return rejectedRead(input, body.set, 'patch', undefined, caller.bounds);
   // The neighbours are read on every attempt: a retry after a lost race ranks against the column as it now is.
   return writeItem(
     ctx,

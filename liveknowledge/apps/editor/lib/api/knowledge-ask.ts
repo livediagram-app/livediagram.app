@@ -2,6 +2,9 @@
 // answer streams back as server-sent events (`AskEvent`): `delta` pieces, then one `done`, or one `error`. A refusal
 // before the stream opens (no key, a limit, not signed in) arrives as JSON and is handed on as an `error` event with
 // the server's own words, so the Ask tab has one shape to show.
+import { refusalKind } from '@/lib/knowledge-ask/ask-failure-words';
+import { AI_CREDITS_HEADER, readAiCreditsHeader } from '@liveknowledge/api-schema';
+import { noteAiCredits, noteAiCreditsUsed } from '@/lib/knowledge-credits';
 import type { AskEvent, AskRequest } from '@liveknowledge/api-schema';
 import { apiFetch } from './core';
 import { knowledgeHeaders, knowledgeUrl, type KnowledgeCaller } from './knowledge';
@@ -89,12 +92,19 @@ export async function apiAskKnowledge(
     const refusal = (await res.json().catch(() => null)) as {
       error?: unknown;
       message?: unknown;
+      reason?: unknown;
+      used?: unknown;
+      max?: unknown;
     } | null;
+    // The owner's month is used (tiers.md): the Ask view swaps its line for the used-up notice.
+    if (refusal?.error === 'ai_credits_used')
+      noteAiCreditsUsed(documentId, refusal.used, refusal.max);
     return failure(
-      typeof refusal?.error === 'string' ? refusal.error : 'other',
+      refusalKind(refusal, 'other'),
       typeof refusal?.message === 'string' ? refusal.message : ASK_FAILED,
     );
   }
+  noteAiCredits(documentId, readAiCreditsHeader(res.headers.get(AI_CREDITS_HEADER)));
   try {
     for await (const event of readAskEvents(res.body)) {
       if (event.type === 'delta') opts.onDelta?.(event.text);

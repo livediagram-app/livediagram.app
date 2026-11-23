@@ -36,7 +36,7 @@ async function call(
   operation: string,
   url: string,
   token: string,
-  method: 'POST' | 'PUT',
+  method: 'GET' | 'POST' | 'PUT',
   body?: unknown,
 ): Promise<unknown> {
   let res: Response;
@@ -181,6 +181,49 @@ export async function closeTracks(
     ...(sdp ? { sessionDescription: { type: 'offer', sdp }, force: false } : { force: true }),
   };
   return tracksResponseOf(await call(fetcher, 'close', url, env.REALTIME_APP_TOKEN, 'PUT', body));
+}
+
+/** The `mid` of every track a session holds now (published or received): `GET sessions/:id`. */
+export async function sessionMids(
+  env: RealtimeEnv,
+  sessionId: string,
+  fetcher: Fetcher = fetch,
+): Promise<string[]> {
+  const url = sfu(env, encodeURIComponent(sessionId));
+  const r = (await call(fetcher, 'state', url, env.REALTIME_APP_TOKEN, 'GET')) as {
+    tracks?: unknown;
+  } | null;
+  if (!Array.isArray(r?.tracks)) return [];
+  const mids = r.tracks.map((t) => (t as { mid?: unknown } | null)?.mid);
+  return [...new Set(mids.filter((mid): mid is string => typeof mid === 'string' && mid !== ''))];
+}
+
+/** The most tracks one forced close names. */
+const SEVER_BATCH = 64;
+
+/**
+ * Close everything a session publishes and receives, without the browser's say (docs/specs/012-collaboration/
+ * call-minutes.md "A client that goes silent"): the room does this for a session that no longer counts, so its media
+ * cannot outlive the count. A session Realtime already dropped has nothing to close. Never throws: a failure is
+ * logged, and the session ends by itself once its browser goes.
+ */
+export async function severSession(
+  env: RealtimeEnv,
+  sessionId: string,
+  fetcher: Fetcher = fetch,
+): Promise<void> {
+  try {
+    const mids = await sessionMids(env, sessionId, fetcher);
+    for (let i = 0; i < mids.length; i += SEVER_BATCH) {
+      await closeTracks(env, sessionId, mids.slice(i, i + SEVER_BATCH), undefined, fetcher);
+    }
+    if (mids.length > 0) console.info('[calls] severed', mids.length);
+  } catch (error) {
+    // Every failure of the two calls above is a RealtimeError (`call` wraps the rest).
+    const status = (error as RealtimeError).status;
+    // Gone already (it expired, or its browser left): nothing to close.
+    if (status !== 404 && status !== 410) console.warn('[calls] sever failed', status);
+  }
 }
 
 function iceServerOf(v: unknown): CallIceServer | null {

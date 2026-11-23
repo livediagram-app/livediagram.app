@@ -30,6 +30,7 @@ import {
 } from './rules';
 import { TEAM_FIELD, TeamFormDialog } from './TeamFormDialog';
 import { teamFacts } from './team-details';
+import { TeamPlan } from './TeamPlan';
 
 // What the team view reads before its card loads, kept apart so the card's chunk stays out of the first load.
 export { initialsOf, teamHeadline, useTeamDetails, type TeamLoad } from './team-details';
@@ -174,6 +175,8 @@ export function TeamCard({
           />
         </div>
       </div>
+      {/* The team's plan and the way to change it, with Pro on (TeamPlan.tsx). */}
+      <TeamPlan teamId={team.id} />
       {menuAnchor ? (
         <PortalMenu anchor={menuAnchor} onClose={() => setMenuAnchor(null)} label="Team options">
           {admin ? (

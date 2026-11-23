@@ -133,12 +133,16 @@ export const MUTATION_OP_KINDS = [
 //
 // `calls-mode` (docs/specs/016-platform/calls-kill-switch.md "The room tells its clients"): the room's own word that
 // the calls kill switch changed. A forged one would end everyone's call.
+//
+// `call-minutes` (docs/specs/012-collaboration/call-minutes.md "The wire"): the room's own word on the Space's owner's
+// call minutes. A forged one would end everyone's call, or tell them the owner's month is used.
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
   'document-trashed',
   'changeset',
   'calls-mode',
+  'call-minutes',
   // The room refusing a nudge sent inside its 2 minutes (docs/specs/012-collaboration/nudge.md "The wire"), to the
   // sender alone: a client forging one could start someone's countdown, so none is relayed from a client.
   'nudge-refused',

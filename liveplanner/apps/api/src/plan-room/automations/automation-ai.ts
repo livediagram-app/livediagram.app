@@ -10,6 +10,8 @@
 // Test on a Card asks nothing and says what it would do. Never throws.
 import {
   AI_CAPPED,
+  AI_CREDITS_UNCHECKED,
+  AI_CREDITS_USED,
   AI_NOT_ASKED,
   AI_NOT_SET_UP,
   AI_UNREADABLE,
@@ -28,6 +30,7 @@ import {
   type Item,
   type PlannedAi,
 } from '@liveplanner/items';
+import { refusedByService, type SpendResult } from '@liveworkspace/subscription';
 import { linksOfItem, readThreads } from '../../db/card-threads';
 import { listItems, readItem } from '../../db/items';
 import { reportServerEvent } from '../../server-telemetry';
@@ -35,7 +38,7 @@ import type { AutomationsAi, PlanEnv } from '../../types';
 import type { AutomationPlan } from './automation-plan';
 import type { HistorySource } from './automation-queue';
 import { aiToday, ask } from '@liveworkspace/automations/room';
-import { markAiAsked } from './automation-log';
+import { markAiAsked, unmarkAiAsked } from './automation-log';
 import type { Sql } from './automation-store';
 import { addComment, patchCard, type WriteDeps } from './automation-writes';
 
@@ -81,6 +84,9 @@ export interface AiStepsInput {
   source: HistorySource;
   dry: boolean;
   gateway?: string;
+  // With Pro on, one of the owner's AI credits for the month, spent before each call (plan-room/tier/plan-tier.ts
+  // spend; spec "Tiers"). Absent for Test on a Card and with Pro off.
+  spend?: () => Promise<SpendResult | null>;
 }
 
 export type AiStepsOutcome = {
@@ -186,6 +192,17 @@ export async function runAiSteps(
   const goOn = async (p: PlannedAi): Promise<void> => {
     if (after && !(await after(p))) out.stopped = true;
   };
+  // The day's count of calls: as last known while no other request asked since, else read afresh.
+  const dayNow = (): number => {
+    const known = input.state.ai;
+    const today =
+      known !== undefined && input.state.aiAsks === input.room.aiAsks
+        ? known
+        : aiToday(input.sql, Date.now());
+    input.state.ai = today;
+    input.state.aiAsks = input.room.aiAsks;
+    return today;
+  };
   let labels: string[] | null = null;
   // The calls this run asked, each marked on its row.
   let made = 0;
@@ -210,13 +227,7 @@ export async function runAiSteps(
     }
     // Read again when another request asked since (a Run Rule, a Describe a Rule or a run while this one waited), with
     // no await before this call is marked: calls at once never pass the day's cap between them.
-    const known = input.state.ai;
-    const today =
-      known !== undefined && input.state.aiAsks === input.room.aiAsks
-        ? known
-        : aiToday(input.sql, Date.now());
-    input.state.ai = today;
-    input.state.aiAsks = input.room.aiAsks;
+    const today = dayNow();
     if (today >= AUTOMATION_AI_PER_DAY) {
       lines[offset + p.line] = { kind: 'action', ok: false, text: AI_CAPPED };
       out.skipped = AI_CAPPED;
@@ -225,11 +236,29 @@ export async function runAiSteps(
       continue;
     }
     // The call counts from now, whatever it answers: marked on the run's row with no await since the count was read.
+    // Its place in the day is taken BEFORE the owner's credit is spent, so a credit is never spent on a call the
+    // day's cap then refuses (another request may ask while the spend waits).
     made += 1;
     if (input.runId) markAiAsked(input.sql, input.runId, made);
     input.room.aiAsks += 1;
     input.state.aiAsks = input.room.aiAsks;
     input.state.ai = today + 1;
+    if (input.spend) {
+      // One of the owner's AI credits, before the model is asked.
+      const credit = await input.spend();
+      if (credit && !credit.ok) {
+        // Nothing is asked: the day's place goes back, and whoever counts next reads the day afresh.
+        made -= 1;
+        if (input.runId) unmarkAiAsked(input.sql, input.runId, made);
+        else input.state.ai = today;
+        input.room.aiAsks += 1;
+        const why = refusedByService(credit) ? AI_CREDITS_UNCHECKED : AI_CREDITS_USED;
+        lines[offset + p.line] = { kind: 'action', ok: false, text: why };
+        out.skipped ??= why;
+        await goOn(p);
+        continue;
+      }
+    }
     const started = Date.now();
     const card = (await readItem(deps.env, deps.planId, input.card.id)) ?? input.card;
     const cardInput = aiCardInput(

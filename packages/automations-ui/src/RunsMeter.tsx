@@ -42,7 +42,7 @@ export function RunsMeter({
       </div>
     );
   return (
-    <div className="flex items-center gap-2 py-2 text-[12px] text-slate-500 dark:text-slate-400">
+    <div className="flex items-center gap-2 text-[12px] text-slate-500 dark:text-slate-400">
       <span aria-hidden>Runs today</span>
       {bar}
       <span aria-hidden className="font-medium tabular-nums text-slate-700 dark:text-slate-200">

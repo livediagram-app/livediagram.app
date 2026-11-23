@@ -3,7 +3,8 @@
 // Most Read (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): the pages read most in the last 7
 // days, each with a bar of its reads against the most read page, people and agents in the sparkline's two tones.
 // A row opens its page.
-import type { KnowledgeMostRead } from '@liveknowledge/api-schema';
+import { MostReadPeriod, periodWords } from './MostReadPeriod';
+import type { KnowledgeMostRead, KnowledgeOverviewResponse } from '@liveknowledge/api-schema';
 import { CompactEmptyState } from '@liveknowledge/ui';
 import { readersText } from '@/lib/knowledge-ask/dashboard-figures';
 import { MostReadIcon } from './ai-knowledge-icons';
@@ -16,9 +17,14 @@ const ROW =
 export function MostReadCard({
   pages,
   onOpenPage,
+  history,
+  onPeriod,
 }: {
   pages: readonly KnowledgeMostRead[];
   onOpenPage: (tab: string) => void;
+  // With Pro on: the period shown, the days kept and who an upgrade is for (tiers.md "AI Knowledge History").
+  history?: KnowledgeOverviewResponse['history'];
+  onPeriod?: ((days: number) => void) | undefined;
 }) {
   const most = Math.max(1, ...pages.map((page) => page.people + page.agents));
   return (
@@ -26,8 +32,9 @@ export function MostReadCard({
       id="ai-reads"
       title="Most Read"
       icon={<MostReadIcon />}
-      about="Read most by people and agents in the last 7 days."
+      about={`Read most by people and agents in the last ${history ? periodWords(history.days) : '7 days'}.`}
     >
+      {history && onPeriod ? <MostReadPeriod history={history} onPeriod={onPeriod} /> : null}
       {pages.length === 0 ? (
         <CompactEmptyState
           icon={<MostReadIcon />}

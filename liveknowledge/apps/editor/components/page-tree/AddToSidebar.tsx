@@ -4,6 +4,7 @@
 // and beside it Add to Sidebar, whose menu holds Connect File (a file from another app, which opens in a new browser
 // tab); New Page is the button beside it, so the menu does not repeat it (owner 2026-11-21). A menu, for more to come. Without Connect File (offline, no account, a link confined to one page) the foot is New Page
 // alone.
+import { openPagesMax } from '@/lib/knowledge-tier';
 import { useState } from 'react';
 import { pageAddRefusal } from '@liveknowledge/document';
 import { HoverCard, WorkspaceMark } from '@liveknowledge/ui';
@@ -23,7 +24,7 @@ export const NEW_PAGE_BUTTON =
 
 /** New Page: adds a top-level page. At the page limit it is disabled and says why. */
 export function NewPageButton({ tabs, onAdd }: { tabs: PageTreeProps['tabs']; onAdd: () => void }) {
-  const refused = pageAddRefusal(tabs);
+  const refused = pageAddRefusal(tabs, undefined, openPagesMax());
   return (
     <HoverCard
       block

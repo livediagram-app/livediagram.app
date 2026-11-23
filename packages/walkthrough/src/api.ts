@@ -5,6 +5,7 @@
 import {
   walkthroughRefusalMessage,
   type WalkthroughEvents,
+  type WalkthroughLimits,
   type WalkthroughSummary,
 } from '@liveworkspace/media/walkthrough';
 import type { UploadProgress } from './upload-progress';
@@ -21,7 +22,13 @@ export type WalkthroughApiDeps = {
   ) => Promise<Response>;
 };
 
-export type WalkthroughList = { walkthroughs: WalkthroughSummary[]; canRecord: boolean };
+// `limits`: with Pro on, what the caller may record on this item, as the server worked it out (walkthroughs.md "With
+// Pro on"). Absent with Pro off, where the recorder keeps the lengths it always had.
+export type WalkthroughList = {
+  walkthroughs: WalkthroughSummary[];
+  canRecord: boolean;
+  limits?: WalkthroughLimits;
+};
 
 export type SaveInput = {
   title: string;

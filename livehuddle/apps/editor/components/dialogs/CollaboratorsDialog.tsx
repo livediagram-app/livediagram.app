@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { Tab } from '@livehuddle/document';
 import { Button } from '@livehuddle/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
@@ -58,6 +58,9 @@ type CollaboratorsDialogProps = {
   onTakeFacilitation: () => void;
   onStepDown: () => void;
   onClose: () => void;
+  // Drawn under the roster, over the footer: the Space's Call Minutes, for its owner and the owning team
+  // (docs/specs/012-collaboration/call-minutes.md "What people see"). Absent, nothing.
+  below?: ReactNode;
 };
 
 const TITLE_ID = 'collaborators-dialog-title';
@@ -81,6 +84,7 @@ export function CollaboratorsDialog({
   onTakeFacilitation,
   onStepDown,
   onClose,
+  below,
 }: CollaboratorsDialogProps) {
   // Keeps each row's "Active 2 mins ago" honest while the modal stays open.
   const now = useRelativeNow();
@@ -100,6 +104,7 @@ export function CollaboratorsDialog({
       onClose={onClose}
       titleId={TITLE_ID}
       size="md"
+      phoneSheet
       className="max-h-[min(36rem,calc(100dvh-2rem))]"
     >
       {/* The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the presence stack's band,
@@ -233,6 +238,7 @@ export function CollaboratorsDialog({
           </section>
         ))}
       </div>
+      {below}
       {/* Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md): the Settings switch,
           one click away when a session gets busy, and only on a tab that draws cursors. */}
       <HideCursorsFooter />

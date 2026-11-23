@@ -35,6 +35,8 @@ export default defineProject({
         'src/d1-compound.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/d1-compound-guard.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-body.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        // And the image upload's gate: a gap there buffers 25 MB for someone who may send 5.
+        'src/image-upload.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/openapi-route.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/preferences-route.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/public-address.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },

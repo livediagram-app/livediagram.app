@@ -16,6 +16,7 @@ apps/index             /api/index: the One Explorer's index (items, folders, sha
 apps/drive             /api/drive: the Google Drive mirror, for every app
 apps/media             /api/media and /api/previews: every app's images, and its previews and share cards
 apps/community         /api/community: every app's Community listings
+apps/subscription      /api/subscription: tiers, entitlements, meters and billing, off unless PRO_ENABLED is on
 apps/telemetry         /api/telemetry: every app's anonymous events
 apps/status            /api/status: hourly checks of every service, 90 days kept
 apps/redirect          the bare liveworkspace.app: a page load's one 301 to www. (docs/specs/010-site/site.md)
@@ -26,7 +27,7 @@ plans                  plans for work in progress
 ```
 
 The services' contracts and clients that apps import are in the root `packages/` (`@liveworkspace/auth-client`,
-`index-client`, `index-app`, `explorer`, `drive`, `media`, `community`, `telemetry`, `settings`, `sites` and the
+`index-client`, `index-app`, `explorer`, `drive`, `media`, `community`, `subscription`, `telemetry`, `settings`, `sites` and the
 rest; [docs/structure.md](../docs/structure.md) at the repository root lists them).
 
 Every service is a Worker on a path route of liveworkspace.app (and `staging.liveworkspace.app`), on the
@@ -46,8 +47,8 @@ there is none (never over one) and applies its local migrations, and the account
 local OAuth client into its local database, so an app started beside it (`corepack pnpm dev:design`, ...) signs in and
 makes guests with no registration step ([docs/specs/003-accounts/sign-in.md](docs/specs/003-accounts/sign-in.md#local-clients)).
 
-`dev:workspace` runs the site on 3000 with its seven services behind it: accounts (8787), telemetry (8790),
-Community (8791), media (8792), the index (8793), status (3010) and Drive (3011). The site's dev server forwards
+`dev:workspace` runs the site on 3000 with its eight services behind it: accounts (8787), telemetry (8790),
+Community (8791), media (8792), the index (8793), subscriptions (8794), status (3010) and Drive (3011). The site's dev server forwards
 each service's paths to it (`apps/site/next.config.ts`), so the pages and the APIs share one origin, as on
 liveworkspace.app. That origin, `http://localhost:3000`, is the accounts Worker's `BASE_URL` and the issuer apps
 check locally.

@@ -118,6 +118,20 @@ describe('listing', () => {
     });
     expect(calls.listOwned).toHaveBeenCalledWith('me');
     expect(access).not.toHaveBeenCalled();
+    // With Pro on the service's limits for the person pass on as they came; without them, none.
+    expect(await body(await mine())).not.toHaveProperty('limits');
+    const limits = {
+      maxMs: 300_000,
+      stored: 1,
+      storedLimit: 5,
+      owner: 'p:me',
+      storedOwner: 'p:me',
+    };
+    calls.listOwned.mockResolvedValueOnce({
+      ok: true,
+      value: { walkthroughs: [], limits },
+    });
+    expect(await body(await mine())).toEqual({ walkthroughs: [], limits });
     // Only a person, as themselves.
     expect((await mine({ owner: null })).status).toBe(403);
     expect((await mine({ person: false })).status).toBe(403);
@@ -359,5 +373,76 @@ describe('renaming and sharing', () => {
 
   it('answers 404 to a method the share route does not take', async () => {
     expect((await door({ method: 'GET', path: ['w1', 'share'] })).status).toBe(404);
+  });
+});
+
+describe('with Pro on', () => {
+  const LIMITS = { maxMs: 300_000, stored: 2, storedLimit: 5, owner: 'p:me' };
+  const start = (durationMs: number, over: Partial<WalkthroughDoorInput> = {}) => {
+    const sent = JSON.stringify({
+      title: 'T',
+      author: null,
+      mediaType: 'audio/webm',
+      mediaBytes: 10,
+      events: { ...EVENTS, durationMs },
+    });
+    return door({
+      method: 'POST',
+      request: new Request('https://app.test/api/walkthroughs?d=doc', {
+        method: 'POST',
+        headers: { 'Content-Length': String(sent.length) },
+        body: sent,
+      }),
+      ...over,
+    });
+  };
+
+  it('asks for the recorder’s limits on the item, naming its owner, and passes them on', async () => {
+    calls.list.mockResolvedValueOnce({ ok: true, value: { walkthroughs: [], limits: LIMITS } });
+    const res = await door({
+      pro: true,
+      access: async () => ({ level: 'edit', closed: false, itemOwner: 't:team_garden' }),
+    });
+    expect(calls.list).toHaveBeenCalledWith('doc', { owner: 'me', itemOwner: 't:team_garden' });
+    expect(await body(res)).toEqual({ walkthroughs: [], canRecord: true, limits: LIMITS });
+  });
+
+  it('asks for no limits for someone who may not record, or where Pro is known off', async () => {
+    await door({ pro: true, level: 'view' });
+    await door({ pro: true, person: false });
+    await door({ pro: false });
+    for (const call of calls.list.mock.calls) expect(call).toEqual(['doc']);
+  });
+
+  it('asks the service where the app has not said: the service knows whether Pro is on', async () => {
+    await door();
+    expect(calls.list).toHaveBeenCalledWith('doc', { owner: 'me', itemOwner: null });
+    // And a longer start goes through for the service to hold, with no item owner named.
+    expect((await start(20 * 60 * 1000)).status).toBe(201);
+    expect(calls.start).toHaveBeenCalledWith('me', expect.anything());
+  });
+
+  it('lets a start up to the longest any tier records through to the service, with the item’s owner', async () => {
+    const res = await start(30 * 60 * 1000, {
+      pro: true,
+      access: async () => ({ level: 'edit', closed: false, itemOwner: 'p:user_host' }),
+    });
+    expect(res.status).toBe(201);
+    expect(calls.start).toHaveBeenCalledWith('me', expect.anything(), 'p:user_host');
+    expect(calls.start.mock.calls[0]![1].events.durationMs).toBe(30 * 60 * 1000);
+    expect((await start(30 * 60 * 1000 + 1, { pro: true })).status).toBe(413);
+  });
+
+  it('holds a start to ten minutes where Pro is known off, and names no item owner', async () => {
+    const off = {
+      pro: false,
+      access: async () => ({ level: 'edit' as const, closed: false, itemOwner: 't:team_garden' }),
+    };
+    const long = await start(10 * 60 * 1000 + 1, off);
+    expect(long.status).toBe(413);
+    expect(await body(long)).toMatchObject({ error: 'too_long', limitMs: 600_000 });
+    expect(calls.start).not.toHaveBeenCalled();
+    expect((await start(1000, off)).status).toBe(201);
+    expect(calls.start).toHaveBeenCalledWith('me', expect.anything());
   });
 });

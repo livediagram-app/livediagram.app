@@ -61,9 +61,12 @@ export type NotReadPage = { tab: string; title: string; touchedAt?: number };
 export function notReadPages(
   pages: readonly NotReadCandidate[],
   now: number,
+  // The days asked about: NOT_READ_DAYS, or fewer where the owner's tier keeps fewer days of reads (tiers.md "AI
+  // Knowledge History"), since a read past them is gone and its page would look unread.
+  days: number = NOT_READ_DAYS,
 ): { pages: NotReadPage[]; total: number } {
-  const since = daysBefore(now, NOT_READ_DAYS);
-  const madeBefore = now - NOT_READ_DAYS * DAY_MS;
+  const since = daysBefore(now, days);
+  const madeBefore = now - days * DAY_MS;
   const unread = pages
     .filter(
       (p) =>

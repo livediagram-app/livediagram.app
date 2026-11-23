@@ -5,8 +5,13 @@
 import type { FormDraft } from '@liveplanner/forms';
 import type { AiKeyFailureBody } from './plan-drafts';
 
+import type { TierLimitRefusal } from './tiers';
+
 export interface FormDraftRequest {
   prompt: string;
+  // The plan the form is drafted for (the dialog was opened on one of its tabs): its owner's AI credit is spent, and
+  // the caller must be an Editor of it. Left out, the draft is nobody's plan yet and the person's own is spent.
+  projectId?: string;
 }
 
 export interface FormDraftResponse {
@@ -28,11 +33,13 @@ export const FORM_DRAFT_ERRORS = [
   // On the person's own key: the provider refused it (revoked, out of credit, a model it can't use) or it will not
   // open (422), with `aiKey` (ai-keys.md "Every AI feature honours the choice"). Never sent to built-in AI instead.
   'ai_key_failed',
+  // The person's AI credits for the month used (Pro on only): 429, with `limit`, `used` and `max`.
+  'form_draft_credits_used',
 ] as const;
 export type FormDraftError = (typeof FORM_DRAFT_ERRORS)[number];
 
 // A refusal's body: `message` is fixed words, never the model's; `path` names the request's field at fault.
-export interface FormDraftErrorBody {
+export interface FormDraftErrorBody extends Partial<TierLimitRefusal> {
   error: FormDraftError;
   path?: string;
   message?: string;

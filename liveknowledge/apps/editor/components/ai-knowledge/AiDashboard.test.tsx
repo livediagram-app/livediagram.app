@@ -298,6 +298,16 @@ describe('the cards', () => {
     expect(screen.queryByRole('region', { name: 'Not Read in 90 Days' })).toBeNull();
   });
 
+  it('Not Read names the days the tier keeps reads, where fewer than 90', () => {
+    draw(overview({ notRead: { pages: [], total: 0, days: 30 } }));
+    expect(screen.getByRole('region', { name: 'Not Read in 30 Days' })).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Each page older than 30 days was opened, or read by an agent, in that time.',
+      ),
+    ).toBeTruthy();
+  });
+
   // verification.md "Under a Review Period of Never": the band shows Average Health in Verified's place, and
   // Knowledge Health leads with the average.
   it('under a Review Period of Never shows Average Health, and no verified share', () => {

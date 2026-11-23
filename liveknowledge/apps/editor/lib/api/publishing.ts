@@ -15,6 +15,7 @@ const EXPECTED = new Set([
   'address_taken',
   'invalid_root',
   'nothing_to_publish',
+  'publish_limit_reached',
   'rate_limited',
 ]);
 const expected = (code: string | null) => code !== null && EXPECTED.has(code);

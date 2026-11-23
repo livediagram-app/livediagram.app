@@ -20,7 +20,7 @@ function setup(answer: () => Response = () => Response.json({ ok: true })) {
       return (await res.json()) as T;
     },
     expectOkVoid: vi.fn(async () => {}),
-    errors: ['automation_invalid', 'automations_need_editor'],
+    errors: ['automation_invalid', 'automations_need_editor', 'automation_rules_full'],
     subject: (subject) => ({ tab: subject }),
   };
   return { client: createAutomationsClient(api), fetch, api };
@@ -117,6 +117,38 @@ describe('the Automations client', () => {
       path: null,
       message: 'automations_need_editor',
     });
+  });
+
+  it('carries what the owner’s tier refused with Pro on, and nothing of it otherwise', async () => {
+    const full = setup(() =>
+      Response.json(
+        {
+          error: 'automation_rules_full',
+          limit: 'automationRules',
+          used: 12,
+          max: 10,
+          guest: true,
+        },
+        { status: 409 },
+      ),
+    );
+    await expect(full.client.list(SCOPE)).rejects.toMatchObject({
+      code: 'automation_rules_full',
+      tier: { limit: 'automationRules', used: 12, max: 10, guest: true },
+    });
+    const owned = setup(() =>
+      Response.json(
+        { error: 'automation_rules_full', limit: 'automationRules', used: 10, max: 10 },
+        { status: 409 },
+      ),
+    );
+    const refused = (await owned.client.list(SCOPE).catch((e: unknown) => e)) as AutomationRefusal;
+    expect(refused.tier).toEqual({ limit: 'automationRules', used: 10, max: 10 });
+    // Half a tier (no numbers) is none.
+    const half = setup(() =>
+      Response.json({ error: 'automation_rules_full', limit: 'automationRules' }, { status: 409 }),
+    );
+    await expect(half.client.list(SCOPE)).rejects.toMatchObject({ tier: null });
   });
 
   it('leaves any other failure to the app', async () => {

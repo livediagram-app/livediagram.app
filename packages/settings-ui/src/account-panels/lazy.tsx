@@ -52,8 +52,11 @@ function AccountPanelCell({
 /** The Account section's API Tokens and Download Your Data over `host`, for an AccountHost. */
 export function accountPanels(
   host: AccountPanelsHost,
-): Required<Pick<AccountSection, 'renderAi' | 'renderTokens' | 'renderDataExport'>> {
+): Required<Pick<AccountSection, 'renderAi' | 'renderTokens' | 'renderDataExport'>> &
+  Pick<AccountSection, 'subscription'> {
   return {
+    // The Subscription category's way to its service (subscription/cells.tsx draws it, with Pro on).
+    ...(host.subscription ? { subscription: host.subscription } : {}),
     renderAi: () => (
       <AccountPanelCell cell="ai" host={host}>
         <AiKeyPanel />

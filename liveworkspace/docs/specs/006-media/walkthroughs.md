@@ -231,6 +231,68 @@ The accepted media types are `video/webm`, `video/mp4`, `audio/webm` and `audio/
 record WebM; Safari records MP4). The declared type is the recorder's MIME type without its parameters; the
 service checks the file's first bytes (WebM's EBML header, MP4's `ftyp` box) against it.
 
+### With Pro on
+
+With `PRO_ENABLED` off the table above stands. With it on ([subscription.md](../019-subscription/subscription.md)
+"Tiers and limits") two limits come from a tier:
+
+| Limit               | Free      | Pro        | Pro for Teams | In place of                                         |
+| ------------------- | --------- | ---------- | ------------- | --------------------------------------------------- |
+| Walkthrough Length  | 5 minutes | 30 minutes | 30 minutes    | `WALKTHROUGH_MAX_MS`                                |
+| Walkthroughs Stored | 5         | no limit   | no limit      | `WALKTHROUGH_MAX_PER_OWNER` (per person, every app) |
+
+The 50 per item stays as a safety cap, and so does `WALKTHROUGH_MAX_BYTES_PER_OWNER`. As for pictures
+([media.md](media.md) "With Pro on"), the two limits follow two rules. **Walkthroughs Stored is the recorder's own
+tier's, always**, on whoever's item they record: what a person keeps is theirs in every app. **Walkthrough Length is
+the better** of the recorder's own and the item's owner's, for a recording made on that item: the app's door names
+the item's owner in `X-Media-Item-Owner` and the service reads both entitlements.
+
+**The recorder asks the server.** `GET /walkthroughs?item=&for=<recorder>` (and each app's `GET
+/api/walkthroughs?d=`) also answers `limits: { maxMs, stored, storedLimit, owner, storedOwner }` with Pro on: the
+longest the caller may record on this item, how many they have stored, how many they may (null is no limit), the
+scope whose tier set the length (`owner`) and the scope whose tier set how many are kept (`storedOwner`, always the
+recorder's own). The recorder stops at `maxMs` and the dock counts against it ("4:12 / 5:00"); with Pro off, or from a
+door that sends no limits, it uses `WALKTHROUGH_MAX_MS`. With `stored` at `storedLimit` the Record button gives way to
+a notice: "You have 5 walkthroughs, the most Free keeps. Delete one to record another, or keep as many as you like
+with Pro." A recording that stopped at the length limit says, once saved, "Saved at 5:00" over "Your walkthrough
+reached Free's 5 minutes and is saved in full. Pro records up to 30 minutes." The offer (**See Pro**, **Upgrade to
+Pro**) is only for someone who may upgrade the owner named. While a tier above records longer, the list's foot says so
+before anything is recorded and after, over Record Walkthrough (owner, 2026-11-22): "Free records up to 5 minutes.
+Pro records up to 30 minutes." with See Pro, or "A walkthrough here records up to 5 minutes." for anyone else.
+
+**An upgrade reaches an open list without a reload.** The limits are read again whenever the tier of either scope
+they name changes as the page knows it (the person's own subscription, read again when they come back from the
+checkout or the billing page in another tab, or the length owner's view), and once more a little over a minute later,
+when the app's door has stopped answering from what it last heard of the subscription service
+(`ENTITLEMENT_FRESH_MS`). So the stored-limit notice gives way to Record Walkthrough, and the recorder takes the new
+length, while the item stays open.
+
+**Thirty minutes in one upload.** A walkthrough's media goes up in one request, and a Worker request carries 100 MB.
+At the bit rates above thirty minutes would be 235.8 MB, so a recording allowed more than ten minutes is recorded at a
+lower video rate, chosen from its limit before it starts (`walkthroughVideoBps(maxMs)`): the bytes ten minutes makes at
+the full rates (78.6 MB) spread over the allowed length. For thirty minutes that is 301,333 bits/s of video beside the
+48,000 of sound: 349,333 bits/s for 1,800 s is 78.6 MB, under the 90 MiB (94.4 MB) cap with the same 20% to spare. A
+limit of ten minutes or less records at the full 1,000,000. The recorder still stops itself at 90 MiB if an encoder
+overshoots.
+
+**Length, checked by size.** A recording's `durationMs` is the browser's word: the service does not decode the media,
+so it cannot time it. What it can weigh is the media itself, which the upload must match byte for byte. So with a
+length limit under ten minutes the media may be no larger than that share of the cap
+(`walkthroughMediaMaxBytes(maxMs)`: Free's five minutes is 45 MiB, its 39.3 MB at the full rates with the same 20%
+to spare), and a start that declares more is refused `413 file_too_large` with `limitBytes`. The recorder stops
+itself at the same figure. Ten minutes or more takes the whole 90 MiB, as before.
+
+This bounds how much a recording holds, not how long it runs: media encoded below the recorder's bit rates fits
+more minutes into the same bytes, and telling that apart would mean decoding it. So a browser that lies about
+`durationMs` and re-encodes can keep a longer, proportionally lower quality recording inside Free's bytes; it can
+never store more than Free's bytes for one, and never more recordings than Free keeps.
+
+The refusals carry the limit: `413 too_long` with `limitMs`, and with Pro on `limit`, `current` and `owner`;
+`403 walkthroughs_full` with `reason`, `limit`, `current`, and with Pro on `owner` (the recorder's own scope). The
+service reports no count: the subscription service asks for it when a person reads their usage
+([media.md](media.md) "What Subscription shows"), which counts every walkthrough a person holds, started ones
+included, as the limit does.
+
 ## The service's routes
 
 Under `/api/media/app`, with the app's key ([media.md](media.md) "The API"). A walkthrough is only ever its own
@@ -348,6 +410,14 @@ first (`GET /api/walkthroughs?mine=1`), as cards in a grid:
   deletes it for good (`DELETE /api/walkthroughs/<id>?d=<item>`), the media and events with it.
 - Empty, the page says "No walkthroughs yet" with a line on recording one from Tools on any item. While it loads,
   skeleton cards in the grid's shape.
+- **With Pro on, what the person's tier keeps** (owner, 2026-11-22), over the cards: the shared usage meter, Stored
+  and "3 of 5" (the count alone where the tier keeps any number), then one quiet line, "Each up to 5 minutes. Your
+  walkthroughs in every app count here.", in the tier's own figures. On Free a ProNote follows: "Free keeps 5
+  walkthroughs of up to 5 minutes. Pro keeps any number, up to 30 minutes." with See Pro. The figures come with the
+  list: `GET /app/walkthroughs?owner=` also answers `limits` (`{ maxMs, stored, storedLimit, owner, storedOwner }`,
+  the person's own tier, never an item's), which each app's door passes on for `?mine=1`. With Pro off there are no
+  `limits` and nothing is drawn. The Image Gallery shows the same for Image Storage ([media.md](media.md) "With Pro
+  on").
 
 liveworkspace.app's Explorer shows the page for the app it is on, read by the workspace token as the other Library
 pages are. The sites registry's `walkthroughsPath` (`/api/walkthroughs`, null where an app has none) says which apps

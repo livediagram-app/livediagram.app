@@ -22,6 +22,7 @@ import { useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import {
+  BUILT_IN_CREDITS_NOTE,
   BUILT_IN_NOTE,
   KEY_ENCRYPTED_NOTE,
   aiInUseTitle,
@@ -36,6 +37,7 @@ import {
   replaceProviderTitle,
 } from '@/lib/knowledge-ask/provider-words';
 import { track } from '@/lib/telemetry';
+import { useOpenKnowledgeTier } from '@/lib/use-knowledge-tier';
 import { AiKeyForm } from './AiKeyForm';
 import { AiProviderPicker, AiSourcePicker, type AiSource } from './AiProviderPicker';
 import { KeyIcon } from './ask-icons';
@@ -91,6 +93,8 @@ export function AiSettingsDialog({
   const [confirmingProvider, setConfirmingProvider] = useState<KnowledgeAiProvider | null>(null);
   // Which AI the Editor picked here, until it takes: Your Own Key with a key saved, Built-In AI with the key removed.
   const [pickedSource, setPickedSource] = useState<AiSource | null>(null);
+  // With Pro on (the knowledgebase's tier is known), built-in AI spends the owner's AI credits.
+  const credits = useOpenKnowledgeTier() !== null;
   const [confirmingBuiltIn, setConfirmingBuiltIn] = useState(false);
 
   useEffect(() => {
@@ -201,6 +205,7 @@ export function AiSettingsDialog({
               <AiSourcePicker
                 chosen={source}
                 builtIn={settings.builtIn}
+                credits={credits}
                 disabled={busy !== null}
                 labelledBy={`${titleId}-source`}
                 onChoose={chooseSource}
@@ -215,7 +220,7 @@ export function AiSettingsDialog({
             )}
             {settings && source === 'built-in' ? (
               <p className={NOTE} data-ai-built-in-note="">
-                {BUILT_IN_NOTE}
+                {credits ? BUILT_IN_CREDITS_NOTE : BUILT_IN_NOTE}
               </p>
             ) : null}
           </section>

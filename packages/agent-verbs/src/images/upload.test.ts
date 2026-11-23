@@ -9,6 +9,7 @@ import {
   IMAGE_FETCH_USER_AGENT,
   nameFromUrl,
   prepareImage,
+  refusedLimitWords,
   uploadToGallery,
   type PreparedImage,
 } from './upload';
@@ -303,6 +304,42 @@ describe('uploadToGallery', () => {
     expect(oneDoor.message).toBe(
       'The image gallery is full: it holds as much as it may. Remove pictures it no longer needs with the Image Gallery, then upload again.',
     );
+  });
+
+  it('says the limit the api named when it refuses a picture for a tier’s limit', async () => {
+    // Pro on, an uploader on Free: the api's 413 carries the tier's limit, under this file's own 10 MB.
+    const tier = await refusalOf(() =>
+      uploadToGallery(
+        refusing(413, {
+          error: 'file_too_large',
+          limitBytes: 5_000_000,
+          limit: 5_000_000,
+          current: 7_000_000,
+          owner: 'p:user_1',
+        }),
+        prepared,
+        'mcp',
+        WORDS,
+      ),
+    );
+    expect(tier).toMatchObject({ status: 413, code: 'file_too_large' });
+    expect(tier.message).toMatch(/^That picture is .+; the gallery takes files up to 5 MB\.$/);
+    // A limit only in limitBytes that is not the legacy cap is worded the same way.
+    expect(refusedLimitWords(JSON.stringify({ limitBytes: 7_500_000 }))).toBe('7.5 MB');
+    // Pro off: the legacy cap, in the words it always had; a body that names none keeps them too.
+    for (const body of [
+      { error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES },
+      'not json',
+      'null',
+      {},
+      { limit: 0 },
+      { limitBytes: Number.NaN },
+    ]) {
+      const legacy = await refusalOf(() =>
+        uploadToGallery(refusing(413, body), prepared, 'mcp', WORDS),
+      );
+      expect(legacy.message).toMatch(/the gallery takes files up to 10 MB\.$/);
+    }
   });
 
   it('words a file too large and images switched off, and lets anything else through', async () => {

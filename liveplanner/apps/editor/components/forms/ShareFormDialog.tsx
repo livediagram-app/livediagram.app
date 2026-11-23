@@ -21,6 +21,7 @@ import { FormProblems, formProblemCount } from './FormProblems';
 import { shareFormHeroArt } from './ShareFormHeroArt';
 import { ShareFormMore } from './share/ShareFormMore';
 import { Callout } from '@liveworkspace/ui/callout';
+import { FormMonth } from './FormMonth';
 
 export function ShareFormDialog({
   open,
@@ -136,6 +137,8 @@ export function ShareFormDialog({
                       : 'Closed: people who open the link see your closed message. Taking responses locks the form.'}
                 </p>
               </div>
+              {/* With Pro on: the month's responses against the owner's tier, and why it is paused once full. */}
+              <FormMonth link={link.link} />
               {/* Still listed once published: a problem since then is the Editor's to fix. */}
               <FormProblems
                 title="Problems with this Form"

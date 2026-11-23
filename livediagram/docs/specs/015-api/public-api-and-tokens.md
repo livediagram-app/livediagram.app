@@ -513,7 +513,7 @@ hardening landed first:
 ## 7. Out of scope (for now)
 
 Finer-grained scopes (per-document / per-folder grants, per-verb permissions)
-and any billing or quota tiers (the product has no paid tier:
+and any billing or quota tiers (the product keeps no billing of its own:
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope that DID land is
 the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);
 OAuth / third-party app authorization landed in [MCP server](mcp-server.md).)

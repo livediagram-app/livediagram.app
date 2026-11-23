@@ -320,6 +320,8 @@ export type KnowledgeSetupSuggestion = {
   name: string;
   pages: KnowledgeSetupPage[];
   provider?: KnowledgeSetupProvider;
+  // With Pro on, on built-in AI: the owner's AI credits this month after this suggestion spent one (tiers.md).
+  credits?: { used: number; limit: number };
 };
 
 /** `POST .../pages/<tab>/describe-structure` (describe-to-set-up.md "Describe Structure on a page"): what the page is
@@ -580,11 +582,15 @@ export type KnowledgeOverviewResponse = {
   reviewEmails: { available: boolean; remindedAt?: number };
   /** The last 14 days' reads by day, oldest first, and the pages read most in the last 7 (at most 5). */
   reads: { days: KnowledgeReadsDay[]; mostRead: KnowledgeMostRead[] };
+  /** With Pro on (tiers.md "AI Knowledge History"): the days of history the owner's tier keeps, the period Most Read
+   *  covers, and who an upgrade is for. Absent with Pro off, where Most Read covers 7 days. */
+  history?: { keptDays: number; days: number; owner?: string; guest?: true };
   /** Pages With Low Health: the 5 lowest under the Healthy line; absent from an older api. */
   lowHealth?: KnowledgeLowHealthPage[];
   /** Not Read in 90 Days (ai-knowledge.md): the first 10, touched longest ago first, and how many; absent from an
    *  older api. */
-  notRead?: { pages: KnowledgeNotReadPage[]; total: number };
+  /** `days`: the days asked about, 90, or the days the owner's tier keeps reads where fewer; absent from an older api. */
+  notRead?: { pages: KnowledgeNotReadPage[]; total: number; days?: number };
   /** Required Reading (required-reading.md): each page asked to be read with its counts, least read first; absent
    *  from an older api. */
   requiredReading?: KnowledgeRequiredReadingPage[];

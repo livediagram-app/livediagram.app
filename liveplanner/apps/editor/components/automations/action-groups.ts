@@ -1,15 +1,6 @@
 // The Add an Action picker's groups (docs/specs/026-plan/automations.md "The rule builder"): every kind + Add Action
-// offers, grouped (each group one thing, never two joined by "and"), each with a line on what it does, and which
-// groups show where the action goes.
+// offers, grouped (each group one thing, never two joined by "and"), each with a line on what it does.
 
-import {
-  AUTOMATION_AI_PER_DAY,
-  AUTOMATION_AI_STEPS_MAX,
-  AUTOMATION_OUTGOING_MAX,
-  AUTOMATION_WAITS_MAX,
-  type AutomationRuleBody,
-} from '@liveplanner/items';
-import { canAddAi, canAddOutgoing, canAddWait } from './rule-draft';
 import type { AddKind } from './step-defaults';
 
 export type ActionGroupId =
@@ -25,11 +16,6 @@ export type ActionGroupId =
   | 'timing'
   | 'tools'
   | 'ai';
-
-// The groups only the rule's top level shows.
-const TOP_ONLY: ReadonlySet<ActionGroupId> = new Set(['timing', 'tools', 'ai']);
-// The kinds a branch leaves out: it makes no card.
-const NOT_IN_BRANCH: ReadonlySet<AddKind> = new Set(['create_card', 'copy_card']);
 
 export const ACTION_GROUPS: readonly {
   id: ActionGroupId;
@@ -83,37 +69,3 @@ export const ACTION_LINES: Readonly<Record<AddKind, string>> = {
   resolve_threads: 'Resolve every open comment thread on the card.',
   wait: 'Hold the rest of the rule for an hour up to 30 days.',
 };
-
-export type PickerGroup = {
-  id: ActionGroupId;
-  name: string;
-  // A note beside the group's name (AI's daily allowance).
-  note?: string;
-  kinds: readonly AddKind[];
-  // Why the group's tiles are dimmed: the rule holds all it may of them.
-  full?: string;
-};
-
-/** The groups for where the action goes: the rule's top level, or an If / Else list or a branch (`branch`). Timing,
- *  Other Tools and AI only at the top level; a branch makes no card. No body (changing a step's kind): nothing is
- *  full. */
-export function pickerGroups(
-  body: AutomationRuleBody | null,
-  where: 'top' | 'list' | 'branch',
-): PickerGroup[] {
-  const out: PickerGroup[] = [];
-  for (const g of ACTION_GROUPS) {
-    if (TOP_ONLY.has(g.id) && where !== 'top') continue;
-    const kinds = where === 'branch' ? g.kinds.filter((k) => !NOT_IN_BRANCH.has(k)) : g.kinds;
-    const group: PickerGroup = { id: g.id, name: g.name, kinds };
-    if (g.id === 'ai') group.note = `${AUTOMATION_AI_PER_DAY} a day per plan`;
-    if (g.id === 'tools' && body && !canAddOutgoing(body))
-      group.full = `A rule holds up to ${AUTOMATION_OUTGOING_MAX} outgoing actions`;
-    if (g.id === 'ai' && body && !canAddAi(body))
-      group.full = `A rule holds up to ${AUTOMATION_AI_STEPS_MAX} AI actions`;
-    if (g.id === 'timing' && body && !canAddWait(body))
-      group.full = `A rule holds up to ${AUTOMATION_WAITS_MAX} Waits`;
-    out.push(group);
-  }
-  return out;
-}

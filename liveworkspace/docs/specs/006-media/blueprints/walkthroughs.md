@@ -266,3 +266,46 @@ site charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.
 - `WLK2`: recording is an Editor's; any reader plays; the recorder or an Editor deletes.
 - `WLK3`: a tab-scoped link and a Community visit see no walkthroughs.
 - `WLK4`: a pending walkthrough is swept after an hour.
+
+## With Pro on
+
+From [walkthroughs.md](../walkthroughs.md) "With Pro on". With `PRO_ENABLED` off: the door asks for no limits, the
+service answers none, and the recorder runs on `WALKTHROUGH_MAX_MS`.
+
+- **Contract** (`packages/media/src/walkthrough.ts`): `WalkthroughLimits = { maxMs, stored, storedLimit, owner }`;
+  `parseWalkthroughStart(value, maxMs)`, `parseWalkthroughEvents(value, maxMs)` and
+  `sealWalkthroughEvents(input, maxMs)` take the length to hold to (default `WALKTHROUGH_MAX_MS`);
+  `walkthroughVideoBps(maxMs)` is the full rate up to ten minutes and otherwise
+  `floor((1,000,000 + 48,000) x 600 / seconds) - 48,000` (301,333 for thirty minutes).
+- **Service** (`liveworkspace/apps/media/src/walkthroughs.ts`): `start` reads `uploadLimits` (the recorder's tier and
+  the `X-Media-Item-Owner` owner's), parses with `walkthroughMaxMs`, caps the count at `walkthroughsStored` (null is
+  none) and keeps `WALKTHROUGHS_PER_ITEM_MAX` and the byte cap. `GET /walkthroughs?item=&for=<recorder>` adds `limits`
+  (`storedCount`: the recorder's rows in every app, started ones included). `reportStored` after a stored media, a
+  delete and a purge (each recorder once).
+- **Door** (`packages/media/src/walkthrough-door.ts`): `WalkthroughAccess.itemOwner` and `WalkthroughDoorInput.pro`.
+  With `pro: false` the door is as it was: no limits asked, a start held to `WALKTHROUGH_MAX_MS`, no owner named.
+  With `pro: true`, or left out, a list by someone who may record calls `calls.list(item, { owner, itemOwner })` and
+  passes `limits` on, and a start is parsed against `WALKTHROUGH_CEILING_MS` and sent on (with the item's owner when
+  the app named one) for the service to hold: the service answers no limits and the legacy length with Pro off, so a
+  door that has not said is right either way. livediagram, livedocuments, livedesign and liveplanner pass
+  `pro: proEnabled(env.PRO_ENABLED)` and `itemOwner: itemOwnerScope(grant)`.
+- **Recorder** (`packages/walkthrough`): `useWalkthroughs` holds the list's `limits` and hands
+  `limits?.maxMs ?? WALKTHROUGH_MAX_MS` to `useRecorder`, which stops there, seals to it and films at
+  `walkthroughVideoBps(maxMs)`. `RecordDock` counts against `recorder.maxMs`. `limit-words.ts` words the limits from
+  the server's numbers; `ui/limit-notices.tsx` draws `StoredLimitNotice` (in place of Record Walkthrough while
+  `storedFull(limits)`) and `LengthLimitNotice` (over the list, for the walkthrough just saved that ran to its
+  length) through the kit's `LimitNotice`, their action from `useOwnerView`: of `limits.storedOwner` for the stored
+  notice (the recorder's own; `limits.owner` from a service older than it) and of `limits.owner` for the length one.
+  `useTierReread` (`src/tier-reread.ts`) keys the two views' tiers and reads the list again when the key changes
+  after its first answer, and once more `TIER_SETTLE_MS` (70 s, past the door's 60 s entitlement cache) later. The
+  provider reads every asked view again when the person comes back from the checkout or billing in another tab.
+- **Length, checked by size.** `walkthroughMediaMaxBytes(maxMs)` (`packages/media/src/walkthrough.ts`) is
+  `WALKTHROUGH_MEDIA_MAX_BYTES` for ten minutes or more, and that cap times `maxMs / WALKTHROUGH_MAX_MS`, rounded up,
+  under it. `parseWalkthroughStart(body, maxMs)` refuses a `mediaBytes` over it (`413 file_too_large`,
+  `limitBytes`), at the door and at the service, and the upload must then be exactly `mediaBytes` long.
+  `startRecording` takes it as `maxBytes` (from `useRecorder`) and stops there. With Pro off `maxMs` is the legacy ten
+  minutes, so nothing changes.
+
+Cost of a recording. Pro off: unchanged. Pro on: the list read the editor already makes carries one extra query
+param and, at the service, up to two entitlement reads (60 s cache) and one count; a start adds the same two reads;
+a stored media or a delete adds nothing after the answer.

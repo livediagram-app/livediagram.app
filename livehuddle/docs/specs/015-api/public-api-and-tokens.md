@@ -461,7 +461,7 @@ hardening landed first:
 ## 7. Out of scope (for now)
 
 Finer-grained scopes (per-document / per-folder grants, per-verb permissions)
-and any billing or quota tiers (the product has no paid tier:
+and any billing or quota tiers (billing and tier limits are the platform's:
 [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). (The one scope that DID land is
 the **read-only** flag, [§3.4](#34-access-full-read--write-with-an-optional-read-only-flag);
 livehuddle has no OAuth / third-party app authorization: its MCP server was removed, [Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches).)

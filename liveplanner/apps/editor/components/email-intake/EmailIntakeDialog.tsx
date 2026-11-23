@@ -6,6 +6,7 @@
 // Address, a quiet line of what it has done, Each Email Becomes and Who Can Send saving as they change, and New
 // Address and Turn Off behind confirms. A tab with several boards gets a board picker at the top.
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useTierReread } from '@/components/tier/use-tier-reread';
 import type {
   EmailIntake,
   EmailIntakeSenders as Senders,
@@ -39,8 +40,13 @@ import type { EmailIntakeScope } from './email-intake-gate';
 import { emailIntakeHeroArt } from './EmailIntakeHeroArt';
 import { EmailIntakeMakes } from './EmailIntakeMakes';
 import { EmailIntakeSenders } from './EmailIntakeSenders';
+import { usePlanTier } from '@/components/tier/plan-tier';
+import { EmailIntakeMonth } from './EmailIntakeMonth';
 
 const MailIcon = lucideGlyph(lucideMail, 14);
+
+/** How often an open dialog with an address on reads its mail again. */
+export const INTAKE_REREAD_MS = 30_000;
 
 const ADDRESS_FIELD =
   'w-full min-w-0 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-800 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100';
@@ -106,6 +112,8 @@ export function EmailIntakeDialog({
   const [saveFailed, setSaveFailed] = useState(false);
   const [confirming, setConfirming] = useState<Confirming | null>(null);
   const { copied, flash } = useCopiedFlash(1800);
+  // With Pro on the read names the plan's owner, their month's limit and whether it is used (spec "Tiers").
+  const tier = usePlanTier(data?.owner);
 
   const read = useCallback(async () => {
     try {
@@ -118,6 +126,18 @@ export function EmailIntakeDialog({
     // oxlint-disable-next-line react/set-state-in-effect -- a fetch from the api: its state lands after the await, never synchronously
     void read();
   }, [read]);
+  // Today's count and the limit recover without a reload: read again when the owner's tier changes (an upgrade from
+  // the notice) or the window is looked at again (spec "What the editor shows").
+  useTierReread(tier, () => void read());
+  // While an address is on and the dialog open, mail keeps landing: its count, Last Card and the day's notice follow
+  // it, one small read at a time.
+  // With Pro on only: with it off the dialog reads as it always did, once on opening.
+  const listening = tier.on && (data?.intakes.length ?? 0) > 0;
+  useEffect(() => {
+    if (!listening) return;
+    const timer = setInterval(() => void read(), INTAKE_REREAD_MS);
+    return () => clearInterval(timer);
+  }, [listening, read]);
 
   // The tab's boards the api knows, in the tab's order (a board just drawn may not be saved yet).
   const boards = useMemo(
@@ -372,6 +392,12 @@ export function EmailIntakeDialog({
               {intakeCountsLine(intake, now)}
             </p>
           </div>
+        ) : null}
+        {/* The owner's month, over all their plans: shown once any address is on. */}
+        {tier.on &&
+        data?.month &&
+        (state === 'on' || (state === 'off' && data.intakes.length > 0)) ? (
+          <EmailIntakeMonth tier={tier} month={data.month} />
         ) : null}
         {(state === 'off' || state === 'on') && types.length ? (
           <EmailIntakeMakes

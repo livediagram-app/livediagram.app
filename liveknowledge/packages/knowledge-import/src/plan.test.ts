@@ -51,6 +51,34 @@ describe('the bounds of an import', () => {
     expect(fits.summary).toMatchObject({ pages: 2, blocked: null });
   });
 
+  it('imports the first pages that fit when asked to trim, and counts the rest left out', async () => {
+    const plan = await planImport('markdown-folder', archiveOf(pages(5)), {
+      existingPages: 497,
+      trimToRoom: true,
+    });
+    expect(plan.summary).toMatchObject({ pages: 3, blocked: null, leftOut: 2 });
+    expect(plan.pages).toHaveLength(3);
+  });
+
+  it('keeps a parent before its subpages when trimming', async () => {
+    const plan = await planImport(
+      'markdown-folder',
+      archiveOf({ 'a/one.md': 'One', 'b/two.md': 'Two' }),
+      { limits: { pages: 3 }, trimToRoom: true },
+    );
+    expect(plan.summary).toMatchObject({ pages: 3, leftOut: 1 });
+    const keys = new Set(plan.pages.map((p) => p.key));
+    for (const page of plan.pages) if (page.parentKey) expect(keys.has(page.parentKey)).toBe(true);
+  });
+
+  it('still refuses a trim into a full knowledgebase', async () => {
+    const full = await planImport('markdown-folder', archiveOf(pages(2)), {
+      existingPages: 500,
+      trimToRoom: true,
+    });
+    expect(full.summary.blocked).toEqual({ reason: 'too-many-pages', found: 2, room: 0 });
+  });
+
   it('counts the pages folders make too', async () => {
     const plan = await planImport(
       'markdown-folder',

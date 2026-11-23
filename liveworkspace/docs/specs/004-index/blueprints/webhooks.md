@@ -89,6 +89,10 @@ Scope, by file:
   (`state = 'pending' AND next_at <= now + 1 s`, `LIMIT 1`) and, when something is due, the dispatcher's `kick()`.
   Without the `WEBHOOKS` binding, nothing. The 15-minute cron calls `kickWebhooks` too (`step('webhooks')`).
 
+- **`check: true` (Pro).** `pushAutomationSends` with `body.check === true` runs every check and answers each send's
+  result, but queues nothing: the item's room asks it before it spends the owner's Automation Runs
+  (webhooks.md "Messages count as Automation Runs (Pro)").
+
 ### Sending (`dispatch.ts`, `durable-object.ts`)
 
 - `kick()`: `setAlarm(now)` unless an alarm is set within `KICK_SLACK_MS` (500 ms).

@@ -3,7 +3,7 @@
 // same guarantees as the first app's runner: the run's id is a hash of the trigger and the rule, claimed on the
 // Audit Trail before anything is done, so a retry never runs a rule twice for one trigger; then the day's budget,
 // the chain (never its own change; a rule that keeps its changes to itself starts nothing; five rules deep), the
-// conditions, and the steps in order, a failed one stopping the run with those before it done. A Wait holds the
+// conditions, with Pro on one of the owner's Automation Runs for the month, and the steps in order, a failed one stopping the run with those before it done. A Wait holds the
 // rest for a run of its own; ten failures in a row pause the rule. A run never throws: anything unexpected is a
 // failed run. A dry run (Test Rule) claims nothing, changes nothing and says what each step would do.
 import { Failed, allHold } from '../../failed';
@@ -24,7 +24,7 @@ import {
   type ItemRun,
   type ItemSummarise,
 } from '../../item';
-import { AUTOMATION_CHAIN_MAX, AUTOMATION_RUNS_PER_DAY } from '../../limits';
+import { AUTOMATION_CHAIN_MAX } from '../../limits';
 import type {
   AutomationActionLine,
   AutomationGone,
@@ -40,6 +40,7 @@ import {
   budgetLineId,
   claimRun,
   dropRun,
+  monthLineId,
   noteLineOnce,
   runsToday,
   settleRun,
@@ -56,6 +57,7 @@ import { runSummarise, type AiCount } from './ai';
 import type { ItemActionContext, ItemDeps, ItemSource } from './kit';
 import { ITEM_TELEMETRY_ACTION, tallyItemRun } from './telemetry';
 import { withItemWriter } from './writer';
+import { RUNS_USED, runsOfMonthUsed } from '../tier';
 
 export const CHAIN_STOPPED = `Chain stopped after ${AUTOMATION_CHAIN_MAX} rules`;
 export const CHAIN_KEPT = "Started by another rule's change";
@@ -74,6 +76,11 @@ export type ItemRunState = AiCount & {
   spent?: boolean;
   // The rules whose budget line this state has seen written or there already, so a wake writes each once.
   noted?: Set<string>;
+  // Set once a run was refused for the owner's month: the rest of the wake asks the service nothing more (Run Rule
+  // answers 429 automation_runs_used for it).
+  monthUsed?: boolean;
+  // The rules whose month line this state has seen written or there already.
+  monthNoted?: Set<string>;
 };
 
 export type ItemRunOptions = { dry?: boolean };
@@ -126,12 +133,40 @@ export const crossAppEvent = (out: { ok: boolean; pause?: true; skip?: true; tex
           ? 'CrossAppLoop'
           : 'CrossAppCapped'
         : 'CrossAppFailed';
+// The owner's month used: the rule's one Audit Trail line for the UTC day, as the budget's is written.
+function noteMonthUsed(sql: ItemDepsSql, state: ItemRunState, rule: ItemRule, at: number): void {
+  state.monthUsed = true;
+  state.monthNoted ??= new Set();
+  if (state.monthNoted.has(rule.id)) return;
+  state.monthNoted.add(rule.id);
+  noteLineOnce(sql, {
+    id: monthLineId(rule.id, at),
+    ruleId: rule.id,
+    ruleName: rule.name,
+    subject: null,
+    at,
+    result: 'skipped',
+    reason: RUNS_USED,
+    tookMs: 0,
+    steps: [],
+  } satisfies ItemRun);
+}
+
+// The owner's month of runs, spent for a run about to act (tier.ts).
+async function monthOfRunsUsed(
+  deps: Pick<ItemDeps, 'store' | 'tier'>,
+  state: ItemRunState,
+  at: number,
+): Promise<boolean> {
+  if (state.monthUsed) return true;
+  return runsOfMonthUsed(deps.store, deps.tier, at);
+}
 
 type ItemDepsSql = ReturnType<ItemDeps['sql']>;
 
-/** One rule answering one trigger: the run, or null when it never started (its own change, the budget spent, ran
- *  already, or a chain stop whose conditions did not hold). The budget spent sets `state.spent` and writes the rule's
- *  one line for the day. */
+/** One rule answering one trigger: the run, or null when it never started (its own change, the budget spent, the
+ *  owner's month used, ran already, or a chain stop whose conditions did not hold). The budget spent sets
+ *  `state.spent`, the month used `state.monthUsed`, and each writes the rule's one line for the day. */
 export async function runItemRule(
   deps: ItemDeps,
   state: ItemRunState,
@@ -150,8 +185,7 @@ export async function runItemRule(
     // The day's count read again when another request claimed a run since this one last did, with no await before
     // the claim: runs at once never pass the day between them, and a wake alone reads it once.
     if (state.claims !== store.claims) state.today = runsToday(sql, at);
-    if (state.today >= AUTOMATION_RUNS_PER_DAY)
-      return (noteBudgetSpent(sql, state, rule, at), null);
+    if (state.today >= store.runsPerDay) return (noteBudgetSpent(sql, state, rule, at), null);
     if (!claimRun(sql, id, rule.id, at)) return null;
     store.claims += 1;
     state.claims = store.claims;
@@ -248,6 +282,10 @@ export async function runItemRule(
       return end('skipped', stop);
     }
     if (!holds) return resume ? end('no_match', WAIT_CONDITIONS) : end('no_match');
+    // The run acts: one of the owner's runs this month, spent before its first step (a run going on after a Wait
+    // spent when it started). The month used drops the claim, so the run never started.
+    if (!dry && !resume && (await monthOfRunsUsed(deps, state, at)))
+      return (dropRun(sql, id), noteMonthUsed(sql, state, rule, at), null);
 
     // The chain across apps this run goes on in: its event's, or one it starts.
     const cross: CrossAppChain = chainOf(event.cross, id);
@@ -330,6 +368,8 @@ export async function runItemRule(
             rule: rule.name,
             subject: tab ? { title: tab.name, url: tab.url } : null,
             at,
+            // With Pro on, one of the owner's Automation Runs for the message, spent before it is pushed.
+            ...(deps.tier ? { spend: (n: number) => deps.tier!.spend('automationRuns', n) } : {}),
           },
           [
             {
@@ -344,7 +384,9 @@ export async function runItemRule(
           0,
         );
         lines.push(sent[0]!);
-        if (out.failed !== undefined) {
+        // Held back for the owner's month, with nothing wrong with the rule: the run goes on and is Skipped.
+        if (out.skipped !== undefined) shared.cap(out.skipped);
+        else if (out.failed !== undefined) {
           webhook = out.webhook;
           return end('failed', out.failed);
         }

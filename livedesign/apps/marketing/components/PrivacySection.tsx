@@ -30,7 +30,7 @@ const PROMISES: PrivacyPromise[] = [
   {
     title: 'Never sold, never traded',
     description:
-      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. There is no paid tier and no plan to add one, so we have no commercial pressure to monetise what you make.",
+      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. The code is public, so anyone can check what happens to what you make.",
     art: <NoSaleArt />,
   },
   {

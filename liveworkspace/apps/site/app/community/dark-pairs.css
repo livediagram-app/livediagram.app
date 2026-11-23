@@ -2,10 +2,11 @@
  * it again. The dark halves of the colour pairs drawn from files this page's sheet doesn't scan, whose light half it
  * emits: named here, the sheet emits each after its light half, so a dark hover stays dark whatever loads after it
  * (liveworkspace/docs/specs/010-site/site.md "Stylesheets"). */
-@source inline("dark:bg-amber-400");
 @source inline("dark:bg-amber-400/10");
+@source inline("dark:bg-amber-400/15");
 @source inline("dark:bg-amber-400/50");
 @source inline("dark:bg-amber-500");
+@source inline("dark:bg-amber-500/20");
 @source inline("dark:bg-brand-400/10");
 @source inline("dark:bg-brand-500/60");
 @source inline("dark:bg-emerald-400");
@@ -17,14 +18,11 @@
 @source inline("dark:bg-pink-400");
 @source inline("dark:bg-rose-400/10");
 @source inline("dark:bg-slate-500");
-@source inline("dark:bg-slate-800/40");
-@source inline("dark:bg-slate-800/50");
 @source inline("dark:bg-slate-800/80");
 @source inline("dark:bg-slate-800/90");
 @source inline("dark:bg-slate-800/95");
 @source inline("dark:bg-slate-900/80");
 @source inline("dark:bg-slate-950/50");
-@source inline("dark:bg-transparent");
 @source inline("dark:bg-violet-400");
 @source inline("dark:bg-violet-500");
 @source inline("dark:bg-violet-500/10");

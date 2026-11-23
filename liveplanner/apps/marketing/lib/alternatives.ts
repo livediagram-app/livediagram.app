@@ -15,7 +15,7 @@ const SHARE_LINKS =
 const AGENTS =
   'An MCP server, a REST API with personal tokens and a command-line tool let scripts and AI agents read the plan and add, edit and move cards, sheets and forms, with their changes shown live. In AI tools that support MCP Apps, a plan opens as a live board view in the chat.';
 const FREE =
-  'liveplanner is free for everyone, with no paid tier, no ads and no third-party trackers. A board exports as CSV, an image, a PDF or a Markdown outline, a sheet as CSV, and the whole plan as one .liveplanner file that imports back, so your work is never locked in.';
+  'liveplanner is free to start, with every feature on the free plan, no ads and no third-party trackers. A board exports as CSV, an image, a PDF or a Markdown outline, a sheet as CSV, and the whole plan as one .liveplanner file that imports back, so your work is never locked in.';
 const ACCOUNT =
   'Signing in is optional and free. It adds teams with shared folders, and the tools that keep working while nobody has the plan open: Automations, Email to Board and calendar feeds.';
 const AUTOMATIONS_ROW = {
@@ -42,7 +42,11 @@ const LIST: Alternative[] = [
     h1: 'The free Trello alternative',
     lede: 'Trello made the kanban board familiar to everyone: lists, cards, drag and drop. liveplanner keeps that simplicity and puts more beside it in one plan: Sheets with real formulas, Dashboards of live slots and Forms whose answers arrive as cards, all free and ready without an account.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans per user' },
+      {
+        label: 'Price',
+        us: 'Free, every feature (a few limits rise on paid plans)',
+        them: 'Free plan, then paid plans per user',
+      },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -99,7 +103,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Trello?',
-        a: 'Yes. Every feature is free for everyone, with no paid tier.',
+        a: 'Yes. Every feature works on the free plan, with no trial. Paid plans raise a few limits.',
       },
       {
         q: 'Can I move my Trello boards across?',
@@ -118,14 +122,18 @@ const LIST: Alternative[] = [
   {
     slug: 'asana',
     name: 'Asana',
-    highlights: ['No seats', 'Live Gantt chart', 'No trackers'],
+    highlights: ['No seats needed', 'Live Gantt chart', 'No trackers'],
     title: 'Asana alternative · liveplanner',
     description:
-      'A free Asana alternative: boards of cards, Gantt and calendar charts, Sheets, Dashboards and Forms, with no seats and no sign-up to start.',
+      'A free Asana alternative: boards of cards, Gantt and calendar charts, Sheets, Dashboards and Forms, with no seats needed and no sign-up to start.',
     h1: 'A free Asana alternative',
     lede: 'Asana is a mature work-management platform, built for organisations coordinating many teams and goals. liveplanner is a lighter place to plan: boards of cards, live charts of them, sheets, dashboards and forms in one plan, free for everyone and ready without an account.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans per seat' },
+      {
+        label: 'Price',
+        us: 'Free, every feature (a few limits rise on paid plans)',
+        them: 'Free plan, then paid plans per seat',
+      },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -154,7 +162,7 @@ const LIST: Alternative[] = [
       'Your organisation wants enterprise administration, security controls and support from one vendor.',
     ],
     usBest: [
-      'No seats and no paid tier: everyone gets every feature, and nobody needs an account to start.',
+      'No seats needed and no feature gating: every feature works on the free plan, and nobody needs an account to start.',
       'A Gantt chart, due and start calendars and charts by field, all drawn live from the cards, with bars you drag to change dates.',
       GANTT_CLASHES,
       'Automations free with a sign-in: rules that move, assign and label cards on card, form, time and email triggers, and post to Slack or Microsoft Teams.',
@@ -185,7 +193,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Asana?',
-        a: 'Yes. There are no seats, plans or paid tiers: every feature is free for everyone.',
+        a: 'Yes. Nobody needs a seat to start: every feature works on the free plan, and paid plans raise a few limits.',
       },
       {
         q: 'Can I import my Asana projects?',
@@ -204,14 +212,18 @@ const LIST: Alternative[] = [
   {
     slug: 'monday',
     name: 'Monday.com',
-    highlights: ['Free, no tiers', 'Live dashboards', 'Export anytime'],
+    highlights: ['No feature gating', 'Live dashboards', 'Export anytime'],
     title: 'Monday.com alternative · liveplanner',
     description:
-      'A free Monday.com alternative: boards with your own card types and fields, Sheets, Dashboards and Forms, with no seats to buy.',
+      'A free Monday.com alternative: boards with your own card types and fields, Sheets, Dashboards and Forms, with no seats needed.',
     h1: 'A free Monday.com alternative',
     lede: 'Monday.com is a flexible, colourful work platform with boards of items, many column types and a deep set of automations. liveplanner covers the everyday core of that, boards with fields of your own, dashboards and forms, in a free planner you can start without an account.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Paid plans per seat, with a free plan' },
+      {
+        label: 'Price',
+        us: 'Free, every feature (a few limits rise on paid plans)',
+        them: 'Paid plans per seat, with a free plan',
+      },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -239,19 +251,19 @@ const LIST: Alternative[] = [
       'You need enterprise permissions, audit and administration at scale.',
     ],
     usBest: [
-      'Free for every person and every feature, with no seats to count as the team grows.',
+      'Every feature on the free plan, with no seats needed as the team grows.',
       'Card types with fields of your own, and one card that can sit on several boards at once.',
       'Dashboards whose slots are live: work on the board, edit the sheet, and watch the chart redraw, all on one page.',
       'Sheet tabs with over 150 functions, conditional formatting, dropdowns and charts from any cells.',
       'Forms on a public link, with sections, a closing date or a response limit, and each answer landing as a card or a row.',
-      'Automations free for anyone signed in, with no paid tier to unlock before a rule can run.',
+      'Automations free for anyone signed in, with nothing to buy before a rule can run.',
       'No account needed to start, and share links at three levels for the people you work with.',
     ],
     sections: [
       {
         heading: 'Boards, fields and dashboards, without seats',
         paragraphs: [
-          'Monday.com charges by seat, so adding a person to the work is a purchasing decision. In liveplanner it is a link. Every feature is free for everyone, and a guest can open a shared plan and work on it with you straight away.',
+          'Monday.com charges by seat, so adding a person to the work is a purchasing decision. In liveplanner it is a link. Every feature works on the free plan, and a guest can open a shared plan and work on it with you straight away.',
           'The building blocks will feel familiar: boards of cards, card types that carry the fields your team tracks, swimlanes by any field, header widgets that count what is due or stale, and Dashboard tabs that lay boards, sheets and charts out in rows of slots, each one live.',
         ],
       },
@@ -269,7 +281,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Monday.com?',
-        a: 'Yes. Every feature is free for everyone, with no seats or plans.',
+        a: 'Yes. Every feature works on the free plan, with no seats needed. Paid plans raise a few limits.',
       },
       {
         q: 'Can I bring my Monday.com boards across?',
@@ -295,7 +307,11 @@ const LIST: Alternative[] = [
     h1: 'A free alternative to Notion for planning',
     lede: 'Notion is a flexible workspace of pages and databases, loved for wikis, notes and docs, and its databases can be shown as boards, tables and timelines. liveplanner focuses on the planning side: boards of cards, real spreadsheets, dashboards and forms, live for everyone and free to use.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans' },
+      {
+        label: 'Price',
+        us: 'Free, every feature (a few limits rise on paid plans)',
+        them: 'Free plan, then paid plans',
+      },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -365,7 +381,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Is it free?',
-        a: 'Yes. Every feature is free for everyone, there is no paid tier.',
+        a: 'Yes. Every feature works on the free plan, with no trial. Paid plans raise a few limits.',
       },
     ],
   },
@@ -379,7 +395,11 @@ const LIST: Alternative[] = [
     h1: 'A lighter, free alternative to Jira',
     lede: 'Jira is the established issue tracker for software teams, with sprints, backlogs, workflows and deep links into development tools. liveplanner is a lighter place to plan: kanban boards with WIP limits, a bug triage template and your own card types, alongside sheets, dashboards and forms, free and ready without an account.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free for small teams, then paid plans' },
+      {
+        label: 'Price',
+        us: 'Free, every feature (a few limits rise on paid plans)',
+        them: 'Free for small teams, then paid plans',
+      },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -415,7 +435,7 @@ const LIST: Alternative[] = [
       'Publish a board as a public roadmap: customers upvote what they want and suggest ideas through a form, with no account.',
       'Boards, sheets, dashboards and forms in one plan, so the plan, the numbers and the intake sit together.',
       AGENTS,
-      'Free, with no seats, no ads and no trackers.',
+      'Free, with no seats needed, no ads and no trackers.',
     ],
     sections: [
       {
@@ -450,7 +470,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Is it free?',
-        a: 'Yes. Every feature is free for everyone, with no seats or paid tier.',
+        a: 'Yes. Every feature works on the free plan, with no seats needed and no trial. Paid plans raise a few limits.',
       },
     ],
   },
@@ -460,11 +480,15 @@ const LIST: Alternative[] = [
     highlights: ['Less to learn', 'Live for everyone', 'No sign-up'],
     title: 'ClickUp alternative · liveplanner',
     description:
-      'A free ClickUp alternative: a simpler planner of boards, Sheets, Dashboards and Forms, with no seats and no sign-up to start.',
+      'A free ClickUp alternative: a simpler planner of boards, Sheets, Dashboards and Forms, with no seats needed and no sign-up to start.',
     h1: 'A simpler, free ClickUp alternative',
     lede: 'ClickUp aims to be an everything app for work, with tasks, docs, goals, chat and a long list of views and settings. liveplanner is deliberately smaller: boards of cards, sheets, dashboards and forms in one plan, each built well for its job, free for everyone and ready without an account.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans' },
+      {
+        label: 'Price',
+        us: 'Free, every feature (a few limits rise on paid plans)',
+        them: 'Free plan, then paid plans',
+      },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -522,7 +546,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is liveplanner a free alternative to ClickUp?',
-        a: 'Yes. Every feature is free for everyone, with no paid tier.',
+        a: 'Yes. Every feature works on the free plan, with no trial. Paid plans raise a few limits.',
       },
       {
         q: 'Does liveplanner have docs, goals and time tracking?',
@@ -541,14 +565,18 @@ const LIST: Alternative[] = [
   {
     slug: 'airtable',
     name: 'Airtable',
-    highlights: ['Cards as rows', '150+ functions', 'Free, no seats'],
+    highlights: ['Cards as rows', '150+ functions', 'No seats needed'],
     title: 'Airtable alternative · liveplanner',
     description:
       'A free Airtable alternative: Sheets with real formulas, boards of cards linked to rows, Dashboards and Forms, no sign-up to start.',
     h1: 'A free Airtable alternative',
     lede: 'Airtable blends a spreadsheet with a database: typed fields, linked records and many views of the same base. liveplanner comes at the same work from a planner’s side, with boards of cards, real spreadsheets that can list those cards as rows, dashboards and forms, free to use.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans per seat' },
+      {
+        label: 'Price',
+        us: 'Free, every feature (a few limits rise on paid plans)',
+        them: 'Free plan, then paid plans per seat',
+      },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -605,7 +633,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Airtable?',
-        a: 'Yes. Every feature is free for everyone, with no seats or paid tier.',
+        a: 'Yes. Every feature works on the free plan, with no seats needed and no trial. Paid plans raise a few limits.',
       },
       {
         q: 'Can I bring my Airtable data across?',
@@ -624,16 +652,16 @@ const LIST: Alternative[] = [
   {
     slug: 'smartsheet',
     name: 'Smartsheet',
-    highlights: ['Gantt from your cards', 'Live dashboards', 'Free, no seats'],
+    highlights: ['Gantt from your cards', 'Live dashboards', 'No seats needed'],
     title: 'Smartsheet alternative · liveplanner',
     description:
-      'A free Smartsheet alternative: Sheets with real formulas, Gantt charts of your cards, live Dashboards and Forms, with no seats.',
+      'A free Smartsheet alternative: Sheets with real formulas, Gantt charts of your cards, live Dashboards and Forms, with no seats needed.',
     h1: 'A free Smartsheet alternative',
     lede: 'Smartsheet brings spreadsheet-style work management to large organisations, with grid, Gantt, card and calendar views, reports and dashboards. liveplanner offers the everyday parts of that, sheets, boards, a Gantt chart of the cards, live dashboards and forms, in a free planner you can start without an account.',
     rows: [
       {
         label: 'Price',
-        us: 'Free, every feature',
+        us: 'Free, every feature (a few limits rise on paid plans)',
         them: 'Paid plans per member, after a free trial',
       },
       {
@@ -663,7 +691,7 @@ const LIST: Alternative[] = [
       'Your organisation already standardises on Smartsheet and its integrations.',
     ],
     usBest: [
-      'No seats or tiers: every feature is free for everyone.',
+      'No seats needed and no feature gating: every feature works on the free plan.',
       'A Gantt chart drawn from the cards, with bars you drag to change dates, swimlanes by any field and a line for today.',
       GANTT_CLASHES,
       'Sheet tabs beside the board, reading its cards or listing them as rows linked both ways.',
@@ -692,7 +720,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Is liveplanner a free alternative to Smartsheet?',
-        a: 'Yes. Every feature is free for everyone, there is no paid tier.',
+        a: 'Yes. Every feature works on the free plan, with no trial. Paid plans raise a few limits.',
       },
       {
         q: 'Can I bring my Smartsheet sheets across?',

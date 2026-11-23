@@ -5,6 +5,9 @@ import { usePhotoPicker } from '@/hooks/canvas/usePhotoPicker';
 import { warmBoundaryModel } from '@/lib/photo-model/client';
 import { usePhotoDraft } from '@/hooks/canvas/usePhotoDraft';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { useEffect } from 'react';
+import { setReadTarget } from '@/lib/reading/read-credits';
+import type { EditorCollaborationSlice } from './useEditorCollaboration';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -26,7 +29,9 @@ export function useEditorEventStorming({
   fromFollowing,
   fromEditing,
   fromLayers,
+  fromCollaboration,
 }: {
+  fromCollaboration: EditorCollaborationSlice;
   fromDocument: EditorDocumentSlice;
   fromHistory: EditorHistorySlice;
   fromSelection: EditorSelectionSlice;
@@ -36,7 +41,13 @@ export function useEditorEventStorming({
   fromEditing: EditorEditingSlice;
   fromLayers: EditorLayersSlice;
 }) {
-  const { selfParticipant, toast, accountUserId } = fromDocument;
+  const { accountUserId, documentId, selfParticipant, toast } = fromDocument;
+  const { sessionShareCode } = fromCollaboration;
+  // Which diagram a photo's notes are read into, and the link it was opened through: with Pro on the read names it,
+  // and its owner pays the read's AI credit (docs/specs/021-event-storming/note-reader.md "Who pays").
+  useEffect(() => {
+    setReadTarget({ documentId, shareCode: sessionShareCode });
+  }, [documentId, sessionShareCode]);
   const { cancelGesture, markCheckpoint, photoDraftOpenRef } = fromHistory;
   const { activeId, setMultiSelectedIds, setSelectedId } = fromSelection;
   const { activeTab } = fromComments;
@@ -53,7 +64,7 @@ export function useEditorEventStorming({
     activeId,
     ownerId: selfParticipant.id,
     aiEnabled: aiCapable,
-    signedIn: !!accountUserId,
+    signedIn: typeof accountUserId === 'string',
     createBlocked,
     tick,
     markCheckpoint,

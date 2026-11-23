@@ -24,6 +24,9 @@ export const TEAM_PAYS_ANY_NOTE = 'On your own key, your team pays its provider 
 /** What built-in AI is, in AI Settings (search-and-ask.md "Built-in AI"). */
 export const BUILT_IN_NOTE =
   'Questions, conflict checks, drafted pages and Describe to Set Up run on built-in AI, included with liveknowledge, with daily limits: 30 questions a person a day.';
+/** The same with Pro on (tiers.md "Built-in AI on AI credits"): built-in AI spends the owner's monthly credits. */
+export const BUILT_IN_CREDITS_NOTE =
+  "Questions, conflict checks, drafted pages and Describe to Set Up run on built-in AI, each spending AI credits from the owner's month (a question 1, Describe to Set Up 2), within daily limits. Your own key never spends a credit.";
 
 type UsesSettings = Pick<KnowledgeAiSettings, 'hasKey' | 'builtIn' | 'uses'>;
 

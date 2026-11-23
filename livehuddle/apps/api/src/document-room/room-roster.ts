@@ -51,6 +51,8 @@ export function dropSession(room: DocumentRoom, ws: WebSocket): void {
     room.gameEvents.forget(presenceId);
     void room.selections.drop(presenceId).catch(() => {});
   }
+  // A call session the connection held is closed at Realtime unless a new connection proves it (call-meter.ts).
+  if (leaving?.callSession) room.callMeter.dropped(leaving.callSession);
   // Their last connection on a tab gone ends their visit there (docs/specs/012-collaboration/tab-attendance.md).
   noteAttendance(room, ws, leaving, null);
   // Exclude the departing socket explicitly: depending on when the

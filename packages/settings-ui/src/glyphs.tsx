@@ -60,7 +60,9 @@ export type SettingsTileId =
   | 'notifications'
   | 'ai'
   | 'tokens'
-  | 'data';
+  | 'data'
+  // The account's subscription (liveworkspace/docs/specs/019-subscription/subscription.md), shown only with Pro on.
+  | 'subscription';
 
 const TILE: Record<SettingsTileId, string> = {
   account: 'bg-teal-600',
@@ -77,6 +79,8 @@ const TILE: Record<SettingsTileId, string> = {
   ai: 'bg-fuchsia-600',
   tokens: 'bg-violet-600',
   data: 'bg-slate-500',
+  // The Pro badge's own ink, which the dark appearance inverts as it does the badge.
+  subscription: 'bg-slate-900 dark:bg-white dark:text-slate-900',
 };
 
 function Svg({ children }: { children: ReactNode }) {
@@ -173,6 +177,13 @@ const TILE_GLYPHS: Record<SettingsTileId, ReactNode> = {
   ),
   tokens: <SettingsSharedGlyph id="tokens" />,
   data: <SettingsSharedGlyph id="data" />,
+  // A card with its stripe: what is paid for, and how.
+  subscription: (
+    <Svg>
+      <rect x="2.5" y="4.5" width="15" height="11" rx="2" />
+      <path d="M2.5 8.5h15M5.5 12.5h3" />
+    </Svg>
+  ),
 };
 
 /** One tile: the coloured rounded square with its glyph centred. */

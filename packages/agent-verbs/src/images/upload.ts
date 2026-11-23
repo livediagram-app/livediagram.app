@@ -2,7 +2,8 @@
 // liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool"): the MCP's upload_image and the CLI's `image add`.
 // The bytes arrive as base64 (or a data: URL), as a file the CLI reads, or from a public https URL fetched through
 // api-kit's SSRF-safe fetch. Whatever their source they are judged by their own first bytes, never a declared type:
-// only the formats the media service stores pass (PNG, JPEG, WebP, GIF; never SVG), at most MAX_IMAGE_BYTES, with a
+// only the formats the media service stores pass (PNG, JPEG, WebP, GIF; never SVG), at most MAX_IMAGE_BYTES (10 MB
+// on every tier: an MCP Worker holds the whole body, so a tier's 25 MB is the editor's alone), with a
 // size their header gives. The upload is the api's own (`POST /api/images`, raw bytes), as the caller, naming the
 // tool that sent it so the gallery can say Made by AI.
 
@@ -39,13 +40,30 @@ const refuse = (status: number, code: string, message: string, hint: string): ne
   throw new VerbRefusal({ status, code, message, hint });
 };
 
-const tooLarge = (size: string): never =>
+// `limit`: the cap in words, when it is not this file's own (the api's, from the uploader's tier with Pro on).
+const tooLarge = (size: string, limit = `${MAX_IMAGE_MB} MB`): never =>
   refuse(
     413,
     'file_too_large',
-    `That picture is ${size}; the gallery takes files up to ${MAX_IMAGE_MB} MB.`,
+    `That picture is ${size}; the gallery takes files up to ${limit}.`,
     'make it smaller (fewer pixels, or JPEG or WebP for a photo) and upload it again',
   );
+
+// The limit the api's 413 names (liveworkspace/docs/specs/006-media/media.md "With Pro on": `limit`, the uploader's
+// tier's, 5 MB on Free; `limitBytes` from a server with Pro off), in words; undefined when it names none. A tier's
+// limit is in decimal megabytes, as every page words it; the legacy cap is the binary 10 MB.
+export function refusedLimitWords(body: string): string | undefined {
+  let named: { limit?: unknown; limitBytes?: unknown } | null;
+  try {
+    named = JSON.parse(body) as typeof named;
+  } catch {
+    return undefined;
+  }
+  const bytes = typeof named?.limit === 'number' ? named.limit : named?.limitBytes;
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes <= 0) return undefined;
+  if (bytes === MAX_IMAGE_BYTES) return `${MAX_IMAGE_MB} MB`;
+  return `${Number((bytes / 1_000_000).toFixed(1))} MB`;
+}
 
 // The bytes of a picture sent as base64, or as a data: URL. The cap is prepareImage's, on the decoded bytes: the MCP
 // transport already bounds the text (MCP_MAX_REQUEST_BYTES, 15 MiB, so at most about 11.8 MB decoded), and decoding
@@ -237,7 +255,11 @@ export async function uploadToGallery(
         `run ${words.list} to choose`,
       );
     }
-    if (err instanceof ApiError && err.status === 413) tooLarge(sizeText(image.bytes.byteLength));
+    // Over the api's limit: with Pro on that is the uploader's tier's (or the plan's owner's), which can be under this
+    // file's own 10 MB, so the refusal says the number the server gave.
+    if (err instanceof ApiError && err.status === 413) {
+      tooLarge(sizeText(image.bytes.byteLength), refusedLimitWords(err.body));
+    }
     if (err instanceof ApiError && err.status === 503) {
       refuse(
         503,

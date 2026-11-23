@@ -14,6 +14,29 @@ export const WALKTHROUGH_AUDIO_BPS = 48_000;
 // 100 MB a Worker request may carry.
 export const WALKTHROUGH_MEDIA_MAX_BYTES = 90 * 1024 * 1024;
 export const WALKTHROUGH_MEDIA_MAX_MB = WALKTHROUGH_MEDIA_MAX_BYTES / (1024 * 1024);
+
+/**
+ * The video bit rate a recording allowed `maxMs` is made at (walkthroughs.md "Thirty minutes in one upload"). The
+ * media goes up in one request, so a longer limit spreads the bytes ten minutes makes at the full rates over its own
+ * length: thirty minutes records video at 301,333 bits/s, and with the sound's 48,000 comes to the same 78.6 MB, under
+ * WALKTHROUGH_MEDIA_MAX_BYTES with the same room to spare. Ten minutes or less records at the full rate.
+ */
+export function walkthroughVideoBps(maxMs: number): number {
+  if (!(maxMs > WALKTHROUGH_MAX_MS)) return WALKTHROUGH_VIDEO_BPS;
+  const budgetBits = (WALKTHROUGH_VIDEO_BPS + WALKTHROUGH_AUDIO_BPS) * (WALKTHROUGH_MAX_MS / 1000);
+  return Math.floor(budgetBits / (maxMs / 1000)) - WALKTHROUGH_AUDIO_BPS;
+}
+
+/**
+ * The most bytes a recording allowed `maxMs` may be (walkthroughs.md "Length, checked by size"). The service cannot
+ * time a recording: `durationMs` is the browser's word. What it can weigh is the media itself, so a limit under ten
+ * minutes takes that share of the cap (five minutes: 45 MiB, its 39.3 MB at the full rates with the same fifth to
+ * spare). Ten minutes or more takes the whole cap: a longer limit is recorded at a lower rate to the same bytes.
+ */
+export function walkthroughMediaMaxBytes(maxMs: number): number {
+  if (!(maxMs < WALKTHROUGH_MAX_MS)) return WALKTHROUGH_MEDIA_MAX_BYTES;
+  return Math.ceil(WALKTHROUGH_MEDIA_MAX_BYTES * (Math.max(0, maxMs) / WALKTHROUGH_MAX_MS));
+}
 // The view and the pointer are sampled at most ten times a second each: ten minutes is about 12,000 events (0.7 MB).
 export const WALKTHROUGH_EVENTS_MAX_BYTES = 2 * 1024 * 1024;
 export const WALKTHROUGH_EVENTS_MAX = 20_000;
@@ -119,6 +142,21 @@ export type WalkthroughSummary = Omit<Walkthrough, 'item' | 'ready'> & {
   canDelete: boolean;
 };
 
+/**
+ * What the caller may record on an item, with Pro on (walkthroughs.md "With Pro on"): the longest recording, how many
+ * walkthroughs they have stored, how many they may (null is no limit), and the scope whose tier set them, for the
+ * offer (null for a guest). The service answers it; the recorder never works a limit out.
+ */
+export type WalkthroughLimits = {
+  maxMs: number;
+  stored: number;
+  storedLimit: number | null;
+  /** The scope whose tier set `maxMs`: the recorder's own, or the item's owner's when that is the better one. */
+  owner: string | null;
+  /** The scope whose tier set `storedLimit`: always the recorder's own. Absent from a service older than it. */
+  storedOwner?: string | null;
+};
+
 /** One of the caller's own walkthroughs in the Explorer's library: which item it is on, too. */
 export type WalkthroughLibraryEntry = WalkthroughSummary & { item: string };
 
@@ -217,10 +255,13 @@ function parseEvent(value: unknown): WalkthroughEvent | null {
  * Run by the recorder before the upload and by the service when the events arrive, so a hidden element stays out of
  * what is stored whoever sent it.
  */
-export function sealWalkthroughEvents(input: WalkthroughEvents): WalkthroughEvents {
+export function sealWalkthroughEvents(
+  input: WalkthroughEvents,
+  maxMs: number = WALKTHROUGH_MAX_MS,
+): WalkthroughEvents {
   const hidden = [...new Set(input.hidden)].slice(0, WALKTHROUGH_HIDDEN_MAX);
   const hiddenSet = new Set(hidden);
-  const durationMs = Math.max(0, Math.min(Math.round(input.durationMs), WALKTHROUGH_MAX_MS));
+  const durationMs = Math.max(0, Math.min(Math.round(input.durationMs), maxMs));
   const events = input.events
     .filter((e) => !(e.k === 'point' && hiddenSet.has(e.id)))
     .map((e) => ({ ...e, t: Math.max(0, Math.min(Math.round(e.t), durationMs)) }))
@@ -231,7 +272,10 @@ export function sealWalkthroughEvents(input: WalkthroughEvents): WalkthroughEven
 }
 
 /** The events from the wire, checked and sealed, or null when they are not a walkthrough's. */
-export function parseWalkthroughEvents(value: unknown): WalkthroughEvents | null {
+export function parseWalkthroughEvents(
+  value: unknown,
+  maxMs: number = WALKTHROUGH_MAX_MS,
+): WalkthroughEvents | null {
   if (typeof value !== 'object' || value === null) return null;
   const v = value as Record<string, unknown>;
   if (v.v !== 1 || !isNumber(v.durationMs) || v.durationMs < 0) return null;
@@ -257,25 +301,30 @@ export function parseWalkthroughEvents(value: unknown): WalkthroughEvents | null
     if (!event || event.t < 0 || event.t > v.durationMs) return null;
     events.push(event);
   }
-  return sealWalkthroughEvents({
-    v: 1,
-    ...(v.screen === true ? { screen: true as const } : {}),
-    durationMs: v.durationMs,
-    camera: v.camera,
-    corner: v.corner as WalkthroughCorner,
-    startTab: v.startTab,
-    hidden: v.hidden as string[],
-    fingerprints,
-    events,
-  });
+  return sealWalkthroughEvents(
+    {
+      v: 1,
+      ...(v.screen === true ? { screen: true as const } : {}),
+      durationMs: v.durationMs,
+      camera: v.camera,
+      corner: v.corner as WalkthroughCorner,
+      startTab: v.startTab,
+      hidden: v.hidden as string[],
+      fingerprints,
+      events,
+    },
+    maxMs,
+  );
 }
 
 const refuse = (status: number, error: string, extra: Record<string, unknown> = {}) =>
   ({ ok: false, refusal: { status, body: { error, ...extra } } }) as const;
 
-/** A start's body, checked cheapest first, or the refusal to answer (the spec's "Refusals"). */
+/** A start's body, checked cheapest first, or the refusal to answer (the spec's "Refusals"). `maxMs` is the longest
+ *  the recording may be: the legacy cap unless the caller holds a tier's (walkthroughs.md "With Pro on"). */
 export function parseWalkthroughStart(
   value: unknown,
+  maxMs: number = WALKTHROUGH_MAX_MS,
 ): { ok: true; start: WalkthroughStart } | { ok: false; refusal: WalkthroughRefusal } {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     return refuse(400, 'invalid_body');
@@ -289,14 +338,17 @@ export function parseWalkthroughStart(
   if (!Number.isInteger(mediaBytes) || (mediaBytes as number) <= 0) {
     return refuse(400, 'invalid_size');
   }
-  if ((mediaBytes as number) > WALKTHROUGH_MEDIA_MAX_BYTES) {
-    return refuse(413, 'file_too_large', { limitBytes: WALKTHROUGH_MEDIA_MAX_BYTES });
+  // The length limit, weighed: more bytes than `maxMs` makes at the recorder's rates is a longer recording, whatever
+  // duration the body declares.
+  const maxBytes = walkthroughMediaMaxBytes(maxMs);
+  if ((mediaBytes as number) > maxBytes) {
+    return refuse(413, 'file_too_large', { limitBytes: maxBytes });
   }
   const raw = body.events as { durationMs?: unknown } | null | undefined;
-  if (isNumber(raw?.durationMs) && raw.durationMs > WALKTHROUGH_MAX_MS) {
-    return refuse(413, 'too_long', { limitMs: WALKTHROUGH_MAX_MS });
+  if (isNumber(raw?.durationMs) && raw.durationMs > maxMs) {
+    return refuse(413, 'too_long', { limitMs: maxMs });
   }
-  const events = parseWalkthroughEvents(body.events);
+  const events = parseWalkthroughEvents(body.events, maxMs);
   if (!events) return refuse(400, 'invalid_events');
   return {
     ok: true,
@@ -318,8 +370,10 @@ export function walkthroughRefusalMessage(
   switch (body.error) {
     case 'file_too_large':
       return `This walkthrough is over ${WALKTHROUGH_MEDIA_MAX_MB} MB, the most one may be.`;
-    case 'too_long':
-      return 'This walkthrough is over 10 minutes, the longest one may be.';
+    case 'too_long': {
+      const minutes = isNumber(body.limitMs) ? Math.round(body.limitMs / 60_000) : 10;
+      return `This walkthrough is over ${minutes} minutes, the longest one may be.`;
+    }
     case 'item_full':
       return `This already has ${WALKTHROUGHS_PER_ITEM_MAX} walkthroughs. Delete one to save another.`;
     case 'walkthroughs_full':

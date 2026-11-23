@@ -4,6 +4,7 @@
 // every app has"). Send Email is stage 3's EmailPanel with an item's To: the owner, whoever started the rule (where
 // someone did), a person, or typed-in addresses.
 
+import { AiStepCredits } from '../../tier/AiStepCredits';
 import { useTabWords } from '../tab-words';
 import {
   inTabWords,
@@ -209,6 +210,7 @@ export function summarisePanel(kinds: ItemKinds): ComponentType<Props<ItemSummar
           this one: pick it from Insert a Value in their text.
         </PanelNote>
         <AiStepSource item={kinds.itemWord} />
+        <AiStepCredits />
       </div>
     );
   };

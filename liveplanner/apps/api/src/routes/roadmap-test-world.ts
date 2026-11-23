@@ -53,8 +53,11 @@ export const settingsOf = (s: Partial<RoadmapSettings> = {}): RoadmapSettings =>
   ...s,
 });
 
-export async function roadmapWorld(): Promise<RoadmapWorld> {
-  const w = await automationWorld('A');
+// `opts.pro`: Pro on against a stand-in subscription service (plan-room/tier/test-tier.ts).
+export async function roadmapWorld(
+  opts: Parameters<typeof automationWorld>[1] = {},
+): Promise<RoadmapWorld> {
+  const w = await automationWorld('A', opts);
   const planEnv = () => w.plans.get('A')!.room.requireEnv();
   await setPlanItemTypes(planEnv(), 'A', defaultCatalogue());
   const setForm = async (form: FormDefinition) => {

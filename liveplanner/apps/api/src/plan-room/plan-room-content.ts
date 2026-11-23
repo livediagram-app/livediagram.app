@@ -1,6 +1,7 @@
 // The plan's content state for its room (plan-room.ts): the schema on first use, the write notes that arm the
 // outbox, the drains to the index and to shared tabs' holders, the daily upkeep, the Community post's checks and
 // the purge. Each takes the room it acts for.
+import { leaveRuleCount } from '@liveworkspace/automations/room';
 import { leaveGithub } from './github/github-room';
 import { markPurged, refuseIfPurged } from './plan-room-purged';
 import {
@@ -38,6 +39,7 @@ import {
 import { drainOutbox } from './plan-outbox';
 import type { PlanRoom } from './plan-room';
 import { closeSockets } from './plan-room-sockets';
+import { leaveRoadmapGauge, syncPlanRoadmaps } from '../roadmap/roadmap-gauge';
 
 // The plan's own daily upkeep: unreferenced sheets expire, old changesets go (both used to be crons).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
@@ -212,6 +214,8 @@ export async function maintain(room: PlanRoom, now: number): Promise<void> {
     // An import's parts left waiting for its last (db/item-imports.ts).
     const held = await sweepHeldImports(env, planId, now - ITEM_IMPORT_HOLD_MS);
     if (held > 0) console.info('[items] import.swept', { planId, cards: held });
+    // With Pro on, the plan's roadmaps as its owner's count should hold them (roadmap/roadmap-gauge.ts).
+    await syncPlanRoadmaps(env, planId);
   } catch (error) {
     console.warn('[plan-room] upkeep failed', { planId, error: String(error) });
   }
@@ -292,6 +296,11 @@ export async function purge(room: PlanRoom, planId?: string): Promise<void> {
   // And its GitHub connection's keys leave the reverse index (github/github-room.ts).
   if (room.planId !== null && room.storedSchema() && room.roomEnv)
     await leaveGithub(room.roomEnv, room.planId);
+  // Its rules leave its owner's total (019 "Meters": item counts). Nothing with Pro off.
+  if (room.planId !== null && room.storedSchema()) await leaveRuleCount(room.tier, room.planId);
+  // Its published roadmaps leave its owner's count (roadmap/roadmap-gauge.ts). Nothing with Pro off.
+  if (room.planId !== null && room.storedSchema())
+    await leaveRoadmapGauge(room.tier, room.state.storage.sql, room.planId);
   await room.ledger.settled();
   // What the media service last heard the plan's cards hold (image-refs.ts), read before it goes.
   const sentImages = lastSentImages(room);

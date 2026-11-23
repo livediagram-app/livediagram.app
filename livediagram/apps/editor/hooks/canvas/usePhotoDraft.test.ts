@@ -25,6 +25,14 @@ vi.mock('@/lib/photo-detect', async () => {
 import { hasOwnAiKey } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { ReadKeyFailed } from '@/lib/api/ai';
 import { selectReader, type SelectedReader } from '@/lib/reading/select';
+import { setProForTests } from '@liveworkspace/subscription-ui/testing';
+import {
+  noteReadCredits,
+  readRun,
+  resetReadCreditsForTests,
+  setReadOwner,
+  setReadTarget,
+} from '@/lib/reading/read-credits';
 
 // The hook asks `selectReader` who reads; the tests drive that reader directly.
 const readCrops = vi.fn<SelectedReader['read']>();
@@ -832,5 +840,93 @@ describe('reading a changed box again', () => {
     answer(read([{ id: 0, text: 'Order shipped' }]));
     await new Promise((r) => setTimeout(r, 20));
     expect(h.api().review).toBeNull();
+  });
+});
+
+// With Pro on, a read that would spend AI credits asks first (docs/specs/021-event-storming/note-reader.md "What the
+// editor shows"): nothing is read until the person chooses the AI, at its cost, or this device, for nothing.
+describe('the choice before a charged read', () => {
+  beforeEach(() => {
+    resetReadCreditsForTests();
+    setProForTests(true);
+    vi.mocked(detectAndCrop).mockResolvedValue(
+      detection(Array.from({ length: 30 }, (_, id) => sticky({ id, x: id * 10 }))),
+    );
+  });
+  afterEach(() => {
+    setProForTests(null);
+    resetReadCreditsForTests();
+  });
+  const charged = () => reviewed({ aiEnabled: true, signedIn: true });
+
+  it('waits for a choice, with the photo’s note count, and reads nothing meanwhile', async () => {
+    const h = await charged();
+    expect(h.api().state.readChoice).toEqual({ notes: 30 });
+    expect(readCrops).not.toHaveBeenCalled();
+    // The read under way knows its notes and that it is charged.
+    expect(readRun()).toMatchObject({ notes: 30, charged: true, onDevice: false });
+  });
+
+  it('reads with the AI once chosen, and the choice goes away', async () => {
+    const h = await charged();
+    await act(async () => h.api().chooseRead(false));
+    await waitFor(() => expect(readCrops).toHaveBeenCalled());
+    expect(selectReader).toHaveBeenLastCalledWith(
+      expect.objectContaining({ aiEnabled: true, onDevice: false }),
+    );
+    expect(h.api().state.readChoice).toBeUndefined();
+  });
+
+  it('reads on this device for nothing when chosen, and its re-reads stay there', async () => {
+    const h = await charged();
+    await act(async () => h.api().chooseRead(true));
+    await waitFor(() => expect(readCrops).toHaveBeenCalled());
+    expect(selectReader).toHaveBeenLastCalledWith(expect.objectContaining({ onDevice: true }));
+    vi.mocked(cropBoxes).mockResolvedValue([{ id: 0, image: 'data:image/jpeg;base64,NEW' }]);
+    act(() => h.api().reread([sticky({ x: 300 })]));
+    await waitFor(() => expect(h.api().rereading).toBe(0));
+    expect(selectReader).toHaveBeenLastCalledWith(expect.objectContaining({ onDevice: true }));
+  });
+
+  it('reads a box again with the AI while the read’s pass holds, and on the device without one', async () => {
+    const h = await charged();
+    vi.mocked(cropBoxes).mockResolvedValue([{ id: 0, image: 'data:image/jpeg;base64,NEW' }]);
+    // Before any choice: a moved box never spends.
+    act(() => h.api().reread([sticky({ x: 300 })]));
+    await waitFor(() => expect(h.api().rereading).toBe(0));
+    expect(selectReader).toHaveBeenLastCalledWith(expect.objectContaining({ onDevice: true }));
+    await act(async () => h.api().chooseRead(false));
+    await waitFor(() => expect(readCrops).toHaveBeenCalledTimes(2));
+    noteReadCredits({ owner: 'p:user_owner', pass: `${Date.now() + 60_000}.sig` });
+    act(() => h.api().reread([sticky({ x: 400 })]));
+    await waitFor(() => expect(readCrops).toHaveBeenCalledTimes(3));
+    expect(selectReader).toHaveBeenLastCalledWith(expect.objectContaining({ onDevice: false }));
+  });
+
+  it('forgets the choice when the review is left, so a late click reads nothing', async () => {
+    const h = await charged();
+    act(() => h.api().cancelReview());
+    await act(async () => h.api().chooseRead(false));
+    await new Promise((r) => setTimeout(r, 10));
+    expect(readCrops).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['Pro is off', { aiEnabled: true, signedIn: true }, false],
+    ['the reader is not signed in', { aiEnabled: true, signedIn: false }, true],
+    ['there is no server reader', { aiEnabled: false, signedIn: true }, true],
+  ] as const)('reads at once, as before, when %s', async (_why, opts, pro) => {
+    setProForTests(pro);
+    const h = await reviewed(opts);
+    expect(h.api().state.readChoice).toBeUndefined();
+    expect(readCrops).toHaveBeenCalled();
+  });
+
+  it('reads at once into a guest’s diagram, which is charged to nobody', async () => {
+    setReadTarget({ documentId: 'doc1', shareCode: 'LINK' });
+    setReadOwner('doc1', { owner: 'guest_00000000-0000-4000-8000-000000000001', team: null });
+    const h = await charged();
+    expect(h.api().state.readChoice).toBeUndefined();
+    expect(readCrops).toHaveBeenCalled();
   });
 });

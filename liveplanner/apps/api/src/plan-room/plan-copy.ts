@@ -23,6 +23,7 @@ import type { TabConnection } from '@liveworkspace/index-client';
 import type { PlanEnv } from '../types';
 import { ruleWithTabIds, type AutomationRule } from '@liveplanner/items';
 import { copiedRuleStatements, copiedRules } from './automations/automation-copy';
+import { rulesCopyMax } from './tier/room-tier';
 import { copiedGrantsStatement, copiedImageGrants } from './image-grants';
 import { UNCONFIRMED_REFS } from './copy-image-claims';
 
@@ -424,7 +425,7 @@ export async function importPlanCopy(
   );
   // Its threads, after the cards they are on.
   stmts.push(...copiedThreadStatements(env, planId, copy.threads ?? []));
-  stmts.push(...copiedRuleStatements(env, copy.automations ?? []));
+  stmts.push(...copiedRuleStatements(env, copy.automations ?? [], now, rulesCopyMax()));
   // The copy's Sheets reference the copied sheets, after the sheets, so the reference triggers find them.
   for (const tab of copy.tabs) {
     const ids = sheetRefsOfData(tab.data);

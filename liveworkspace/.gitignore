@@ -22,3 +22,6 @@ apps/*/CLAUDE.md
 
 # Work plans (livediagram/AGENTS.md "Plans"), kept out of the repo.
 /plans/
+.env
+.env.local
+.env.*.local

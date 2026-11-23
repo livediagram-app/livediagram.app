@@ -6,6 +6,7 @@
 // Context (a checkmark row), Watch (watching.md, every signed-in reader's) and a closed Move section (Move Up, Move
 // Down, Indent, Outdent). A verb that cannot run stays, greyed, and says why in its hover card. A Viewer or a
 // Participant has Copy Link and Watch alone.
+import { openPagesMax } from '@/lib/knowledge-tier';
 import { useState, type ReactNode } from 'react';
 import {
   pageAddRefusal,
@@ -73,12 +74,12 @@ export function pageMenuRefusals(
 ): Partial<Record<PageMenuVerb, string>> {
   const out: Partial<Record<PageMenuVerb, string>> = {};
   const parent = pageParents(tabs).get(id);
-  const subpage = pageAddRefusal(tabs, id);
+  const subpage = pageAddRefusal(tabs, id, openPagesMax());
   if (subpage) out.add = pageTreeRefusalText(subpage);
   // A connected row goes in wherever a subpage would, but never meets the page limit.
   if (pageDepth(tabs, id) >= MAX_PAGE_DEPTH)
     out['connect-here'] = pageTreeRefusalText('depth_limit');
-  const copy = pageAddRefusal(tabs, parent);
+  const copy = pageAddRefusal(tabs, parent, openPagesMax());
   if (copy) out.duplicate = pageTreeRefusalText(copy);
   if (!withPageStepped(tabs, id, -1)) out.up = 'This is the first page here.';
   if (!withPageStepped(tabs, id, 1)) out.down = 'This is the last page here.';

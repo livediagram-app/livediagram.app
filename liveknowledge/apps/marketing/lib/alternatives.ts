@@ -26,7 +26,7 @@ const US = {
   mobile: 'In a phone’s browser. No native app',
   integrations:
     'Live embeds from the other liveworkspace apps, a REST API, the MCP server and the CLI',
-  publish: 'View-only share links. No public site with its own domain',
+  publish: 'Publish to the Web: a public, searchable site from saved pages. No custom domain',
 };
 
 const row = (label: string, us: string, them: string): ComparisonRow => ({ label, us, them });
@@ -233,7 +233,7 @@ const LIST: Alternative[] = [
         heading: 'How the AI is paid for',
         paragraphs: [
           'Ask runs on built-in AI that liveknowledge pays for, with daily limits: 30 questions a person and 100 a knowledgebase. A team that wants more may add its own Claude or OpenAI key in AI Settings; it is encrypted, never shown again, and everything then runs on it. Search needs no AI at all.',
-          'That is a trade. The included AI has limits, and going past them means your team brings a key and carries that cost. In return there is no plan to choose and no seat to pay for.',
+          'That is a trade. The included AI has limits, and going past them means your team brings a key and carries that cost. In return, your own key is free to add on any plan.',
         ],
       },
     ],
@@ -348,7 +348,7 @@ const LIST: Alternative[] = [
       row('Permissions', US.permissions, 'Per space, and visitor access for published sites'),
     ],
     themBest: [
-      'You are publishing documentation for customers: a public site with your own domain, navigation and search. liveknowledge does not publish public sites.',
+      'You are publishing documentation for customers: a public site on your own domain, built for that. liveknowledge publishes a plain public site, without a custom domain.',
       'You want your docs to live in a Git repository, reviewed and merged like code.',
       'You are documenting an API and want a platform built for that.',
       'You want changes to go through a review before they are published.',
@@ -380,7 +380,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Can I publish a public docs site with liveknowledge?',
-        a: 'No. You can share a view-only link, but there is no public site with its own domain or navigation. For customer documentation, GitBook is the better fit.',
+        a: 'Yes, a plain one. Publish to the Web puts a knowledgebase on a public site with its page tree and search, but not on your own domain. For customer documentation, GitBook is the better fit.',
       },
       {
         q: 'Can I import from GitBook?',

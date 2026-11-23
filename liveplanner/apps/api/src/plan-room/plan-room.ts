@@ -25,7 +25,7 @@ import type { Env, PlanEnv, ServerMessage } from '../types';
 import { type LoggedOp } from '../project-room-rules';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
-import { spendPlanDraftIn } from '../plan-draft-count';
+import { giveBackPlanDraftIn, spendPlanDraftIn } from '../plan-draft-count';
 import type { InternalRoom } from '../room-internal';
 import { readSessionAttachment, type SessionAttachment } from '../room-session';
 import { planHasTab } from '../db/tabs';
@@ -109,6 +109,7 @@ import { answerHookCall, type HookAnswer, type HookCall } from './automations/au
 import { optOutAddress } from './automations/automation-addresses';
 import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './github/github-room';
 import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
+import { automationLimitsOf, roomTier } from './tier/room-tier';
 import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
 import { purgedAt } from './plan-room-purged';
 import { RemovalGuard } from './removal-guard-store';
@@ -251,7 +252,11 @@ export class PlanRoom extends DurableObject<Env> {
     () => this.armAlarm(),
     () => automationDeps(this),
     () => this.standing.putAway,
+    () => automationLimitsOf(this.tier),
   );
+  // The plan's tier (tier/plan-tier.ts; docs/specs/026-plan/automations.md "Tiers"): its owner's limits, read from
+  // the subscription service at most once a minute. With Pro off it asks nothing.
+  readonly tier = roomTier(this);
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
   writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
@@ -302,6 +307,7 @@ export class PlanRoom extends DurableObject<Env> {
           PLAN_ROOM: localNamespace(this, env.PLAN_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
           AUTOMATIONS: this.automations,
+          TIER: this.tier,
           REMOVAL_GUARD: new RemovalGuard(state.storage),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
           // Stamped with SQLite's change count, which every write in this room moves, whichever path made it.
@@ -652,6 +658,11 @@ export class PlanRoom extends DurableObject<Env> {
   // Only on an account's `~plan-drafts:` instance, never a plan's: one storage key, no plan schema made or read.
   spendPlanDraft(day: string, cap: number): Promise<boolean> {
     return spendPlanDraftIn(this.state.storage, day, cap);
+  }
+
+  // The same count's give-back: a draft counted and then refused before the model was asked.
+  giveBackPlanDraft(day: string): Promise<void> {
+    return giveBackPlanDraftIn(this.state.storage, day);
   }
 
   requireEnv(): PlanEnv {

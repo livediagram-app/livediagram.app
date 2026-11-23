@@ -33,6 +33,7 @@ export function newDocumentAutomations(room: DocumentRoom): ItemEngine {
     kinds: KINDS,
     kit: () => documentKit(room),
     putAway: () => room.standing.putAway,
+    tier: () => room.tier,
   });
 }
 

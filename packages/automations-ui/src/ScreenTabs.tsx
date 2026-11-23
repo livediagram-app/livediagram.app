@@ -154,7 +154,9 @@ export function ScreenTabs({
         })}
       </div>
       {phone ? null : <span className="flex-1" />}
-      {phone ? null : <div className="pb-2">{meter}</div>}
+      {/* The meter's middle on the tab labels' line: the same 4px over and 12px under a 20px line, the taller Refresh
+          button and badge spilling evenly round it (owner, 2026-11-22). */}
+      {phone ? null : <div className="flex h-5 items-center box-content pb-3 pt-1">{meter}</div>}
     </div>
   );
 }

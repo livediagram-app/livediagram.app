@@ -157,6 +157,9 @@ importers:
       '@liveworkspace/snapshots':
         specifier: workspace:*
         version: link:../../../packages/snapshots
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -342,6 +345,9 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:^
+        version: link:../../../packages/subscription-ui
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -1270,6 +1276,9 @@ importers:
       '@liveworkspace/snapshots':
         specifier: workspace:*
         version: link:../../../packages/snapshots
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -1479,6 +1488,12 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:^
+        version: link:../../../packages/subscription-ui
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -2421,6 +2436,9 @@ importers:
       '@liveworkspace/snapshots':
         specifier: workspace:*
         version: link:../../../packages/snapshots
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -2603,6 +2621,12 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:^
+        version: link:../../../packages/subscription-ui
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -3513,6 +3537,9 @@ importers:
       '@liveworkspace/snapshots':
         specifier: workspace:*
         version: link:../../../packages/snapshots
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -3643,6 +3670,12 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:^
+        version: link:../../../packages/subscription-ui
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -4431,6 +4464,9 @@ importers:
       '@liveworkspace/snapshots':
         specifier: workspace:*
         version: link:../../../packages/snapshots
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -4625,6 +4661,12 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:^
+        version: link:../../../packages/subscription-ui
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -5624,6 +5666,9 @@ importers:
       '@liveworkspace/snapshots':
         specifier: workspace:*
         version: link:../../../packages/snapshots
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -5812,6 +5857,12 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:^
+        version: link:../../../packages/subscription-ui
       '@liveworkspace/telemetry-client':
         specifier: workspace:*
         version: link:../../../packages/telemetry-client
@@ -7232,6 +7283,9 @@ importers:
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../../../packages/subscription
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -7442,6 +7496,12 @@ importers:
       '@liveworkspace/style-guards':
         specifier: workspace:*
         version: link:../../../packages/style-guards
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../../../packages/subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:*
+        version: link:../../../packages/subscription-ui
       '@liveworkspace/telemetry':
         specifier: workspace:*
         version: link:../../../packages/telemetry
@@ -7592,6 +7652,49 @@ importers:
         specifier: ^4.164.0
         version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
 
+  liveworkspace/apps/subscription:
+    dependencies:
+      '@liveworkspace/auth-client':
+        specifier: workspace:*
+        version: link:../../../packages/auth-client
+      '@liveworkspace/index-app':
+        specifier: workspace:^
+        version: link:../../../packages/index-app
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../../../packages/subscription
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^5.20261110.1
+        version: 5.20261118.1
+      '@liveworkspace/api-kit':
+        specifier: workspace:^
+        version: link:../../../packages/api-kit
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../../../packages/vitest-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      jose:
+        specifier: ^6.2.17
+        version: 6.2.17
+      oxlint:
+        specifier: ^1.93.0
+        version: 1.94.0(oxlint-tsgolint@7.0.2007)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+      wrangler:
+        specifier: ^4.160.0
+        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+
   liveworkspace/apps/telemetry:
     dependencies:
       '@livedesign/api-schema':
@@ -7680,6 +7783,9 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:*
+        version: link:../subscription-ui
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
@@ -7817,6 +7923,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261118.1
@@ -7959,6 +8068,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:^
         version: link:../model-core
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
       '@liveworkspace/telemetry':
         specifier: workspace:^
         version: link:../telemetry
@@ -8011,6 +8123,12 @@ importers:
       '@liveworkspace/settings-ui':
         specifier: workspace:^
         version: link:../settings-ui
+      '@liveworkspace/subscription':
+        specifier: workspace:^
+        version: link:../subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:^
+        version: link:../subscription-ui
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
@@ -8575,6 +8693,12 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:*
+        version: link:../subscription-ui
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
@@ -8973,6 +9097,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
     devDependencies:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
@@ -9168,6 +9295,12 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:^
         version: link:../sites
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:*
+        version: link:../subscription-ui
       '@liveworkspace/ui':
         specifier: workspace:^
         version: link:../ui
@@ -9230,6 +9363,12 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../api-schema
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:*
+        version: link:../subscription-ui
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
@@ -9323,6 +9462,76 @@ importers:
       oxlint:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
+      vitest:
+        specifier: ^5.0.1
+        version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/subscription:
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@vitest/coverage-v8':
+        specifier: ^5.1.0
+        version: 5.1.1(vitest@5.1.1)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.94.0(oxlint-tsgolint@7.0.2007)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/subscription-ui:
+    dependencies:
+      '@liveworkspace/brand':
+        specifier: workspace:*
+        version: link:../brand
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../sites
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^31.0.0
+        version: 31.0.1(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.93.0
+        version: 1.94.0(oxlint-tsgolint@7.0.2007)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
       vitest:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -9572,6 +9781,12 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:*
+        version: link:../subscription-ui
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
@@ -9672,6 +9887,9 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:^
         version: link:../sites
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:*
+        version: link:../subscription-ui
       '@liveworkspace/telemetry':
         specifier: workspace:^
         version: link:../telemetry

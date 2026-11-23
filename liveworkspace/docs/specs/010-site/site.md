@@ -34,9 +34,15 @@ The APIs are Workers on more specific routes of the same origin, so the pages ca
 ### The header
 
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
-(the current site highlighted), links to Our Apps, Community (`/community`, every app's posts), Telemetry and Help (`/help`, the help centre's
-All Apps view), each with its icon, and the account
-control. Below 768px (a phone or a narrow window) only the wordmark and the account control show; the footer has the
+(the current site highlighted), two menus and the account control (owner, 2026-11-22: the bar had grown cluttered).
+
+- **Product**: Our Apps (`/#apps`), Pricing (with Pro on), Comparison (`/compare`) and Community (`/community`,
+  every app's posts).
+- **Support**: Help (`/help`, the help centre's All Apps view), Status (`/status`) and Telemetry (`/telemetry`).
+- **Sign In, or the account menu**, stays on the bar, never inside a menu.
+
+Each menu opens on click, Enter, Space or Down Arrow (the shared menu button), its rows an icon, a name and a
+one-line hint, as the account menu's are; a row for the page you are on is marked as current. Below 768px (a phone or a narrow window) only the wordmark and the account control show; the footer has the
 rest. The
 Appearance toggle is never in the header: it is on the rail. The sign-in pages served under an app's own
 address wear that app's logo in place of the wordmark, linking to the app's home, with that app highlighted in the
@@ -118,7 +124,7 @@ moves between them, and the one account that joins them.
 1. **Hero**: "Everything your team makes, live in one workspace", then two short paragraphs, never one block:
    the first names each app in its accent and what it is for (sketch, plan, write it up, make it look right, talk
    it through), the second says one account opens them all and every link opens straight into the work. Under the
-   calls to action, three ticked promises: Open source, No sign-up needed (Free in every app, signed in), No
+   calls to action, three ticked promises: Open source, No sign-up needed (Free to start, signed in), No
    trackers or ads. Two calls to action: **Create your free account** (`/sign-up`, back here after) and **Explore
    the apps**. Signed in, they are hidden. Beside it, the platform's prism
    with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
@@ -180,7 +186,9 @@ moves between them, and the one account that joins them.
    everything (full width: the words beside a folder holding a Canvas, a Plan, a Document, a
    Design and a Space, two by two with the Space across the foot); connected across apps (a plan's tab bar holding connected files from the other apps, one open as a preview; two columns wide on a tablet); one Inbox; teams across every app; one key for scripts and AI (a token in a
    terminal, checked against every app's API by a script, since there is no liveworkspace CLI); a copy in your Google Drive (the liveworkspace folder in Drive, a file from each app, each synced); on your phone, too (an installed app's notification on a home screen of the apps); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
-   and one close for every app); completely free.
+   and one close for every app); completely free. With Pro on (owner, 2026-11-22) that tile is **Free for
+   everyone**: every app free to use, with generous limits, and Pro, optional, raising them, linking `/pricing`; its
+   art drops "every feature" and "no paywall". The terms page's highlight and the site's description say the same.
 4. **Closing call to action**: "One account. Every app. Always live." Signed out, it says "Or start your work as a
    guest without signing in at all." over **Create your free account** (`/sign-up`, back here after) and **Pick an
    app** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
@@ -417,6 +425,11 @@ Every app's work, in one place: the shared Explorer (`@liveworkspace/explorer`, 
 built once here. It is shown here and, through each switched-on app's router, at that app's own `/explorer`
 ([below](#on-an-apps-own-address)). A link from elsewhere comes here with `?from=<app>` (`explorerUrl` in
 `@liveworkspace/sites`). Its parts are `components/explorer/` and `lib/explorer/`.
+
+- **Pro, around the whole Explorer** (owner, 2026-11-22), with Pro on: one `SiteSubscription` holds the page, not only
+  its account menu, so everything inside knows the person's tier: the Library's usage (the Image Gallery's storage, the
+  Walkthroughs' count, each with what Pro keeps on Free), a tier's limit notices, and the menu's Upgrade to Pro. It asks
+  nothing until the person is known, and nothing for a guest.
 
 - **Who it reads as.** The index is asked with a short-lived token from `GET /api/auth/workspace-token`: the
   signed-in account's, or this browser's guest's ([accounts.md](../003-accounts/accounts.md)). Signing out here asks again.

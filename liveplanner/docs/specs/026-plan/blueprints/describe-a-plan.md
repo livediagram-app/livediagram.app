@@ -111,6 +111,11 @@ day, count }`) and never touches the plan schema, so the instance stays a room w
   `PLAN_DRAFT_CAPPED` now have); the Audit Trail's `AI_NOT_SET_UP` and Describe a Rule's `AI_DRAFT_FAILED` stay as
   they are. The log adds `rules` and `rulesDropped`.
 
+- **AI credits** (spec "Limits and cost"): with Pro on, after `spendPlanDraft` and before the first ask the route
+  spends one `aiCredits` of `personScope(accountId)` through `subscriptionOf(env)` (apps/api/src/subscription.ts);
+  refused, `429 plan_draft_credits_used` with `limit`, `used` and `max` (`creditsRefusal`, routes/draft-credits.ts,
+  shared with Describe a Form). With Pro off no call is made.
+
 ## api-schema and the manifest
 
 `packages/api-schema/src/plan-drafts.ts`: `PlanDraftRequest`, `PlanDraftResponse` (`{ draft: PlanDraft }`),

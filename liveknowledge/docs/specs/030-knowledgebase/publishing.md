@@ -40,8 +40,9 @@ the interface says "Publish to the Web", "public site" and "Published", never "P
   is an Editor's, like the style (decided). A Participant, a Viewer, a link visitor and an embed are never offered
   it, and the api refuses them (`forbidden`).
 - **One capability check** decides whether publishing is offered at all (`publishingOffered`, the blueprint's
-  P1). It is free for everyone now; a tier gate later (the owner may make it Pro) is one line there. The editor
-  hides the menu row and the api refuses (`publishing_unavailable`) when it is off.
+  P1). It answers yes for every knowledgebase on every tier. The editor hides the menu row and the api refuses
+  (`publishing_unavailable`) when it is off. How many knowledgebases an owner publishes at once is the tier's
+  ("Tiers" below), never this check.
 
 ## Publishing
 
@@ -71,6 +72,54 @@ the interface says "Publish to the Web", "public site" and "Published", never "P
   minute. You can publish it again." It removes the published snapshot and frees the site's addresses.
 - **Telemetry:** `UI` `Used` `PublishSite` on a publish or update, `UI` `Removed` `PublishSite` on an Unpublish;
   never the address, a page or a name.
+
+## Tiers
+
+With Pro off nothing here applies: an owner publishes as many knowledgebases as they hold. With
+[Pro on](../../../../liveworkspace/docs/specs/019-subscription/subscription.md) the knowledgebases an owner has
+published at once, over all their knowledgebases, are limited by the **owner's tier** (Free 1, Pro 10, Pro for Teams
+unlimited; owner, 2026-11-22): a team's for a knowledgebase in a team's library, otherwise the owning person's
+([tiers.md](tiers.md) "Public Knowledgebases").
+
+- **Publish** asks the subscription service for one more (its `publicKnowledgebases` gauge, keyed by the
+  knowledgebase's id) before anything goes public. At the limit it is refused with **409** `publish_limit_reached`,
+  carrying `limit` (`publicKnowledgebases`), `used` and `max`, and nothing is published. If the subscription service
+  refuses the api's own request, nothing is published uncounted and the request fails as a server error, never as
+  a limit.
+- **Changing** a published site (another section, address or option) never counts, and is never refused by a tier.
+- **Unpublish**, the knowledgebase's purge and the knowledgebase moving to another owner each give the place back.
+  A knowledgebase in the Trash or archived keeps its place: it can come back.
+- **A site answers only while it holds a counted place.** The site keeps a mark: counted, not counted, or never
+  counted. One whose place was refused holds none: every public address answers the same not-found as any other
+  miss, the snapshot and its addresses are kept, and the dialog reads it as not published, with the limit beside it.
+  It asks for its place again the next time it is counted (the dialog's read, a Publish, the daily upkeep) and,
+  given one, the same addresses answer.
+- **Sites from before** (published before Pro, or while the subscription service could not be reached) were never
+  counted and keep answering until their first count (the dialog's read, a Publish, the knowledgebase's daily
+  upkeep). Each knowledgebase counts its own, so the ones counted first keep their places: within the owner's limit
+  none ever comes down; past it the rest hold none until the owner has room (unpublishing one, or a higher tier).
+  Nothing is deleted.
+- **A knowledgebase that moves** to another owner or team gives its place back and asks the new owner for one by
+  the same rule. A move is never a way past a limit.
+- **A higher tier takes effect at once:** every Publish asks the service, which reads the owner's tier as it is now.
+- **A guest's knowledgebase** (its owner has no account) is held to Free's 1, counted in the knowledgebase itself,
+  which its one site always fits. The subscription service is never asked about it, `owner` is absent and
+  `guest: true` is sent in its place. Nobody is offered an upgrade there.
+- `GET` carries `usage` (`used` when known, and `limit`, null for unlimited) and `owner` (the owner's scope) so the
+  dialog can say the limit and ask the subscription service which action to offer. All three are absent with Pro
+  off.
+
+### What the dialog shows
+
+Only with Pro on. A knowledgebase not published, while its owner has published every knowledgebase their tier
+allows (the state's `usage`, or a refused Publish's own numbers), shows a notice above What to Publish: "You have 1
+public Knowledgebase, the most Free publishes. Unpublish one to publish this, or publish up to 10 with Pro." Its
+button is **Upgrade to Pro** for the owner or a team admin. A team's other members read the sentence without its
+offer, "...Unpublish one to publish this.", with **Ask an Admin**; anyone else reads it with no button (the shared
+LimitNotice). On Pro the sentence names Pro and offers nothing more: "You have 10 public Knowledgebases, the most
+Pro publishes. Unpublish one to publish this." A guest's knowledgebase holds at most its own one site, so it never
+meets the limit. Publish stays on: the numbers may be from before an upgrade, so a press asks the api, which answers with the
+limit when it still holds.
 
 ## What goes public, and what never does
 

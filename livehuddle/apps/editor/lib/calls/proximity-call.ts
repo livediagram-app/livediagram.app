@@ -24,6 +24,11 @@ import {
   type ProximityCallInput,
 } from './call-config';
 import { CallMic } from './call-mic';
+import {
+  noteCallMinutesUsed,
+  noteCallSessionMinutes,
+  onCallMinutesUsed,
+} from './call-minutes-store';
 import { stageScene } from './call-staging';
 import { CallReceiver } from './call-receiver';
 import { chooseSubscriptions } from './call-subscriptions';
@@ -91,6 +96,8 @@ export class ProximityCall {
   private readonly beacon: CallBeacon;
   private heard: ReadonlySet<string> = new Set();
   private session: { sessionId: string; sessionToken: string } | null = null;
+  // The session counts against the Space's owner's Call Minutes (call-minutes.md): the call then says when it leaves.
+  private metered = false;
   private provedAt = 0;
   private scene: CallScene = { tabId: '', self: null, walkers: new Map() };
   // Everyone's room, and who speaks from a stage, worked out once per scene and read by hearing, placing and the mic
@@ -162,6 +169,9 @@ export class ProximityCall {
         if (this.hand.up) this.lowerHand();
       }),
       onStopShare((from) => this.onStopShare(from)),
+      // The Space's owner's call minutes are used (call-minutes.md "When the minutes are used"): the call ends as
+      // Leave does, and the dock reads Calls Paused.
+      onCallMinutesUsed(() => this.stop()),
       // A preview turned on while the call runs (or joins) is sent the moment the call may send it.
       ...(input.preview ? [input.preview.subscribe(() => this.adoptPreview())] : []),
     ];
@@ -203,6 +213,8 @@ export class ProximityCall {
     setCallsMode(session.mode === 'audio-only' ? 'audio-only' : 'on');
     this.trackToken = session.trackToken ?? null;
     this.session = { sessionId: session.sessionId, sessionToken: session.sessionToken };
+    this.metered = session.minutes !== undefined;
+    noteCallSessionMinutes(session.minutes, this.input.caller);
     // Only the current session's events count: a step of a closed one may still finish.
     const current = () => this.sfu === sfu;
     const sfu: SfuSession = new SfuSession(this.input.caller, session, {
@@ -237,10 +249,17 @@ export class ProximityCall {
     return true;
   }
 
-  // A mint refused: paused is no error (Calls Paused); anything else fails into Retry.
-  private refused(error: unknown, why: string): void {
+  // A mint refused: paused is no error (Calls Paused), nor is the owner's month of call minutes being used; anything
+  // else fails into Retry.
+  private refused(error: unknown, why: 'start' | 'renew'): void {
     if (error instanceof CallsApiError && error.paused) {
       this.pause();
+      return;
+    }
+    if (error instanceof CallsApiError && error.minutesUsed) {
+      this.stop();
+      // A renewal refused ends a call that was running; a join refused on arriving never started one.
+      noteCallMinutesUsed(error.minutesUsed, why === 'renew', this.input.caller);
       return;
     }
     this.fail(error instanceof CallsApiError ? (error.code ?? String(error.status)) : why);
@@ -503,6 +522,10 @@ export class ProximityCall {
         ...(this.video.cameraAnnounced ? { video: null } : {}),
         ...(this.video.screenAnnounced ? { screen: null } : {}),
       });
+    }
+    // A metered call says it left, so the room stops counting this person (call-minutes.md "The wire").
+    if (this.metered && this.session) {
+      this.input.send({ kind: 'call-session', ...this.session, left: true });
     }
     const [camera, screen] = this.video.release();
     for (const stream of [this.mic.release(), camera, screen]) {

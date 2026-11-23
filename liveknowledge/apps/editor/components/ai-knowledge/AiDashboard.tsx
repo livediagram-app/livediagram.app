@@ -4,6 +4,7 @@
 // then two stacks of cards, the wide one (Needs Attention, Connected Agents) and the narrow one (Knowledge Health,
 // Always in Context, Most Read, What an Agent Sees); one column below a laptop's width. Every figure is from the one
 // overview read. A tile filters Needs Attention or brings its card into view and focuses it.
+import { NOT_READ_DAYS } from '@liveknowledge/knowledge';
 import { useMemo, useState } from 'react';
 import type {
   KnowledgeAgent,
@@ -29,6 +30,8 @@ import { takeAskedAttentionFilter } from '@/lib/knowledge-ask/attention-filter-a
 /** What the dashboard's controls do: AiKnowledgeView's handlers, each checking its right again. */
 export type DashboardActions = {
   openPage: (tab: string, block?: string) => void;
+  // With Pro on, Most Read's period (tiers.md "AI Knowledge History").
+  setPeriod?: (days: number) => void;
   connect: () => void;
   openAiSettings: () => void;
   dismissConflict: (id: string) => void;
@@ -144,12 +147,18 @@ export function AiDashboard({
             onOpenPage={actions.openPage}
             onAskWrite={actions.askWrite}
           />
-          <MostReadCard pages={overview.reads.mostRead} onOpenPage={actions.openPage} />
+          <MostReadCard
+            pages={overview.reads.mostRead}
+            onOpenPage={actions.openPage}
+            history={overview.history}
+            onPeriod={actions.setPeriod}
+          />
           {/* Absent from an older api: not drawn. */}
           {overview.notRead ? (
             <NotReadCard
               pages={overview.notRead.pages}
               total={overview.notRead.total}
+              days={overview.notRead.days ?? NOT_READ_DAYS}
               now={now}
               onOpenPage={actions.openPage}
             />

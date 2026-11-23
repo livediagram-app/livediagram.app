@@ -9,7 +9,7 @@
 import { workbench } from '@liveworkspace/workbench/bindings';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { reloadAfterRevert, SnapshotsApiError, type SnapshotsApi } from '../client';
-import type { SnapshotSummary } from '../wire';
+import type { SnapshotRetentionInfo, SnapshotSummary } from '../wire';
 
 export type SnapshotBusy =
   { kind: 'take' } | { kind: 'revert'; id: string } | { kind: 'delete'; id: string } | null;
@@ -17,6 +17,8 @@ export type SnapshotBusy =
 export type SnapshotsState = {
   snapshots: SnapshotSummary[] | null;
   kept: number;
+  /** With Pro on: what the item's owner's tier keeps, as the server answered it. Null with Pro off. */
+  retention: SnapshotRetentionInfo | null;
   error: string | null;
   /** The list's own fetch failed: the dialog says so with Try Again rather than an empty list. */
   listFailed: boolean;
@@ -37,6 +39,7 @@ export function useSnapshots(
 ): SnapshotsState {
   const [snapshots, setSnapshots] = useState<SnapshotSummary[] | null>(null);
   const [kept, setKept] = useState(5);
+  const [retention, setRetention] = useState<SnapshotRetentionInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [listFailed, setListFailed] = useState(false);
   const [busy, setBusy] = useState<SnapshotBusy>(null);
@@ -49,6 +52,7 @@ export function useSnapshots(
       if (!live.current) return;
       setSnapshots(list.snapshots);
       setKept(list.kept);
+      setRetention(list.retention ?? null);
       setListFailed(false);
     } catch {
       if (!live.current) return;
@@ -123,5 +127,17 @@ export function useSnapshots(
     void refresh();
   }, [refresh]);
 
-  return { snapshots, kept, error, listFailed, retry, busy, reverted, take, revert, remove };
+  return {
+    snapshots,
+    kept,
+    retention,
+    error,
+    listFailed,
+    retry,
+    busy,
+    reverted,
+    take,
+    revert,
+    remove,
+  };
 }

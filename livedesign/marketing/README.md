@@ -35,7 +35,8 @@ marketing/
   and wireframes". It is not a diagram, whiteboard or slide tool; never describe
   it as one.
 - **Don't overclaim.** Only what the fact sheet lists as shipped.
-- **Free means free.** MIT-licensed, no paid tier, no plan for
-  one. Say so where the format allows.
+- **Free means free.** MIT-licensed, every feature on the free plan, no
+  trial. Say so where the format allows. Don't claim there is no paid tier
+  (Pro exists and only raises limits), and don't lead with Pro.
 - **Brand color** is rose, `#f43f5e` ("livedesign rose"); text and fills in it use `#be123c`. See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

@@ -5,6 +5,7 @@ import { IMAGE_TYPES_LABEL, MAX_IMAGE_MB } from '@livehuddle/api-schema';
 import { UPLOAD_ACCEPT_ATTR } from '@/lib/upload-image';
 import { Glyph } from '@livehuddle/ui';
 import { Callout } from '@liveworkspace/ui/callout';
+import { imageSizeHint } from '@liveworkspace/subscription-ui/images';
 
 // Drop / click target for image uploads. The same dashed-border
 // tile appeared inline in both ImagePicker (editor modal, 192px
@@ -76,7 +77,7 @@ export function ImageDropZone({
           {uploading ? 'Uploading...' : prompt}
         </p>
         <p className="text-[11px] text-slate-500 dark:text-slate-400">
-          {`${IMAGE_TYPES_LABEL} up to ${MAX_IMAGE_MB} MB`}
+          {imageSizeHint(IMAGE_TYPES_LABEL, MAX_IMAGE_MB)}
         </p>
         <input
           ref={fileInputRef}

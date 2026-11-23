@@ -4,10 +4,18 @@
 // saved or run: the route writes only its count of asks, which share the day's AI asks and cap the drafts a day.
 // Every refusal's message is fixed words, never the model's; the request and the reply are never logged.
 import type {
+  AutomationErrorBody,
   AutomationDraftResponse,
   AutomationError,
 } from '@liveworkspace/api-schema/automations';
-import { AI_NOT_SET_UP, aiCappedWords, readAiReply } from '../../ai';
+import { AI_CREDIT_COSTS, refusedByService } from '@liveworkspace/subscription';
+import {
+  AI_CREDITS_UNCHECKED,
+  AI_CREDITS_USED,
+  AI_NOT_SET_UP,
+  aiCappedWords,
+  readAiReply,
+} from '../../ai';
 import {
   AI_DRAFT_FAILED,
   AI_DRAFT_PER_DAY,
@@ -76,10 +84,28 @@ export async function draftRule(g: Gated): Promise<Response> {
   const sql = g.deps.sql();
   const started = Date.now();
   const capped = () => say(429, 'automation_ai_capped', aiCappedWords(kit.itemWord));
+  // On the caller's own key nothing of the item's or the owner's is spent: no daily caps, no AI credit.
   if (!keyed) {
     if (aiToday(sql, started) >= AUTOMATION_AI_PER_DAY) return capped();
     if (draftsToday(sql, started) >= AI_DRAFT_PER_DAY)
       return say(429, 'automation_ai_capped', aiDraftCappedWords(kit.itemWord));
+    // One of the item's owner's AI credits for the draft (Pro on only), before the model is asked: its second ask
+    // rides it, and it is never given back.
+    const credit = await g.deps.tier?.spend('aiCredits', AI_CREDIT_COSTS.automationRuleDraft);
+    // The service refused the item's request (its key, never the owner's month): not asked, and no offer to upgrade.
+    if (credit && refusedByService(credit))
+      return say(503, 'automation_ai_unavailable', AI_CREDITS_UNCHECKED);
+    if (credit && !credit.ok)
+      return json(
+        {
+          error: 'automation_ai_credits_used',
+          message: AI_CREDITS_USED,
+          limit: 'aiCreditsPerMonth',
+          used: credit.used,
+          max: credit.limit ?? 0,
+        } satisfies AutomationErrorBody,
+        429,
+      );
   }
 
   const outline = await kit.outline();

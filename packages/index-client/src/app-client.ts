@@ -113,11 +113,17 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
       put(`/items/${enc(itemId)}/card-moves`, { moves }),
     // Up to AUTOMATION_SENDS_MAX messages an item's automation rules post through its own connections (any app), each
     // answered queued or refused, in the order sent. Safe to send again: a key already queued answers queued.
+    // `check`: nothing is queued, and each answer is what a push would get now (asked before the owner's webhook
+    // deliveries are spent, so none is spent on a message the index would refuse).
     pushAutomationSends: (
       itemId: string,
       sends: readonly AutomationSend[],
+      opts: { check?: boolean } = {},
     ): Promise<{ results: AutomationSendResult[] }> =>
-      post(`/items/${enc(itemId)}/automation-sends`, { sends }),
+      post(`/items/${enc(itemId)}/automation-sends`, {
+        sends,
+        ...(opts.check ? { check: true } : {}),
+      }),
     // One step of a rule acting on another app's item as its author (automation-steps.ts): the index checks the
     // author's access, signs their grant and asks the target's app; its answer, Done or refused, is the step's line.
     pushAutomationStep: (itemId: string, push: AutomationStepPush): Promise<AutomationStepAnswer> =>

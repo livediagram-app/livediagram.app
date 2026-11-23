@@ -133,8 +133,8 @@ export function PromisePrism() {
             Built with your values in mind
           </h2>
           <p className="mt-5 text-pretty text-lg leading-relaxed text-slate-300">
-            livedesign is free, open and private for everyone, and it stays that way. One light,
-            four promises, kept in the open.
+            livedesign is free to start, open and private for everyone. One light, four promises,
+            kept in the open.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
             <a
@@ -286,13 +286,8 @@ function PromiseCard({
         <Icon size={18} aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-baseline gap-x-3">
-          {p.value ? (
-            <span className="text-xl font-semibold tracking-tight" style={{ color: hue }}>
-              {p.value}
-            </span>
-          ) : null}
-          <span className="font-semibold text-white">{p.title}</span>
+        <span className="block text-lg font-semibold tracking-tight" style={{ color: hue }}>
+          {p.title}
         </span>
         <span className="mt-0.5 block text-sm leading-relaxed text-slate-300">{p.line}</span>
         {p.link ? (

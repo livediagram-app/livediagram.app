@@ -92,17 +92,23 @@ export class RoomKnowledge {
   }
 }
 
-/** The daily prune (the room's upkeep): reads past 90 days, counters past their window, questions past the cap,
- *  suggestions nobody decided about in 90 days or whose page is gone, connections not seen in 90 days, the
- *  questions answered from each page past 30 days or past their cap. */
-export function pruneKnowledge(sql: ItemSql, now: number): void {
+/** The daily prune (the room's upkeep): reads and connections past `historyDays` (90 with Pro off, the owner's AI
+ *  Knowledge History with it on, tiers.md; null while the owner's tier cannot be learnt, when neither is dropped for
+ *  its age), counters past their window, questions past the cap, suggestions nobody decided about in 90 days or whose
+ *  page is gone, the questions answered from each page past 30 days or past their cap. */
+export function pruneKnowledge(
+  sql: ItemSql,
+  now: number,
+  historyDays: number | null = READS_KEPT_DAYS,
+): void {
+  const aged =
+    historyDays === null ? [] : [pruneReads(now, historyDays), pruneAgentSeen(now, historyDays)];
   for (const statement of [
-    pruneReads(now),
+    ...aged,
     pruneCounters(now),
     ...pruneQuestions(),
     ...prunePageAnswers(now),
     ...pruneSuggestions(now),
-    pruneAgentSeen(now, READS_KEPT_DAYS),
     ...pruneEmailMarks(now),
     ...pruneWatchUpdates(now),
   ])

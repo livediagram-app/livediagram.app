@@ -9,6 +9,7 @@ import {
   ProfileError,
   readProfiles,
   readSettings,
+  readTeamMemberCounts,
   recordSighting,
   reportActivity,
   SettingsError,
@@ -290,6 +291,32 @@ describe('accountAddresses', () => {
     expect((await accountAddresses(CREDENTIALS, ['guest_1'], fetcher)).size).toBe(0);
     expect(calls).toHaveLength(0);
     expect((await accountAddresses(CREDENTIALS, ['user_1'], fetcher)).size).toBe(0);
+  });
+});
+
+describe('readTeamMemberCounts', () => {
+  it("asks for several teams' joined members in one call, each team once", async () => {
+    const { fetcher, calls } = fakeFetch(() =>
+      Response.json({ counts: { t1: 4, t2: 1, t3: 'many', t4: -1, t5: 1.5 } }),
+    );
+    expect(await readTeamMemberCounts(CREDENTIALS, ['t1', 't2', 't1', 't3'], fetcher)).toEqual({
+      t1: 4,
+      t2: 1,
+    });
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.url).toBe(
+      'https://liveworkspace.app/api/account/internal/teams/member-counts',
+    );
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ teamIds: ['t1', 't2', 't3'] });
+  });
+
+  it('throws when accounts refuses, and reads an answer with no counts as none', async () => {
+    const refused = fakeFetch(() => new Response('', { status: 404 }));
+    await expect(readTeamMemberCounts(CREDENTIALS, ['t1'], refused.fetcher)).rejects.toThrow(
+      'team member counts failed: 404',
+    );
+    const empty = fakeFetch(() => Response.json({}));
+    expect(await readTeamMemberCounts(CREDENTIALS, ['t1'], empty.fetcher)).toEqual({});
   });
 });
 

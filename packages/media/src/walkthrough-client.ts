@@ -2,7 +2,13 @@
 // walkthroughs.md "The service's routes"), for `createMediaClient().walkthroughs`. Answers that aren't a success come
 // back as `{ ok: false, status, body }`, which the door passes on.
 
-import type { Walkthrough, WalkthroughEvents, WalkthroughStart } from './walkthrough';
+import type {
+  Walkthrough,
+  WalkthroughEvents,
+  WalkthroughLimits,
+  WalkthroughStart,
+} from './walkthrough';
+import { MEDIA_ITEM_OWNER_HEADER } from './wire';
 
 export const WALKTHROUGHS_PATH = '/walkthroughs';
 
@@ -12,7 +18,12 @@ export type WalkthroughResult<T> =
 
 export type WalkthroughListResponse = {
   walkthroughs: { walkthrough: Walkthrough; owner: string }[];
+  // With Pro on, and a recorder named: what they may record on the item (walkthroughs.md "With Pro on").
+  limits?: WalkthroughLimits;
 };
+
+/** Who a list's limits are for: the recorder (a media owner) and the owner scope of the item, from the app's grant. */
+export type WalkthroughRecorder = { owner: string; itemOwner?: string | null };
 export type WalkthroughReadResponse = {
   walkthrough: Walkthrough;
   owner: string;
@@ -56,22 +67,36 @@ export function walkthroughCalls(call: WalkthroughCall) {
   };
   const at = (id: string, rest = '') => `${WALKTHROUGHS_PATH}/${encodeURIComponent(id)}${rest}`;
   return {
-    /** An item's ready walkthroughs, newest first, each with whose it is. */
-    list: async (item: string) =>
-      json<WalkthroughListResponse>(await call(WALKTHROUGHS_PATH, {}, { item })),
+    /** An item's ready walkthroughs, newest first, each with whose it is. With `recorder`, and Pro on at the service,
+     *  the answer also carries what that person may record there. */
+    list: async (item: string, recorder?: WalkthroughRecorder | null) =>
+      json<WalkthroughListResponse>(
+        recorder
+          ? await call(
+              WALKTHROUGHS_PATH,
+              recorder.itemOwner
+                ? { headers: { [MEDIA_ITEM_OWNER_HEADER]: recorder.itemOwner } }
+                : {},
+              { item, for: recorder.owner },
+            )
+          : await call(WALKTHROUGHS_PATH, {}, { item }),
+      ),
 
     /** A person's own ready walkthroughs in this app, newest first (the Explorer's Walkthroughs library). */
     listOwned: async (owner: string) =>
       json<WalkthroughListResponse>(await call(WALKTHROUGHS_PATH, {}, { owner })),
 
     /** Start one: its events are stored at once; it is ready once its media arrives. */
-    start: async (owner: string, start: WalkthroughStart) =>
+    start: async (owner: string, start: WalkthroughStart, itemOwner?: string | null) =>
       json<{ walkthrough: Walkthrough }>(
         await call(
           WALKTHROUGHS_PATH,
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(itemOwner ? { [MEDIA_ITEM_OWNER_HEADER]: itemOwner } : {}),
+            },
             body: JSON.stringify(start),
           },
           { owner },

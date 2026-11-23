@@ -52,7 +52,7 @@ Web](publishing.md)): its "public site", never its "Public".
 - Templates are templates of writing only (meeting notes, a design doc, a status report and the like), with Blank Page.
 - A knowledgebase is shared, found, archived, deleted, restored, snapshotted, mirrored to Drive and kept Offline exactly as
   every app's item is; liveknowledge adds nothing to those.
-- **Limits:** 500 pages a knowledgebase (`MAX_KNOWLEDGEBASE_PAGES`), 8 levels deep (`MAX_PAGE_DEPTH`). At a limit the control is disabled
+- **Limits:** 500 pages a knowledgebase (`MAX_KNOWLEDGEBASE_PAGES`; with Pro on, the owner's tier's, [Tiers](tiers.md)), 8 levels deep (`MAX_PAGE_DEPTH`). At a limit the control is disabled
   with a tooltip that says why. Both are checked on the server as well.
 
 ## The page tree

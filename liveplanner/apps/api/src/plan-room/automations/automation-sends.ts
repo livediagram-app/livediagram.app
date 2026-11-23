@@ -9,6 +9,7 @@ import {
   sendMessages as sendThrough,
   type AutomationSendsClient as MessagesClient,
   type SendsOutcome,
+  type SpendDeliveries,
 } from '@liveworkspace/automations/room';
 import { indexAppClient } from '../../index-service';
 import type { PlanEnv } from '../../types';
@@ -17,8 +18,10 @@ export {
   SENDS_UNREACHABLE,
   SEND_EMPTY,
   SEND_NOT_SENT,
+  MESSAGE_RUNS_USED,
   heldSends,
   type SendsOutcome,
+  type SpendDeliveries,
 } from '@liveworkspace/automations/room';
 
 // The index's automation sends (packages/index-client webhooks.ts). The room's client is the index's app client;
@@ -36,7 +39,7 @@ type SendCard = NonNullable<AutomationSend['card']>;
 
 // The index's client as the engine sends through it: a plan's messages name their card under `card`.
 const messagesClient = (client: AutomationSendsClient): MessagesClient<SendCard> => ({
-  push: async (planId, messages) =>
+  push: async (planId, messages, opts) =>
     (
       await client.pushAutomationSends(
         planId,
@@ -48,6 +51,7 @@ const messagesClient = (client: AutomationSendsClient): MessagesClient<SendCard>
           text: m.text,
           at: m.at,
         })),
+        ...(opts?.check ? [{ check: true }] : []),
       )
     ).results,
 });
@@ -63,6 +67,8 @@ export function sendMessages(
     card: SendCard | null;
     at: number;
     dry?: boolean;
+    // With Pro on, the owner's automation runs, one spent for each message before it is pushed.
+    spend?: SpendDeliveries;
   },
   sends: readonly PlannedSend[],
   lines: AutomationStepLine[],
@@ -77,6 +83,7 @@ export function sendMessages(
       subject: input.card,
       at: input.at,
       ...(input.dry ? { dry: true } : {}),
+      ...(input.spend ? { spend: input.spend } : {}),
     },
     sends,
     lines,

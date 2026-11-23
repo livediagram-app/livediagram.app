@@ -37,7 +37,7 @@ export default function AlternativesIndexPage() {
           tryIt={
             <TryItCard
               title="Or just try it"
-              body="No sign-up, nothing to install, free forever. The fastest comparison is your own."
+              body="No sign-up, nothing to install, free to start. The fastest comparison is your own."
               source="Compare.Card"
               art
             />

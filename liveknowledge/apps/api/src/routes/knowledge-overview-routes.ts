@@ -5,6 +5,8 @@
 //   POST   /api/documents/<id>/conflicts/<id>/dismiss  Not a Conflict (Editor)
 //   (Ask Both Owners and Remind the Owners are knowledge-email-routes.ts.)
 // Seeing the tab is every role's; resolving is an Editor's. All of it is the room's own bookkeeping: no model.
+import { mostReadPeriodOf } from '@liveknowledge/api-schema';
+import { knowledgeHistoryDays, tierHead, workerTierOf } from '../knowledge/tier-limits';
 import { newQuestions, queueNewQuestions } from '../document-room/automations/question-events';
 import {
   ASK_MAX_QUESTION_CHARS,
@@ -25,6 +27,7 @@ import {
   lowHealthPages,
   questionGroups,
   questionKey,
+  NOT_READ_DAYS,
   notReadPages,
   shownTrust,
   trustState,
@@ -131,6 +134,15 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
   const now = Date.now();
   const every = document.knowledgeSettings.reviewEvery;
   const titles = new Map(document.tabs.map((t) => [t.id, t.name]));
+  // With Pro on, Most Read covers the period asked for, within the owner's AI Knowledge History (tiers.md).
+  const tier = await workerTierOf(env, document);
+  const head = tierHead(tier);
+  const keptDays = knowledgeHistoryDays(tier);
+  // Not Read asks about no more days than the tier keeps reads for: past them every page looks unread.
+  const notReadDays = Math.min(NOT_READ_DAYS, keptDays);
+  const period = head
+    ? mostReadPeriodOf(new URL(ctx.request.url).searchParams.get('days'), keptDays)
+    : 7;
   const [
     reads,
     seen,
@@ -162,7 +174,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     marksOf(env, 'remind'),
     // The figures band's sparkline and Most Read (ai-knowledge.md "Reads"): two ranges of page_reads.
     rowsOf<DailyReadsRow>(env, countDailyReads(now)),
-    rowsOf<MostReadRow>(env, countMostRead(now)),
+    rowsOf<MostReadRow>(env, countMostRead(now, period)),
     // Every page's Health Score (verification.md "Health Score"): one statement, no read a page.
     pageHealthScores(env, document.id, every, now),
     // Required Reading's counts (required-reading.md): two reads, the team at most once.
@@ -221,17 +233,21 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
       })),
     ).map(({ tab, title, score, label, reason }) => ({ tab, title, score, label, reason })),
     // Not Read in 90 Days (ai-knowledge.md): from the same facts rows, each with its last read day.
-    notRead: notReadPages(
-      scored.map(({ row }) => ({
-        tab: row.tab,
-        title: row.title,
-        lastRead: row.lastRead,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-        order: row.order,
-      })),
-      now,
-    ),
+    notRead: {
+      days: notReadDays,
+      ...notReadPages(
+        scored.map(({ row }) => ({
+          tab: row.tab,
+          title: row.title,
+          lastRead: row.lastRead,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          order: row.order,
+        })),
+        now,
+        notReadDays,
+      ),
+    },
     requiredReading,
     reviewEvery: every,
     hasKey: ai.hasKey,
@@ -252,6 +268,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
         })
         .slice(0, MOST_READ_PAGES),
     },
+    ...(head ? { history: { keptDays, days: period, ...head } } : {}),
   };
   return json(overview);
 }

@@ -175,6 +175,11 @@ Ten minutes, and 40 MB for the recording (the platform spec says why). The recor
 records at a bit rate that keeps ten minutes under the size limit, so the size refusal is for a browser that
 overshoots. A person keeps up to 50 walkthroughs, and 1 GB of them, across every app; a plan holds up to 50.
 
+With Pro on the length and the number a person keeps come from a tier
+([walkthroughs.md](../../../../liveworkspace/docs/specs/006-media/walkthroughs.md) "With Pro on"): the better of the
+recorder's own and the plan's owner's. This app's door names the plan's owner from the index's grant (its team for a
+team's plan), so whoever records in a team's plan gets the team's limits; nothing the request claims is passed on.
+
 ## Deleting
 
 Deleting a walkthrough deletes its recording and its events from the media service. Purging the plan from the

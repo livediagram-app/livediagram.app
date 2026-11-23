@@ -45,6 +45,7 @@ import {
   takeRoadmapVote,
   type RoadmapRow,
 } from './roadmap-store';
+import { roadmapServes } from './roadmap-gauge';
 import { pageFor, shownOf, type BuiltRoadmap } from './roadmap-memo';
 import { onRoadmap, publicRoadmapOf } from './roadmap-view';
 
@@ -225,5 +226,8 @@ export async function answerRoadmap(ctx: PlanRouteContext): Promise<Response> {
   if (request.method !== (isVote ? 'POST' : 'GET')) return publicRefusal('method_not_allowed', 405);
   const roadmap = await roadmapByCode(ctx.env, planId, code);
   if (!roadmap) return roadmapMissed('unknown_code');
+  // With Pro on, a roadmap answers only while it holds a counted place of its owner's Public Roadmaps (spec "Tiers"):
+  // one whose place was given back or refused is the same not-found as any other miss. One mark read, no call.
+  if (!roadmapServes(ctx.env.TIER, roadmap)) return roadmapMissed('uncounted');
   return isVote ? vote(ctx, planId, roadmap) : read(ctx, planId, roadmap);
 }

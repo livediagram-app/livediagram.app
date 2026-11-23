@@ -23,6 +23,7 @@ export type {
 
 import type { AutomationsAi, ItemHost } from '@liveworkspace/automations/room';
 import type { DesignRoom } from './design-room/design-room';
+import type { SubscriptionFetcher } from '@liveworkspace/subscription';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
@@ -83,6 +84,15 @@ export type Env = {
   // livedesign's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
   // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
+  // Pro (liveworkspace/docs/specs/019-subscription/subscription.md): the four vars `subscriptionClientOf(env,
+  // 'livedesign.app')` reads. PRO_ENABLED is the flag (`true`, `1` or `on`; unset is off, and nothing asks the service);
+  // SUBSCRIPTION_KEY is livedesign's secret on the subscription service (wrangler secret put), the same value as its
+  // SUBSCRIPTION_KEY_LIVEDESIGN; SUBSCRIPTION_URL names a service that is not production's; SUBSCRIPTION is the
+  // service binding, the public route when it is absent.
+  PRO_ENABLED?: string;
+  SUBSCRIPTION_KEY?: string;
+  SUBSCRIPTION_URL?: string;
+  SUBSCRIPTION?: SubscriptionFetcher;
   // livedesign's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
   // same value as the service's DRIVE_KEY_LIVEDESIGN: it opens the internal export door (its `file` format) and the
   // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.

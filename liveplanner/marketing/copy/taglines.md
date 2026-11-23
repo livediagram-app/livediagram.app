@@ -42,7 +42,7 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 
 - Plan the work together, live: boards, sheets, dashboards and forms in one place. [80]
 - Real-time boards, sheets and forms for teams. Free, with no trackers. [70]
-- Plan together in the browser. No sign-up wall, no paid tier, no lock-in. [73]
+- Plan together in the browser. No sign-up wall, no trial, no lock-in. [69]
 
 ## Long, <= 100 characters
 

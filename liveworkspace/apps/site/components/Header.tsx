@@ -1,33 +1,12 @@
-import { lucideGlyph } from '@livediagram/ui';
-import {
-  lucideChartLine,
-  lucideCircleHelp,
-  lucideLayoutGrid,
-  lucideUsers,
-} from '@liveworkspace/icons/lucide';
-import type { ReactNode } from 'react';
 import { AccountControl } from './AccountControl';
 import { HeaderLogo } from './HeaderLogo';
+import { HeaderMenus } from './HeaderMenus';
 import { SiteRail } from './SiteRail';
 import { Wordmark } from './Wordmark';
 
-// Left out below 768px (a phone or a narrow window), where the wordmark and the account control fill the
-// bar; the footer lists them all.
-const AppsIcon = lucideGlyph(lucideLayoutGrid, 16);
-const CommunityIcon = lucideGlyph(lucideUsers, 16);
-const TelemetryIcon = lucideGlyph(lucideChartLine, 16);
-const HelpIcon = lucideGlyph(lucideCircleHelp, 16);
-
-const NAV: { href: string; label: string; icon: ReactNode }[] = [
-  { href: '/#apps', label: 'Our Apps', icon: <AppsIcon /> },
-  { href: '/community', label: 'Community', icon: <CommunityIcon /> },
-  { href: '/telemetry', label: 'Telemetry', icon: <TelemetryIcon /> },
-  { href: '/help', label: 'Help', icon: <HelpIcon /> },
-];
-
 // The header on every page (liveworkspace/docs/specs/010-site/site.md "The header"): the wordmark, whose hover lists
-// every site (liveworkspace/docs/specs/010-site/site-switcher.md), four links, each with its icon, and Sign in or the
-// account menu. The sign-in pages leave the account control out: they are the sign-in, and under an app's address
+// every site (liveworkspace/docs/specs/010-site/site-switcher.md), the Product and Support menus (HeaderMenus, left out
+// below 768px where the footer lists them), and Sign in or the account menu, always on the bar. The sign-in pages leave the account control out: they are the sign-in, and under an app's address
 // they wear that app's logo (HeaderLogo).
 //
 // Light / Dark / System is never in the bar: it is on the rail at the page's right edge (SiteRail),
@@ -47,16 +26,7 @@ export function Header({ account = true, share = false }: { account?: boolean; s
             </a>
           </HeaderLogo>
           <nav aria-label="Sections" className="flex items-center gap-1 text-sm font-medium">
-            {NAV.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="relative touch-target-y inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 max-md:hidden dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-              >
-                <span className="text-slate-400 dark:text-slate-500">{item.icon}</span>
-                {item.label}
-              </a>
-            ))}
+            <HeaderMenus />
             {account && <AccountControl />}
           </nav>
         </div>

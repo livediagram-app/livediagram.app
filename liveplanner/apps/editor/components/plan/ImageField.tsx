@@ -14,7 +14,15 @@ import {
   lucideTrash2,
   lucideX,
 } from '@liveworkspace/icons/lucide';
-import { IMAGE_ACCEPT, IMAGE_THUMB_EDGE, ImageUploadError, apiUploadImage } from '@/lib/api/images';
+import type { ImageLimitRefusal } from '@liveworkspace/subscription-ui/images';
+import {
+  IMAGE_ACCEPT,
+  IMAGE_THUMB_EDGE,
+  ImageUploadError,
+  apiUploadImage,
+  imageUploadHint,
+} from '@/lib/api/images';
+import { ImageUploadLimit } from './ImageUploadLimit';
 import { track } from '@/lib/telemetry';
 import { usePlan } from './PlanContext';
 import { useImageUrl, useSeen } from './use-image-url';
@@ -57,6 +65,8 @@ export function ImageFieldControl({
   // The share of the picture's bytes sent (0 to 1, in whole percents), once the browser says.
   const [sent, setSent] = useState<number | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+  // A tier's limit refused the upload (Pro on): drawn as the shared notice in place of the plain line.
+  const [limit, setLimit] = useState<ImageLimitRefusal | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   const [over, setOver] = useState(false);
   // The upload going now's stop (Cancel Upload, Work Tracker 794).
@@ -66,6 +76,7 @@ export function ImageFieldControl({
   const upload = async (file: File | undefined) => {
     if (!file || !scope || uploading) return;
     setError(null);
+    setLimit(null);
     setUploading(true);
     setSent(undefined);
     const stop = new AbortController();
@@ -85,7 +96,8 @@ export function ImageFieldControl({
       if (stop.signal.aborted) return;
       const failure = err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
       if (failure.code === 'images_unavailable') setUnavailable(true);
-      setError(failure.message);
+      if (failure.limit) setLimit(failure.limit);
+      else setError(failure.message);
     } finally {
       stopRef.current = null;
       setUploading(false);
@@ -130,6 +142,7 @@ export function ImageFieldControl({
     />
   );
   const message = unavailable ? "Image uploads aren't available here." : error;
+  const limitNotice = <ImageUploadLimit refusal={limit} onChooseAnother={choose} />;
 
   if (!imageId) {
     if (disabled) return <p className="text-[13px] text-slate-500 dark:text-slate-400">None</p>;
@@ -163,7 +176,7 @@ export function ImageFieldControl({
             {uploading ? uploadingWords(sent) : 'Add an Image'}
           </span>
           <span id={hintId} className="text-[11px] text-slate-500 dark:text-slate-400">
-            PNG, JPEG, WebP or GIF, up to 10 MB
+            {imageUploadHint()}
           </span>
         </Button>
         {uploading ? <div className="flex items-center gap-1">{cancelButton}</div> : null}
@@ -172,6 +185,7 @@ export function ImageFieldControl({
             {message}
           </p>
         ) : null}
+        {limitNotice}
       </div>
     );
   }
@@ -237,6 +251,7 @@ export function ImageFieldControl({
               className={QUIET_BUTTON}
               onClick={() => {
                 setError(null);
+                setLimit(null);
                 onSave(undefined);
               }}
             >
@@ -251,6 +266,7 @@ export function ImageFieldControl({
           {message}
         </p>
       ) : null}
+      {limitNotice}
     </div>
   );
 }

@@ -130,10 +130,18 @@ export function runToast(
   return { tone: 'info', text: run.reason || `“${name}” found nothing to do.` };
 }
 
-/** A refused run in words: the day's budget, a rule that is not by hand, a tab that went. */
-export function runRefusalWords(code: string, message: string, item: string): string {
+/** A refused run in words: the item's runs for the day, the owner's month (with Pro on), a rule that is not by hand, a
+ *  tab that went. */
+export function runRefusalWords(
+  code: string,
+  message: string,
+  item: string,
+  max: number = AUTOMATION_RUNS_PER_DAY,
+): string {
   if (code === 'automation_budget_spent')
-    return `This ${item} has used today’s ${AUTOMATION_RUNS_PER_DAY.toLocaleString('en')} runs. It runs again tomorrow.`;
+    return `This ${item} has used today’s ${max.toLocaleString('en')} runs. It runs again tomorrow.`;
+  if (code === 'automation_runs_used')
+    return 'This month’s automation runs are used. Rules run again on the 1st.';
   if (code === 'automation_not_manual') return 'Only a Run by Hand rule runs from here.';
   if (code === 'automation_not_found') return 'This rule was deleted elsewhere.';
   if (code === 'tab_not_found')

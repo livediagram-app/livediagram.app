@@ -46,11 +46,12 @@ function rawWordsOf(word: string): Readonly<Record<string, string>> {
       'a rule’s connection (where a Post to Slack, Teams or a service sends) is picked only by a person, in the editor: keep the connection the rule already has, or leave that step out.',
     automation_snapshots_full: `the rules would keep more than ${AUTOMATION_KEPT_SNAPSHOTS_MAX} snapshots: name one the rules already keep.`,
     automation_name_taken: `a rule of that name is in this ${word}: pick another name (1 to ${AUTOMATION_NAME_MAX} characters).`,
-    automation_rules_full: `the ${word} holds ${AUTOMATION_RULES_MAX} rules, the most it can: delete one first.`,
+    automation_rules_full: `no more rules can be added: the ${word} holds ${AUTOMATION_RULES_MAX}, the most one can, or its owner holds every rule their plan allows across everything they own. Delete one first.`,
     automation_not_found: 'that rule is gone. list_rules lists the rules.',
     automation_not_manual:
       'run takes only a Run by Hand rule (trigger manual) that is on: turn it on, or try another rule with test.',
     automation_budget_spent: `the ${word} has made its ${AUTOMATION_RUNS_PER_DAY.toLocaleString('en-GB')} runs today: rules run again tomorrow (UTC). test still works.`,
+    automation_runs_used: `the owner’s automation runs for this month are used, across everything they own: rules run again on the 1st (UTC). test still works.`,
     tab_not_found: `that tab is gone from the ${word}. list_rules lists the tabs.`,
   };
 }

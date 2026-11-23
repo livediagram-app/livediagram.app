@@ -3,6 +3,8 @@
 // optional: an app without one simply doesn't show it. The Explorer never stores any of it; the host reads and writes
 // its own source (the media service through the app, a Durable Object behind the app's API).
 
+import type { OwnerScope } from '@liveworkspace/subscription';
+import type { ImageStorage } from '@liveworkspace/subscription-ui/images';
 import type { ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import type { Placement } from '../types';
@@ -51,8 +53,12 @@ export type GalleryHost = {
   imageBlob: (image: GalleryImage, signal?: AbortSignal) => Promise<Blob | null>;
   /** Delete one. Items that place it show a broken picture. */
   remove: (image: GalleryImage) => Promise<void>;
-  /** Add one. A refusal throws an Error whose message is said as it is. Without it there is no upload. */
+  /** Add one. A refusal throws an Error whose message is said as it is (an UploadLimitError where a tier's limit
+   *  refused it, which the pane draws as the shared notice). Without it there is no upload. */
   upload?: (file: File) => Promise<void>;
+  /** With Pro on: what the last `list` said the gallery uses of its owner's Image Storage, for the meter. Null with
+   *  Pro off, or before a list. */
+  storage?: () => ImageStorage | null;
   /** The gallery's help article. */
   helpHref?: string;
 };
@@ -132,7 +138,18 @@ export type WalkthroughsHost = {
   remove: (entry: WalkthroughEntry) => Promise<void>;
   /** A screen recording's public link on or off: the entry as it now is, or null when it couldn't be. */
   share?: (entry: WalkthroughEntry, on: boolean) => Promise<WalkthroughEntry | null>;
+  /** With Pro on, what the person's own tier keeps, as the last list answered it; null with Pro off. */
+  usage?: () => WalkthroughUsage | null;
   helpHref?: string;
+};
+
+/** The person's walkthroughs against their own tier (walkthroughs.md "The Explorer's Walkthroughs"), in every app. */
+export type WalkthroughUsage = {
+  stored: number;
+  /** Null keeps any number. */
+  storedLimit: number | null;
+  maxMs: number;
+  owner: OwnerScope | null;
 };
 
 /** Everything above, as the Explorer and the panel take it. */

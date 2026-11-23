@@ -39,8 +39,8 @@ export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
           Start Your Knowledgebase
         </h2>
         <p className="mx-auto mt-5 max-w-lg text-pretty text-lg leading-relaxed text-slate-300">
-          No sign-up, no paywall, nothing to install. Write the first page now, and bring your team
-          and your agents in when it is worth reading.
+          No sign-up, no card, nothing to install. Write the first page now, and bring your team and
+          your agents in when it is worth reading.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <a

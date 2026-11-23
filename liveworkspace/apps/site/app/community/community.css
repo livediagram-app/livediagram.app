@@ -26,6 +26,9 @@
 @source '../../../../../livediagram/packages/ui/src/SiteSwitcher.tsx';
 @source '../../components/settings';
 @source '../../../../../packages/settings-ui/src';
+/* Pro's own parts (the badge, the meters, the upgrade dialog), which the account menu and the Settings panel draw. */
+@source '../../../../../packages/subscription-ui/src';
+@source not '../../../../../packages/subscription-ui/src/**/*.test.tsx';
 @source '../../components/Footer.tsx';
 @source '../../components/SiteRail.tsx';
 @source '../../components/landing/AppLogo.tsx';

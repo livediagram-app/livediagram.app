@@ -3,6 +3,8 @@
 // video-and-screen-bubbles.md "The mint route"). The browser never holds the Realtime secret or the TURN key: every session, track, renegotiation and
 // close is made here, after the grant on the Space, the calls gate, and the session's own token. The calls kill switch
 // (docs/specs/016-platform/calls-kill-switch.md "The mint route") checks every session and track against its mode.
+// With Pro on, a session is admitted by the Space's room first, against its owner's Call Minutes, and `calls/minutes`
+// reads the owner's month (docs/specs/012-collaboration/call-minutes.md).
 import {
   CALL_SCREEN_TRACK_NAME,
   CALL_TRACK_NAME,
@@ -13,6 +15,8 @@ import {
   parseCallTrackLocator,
   type AccessLevel,
   type CallLayer,
+  type CallMinutesResponse,
+  type CallSessionMinutes,
   type CallSessionResponse,
   type CallSubscribeLocator,
   type CallsErrorCode,
@@ -41,7 +45,12 @@ import {
 import type { HearingAnswer, HearingAsk } from '../calls/room-calls';
 import { splitByHearing, withRefusals } from '../calls/subscribe-hearing';
 import { documentRoom } from '../document-client';
+import type { ItemGrant } from '../index-service';
 import { documentTrashed, forbidden, json, notFound } from '../responses';
+import { subscriptionOf } from '../subscription';
+import { isAccountIdShape } from '@liveworkspace/api-kit/request-auth';
+import { itemPayer } from '@liveworkspace/subscription';
+import { GUEST_SPACE, type CallsPayer } from '../calls/call-meter';
 import { isCommunityCode } from './community-link';
 import type { RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
@@ -191,11 +200,65 @@ export function publishRefused(
   return null;
 }
 
+/**
+ * Who pays for the Space's calls (docs/specs/012-collaboration/call-minutes.md "Who pays"): its owner as the index's
+ * grant names them, the team for a team's Space, by the one rule every app follows (`itemPayer`). A guest's Space
+ * is nobody's at the subscription service: its room counts its own month against Free's (`GUEST_SPACE`). Never the
+ * caller, and never anything the request carries. Null for a grant that names neither (one signed before the index
+ * named owners): nothing can be counted.
+ */
+export function callsPayer(grant: Pick<ItemGrant, 'owner' | 'team'>): CallsPayer | null {
+  const payer = itemPayer(grant);
+  return payer.kind === 'owner' ? payer.scope : payer.kind === 'guest' ? GUEST_SPACE : null;
+}
+
+/**
+ * What a caller may be told of the payer (liveworkspace 019 "What a collaborator is told"). `owner`: the owner's
+ * scope, for a signed-in caller alone (they ask the subscription service which action they may take); never a
+ * guest's Space's, which has none. `numbers`: the owner's used and limit, for the owner and the owning team alone.
+ */
+export function minutesAudience(
+  ctx: Pick<RouteContext, 'teams'>,
+  grant: Pick<ItemGrant, 'owner' | 'team' | 'sub'>,
+  payer: CallsPayer,
+): { owner?: string; guest?: true; numbers: boolean } {
+  // The grant's subject is the index's word on who is calling: an account, a guest or a link visitor.
+  const caller = isAccountIdShape(grant.sub) ? grant.sub : null;
+  const team = grant.team;
+  const numbers =
+    caller !== null &&
+    (team ? (ctx.teams ?? []).some((t) => t.id === team) : !!grant.owner && grant.owner === caller);
+  if (payer === GUEST_SPACE) return { guest: true, numbers: false };
+  return { ...(caller !== null ? { owner: payer } : {}), numbers };
+}
+
+/**
+ * `GET calls/minutes` (call-minutes.md "The wire"): the owner's month of call minutes, for the Space's people dialog
+ * and the notices. The numbers are for the owner and the owning team's members alone; anyone else reads the state.
+ * With Pro off: `{ metered: false }`, and nothing is asked of the room or the service.
+ */
+async function minutes(ctx: RouteContext, documentId: string, grant: ItemGrant): Promise<Response> {
+  const payer = subscriptionOf(ctx.env).enabled ? callsPayer(grant) : null;
+  const reading = payer ? await documentRoom(ctx.env, documentId).callMinutes(payer) : null;
+  if (!payer || !reading) return json({ metered: false } satisfies CallMinutesResponse);
+  const { numbers, ...who } = minutesAudience(ctx, grant, payer);
+  const answer: CallMinutesResponse = {
+    metered: true,
+    ...who,
+    used: numbers ? reading.used : null,
+    limit: numbers ? reading.limit : null,
+    low: reading.low,
+    paused: reading.paused,
+  };
+  return json(answer);
+}
+
 async function mintSession(
   env: RealtimeEnv,
   documentId: string,
   canSpeak: boolean,
   mode: Exclude<CallsMode, 'off'>,
+  minutes: CallSessionMinutes | null,
 ): Promise<Response> {
   return upstream(
     async () => {
@@ -210,6 +273,7 @@ async function mintSession(
         iceServers,
         canSpeak,
         mode,
+        ...(minutes ? { minutes } : {}),
       };
       return answer;
     },
@@ -220,6 +284,20 @@ async function mintSession(
 /** Asks the Space's room which tracks a call session may hear (calls/room-calls.ts). */
 type Hearing = (subscriberSession: string, asks: HearingAsk[]) => Promise<HearingAnswer[]>;
 
+/**
+ * Asks the Space's room whether its owner's month of call minutes is used. Null where nothing is metered (Pro off,
+ * or a Space nobody can be counted for): the room is never asked, and nothing it says of minutes is read. A room
+ * that cannot answer pauses nothing: the check never ends a call by failing.
+ */
+type Paused = (() => Promise<boolean>) | null;
+
+// The refusal for media asked for while the owner's month is used (call-minutes.md "When the minutes are used"):
+// the state alone, as every caller may know it.
+const minutesUsed = () => {
+  console.warn('[calls] minutes used', 'media');
+  return refuse(429, 'calls_minutes_used');
+};
+
 async function tracks(
   env: RealtimeEnv,
   documentId: string,
@@ -227,6 +305,7 @@ async function tracks(
   level: AccessLevel,
   mode: Exclude<CallsMode, 'off'>,
   hearing: Hearing,
+  paused: Paused,
 ): Promise<Response> {
   const session = await provenSession(env, documentId, body);
   if (!session) return invalid();
@@ -245,8 +324,9 @@ async function tracks(
     // A listener's session stays one, even if its grant has since grown.
     const refused = publishRefused(trackName, level, session.role);
     if (refused) return refused;
-    const paused = mediaRefused(mode, [trackName]);
-    if (paused) return paused;
+    const off = mediaRefused(mode, [trackName]);
+    if (off) return off;
+    if (paused && (await paused())) return minutesUsed();
     const offer = { type: 'offer' as const, sdp: publish.sdp };
     const tracks = [{ location: 'local' as const, mid: publish.mid, trackName }];
     return upstream(
@@ -258,13 +338,16 @@ async function tracks(
     const proven = await provenLocators(env, documentId, body.subscribe);
     if (!proven) return invalid();
     const { locators, forged } = proven;
-    const paused = mediaRefused(
+    const off = mediaRefused(
       mode,
       locators.map((l) => l.trackName),
     );
-    if (paused) return paused;
-    // The room says which of them this session may hear now (#483); the rest are answered `not_heard`.
-    const { refused } = await splitByHearing(locators, (asks) => hearing(session.sessionId, asks));
+    if (off) return off;
+    // The room says which of them this session may hear now (#483); the rest are answered `not_heard`. The same
+    // answer says when the owner's month of call minutes is used: nothing is subscribed then.
+    const split = await splitByHearing(locators, (asks) => hearing(session.sessionId, asks));
+    if (paused && split.paused) return minutesUsed();
+    const { refused } = split;
     const allowed = locators.filter((_, i) => !refused.has(i) && !forged.has(i));
     if (allowed.length === 0) return json(withRefusals(locators, refused, null, forged));
     const tracks = allowed.map(remoteTrack);
@@ -283,6 +366,7 @@ async function layer(
   documentId: string,
   body: Record<string, unknown>,
   mode: Exclude<CallsMode, 'off'>,
+  paused: Paused,
 ): Promise<Response> {
   const session = await provenSession(env, documentId, body);
   if (!session) return invalid();
@@ -314,8 +398,9 @@ async function layer(
       simulcast: simulcastFor(chosen),
     });
   }
-  const paused = mediaRefused(mode, [CALL_VIDEO_TRACK_NAME]);
-  if (paused) return paused;
+  const off = mediaRefused(mode, [CALL_VIDEO_TRACK_NAME]);
+  if (off) return off;
+  if (paused && (await paused())) return minutesUsed();
   return upstream(
     () => updateTracks(env, session.sessionId, tracks),
     (answer) => json(answer),
@@ -336,7 +421,8 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
     (segments[4] === 'tracks' && method === 'POST') ||
     (segments[4] === 'renegotiate' && method === 'PUT') ||
     (segments[4] === 'layer' && method === 'PUT') ||
-    (segments[4] === 'close' && method === 'PUT');
+    (segments[4] === 'close' && method === 'PUT') ||
+    (segments[4] === 'minutes' && method === 'GET');
   if (!known) return notFound();
   const documentId = segments[2]!;
   const grant = await resolveDocumentGrant(ctx, documentId);
@@ -346,6 +432,8 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
   // A Community post's link is a content-only pass (docs/specs/025-community/community.md): its visitors never join
   // the room, so they never call in it, and learn nothing of whether calls are on.
   if (await isCommunityCode(env, documentId, grant.shareCode)) return forbidden('community_link');
+  // The owner's call minutes are read whether or not calls are on right now.
+  if (segments[4] === 'minutes') return minutes(ctx, documentId, grant);
   const gate = await callsGate(env);
   // Closing never costs, so a browser may still close its tracks while the kill switch alone pauses calls.
   const closingWhilePaused = !gate.open && gate.reason === 'paused' && segments[4] === 'close';
@@ -359,20 +447,58 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
   // Participant's, a guest's included; a Viewer listens.
   const canSpeak = levelAtLeast(grant.level, 'participate');
   if (gate.open && segments[4] === 'session') {
-    return mintSession(realtime, documentId, canSpeak, gate.mode);
+    // With Pro on, the Space's room says first whether its owner has call minutes left (call-minutes.md "A join is
+    // admitted first"). With Pro off nothing is asked.
+    const payer = subscriptionOf(env).enabled ? callsPayer(grant) : null;
+    if (payer) {
+      const admitted = await documentRoom(env, documentId).callsAdmit(payer);
+      if (!admitted.ok && admitted.unchecked) {
+        // The subscription service refused the room's request: calls cannot be metered, so none starts
+        // (call-minutes.md "When the service refuses"). The editor reads it as Audio Unavailable, with Retry.
+        return refuse(503, 'calls_off', { reason: 'unconfigured' });
+      }
+      const { numbers, ...who } = minutesAudience(ctx, grant, payer);
+      if (!admitted.ok) {
+        console.warn('[calls] minutes used');
+        const { used, limit } = admitted;
+        return refuse(429, 'calls_minutes_used', { ...(numbers ? { used, limit } : {}), ...who });
+      }
+      return mintSession(realtime, documentId, canSpeak, gate.mode, { ...who, low: admitted.low });
+    }
+    return mintSession(realtime, documentId, canSpeak, gate.mode, null);
   }
   const body = await bodyOf(request);
   if (!body) return invalid();
+  // With Pro on, media is refused while the Space's owner's month of call minutes is used: the room is asked, once
+  // a request and only past every other check. A subscribe rides the room call it already makes.
+  const metered = subscriptionOf(env).enabled && callsPayer(grant) !== null;
+  const paused: Paused = metered
+    ? () =>
+        documentRoom(env, documentId)
+          .callsPaused()
+          .catch((error: unknown) => {
+            console.warn('[calls] minutes unanswered', String(error));
+            return false;
+          })
+    : null;
   if (gate.open && segments[4] === 'tracks') {
-    return tracks(realtime, documentId, body, grant.level, gate.mode, (subscriber, asks) =>
-      documentRoom(env, documentId).callsHearing(subscriber, asks),
+    return tracks(
+      realtime,
+      documentId,
+      body,
+      grant.level,
+      gate.mode,
+      (subscriber, asks) => documentRoom(env, documentId).callsHearing(subscriber, asks),
+      paused,
     );
   }
-  if (gate.open && segments[4] === 'layer') return layer(realtime, documentId, body, gate.mode);
+  if (gate.open && segments[4] === 'layer')
+    return layer(realtime, documentId, body, gate.mode, paused);
   const session = await provenSession(realtime, documentId, body);
   if (!session) return invalid();
   if (segments[4] === 'renegotiate') {
     if (!isSdp(body.sdp)) return invalid();
+    if (paused && (await paused())) return minutesUsed();
     const sdp = body.sdp;
     return upstream(
       () => renegotiate(realtime, session.sessionId, sdp),

@@ -29,7 +29,7 @@ The screen has four tabs:
 - **Templates**: ready-made rules (below).
 - **Connections**: the Slack and Microsoft Teams channels and your own services that rules post to ([below](#post-to-slack-teams-or-your-own-service)).
 
-At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs a day have been used. A No Match costs nothing, and **Last Run** and **This Week** leave No Matches out too.
+At the right of the tabs, **Runs today** shows how many of the plan's 1,000 runs for the day have been used. With subscriptions on, the plan's owner sees **Runs This Month** instead: their runs this month, over everything they own (see [Limits and Pausing](#limits-and-pausing)). A No Match costs nothing, and **Last Run** and **This Week** leave No Matches out too.
 
 ## Start From a Template
 
@@ -201,8 +201,17 @@ A rule's changes don't set off other rules, so two rules can never keep changing
 
 ## Limits and Pausing
 
-- A plan holds up to 50 rules, each with up to 10 conditions and 20 actions (a For Related Cards step's count too), of which up to 5 post messages.
-- A plan makes up to 1,000 runs a day (UTC), counted as each run starts, so runs that start together never pass it; past that, what would start a rule is let go and rules run again the next day. A No Match doesn't count. A rule with a **Wait** is two runs, one up to the Wait and one after it, as the Audit Trail shows them.
+A plan holds up to 50 rules and makes up to 1,000 runs a day, whether or not the server has subscriptions turned on.
+
+With subscriptions on, the plan's owner's tier also counts their rules and runs over everything they own, in every app. It is the tier of whoever owns the plan (the team, for a plan in a team's library), never of the person working in it.
+
+- **Automation Rules**: Free holds 25 rules, Pro 500, Pro for Teams 250 a member. At the limit, New Rule, Duplicate and the templates are off until a rule is deleted. An owner who holds more than their tier allows (their subscription ended) keeps every rule running and editable, and a rule that is off can't be switched on until they hold no more than the limit.
+- **Automation Runs**: Free makes 500 runs a month, Pro 10,000, Pro for Teams 5,000 a member. A run counts once its conditions hold; a No Match costs nothing, and so does a test. Each message a run sends to a webhook, Slack or Teams counts as one run too. Once the month is used, rules wait until the 1st and the Audit Trail says so once a rule a day; the rules stay on.
+
+The owner, and the owning team, see **Runs This Month** in place of **Runs today**. AI steps and Describe a Rule each spend one AI credit (50 a month on Free, 1,000 on Pro, 500 a member on Pro for Teams): with none left an AI step is skipped with "This month's AI credits are used" and the rest of the rule runs.
+
+- A rule has up to 10 conditions and 20 actions (a For Related Cards step's count too), of which up to 5 post messages.
+- A plan's runs for the day (UTC) are counted as each run starts, so runs that start together never pass it; past that, what would start a rule is let go and rules run again the next day. A No Match doesn't count. A rule with a **Wait** is two runs, one up to the Wait and one after it, as the Audit Trail shows them.
 - One move runs **Card Unblocked** or **Related Cards Done** on up to 100 cards, the first by their number; past that the Audit Trail says "Ran on 100 of 340 cards: at most 100 a move" and the rest are left out. A time trigger runs on up to 100 cards a time. Past that, **Overdue** and **Card Stuck** reach the rest at their next times; **Scheduled** and **Due In** leave the rest out, and the Audit Trail says so.
 - A rule holds up to 3 AI actions, and a plan makes up to 100 AI steps a day, rules and Describe a Rule together, even when they ask at once; past that, AI steps are skipped until the next day.
 - A rule that fails 10 times in a row turns itself off and is marked **Paused** with the reason. Fix what it names, then press **Resume**. When a paused connection stopped it, **Fix Connection** opens the plan's connections.

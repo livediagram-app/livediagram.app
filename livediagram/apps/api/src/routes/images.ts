@@ -6,11 +6,16 @@ import {
   ACCEPTED_IMAGE_TYPES,
   IMAGE_SOURCE_HEADER,
   imageSourceOf,
-  MAX_IMAGE_BYTES,
   MEDIA_ID_MAX,
   ORIGINAL_NAME_MAX,
+  imageTooLargeBody,
   parseUnusedImageIds,
 } from '@liveworkspace/media';
+import {
+  galleryStorageOf,
+  imageUploadAllowance,
+  readImageUpload,
+} from '@liveworkspace/api-kit/image-upload';
 import {
   galleryUsage,
   IMAGE_GRANT_IDS_MAX,
@@ -23,6 +28,7 @@ import { documentRoom } from '../document-client';
 import { indexFor } from '../index-service';
 import {
   imageSummary,
+  MEDIA_APP,
   mediaClient,
   mediaImageOwner,
   mediaOwner,
@@ -57,7 +63,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const images = listed.value.images;
     const named = await mediaOwner(owner);
     for (const image of images) rememberMediaOwner(image.id, named);
-    return json({ images: images.map(imageSummary) });
+    return json({ images: images.map(imageSummary), ...galleryStorageOf(listed.value) });
   }
 
   // POST /api/images: upload, deduped. Body: the raw image bytes. Owner only. The service checks the
@@ -77,8 +83,17 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (!Number.isFinite(declaredLen) || declaredLen <= 0) {
       return badRequest('missing or invalid Content-Length');
     }
-    if (declaredLen > MAX_IMAGE_BYTES) {
-      return json({ error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
+    // The largest image this caller may send: 10 MB, or with Pro on the better of their own tier and the tier of the
+    // owner of the item named in `?d=` (liveworkspace/docs/specs/006-media/media.md "With Pro on"). Read from their
+    // entitlements, never from the request, and checked before a byte of the body is read.
+    const uploader = await mediaOwner(owner);
+    const allowance = await imageUploadAllowance(env, MEDIA_APP, uploader, async () => {
+      const d = url.searchParams.get('d');
+      const grant = d ? await resolveDocumentGrant(ctx, d) : null;
+      return grant && !(grant instanceof Response) ? grant : null;
+    });
+    if (declaredLen > allowance.maxBytes) {
+      return json(imageTooLargeBody(allowance, declaredLen), { status: 413 });
     }
     // The hash shortcut answers a bare hash with the gallery row without reading a byte, so only the
     // owner's own editor sends it: a workbench session or an API token acts for the owner without being
@@ -87,14 +102,13 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const headerSha = (request.headers.get('X-Image-Sha256') ?? '').toLowerCase();
     const sha256 =
       !ctx.workbench && !ctx.token && /^[0-9a-f]{64}$/.test(headerSha) ? headerSha : null;
-    // Read whole (at most MAX_IMAGE_BYTES, checked above) so the service gets an exact length.
-    const bytes = await request.arrayBuffer();
-    if (bytes.byteLength > MAX_IMAGE_BYTES) {
-      // Content-Length is the client's word; the body is the truth.
-      return json({ error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
-    }
+    // Read whole (at most the limit checked above) so the service gets an exact length. Content-Length is the
+    // client's word; the body is the truth.
+    const bytes = await readImageUpload(request, allowance);
+    if (!bytes) return json(imageTooLargeBody(allowance, null), { status: 413 });
     const uploaded = await media.upload({
-      owner: await mediaOwner(owner),
+      owner: uploader,
+      ...(allowance.itemOwner ? { itemOwner: allowance.itemOwner } : {}),
       bytes,
       contentType: declaredType,
       byteSize: bytes.byteLength,

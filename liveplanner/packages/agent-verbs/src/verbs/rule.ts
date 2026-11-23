@@ -328,7 +328,7 @@ export const ruleRun = defineVerb({
   summary: 'Run an Automations rule on a card, now',
   description:
     'Runs a Run from a Card rule that is on, on a card, now, as Run Rule does, and prints the run. It counts toward ' +
-    'the plan’s 1,000 runs a day.',
+    'the plan’s runs a day (rule ls says how many).',
   behaviour: 'write',
   input: z.object({ project: projectArg, rule: ruleArg, card: cardArg }),
   output: appliedOut,

@@ -91,8 +91,8 @@ never arrives.
   diagram someone would keep, not whether a whiteboard has one.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline
   Mode is a per-document choice, not the default posture (see "Boundaries worth stating").
-- **Not a paid product, ever.** No tier, no billing, no feature flags gating the
-  core editor ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+- **No paid features.** No tier, no billing, no feature flags gating a
+  feature; Pro, where it is on, only raises limits ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
 
 ## Boundaries worth stating
 
@@ -119,7 +119,7 @@ a team building a diagram together need this in the room?".
 ## How it ships
 
 livediagram is **open source** (MIT) and also runs as a **hosted product**, free
-for everyone, no paid tier. The codebase is public for anyone to read. See
+for everyone, every feature on the free plan. The codebase is public for anyone to read. See
 [03-open-source-and-business-model.md](../002-project-scope/open-source-and-business-model.md).
 
 The canvas is **always available without signing in**: a visitor can build a

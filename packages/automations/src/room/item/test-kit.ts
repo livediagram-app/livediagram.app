@@ -1,6 +1,7 @@
 // Tests only: an item with no cards on node:sqlite (its `tabs`, a link table and every Automations table and SQL
 // trigger), a registry with a few kinds of an app's own, and a kit that records what it was asked. Not a `.test.ts`
 // file, so vitest does not collect it.
+import type { ItemTier } from '@liveworkspace/subscription';
 import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import {
   agentChangedTrigger,
@@ -174,7 +175,11 @@ export interface World {
   settled(): Promise<void>;
 }
 
-export function world(over: Partial<ItemRoomKit> = {}): World {
+export function world(
+  over: Partial<ItemRoomKit> = {},
+  // The item's tier, as a room hands it in; absent, the engine has none (the legacy limits).
+  opts: { tier?: () => ItemTier | null } = {},
+): World {
   const { db, sql } = itemDb();
   const armed = { count: 0 };
   const state = { putAway: false, ready: true, held: true };
@@ -248,8 +253,9 @@ export function world(over: Partial<ItemRoomKit> = {}): World {
       },
     },
     sends: {
-      push: (_itemId, messages) => {
-        w.posted.push(...messages);
+      push: (_itemId, messages, opts) => {
+        // A check asks what would be taken: nothing is posted.
+        if (!opts?.check) w.posted.push(...messages);
         return Promise.resolve(messages.map((m) => ({ key: m.key, queued: true as const })));
       },
     },
@@ -276,6 +282,7 @@ export function world(over: Partial<ItemRoomKit> = {}): World {
     kinds: TEST_KINDS,
     kit: () => (state.held ? w.kit : null),
     putAway: () => state.putAway,
+    ...(opts.tier ? { tier: opts.tier } : {}),
   });
   w.addTab = (id, name = `Tab ${id}`) => {
     sql.exec('INSERT INTO tabs (id, name, data) VALUES (?, ?, ?)', id, name, '{}');

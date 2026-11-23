@@ -29,9 +29,15 @@ export type AutomationListedRule<Rule, Need = unknown> = Rule & {
 
 export interface AutomationsListResponse<Rule, Need = unknown> {
   rules: AutomationListedRule<Rule, Need>[];
-  // The Runs today meter.
+  // The item's runs today against its fixed 1,000 a day, on every tier: a safety cap, never the owner's month.
   runsToday: number;
   runsPerDay: number;
+  // The most rules the item holds itself (50, or Free's 25 for a guest's item). With Pro on
+  // (liveworkspace/docs/specs/019-subscription/subscription.md) the owner as a scope for the offer and their monthly
+  // figures (`p:<id>` or `t:<id>`), or `guest` for an owner with no account. Absent with Pro off.
+  rulesMax?: number;
+  owner?: string;
+  guest?: true;
   // The item's tabs and people as rules name them, for agents; the editor reads its own.
   tabs?: { id: string; name: string }[];
   people?: { id: string; name: string }[];
@@ -118,6 +124,7 @@ export const AUTOMATION_HOOK_ERRORS = [
   'webhook_json_only',
   'webhook_rate_limited',
   'automation_budget_spent',
+  'automation_runs_used',
 ] as const;
 export type AutomationHookError = (typeof AUTOMATION_HOOK_ERRORS)[number];
 
@@ -134,8 +141,10 @@ export const AUTOMATION_ERRORS = [
   'automation_rules_full',
   'automation_not_found',
   'automation_not_manual',
-  // Run Rule past the day's budget: 429, nothing ran.
+  // Run Rule past the item's 1,000 runs a day: 429, nothing ran.
   'automation_budget_spent',
+  // With Pro on, Run Rule once the owner's month of automation runs is used: 429, with the tier's numbers.
+  'automation_runs_used',
   // Run Rule the room could not start or record (its claim failed, or the run never settled): 500, try again.
   'automation_run_failed',
   // Make Secret for a rule whose trigger is not Incoming Webhook: 409.
@@ -151,6 +160,8 @@ export const AUTOMATION_ERRORS = [
   // Describe a Rule on the person's key, or their team's: the provider refused it (revoked, out of credit, a model
   // it can't use) or it will not open (422), with `aiKey`; never sent to built-in AI instead.
   'ai_key_failed',
+  // With Pro on, Describe a Rule when the owner's AI credits for the month are used: 429, with the tier's numbers.
+  'automation_ai_credits_used',
   // An API token saving a rule only a person may save (Revert to Snapshot): 403.
   'automation_needs_a_person',
   // An API token's add, change or duplicate naming a connection the rule did not already name: 403.
@@ -171,4 +182,10 @@ export interface AutomationErrorBody {
     provider: 'anthropic' | 'openai' | null;
     kind: 'bad-key' | 'no-credit' | 'model-unavailable' | 'unreadable';
   };
+  // With Pro on, a refusal a tier limit caused (liveworkspace/docs/specs/019-subscription/subscription.md "What
+  // people see"): which limit, what is used and the most the owner's tier allows; `guest`: the owner has no account.
+  limit?: string;
+  used?: number;
+  max?: number;
+  guest?: true;
 }

@@ -3,6 +3,7 @@
 // AI Knowledge's data (docs/specs/030-knowledgebase/ai-knowledge.md): `GET knowledge`, one request each time the
 // view opens and one after each action here; nothing is polled. An action's request is `run`: it is one at a time
 // by its id, a refusal is said in words above the sections, and the overview is read again when it has landed.
+import { MOST_READ_PERIODS } from '@liveknowledge/api-schema';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KnowledgeOverviewResponse } from '@liveknowledge/api-schema';
 import { apiKnowledgeOverview, type KnowledgeCaller } from '@/lib/api/knowledge';
@@ -19,6 +20,9 @@ export type KnowledgeOverview = {
   /** The last refusal, in words; cleared when the next action starts. */
   failure: string | null;
   refresh: () => void;
+  /** With Pro on, the period Most Read covers, and a change of it (read again). */
+  period: number;
+  setPeriod: (days: number) => void;
   /** Run one action under `id`, then read the overview again. Resolves true when it landed. */
   run: (
     id: string,
@@ -39,12 +43,13 @@ export function useKnowledgeOverview(
   const [busy, setBusy] = useState<ReadonlySet<string>>(() => new Set());
   const [failure, setFailure] = useState<string | null>(null);
   const [turn, setTurn] = useState(0);
+  const [period, setPeriod] = useState<number>(MOST_READ_PERIODS[0]);
   const running = useRef(new Set<string>());
 
   useEffect(() => {
     if (!enabled) return;
     const abort = new AbortController();
-    apiKnowledgeOverview(who, documentId, abort.signal)
+    apiKnowledgeOverview(who, documentId, abort.signal, period)
       .then((overview) => {
         if (!abort.signal.aborted) setState({ status: 'ready', overview });
       })
@@ -54,7 +59,7 @@ export function useKnowledgeOverview(
           setState((held) => (held.status === 'ready' ? held : { status: 'failed' }));
       });
     return () => abort.abort();
-  }, [who, documentId, turn, enabled]);
+  }, [who, documentId, turn, enabled, period]);
 
   const refresh = useCallback(() => setTurn((n) => n + 1), []);
   const run = useCallback<KnowledgeOverview['run']>(
@@ -77,5 +82,5 @@ export function useKnowledgeOverview(
     },
     [refresh],
   );
-  return { state, busy, failure, refresh, run };
+  return { state, busy, failure, refresh, period, setPeriod, run };
 }

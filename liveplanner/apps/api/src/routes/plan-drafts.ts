@@ -5,6 +5,7 @@
 // each read by Describe a Rule's reader), or asked once more with the check's words (draft-asks.ts). Nothing is made: the route writes only its count. Every refusal's message is fixed words, never the
 // model's; the request and the reply are never logged.
 import {
+  AI_CREDITS_USED,
   PLAN_DRAFT_CAPPED,
   PLAN_DRAFT_FAILED,
   PLAN_DRAFT_NOT_SET_UP,
@@ -21,7 +22,8 @@ import type {
 } from '@liveplanner/api-schema';
 import { draftAi, keyFailedResponse, keyFailureOf } from './draft-ai';
 import { DRAFT_ASKS_MAX, askForDraft } from './draft-asks';
-import { spendPlanDraft } from '../plan-draft-count';
+import { spendDraftCredit } from './draft-credits';
+import { giveBackPlanDraft, spendPlanDraft } from '../plan-draft-count';
 import { json, methodNotAllowed, notFound, signInRequired } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
 import { readBody, type RouteContext } from './context';
@@ -87,13 +89,27 @@ async function draftPlan(ctx: RouteContext): Promise<Response> {
     return response;
   };
 
-  // One draft counted, before the first ask; its second ask rides it. On a key nothing is counted: the allowance is
-  // built-in AI's.
+  // One draft counted, before the first ask; its second ask rides it. On a key nothing is counted or spent: the
+  // allowance and the AI credits are built-in AI's.
   if (!ai.keyed) {
     const spent = await spendPlanDraft(env, accountId, started);
     if (spent === 'unavailable')
       return done('failed', 0, refuse(503, 'plan_draft_unavailable', PLAN_DRAFT_FAILED));
     if (!spent) return done('capped', 0, refuse(429, 'plan_draft_capped', PLAN_DRAFT_CAPPED));
+    // With Pro on, one of the person's AI credits for the month (draft-credits.ts).
+    const credits = await spendDraftCredit(env, accountId);
+    // Refused before the model was asked: the day's place goes back, so a month's used credits never cost a draft.
+    if (credits) await giveBackPlanDraft(env, accountId, started);
+    if (credits === 'unavailable')
+      return done('failed', 0, refuse(503, 'plan_draft_unavailable', PLAN_DRAFT_FAILED));
+    if (credits) {
+      const body: PlanDraftErrorBody = {
+        error: 'plan_draft_credits_used',
+        message: AI_CREDITS_USED,
+        ...credits,
+      };
+      return done('capped', 0, json(body, { status: 429 }));
+    }
   }
 
   const asked = await askForDraft({

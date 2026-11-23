@@ -58,7 +58,11 @@ function AiKnowledge({ session }: { session: AskSession }) {
   const now = useRelativeNow();
   const offline = rights.askOff === 'offline';
   const pages = useEditorChrome((s) => s.tabs, sameTabsForBar);
-  const { state, busy, failure, refresh, run } = useKnowledgeOverview(who, documentId, !offline);
+  const { state, busy, failure, refresh, setPeriod, run } = useKnowledgeOverview(
+    who,
+    documentId,
+    !offline,
+  );
   const overview = state.status === 'ready' ? state.overview : null;
   const { drafting, draft } = useDraftPage(session, overview?.hasAi ?? false);
   const [adding, setAdding] = useState(false);
@@ -168,6 +172,7 @@ function AiKnowledge({ session }: { session: AskSession }) {
                   openPage,
                   connect,
                   openAiSettings: openAiSettingsFrom,
+                  setPeriod,
                   askWrite: agentWrite.ask,
                   dismissConflict: (id) => {
                     if (!rights.resolve) return;

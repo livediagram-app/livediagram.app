@@ -1,6 +1,6 @@
 # Snapshots blueprint
 
-Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN36 are cited from the code.
+Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN40 are cited from the code.
 
 ## Domain and naming
 
@@ -306,3 +306,35 @@ max 40 to 200; kept by rules 5 (with kept, at most 20 snapshots of 32 MiB in an 
 ## Defaults ledger
 
 SND1 to SND5 in [DEFAULTS.md](DEFAULTS.md).
+
+## With Pro on (retention)
+
+- **SN37 retention.** `src/retention.ts`: `SnapshotRetention = { keep, maxAgeMs, days, owner, known }`.
+  `retentionOf(historyDays, owner)` is `{ keep: SNAPSHOTS_KEPT, maxAgeMs: days x 24 h }` for a tier that keeps history
+  for a time and `{ keep: SNAPSHOTS_KEPT_PAID (50), maxAgeMs: null }` for one with no age limit.
+  `snapshotRetention(env, app, owner)` is null with `PRO_ENABLED` off (nothing asked); Free for a guest's item
+  (`owner` null, nothing asked); otherwise one `confirmedEntitlement(owner)` read on the client's 60 s cache.
+  `RETENTION_UNKNOWN` (keep five, no age, `known: false`) stands in where the grant names no owner (`owner`
+  undefined) or the service answered `unknown` (out of reach with nothing remembered, refusing the app's key, or no
+  key). The routes apply `keptWhileUnknown(held)` in its place: five, or fifty where the item already holds more than
+  five (only a tier that keeps fifty could have left them, and a guess never drops them). A caller reaches it
+  whenever its request carries no grant for the item or one naming no owner; it then keeps what Free keeps, never
+  fifty.
+- **SN38 routes.** `ServeSnapshots.retention` (optional) is asked once by the list, take and revert routes, never by
+  a delete. With a `maxAgeMs`, the list and the take first run `dropSnapshotsBefore(db, itemId, now - maxAgeMs, keptIds)` (the
+  item's own rows only, never one a rule names (SN35), with their chunks, in one batch); a revert never drops for age. Every `takeSnapshot` in the
+  routes, and `revertToSnapshot`'s safety snapshot, passes the retention's `keep`; the rule-named snapshots stay
+  beside it, uncounted. The list answers `kept: retention.keep`, `retention: { days, owner }` when
+  `known`, and `expiresAt = createdAt + maxAgeMs` on each snapshot; the take answers `expiresAt` too.
+- **SN39 the apps.** Each app's door passes `retention: () => snapshotRetention(ctx.env, '<app>.app',
+knownItemOwnerScope(grant))`, the grant being the request's when it is this item's
+  (`@liveworkspace/media` `knownItemOwnerScope`: the team, else the owning account, null for a guest's item,
+  undefined where the grant names neither). liveplanner's door (`plan-room/plan-snapshots.ts`) passes it too.
+- **SN40 the line.** `ui/retention-note.tsx`: `SnapshotRetentionNote` draws the kit's `ProNote` (`limitKey
+"historyDays"`) with `retentionSentence(days)` when the list's `retention.days` is a number, its action from
+  `useOwnerView(retention.owner)`, and `othersRetentionSentence(days)` as its `others` for anyone who cannot act on
+  the owner's tier; `showsRetentionNote` lets History add its top block only then. `snapshotMeta`
+  appends `snapshotKeptUntil(expiresAt)`. `useSnapshots` holds `retention` from the list.
+
+Cost: with Pro off, nothing. With Pro on, a list, take or revert adds one entitlement read (cached 60 s per owner
+per isolate); a list or take on a tier with an age limit adds one two-statement batch.

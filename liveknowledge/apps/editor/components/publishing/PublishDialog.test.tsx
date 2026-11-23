@@ -6,6 +6,7 @@ import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PublishingState } from '@liveknowledge/api-schema';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
+import { setProForTests } from '@liveworkspace/subscription-ui/testing';
 
 const api = vi.hoisted(() => ({
   apiPublishingState: vi.fn(),
@@ -74,7 +75,9 @@ async function open(over: Record<string, unknown> = {}) {
   const utils = renderInEditor(<PublishHost />, chromeValue('edit', { tabs: TABS, ...over }));
   act(() => openPublishing());
   const dialog = await screen.findByRole('dialog', { name: 'Publish to the Web' });
-  await waitFor(() => expect(within(dialog).getByRole('status').textContent).not.toBe(''));
+  // The state's own line (a limit notice is a status too).
+  const status = () => dialog.querySelector('[data-publish-status] [role="status"]')!;
+  await waitFor(() => expect(status().textContent).not.toBe(''));
   return { ...utils, dialog };
 }
 const button = (name: string | RegExp) => screen.getByRole('button', { name });
@@ -268,5 +271,57 @@ describe('a published site', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog', { name: 'Publish to the Web' })).toBeNull(),
     );
+  });
+});
+
+describe('at the owner’s tier’s limit (Pro on)', () => {
+  beforeEach(() => setProForTests(true));
+  afterEach(() => setProForTests(null));
+  const limit = () => document.querySelector('[data-publish-limit]');
+
+  it('says so above What to Publish while every one the tier allows is published', async () => {
+    api.apiPublishingState.mockResolvedValue(
+      state({ usage: { used: 1, limit: 1 }, owner: 'p:user_me' }),
+    );
+    await open();
+    expect(limit()!.textContent).toContain(
+      'You have 1 public Knowledgebase, the most Free publishes. Unpublish one to publish this.',
+    );
+    // Publish stays on: the numbers may be from before an upgrade.
+    expect((button('Publish') as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('shows nothing below the limit, while published, or with no count', async () => {
+    api.apiPublishingState.mockResolvedValue(state({ usage: { used: 0, limit: 1 } }));
+    await open();
+    expect(limit()).toBeNull();
+    cleanup();
+    act(() => closePublishing());
+    api.apiPublishingState.mockResolvedValue(live({ usage: { used: 1, limit: 1 } }));
+    await open();
+    expect(limit()).toBeNull();
+    cleanup();
+    act(() => closePublishing());
+    api.apiPublishingState.mockResolvedValue(state({ usage: { limit: 1 } }));
+    await open();
+    expect(limit()).toBeNull();
+  });
+
+  it('shows a refused publish’s own numbers, not as a failure, and clears them once one lands', async () => {
+    api.apiPublish.mockRejectedValueOnce(
+      new ApiError('publish', 409, 'publish_limit_reached', {
+        error: 'publish_limit_reached',
+        limit: 'publicKnowledgebases',
+        used: 1,
+        max: 1,
+      }),
+    );
+    await open();
+    fireEvent.click(button('Publish'));
+    await waitFor(() => expect(limit()).not.toBeNull());
+    expect(screen.queryByRole('alert')).toBeNull();
+    api.apiPublish.mockResolvedValue(live());
+    fireEvent.click(button('Publish'));
+    await waitFor(() => expect(limit()).toBeNull());
   });
 });

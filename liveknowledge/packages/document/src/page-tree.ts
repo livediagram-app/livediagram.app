@@ -189,8 +189,10 @@ export function withPageTreeOrder<T extends TreePage>(pages: readonly T[]): read
 export function pageAddRefusal<T extends TreePage>(
   pages: readonly T[],
   parent?: string,
+  // The most pages the knowledgebase holds: its owner's tier's with Pro on (tiers.md), 500 with it off.
+  max: number = MAX_KNOWLEDGEBASE_PAGES,
 ): PageTreeRefusal | null {
-  if (pageCount(pages) >= MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
+  if (pageCount(pages) >= max) return 'page_limit';
   return placeRefusal(pages, parent);
 }
 
@@ -320,10 +322,13 @@ export function withPageDeleted<T extends TreePage>(pages: readonly T[], id: str
   return listOf(left, shapeOf(left));
 }
 
-/** Whether a list of pages is within the tree's limits: at most MAX_KNOWLEDGEBASE_PAGES, none below MAX_PAGE_DEPTH.
- *  What the room checks before it takes a change to the tree. */
-export function pageTreeRefusal<T extends TreePage>(pages: readonly T[]): PageTreeRefusal | null {
-  if (pageCount(pages) > MAX_KNOWLEDGEBASE_PAGES) return 'page_limit';
+/** Whether a list of pages is within the tree's limits: at most `max` (MAX_KNOWLEDGEBASE_PAGES unless the tier says),
+ *  none below MAX_PAGE_DEPTH. What the room checks before it takes a change to the tree. */
+export function pageTreeRefusal<T extends TreePage>(
+  pages: readonly T[],
+  max: number = MAX_KNOWLEDGEBASE_PAGES,
+): PageTreeRefusal | null {
+  if (pageCount(pages) > max) return 'page_limit';
   const { children } = shapeOf(pages);
   let deepest = 0;
   for (const top of children.get(ROOT)!) deepest = Math.max(deepest, subtreeLevels(children, top));

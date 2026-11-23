@@ -2,6 +2,7 @@
 import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SettingsAppId } from '@liveworkspace/settings-ui';
+import * as settingsUi from '@liveworkspace/settings-ui';
 import { configureWorkbench, resetWorkbenchForTests, WORKBENCH_DEFAULTS } from '../../../bindings';
 import { ACCOUNT_SETTINGS_PARAM, createSettingsPanelHost } from './settings-panel-host';
 
@@ -56,6 +57,15 @@ describe('createSettingsPanelHost', () => {
     expect(host.settingsParam).toBe(ACCOUNT_SETTINGS_PARAM);
     expect(host.workspaceOrigin).toMatch(/^https?:\/\//);
     expect(host.helpHref?.startsWith(host.workspaceOrigin)).toBe(true);
+  });
+
+  it("points Settings' Subscription at liveworkspace's origin for this host", () => {
+    const panels = vi.spyOn(settingsUi, 'accountPanels');
+    createSettingsPanelHost('livediagram');
+    const host = panels.mock.calls[0]![0];
+    const origin = host.subscription?.origin;
+    expect(typeof origin === 'function' ? origin() : origin).toMatch(/^https?:\/\//);
+    panels.mockRestore();
   });
 
   it("carries the Account section's sign-in panel", () => {

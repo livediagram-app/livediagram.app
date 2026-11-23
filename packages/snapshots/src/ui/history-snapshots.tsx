@@ -14,6 +14,14 @@ import { SnapshotGlyph } from './glyphs';
 import { SnapshotButton, SnapshotNotices } from './snapshot-parts';
 import { SnapshotRow, type RowConfirm } from './SnapshotRow';
 import { useSnapshots } from './useSnapshots';
+import type { SnapshotRetentionInfo } from '../wire';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
+
+// The quiet line about what the owner's tier keeps (Pro on only), loaded when it first shows: this module is in the
+// editor's first load, and the kit's note is not.
+const SnapshotRetentionNote = lazy(() =>
+  import('./retention-note').then((m) => ({ default: m.SnapshotRetentionNote })),
+);
 
 const SnapshotsDialog = lazy(() =>
   import('./SnapshotsDialog').then((m) => ({ default: m.SnapshotsDialog })),
@@ -30,6 +38,12 @@ export type HistorySnapshotsHost = {
   Alone: ComponentType<{ onClose: () => void; after?: ReactNode }>;
 };
 
+/** Whether there is a retention line to draw: Pro on in the build, and the server answered a tier that keeps
+ *  snapshots for a time. */
+export function keepsForATime(retention: SnapshotRetentionInfo | null): boolean {
+  return proOn() && retention !== null && retention.days !== null;
+}
+
 /** Snapshots as History's top block and pins, for the open door. */
 export function useSnapshotsExtras(door: SnapshotsDoor, now = Date.now): HistoryExtras {
   const state = useSnapshots(door.api);
@@ -38,11 +52,17 @@ export function useSnapshotsExtras(door: SnapshotsDoor, now = Date.now): History
   const working = state.busy !== null || state.reverted;
   // The Snapshot button sits full width at History's foot; the notices under the filter.
   const action = <SnapshotButton state={state} />;
-  // Only while there is a notice: an empty block drew a second rule under the filter.
+  // Only while there is a notice, or the owner's tier keeps snapshots for a time (the quiet line, with Pro on): an
+  // empty block drew a second rule under the filter.
   const top =
-    state.error || state.reverted ? (
+    state.error || state.reverted || keepsForATime(state.retention) ? (
       <div data-history-snapshots="" className="flex flex-col gap-2">
         <SnapshotNotices state={state} className="" />
+        {keepsForATime(state.retention) ? (
+          <Suspense fallback={null}>
+            <SnapshotRetentionNote retention={state.retention} layout="box" />
+          </Suspense>
+        ) : null}
       </div>
     ) : null;
   const pins: HistoryPin[] = (state.snapshots ?? []).map((snapshot) => ({

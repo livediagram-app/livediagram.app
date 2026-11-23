@@ -9,6 +9,7 @@ import { readProjectFile } from '../plan-room/project-file';
 import { INDEX_APP, indexFor } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
+import { rulesCopyMax } from '../plan-room/tier/room-tier';
 
 // `source`: a Drive file's `import`, or a project kit's `template` (internal-template.ts).
 export function importProjectFileFor(
@@ -21,7 +22,7 @@ export function importProjectFileFor(
     INDEX_APP,
     input,
     {
-      read: (file) => readProjectFile(file),
+      read: (file) => readProjectFile(file, undefined, { rulesMax: rulesCopyMax() }),
       title: (name) => capStoredName(name, null, 'project') || 'Untitled',
       write: (id, content, name) =>
         planRoom(env, id).importFile({ ...content, name, ownerId: input.owner }),

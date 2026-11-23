@@ -2,7 +2,7 @@
 
 import { CountBadge, DialogCloseButton } from '@livehuddle/ui';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { apiDeleteImage, type ImageSummary } from '@/lib/api-client';
 import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
@@ -13,6 +13,8 @@ import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
 import { Callout } from '@liveworkspace/ui/callout';
+import { ImageLimitNotice } from '@liveworkspace/subscription-ui';
+import type { ImageLimitRefusal } from '@liveworkspace/subscription-ui/images';
 
 // Three-tab modal launched from the Image element's placeholder + the
 // "Upload image" palette button. Tab 1 (Upload) accepts a file via
@@ -64,11 +66,15 @@ export function ImagePicker({
     pick,
   } = useImageGallery(ownerId, documentId);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  // A tier's limit refused the upload (Pro on): drawn as the shared notice in place of the plain line.
+  const [uploadLimit, setUploadLimit] = useState<ImageLimitRefusal | null>(null);
+  const uploadZone = useRef<HTMLDivElement>(null);
   const [uploading, setUploading] = useState(false);
   const confirm = useConfirm();
 
   const handleFile = async (file: File) => {
     setUploadError(null);
+    setUploadLimit(null);
     setUploading(true);
     try {
       // Cloud documents upload to the gallery; offline documents embed the
@@ -76,7 +82,9 @@ export function ImagePicker({
       const { image } = await addImageFileForDocument(ownerId, documentId, file);
       onSelect(image);
     } catch (e) {
-      setUploadError(e instanceof ImageUploadError ? e.message : 'Upload failed.');
+      const limit = e instanceof ImageUploadError ? e.limit : null;
+      if (limit) setUploadLimit(limit);
+      else setUploadError(e instanceof ImageUploadError ? e.message : 'Upload failed.');
     } finally {
       setUploading(false);
     }
@@ -161,14 +169,32 @@ export function ImagePicker({
       </nav>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {tab === 'upload' ? (
-          <ImageDropZone
-            onSelectFile={handleFile}
-            uploading={uploading}
-            error={uploadError}
-            prompt="Drop, paste, or click to choose an image"
-            heightClass="h-48"
-            gapClass="gap-2"
-          />
+          <div ref={uploadZone}>
+            <ImageDropZone
+              onSelectFile={handleFile}
+              uploading={uploading}
+              error={uploadError}
+              prompt="Drop, paste, or click to choose an image"
+              heightClass="h-48"
+              gapClass="gap-2"
+            />
+            {uploadLimit ? (
+              <ImageLimitNotice
+                refusal={uploadLimit}
+                className="mt-3"
+                onChooseAnother={
+                  uploadLimit.kind === 'too_large'
+                    ? () =>
+                        uploadZone.current
+                          ?.querySelector<HTMLInputElement>('input[type="file"]')
+                          ?.click()
+                    : undefined
+                }
+                // Where images are deleted: this picker's own Gallery.
+                onManageImages={() => setTab('gallery')}
+              />
+            ) : null}
+          </div>
         ) : tab === 'search' ? (
           <ImageSearchPane ownerId={ownerId} documentId={documentId} onPicked={onSelect} />
         ) : (

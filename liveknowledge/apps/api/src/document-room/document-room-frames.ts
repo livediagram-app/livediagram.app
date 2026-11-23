@@ -2,7 +2,8 @@
 // grant, sync (catch-up), the selection lock, a follow, and a relayed op. Each takes the room.
 import type { PageTreeRefusal } from '@liveknowledge/document';
 import { OP_REFUSED_ID_MAX } from '@liveworkspace/api-schema/room-refusal';
-import { readStoredPagesSync, treeOpRefusal } from './page-tree-store';
+import { knowledgePagesMax } from '../knowledge/tier-limits';
+import { readStoredPagesSync, treeOpRefusal, type StoredPage } from './page-tree-store';
 import { DOCUMENT_FORMAT, isRoomOpRef, parseBuildId } from '@liveknowledge/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@liveknowledge/document';
 import { selectionFromOp } from '../room-selections';
@@ -282,8 +283,12 @@ export function refusesPageTreeOp(
   const sql = room.state.storage.sql;
   if (!id || !sql) return false;
   let reason: PageTreeRefusal | null;
+  let stored: StoredPage[];
   try {
-    reason = treeOpRefusal(readStoredPagesSync(sql, id), op);
+    stored = readStoredPagesSync(sql, id);
+    // The one knowledgebase's fixed bound: the relay cannot wait on the subscription service, so the owner's
+    // Knowledgebase Pages over all of theirs are met by the save that stores the page (tiers.md).
+    reason = treeOpRefusal(stored, op, knowledgePagesMax());
   } catch {
     // No schema yet (nothing stored): there is no tree to break.
     return false;

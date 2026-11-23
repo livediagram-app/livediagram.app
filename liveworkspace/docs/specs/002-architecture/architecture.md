@@ -9,18 +9,24 @@ Every service is a Cloudflare Worker on a path route of liveworkspace.app (`stag
 Path routes win over the site's custom domain, so Cloudflare sends each service its paths and the static site
 everything else:
 
-| Path                                                     | Worker                    | Spec                                              |
-| -------------------------------------------------------- | ------------------------- | ------------------------------------------------- |
-| `/api/auth/*`, `/api/account/*`, the two `/.well-known/` | accounts                  | [sign-in.md](../003-accounts/sign-in.md)          |
-| `/api/index*`                                            | index                     | [index-service.md](../004-index/index-service.md) |
-| `/api/drive*`                                            | drive                     | [drive.md](../005-drive/drive.md)                 |
-| `/api/media*`, `/api/previews*`                          | media                     | [media.md](../006-media/media.md)                 |
-| `/api/community*`                                        | community                 | [community.md](../007-community/community.md)     |
-| `/api/telemetry*`                                        | telemetry                 | [telemetry.md](../008-telemetry/telemetry.md)     |
-| `/api/status*`                                           | status                    | [status.md](../009-status/status.md)              |
-| everything else                                          | site (static assets only) | [site.md](../010-site/site.md)                    |
+| Path                                                     | Worker                    | Spec                                                   |
+| -------------------------------------------------------- | ------------------------- | ------------------------------------------------------ |
+| `/api/auth/*`, `/api/account/*`, the two `/.well-known/` | accounts                  | [sign-in.md](../003-accounts/sign-in.md)               |
+| `/api/index*`                                            | index                     | [index-service.md](../004-index/index-service.md)      |
+| `/api/drive*`                                            | drive                     | [drive.md](../005-drive/drive.md)                      |
+| `/api/media*`, `/api/previews*`                          | media                     | [media.md](../006-media/media.md)                      |
+| `/api/community*`                                        | community                 | [community.md](../007-community/community.md)          |
+| `/api/subscription*`                                     | subscription              | [subscription.md](../019-subscription/subscription.md) |
+| `/api/telemetry*`                                        | telemetry                 | [telemetry.md](../008-telemetry/telemetry.md)          |
+| `/api/status*`                                           | status                    | [status.md](../009-status/status.md)                   |
+| everything else                                          | site (static assets only) | [site.md](../010-site/site.md)                         |
 
 The site's pages therefore call `/api/…` on their own origin, with no cross-site requests and no CORS.
+
+The subscription Worker answers only where Pro is on (`PRO_ENABLED`,
+[subscription.md](../019-subscription/subscription.md#the-flag)): off, every one of its routes is a 404 and no other
+Worker calls it, so a deployment without Pro need not deploy it. An app's pages call it across origins, at
+liveworkspace.app, with CORS for the site and every app; no router forwards it.
 
 ## On an app's address
 
@@ -50,7 +56,9 @@ the router fetches the public route at `WORKSPACE_ORIGIN` and the other origins,
 - **A browser** calls a service with an accounts access token or a guest token as `Authorization: Bearer`, checked
   offline against accounts' keys (`/api/auth/jwks`).
 - **An app's server** calls a service with its key for that service (`INDEX_KEY`, `MEDIA_KEY`, `COMMUNITY_KEY`,
-  `TELEMETRY_KEY`), over HTTPS. Each service holds one secret per app (`<SERVICE>_KEY_<APP>`).
+  `TELEMETRY_KEY`, `SUBSCRIPTION_KEY`), over HTTPS. Each service holds one secret per app (`<SERVICE>_KEY_<APP>`).
+  The subscription service is called over the `SUBSCRIPTION` service binding where an app's Worker has one, and
+  media and the other platform Workers call it with the platform's own key, `SUBSCRIPTION_KEY_LIVEWORKSPACE`.
 - **A service calls another** over a service binding where both are platform Workers (accounts to the index,
   telemetry and Drive; the index to Drive; Drive and media to the index; status to livediagram's router and MCP;
   every app's router to the site, accounts, the index, Drive, media and the Community).

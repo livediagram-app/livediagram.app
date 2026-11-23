@@ -11,6 +11,7 @@ import type { AvatarBellOp } from './bell';
 import type { NudgeOp, NudgeRefusedOp } from './nudge';
 import type { GameEventOp, GameInputOp } from './table-game';
 import type { CallsModeOp } from './calls-mode';
+import type { CallMinutesOp } from './call-minutes';
 import type { DragPreviewPatch, DragPreviewRide } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 
@@ -132,6 +133,8 @@ export type RoomOp =
   | GameEventOp
   // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md): system only, from the room.
   | CallsModeOp
+  // The Space's owner's call minutes (docs/specs/012-collaboration/call-minutes.md): system only, from the room.
+  | CallMinutesOp
   // A dragger's live preview (docs/specs/008-canvas/drag-preview.md): one geometry patch per changed
   // element, or for a very large move one shared offset (`ride`, in place of `patches`, so an editor that
   // does not know it drops the op and sees the move on release); `end` says the preview is over, `landed`

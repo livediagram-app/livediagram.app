@@ -3,6 +3,7 @@
 // (`importedPageTab`: text only, the reader keeps http, https and mailto links and nothing that runs), added through
 // the editor's own page list so the autosave stores it like any page a person adds. Editor only: the caller gates
 // on `makePages`, and the tree and the room check again.
+import { openPagesMax } from '@/lib/knowledge-tier';
 import { pageAddRefusal, truncateName, withPageAdded, type Tab } from '@liveknowledge/document';
 import { PAGE_LINK_SCHEME, type PlannedPage } from '@liveknowledge/knowledge-import';
 import type { AskSource } from '@liveknowledge/api-schema';
@@ -43,7 +44,7 @@ export function makePage(
   },
   newId: () => string = () => crypto.randomUUID(),
 ): MadePage {
-  const refused = pageAddRefusal(editor.tabs, input.parent);
+  const refused = pageAddRefusal(editor.tabs, input.parent, openPagesMax());
   if (refused) return { ok: false, reason: pageTreeRefusalText(refused) };
   const page: PlannedPage = {
     key: 'p0',

@@ -918,6 +918,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "A call to a rule's Incoming Webhook address was refused for too many calls that minute.",
   'Plan|Ran|AutomationHookBudget':
     "A call to a rule's Incoming Webhook address was refused because the plan had used its runs for the day.",
+  'Plan|Ran|AutomationHookMonthUsed':
+    "A call to a rule's Incoming Webhook address was refused because the plan's owner had used this month's automation runs.",
   'Plan|Ran|AutomationHookInvalid':
     "A call to a rule's Incoming Webhook address was refused because its body couldn't be read.",
   'Plan|Ran|AutomationAiDraft':

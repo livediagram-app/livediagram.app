@@ -154,7 +154,8 @@ describe('the rule tools and verbs', () => {
       ['automations_need_editor', 403, 'an Editor of the whole design'],
       ['read_only_token', 403, 'this token is read-only'],
       ['automation_needs_a_person', 403, 'leave the revert_snapshot step out'],
-      ['automation_rules_full', 409, 'the design holds 50 rules'],
+      ['automation_rules_full', 409, 'the design holds 50, the most one can'],
+      ['automation_runs_used', 429, 'automation runs for this month are used'],
       ['automation_budget_spent', 429, 'the design has made its 1,000 runs today'],
     ];
     for (const [error, status, words] of cases) {

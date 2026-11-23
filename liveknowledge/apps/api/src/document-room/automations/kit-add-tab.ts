@@ -4,7 +4,8 @@
 // seeded create takes (routes/document-seed.ts compileSeededTabs, the same engine a `replace` changeset compiles
 // with) and the one tab write every save uses, last in order. Everyone with the document open sees it arrive, as an
 // ordered op a blipped socket replays.
-import { isValidTab, migrateIncomingTab, type Tab } from '@liveknowledge/document';
+import { isValidTab, migrateIncomingTab, pageCount, type Tab } from '@liveknowledge/document';
+import { countPages, knowledgePagesMax } from '../../knowledge/tier-limits';
 import { KINDS } from '@liveknowledge/document/automations';
 import { templateKindOf } from '@liveknowledge/templates';
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
@@ -27,6 +28,22 @@ export async function addTemplateTab(
   name: string,
 ): Promise<{ id: string; name: string } | { failed: string }> {
   const outline = await readDocumentOutline(env, documentId);
+  // A full knowledgebase takes no new page from a rule either (tiers.md): its fixed bound, then its owner's
+  // Knowledgebase Pages over all of theirs.
+  const max = knowledgePagesMax();
+  if (outline.meta && pageCount(outline.tabs) >= max)
+    return {
+      failed: `This knowledgebase holds ${max.toLocaleString('en-US')} pages, the most it can.`,
+    };
+  if (outline.meta) {
+    const over = await countPages(room.tier, documentId, pageCount(outline.tabs) + 1);
+    if (over === 'unavailable')
+      return { failed: 'Couldn’t check the owner’s pages. Try again later.' };
+    if (over)
+      return {
+        failed: `The owner’s Knowledgebases hold ${over.max.toLocaleString('en-US')} pages, the most they can.`,
+      };
+  }
   return addItemTab<Tab>(
     {
       itemWord: KINDS.itemWord,

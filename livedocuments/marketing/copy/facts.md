@@ -56,7 +56,9 @@ value is the team, not the individual.
 ## Open source and price
 
 - MIT-licensed and publicly viewable.
-- Hosted free at livedocuments.app. No paid tier and no plan to introduce one.
+- Hosted free at livedocuments.app, every feature on the free plan, no trial or card.
+  Pro raises a few limits: don't claim there is no paid tier, and don't lead
+  with Pro.
 - The open-source core never calls home and never gates features behind a
   license check. Sign-in through liveworkspace accounts is optional; guests
   get saving, sharing and real-time collaboration without it.

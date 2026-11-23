@@ -40,7 +40,7 @@ export function DescribeFormHost({ onClose }: { onClose: () => void }) {
         '/sign-in/',
         `${window.location.pathname}${window.location.search}${window.location.hash}`,
       )}
-      draft={(prompt) => draftForm(ctx.selfParticipant.id, prompt)}
+      draft={(prompt) => draftForm(ctx.selfParticipant.id, prompt, ctx.projectId)}
       options={options}
       current={current}
       typeLabelFor={(heading) => uniqueTypeLabel(heading, types ?? [])}

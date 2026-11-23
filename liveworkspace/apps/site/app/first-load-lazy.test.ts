@@ -56,3 +56,16 @@ describe('every page’s first load', () => {
     );
   });
 });
+
+describe('Pro in the Explorer’s first load', () => {
+  it('the upload ceiling reads Largest Image alone, not the whole limits table', () => {
+    // The gallery's upload check is on the Explorer's first load: importing TIER_LIMITS there put the table (about
+    // 0.5 KiB gzipped) on it for one number (packages/subscription/src/image-sizes.ts).
+    const src = readFileSync(
+      join(root, '../../../packages/subscription-ui/src/images/image-limits.ts'),
+      'utf8',
+    );
+    expect(src).toContain('IMAGE_MAX_BYTES_ANY_TIER');
+    expect(src).not.toMatch(/\bTIER_LIMITS\b|\bTIERS\b/);
+  });
+});

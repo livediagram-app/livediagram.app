@@ -81,6 +81,20 @@ export interface RouteSpec {
 // are the ONLY hand-written shapes; the payloads they reference come from the
 // generated component schemas.
 const ref = (name: string) => ({ $ref: `#/components/schemas/${name}` });
+// With subscriptions on, what the caller's pictures use of their Image Storage, on the list of their images
+// (liveworkspace/docs/specs/006-media/media.md "With Pro on"); left out with them off.
+const imageStorage = {
+  type: 'object',
+  description:
+    "Only with subscriptions on: what the caller's images use of their tier's Image Storage, in bytes, the largest one image may be, and the owner scope whose tier set them.",
+  properties: {
+    used: { type: 'integer' },
+    limit: { type: 'integer' },
+    maxImageBytes: { type: 'integer' },
+    owner: { type: ['string', 'null'] },
+  },
+  required: ['used', 'limit', 'maxImageBytes', 'owner'],
+};
 const listOf = (key: string, name: string): BodySchema => ({
   type: 'object',
   properties: { [key]: { type: 'array', items: ref(name) } },
@@ -766,7 +780,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      "The plan's rules in their order, each with its last run, its runs this week, its failures in a row and what it names that the plan lacks; and the runs today against the day's budget. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.",
+      "The plan's rules in their order, each with its last run, its runs this week, its failures in a row and what it names that the plan lacks; and the runs today against the plan's fixed 1,000 a day. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.",
     auth: 'clerk',
     tokenUsable: true,
     responseSchema: 'AutomationsListResponse',
@@ -778,7 +792,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Make a rule, last in the list: on once it has an action. Up to 50 rules, names unique. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
+      'Make a rule, last in the list: on once it has an action. Up to the plan’s rule limit (rulesMax on the list; 50 unless its owner’s tier sets another), names unique. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'AutomationRuleBody',
@@ -1130,7 +1144,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'projects',
     tag: 'Automations',
     summary:
-      'Run a Run from a Card rule that is on, on one card, now. Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
+      'Run a Run from a Card rule that is on, on one card, now. 429 automation_budget_spent past the plan’s 1,000 runs a day, 429 automation_runs_used once the owner’s month of automation runs is used (Retry-After until the 1st, UTC). Needs edit access to the whole plan, signed in or through that person’s API token (a read-only token only reads); never a link to one tab.',
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'AutomationRunNowRequest',
@@ -2074,7 +2088,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'images',
     tag: 'Images',
     summary:
-      "Upload a picture for an Image field of plan p (raw bytes, up to 10 MB; PNG, JPEG, WebP or GIF; X-Image-Width, X-Image-Height and X-Image-Original-Name headers). Into the caller's gallery at liveworkspace's media service; the plan may then serve it. An Editor or a Participant of the plan.",
+      "Upload a picture for an Image field of plan p (raw bytes, up to 10 MB; PNG, JPEG, WebP or GIF; X-Image-Width, X-Image-Height and X-Image-Original-Name headers). Into the caller's gallery at liveworkspace's media service; the plan may then serve it. An Editor or a Participant of the plan. 413 file_too_large names the cap in limitBytes; with subscriptions on the cap is a tier's (the better of the caller's and the plan owner's: 5 MB on Free, 25 MB on Pro and Pro for Teams) and the refusal also carries limit, current and owner.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -2171,6 +2185,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
             required: ['id', 'contentType', 'byteSize', 'width', 'height', 'createdAt'],
           },
         },
+        storage: imageStorage,
       },
       required: ['images'],
     },

@@ -25,6 +25,7 @@
       "default": "./scripts/hosted-vars.mjs"
     },
     "./image-ref-index": "./src/image-ref-index.ts",
+    "./image-upload": "./src/image-upload.ts",
     "./image-refs": "./src/image-refs.ts",
     "./oauth": "./src/oauth.ts",
     "./openapi-route": "./src/openapi-route.ts",
@@ -74,7 +75,8 @@
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/media": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
-    "@liveworkspace/sites": "workspace:*"
+    "@liveworkspace/sites": "workspace:*",
+    "@liveworkspace/subscription": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261118.1",

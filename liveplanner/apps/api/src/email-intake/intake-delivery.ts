@@ -17,6 +17,9 @@ import { senderHash } from './intake-code';
 import { planMemberAddresses } from './intake-members';
 import { attachPictures } from './intake-pictures';
 import { countIntake, intakeByCode, takeIntakeHour } from './intake-store';
+import { monthKey, refusedByService } from '@liveworkspace/subscription';
+import { EMAIL_METER, markMonthFull, monthFull } from '../plan-room/tier/plan-meters';
+import { tierOn } from '../plan-room/tier/plan-tier';
 
 /** A message the worker read, for the room to take: or only the news that one failing its checks was dropped. */
 export type IntakeDelivery =
@@ -30,7 +33,15 @@ export type IntakeDelivery =
   | { code: string; dropped: true };
 
 export type IntakeOutcome =
-  'made' | 'counted' | 'gone' | 'refused_sender' | 'busy' | 'unavailable' | 'failed';
+  | 'made'
+  | 'counted'
+  | 'gone'
+  | 'refused_sender'
+  | 'busy'
+  // The owner's month of email is used (Pro on only: email-to-board.md "Tiers").
+  | 'month_limit'
+  | 'unavailable'
+  | 'failed';
 
 /** What the room lends a delivery: its env, whether its plan is put away, its picture grants and its write's tail. */
 export type IntakeRoom = {
@@ -103,8 +114,29 @@ export async function deliverIntake(
       return 'refused_sender';
     }
   }
+  // With Pro on, the owner's month: their tier's emails, over every plan they own (spec "Tiers"). A plan that found
+  // it used reads so until the month turns or the limit grows, asking for the owner's limits once more first (they
+  // may have upgraded a moment ago).
+  const tier = await tierOn(env);
+  const month = tier?.owner ? monthKey(now) : null;
+  const limitNow = () => tier!.limit('emailToBoardPerMonth', 0);
+  if (month !== null && (await monthFull(env, planId, EMAIL_METER, month, limitNow()))) {
+    if (!(await tier!.recheck()) || (await monthFull(env, planId, EMAIL_METER, month, limitNow())))
+      return 'month_limit';
+  }
   const hash = await senderHash(sender);
   if (!(await takeIntakeHour(env, intake.code, hash, now))) return 'busy';
+  // One of the owner's month, spent once the hour's caps let the mail through and before anything is made. A card
+  // that then fails to be made keeps its spend: the service has no refund, and such a failure is rare. Out of reach,
+  // it goes through uncounted; refused by the service, it cannot be checked and is sent again later.
+  if (month !== null) {
+    const spent = await tier!.spend('emailToBoard');
+    if (spent && !spent.ok) {
+      if (refusedByService(spent)) return 'unavailable';
+      await markMonthFull(env, planId, EMAIL_METER, month, spent.limit ?? limitNow());
+      return 'month_limit';
+    }
+  }
   const pictures = await attachPictures(
     env,
     { id: planId, ownerId: plan.owner_id },

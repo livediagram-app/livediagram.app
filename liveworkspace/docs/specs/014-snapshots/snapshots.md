@@ -12,8 +12,18 @@ item to it. A revert puts the item back for everyone with it open. An item's
 
 Snapshots are save points, not an activity log: nothing is taken unless a person or one of the item's rules asks, no
 edit is recorded one by one, and nothing is kept beyond the latest five and the few a rule names. They replace the hourly snapshots, the operation log and the Free and Pro
-retention ideas (the owner's direction, 2026-11-15). They cost nothing extra and have no paid tier, like every other
-feature.
+retention ideas (the owner's direction, 2026-11-15). They are on every tier.
+
+**With Pro on** ([subscription.md](../019-subscription/subscription.md) "Tiers and limits") the item's owner's tier sets
+how much is kept: on Free the latest five, each for 7 days from when it was taken; on Pro and Pro for Teams the latest
+50, with no age limit. A snapshot past its 7 days is dropped the next time the item's snapshots are listed or one is
+taken, never while a revert to it is running. With Pro off nothing changes: the latest five, kept until pushed out.
+
+While the item's owner's tier cannot be learnt (the item names no owner to the app, or the subscription service
+cannot say), nothing is dropped for its age and the latest **five** are kept, as on Free: not knowing never gives an
+item more than Free keeps. An item that already holds more than five keeps them (they can only be a paying owner's,
+and a dropped snapshot cannot be brought back), up to 50. A snapshot one of the item's rules names is kept beside these, whatever the tier, and is never dropped for its age. The dialog then says how many are kept and nothing of a
+tier.
 
 livedocuments' Version History (its `006-document/version-history.md`) is a different thing kept beside them:
 automatic versions of one tab, named or not, restored one tab at a time. A snapshot is the whole document, taken by a
@@ -217,6 +227,16 @@ On their own (no timeline), the same parts in a list:
   never the empty state, which would say there are none.
 - While a request runs its button says so and the others wait; a refusal shows its message in the dialog.
 
+With Pro on, where the item's owner's tier keeps snapshots for a time (Free), a quiet line says so:
+"Free keeps snapshots for 7 days. Pro keeps them forever." and **See Pro**, wearing the Pro mark, for someone who may upgrade the owner (the
+owner, or a team's admin; a team's member sees **Ask an Admin**). Anyone else (a collaborator, a signed-out visitor,
+or while the owner's view is still loading) reads "Snapshots here are kept for 7 days." with no badge and no tier
+named: a collaborator is never told the owner's tier ([subscription.md](../019-subscription/subscription.md) "Who pays
+for an item"). It closes the list
+in the Snapshots dialog and sits over the timeline in History. Each snapshot's line ends with when it goes ("Kept
+until 27 Nov"), and the dialog's subtitle counts what the tier keeps ("The latest 50 are kept"). None of it is drawn
+with Pro off or on Pro.
+
 Either way, Escape inside a row's confirm cancels the confirm; the next Escape goes back to the Tools list. The data,
 routes and telemetry names are unchanged: History draws the same list from the same calls.
 
@@ -226,12 +246,19 @@ Under each app's item route (`/api/projects/<id>`, `/api/documents/<id>`, `/api/
 
 | Method and path                          | Does                                | Answers                                                 |
 | ---------------------------------------- | ----------------------------------- | ------------------------------------------------------- |
-| `GET    …/snapshots`                     | Lists them, newest first, no bodies | 200 `{ snapshots, kept }`                               |
+| `GET    …/snapshots`                     | Lists them, newest first, no bodies | 200 `{ snapshots, kept }` (`retention` with Pro on)     |
 | `POST   …/snapshots` `{ name? }`         | Takes one of the item now           | 201 `{ snapshot }`, 413 `snapshot_too_large`            |
 | `DELETE …/snapshots/<snapshotId>`        | Deletes one                         | 204, 404, 409 `snapshot_kept`                           |
 | `POST   …/snapshots/<snapshotId>/revert` | Reverts to one (steps above)        | 200 `{ reverted }`, 404, 413, 422 `snapshot_unreadable` |
 
-Each refuses a token (403) and answers 404 to anyone else who may not use snapshots. In the list each snapshot
+Each refuses a token (403) and answers 404 to anyone else who may not use snapshots.
+
+With Pro on the list also answers `retention: { days, owner }` (`days` null where there is no age limit; `owner` the
+item's owner as a scope, null for a guest's item), `kept` is what the tier keeps (5 or 50), and each snapshot on a
+tier that keeps them for a time carries `expiresAt`. The tier is read by the server from the item's owner in the
+index's grant, and only a tier the subscription service confirmed is applied: while the owner is not named, or the
+service cannot say with nothing remembered, nothing is dropped for its age, the latest 50 stay and no `retention` is
+answered. In the list each snapshot
 carries `kept: true | false` (a rule names it); the list's own `kept` is the five.
 
 ## Telemetry

@@ -9,6 +9,7 @@ import { NAME_MAX_LENGTH } from '@livedocuments/document';
 import { Button, CompactEmptyState, SwitchRow, TextInput } from '@livedocuments/ui';
 import { HistoryIcon } from './history-tools-item';
 import type { VersionList } from './useVersionHistory';
+import { VersionRetentionNote } from './VersionRetentionNote';
 import { timeOfDay, versionsByDay, versionTitle } from './version-words';
 
 export const NOW = 'now';
@@ -127,6 +128,7 @@ export function VersionRail(props: RailProps) {
           </section>
         ))}
       </nav>
+      {list.state === 'ready' ? <VersionRetentionNote retention={list.retention ?? null} /> : null}
       {versions.some((v) => v.name !== null) ? (
         <div className="border-t border-slate-200 px-3 py-2 dark:border-slate-800">
           <SwitchRow checked={onlyNamed} onChange={setOnlyNamed} className="w-full text-xs">

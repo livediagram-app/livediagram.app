@@ -8,8 +8,6 @@
 // rule at once. A time trigger's rule lists its next moment (`stats.nextAt`), and tests on the chosen card as if its
 // moment had come.
 import {
-  AUTOMATION_RULES_MAX,
-  AUTOMATION_RUNS_PER_DAY,
   INCOMING_WEBHOOK_PERSON,
   EMAIL_TEST_PERSON,
   automationPerson,
@@ -62,8 +60,19 @@ import { writer } from './item-route-kit';
 import { githubConfig } from '../github/github-config';
 import { readConnection } from '../plan-room/github/github-store';
 import { gateEdit, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
+import { tierOn, type PlanTier } from '../plan-room/tier/plan-tier';
+import { tierRefusal } from '../plan-room/tier/tier-refusal';
+import {
+  listTier,
+  recountRules,
+  rulesAtLimit,
+  rulesOverLimit,
+  runsUsedBody,
+  type RulesFull,
+} from './automation-tier';
 
-// `ai`: the caller is an API token (an agent), whose stamps and Run Rule say so.
+// `ai`: the caller is an API token (an agent), whose stamps and Run Rule say so. `tier`: the plan's owner's limits,
+// current for this request, with Pro on; null with it off (spec "Tiers").
 // `account`: the signed-in account behind `by`, kept on the stamp so a step in another app acts as it.
 export type Gated = {
   projectId: string;
@@ -71,6 +80,7 @@ export type Gated = {
   by: ItemPerson;
   ai: boolean;
   account: string;
+  tier: PlanTier | null;
 };
 
 const refuse = (
@@ -80,6 +90,20 @@ const refuse = (
 ) => json({ error, ...more } satisfies AutomationErrorBody, { status });
 
 const notFoundRule = () => refuse(404, 'automation_not_found');
+
+// No rule may be added: with Pro on, the owner's total names their tier's limit (and a guest's plan says it is one);
+// the plan's own fixed 50 names none.
+const rulesFull = (g: Gated, full: RulesFull) =>
+  refuse(
+    409,
+    'automation_rules_full',
+    full.owner || g.tier?.guest ? tierRefusal(g.tier, 'automationRules', full.used, full.max) : {},
+  );
+
+// The plan's rule count told again where it moved past the one just told (another add landed meanwhile).
+const recounted = (g: Gated, told: number) => {
+  if (g.hook.store.count() !== told) recountRules(g.tier, g.projectId, g.hook.store);
+};
 
 // Who may come through (spec "Who may do what"): a signed-in person, or an API token of one (its account verified),
 // never a workbench session, a guest or a link visitor with no account.
@@ -108,7 +132,9 @@ async function gate(ctx: PlanRouteContext, projectId: string): Promise<Gated | R
     });
     return refuse(403, 'automations_need_editor');
   }
-  return { projectId, hook, by: await writer(ctx, owner), ai: !!ctx.token, account: owner };
+  // The plan's limits are its owner's, whoever calls: read once a request at most, here, before any rule work.
+  const tier = await tierOn(ctx.env);
+  return { projectId, hook, by: await writer(ctx, owner), ai: !!ctx.token, account: owner, tier };
 }
 
 // A stamp of the caller now: an agent's says so (spec "Agents and the CLI", "Who it was").
@@ -218,7 +244,7 @@ async function list(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const answer: AutomationsListResponse = {
     rules: rules.map((r) => listed(g.hook, plan, r, stats, nextAts, hooks, github)),
     runsToday: runsToday(g.hook.sql(), now),
-    runsPerDay: AUTOMATION_RUNS_PER_DAY,
+    ...listTier(g.hook.store, g.tier),
     // What an agent names people by, and words them with (spec "Agents and the CLI").
     people: plan.outline.people.map((p) => ({ id: p.id, name: p.name })),
     // The boards' saved filters by name, so an agent's sentence reads "Matches Open Bugs".
@@ -299,11 +325,14 @@ async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
   const body = await bodyOf(ctx, g.projectId);
   if (body instanceof Response) return body;
   const rules = g.hook.store.list();
-  if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
   const snapped = snapshotRefusal(g, body, rules);
   if (snapped) return snapped;
   if (ruleNameTaken(body.name, rules))
     return refuse(409, 'automation_name_taken', { path: 'name' });
+  // With Pro on the owner's total is asked (and the new count recorded when it is taken).
+  const held = g.hook.store.count();
+  const full = await rulesAtLimit(g.hook.store, g.tier, held, g.projectId);
+  if (full) return rulesFull(g, full);
   const stamp = stampOf(g);
   const rule: AutomationRule = {
     ...body,
@@ -313,6 +342,7 @@ async function create(ctx: PlanRouteContext, g: Gated): Promise<Response> {
     edited: stamp,
   };
   g.hook.store.insert(rule);
+  recounted(g, held + 1);
   console.info('[automations] rule.made', { trigger: rule.trigger.kind, enabled: rule.enabled });
   return answerRule(ctx, g, rule, 201);
 }
@@ -360,6 +390,11 @@ async function toggle(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Pr
       path: 'steps',
       message: 'a rule needs an action to be on',
     });
+  // A plan over its tier's rules (kept when its tier dropped) switches nothing on until it is back within it.
+  if (enabled && !held.enabled) {
+    const over = await rulesOverLimit(g.hook.store, g.tier, g.hook.store.count(), g.projectId);
+    if (over) return rulesFull(g, over);
+  }
   const { paused: _paused, ...rest } = held;
   const rule: AutomationRule = enabled ? { ...rest, enabled } : { ...held, enabled };
   g.hook.store.update(rule, enabled ? 0 : undefined);
@@ -368,8 +403,10 @@ async function toggle(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Pr
 }
 
 async function duplicate(ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
+  const full = await rulesAtLimit(g.hook.store, g.tier, g.hook.store.count(), g.projectId);
+  if (full) return rulesFull(g, full);
+  // The rules as they are after the ask, so the copy's name is free among any added meanwhile.
   const rules = g.hook.store.list();
-  if (rules.length >= AUTOMATION_RULES_MAX) return refuse(409, 'automation_rules_full');
   // A copy names the same snapshots, so it keeps no more; a token still may not make a rule that reverts.
   const snapped = snapshotRefusal(g, held, rules);
   if (snapped) return snapped;
@@ -384,6 +421,7 @@ async function duplicate(ctx: PlanRouteContext, g: Gated, held: AutomationRule):
     edited: stamp,
   };
   g.hook.store.insert(rule);
+  recounted(g, rules.length + 1);
   return answerRule(ctx, g, rule, 201);
 }
 
@@ -490,7 +528,15 @@ async function runNow(ctx: PlanRouteContext, g: Gated, read: AutomationRule): Pr
     held,
     manualEvent(g, card.id, 'm', held.id),
   );
-  return run ? json({ run }) : refuse(429, 'automation_budget_spent');
+  if (run) return json({ run });
+  const now = Date.now();
+  // With Pro on, the owner's month is used: 429 in the tier's numbers until the 1st (UTC).
+  if (g.hook.store.monthUsed(now)) {
+    const used = runsUsedBody(g.hook.store, g.tier, now);
+    return json(used.body, { status: 429, headers: { 'Retry-After': String(used.retryAfter) } });
+  }
+  // The plan's own fixed runs for the day are spent.
+  return refuse(429, 'automation_budget_spent');
 }
 
 const RESULTS: readonly AutomationResult[] = ['done', 'no_match', 'skipped', 'failed', 'waiting'];
@@ -518,6 +564,7 @@ type RuleDoor = (ctx: PlanRouteContext, g: Gated, held: AutomationRule) => Promi
 
 function remove(_ctx: PlanRouteContext, g: Gated, held: AutomationRule): Promise<Response> {
   g.hook.store.remove(held.id);
+  recountRules(g.tier, g.projectId, g.hook.store);
   return Promise.resolve(noContent());
 }
 

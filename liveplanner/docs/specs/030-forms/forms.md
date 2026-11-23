@@ -1190,6 +1190,46 @@ session can add content elsewhere, never to a form.
   answers the same `404 form_not_found`.
 - No respondent identity is kept: no address, no account, no cookie. A response's card carries the answers alone.
 
+### Tiers
+
+With Pro off nothing here applies. With [Pro on](../../../../liveworkspace/docs/specs/019-subscription/subscription.md) each response spends one of the plan's **owner's** Form Responses
+for the UTC calendar month (Free 500, Pro 10,000, Pro for Teams 5,000 a member, pooled), counted over every form the
+owner has in every plan (owner, 2026-11-22): a team's for a plan in a team's library, otherwise the owning person's,
+never the respondent's or a collaborator's.
+
+- The spend is made once the response has its number, before its card or row is made; refused, the number goes
+  back. A Preview never spends. A response that then makes nothing (its card or row could not be written) gives its
+  number back but not its spend: the service has no refund, and such a failure is rare.
+- The hourly cap and the form's own Response Limit stay in force on every tier, and are checked first: a response
+  they turn away spends nothing.
+- A guest's plan and a plan that is nobody's yet spend nothing (019 "A guest's item"): the hourly cap and the
+  Response Limit are all they have.
+- **Out of reach is not refused:** with the subscription service out of reach a response is taken, uncounted. When
+  the service refuses the request (it cannot be checked) the response is turned away as busy (`429 form_busy`, try
+  again), never as closed.
+- Past the owner's month the form reads **closed** to respondents, with one neutral message whatever the form's own
+  Closed Message says: "This form isn't accepting responses right now. Please try again later." It names no tier and
+  offers nothing. The refused response is `409 form_closed`. The link remembers the month it was refused in and the
+  limit it met, so the public page and later responses read closed with no call to the service.
+- The form opens again by itself on the first of the next month (UTC), or as soon as the owner's tier allows more
+  (a larger limit than the one met; a response that finds the link closed asks for the owner's limits once more
+  first, so a form opens on the response after an upgrade). Nothing about the form or its link changes: its switch
+  stays on.
+- The Form tab's link read carries `month` (`limit` and `full`) and `owner` (the owner's scope), so the editor can
+  say whether the form is paused and ask the subscription service which action to offer. What the owner used is
+  theirs alone (019 "What a collaborator is told"): the editor reads it from the owner's own subscription.
+- **What the editor shows** (Pro on only): Share Form, once published, and Settings show the owner or a member of
+  the owning team a meter, **Form responses this month** ("120 of 500"), over every form they own. A form that is
+  switched on with its owner's month used (the link read says so, or the meter's own count has reached the limit,
+  so the owner never sees a full meter beside Accepting Responses) reads **Paused** in the status bar, in amber (it opens again by itself, so
+  never the red Not Taking Responses), and under the bar a notice: "Your forms have taken Free's 500 responses for
+  the month. This form takes responses again on 1 December, or now with 10,000 a month on Pro." with **Upgrade to
+  Pro** for the plan's owner or an admin of the owning team (a team reads "This team's forms have taken…"), **Ask an
+  Admin** for another member of it, and for anyone else "This plan's owner has used this month's form responses.
+  This form takes responses again on 1 December." with no number, tier or offer. **View Responses** opens the tab
+  the responses go to. The lock strip under it then says "Live, so it can't be changed. Edit Form unlocks it while
+  you edit; its link stays the same.", since it takes no responses meanwhile.
+
 ## Agents
 
 An agent builds, reads, tries and publishes a form as an Editor does, through five MCP tools

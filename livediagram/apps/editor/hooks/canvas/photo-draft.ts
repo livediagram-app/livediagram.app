@@ -45,6 +45,9 @@ export type PhotoDraftState = {
   readerFallback?: ReaderFallback;
   // The last failure's token, for the toast. Cleared by the next attempt.
   error: string | null;
+  // With Pro on, a charged read waiting for the person to choose the AI (at its cost) or this device: the photo's
+  // notes, which set the cost (docs/specs/021-event-storming/note-reader.md "What the editor shows").
+  readChoice?: { notes: number };
 };
 
 export const EMPTY: PhotoDraftState = { stage: 'idle', found: 0, readSoFar: 0, error: null };
@@ -98,7 +101,8 @@ export type PhotoDraftDeps = {
   // the server model when there is one, the in-browser model when there is not
   // (docs/specs/021-event-storming/event-storming.md Phase 9). Never a gate on the import itself: both read.
   aiEnabled: boolean;
-  // A signed-in account, whose own AI key, when they have one, reads the notes (note-reader.md "On your own key").
+  // A signed-in account: whose own AI key, when they have one, reads the notes (note-reader.md "On your own key"),
+  // and, with Pro on, whose read on built-in AI is charged, so only theirs asks first ("What the editor shows").
   signedIn: boolean;
   createBlocked: boolean;
   // The gesture's three history verbs, exactly as the eraser and the drag use
@@ -142,6 +146,8 @@ export type PhotoDraftApi = {
   reread: (boxes: DetectedSticky[]) => void;
   // How many boxes are queued or being read again.
   rereading: number;
+  // The choice before a charged read (`state.readChoice`): read with AI, or on this device for nothing.
+  chooseRead: (onDevice: boolean) => void;
 };
 
 export const ERROR_TOASTS: Record<string, string> = {

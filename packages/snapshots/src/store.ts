@@ -136,6 +136,27 @@ export async function listSnapshots(db: SnapshotDb, itemId: string): Promise<Sna
   return (res.results ?? []).map(summaryOf);
 }
 
+/** With Pro on, a tier that keeps snapshots for a time: every snapshot of the item taken before `before` goes, with
+ *  its chunks (snapshots.md "With Pro on"). Only the item's own: a save point of one part of it is another item id. */
+export async function dropSnapshotsBefore(
+  db: SnapshotDb,
+  itemId: string,
+  before: number,
+  /** SN35: the snapshots a rule names, which are never dropped for their age either. */
+  keptIds: readonly string[] = [],
+): Promise<void> {
+  await ensureSchema(db);
+  await db.batch([
+    db
+      .prepare(
+        'DELETE FROM snapshots WHERE item_id = ? AND created_at < ? AND id NOT IN (SELECT value FROM json_each(?))',
+      )
+      .bind(itemId, before, JSON.stringify(keptIds)),
+    // A database without foreign keys on (a test's) keeps no orphan chunk either.
+    db.prepare('DELETE FROM snapshot_chunks WHERE snapshot_id NOT IN (SELECT id FROM snapshots)'),
+  ]);
+}
+
 /** One snapshot's summary, or null. */
 export async function getSnapshot(
   db: SnapshotDb,

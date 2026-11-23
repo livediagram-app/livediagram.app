@@ -13,13 +13,13 @@ const LIST: Alternative[] = [
     highlights: ['Logo Kit export', 'Photo layers and PSD', 'No account'],
     title: 'Figma alternative for logos and wireframes · livedesign',
     description:
-      'A free, open-source Figma alternative for logos, wireframes and photo edits: real-time editing, no account needed, and every feature free.',
+      'A free, open-source Figma alternative for logos, wireframes and photo edits: real-time editing, no account needed, and every feature on the free plan.',
     h1: 'A free, open-source Figma alternative for logos and wireframes',
     lede: 'Figma is the design tool most product teams already use. livedesign is smaller and more focused: logos on a square artboard, wireframes framed by their device and photos edited in layers, side by side as tabs of one design, edited live with your team and free for everyone.',
     rows: [
       {
         label: 'Price',
-        us: 'Free, every feature',
+        us: 'Free, every feature (a few limits rise on paid plans)',
         them: 'A free plan, with paid plans for more files and features',
       },
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'No, proprietary' },
@@ -73,7 +73,7 @@ const LIST: Alternative[] = [
       'An AI assistant connected over MCP can add logo, wireframe and photo pages for you, and in Claude a live view of the design opens beside the answer.',
       'A Personal or team Library: save any selection once, then drop it into every design.',
       '36 templates to start from, by what you are making: logos, brand boards and marks, clickable app and website wireframes for shopping, travel, social and work, and a photo to edit.',
-      'Free and MIT-licensed, with no paid tier.',
+      'Free and MIT-licensed, with every feature on the free plan.',
     ],
     sections: [
       {
@@ -93,7 +93,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Free, open and no account needed',
         paragraphs: [
-          'Figma has a free plan and paid plans for teams. livedesign has no paid tier at all: open the editor and start, and a guest’s design stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed.',
+          'Figma has a free plan and paid plans for teams. livedesign puts no feature behind a plan: open the editor and start, and a guest’s design stays in their browser until they press Share, which syncs it in one step. The whole product is MIT-licensed.',
         ],
       },
     ],
@@ -112,7 +112,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Is livedesign free?',
-        a: 'Yes. It is MIT-licensed open source with a free hosted version, every feature included, and no paid tier. You can even use it without creating an account at all.',
+        a: 'Yes. It is MIT-licensed open source with a free hosted version where every feature works, and no trial. You can even use it without creating an account at all.',
       },
     ],
   },

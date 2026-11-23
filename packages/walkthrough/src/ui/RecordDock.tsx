@@ -6,7 +6,6 @@
 // under the palette strip where the palette tray goes (owner, 2026-11-17, as "Click to drop" does); without a strip,
 // and for the save card, at the bottom centre of the canvas.
 
-import { WALKTHROUGH_MAX_MS } from '@liveworkspace/media/walkthrough';
 import { Button, ConfirmPopover } from '@liveworkspace/ui';
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -16,6 +15,7 @@ import {
   traySlot,
   usePaletteStripBox,
 } from '@liveworkspace/workbench/components/chrome/PaletteTray';
+import { stoppedAtLimit, stoppedNote } from '../limit-state';
 import { formatClock } from '../timeline';
 import {
   formatTimeLeft,
@@ -31,7 +31,6 @@ import { PickingBar } from './PickingBar';
 
 const CARD =
   'pointer-events-auto rounded-2xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-900/15 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/40';
-const LAST_MINUTE_MS = WALKTHROUGH_MAX_MS - 60_000;
 
 export function RecordDock({ walkthroughs }: { walkthroughs: Walkthroughs }) {
   const { recorder } = walkthroughs;
@@ -131,7 +130,8 @@ function DiscardButton({ onDiscard, size = 'sm' }: { onDiscard: () => void; size
 
 function RecordingBar({ walkthroughs, elapsed }: { walkthroughs: Walkthroughs; elapsed: number }) {
   const { recorder, discard } = walkthroughs;
-  const late = elapsed >= LAST_MINUTE_MS;
+  // The recorder's own limit: the server's with Pro on, else the length a walkthrough always had.
+  const late = elapsed >= recorder.maxMs - 60_000;
   return (
     <section
       aria-label="Recording"
@@ -147,7 +147,7 @@ function RecordingBar({ walkthroughs, elapsed }: { walkthroughs: Walkthroughs; e
           late ? 'text-amber-600 dark:text-amber-400' : 'text-slate-800 dark:text-slate-100'
         }`}
       >
-        {formatClock(elapsed)} / {formatClock(WALKTHROUGH_MAX_MS)}
+        {formatClock(elapsed)} / {formatClock(recorder.maxMs)}
         {late ? <span className="ml-1.5 font-normal">1 minute left</span> : null}
       </span>
       <LevelBar meter={recorder.meter} className="hidden w-14 md:block" />
@@ -174,7 +174,7 @@ function SaveCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
   const phase = recorder.phase;
   if (phase.kind !== 'review') return null;
   const saving = phase.saving !== null;
-  const stoppedAtLimit = phase.events.durationMs >= WALKTHROUGH_MAX_MS - 1000;
+  const stopped = stoppedAtLimit(phase.events.durationMs, recorder.maxMs);
   return (
     <section
       aria-label="Save Walkthrough"
@@ -186,7 +186,7 @@ function SaveCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
         </h2>
         <p className="mt-0.5 text-[12px] tabular-nums text-slate-500 dark:text-slate-400">
           {formatClock(phase.events.durationMs)} · {megabytes(phase.recorded.blob.size)} MB
-          {stoppedAtLimit ? ' · Stopped at 10 minutes, the longest a walkthrough may be.' : ''}
+          {stopped ? ` · ${stoppedNote(recorder.maxMs, walkthroughs.limits !== null)}` : ''}
         </p>
       </header>
       {saving ? (

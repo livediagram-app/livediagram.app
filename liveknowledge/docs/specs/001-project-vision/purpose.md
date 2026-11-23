@@ -29,4 +29,4 @@ one set of pages, kept right by the people who own them, read the same way by a 
 ## What it is not
 
 Not a document layout tool (that is livedocuments), not a chat, not a project tracker. liveknowledge is free and
-open source like every liveworkspace app, with no paid tier: a team that wants Ask brings its own Claude API key.
+open source like every liveworkspace app, with every feature on Free: Ask runs on built-in AI, or on the team's own key.

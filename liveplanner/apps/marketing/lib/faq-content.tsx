@@ -74,12 +74,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'free',
     title: 'Free to use',
-    blurb: 'No paid tier, no catch.',
+    blurb: 'Every feature, on the free plan.',
     icon: lucideGlyph(lucideGift, ICON),
     items: [
       {
         q: 'Is it really free?',
-        a: 'Yes. Every feature is free for everyone, with no paid tier, no trial and no plan to introduce one. If we ship it, every user gets it.',
+        a: 'Yes. Every feature works on the free plan, with no trial and no card. Paid plans raise a few limits.',
       },
       {
         q: 'How is it free? What is the catch?',
@@ -93,10 +93,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'There is no catch. liveplanner shows no ads, runs no third-party trackers and never sells your data. The privacy policy sets out what the service does with your data, and you can export your work whenever you like.',
-      },
-      {
-        q: 'Will features ever move behind a paywall?',
-        a: 'No. There are no "Pro" features and no billing anywhere in liveplanner. Everyone gets the same product.',
       },
     ],
   },

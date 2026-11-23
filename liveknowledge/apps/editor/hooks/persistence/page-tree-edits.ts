@@ -2,6 +2,8 @@
 // terms"), as list transforms over the tree functions (@liveknowledge/document page-tree.ts): a page added under a
 // parent, duplicated beside itself, deleted with its subpages. Pure; the hook (useTabActions) commits what they
 // answer. Each answers the same list when the tree refuses the edit.
+import { openPagesBound, openPagesMax } from '@/lib/knowledge-tier';
+import { fullSentence } from '@/lib/knowledge-import/import-trim';
 import {
   buildPageTree,
   isConnectedRow,
@@ -114,8 +116,12 @@ export function deletePageMessage(subpages: number, toTrash: boolean): string {
 /** Why the tree refuses an edit, as a person reads it in a tooltip or a toast. */
 export function pageTreeRefusalText(reason: PageTreeRefusal): string {
   switch (reason) {
-    case 'page_limit':
-      return 'A knowledgebase holds 500 pages at most.';
+    case 'page_limit': {
+      // At the owner's Knowledgebase Pages, the notice's own words; else the one knowledgebase's bound.
+      const bound = openPagesBound();
+      if (bound?.account) return fullSentence(bound);
+      return `A knowledgebase holds ${openPagesMax().toLocaleString('en-US')} pages at most.`;
+    }
     case 'depth_limit':
       return 'Pages nest 8 levels deep at most.';
     case 'own_subtree':

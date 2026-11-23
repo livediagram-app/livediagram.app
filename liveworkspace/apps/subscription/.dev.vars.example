@@ -1,0 +1,38 @@
+# Local development: `wrangler dev` reads .dev.vars (the dev script copies this file to it when there is none).
+# Pro is on here so the service answers; every app's api and the site also need their own flag on to use it
+# (PRO_ENABLED=true in the api's .dev.vars, NEXT_PUBLIC_PRO_ENABLED=true for the pages).
+ENVIRONMENT=development
+PRO_ENABLED=true
+BILLING_PROVIDER=mock
+# To try Stripe's test mode instead (subscription.md "Stripe"): BILLING_PROVIDER=stripe, a test-mode restricted key
+# (rk_test_...), the Prices and portal configuration `node scripts/stripe-setup.mjs` prints, and the signing secret
+# `stripe listen --forward-to localhost:8794/api/subscription/stripe/webhook` prints.
+# STRIPE_SECRET_KEY=
+# STRIPE_WEBHOOK_SECRET=
+# STRIPE_PRICE_PRO=
+# STRIPE_PRICE_TEAM=
+# STRIPE_PORTAL_CONFIGURATION=
+# Where the mock checkout and portal pages live: the local site.
+SITE_ORIGIN=http://localhost:3000
+# Give each app's api Worker the same value as SUBSCRIPTION_KEY. LIVEWORKSPACE is the platform's own Workers' (media).
+SUBSCRIPTION_KEY_LIVEDIAGRAM=dev-livediagram-subscription-key
+SUBSCRIPTION_KEY_LIVEPLANNER=dev-liveplanner-subscription-key
+SUBSCRIPTION_KEY_LIVEDOCUMENTS=dev-livedocuments-subscription-key
+SUBSCRIPTION_KEY_LIVEDESIGN=dev-livedesign-subscription-key
+SUBSCRIPTION_KEY_LIVEHUDDLE=dev-livehuddle-subscription-key
+SUBSCRIPTION_KEY_LIVEKNOWLEDGE=dev-liveknowledge-subscription-key
+SUBSCRIPTION_KEY_LIVEWORKSPACE=dev-liveworkspace-subscription-key
+# The account check: access tokens checked against the local site's accounts, addressed to the local apps' API
+# resource (API_RESOURCE in each api's .dev.vars), as the Community's and the Drive service's .dev.vars have them.
+ACCOUNTS_URL=http://localhost:3000
+INDEX_AUDIENCES=http://localhost/api
+# A team's seats are its joined members, asked of accounts with an OAuth client (src/seats.ts). Locally this borrows
+# liveplanner's fixed local client (liveworkspace/apps/accounts/scripts/local-clients.ts); without it seats are 3.
+ACCOUNTS_CLIENT_ID=local-liveplanner
+ACCOUNTS_CLIENT_SECRET=local-liveplanner-client-secret
+# Development only, off unless set: lowers Free's limits so each one can be met by hand (src/dev-limits.ts).
+# Uncomment it to try a limit; left as is, a local run shows Free's real figures.
+# DEV_FREE_LIMITS='{"automationRunsPerMonth":5,"automationRules":3,"emailToBoardPerMonth":3,"formResponsesPerMonth":3,"aiCreditsPerMonth":3,"callMinutesPerMonth":5,"walkthroughsStored":2,"knowledgebasePages":5}'
+# Media, asked what each owner holds (Image Storage, Walkthroughs Stored) when a person reads their usage
+# (src/media-usage.ts), with SUBSCRIPTION_KEY_LIVEWORKSPACE above, which is media's SUBSCRIPTION_KEY.
+MEDIA_URL=http://localhost:8792/api/media

@@ -1,6 +1,7 @@
 import type { App } from '@liveworkspace/index-client';
 import { MEDIA_APPS, type MediaApp } from '@liveworkspace/media';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
+import type { SubscriptionFetcher } from '@liveworkspace/subscription';
 
 export interface Env {
   // The service's off switch: "false", "0" or "off" answers every route as missing. Unset is on.
@@ -34,6 +35,15 @@ export interface Env {
   // binding, with the key the two share (accounts' ACCOUNTS_KEY_MEDIA). Either unset, every team's Library stays.
   ACCOUNTS?: Fetcher;
   ACCOUNTS_KEY_MEDIA?: string;
+  // Pro (liveworkspace/docs/specs/019-subscription/subscription.md): the four vars `subscriptionClientOf(env,
+  // 'liveworkspace.app')` reads. PRO_ENABLED is the flag (`true`, `1` or `on`; unset is off, and nothing asks the
+  // service); SUBSCRIPTION_KEY is the platform Workers' secret on the subscription service, the same value as its
+  // SUBSCRIPTION_KEY_LIVEWORKSPACE; SUBSCRIPTION_URL names a service that is not production's; SUBSCRIPTION is the
+  // service binding, the public route when it is absent.
+  PRO_ENABLED?: string;
+  SUBSCRIPTION_KEY?: string;
+  SUBSCRIPTION_URL?: string;
+  SUBSCRIPTION?: SubscriptionFetcher;
   // Where each app answers its export door (`<origin>/api/internal/items/:id/export`), called with that app's
   // media key. Unset, that app's items have no previews.
   APP_ORIGIN_LIVEDIAGRAM?: string;

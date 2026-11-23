@@ -161,6 +161,8 @@ export function readFormOf(input: {
       open: live.open,
       responses: link!.responses,
       now: input.now ?? Date.now(),
+      // With Pro on, the api says whether its owner's month of responses is used.
+      ...(link!.month ? { monthFull: link!.month.full } : {}),
     });
     state = reason ? 'closed' : problem ? 'paused' : 'accepting';
   } else if (link?.suspendedAt) state = 'suspended';
