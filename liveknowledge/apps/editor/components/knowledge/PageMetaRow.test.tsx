@@ -93,6 +93,12 @@ describe('the meta row’s maker pills', () => {
     );
     // Neutral grey: never the accent, never a state colour.
     for (const p of pills) expect(p.className).not.toMatch(/(bg|text)-(brand|amber|red|green)-/);
+    // A 44 px tap on touch from the shared pad, on a positioned host; the drawn pill stays 20 px everywhere.
+    for (const p of pills) {
+      const classes = p.className.split(' ');
+      expect(classes).toEqual(expect.arrayContaining(['relative', 'touch-target-y', 'h-5']));
+      expect(p.className).not.toMatch(/(phone|pointer-coarse):h-/);
+    }
   });
 
   // A phone has no hover: a tap (a click) opens the pill's card as a popover, and Escape closes it.

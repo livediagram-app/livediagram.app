@@ -17,6 +17,11 @@ const POPOVER_WIDTH = 248;
 const PILL =
   'inline-flex h-5 shrink-0 cursor-pointer items-center gap-1 rounded-full bg-slate-100 px-2 text-[12px] font-medium leading-none text-slate-700 dark:bg-slate-800 dark:text-slate-200';
 
+// On touch the pill keeps its 20 px look but takes a 44 px tap, as the row's Add Label and Verify do: the shared
+// `touch-target-y` pad (docs/specs/004-interface-design/touch-targets.md), vertical only since the two pills sit 4 px
+// apart, on a positioned host so the pad takes only its own taps.
+export const MAKER_PILL_TOUCH = 'relative touch-target-y';
+
 const MAKER_ICON = 'text-slate-500 dark:text-slate-400';
 
 export type PageMakers = { created?: PageAuthorStamp; updated?: PageAuthorStamp };
@@ -58,7 +63,7 @@ function MakerPill({ words }: { words: MakerWords & { key: string } }) {
         }}
         // `optical-edges`: the leading icon is drawn inside its box with blank space before it, so even padding to
         // the box set the pill's contents 0.9 px right of its centre (optical-alignment.md).
-        className={`${PILL} optical-edges focus-visible:outline-2 focus-visible:outline-brand-600`}
+        className={`${PILL} ${MAKER_PILL_TOUCH} optical-edges focus-visible:outline-2 focus-visible:outline-brand-600`}
       >
         {/* The glyph is the pill's first child, so optical-edges reaches it. */}
         {words.kind === 'ai' ? (
