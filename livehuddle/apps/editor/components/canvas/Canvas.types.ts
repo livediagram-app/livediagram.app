@@ -20,8 +20,9 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { CanvasTool } from '@/components/palette/palette.types';
 
-// A snap marker drawn by CanvasChrome: a world-space point, with `active` set on the one in use.
-export type SnapTarget = { x: number; y: number; active: boolean };
+// The snap marker CanvasChrome draws (@liveworkspace/workbench/lib/canvas-snap.ts), re-exported so importers keep
+// resolving.
+export type { SnapTarget } from '@liveworkspace/workbench/lib/canvas-snap';
 
 export type CanvasProps = {
   tabName: string;

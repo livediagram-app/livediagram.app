@@ -31,3 +31,8 @@ export const ALIGN_SNAP_THRESHOLD = 6;
 // generous than the element-anchor snap so a thin line is catchable.
 export const ARROW_SNAP_REVEAL_PX = 36;
 export const ARROW_SNAP_THRESHOLD_PX = 12;
+
+// A connection-point marker shown while dragging an arrow endpoint: the
+// world-space position of a nearby shape's anchor, with `active` set on the
+// one the endpoint is currently snapped to. Rendered by CanvasChrome.
+export type SnapTarget = { x: number; y: number; active: boolean };

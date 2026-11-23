@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import type { AlignmentGuide, DistributionGuide } from '@livedocuments/document';
-import { sameDistGuides, sameGuides, sameTargets } from '@/lib/drag-geometry';
-import type { SnapTarget } from '@/components/canvas/Canvas.types';
-import { createListeners } from '@liveworkspace/workbench/lib/listeners';
+import type {
+  AlignmentGuide,
+  DistributionGuide,
+} from '@liveworkspace/element-model/geometry-guides';
+import { sameDistGuides, sameGuides, sameTargets } from '../../lib/drag-geometry';
+import type { SnapTarget } from '../../lib/canvas-snap';
+import { createListeners } from '../../lib/listeners';
 
 // Cosmetic snap-guide overlay state for the active drag gesture (alignment
 // guides, equal-spacing guides, and arrow-endpoint snap markers), all

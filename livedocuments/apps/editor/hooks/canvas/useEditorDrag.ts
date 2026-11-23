@@ -23,7 +23,7 @@ import type { Element } from '@livedocuments/document';
 import type { DragState } from '@/lib/canvas';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import type { ShiftDupSwap } from './shift-duplicate-swap';
-import { useSnapGuideState } from './useSnapGuideState';
+import { useSnapGuideState } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import { useArrowDragHandlers } from './useArrowDragHandlers';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

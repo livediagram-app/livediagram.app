@@ -1,6 +1,10 @@
-import type { AlignmentGuide, DistributionGuide, Element } from '@liveknowledge/document';
+import type {
+  AlignmentGuide,
+  DistributionGuide,
+} from '@liveworkspace/element-model/geometry-guides';
+import type { Element } from '@liveworkspace/element-model/element';
 import { describe, expect, it } from 'vitest';
-import type { SnapTarget } from '@/components/canvas/Canvas.types';
+import type { SnapTarget } from './canvas-snap';
 import { computeSnapTargets, sameDistGuides, sameGuides, sameTargets } from './drag-geometry';
 
 describe('sameGuides', () => {

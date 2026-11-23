@@ -6,16 +6,15 @@
 // the snap-target reveal computation, and point-to-segment distance for
 // curve-point insertion. All stateless; nothing here touches React.
 
+import { offeredAnchors } from '@liveworkspace/element-model/anchors';
+import { anchorPosition } from '@liveworkspace/element-model/geometry';
+import { isBoxed, type Element } from '@liveworkspace/element-model/element';
 import {
-  offeredAnchors,
-  anchorPosition,
-  isBoxed,
   type AlignmentGuide,
-  type Anchor,
   type DistributionGuide,
-  type Element,
-} from '@livedesign/design';
-import type { SnapTarget } from '@/components/canvas/Canvas.types';
+} from '@liveworkspace/element-model/geometry-guides';
+import { type Anchor } from '@liveworkspace/element-model/arrow-types';
+import type { SnapTarget } from './canvas-snap';
 
 // Value-equality for two guide lists. Used to bail out of the
 // snapGuides state update when the guides haven't changed: on the vast

@@ -933,7 +933,9 @@
     "./components/primitives/icon-glyph": "./src/components/primitives/icon-glyph.tsx",
     "./components/primitives/tech-icon-glyph": "./src/components/primitives/tech-icon-glyph.tsx",
     "./components/canvas/web/CardFace": "./src/components/canvas/web/CardFace.tsx",
-    "./components/canvas/web/SiteHeaderFace": "./src/components/canvas/web/SiteHeaderFace.tsx"
+    "./components/canvas/web/SiteHeaderFace": "./src/components/canvas/web/SiteHeaderFace.tsx",
+    "./lib/drag-geometry": "./src/lib/drag-geometry.ts",
+    "./hooks/canvas/useSnapGuideState": "./src/hooks/canvas/useSnapGuideState.ts"
   },
   "scripts": {
     "lint": "oxlint",

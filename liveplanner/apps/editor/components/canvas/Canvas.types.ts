@@ -1,4 +1,4 @@
-import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
+import type { SnapGuideStore } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
 // Prop contract for the Canvas component, split out of Canvas.tsx
@@ -19,10 +19,9 @@ import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from
 import type { UserPreferences } from '@/lib/user-preferences';
 import type { CanvasTool } from '@/components/palette/palette.types';
 
-// A connection-point marker shown while dragging an arrow endpoint: the
-// world-space position of a nearby shape's anchor, with `active` set on the
-// one the endpoint is currently snapped to. Rendered by CanvasChrome.
-export type SnapTarget = { x: number; y: number; active: boolean };
+// The snap marker CanvasChrome draws (@liveworkspace/workbench/lib/canvas-snap.ts), re-exported so importers keep
+// resolving.
+export type { SnapTarget } from '@liveworkspace/workbench/lib/canvas-snap';
 
 export type CanvasProps = {
   tabName: string;
