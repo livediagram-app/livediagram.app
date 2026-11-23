@@ -23,7 +23,10 @@ import {
   laneTitleFrame,
   laneTitleText,
 } from '@liveworkspace/workbench/components/canvas/lane-title-frame';
-import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
+import {
+  captionBandAlignY,
+  captionBandClass,
+} from '@liveworkspace/workbench/components/primitives/icon-band';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';

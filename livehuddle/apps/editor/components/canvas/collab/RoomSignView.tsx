@@ -12,7 +12,7 @@ import {
   type ShapeElement,
 } from '@livehuddle/document';
 import { HoverCard } from '@livehuddle/ui';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { useKnocker, useMeetingLive, type SignLive } from '@/lib/office/meeting-live';
 import { useKnockedRecently, useMinuteClock } from './room-sign-clock';
 

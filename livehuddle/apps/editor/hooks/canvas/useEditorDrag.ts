@@ -39,7 +39,7 @@ import {
   resolveBoxedResize,
   translateBoxedSelection,
 } from './boxed-drag-resolve';
-import { measureDrawnText } from '@/components/canvas/text-hug-measure';
+import { measureDrawnText } from '@liveworkspace/workbench/components/label-editor/plain-text-hug-measure';
 import { useSnapGuideState } from './useSnapGuideState';
 import { useBoxedDragHandlers } from './useBoxedDragHandlers';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

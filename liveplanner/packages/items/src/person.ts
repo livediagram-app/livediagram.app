@@ -3,7 +3,7 @@
 // so items never carry it: authors and voters are keyed by a one-way hash every client can compute
 // for itself (to find its own votes and its own face-down cards) and nobody can reverse.
 
-import { sha256 } from './sha256';
+import { sha256 } from '@liveworkspace/model-core/sha256';
 
 const PREFIX = 'liveplanner-item-person:';
 

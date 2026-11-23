@@ -62,11 +62,8 @@ import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';
 import { hasStylePresets, TargetPresetsSection } from '@/components/palette/PresetSections';
-import {
-  IconPositionGrid,
-  MarkersMenuGlyph,
-  MarkerTiles,
-} from '@/components/palette/context-menu-rows';
+import { IconPositionGrid } from '@liveworkspace/workbench/components/palette/IconPositionGrid';
+import { MarkersMenuGlyph, MarkerTiles } from '@/components/palette/context-menu-rows';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from '@liveworkspace/workbench/components/palette/useContextMenuScaffold';
 import { ElementDataSections } from './ElementDataSections';

@@ -15,8 +15,8 @@ import {
   type Element,
 } from '@liveknowledge/document';
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 
 const EFFECT_LABEL: Record<BuildEffect, string> = { appear: 'Appear', fade: 'Fade', rise: 'Rise' };

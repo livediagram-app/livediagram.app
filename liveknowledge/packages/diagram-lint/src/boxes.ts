@@ -11,7 +11,7 @@ import {
   type Rect,
   rotatePoint,
 } from '@liveknowledge/document';
-import { LINT_OVERLAP_TOLERANCE_PX } from './constants';
+import { LINT_OVERLAP_TOLERANCE_PX } from '@liveworkspace/diagram-lint/constants';
 
 const NOT_BOXES: ReadonlySet<string> = new Set(['text', 'article-note', 'freehand', 'path']);
 

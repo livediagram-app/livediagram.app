@@ -10,8 +10,12 @@ import {
   PIE_DEFAULT_SLICES,
   RATING_DEFAULT,
 } from './data-shapes';
-import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
-import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
+import { SANKEY_DEFAULT_FLOWS } from '@liveworkspace/element-model/sankey-model';
+import {
+  NAV_DEFAULT_LINKS,
+  PROCESS_DEFAULT_STEPS,
+  STAT_DEFAULTS,
+} from '@liveworkspace/element-model/web-components';
 import type { ShapeElement, ShapeKind } from './index';
 
 export function seedGraphicShape(kind: ShapeKind, base: ShapeElement): ShapeElement {

@@ -3,29 +3,31 @@
 Derived from [Word and PowerPoint import](../office-import.md). The spec decides; this file only adds engineering
 precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-Scope, by file (under `apps/editor/lib/office-import/` unless marked):
+Scope, by file (under `apps/editor/lib/office-import/` unless marked; the `../packages/office-files` ones are
+`@liveworkspace/office-files`, one copy for livedocuments and liveknowledge, liveworkspace/docs/specs/013-export/office-files.md):
 
 | File                                            | Role                                                                                       |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `limits.ts`                                     | Every number the import uses, named                                                        |
-| `errors.ts`                                     | `OfficeImportError`, `OfficeImportFailure`, `officeErrorMessage`                           |
-| `zip.ts`                                        | `openZip`: the central directory read, entries unpacked on demand under one budget         |
-| `xml.ts`                                        | `parseXml`: the bounded XML reader (no DTD), namespaces folded to canonical prefixes       |
-| `package.ts`                                    | `openOfficePackage`: zip + content types + relationships, the main part, `OfficePackage`   |
-| `tally.ts`                                      | `SkipTally`: counts of what was left out                                                   |
+| `../packages/office-files/src/limits.ts`        | Every number the import uses, named                                                        |
+| `../packages/office-files/src/errors.ts`        | `OfficeImportError`, `OfficeImportFailure`, `FileImportFormat`                             |
+| `errors.ts`                                     | `officeErrorMessage`: each failure in words, with this model's limits                      |
+| `../packages/office-files/src/zip.ts`           | `openZip`: the central directory read, entries unpacked on demand under one budget         |
+| `../packages/office-files/src/xml.ts`           | `parseXml`: the bounded XML reader (no DTD), namespaces folded to canonical prefixes       |
+| `../packages/office-files/src/package.ts`       | `openOfficePackage`: zip + content types + relationships, the main part, `OfficePackage`   |
+| `../packages/office-files/src/tally.ts`         | `SkipTally`: counts of what was left out                                                   |
 | `docx-styles.ts`                                | Paragraph styles, numbering and run properties of a Word package                           |
 | `docx.ts`                                       | `readDocx`: the body walked into `DocxBlock`s and the pictures they name                   |
 | `docx-parts.ts`                                 | The walker's pure parts: a to-do's box, alignment, field links, table parts, a VML size    |
 | `docx-footnotes.ts`                             | `readFootnotes`: each footnote's plain text by id                                          |
-| `pptx-shapes.ts`                                | Placeholders, transforms, a text body and its fit (`bodyFitOf`) into a slide's items       |
-| `text-fit.ts`                                   | `fitTextBox`: a no-wrap box widened, an autofit box grown to its text (estimated, linear)  |
+| `../packages/office-files/src/pptx-shapes.ts`   | Placeholders, transforms, a text body and its fit (`bodyFitOf`) into a slide's items       |
+| `../packages/office-files/src/text-fit.ts`      | `fitTextBox`: a no-wrap box widened, an autofit box grown to its text (estimated, linear)  |
 | `pptx.ts`                                       | `readPptx`: slides, their items, notes and hidden flags, the deck size                     |
 | `store-images.ts`                               | `storePictures`: each picture once, three at a time, through an `ImportImageSession`       |
 | `build-article.ts`                              | `buildArticleTab`: blocks + stored images into an article tab (zones parked off the page)  |
 | `build-deck.ts`                                 | `buildDeckTab`: slides + stored images into a tab of slide pages, with each page's notes   |
 | `report.ts`                                     | `officeImportReport`: the tally and image outcomes as the dialog's report lines            |
 | `index.ts`                                      | `importOfficeFile`: the whole import, file to tab, the one entry the editor imports lazily |
-| `test-fixtures.ts`                              | A zip writer and Word, Google Docs, PowerPoint and Google Slides package builders (tests)  |
+| `../packages/office-files/src/test-fixtures.ts` | A zip writer and Word, Google Docs, PowerPoint and Google Slides package builders (tests)  |
 | `components/dialogs/FileImportPanel.tsx`        | The file panel: drop area, Choose a File, stage line, error                                |
 | `lib/drop-import-hint.ts`                       | A `.docx` / `.pptx` dropped on the canvas points to Import in the tab menu                 |
 | `hooks/persistence/useTabImport.ts`             | `importFileIntoActiveTab(format, file, onStage)`: runs the import and replaces the tab     |
@@ -367,26 +369,26 @@ logged by the pipeline as `[import-images]`.
 
 ## Testing
 
-| Rule                                           | Test                                                   |
-| ---------------------------------------------- | ------------------------------------------------------ |
-| Zip read, stored and deflated, bounds          | `zip.test.ts`                                          |
-| Zip bomb and lying sizes stop at the cap       | `zip.test.ts`                                          |
-| DTD refused, entities, namespaces, caps        | `xml.test.ts`                                          |
-| Legacy, wrong format, not a package            | `package.test.ts`                                      |
-| Word mapping (spec table), Google Docs flavour | `docx.test.ts`                                         |
-| PowerPoint placeholders, groups, notes, Google | `pptx.test.ts`                                         |
-| Pictures once each, cap, failures              | `store-images.test.ts`                                 |
-| Zones parked and settled by the editor's pass  | `build-article.test.ts`                                |
-| Slide pages, scale, sizes                      | `build-deck.test.ts`                                   |
-| No-wrap and autofit text boxes                 | `text-fit.test.ts`, `real-files.test.ts`               |
-| Report lines                                   | `report.test.ts`                                       |
-| End to end, sizes, errors                      | `index.test.ts`                                        |
-| 100-page and 50-slide budgets                  | `office-import.perf.test.ts`                           |
-| Deck details                                   | `slide-deck-pages.test.ts` (document)                  |
-| Panel states, drop, choose, errors             | `FileImportPanel.test.tsx`, `ImportTabDialog.test.tsx` |
+| Rule                                           | Test                                                                  |
+| ---------------------------------------------- | --------------------------------------------------------------------- |
+| Zip read, stored and deflated, bounds          | `../packages/office-files/src/zip.test.ts`                            |
+| Zip bomb and lying sizes stop at the cap       | `../packages/office-files/src/zip.test.ts`                            |
+| DTD refused, entities, namespaces, caps        | `../packages/office-files/src/xml.test.ts`                            |
+| Legacy, wrong format, not a package            | `../packages/office-files/src/package.test.ts`                        |
+| Word mapping (spec table), Google Docs flavour | `docx.test.ts`                                                        |
+| PowerPoint placeholders, groups, notes, Google | `pptx.test.ts`                                                        |
+| Pictures once each, cap, failures              | `store-images.test.ts`                                                |
+| Zones parked and settled by the editor's pass  | `build-article.test.ts`                                               |
+| Slide pages, scale, sizes                      | `build-deck.test.ts`                                                  |
+| No-wrap and autofit text boxes                 | `../packages/office-files/src/text-fit.test.ts`, `real-files.test.ts` |
+| Report lines                                   | `report.test.ts`                                                      |
+| End to end, sizes, errors                      | `index.test.ts`                                                       |
+| 100-page and 50-slide budgets                  | `office-import.perf.test.ts`                                          |
+| Deck details                                   | `slide-deck-pages.test.ts` (document)                                 |
+| Panel states, drop, choose, errors             | `FileImportPanel.test.tsx`, `ImportTabDialog.test.tsx`                |
 
 ## Assets and external resources
 
 No dependency is added: unzipping is the platform's `DecompressionStream`, the XML reader is our own. Test
-fixtures are built by `test-fixtures.ts` at test time, so no binary is committed; they mimic what Word,
+fixtures are built by `../packages/office-files/src/test-fixtures.ts` at test time, so no binary is committed; they mimic what Word,
 PowerPoint, Google Docs and Google Slides write (the differences each reader branch covers are named there).

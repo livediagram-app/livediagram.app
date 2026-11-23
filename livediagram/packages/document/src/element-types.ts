@@ -4,33 +4,33 @@
 // public `@livediagram/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { ChairFacing, RoomDoor } from './retired-elements';
-import type { Finish } from './finish';
+import type { Finish } from '@liveworkspace/element-model/finish';
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
-import type { ElementAction } from './element-action';
+import type { ElementAction } from '@liveworkspace/element-model/element-action';
 import type {
   BorderStroke,
   BorderStyle,
   BorderRadius,
 } from '@liveworkspace/model-core/border-style';
-import type { ElementShadow } from './shadow';
+import type { ElementShadow } from '@liveworkspace/element-model/shadow';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { BpmnSymbol } from './bpmn';
-import type { AccentEdge } from './accent-edge';
-import type { CardMedia } from './card';
+import type { AccentEdge } from '@liveworkspace/element-model/accent-edge';
+import type { CardMedia } from '@liveworkspace/element-model/card';
 import type { Anchor } from '@liveworkspace/element-model/arrow-types';
-import type { ChipLook } from './chip';
-import type { AttachPoint } from './attachment';
-import type { BoundaryStyle } from './boundary';
-import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
-import type { PenColourName } from './pen-colours';
-import type { QuickSwatchSlot } from './quick-swatches';
+import type { ChipLook } from '@liveworkspace/element-model/chip';
+import type { AttachPoint } from '@liveworkspace/element-model/attachment';
+import type { BoundaryStyle } from '@liveworkspace/element-model/boundary';
+import type { ConceptAnim, ConceptRow, PyramidVariant } from '@liveworkspace/element-model/concept';
+import type { PenColourName } from '@liveworkspace/element-model/pen-colours';
+import type { QuickSwatchSlot } from '@liveworkspace/element-model/quick-swatches';
 import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
-import type { MindFlow, MindSpacing } from './mind-flow';
+import type { MindFlow, MindSpacing } from '@liveworkspace/element-model/mind-flow';
 import type { FlowchartDirection } from './flowchart';
-import type { ChartPaletteId } from './chart-palettes';
-import type { ChartVariant } from './chart-types';
+import type { ChartPaletteId } from '@liveworkspace/element-model/chart-palettes';
+import type { ChartVariant } from '@liveworkspace/element-model/chart-types';
 import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import type {
   SankeyAlign,
@@ -40,7 +40,7 @@ import type {
   SankeyLinkColor,
   SankeyNodeStyle,
   SankeyValueLabel,
-} from './sankey-model';
+} from '@liveworkspace/element-model/sankey-model';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
@@ -48,8 +48,8 @@ import type { EmbedProvider } from './youtube';
 import type { LiveItem } from '@liveworkspace/element-model/live-item';
 import type { ParticipantResponse } from './responses';
 import type { QaNote } from './qa-board';
-import type { HeroCaption, StatItem } from './web-components';
-import type { ImageCredit } from './image-credit';
+import type { HeroCaption, StatItem } from '@liveworkspace/element-model/web-components';
+import type { ImageCredit } from '@liveworkspace/model-core/image-credit';
 import type { AgendaItem, DecisionStatus, EstimateScale, RollCallEntry } from './collab-shapes';
 import type {
   AnimationSpeed,
@@ -76,10 +76,13 @@ import type {
   TextSize,
   TextSizePreset,
 } from './index';
-import type { KeyRow } from './diagram-key';
-import type { MindLook } from './person-node';
-import type { SequenceElementMessage, SequenceElementParticipant } from './sequence-element';
-import type { StackAlign, StackDirection } from './stack';
+import type { KeyRow } from '@liveworkspace/element-model/diagram-key';
+import type { MindLook } from '@liveworkspace/element-model/person-node';
+import type {
+  SequenceElementMessage,
+  SequenceElementParticipant,
+} from '@liveworkspace/element-model/sequence-element';
+import type { StackAlign, StackDirection } from '@liveworkspace/element-model/stack';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
 // separately by `chartLegend: false`, so this only covers the four placements.

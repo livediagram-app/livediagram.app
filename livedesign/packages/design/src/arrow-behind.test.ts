@@ -4,8 +4,8 @@ import {
   arrowRoutesBehind,
   routeBehindHoles,
   routeBehindQueryRect,
-} from './arrow-behind';
-import { buildElementGrid, queryElementGrid } from './element-grid';
+} from '@liveworkspace/element-model/arrow-behind';
+import { buildElementGrid, queryElementGrid } from '@liveworkspace/element-model/element-grid';
 import { createShape } from './shape-factory';
 import { createArrow } from './factories';
 import type { ArrowElement, Element, PathElement, ShapeElement } from './index';

@@ -1,5 +1,5 @@
 import { getPersonIdentity } from './auth/accounts';
-import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
+import { AccountsUnavailable, type ResolvedApiToken } from '@liveworkspace/auth-client/api-tokens';
 import { handleAuth } from './routes/auth';
 import { resolveApiToken } from './db';
 import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livehuddle/api-schema';
@@ -39,6 +39,7 @@ import { handlePreferences } from './routes/preferences';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
+import { handleAsk } from './routes/ask';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
 import { pollCallsBudget } from './calls/calls-budget';
@@ -285,6 +286,9 @@ async function routeApiRequest(
       return await handleAccount(ctx);
     case 'trash':
       return await handleTrash(ctx);
+    // Ask AI (liveworkspace/docs/specs/020-ask/ask.md): a question answered from the open item's own words.
+    case 'ask':
+      return await handleAsk(ctx);
     case 'preferences':
       return await handlePreferences(ctx);
     case 'participants':

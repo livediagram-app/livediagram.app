@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PEN_INK } from './pen-colours';
+import { PEN_INK } from '@liveworkspace/element-model/pen-colours';
 import {
   canvasSurface,
   contrastRatio,

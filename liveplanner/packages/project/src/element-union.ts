@@ -3,7 +3,7 @@
 // root (./index), which every module here imports them from.
 // Value import from the data-shapes LEAF module (it imports only types from the root, so no cycle at runtime):
 // elementSupportsText excludes the self-drawing data shapes the same way the inline editor does.
-import { isSelfDrawingShape } from './data-shapes';
+import { isSelfDrawingShape } from '@liveworkspace/element-model/data-shapes';
 import type { ArrowElement } from './arrow-types';
 import type { TabId, ElementId } from '@liveworkspace/model-core/basics';
 import type {

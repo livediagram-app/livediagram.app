@@ -6,7 +6,8 @@
 import { useContext, useMemo } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
-import { themeOptions, type ColourOption } from './colour-options';
+import { type ColourOption } from '@liveworkspace/workbench/components/colour/colour-options';
+import { themeOptions } from './colour-options';
 
 const NONE: readonly ColourOption[] = [];
 

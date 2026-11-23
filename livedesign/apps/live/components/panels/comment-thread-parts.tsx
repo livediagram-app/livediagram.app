@@ -27,8 +27,8 @@ import {
   Chip,
 } from '@livedesign/ui';
 import type { Comment, CommentMention, CommentThread } from '@livedesign/design';
-import { MentionMenu } from '@/components/primitives/MentionMenu';
-import { MentionText } from '@/components/primitives/MentionText';
+import { MentionMenu } from '@liveworkspace/workbench/components/primitives/MentionMenu';
+import { MentionText } from '@liveworkspace/workbench/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import { initialsOf } from '@/lib/identity';

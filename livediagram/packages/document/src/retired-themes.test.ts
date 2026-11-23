@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredTab } from './stored-tab';
-import { THEMES } from './themes-data';
+import { THEMES } from '@liveworkspace/element-model/themes-data';
 import type { Element } from './index';
 
 const box = (extra: Record<string, unknown>) =>

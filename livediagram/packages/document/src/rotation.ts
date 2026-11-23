@@ -12,7 +12,7 @@ import {
   type Rect,
 } from '@liveworkspace/model-core/geometry-primitives';
 import { isBoxed, type BoxedElement, type Element } from './index';
-import { isPointerNote } from './pointer-note';
+import { isPointerNote } from '@liveworkspace/element-model/pointer-note';
 import { isUprightRetiredKind } from './retired-elements';
 
 export function supportsRotation(el: Element): el is BoxedElement {

@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { themeColourMap, themeHalf, viewElementInTheme } from './theme-halves';
+import {
+  themeColourMap,
+  themeHalf,
+  viewElementInTheme,
+} from '@liveworkspace/element-model/theme-halves';
 import { THEMES } from './themes';
-import { legacyShapeColorPresets, shapeColorPresets } from './theme-presets';
+import {
+  legacyShapeColorPresets,
+  shapeColorPresets,
+} from '@liveworkspace/element-model/theme-presets';
 import { contrastRatio, isLightColor } from './colors';
 import { defaultScheme } from './themes';
-import { resolveStockColours } from './stock-colours';
+import { resolveStockColours } from '@liveworkspace/element-model/stock-colours';
 import { createShape } from './factories';
 
 // docs/specs/011-theme/light-and-dark.md "What a viewer sees": a box's text and fill are drawn as a pair.

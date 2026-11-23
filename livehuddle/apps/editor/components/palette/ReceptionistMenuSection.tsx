@@ -4,7 +4,7 @@
 // first pad, his.
 import type { ShapeElement } from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
 export function ReceptionistMenuSection({

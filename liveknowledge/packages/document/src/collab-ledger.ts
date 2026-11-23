@@ -29,7 +29,7 @@
 import type { Tab } from './index';
 import type { Comment } from './comments';
 import { applyElementDelta, isComment, type ElementDelta } from './element-deltas';
-import { CHECKLIST_MAX_TEXT } from './data-shapes';
+import { CHECKLIST_MAX_TEXT } from '@liveworkspace/element-model/data-shapes';
 import {
   isReactionChange,
   type CommentReactionId,

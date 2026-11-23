@@ -9,7 +9,7 @@ import {
 } from '@livehuddle/api-schema';
 import type { Element } from '@livehuddle/document';
 import { kindOf, labelOf, quoteCut } from './element-text';
-import { nearestName } from './nearest';
+import { nearestName } from '@liveworkspace/edit-operations/nearest';
 import {
   DID_YOU_MEAN_MAX_DISTANCE,
   EDIT_OPERATION_NAMES,

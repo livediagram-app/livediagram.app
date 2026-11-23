@@ -3,12 +3,15 @@
 // and the pieces of a stroke that survive a Partial erase. Pure; canvas coords.
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveworkspace/model-core/border-style';
 import { createFreehand } from './factories';
-import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
-import { PEN_MID_PRESSURE, penPressureWidth } from './pen-stroke';
-import { isFilledPenLoop } from './stroke-loop-fill';
+import {
+  freehandCanvasPoints,
+  freehandStrokePoints,
+} from '@liveworkspace/element-model/freehand-points';
+import { PEN_MID_PRESSURE, penPressureWidth } from '@liveworkspace/element-model/pen-stroke';
+import { isFilledPenLoop } from '@liveworkspace/element-model/stroke-loop-fill';
 import type { FreehandElement, PathElement } from './index';
-import { pathContours, pathWorldAnchors } from './path-element';
-import { samplePath } from './path-geometry';
+import { pathContours, pathWorldAnchors } from '@liveworkspace/element-model/path-element';
+import { samplePath } from '@liveworkspace/element-model/path-geometry';
 import { segmentDistance } from '@liveworkspace/model-core/segment-geometry';
 
 type Point = { x: number; y: number };

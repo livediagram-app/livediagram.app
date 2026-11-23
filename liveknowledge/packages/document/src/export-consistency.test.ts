@@ -4,7 +4,7 @@ import { boxedNeedsSvgRaster, renderElementsToSvg, svgBoxed } from './svg-render
 import { createShape } from './factories';
 import { SHAPE_KINDS } from './validate';
 import { LABEL_FONT_PX, NOTE_FONT_PX } from '@liveworkspace/model-core/label-font';
-import { fontSizeFor } from './svg-render-primitives';
+import { fontSizeFor } from '@liveworkspace/element-model/svg-render-primitives';
 import type { ShapeKind, Tab } from './index';
 
 // The exporters against the canvas.

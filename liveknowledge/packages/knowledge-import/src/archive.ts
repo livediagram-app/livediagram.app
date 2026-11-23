@@ -71,7 +71,7 @@ export async function readText(file: ArchiveFile, maxBytes: number): Promise<str
   return utf8.decode(bytes);
 }
 
-/** What a zip reader has to offer: the shape of the editor's own (`apps/editor/lib/office-import/zip.ts`). */
+/** What a zip reader has to offer: the shape of the shared one (`@liveworkspace/office-files/zip`). */
 export type ZipReader = {
   names(): string[];
   read(name: string, max: number): Promise<Uint8Array | null>;

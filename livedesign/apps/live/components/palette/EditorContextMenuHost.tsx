@@ -6,7 +6,7 @@ import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/se
 import dynamic from 'next/dynamic';
 import { logoPageAt, tagColoursOf, type TextPresetId } from '@livedesign/design';
 import { restyleTextAs } from '@/lib/text-style';
-import { measureDrawnText } from '@/components/canvas/text-hug-measure';
+import { measureDrawnText } from '@liveworkspace/workbench/components/label-editor/plain-text-hug-measure';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';

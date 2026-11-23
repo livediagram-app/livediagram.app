@@ -7,7 +7,7 @@ import {
   deriveContainers,
   isContainer,
   smallestHolder,
-} from './containment';
+} from '@liveworkspace/element-model/containment';
 import { createPinnedArrow, createShape } from './factories';
 import type { Element, ShapeElement } from './index';
 

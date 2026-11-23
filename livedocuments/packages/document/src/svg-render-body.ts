@@ -15,22 +15,30 @@ import {
   isPieShape,
   isRatingShape,
   isSelfDrawingShape,
-} from './data-shapes';
-import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
-import { svgSankey } from './svg-render-sankey';
-import { isSankeyShape } from './sankey-model';
+} from '@liveworkspace/element-model/data-shapes';
+import {
+  svgBarChart,
+  svgLineChart,
+  svgPieChart,
+} from '@liveworkspace/element-model/svg-render-charts';
+import { svgSankey } from '@liveworkspace/element-model/svg-render-sankey';
+import { isSankeyShape } from '@liveworkspace/element-model/sankey-model';
 import { isMapShape, mapLandColour, mapPaperColour } from './map-model';
 import { svgMap } from './svg-render-map';
-import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
-import { progressTrackColour } from './progress-colours';
+import {
+  svgProgressBar,
+  svgProgressRing,
+  svgRating,
+} from '@liveworkspace/element-model/svg-render-data';
+import { progressTrackColour } from '@liveworkspace/element-model/progress-colours';
 import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
-import { isChipShape } from './chip';
-import { svgChip } from './svg-render-chip';
-import { svgConcept } from './svg-render-concept';
-import type { TagColour } from './tag-colours';
-import { svgPointerNote } from './svg-render-pointer-note';
-import { isConceptShape } from './concept';
+import { isChipShape } from '@liveworkspace/element-model/chip';
+import { svgChip } from '@liveworkspace/element-model/svg-render-chip';
+import { svgConcept } from '@liveworkspace/element-model/svg-render-concept';
+import type { TagColour } from '@liveworkspace/element-model/tag-colours';
+import { svgPointerNote } from '@liveworkspace/element-model/svg-render-pointer-note';
+import { isConceptShape } from '@liveworkspace/element-model/concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
 import type { ResolveIconArt, ResolveImageHref } from './svg-render-describe';

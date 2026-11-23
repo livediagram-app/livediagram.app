@@ -4,12 +4,12 @@ Derived from [The boundary](../boundary.md). Defaults in [DEFAULTS.md](DEFAULTS.
 
 | File                                                                                            | Role                                                         |
 | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `packages/document/src/boundary.ts`                                                             | `BoundaryStyle`, `boundaryLayout`, `BOUNDARY_TINT`, writes   |
-| `packages/document/src/containment.ts`                                                          | `CONTAINER_KINDS`, `isContainerKind`: frame, lane, boundary  |
+| `../packages/element-model/src/boundary.ts`                                                     | `BoundaryStyle`, `boundaryLayout`, `BOUNDARY_TINT`, writes   |
+| `../packages/element-model/src/containment.ts`                                                  | `CONTAINER_KINDS`, `isContainerKind`: frame, lane, boundary  |
 | `graph-look-routes.ts`, `arrow-behind.ts`, `arrow-label-layout.ts`, `apps/editor/lib/canvas.ts` | Their frame-or-lane checks read `isContainerKind`            |
 | `packages/document/src/layers.ts`                                                               | Containers paint first (tier 0), the larger first among them |
 | `packages/document/src/colors.ts`                                                               | `defaultFillColor` transparent (the face paints the tint)    |
-| `packages/document/src/svg-render-boundary.ts`                                                  | `svgBoundary`: tint, tab or title, icon, meta                |
+| `../packages/element-model/src/svg-render-boundary.ts`                                          | `svgBoundary`: tint, tab or title, icon, meta                |
 | `apps/editor/components/canvas/BoundaryFace.tsx`                                                | The canvas face                                              |
 | `apps/editor/components/canvas/shape-svg-overlay.tsx`                                           | `boundary` on the CSS box path (its border is the wrapper's) |
 | `apps/editor/components/palette/BoundaryMenuSection.tsx`                                        | Style tiles                                                  |

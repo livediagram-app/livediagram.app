@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
-import { freehandPressures } from './freehand-points';
+import { freehandPressures } from '@liveworkspace/element-model/freehand-points';
 import {
   STROKE_POINT_MAX_ERROR,
   STROKE_PRESSURE_MAX_ERROR,
@@ -12,8 +12,8 @@ import {
   pathTouchesBrush,
   strokeTouchesBrush,
 } from './whiteboard-stroke';
-import { createPath } from './path-element';
-import { freehandPenStroke, penStrokeCentreline } from './pen-stroke';
+import { createPath } from '@liveworkspace/element-model/path-element';
+import { freehandPenStroke, penStrokeCentreline } from '@liveworkspace/element-model/pen-stroke';
 
 // A horizontal stroke from (0, 100) to (200, 100), 4px wide, with a pen's pressures when given.
 const line = (over: Partial<FreehandElement> = {}, pressures?: number[]): FreehandElement => ({

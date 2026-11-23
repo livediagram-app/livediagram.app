@@ -53,7 +53,10 @@ const ElementResourcesDialog = dynamic(
   { ssr: false },
 );
 const CodeEditDialog = dynamic(
-  () => import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
+  () =>
+    import('@liveworkspace/workbench/components/dialogs/CodeEditDialog').then(
+      (m) => m.CodeEditDialog,
+    ),
   { ssr: false },
 );
 const EntityFieldsDialog = dynamic(

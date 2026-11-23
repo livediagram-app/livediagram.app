@@ -1,6 +1,6 @@
 'use client';
 
-import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
+import { TagColoursProvider } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { sessionToolsForSurface } from '@/components/canvas/SessionClusterStrip';
 import { SuppressElementIndicators } from '@liveworkspace/workbench/components/canvas/ElementIndicatorStyleContext';

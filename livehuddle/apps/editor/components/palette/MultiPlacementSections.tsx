@@ -7,7 +7,7 @@ import {
 } from '@livehuddle/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   AspectLockMenuIcon,
   LayerDownIcon,
@@ -15,7 +15,7 @@ import {
   LayerUpIcon,
   RotationGlyph,
   RotationMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuActionButton,

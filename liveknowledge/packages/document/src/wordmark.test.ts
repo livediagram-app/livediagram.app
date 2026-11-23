@@ -8,7 +8,7 @@ import {
   hasWordmarkType,
   resolvedFontWeight,
   wordmarkDisplayText,
-} from './wordmark';
+} from '@liveworkspace/element-model/wordmark';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/006-document/document-structure.md "Text type".

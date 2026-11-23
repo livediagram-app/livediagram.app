@@ -3,12 +3,12 @@
 // and the filled pieces (a rounded part, a body's rim and bezel) the frames are built from. Shared by
 // the frame under the screen (wireframe-device-svg.ts) and what is drawn over it
 // (wireframe-frame-over.ts).
-import { r2 } from './svg-render-primitives';
+import { r2 } from '@liveworkspace/element-model/svg-render-primitives';
 import { isLightColor, shade } from './colors';
 import { mixHex } from '@liveworkspace/model-core/color-wash';
-import type { Finish } from './finish';
-import { MARKER_INK_OPACITY, markerStrokes } from './marker';
-import { outlineOfPath, sketchStrokes } from './sketch';
+import type { Finish } from '@liveworkspace/element-model/finish';
+import { MARKER_INK_OPACITY, markerStrokes } from '@liveworkspace/element-model/marker';
+import { outlineOfPath, sketchStrokes } from '@liveworkspace/element-model/sketch';
 import { fnv1aString } from '@liveworkspace/model-core/string-hash';
 import {
   deviceScreenPath,

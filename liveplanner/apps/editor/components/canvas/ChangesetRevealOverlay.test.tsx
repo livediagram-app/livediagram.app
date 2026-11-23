@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render } from '@testing-library/react';
 import { CHANGESET_REVEAL_MS } from '@liveplanner/api-schema';
 import type { Element } from '@liveplanner/project';
-import { createRevealStore } from '@/lib/changeset-reveals';
+import { createRevealStore } from '@liveworkspace/workbench/lib/changeset-reveals';
 import { ChangesetRevealContext, ChangesetRevealOverlay } from './ChangesetRevealOverlay';
 
 const box = (id: string, x: number): Element => ({

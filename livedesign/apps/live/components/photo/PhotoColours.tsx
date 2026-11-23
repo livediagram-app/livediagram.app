@@ -5,7 +5,7 @@
 // swatch opens the shared colour picker for it. The person's own, kept in this browser.
 import { lucideArrowLeftRight, lucideRotateCcw } from '@liveworkspace/icons/lucide';
 import { lucideGlyph, Tooltip } from '@livedesign/ui';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { photoTools, usePhotoTools } from '@/lib/photo-editor/tool-state';
 

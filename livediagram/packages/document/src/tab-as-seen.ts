@@ -5,9 +5,18 @@ import {
   tabAsSeenFor,
   type ResolvedBackdrop as SharedResolvedBackdrop,
 } from '@liveworkspace/element-model/tab-as-seen';
-import { resolveStockColours } from './stock-colours';
-import { themeColourMap, viewBackdropInTheme, viewElementInTheme } from './theme-halves';
-import { DEFAULT_SCHEME_ID, DEFAULT_SCHEME_LIGHT, THEMES, type ThemeDefinition } from './themes';
+import { resolveStockColours } from '@liveworkspace/element-model/stock-colours';
+import {
+  themeColourMap,
+  viewBackdropInTheme,
+  viewElementInTheme,
+} from '@liveworkspace/element-model/theme-halves';
+import {
+  DEFAULT_SCHEME_ID,
+  DEFAULT_SCHEME_LIGHT,
+  THEMES,
+  type ThemeDefinition,
+} from '@liveworkspace/element-model/themes';
 import { withReadableLabelInks } from './label-backdrop';
 import type { BackgroundPattern, Element } from './index';
 

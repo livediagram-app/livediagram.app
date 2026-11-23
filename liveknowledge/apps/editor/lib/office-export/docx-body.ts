@@ -4,7 +4,7 @@
 // images) and the numbered runs the other parts need. Pure string building.
 
 import type { ArticleAlign, ArticleRun, ArticleTableBlock } from '@liveknowledge/document';
-import { REL, XML_DECL, xmlText, type OoxmlRel } from './ooxml';
+import { REL, XML_DECL, xmlText, type OoxmlRel } from '@liveworkspace/office-files/ooxml';
 import {
   BULLET_NUM_ID,
   CODE_CHAR_STYLE_ID,

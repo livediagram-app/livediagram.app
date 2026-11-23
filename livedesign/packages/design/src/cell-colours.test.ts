@@ -1,6 +1,6 @@
 // Readable cells: stored colours drawn for the Sheet's surface, the ink always AA.
 import { describe, expect, it } from 'vitest';
-import { cellColours, cellFill, readableInk } from './cell-colours';
+import { cellColours, cellFill, readableInk } from '@liveworkspace/element-model/cell-colours';
 import { contrastRatio } from './colors';
 
 const LIGHT = { fill: '#f8fafc', ink: '#0f172a', dark: false };

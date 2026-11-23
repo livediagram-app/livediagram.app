@@ -8,7 +8,7 @@
 import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Gradient } from '@livedesign/photo-engine';
 import { Button } from '@livedesign/ui';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { PREVIEW_CHECKER } from '@/components/dialogs/ImageExportPanel';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';

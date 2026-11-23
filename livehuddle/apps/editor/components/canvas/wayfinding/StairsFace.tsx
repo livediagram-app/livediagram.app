@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { HoverCard, lucideGlyph } from '@livehuddle/ui';
 import { lucideArrowDown, lucideArrowUp } from '@liveworkspace/icons/lucide';
 import type { ShapeElement } from '@livehuddle/document';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { stairsFlights, type StairsFlight, type StairsLanding } from '@/lib/wayfinding';
 import { useFloorsOnOpen } from './useFloorsOnOpen';
 import { useWalkedInPanel, useWayfindingSelect, type Wayfinding } from './wayfinding-store';

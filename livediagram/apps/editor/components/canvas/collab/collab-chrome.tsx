@@ -8,7 +8,7 @@
 import { createContext, useContext } from 'react';
 import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@livediagram/document';
 import { tint } from '@/lib/element-tint';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 // Re-exported: every collab face already reaches for it through this module,
 // and the kit it now also feeds lives one level up (see lib/element-tint.ts).
 export { tint };

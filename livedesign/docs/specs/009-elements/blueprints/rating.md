@@ -8,11 +8,11 @@ Scope, by file:
 
 | File                                                      | Role                                                                                                                 |
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `packages/design/src/data-shapes.ts`                      | `RATING_MAX`, `RATING_DEFAULT`, `RatingAnim`, `RATING_ANIMS`, `RATING_LOOPING_ANIMS`, `isRatingShape`, `clampRating` |
+| `../packages/element-model/src/data-shapes.ts`            | `RATING_MAX`, `RATING_DEFAULT`, `RatingAnim`, `RATING_ANIMS`, `RATING_LOOPING_ANIMS`, `isRatingShape`, `clampRating` |
 | `packages/design/src/element-types.ts`                    | `rating`, `ratingAnim`, `ratingAnimSpeed`, `ratingAnimRepeat`                                                        |
 | `packages/design/src/shape-factory.ts`                    | Size 200 × 44; seeds `rating` and the amber stroke                                                                   |
 | `packages/design/src/colors.ts`                           | `SELF_PAINTING_SHAPES` membership                                                                                    |
-| `packages/design/src/svg-render-data.ts`                  | `svgRating`: the export body                                                                                         |
+| `../packages/element-model/src/svg-render-data.ts`        | `svgRating`: the export body                                                                                         |
 | `packages/design/src/svg-render-body.ts`                  | `svgElementBody`: routes `'rating'` to `svgRating` with the resolved stroke                                          |
 | `apps/live/components/canvas/RatingView.tsx`              | Canvas stars, animation class, stagger                                                                               |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes `'rating'` to `RatingView`                                                                                    |

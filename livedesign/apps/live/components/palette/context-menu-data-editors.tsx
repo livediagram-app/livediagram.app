@@ -9,7 +9,7 @@ import {
   type PieSlice,
 } from '@livedesign/design';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';

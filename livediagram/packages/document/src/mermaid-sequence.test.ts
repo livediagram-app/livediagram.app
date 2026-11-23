@@ -5,7 +5,7 @@ import {
   SEQUENCE_MAX_PARTICIPANTS,
 } from './mermaid-sequence';
 import { layoutGraph, graphFromMermaid } from './graph-input';
-import { arrowLabelPass } from './arrow-label-layout';
+import { arrowLabelPass } from '@liveworkspace/element-model/arrow-label-layout';
 import type { ArrowElement, Element } from './index';
 
 // docs/specs/020-import-export/mermaid.md "Sequence diagrams (agents)".

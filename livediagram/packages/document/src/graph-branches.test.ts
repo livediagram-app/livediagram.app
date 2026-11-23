@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { branchExits, withExactEnds, withExactStarts } from './graph-branches';
 import { graphFromMermaid, layoutGraph } from './graph-input';
 import { frameHeadingRect } from './auto-layout-cluster-seats';
-import { arrowRoutePoints } from './arrow-label-layout';
+import { arrowRoutePoints } from '@liveworkspace/element-model/arrow-label-layout';
 import type { Anchor, ArrowElement, BoxedElement, Element } from './index';
 
 // docs/specs/015-api/mcp-server.md §4.7 "The graph look": trunks and buses, and a step's exits by side.
@@ -425,7 +425,7 @@ describe('labels slide along their run', () => {
 describe('labels off other lines', () => {
   it('moves a label off a run another, unlabelled line crosses', async () => {
     const { placeElbowLabels } = await import('./graph-look-labels');
-    const { withOrthogonalBends } = await import('./arrow-orthogonal');
+    const { withOrthogonalBends } = await import('@liveworkspace/element-model/arrow-orthogonal');
     // s's right side to t's top: one bend, then a drop that an unlabelled line crosses at its middle.
     const els = withOrthogonalBends(
       [

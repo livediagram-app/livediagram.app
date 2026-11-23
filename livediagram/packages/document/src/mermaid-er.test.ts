@@ -3,7 +3,7 @@ import { parseMermaid } from './mermaid';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
 import { edgeToArrow, graphToElements } from './graph-authoring';
-import { entityHeight } from './entity-geometry';
+import { entityHeight } from '@liveworkspace/model-core/entity-geometry';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // Tested through parseMermaid so the dispatch is covered too.

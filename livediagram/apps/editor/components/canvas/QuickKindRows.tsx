@@ -6,7 +6,7 @@
 
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
 import type { QuickCodeStyle, QuickNoteStyle, QuickTableStyle } from '@/lib/quick-style-kinds';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 import { QuickMoreColours } from './QuickMoreColours';

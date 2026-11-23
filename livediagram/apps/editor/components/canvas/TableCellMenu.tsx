@@ -5,14 +5,17 @@ import {
   ContextMenu,
   ContextMenuDivider,
 } from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   TextGlyph,
   PaletteMenuIcon,
   RemoveIconGlyph,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';
-import { FillColourIcon, TextColourIcon } from '@/components/palette/context-menu-icons';
+import {
+  FillColourIcon,
+  TextColourIcon,
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { useCellTextContrast } from '@/hooks/ui/useTextContrast';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';

@@ -1,5 +1,5 @@
 import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/document';
-import { PALETTE_DND_MIME } from '@/lib/icons';
+import { PALETTE_DND_MIME } from '@/lib/dnd-mime';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { tileCaption } from '@liveworkspace/workbench/components/palette/tile-caption';
 import { useModKeyHeld } from '@liveworkspace/workbench/hooks/ui/useModKeyHeld';

@@ -2,7 +2,7 @@ import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@liveplanner/project';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
-import type { SnapGuideStore } from './useSnapGuideState';
+import type { SnapGuideStore } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 
 // External state + callbacks the drag machine reads on every move.
 // Bundled into one object so the hook signature doesn't sprout

@@ -4,7 +4,7 @@
 // no two side by side, move so each one-entry group's entry sits on the line of what feeds it. Frames keep their own
 // width: stretched to one width, a stage of two boxes stood mostly empty.
 
-import type { LayoutDirection } from './auto-layout';
+import type { LayoutDirection } from '@liveworkspace/element-model/auto-layout';
 import type { DiagramGraph } from './graph-authoring';
 import type { BoxedElement } from './index';
 

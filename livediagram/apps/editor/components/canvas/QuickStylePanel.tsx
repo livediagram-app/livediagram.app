@@ -17,7 +17,7 @@ import {
   BorderRadiusIcon,
   BorderStrokeIcon,
   BorderStyleIcon,
-} from '@/components/palette/palette-style-previews';
+} from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import { QUICK_CORNERS } from '@/lib/quick-style-whiteboard';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@liveworkspace/workbench/hooks/ui/useQuickStylePlacement';
@@ -43,13 +43,13 @@ import {
   type QuickSwatchSlot,
   type TextAlignX,
 } from '@livediagram/document';
-import type { ShownSwatch } from '@/lib/swatch-overrides';
+import type { ShownSwatch } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { BoardColourRow, QuickPenRows } from './QuickPenRows';
 import { QuickKindRows } from './QuickKindRows';
 import { QuickHighlighterRows } from './QuickHighlighterRows';
 import { QuickMoreColours } from './QuickMoreColours';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import {
   QUICK_BORDER_PX,

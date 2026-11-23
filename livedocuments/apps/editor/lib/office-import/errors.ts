@@ -1,31 +1,9 @@
-// The named failures of a Word or PowerPoint import and their copy
+// The copy of a Word or PowerPoint import's named failures (@liveworkspace/office-files/errors)
 // (docs/specs/020-import-export/office-import.md "Errors").
 
 import { MAX_ARTICLE_BLOCKS, MAX_PAGES } from '@livedocuments/document';
 
-export type FileImportFormat = 'word' | 'powerpoint';
-
-export type OfficeImportFailure =
-  | 'too-large'
-  | 'legacy'
-  | 'not-a-package'
-  | 'wrong-format'
-  | 'unpacks-too-large'
-  | 'too-many-slides'
-  | 'too-many-blocks'
-  | 'too-large-for-tab';
-
-/** Thrown by the readers; `importOfficeFile` turns it into its failure. `count` carries the number a message names. */
-export class OfficeImportError extends Error {
-  readonly failure: OfficeImportFailure;
-  readonly count?: number;
-  constructor(failure: OfficeImportFailure, count?: number) {
-    super(failure);
-    this.name = 'OfficeImportError';
-    this.failure = failure;
-    if (count !== undefined) this.count = count;
-  }
-}
+import type { FileImportFormat, OfficeImportFailure } from '@liveworkspace/office-files/errors';
 
 const n = (v: number) => v.toLocaleString('en-GB');
 

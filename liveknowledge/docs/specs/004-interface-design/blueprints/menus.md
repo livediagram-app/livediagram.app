@@ -18,7 +18,7 @@ Scope, by file:
 | `../packages/ui/src/menu/index.ts`                                          | Public surface, re-exported from `../packages/ui/src/index.ts` and so from `packages/ui`                                    |
 | `../packages/tailwind-config/theme.css`                                     | The inset menu focus ring; the app-wide ring at brand 600 in light                                                          |
 | `../packages/workbench/src/components/primitives/PortalMenu.tsx`            | Anchored menu (command or control) and its list rows, each role-aware                                                       |
-| `apps/editor/components/primitives/MenuTiles.tsx`                           | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                                    |
+| `../packages/workbench/src/components/primitives/MenuTiles.tsx`             | The tile family: `MenuToolbar`, `MenuToolButton`, `MenuTile`, `MenuTileGrid`, role-aware                                    |
 | `../packages/workbench/src/components/primitives/menu-item-props.ts`        | `useMenuItemProps`: a row's role, `tabIndex` and states from the menu it sits in                                            |
 | `../packages/workbench/src/components/primitives/usePortalMenuPlacement.ts` | An anchored menu's position, side (`flipSide`), viewport clamp and outside-press dismissal                                  |
 | `../packages/workbench/src/components/primitives/MenuFlyoutSection.tsx`     | Submenu (in a command menu) or sub-panel (in a control menu)                                                                |
@@ -249,7 +249,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Focus in, arrows, activate, Escape, Tab, return                                            | `../packages/ui/src/menu/useMenu.test.tsx`                                                                |
 | Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                                                          |
 | Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                                                         |
-| Rows take the kind's roles                                                                 | `apps/editor/components/primitives/PortalMenu.test.tsx`                                                   |
+| Rows take the kind's roles                                                                 | `../packages/workbench/src/components/primitives/PortalMenu.test.tsx`                                     |
 | Row labels left-aligned, icon level with the first line                                    | `../packages/workbench/src/components/primitives/MenuActionRow.layout.test.tsx`                           |
 | Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
 | Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                                        |

@@ -3,17 +3,17 @@
 // edit operation's `set` and the MCP's whole-element check refuse the same values the same way. A value off its list
 // used to be stored and drawn wrong in silence (`textSize: "xl"` drew tiny overlapping text).
 
-import { ACCENT_EDGES } from './accent-edge';
-import { ARROWHEAD_SHAPES } from './arrow-style';
-import { ATTACH_POINTS } from './attachment';
+import { ACCENT_EDGES } from '@liveworkspace/element-model/accent-edge';
+import { ARROWHEAD_SHAPES } from '@liveworkspace/element-model/arrow-style';
+import { ATTACH_POINTS } from '@liveworkspace/element-model/attachment';
 import { BORDER_DASH_ARRAY } from '@liveworkspace/model-core/border-style';
-import { BOUNDARY_STYLES } from './boundary';
-import { CARD_MEDIA } from './card';
-import { CHIP_LOOKS } from './chip';
-import { PYRAMID_VARIANTS } from './concept';
+import { BOUNDARY_STYLES } from '@liveworkspace/element-model/boundary';
+import { CARD_MEDIA } from '@liveworkspace/element-model/card';
+import { CHIP_LOOKS } from '@liveworkspace/element-model/chip';
+import { PYRAMID_VARIANTS } from '@liveworkspace/element-model/concept';
 import { PLANNER_EXCLUDED_FONT_IDS, PLANNER_FONTS } from './planner-fonts';
 import { ICON_WEIGHTS } from '@liveworkspace/model-core/icon-weight';
-import { STACK_ALIGNS, STACK_DIRECTIONS } from './stack';
+import { STACK_ALIGNS, STACK_DIRECTIONS } from '@liveworkspace/element-model/stack';
 
 export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> = {
   textSize: ['sm', 'md', 'lg', 'scale'],

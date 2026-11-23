@@ -25,7 +25,11 @@ import {
   type TextElement,
   type ThemeDefinition,
 } from '@livedocuments/document';
-import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
+import {
+  applySwatchOverrides,
+  type ShownSwatch,
+  type SwatchOverrides,
+} from '@liveworkspace/workbench/lib/swatch-overrides';
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement;
 type QuickSectionId =

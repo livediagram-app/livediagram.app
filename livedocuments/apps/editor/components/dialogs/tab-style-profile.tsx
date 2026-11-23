@@ -17,7 +17,10 @@ import {
   type TabStyleTextSizeProps,
 } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 import { seasonalLooksFor } from '@liveworkspace/workbench/lib/seasonal-looks';
-import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
+import {
+  FINISH_LABELS,
+  FinishSwatch,
+} from '@liveworkspace/workbench/components/palette/FinishSection';
 import { patternLabel } from '@/components/palette/palette-patterns';
 import { TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ThemeBrowser } from '@/components/palette/ThemeBrowser';

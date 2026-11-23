@@ -5,7 +5,7 @@ import {
   resolvedAccentEdge,
   supportsAccentEdge,
   svgAccentEdge,
-} from './accent-edge';
+} from '@liveworkspace/element-model/accent-edge';
 import { boxedNeedsSvgRaster, createShape, svgBoxed, type ShapeElement } from './index';
 
 const square = (over: Partial<ShapeElement> = {}): ShapeElement => ({
@@ -73,7 +73,8 @@ describe('accent edge (docs/specs/008-canvas/accent-edge.md)', () => {
 
 describe('accent edge writes', () => {
   it('sets and clears on a supported shape only', async () => {
-    const { withAccentEdge, withAccentEdgeColor } = await import('./accent-edge');
+    const { withAccentEdge, withAccentEdgeColor } =
+      await import('@liveworkspace/element-model/accent-edge');
     const on = withAccentEdge(square(), 'top');
     expect(on.accentEdge).toBe('top');
     expect('accentEdge' in withAccentEdge(on, null)).toBe(false);

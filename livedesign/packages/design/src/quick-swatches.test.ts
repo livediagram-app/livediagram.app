@@ -7,7 +7,7 @@ import {
   quickSwatchColor,
   quickSwatches,
   quickSwatchSlotOf,
-} from './quick-swatches';
+} from '@liveworkspace/element-model/quick-swatches';
 import { MIN_TEXT_CONTRAST, contrastRatio, unpaintedShapeInk } from './colors';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
 import type { ThemeDefinition } from './themes';

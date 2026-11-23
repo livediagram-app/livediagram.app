@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { labelRoom } from './auto-layout-tidy-flow';
+import { labelRoom } from '@liveworkspace/element-model/auto-layout-tidy-flow';
 import { layoutGraph, type GraphInput } from './graph-input';
 import type { BoxedElement } from './index';
 

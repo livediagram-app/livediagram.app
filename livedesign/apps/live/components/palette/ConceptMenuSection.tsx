@@ -11,8 +11,9 @@ import {
   type ShapeElement,
 } from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
-import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
+import { MenuToggleRow } from '@/components/palette/context-menu-rows';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

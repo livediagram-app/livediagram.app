@@ -132,5 +132,5 @@ settled on read).
 longer than 24 characters (`BADGE_LABEL_MAX`) is refused with `invalid_result`, naming the element and the cap
 (`b1 label: a badge's label is at most 24 characters`). A step's label over 3 is refused the same way. Only the
 elements a write touches are checked, so a design that already holds a longer label still takes edits to its other
-elements, and the editor's own saves are never refused for it (`chipLabelIssue` in `packages/design/src/chip.ts`,
+elements, and the editor's own saves are never refused for it (`chipLabelIssue` in `../packages/element-model/src/chip.ts`,
 run by the agent write paths alone).

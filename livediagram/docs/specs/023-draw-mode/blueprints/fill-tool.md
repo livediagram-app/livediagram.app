@@ -11,7 +11,7 @@ Scope, by file:
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `packages/model-core/src/stroke-loop.ts` (monorepo root)              | `STROKE_LOOP_*`, `isStrokeLoop`, `closeStrokeLoop`, `insideLoop`, `loopFillPath` (pure)    |
 | `packages/workbench/src/lib/fill-choice.ts` (monorepo root)           | The bucket's colour in this browser: `parseFillChoice`, `loadFillChoice`, `saveFillChoice` |
-| `packages/document/src/stroke-loop-fill.ts`                           | `isOpenMarkerLoop`, `isFilledPenLoop`, `fillStrokeLoop`, `penLoopFillPath`                 |
+| `../packages/element-model/src/stroke-loop-fill.ts`                   | `isOpenMarkerLoop`, `isFilledPenLoop`, `fillStrokeLoop`, `penLoopFillPath`                 |
 | `packages/document/src/svg-render-shapes.ts`                          | Export: a filled loop's fill path under its ink                                            |
 | `packages/document/src/whiteboard-stroke.ts`                          | The Stroke eraser touches a filled loop's fill                                             |
 | `apps/editor/lib/paint-bucket.ts`                                     | `paintBucketTarget` (what a press fills) and `pourBucket` (the element after) (pure)       |

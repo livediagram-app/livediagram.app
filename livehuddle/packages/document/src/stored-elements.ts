@@ -3,10 +3,10 @@
 
 import { migrateLegacyGroups } from './legacy-groups';
 import { migrateLegacyModeButtons } from './legacy-mode-buttons';
-import { migrateLegacyTextSizing } from './legacy-text-sizing';
+import { migrateLegacyTextSizing } from '@liveworkspace/element-model/legacy-text-sizing';
 import { dropUnturnableRotation } from './unturnable-rotation';
-import { dropMalformedIds } from './malformed-ids';
-import { dropMalformedStyles } from './malformed-styles';
+import { dropMalformedIds } from '@liveworkspace/element-model/malformed-ids';
+import { dropMalformedStyles } from '@liveworkspace/element-model/malformed-styles';
 import { dropUnsafeColours } from '@liveworkspace/element-model/unsafe-colours';
 import type { Element } from './index';
 

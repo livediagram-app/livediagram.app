@@ -29,7 +29,12 @@ import {
   type Finish,
   type ShapeKind,
 } from '@livedocuments/document';
-import { fontFaceName, NO_PAINT, ooxmlColour, type OoxmlColour } from './ooxml-colour';
+import {
+  fontFaceName,
+  NO_PAINT,
+  ooxmlColour,
+  type OoxmlColour,
+} from '@liveworkspace/office-files/ooxml-colour';
 import type {
   EmuRect,
   PptxAlign,
@@ -38,7 +43,7 @@ import type {
   PptxRun,
   PptxShape,
   PptxTextShadow,
-} from './pptx-types';
+} from '@liveworkspace/office-files/pptx-types';
 
 /** Where a page's px land on its slide: an offset and one scale, EMU per px (and so points per px). */
 export type SlidePlacement = { ox: number; oy: number; emuPerPx: number };

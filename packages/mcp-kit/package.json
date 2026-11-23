@@ -32,7 +32,11 @@
     "./eval/diagram-tasks": "./eval/diagram-tasks.mjs",
     "./testing/test-client": "./src/testing/test-client.ts",
     "./eval/score": "./eval/score.mjs",
-    "./eval/task-bank": "./eval/task-bank.mjs"
+    "./eval/task-bank": "./eval/task-bank.mjs",
+    "./eval/gallery-seed": "./eval/gallery-seed.mjs",
+    "./eval/mcp-call": "./eval/mcp-call.mjs",
+    "./eval/run": "./eval/run.mjs",
+    "./eval/transcript": "./eval/transcript.mjs"
   },
   "scripts": {
     "lint": "oxlint",

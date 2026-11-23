@@ -13,11 +13,8 @@ import { lucideFolderX } from '@liveworkspace/icons/lucide';
 import { useState } from 'react';
 import { OrganiseDialogFrame } from '@liveworkspace/workbench/components/dialogs/OrganiseDialogFrame';
 import { tabFolderHeroArt } from '@liveworkspace/ui/dialog-hero-art/tab-folder';
-import {
-  FolderPlaceIcon,
-  NewFolderTile,
-  PlacementCard,
-} from '@/components/placement/PlacementCard';
+import { FolderPlaceIcon } from '@liveworkspace/workbench/components/placement/PlacementCard';
+import { NewFolderTile, PlacementCard } from '@/components/placement/PlacementCard';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { CompactEmptyState, NoMatches, lucideGlyph } from '@liveknowledge/ui';
 import { DocumentIcon } from '@/components/primitives/explorer-icons';

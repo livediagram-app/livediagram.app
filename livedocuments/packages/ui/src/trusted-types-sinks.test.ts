@@ -14,10 +14,8 @@ describeTrustedTypesSinks({
   // an export preview) goes through sanitizedHtml.
   builderMarkup: [
     'apps/editor/app/pre-hydration-scripts.ts',
-    'apps/editor/components/canvas/StickerView.tsx',
     'apps/editor/components/canvas/layout-render-thumb.tsx',
     'apps/editor/components/dialogs/TabStylePreview.tsx',
-    'apps/editor/components/primitives/tech-icon-glyph.tsx',
     'apps/editor/lib/stale-html-guard.ts',
     'packages/ui/src/appearance/appearance-storage.ts',
   ],

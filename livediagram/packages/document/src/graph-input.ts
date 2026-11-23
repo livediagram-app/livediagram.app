@@ -12,11 +12,15 @@
 //  - The arrows get their routing (lines), defaulting per style.
 
 import { isRetiredShapeKind, retiredKindRefusal } from './retired-elements';
-import { autoLayoutElements, type LayoutDirection, type LayoutStyle } from './auto-layout';
+import {
+  autoLayoutElements,
+  type LayoutDirection,
+  type LayoutStyle,
+} from '@liveworkspace/element-model/auto-layout';
 import { layoutClusteredGraph, sweepEdgelessNodes } from './auto-layout-clusters';
-import { withOrthogonalBends } from './arrow-orthogonal';
+import { withOrthogonalBends } from '@liveworkspace/element-model/arrow-orthogonal';
 import { withoutNotches } from './graph-notches';
-import type { ArrowStyle } from './arrow-style';
+import type { ArrowStyle } from '@liveworkspace/element-model/arrow-style';
 import {
   graphToElements,
   type GraphCluster,

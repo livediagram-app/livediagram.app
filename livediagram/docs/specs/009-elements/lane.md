@@ -108,7 +108,7 @@ A lane follows the tab's theme whole: its body, its border, its title and its **
 ## Aligning the title re-orients the lane
 
 The gutter is the title's backdrop, so it runs along whichever **edge the
-title is pinned to** (`laneGutterEdge` in `packages/document/src/lane-gutter.ts`, drawn by `LaneGutter.tsx`):
+title is pinned to** (`laneGutterEdge` in `../packages/element-model/src/lane-gutter.ts`, drawn by `LaneGutter.tsx`):
 
 | Title alignment           | Gutter                                          |
 | ------------------------- | ----------------------------------------------- |

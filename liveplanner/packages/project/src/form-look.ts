@@ -2,12 +2,12 @@
 // and the form link's page both draw it. Its colour is always the theme's own; each half (light, dark) is worked out so the page
 // can follow the respondent's system.
 import { contrastRatio } from './colors';
-import { resolveFinish, type Finish } from './finish';
+import { resolveFinish, type Finish } from '@liveworkspace/element-model/finish';
 import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { themeAccent } from './colour-background';
 import { DEFAULT_PATTERN_COLOR } from '@liveworkspace/model-core/canvas-colors';
 import { isBackgroundPattern, type BackgroundPattern, type Tab } from './index';
-import { themeHalf, viewBackdropInTheme } from './theme-halves';
+import { themeHalf, viewBackdropInTheme } from '@liveworkspace/element-model/theme-halves';
 import { DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
 import { getBuiltInTheme, type Appearance, type ThemeDefinition } from './themes';
 

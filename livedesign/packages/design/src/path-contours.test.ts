@@ -8,7 +8,7 @@ import {
   pathOfContours,
   pathWorldAnchors,
   reshapeContour,
-} from './path-element';
+} from '@liveworkspace/element-model/path-element';
 import { svgPathElementShape } from './svg-render-shapes';
 import { elementValidationIssue } from './validate';
 

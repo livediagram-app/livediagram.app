@@ -1,7 +1,7 @@
 // The graph look's roles and tones (graph-look.ts): which decision exits step aside, and the start, end and decision
 // tones a flowchart's nodes draw with. Also the small edge counts the later passes walk the graph with.
 
-import { edgeKey } from './auto-layout';
+import { edgeKey } from '@liveworkspace/element-model/auto-layout';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import type { Element } from './index';
 

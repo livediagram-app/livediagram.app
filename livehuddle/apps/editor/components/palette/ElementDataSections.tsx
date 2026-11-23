@@ -14,7 +14,7 @@
 // handlers; this component only decides which items to show.
 
 import { changesType, elementKindLabel, hasBuiltInDoorway } from '@livehuddle/document';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuToolsSection } from '@liveworkspace/workbench/components/primitives/MenuToolsSection';
 import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import { StageMenuSection } from '@/components/palette/StageMenuSection';

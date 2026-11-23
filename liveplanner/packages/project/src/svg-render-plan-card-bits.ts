@@ -50,7 +50,7 @@ import {
   planPercentInks,
   type PlanPalette,
 } from './plan-palette';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { personDisc, text as faceText, wrapLines } from './svg-render-face-kit';
 import { initialsOf } from '@liveworkspace/model-core/names';
 

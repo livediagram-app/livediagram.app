@@ -3,8 +3,13 @@ import {
   DARK_CANVAS_BACKGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
 } from '@liveworkspace/model-core/canvas-colors';
-import { APPEARANCES, DEFAULT_SCHEME_LIGHT, THEMES, isAppearance } from './themes';
-import { themeHalf } from './theme-halves';
+import {
+  APPEARANCES,
+  DEFAULT_SCHEME_LIGHT,
+  THEMES,
+  isAppearance,
+} from '@liveworkspace/element-model/themes';
+import { themeHalf } from '@liveworkspace/element-model/theme-halves';
 import { tabAsSeen, themeSource } from './tab-as-seen';
 import type { Tab } from './index';
 

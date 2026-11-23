@@ -3,7 +3,7 @@
 // so it adapts to light and dark boards. Pure; the field table (docs/specs/023-draw-mode/
 // blueprints/snap-colours.md) says which kinds and fields take part.
 import type { Element } from './index';
-import { isCustomPenColour, nearestPenColour } from './pen-colours';
+import { isCustomPenColour, nearestPenColour } from '@liveworkspace/element-model/pen-colours';
 
 /** One kind's colour field that can hold a custom hex or a stock name. */
 type SnapColourField = {

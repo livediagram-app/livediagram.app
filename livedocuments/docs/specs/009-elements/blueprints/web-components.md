@@ -15,7 +15,7 @@ Scope, by file:
 | `packages/document/src/svg-render-web.ts`                        | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
 | `packages/document/src/themes.ts`                                | `themeColourFields`: accent bars retheme only their stroke                       |
 | `packages/document/src/colors.ts`                                | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
-| `packages/document/src/data-shapes.ts`                           | `isSelfDrawingShape`: stat row and process carry no label                        |
+| `../packages/element-model/src/data-shapes.ts`                   | `isSelfDrawingShape`: stat row and process carry no label                        |
 | `packages/document/src/validate.ts`                              | Row, masthead and caption bounds; arrow ends `free`, `pinned` or `on-arrow`      |
 | `apps/editor/components/canvas/web/*.tsx`                        | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
 | `../packages/workbench/src/components/canvas/InlineTextLine.tsx` | The in-place single-line editor                                                  |

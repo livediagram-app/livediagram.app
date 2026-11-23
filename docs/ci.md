@@ -1,8 +1,7 @@
 # CI
 
 The monorepo's checks live in the root `.github/`. GitHub reads workflows only from there, so the
-`.github/` folders the products brought with them (`livediagram/.github/` and the others) are inert
-here. Each product's own spec describes what its suites check (`docs/specs/016-platform/deployment.md` "CI" in each product).
+products have no `.github/` folders of their own. Each product's own spec describes what its suites check (`docs/specs/016-platform/deployment.md` "CI" in each product).
 
 ## Only what changed
 
@@ -30,8 +29,7 @@ deploy. None is held today: livehuddle was held until its launch (Work Tracker #
 change touches something every workspace leans on without turbo seeing it as theirs: `.github/` (but for a
 guard's baseline list, which only its guard reads: "Before a push"), the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
-Prettier config and ignore file, or a product folder's own `package.json`, `tsconfig.base.json` or
-Prettier files.
+Prettier config and ignore file, or a product folder's own `package.json` or Prettier ignore file.
 
 ### Suites that read other workspaces
 

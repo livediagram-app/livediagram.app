@@ -3,7 +3,7 @@
 // naming what each shape kind the graph uses means, drawn in the diagram's own tones.
 
 import { unionRects } from '@liveworkspace/model-core/geometry-primitives';
-import { glyphWidth } from './glyph-width';
+import { glyphWidth } from '@liveworkspace/element-model/glyph-width';
 import { fitTextWidth } from '@liveworkspace/element-model/text-fit';
 import {
   isBoxed,

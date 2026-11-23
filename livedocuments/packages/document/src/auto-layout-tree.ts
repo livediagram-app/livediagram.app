@@ -17,7 +17,7 @@ import {
   type PlacedComponent,
   type Pt,
   type Size,
-} from './auto-layout-shared';
+} from '@liveworkspace/element-model/auto-layout-shared';
 
 // Roots for the spanning forest: in-degree-0 nodes (classic tree roots). A
 // fully cyclic component has none, so fall back to the node with the best

@@ -5,8 +5,8 @@ import {
   THEME_TEXT_CONTRAST,
   themeColourMap,
   themeHalf,
-} from './theme-halves';
-import { shapeColorPresets } from './theme-presets';
+} from '@liveworkspace/element-model/theme-halves';
+import { shapeColorPresets } from '@liveworkspace/element-model/theme-presets';
 import { THEMES } from './themes-data';
 import type { Appearance, ThemeDefinition } from './themes';
 

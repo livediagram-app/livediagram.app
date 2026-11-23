@@ -24,7 +24,7 @@ import {
   translateBoxedSelection,
 } from './boxed-drag-resolve';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
-import type { useSnapGuideState } from './useSnapGuideState';
+import type { useSnapGuideState } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 
 // Screen-pixel distance the pointer must travel before a body drag
 // actually starts moving the element. Below this a press (even one that

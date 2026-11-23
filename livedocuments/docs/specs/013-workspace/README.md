@@ -32,3 +32,4 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./automations.md - when working on Automations: rules a document runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./send-to-plan.md - when working on Send to Plan: what livedocuments sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, automations)
+- ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the document is read, where a source opens, the suggested questions (the platform's `020-ask`)

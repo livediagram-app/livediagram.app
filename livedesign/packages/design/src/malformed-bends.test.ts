@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createArrow } from './factories';
 import { migrateIncomingTab } from './stored-tab';
 import { elementValidationIssue, isValidTab } from './validate';
-import { arrowPathD } from './arrow-path';
-import { dropMalformedBends, MAX_CURVE_POINTS } from './malformed-bends';
+import { arrowPathD } from '@liveworkspace/element-model/arrow-path';
+import { dropMalformedBends, MAX_CURVE_POINTS } from '@liveworkspace/element-model/malformed-bends';
 import type { ArrowElement, Element, Tab } from './index';
 
 // An arrow's bends are { dx, dy } deltas (docs/specs/008-canvas/arrow-bending.md "Stored bends").

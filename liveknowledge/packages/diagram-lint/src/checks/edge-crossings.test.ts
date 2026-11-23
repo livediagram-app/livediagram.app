@@ -1,7 +1,7 @@
 import { fixes } from '../fixes';
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@liveknowledge/document';
-import { LINT_MAX_ARROWS } from '../constants';
+import { LINT_MAX_ARROWS } from '@liveworkspace/diagram-lint/constants';
 import { arrow, box, stack, lint, of, tabOf } from '../fixtures/build';
 import { formatLintReport } from '@liveworkspace/diagram-lint/format';
 

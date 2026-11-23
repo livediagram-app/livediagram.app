@@ -5,7 +5,7 @@
 import type { EditRejection } from '@livehuddle/api-schema';
 import { kindWordOf, resolveRef, type Element, type ElementId } from '@livehuddle/document';
 import { describeElement, kindOf, labelOf } from './element-text';
-import { nearestElements } from './nearest';
+import { nearestElements } from '@liveworkspace/edit-operations/nearest';
 import { currentElements, namingOf, noteTarget, refsOf, type EditState } from './state';
 import {
   arrowParts,
@@ -14,7 +14,7 @@ import {
   tokeniseLine,
   unquotedPrefix,
   type Word,
-} from './tokenise';
+} from '@liveworkspace/edit-operations/tokenise';
 import { REJECTION_CANDIDATES_MAX, RESERVED_WORDS, SELECTOR_KEYS } from './vocabulary';
 
 type SelectorTerm =

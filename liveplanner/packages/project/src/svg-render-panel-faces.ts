@@ -8,9 +8,9 @@
 
 import { COLLAB_DONE_COLOR as DONE } from './colors';
 import type { Comment } from './comments';
-import { elementActions, isClosedAction } from './element-action';
+import { elementActions, isClosedAction } from '@liveworkspace/element-model/element-action';
 import { initialsOf } from '@liveworkspace/model-core/names';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import {
   checkMark,
   collabCard,

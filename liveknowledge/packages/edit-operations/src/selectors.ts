@@ -11,8 +11,8 @@ import {
   type ElementId,
 } from '@liveknowledge/document';
 import { describeElement, kindOf, labelOf } from './element-text';
-import { reachableFrom } from './graph-walk';
-import { nearestElements } from './nearest';
+import { reachableFrom } from '@liveworkspace/edit-operations/graph-walk';
+import { nearestElements } from '@liveworkspace/edit-operations/nearest';
 import { currentElements, holdersOf, namingOf, noteTarget, refsOf, type EditState } from './state';
 import {
   arrowParts,
@@ -21,7 +21,7 @@ import {
   tokeniseLine,
   unquotedPrefix,
   type Word,
-} from './tokenise';
+} from '@liveworkspace/edit-operations/tokenise';
 import { REJECTION_CANDIDATES_MAX, RESERVED_WORDS, SELECTOR_KEYS } from './vocabulary';
 
 // Keys whose value names one element.

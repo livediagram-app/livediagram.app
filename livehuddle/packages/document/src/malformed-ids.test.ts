@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { migrateIncomingTab } from './stored-tab';
 import { elementValidationIssue, isValidTab } from './validate';
-import { dropMalformedIds, ELEMENT_KEY_MAX } from './malformed-ids';
+import { dropMalformedIds, ELEMENT_KEY_MAX } from '@liveworkspace/element-model/malformed-ids';
 import type { Element, Tab } from './index';
 
 // Catalogue keys are text (docs/specs/010-palette/technology-icons.md).

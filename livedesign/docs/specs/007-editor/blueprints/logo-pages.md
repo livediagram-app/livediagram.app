@@ -44,10 +44,10 @@ Exclude), **Wordmark**, **Logo Kit**.
 | `LOGO_GRID_DIVISIONS`                      | 8                                             | `packages/design/src/logo-page.ts`                       | Spec                                                             |
 | `LOGO_GUIDE_ALPHA`                         | faint .2/.08, medium .35/.15, strong .6/.3    | `apps/live/lib/logo-guide-prefs.ts`                      | Guides / grid opacity per strength                               |
 | `MIRROR_AXIS_TOLERANCE`                    | 0.01 (of the artboard's width)                | `packages/design/src/element-mirror.ts`                  | Spec; 0.005 to 0.03                                              |
-| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `packages/design/src/wordmark.ts`                        | Spec                                                             |
-| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `packages/design/src/wordmark.ts`                        | Spec                                                             |
-| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `packages/design/src/wordmark.ts`                        | The weights `fonts.ts` loads for every catalogue font            |
-| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `packages/design/src/wordmark.ts`                        | Room kept for glyphs above / below the arc's baseline            |
+| `LETTER_SPACING_MIN` / `_MAX`              | -0.2 / 1 (em)                                 | `../packages/element-model/src/wordmark.ts`              | Spec                                                             |
+| `TEXT_ARC_MAX`                             | 360 (degrees, either sign)                    | `../packages/element-model/src/wordmark.ts`              | Spec                                                             |
+| `FONT_WEIGHTS`                             | 400, 500, 700                                 | `../packages/element-model/src/wordmark.ts`              | The weights `fonts.ts` loads for every catalogue font            |
+| `ARC_ASCENT` / `ARC_DESCENT`               | 0.8 / 0.25 (em)                               | `../packages/element-model/src/wordmark.ts`              | Room kept for glyphs above / below the arc's baseline            |
 | `COMBINE_TOLERANCE_PX`                     | 0.25                                          | `apps/live/lib/combine/outline.ts`                       | Spec ("a quarter of a pixel")                                    |
 | `COMBINE_MERGE_PX`                         | 0.05                                          | `apps/live/lib/combine/simplify.ts`                      | Collinear merge distance; well under a device pixel              |
 | `COMBINE_MAX_INPUT_POINTS`                 | 50,000                                        | `apps/live/lib/combine/combine.ts`                       | Refused above as Too detailed; measured runs stay under 4 ms     |
@@ -210,7 +210,7 @@ Exclude), **Wordmark**, **Logo Kit**.
   the tab is unlocked, loaded and the session not read-only; `can.recolour`; `commitElements`;
   `useToast().info`), so neither `useEditorState` nor `EditorCanvasHost` threads a prop.
   `lib/paint-bucket.ts` is livediagram's `paintBucketTarget` / `pourBucket` on `@livedesign/design`
-  (`freehandCanvasPoints` for a stroke's points), and `packages/design/src/stroke-loop-fill.ts`
+  (`freehandCanvasPoints` for a stroke's points), and `../packages/element-model/src/stroke-loop-fill.ts`
   binds `@liveworkspace/model-core/stroke-loop` to the freehand element (closing, the fill path).
   `FreehandSvg` draws a filled loop's fill under its ink (`data-loop-fill`, `pointerEvents: all`
   while only the line picks, so the DOM eraser and a click find it); `svgFreehandShape` exports it.
@@ -409,7 +409,7 @@ on)` (which also calls `preloadCombineEngine()` when turned on), `mirrorPages`
   adds (an id not there before) gets its twins in the same commit, merged or with fresh ids;
   `Element · Created · MirrorTwin` once per twinned commit.
 
-### Wordmark type (`packages/design/src/wordmark.ts`, `svg-render-wordmark.ts`)
+### Wordmark type (`../packages/element-model/src/wordmark.ts`, `svg-render-wordmark.ts`)
 
 - `hasWordmarkType`, `wordmarkDisplayText`, `resolvedFontWeight` (`fontWeight ?? (textBold ? 700 :
 400)`), `clampLetterSpacing`, `clampTextArc`, `arcText` (line breaks as spaces), `arcGeometry(box,
@@ -483,7 +483,7 @@ viewportZoom })` holds `press` (the last press on a compound path while nothing 
   It exposes `clearSelection`.
 - Commits: `usePathTool` passes `contourIndex` to `onCommitPathEdit(id, next, kind, contour)`, and drops a
   commit whose `closed` differs from the path's (J on a compound path). `usePathCommits` applies
-  `reshapeContour(el, contour, anchors)` (`packages/design/src/path-element.ts`): every contour placed in
+  `reshapeContour(el, contour, anchors)` (`../packages/element-model/src/path-element.ts`): every contour placed in
   the path's frame, the edited one replaced, those failing `isCommittablePath` dropped,
   `pathOfContours` for the new box (one contour left: no `subpaths`), the box moved as `reshapePath`
   moves a rotated one (`keptInPlace`); null (the element deleted) when none is left; an index past

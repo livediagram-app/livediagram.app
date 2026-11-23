@@ -1,20 +1,29 @@
-// What the room's constructor (plan-room.ts) wires up: the env's PLAN_ROOM answering this object's own id,
-// the plan's owner and team kept from its grants, a Participant's writes, and the surface the internal endpoints act
-// on. Each takes the room.
+// What the room's constructor (plan-room.ts) wires up: the env the plan's code runs with, its PLAN_ROOM answering
+// this object's own id, the plan's owner and team kept from its grants, a Participant's writes, and the surface the
+// internal endpoints act on. Each takes the room.
 import { createItemHeadSync, type ItemHeadSync } from '@liveworkspace/index-app';
 import { watchIdsOfOp } from './sheet-watchers';
 import { RoomParticipantWrites } from '../room-participant';
 import { type InternalRoom } from '../room-internal';
 import type { PlanRoom } from './plan-room';
+import type { Env, PlanEnv } from '../types';
+import { RoadmapMemo } from '../roadmap/roadmap-memo';
+import { RemovalGuard } from './removal-guard-store';
 import { ensureSchema, noteWrite } from './plan-room-content';
 import {
   closeAllIfTrashed,
+  closeAllReverted,
   closeSessionsOfChangedLink,
   closeSessionsForAccessChange,
   sequenceMutation,
   sendTo,
 } from './plan-room-sockets';
-import { handleAgentPresence, clearAgentsFor, liveSessions } from './plan-room-presence';
+import {
+  handleAgentPresence,
+  clearAgentsFor,
+  liveSessions,
+  roomPeople,
+} from './plan-room-presence';
 import { moveRoadmapGauge } from '../roadmap/roadmap-gauge';
 
 // This env's PLAN_ROOM, answering this plan's own id with this object: the code shared with the worker (a
@@ -36,6 +45,26 @@ export function localNamespace(
         : value;
     },
   });
+}
+
+// The env the plan's code runs with in the room: the worker's bindings, the plan's own SQLite as `PLAN_DB`, and
+// what only the room can answer (who is connected, the automations queue, the removal guard, the roadmap memo).
+export function roomEnv(room: PlanRoom, env: Env): PlanEnv {
+  const storage = room.state.storage;
+  return {
+    ...env,
+    PLAN_DB: room.db.asD1(),
+    PLAN_ROOM: localNamespace(room, env.PLAN_ROOM),
+    ROOM_PEOPLE: () => roomPeople(room),
+    AUTOMATIONS: room.automations,
+    TIER: room.tier,
+    REMOVAL_GUARD: new RemovalGuard(storage),
+    SNAPSHOT_REVERTED: () => closeAllReverted(room),
+    // Stamped with SQLite's change count, which every write in this room moves, whichever path made it.
+    ROADMAP_MEMO: new RoadmapMemo(() =>
+      Number(storage.sql.exec('SELECT total_changes() AS n').toArray()[0]?.n ?? 0),
+    ),
+  };
 }
 
 // The plan's owner and team as its own row keeps them (@liveworkspace/index-app item-head.ts).

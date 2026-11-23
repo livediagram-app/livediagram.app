@@ -1,4 +1,4 @@
-import { StrokeWeightIcon } from '@/components/palette/palette-style-previews';
+import { StrokeWeightIcon } from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import type { PenWidthId } from '@/lib/quick-style-pen';
 
 // A marker width as a picture (docs/specs/023-draw-mode/draw-mode.md "Pens"), the same wherever a

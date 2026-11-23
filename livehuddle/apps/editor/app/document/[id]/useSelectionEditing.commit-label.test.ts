@@ -13,7 +13,7 @@ import { useSelectionEditing } from './useSelectionEditing';
 
 // A mind node's lines measure this tall (jsdom lays nothing out).
 const mindLines = { height: 0 };
-vi.mock('@/components/canvas/text-hug-measure', () => ({
+vi.mock('@liveworkspace/workbench/components/label-editor/plain-text-hug-measure', () => ({
   measureDrawnText: () => () => 0,
   measureDrawnMindLabel: () => () => () => ({ width: 1, height: mindLines.height }),
 }));

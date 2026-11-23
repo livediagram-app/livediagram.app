@@ -18,7 +18,7 @@ import { lineDataHeroArt } from '@liveworkspace/ui/dialog-hero-art/line-data';
 import { tableHeroArt } from '@liveworkspace/ui/dialog-hero-art/table';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import {
   ChecklistRowsEditor,
   LegendDataEditor,
@@ -26,7 +26,7 @@ import {
 } from '@/components/palette/context-menu-data-editors';
 import { ConceptSettings, hasConceptSettings } from '@/components/palette/ConceptMenuSection';
 import { WebRowsEditor, webRowsTitle } from '@/components/palette/context-menu-web-editors';
-import { shownColour } from '@/components/palette/ink-row';
+import { shownColour } from '@liveworkspace/workbench/components/palette/ink-row';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import { getTheme, themeChartPalette } from '@/lib/themes';

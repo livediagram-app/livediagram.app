@@ -4,7 +4,7 @@
 // forgivingly, so a list pasted from elsewhere works: bullets, numbered items, plain lines and
 // headings, with inline Markdown stripped. Pure text.
 import type { Element, ElementId } from './index';
-import type { MindFlow } from './mind-flow';
+import type { MindFlow } from '@liveworkspace/element-model/mind-flow';
 import { mindNodesInOrder } from './mind-layout';
 import {
   mindMarkdownToMarks,

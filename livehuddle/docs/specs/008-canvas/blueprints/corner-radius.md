@@ -29,7 +29,7 @@ export function cornerRadiusPx(
 | `apps/editor/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`) |
 | `apps/editor/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8                           |
 | `apps/editor/components/canvas/ImageElementView.tsx`                         | 4                           |
-| `packages/document/src/svg-render-border.ts` (`borderOf`)                    | `DEFAULT_BOX_RADIUS_PX`     |
+| `../packages/element-model/src/svg-render-border.ts` (`borderOf`)            | `DEFAULT_BOX_RADIUS_PX`     |
 | `packages/document/src/svg-render-describe.ts`                               | 4 (images)                  |
 | `livediagram/packages/document/src/shape-hit.ts`                             | `CSS_DEFAULT_RADIUS_PX`     |
 

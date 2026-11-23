@@ -18,7 +18,7 @@ import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/Se
 import { PanelSection } from '../page-panel-sections';
 import { ArticleBandsSection } from './ArticleBandsSection';
 import { ColourPicker } from '@/components/colour/ColourPicker';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 // The Theme accent's id in the colour picker: the article stores no accent of its own.

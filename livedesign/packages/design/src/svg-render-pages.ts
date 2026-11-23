@@ -6,7 +6,7 @@ import { pagesOf, layOutPages, type LaidOutPage } from './page';
 import { pageExportFrame } from './page-frame';
 import { tabWireframeFrameTheme } from './wireframe-page';
 import { opensInOf } from './editor-mode';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { renderElementsToSvg } from './svg-render';
 import type { Tab } from './index';
 

@@ -3,7 +3,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Element } from '@liveknowledge/document';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { getLineArtIconCatalog } from '@/lib/icons';
+import { getLineArtIconCatalog } from '@liveworkspace/workbench/lib/icons';
 import { getStickerCatalog } from '@liveworkspace/workbench/lib/stickers';
 import { CATALOGUE_MATCH_LIMIT, searchCatalogueTiles } from './palette-catalogue-search';
 import type { PaletteTileDef } from './palette-tile-defs';

@@ -13,7 +13,7 @@ import { lucideGlyph, PencilIcon } from '@livehuddle/ui';
 import { lucideVote } from '@liveworkspace/icons/lucide';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
 export type StagePatch = { stageSpeakers?: StageSpeakers; stageCameras?: boolean };

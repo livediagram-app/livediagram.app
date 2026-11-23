@@ -7,9 +7,9 @@ import {
   sankeyLabelHalo,
   sankeyNodeReadout,
   SANKEY_NEUTRAL_BAND,
-} from './sankey-frame';
-import { svgSankey } from './svg-render-sankey';
-import { PIE_PALETTE } from './data-shapes';
+} from '@liveworkspace/element-model/sankey-frame';
+import { svgSankey } from '@liveworkspace/element-model/svg-render-sankey';
+import { PIE_PALETTE } from '@liveworkspace/element-model/data-shapes';
 import { isValidElement } from './validate';
 import { normaliseElement } from './element-normalise';
 import {
@@ -18,7 +18,7 @@ import {
   withSankeyNodeColor,
   cleanSankeyFlows,
   sankeyDrawnFlows,
-} from './sankey-model';
+} from '@liveworkspace/element-model/sankey-model';
 
 const budget = (patch: Partial<ShapeElement> = {}): ShapeElement => ({
   ...createShape('sankey', 10, 20),

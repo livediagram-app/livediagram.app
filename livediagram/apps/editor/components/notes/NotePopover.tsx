@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { clampIntoRange, Portal } from '@livediagram/ui';
 import type { TextRun } from '@livediagram/document';
-import { NoteRichText, noteRuns } from '@/components/notes/NoteRichText';
+import { NoteRichText, noteRuns } from '@liveworkspace/workbench/components/notes/NoteRichText';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';

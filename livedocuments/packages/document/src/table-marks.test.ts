@@ -16,7 +16,7 @@ import {
   tableMarkColours,
   tableMarkPath,
   tableMarkSize,
-} from './table-marks';
+} from '@liveworkspace/element-model/table-marks';
 import { isValidElement } from './validate';
 
 // docs/specs/009-elements/comparison-tables.md.

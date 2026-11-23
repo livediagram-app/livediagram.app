@@ -15,10 +15,10 @@ Scope, by file:
 | `apps/editor/lib/locked-element-ids.ts`                   | `lockedElementIds`: the lock rule, light enough for callers that do not tidy                 |
 | `apps/editor/lib/tidy-verdict.ts`                         | `assessCleanup`, `cleanupVerdict`: whether a tidier is offered, its line and notice          |
 | `apps/editor/lib/auto-align.ts`, `auto-align-lines.ts`    | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard    |
-| `packages/document/src/auto-layout-tidy.ts`               | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit       |
+| `../packages/element-model/src/auto-layout-tidy.ts`       | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit       |
 | `../packages/element-model/src/auto-layout-tidy-graph.ts` | Units, riders, dashed arrows: the graph of nodes the profile lays out                        |
 | `../packages/element-model/src/auto-layout-tidy-rank.ts`  | Drawn-order loop breaking, side steps, zero-length side edges in the layering                |
-| `packages/document/src/auto-layout-tidy-flow.ts`          | One component's flow positions: blocks, label-sized gaps, lane centres                       |
+| `../packages/element-model/src/auto-layout-tidy-flow.ts`  | One component's flow positions: blocks, label-sized gaps, lane centres                       |
 | `../packages/element-model/src/auto-layout-route.ts`      | Square arrow routes around the boxes                                                         |
 | `../packages/model-core/src/auto-layout-route-grid.ts`    | Bucket grid of the boxes a route must clear                                                  |
 | `apps/editor/hooks/canvas/useCleanupPreview.ts`           | `previewCleanup(kind)` / `endCleanupPreview()`, `assessCleanupKind`: snapshot, revert, judge |

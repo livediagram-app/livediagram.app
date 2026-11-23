@@ -19,7 +19,10 @@ import {
   applyFillColorToEl,
   applyTextColorToEl,
 } from './style-presets';
-import { applySwatchOverrides, type SwatchOverrides } from './swatch-overrides';
+import {
+  applySwatchOverrides,
+  type SwatchOverrides,
+} from '@liveworkspace/workbench/lib/swatch-overrides';
 
 type Option<V extends string> = { value: V; name: string; swatch: string };
 

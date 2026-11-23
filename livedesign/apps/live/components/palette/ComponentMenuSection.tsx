@@ -30,8 +30,8 @@ import { MENU_CELL_INPUT } from '@liveworkspace/workbench/components/palette/men
 import { useEditorContext, useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import { MAKE_COMPONENT_REFUSAL } from '@/app/design/[id]/useComponentActions';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
-import { getLineArtIconCatalog } from '@/lib/icons';
+import { CatalogIconThumb } from '@liveworkspace/workbench/components/primitives/icon-glyph';
+import { getLineArtIconCatalog } from '@liveworkspace/workbench/lib/icons';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 
 const ComponentIcon = lucideGlyph(lucidePackage, 16);

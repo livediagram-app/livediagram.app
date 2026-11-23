@@ -15,7 +15,7 @@ import {
   timerDigitSize,
   type TimerPieceKind,
 } from './timer-pieces';
-import { r2 } from './svg-render-primitives';
+import { r2 } from '@liveworkspace/element-model/svg-render-primitives';
 import { text, type Face } from './svg-render-face-kit';
 
 const rect = (

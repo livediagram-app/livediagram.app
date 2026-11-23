@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { autoLayoutElements } from './auto-layout';
+import { autoLayoutElements } from '@liveworkspace/element-model/auto-layout';
 import { createShape, createPinnedArrow } from './factories';
 import type { ArrowElement, BoxedElement, Element, ShapeElement } from './index';
 

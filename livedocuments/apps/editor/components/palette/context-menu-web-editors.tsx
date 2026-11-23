@@ -24,7 +24,7 @@ import {
 } from '@livedocuments/document';
 import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
 import { conceptTitle } from '@/components/palette/ConceptMenuSection';
-import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';
 import { moveRow } from '@liveworkspace/workbench/lib/move-row';

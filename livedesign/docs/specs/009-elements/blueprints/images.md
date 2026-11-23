@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/design/src/validate.ts`                          | Structural check of an image element in a tab body                           |
 | `packages/design/src/svg-render-describe.ts`               | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius        |
 | `packages/design/src/svg-render-boxed.ts`                  | Image branch: `svgImageShape`, else the dashed placeholder rect              |
-| `packages/design/src/svg-render-image-icon.ts`             | `svgImageShape`: clipped `<image>` over a white backing rect                 |
+| `../packages/element-model/src/svg-render-image-icon.ts`   | `svgImageShape`: clipped `<image>` over a white backing rect                 |
 | `../packages/api-schema/src/image-limits.ts`               | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy             |
 | `../packages/api-schema/src/image-sniff.ts`                | `sniffImageType`: magic-number table                                         |
 | `packages/api-schema/src/embed-images.ts`                  | `embedTabImages`, `tabImageIds`: the tab's ids for the shared embedder       |

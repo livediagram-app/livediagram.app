@@ -2,7 +2,7 @@
 
 import type { ShapeElement } from '@liveplanner/project';
 import { MenuDialogSection } from '@liveworkspace/workbench/components/primitives/MenuDialogSection';
-import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 
 // A sequence diagram's row (docs/specs/009-elements/sequence-diagram.md "The menu"): it opens the Sequence dialog,
 // where its participants, its messages and Numbered are. The menu holds the row alone: a setting never sits loose

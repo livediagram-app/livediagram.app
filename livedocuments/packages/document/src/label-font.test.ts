@@ -11,7 +11,7 @@ import {
   readTextSize,
   runFontPx,
 } from '@liveworkspace/model-core/label-font';
-import { svgPieChart } from './svg-render-charts';
+import { svgPieChart } from '@liveworkspace/element-model/svg-render-charts';
 import { svgLegendShape } from './svg-render-shapes';
 import { createShape } from './factories';
 

@@ -138,7 +138,8 @@ are forwarded to its origins (`WORKSPACE_ORIGIN`, `INDEX_ORIGIN`, `PREVIEWS_ORIG
 `forward(request, url, binding, origin, stripPrefix?)` resolves each app target as _binding if present, else
 local-dev origin_ (see Local development below) and strips the prefix for the assetPrefix and basePath paths (`/live`
 assets and `/help`) when forwarding to a binding, re-prefixing a redirect's `Location` (`withPrefixedRedirect`). The
-order is `route()` in `apps/router/src/index.ts`, as the table above lists it; `LIVE_ROUTE_SEGMENTS` is
+order is `route()` in `../packages/sites/src/app-router.ts` (`createAppRouter`, the one router every app runs, bound
+to this app in `apps/router/src/index.ts`), as the table above lists it; `LIVE_ROUTE_SEGMENTS` is
 `document`, `auth`, `embed`, `explorer`, `get-started`, `join`, `new`, `oauth`, `offline` and `sign-in`.
 
 Adding a new top-level route to the editor app means adding its first segment to `LIVE_ROUTE_SEGMENTS` (in `packages/api-schema/src/page-views.ts`), or the router will send it to marketing.

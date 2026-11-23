@@ -28,7 +28,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { usePublishFaceControls } from '@/components/canvas/collab/face-controls';
 
 export function IdeaBoxFace({

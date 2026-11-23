@@ -7,9 +7,9 @@ import type {
   TextElement,
 } from './index';
 import { defaultStrokeColor } from './colors';
-import { PEN_INK, penColourHex } from './pen-colours';
+import { PEN_INK, penColourHex } from '@liveworkspace/element-model/pen-colours';
 import { renderElementsToSvg, svgArrow, svgBoxed } from './svg-render';
-import { resolveStockColours } from './stock-colours';
+import { resolveStockColours } from '@liveworkspace/element-model/stock-colours';
 import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 const shape = (over: Partial<ShapeElement> = {}): ShapeElement => ({

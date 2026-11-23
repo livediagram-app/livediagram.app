@@ -5,9 +5,12 @@
 // Palette's first five colours drawn with the one swatch, the cell's own picked, and More colours (Quick Style's
 // four-dot glyph) that opens the full picker.
 // One Tab stop, the arrows move through the row (the picker's keyboard).
-import { ColourSwatch } from '@/components/colour/ColourSwatch';
+import { ColourSwatch } from '@liveworkspace/workbench/components/colour/ColourSwatch';
 import { MoreColoursGlyph } from '@/components/colour/MoreColoursGlyph';
-import { optionMatches, themeOptions } from '@/components/colour/colour-options';
+import {
+  optionMatches,
+  themeOptions,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { onColourKeys } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { useThemeColours } from '@/components/colour/useThemeColours';
 import { getTheme, themePresetColors } from '@/lib/themes';

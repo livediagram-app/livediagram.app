@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { SPLIT_HOVER_FOCUS_MS } from '@/lib/split-view';
+import { SPLIT_HOVER_FOCUS_MS } from '@liveworkspace/workbench/lib/split-view';
 import { SplitStaticPane } from './SplitStaticPane';
 
 vi.mock('@/app/document/[id]/EditorContext', () => ({

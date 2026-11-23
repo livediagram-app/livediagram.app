@@ -6,7 +6,7 @@
 // hard-to-see warning. Ink is the pen's null colour.
 import { INK_PEN_COLOUR, type Appearance, type PenColour } from '@livedesign/design';
 import { ColourPicker as Picker } from '@/components/colour/ColourPicker';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 
 export function ColourPicker({

@@ -17,7 +17,7 @@
 
 import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
-import { isTimingType } from './timing-telemetry';
+import { isTimingType } from '@liveworkspace/api-schema/timing-telemetry';
 import { telemetryEventCheck } from '@liveworkspace/telemetry';
 
 // The generic half of telemetry (the type-token bound, the dashboard's windows and summary) is

@@ -9,8 +9,8 @@
 //
 // Graph input only (graph-input.ts `layoutGraph`); the editor's Mermaid import and Tidy Up never run them.
 
-import { edgeKey } from './auto-layout';
-import { arrowRoutePoints } from './arrow-label-layout';
+import { edgeKey } from '@liveworkspace/element-model/auto-layout';
+import { arrowRoutePoints } from '@liveworkspace/element-model/arrow-label-layout';
 import { rectGrid } from '@liveworkspace/model-core/auto-layout-route-grid';
 import { ROUTER_BUDGET, runsOf, type RouterBudget, type Run } from './orthogonal-router';
 import {

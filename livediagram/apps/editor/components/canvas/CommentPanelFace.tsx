@@ -21,7 +21,7 @@ import {
   ReopenGlyph,
   stopPointer,
 } from '@/components/canvas/collab/qa/qa-parts';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 
 // The face of a Comment panel (docs/specs/012-collaboration/comment-pin.md): a card on the canvas that carries a
 // comment thread and shows it in place, as a conversation.
