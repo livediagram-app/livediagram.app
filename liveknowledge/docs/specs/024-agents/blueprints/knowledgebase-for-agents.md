@@ -143,11 +143,14 @@ confined to one page names it by id and reads any other as a plain `404`.
   tool to call for it.
 - **Errors**: a refusal the api worded is answered in its words (`apiRefusalOf`, packages/agent-verbs
   `api-refusal.ts`); a suggestion over 20,000 characters is refused before the api is asked.
-- **The agent's name**: `agentNameOf` keeps printable ASCII, single spaces, 60 characters.
-  `rememberClientName` (the Worker's `fetch`, beside the request under `waitUntil`) reads a copy of a POST `/mcp`
+- **The agent's name** (shared by every product's MCP, `@liveworkspace/mcp-kit/agent-name`, re-exported by
+  `apps/mcp/src/agent-name.ts`; Work Tracker 1381): `agentNameOf` keeps printable ASCII, single spaces, 60 characters.
+  `rememberClientName` (the kit's `/mcp` handler, beside the request under `waitUntil`) reads a copy of a POST `/mcp`
   body of at most 8,192 bytes, and for an `initialize` writes `agent-name:<sha256 of the token>` to `OAUTH_KV`
   for 200 days, unless it already holds that name. `clientNameFor` answers the handshake's name when this server
-  saw it, else one KV read. No name: the header is not sent and the api counts the read under "MCP".
+  saw it, else one KV read, asked once a request and only when a tool calls the api (`runWithClientName`); every
+  api call carries it with `X-Liveknowledge-Client: mcp` (`withAgentHeaders` in `api.ts`). No name: the header is
+  not sent and the api counts the read under "MCP".
 
 ## CLI
 
@@ -223,7 +226,7 @@ every tool does.
 | Sections, cuts and passages                                          | `packages/knowledge/src/page-markdown.test.ts`                                             |
 | One request a tool, the name sent, trust fields, sizes, refusals     | `apps/mcp/src/knowledge-tools.test.ts`                                                     |
 | `review_period` said once; no tool takes a review interval           | `apps/mcp/src/knowledge-tools.test.ts`, `packages/agent-verbs/src/verbs/knowledge.test.ts` |
-| The client's name                                                    | `apps/mcp/src/agent-name.test.ts`                                                          |
+| The client's name                                                    | `packages/mcp-kit/src/agent-name.test.ts`                                                  |
 | The tools' words and shapes                                          | `packages/agent-verbs/src/verbs/mcp-tools.test.ts`, `mcp/schema.test.ts`                   |
 | The CLI's commands                                                   | `packages/agent-verbs/src/verbs/knowledge.test.ts`                                         |
 | Export, import, the zip reader                                       | `apps/cli/src/commands/knowledge-files.test.ts`, `zip-reader.test.ts`                      |
