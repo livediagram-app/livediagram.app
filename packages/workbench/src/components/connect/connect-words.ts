@@ -97,10 +97,16 @@ export function besideOfferWords(
 
 /** The screen reader's phrase after a connected tab's name. Pressing the tab opens nothing (its page's Open does,
  *  and that button says where), so the phrase says only what the tab is. */
-export function connectedTabPhrase(app: App, broken: boolean): string {
-  return broken
-    ? `, connected ${appName(app)} file, needs attention`
-    : `, connected ${appName(app)} file`;
+export function connectedTabPhrase(app: App, broken: boolean, targetName?: string): string {
+  const attention = broken ? ', needs attention' : '';
+  // A renamed tab names its file first, in its tooltip's words ("A tab's own name").
+  if (targetName) return `, connected to ${targetName}, a ${appName(app)} file${attention}`;
+  return `, connected ${appName(app)} file${attention}`;
+}
+
+/** A renamed connected tab's tooltip: the file it stands for, by the file's own name. */
+export function connectedToLine(targetName: string): string {
+  return `Connected to ${targetName}`;
 }
 
 /** Case-blind "does this title hold what was typed": a plain substring, never a pattern. */

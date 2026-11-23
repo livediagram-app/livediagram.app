@@ -20,6 +20,9 @@ type LooseOp = {
 
 const names = (list: unknown, key: string): boolean => Array.isArray(list) && list.includes(key);
 
+// A tab's name, and a connected tab's file name kept beside a name of its own (connected-tabs.md "A tab's own name").
+const NAME_FIELDS = ['name', 'targetName'];
+
 export function structureFirst(op: unknown, scope: string): StructureVerdict {
   const o = (typeof op === 'object' && op !== null ? op : {}) as LooseOp;
   if (o.kind === 'tab') return 'stored';
@@ -27,7 +30,7 @@ export function structureFirst(op: unknown, scope: string): StructureVerdict {
     const patch = (typeof o.patch === 'object' && o.patch !== null ? o.patch : {}) as {
       form?: unknown;
     };
-    if (Object.hasOwn(patch, 'name') || names(o.clear, 'name')) return 'drop';
+    if (NAME_FIELDS.some((f) => Object.hasOwn(patch, f) || names(o.clear, f))) return 'drop';
     if (Object.hasOwn(patch, 'form') && formLeavesTab(undefined, patch.form, scope))
       return 'stored';
     return 'relay';

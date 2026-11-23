@@ -8406,6 +8406,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "targetName": {
+        "type": "string"
+      },
       "templateChosen": {
         "type": "boolean"
       },
@@ -8556,6 +8559,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "targetName": {
+        "type": "string"
+      },
       "templateChosen": {
         "type": "boolean"
       },
@@ -8604,6 +8610,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "outOfScope": {
         "const": true,
         "type": "boolean"
+      },
+      "targetName": {
+        "type": "string"
       },
       "updatedAt": {
         "type": "number"

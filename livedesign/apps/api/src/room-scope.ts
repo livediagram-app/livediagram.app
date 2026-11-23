@@ -58,11 +58,18 @@ export function scopedSenderMayRelay(op: unknown, tabScope: string | null): bool
 }
 
 // A tab's name is structure, like the tabs around it: a scoped session never renames its own tab.
-// A `tab-meta` patch that sets or clears `name` is refused whole.
+// A `tab-meta` patch that sets or clears `name`, or a connected tab's `targetName` (the file's name kept beside a name
+// of its own, liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"), is refused whole.
+const NAME_FIELDS = ['name', 'targetName'];
 function renamesTab(op: unknown): boolean {
   const { patch, clear } = op as { patch?: unknown; clear?: unknown };
-  if (typeof patch === 'object' && patch !== null && Object.hasOwn(patch, 'name')) return true;
-  return Array.isArray(clear) && clear.includes('name');
+  if (
+    typeof patch === 'object' &&
+    patch !== null &&
+    NAME_FIELDS.some((f) => Object.hasOwn(patch, f))
+  )
+    return true;
+  return Array.isArray(clear) && NAME_FIELDS.some((f) => clear.includes(f));
 }
 
 // The op as the room relays it from a session scoped to `tabScope`. A whole `tab` op is content and
@@ -72,9 +79,10 @@ export function opFromScopedSender(op: unknown, tabScope: string | null): unknow
   if (tabScope === null) return op;
   const o = op as { kind?: unknown; tab?: unknown };
   if (o.kind !== 'tab' || typeof o.tab !== 'object' || o.tab === null) return op;
-  if (!Object.hasOwn(o.tab, 'name')) return op;
-  const { name: _name, ...tab } = o.tab as Record<string, unknown>;
+  if (!NAME_FIELDS.some((f) => Object.hasOwn(o.tab as object, f))) return op;
+  const { name: _name, targetName: _targetName, ...tab } = o.tab as Record<string, unknown>;
   void _name;
+  void _targetName;
   return { ...o, tab };
 }
 
