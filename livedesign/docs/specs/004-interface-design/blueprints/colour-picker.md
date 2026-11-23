@@ -184,7 +184,7 @@ judged, onUse: onPick, onArrive })`; `onArrive` previews the swatch `arrive` ret
   (= `CUSTOM_COLOURS_MAX`). Never reads elements or pages. `useDesignColours(offered?)` memoises on the
   editor's `tabs`, the active tab id and the joined `offered`; with no editor context, `[]`. `ColourPicker` also leaves
   out of Custom Colours any colour another group offers.
-- `stableColours(shown, next, max)` (`components/colour/colour-options.ts`): colours in `next` not in `shown` go
+- `stableColours(shown, next, max)` (`../packages/workbench/src/components/colour/colour-options.ts`): colours in `next` not in `shown` go
   first, then `shown` in its order, capped at `max`; returns `shown` itself when nothing is new. `ColourPicker` holds
   `shown` in state from mount (the in-force colour first, then `yours`) and re-derives it each render, frozen while
   the custom editor is open so its live preview adds nothing until **Use**. Unmounting (closing) resets it.

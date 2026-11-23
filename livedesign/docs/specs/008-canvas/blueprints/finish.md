@@ -374,7 +374,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 
 ### Menus and dialog
 
-- `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
+- `../packages/workbench/src/components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
   (`kind="single"`, label "Drawn As") with rows `follow-tab`, `flexible`, `professional`, `sketch`, `marker`: a glyph, the
   `FINISH_LABELS` name and the `FINISH_DETAILS` line. Hover previews through `OptionRows`' `onPreview` /
   `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Appearance flyout, arrows

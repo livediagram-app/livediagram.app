@@ -47,7 +47,6 @@ livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
 livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx	liveknowledge/apps/editor/app/sign-in/page.tsx
 livediagram/apps/editor/components/chrome/EllipsisMenuButton.tsx	livedocuments/apps/editor/components/chrome/EllipsisMenuButton.tsx
 livediagram/apps/editor/components/chrome/OpeningScreen.tsx	livedocuments/apps/editor/components/chrome/OpeningScreen.tsx	livehuddle/apps/editor/components/chrome/OpeningScreen.tsx	liveknowledge/apps/editor/components/chrome/OpeningScreen.tsx
-livediagram/apps/editor/components/colour/useThemeColours.ts	livehuddle/apps/editor/components/colour/useThemeColours.ts
 livediagram/apps/editor/components/dialogs/ConversionHandoff.tsx	livehuddle/apps/editor/components/dialogs/ConversionHandoff.tsx
 livediagram/apps/editor/components/panels/LaserColourRow.tsx	livedocuments/apps/editor/components/panels/LaserColourRow.tsx	liveknowledge/apps/editor/components/panels/LaserColourRow.tsx
 livediagram/apps/editor/components/start/start-closed-key.ts	livehuddle/apps/editor/components/start/start-closed-key.ts
@@ -126,7 +125,6 @@ livedocuments/apps/editor/components/canvas/useCanvasToolPanels.tsx	liveknowledg
 livedocuments/apps/editor/components/dialogs/ConversionHandoff.tsx	liveknowledge/apps/editor/components/dialogs/ConversionHandoff.tsx
 livedocuments/apps/editor/components/dialogs/SharePasswordGate.tsx	liveknowledge/apps/editor/components/dialogs/SharePasswordGate.tsx
 livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveknowledge/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
-livedocuments/apps/editor/components/find/find-bar-top.ts	liveknowledge/apps/editor/components/find/find-bar-top.ts
 livedocuments/apps/editor/components/palette/ArticleDockSlot.tsx	liveknowledge/apps/editor/components/palette/ArticleDockSlot.tsx
 livedocuments/apps/editor/components/palette/CategoryBar.tsx	liveknowledge/apps/editor/components/palette/CategoryBar.tsx
 livedocuments/apps/editor/components/palette/PaletteToolRows.tsx	liveknowledge/apps/editor/components/palette/PaletteToolRows.tsx

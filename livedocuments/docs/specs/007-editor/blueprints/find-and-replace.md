@@ -200,20 +200,20 @@ are.` when any held (`1 match ... was left as it is.`).
 
 ## Testing
 
-| Rule                                                                    | Test                                                                        |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Case, whole word, no overlaps, linear worst case                        | `lib/find/find-text.test.ts`                                                |
-| Order, fields searched, held by lock and role                           | `lib/find/find-targets.test.ts`                                             |
-| Replace keeps formatting, label and richText agree, one tab             | `lib/find/find-replace.test.ts`                                             |
-| Roles: Editor anything, Participant text (guard passes), Viewer nothing | `lib/find/find-roles.test.ts`, `lib/editor-capabilities.test.ts`            |
-| 100-page article budget                                                 | `lib/find/find-performance.test.ts`                                         |
-| Bar: count, steps, toggles, Replace row by role, Escape                 | `components/find/FindBar.test.tsx`                                          |
-| Writing highlights                                                      | `lib/article/article-find-plugin.test.ts`                                   |
-| Cmd+F where the browser keeps it                                        | `hooks/editor/find-shortcut.test.ts`                                        |
-| Hook end to end: debounce, steps, Replace, Replace All, each role       | `hooks/editor/useFindReplace.test.tsx`                                      |
-| Typing in the bar re-renders the bar alone; the editor's door opens it  | `components/find/FindHost.test.tsx`                                         |
-| Never over a page title bar, following it as the canvas moves           | `components/find/find-bar-top.test.ts`, `components/find/FindHost.test.tsx` |
-| Shortcut list                                                           | `components/dialogs/shortcut-sections.test.ts`                              |
+| Rule                                                                    | Test                                                                                                  |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Case, whole word, no overlaps, linear worst case                        | `lib/find/find-text.test.ts`                                                                          |
+| Order, fields searched, held by lock and role                           | `lib/find/find-targets.test.ts`                                                                       |
+| Replace keeps formatting, label and richText agree, one tab             | `lib/find/find-replace.test.ts`                                                                       |
+| Roles: Editor anything, Participant text (guard passes), Viewer nothing | `lib/find/find-roles.test.ts`, `lib/editor-capabilities.test.ts`                                      |
+| 100-page article budget                                                 | `lib/find/find-performance.test.ts`                                                                   |
+| Bar: count, steps, toggles, Replace row by role, Escape                 | `components/find/FindBar.test.tsx`                                                                    |
+| Writing highlights                                                      | `lib/article/article-find-plugin.test.ts`                                                             |
+| Cmd+F where the browser keeps it                                        | `hooks/editor/find-shortcut.test.ts`                                                                  |
+| Hook end to end: debounce, steps, Replace, Replace All, each role       | `hooks/editor/useFindReplace.test.tsx`                                                                |
+| Typing in the bar re-renders the bar alone; the editor's door opens it  | `components/find/FindHost.test.tsx`                                                                   |
+| Never over a page title bar, following it as the canvas moves           | `../packages/workbench/src/components/find/find-bar-top.test.ts`, `components/find/FindHost.test.tsx` |
+| Shortcut list                                                           | `components/dialogs/shortcut-sections.test.ts`                                                        |
 
 ## Defaults ledger
 
