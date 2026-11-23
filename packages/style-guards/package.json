@@ -8,7 +8,12 @@
     "./motion": "./src/motion.ts",
     "./motion-budget": "./src/motion-budget.ts",
     "./optical-guard": "./src/optical-guard.ts",
-    "./touch-target-guard": "./src/touch-target-guard.ts"
+    "./touch-target-guard": "./src/touch-target-guard.ts",
+    "./count-badges": "./src/count-badges.ts",
+    "./label-contrast": "./src/label-contrast.ts",
+    "./aria-label-roles": "./src/aria-label-roles.ts",
+    "./clipped-descenders": "./src/clipped-descenders.ts",
+    "./commit-updater-flags": "./src/commit-updater-flags.ts"
   },
   "scripts": {
     "lint": "oxlint",
