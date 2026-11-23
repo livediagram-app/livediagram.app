@@ -204,6 +204,16 @@ test waits for a core and failed at random on `main`, where CPU time barely move
 still catches a real regression. A test that seeds a large fixture sets its own timeout (seeding isn't
 what it measures) and times only the work under test.
 
+A budget on work that takes a few milliseconds or less measures with **`cpuLeastMsOf`** (the least CPU time
+of five runs, or of the `runs` passed in) in place of `cpuMsOf`, still against `cpuBudgetMs`.
+`process.cpuUsage` counts the whole process, so one sample also holds a collection or a compile that lands on
+it: livedocuments' readability pass, which settles under 1 ms, read 17 to 27 ms against its 20 ms while forty
+other suites ran (2026-11-23). Interference only ever adds CPU time, so the least of a few runs is the work
+itself, and a real regression (a pass that looks back, a rescan) is slow in every run. Keep `cpuMsOf` where
+the work takes tens of milliseconds or more (one stray collection is small beside it and five runs would
+cost five times the suite's time), and where a second run would not be the same work: a cache the first run
+fills, state it consumes, or a cold first call that is the thing being held to the budget.
+
 Coverage never judges a budget. Instrumentation runs the same work several times slower, and budgets read
 under it were the commonest red on CI (15 of 25 failed runs in November 2026, each a miss of 1% to 50%). In a
 coverage run `cpuBudgetMs` is unbounded: the test still runs and its lines still count. **`vitest-budgets`**
@@ -495,7 +505,10 @@ package (41 s, its thresholds), and a note box already on `main` (85 s, the merg
     time; `@livehuddle/avatar` 24 s; a product's `agent-verbs` 26 s of CPU time. Left to CI, each
     keeping its related run: the six product apis (140 to 252 test files, 46 s to 176 s measured:
     `COVERAGE_ON_CI`), any suite over 200 test files (`COVERAGE_MAX_FILES`: `@liveworkspace/workbench`,
-    546), and the editors, whose floors CI checks across three shards;
+    546), and the editors, whose floors CI checks across three shards. This run judges no speed budget:
+    it is `vitest run --coverage` without the `vitest-budgets` rerun, and under coverage `cpuBudgetMs`
+    and the growth ceilings are unbounded ("Speed budgets"), so a loaded machine cannot fail it on CPU
+    time. The budgets are CI's, and the related run's where a workspace keeps one;
   - **the suites that read what the push changes** ("Suites that read other workspaces"), though the
     push never touches them: each runs its scan tests, the tests that read files (`readFileSync`,
     `readdirSync`, `git grep` ...) or are named `*guard.test.*`, found with one `git grep`

@@ -124,8 +124,9 @@ export default defineProject({ test: { environment: 'jsdom' } });
   machine's own clock, two such tests would have failed every run from 1 January 2027.
 - **A long test names its own timeout.** Vitest stops a test after 5 s of wall-clock time, which counts the
   time it waits for a core. A test that does seconds of real work (a property test over hundreds of
-  elements, 500 rendered rows) sets `{ timeout: 30_000 }` on its `describe`, there only to stop a hang; what
-  it may cost is a CPU budget, above.
+  elements, 500 rendered rows) sets `{ timeout: 30_000 }` on its `describe`, or passes a timeout as the
+  test's last argument where one test of the file is the long one, there only to stop a hang; what it may
+  cost is a CPU budget, above.
 - **A guard that scans source files filters by text before parsing.** It
   skips a file that lacks a token every violation needs, and parses each file
   once per test file, never once per test.

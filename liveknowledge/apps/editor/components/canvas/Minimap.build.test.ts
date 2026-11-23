@@ -5,10 +5,7 @@ import { minimapBuild, minimapParts } from './Minimap';
 
 // docs/specs/008-canvas/canvas-performance.md "The Map draws what changed": the picture built from the parts carried
 // over is the picture built afresh, after any edit, the pages' fills among them.
-//
-// Sixty edits of a 300 element board, each built twice: seconds of work (4.5 s on a CI runner under coverage,
-// 2026-11-22). The wall-clock timeout only stops a hang, so a busy runner's waits never fail a run whose pictures match.
-describe('minimapBuild', { timeout: 30_000 }, () => {
+describe('minimapBuild', () => {
   for (const tabFinish of ['flexible', 'professional', 'sketch'] as const)
     it(`carries over only the parts an edit cannot reach (${tabFinish})`, () => {
       const rand = prng(tabFinish.length * 31);
@@ -33,7 +30,10 @@ describe('minimapBuild', { timeout: 30_000 }, () => {
         expect(got.picture?.href === want.picture?.href, `step ${step}`).toBe(true);
         expect(got.bounds).toEqual(want.bounds);
       }
-    });
+      // 120 pictures of a 300-element board: about a second of CPU, twice that in Sketch (4.5 s on a CI runner under
+      // coverage, 2026-11-22). The timeout is on the wall clock and only stops a hang: with every core busy that
+      // second took 7.8 s to come by in livedocuments' copy of this test (2026-11-23), past Vitest's 5.
+    }, 60_000);
 
   it('draws every part again under another surface', () => {
     const parts = minimapParts();

@@ -3,7 +3,7 @@
 // Board is a dialog over the editor, for this person only: open at once for whoever placed the board, closed to the
 // placeholder by Escape, opened again from it, and closed with a toast when someone else sets the board up.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type PlanBoardSetup } from '@liveplanner/items';
 import { markPlacedHere, resetSetupDialogs } from '@/lib/setup-dialog-store';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -43,6 +43,13 @@ beforeEach(() => {
   resetSetupDialogs();
 });
 afterEach(cleanup);
+
+// The dialog's code is a lazy chunk, fetched the first time it is drawn. That first load used to fall inside a
+// `findBy`'s one second, which a busy machine does not always give it (approvals-roles: 0.9 s for the load alone,
+// 2026-11-23). It is loaded here instead, on a wait that is a module load's, not the UI's.
+beforeAll(async () => {
+  await import('./PlanSetupBoard');
+}, 60_000);
 
 describe('Setup Board as a dialog', () => {
   it('opens at once for whoever placed the board, with focus inside', async () => {

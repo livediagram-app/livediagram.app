@@ -5,7 +5,7 @@
 // errors. The writers are stood in for (tested in lib/office-export).
 
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   layOutPages,
   newSlidePage,
@@ -72,6 +72,13 @@ const open = (tab: Tab, extra: { scope?: 'selection'; deck?: Deck } = {}) =>
   );
 
 const card = (name: RegExp) => screen.queryByRole('button', { name });
+
+// The Office panel's code is a lazy chunk, fetched the first time it is drawn. That first load used to fall inside a
+// `findBy`'s one second, which a busy machine does not always give it (approvals-roles: 0.9 s for the load alone,
+// 2026-11-23). It is loaded here instead, on a wait that is a module load's, not the UI's.
+beforeAll(async () => {
+  await import('./office/OfficeExportPanel');
+}, 60_000);
 
 describe('ExportTabDialog, PowerPoint and Word', () => {
   it('offers PowerPoint for a deck, Word for an article, and neither for anything else', () => {
