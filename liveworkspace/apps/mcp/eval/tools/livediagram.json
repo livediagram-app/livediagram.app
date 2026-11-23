@@ -19,7 +19,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "upload_image",
@@ -42,7 +43,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": true }
   },
   {
     "name": "delete_image",
@@ -65,6 +67,12 @@
       },
       "required": ["imageIds"],
       "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
     }
   },
   {
@@ -90,7 +98,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "find_diagrams",
@@ -101,7 +110,8 @@
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "read_document",
@@ -162,7 +172,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "read_diagram",
@@ -173,7 +184,8 @@
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "list_templates",
@@ -183,7 +195,8 @@
       "type": "object",
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "search_icons",
@@ -207,7 +220,8 @@
       },
       "required": ["query"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "create_document",
@@ -449,7 +463,8 @@
       },
       "required": ["name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "create_diagram",
@@ -460,7 +475,8 @@
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "add_tab",
@@ -679,7 +695,8 @@
       },
       "required": ["documentId", "name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "update_document",
@@ -917,7 +934,8 @@
       },
       "required": ["documentId", "mode"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "update_diagram",
@@ -928,7 +946,8 @@
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "share_document",
@@ -964,7 +983,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "share_diagram",
@@ -975,7 +995,8 @@
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "rename_document",
@@ -1000,7 +1021,8 @@
       },
       "required": ["documentId", "name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "rename_diagram",
@@ -1011,7 +1033,8 @@
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "change_tabs",
@@ -1087,7 +1110,8 @@
       },
       "required": ["documentId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "delete_document",
@@ -1107,7 +1131,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "delete_diagram",
@@ -1118,7 +1143,8 @@
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_trash",
@@ -1128,7 +1154,8 @@
       "type": "object",
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "archive_document",
@@ -1144,7 +1171,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "unarchive_document",
@@ -1168,7 +1196,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "restore_document",
@@ -1184,7 +1213,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "restore_diagram",
@@ -1195,7 +1225,8 @@
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#",
       "additionalProperties": {}
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "list_threads",
@@ -1218,7 +1249,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_threads",
@@ -1328,7 +1360,8 @@
       },
       "required": ["documentId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_rules",
@@ -1355,7 +1388,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_rules",
@@ -1681,7 +1715,8 @@
       },
       "required": ["documentId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "view_tab",
@@ -1703,7 +1738,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "view_live",
@@ -1714,7 +1750,8 @@
       "properties": { "documentId": { "type": "string", "description": "The document id." } },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "view_edit",
@@ -1754,6 +1791,7 @@
       },
       "required": ["documentId", "tabId", "edits"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   }
 ]

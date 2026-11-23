@@ -77,7 +77,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_items",
@@ -241,7 +242,8 @@
       },
       "required": ["projectId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "upload_image",
@@ -269,7 +271,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": true }
   },
   {
     "name": "list_threads",
@@ -292,7 +295,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_threads",
@@ -400,7 +404,8 @@
       },
       "required": ["projectId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "add_board",
@@ -446,7 +451,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "import_board",
@@ -483,7 +489,8 @@
       },
       "required": ["content"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "change_board",
@@ -583,7 +590,8 @@
       },
       "required": ["projectId", "board"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "change_card_types",
@@ -1199,7 +1207,8 @@
       },
       "required": ["projectId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_rules",
@@ -1226,7 +1235,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_rules",
@@ -1574,7 +1584,8 @@
       },
       "required": ["projectId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_sheets",
@@ -1588,7 +1599,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "read_sheet",
@@ -1609,7 +1621,8 @@
       },
       "required": ["projectId", "sheet"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_sheet",
@@ -2620,7 +2633,8 @@
       },
       "required": ["projectId", "sheet", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "add_sheet",
@@ -3004,7 +3018,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "read_form",
@@ -3025,7 +3040,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "add_form",
@@ -3386,7 +3402,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "change_form",
@@ -3707,11 +3724,10 @@
                           "gradient": {
                             "description": "A two-stop gradient: the colours it runs from and to.",
                             "type": "array",
-                            "items": [
-                              { "type": "string", "description": "A hex colour such as #0f172a." },
-                              { "type": "string", "description": "A hex colour such as #0f172a." }
-                            ],
-                            "additionalItems": false,
+                            "items": {
+                              "type": "string",
+                              "description": "A hex colour such as #0f172a."
+                            },
                             "minItems": 2,
                             "maxItems": 2
                           },
@@ -3931,7 +3947,8 @@
       },
       "required": ["projectId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "share_form",
@@ -3953,7 +3970,8 @@
       },
       "required": ["projectId", "action"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "try_form",
@@ -3976,7 +3994,8 @@
       },
       "required": ["projectId", "answers"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "find_projects",
@@ -4001,7 +4020,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "read_project",
@@ -4058,7 +4078,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "list_templates",
@@ -4068,7 +4089,8 @@
       "type": "object",
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "create_project",
@@ -4231,7 +4253,8 @@
       },
       "required": ["name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "add_tab",
@@ -4378,7 +4401,8 @@
       },
       "required": ["projectId", "name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "update_project",
@@ -4544,7 +4568,8 @@
       },
       "required": ["projectId", "mode"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "share_project",
@@ -4580,7 +4605,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "rename_project",
@@ -4605,7 +4631,8 @@
       },
       "required": ["projectId", "name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "change_tabs",
@@ -4681,7 +4708,8 @@
       },
       "required": ["projectId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "delete_project",
@@ -4701,7 +4729,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_trash",
@@ -4711,7 +4740,8 @@
       "type": "object",
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "archive_project",
@@ -4727,7 +4757,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "unarchive_project",
@@ -4751,7 +4782,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "restore_project",
@@ -4764,7 +4796,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "view_tab",
@@ -4781,7 +4814,8 @@
       },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "view_live",
@@ -4792,6 +4826,7 @@
       "properties": { "projectId": { "type": "string", "description": "The plan id." } },
       "required": ["projectId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   }
 ]

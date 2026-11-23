@@ -23,6 +23,16 @@ const KIND_LIST =
   'cards, sheets, forms, dashboards), design (livedesign: logos, social posts, mockups), knowledgebase ' +
   '(liveknowledge: a team wiki)';
 
+const APP_TOOL_INPUT = {
+  type: 'object',
+  properties: {
+    tool: { type: 'string', description: 'The tool’s name, as list_app_tools gives it.' },
+    arguments: { type: 'object', description: 'Its arguments, as its input schema says.' },
+  },
+  required: ['tool'],
+  additionalProperties: false,
+};
+
 export const CORE_TOOLS: readonly ListedTool[] = [
   {
     name: 'find_items',
@@ -55,7 +65,7 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       },
       additionalProperties: false,
     },
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, openWorldHint: false },
   },
   {
     name: 'read_item',
@@ -73,7 +83,7 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       required: ['ref'],
       additionalProperties: false,
     },
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, openWorldHint: false },
   },
   {
     name: 'create_item',
@@ -102,6 +112,7 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       required: ['kind', 'name'],
       additionalProperties: false,
     },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   },
   {
     name: 'share_item',
@@ -127,7 +138,7 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       required: ['ref'],
       additionalProperties: false,
     },
-    annotations: { openWorldHint: false },
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
   },
   {
     name: 'rename_item',
@@ -139,7 +150,12 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       required: ['ref', 'name'],
       additionalProperties: false,
     },
-    annotations: { idempotentHint: true },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
   },
   {
     name: 'trash_item',
@@ -151,7 +167,7 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       required: ['ref'],
       additionalProperties: false,
     },
-    annotations: { destructiveHint: true },
+    annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
   },
   {
     name: 'restore_item',
@@ -163,7 +179,12 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       required: ['ref'],
       additionalProperties: false,
     },
-    annotations: { idempotentHint: true },
+    annotations: {
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
   },
   {
     name: 'list_app_tools',
@@ -172,8 +193,8 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       'The editing tools for one kind of item, beyond these core ones: a diagram’s boxes and arrows, a doc’s ' +
       'slides and article text, a plan’s cards, sheets and forms, a design’s pages, a knowledgebase’s ' +
       'pages, plus each kind’s comments, templates, pictures and automations. Without tools: each tool’s ' +
-      'name and what it does. With tools: those tools’ full descriptions and input schemas, which use_app_tool ' +
-      'then calls.',
+      'name, what it does and whether it only reads. With tools: those tools’ full descriptions and input ' +
+      'schemas. read_with_app_tool runs a tool that only reads; change_with_app_tool runs one that changes something.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -188,23 +209,27 @@ export const CORE_TOOLS: readonly ListedTool[] = [
       required: ['kind'],
       additionalProperties: false,
     },
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: true, openWorldHint: false },
   },
   {
-    name: 'use_app_tool',
-    title: 'Use an editing tool',
+    name: 'read_with_app_tool',
+    title: 'Read with an editing tool',
     description:
-      'Call one of the editing tools list_app_tools names (update_diagram, change_cards, write_article, ' +
-      'change_sheet, write_knowledge_page...) with its arguments, as its input schema says.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        tool: { type: 'string', description: 'The tool’s name, as list_app_tools gives it.' },
-        arguments: { type: 'object', description: 'Its arguments, as its input schema says.' },
-      },
-      required: ['tool'],
-      additionalProperties: false,
-    },
+      'Call one of the tools list_app_tools marks readOnly (list_cards, read_plan_sheet, search_knowledge_pages, ' +
+      'view_diagram_tab...) with its arguments, as its input schema says. It only reads; a tool that changes ' +
+      'something runs through change_with_app_tool.',
+    inputSchema: APP_TOOL_INPUT,
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  },
+  {
+    name: 'change_with_app_tool',
+    title: 'Change with an editing tool',
+    description:
+      'Call one of the tools list_app_tools marks as changing something (update_diagram, change_cards, ' +
+      'write_article, change_plan_sheet, write_knowledge_page...) with its arguments, as its input schema says. ' +
+      'A tool that only reads runs through read_with_app_tool.',
+    inputSchema: APP_TOOL_INPUT,
+    annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
   },
 ];
 
@@ -358,12 +383,13 @@ async function listAppTools(ctx: CoreContext, args: Record<string, unknown>): Pr
     const tools = catalogue.tools.map((t) => ({
       name: t.name,
       does: firstSentence(t.description ?? ''),
+      readOnly: isReadOnly(t),
     }));
     const value = {
       kind: spec.kind,
       app: spec.app,
       tools,
-      next: 'list_app_tools with tools: [names] for their input schemas, then use_app_tool.',
+      next: 'list_app_tools with tools: [names] for their input schemas, then read_with_app_tool (readOnly) or change_with_app_tool.',
     };
     return { ...textResult(value), structuredContent: value };
   }
@@ -374,6 +400,7 @@ async function listAppTools(ctx: CoreContext, args: Record<string, unknown>): Pr
     tools: found.map((t) => ({
       name: t.name,
       description: t.description,
+      readOnly: isReadOnly(t),
       inputSchema: t.inputSchema,
     })),
     ...(unknown.length ? { unknown } : {}),
@@ -393,7 +420,7 @@ export function firstSentence(description: string): string {
 export async function appOfTool(
   ctx: CoreContext,
   name: string,
-): Promise<{ spec: AppSpec; appTool: string } | null> {
+): Promise<{ spec: AppSpec; appTool: string; readOnly: boolean } | null> {
   for (const spec of ctx.allowed) {
     // An app that can't be reached has no tools to find; the others are still looked through.
     const catalogue = await ctx.catalogue(spec).catch((err: unknown) => {
@@ -401,13 +428,20 @@ export async function appOfTool(
       return null;
     });
     const appTool = catalogue?.toApp.get(name);
-    if (appTool) return { spec, appTool };
+    const listed = catalogue?.tools.find((t) => t.name === name);
+    if (appTool && listed) return { spec, appTool, readOnly: isReadOnly(listed) };
   }
   return null;
 }
 
+/** Whether an app tool only reads, as its own annotations say. */
+export function isReadOnly(tool: ListedTool): boolean {
+  return tool.annotations?.readOnlyHint === true;
+}
+
 async function callEditingTool(
   ctx: CoreContext,
+  verb: 'read_with_app_tool' | 'change_with_app_tool',
   args: Record<string, unknown>,
 ): Promise<ToolResult> {
   const name = typeof args.tool === 'string' ? args.tool : '';
@@ -415,6 +449,12 @@ async function callEditingTool(
   const found = await appOfTool(ctx, name);
   if (!found)
     return refused(`No tool named "${name}" here. list_app_tools lists each kind’s tools.`);
+  // Reading and changing never share a tool (Claude's connector directory refuses one that does both).
+  const readOnly = found.readOnly;
+  if (verb === 'read_with_app_tool' && !readOnly)
+    return refused(`${name} changes something: call it through change_with_app_tool.`);
+  if (verb === 'change_with_app_tool' && readOnly)
+    return refused(`${name} only reads: call it through read_with_app_tool.`);
   const toolArgs =
     args.arguments && typeof args.arguments === 'object'
       ? (args.arguments as Record<string, unknown>)
@@ -435,8 +475,9 @@ export async function runCore(
       return createItem(ctx, args);
     case 'list_app_tools':
       return listAppTools(ctx, args);
-    case 'use_app_tool':
-      return callEditingTool(ctx, args);
+    case 'read_with_app_tool':
+    case 'change_with_app_tool':
+      return callEditingTool(ctx, name, args);
     case 'read_item':
     case 'share_item':
     case 'rename_item':

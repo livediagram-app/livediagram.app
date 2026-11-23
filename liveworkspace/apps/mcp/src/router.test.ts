@@ -157,7 +157,7 @@ beforeEach(() => {
 });
 
 describe('tools/list', () => {
-  it('lists the nine core verbs by default', async () => {
+  it('lists the ten core verbs by default', async () => {
     expect(await listNames()).toEqual([
       'find_items',
       'read_item',
@@ -167,7 +167,8 @@ describe('tools/list', () => {
       'trash_item',
       'restore_item',
       'list_app_tools',
-      'use_app_tool',
+      'read_with_app_tool',
+      'change_with_app_tool',
     ]);
     expect(calls).toEqual([]);
   });
@@ -187,13 +188,39 @@ describe('tools/list', () => {
     const names = await listNames({ all: true });
     expect(names).toContain('update_diagram');
     expect(names).not.toContain('write_article');
-    await tool('use_app_tool', { tool: 'change_cards', arguments: { projectId: 'P1' } });
+    await tool('change_with_app_tool', { tool: 'change_cards', arguments: { projectId: 'P1' } });
     expect(calls.find((c) => c.method === 'tools/call')).toMatchObject({ app: 'liveplanner' });
   });
 
   it('answers 401 when an app refuses the token while listing', async () => {
     refusing = 'liveplanner';
     expect((await rpc('tools/list', {}, { all: true })).status).toBe(401);
+  });
+
+  it('gives every tool a title and its hints in full, as Claude’s connector directory requires', async () => {
+    const response = await rpc('tools/list', {}, { all: true });
+    const { result } = await response.json<{
+      result: { tools: { name: string; title?: string; annotations?: Record<string, unknown> }[] };
+    }>();
+    const missing = result.tools.filter(
+      (t) =>
+        !t.title ||
+        !(
+          t.annotations?.readOnlyHint === true ||
+          (t.annotations?.readOnlyHint === false &&
+            typeof t.annotations.destructiveHint === 'boolean')
+        ),
+    );
+    expect(missing.map((t) => t.name)).toEqual([]);
+    expect(JSON.stringify(result.tools)).not.toContain('additionalItems');
+  });
+
+  it('marks each editing tool readOnly or not in list_app_tools', async () => {
+    const listed = await tool('list_app_tools', { kind: 'plan' });
+    const tools = (listed.structuredContent as { tools: { name: string; readOnly: boolean }[] })
+      .tools;
+    expect(tools.find((t) => t.name === 'list_cards')!.readOnly).toBe(true);
+    expect(tools.find((t) => t.name === 'change_cards')!.readOnly).toBe(false);
   });
 
   it('reads each app’s tool list once per isolate', async () => {
@@ -206,7 +233,7 @@ describe('tools/list', () => {
 describe('routing', () => {
   it('calls an editing tool on its app by its own name, as the person, and rewrites names in the answer', async () => {
     answers['livediagram.update_document'] = () => ({ next: 'Call read_document to check it.' });
-    const result = await tool('use_app_tool', {
+    const result = await tool('change_with_app_tool', {
       tool: 'update_diagram',
       arguments: { documentId: 'D1', elements: [] },
     });
@@ -229,8 +256,29 @@ describe('routing', () => {
     });
   });
 
+  it('keeps reading and changing apart: each verb refuses the other’s tools and names the right one', async () => {
+    const wrongWay = await tool('read_with_app_tool', {
+      tool: 'change_cards',
+      arguments: { projectId: 'P1' },
+    });
+    expect(wrongWay.isError).toBe(true);
+    expect(wrongWay.content[0]!.text).toContain('change_with_app_tool');
+    const otherWay = await tool('change_with_app_tool', {
+      tool: 'list_cards',
+      arguments: { projectId: 'P1' },
+    });
+    expect(otherWay.isError).toBe(true);
+    expect(otherWay.content[0]!.text).toContain('read_with_app_tool');
+    expect(calls.filter((c) => c.method === 'tools/call')).toEqual([]);
+    await tool('read_with_app_tool', { tool: 'list_cards', arguments: { projectId: 'P1' } });
+    expect(calls.find((c) => c.method === 'tools/call')).toMatchObject({
+      app: 'liveplanner',
+      name: 'list_items',
+    });
+  });
+
   it('refuses an unknown editing tool in words', async () => {
-    const result = await tool('use_app_tool', { tool: 'update_document' });
+    const result = await tool('change_with_app_tool', { tool: 'update_document' });
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toContain('list_app_tools');
   });

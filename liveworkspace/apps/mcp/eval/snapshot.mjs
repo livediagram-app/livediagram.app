@@ -27,7 +27,7 @@ it('snapshot', async () => {
   await client.connect(a);
   const { tools } = await client.listTools();
   const body = compactToolList({ jsonrpc: '2.0', id: 1, result: { tools } });
-  const kept = body.result.tools.map(({ name, title, description, inputSchema }) => ({ name, title, description, inputSchema }));
+  const kept = body.result.tools.map(({ name, title, description, inputSchema, annotations }) => ({ name, title, description, inputSchema, annotations }));
   writeFileSync(${JSON.stringify(out)}, JSON.stringify({ instructions: client.getInstructions() ?? '', tools: kept }));
 });
 `;

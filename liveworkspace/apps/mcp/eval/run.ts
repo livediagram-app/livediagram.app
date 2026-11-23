@@ -24,6 +24,31 @@ import {
 
 const MODELS: Record<string, string> = { opus: 'claude-opus-5-5', haiku: 'claude-haiku-5-5' };
 const MAX_CALLS = 4;
+
+// Dollars per million tokens (platform pricing, 2026-11): input, output, cache read, 5-minute cache write. Haiku 5.5
+// has a second card for prompts over 100K tokens.
+type Card = { input: number; output: number; read: number; write: number };
+const PRICES: Record<string, (prompt: number) => Card> = {
+  'claude-opus-5-5': () => ({ input: 4, output: 20, read: 0.2, write: 5 }),
+  'claude-haiku-5-5': (prompt) =>
+    prompt > 100_000
+      ? { input: 0.5, output: 2.5, read: 0.05, write: 0.625 }
+      : { input: 0.1, output: 0.5, read: 0.01, write: 0.125 },
+};
+
+function costOf(model: string, u: Anthropic.Usage): number {
+  const read = u.cache_read_input_tokens ?? 0;
+  const write = u.cache_creation_input_tokens ?? 0;
+  const card = PRICES[model]?.(u.input_tokens + read + write);
+  if (!card) return 0;
+  return (
+    (u.input_tokens * card.input +
+      u.output_tokens * card.output +
+      read * card.read +
+      write * card.write) /
+    1e6
+  );
+}
 const CONCURRENCY = 4;
 
 function flag(name: string): string[] | null {
@@ -53,7 +78,9 @@ type Outcome = Verdict & {
   stop?: string;
   inputTokens: number;
   cacheRead: number;
+  cacheWrite: number;
   outputTokens: number;
+  costUsd: number;
 };
 
 async function runOne(model: string, setup: Setup, request: EvalRequest): Promise<Outcome> {
@@ -64,7 +91,7 @@ async function runOne(model: string, setup: Setup, request: EvalRequest): Promis
   ];
   const steps: AppCall[][] = [];
   const trail: Outcome['trail'] = [];
-  let usage = { inputTokens: 0, cacheRead: 0, outputTokens: 0 };
+  let usage = { inputTokens: 0, cacheRead: 0, cacheWrite: 0, outputTokens: 0, costUsd: 0 };
   let stop: string | undefined;
   for (let turn = 0; turn < MAX_CALLS && steps.length < MAX_CALLS; turn++) {
     const response = await client.messages.create({
@@ -80,7 +107,9 @@ async function runOne(model: string, setup: Setup, request: EvalRequest): Promis
     usage = {
       inputTokens: usage.inputTokens + response.usage.input_tokens,
       cacheRead: usage.cacheRead + (response.usage.cache_read_input_tokens ?? 0),
+      cacheWrite: usage.cacheWrite + (response.usage.cache_creation_input_tokens ?? 0),
       outputTokens: usage.outputTokens + response.usage.output_tokens,
+      costUsd: usage.costUsd + costOf(model, response.usage),
     };
     const uses = response.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
     if (response.stop_reason !== 'tool_use' || uses.length === 0) {
@@ -171,6 +200,8 @@ for (const model of models) {
       rightArgs: +(outcomes.filter((o) => o.rightArgs).length / n).toFixed(3),
       callsPerTask: +(outcomes.reduce((s, o) => s + o.calls, 0) / n).toFixed(2),
       toolListTokens: tokens,
+      turns: outcomes.reduce((t, o) => t + o.trail.length, 0),
+      costUsd: +outcomes.reduce((c, o) => c + o.costUsd, 0).toFixed(3),
       misses: outcomes.filter((o) => !o.rightTool).map((o) => o.id),
     };
     summary.push(row);

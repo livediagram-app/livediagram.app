@@ -19,19 +19,20 @@ server is shaped to pick better than five servers, and the eval says whether it 
 
 ## Three layers
 
-1. **Core verbs, always listed.** Nine tools that work on any item:
+1. **Core verbs, always listed.** Ten tools that work on any item:
 
-   | Tool             | Does                                                                                                 |
-   | ---------------- | ---------------------------------------------------------------------------------------------------- |
-   | `find_items`     | Finds items by name across the apps; `kind` narrows to one kind, `where` reads archived or the Trash |
-   | `read_item`      | Reads one item (its tabs and their content, as the app's own read tool does)                         |
-   | `create_item`    | Makes an item of a `kind`: diagram, deck, article, infographic, plan, design, knowledgebase          |
-   | `share_item`     | Shares an item by link with a role                                                                   |
-   | `rename_item`    | Renames an item                                                                                      |
-   | `trash_item`     | Moves an item to the Trash                                                                           |
-   | `restore_item`   | Restores an item from the Trash                                                                      |
-   | `list_app_tools` | Lists one kind's editing tools, with their input schemas                                             |
-   | `use_app_tool`   | Calls one of those editing tools by name                                                             |
+   | Tool                   | Does                                                                                                 |
+   | ---------------------- | ---------------------------------------------------------------------------------------------------- |
+   | `find_items`           | Finds items by name across the apps; `kind` narrows to one kind, `where` reads archived or the Trash |
+   | `read_item`            | Reads one item (its tabs and their content, as the app's own read tool does)                         |
+   | `create_item`          | Makes an item of a `kind`: diagram, deck, article, infographic, plan, design, knowledgebase          |
+   | `share_item`           | Shares an item by link with a role                                                                   |
+   | `rename_item`          | Renames an item                                                                                      |
+   | `trash_item`           | Moves an item to the Trash                                                                           |
+   | `restore_item`         | Restores an item from the Trash                                                                      |
+   | `list_app_tools`       | Lists one kind's editing tools, with their input schemas                                             |
+   | `read_with_app_tool`   | Calls one of those tools that only reads (`readOnlyHint`), by name                                   |
+   | `change_with_app_tool` | Calls one of those tools that changes something, by name                                             |
 
    An item is named by its **ref**, `<kind>:<id>` (`diagram:Ab3…`), which `find_items` and `create_item` answer.
    The kinds and the app each belongs to: `diagram` (livediagram), `doc` (livedocuments: a deck, an article or an
@@ -39,8 +40,8 @@ server is shaped to pick better than five servers, and the eval says whether it 
    (livedesign), `knowledgebase` (liveknowledge).
 
 2. **Editing tools, on demand.** Each app's other tools (diagram elements, board cards, sheet cells, article
-   writing, knowledgebase pages) come back from `list_app_tools(kind)` and run through `use_app_tool`. An assistant
-   normally sees nine tools, not about 150. A client with its own tool search (it defers tool definitions until
+   writing, knowledgebase pages) come back from `list_app_tools(kind)`, each marked `readOnly` or not, and run through
+   `read_with_app_tool` or `change_with_app_tool`. An assistant normally sees ten tools, not about 150. A client with its own tool search (it defers tool definitions until
    needed) connects to `/mcp?tools=all` instead: that lists the core verbs and every editing tool, each callable
    by name.
 
@@ -59,6 +60,27 @@ server is shaped to pick better than five servers, and the eval says whether it 
    description opens with the noun people use and the app ("For a diagram (livediagram)."), and every old tool name
    inside a description or an answer is rewritten to its new name, so an answer's "call read_document next" says
    `read_diagram`. The apps' deprecated aliases (livediagram's `*_diagram(s)` names) are not listed.
+
+## Fit for Claude's connector directory
+
+The server is built to be listed in Claude's connector directory, so it meets its review criteria
+(claude.com/docs/connectors/building/review-criteria), checked again whenever they change:
+
+- **Every tool has a `title` and the hints that apply**, said in full rather than left to the defaults:
+  `readOnlyHint: true` on a tool that only reads, `destructiveHint` true or false on every other. An editing tool
+  keeps its app's own annotations, title and all, under its new name.
+- **Reading and changing never share a tool.** The directory refuses one tool that does both, so an editing tool
+  runs through `read_with_app_tool` (read-only, and it refuses a tool that changes anything) or
+  `change_with_app_tool` (marked destructive, and it refuses a read-only tool, naming the other).
+- **Input schemas any client can send on**: JSON Schema every draft reads alike, so no tuples (mcp-kit says them
+  as plain arrays with an exact length).
+- **No instructions out of place**: descriptions say what a tool does and when; they never send the assistant to
+  other tools the person didn't ask for, nor to outside instructions. What items hold is data.
+- **Sign-in as the directory expects**: OAuth 2.1 with S256 PKCE, dynamic client registration, a 401 with
+  `resource_metadata` for a missing or refused token, and `https://claude.ai/api/mcp/auth_callback` and loopback
+  redirects accepted (mcp-kit's authorization server).
+
+Before submitting: public docs, a privacy policy and support links, which wait until the trial ends.
 
 ## How it works
 
@@ -91,7 +113,7 @@ app's MCP does.
 Before the server is listed anywhere, an eval measures whether it picks better than the five servers:
 
 - about 60 realistic requests, each with the tool it should lead to and the key arguments;
-- run against (a) the five app servers' tool lists together and (b) this server, both its default nine and
+- run against (a) the five app servers' tool lists together and (b) this server, both its default ten and
   `?tools=all`, with a current Claude model and a smaller one;
 - reports the right-tool rate, the right-arguments rate, calls per task and the tool-list tokens.
 

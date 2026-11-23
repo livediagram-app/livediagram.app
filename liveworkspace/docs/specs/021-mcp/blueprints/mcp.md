@@ -9,7 +9,7 @@ Derived from [mcp.md](../mcp.md). The spec decides; this file adds engineering p
 | `apps/mcp/src/index.ts`                | The Worker entry: per request, the token's allowed apps and `?tools=all`, then mcp-kit's app; a refused token becomes the 401 challenge |
 | `apps/mcp/src/apps.ts`                 | The five apps: kind, binding, item word and noun, id argument, the tools the core verbs map to, hand-made names                         |
 | `apps/mcp/src/catalogue.ts`            | Renaming (`renameTool`), the rewrite of old names in texts (`nameRewriter`, `rewriteJson`), `namingProblems`                            |
-| `apps/mcp/src/core.ts`                 | The nine core verbs: their schemas (`CORE_TOOLS`) and `runCore`                                                                         |
+| `apps/mcp/src/core.ts`                 | The ten core verbs: their schemas (`CORE_TOOLS`) and `runCore`                                                                          |
 | `apps/mcp/src/app-client.ts`           | JSON-RPC to an app's MCP over its binding; the per-isolate tool lists; `TokenRefused`                                                   |
 | `apps/mcp/src/server.ts`               | The per-request `McpServer`: low-level `tools/list` and `tools/call` handlers, the instructions                                         |
 | `apps/mcp/src/grants.ts`               | Per-app consent: `keepGrant` on `/oauth/complete`, `allowedApps` per request                                                            |

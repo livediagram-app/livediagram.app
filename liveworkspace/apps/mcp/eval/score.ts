@@ -43,26 +43,9 @@ export type ModelTool = {
   input_schema: Record<string, unknown>;
 };
 
-// The Messages API takes JSON Schema 2020-12 only; zod's draft-07 tuples (`items: [...]`, `additionalItems`) become
-// `prefixItems` and `items`, for every setup alike.
-export function toDraft2020(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(toDraft2020);
-  if (!value || typeof value !== 'object') return value;
-  const out: Record<string, unknown> = {};
-  const entries = Object.entries(value as Record<string, unknown>);
-  const tuple = entries.some(([k, v]) => k === 'items' && Array.isArray(v));
-  for (const [key, v] of entries) {
-    if (tuple && key === 'items') out.prefixItems = toDraft2020(v);
-    else if (tuple && key === 'additionalItems') out.items = toDraft2020(v);
-    else out[key] = toDraft2020(v);
-  }
-  return out;
-}
-
 function modelTool(name: string, tool: ListedTool): ModelTool {
   const { $schema: _schema, ...schema } = tool.inputSchema;
-  const input_schema = toDraft2020({ type: 'object', ...schema }) as Record<string, unknown>;
-  return { name, description: tool.description ?? '', input_schema };
+  return { name, description: tool.description ?? '', input_schema: { type: 'object', ...schema } };
 }
 
 const isDeprecated = (tool: ListedTool) => /\(deprecated\)/i.test(tool.title ?? '');

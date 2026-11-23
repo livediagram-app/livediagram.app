@@ -147,4 +147,8 @@ export function namingProblems(names: readonly string[]): string[] {
 }
 
 // The core verbs whose subject is the app's tools themselves.
-const CORE_SUBJECTLESS: ReadonlySet<string> = new Set(['list_app_tools', 'use_app_tool']);
+const CORE_SUBJECTLESS: ReadonlySet<string> = new Set([
+  'list_app_tools',
+  'read_with_app_tool',
+  'change_with_app_tool',
+]);

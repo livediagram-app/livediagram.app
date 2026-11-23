@@ -45,11 +45,10 @@
                       "gradient": {
                         "description": "A two-stop gradient: the colours it runs from and to.",
                         "type": "array",
-                        "items": [
-                          { "type": "string", "description": "A hex colour such as #0f172a." },
-                          { "type": "string", "description": "A hex colour such as #0f172a." }
-                        ],
-                        "additionalItems": false,
+                        "items": {
+                          "type": "string",
+                          "description": "A hex colour such as #0f172a."
+                        },
                         "minItems": 2,
                         "maxItems": 2
                       },
@@ -175,11 +174,10 @@
                       "color": { "type": "string" },
                       "gradient": {
                         "type": "array",
-                        "items": [
-                          { "type": "string", "description": "A hex colour such as #0f172a." },
-                          { "type": "string", "description": "A hex colour such as #0f172a." }
-                        ],
-                        "additionalItems": false,
+                        "items": {
+                          "type": "string",
+                          "description": "A hex colour such as #0f172a."
+                        },
                         "minItems": 2,
                         "maxItems": 2
                       },
@@ -313,7 +311,8 @@
       },
       "required": ["designId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "change_components",
@@ -393,7 +392,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_images",
@@ -415,7 +415,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "upload_image",
@@ -438,7 +439,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": true }
   },
   {
     "name": "delete_image",
@@ -461,6 +463,12 @@
       },
       "required": ["imageIds"],
       "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
     }
   },
   {
@@ -486,7 +494,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "read_design",
@@ -554,7 +563,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "list_templates",
@@ -564,7 +574,8 @@
       "type": "object",
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "search_icons",
@@ -588,7 +599,8 @@
       },
       "required": ["query"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "create_design",
@@ -657,7 +669,8 @@
       },
       "required": ["name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "add_tab",
@@ -710,7 +723,8 @@
       },
       "required": ["designId", "name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "update_design",
@@ -782,7 +796,8 @@
       },
       "required": ["designId", "mode"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "share_design",
@@ -818,7 +833,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "rename_design",
@@ -843,7 +859,8 @@
       },
       "required": ["designId", "name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "change_tabs",
@@ -919,7 +936,8 @@
       },
       "required": ["designId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "delete_design",
@@ -939,7 +957,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_trash",
@@ -949,7 +968,8 @@
       "type": "object",
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "archive_design",
@@ -965,7 +985,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "unarchive_design",
@@ -989,7 +1010,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "restore_design",
@@ -1002,7 +1024,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "list_threads",
@@ -1025,7 +1048,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_threads",
@@ -1135,7 +1159,8 @@
       },
       "required": ["designId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_rules",
@@ -1162,7 +1187,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_rules",
@@ -1485,7 +1511,8 @@
       },
       "required": ["designId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "view_tab",
@@ -1511,7 +1538,8 @@
       },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "view_live",
@@ -1522,6 +1550,7 @@
       "properties": { "designId": { "type": "string", "description": "The design id." } },
       "required": ["designId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   }
 ]

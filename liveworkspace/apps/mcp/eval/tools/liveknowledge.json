@@ -13,7 +13,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "list_pages",
@@ -53,7 +54,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "search_pages",
@@ -88,7 +90,8 @@
       },
       "required": ["documentId", "query"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "read_page",
@@ -121,7 +124,8 @@
       },
       "required": ["documentId", "page"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "report_gap",
@@ -143,6 +147,12 @@
       },
       "required": ["documentId", "question"],
       "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
     }
   },
   {
@@ -175,7 +185,8 @@
       },
       "required": ["documentId", "title", "markdown"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "suggest_edit",
@@ -214,7 +225,8 @@
       },
       "required": ["documentId", "page", "reason", "new_text"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "write_page",
@@ -349,7 +361,8 @@
       },
       "required": ["documentId", "page"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "move_page",
@@ -380,6 +393,12 @@
       },
       "required": ["documentId", "page"],
       "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
     }
   },
   {
@@ -405,7 +424,8 @@
       },
       "required": ["documentId", "page"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "list_page_comments",
@@ -432,7 +452,8 @@
       },
       "required": ["documentId", "page"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_page_comments",
@@ -540,7 +561,8 @@
       },
       "required": ["documentId", "page", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "find_documents",
@@ -565,7 +587,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "create_document",
@@ -615,7 +638,8 @@
       },
       "required": ["name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "rename_document",
@@ -641,7 +665,8 @@
       },
       "required": ["documentId", "name"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "share_document",
@@ -667,7 +692,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "archive_document",
@@ -683,7 +709,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "unarchive_document",
@@ -707,7 +734,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "delete_document",
@@ -728,7 +756,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "restore_document",
@@ -744,7 +773,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": false }
   },
   {
     "name": "list_trash",
@@ -754,7 +784,8 @@
       "type": "object",
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "list_templates",
@@ -764,7 +795,8 @@
       "type": "object",
       "properties": {},
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "list_images",
@@ -786,7 +818,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "upload_image",
@@ -809,7 +842,8 @@
         }
       },
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": false, "openWorldHint": true }
   },
   {
     "name": "delete_image",
@@ -832,6 +866,12 @@
       },
       "required": ["imageIds"],
       "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
     }
   },
   {
@@ -858,7 +898,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_threads",
@@ -971,7 +1012,8 @@
       },
       "required": ["documentId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   },
   {
     "name": "list_rules",
@@ -1001,7 +1043,8 @@
       },
       "required": ["documentId"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": true, "openWorldHint": false }
   },
   {
     "name": "change_rules",
@@ -1348,6 +1391,7 @@
       },
       "required": ["documentId", "changes"],
       "$schema": "http://json-schema.org/draft-07/schema#"
-    }
+    },
+    "annotations": { "readOnlyHint": false, "destructiveHint": true, "openWorldHint": false }
   }
 ]

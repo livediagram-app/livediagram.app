@@ -3,14 +3,7 @@
 // app tools they run exactly as the Worker would.
 import { describe, expect, it } from 'vitest';
 import { REQUESTS } from '../eval/requests';
-import {
-  judge,
-  loadWorld,
-  toDraft2020,
-  missingExpectations,
-  readCall,
-  setupOf,
-} from '../eval/score';
+import { judge, loadWorld, missingExpectations, readCall, setupOf } from '../eval/score';
 
 const world = loadWorld();
 
@@ -24,31 +17,19 @@ describe('the tool-pick eval', () => {
   it('shows the one MCP far fewer tools than the five servers', () => {
     const apps = setupOf(world, 'apps');
     const one = setupOf(world, 'one');
-    expect(one.tools).toHaveLength(9);
+    expect(one.tools).toHaveLength(10);
     expect(apps.tools.length).toBeGreaterThan(140);
     expect(JSON.stringify(one.tools).length * 10).toBeLessThan(JSON.stringify(apps.tools).length);
     expect(apps.tools.every((t) => /^[a-zA-Z0-9_-]{1,64}$/.test(t.name))).toBe(true);
-    expect(setupOf(world, 'one-all').tools.length).toBe(apps.tools.length + 9);
+    expect(setupOf(world, 'one-all').tools.length).toBe(apps.tools.length + 10);
   });
 
-  it('turns draft-07 tuples into JSON Schema 2020-12, which the Messages API takes', () => {
-    expect(
-      toDraft2020({
-        type: 'array',
-        items: [{ type: 'string' }],
-        additionalItems: { type: 'number' },
-      }),
-    ).toEqual({
-      type: 'array',
-      prefixItems: [{ type: 'string' }],
-      items: { type: 'number' },
-    });
-    expect(toDraft2020({ type: 'array', items: { type: 'string' } })).toEqual({
-      type: 'array',
-      items: { type: 'string' },
-    });
-    const all = JSON.stringify(setupOf(world, 'apps').tools);
-    expect(all).not.toContain('additionalItems');
+  it('lists no draft-07 tuple, which the Claude API refuses (mcp-kit untuple says them as plain arrays)', () => {
+    for (const setup of ['apps', 'one-all'] as const) {
+      const all = JSON.stringify(setupOf(world, setup).tools);
+      expect(all).not.toContain('additionalItems');
+      expect(all).not.toMatch(/"items":\[/);
+    }
   });
 
   it('maps the one MCP’s calls to the app tools they run', async () => {
@@ -60,7 +41,7 @@ describe('the tool-pick eval', () => {
         args: { name: 'Q', tabs: [{ template: 'blank-slide-deck' }] },
       },
     ]);
-    const used = await readCall(world, 'one', 'use_app_tool', {
+    const used = await readCall(world, 'one', 'change_with_app_tool', {
       tool: 'change_cards',
       arguments: { projectId: 'P-launch' },
     });
