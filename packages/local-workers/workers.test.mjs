@@ -25,6 +25,14 @@ test('a dev script that is only wrangler dev has no steps', () => {
   assert.throws(() => parseDevScript('next dev'), /no `wrangler dev`/);
 });
 
+test('a dev script with env prefixes parses, and a long run of KEY=VALUE words finishes fast', () => {
+  assert.equal(parseDevScript('A=1 B=2 wrangler dev --port 1').flags.port, 1);
+  const started = performance.now();
+  assert.throws(() => parseDevScript(`${'a=a= '.repeat(20000)}!`), /no `wrangler dev`/);
+  assert.throws(() => parseDevScript(`${'!==!\t'.repeat(20000)}x`), /no `wrangler dev`/);
+  assert.ok(performance.now() - started < 1000);
+});
+
 test('a local config folds in --var flags and drops routes', () => {
   const config = localConfig(
     { name: 'w', routes: [{ pattern: 'x.app/*' }], vars: { A: '1', B: '2' } },

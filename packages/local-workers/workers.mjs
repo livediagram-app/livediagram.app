@@ -10,10 +10,18 @@ import path from 'node:path';
 /** Where a Worker's folded config is written, beside its wrangler.toml so its relative paths still hold. Gitignored. */
 export const LOCAL_CONFIG = 'local-workers.wrangler.json';
 
+/** Whether a step is `wrangler dev`, after any leading KEY=VALUE words. Word by word, so long input can't backtrack. */
+function isWranglerDev(part) {
+  const words = part.split(/\s+/);
+  let i = 0;
+  while (i < words.length && /^[^=\s]+=\S*$/.test(words[i])) i++;
+  return words[i] === 'wrangler' && /^dev\b/.test(words[i + 1] ?? '');
+}
+
 /** The steps a `dev` script takes before `wrangler dev` (joined back with &&) and that command's flags. */
 export function parseDevScript(devScript) {
   const parts = devScript.split('&&').map((part) => part.trim());
-  const at = parts.findIndex((part) => /^(\S+=\S+\s+)*wrangler\s+dev\b/.test(part));
+  const at = parts.findIndex(isWranglerDev);
   if (at === -1) throw new Error(`no \`wrangler dev\` in: ${devScript}`);
   const words = parts[at].split(/\s+/);
   const flags = { vars: {} };
