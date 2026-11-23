@@ -108,6 +108,11 @@ All under `apps/api/src/openapi/` unless noted:
 - **`route-parity.test.ts`** + **`dispatch-probe.ts`**: the `(method,
 path-template)` parity described under "Drift test", run in the api worker's
   Node test env against `index.ts`'s default export.
+- **`dispatch-sweep.ts`** + **`route-sweep-<n>.test.ts`**: the probe of every candidate path (rules 2 and 3), split
+  into four equal shares, one test file each, so the shares run on separate cores. The sweep is about 91,000 paths
+  in five methods each (2026-11-23) and grows with every literal the `documents` routes compare; in one file it
+  reached its 120 s timeout on CI's runners. `route-parity.test.ts` checks the shares are the whole sweep exactly
+  once and that each has its file. **`probe-caller.ts`** is the signed-in caller every probing file mocks.
 - **`manifest.test.ts`**: the remaining guards: (1) the manifest's segment set
   equals the `case '…':` labels in `index.ts`'s dispatch, in both directions,
   and every verb a segment's handlers compare against is documented for it;
