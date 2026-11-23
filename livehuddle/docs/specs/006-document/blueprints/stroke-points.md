@@ -24,10 +24,10 @@ spec.
 | File                                                    | Responsibility                                                                                                                                                      |
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `../packages/model-core/src/stroke-points.ts`           | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                                  |
-| `livediagram/packages/document/src/stroke-fit.ts`       | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                                     |
+| `../packages/element-model/src/stroke-fit.ts`           | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                                     |
 | `../packages/model-core/src/stroke-points-cache.ts`     | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                                  |
 | `../packages/model-core/src/stroke-points-debug.ts`     | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                                     |
-| `livediagram/packages/document/src/freehand-points.ts`  | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures`            |
+| `../packages/element-model/src/freehand-points.ts`      | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures`            |
 | `../packages/element-model/src/legacy-stroke-points.ts` | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                                     |
 | `packages/document/scripts/expand-stroke-points.ts`     | The debug script: a tab or document JSON file with every block expanded                                                                                             |
 | `../scripts/ts-source-hooks.mjs`                        | Node resolve hook (the monorepo root's): lets repo scripts run workspace TypeScript sources                                                                         |
@@ -201,7 +201,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Validation          | `packages/document/src/validate.ts`                                              | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec |
 | OpenAPI             | `apps/api/src/openapi/schemas.generated.ts`                                      | regenerated from the type                                     |
 | Factories           | `packages/document/src/factories.ts`                                             | `createFreehand` packs; geometry stays unpacked               |
-| Pen outline         | `livediagram/packages/document/src/pen-stroke.ts`                                | `freehandPenStroke` / `penStrokeSvg` decode                   |
+| Pen outline         | `../packages/element-model/src/pen-stroke.ts`                                    | `freehandPenStroke` / `penStrokeSvg` decode                   |
 | Eraser              | `livediagram/packages/document/src/whiteboard-stroke.ts`                         | decode; pieces re-pack                                        |
 | SVG export          | `livediagram/packages/document/src/svg-render-shapes.ts`                         | decode                                                        |
 | Stored migration    | `packages/document/src/stored-elements.ts`                                       | adds `migrateLegacyStrokePoints`                              |

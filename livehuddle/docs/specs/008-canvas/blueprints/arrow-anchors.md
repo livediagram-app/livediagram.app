@@ -15,15 +15,15 @@ Scope, by file:
 | `../packages/element-model/src/anchors.ts`                        | The anchor table: side, position class, box fraction, outward vector                               |
 | `packages/document/src/shape-outline.ts`                          | Anchoring outlines, outline projection, point-inside test                                          |
 | `../packages/model-core/src/svg-path-outline.ts`                  | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
-| `livediagram/packages/document/src/anchor-layouts.ts`             | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
+| `../packages/element-model/src/anchor-layouts.ts`                 | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
 | `packages/document/src/shape-geometry.ts`                         | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
 | `packages/document/src/geometry.ts`                               | `anchorPosition`                                                                                   |
-| `livediagram/packages/document/src/anchor-choice.ts`              | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
-| `livediagram/packages/document/src/arrow-path.ts`                 | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
-| `livediagram/packages/document/src/arrow-path-hits.ts`            | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
+| `../packages/element-model/src/anchor-choice.ts`                  | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
+| `../packages/element-model/src/arrow-path.ts`                     | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
+| `../packages/element-model/src/arrow-path-hits.ts`                | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
 | `livediagram/packages/document/src/arrow-rebind.ts`               | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
-| `livediagram/packages/document/src/arrow-rebind-swap.ts`          | `swapCrossingEnds`                                                                                 |
-| `livediagram/packages/document/src/arrow-endpoint-spread.ts`      | Quarter fans                                                                                       |
+| `../packages/element-model/src/arrow-rebind-swap.ts`              | `swapCrossingEnds`                                                                                 |
+| `../packages/element-model/src/arrow-endpoint-spread.ts`          | Quarter fans                                                                                       |
 | `packages/document/src/validate.ts`                               | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
 | `packages/document/src/legacy-groups.ts`                          | Legacy group anchors resolved through the table                                                    |
 | `packages/document/src/duplicate.ts`                              | Endpoint copy without `manual`                                                                     |

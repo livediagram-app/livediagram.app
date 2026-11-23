@@ -484,7 +484,7 @@ hardening landed first:
      explains why the owner id can't be it and why leaving the key claimable
      costs nothing.
 3. ✅ API tokens (`expires_at` fixed to +6 months), kept by liveworkspace accounts and
-   checked here (`db/api-tokens.ts`), signed-in-only `/api/tokens` routes (the team-route
+   checked here (`../packages/auth-client/src/api-tokens.ts`), signed-in-only `/api/tokens` routes (the team-route
    gate, [Teams](../013-workspace/teams.md)).
 4. ✅ The **Settings API Tokens category** (`SettingsTokensRow`): the management
    UI ([§3.6](#36-management-the-settings-dialogs-api-tokens-category)); it

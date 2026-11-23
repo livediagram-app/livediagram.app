@@ -387,7 +387,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 ## Compact output (`compact.ts`)
 
 - A stroke's points and pressures are the codec's: ink and the diagram profile's freehands land through
-  `packFreehandPoints(points, pressures?)` (`livediagram/packages/document/src/freehand-points.ts`), whose box is
+  `packFreehandPoints(points, pressures?)` (`../packages/element-model/src/freehand-points.ts`), whose box is
   the points' bounds padded a pixel and grown to whole px, and whose quantisation
   (`STROKE_POINT_MAX_ERROR`, `STROKE_PRESSURE_MAX_ERROR`) is the only rounding a stroke meets. The
   landing has no point or pressure rounding of its own.

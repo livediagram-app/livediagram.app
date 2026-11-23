@@ -10,7 +10,7 @@ Scope, by file:
 
 | File                                                                 | Role                                                                                            |
 | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `livediagram/packages/document/src/arrow-bend.ts`                    | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
+| `../packages/element-model/src/arrow-bend.ts`                        | Pure bend maths: grab plan, bow through a point, insert, segment slide                          |
 | `../packages/workbench/src/lib/double-press.ts`                      | The press ledger: double-press pairing and echo detection                                       |
 | `apps/editor/lib/canvas.ts`                                          | `DragState` gains `arrow-bend`                                                                  |
 | `livediagram/apps/editor/hooks/canvas/useArrowDragHandlers.ts`       | `beginArrowBend`: plans a bend from a line press; `beginArrowTranslate` for the frame           |

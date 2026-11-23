@@ -154,7 +154,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
   the two never draw a chart differently. An exported chart's (and Sankey's) text names the theme's font, else the
   export's sans default, never bare: a standalone viewer drew bare text in its serif default.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
-  `isChartShape` live in `@livediagram/document` (`src/data-shapes.ts`).
+  `isChartShape` live in `@livediagram/document` (`../packages/element-model/src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
   default palette or a per-mark colour, with a `ChartLegend`; the mark group
   carries the `lvd-pie-*` animation (CSS in `apps/editor/app/canvas-motion.css`,

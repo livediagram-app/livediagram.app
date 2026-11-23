@@ -8,7 +8,7 @@ Derived from [Accent edge](../accent-edge.md). Defaults in [DEFAULTS.md](DEFAULT
 
 | File                                                             | Role                                                                |
 | ---------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `livediagram/packages/document/src/accent-edge.ts`               | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
+| `../packages/element-model/src/accent-edge.ts`                   | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
 | `packages/document/src/element-types.ts`                         | `accentEdge`, `accentEdgeColor` on `ShapeElement`                   |
 | `packages/document/src/element-fields.ts`                        | Both fields listed for `shape`                                      |
 | `packages/document/src/svg-render.ts`                            | Appends `svgAccentEdge` after the box, before the face and label    |
