@@ -10,6 +10,8 @@ export type CoreContext = {
   allowed: readonly AppSpec[];
   catalogue: (spec: AppSpec) => Promise<AppCatalogue>;
   call: (spec: AppSpec, appTool: string, args: Record<string, unknown>) => Promise<ToolResult>;
+  // The app's own MCP guidance, for list_app_tools; absent (the eval), none is given.
+  guide?: (spec: AppSpec) => Promise<string>;
 };
 
 const REF = {
@@ -390,9 +392,17 @@ async function listAppTools(ctx: CoreContext, args: Record<string, unknown>): Pr
       does: firstSentence(t.description ?? ''),
       readOnly: isReadOnly(t),
     }));
+    // The app's own guidance, as its MCP gives every client; a failure to read it leaves it out.
+    const guide = ctx.guide
+      ? await ctx.guide(spec).catch((err: unknown) => {
+          if (err instanceof TokenRefused) throw err;
+          return '';
+        })
+      : '';
     const value = {
       kind: spec.kind,
       app: spec.app,
+      ...(guide ? { guide } : {}),
       tools,
       next: 'list_app_tools with tools: [names] for their input schemas, then read_with_app_tool (readOnly) or change_with_app_tool.',
     };

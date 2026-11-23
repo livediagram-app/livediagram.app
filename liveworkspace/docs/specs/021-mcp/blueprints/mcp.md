@@ -64,6 +64,12 @@ app's tool list once (in parallel, then cached); an app that can't be reached is
 whose schema has the app's id argument, a ref (`ref` on the verb, or `ref`, the kind's name or `id` in the
 arguments, when the schema has no such property) becomes that argument, and a ref given as the id loses its prefix.
 
+Prompts, resources and guidance (mcp.md "Nothing an app's MCP offers is lost"): `prompts/list`, `prompts/get`,
+`resources/list`, `resources/templates/list` and `resources/read` go to each allowed app over the same JSON-RPC
+(`appRpc`), an app without them left out; `promptName` swaps the item word for the noun; a resource goes to the app
+whose name its URI's scheme or `ui://` host is. `appGuide` sends `initialize` and keeps the instructions per isolate
+10 minutes.
+
 `create_item` defaults: deck `blank-slide-deck`, article `blank-article`, infographic `blank-infographic`, plan
 `kanban`; any other kind with no template gets one blank tab (`tabs: [{ elements: [] }]`); a knowledgebase takes
 `template` itself, never `tabs`.

@@ -102,6 +102,27 @@ during `find_items` is named in the answer with its error; the others still answ
 
 Each app's tool list is read from its MCP once per isolate and kept 10 minutes.
 
+### Nothing an app's MCP offers is lost
+
+Everything each app's own MCP serves reaches the person through the one MCP, for the apps they allowed:
+
+- **Every tool.** Each app tool runs through `read_with_app_tool` or `change_with_app_tool`, or by its own name (all
+  of them are listed with `?tools=all`), the views' own `view_*` tools too, as each app's MCP lists them: a host
+  without MCP Apps lets the model call them for a picture, and with `?tools=all` each keeps its `_meta`, so a host
+  with MCP Apps keeps the ones marked for the view alone from the model.
+- **Each app's guidance.** The server instructions each app's MCP gives (liveknowledge's trust and health rules,
+  livedocuments' pictures, archived items, and so on) come back from `list_app_tools(kind)` as `guide`, old tool
+  names rewritten, read once per isolate and kept 10 minutes.
+- **Prompts.** Every allowed app's prompts are listed (`prompts/list`) and run (`prompts/get`) through the app, the
+  app's item word in a name made its noun (`show_my_document` is `show_my_diagram`, `show_my_doc` and
+  `show_my_knowledgebase`; `show_my_project` is `show_my_plan`), and old tool names in their texts rewritten.
+- **Resources.** Every allowed app's resources (the element schemas, the views' `ui://` pages) are listed and read
+  through the app that owns the URI (`<app>://…` or `ui://<app>/…`), old tool names in their texts rewritten, so a
+  view calls its tools by their names here.
+- **Interactive views.** A tool that links an app's view keeps its `_meta`, so with `?tools=all` a host with MCP
+  Apps shows the view beside the result. Through the core verbs, which serve every app, the result's picture shows
+  instead, as in a host without MCP Apps.
+
 ## Sign-in and per-app consent
 
 OAuth 2.1 with PKCE and dynamic registration, the same as each app's MCP (`@liveworkspace/mcp-kit`). The consent

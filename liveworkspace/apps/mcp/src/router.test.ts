@@ -71,6 +71,15 @@ function appWorker(app: AppId): Fetcher {
         auth,
       });
       if (refusing === app) return Response.json({ error: 'invalid_token' }, { status: 401 });
+      const reply = (result: unknown) => Response.json({ jsonrpc: '2.0', id: body.id, result });
+      const extra = appExtras(app, body.method, body.params);
+      if (extra === 'none')
+        return Response.json({
+          jsonrpc: '2.0',
+          id: body.id,
+          error: { code: -32601, message: 'Method not found' },
+        });
+      if (extra !== undefined) return reply(extra);
       if (body.method === 'tools/list')
         return Response.json({ jsonrpc: '2.0', id: body.id, result: { tools: recorded(app) } });
       if (failing === app) return new Response('boom', { status: 503 });
@@ -89,6 +98,49 @@ function appWorker(app: AppId): Fetcher {
       throw new Error('no sockets');
     },
   };
+}
+
+// What each app's MCP answers beside its tools: its instructions, prompts and resources. livedesign has no prompts.
+function appExtras(app: AppId, method: string, params: Record<string, unknown>): unknown {
+  switch (method) {
+    case 'initialize':
+      return {
+        protocolVersion: '2025-06-18',
+        instructions: `${app}: call update_document to edit.`,
+      };
+    case 'prompts/list':
+      if (app === 'livedesign') return 'none';
+      return {
+        prompts: [
+          {
+            name: `show_my_${APPS.find((a) => a.app === app)!.itemWord}`,
+            description: 'Find one with find_documents.',
+          },
+          ...(app === 'livediagram' ? [{ name: 'diagram_this', description: 'A diagram.' }] : []),
+        ],
+      };
+    case 'prompts/get':
+      return {
+        messages: [
+          {
+            role: 'user',
+            content: { type: 'text', text: `${String(params.name)}: use read_document.` },
+          },
+        ],
+      };
+    case 'resources/list':
+      return { resources: [{ uri: `${app}://schema/elements`, name: `${app} elements` }] };
+    case 'resources/templates/list':
+      return { resourceTemplates: [] };
+    case 'resources/read':
+      return {
+        contents: [
+          { uri: params.uri, mimeType: 'text/html', text: "callTool({ name: 'view_tab' })" },
+        ],
+      };
+    default:
+      return undefined;
+  }
 }
 
 const ctx = {
@@ -487,31 +539,96 @@ describe('core verbs', () => {
   });
 });
 
-describe('per-app consent', () => {
-  async function grant(apps: string[], token: string): Promise<string> {
-    // The OAuth flow's last steps, as the consent page drives them.
-    await env.OAUTH_KV.put(
-      'session:s1',
-      JSON.stringify({
-        clientId: 'c1',
-        redirectUri: 'https://claude.test/cb',
-        codeChallenge: 'x'.repeat(43),
-        clientName: 'Claude',
-      }),
-    );
-    const response = await worker.fetch(
-      new Request('https://mcp.liveworkspace.test/oauth/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session: 's1', token, apps }),
-      }),
-      env,
-      ctx,
-    );
-    expect(response.status).toBe(200);
-    return token;
+async function grant(apps: string[], token: string): Promise<string> {
+  // The OAuth flow's last steps, as the consent page drives them.
+  await env.OAUTH_KV.put(
+    'session:s1',
+    JSON.stringify({
+      clientId: 'c1',
+      redirectUri: 'https://claude.test/cb',
+      codeChallenge: 'x'.repeat(43),
+      clientName: 'Claude',
+    }),
+  );
+  const response = await worker.fetch(
+    new Request('https://mcp.liveworkspace.test/oauth/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session: 's1', token, apps }),
+    }),
+    env,
+    ctx,
+  );
+  expect(response.status).toBe(200);
+  return token;
+}
+
+describe('everything an app’s MCP offers', () => {
+  async function result<T>(method: string, params: Record<string, unknown> = {}, token?: string) {
+    const body = await (await rpc(method, params, { token })).json<{ result: T }>();
+    return body.result;
   }
 
+  it('list_app_tools gives the app’s own guidance, old tool names rewritten', async () => {
+    const listed = await tool('list_app_tools', { kind: 'diagram' });
+    expect(listed.structuredContent!.guide).toBe('livediagram: call update_diagram to edit.');
+    await tool('list_app_tools', { kind: 'diagram' });
+    expect(calls.filter((c) => c.method === 'initialize')).toHaveLength(1);
+  });
+
+  it('lists every app’s prompts under their noun, and runs one through its app', async () => {
+    const { prompts } = await result<{ prompts: { name: string; description: string }[] }>(
+      'prompts/list',
+    );
+    expect(prompts.map((p) => p.name).toSorted()).toEqual(
+      [
+        'diagram_this',
+        'show_my_diagram',
+        'show_my_doc',
+        'show_my_knowledgebase',
+        'show_my_plan',
+      ].toSorted(),
+    );
+    expect(prompts.find((p) => p.name === 'show_my_diagram')!.description).toBe(
+      'Find one with find_diagrams.',
+    );
+    const got = await result<{ messages: { content: { text: string } }[] }>('prompts/get', {
+      name: 'show_my_diagram',
+    });
+    expect(got.messages[0]!.content.text).toBe('show_my_document: use read_diagram.');
+    expect(calls.find((c) => c.method === 'prompts/get')).toMatchObject({ app: 'livediagram' });
+  });
+
+  it('lists every app’s resources and reads one through the app that owns it, names rewritten', async () => {
+    const { resources } = await result<{ resources: { uri: string }[] }>('resources/list');
+    expect(resources.map((r) => r.uri)).toContain('liveknowledge://schema/elements');
+    const read = await result<{ contents: { text: string }[] }>('resources/read', {
+      uri: 'ui://livediagram/view.html',
+    });
+    expect(read.contents[0]!.text).toBe("callTool({ name: 'view_diagram_tab' })");
+    expect(calls.find((c) => c.method === 'resources/read')).toMatchObject({ app: 'livediagram' });
+  });
+
+  it('offers only the allowed apps’ prompts and resources', async () => {
+    await grant(['livediagram', 'liveplanner'], 'lwt_two');
+    const { prompts } = await result<{ prompts: { name: string }[] }>(
+      'prompts/list',
+      {},
+      'lwt_two',
+    );
+    expect(prompts.map((p) => p.name).toSorted()).toEqual([
+      'diagram_this',
+      'show_my_diagram',
+      'show_my_plan',
+    ]);
+    const refused = await (
+      await rpc('resources/read', { uri: 'livedesign://schema/elements' }, { token: 'lwt_two' })
+    ).json<{ error?: { message: string } }>();
+    expect(refused.error?.message).toContain('not found');
+  });
+});
+
+describe('per-app consent', () => {
   it('keeps a connection to the apps ticked', async () => {
     const token = await grant(['livediagram', 'liveplanner'], 'lwt_two');
     const names = await listNames({ all: true, token });

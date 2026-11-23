@@ -28,11 +28,15 @@ const catalogues = new Map<string, { at: number; catalogue: AppCatalogue }>();
 /** Drops every kept tool list (tests). */
 export function forgetCatalogues(): void {
   catalogues.clear();
+  guides.clear();
 }
+
+// Each app's server instructions, under the one MCP's tool names, kept as long as a tool list.
+const guides = new Map<string, { at: number; guide: string }>();
 
 let nextId = 1;
 
-async function rpc(
+export async function appRpc(
   env: Env,
   spec: AppSpec,
   token: string,
@@ -63,11 +67,30 @@ async function rpc(
 export async function appCatalogue(env: Env, spec: AppSpec, token: string): Promise<AppCatalogue> {
   const kept = catalogues.get(spec.app);
   if (kept && Date.now() - kept.at < CATALOGUE_TTL_MS) return kept.catalogue;
-  const result = await rpc(env, spec, token, 'tools/list', {});
+  const result = await appRpc(env, spec, token, 'tools/list', {});
   const tools = Array.isArray(result.tools) ? (result.tools as ListedTool[]) : [];
   const catalogue = buildAppCatalogue(spec, tools);
   catalogues.set(spec.app, { at: Date.now(), catalogue });
   return catalogue;
+}
+
+/** The guidance the app's own MCP gives every client (its `initialize` instructions), old tool names rewritten. */
+export async function appGuide(
+  env: Env,
+  spec: AppSpec,
+  token: string,
+  rewrite: (text: string) => string,
+): Promise<string> {
+  const kept = guides.get(spec.app);
+  if (kept && Date.now() - kept.at < CATALOGUE_TTL_MS) return kept.guide;
+  const result = await appRpc(env, spec, token, 'initialize', {
+    protocolVersion: '2025-06-18',
+    capabilities: {},
+    clientInfo: { name: 'liveworkspace-mcp', version: '1.0.0' },
+  });
+  const guide = typeof result.instructions === 'string' ? rewrite(result.instructions) : '';
+  guides.set(spec.app, { at: Date.now(), guide });
+  return guide;
 }
 
 /** Calls the app's own tool by its own name; the answer comes back with old tool names rewritten. */
@@ -79,7 +102,7 @@ export async function callAppTool(
   args: Record<string, unknown>,
   rewrite: (text: string) => string,
 ): Promise<ToolResult> {
-  const result = await rpc(env, spec, token, 'tools/call', { name: appTool, arguments: args });
+  const result = await appRpc(env, spec, token, 'tools/call', { name: appTool, arguments: args });
   const content = Array.isArray(result.content) ? (result.content as ToolResult['content']) : [];
   const out: ToolResult = {
     ...result,

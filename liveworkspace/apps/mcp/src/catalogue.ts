@@ -132,6 +132,20 @@ export function buildAppCatalogue(spec: AppSpec, listed: readonly ListedTool[]):
   return { spec, tools, toApp, rewrite };
 }
 
+/** An app's prompt name under the one MCP: its item word made its noun (`show_my_document` is `show_my_diagram`). */
+export function promptName(spec: AppSpec, name: string): string {
+  return name
+    .split('_')
+    .map((part) =>
+      part === spec.itemWord
+        ? spec.itemNoun
+        : part === `${spec.itemWord}s`
+          ? `${spec.itemNoun}s`
+          : part,
+    )
+    .join('_');
+}
+
 /** Clashes and vague names across a whole catalogue: what the naming test and the Worker's own check refuse. */
 export function namingProblems(names: readonly string[]): string[] {
   const problems: string[] = [];
