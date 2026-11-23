@@ -232,10 +232,12 @@ export type ClientMessage =
 export type GrantRenewMessage = { kind: 'grant-renew'; expiresAt: number };
 export type SourceChangedMessage = {
   kind: 'source-changed';
-  app: 'liveplanner';
+  app: 'liveplanner' | 'livehuddle';
   itemId: string;
   sheetIds: string[];
   cards?: string[];
+  // A call about the item (item-calls.md): its calls changed, read them again.
+  calls?: true;
 };
 
 // A fresh grant for this session, the index's ES256 JWT (or the api's room ticket, for a client that has no
