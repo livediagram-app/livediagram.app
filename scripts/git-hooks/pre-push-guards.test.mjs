@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readersOf, repoReaders } from '../../.github/scripts/ci-readers.mjs';
-import { mergedTree } from './merged-guards.mjs';
+import { mergedTests, mergedTree } from './merged-guards.mjs';
 import {
   ciScriptSteps,
   ciScriptTests,
@@ -121,6 +121,7 @@ test('a suite that reads what the push changes runs its scan tests, though the p
         'vitest',
         'run',
         'src/callout/callout-guard.test.ts',
+        '--testTimeout=60000',
         '--maxWorkers=2',
       ],
       parallel: true,
@@ -174,6 +175,18 @@ test('a merge is checked when git wrote its tree, and skipped with the reason ot
   assert.match(
     /** @type {{ skip: string }} */ (mergedTree({ status: 129, stdout: '' })).skip,
     /this git cannot merge/,
+  );
+});
+
+test('the merged tree runs the scan tests that do not render', () => {
+  assert.deepEqual(
+    mergedTests([
+      'a-guard.test.ts',
+      'src/art-rules.test.tsx',
+      'history-state.test.js',
+      'b.test.jsx',
+    ]),
+    ['a-guard.test.ts', 'history-state.test.js'],
   );
 });
 

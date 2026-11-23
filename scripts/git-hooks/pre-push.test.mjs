@@ -127,6 +127,7 @@ test('changed code runs the tests that import it, then the guard tests', () => {
           'run',
           'app/dark-palette.test.ts',
           'lib/small-text-contrast.test.ts',
+          '--testTimeout=60000',
         ],
       ],
       [

@@ -32,6 +32,13 @@ const E2E = /(^|\/)e2e\//;
 export const EMITTERS_TEST = /^app\/telemetry\/[^/]+\/metric-emitters\.test\.ts$/;
 
 /**
+ * Scan tests read thousands of files and shell out to git: on a machine several agents share (a load of 100 on
+ * 10 cores, measured) `git grep` alone passed vitest's 5 s limit. They assert what they find, not how long it
+ * took, so they get a minute.
+ */
+export const SCAN_TIMEOUT = '--testTimeout=60000';
+
+/**
  * A suite up to this size runs whole, with coverage, where its workspace enforces thresholds. Measured at a load
  * of 50 on 10 cores: @liveplanner/items, the largest under it (182 test files), 31 s and 57 s of CPU time;
  * the packages' median 45 s. Over it today: @liveworkspace/workbench (546) and @liveplanner/api (252).
@@ -145,7 +152,7 @@ export function readerSteps(
     steps.push({
       label: `${ws.name}: guard tests (it reads what the push changes)`,
       cmd: 'pnpm',
-      args: ['--filter', ws.name, 'exec', 'vitest', 'run', ...tests, ...workers],
+      args: ['--filter', ws.name, 'exec', 'vitest', 'run', ...tests, SCAN_TIMEOUT, ...workers],
       parallel: true,
     });
   }

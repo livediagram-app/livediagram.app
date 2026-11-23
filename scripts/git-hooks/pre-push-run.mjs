@@ -173,6 +173,9 @@ export async function runSteps(root, steps, env, pool, io = CONSOLE, tag = '[pre
   );
   if (failed.length > 0) {
     io.error(`${tag} ${failed.length} failed in ${seconds(Date.now() - started)}:`);
+    // In the steps' own order, whichever test run ended first.
+    const order = steps.map((step) => step.label);
+    failed.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     for (const label of failed) io.error(`${tag}   ${label}`);
     io.error(`${tag} fix them, or push with --no-verify to leave it to CI`);
     return 1;

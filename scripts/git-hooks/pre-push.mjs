@@ -24,6 +24,7 @@ import {
   COVERAGE_MAX_FILES,
   COVERAGE_ON_CI,
   EMITTERS_TEST,
+  SCAN_TIMEOUT,
   ciScriptSteps,
   ciScriptTests,
   enforcesCoverage,
@@ -355,7 +356,7 @@ export function testSteps(
       steps.push({
         label: `${ws.name}: guard tests`,
         cmd: 'pnpm',
-        args: [...filter, 'run', ...guards, ...workers],
+        args: [...filter, 'run', ...guards, SCAN_TIMEOUT, ...workers],
         parallel: true,
       });
   }

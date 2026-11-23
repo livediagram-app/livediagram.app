@@ -18,7 +18,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { repoReaders } from '../../.github/scripts/ci-readers.mjs';
-import { scanTests, workspaceDirs } from './pre-push-guards.mjs';
+import { SCAN_TIMEOUT, scanTests, workspaceDirs } from './pre-push-guards.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const BASE_REF = process.env.PRE_PUSH_BASE_REF || 'origin/main';
@@ -38,6 +38,16 @@ export function mergedTree(run) {
   if (run.status === 0 && /^[0-9a-f]{40,64}$/.test(tree)) return { tree };
   if (run.status === 1) return { skip: `the push conflicts with ${BASE_REF}: merge it to check` };
   return { skip: 'this git cannot merge without a work tree (2.38 or newer can)' };
+}
+
+/**
+ * The scan tests that can run in the merged tree: not a `.tsx` test, which renders, and whose setup file
+ * (`@liveworkspace/vitest-config/react-cleanup`) resolves through the linked modules to this worktree, outside
+ * the root Vite serves files from. Those stay with the push's own run and CI.
+ * @param {string[]} tests
+ */
+export function mergedTests(tests) {
+  return tests.filter((file) => !/\.[jt]sx$/.test(file));
 }
 
 /** @param {string} cwd @param {string[]} args */
@@ -92,19 +102,20 @@ function main() {
       });
       if (run.status !== 0) failed.push(/** @type {string} */ (label));
     }
-    // The merged tree has no modules of its own: each suite runs on this worktree's, linked in.
-    if (existsSync(path.join(ROOT, 'node_modules')))
-      symlinkSync(path.join(ROOT, 'node_modules'), path.join(dir, 'node_modules'));
+    // The merged tree has no modules of its own: every workspace gets this worktree's, linked in (a scan test
+    // may read another workspace's, as the site's licences test does).
     const dirs = workspaceDirs(dir);
+    for (const ws of new Set(['.', ...dirs.values()]))
+      if (existsSync(path.join(ROOT, ws, 'node_modules')) && existsSync(path.join(dir, ws)))
+        symlinkSync(path.join(ROOT, ws, 'node_modules'), path.join(dir, ws, 'node_modules'));
     for (const reader of repoReaders(path.join(dir, 'turbo.json'))) {
       const ws = dirs.get(reader.name);
       if (!ws) continue;
       const vitest = path.join(ROOT, ws, 'node_modules/vitest/vitest.mjs');
-      const tests = scanTests(dir, ws);
+      const tests = mergedTests(scanTests(dir, ws));
       // A suite main added, not installed here yet, is left to CI.
       if (tests.length === 0 || !existsSync(vitest)) continue;
-      symlinkSync(path.join(ROOT, ws, 'node_modules'), path.join(dir, ws, 'node_modules'));
-      const run = spawnSync(process.execPath, [vitest, 'run', ...tests], {
+      const run = spawnSync(process.execPath, [vitest, 'run', ...tests, SCAN_TIMEOUT], {
         cwd: path.join(dir, ws),
         encoding: 'utf8',
       });
