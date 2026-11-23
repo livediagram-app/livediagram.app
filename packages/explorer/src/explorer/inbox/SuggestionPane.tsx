@@ -1,7 +1,7 @@
 'use client';
 
 // A suggested edit in the Inbox's reading pane (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox",
-// "Suggested edits"; liveknowledge's 030-knowledgebase/ai-knowledge.md "Edits suggested by agents"): the agent's
+// "Suggested edits"; liveknowledge's 030-knowledgebase/insights.md "Edits suggested by agents"): the agent's
 // reason quoted, the change as the lines it removes (struck, rose, a minus) and adds (blue, a plus), and the verbs
 // Accept (e) and Dismiss, carried out by the app's own suggestion routes through the host's `InboxActions`. Done, the
 // row leaves (the pane's `onGone`) and the pane moves on as after Resolve; refused, the pane says why and the row

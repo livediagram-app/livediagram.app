@@ -1,4 +1,4 @@
-// Required Reading in AI Knowledge (docs/specs/030-knowledgebase/required-reading.md "Where it shows"): each page asked
+// Required Reading in Insights (docs/specs/030-knowledgebase/required-reading.md "Where it shows"): each page asked
 // to be read with how many of its audience confirmed, least read first. Counts only, never who. Two reads (the
 // requirements, their confirmations) and the team at most once, kept a minute (reading-people.ts).
 import type { KnowledgeRequiredReadingPage } from '@liveknowledge/api-schema';

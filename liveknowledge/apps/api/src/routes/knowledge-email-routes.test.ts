@@ -22,7 +22,7 @@ import { runKnowledgeEmail, runReviewEmails } from '../knowledge/knowledge-email
 import { ACCOUNTS_ON, stubAccounts, type FakeAccounts } from '../test-accounts';
 import { knowledgeKit, OWNER, page, PAGES, type Kit, type Who } from './knowledge-test-kit';
 
-// The Knowledgebase Reviews emails (docs/specs/030-knowledgebase/verification.md "Reminders", ai-knowledge.md
+// The Knowledgebase Reviews emails (docs/specs/030-knowledgebase/verification.md "Reminders", insights.md
 // "Pages that disagree", "Knowledge Health"): who is emailed, how often, and what each route answers.
 
 const DAY = 86_400_000;
@@ -366,12 +366,12 @@ describe('POST conflicts/<id>/ask-owners', () => {
     const { html, text } = lastEmail();
     expect(html).toContain('https://app.test/document/kb#t=deploys');
     expect(html).toContain('https://app.test/document/kb#t=holidays');
-    expect(html).toContain('https://app.test/document/kb?view=ai');
+    expect(html).toContain('https://app.test/document/kb?view=insights');
     expect(html).toContain('Everyone takes the last week of December off.');
     // The question is other people's text: escaped.
     expect(html).toContain('When is the &lt;office&gt; closed?');
     expect(html).not.toContain('<office>');
-    expect(text).toContain('See both passages: https://app.test/document/kb?view=ai');
+    expect(text).toContain('See both passages: https://app.test/document/kb?view=insights');
     at(T0 + 30 * DAY);
     expect(await result('editor', path)).toEqual({ outcome: 'already_sent', sentAt: T0 });
     expect(sent()).toHaveLength(2);

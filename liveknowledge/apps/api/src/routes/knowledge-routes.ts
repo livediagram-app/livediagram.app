@@ -247,7 +247,7 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   const grant = await gateGrant(ctx, id, document.ownerId, document.teamId);
   if (!grant) return forbidden();
   const route: KnowledgeRoute = { ctx, document, grant };
-  // A token that calls here is a connection AI Knowledge lists (knowledge/agent-seen.ts): one guarded upsert, a
+  // A token that calls here is a connection Insights lists (knowledge/agent-seen.ts): one guarded upsert, a
   // write an hour at most.
   if (ctx.token && ctx.agent) {
     const reader = readerOf(ctx);

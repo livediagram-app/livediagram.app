@@ -1,4 +1,4 @@
-// The connections a knowledgebase has seen (docs/specs/030-knowledgebase/ai-knowledge.md "Connected agents"):
+// The connections a knowledgebase has seen (docs/specs/030-knowledgebase/insights.md "Connected agents"):
 // `agent_seen`, one row an API token that called a knowledge route here. It is what lets Connected Agents show a
 // connection's real scopes and lets an Editor grant one `write`: the reads (`page_reads`) are counted under the
 // agent's name alone, and the grant is kept by the token's id (agent-grants.ts).

@@ -169,7 +169,7 @@ describe('the access, by role', () => {
     expect(!!button).toBe(opensAgents);
     if (button) {
       fireEvent.click(button);
-      expect(window.location.search).toBe('?view=ai');
+      expect(window.location.search).toBe('?view=insights');
     }
   });
 });
@@ -191,7 +191,7 @@ describe('the status', () => {
     await waitFor(() => expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(2));
   });
 
-  it('says Connected once an app reads here, with Manage in AI Knowledge', async () => {
+  it('says Connected once an app reads here, with Manage in Insights', async () => {
     await open();
     agentsAre([
       agent('Claude', { lastSeenAt: Date.now(), door: 'mcp', scopes: ['read', 'suggest'] }),
@@ -199,8 +199,8 @@ describe('the status', () => {
     fireEvent.click(step('Check It Worked').getByRole('button', { name: 'Check Now' }));
     await waitFor(() => expect(status().textContent).toContain('Connected: Claude'));
     expect(status().textContent).toContain('Last seen today, 2 pages read this week.');
-    fireEvent.click(within(status()).getByRole('button', { name: 'Manage in AI Knowledge' }));
-    expect(window.location.search).toBe('?view=ai');
+    fireEvent.click(within(status()).getByRole('button', { name: 'Manage in Insights' }));
+    expect(window.location.search).toBe('?view=insights');
   });
 
   it('says it could not check, with Try Again', async () => {
@@ -227,8 +227,8 @@ describe('beside the steps', () => {
       within(rows[0] as HTMLElement).getByRole('list', { name: 'What it may do' }).textContent,
     ).toBe('ReadsSuggests EditsWrites');
     expect(rows[0]!.textContent).toContain('Through the MCP server');
-    fireEvent.click(within(aside).getByRole('button', { name: 'Manage in AI Knowledge' }));
-    expect(window.location.search).toBe('?view=ai');
+    fireEvent.click(within(aside).getByRole('button', { name: 'Manage in Insights' }));
+    expect(window.location.search).toBe('?view=insights');
   });
 
   it('say when none is connected yet', async () => {

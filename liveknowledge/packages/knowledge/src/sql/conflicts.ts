@@ -1,9 +1,9 @@
-// Pages that disagree, as stored (docs/specs/030-knowledgebase/ai-knowledge.md "Pages that disagree"). A conflict
+// Pages that disagree, as stored (docs/specs/030-knowledgebase/insights.md "Pages that disagree"). A conflict
 // closes by itself when either passage changes: sql/page-index.ts `closeChangedConflicts`, run with every save.
 import type { Conflict } from '../conflicts';
 import type { SqlStatement } from './statement';
 
-/** How many open conflicts the AI Knowledge tab lists. */
+/** How many open conflicts the Insights tab lists. */
 export const CONFLICTS_LISTED = 50;
 
 /** Stores a found conflict. A pair already there, open or dismissed, is left as it is. */

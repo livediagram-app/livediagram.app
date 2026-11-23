@@ -1,4 +1,4 @@
-// The figures band's pictures (docs/specs/030-knowledgebase/ai-knowledge.md "Every tile draws a picture"): a 28px
+// The figures band's pictures (docs/specs/030-knowledgebase/insights.md "Every tile draws a picture"): a 28px
 // strip at each tile's foot, the same height as the Reads sparkline so the six line up. Each is hidden from screen
 // readers; its words are said as the tile's description (FigureTiles passes them as `spoken`).
 import type { KnowledgeConflict } from '@liveknowledge/api-schema';

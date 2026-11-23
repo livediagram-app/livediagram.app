@@ -1,4 +1,4 @@
-// Connected Agents as `GET knowledge` answers them (docs/specs/030-knowledgebase/ai-knowledge.md "Connected
+// Connected Agents as `GET knowledge` answers them (docs/specs/030-knowledgebase/insights.md "Connected
 // agents"): the connections the room has seen by token (agent-seen.ts), each with the reads counted under its name,
 // then any agent known only by its reads (counted before the room kept tokens). Pure.
 import type { KnowledgeAgent } from '@liveknowledge/api-schema';

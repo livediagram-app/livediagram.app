@@ -22,7 +22,7 @@ import { useSetupOffered } from './useSetupOffered';
 const SetupDialog = dynamic(() => import('./SetupDialog').then((m) => m.SetupDialog), {
   ssr: false,
 });
-// AI Settings over Pages, opened from the dialog's no-key step or the knowledgebase menu. Over Ask or AI Knowledge the
+// AI Settings over Pages, opened from the dialog's no-key step or the knowledgebase menu. Over Ask or Insights the
 // views' host draws it.
 const AiSettingsDialogHost = dynamic(
   () => import('@/components/ask/AiSettingsDialog').then((m) => m.AiSettingsHost),
@@ -44,7 +44,7 @@ export function SetupWhenOpen() {
     return () => publishSetupOffered(null);
   }, [offered]);
   // Over the Pages view this host draws AI Settings, whether opened from Describe to Add Pages or from the
-  // knowledgebase menu (the Ask and AI Knowledge views draw their own). It was drawn only beside an open Describe, so
+  // knowledgebase menu (the Ask and Insights views draw their own). It was drawn only beside an open Describe, so
   // the menu's AI Settings did nothing there (sweep 2026-11-21).
   const aiSettingsOpen = useAiSettingsOpen();
   const overPages = useKnowledgeView() === 'pages';

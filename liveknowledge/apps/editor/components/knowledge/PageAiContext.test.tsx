@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// AI Context in the right rail (docs/specs/030-knowledgebase/ai-knowledge.md "AI Context on a page"), from plain
+// AI Context in the right rail (docs/specs/030-knowledgebase/insights.md "AI Context on a page"), from plain
 // props, a share role at a time.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

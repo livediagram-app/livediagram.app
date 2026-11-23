@@ -28,7 +28,7 @@ const row = (drafting: string | null) =>
   );
 
 describe('QuestionRow', () => {
-  // ai-knowledge.md "Questions nobody could answer": the draft takes seconds, so its button says it is working.
+  // insights.md "Questions nobody could answer": the draft takes seconds, so its button says it is working.
   it('shows a spinner and Drafting while its page is drafted', () => {
     const { unmount } = row(QUESTION.question);
     const button = screen.getByRole('button', { name: 'Drafting…' });

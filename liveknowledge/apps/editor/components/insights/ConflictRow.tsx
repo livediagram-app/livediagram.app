@@ -1,6 +1,6 @@
 'use client';
 
-// A conflict's row in Needs Attention (docs/specs/030-knowledgebase/ai-knowledge.md "Pages that disagree"): the
+// A conflict's row in Needs Attention (docs/specs/030-knowledgebase/insights.md "Pages that disagree"): the
 // question a pair of passages answers differently, both passages side by side with each page's trust, and the two
 // ways to settle it.
 // Ask Both Owners emails the two pages' owners once (knowledge-email-routes.ts); once asked, the row says when in
@@ -11,8 +11,8 @@ import { Button } from '@liveknowledge/ui';
 import { HealthChip } from '@/components/knowledge/HealthChip';
 import { ownersEmailedText } from '@/lib/knowledge-ask/email-words';
 import { trustText } from '@/lib/knowledge-ask/source-meta';
-import { MailIcon } from './ai-knowledge-icons';
-import { AI_MUTED } from './AiSection';
+import { MailIcon } from './insights-icons';
+import { INSIGHTS_MUTED } from './InsightsSection';
 
 function Side({
   side,
@@ -32,7 +32,7 @@ function Side({
       >
         {side.title || 'Untitled Page'}
       </button>
-      <p className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${AI_MUTED}`}>
+      <p className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${INSIGHTS_MUTED}`}>
         {side.trust === 'off' ? null : (
           <span>{trustText(side.trust, side.verifiedAt, undefined, now)}</span>
         )}
@@ -70,7 +70,7 @@ export function ConflictRow({
   onDismiss: (id: string) => void;
   onAskOwners: (id: string) => void;
 }) {
-  // The likelier right side (ai-knowledge.md "Pages that disagree"): 10 or more points healthier. A suggestion only:
+  // The likelier right side (insights.md "Pages that disagree"): 10 or more points healthier. A suggestion only:
   // both buttons stay, the likelier one first.
   const likely = likelierRight(conflict.a.health?.score, conflict.b.health?.score);
   const right = likely === 'b' ? conflict.b : conflict.a;
@@ -92,7 +92,7 @@ export function ConflictRow({
         {conflict.question}
       </p>
       {likely ? (
-        <p data-likelier-right={likely} className={`mt-1 text-xs ${AI_MUTED}`}>
+        <p data-likelier-right={likely} className={`mt-1 text-xs ${INSIGHTS_MUTED}`}>
           <span className="font-medium text-slate-800 dark:text-slate-200">
             {right.title || 'Untitled Page'}
           </span>{' '}
@@ -127,7 +127,7 @@ export function ConflictRow({
               Ask Both Owners
             </Button>
           ) : (
-            <span className={`flex items-center gap-1.5 px-1 text-xs ${AI_MUTED}`}>
+            <span className={`flex items-center gap-1.5 px-1 text-xs ${INSIGHTS_MUTED}`}>
               <MailIcon />
               {ownersEmailedText('ask', conflict.askedAt, now)}
             </span>
@@ -159,7 +159,7 @@ export function ConflictKeyNote({
   return (
     <p
       role="note"
-      className={`mb-3 flex flex-wrap items-center gap-x-2 text-xs leading-5 ${AI_MUTED}`}
+      className={`mb-3 flex flex-wrap items-center gap-x-2 text-xs leading-5 ${INSIGHTS_MUTED}`}
     >
       <span>
         This server has no built-in AI, so finding pages that disagree needs your team&apos;s AI

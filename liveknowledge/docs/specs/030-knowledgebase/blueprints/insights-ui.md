@@ -1,25 +1,25 @@
-# AI Knowledge UI blueprint
+# Insights UI blueprint
 
-Derived from [AI Knowledge](../ai-knowledge.md): the knowledgebase's third view, over `GET knowledge` and the routes
+Derived from [Insights](../insights.md): the knowledgebase's third view, over `GET knowledge` and the routes
 its actions call ([api.md](../../015-api/api.md) "Knowledge"). It is drawn on the surface the
 [Ask UI blueprint](ask-ui.md) "The views" describes and shares its session, rights, page picker, Draft a Page
 and AI Settings. The dashboard was seen in a browser on 2026-11-21; a conflict's row only through a stubbed read.
 
-| Piece                                     | File                                                                                                                    |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| the read and the actions' runner          | `components/ai-knowledge/useKnowledgeOverview.ts`                                                                       |
-| the view: its states, actions and dialogs | `components/ai-knowledge/AiKnowledgeView.tsx`                                                                           |
-| the dashboard's layout and its loading    | `components/ai-knowledge/AiDashboard.tsx`, `DashboardLoading.tsx`                                                       |
-| the figures band and its pictures         | `components/ai-knowledge/FigureTiles.tsx`, `ReadsSparkline.tsx`, `TileVisuals.tsx`, `lib/knowledge-ask/tile-visuals.ts` |
-| Needs Attention and its rows              | `NeedsAttention.tsx`, `ConflictRow.tsx`, `QuestionRow.tsx`, `SuggestionRow.tsx`                                         |
-| a card, its cap and Show All              | `components/ai-knowledge/AiSection.tsx`, `useShowAll.tsx`                                                               |
-| the other cards                           | `AgentsSection.tsx`, `HealthAndContext.tsx`, `MostReadCard.tsx`                                                         |
-| an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                              |
-| Connect an Agent                          | the Connect view ([its blueprint](mcp-connect-ui.md))                                                                   |
-| the owner emails' requests and words      | `lib/api/knowledge-emails.ts`, `lib/knowledge-ask/email-words.ts`                                                       |
-| the words and the figures                 | `lib/knowledge-ask/overview-words.ts`, `lib/knowledge-ask/dashboard-figures.ts`                                         |
-| accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                                  |
-| the reads by day and Most Read (api)      | `countDailyReads` + `dailyReads`, `countMostRead` in `packages/knowledge/src/sql/reads.ts`; `handleOverview`            |
+| Piece                                     | File                                                                                                                |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| the read and the actions' runner          | `components/insights/useKnowledgeOverview.ts`                                                                       |
+| the view: its states, actions and dialogs | `components/insights/InsightsView.tsx`                                                                              |
+| the dashboard's layout and its loading    | `components/insights/InsightsDashboard.tsx`, `DashboardLoading.tsx`                                                 |
+| the figures band and its pictures         | `components/insights/FigureTiles.tsx`, `ReadsSparkline.tsx`, `TileVisuals.tsx`, `lib/knowledge-ask/tile-visuals.ts` |
+| Needs Attention and its rows              | `NeedsAttention.tsx`, `ConflictRow.tsx`, `QuestionRow.tsx`, `SuggestionRow.tsx`                                     |
+| a card, its cap and Show All              | `components/insights/InsightsSection.tsx`, `useShowAll.tsx`                                                         |
+| the other cards                           | `AgentsSection.tsx`, `HealthAndContext.tsx`, `MostReadCard.tsx`                                                     |
+| an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                          |
+| Connect an Agent                          | the Connect view ([its blueprint](mcp-connect-ui.md))                                                               |
+| the owner emails' requests and words      | `lib/api/knowledge-emails.ts`, `lib/knowledge-ask/email-words.ts`                                                   |
+| the words and the figures                 | `lib/knowledge-ask/overview-words.ts`, `lib/knowledge-ask/dashboard-figures.ts`                                     |
+| accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                              |
+| the reads by day and Most Read (api)      | `countDailyReads` + `dailyReads`, `countMostRead` in `packages/knowledge/src/sql/reads.ts`; `handleOverview`        |
 
 ## The read
 
@@ -42,7 +42,7 @@ and one read.
 
 ## The dashboard
 
-`AiDashboard` lays the ready view out (ai-knowledge.md "The view, as built"): the figures band, then the cards in CSS
+`InsightsDashboard` lays the ready view out (insights.md "The view, as built"): the figures band, then the cards in CSS
 columns (`lg:columns-2`), each in a `break-inside-avoid` slot, in reading order: Needs Attention, Knowledge Health,
 Connected Agents, Always in Context, Most Read, What an Agent Sees. The browser balances the two columns by height.
 Below `lg` they are one column. The content is at most `max-w-7xl`, centred, `px-4 sm:px-6`.
@@ -72,7 +72,7 @@ Below `lg` they are one column. The content is at most `max-w-7xl`, centred, `px
   many others), `waitingDots` (each suggestion's whole days waited, capped at 13, stacked per day, `old` from 7) and
   `verifiedParts` (verified, Review Due and never verified, as shares of `total`). `now` is read once per render
   of the band. Bars are HTML flex pieces (no SVG scaling), so a thin share keeps a 2px minimum and rounds cleanly.
-- **Needs Attention** (`NeedsAttention`): an `AiSection` "Needs Attention" with a `SegmentedToggle` ("Show": All,
+- **Needs Attention** (`NeedsAttention`): an `InsightsSection` "Needs Attention" with a `SegmentedToggle` ("Show": All,
   Questions, Disagreements, Edits) as its action (under its heading on a phone). `attentionItems(overview,
 filter)` orders the rows: conflicts by `foundAt` newest first, suggestions by `createdAt` newest first, questions
   by `asked` most first then `lastAt`. Each row is an `li` with an eyebrow (the kind's icon and word: "Pages
@@ -102,7 +102,7 @@ Page from a gap is offered whenever `hasAi`.
 
 ## The rows
 
-Each card is `AiSection`: a `section` named by its heading's words (the count sits beside them in a `CountBadge`,
+Each card is `InsightsSection`: a `section` named by its heading's words (the count sits beside them in a `CountBadge`,
 outside the name), one line about it, an optional action at the right, then its rows or a `CompactEmptyState`.
 
 - **Agents.** `agentDoor(agent)`: the row's `door` when the room noted its token; else, from the name, "MCP", "CLI"
@@ -167,7 +167,7 @@ Knowledge". Failed: an error callout, **Try Again**. Offline: one `EmptyState` f
 | Ask Both Owners; Remind the Owners (signed in)                     | yes    | yes         | no     |
 
 Gated on `askRights` (`resolve`, `makePages`, `context`, `manageAi`, `grantAgents`, `emailOwners`): without the flag the control is not drawn, and
-each handler checks it again. Tests, a role at a time: `components/ai-knowledge/AiKnowledgeView.test.tsx` "as edit",
+each handler checks it again. Tests, a role at a time: `components/insights/InsightsView.test.tsx` "as edit",
 "as participate", "as view".
 
 ## Telemetry
@@ -178,17 +178,17 @@ each handler checks it again. Tests, a role at a time: `components/ai-knowledge/
 ## Tests
 
 `lib/knowledge-ask/overview-words.test.ts`, `lib/knowledge-ask/dashboard-figures.test.ts` and
-`components/ai-knowledge/AiKnowledgeView.test.tsx`: one read on open and one after an action, every empty state, a
+`components/insights/InsightsView.test.tsx`: one read on open and one after an action, every empty state, a
 failed read, Offline, each card's rows, the passages and lines as text, the health bar's label and parts, the
-over-budget refusal, each action's request, and the controls per role. `components/ai-knowledge/AiDashboard.test.tsx`:
+over-budget refusal, each action's request, and the controls per role. `components/insights/InsightsDashboard.test.tsx`:
 each tile's figure and name, the amber mark, a filter tile pressing and unpressing, a tile scrolling to its card, the
 sparkline's label, the caps and Show All, Most Read's rows and empty state. The api's `knowledge-ask-routes.test.ts`
-"AI Knowledge" and `knowledge-overview-reads.test.ts`: the days filled with zeros, people and agents apart, the
+"Insights" and `knowledge-overview-reads.test.ts`: the days filled with zeros, people and agents apart, the
 14-day window, Most Read's order, its cap and a deleted page left out.
 
 ## AI Context on a page
 
-Derived from [AI Knowledge](../ai-knowledge.md) "AI Context on a page": a section of the page's right rail, drawn
+Derived from [Insights](../insights.md) "AI Context on a page": a section of the page's right rail, drawn
 after Page Health in `PageRailBody` (docked and in the Page Info card alike), over Page Health's own read.
 
 | Piece                           | File                                                                              |
@@ -223,7 +223,7 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
     before it), and for an Editor (`rights.editFields`) a `Switch` (`sm`) labelled "Always in Context" calling
     `setFields(pageId, { context }, 'context')`, which shows the change at once and puts it back with the route's
     budget words in a toast on a refusal. Anyone else reads "Handed to Every Agent First" or "Not Handed to Agents
-    First". Telemetry `UI·Added·ContextPage` / `UI·Removed·ContextPage`, as AI Knowledge sends.
+    First". Telemetry `UI·Added·ContextPage` / `UI·Removed·ContextPage`, as Insights sends.
   - **Answered From This Page**: up to three quotes (an opening curly quote in the brand's colour, then the
     question, clamped to three lines with the whole words still in the page for a screen reader) with "Asked once" or "Asked 6 times" under each; before the read, quiet
     placeholder lines; with none, the block is not drawn.
@@ -241,7 +241,7 @@ day))`, `day` the UTC day (`dayOf`), and a trigger that deletes a page's rows wi
 
 ## Page Insights
 
-Derived from [AI Knowledge](../ai-knowledge.md#page-insights): `components/knowledge/PageInsights.tsx`, drawn in
+Derived from [Insights](../insights.md#page-insights): `components/knowledge/PageInsights.tsx`, drawn in
 `PageRailBody` before AI Context (docked, card and sheet), over Page Health's read (`health.insights`,
 `health.answered`, `health.created`).
 
@@ -268,16 +268,16 @@ Derived from [AI Knowledge](../ai-knowledge.md#page-insights): `components/knowl
 
 ## Not Read in 90 Days
 
-`components/ai-knowledge/NotReadCard.tsx`, under `MostReadCard` in the left column, from
+`components/insights/NotReadCard.tsx`, under `MostReadCard` in the left column, from
 `overview.notRead: { pages: { tab, title, touchedAt? }[]; total }` (absent from an older api: not drawn).
 
-- An `AiSection` "Not Read in 90 Days", `count` the total, about "Pages nobody opened and no agent read in 90 days:
+- An `InsightsSection` "Not Read in 90 Days", `count` the total, about "Pages nobody opened and no agent read in 90 days:
   worth updating, merging or deleting."; rows as Most Read's (a button a page, its title underlined on hover, a
   quiet line "Last edited 5 months ago" or "Last edit not kept", a chevron), then "4 more not listed" when the total
   passes 10. Empty: `CompactEmptyState` "Every Page Was Read".
 - **Directions considered.** A switch inside Most Read (Most Read, Not Read) hid one list behind the other; a figure
   tile had no room in the band of six. Its own card keeps both lists in view.
-- **Tests:** `AiDashboard.test.tsx` (rows, order kept, the count, the more line, the empty state, opening a page);
+- **Tests:** `InsightsDashboard.test.tsx` (rows, order kept, the count, the more line, the empty state, opening a page);
   `page-insights.test.ts` (`notReadPages`); the overview route test (`knowledge-verification-off.test.ts`: a new page
   left out, a page listed until read); `page-health-read.test.ts` (500 pages and 45,000 reads in one statement).
 

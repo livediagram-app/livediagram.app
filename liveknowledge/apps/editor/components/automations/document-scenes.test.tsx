@@ -86,7 +86,7 @@ describe('the knowledgebase’s kit', () => {
         kind,
       ).toBe(true);
     expect(kinds.triggerGroups.map((g) => g.name)).toEqual(
-      expect.arrayContaining(['Trust', 'AI Knowledge', 'Versions']),
+      expect.arrayContaining(['Trust', 'Insights', 'Versions']),
     );
   });
 });

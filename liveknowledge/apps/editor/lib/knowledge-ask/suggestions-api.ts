@@ -50,7 +50,7 @@ const FALLBACK: Record<OverviewAction, string> = {
   context: 'Always in Context could not be changed. Try again.',
 };
 
-/** A refused AI Knowledge action in words, from its code and status. */
+/** A refused Insights action in words, from its code and status. */
 export function overviewFailureText(err: unknown, action: OverviewAction): string {
   if (err instanceof ApiError) {
     if (err.code === 'suggestion_stale')

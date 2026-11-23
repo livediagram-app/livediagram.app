@@ -1,13 +1,13 @@
 'use client';
 
-// Most Read (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): the pages read most in the last 7
+// Most Read (docs/specs/030-knowledgebase/insights.md "The view, as built"): the pages read most in the last 7
 // days, each with a bar of its reads against the most read page, people and agents in the sparkline's two tones.
 // A row opens its page.
 import type { KnowledgeMostRead } from '@liveknowledge/api-schema';
 import { CompactEmptyState } from '@liveknowledge/ui';
 import { readersText } from '@/lib/knowledge-ask/dashboard-figures';
-import { MostReadIcon } from './ai-knowledge-icons';
-import { AI_MUTED, AiSection } from './AiSection';
+import { MostReadIcon } from './insights-icons';
+import { INSIGHTS_MUTED, InsightsSection } from './InsightsSection';
 import { AGENT_BG, PEOPLE_BG } from './ReadsSparkline';
 
 const ROW =
@@ -22,7 +22,7 @@ export function MostReadCard({
 }) {
   const most = Math.max(1, ...pages.map((page) => page.people + page.agents));
   return (
-    <AiSection
+    <InsightsSection
       id="ai-reads"
       title="Most Read"
       icon={<MostReadIcon />}
@@ -46,7 +46,7 @@ export function MostReadCard({
                       <span className="min-w-0 flex-1 truncate text-sm font-medium text-slate-900 underline-offset-2 group-hover:underline dark:text-slate-100">
                         {page.title || 'Untitled Page'}
                       </span>
-                      <span className={`shrink-0 text-xs tabular-nums ${AI_MUTED}`}>
+                      <span className={`shrink-0 text-xs tabular-nums ${INSIGHTS_MUTED}`}>
                         <span aria-hidden>{total.toLocaleString('en')}</span>
                         <span className="sr-only">{readersText(page.people, page.agents)}</span>
                       </span>
@@ -69,7 +69,7 @@ export function MostReadCard({
               );
             })}
           </ol>
-          <ul aria-label="Key" className={`mt-3 flex gap-4 text-xs ${AI_MUTED}`}>
+          <ul aria-label="Key" className={`mt-3 flex gap-4 text-xs ${INSIGHTS_MUTED}`}>
             <li className="flex items-center gap-1.5">
               <span aria-hidden className={`h-2 w-2 rounded-sm ${PEOPLE_BG}`} />
               People
@@ -81,6 +81,6 @@ export function MostReadCard({
           </ul>
         </>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }

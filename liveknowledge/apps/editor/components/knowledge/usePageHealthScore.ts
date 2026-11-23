@@ -87,12 +87,12 @@ export function usePageHealthScore(page: PageKnowledgeView): {
           }
         : {}),
       ...(mayWrite ? { heading: addHeading } : {}),
-      // Open issues, for anyone who can read the page: the conflicts in AI Knowledge's Needs Attention, at
+      // Open issues, for anyone who can read the page: the conflicts in Insights' Needs Attention, at
       // Disagreements; the comments where they sit under the page; its suggested edits in the rail.
       conflicts: () => {
         track('UI', 'Used', 'HealthShowConflicts');
         askAttentionFilter('conflicts');
-        showKnowledgeView('ai');
+        showKnowledgeView('insights');
       },
       comments: () => {
         track('UI', 'Used', 'HealthShowComments');

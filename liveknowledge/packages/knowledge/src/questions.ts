@@ -1,4 +1,4 @@
-// Like questions, grouped (docs/specs/030-knowledgebase/ai-knowledge.md "Questions nobody could answer"): two
+// Like questions, grouped (docs/specs/030-knowledgebase/insights.md "Questions nobody could answer"): two
 // questions are the same when they hold the same words after lowercasing, dropping punctuation and stop words and
 // stemming. No dependency: a small stop list and a light English stemmer, since the key only has to bring
 // "How do we deploy?" and "how are deploys done" together, not parse a language.

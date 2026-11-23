@@ -1,23 +1,22 @@
 'use client';
 
 // Beside Connect's steps (docs/specs/030-knowledgebase/mcp-connect.md "The view"): Already Connected, the
-// connections AI Knowledge counts, and Other Ways In, the command line and API tokens.
+// connections Insights counts, and Other Ways In, the command line and API tokens.
 import type { ReactNode } from 'react';
 import type { KnowledgeAgent } from '@liveknowledge/api-schema';
 import { CodeSnippet } from '@liveworkspace/marketing-site/components/ai/CodeSnippet';
 import { Button, CompactEmptyState } from '@liveknowledge/ui';
-import { AiSection, AI_CHIP, AI_MUTED } from '@/components/ai-knowledge/AiSection';
 import {
-  AgentIcon,
-  CliIcon,
-  McpIcon,
-  TokenIcon,
-} from '@/components/ai-knowledge/ai-knowledge-icons';
+  InsightsSection,
+  INSIGHTS_CHIP,
+  INSIGHTS_MUTED,
+} from '@/components/insights/InsightsSection';
+import { AgentIcon, CliIcon, McpIcon, TokenIcon } from '@/components/insights/insights-icons';
 import { ConnectViewIcon } from '@/components/ask/ask-icons';
 import { agentDoor, agentScopeChips, type AgentDoor } from '@/lib/knowledge-ask/overview-words';
 import { track } from '@/lib/telemetry';
 
-/** How many connections the aside lists; AI Knowledge has them all. */
+/** How many connections the aside lists; Insights has them all. */
 export const ASIDE_AGENTS = 5;
 
 const DOOR_ICON: Record<AgentDoor, ReactNode> = {
@@ -40,7 +39,7 @@ export function AlreadyConnected({
 }) {
   const shown = agents?.slice(0, ASIDE_AGENTS) ?? [];
   return (
-    <AiSection
+    <InsightsSection
       id="connect-agents"
       title="Already Connected"
       icon={<AgentIcon />}
@@ -76,10 +75,10 @@ export function AlreadyConnected({
                     <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                       {agent.name}
                     </p>
-                    <p className={`truncate text-xs ${AI_MUTED}`}>{how}</p>
+                    <p className={`truncate text-xs ${INSIGHTS_MUTED}`}>{how}</p>
                     <ul aria-label="What it may do" className="mt-1.5 flex flex-wrap gap-1">
                       {agentScopeChips(agent).map((chip) => (
-                        <li key={chip} className={AI_CHIP}>
+                        <li key={chip} className={INSIGHTS_CHIP}>
                           {chip}
                         </li>
                       ))}
@@ -95,18 +94,18 @@ export function AlreadyConnected({
             onClick={onManage}
             className="w-fit cursor-pointer phone:min-h-11"
           >
-            Manage in AI Knowledge
+            Manage in Insights
           </Button>
         </div>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }
 
 export function OtherWaysIn({ name, onOpenTokens }: { name: string; onOpenTokens: () => void }) {
-  const text = `text-[13px] leading-5 ${AI_MUTED}`;
+  const text = `text-[13px] leading-5 ${INSIGHTS_MUTED}`;
   return (
-    <AiSection
+    <InsightsSection
       id="connect-other"
       title="Other Ways In"
       icon={<CliIcon />}
@@ -139,6 +138,6 @@ export function OtherWaysIn({ name, onOpenTokens }: { name: string; onOpenTokens
           </Button>
         </div>
       </div>
-    </AiSection>
+    </InsightsSection>
   );
 }

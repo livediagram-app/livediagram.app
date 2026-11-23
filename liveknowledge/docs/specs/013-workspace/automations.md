@@ -47,18 +47,18 @@ Edited For, Snapshot Taken, Someone Joined, Access Requested, and the comment an
 The comment triggers hear the notes in a page's margin. The comments at a page's foot are not heard yet: Comment Added
 starts for neither those nor their replies.
 
-| Trigger                      | Group        | Starts when                                                                               | Picks             |
-| ---------------------------- | ------------ | ----------------------------------------------------------------------------------------- | ----------------- |
-| **Page Verified**            | Trust        | someone verifies a page ([Verification](../030-knowledgebase/verification.md))            | a page (optional) |
-| **Review Due**               | Trust        | a verified page's review comes due (verified + the Review Period); once per review        | a page (optional) |
-| **Page Owner Changed**       | Trust        | someone gives a page a new owner, or takes its owner away                                 | a page (optional) |
-| **Unanswered Question**      | AI Knowledge | a question nobody's pages answer is asked for the first time (Ask, an agent's search      | nothing           |
-|                              |              | that found nothing, `report_gap`); like questions are one                                 |                   |
-| **Pages Disagree**           | AI Knowledge | the conflict check finds a new pair of pages stating opposite facts                       | a page (optional) |
-| **Agent Suggested a Change** | AI Knowledge | an agent with the suggest scope suggests an edit to a page                                | a page (optional) |
-| **Agent Made Changes**       | AI Knowledge | an agent (an API token) writes a page: `create_page`, `write_page`, a changeset           | a page (optional) |
-| **Version Named**            | Versions     | someone names a version of a page ([Version history](../006-document/version-history.md)) | a page (optional) |
-| **Version Restored**         | Versions     | someone restores a page to an earlier version                                             | a page (optional) |
+| Trigger                      | Group    | Starts when                                                                               | Picks             |
+| ---------------------------- | -------- | ----------------------------------------------------------------------------------------- | ----------------- |
+| **Page Verified**            | Trust    | someone verifies a page ([Verification](../030-knowledgebase/verification.md))            | a page (optional) |
+| **Review Due**               | Trust    | a verified page's review comes due (verified + the Review Period); once per review        | a page (optional) |
+| **Page Owner Changed**       | Trust    | someone gives a page a new owner, or takes its owner away                                 | a page (optional) |
+| **Unanswered Question**      | Insights | a question nobody's pages answer is asked for the first time (Ask, an agent's search      | nothing           |
+|                              |          | that found nothing, `report_gap`); like questions are one                                 |                   |
+| **Pages Disagree**           | Insights | the conflict check finds a new pair of pages stating opposite facts                       | a page (optional) |
+| **Agent Suggested a Change** | Insights | an agent with the suggest scope suggests an edit to a page                                | a page (optional) |
+| **Agent Made Changes**       | Insights | an agent (an API token) writes a page: `create_page`, `write_page`, a changeset           | a page (optional) |
+| **Version Named**            | Versions | someone names a version of a page ([Version history](../006-document/version-history.md)) | a page (optional) |
+| **Version Restored**         | Versions | someone restores a page to an earlier version                                             | a page (optional) |
 
 - **Review Due** has nobody behind it. The room checks with the review emails' check (the alarm that wakes when the
   next review comes due) whether the Knowledgebase Reviews emails are on or not, and only while a rule that is on
@@ -76,15 +76,15 @@ starts for neither those nor their replies.
 
 ## Steps of its own
 
-| Step                                          | Group        | Does                                                                                     |
-| --------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------- |
-| **Set the Page Owner**                        | Trust        | makes a person, or whoever started the rule, the owner of a page (the run's or a chosen) |
-| **Clear Verification**                        | Trust        | takes a page's verification away, so it reads Not Verified until someone verifies it     |
-| **Email the Page Owner**                      | Trust        | emails the run's page's owner, values allowed                                            |
-| **Add to Always in Context** / **Remove ...** | AI Knowledge | puts a page in, or takes it out of, the pages every agent is handed                      |
-| **Name This Version**                         | Versions     | names the current content of a page (the run's, or a chosen one), values allowed         |
-| **Restore a Version**                         | Versions     | puts a chosen page back to one of its named versions, as Restore does                    |
-| **Add a Page from a Template**                | Pages        | the shared step: adds a page made from a chosen template, named by the rule              |
+| Step                                          | Group    | Does                                                                                     |
+| --------------------------------------------- | -------- | ---------------------------------------------------------------------------------------- |
+| **Set the Page Owner**                        | Trust    | makes a person, or whoever started the rule, the owner of a page (the run's or a chosen) |
+| **Clear Verification**                        | Trust    | takes a page's verification away, so it reads Not Verified until someone verifies it     |
+| **Email the Page Owner**                      | Trust    | emails the run's page's owner, values allowed                                            |
+| **Add to Always in Context** / **Remove ...** | Insights | puts a page in, or takes it out of, the pages every agent is handed                      |
+| **Name This Version**                         | Versions | names the current content of a page (the run's, or a chosen one), values allowed         |
+| **Restore a Version**                         | Versions | puts a chosen page back to one of its named versions, as Restore does                    |
+| **Add a Page from a Template**                | Pages    | the shared step: adds a page made from a chosen template, named by the rule              |
 
 - **Set the Page Owner** with **Whoever Started the Rule** takes the event's person: for an agent, its token's
   person. It fails "Nobody started this rule who can own a page" for a time, a call or a rule's own change, and
@@ -128,7 +128,7 @@ starts for neither those nor their replies.
 | **Weekly Summary by Email**                | Weekly on Friday at 16:00 → Summarise with AI → Send Email with `{{summary}}`                  |
 | **Snapshot Every Month**                   | Monthly on day 1 at 09:00 → Take Snapshot "{{now.date}}"                                       |
 
-The gallery's sections: **Keep Pages Trusted**, **AI Knowledge**, **Stay in the Loop** and **Keep It Safe**.
+The gallery's sections: **Keep Pages Trusted**, **Insights**, **Stay in the Loop** and **Keep It Safe**.
 
 Considered and left out (decided): a Set the Review Period step (one setting for the whole knowledgebase, changed
 rarely, and only an Editor's to change), Page Answered a Question (every Ask would start it), and "remind the owner
