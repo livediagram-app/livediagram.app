@@ -9,6 +9,8 @@ import { HoverCard } from '@liveknowledge/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { SearchField } from '@/components/knowledge/SearchField';
 import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
+import { LabelFilterHeading } from '@/components/page-labels/LabelFilterHeading';
+import { useLabelFilterReveal } from '@/components/page-labels/useLabelFilter';
 import { PageTree, type PageTreeProps } from './PageTree';
 import { type KnowledgebaseHead } from './PageTreeSidebar';
 import { AddToSidebar } from './AddToSidebar';
@@ -31,6 +33,8 @@ export function PageTreeSheet({
   menu?: ((head: KnowledgebaseHead & { close: () => void }) => ReactNode) | undefined;
 }) {
   const [open, setOpen] = useState(false);
+  // A page's label pill pressed: the sheet opens on the filtered tree (page-surface.md "Page labels").
+  useLabelFilterReveal(() => setOpen(true));
   const [renaming, setRenaming] = useState(false);
   const shownName = name.trim() || 'Untitled Knowledgebase';
   const { actions } = tree;
@@ -136,9 +140,7 @@ export function PageTreeSheet({
           <div className="px-4 pb-1 pt-2">
             <SearchField />
           </div>
-          <p className="px-4 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-            Pages
-          </p>
+          <LabelFilterHeading only={tree.only} touch inset="px-4" top="pt-2" />
           <PageTree
             {...tree}
             actions={sheetActions}
