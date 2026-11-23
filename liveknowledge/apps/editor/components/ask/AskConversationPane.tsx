@@ -18,6 +18,7 @@ import { saveAnswerAsPage } from '@/lib/knowledge-ask/make-page';
 import { BLOCK_HIT_MS } from '@/lib/knowledge/go-to-block';
 import { KnowledgeAiSource } from './KnowledgeAiSource';
 import { track } from '@/lib/telemetry';
+import { sourceHref } from '@/lib/knowledge-ask/source-item';
 import { AskAnswerCard } from './AskAnswerCard';
 import { AskComposer } from './AskComposer';
 import { AskSourcesRail, type SourcePage } from './AskSourcesRail';
@@ -166,10 +167,18 @@ export function AskConversationPane({
 
   const openSource = useCallback(
     (source: AskSource) => {
+      // An item of another app opens there, at the cited place, under the Cited by Ask bar (search-and-ask.md
+      // "Where a citation lands"); `noopener`, so that page has no handle back to this one.
+      if (source.source) {
+        track('UI', 'Opened', 'AskSourceItem');
+        const turn = shownTurn?.question ?? '';
+        window.open(sourceHref(source.source, turn, session.documentId), '_blank', 'noopener');
+        return;
+      }
       if (!openPassage(chrome, source.tab, source.firstBlock))
         toast.info('That page is no longer in this knowledgebase.');
     },
-    [chrome, toast],
+    [chrome, toast, shownTurn, session.documentId],
   );
 
   return (

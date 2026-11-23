@@ -3,6 +3,8 @@
 // and Settings > AI are built over. Each is one request through the shared funnel (identity, the index's grant, the
 // release signal, the failure report); the Ask stream is knowledge-ask.ts.
 import type {
+  KnowledgeSources,
+  KnowledgeSourcesChange,
   KnowledgeAiProvider,
   KnowledgeAiSettings,
   KnowledgeBacklink,
@@ -274,6 +276,25 @@ export async function apiSetKnowledgeAiModel(
 ): Promise<KnowledgeAiSettings> {
   const res = await write(who, knowledgeUrl(documentId, 'ai/model'), 'PUT', { model });
   return expectOk<KnowledgeAiSettings>(res, 'set ai model', expected);
+}
+
+/** AI Settings' Sources (search-and-ask.md "Sources in AI Settings"): what the knowledgebase reads besides its pages. */
+export function apiKnowledgeSources(
+  who: KnowledgeCaller,
+  documentId: string,
+  signal?: AbortSignal,
+): Promise<KnowledgeSources> {
+  return read(who, knowledgeUrl(documentId, 'ai/sources'), 'read sources', signal);
+}
+
+/** An Editor's change to Sources: Connected Items on or off, a team folder or none. */
+export async function apiSetKnowledgeSources(
+  who: KnowledgeCaller,
+  documentId: string,
+  change: KnowledgeSourcesChange,
+): Promise<KnowledgeSources> {
+  const res = await write(who, knowledgeUrl(documentId, 'ai/sources'), 'PUT', change);
+  return expectOk<KnowledgeSources>(res, 'set sources', expected);
 }
 
 /** The Insights tab: agents, unanswered questions, conflicts, Always in Context pages, health. */

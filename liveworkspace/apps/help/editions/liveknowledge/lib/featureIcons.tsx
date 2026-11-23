@@ -66,6 +66,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'searching-a-knowledgebase': lucide(lucideSearch),
   ask: lucide(lucideMessageCircle),
   'ai-settings': lucide(lucideSparkles),
+  // A page joined to two other apps' files: Ask reading across the apps.
+  'ask-across-apps': (
+    <Glyph>
+      <rect x="3" y="9" width="7" height="8" rx="1.5" />
+      <rect x="15" y="3" width="6" height="6" rx="1.5" />
+      <rect x="15" y="15" width="6" height="6" rx="1.5" />
+      <path d="M10 12l5-6M10 14l5 4" />
+    </Glyph>
+  ),
   // ---- Insights ----
   // A plug: an agent connected to the Knowledgebase.
   'connecting-an-agent': (

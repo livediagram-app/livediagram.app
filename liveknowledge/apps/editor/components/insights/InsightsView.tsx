@@ -5,7 +5,7 @@
 // `GET knowledge` when the view opens and one after each action here. Everyone sees it; settling a conflict, drafting or dismissing a question, accepting or
 // dismissing a suggestion and Always in Context are an Editor's.
 import { useState } from 'react';
-import type { KnowledgeEmailResult } from '@liveknowledge/api-schema';
+import type { KnowledgeEmailResult, KnowledgeLikelySource } from '@liveknowledge/api-schema';
 import { Button, EmptyState } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -44,6 +44,7 @@ import { AgentWriteDialog } from './AgentWriteDialog';
 import { DashboardLoading } from './DashboardLoading';
 import { useAgentWrite } from './useAgentWrite';
 import { useKnowledgeOverview } from './useKnowledgeOverview';
+import { useConnectLikely } from './useConnectLikely';
 
 export function InsightsView() {
   const session = useAskSession();
@@ -57,6 +58,8 @@ function Insights({ session }: { session: AskSession }) {
   const toast = useToast();
   const now = useRelativeNow();
   const offline = rights.askOff === 'offline';
+  // Connect on an unanswered question's likely item (insights.md "Likely answered elsewhere"): an Editor's.
+  const likely = useConnectLikely(rights.manageAi && !offline);
   const pages = useEditorChrome((s) => s.tabs, sameTabsForBar);
   const { state, busy, failure, refresh, setPeriod, run } = useKnowledgeOverview(
     who,
@@ -168,7 +171,14 @@ function Insights({ session }: { session: AskSession }) {
                 drafting={drafting}
                 canEmailOwners={canEmailOwners}
                 now={now}
+                connectingLikely={likely.connecting}
                 actions={{
+                  ...(likely.canConnect
+                    ? {
+                        connectLikely: (item: KnowledgeLikelySource) =>
+                          void likely.connect(item).then(refresh),
+                      }
+                    : {}),
                   openPage,
                   connect,
                   openAiSettings: openAiSettingsFrom,
