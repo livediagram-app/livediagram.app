@@ -1,18 +1,18 @@
 // Everything a stored tab's elements need on the way in, in one call. Composed
 // into migrateStoredTab (stored-tab.ts), which every stored-tab entry point runs.
 
-import { migrateLegacyCallouts } from './card';
-import { settleChips } from './attachment';
-import { dropLegacyDocks } from './legacy-docks';
+import { migrateLegacyCallouts } from '@liveworkspace/element-model/card';
+import { settleChips } from '@liveworkspace/element-model/attachment';
+import { dropLegacyDocks } from '@liveworkspace/element-model/legacy-docks';
 import { stampLegacyEsKinds } from './legacy-es-kinds';
-import { migrateLegacyGroups } from './legacy-groups';
+import { migrateLegacyGroups } from '@liveworkspace/element-model/legacy-groups';
 import { migrateLegacyModeButtons } from './legacy-mode-buttons';
-import { migrateLegacyStrokePoints } from './legacy-stroke-points';
-import { migrateLegacyTextSizing } from './legacy-text-sizing';
+import { migrateLegacyStrokePoints } from '@liveworkspace/element-model/legacy-stroke-points';
+import { migrateLegacyTextSizing } from '@liveworkspace/element-model/legacy-text-sizing';
 import { dropUnturnableRotation } from './unturnable-rotation';
-import { dropMalformedBends } from './malformed-bends';
+import { dropMalformedBends } from '@liveworkspace/element-model/malformed-bends';
 import { dropMalformedIds } from './malformed-ids';
-import { dropMalformedStyles } from './malformed-styles';
+import { dropMalformedStyles } from '@liveworkspace/element-model/malformed-styles';
 import { settleChartRows } from './malformed-chart-rows';
 import { dropUnsafeColours } from '@liveworkspace/element-model/unsafe-colours';
 import type { Element } from './index';

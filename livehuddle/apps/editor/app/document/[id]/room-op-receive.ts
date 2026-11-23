@@ -12,7 +12,7 @@ import { keepUnsavedTabChanges } from './meta-keep-local';
 import { foldRemoteOpIntoBaseline } from './save-baseline';
 import { isSupersededByOwnWrite } from './own-element-writes';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { shareLinkOpEffect } from './share-link-ops';
+import { shareLinkOpEffect } from '@liveworkspace/workbench/lib/share-link-ops';
 import { endPeerDragPreview, receivePeerDragPreview } from '@/hooks/collab/peer-drag-previews';
 import { receivePeerSay } from '@livehuddle/avatar/speech-store';
 import {

@@ -5,10 +5,17 @@
 // a shape is moved and turned. Pure: the caller gives each twin its own id.
 import type { BoxedElement } from './index';
 import type { FreehandElement, PathElement } from './element-types';
-import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
+import {
+  freehandCanvasPoints,
+  freehandStrokePoints,
+} from '@liveworkspace/element-model/freehand-points';
 import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
-import { pathContours, pathOfContours, pathWorldAnchors } from './path-element';
-import type { PathAnchor } from './path-geometry';
+import {
+  pathContours,
+  pathOfContours,
+  pathWorldAnchors,
+} from '@liveworkspace/element-model/path-element';
+import type { PathAnchor } from '@liveworkspace/element-model/path-geometry';
 import type { LaidOutPage, PageRect } from './page';
 import { MIRROR_AXIS_TOLERANCE } from './element-mirror';
 import type { GuideLine } from './logo-page';

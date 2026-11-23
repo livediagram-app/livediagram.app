@@ -18,7 +18,7 @@ Scope, by file:
 | `packages/document/src/validate.ts`                                    | `'path'` in `ELEMENT_TYPES`; node, handle, mode and count checks                                                                  |
 | `packages/document/src/colors.ts`                                      | Padding, default stroke and fill, border support for `path`                                                                       |
 | `packages/document/src/element-kind-label.ts`                          | `Path`                                                                                                                            |
-| `packages/document/src/whiteboard.ts`                                  | Ink projection for `path`                                                                                                         |
+| `../packages/element-model/src/whiteboard.ts`                          | Ink projection for `path`                                                                                                         |
 | `livediagram/packages/document/src/whiteboard-stroke.ts`               | `pathTouchesBrush`: the eraser touches a path by its line or its fill                                                             |
 | `packages/document/src/svg-render*.ts`                                 | `svgPathElementShape`: the export twin of the canvas path                                                                         |
 | `apps/api/src/openapi/schemas.generated.ts`                            | Regenerated: `PathElement` in `BoxedElement`                                                                                      |

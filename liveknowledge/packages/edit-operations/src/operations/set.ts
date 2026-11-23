@@ -5,7 +5,7 @@
 
 import type { EditRejection } from '@liveknowledge/api-schema';
 import type { ArrowElement, Element } from '@liveknowledge/document';
-import { sameValue } from '../equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';
 import { layerLockOf } from '../locks';

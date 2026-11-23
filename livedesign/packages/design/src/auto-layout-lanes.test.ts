@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { autoLayoutElements } from './auto-layout';
-import { reanchorArrow } from './auto-layout-shared';
+import { autoLayoutElements } from '@liveworkspace/element-model/auto-layout';
+import { reanchorArrow } from '@liveworkspace/element-model/auto-layout-shared';
 import { createPinnedArrow, createShape } from './factories';
 import type { ArrowElement, BoxedElement, Element, ShapeElement } from './index';
 

@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { contrastRatio, MIN_TEXT_CONTRAST, type CanvasSurface } from './colors';
 import { createTable } from './factories';
 import { svgTableShape } from './svg-render-table';
-import { TABLE_HEADER_BASE, tableHeaderColours } from './table-header-colours';
-import { tableColorPresets } from './theme-presets';
+import {
+  TABLE_HEADER_BASE,
+  tableHeaderColours,
+} from '@liveworkspace/element-model/table-header-colours';
+import { tableColorPresets } from '@liveworkspace/element-model/theme-presets';
 import { THEMES } from './themes-data';
 import type { TableElement } from './index';
 

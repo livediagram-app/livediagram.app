@@ -10,7 +10,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | swatch               | `ColourSwatch`, `SwatchChip` (`../packages/workbench/src/components/colour/ColourSwatch.tsx`)                                                                                                       |
 | standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`../packages/element-model/src/standard-colours.ts`)                                                                                  |
 | tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                                 |
-| theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/document/src/quick-swatches.ts`)                                                                                   |
+| theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`../packages/element-model/src/quick-swatches.ts`)                                                                           |
 | Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/document`), `documentColours(...)` (`apps/editor/lib/document-colours.ts`), `useDocumentColours()` (`apps/editor/hooks/ui/`) |
 | custom colour editor | `CustomColourEditor` (`packages/workbench/src/components/colour/CustomColourEditor.tsx`)                                                                                                            |
 | skins                | inline `ColourPicker`; row (`ColourRow`, `LaserColourRow`); `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                                 |
@@ -110,7 +110,7 @@ ColourPicker({
 - `Tab.customColours?: string[]` (`packages/document/src/tab-type.ts`), read with `customColoursOf(tab)` (lower-case
   `#rrggbb`, deduped, anything else dropped, at most `CUSTOM_COLOURS_MAX` = 12) and written with
   `withCustomColour(tab, hex)` (moves `hex` to the front, caps; returns the tab itself when nothing changes), both in
-  `packages/document/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.
+  `../packages/element-model/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.
 - `addCustomColour(hex)` on the editor state (`hooks/editor/useAddCustomColour.ts`): `tickTabs` on the active tab
   (no history step), a no-op without edit rights or when nothing changes. `ColourPicker` calls it, lower-cased, on the
   custom editor's **Use**, before `onPick`; outside an `EditorContext` there is none.

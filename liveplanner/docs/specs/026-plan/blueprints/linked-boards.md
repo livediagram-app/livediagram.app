@@ -20,7 +20,7 @@ Derived from [Linked boards](../linked-boards.md).
 ## Files
 
 ```
-packages/project/src/element-action.ts       ElementActionStatus ('open' | 'done' | 'wont-do'), isClosedAction,
+../packages/element-model/src/element-action.ts       ElementActionStatus ('open' | 'done' | 'wont-do'), isClosedAction,
                                               ACTION_STATUS_LABELS
 packages/project/src/plan-board-patch.ts      'collects' among SETUP_KEYS
 packages/project/src/svg-render-panel-faces.ts the export's Won't Do row (slashed ring, muted, "Won’t Do · name")

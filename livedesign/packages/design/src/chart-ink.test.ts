@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chartFrame } from './chart-frame';
+import { chartFrame } from '@liveworkspace/element-model/chart-frame';
 import {
   chartMarkInk,
   chartPageGrounds,
@@ -8,15 +8,15 @@ import {
   CHART_TEXT_CONTRAST,
   CHART_TEXT_TARGET,
 } from './chart-ink';
-import { CHART_PALETTES } from './chart-palettes';
+import { CHART_PALETTES } from '@liveworkspace/element-model/chart-palettes';
 import { contrastRatio, hexToRgb } from './colors';
 import { createShape, createSticky, type Element, type ShapeElement } from './index';
 import { layOutPages, type PageFill } from './page';
-import { worstContrast } from './page-ink-contrast';
-import { sankeyFrame } from './sankey-frame';
+import { worstContrast } from '@liveworkspace/element-model/page-ink-contrast';
+import { sankeyFrame } from '@liveworkspace/element-model/sankey-frame';
 import { svgBoxed } from './svg-render';
-import { svgLineChart } from './svg-render-charts';
-import { themeChartPalette } from './theme-presets';
+import { svgLineChart } from '@liveworkspace/element-model/svg-render-charts';
+import { themeChartPalette } from '@liveworkspace/element-model/theme-presets';
 import { THEMES } from './themes-data';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 

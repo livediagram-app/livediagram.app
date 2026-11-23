@@ -6,8 +6,8 @@ Derived from [Tag colours](../tag-colours.md). Defaults in [DEFAULTS.md](DEFAULT
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | `../packages/element-model/src/tag-colours.ts`                      | Type, bounds, lookup, write, the card's tag colour, the render overlay |
 | `packages/design/src/validate.ts` (tab checks)                      | `tagColours` validation                                                |
-| `packages/design/src/accent-edge.ts`                                | `resolvedAccentEdge` takes the tab's map                               |
-| `packages/design/src/svg-render-card.ts`                            | Tinted tag chips in export                                             |
+| `../packages/element-model/src/accent-edge.ts`                      | `resolvedAccentEdge` takes the tab's map                               |
+| `../packages/element-model/src/svg-render-card.ts`                  | Tinted tag chips in export                                             |
 | `../packages/workbench/src/components/canvas/TagColoursContext.tsx` | The active tab's map, for the canvas                                   |
 | `apps/live/hooks/editor/useTagColourSetter.ts`                      | `setTagColour(tag, colour \| null)`: one history step on the tab       |
 | `apps/live/components/palette/TagColoursBlock.tsx`                  | The Card section's Tag Colours rows                                    |

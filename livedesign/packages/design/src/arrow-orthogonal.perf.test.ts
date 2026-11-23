@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { withFacingBends } from './arrow-orthogonal';
+import { withFacingBends } from '@liveworkspace/element-model/arrow-orthogonal';
 import type { Element } from './index';
 
 // docs/specs/008-canvas/layout-cleanup.md "Angled lines bend twice": an agent's board of thousands of facing arrows is

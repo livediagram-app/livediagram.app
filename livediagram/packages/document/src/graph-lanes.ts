@@ -13,7 +13,7 @@ import {
   type GraphLook,
 } from './graph-authoring';
 import { LABEL_FONT_PX } from '@liveworkspace/model-core/label-font';
-import { reanchorArrow, type Pt } from './auto-layout-shared';
+import { reanchorArrow, type Pt } from '@liveworkspace/element-model/auto-layout-shared';
 import { BRANCH_CLEAR } from './graph-branches';
 import { labelWidth } from './graph-look-labels';
 import { isBoxed, type BoxedElement, type Element } from './index';

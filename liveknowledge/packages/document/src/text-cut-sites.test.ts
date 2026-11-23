@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CARD_TAG_MAX, clampCardTag } from './card';
-import { SANKEY_NAME_MAX, cleanSankeyName } from './sankey-model';
+import { CARD_TAG_MAX, clampCardTag } from '@liveworkspace/element-model/card';
+import { SANKEY_NAME_MAX, cleanSankeyName } from '@liveworkspace/element-model/sankey-model';
 import { pageRenamed } from './pages-edits';
 import { PAGE_NAME_MAX, pagesOf } from './page';
 

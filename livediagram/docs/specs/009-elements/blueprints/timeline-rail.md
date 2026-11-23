@@ -11,10 +11,10 @@ Scope, by file:
 | File                                                                  | Role                                                                                     |
 | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | `packages/document/src/shape-kind.ts`                                 | `ShapeKind` includes `'timeline-rail'`                                                   |
-| `packages/document/src/concept.ts`                                    | `ConceptShape` includes it; `CONCEPT_ROWS['timeline-rail']`; `conceptDrawsNotes` is true |
-| `packages/document/src/concept-timeline.ts`                           | `timelineLayout(w, h, n)`: the pure layout the face and the export share                 |
-| `packages/document/src/svg-render-timeline.ts`                        | `svgTimeline`: the headless render                                                       |
-| `packages/document/src/svg-render-concept.ts`                         | Dispatches a Timeline to `svgTimeline`                                                   |
+| `../packages/element-model/src/concept.ts`                            | `ConceptShape` includes it; `CONCEPT_ROWS['timeline-rail']`; `conceptDrawsNotes` is true |
+| `../packages/element-model/src/concept-timeline.ts`                   | `timelineLayout(w, h, n)`: the pure layout the face and the export share                 |
+| `../packages/element-model/src/svg-render-timeline.ts`                | `svgTimeline`: the headless render                                                       |
+| `../packages/element-model/src/svg-render-concept.ts`                 | Dispatches a Timeline to `svgTimeline`                                                   |
 | `packages/document/src/shape-factory.ts`                              | `SHAPE_DEFAULT_SIZE['timeline-rail']` (720 × 240); `createShape` starting milestones     |
 | `packages/document/src/element-normalise.ts`                          | `normaliseConcept`, `railToTimeline`: point fields into milestones                       |
 | `packages/document/src/element-types.ts`                              | `ShapeElement.railCount`, `railLabels`: read once, never written                         |
@@ -68,7 +68,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/concept-timeline.ts
+// ../packages/element-model/src/concept-timeline.ts
 export type TimelineMilestone = {
   dot: { x: number; y: number };
   stem: { y1: number; y2: number };
@@ -86,7 +86,7 @@ export type TimelineLayout = {
 };
 export function timelineLayout(w: number, h: number, n: number): TimelineLayout;
 
-// packages/document/src/svg-render-timeline.ts
+// ../packages/element-model/src/svg-render-timeline.ts
 export function svgTimeline(
   el: Shape,
   rows: readonly ConceptRow[],

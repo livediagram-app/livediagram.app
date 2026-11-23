@@ -5,8 +5,8 @@
 import type { ShapeElement } from './element-types';
 import { mapLayout, pinLabelAnchor, type MapColours } from './map-layout';
 import { providedMapGeometry, type MapGeometry } from './map-model';
-import { r2, xmlEscape } from './svg-render-primitives';
-import { svgFontFamilyAttr } from './svg-render-labels';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
+import { svgFontFamilyAttr } from '@liveworkspace/element-model/svg-render-labels';
 
 // The placeholder's opacity while no geometry is provided (D198).
 export const MAP_PLACEHOLDER_OPACITY = 0.6;

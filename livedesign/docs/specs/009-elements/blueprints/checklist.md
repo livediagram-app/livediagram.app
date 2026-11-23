@@ -9,7 +9,7 @@ Scope, by file:
 
 | File                                                            | Role                                                                                                        |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `packages/design/src/data-shapes.ts`                            | `ChecklistItem`, `CHECKLIST_MAX_ITEMS`, `CHECKLIST_MAX_TEXT`, `CHECKLIST_DEFAULT_ITEMS`, `isChecklistShape` |
+| `../packages/element-model/src/data-shapes.ts`                  | `ChecklistItem`, `CHECKLIST_MAX_ITEMS`, `CHECKLIST_MAX_TEXT`, `CHECKLIST_DEFAULT_ITEMS`, `isChecklistShape` |
 | `packages/design/src/shape-factory.ts`                          | Size 240 × 180; seeds the three rows                                                                        |
 | `packages/design/src/validate.ts`                               | Row count, row text and `done` type checks                                                                  |
 | `packages/design/src/element-deltas.ts`                         | The `check` delta, `checklistDeltaFor`, `keepLocalTicks`, `mergeIncomingElement`                            |

@@ -9,7 +9,7 @@ Scope, by file:
 
 | File                                                                           | Role                                                                                        |
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `packages/document/src/image-credit.ts`                                        | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`                               |
+| `../packages/model-core/src/image-credit.ts`                                   | `ImageCredit`, its two limits, `isCreditUrl`, `isImageCredit`                               |
 | `packages/document/src/element-types.ts`                                       | `ImageElement.credit`                                                                       |
 | `packages/document/src/validate.ts`                                            | Image branch calls `isImageCredit` on `credit`                                              |
 | `apps/editor/lib/upload-image.ts`                                              | `PickedImage`: what every picker tab hands back                                             |

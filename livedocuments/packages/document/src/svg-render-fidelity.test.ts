@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { createShape, createText } from './factories';
-import { wrapLabel } from './svg-render-primitives';
+import { wrapLabel } from '@liveworkspace/element-model/svg-render-primitives';
 import type { Tab } from './index';
 
 // Faces export the way the canvas draws them (docs/specs/020-import-export/export-fidelity.md).

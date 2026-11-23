@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { graphFromMermaid, layoutGraph, type GraphInput } from './graph-input';
-import { anchorPrimarySide } from './anchors';
+import { anchorPrimarySide } from '@liveworkspace/element-model/anchors';
 import type { ArrowElement, BoxedElement, Element } from './index';
 
 // A shared end in swimlanes (docs/specs/015-api/mcp-server.md §4.7 "Lanes stay compact and their decisions branch"):

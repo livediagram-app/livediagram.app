@@ -18,10 +18,10 @@ import {
   inkOn,
   type CanvasSurface,
 } from './colors';
-import { clampShadow, type ElementShadow } from './shadow';
-import { isHexColour } from './standard-colours';
+import { clampShadow, type ElementShadow } from '@liveworkspace/element-model/shadow';
+import { isHexColour } from '@liveworkspace/element-model/standard-colours';
 import { mixHex } from './svg-render-face-kit';
-import { shapeColorPresets } from './theme-presets';
+import { shapeColorPresets } from '@liveworkspace/element-model/theme-presets';
 import type { ThemeDefinition } from './themes';
 
 // The slot contents that take a style: the Utilities.

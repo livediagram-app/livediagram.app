@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './factories';
 import type { BoxedElement } from './index';
-import { elementDisplayLabel } from './element-display-label';
+import { elementDisplayLabel } from '@liveworkspace/element-model/element-display-label';
 
 // Shared by the Collaborate Panel and the api's collaboration index
 // (docs/specs/013-workspace/inbox.md §2.1), so a change here changes what BOTH surfaces call a row.

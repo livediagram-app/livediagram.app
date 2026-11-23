@@ -13,7 +13,7 @@ import {
   type EstimateScale,
 } from '@livediagram/document';
 import { Glyph, GlyphDisc } from '@livediagram/ui';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, QA_ACCENT_INK, stopPointer } from '../qa/qa-parts';
 

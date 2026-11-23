@@ -8,11 +8,11 @@ Scope, by file:
 
 | File                                                                          | Role                                                                                                             |
 | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/project/src/quick-swatches.ts`                                      | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
+| `../packages/element-model/src/quick-swatches.ts`                             | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
 | `packages/project/src/colors.ts`                                              | `unpaintedShapeInk(surface)`: the theme default on the Default scheme                                            |
 | `packages/project/src/element-types.ts`, `arrow-types.ts`                     | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
 | `packages/project/src/validate.ts`                                            | Rejects a swatch field that is not a slot                                                                        |
-| `packages/project/src/quick-swatch-rederive.ts`                               | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
+| `../packages/element-model/src/quick-swatch-rederive.ts`                      | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
 | `packages/project/src/theme-graph.ts`                                         | The theme walks call the re-derive last                                                                          |
 | `apps/editor/lib/style-presets.ts`, `apps/editor/lib/reset-colours.ts`        | Hand-set colour, presets and resets clear the matching binding                                                   |
 | `apps/editor/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts` | Resets clear both bindings                                                                                       |

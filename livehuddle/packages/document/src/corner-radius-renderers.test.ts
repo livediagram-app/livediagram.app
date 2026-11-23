@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from './index';
-import { borderOf } from './svg-render-border';
+import { borderOf } from '@liveworkspace/element-model/svg-render-border';
 import { renderElementsToSvg } from './svg-render';
 
 // docs/specs/008-canvas/corner-radius.md: the export draws a corner by the one rule, so a small rounded box stays

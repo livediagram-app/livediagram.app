@@ -13,7 +13,7 @@ import {
   sketchSeed,
   sketchStrokes,
   type Pt,
-} from './sketch';
+} from '@liveworkspace/element-model/sketch';
 
 // docs/specs/008-canvas/finish.md "Sketch", blueprint docs/specs/008-canvas/blueprints/finish.md
 const numbersOf = (d: string) => (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);

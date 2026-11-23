@@ -12,11 +12,11 @@ Scope, by file:
 | `packages/document/src/element-types.ts`                                | `PathElement`, `PathNode`, `PathHandleMode`, `PathPoint`                                                                          |
 | `packages/document/src/element-union.ts`                                | `PathElement` joins `BoxedElement`, re-exported from `index.ts`                                                                   |
 | `../packages/element-model/src/path-geometry.ts`                        | Pure curve maths: segments, `d`, bounds, split, bend, smooth, nearest                                                             |
-| `packages/document/src/path-element.ts`                                 | Element ⇄ anchors: `pathAnchors`, `pathWorldAnchors`, `pathGeometry`, `createPath`, `reshapePath`, `continuedPath`, `reversePath` |
+| `../packages/element-model/src/path-element.ts`                         | Element ⇄ anchors: `pathAnchors`, `pathWorldAnchors`, `pathGeometry`, `createPath`, `reshapePath`, `continuedPath`, `reversePath` |
 | `packages/document/src/validate.ts`                                     | `'path'` in `ELEMENT_TYPES`; node, handle, mode and count checks                                                                  |
 | `packages/document/src/colors.ts`                                       | Padding, default stroke and fill, border support for `path`                                                                       |
 | `packages/document/src/element-kind-label.ts`                           | `Path`                                                                                                                            |
-| `packages/document/src/whiteboard.ts`                                   | Ink projection for `path`                                                                                                         |
+| `../packages/element-model/src/whiteboard.ts`                           | Ink projection for `path`                                                                                                         |
 | `packages/document/src/whiteboard-stroke.ts`                            | `pathTouchesBrush`: the eraser touches a path by its line or its fill                                                             |
 | `packages/document/src/svg-render*.ts`                                  | `svgPathElementShape`: the export twin of the canvas path                                                                         |
 | `apps/api/src/openapi/schemas.generated.ts`                             | Regenerated: `PathElement` in `BoxedElement`                                                                                      |

@@ -29,7 +29,7 @@ import type {
 } from '@livedesign/design';
 import { useContext, useMemo, useState } from 'react';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
-import { elementRunDefaults } from './label-style';
+import { elementRunDefaults } from '@liveworkspace/workbench/components/label-editor/label-style';
 import { HoverCard } from '@livedesign/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';

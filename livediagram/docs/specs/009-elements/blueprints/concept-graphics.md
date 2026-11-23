@@ -4,10 +4,10 @@ Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.m
 
 | File                                                                                                   | Role                                                                         |
 | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| `packages/document/src/concept.ts`                                                                     | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
-| `packages/document/src/web-components.ts`                                                              | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
-| `packages/document/src/svg-render-concept.ts`                                                          | `svgConcept`: the headless body (rest frame)                                 |
-| `packages/document/src/concept-timeline.ts`, `svg-render-timeline.ts`                                  | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
+| `../packages/element-model/src/concept.ts`                                                             | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
+| `../packages/element-model/src/web-components.ts`                                                      | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
+| `../packages/element-model/src/svg-render-concept.ts`                                                  | `svgConcept`: the headless body (rest frame)                                 |
+| `../packages/element-model/src/concept-timeline.ts`, `svg-render-timeline.ts`                          | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
 | `../packages/workbench/src/components/canvas/ConceptTimelineBody.tsx`, `concept-row-layer.tsx`         | The Timeline's face body; `ConceptRowLayer`, one animated row layer          |
 | `packages/document/src/element-normalise.ts`                                                           | `railToTimeline`: a saved timeline rail's points into milestones             |
 | `packages/document/src/shape-variants.ts`                                                              | `pyramid` + `funnel` / `inverted` variants                                   |

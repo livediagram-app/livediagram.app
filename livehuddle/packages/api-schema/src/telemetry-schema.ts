@@ -17,7 +17,7 @@
 
 import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
-import { isTimingType } from './timing-telemetry';
+import { isTimingType } from '@liveworkspace/api-schema/timing-telemetry';
 import { telemetryEventCheck } from '@liveworkspace/telemetry';
 
 // The wire bound on `type`, the fixed dashboard windows and the summary shapes are the liveworkspace

@@ -4,10 +4,13 @@
 // every lifeline. Pure: a parsed sequence in, elements out.
 
 import { createArrow, createShape, createSticky, createText } from './factories';
-import { glyphWidth } from './glyph-width';
+import { glyphWidth } from '@liveworkspace/element-model/glyph-width';
 import { arrowLabelFontSize } from '@liveworkspace/model-core/arrow-label';
 import { wrapBalanced } from '@liveworkspace/model-core/arrow-label-wrap';
-import { LABEL_LINE_HEIGHT, labelMeasure } from './svg-render-primitives';
+import {
+  LABEL_LINE_HEIGHT,
+  labelMeasure,
+} from '@liveworkspace/element-model/svg-render-primitives';
 import { GRAPH_MUTED, withHeaderAndKey } from './graph-header';
 import type { SequenceDiagram, SequenceItem, SequenceMessageKind } from './mermaid-sequence';
 import type { ArrowheadShape, Element } from './index';

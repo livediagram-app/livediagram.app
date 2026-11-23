@@ -106,7 +106,7 @@ ColourPicker({
 - `Tab.customColours?: string[]` (`packages/document/src/index.ts`), read with `customColoursOf(tab)` (lower-case
   `#rrggbb`, deduped, anything else dropped, at most `CUSTOM_COLOURS_MAX` = 12) and written with
   `withCustomColour(tab, hex)` (moves `hex` to the front, caps; returns the tab itself when nothing changes), both in
-  `packages/document/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.
+  `../packages/element-model/src/custom-colours.ts`. Synced as a `tab-meta` field like any other.
 - `addCustomColour(hex)` on the editor state (`hooks/editor/useAddCustomColour.ts`): `tickTabs` on the active tab
   (no history step), a no-op without edit rights or when nothing changes. `ColourPicker` calls it, lower-cased, on the
   custom editor's **Use**, before `onPick`; outside an `EditorContext` there is none.

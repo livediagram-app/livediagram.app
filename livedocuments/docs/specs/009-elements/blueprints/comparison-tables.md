@@ -8,7 +8,7 @@ Scope, by file:
 
 | File                                                                                        | Role                                                                                                               |
 | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/table-marks.ts`                                                      | `TableMark`, `tableCellMark`, `TABLE_MARK_TEXT`, `tableMarkColour`, `tableHighlightColours`, `withHighlightColumn` |
+| `../packages/element-model/src/table-marks.ts`                                              | `TableMark`, `tableCellMark`, `TABLE_MARK_TEXT`, `tableMarkColour`, `tableHighlightColours`, `withHighlightColumn` |
 | `packages/document/src/table.ts`                                                            | Insert, remove and move keep `highlightColumn` in step                                                             |
 | `packages/document/src/element-types.ts`, `element-fields.ts`                               | `TableElement.highlightColumn`                                                                                     |
 | `packages/document/src/validate.ts`                                                         | `highlightColumn` a whole number within the columns                                                                |

@@ -22,7 +22,7 @@ import {
 } from '@livedesign/design';
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
-import { sameValue } from './equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { invalidResult } from './rejections';
 import { currentElements, refsOf, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';

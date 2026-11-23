@@ -1,7 +1,7 @@
 // A BPMN mark in an exported image (docs/specs/009-elements/bpmn.md "How it looks"): the same parts the canvas's
 // BpmnMarkLayer draws (bpmnMarkParts), at element coordinates, so a PNG or SVG matches the canvas.
 import { bpmnMarkParts, bpmnSymbolOf, type BpmnMarkPart } from './bpmn';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 
 function paintAttrs(part: BpmnMarkPart, fill: string, stroke: string): string {
   const width = ` stroke-width="${r2(part.width)}" stroke-linecap="round" stroke-linejoin="round"`;

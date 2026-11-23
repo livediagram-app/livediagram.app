@@ -3,7 +3,7 @@
 // One pattern description, which the canvas (RoomFloorPattern) and the export (roomFloorSvg) both paint, its seams
 // fixed in canvas px whatever the room's size. Pure: no React, no DOM.
 
-import { xmlEscape } from './svg-render-primitives';
+import { xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 
 export const ROOM_FLOORS = ['boards', 'tiles', 'carpet', 'stone', 'concrete'] as const;
 export type RoomFloor = (typeof ROOM_FLOORS)[number];

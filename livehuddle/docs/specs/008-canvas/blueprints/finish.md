@@ -74,7 +74,7 @@ export function finishHatches(element: Element, fill: string, backdrop?: boolean
 // finishHatchesKind, not a backdrop, fill not transparent
 ```
 
-### `packages/document/src/sketch.ts` (pure geometry, no DOM)
+### `../packages/element-model/src/sketch.ts` (pure geometry, no DOM)
 
 ```ts
 type Pt = { x: number; y: number };
@@ -114,7 +114,7 @@ export function pathEndTangents(
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
 
-### `packages/document/src/marker.ts` (pure geometry, no DOM)
+### `../packages/element-model/src/marker.ts` (pure geometry, no DOM)
 
 Marker draws the outlines `sketch.ts` builds (`SketchOutline`, exported for it, with `sketchPoint` for path text),
 with its own pen. Seeded from `sketchSeed(id)` through `sketchRandom`, each function on its own stream

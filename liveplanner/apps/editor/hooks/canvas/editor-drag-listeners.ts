@@ -17,7 +17,7 @@ import {
   resolveBoxedResize,
   translateBoxedSelection,
 } from './boxed-drag-resolve';
-import { measureDrawnText } from '@/components/canvas/text-hug-measure';
+import { measureDrawnText } from '@liveworkspace/workbench/components/label-editor/plain-text-hug-measure';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { dragWaitsToEngage, gestureOfDrag } from './drag-gesture';

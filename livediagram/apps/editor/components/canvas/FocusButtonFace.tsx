@@ -10,7 +10,7 @@
 // not send the room somewhere.
 
 import { keycapEdge } from '@liveworkspace/workbench/components/canvas/paper-kit';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { Glyph } from '@livediagram/ui';
 
 // A target: the reticle you put over the thing you want looked at. Not an eye

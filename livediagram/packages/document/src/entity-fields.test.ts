@@ -19,17 +19,17 @@ import {
   relationshipHeads,
   removedFieldRemap,
   withEntityFields,
-} from './entity-fields';
+} from '@liveworkspace/element-model/entity-fields';
 import {
   ENTITY_KEY_GUTTER_PX,
   ENTITY_KEY_PAIR_GUTTER_PX,
   entityFieldPoint,
   entityPartAt,
   entityRowTop,
-} from './entity-geometry';
-import { endpointPosition } from './geometry';
+} from '@liveworkspace/model-core/entity-geometry';
+import { endpointPosition } from '@liveworkspace/element-model/geometry';
 import type { Element } from './index';
-import { svgEntityRows } from './svg-render-entity';
+import { svgEntityRows } from '@liveworkspace/element-model/svg-render-entity';
 import { elementValidationIssue } from './validate';
 
 // docs/specs/009-elements/entity.md: keys, the box following its fields, field-to-field relationships and

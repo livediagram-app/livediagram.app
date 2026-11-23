@@ -8,7 +8,7 @@ Scope, by file:
 
 | File                                                              | Role                                                                                          |
 | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `packages/document/src/data-shapes.ts`                            | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
+| `../packages/element-model/src/data-shapes.ts`                    | `CODE_LANGUAGES`, `CodeLanguage`, `CODE_MAX_LENGTH`, `isCodeBlockShape`                       |
 | `../packages/model-core/src/code-themes.ts`                       | `CodeThemeId`, `CodeTheme`, `CODE_THEMES`, `DEFAULT_CODE_THEME`, `codeTheme`, `isCodeThemeId` |
 | `packages/document/src/element-types.ts`                          | `code`, `codeLanguage`, `codeTheme`, `codeWrap`                                               |
 | `packages/document/src/shape-factory.ts`                          | Size 320 × 180; seeds `codeLanguage: 'plain'`                                                 |

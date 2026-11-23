@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from './index';
-import { borderOf } from './svg-render-border';
+import { borderOf } from '@liveworkspace/element-model/svg-render-border';
 import { renderElementsToSvg } from './svg-render';
 import { shapeHitOutline } from './shape-hit';
 

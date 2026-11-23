@@ -27,7 +27,7 @@ import { fitMultilineFontPx } from '@liveworkspace/workbench/components/label-ed
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 import type { TextHugLabel } from './useTextHug';
 import type { TextAnimView } from './useTextAnimation';
-import { wordmarkTextStyle } from './label-style';
+import { wordmarkTextStyle } from '@liveworkspace/workbench/components/label-editor/label-style';
 import { WordmarkArcLabel } from '@liveworkspace/workbench/components/canvas/WordmarkArcLabel';
 
 export function renderLabel(

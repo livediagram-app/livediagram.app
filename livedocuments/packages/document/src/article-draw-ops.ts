@@ -3,7 +3,7 @@
 // canvas coordinates; and those operations as SVG markup. The editor reads them off its live layout
 // (apps/editor/lib/article/article-snapshot.ts); a preview without a browser estimates them (article-layout-estimate.ts).
 // Pure.
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 
 export type ArticleDrawOp =
   | {

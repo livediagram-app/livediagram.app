@@ -7,16 +7,16 @@ Scope, by file:
 
 | File                                                                                  | Role                                                                                                                  |
 | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `packages/design/src/sankey-model.ts`                                                 | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits          |
-| `packages/design/src/sankey-layout.ts`                                                | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`                       |
-| `packages/design/src/sankey-frame.ts`                                                 | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                                    |
+| `../packages/element-model/src/sankey-model.ts`                                       | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits          |
+| `../packages/element-model/src/sankey-layout.ts`                                      | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`                       |
+| `../packages/element-model/src/sankey-frame.ts`                                       | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                                    |
 | `../packages/element-model/src/sankey-text.ts`                                        | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                            |
-| `packages/design/src/svg-render-sankey.ts`                                            | `svgSankey`: the export                                                                                               |
+| `../packages/element-model/src/svg-render-sankey.ts`                                  | `svgSankey`: the export                                                                                               |
 | `packages/design/src/shape-kind.ts`, `validate.ts`                                    | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                           |
 | `packages/design/src/validate-shape.ts`                                               | Field checks                                                                                                          |
 | `packages/design/src/element-normalise.ts`                                            | `normaliseSankey`: agent input                                                                                        |
 | `packages/design/src/shape-factory.ts`                                                | Default size and starter flows                                                                                        |
-| `packages/design/src/data-shapes.ts`                                                  | `isSelfDrawingShape` membership, `takesChartPalette`                                                                  |
+| `../packages/element-model/src/data-shapes.ts`                                        | `isSelfDrawingShape` membership, `takesChartPalette`                                                                  |
 | `packages/design/src/animation-membership.ts`                                         | Sankey owns its animation set                                                                                         |
 | `packages/design/src/colors.ts`                                                       | `SELF_PAINTING_SHAPES` member                                                                                         |
 | `apps/live/components/canvas/SankeyView.tsx`                                          | Canvas view (lazy chunk), hover, animations                                                                           |

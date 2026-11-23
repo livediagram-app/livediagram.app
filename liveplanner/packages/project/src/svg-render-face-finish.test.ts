@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { faceFinishOf, finishFaceCornerPx, finishFaceShadows } from './finish';
+import {
+  faceFinishOf,
+  finishFaceCornerPx,
+  finishFaceShadows,
+} from '@liveworkspace/element-model/finish';
 import { faceAttrs, isPillRect } from '@liveworkspace/model-core/face-finish';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';

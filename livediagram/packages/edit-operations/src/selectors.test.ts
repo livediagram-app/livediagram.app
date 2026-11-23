@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { EditRejection } from '@livediagram/api-schema';
 import type { Element, Tab } from '@livediagram/document';
-import { reachableFrom } from './graph-walk';
+import { reachableFrom } from '@liveworkspace/edit-operations/graph-walk';
 import { refused } from './fixtures/outcomes';
 import { elementOf, run } from './fixtures/run';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';

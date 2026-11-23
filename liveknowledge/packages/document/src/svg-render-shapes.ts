@@ -5,24 +5,34 @@
 // (svg-shape-fit.ts) with the same fit the canvas uses, so they match it at any aspect ratio
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from '@liveworkspace/model-core/border-style';
-import { finishBorderStroke, type Finish } from './finish';
+import { finishBorderStroke, type Finish } from '@liveworkspace/element-model/finish';
 import type { BoxedElement, FreehandElement } from './index';
-import { graphemes, r2, xmlEscape } from './svg-render-primitives';
+import { graphemes, r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { shapeRoleAttrs as roleAttrs } from '@liveworkspace/element-model/svg-shape-role';
-import { boxFit, fitShapePart } from './svg-shape-fit';
-import { catmullRomToBezierPath } from './polyline';
-import { freehandPenStroke, isPenStroke, penStrokePath } from './pen-stroke';
-import { freehandCanvasPoints, freehandStrokePoints } from './freehand-points';
-import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
+import { boxFit, fitShapePart } from '@liveworkspace/element-model/svg-shape-fit';
+import { catmullRomToBezierPath } from '@liveworkspace/model-core/polyline';
+import {
+  freehandPenStroke,
+  isPenStroke,
+  penStrokePath,
+} from '@liveworkspace/element-model/pen-stroke';
+import {
+  freehandCanvasPoints,
+  freehandStrokePoints,
+} from '@liveworkspace/element-model/freehand-points';
+import {
+  isPolygonOutline,
+  polygonStrokePx,
+} from '@liveworkspace/element-model/drawn-outline-finish';
 import { codeTheme } from '@liveworkspace/model-core/code-themes';
-import { chartRamp } from './chart-palettes';
+import { chartRamp } from '@liveworkspace/element-model/chart-palettes';
 import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import {
   BROWSER_CHROME,
   browserChromeLayout,
   shapeGeometry,
   type ShapePart,
-} from './shape-geometry';
+} from '@liveworkspace/element-model/shape-geometry';
 
 // The kinds this module draws: every kind in the geometry table except the
 // diamond, which svgBoxed draws as a native polygon at element coordinates

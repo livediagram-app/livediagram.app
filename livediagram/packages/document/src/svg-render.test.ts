@@ -9,12 +9,12 @@ import type {
   TableElement,
 } from './index';
 import { createPinnedArrow, createShape } from './factories';
-import { tableHeaderColours } from './table-header-colours';
-import { freehandPenStroke, penStrokePath } from './pen-stroke';
-import { r2 } from './svg-render-primitives';
+import { tableHeaderColours } from '@liveworkspace/element-model/table-header-colours';
+import { freehandPenStroke, penStrokePath } from '@liveworkspace/element-model/pen-stroke';
+import { r2 } from '@liveworkspace/element-model/svg-render-primitives';
 import { contentBounds, renderElementsToSvg } from './svg-render';
-import { arrowLabelFontStack } from './svg-render-arrows';
-import { arrowLabelPass, layoutArrowLabels } from './arrow-label-layout';
+import { arrowLabelFontStack } from '@liveworkspace/element-model/svg-render-arrows';
+import { arrowLabelPass, layoutArrowLabels } from '@liveworkspace/element-model/arrow-label-layout';
 import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { DEFAULT_BACKGROUND_COLOR as PAPER } from '@liveworkspace/model-core/canvas-colors';
 

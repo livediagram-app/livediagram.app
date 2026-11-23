@@ -8,11 +8,15 @@ import {
   markerFrameInk,
   sketchFacePart,
   type FacePartPaint,
-} from './marker-face';
-import { outlineOfEllipse, outlineOfPath, outlineOfRect } from './sketch';
+} from '@liveworkspace/element-model/marker-face';
+import {
+  outlineOfEllipse,
+  outlineOfPath,
+  outlineOfRect,
+} from '@liveworkspace/element-model/sketch';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';
-import { svgMarkerFace } from './svg-render-face-finish';
+import { svgMarkerFace } from '@liveworkspace/element-model/svg-render-face-finish';
 
 // docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes".
 const face = { width: 400, height: 300 };

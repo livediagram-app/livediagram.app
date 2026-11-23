@@ -13,7 +13,7 @@ import {
   type WireframeDeviceClass,
 } from './wireframe-device';
 import { canvasSurface } from './colors';
-import { isFinish } from './finish';
+import { isFinish } from '@liveworkspace/element-model/finish';
 import { getBuiltInTheme } from './themes';
 import {
   wireframeFrameTheme,

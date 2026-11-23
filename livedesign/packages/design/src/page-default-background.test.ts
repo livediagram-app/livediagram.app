@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { contrastRatio } from './colors';
 import { getBuiltInTheme, THEMES } from './themes';
-import { PEN_INK } from './pen-colours';
+import { PEN_INK } from '@liveworkspace/element-model/pen-colours';
 import { defaultPageBackground, themeAccent } from './page-default-background';
 
 // docs/specs/007-editor/pages-mode.md "A new page's background".

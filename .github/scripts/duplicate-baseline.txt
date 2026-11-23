@@ -123,7 +123,6 @@ livedocuments/apps/editor/components/canvas/useCanvasToolPanels.tsx	liveknowledg
 livedocuments/apps/editor/components/dialogs/ConversionHandoff.tsx	liveknowledge/apps/editor/components/dialogs/ConversionHandoff.tsx
 livedocuments/apps/editor/components/dialogs/SharePasswordGate.tsx	liveknowledge/apps/editor/components/dialogs/SharePasswordGate.tsx
 livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveknowledge/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
-livedocuments/apps/editor/components/palette/ArticleDockSlot.tsx	liveknowledge/apps/editor/components/palette/ArticleDockSlot.tsx
 livedocuments/apps/editor/components/palette/CategoryBar.tsx	liveknowledge/apps/editor/components/palette/CategoryBar.tsx
 livedocuments/apps/editor/components/palette/PaletteToolRows.tsx	liveknowledge/apps/editor/components/palette/PaletteToolRows.tsx
 livedocuments/apps/editor/components/palette/bar-categories.tsx	liveknowledge/apps/editor/components/palette/bar-categories.tsx

@@ -19,7 +19,7 @@
 // back, which is why `shared` exists — see below.
 
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { spinFrameDelays, spinReel, type PickerCandidate } from '@/lib/picker';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { ReelWindow } from '@liveworkspace/workbench/components/canvas/paper-kit';

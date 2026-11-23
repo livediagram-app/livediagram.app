@@ -8,12 +8,12 @@ Scope, by file:
 
 | File                                                                             | Role                                                                                                             |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `packages/design/src/quick-swatches.ts`                                          | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
+| `../packages/element-model/src/quick-swatches.ts`                                | The seven swatches per role and theme, slot ids, hue names, slot lookup                                          |
 | `packages/design/src/colors.ts`                                                  | `unpaintedShapeInk(surface)`: the theme default on the Default scheme; `supportsColours` admits `text`           |
 | `packages/design/src/element-types.ts`, `arrow-types.ts`                         | `strokeSwatch` / `fillSwatch` on `ShapeElement`, `strokeSwatch` on `ArrowElement`, `textSwatch` on `TextElement` |
 | `packages/design/src/validate.ts`                                                | Rejects a swatch field that is not a slot                                                                        |
-| `packages/design/src/quick-swatch-rederive.ts`                                   | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
-| `packages/design/src/theme-graph.ts`                                             | The four theme walks call the re-derive last                                                                     |
+| `../packages/element-model/src/quick-swatch-rederive.ts`                         | `rederiveQuickSwatches(el, theme)`: a bound colour re-read from its slot                                         |
+| `../packages/element-model/src/theme-graph.ts`                                   | The four theme walks call the re-derive last                                                                     |
 | `apps/live/lib/style-presets.ts`                                                 | Hand-set colour and presets clear the matching binding                                                           |
 | `apps/live/hooks/canvas/useColorStyleSetters.ts`, `useShapeStyleSetters.ts`      | Resets clear both bindings                                                                                       |
 | `apps/live/lib/format-painter.ts`, `format-config.ts`                            | The painter carries a binding only together with its colour                                                      |

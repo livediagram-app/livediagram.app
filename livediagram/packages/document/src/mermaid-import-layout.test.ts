@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { graphFromMermaid, layoutGraph } from './graph-input';
-import { arrowPolyline, pathPassesThrough } from './arrow-path-hits';
-import { elementIndexFor } from './geometry';
+import { arrowPolyline, pathPassesThrough } from '@liveworkspace/element-model/arrow-path-hits';
+import { elementIndexFor } from '@liveworkspace/element-model/geometry';
 import { isBoxed, type ArrowElement, type BoxedElement, type Element } from './index';
 
 // docs/specs/020-import-export/mermaid.md "Layout": the editor's import lays Mermaid out as an agent's Mermaid is

@@ -22,7 +22,7 @@ Derived from [Finish](../finish.md). Defaults in [DEFAULTS.md](DEFAULTS.md) (D-f
 
 ## Interfaces and contracts
 
-### `packages/document/src/finish.ts`
+### `../packages/element-model/src/finish.ts`
 
 ```ts
 export type Finish = 'flexible' | 'professional' | 'sketch' | 'marker';
@@ -74,7 +74,7 @@ export function finishHatches(element: Element, fill: string, backdrop?: boolean
 // finishHatchesKind, not a backdrop, fill not transparent
 ```
 
-### `packages/document/src/sketch.ts` (pure geometry, no DOM)
+### `../packages/element-model/src/sketch.ts` (pure geometry, no DOM)
 
 ```ts
 type Pt = { x: number; y: number };
@@ -114,7 +114,7 @@ export function pathEndTangents(
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
 
-### `packages/document/src/marker.ts` (pure geometry, no DOM)
+### `../packages/element-model/src/marker.ts` (pure geometry, no DOM)
 
 Marker draws the outlines `sketch.ts` builds (`SketchOutline`, exported for it, with `sketchPoint` for path text),
 with its own pen. Seeded from `sketchSeed(id)` through `sketchRandom`, each function on its own stream
@@ -166,7 +166,7 @@ len * 0.04)`; the bow is `±min(len * MARKER_BOW_SHARE, MARKER_BOW_MAX_PX)`. Emi
   span too short for a stroke draws a dab. An area under 2 px across draws nothing (`nibPx` 0).
 - Every output is deterministic for the same input and seed; numbers are written in tenths (`sketchPoint`).
 
-### `packages/document/src/marker-element.ts` and `hand-drawn.ts`
+### `../packages/element-model/src/marker-element.ts` and `hand-drawn.ts`
 
 - `markerElementPaint(el, fill, backdrop)` returns `{ drawing: MarkerDrawing, strokePx, dash }` or null:
   - `MarkerDrawing = { pen: 'marker'; ink: MarkerLayers; details: string; solid: string; streaks: MarkerLayers;
@@ -189,7 +189,7 @@ nibPx: number }`.
 heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFill` false, `inkOpacity` 1, one
   pass while `flowing`; Marker: `inkOpacity` `MARKER_INK_OPACITY`). The canvas and the export call only these two.
 
-### `packages/document/src/sketch-element.ts` and `sketch-backdrop.ts`
+### `../packages/element-model/src/sketch-element.ts` and `sketch-backdrop.ts`
 
 - `sketchElement(el, { strokePx, radiusPx, fill, backdrop })` returns the `SketchDrawing` layers (`strokes`,
   `details`, `hatch`, `solid`); `sketchElementPaint(el, finish, fill, backdrop)` resolves stroke, dash and radius as an
@@ -230,7 +230,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - Lettering: `CanvasElementsLayer`, `text-hug-measure` and `useTextStyleSetters` resolve fonts with `elementFontId`.
 - Mind connectors: `deriveArrowViewFrame(arrow, index, finish)` / `arrowViewGeometry(..., finish)` (finish from
   `resolveFinish(el.finish, tabFinish)` in `CanvasElementsLayer` and `previewArrowGeometry`) draw through
-  `finishArrowEnds` (`packages/document/src/mind-connector-route.ts`, blueprint in
+  `finishArrowEnds` (`../packages/element-model/src/mind-connector-route.ts`, blueprint in
   [Mind node](../../009-elements/blueprints/mind-node.md)); a routed frame has no curve, elbow or anchor handles,
   and `beginArrowBend` refuses a routed connector.
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow

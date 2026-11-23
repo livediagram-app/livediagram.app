@@ -1,5 +1,5 @@
 import { getPersonIdentity } from './auth/accounts';
-import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
+import { AccountsUnavailable, type ResolvedApiToken } from '@liveworkspace/auth-client/api-tokens';
 import { handleAuth } from './routes/auth';
 import { resolveApiToken } from './db';
 import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livehuddle/api-schema';

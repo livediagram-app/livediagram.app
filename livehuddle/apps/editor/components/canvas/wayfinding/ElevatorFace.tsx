@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { HoverCard } from '@livehuddle/ui';
 import { WAYFINDING_TONES } from '@livehuddle/document';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { elevatorName, spaceFloors, type WayPoint } from '@/lib/wayfinding';
 import {
   NO_WAYFINDING_STORE,

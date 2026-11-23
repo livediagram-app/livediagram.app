@@ -6,14 +6,14 @@ and the rows menu, and only what differs is written here.
 
 | File                                                                         | Role                                                                                  |
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `packages/document/src/card.ts`                                              | `CardMedia`, bounds, `cardLayout`, `cardTagWidth`, `withCardMedia`, `withCardHeader`  |
+| `../packages/element-model/src/card.ts`                                      | `CardMedia`, bounds, `cardLayout`, `cardTagWidth`, `withCardMedia`, `withCardHeader`  |
 | `packages/document/src/shape-kind.ts`                                        | `'card'` in `ShapeKind` / `SHAPE_KINDS`                                               |
 | `packages/document/src/web-components.ts`                                    | `'card'` in `WebComponentShape`; `tags` in `WebRows`                                  |
 | `packages/document/src/element-types.ts`, `element-fields.ts`                | `cardMedia`, `cardHeader`, `tags`                                                     |
 | `packages/document/src/validate-shape.ts`                                    | Bounds for the three fields                                                           |
 | `packages/document/src/shape-factory.ts`, `component-factories.ts`           | Default size, starting content, `createCalloutCard`                                   |
 | `packages/document/src/colors.ts`                                            | `card` in `RADIUS_SHAPES`; `acceptsInlineIcon` true                                   |
-| `packages/document/src/svg-render-card.ts`                                   | `svgCard`: the headless body                                                          |
+| `../packages/element-model/src/svg-render-card.ts`                           | `svgCard`: the headless body                                                          |
 | `packages/document/src/shape-variants.ts`                                    | `CARD_PRESET_VARIANTS`, `applyShapeVariant`: the card presets, the Callout among them |
 | `apps/editor/components/canvas/web/CardFace.tsx`                             | The canvas face                                                                       |
 | `apps/editor/components/palette/CardMenuSection.tsx`                         | Header Band, Media tiles, Tags rows                                                   |

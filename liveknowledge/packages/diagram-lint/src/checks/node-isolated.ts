@@ -4,7 +4,10 @@
 
 import type { ElementId } from '@liveknowledge/document';
 import { createRingTest } from '@liveworkspace/diagram-lint/ring';
-import { LINT_GRAPH_MIN_CONNECTED, LINT_GRAPH_MIN_SHARE } from '../constants';
+import {
+  LINT_GRAPH_MIN_CONNECTED,
+  LINT_GRAPH_MIN_SHARE,
+} from '@liveworkspace/diagram-lint/constants';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check } from './types';

@@ -1,5 +1,5 @@
 import { getPersonIdentity } from './auth/accounts';
-import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
+import { AccountsUnavailable, type ResolvedApiToken } from '@liveworkspace/auth-client/api-tokens';
 import { handleAuth } from './routes/auth';
 import { reportServerEvent, telemetryEnabled } from './server-telemetry';
 import { resolveApiToken } from './db';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SERVER_EMITTED_EVENT_PAIRS } from './server-emitted-events';
+import { SERVER_EMITTED_EVENT_PAIRS } from '@liveworkspace/api-schema/server-emitted-events';
 import { TELEMETRY_ACTIONS, TELEMETRY_CATEGORIES } from './telemetry-schema';
 
 // The pairs and their matching are @liveworkspace/api-schema's (and tested there); this checks them

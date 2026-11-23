@@ -24,7 +24,11 @@
 
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
-import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
+import {
+  threadResolved,
+  threadWithComment,
+  threadWithoutComment,
+} from '@liveworkspace/element-model/comment-thread';
 import {
   CELL_THREADS_MAX,
   cellThreadsOf,
@@ -35,7 +39,7 @@ import {
   withThreadAt,
   type CellCommentThreads,
 } from './cell-comments';
-import type { ChecklistItem } from './data-shapes';
+import type { ChecklistItem } from '@liveworkspace/element-model/data-shapes';
 import {
   RESPONSES_MAX,
   RESPONSE_VALUE_MAX,

@@ -4,7 +4,7 @@ Derived from [Accent edge](../accent-edge.md). Defaults in [DEFAULTS.md](DEFAULT
 
 | File                                                                | Role                                                                |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/design/src/accent-edge.ts`                                | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
+| `../packages/element-model/src/accent-edge.ts`                      | Vocabulary, `supportsAccentEdge`, geometry, colour, `svgAccentEdge` |
 | `packages/design/src/element-types.ts`                              | `accentEdge`, `accentEdgeColor` on `ShapeElement`                   |
 | `packages/design/src/element-fields.ts`                             | Both fields listed for `shape`                                      |
 | `packages/design/src/svg-render-boxed.ts`                           | Appends `svgAccentEdge` after the box, before the face and label    |

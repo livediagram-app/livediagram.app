@@ -5,7 +5,7 @@ import { createShape, createText, type Element, type Tab } from '@liveplanner/pr
 import { useSelectionEditing } from './useSelectionEditing';
 
 // jsdom lays nothing out.
-vi.mock('@/components/canvas/text-hug-measure', () => ({
+vi.mock('@liveworkspace/workbench/components/label-editor/plain-text-hug-measure', () => ({
   measureDrawnText: () => () => 0,
 }));
 

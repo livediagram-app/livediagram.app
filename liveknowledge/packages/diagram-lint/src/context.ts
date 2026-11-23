@@ -28,7 +28,7 @@ import {
   type Tab,
 } from '@liveknowledge/document';
 import { boxBounds, isLintBox } from './boxes';
-import { LINT_MEASURE_EPOCH } from './constants';
+import { LINT_MEASURE_EPOCH } from '@liveworkspace/diagram-lint/constants';
 
 export type DrawableArrow = {
   arrow: ArrowElement;

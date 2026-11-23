@@ -136,7 +136,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - `ShapeElement.chartValues?: boolean`: the numbers on the marks (Show Values); absent means off.
 - `ShapeElement.chartAxis?: boolean`: the value axis, its tick labels and gridlines (Show Axis); absent means off.
   A `LineSeries` may carry `axis?: 'right'`, its own scale (a second axis); any other value reads as absent. The
-  axes are laid out with the marks, in `chartValueAxis` (`packages/design/src/chart-axis.ts`) for both renderers.
+  axes are laid out with the marks, in `chartValueAxis` (`../packages/element-model/src/chart-axis.ts`) for both renderers.
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories: a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
@@ -147,8 +147,8 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?` and
   `chartVariant?` (`'horizontal' | 'area' | 'scatter' | 'doughnut'`, Chart types above); `chartTypeOf(el)` and
   `chartShapeOf(type)` map between a chart and its type, `chartTypeChange(el, type)` gives the patch that changes it
-  (`packages/design/src/chart-types.ts`), and `pieMarks` / `barMarks` / `lineMarks`
-  (`packages/design/src/chart-marks.ts`) lay out every type's marks for both the canvas views and the exporter, so
+  (`../packages/element-model/src/chart-types.ts`), and `pieMarks` / `barMarks` / `lineMarks`
+  (`../packages/element-model/src/chart-marks.ts`) lay out every type's marks for both the canvas views and the exporter, so
   the two never draw a chart differently. An exported chart's (and Sankey's) text names the theme's font, else the
   export's sans default, never bare: a standalone viewer drew bare text in its serif default.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
@@ -158,7 +158,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
   carries the `lvd-pie-*` animation (CSS in `apps/live/app/canvas-motion.css`,
   reduced-motion-safe), the axes / labels stay still. `element-variant.ts` gives
   them a borderless wrapper. The shared layout `chartFrame` lives in
-  `packages/design/src/chart-frame.ts` (re-exported from `apps/live/lib/chart.ts`,
+  `../packages/element-model/src/chart-frame.ts` (re-exported from `apps/live/lib/chart.ts`,
   which holds `chartAnim`); the frame, readout and legend are drawn by
   `ChartSurface`; hover wiring in `useChartHover` + `ChartReadout`.
 - CSV import (line): `parseCsvLineData` in `apps/live/lib/csv.ts` (quoted-field
@@ -266,7 +266,7 @@ Without a chart-level palette, saying "this chart is greys" would mean opening
 the data editor and setting a colour on every row by hand, and a row added later
 would still come out in the theme's colours.
 
-`chartPalette` (a `ChartPaletteId` from `packages/design/src/chart-palettes.ts`)
+`chartPalette` (a `ChartPaletteId` from `../packages/element-model/src/chart-palettes.ts`)
 slots in as the middle rung: **per-datum colour > the chart's palette > the tab
 theme's > the built-in ramp**. Stored as an id, so it keeps applying as the data
 grows, and it never touches the data, so a slice somebody coloured on purpose

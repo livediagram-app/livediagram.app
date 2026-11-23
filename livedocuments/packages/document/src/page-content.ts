@@ -12,7 +12,7 @@ import {
   type CanvasSurface,
 } from './colors';
 import { duplicateElements } from './duplicate';
-import { endpointPosition } from './geometry';
+import { endpointPosition } from '@liveworkspace/element-model/geometry';
 import {
   pageAt,
   pagesOf,
@@ -26,7 +26,7 @@ import {
 } from './page';
 import { pageImageTone } from './page-image';
 import { TEXT_SCALE_MIN } from './validate';
-import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from './page-ink-rules';
+import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from '@liveworkspace/element-model/page-ink-rules';
 import {
   isBoxed,
   type Element,

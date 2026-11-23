@@ -5,9 +5,9 @@ the note's own tip. Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
 | File                                                                 | Role                                                                |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/pointer-note.ts`                              | Kind guard, tip read / write, leader geometry, tip snapping         |
-| `packages/document/src/attachment.ts`                                | `settleChips` settles a pointer note; `withAttached` carries it     |
-| `packages/document/src/svg-render-pointer-note.ts`                   | Headless body: panel, leader, tip                                   |
+| `../packages/element-model/src/pointer-note.ts`                      | Kind guard, tip read / write, leader geometry, tip snapping         |
+| `../packages/element-model/src/attachment.ts`                        | `settleChips` settles a pointer note; `withAttached` carries it     |
+| `../packages/element-model/src/svg-render-pointer-note.ts`           | Headless body: panel, leader, tip                                   |
 | `../packages/workbench/src/components/canvas/PointerNoteOverlay.tsx` | Canvas face: leader, tip, the tip handle while selected             |
 | `apps/editor/hooks/canvas/usePointerNoteSetters.ts`                  | `setPointerTip(id, tipAbs)`: snap, attach or free, one history step |
 

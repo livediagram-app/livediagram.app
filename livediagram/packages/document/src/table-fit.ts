@@ -2,8 +2,12 @@
 // table height that hold every cell's text, measured as the export wraps it, taller only.
 import { tableCellFontPx } from '@liveworkspace/model-core/table-cell-font';
 import { PADDING_PX, type TableElement } from './index';
-import { LABEL_LINE_HEIGHT, labelMeasure, wrapLabel } from './svg-render-primitives';
-import { tableTrackSizes } from './svg-render-table';
+import {
+  LABEL_LINE_HEIGHT,
+  labelMeasure,
+  wrapLabel,
+} from '@liveworkspace/element-model/svg-render-primitives';
+import { tableTrackSizes } from '@liveworkspace/element-model/svg-render-table';
 
 // How many times a table sized to scale is measured again after growing (its font follows the row height).
 export const TABLE_FIT_PASSES = 4;

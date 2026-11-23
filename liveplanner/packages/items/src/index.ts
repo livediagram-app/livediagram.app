@@ -82,7 +82,7 @@ export * from './repeat-dates';
 export * from './repeat-words';
 export * from './repeat-copy';
 export * from './plan-people';
-export * from './sha256';
+export * from '@liveworkspace/model-core/sha256';
 export * from './indefinite-article';
 export * from './store';
 export * from './group-moves';

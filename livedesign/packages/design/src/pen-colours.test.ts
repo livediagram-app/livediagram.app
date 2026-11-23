@@ -229,7 +229,7 @@ describe('hexOklch', () => {
 
 describe('Grey, the neutral stock colour', () => {
   it('is a stock name, tuned per board, and never a hue the snap measures', async () => {
-    const m = await import('./pen-colours');
+    const m = await import('@liveworkspace/element-model/pen-colours');
     expect(m.isPenColourName('grey')).toBe(true);
     expect(m.penColourLabel('grey')).toBe('Grey');
     expect(m.PEN_COLOUR_NAMES).not.toContain('grey');

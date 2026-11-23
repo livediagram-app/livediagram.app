@@ -3,9 +3,9 @@
 // replaced it, and every colour still equal to what the retired theme painted becomes the replacement's colour for the
 // same role (canvas, pattern, element paints, root, each palette branch by position); a colour someone picked stays.
 // These definitions are data about the past, frozen as they shipped; they never change.
-import { themeHalf } from './theme-halves';
-import { THEMES } from './themes-data';
-import type { ThemeDefinition } from './themes';
+import { themeHalf } from '@liveworkspace/element-model/theme-halves';
+import { THEMES } from '@liveworkspace/element-model/themes-data';
+import type { ThemeDefinition } from '@liveworkspace/element-model/themes';
 import type { Tab } from './index';
 
 // Retired ids are not ThemeIds any more, hence the cast.

@@ -3,7 +3,7 @@
 // gallery images a tab's pages name. Pure, shared by the editor, the exports, the api's image
 // reference index and the agents' page summaries.
 import { parsePageImageBlur } from '@liveworkspace/page-background/image-blur';
-import { isImageCredit, type ImageCredit } from './image-credit';
+import { isImageCredit, type ImageCredit } from '@liveworkspace/model-core/image-credit';
 
 // The overlays over the picture, under everything on the page.
 export type PageImageOverlayKind = 'light' | 'dark' | 'tint' | 'fade';

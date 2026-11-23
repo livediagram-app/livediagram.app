@@ -18,7 +18,7 @@ import {
   tableCellFontPx,
 } from '@liveworkspace/model-core/table-cell-font';
 import { arrowLabelFontSize } from '@liveworkspace/model-core/arrow-label';
-import { sankeyLabelPx } from './sankey-frame';
+import { sankeyLabelPx } from '@liveworkspace/element-model/sankey-frame';
 import { svgBoxed } from './svg-render';
 import { createShape } from './factories';
 

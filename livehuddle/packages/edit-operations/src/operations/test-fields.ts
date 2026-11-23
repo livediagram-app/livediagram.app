@@ -6,7 +6,7 @@
 import type { EditRejection, JsonValue } from '@livehuddle/api-schema';
 import type { Element } from '@livehuddle/document';
 import { isHexColour } from '../colours';
-import { sameValue } from '../equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { fieldValue, writeFieldsOnto } from '../fields';
 import { formatValue } from '../format-results';
 import { testFailed } from '../rejections';

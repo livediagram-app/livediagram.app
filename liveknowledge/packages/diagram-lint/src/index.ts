@@ -8,4 +8,4 @@ export {
   lintVerdict,
 } from '@liveworkspace/diagram-lint/format';
 export { consoleLintLogger, type LintLogger } from '@liveworkspace/diagram-lint/log';
-export * from './constants';
+export * from '@liveworkspace/diagram-lint/constants';

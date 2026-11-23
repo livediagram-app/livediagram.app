@@ -25,7 +25,7 @@ import {
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { resolvePlacement, type Placed } from '../placement';
-import { nearestName } from '../nearest';
+import { nearestName } from '@liveworkspace/edit-operations/nearest';
 import { invalidValue } from '../rejections';
 import { DID_YOU_MEAN_MAX_DISTANCE, SHAPES_RETIRED } from '../vocabulary';
 import { type EditState, writeFields } from '../state';

@@ -17,7 +17,7 @@ import {
   labelRunPx,
   labelTextStyleCss,
   TEXT_ALIGN,
-} from '@/components/canvas/label-style';
+} from '@liveworkspace/workbench/components/label-editor/label-style';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { ShapeMarkerGlyph } from '@liveworkspace/workbench/components/canvas/ShapeMarker';
 import { HoverCard } from '@liveplanner/ui';

@@ -4,7 +4,7 @@
 import { boundsOfPoints, pathPassesThrough, queryElementGrid } from '@liveknowledge/document';
 import { arrowName, arrowSelector } from '../arrow-names';
 import { isLintBox } from '../boxes';
-import { LINT_MOVE_CLEAR } from '../constants';
+import { LINT_MOVE_CLEAR } from '@liveworkspace/diagram-lint/constants';
 import { padded, refOf } from '../context';
 import { fixes } from '../fixes';
 import { restyledRoutes } from '../restyle';

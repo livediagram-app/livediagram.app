@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { normaliseElement } from './element-normalise';
 import { createShape, isConceptShape, type ShapeElement } from './index';
-import { svgConcept } from './svg-render-concept';
+import { svgConcept } from '@liveworkspace/element-model/svg-render-concept';
 
 // docs/specs/009-elements/concept-graphics.md "Timeline"
 describe('the Timeline element', () => {

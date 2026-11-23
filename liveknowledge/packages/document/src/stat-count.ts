@@ -4,7 +4,7 @@
 
 import { colorWash } from '@liveworkspace/model-core/color-wash';
 import type { CanvasSurface } from './colors';
-import { reachContrast, THEME_TEXT_CONTRAST } from './readable-colour';
+import { reachContrast, THEME_TEXT_CONTRAST } from '@liveworkspace/element-model/readable-colour';
 
 export type StatTrend = 'up' | 'down' | 'flat';
 

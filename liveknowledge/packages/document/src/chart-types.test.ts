@@ -8,11 +8,11 @@ import {
   isChartVariant,
   lineVariantOf,
   variantFitsKind,
-} from './chart-types';
+} from '@liveworkspace/element-model/chart-types';
 import { createShape } from './shape-factory';
 import { normaliseElement } from './element-normalise';
 import { shapeValidationIssue, CHART_PALETTE_IDS_RULE } from './validate-shape';
-import { CHART_PALETTES } from './chart-palettes';
+import { CHART_PALETTES } from '@liveworkspace/element-model/chart-palettes';
 
 describe('chart types (docs/specs/009-elements/pie-chart.md "Chart types")', () => {
   it('round-trips every type through its kind and variant', () => {

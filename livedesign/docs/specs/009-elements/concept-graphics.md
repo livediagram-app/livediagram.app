@@ -105,7 +105,7 @@ export matches the editor. Text re-wraps and re-sizes with the element; it never
 
 ### Timeline
 
-`timelineLayout(w, h, n)` (`packages/design/src/concept-timeline.ts`), shared by the face and the export:
+`timelineLayout(w, h, n)` (`../packages/element-model/src/concept-timeline.ts`), shared by the face and the export:
 
 - **The spine** runs across the middle (`y = h / 2`) to an arrowhead at the right edge, `clamp(h * 0.06, 6, 12)` long:
   time runs that way. It is drawn in the accent at 55%, 3 px, round-capped.

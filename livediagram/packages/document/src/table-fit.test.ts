@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createTable } from './factories';
 import { PADDING_PX, type TableElement } from './index';
-import { LABEL_LINE_HEIGHT } from './svg-render-primitives';
+import { LABEL_LINE_HEIGHT } from '@liveworkspace/element-model/svg-render-primitives';
 import { tableGrowthForCells } from './table-fit';
-import { svgTableShape } from './svg-render-table';
+import { svgTableShape } from '@liveworkspace/element-model/svg-render-table';
 
 // docs/specs/009-elements/table-rows-fit-text.md: a row grows taller (never shorter) to hold its cells' words.
 

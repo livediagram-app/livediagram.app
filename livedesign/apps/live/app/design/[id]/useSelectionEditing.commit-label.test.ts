@@ -10,7 +10,7 @@ import {
 } from '@livedesign/design';
 import { useSelectionEditing } from './useSelectionEditing';
 
-vi.mock('@/components/canvas/text-hug-measure', () => ({
+vi.mock('@liveworkspace/workbench/components/label-editor/plain-text-hug-measure', () => ({
   measureDrawnText: () => () => 0,
 }));
 

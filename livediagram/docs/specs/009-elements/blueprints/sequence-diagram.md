@@ -4,11 +4,11 @@ Derived from [The sequence diagram](../sequence-diagram.md). Defaults in [DEFAUL
 
 | File                                                                        | Role                                                      |
 | --------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `packages/document/src/sequence-element.ts`                                 | Fields, bounds, writes, the diagram it describes          |
+| `../packages/element-model/src/sequence-element.ts`                         | Fields, bounds, writes, the diagram it describes          |
 | `packages/document/src/svg-render-sequence.ts`                              | The picture: `layoutSequence` drawn and fitted to the box |
 | `apps/editor/components/canvas/SequenceFace.tsx`                            | Canvas face (the same picture), the Play wipe             |
 | `apps/editor/components/palette/SequenceMenuSection.tsx`                    | Summary, Edit Sequence, Numbered                          |
-| `packages/document/src/sequence-text.ts`                                    | The Text tab: rows as lines and back                      |
+| `../packages/element-model/src/sequence-text.ts`                            | The Text tab: rows as lines and back                      |
 | `apps/editor/components/dialogs/SequenceDialog.tsx`                         | The dialog: tabs, draft, preview, footer                  |
 | `../packages/workbench/src/components/dialogs/SequenceParticipantStrip.tsx` | Participant chips and the open chip's editor              |
 | `../packages/workbench/src/components/dialogs/SequenceMessageList.tsx`      | Numbered message rows, Add Message                        |

@@ -6,7 +6,7 @@
 import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livediagram/document';
 import { GlyphDisc } from '@livediagram/ui';
 import { initialsOf } from '@/lib/identity';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { CheckGlyph, QA_ACCENT, QA_ON_ACCENT, stopPointer } from '../qa/qa-parts';
 import { SlashGlyph } from './action-parts';

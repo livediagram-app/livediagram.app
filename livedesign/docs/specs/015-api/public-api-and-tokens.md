@@ -63,7 +63,7 @@ account). What follows records how livedesign uses them; where it describes live
 storing tokens itself, the account-level design below supersedes it.
 
 - **Verifying.** An `lwt_` bearer is checked with liveworkspace (`POST /api/account/internal/tokens/verify`,
-  client-credentials) by `createTokenChecker` in `apps/api/src/db/api-tokens.ts`. A verified token is cached for
+  client-credentials) by `createTokenChecker` in `../packages/auth-client/src/api-tokens.ts`. A verified token is cached for
   a minute per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
   liveworkspace refuses gets `401 invalid_token`; if liveworkspace can't be reached, `503 accounts_unavailable`
   with `Retry-After: 5`.
@@ -111,7 +111,7 @@ A token authenticates as a third identity path, resolved once in `fetch`
 alongside the account access token + the guest token:
 
 1. An account access token in `Authorization: Bearer`, when it verifies.
-2. Else `Authorization: Bearer lwt_…` (or `lvd_…`, §3.1) → checked with liveworkspace (cached for a minute per isolate, `apps/api/src/db/api-tokens.ts`)
+2. Else `Authorization: Bearer lwt_…` (or `lvd_…`, §3.1) → checked with liveworkspace (cached for a minute per isolate, `../packages/auth-client/src/api-tokens.ts`)
    → the request's owner is the token's account. (A token and a JWT can't both be the bearer.) An `lwt_`
    bearer liveworkspace refuses (unknown, revoked or expired), or one too short to be a token at all (cut short or
    mistyped when pasted), is refused there and then with `401 invalid_token` and `WWW-Authenticate: Bearer
@@ -264,7 +264,7 @@ already has 10 live (non-revoked, non-expired) tokens, enough for any real
 integration set, low enough to keep the list + table tidy. Revoking or letting
 one expire frees a slot. The count is part of the INSERT itself (one
 `INSERT ... SELECT ... WHERE (SELECT COUNT(*) ...) < 10` statement in
-`apps/api/src/db/api-tokens.ts`), so concurrent mints, from the Explorer and
+`../packages/auth-client/src/api-tokens.ts`), so concurrent mints, from the Explorer and
 the OAuth exchange alike, can never take an account past 10; a refused mint
 logs `[api-tokens] mint refused: owner at the token cap` and answers `409
 token_limit_reached`.

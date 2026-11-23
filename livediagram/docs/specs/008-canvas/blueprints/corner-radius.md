@@ -32,9 +32,9 @@ export function cornerRadiusPx(
 | `../packages/workbench/src/components/canvas/web/BannerFace.tsx`             | `lg`'s px (24)                            |
 | `apps/editor/components/canvas/web/SiteHeaderFace.tsx`                       | `md`'s px (12)                            |
 | `apps/editor/components/canvas/web/StatRowFace.tsx`                          | `md`'s px (12)                            |
-| `packages/document/src/svg-render-border.ts` (`borderOf`)                    | `DEFAULT_BOX_RADIUS_PX`                   |
+| `../packages/element-model/src/svg-render-border.ts` (`borderOf`)            | `DEFAULT_BOX_RADIUS_PX`                   |
 | `packages/document/src/svg-render-describe.ts`                               | 4 (images)                                |
-| `packages/document/src/svg-render-web.ts`                                    | the caller's fallback                     |
+| `../packages/element-model/src/svg-render-web.ts`                            | the caller's fallback                     |
 | `packages/document/src/svg-render-boxed.ts`                                  | 12 (mind node)                            |
 | `packages/document/src/shape-hit.ts`                                         | `CSS_DEFAULT_RADIUS_PX`                   |
 

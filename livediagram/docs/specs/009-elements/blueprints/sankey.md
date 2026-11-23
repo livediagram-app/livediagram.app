@@ -8,10 +8,10 @@ Scope, by file:
 | File                                                                                  | Role                                                                                                                  |
 | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `../packages/element-model/src/sankey-model.ts`                                       | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits          |
-| `packages/document/src/sankey-layout.ts`                                              | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`                       |
-| `packages/document/src/sankey-frame.ts`                                               | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                                    |
+| `../packages/element-model/src/sankey-layout.ts`                                      | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`                       |
+| `../packages/element-model/src/sankey-frame.ts`                                       | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                                    |
 | `../packages/element-model/src/sankey-text.ts`                                        | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                            |
-| `packages/document/src/svg-render-sankey.ts`                                          | `svgSankey`: the export                                                                                               |
+| `../packages/element-model/src/svg-render-sankey.ts`                                  | `svgSankey`: the export                                                                                               |
 | `packages/document/src/shape-kind.ts`, `validate.ts`                                  | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                           |
 | `packages/document/src/validate-shape.ts`                                             | Field checks                                                                                                          |
 | `packages/document/src/element-normalise.ts`                                          | `normaliseSankey`: agent input                                                                                        |

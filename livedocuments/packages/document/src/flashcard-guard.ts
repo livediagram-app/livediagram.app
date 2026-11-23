@@ -1,7 +1,7 @@
 // Flashcards hold text only (docs/specs/007-editor/flashcards.md "Text only"): the guard a local
 // edit passes through so no element is added onto a card or moved onto one. An element already on a
 // card (made before the rule, or by an agent) stays and may move off it. Pure.
-import { elementBounds } from './geometry';
+import { elementBounds } from '@liveworkspace/element-model/geometry';
 import { layOutPages, type LaidOutPage, type Page } from './page';
 import type { Element } from './index';
 

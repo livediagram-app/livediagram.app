@@ -4,11 +4,11 @@
 // group's centre, its line jogging across its neighbours'. And an edge to or from the group itself left the frame's
 // middle and swept along it past the members' own drops. These two passes run on the expanded geometry.
 
-import { SIBLING_GAP } from './auto-layout-shared';
+import { SIBLING_GAP } from '@liveworkspace/element-model/auto-layout-shared';
 import { LABEL_FONT_PX } from '@liveworkspace/model-core/label-font';
-import { legalise, rankOffsets } from './auto-layout-placement';
+import { legalise, rankOffsets } from '@liveworkspace/element-model/auto-layout-placement';
 import { NOTCH_MAX } from './graph-notches';
-import type { LayoutDirection } from './auto-layout';
+import type { LayoutDirection } from '@liveworkspace/element-model/auto-layout';
 import type { DiagramGraph } from './graph-authoring';
 import type { Anchor, ArrowElement, BoxedElement, TextSizePreset } from './index';
 

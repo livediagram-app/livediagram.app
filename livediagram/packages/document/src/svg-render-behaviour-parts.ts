@@ -12,11 +12,11 @@ import {
 } from './retired-placeholder';
 import type { ResolveEmojiArt } from './svg-render-describe';
 import { REACTION_EMOJI, REACTION_HUES, reactionOf } from './data-shapes';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { formatTimerClock } from './session';
 import { sessionButtonPlan, type SessionButtonConfig } from './selection-mode';
 import { sessionButtonText } from './session-button-text';
-import { borderOf } from './svg-render-border';
+import { borderOf } from '@liveworkspace/element-model/svg-render-border';
 import { REVEAL_COVER_BASE, type CanvasSurface } from './colors';
 import { fitLine, glow, pill, text, wrapLines, type Face } from './svg-render-face-kit';
 

@@ -19,8 +19,8 @@ Scope, by file:
 | `../packages/element-model/src/arrow-path.ts`                     | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
 | `../packages/element-model/src/arrow-path-hits.ts`                | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
 | `packages/document/src/arrow-rebind.ts`                           | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
-| `packages/document/src/arrow-rebind-swap.ts`                      | `swapCrossingEnds`                                                                                 |
-| `packages/document/src/arrow-endpoint-spread.ts`                  | Quarter fans                                                                                       |
+| `../packages/element-model/src/arrow-rebind-swap.ts`              | `swapCrossingEnds`                                                                                 |
+| `../packages/element-model/src/arrow-endpoint-spread.ts`          | Quarter fans                                                                                       |
 | `packages/document/src/validate.ts`                               | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
 | `packages/document/src/duplicate.ts`                              | Endpoint copy without `manual`                                                                     |
 | `apps/editor/lib/user-preferences.ts`                             | `autoRebindArrowsEnabled`: on unless `false`                                                       |

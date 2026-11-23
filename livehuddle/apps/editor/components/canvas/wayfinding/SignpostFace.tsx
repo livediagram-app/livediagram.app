@@ -12,7 +12,7 @@ import {
 } from '@livehuddle/document';
 import { HoverCard, Tooltip } from '@livehuddle/ui';
 import { Overlay } from '@/components/canvas/collab/SocialFaces';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import {
   signpostBoards,
   signpostFoot,
