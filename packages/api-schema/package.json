@@ -41,6 +41,7 @@
     "./tab-folder-colour": "./src/tab-folder-colour.ts",
     "./tab-save-changes": "./src/tab-save-changes.ts",
     "./tab-size": "./src/tab-size.ts",
+    "./testing/telemetry-schema-suite": "./src/testing/telemetry-schema-suite.ts",
     "./tab-connection": "./src/tab-connection.ts",
     "./teams": "./src/teams.ts",
     "./timing-telemetry": "./src/timing-telemetry.ts",
