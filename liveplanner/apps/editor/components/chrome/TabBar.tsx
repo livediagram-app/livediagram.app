@@ -1,3 +1,5 @@
+import { boardSetupsOfTab } from '@liveplanner/items';
+import { canViewAsDiagram, openViewAsDiagram } from '@/components/plan-diagram/view-entry';
 import { isPlanTabKind } from '@liveplanner/project';
 import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
@@ -224,6 +226,14 @@ export function TabBar({
         ? {
             broken: connectedTabBroken(connectionOf(tab)!.id),
             onConnectAgain: () => onConnectAgain(tab.id),
+          }
+        : undefined,
+    // View As Diagram (docs/specs/026-plan/view-as-diagram.md "Where"): a Board tab's, where this session may draw.
+    onViewAsDiagram:
+      canViewAsDiagram() && boardSetupsOfTab(tab.elements).length > 0
+        ? () => {
+            openViewAsDiagram(tab.id);
+            close();
           }
         : undefined,
     canDelete: tabs.length > 1,

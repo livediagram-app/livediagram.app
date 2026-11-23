@@ -1,4 +1,5 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import { lucideWorkflow } from '@liveworkspace/icons/lucide';
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { useMenuDismiss } from '@liveworkspace/workbench/hooks/ui/useMenuDismiss';
@@ -37,6 +38,8 @@ const ConnectAgainIcon = lucideGlyph(lucideLink, 16);
 // The unified tab / canvas portal menu (actions, copy-to-project, and
 // folder sub-views). Extracted from TabBar.tsx, where it had grown into a
 // ~520-line component buried in the file. Pure prop-based component.
+
+const ViewAsDiagramIcon = lucideGlyph(lucideWorkflow, 16);
 export function PortalMenu({
   anchor,
   point,
@@ -60,6 +63,7 @@ export function PortalMenu({
   canDelete,
   deleteWarning,
   connected,
+  onViewAsDiagram,
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -95,6 +99,8 @@ export function PortalMenu({
   // follows its file unless renamed, so its menu keeps only Rename, Remove Tab, its folder and, when it opens nothing,
   // Connect Again.
   connected?: ConnectedTabMenu | undefined;
+  // View As Diagram (docs/specs/026-plan/view-as-diagram.md "Where"): a Board tab's board drawn in livediagram.
+  onViewAsDiagram?: (() => void) | undefined;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the organise picker, "folder"
   // (docs/specs/006-project/tab-folders.md, file the tab into a tab-bar folder), opens as a proper centred MODAL in place of the anchored box, so it
@@ -367,6 +373,14 @@ export function PortalMenu({
             disabled={!(canImport ?? !locked)}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
+          {onViewAsDiagram ? (
+            <MenuActionRow
+              plain
+              icon={<ViewAsDiagramIcon />}
+              label="View As Diagram"
+              onClick={onViewAsDiagram}
+            />
+          ) : null}
           <MenuActionRow
             plain
             icon={<ClearIcon />}
