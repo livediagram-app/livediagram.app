@@ -223,10 +223,8 @@ describe('Settings › Subscription, your tier', () => {
     expect(within(tier).queryByRole('img', { name: 'You Have Pro' })).toBeNull();
     expect(within(tier).getByText(`${formatPrice(PRICES.GBP.pro, 'GBP')} a month`)).toBeTruthy();
     fireEvent.click(within(tier).getByRole('button', { name: 'Upgrade to Pro' }));
-    // The dialog's first render in this file: a busy machine takes longer over it than the default second.
-    expect(
-      await screen.findByRole('dialog', { name: 'One Upgrade, Every App' }, { timeout: 5_000 }),
-    ).toBeTruthy();
+    // The dialog's code is in (beforeAll), so the press itself draws it: nothing to wait for.
+    expect(screen.getByRole('dialog', { name: 'One Upgrade, Every App' })).toBeTruthy();
   });
 
   it('Pro: the badge, the price in the subscription’s own currency, the renewal day and Manage Billing', async () => {
@@ -318,7 +316,7 @@ describe('Settings › Subscription, your tier', () => {
         .map((button) => button.textContent),
     ).toEqual(['Go Pro Again', 'Dismiss', 'Upgrade to Pro']);
     fireEvent.click(within(card).getByRole('button', { name: 'Go Pro Again' }));
-    expect(await screen.findByRole('dialog')).toBeTruthy();
+    expect(screen.getByRole('dialog')).toBeTruthy();
   });
 
   it('back on Free: under the storage limit it is only smaller, and Dismiss tells the service', async () => {
@@ -447,7 +445,7 @@ describe('Settings › Subscription, your teams', () => {
     expect(garden.textContent).toContain('You’re an admin · 6 members · Free');
     expect(within(garden).queryByRole('img')).toBeNull();
     fireEvent.click(within(garden).getByRole('button', { name: 'Upgrade Team: Garden Club' }));
-    const dialog = await screen.findByRole('dialog', { name: 'One Upgrade, Every App' });
+    const dialog = screen.getByRole('dialog', { name: 'One Upgrade, Every App' });
     await waitFor(() =>
       expect(
         (within(dialog).getByRole('combobox', { name: 'Team' }) as HTMLSelectElement).value,
@@ -462,7 +460,7 @@ describe('Settings › Subscription, your teams', () => {
     expect(side.textContent).toContain('You’re a member · 4 members · Free');
     expect(within(side).queryByRole('button', { name: /Upgrade|Manage/ })).toBeNull();
     fireEvent.click(within(side).getByRole('button', { name: 'Ask an Admin: Side Projects' }));
-    expect(await screen.findByRole('dialog', { name: 'Ask an Admin About Pro' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Ask an Admin About Pro' })).toBeTruthy();
   });
 
   it('an admin of a team on Free is told who asked for Pro for Teams, why, when and their note', async () => {
