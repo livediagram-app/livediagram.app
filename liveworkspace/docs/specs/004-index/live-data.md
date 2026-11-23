@@ -35,12 +35,13 @@ plan"); the editor's side is one copy in `@liveworkspace/workbench` (`components
   source itself (a Sheet and a range; a board, what to count by and its filters; a metric). A preview shows what the
   element will draw, and for a read with several series, **Series** chips say which feed the element and in what order
   (a pie, doughnut, column or bar draws the first alone). **Link** writes the read and the link as one undo step.
-- **The live mark.** A linked element shows a small live dot and, on hover or selection, a quiet line below it:
+- **The live mark.** A linked element shows a small dot at its top-right corner (green while live, still, so a page of
+  linked charts costs no animation) and, on hover or selection, a quiet line below it:
   "Live from Launch Plan · updated 2 min ago". Its Data section says the same with the source under it ("Roadmap ·
   Cards per column", "Budget · B2:E9", "Dashboard · Progress") and offers **Open Plan** (the plan in liveplanner, a new
   tab), **Update**, **Freeze**, **Change…** and **Unlink**.
 - **Freeze** keeps the numbers as they are and stops updating: for a report that must not change after it is sent.
-  The link stays (frozen), the line says "Frozen · as of 12 Nov", and **Unfreeze** reads again. A frozen element is
+  The link stays (frozen), the line says "From Launch Plan · frozen 12 Nov", and **Unfreeze** reads again. A frozen element is
   never read, so it costs no reads and no watches.
 - **Tables.** A linked table's cells are the read: a header row (the label column's heading, then each series' name)
   and a row per category. Its cells are not typed into while linked (the next read would overwrite them); its look,
@@ -66,14 +67,15 @@ filters: {priorities, labels, people, types}}`. A tab-scoped link lists only its
 readAt}`. `sourceName` is the board tab's name ("Dashboard" for a metric), `label` the words for what was read
   ("Cards per column", "Progress").
 - Access is checked as for a range read: the person's own, any level; a share code, a public link and a delegate answer
-  `404`; a board off a tab-scoped link's tab is `404`. Answers are `no-store` and never written to the index.
+  `404`; a board off a tab-scoped link's tab is `404`, and so is any metric on a tab-scoped link (a metric reads the
+  whole plan). Answers are `no-store` and never written to the index.
 
-| Answer                   | When                                                                          |
-| ------------------------ | ----------------------------------------------------------------------------- |
-| `200` the read           | the person can open the plan and the board or metric is there                 |
+| Answer                   | When                                                                              |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| `200` the read           | the person can open the plan and the board or metric is there                     |
 | `400 invalid_source`     | the body is not a board ask (a known `by`, a filter of short strings) or a metric |
-| `404 not_found`          | no such plan, the person cannot reach it, or the board is gone or off their tab |
-| `503 source_unavailable` | the plan's app did not answer                                                 |
+| `404 not_found`          | no such plan, the person cannot reach it, or the board is gone or off their tab   |
+| `503 source_unavailable` | the plan's app did not answer                                                     |
 
 The door: `GET` and `POST /api/internal/items/:id/plan-data` on the plan app's own index key alone, as the sheet doors.
 It reads only the counts asked for: category names and numbers, never a card's title, text, comments or fields beyond
@@ -120,4 +122,11 @@ Viewer see the live mark and the live numbers on their own access, or the snapsh
 
 `Element·Changed·<event>` through the product's own `track`: `ChartSheetLink` (a chart linked to a range),
 `ChartBoardLink`, `ChartMetricLink`, `TableLiveLink` (a table linked to any source), `ChartSheetUnlink`,
-`LiveDataFreeze` and `LiveDataUnfreeze`, each charted on the liveworkspace site's metrics.
+`LiveDataFreeze` and `LiveDataUnfreeze`, charted together as **Live Data** in each reader app's Element Editing on the
+liveworkspace site's metrics (Elements Changed leaves them out).
+
+## Help
+
+[Live Data From a Plan](../../../apps/help/app/palette/tools/data-elements/live-data/page.mdx) in the help centre, for
+livediagram, livedocuments and livedesign; the chart articles, the data elements index and the plan's Sheets article
+point to it. liveknowledge's help has no chart articles yet.

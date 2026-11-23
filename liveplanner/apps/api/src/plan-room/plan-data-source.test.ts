@@ -3,6 +3,7 @@
 // column, label, assignee and priority with its filters, a metric's rows, nothing of a card beyond the count, and the
 // cards watch for the item that asked.
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { defaultCatalogue, typesOf, type Item } from '@liveplanner/items';
 import type { Element, Tab } from '@liveplanner/project';
 import { insertItems } from '../db/items';
@@ -153,7 +154,9 @@ describe('the plan-data door', () => {
       tabId: '',
       table: { categories: ['High', 'Low'], series: [{ values: [2, 1] }] },
     });
-    const count = await (await send('A/plan-data', { kind: 'metric', metric: 'count' })).json<{
+    const count = await (
+      await send('A/plan-data', { kind: 'metric', metric: 'count' })
+    ).json<{
       table: { series: { values: number[] }[] };
     }>();
     expect(count.table.series[0]!.values.reduce((a, b) => a + b, 0)).toBe(4);
@@ -206,8 +209,49 @@ describe('the counts', () => {
     expect(table.categories[0]).toBe('common');
   });
 
-  it("draws a ring as Done and Not Done, and a lone figure as one row", () => {
-    expect(metricTable({ hero: '40', line: '', visual: { kind: 'ring', pct: 40 } }, 'Done')).toEqual({
+  // Bounded (live-data.md "Bounds"): a read runs on every change signal, so a big board counts in linear time.
+  it('counts a 20,000-card board by every grouping within a CPU budget', () => {
+    const items = new Map<string, Item>();
+    const columns = Array.from({ length: 12 }, (_, i) => ({
+      id: `col${i}`,
+      name: `C${i}`,
+      status: `s${i}`,
+    }));
+    for (let i = 0; i < 20_000; i++)
+      items.set(
+        `c${i}`,
+        card(`c${i}`, i, {
+          status: `s${i % 12}`,
+          labels: [`l${i % 400}`, `m${i % 7}`],
+          priority: i % 2 ? 'high' : 'low',
+          assignees: [i % 3 ? ADA.id : BO.id],
+        }),
+      );
+    const setup = {
+      title: 'B',
+      columns,
+      swimlaneBy: 'none',
+      cardFields: [],
+      hideWriting: false,
+    } as never;
+    const reads = {
+      items,
+      types: typesOf(defaultCatalogue()),
+      statusNames: new Map(),
+      isDone: () => false,
+    };
+    const ms = cpuMsOf(() => {
+      for (const by of ['column', 'label', 'assignee', 'priority'] as const)
+        boardCounts(setup, reads, by);
+      boardCounts(setup, reads, 'column', { label: 'l7', priority: 'high' });
+    });
+    expect(ms).toBeLessThan(1500);
+  });
+
+  it('draws a ring as Done and Not Done, and a lone figure as one row', () => {
+    expect(
+      metricTable({ hero: '40', line: '', visual: { kind: 'ring', pct: 40 } }, 'Done'),
+    ).toEqual({
       categories: ['Done', 'Not Done'],
       series: [{ name: 'Done', values: [40, 60] }],
     });
@@ -215,9 +259,9 @@ describe('the counts', () => {
       categories: ['Stale'],
       series: [{ name: 'Stale', values: [7] }],
     });
-    expect(metricTable({ hero: '–', line: '', visual: null }, 'Completion').series[0]!.values).toEqual(
-      [0],
-    );
+    expect(
+      metricTable({ hero: '–', line: '', visual: null }, 'Completion').series[0]!.values,
+    ).toEqual([0]);
     expect(
       metricTable(
         {

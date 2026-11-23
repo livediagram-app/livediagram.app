@@ -5,24 +5,29 @@ named here is as [sheet-sources.md](sheet-sources.md).
 
 ## Files
 
-| File                                                      | Role                                                                                                                  |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `packages/index-client/src/live-data.ts`                  | The contract: `PlanDataAsk`, `BOARD_COUNT_BYS`, `PLAN_DATA_CARDS`, the listing and reads, `readPlanDataAsk`, guards  |
-| `packages/index-client/src/client.ts`                     | `listPlanData(itemId)`, `readPlanData(itemId, ask, {grant?, watch?})`                                                 |
-| `packages/app-doors/src/doors.ts`                         | `listPlanData(app, itemId)`, `readPlanData(app, itemId, ask)`                                                         |
-| `packages/index-app/src/sheet-source-doors.ts`            | The `plan-data` door (GET list, POST read) beside the sheet doors; handlers `planDataList`, `planData`                |
-| `liveworkspace/apps/index/src/live-data.ts`               | `GET` and `POST /items/:id/plan-data`, on `ownSource` and `watcherOf` from `sheet-sources.ts`                         |
-| `liveplanner/apps/api/src/plan-room/plan-data-source.ts`  | The door handlers: the plan's boards, metrics and filter values; a board's counts; a metric's rows                    |
-| `liveplanner/apps/api/src/plan-room/plan-room-wiring.ts`  | An `items` or `item-types` broadcast marks the `cards` watch changed                                                  |
-| `packages/element-model/src/chart-sheet-source.ts`        | The link: `ChartSheetSource` (the union of the three kinds), `series`, `frozen`, `isChartSheetSource`, `sourceKindOf` |
-| `packages/element-model/src/live-data-table.ts`           | A read as a table's cells (`tableCellsFromRead`), bounded                                                             |
-| `packages/workbench/src/components/sheet-links/`          | Reads per kind, Freeze, the dialog's three source kinds and Series chips, the live mark, `LiveTable` for tables       |
+| File                                                     | Role                                                                                                                  |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `packages/index-client/src/live-data.ts`                 | The contract: `PlanDataAsk`, `BOARD_COUNT_BYS`, `PLAN_DATA_CARDS`, the listing and reads, `readPlanDataAsk`, guards   |
+| `packages/index-client/src/client.ts`                    | `listPlanData(itemId)`, `readPlanData(itemId, ask, {grant?, watch?})`                                                 |
+| `packages/app-doors/src/doors.ts`                        | `listPlanData(app, itemId)`, `readPlanData(app, itemId, ask)`                                                         |
+| `packages/index-app/src/sheet-source-doors.ts`           | The `plan-data` door (GET list, POST read) beside the sheet doors; handlers `planDataList`, `planData`                |
+| `liveworkspace/apps/index/src/live-data.ts`              | `GET` and `POST /items/:id/plan-data`, on `ownSource` and `watcherOf` from `sheet-sources.ts`                         |
+| `liveplanner/apps/api/src/plan-room/plan-data-source.ts` | The door handlers: the plan's boards, metrics and filter values; a board's counts; a metric's rows                    |
+| `liveplanner/apps/api/src/plan-room/plan-room-wiring.ts` | An `items` or `item-types` broadcast marks the `cards` watch changed                                                  |
+| `packages/element-model/src/chart-sheet-source.ts`       | The link: `ChartSheetSource` (the union of the three kinds), `series`, `frozen`, `isChartSheetSource`, `sourceKindOf` |
+| `packages/element-model/src/live-data-table.ts`          | A read as a table's cells (`tableCellsFromRead`), bounded                                                             |
+| `packages/workbench/src/components/sheet-links/`         | Reads per kind, Freeze, the dialog's three source kinds and Series chips, the live mark, `LiveTableFace` for tables   |
 
 ## Contract
 
 ```ts
 export const BOARD_COUNT_BYS = ['column', 'label', 'assignee', 'priority'] as const;
-export type BoardCountFilter = { priority?: string; label?: string; person?: string; type?: string };
+export type BoardCountFilter = {
+  priority?: string;
+  label?: string;
+  person?: string;
+  type?: string;
+};
 export type PlanDataAsk =
   | { kind: 'board'; boardId: string; by: BoardCountBy; filter?: BoardCountFilter }
   | { kind: 'metric'; metric: string };
@@ -37,8 +42,18 @@ export type PlanDataListing = {
     types: { id: string; label: string }[];
   };
 };
-export type PlanDataDoorRead = { sourceName: string; tabId: string; label: string; table: SheetChartTable };
-export type PlanDataRead = PlanDataDoorRead & { itemId: string; itemName: string; kind: 'board' | 'metric'; readAt: number };
+export type PlanDataDoorRead = {
+  sourceName: string;
+  tabId: string;
+  label: string;
+  table: SheetChartTable;
+};
+export type PlanDataRead = PlanDataDoorRead & {
+  itemId: string;
+  itemName: string;
+  kind: 'board' | 'metric';
+  readAt: number;
+};
 ```
 
 `readPlanDataAsk(raw)`: `kind` `board` with `boardId` an id, `by` in `BOARD_COUNT_BYS`, `filter` absent or an object of
@@ -78,26 +93,26 @@ Names are at most 200 characters, labels 80. Each product's validator takes it o
   read per key per open item, frozen links skipped.
 - A frame's `sheetIds` re-read a sheet source whose `sheetId` is among them, and a board or metric source when `cards`
   is.
-- `liveChartFields(el, table)` applies `series` first (`pickSeries`), then a chart's `chartFieldsFromTable` or a table's
+- `liveFields(el, table)` applies `series` first (`pickSeries`), then a chart's `chartFieldsFromTable` or a table's
   `tableCellsFromRead`.
 
 ## Testing
 
-| Rule                                                                        | File                                                         |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Asks parse, malformed refused; listings and reads checked                   | `packages/index-client/src/live-data.test.ts`                |
-| The link's guard for every kind, `series`, `frozen`                         | `packages/element-model/src/chart-sheet-source.test.ts`      |
-| A read as table cells, bounded                                              | `packages/element-model/src/live-data-table.test.ts`         |
-| The door: list and read, 400, 404                                           | `packages/index-app/src/sheet-source-doors.test.ts`          |
-| Index: own access only, share code / delegate 404, tab scope, watch, errors | `liveworkspace/apps/index/src/live-data.test.ts`             |
+| Rule                                                                        | File                                                          |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Asks parse, malformed refused; listings and reads checked                   | `packages/index-client/src/live-data.test.ts`                 |
+| The link's guard for every kind, `series`, `frozen`                         | `packages/element-model/src/chart-sheet-source.test.ts`       |
+| A read as table cells, bounded                                              | `packages/element-model/src/live-data-table.test.ts`          |
+| The door: list and read, 400, 404                                           | `packages/index-app/src/sheet-source-doors.test.ts`           |
+| Index: own access only, share code / delegate 404, tab scope, watch, errors | `liveworkspace/apps/index/src/live-data.test.ts`              |
 | liveplanner: counts by each `by`, filters, metrics, the cards watch         | `liveplanner/apps/api/src/plan-room/plan-data-source.test.ts` |
-| Reader: keys, frozen skipped, the cards frame, Freeze, tables, roles        | `packages/workbench/src/components/sheet-links/*.test.ts(x)` |
+| Reader: keys, frozen skipped, the cards frame, Freeze, tables, roles        | `packages/workbench/src/components/sheet-links/*.test.ts(x)`  |
 
 ## Constants
 
-| Name                    | Value | Provenance / safe range          |
-| ----------------------- | ----- | -------------------------------- |
-| `PLAN_DATA_LIST_MAX`    | 100   | Each filter list; 20 to 500      |
-| `PLAN_DATA_BOARDS_MAX`  | 50    | Boards listed; 10 to 200         |
-| `LIVE_TABLE_ROWS_MAX`   | 501   | A header and 500 categories      |
-| `LIVE_TABLE_COLS_MAX`   | 13    | A label column and 12 series     |
+| Name                   | Value | Provenance / safe range      |
+| ---------------------- | ----- | ---------------------------- |
+| `PLAN_DATA_LIST_MAX`   | 100   | Each filter list; 20 to 500  |
+| `PLAN_DATA_BOARDS_MAX` | 50    | Boards listed; 10 to 200     |
+| `LIVE_TABLE_ROWS_MAX`  | 501   | A header and 500 categories  |
+| `LIVE_TABLE_COLS_MAX`  | 13    | A label column and 12 series |
