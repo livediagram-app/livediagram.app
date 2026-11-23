@@ -222,7 +222,7 @@ describe('Home', () => {
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
-  it("says it has nothing with the Explorer's one empty state, under Recent, not a box of its own", async () => {
+  it("says it has nothing with the Explorer's one empty state for the whole view, under no heading", async () => {
     const index = createFakeIndex({ items: [] });
     const { container } = render(
       <Explorer
@@ -236,10 +236,12 @@ describe('Home', () => {
       />,
     );
     const title = await screen.findByRole('heading', { name: 'No designs yet' });
-    expect(title.closest('[data-empty-state="compact"]')).not.toBeNull();
-    expect(section('recent')!.contains(title)).toBe(true);
+    expect(title.closest('[data-home-nothing]')).not.toBeNull();
+    expect(section('recent')).toBeNull();
     expect(section('most-used')).toBeNull();
-    expect(screen.getByText('The designs you open will gather here.')).toBeTruthy();
+    expect(
+      screen.getByText('The designs you make, open or have shared with you gather here.'),
+    ).toBeTruthy();
     expect(container.querySelector('.border-dashed')).toBeNull();
   });
 });

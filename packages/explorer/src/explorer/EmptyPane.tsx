@@ -19,7 +19,7 @@ import {
   ArchiveIcon,
 } from '../ui/icons';
 import { ImageIcon, MailIcon, ShapesIcon, WalkthroughIcon } from '../ui/library-icons';
-import { homeEmptyLine } from '../data/viewLists';
+import { homeNothingLine } from '../data/viewLists';
 import type { ExplorerView } from '../views';
 import type { Words } from '../words';
 import { BrowserIcon } from './host';
@@ -140,7 +140,7 @@ export function emptyCopy(
       return {
         icon: <ClockIcon />,
         title: `No ${w.lowerMany} yet`,
-        description: homeEmptyLine(w.lowerMany),
+        description: homeNothingLine(w.lowerMany),
         cta: true,
       };
   }

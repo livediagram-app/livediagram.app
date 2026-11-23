@@ -6,7 +6,8 @@
 // the same size, the latest opened of the rest, See More at its heading's right), each a section headed as New is,
 // then Spaces (HomeSpaces: My Work and each team, each a tile into its list), and Shared With You Recently. On a phone
 // each of Most Used and Recent is its own strip of up to eight under its own heading. A section with nothing in it is
-// left out. Each item shows once, in the first of New, Most Used and Recent it qualifies for (home-sections.ts). An item kept only in this browser is one card among Recent's (LocalCard): the same frame, size, menu and
+// left out, heading and all; with every one empty (once each read has answered), Home shows one empty state for the
+// whole view with New (HomeNothing, "Nothing on Home"). Each item shows once, in the first of New, Most Used and Recent it qualifies for (home-sections.ts). An item kept only in this browser is one card among Recent's (LocalCard): the same frame, size, menu and
 // drag, with the Offline badge on its line and Offline's own verbs. With the hero hidden, Home takes the
 // ordinary page header. Three requests, each one small page: Recent carries Most Used and New beside it (the index's
 // `used` and `newest`), so its two sections cost one; the spaces' previews; and Shared. The cards are HomeCards.tsx's.
@@ -14,21 +15,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ShownItem } from '../data/overlay';
 import { useItemList } from '../data/useItemList';
-import {
-  JUMP_BACK_IN_PER_GROUP,
-  homeEmptyLine,
-  homeOpenedLoader,
-  sharedRecentlyLoader,
-} from '../data/viewLists';
-import { EmptyState } from '@liveworkspace/ui';
-import { ClockIcon } from '../ui/icons';
+import { JUMP_BACK_IN_PER_GROUP, homeOpenedLoader, sharedRecentlyLoader } from '../data/viewLists';
 import { useExplorer } from './context';
+import { EmptyPane } from './EmptyPane';
 import { PaneHeader } from './PaneHeader';
 import { HomeFailed, HomeSection } from './HomeSection';
 import { CardGroup, GridSkeleton, HomeCardsProvider, Strip, StripSkeleton } from './HomeCards';
 import { HomeNew, useHomeNew } from './HomeNew';
 import { homeSections } from './home-sections';
-import { HomeSpaces } from './HomeSpaces';
+import { HomeSpaces, useHomeSpaces } from './HomeSpaces';
 import type { ThisBrowserItem } from '../this-browser';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
@@ -97,11 +92,22 @@ export function HomePane({ hero }: { hero: boolean }) {
     () => homeSections(recent.items, made.shown, localOpened, HOME_RECENT_MAX),
     [recent.items, made.shown, localOpened],
   );
-  const empty = !recent.loading && mostUsed.length === 0 && recentRest.length === 0;
   const { firstRun } = useFirstRun();
   // A failed read says so once, under Recent's heading, with Try again, never "nothing yet".
   const failed = !recent.loading && Boolean(recent.error);
   const loading = recent.loading;
+  const spaces = useHomeSpaces();
+  // Every section answered and empty: one empty state for the whole view, never a heading over nothing.
+  const nothing =
+    !loading &&
+    !failed &&
+    mostUsed.length === 0 &&
+    recentRest.length === 0 &&
+    !made.loading &&
+    made.shown.length === 0 &&
+    !shared.loading &&
+    shared.items.length === 0 &&
+    spaces.empty;
   // A card opened from Most Used or Recent, or See More followed to the Recent view (Home·Selected).
   const pickFrom = (section: 'MostUsed' | 'Recent') => (seeLink: boolean) =>
     onHome?.('Selected', seeLink ? 'SeeMore' : section);
@@ -131,66 +137,69 @@ export function HomePane({ hero }: { hero: boolean }) {
       {hero ? null : (
         <PaneHeader title="Home" onCreateItem={() => onCreate({ folderId: null, teamId: null })} />
       )}
-      <HomeCardsProvider>
-        <div className="flex flex-col gap-10">
-          <HomeNew wide={wide} showApp={showApp} made={made} />
-          {/* Most Used: left out once the read finds none, and while Home could not load (Recent says so). */}
-          {loading || (!failed && mostUsed.length > 0) ? (
-            <HomeSection
-              id="most-used"
-              title={HOME_COPY.mostUsed}
-              busy={loading}
-              onPick={onHome ? pickFrom('MostUsed') : undefined}
-            >
-              {loading ? (
-                <SectionSkeleton wide={wide} />
-              ) : (
-                <SectionCards wide={wide} items={mostUsed} showApp={showApp} />
-              )}
-            </HomeSection>
-          ) : null}
-          {/* Recent: left out when Most Used holds everything opened; with nothing opened at all, it keeps Home's one
-              empty state. */}
-          {loading || failed || empty || recentRest.length > 0 ? (
-            <HomeSection
-              id="recent"
-              title={HOME_COPY.recent}
-              busy={loading}
-              onPick={onHome ? pickFrom('Recent') : undefined}
-              link={
-                wide && !loading && !failed && recentRest.length > 0
-                  ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
-                  : undefined
-              }
-            >
-              {failed ? (
-                <HomeFailed message="Couldn’t load Home." onRetry={retry} />
-              ) : loading ? (
-                <SectionSkeleton wide={wide} />
-              ) : empty ? (
-                <HomeEmpty />
-              ) : (
-                <SectionCards wide={wide} items={recentRest} showApp={showApp} seeMore />
-              )}
-            </HomeSection>
-          ) : null}
-          <HomeSpaces />
-          {shared.items.length > 0 ? (
-            <HomeSection
-              id="shared-recently"
-              title={HOME_COPY.sharedRecently}
-              busy={false}
-              link={{ view: { kind: 'shared' }, label: HOME_COPY.seeAll }}
-            >
-              <CardGroup items={shared.items} large showApp={showApp} />
-            </HomeSection>
-          ) : null}
-        </div>
-      </HomeCardsProvider>
+      {nothing ? (
+        <HomeNothing />
+      ) : (
+        <HomeCardsProvider>
+          <div className="flex flex-col gap-10">
+            <HomeNew wide={wide} showApp={showApp} made={made} />
+            {/* Most Used: left out once the read finds none, and while Home could not load (Recent says so). */}
+            {loading || (!failed && mostUsed.length > 0) ? (
+              <HomeSection
+                id="most-used"
+                title={HOME_COPY.mostUsed}
+                busy={loading}
+                onPick={onHome ? pickFrom('MostUsed') : undefined}
+              >
+                {loading ? (
+                  <SectionSkeleton wide={wide} />
+                ) : (
+                  <SectionCards wide={wide} items={mostUsed} showApp={showApp} />
+                )}
+              </HomeSection>
+            ) : null}
+            {/* Recent: left out once the read finds nothing past New and Most Used; a failed read says so here. */}
+            {loading || failed || recentRest.length > 0 ? (
+              <HomeSection
+                id="recent"
+                title={HOME_COPY.recent}
+                busy={loading}
+                onPick={onHome ? pickFrom('Recent') : undefined}
+                link={
+                  wide && !loading && !failed && recentRest.length > 0
+                    ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
+                    : undefined
+                }
+              >
+                {failed ? (
+                  <HomeFailed message="Couldn’t load Home." onRetry={retry} />
+                ) : loading ? (
+                  <SectionSkeleton wide={wide} />
+                ) : (
+                  <SectionCards wide={wide} items={recentRest} showApp={showApp} seeMore />
+                )}
+              </HomeSection>
+            ) : null}
+            <HomeSpaces state={spaces} />
+            {shared.items.length > 0 ? (
+              <HomeSection
+                id="shared-recently"
+                title={HOME_COPY.sharedRecently}
+                busy={false}
+                link={{ view: { kind: 'shared' }, label: HOME_COPY.seeAll }}
+              >
+                <CardGroup items={shared.items} large showApp={showApp} />
+              </HomeSection>
+            ) : null}
+          </div>
+        </HomeCardsProvider>
+      )}
     </div>
   );
 }
 
+// Where Home's New makes one, as the header's does: the person's own space, in no folder.
+const HOME_PLACE = { folderId: null, teamId: null };
 const live = (i: ShownItem) => i.trashedAt === null;
 // Most Used and Recent leave out what the person hid from Recent (the index does too; this catches a change made here).
 const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
@@ -223,15 +232,17 @@ function SectionCards({
   );
 }
 
-// Nothing opened yet: the Explorer's one empty state, as every other list shows it.
-function HomeEmpty() {
-  const { words } = useExplorer();
+// Nothing on Home at all: the Explorer's one empty state for the whole view, with New where the header's New makes it.
+function HomeNothing() {
+  const { words, kind, onCreate } = useExplorer();
   return (
-    <EmptyState
-      compact
-      icon={<ClockIcon />}
-      title={`No ${words.lowerMany} yet`}
-      description={homeEmptyLine(words.lowerMany)}
-    />
+    <div data-home-nothing="">
+      <EmptyPane
+        view={{ kind: 'home' }}
+        words={words}
+        onCreate={(app) => (app ? onCreate(HOME_PLACE, app) : onCreate(HOME_PLACE))}
+        createLabel={`New ${kind.one}`}
+      />
+    </div>
   );
 }
