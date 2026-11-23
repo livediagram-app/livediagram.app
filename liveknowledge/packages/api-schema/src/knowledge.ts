@@ -135,6 +135,9 @@ export type PageHealthResponse = PageKnowledgeResponse & {
    *  it), by account id, so every reader can name them (verification.md "Created and Updated"); absent when none has
    *  a name. */
   names?: Record<string, string>;
+  /** Each of those accounts' colour (their avatar's, Version History's dot), by account id, so Page Health's foot draws
+   *  a person's disc in it; absent when none has one. */
+  colors?: Record<string, string>;
   /** Who made the page and who last saved it (verification.md "Created and Updated"), by account id; absent for a
    *  page not saved since the server began keeping them. */
   created?: PageAuthorStamp;
@@ -307,6 +310,10 @@ export type KnowledgeSetupPage = {
   headings: string[];
   parent: string | null;
   depth: number;
+  /** A line-art page icon's id; only a structure picked on the start carries one (describe-to-set-up.md). */
+  icon?: string;
+  /** A built-in theme gradient cover (`theme-<name>`); only a structure picked on the start carries one. */
+  cover?: string;
 };
 /** Which AI answered a suggestion (describe-to-set-up.md "The model"): built-in AI with no key, else the team's. */
 export type KnowledgeSetupProvider = 'built-in' | KnowledgeAiProvider;

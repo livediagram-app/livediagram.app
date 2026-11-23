@@ -33,7 +33,7 @@ export const SOURCE_SIGNAL_CONCURRENCY = 10;
 // A range read waits this long for the sheet app; past it the reader shows its saved values and offers Update.
 export const SHEET_DOOR_TIMEOUT_MS = 8_000;
 
-const doorsFor = (env: Env): AppDoors =>
+export const doorsFor = (env: Env): AppDoors =>
   createAppDoors({
     origin: (app) => appOrigin(env, app),
     key: (app) => appKey(env, app),
@@ -44,7 +44,7 @@ const doorsFor = (env: Env): AppDoors =>
 // The plan as the person reaches it themselves: their own access (owner, team, or a live link they opened), any
 // level. A share code sent with the request, a public (Community) link, an app acting for them, and an item in an app
 // with no sheets all answer as missing.
-async function ownSource(ctx: RouteContext, id: string): Promise<Loaded | Response> {
+export async function ownSource(ctx: RouteContext, id: string): Promise<Loaded | Response> {
   const { person, share } = ctx.caller;
   if (!person || share || person.app || person.drive || person.export) return notFound();
   const loaded = await loadItem(ctx.env, id, ctx.caller, 'view');
@@ -85,7 +85,7 @@ export async function handleSheetList(ctx: RouteContext, id: string): Promise<Re
 
 // The reader item that may watch: named in `watch`, proved by its own grant (X-Index-Grant), in a reader app, and
 // not reached through a public link. Anything less reads without a watch.
-async function watcherOf(ctx: RouteContext, watch: unknown): Promise<string | null> {
+export async function watcherOf(ctx: RouteContext, watch: unknown): Promise<string | null> {
   const itemId = (watch as { itemId?: unknown } | null)?.itemId;
   if (!isId(itemId)) return null;
   const grant = await verifyOwnGrant(ctx.env, ctx.request.headers.get(ITEM_GRANT_HEADER));

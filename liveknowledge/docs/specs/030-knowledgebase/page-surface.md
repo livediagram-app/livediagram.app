@@ -96,7 +96,8 @@ shows their name."
 - **What.** 28 px discs side by side, 4 px apart, never overlapping (owner 2026-11-22), the creator first, then everyone else who saved the page in the order they
   first did: a person by their initials in a colour of their name (a person nobody here can name is "Guest"), an
   agent as a sparkle. Six at most; past that the sixth is "+N". Hovering or focusing a disc names them: "Priya Shah,
-  Created", "Claude, Edited".
+  Created", "Claude for Priya Shah, Edited" (an agent names the person it acted for: [Verification](verification.md)
+  "Made by a person or an agent").
 - **Kept.** One row a page and writer, `page_editors` (schema step V33), written in the same batch as the creator and
   last change (`page_authors`) on every write that counts; a person is one row, each agent its own. Page Health
   returns them as `editors`, the first writer first, 12 at most. A page not saved since the table began shows none.
@@ -221,6 +222,10 @@ should be to the right of Add Cover under the title."
   catalogue, which loads once (an async chunk) only when a page with an icon of the catalogue, or the picker's Icons
   tab, is shown. The emoji list loads only when the picker opens. A tree row's icon is a plain value of the row, so
   a tree of 500 pages renders no row for a change that is not its own.
+- **Starter structures.** A knowledgebase made from a structure (describe-to-set-up.md "The start screen")
+  opens with icons on its section pages and plain-named leaves, and a cover on each top-level section page and the
+  first page: the catalogue's line-art icons, and a theme gradient, so each is the page's own and changed or removed
+  as any other. Every id a structure uses is one the picker offers (a test holds it), so none draws the placeholder.
 - **Telemetry:** `Element` `Added` `PageIcon` when an icon is set on a page with none, `Element` `Changed`
   `PageIcon` when it is changed, `Element` `Deleted` `PageIcon` when it is removed.
 

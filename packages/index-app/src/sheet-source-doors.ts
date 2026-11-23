@@ -5,10 +5,16 @@
 //   GET  /api/internal/items/:id/sheets           → { sheets }
 //   POST /api/internal/items/:id/sheet-range      {sheetId, range | a1, cols?, watcher?} → the read
 //   POST /api/internal/items/:id/source-changed   {app, itemId, sheetIds} → 202
+//   GET  /api/internal/items/:id/plan-data        → {boards, metrics, filters} (live-data.md)
+//   POST /api/internal/items/:id/plan-data        {kind: board | metric, …, watcher?} → the read
 
 import {
+  readPlanDataAsk,
   readSheetRangeAsk,
   readSourceChange,
+  type PlanDataAsk,
+  type PlanDataDoorListing,
+  type PlanDataDoorRead,
   type SheetListing,
   type SheetRangeAsk,
   type SheetRangeDoorRead,
@@ -23,6 +29,10 @@ export type SheetRangeResult =
   | { status: 'range_gone' }
   | { status: 'invalid_range' };
 
+export type PlanDataListResult =
+  { status: 'ok'; listing: PlanDataDoorListing } | { status: 'not_found' };
+export type PlanDataResult = { status: 'ok'; read: PlanDataDoorRead } | { status: 'not_found' };
+
 export type SheetSourceHandlers = {
   // A source app's sheets, for a picker.
   listSheets?: (itemId: string) => Promise<SheetListResult>;
@@ -32,11 +42,15 @@ export type SheetSourceHandlers = {
     ask: SheetRangeAsk,
     watcher: string | null,
   ) => Promise<SheetRangeResult>;
+  // Live data (live-data.md): a source app's boards, metrics and filter values; one board's counts or one metric's rows
+  // now, and (`watcher`) a watch on the plan's cards. Reads only the counts.
+  planDataList?: (itemId: string) => Promise<PlanDataListResult>;
+  planData?: (itemId: string, ask: PlanDataAsk, watcher: string | null) => Promise<PlanDataResult>;
   // A reader app: a sheet its item draws from changed. Tells the item's open sessions; stores nothing.
   sourceChanged?: (itemId: string, change: SourceChange) => Promise<unknown>;
 };
 
-const SHEET_DOORS = new Set(['sheets', 'sheet-range', 'source-changed']);
+const SHEET_DOORS = new Set(['sheets', 'sheet-range', 'source-changed', 'plan-data']);
 
 // Whether `rest` (after `/api/internal/items/`) names one of these doors.
 export const isSheetSourceDoor = (rest: readonly string[]): boolean =>
@@ -62,6 +76,18 @@ export async function answerSheetSourceDoor(
     if (result.status === 'range_gone') return json({ error: 'range_gone' }, 409);
     if (result.status === 'invalid_range') return json({ error: 'invalid_range' }, 400);
     return notFound();
+  }
+  if (door === 'plan-data' && request.method === 'GET' && handlers.planDataList) {
+    const result = await handlers.planDataList(id);
+    return result.status === 'ok' ? json(result.listing) : notFound();
+  }
+  if (door === 'plan-data' && request.method === 'POST' && handlers.planData) {
+    const body = await bodyOf(request);
+    const ask = readPlanDataAsk(body);
+    if (!ask) return json({ error: 'invalid_source' }, 400);
+    const watcher = validId(body?.['watcher']) ? body['watcher'] : null;
+    const result = await handlers.planData(id, ask, watcher);
+    return result.status === 'ok' ? json(result.read) : notFound();
   }
   if (door === 'source-changed' && request.method === 'POST' && handlers.sourceChanged) {
     const change = readSourceChange(await bodyOf(request));

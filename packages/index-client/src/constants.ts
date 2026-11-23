@@ -375,6 +375,8 @@ export const INDEX_ERRORS = [
   'invalid_range',
   'range_gone',
   'source_unavailable',
+  // Live data (live-data.md): a plan-data ask that is neither a board count nor a metric.
+  'invalid_source',
   // Webhooks (webhooks.md): a malformed body, an address refused, a document full, no key set, a caller who isn't an
   // account, card moves malformed.
   'invalid_webhook',

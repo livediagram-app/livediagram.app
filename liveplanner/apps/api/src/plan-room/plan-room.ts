@@ -124,11 +124,14 @@ import type { SheetWatches } from './sheet-watchers';
 import type { SentCards } from './sent-cards';
 import {
   listSheets,
+  planData,
+  planDataList,
   readSheetRange,
   roomSheetWatches,
   roomSentCards,
   type SheetRangeAsk,
 } from './plan-room-doors';
+import type { PlanDataAsk } from '@liveworkspace/index-client';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -437,6 +440,16 @@ export class PlanRoom extends DurableObject<Env> {
 
   readSheetRange(planId: string, ask: SheetRangeAsk, watcher: string | null) {
     return readSheetRange(this, planId, ask, watcher);
+  }
+
+  // A chart or table counting this plan's cards (liveworkspace/docs/specs/004-index/live-data.md): its boards and
+  // metrics for a picker, and one board's counts or one metric's rows, watching the plan's cards (plan-data-source.ts).
+  planDataList(planId: string) {
+    return planDataList(this, planId);
+  }
+
+  planData(planId: string, ask: PlanDataAsk, watcher: string | null) {
+    return planData(this, planId, ask, watcher);
   }
 
   // A new plan from a Drive file (routes/internal-file.ts read it): its content lands as a copy's does, and it

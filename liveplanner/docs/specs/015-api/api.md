@@ -432,6 +432,16 @@ gone. A `watcher` (the reading item's id) is kept by the plan's room for a day f
 (`plan-room/sheet-watchers.ts`); every change to a watched Sheet (a relayed `sheets` op) is gathered for 1.5 s and told
 to the index once (`POST /api/index/app/items/:id/sheet-changed`), whose `gone` answer forgets those watchers.
 
+**Live data** ([liveworkspace live-data.md](../../../../liveworkspace/docs/specs/004-index/live-data.md)): a chart or
+table in another app counting a board's cards or showing a Dashboard metric, on the index's key alone
+(`plan-room/plan-data-source.ts`). `GET /api/internal/items/:id/plan-data` answers 200 `{ boards, metrics, filters }`
+(every Board tab, every metric kind, and the priorities, labels, assignees and card types a filter can name, each
+capped at 100). `POST /api/internal/items/:id/plan-data` `{ kind: 'board', boardId, by, filter? } | { kind: 'metric',
+metric }` with an optional `watcher` reads only the counts: 200 `{ sourceName, tabId, label, table }` (one series, at
+most 500 categories), 400 `invalid_source`, 404 for a plan or board that is not there. A watcher is kept as
+`(watcher, 'cards')` in the plan's watches; every relayed `items` or `item-types` op marks `cards` changed, gathered
+with Sheet changes and told to the index the same way.
+
 **Connected tabs** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md), the blueprint's "Each
 app"). `POST /api/internal/items/:id/connected-tabs` `{ name, connection }`, on the index's key alone, is the index's
 reverse write of a connection made both ways (`plan-room/connected-tab.ts`): one empty tab named `name` (the host's

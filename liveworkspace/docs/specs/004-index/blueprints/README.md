@@ -12,6 +12,7 @@ Follow the references below only as needed; never upfront.
 - ./connected-tabs.md - when working on connected tabs: the build order, the connections table, the make, open and removal doors, each app's column and door
 - ./kits.md - when working on project kits: the run's wire shapes, the index's two routes, the apps' template door, tests
 - ./sheet-sources.md - when working on sheet sources: the index's two routes, the doors' contract, the watch and the change signal, limits and tests
+- ./live-data.md - when working on live data: board and metric reads, the plan-data routes and door, the cards watch, Freeze, tables
 - ./live-embeds.md - when working on live embeds: the element's fields and checks, the embed ticket, the slots, the host's
   side of the frame's messages, snapshots, limits and tests
 - ./send-to-plan.md - when working on Send to Plan: the wire, the index's routes and table, liveplanner's door and change call, the editors' store, picker and chips, tests

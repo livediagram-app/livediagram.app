@@ -11,6 +11,7 @@ export const SOURCE_WATCH_APPS = [
   'livedocuments',
   'livediagram',
   'livedesign',
+  'liveknowledge',
 ] as const satisfies readonly App[];
 export type SourceWatchApp = (typeof SOURCE_WATCH_APPS)[number];
 

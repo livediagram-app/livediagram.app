@@ -202,6 +202,7 @@ export const ORDER: readonly string[] = [
   'palette/tools/data-elements/rating',
   'palette/tools/data-elements/pie-chart',
   'palette/tools/data-elements/bar-and-line-charts',
+  'palette/tools/data-elements/live-data',
   'palette/tools/data-elements/legend',
   'palette/concept-graphics/timeline-rail',
   'pages/wireframe-pages/inspect',

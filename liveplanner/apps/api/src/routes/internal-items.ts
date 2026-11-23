@@ -79,6 +79,9 @@ export function handleInternalItems(
       // watch for the item that asked.
       listSheets: (id) => planRoom(env, id).listSheets(),
       sheetRange: (id, ask, watcher) => planRoom(env, id).readSheetRange(ask, watcher),
+      // A chart or table counting the plan's cards or showing a Dashboard metric (live-data.md), in the plan's room.
+      planDataList: (id) => planRoom(env, id).planDataList(),
+      planData: (id, ask, watcher) => planRoom(env, id).planData(ask, watcher),
       // A new plan from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importProjectFileFor(env, input),
       // A new item from one of this app's templates, a project kit's part (internal-template.ts).

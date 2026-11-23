@@ -58,6 +58,7 @@ import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
+import type { PlanDataAsk, PlanDataListing, PlanDataRead } from './live-data';
 import type {
   Approval,
   ApprovalCandidate,
@@ -368,6 +369,22 @@ export function createIndexClient({
       }),
     newPlanForSend: (name: string) =>
       call<{ item: Item }>('/plan-sends/plans', { method: 'POST', body: { name } }),
+
+    // Live data (live-data.md), on the person's own access: a plan's boards, metrics and filter values, and one board's
+    // counts or one metric's rows now. `watch` as readSheetRange's.
+    listPlanData: (itemId: string, options: RequestOptions = {}) =>
+      call<PlanDataListing>(`/items/${enc(itemId)}/plan-data`, { signal: options.signal }),
+    readPlanData: (
+      itemId: string,
+      ask: PlanDataAsk,
+      options: RequestOptions & { grant?: string | null; watch?: string | null } = {},
+    ) =>
+      call<PlanDataRead>(`/items/${enc(itemId)}/plan-data`, {
+        method: 'POST',
+        body: options.watch ? { ...ask, watch: { itemId: options.watch } } : ask,
+        ...(options.grant ? { grant: options.grant } : {}),
+        signal: options.signal,
+      }),
 
     // One item's History: its events of the last EVENT_RETENTION_MS, newest first, a page at a time (HISTORY_PAGE
     // by default, at most HISTORY_LIMIT_MAX). Its owner's and its team's only; anyone else is 404.

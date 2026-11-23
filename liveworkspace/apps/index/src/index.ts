@@ -41,6 +41,7 @@ import { handleTeamAudit } from './team-audit-read';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 import { handleSpacePreviews } from './space-previews';
 import { handleSheetList, handleSheetRange } from './sheet-sources';
+import { handlePlanData } from './live-data';
 import { under } from '@liveworkspace/index-app/worker-http';
 import { guardRequest } from '@liveworkspace/api-kit/request-failure';
 import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
@@ -123,6 +124,8 @@ async function route(ctx: RouteContext): Promise<Response> {
     if (segments[2] === 'sheet-range' && segments.length === 3) return handleSheetRange(ctx, id);
     // Send to Plan (plan-sends.ts): a send to this plan, or this source's sends for its chips.
     if (segments[2] === 'plan-sends' && segments.length === 3) return handlePlanSends(ctx, id);
+    // A board's counts or a metric's rows on the person's own access, and the plan's boards for its picker (live-data.ts).
+    if (segments[2] === 'plan-data' && segments.length === 3) return handlePlanData(ctx, id);
     // Approvals (approvals.ts): asked, decided, cancelled and read, a person in person only.
     if (segments[2] === 'approval') return handleApproval(ctx, id, segments.slice(3));
     // Request Access (access-requests.ts): asked, granted and declined, an account in person only.
@@ -206,6 +209,7 @@ const routeLabel = createApiRouteLabel(
     'sheets',
     'sheet-range',
     'sheet-changed',
+    'plan-data',
     'approval',
     'decision',
     'access-requests',

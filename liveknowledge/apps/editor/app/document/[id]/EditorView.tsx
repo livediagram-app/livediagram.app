@@ -101,7 +101,17 @@ const sheetLinkGrantOf = async (itemId: string): Promise<string | null> =>
 const trackSheetLink = (event: SheetLinkEvent): void =>
   event === 'ChartSheetLink'
     ? track('Element', 'Changed', 'ChartSheetLink')
-    : track('Element', 'Changed', 'ChartSheetUnlink');
+    : event === 'ChartBoardLink'
+      ? track('Element', 'Changed', 'ChartBoardLink')
+      : event === 'ChartMetricLink'
+        ? track('Element', 'Changed', 'ChartMetricLink')
+        : event === 'TableLiveLink'
+          ? track('Element', 'Changed', 'TableLiveLink')
+          : event === 'LiveDataFreeze'
+            ? track('Element', 'Changed', 'LiveDataFreeze')
+            : event === 'LiveDataUnfreeze'
+              ? track('Element', 'Changed', 'LiveDataUnfreeze')
+              : track('Element', 'Changed', 'ChartSheetUnlink');
 // Only a Community link's view draws it, so it stays off every other open's first load.
 const CommunityBar = dynamic(
   () => import('@/components/chrome/CommunityBar').then((m) => m.CommunityBar),

@@ -9,6 +9,7 @@ Follow the references below only as needed; never upfront.
 - ./live-embeds.md - when one item shows another live, read-only, inside it: each reader's own access, the embed ticket, loading on screen, snapshots for exports and Community
 - ./sheet-sources.md - when a chart in one app draws from a sheet in another: the range read on each reader's own access, the door, the change signal, freezing
 - ./send-to-plan.md - when working on Send to Plan: a sticky, a comment, words or an action in any app made a liveplanner card as the person, the send's record, the live status chip, the picker, agents
+- ./live-data.md - when a chart or table draws from a plan: Sheet ranges, board counts and dashboard metrics, Freeze, tables, the cards watch, bounds, agents
 - ./team-audit-log.md - when working on the team audit log: what a team's admins can look back on, how it is written, kept a year, anonymised and read
 - ./approvals.md - when working on approvals: asking named people to approve an item, their decisions, the badge, Changed Since Approval, who may approve (a Viewer included), the email, History and the audit log
 - ./request-access.md - when working on Request Access: asking for an item you can't open, revealing nothing, the limits, who is told (Inbox and email), granting in one click and declining

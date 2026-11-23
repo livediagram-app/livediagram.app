@@ -252,6 +252,7 @@ export const ELEMENT_FIELD_NAMES = {
   table: fieldsOf<TableElement>()([
     'id',
     'type',
+    'chartSheetSource',
     'layerId',
     'componentMember',
     ...BOX_FIELDS,
