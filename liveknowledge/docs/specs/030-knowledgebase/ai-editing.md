@@ -87,8 +87,8 @@ writing on a verified page does not clear the tick, and a large change adds "Cha
   pages](knowledgebases-and-pages.md#the-knowledgebases-menu)), with a shield-and-tick icon.
 - **The modal** is centred (never at the top), a steady height whatever is chosen, and on a phone a sheet from the
   bottom. The shared hero header ([Dialog hero header](../../../../liveworkspace/docs/specs/004-index/dialog-hero-header.md))
-  with its own art: a page with a pencil under a shield, a sparkle beside it; title **AI Editing**, line "How far
-  agents connected over MCP, the CLI or the API may change pages."
+  with its own art: a sparkle, a shield with a tick, and a page rising off the band with a pencil writing on it;
+  title **AI Editing**, line "How far agents connected over MCP, the CLI or the API may change pages."
 - **Three choice cards**, stacked, each a small purpose-made illustration (a speech bubble with a pencil; a page with
   an empty tick ring and a pencil; a page with a filled tick and a pencil), the level's name, its line, and a radio
   mark. The chosen card wears the brand ring and wash. **Default** rides Suggest Edits Only's name as a quiet pill.
@@ -101,7 +101,8 @@ writing on a verified page does not clear the tick, and a large change adds "Cha
   A failed save says so in the dialog and keeps the choice.
 - **Keyboard and screen readers:** the cards are one radio group (native radios: the arrow keys move between them,
   Space chooses), each named by its level and described by its line; the switch is a `role="switch"` with its state.
-  Escape and Cancel close without saving. Targets are 44 px at least on a touch screen.
+  Escape and Cancel close without saving. On a touch screen each card is 56 px tall at least; the switch, Save and
+  Cancel are the shared controls, at their own sizes.
 - Light and dark alike; the chrome motion budget (the switch's unfold 200 ms, none with reduced motion).
 
 ## For agents

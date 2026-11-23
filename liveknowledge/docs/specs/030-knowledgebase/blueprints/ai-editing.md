@@ -61,8 +61,9 @@ Derived from [AI Editing](../ai-editing.md). Implementation detail only; the spe
 ## Accessibility
 
 - One `role="radiogroup"` of native radios labelled by the dialog's title; each radio described by its line. The switch
-  is a button with `role="switch"` and `aria-checked`. Focus rings on every control; 44 px targets under a coarse
-  pointer; reduced motion drops the unfold.
+  is a button with `role="switch"` and `aria-checked`. Focus rings on every control; each card's label is 56 px
+  (`pointer-coarse:min-h-14`) under a coarse pointer, the switch and buttons the shared `Switch` and `Button`; reduced
+  motion drops the unfold.
 
 ## Observability
 

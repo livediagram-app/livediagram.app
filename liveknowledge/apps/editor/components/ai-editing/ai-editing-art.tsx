@@ -25,60 +25,62 @@ const SHIELD_GLYPH = (
   </g>
 );
 
-// A page rising from the band's foot, its lines of writing, a pencil writing on it, a shield standing guard beside it
-// and a sparkle that bobs twice (motion allowing).
+// Kept to the 34px under the header's buttons: a sparkle that bobs twice (motion allowing), a shield with a tick, and a
+// page rising off the band's foot with its lines of writing and a pencil writing the last one.
 const PIECES = (
   <svg
     {...HERO_SVG}
-    width="96"
-    height="30"
-    viewBox="0 0 96 30"
-    overflow="visible"
+    width="92"
+    height="34"
+    viewBox="0 0 92 34"
     className={HERO_PLACE.bottomRight}
+    data-ai-editing-hero=""
   >
+    {/* The sparkle. */}
+    <path
+      className={HERO_MOTION.float}
+      d="M7 5l1.4 3.1 3.1 1.4-3.1 1.4L7 14l-1.4-3.1-3.1-1.4 3.1-1.4Z"
+      fill="var(--hero-accent)"
+    />
     {/* The shield. */}
     <path
-      d="M22 9l9 3.4v6.6c0 5.6-3.7 9.6-9 11.4-5.3-1.8-9-5.8-9-11.4v-6.6Z"
-      fill="var(--hero-wash)"
-      stroke="var(--hero-line)"
-      strokeWidth="1"
-    />
-    <path
-      d="M18.4 19.6l2.4 2.4 4.6-5"
-      fill="none"
+      d="M26 8l10 3.8v7.2c0 6.2-4.2 10.5-10 12.6-5.8-2.1-10-6.4-10-12.6v-7.2Z"
+      fill="var(--hero-plate)"
       stroke="var(--hero-accent)"
       strokeWidth="1.6"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M21.6 20.2l3.2 3.2 5.6-6"
+      fill="none"
+      stroke="var(--hero-accent)"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-    {/* The page. */}
+    {/* The page, running off the band's foot. */}
     <rect
       x="44"
-      y="2"
-      width="30"
-      height="34"
-      rx="4"
+      y="4"
+      width="34"
+      height="40"
+      rx="5"
       fill="var(--hero-plate)"
       stroke="var(--hero-line)"
     />
     <path
-      d="M50 10h16M50 15h18M50 20h12"
-      stroke="var(--hero-soft)"
+      d="M50 12h22M50 18h17M50 24h22M50 30h8"
+      stroke="var(--hero-mark)"
       strokeWidth="2.2"
       strokeLinecap="round"
+      opacity="0.55"
     />
-    {/* The pencil, writing the next line. */}
-    <g transform="rotate(-40 80 22)">
-      <rect x="66" y="19" width="22" height="6" rx="1.5" fill="var(--hero-accent)" />
-      <path d="M66 19l-5 3 5 3Z" fill="var(--hero-soft)" />
-      <rect x="84" y="19" width="4" height="6" rx="1" fill="var(--hero-wash)" />
+    {/* The pencil, writing the last line. */}
+    <g transform="rotate(-38 61 30)">
+      <rect x="61" y="27.5" width="20" height="5" rx="1.25" fill="var(--hero-accent)" />
+      <path d="M61 27.5l-5 2.5 5 2.5Z" fill="var(--hero-soft)" />
+      <rect x="78" y="27.5" width="3" height="5" rx="0.75" fill="var(--hero-line)" />
     </g>
-    {/* The sparkle. */}
-    <path
-      className={HERO_MOTION.float}
-      d="M88 1l1.4 3.2 3.2 1.4-3.2 1.4L88 10.2l-1.4-3.2-3.2-1.4 3.2-1.4Z"
-      fill="var(--hero-accent)"
-    />
   </svg>
 );
 
