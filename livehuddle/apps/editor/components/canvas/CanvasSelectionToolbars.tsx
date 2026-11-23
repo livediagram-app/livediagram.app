@@ -85,6 +85,9 @@ export function CanvasSelectionToolbars({
   // not-in-livehuddle.md "What it does", Work Tracker 639): it takes no text, turn, copy, look or layer step there,
   // and its menu's Arrange and Size stay a right-click away.
   const editable = !readOnly && !!selected && !isRetiredElement(selected);
+  // Send to Plan (docs/specs/013-workspace/send-to-plan.md "Who sees it"): read on the Space is enough, so a Participant
+  // or a Viewer gets the toolbar too, holding that button alone, on an element with words while they may send.
+  const sendable = !!selected && canSendElements([selected]);
   return (
     <>
       {/* SelectionPopover rides on a sibling wrapper that mirrors
@@ -100,10 +103,10 @@ export function CanvasSelectionToolbars({
           Canvas elements stay in the original wrapper at z-auto
           and continue to be visually covered by panels where they
           overlap. */}
-      {/* A Participant or a Viewer gets no selection toolbar: every button on it is an Editor's, and its one
-          read-only button, the comments, left livehuddle (docs/specs/002-project-scope/not-in-livehuddle.md
-          "Comments, actions, links and notes"). */}
-      {showPopover && selectionBounds && !readOnly ? (
+      {/* A Participant or a Viewer gets the selection toolbar only to Send to Plan: every other button on it is an
+          Editor's, and its one other read-only button, the comments, left livehuddle
+          (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"). */}
+      {showPopover && selectionBounds && (!readOnly || sendable) ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
@@ -157,9 +160,7 @@ export function CanvasSelectionToolbars({
             // are the missing nudge for two things on the same one.
             onBringToFront={editable ? props.onBringSelectedToFront : undefined}
             // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a sticky's way in (livehuddle has no element menu row).
-            onSendToPlan={
-              selected && canSendElements([selected]) ? () => sendElements([selected]) : undefined
-            }
+            onSendToPlan={sendable && selected ? () => sendElements([selected]) : undefined}
             onSendToBack={editable ? props.onSendSelectedToBack : undefined}
             onDelete={readOnly ? undefined : onDeleteSelected}
             onOpenContextMenu={
