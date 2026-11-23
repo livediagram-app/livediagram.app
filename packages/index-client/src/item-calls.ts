@@ -61,6 +61,8 @@ export type SpaceCall = {
   host: boolean;
   live: boolean;
   startedAt: number;
+  // Who came, first come: the summary's draft names them.
+  names: string[];
   summary: { title: string; link: string } | null;
   summaryDefault: { id: string; title: string } | null;
 };

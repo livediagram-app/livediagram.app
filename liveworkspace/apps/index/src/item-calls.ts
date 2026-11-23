@@ -201,6 +201,7 @@ async function readSpaceCall(ctx: RouteContext, spaceId: string): Promise<Respon
     host,
     live: read.live,
     startedAt: call.started_at,
+    names: read.names,
     summary:
       call.summary_link && call.summary_title
         ? { title: call.summary_title, link: call.summary_link }
