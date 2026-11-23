@@ -6887,6 +6887,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "One proposed page. `parent` is the `id` of a page earlier in the list, or null at the top; `depth` is 1 to 3.",
     "properties": {
+      "cover": {
+        "description": "A built-in theme gradient cover (`theme-<name>`); only a structure picked on the start carries one.",
+        "type": "string"
+      },
       "depth": {
         "type": "number"
       },
@@ -6895,6 +6899,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "icon": {
+        "description": "A line-art page icon's id; only a structure picked on the start carries one (describe-to-set-up.md).",
+        "type": "string"
       },
       "id": {
         "type": "string"

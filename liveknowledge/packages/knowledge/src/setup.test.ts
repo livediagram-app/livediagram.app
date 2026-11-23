@@ -340,3 +340,30 @@ describe('a suggestion end to end, with a faked model', () => {
     });
   });
 });
+
+describe('a page’s icon and cover in a reply', () => {
+  const first = (text: string) => parseSetupSuggestion(text)!.pages[0]!;
+  const withLooks = (icon: unknown, cover: unknown) =>
+    first(reply([page('a', 'Home', null, { icon, cover })]));
+
+  it('keeps a catalogue icon id and a built-in theme gradient', () => {
+    expect(withLooks('rocket', 'theme-dawn')).toMatchObject({
+      icon: 'rocket',
+      cover: 'theme-dawn',
+    });
+  });
+
+  it('drops anything else: a picture address, a colour, a shout or a non-string', () => {
+    for (const bad of ['https://example.com/a.png', '#fff', 'Not An Id', 7, null, {}]) {
+      const read = withLooks(bad, bad);
+      expect(read).not.toHaveProperty('icon');
+      expect(read).not.toHaveProperty('cover');
+    }
+  });
+
+  it('is absent when the reply gives none, as every model reply does', () => {
+    const read = first(reply([page('a', 'Home')]));
+    expect(read).not.toHaveProperty('icon');
+    expect(read).not.toHaveProperty('cover');
+  });
+});

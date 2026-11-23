@@ -17,6 +17,8 @@ import {
   layOutPages,
   nextArticleBlockId,
   pageDimensions,
+  parseTabCover,
+  parseTabIcon,
   truncateName,
   type ArticleBlock,
   type ArticleRun,
@@ -214,6 +216,9 @@ export function importedPageTab(input: ImportedPageInput): ImportedPage {
       `It makes ${blocks.length.toLocaleString('en-GB')} blocks; a page holds at most ${MAX_ARTICLE_BLOCKS.toLocaleString('en-GB')}.`,
     );
   }
+  // A starter structure's page may carry an icon and a cover; an import's plan carries none. Read as stored ones are.
+  const icon = parseTabIcon(page.icon ? { iconId: page.icon } : undefined);
+  const cover = parseTabCover(page.cover ? { gradient: page.cover } : undefined);
   const tab: Tab = {
     id,
     name,
@@ -221,6 +226,8 @@ export function importedPageTab(input: ImportedPageInput): ImportedPage {
     defaultTextSize: 'sm',
     templateChosen: true,
     ...input.seed,
+    ...(icon ? { icon } : {}),
+    ...(cover ? { cover } : {}),
     ...(parent ? { parent } : {}),
     pages: [sheet],
     articles: { [KNOWLEDGEBASE_FLOW]: { blocks } },

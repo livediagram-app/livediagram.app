@@ -221,6 +221,10 @@ should be to the right of Add Cover under the title."
   catalogue, which loads once (an async chunk) only when a page with an icon of the catalogue, or the picker's Icons
   tab, is shown. The emoji list loads only when the picker opens. A tree row's icon is a plain value of the row, so
   a tree of 500 pages renders no row for a change that is not its own.
+- **Starter structures.** A knowledgebase made from a structure (describe-to-set-up.md "The start screen")
+  opens with icons on its section pages and plain-named leaves, and a cover on each top-level section page and the
+  first page: the catalogue's line-art icons, and a theme gradient, so each is the page's own and changed or removed
+  as any other. Every id a structure uses is one the picker offers (a test holds it), so none draws the placeholder.
 - **Telemetry:** `Element` `Added` `PageIcon` when an icon is set on a page with none, `Element` `Changed`
   `PageIcon` when it is changed, `Element` `Deleted` `PageIcon` when it is removed.
 

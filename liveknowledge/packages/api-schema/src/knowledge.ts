@@ -307,6 +307,10 @@ export type KnowledgeSetupPage = {
   headings: string[];
   parent: string | null;
   depth: number;
+  /** A line-art page icon's id; only a structure picked on the start carries one (describe-to-set-up.md). */
+  icon?: string;
+  /** A built-in theme gradient cover (`theme-<name>`); only a structure picked on the start carries one. */
+  cover?: string;
 };
 /** Which AI answered a suggestion (describe-to-set-up.md "The model"): built-in AI with no key, else the team's. */
 export type KnowledgeSetupProvider = 'built-in' | KnowledgeAiProvider;
