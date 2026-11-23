@@ -66,6 +66,8 @@ export function sendPlace(input: {
   kind: PlanSendKind;
   tabId?: string | null;
   elementId?: string | null;
+  // Which of the element's threads (a plan card's): its id. Picked words key themselves instead.
+  part?: string | null;
   label?: string;
   text: string;
 }): PlanSendPlace {
@@ -76,7 +78,7 @@ export function sendPlace(input: {
     kind: input.kind,
     tabId: input.tabId ?? null,
     elementId: input.elementId ?? null,
-    part: input.kind === 'text' ? textPart(text) : null,
+    part: input.kind === 'text' ? textPart(text) : (input.part ?? null),
     label: clip((input.label ?? '').trim(), PLAN_SEND_LABEL_MAX),
     text,
   };
@@ -102,7 +104,14 @@ export function canSendHere(): boolean {
 export function sendFromHere(
   kind: PlanSendKind,
   noun: SendNoun,
-  of: readonly { elementId: string | null; text: string; label?: string }[],
+  of: readonly {
+    elementId: string | null;
+    text: string;
+    label?: string;
+    // A plan card's thread: its id, and no tab (a card is on every board that shows it).
+    part?: string;
+    tabId?: null;
+  }[],
   // Another tab than the one shown (a tab menu's Send All).
   onTab?: string,
 ): void {
@@ -117,9 +126,10 @@ export function sendFromHere(
         app,
         itemId,
         kind,
-        tabId,
+        tabId: o.tabId === null ? null : tabId,
         elementId: o.elementId,
         text: o.text,
+        ...(o.part ? { part: o.part } : {}),
         ...(o.label ? { label: o.label } : {}),
       }),
     ),

@@ -81,15 +81,19 @@ export const cardLink = (env: Pick<Env, 'ENVIRONMENT'>, planId: string, cardId: 
 /** The exact place in its app: the item's address and the editor's deep link (each app's collab-deep-link.ts). */
 export function placeLink(
   env: Pick<Env, 'ENVIRONMENT'>,
-  place: Pick<PlanSendPlace, 'app' | 'itemId' | 'kind' | 'tabId' | 'elementId'>,
+  place: Pick<PlanSendPlace, 'app' | 'itemId' | 'kind' | 'tabId' | 'elementId'> &
+    Partial<Pick<PlanSendPlace, 'part'>>,
 ): string {
   const base = `${appSiteOrigin(env, place.app)}${APP_ITEMS[place.app].itemPath}${enc(place.itemId)}`;
   const parts: string[] = [];
   if (place.tabId) parts.push(`t=${enc(place.tabId)}`);
   if (place.elementId) {
     // A plan's card thread opens its card; anywhere else, the element, and its thread or action.
-    if (place.app === PLAN_APP) parts.push(`item=${enc(place.elementId)}`);
-    else {
+    // A card's thread names which of the card's threads (`part`), opened on the card (lib/collab-deep-link.ts).
+    if (place.app === PLAN_APP) {
+      parts.push(`item=${enc(place.elementId)}`);
+      if (place.kind === 'thread' && place.part) parts.push(`thread=${enc(place.part)}`);
+    } else {
       parts.push(`el=${enc(place.elementId)}`);
       if (place.kind === 'thread') parts.push('open=comments');
       if (place.kind === 'action') parts.push('open=action');

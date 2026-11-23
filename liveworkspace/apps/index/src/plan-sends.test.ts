@@ -400,6 +400,9 @@ describe('the links', () => {
     expect(at({ app: 'liveplanner', kind: 'thread', elementId: 'c' })).toBe(
       'https://www.liveplanner.app/project/D#item=c',
     );
+    expect(at({ app: 'liveplanner', kind: 'thread', elementId: 'c', part: 'th 1' })).toBe(
+      'https://www.liveplanner.app/project/D#item=c&thread=th%201',
+    );
     expect(cardLink(env, 'P', 'c 1')).toBe('https://www.liveplanner.app/project/P#item=c%201');
   });
 });
