@@ -75,7 +75,9 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   per article (`meta`, `foot`) and a ProseMirror plugin that places each as a widget decoration (constant work a
   transaction: the first block's size and the document's); `ArticleEditor` hands the plugin to `mountArticleView`
   (`extraPlugins`) and `PageKnowledgeSlots` portals `PageMetaRow` into the host. The row is 28 px tall at least
-  whatever it holds, so the writing does not move when Page Health arrives. It holds: the tick with "Verified by
+  whatever it holds, so the writing does not move when Page Health arrives. What does move it (Required Reading's banner, a second line of pills on a phone) is
+  measured again: `observePageSlots` watches the hosts' sizes and `ArticleEditor` schedules a measure on each change,
+  so the zones, and the elements the narrow view draws at them, follow the blocks. It holds: the tick with "Verified by
   <name>" or the amber Review Due pill (nothing for Never Verified), "Review due <date>" ("Review was due" once
   passed), "Changed since verified" (from Page Health), and for whoever may verify a button: "Verify", or "Verify
   Again" once verified.

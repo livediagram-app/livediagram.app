@@ -59,3 +59,16 @@ export function createPageSlots(): PageSlots {
   });
   return { plugin, head, meta, foot };
 }
+
+/**
+ * Calls `changed` whenever a slot's drawn size changes. What the slots show arrives after the writing is first
+ * measured (the meta row's pills, Linked From, comments), and a slot that grows moves every block under it: the
+ * writing measures again, or the zones' places (and the embeds drawn at them) stay where the blocks were before.
+ * One observer for the three hosts; nothing where there is no ResizeObserver.
+ */
+export function observePageSlots(slots: PageSlots, changed: () => void): () => void {
+  if (typeof ResizeObserver === 'undefined') return () => {};
+  const observer = new ResizeObserver(() => changed());
+  for (const el of [slots.head, slots.meta, slots.foot]) observer.observe(el);
+  return () => observer.disconnect();
+}
