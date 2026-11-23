@@ -43,7 +43,8 @@ Opened from the place's menu (each app's spec says where), a dialog centred on s
 
 1. **Plan**: the person's plans, most recent across every app first (the index's Recent, `app=liveplanner`), with a
    search, and **New Plan**, which makes an empty Kanban plan of the person's own (named as they type, "Plans from
-   <source title>" by default) through liveplanner's template door and picks it. A plan they cannot edit is not listed:
+   <source title>" by default) through liveplanner's template door (`template: 'kanban'`, `bare: true`: the Board tab
+   alone, no example cards, sample people, Requests, form or Flow tab) and picks it. A plan they cannot edit is not listed:
    the boards read (below) refuses it, and the row says "You can't add cards to this plan".
 2. **Board** and **Column**: the plan's boards and each one's columns, read through liveplanner's own door with the
    person's grant (`GET /items/:id/automation-target`, an Editor's alone). The first board and its first column are

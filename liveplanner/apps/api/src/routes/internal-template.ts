@@ -4,7 +4,7 @@
 // with source `template`: every tab the template makes, the card types its boards bring, its example cards and its
 // Sheets made from their marks. The door cannot name the person, so the example cards are made by the example team's
 // Maya, as an offline plan's are before its maker is known. A form template is made only by the editor, so it has no
-// file.
+// file. A bare ask makes the first tab alone, with no example cards.
 import { projectToEnvelopeText, type EnvelopeSheet } from '@liveplanner/project';
 import {
   catalogueWithBoardTypes,
@@ -46,7 +46,7 @@ function exampleCards(kind: Parameters<typeof planTemplateSeedItems>[0], now: nu
   });
 }
 
-export const templateProjectFile: TemplateFile = (template, name) => {
+export const templateProjectFile: TemplateFile = (template, name, options) => {
   const kind = templateKindOf(template);
   if (!kind || isFormTemplateKind(kind)) return null;
   const now = Date.now();
@@ -55,6 +55,8 @@ export const templateProjectFile: TemplateFile = (template, name) => {
     kind,
     () => crypto.randomUUID(),
   );
+  // Bare (Send to Plan's New Plan, kits.md "The apps' door"): the first tab alone, and no example cards below.
+  if (options?.bare) tabs = tabs.slice(0, 1);
   const itemTypes = catalogueWithBoardTypes(
     null,
     tabs.flatMap((tab) => tab.elements),
@@ -65,7 +67,7 @@ export const templateProjectFile: TemplateFile = (template, name) => {
     tabs = made.tabs;
     sheets = made.sheets as EnvelopeSheet[];
   }
-  const items = exampleCards(kind, now);
+  const items = options?.bare ? [] : exampleCards(kind, now);
   return projectToEnvelopeText({ id: 'template', name }, tabs, now, items, itemTypes, sheets);
 };
 

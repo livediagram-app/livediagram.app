@@ -364,6 +364,8 @@ describe('New Plan', () => {
       folderId: null,
       name: 'Launch',
       template: 'kanban',
+      // An empty Kanban: the Board tab alone, no example cards or sample people.
+      bare: true,
     });
     h.appAnswer = () => new Response(null, { status: 500 });
     expect(

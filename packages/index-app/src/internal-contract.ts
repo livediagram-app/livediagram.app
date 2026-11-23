@@ -195,6 +195,8 @@ export type TemplateInput = {
   folderId: string | null;
   name: string;
   template: string;
+  // The template's first tab alone, with no example cards (kits.md "The apps' door"): Send to Plan's New Plan.
+  bare?: boolean;
 };
 
 export type TemplateResult = { status: 'ok'; id: string } | { status: 'unknown_template' };

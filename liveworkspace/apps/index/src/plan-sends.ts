@@ -354,7 +354,8 @@ export async function handleNewPlanForSend(ctx: PersonContext): Promise<Response
     env,
     PLAN_APP,
     '/items/from-template',
-    { owner: person.id, folderId: null, name, template: 'kanban' },
+    // An empty Kanban board: the Board tab alone, no example cards (kits.md "The apps' door").
+    { owner: person.id, folderId: null, name, template: 'kanban', bare: true },
     KIT_CREATE_TIMEOUT_MS,
   );
   const id = res.ok ? res.body.id : undefined;
