@@ -1,5 +1,13 @@
 import { Button, CloseIcon } from '@liveplanner/ui';
-import { CHECKLIST_MAX_ITEMS, CHECKLIST_MAX_TEXT, PIE_PALETTE, type ChecklistItem, type LegendItem, type LineSeries, type PieSlice } from '@liveplanner/project';
+import {
+  CHECKLIST_MAX_ITEMS,
+  CHECKLIST_MAX_TEXT,
+  PIE_PALETTE,
+  type ChecklistItem,
+  type LegendItem,
+  type LineSeries,
+  type PieSlice,
+} from '@liveplanner/project';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useProjectColours } from '@/hooks/ui/useProjectColours';

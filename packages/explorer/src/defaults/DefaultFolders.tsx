@@ -15,13 +15,24 @@ import { defaultFoldersHeroArt } from '@liveworkspace/ui/dialog-hero-art/default
 import { Dialog, DialogFooter } from '../ui/Dialog';
 import { FolderOutlineIcon } from '../ui/icons';
 import { ToastProvider, useToast } from '../ui/Toasts';
-import { PlacementBrowser, parsePlacement, placementValue, type PickerFolder, type PickerTeam } from '../dialogs/PlacementBrowser';
+import {
+  PlacementBrowser,
+  parsePlacement,
+  placementValue,
+  type PickerFolder,
+  type PickerTeam,
+} from '../dialogs/PlacementBrowser';
 import { useFolderStore } from '../data/useFolders';
 import { useExplorer } from '../explorer/context';
 import type { LensOption } from '../lens';
 import type { OrganiseTelemetry, TeamRef } from '../types';
 import { kindWords } from '../words';
-import { defaultEntries, destinationOf, type DefaultEntry, type DefaultFolderOption } from './entries';
+import {
+  defaultEntries,
+  destinationOf,
+  type DefaultEntry,
+  type DefaultFolderOption,
+} from './entries';
 import { usePlacementDefaults, type PlacementDefaultsStore } from './usePlacementDefaults';
 
 type Lists = {

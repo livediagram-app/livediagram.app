@@ -2,7 +2,15 @@
 
 import { useId, useState } from 'react';
 import { Button, CloseIcon, Select } from '@livediagram/ui';
-import { clampQuizSeconds, compactQuizOptions, QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT, QUIZ_SECONDS_CHOICES, quizOptionLetter, type ShapeElement } from '@livediagram/document';
+import {
+  clampQuizSeconds,
+  compactQuizOptions,
+  QUIZ_MAX_OPTIONS,
+  QUIZ_OPTION_MAX_TEXT,
+  QUIZ_SECONDS_CHOICES,
+  quizOptionLetter,
+  type ShapeElement,
+} from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';

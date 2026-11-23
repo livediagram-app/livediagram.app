@@ -21,7 +21,15 @@ import { useToast } from '../ui/Toasts';
 import { useTeams } from './context';
 import { InviteLinkDialog } from './InviteLinkDialog';
 import { PILL, PILL_QUIET, RolePill } from './RolePill';
-import { deleteCopy, lastAdmin, memberName, memberState, orderMembers, removalCopy, removalOf } from './rules';
+import {
+  deleteCopy,
+  lastAdmin,
+  memberName,
+  memberState,
+  orderMembers,
+  removalCopy,
+  removalOf,
+} from './rules';
 import { TEAM_FIELD, TeamFormDialog } from './TeamFormDialog';
 import { teamFacts } from './team-details';
 import { TeamPlan } from './TeamPlan';
@@ -283,7 +291,6 @@ export function TeamCard({
     </div>
   );
 }
-
 
 function TeamMemberRow({
   m,

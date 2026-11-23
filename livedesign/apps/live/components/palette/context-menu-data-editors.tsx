@@ -1,5 +1,13 @@
 import { CloseIcon } from '@livedesign/ui';
-import { CHECKLIST_MAX_ITEMS, CHECKLIST_MAX_TEXT, PIE_PALETTE, type ChecklistItem, type LegendItem, type LineSeries, type PieSlice } from '@livedesign/design';
+import {
+  CHECKLIST_MAX_ITEMS,
+  CHECKLIST_MAX_TEXT,
+  PIE_PALETTE,
+  type ChecklistItem,
+  type LegendItem,
+  type LineSeries,
+  type PieSlice,
+} from '@livedesign/design';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';

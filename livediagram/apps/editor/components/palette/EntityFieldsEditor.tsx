@@ -1,5 +1,12 @@
 import { CloseIcon } from '@livediagram/ui';
-import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, entityFieldView, removedFieldRemap, type EntityField, type FieldRemap } from '@livediagram/document';
+import {
+  ENTITY_MAX_FIELDS,
+  ENTITY_MAX_TEXT,
+  entityFieldView,
+  removedFieldRemap,
+  type EntityField,
+  type FieldRemap,
+} from '@livediagram/document';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';
 import { EntityKeyPicker } from './EntityKeyPicker';
