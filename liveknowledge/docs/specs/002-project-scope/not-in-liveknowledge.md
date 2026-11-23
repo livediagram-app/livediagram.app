@@ -65,7 +65,7 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   `useSpotlight` and the laser broadcast in `hooks/collab/useEditorBroadcast.ts` with its `laser` room op, the
   `laser`, `spotlight` and `pan` members of `CanvasTool` and their branches in `canvasCursorClass` and
   `useCanvasSurfaceGestures`, the Laser and Spotlight glyphs in `components/palette/palette-icons.tsx`, and the
-  strip's old furniture, unreferenced now: `components/palette/ArticleDockSlot.tsx`, `usePaletteKindMotion.ts`,
+  strip's old furniture, unreferenced now: `usePaletteKindMotion.ts`,
   `lib/palette-kind.ts`'s `usePaletteKind`, the Library tab of `usePaletteCatalogue`, `useStripCrowdsCorners` and
   the `stripSpansTop` clearance in `CanvasChrome`, and the Components, Media and Data categories of
   `palette-layouts.ts` with the tiles only they show. Deleted with this change:

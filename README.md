@@ -66,5 +66,5 @@ issue. [SECURITY.md](SECURITY.md) has the policy, and the specs are in
 
 Every product deploys from here, from the root `.github/`, to the liveworkspace Cloudflare account
 each `wrangler.toml` pins. Staging follows `main`, and production is a manual gate that ships what
-staging runs. A deploy builds and ships only the Workers a change reaches. The products' own
-`.github/` folders are inert. [docs/ci.md](docs/ci.md#deploys) has the details.
+staging runs. A deploy builds and ships only the Workers a change reaches. The products have no
+`.github/` folders of their own. [docs/ci.md](docs/ci.md#deploys) has the details.

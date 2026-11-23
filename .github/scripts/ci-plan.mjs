@@ -99,7 +99,7 @@ const RUN_ALL = [
   /^prettier\.config\.js$/,
   /^\.prettierignore$/,
   /^\.npmrc$/,
-  /^(livediagram|liveplanner|livedesign|livedocuments|livehuddle|liveknowledge)\/(package\.json|tsconfig\.base\.json|prettier\.config\.js|\.prettierignore)$/,
+  /^(livediagram|liveplanner|livedesign|livedocuments|livehuddle|liveknowledge)\/(package\.json|\.prettierignore)$/,
 ];
 
 // Deploys ignore what only CI and formatting read.

@@ -40,4 +40,4 @@ The liveworkspace monorepo. Read README.md and docs/structure.md first.
   another product's block.
 
 - This monorepo is the one home of every product: their work, CI and deploys happen here. The product
-  folders came in with `git subtree add` and keep their history; their own `.github/` folders are inert.
+  folders came in with `git subtree add` and keep their history; they have no `.github/` folders of their own.

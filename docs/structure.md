@@ -688,6 +688,6 @@ Each step is its own PR, and both products build and pass their tests after ever
 
 This monorepo is the one home of every product. Their work, CI and deploys happen here; the old
 per-product repositories are history. The products came in with `git subtree add` and keep their
-history; the `.github/` folders under each product are inert, since GitHub reads workflows only from
+history; the `.github/` folders they brought are gone, since GitHub reads workflows only from
 the root ([ci.md](ci.md)). The pre-push hook is the root's, driven by CI's planner
 ([ci.md](ci.md#before-a-push)); the products' own `.githooks/` are not installed.
