@@ -620,6 +620,24 @@ test('a large gated suite, one vitest cannot size, or one without thresholds kee
   );
 });
 
+test("a product api's coverage stays CI's: it keeps its related run", () => {
+  const api = {
+    dir: 'liveplanner/apps/api',
+    name: '@liveplanner/api',
+    vitest: true,
+    coverage: true,
+  };
+  const steps = testSteps([{ status: 'M', path: 'liveplanner/apps/api/src/index.ts' }], {
+    ...gated,
+    workspaceOf: () => api,
+    reach: () => ({ related: [], total: 30 }),
+  });
+  assert.deepEqual(
+    steps.map((s) => s.label),
+    ['@liveplanner/api: tests the change reaches'],
+  );
+});
+
 test('the quick run keeps coverage and the guard tests, and leaves the related runs out', () => {
   const steps = testSteps(
     [...itemChange, { status: 'M', path: 'liveplanner/apps/editor/lib/a.ts' }],

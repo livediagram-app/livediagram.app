@@ -32,11 +32,16 @@ const E2E = /(^|\/)e2e\//;
 export const EMITTERS_TEST = /^app\/telemetry\/[^/]+\/metric-emitters\.test\.ts$/;
 
 /**
- * A suite up to this size runs whole, with coverage, where its workspace enforces thresholds. Every such suite
- * today is under it (the largest, @liveplanner/items, has 182 test files and took 57 s of CPU time); it is
- * there for one that outgrows a push.
+ * A suite up to this size runs whole, with coverage, where its workspace enforces thresholds. Measured at a load
+ * of 50 on 10 cores: @liveplanner/items, the largest under it (182 test files), 31 s and 57 s of CPU time;
+ * the packages' median 45 s. Over it today: @liveworkspace/workbench (546) and @liveplanner/api (252).
  */
 export const COVERAGE_MAX_FILES = 200;
+/**
+ * Suites whose coverage stays CI's whatever their size: the product apis (140 to 252 test files; 46 s to 176 s
+ * measured, a whole Worker's suite on every push that touches it).
+ */
+export const COVERAGE_ON_CI = /\/apps\/api$/;
 
 /**
  * A workspace's scan tests, relative to it: its tracked tests that read files or are named `*guard.test.*`.

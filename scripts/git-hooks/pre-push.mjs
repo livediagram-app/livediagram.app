@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { repoReaders } from '../../.github/scripts/ci-readers.mjs';
 import {
   COVERAGE_MAX_FILES,
+  COVERAGE_ON_CI,
   EMITTERS_TEST,
   ciScriptSteps,
   ciScriptTests,
@@ -37,7 +38,8 @@ import { reachOf, runSteps } from './pre-push-run.mjs';
 export { listedTests, pooled } from './pre-push-run.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const BASE_REF = 'origin/main';
+// What the push is compared with. PRE_PUSH_BASE_REF names another ref, for a branch stacked on one not merged yet.
+const BASE_REF = process.env.PRE_PUSH_BASE_REF || 'origin/main';
 const ZERO_SHA = /^0+$/;
 
 /**
@@ -247,8 +249,8 @@ export function testWorkers(cores, load) {
  *   test itself); when that is most of its suite (`CAP_SHARE` of `CAP_MIN_FILES` test files or more, by
  *   `reach`), only the changed tests run and the suite is left to CI, which runs it whole anyway;
  * - where it enforces coverage thresholds and its suite is small (`COVERAGE_MAX_FILES` test files at most,
- *   by `reach`), the whole suite with coverage in place of the related run, so a new function without a
- *   test fails here, not on CI's Coverage thresholds step;
+ *   by `reach`, and not a product api: `COVERAGE_ON_CI`), the whole suite with coverage in place of the
+ *   related run, so a new function without a test fails here, not on CI's Coverage thresholds step;
  * - its guard tests, which scan files rather than import them, so `related` never picks them up (an
  *   app's root and `app/` tests, `lib/small-text-contrast.test.ts`, an api's `src/openapi` tests,
  *   which catch stale generated schemas, and every `*guard.test.*`);
@@ -290,6 +292,7 @@ export function testSteps(
     const covered =
       files.size > 0 &&
       ws.coverage === true &&
+      !COVERAGE_ON_CI.test(ws.dir) &&
       reached !== null &&
       reached.total <= COVERAGE_MAX_FILES;
     if (covered)
@@ -598,7 +601,7 @@ async function main() {
   }
   // CI checks the push merged with main as it is now, so the merged guards need today's main: a short fetch,
   // and the last one fetched where there is no network.
-  if (!dryRun)
+  if (!dryRun && BASE_REF === 'origin/main')
     spawnSync('git', ['fetch', '--quiet', 'origin', 'main'], {
       cwd: ROOT,
       stdio: 'ignore',

@@ -37,8 +37,9 @@ Prettier files.
 
 Some suites read files outside their own workspace from disk: the site's telemetry checks scan every
 product's apps and packages, the help centre's edition guards (`liveworkspace/apps/help/editions/<app>/tests`) read each whole product, the shared marketing guards
-read every marketing app, and livedesign's naming guard (`@livedesign/design`) reads all of `livedesign/`,
-the apps that depend on it included. Turbo's package graph can't see those reads, so before 2026-10-31 a
+read every marketing app, livedesign's naming guard (`@livedesign/design`) reads all of `livedesign/`,
+the apps that depend on it included, the Callout guard (`@liveworkspace/ui`) reads every app's and package's
+`.tsx`, and `@liveworkspace/next-config`'s tree scans read every script and every Next app's config. Turbo's package graph can't see those reads, so before 2026-10-31 a
 pull request touching only `liveplanner/` never ran the site's suite: it passed, and `main` went red at
 the next change that did reach the site.
 
@@ -46,7 +47,14 @@ Each such suite declares what it reads as `$TURBO_ROOT$/…` inputs on its `<wor
 `<workspace>#test:coverage` tasks in `turbo.json`. That one declaration does two jobs: turbo's cache
 hashes those files, so it never replays a stale pass, and the planner (`.github/scripts/ci-readers.mjs`)
 adds the suite to a run whose changed files fall in them. **A new test that reads outside its
-workspace adds its inputs there**, or it will pass on its pull request and fail on `main`.
+workspace adds its inputs there**, or it will pass on its pull request and fail on `main`. The pre-push
+hook reads the same declaration: it runs such a suite's scan tests when the push changes what it reads
+("Before a push").
+
+The Callout guard and the next-config scans had no such inputs until 2026-11-23. A pull request that added
+a hand-tinted note box to `packages/workbench` merged green, because nothing it changed reached
+`@liveworkspace/ui`, and the next three pull requests that did reach it failed on a line they never wrote;
+three Dependabot runs failed the same way on a help centre config that had merged two days before.
 
 Turbo's own cache (`.turbo/cache`) is kept between runs with GitHub's cache, saved on `main` only and
 read by pull requests, so a workspace whose inputs haven't changed since `main`'s run replays its
@@ -427,8 +435,21 @@ ratchet instead: it may never fall, and its floor rises as tests are added.
 
 A **pre-push hook** runs the fast checks CI's Checks job would fail on, and the tests the push reaches,
 so a deterministic failure shows up on the machine in minutes rather than on CI later. Whole suites,
-coverage floors and E2E are CI's: running them on every push took up to half an hour, loaded a machine
-several agents share, and timed out tests the change never touched.
+the editors' coverage floors and E2E are CI's: running them on every push took up to half an hour, loaded a
+machine several agents share, and timed out tests the change never touched.
+
+**What still got through** (pull request runs of CI and E2E, 18 to 23 November 2026: 926 runs, 144 with a
+failed job), and what the hook does about each since 2026-11-23:
+
+| Failure on CI                                                                                                                                                                                                          | Runs | Why the hook let it by                                                                                                                                                                                                 | Now                                                                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A repo-wide guard test in Tests (platform): the Callout guard, the site's dark-pair and hover-tie guards, next-config's history-state and apps-use-shared scans                                                        | 16   | The guard lives in a workspace the push never touched (the offender was in another), so no step ran it. In 6 of the 16 the offender was already on `main`, merged green by a pull request whose CI never ran the guard | The scan tests of every suite that reads what the push changes; the same on the push merged with `origin/main`; and CI now runs those suites on the pull request that adds the offender (`turbo.json`) |
+| Coverage thresholds step, a real threshold (a new function or branch with no test)                                                                                                                                     | 7    | Coverage was CI's alone                                                                                                                                                                                                | A changed workspace that enforces thresholds runs its suite with coverage                                                                                                                              |
+| Coverage thresholds step, a failing test (the step is also those workspaces' test run): help-centre and naming guards that read the repository, an api's generated manifest, tests in a dependent of a changed package | 31   | 13 were scan tests the related run cannot see; 6 were timing tests; the rest fail only in a dependent of the changed package, or skipped the hook                                                                      | The scan tests as above. A test in a dependent that does not read files is still CI's                                                                                                                  |
+| Copies and file size guards (each fails every Checks job at once, and the platform's CI script tests)                                                                                                                  | 8    | The hook runs both, so the push skipped it (`--no-verify`), or the copy only existed once the branch met `main`                                                                                                        | Both guards also run on the push merged with `origin/main`; `pnpm prepush:quick` for a `--no-verify` push                                                                                              |
+| Format check, speed budgets                                                                                                                                                                                            | 6    | The hook runs both, so the push skipped it                                                                                                                                                                             | `pnpm prepush:quick`                                                                                                                                                                                   |
+| Lint and type check                                                                                                                                                                                                    | 14   | 8 were a break the branch did not make (on `main`, or on the branch it was stacked on); 4 were Dependabot's; 2 skipped the hook                                                                                        | Unchanged: the hook runs both; a break that needs two merges is CI's                                                                                                                                   |
+| The site's build: `explorer.html` over its first-load budget by under 0.5 KiB (fails four products' Smoke build and Sites audit and the platform's Build)                                                              | 7    | The hook builds nothing                                                                                                                                                                                                | `pnpm prepush:quick --site-build` (the build takes minutes, so it is never automatic); the failure names that command                                                                                  |
 
 Measured on a quiet machine (2026-11-23, a change to three shared packages and all six editors): about
 eleven minutes, 82% of it the test runs, one after another; lint and type check were 18%, most of it
@@ -455,8 +476,34 @@ leaves that suite to CI, and the telemetry chart tests run once.
     speed-budget guard;
   - per workspace the push changes: `vitest related` on its changed code files (every test that imports
     one, and a changed test itself), then its guard tests, which scan files and so are never "related":
-    the tests at its root and in `app/`, `lib/small-text-contrast.test.ts` and an api's `src/openapi`
-    tests (stale generated schemas);
+    the tests at its root and in `app/`, `lib/small-text-contrast.test.ts`, an api's `src/openapi`
+    tests (stale generated schemas) and every `*guard.test.*`;
+  - **coverage thresholds**: a changed workspace that enforces them (a `test:coverage` script that runs
+    vitest, and `thresholds` in its vitest config: 61 workspaces) runs its whole suite with coverage in
+    place of the related run, so a new function without a test fails here. Measured on a machine at a
+    load of 50 on 10 cores: `@liveplanner/items`, the largest (182 test files), 31 s and 57 s of CPU
+    time; `@livehuddle/avatar` 24 s; a product's `agent-verbs` 26 s of CPU time. Left to CI, each
+    keeping its related run: the six product apis (140 to 252 test files, 46 s to 176 s measured:
+    `COVERAGE_ON_CI`), any suite over 200 test files (`COVERAGE_MAX_FILES`: `@liveworkspace/workbench`,
+    546), and the editors, whose floors CI checks across three shards;
+  - **the suites that read what the push changes** ("Suites that read other workspaces"), though the
+    push never touches them: each runs its scan tests, the tests that read files (`readFileSync`,
+    `readdirSync`, `git grep` ...) or are named `*guard.test.*`, found with one `git grep`
+    (`scripts/git-hooks/pre-push-guards.mjs`). That is the Callout guard for a change to any `.tsx`,
+    next-config's scans for any script, the site's style guards for a change under `packages/`, and
+    the help centre's edition guards (its repo paths, UI labels and naming tests) for any change. All
+    of them together took 20 s here at a load of 36;
+  - **the repo guards on the push merged with `origin/main`**, when `main` has commits the push lacks
+    (`scripts/git-hooks/merged-guards.mjs`). CI checks that merge, not the branch, so a branch can
+    pass alone and fail there: `main` gained a guard, another pull request merged an offender, or
+    both sides added the same code. The hook fetches `origin/main` (20 s at most, skipped without a
+    network), merges without touching the branch or the work tree (`git merge-tree`), checks the
+    result out as a temporary worktree, and runs the copies, file size and markup guards and every
+    reading suite's scan tests there, on this worktree's `node_modules`. A merge with conflicts is
+    skipped and says so. Measured: 9 s to check out, 3 s for the three guards, 4 s to remove, plus
+    the scan tests;
+  - the CI script tests (`.github/scripts/*.test.mjs`, `scripts/git-hooks/*.test.mjs`, 4 s), when the
+    push changes a file in either folder;
   - **a change that reaches most of a suite leaves it to CI.** Before anything runs the hook asks vitest
     what each changed workspace's change reaches (`vitest list --filesOnly --changed <merge base>`, a
     second or two each, four at once). Where that is 80% or more of a workspace's test files, and it has
@@ -467,19 +514,29 @@ leaves that suite to CI, and the telemetry chart tests run once.
   - once, when the push changes a product's code: the site's metric-emitters test for each such product
     (a telemetry event with no chart), in one run. Where the site itself changed, the tests of that kind
     its change reaches join that run and its related run leaves them out, so none runs twice (six ran
-    twice, 14,000 tests, when six catalogue files changed);
-  - when the push deletes or renames a file: every help edition's `repo-paths-in-docs` test (`liveworkspace/apps/help/editions/<app>/tests`).
+    twice, 14,000 tests, when six catalogue files changed).
 - **The test runs go a few at a time**, after the checks: one for every four cores, three at most, each
   with an even share of the cores as its workers, its output kept until it ends (a pass is one line, a
   failure prints in full).
 - When half the cores are already busy, the test runs go one at a time and each is capped at two workers,
   so a starved CPU doesn't fail timing tests.
+- It compares the push with `origin/main`; `PRE_PUSH_BASE_REF=<ref>` names another ref, for a branch
+  stacked on one that has not merged.
 - It checks only a push of the checked-out `HEAD` (`git push origin HEAD:<branch>` included); a push of any other commit, a tag or a deletion
   passes and is left to CI. Nothing changed since the merge base also passes.
 - One run at a time on the machine: a push made while another's checks are running waits its turn,
   for up to 15 minutes, then skips and says so.
 - It finds `pnpm` (which turbo needs) through corepack shims in the temp directory when `pnpm` isn't on
   `PATH`. `git push --no-verify` skips it; CI still runs everything, E2E included.
+- **Before a push with `--no-verify`, run `corepack pnpm prepush:quick`** (`pre-push.mjs --quick`): the
+  same plan without lint, type check and the related test runs, so what is left is the guards, the format
+  check, the guard tests, coverage thresholds and the merged guards. It needs no push, checks the
+  checked-out `HEAD` against `origin/main`, never waits behind another push's checks, and says at the
+  end what it left out. Most `--no-verify` pushes are a helper's, made while another push's checks hold
+  the machine; this is the part of the hook that is cheap enough to run anyway.
+  `corepack pnpm prepush:quick --site-build` also builds liveworkspace's site, which ends in its
+  first-load budget (`liveworkspace/apps/site/scripts/first-load-budget.ts`): worth it for a change to
+  the site or to a package its front door or Explorer loads.
 - A change to something every workspace leans on (`.github/`, the root config) reaches every group's
   lint, type check and format, as on CI; turbo's cache replays what hasn't changed.
   A guard's baseline list (`.github/scripts/*-baseline.txt`) is the exception, here and on CI

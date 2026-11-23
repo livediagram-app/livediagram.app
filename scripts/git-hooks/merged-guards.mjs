@@ -21,7 +21,7 @@ import { repoReaders } from '../../.github/scripts/ci-readers.mjs';
 import { scanTests, workspaceDirs } from './pre-push-guards.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const BASE_REF = 'origin/main';
+const BASE_REF = process.env.PRE_PUSH_BASE_REF || 'origin/main';
 const SCRIPT_GUARDS = [
   ['no new copies across products', '.github/scripts/duplicate-guard.mjs'],
   ['no new files over 800 lines', '.github/scripts/file-size-guard.mjs'],
@@ -67,7 +67,7 @@ function main() {
     '-p',
     BASE_REF,
     '-m',
-    'pre-push: HEAD merged with origin/main',
+    `pre-push: HEAD merged with ${BASE_REF}`,
   );
   const dir = mkdtempSync(path.join(tmpdir(), 'liveworkspace-merged-'));
   const remove = () => {
