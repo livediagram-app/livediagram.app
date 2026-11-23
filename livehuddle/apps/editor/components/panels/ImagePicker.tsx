@@ -161,7 +161,7 @@ export function ImagePicker({
         </TabButton>
       </nav>
       {/* As tall as the Upload tab on every tab, so the centred dialog keeps its height as tabs change. */}
-      <div className={`min-h-0 flex-1 overflow-y-auto p-4 ${uploadOnly ? '' : 'min-h-56'}`}>
+      <div className="min-h-56 flex-1 overflow-y-auto p-4">
         {tab === 'upload' ? (
           <ImageDropZone
             onSelectFile={handleFile}
