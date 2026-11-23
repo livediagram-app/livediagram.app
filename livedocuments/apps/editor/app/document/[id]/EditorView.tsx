@@ -1,5 +1,6 @@
 'use client';
 import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
+import { canCall, ItemCallHost } from '@liveworkspace/workbench/components/item-call/ItemCallHost';
 import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
@@ -441,6 +442,20 @@ export function EditorView() {
                 share={sessionShareCode ? { code: sessionShareCode } : null}
                 enabled={canSendToPlan({
                   signedIn: !!accountUserId,
+                  offline: isOffline,
+                  embed: !appChrome,
+                  community: sessionCommunity !== null,
+                })}
+              />
+              {/* Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md): the Call button's item, and
+                  Meetings in Tools. */}
+              <ItemCallHost
+                app="livedocuments"
+                itemId={ctx.authLoaded && hydrated ? documentId : null}
+                title={ctx.documentName?.trim() || 'Untitled document'}
+                share={sessionShareCode ? { code: sessionShareCode } : null}
+                signedIn={!!accountUserId}
+                enabled={canCall({
                   offline: isOffline,
                   embed: !appChrome,
                   community: sessionCommunity !== null,

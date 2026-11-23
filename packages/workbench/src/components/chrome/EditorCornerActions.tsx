@@ -71,6 +71,9 @@ export type EditorCornerActionsProps = {
   // Where the item's approval stands, first of all (liveworkspace approvals.md "In the editor"): an app inside an
   // approvals door passes `<ApprovalBadge corner />`. A slot, so an app with no door (livehuddle) never bundles it.
   approval?: ReactNode;
+  // Start a Call Here (liveworkspace item-calls.md): the shared ItemCallButton, its Call or its "3 in Call" pill, after
+  // the approval. A slot, so the card bundles no call code of its own.
+  call?: ReactNode;
 };
 
 export function EditorCornerActions({
@@ -88,6 +91,7 @@ export function EditorCornerActions({
   shareAction,
   leadAction,
   approval,
+  call,
 }: EditorCornerActionsProps) {
   // Drawn at the toolbar's UI scale (docs/specs/007-editor/ui-scale.md), as the palette strip and the menu card are,
   // so the three stand the same height in one row, still 12px from the corner.
@@ -166,6 +170,7 @@ export function EditorCornerActions({
         {/* Where the item's approval stands, first: the badge draws only inside an approvals door with an approval
             to show, so nothing here for anyone else. */}
         {approval ?? null}
+        {call ?? null}
         {leadAction ?? null}
         {onMakeCopy ? (
           <HoverCard title="Make a Copy" description={copyDescription}>
