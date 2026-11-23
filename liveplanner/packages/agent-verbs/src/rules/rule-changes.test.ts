@@ -345,6 +345,40 @@ describe('changing the rules', () => {
   });
 });
 
+// docs/specs/026-plan/automations.md "Snapshot steps": an agent sends both as written; the api keeps a revert a
+// person's, and the refusal says so.
+describe('snapshot steps through change_rules', () => {
+  it('sends Take Snapshot and Revert to Snapshot as written, and words a revert refused', async () => {
+    const take = { kind: 'take_snapshot', name: 'Weekly {{now.date}}' };
+    const revert = { kind: 'revert_snapshot', snapshot: 'sn1' };
+    const steps = [take, revert];
+    const w = world([listed()], (r, body) =>
+      r.method === 'POST' && JSON.stringify(body).includes('revert_snapshot')
+        ? refusal(403, { error: 'automation_needs_a_person', path: 'steps' })
+        : null,
+    );
+    const took = await apply(
+      [
+        {
+          op: 'add',
+          rule: { name: 'Weekly', trigger: { kind: 'card_created' }, steps: [take] },
+        },
+      ],
+      w,
+    );
+    expect(took.refusal).toBeUndefined();
+    expect(took.bodies[0]).toMatchObject({ steps: [take] });
+    const r = await apply(
+      [{ op: 'add', rule: { name: 'Reset', trigger: { kind: 'card_created' }, steps } }],
+      w,
+    );
+    expect(r.refusal?.code).toBe('automation_needs_a_person');
+    expect(r.refusal?.message).toMatch(/saved by a person, in the builder/);
+    const full = new ApiError(409, JSON.stringify({ error: 'automation_snapshots_full' }));
+    expect(ruleRefusalOf(full)!.message).toMatch(/at most 5 snapshots/);
+  });
+});
+
 describe('ruleRefusalOf', () => {
   const err = (status: number, body: unknown) =>
     new ApiError(status, typeof body === 'string' ? body : JSON.stringify(body));

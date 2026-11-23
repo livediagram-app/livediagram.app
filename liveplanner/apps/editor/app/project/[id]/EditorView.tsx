@@ -307,15 +307,16 @@ export function EditorView() {
     // a Default tab's paper is the viewer's, not the tab's.
     // Only a Dashboard draws participant cursors (plan-cursors.ts), so only there do Settings, the Collaborators
     // modal and search offer Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md).
-    <PlanAutomationsHost
-      scope={automationsScope}
-      plan={ctx.plan.context}
-      gate={automationsGate}
-      signedIn={!!accountUserId}
-    >
-      {/* A template's starter rules, once the plan it made can hold them (plan-templates.md "Starter rules"). */}
-      <PendingStarterRules tabId={tabs[0]?.id} projectId={ctx.projectId} offline={isOffline} />
-      <SnapshotsDoorProvider door={snapshotsDoor}>
+    // The snapshots door stands outside Automations: a Revert to Snapshot step lists the plan's snapshots through it.
+    <SnapshotsDoorProvider door={snapshotsDoor}>
+      <PlanAutomationsHost
+        scope={automationsScope}
+        plan={ctx.plan.context}
+        gate={automationsGate}
+        signedIn={!!accountUserId}
+      >
+        {/* A template's starter rules, once the plan it made can hold them (plan-templates.md "Starter rules"). */}
+        <PendingStarterRules tabId={tabs[0]?.id} projectId={ctx.projectId} offline={isOffline} />
         <CalendarFeedHost scope={calendarFeedScope} gate={calendarFeedGate}>
           <RoadmapHost
             scope={roadmapScope}
@@ -517,8 +518,8 @@ export function EditorView() {
             </EmailIntakeHost>
           </RoadmapHost>
         </CalendarFeedHost>
-      </SnapshotsDoorProvider>
-    </PlanAutomationsHost>
+      </PlanAutomationsHost>
+    </SnapshotsDoorProvider>
   );
   // The approvals door around the whole view: the corner card's badge, the banner and the Share dialog read it.
   return <ApprovalDoorProvider door={approvalDoor}>{view}</ApprovalDoorProvider>;

@@ -27,8 +27,20 @@ import {
 } from './outline';
 
 type Need = {
-  kind: 'column' | 'type' | 'field' | 'person' | 'filter' | 'form' | 'board' | 'webhook' | 'card';
+  kind:
+    | 'column'
+    | 'type'
+    | 'field'
+    | 'person'
+    | 'filter'
+    | 'form'
+    | 'board'
+    | 'webhook'
+    | 'card'
+    | 'snapshot';
   id: string;
+  // A snapshot's name as the step kept it, so the line says which one is gone.
+  name?: string;
 };
 
 // One thing a rule needs, as data: something it names that is gone (by kind and stored id), or a field Field Changed
@@ -154,6 +166,8 @@ function namesOf(rule: AutomationRuleBody, o: AutomationOutline): Need[] {
     if (s.kind === 'if' || s.kind === 'for')
       for (const c of s.conditions) out.push(...conditionNames(c));
     for (const a of stepActions(s)) out.push(...actionNames(a, o));
+    if (s.kind === 'revert_snapshot' && s.snapshot)
+      out.push({ kind: 'snapshot', id: s.snapshot, ...(s.name ? { name: s.name } : {}) });
   }
   return out;
 }
@@ -178,6 +192,8 @@ function present(need: Need, o: AutomationOutline, webhooks?: ReadonlySet<string
       return !o.boards || o.boards.some((b) => b.id === need.id);
     case 'card':
       return !o.cards || o.cards.has(need.id);
+    case 'snapshot':
+      return !o.snapshots || o.snapshots.has(need.id);
   }
 }
 
@@ -230,12 +246,14 @@ export const needLine = (need: AutomationNeed): string =>
         : `Repositories ${need.names.join(', ')} are not heard`
       : need.kind === 'unheard'
         ? `Field Changed never hears ${need.name}`
-        : need.kind === 'form' ||
-            need.kind === 'board' ||
-            need.kind === 'webhook' ||
-            need.kind === 'card'
-          ? `${WORDS[need.kind]} ${need.id} is gone`
-          : goneLine({ kind: need.kind, id: need.id });
+        : need.kind === 'snapshot' && need.name
+          ? `Snapshot “${need.name}” is gone`
+          : need.kind === 'form' ||
+              need.kind === 'board' ||
+              need.kind === 'webhook' ||
+              need.kind === 'card'
+            ? `${WORDS[need.kind]} ${need.id} is gone`
+            : goneLine({ kind: need.kind, id: need.id });
 
 // What the rule names that the plan lacks, a line each ("Column done is gone"), for agents.
 export function ruleNeeds(

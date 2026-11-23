@@ -699,6 +699,11 @@ function stillEmpty(part: unknown, pick: AutomationPick): boolean {
       return p.kind === 'notify' && p.webhook === '';
     case 'target':
       return 'target' in p && !(p as { target: { item: string } }).target.item;
+    case 'snapshot':
+      return (
+        (part as { kind: string }).kind === 'revert_snapshot' &&
+        !(part as { snapshot: string }).snapshot
+      );
   }
 }
 

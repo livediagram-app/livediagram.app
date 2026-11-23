@@ -8,6 +8,7 @@ import {
   CROSS_APP_READERS,
   isCrossAppKind,
 } from '@liveworkspace/automations/cross-app';
+import { isSnapshotKind, readSnapshotStep, SNAPSHOT_KINDS } from '@liveworkspace/automations/item';
 import {
   checkActionsCap,
   checkStepCaps,
@@ -59,6 +60,7 @@ import {
   type RuleRefusal,
 } from './validate-read';
 import { readConditions, readTrigger } from './validate-conditions';
+import { runsForPlan } from './incoming';
 
 export { AUTOMATION_LIST_MAX, type RuleRefusal } from './validate-read';
 // The shell of the check (name, time zone, chain, the caps every app shares) and a rule's name rules are
@@ -77,8 +79,17 @@ const NOT_IN_BRANCH = new Set([
   'ai',
   'wait',
   ...CROSS_APP_KINDS,
+  ...SNAPSHOT_KINDS,
 ]);
-const NOT_IN_IF = new Set(['if', 'for', 'notify', 'ai', 'wait', ...CROSS_APP_KINDS]);
+const NOT_IN_IF = new Set([
+  'if',
+  'for',
+  'notify',
+  'ai',
+  'wait',
+  ...CROSS_APP_KINDS,
+  ...SNAPSHOT_KINDS,
+]);
 
 function readSetValue(v: unknown, path: string, place: ValuePlace): AutomationSetValue {
   const o = obj(v, path);
@@ -363,6 +374,8 @@ function readStep(v: unknown, path: string, place: ValuePlace): AutomationStep {
     return CROSS_APP_READERS[s['kind']]!(s, path, {
       unknownValue: (t) => unknownValueIn(t, place),
     });
+  if (isSnapshotKind(s['kind']))
+    return readSnapshotStep(s, path, { unknownValue: (t) => unknownValueIn(t, place) });
   if (s['kind'] === 'wait') return readWait(s, path);
   if (s['kind'] === 'ai') {
     const read = readAiStep(s);
@@ -442,6 +455,23 @@ const placeOf = (trigger: AutomationTrigger): ValuePlace =>
           ? { form: true }
           : {};
 
+// Take Snapshot and Revert to Snapshot (spec "Snapshot steps"): a revert is the rule's last step; on a time trigger
+// either runs once for the plan (a Scheduled rule with no conditions and no card steps), never once for each card.
+function checkSnapshotSteps(rule: Pick<AutomationRuleBody, 'trigger' | 'conditions' | 'steps'>) {
+  const { steps } = rule;
+  steps.forEach((s, i) => {
+    if (s.kind === 'revert_snapshot' && i !== steps.length - 1)
+      refuse(`steps.${i}`, "Revert to Snapshot is the rule's last step: nothing may follow it");
+  });
+  if (!isTimeTrigger(rule.trigger) || runsForPlan(rule)) return;
+  const at = steps.findIndex((s) => isSnapshotKind(s.kind));
+  if (at >= 0)
+    refuse(
+      `steps.${at}`,
+      'A snapshot step on a time trigger runs once for the plan: only on a Scheduled rule with no conditions and no card steps',
+    );
+}
+
 // The checks over the rule read whole, in the order their refusals answer: the shared caps, with the cards a run
 // may make between them; then what only a branch may hold and what a trigger with no person behind it may not.
 function checkRule(rule: {
@@ -461,6 +491,7 @@ function checkRule(rule: {
       if (a.kind === 'link_card' && 'trigger' in a.to)
         refuse(`steps.${i}`, 'only a branch links to the card that started the rule');
   });
+  checkSnapshotSteps(rule);
   if (isPersonless(trigger))
     checkPersonless(
       conditions,

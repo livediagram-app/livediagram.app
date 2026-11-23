@@ -4,6 +4,7 @@
 // Trail's trigger line. The secret, its checks and the queue are the api's (automation-incoming.ts). Pure.
 
 import { readHookBody as readBody, type Obj } from '@liveworkspace/automations';
+import { isSnapshotKind } from '@liveworkspace/automations/item';
 import type { Item } from '../item';
 import { INCOMING_WEBHOOK_PERSON, type AutomationRuleBody } from './types';
 
@@ -48,16 +49,32 @@ export function readHookBody(raw: unknown): HookBody {
 }
 
 /** Whether a rule can run with no card: no conditions, and only Create Card (copying and linking nothing from the
- *  triggering card) and outgoing actions. */
+ *  triggering card), outgoing actions and the snapshot steps (automations.md "Snapshot steps"). */
 export function runsWithoutCard(rule: Pick<AutomationRuleBody, 'conditions' | 'steps'>): boolean {
   return (
     rule.conditions.length === 0 &&
     rule.steps.length > 0 &&
     rule.steps.every(
-      (s) => s.kind === 'notify' || (s.kind === 'create_card' && !s.copy?.length && !s.linkField),
+      (s) =>
+        s.kind === 'notify' ||
+        isSnapshotKind(s.kind) ||
+        (s.kind === 'create_card' && !s.copy?.length && !s.linkField),
     )
   );
 }
+
+/** Whether a rule holds Take Snapshot or Revert to Snapshot (at its top level, their one place). */
+export const holdsSnapshotStep = (rule: Pick<AutomationRuleBody, 'steps'>): boolean =>
+  rule.steps.some((s) => isSnapshotKind(s.kind));
+
+/** Whether a rule reverts the plan: only a person saves one (automations.md "Snapshot steps"). */
+export const ruleReverts = (rule: Pick<AutomationRuleBody, 'steps'>): boolean =>
+  rule.steps.some((s) => s.kind === 'revert_snapshot');
+
+/** Whether a time rule runs once a moment for the plan, with no card, rather than once for each card: a Scheduled rule
+ *  that holds a snapshot step and can run without a card. */
+export const runsForPlan = (rule: Pick<AutomationRuleBody, 'trigger' | 'conditions' | 'steps'>) =>
+  rule.trigger.kind === 'scheduled' && holdsSnapshotStep(rule) && runsWithoutCard(rule);
 
 export const NO_CARDS_NAMED = "No cards named: this rule's steps need a card";
 

@@ -7,6 +7,7 @@
 // address. No id but the rule's own leaves. Pure.
 
 import { crossAppChip } from '@liveworkspace/automations/cross-app';
+import { snapshotStepSummary } from '@liveworkspace/automations/item';
 import {
   SUMMARY_AI_STEP,
   looksLikeAddress,
@@ -96,6 +97,10 @@ function stepSummary(step: AutomationStep, outline: RuleSentenceOutline): Automa
     case 'doc_tab':
     case 'inbox_notice':
       return { kind: step.kind, words: crossAppChip(step) };
+    // A reader sees the step, never which snapshot or its name.
+    case 'take_snapshot':
+    case 'revert_snapshot':
+      return { kind: step.kind, words: snapshotStepSummary(step) };
     default:
       return actionLine(step, outline);
   }
