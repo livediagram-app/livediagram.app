@@ -124,6 +124,17 @@ describe('Chip', () => {
     expect((container.firstElementChild as HTMLElement).style.height).toBe('');
   });
 
+  it("keeps the caller's own gap, a tighter one included", () => {
+    const own = render(<Chip className="gap-0.5 px-2">Private</Chip>);
+    const tokens = (own.container.firstElementChild as HTMLElement).className.split(/\s+/);
+    expect(tokens).toContain('gap-0.5');
+    expect(tokens).not.toContain('gap-1');
+    const plain = render(<Chip className="px-2">Private</Chip>);
+    expect((plain.container.firstElementChild as HTMLElement).className.split(/\s+/)).toContain(
+      'gap-1',
+    );
+  });
+
   it('can be a rectangular badge instead of a pill', () => {
     const { container } = render(
       <Chip height={19} radius="sm">
