@@ -6,7 +6,12 @@
 // strip. Every change here is structural, so it is stored at once (the name on Enter or when its box loses focus).
 
 import { useEffect, useRef, useState } from 'react';
-import { SEQ_PARTICIPANTS_MAX, SEQ_PARTICIPANTS_MIN, SEQ_PARTICIPANT_LABEL_MAX, type SequenceElementParticipant } from '@liveworkspace/element-model/sequence-element';
+import {
+  SEQ_PARTICIPANTS_MAX,
+  SEQ_PARTICIPANTS_MIN,
+  SEQ_PARTICIPANT_LABEL_MAX,
+  type SequenceElementParticipant,
+} from '@liveworkspace/element-model/sequence-element';
 import { lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@liveworkspace/ui';
 import {
   lucideChevronLeft,

@@ -4,7 +4,12 @@
 // at 24 units, so a tile reads before its label does.
 
 import { SANKEY_NEUTRAL_BAND } from '@liveworkspace/element-model/sankey-frame';
-import { type SankeyAlign, type SankeyLeftover, type SankeyLinkColor, type SankeyValueLabel } from '@liveworkspace/element-model/sankey-model';
+import {
+  type SankeyAlign,
+  type SankeyLeftover,
+  type SankeyLinkColor,
+  type SankeyValueLabel,
+} from '@liveworkspace/element-model/sankey-model';
 
 export function BandGlyph({ mode, from, to }: { mode: SankeyLinkColor; from: string; to: string }) {
   const id = `sk-band-glyph-${mode}`;

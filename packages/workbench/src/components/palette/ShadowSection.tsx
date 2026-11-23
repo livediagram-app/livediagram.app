@@ -9,7 +9,13 @@
 // stay pixel-identical.
 
 import { MenuSliderRow } from '../primitives/MenuSliderRow';
-import { DEFAULT_SHADOW, SHADOW_LIMITS, SHADOW_PRESETS, shadowBoxCss, type ElementShadow } from '@liveworkspace/element-model/shadow';
+import {
+  DEFAULT_SHADOW,
+  SHADOW_LIMITS,
+  SHADOW_PRESETS,
+  shadowBoxCss,
+  type ElementShadow,
+} from '@liveworkspace/element-model/shadow';
 import { onMouseHover } from '../primitives/hover-preview';
 import { MenuAccordionSection } from '../primitives/PortalMenu';
 import { SizeButton } from './palette-buttons';

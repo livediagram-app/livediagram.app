@@ -6,7 +6,13 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { VIEWPORT_EDGE_MARGIN } from '../../lib/clamp-to-viewport';
-import { MenuAccordionSection, MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from './PortalMenu';
+import {
+  MenuAccordionSection,
+  MenuActionRow,
+  MenuGroupSeparator,
+  MenuHeader,
+  PortalMenu,
+} from './PortalMenu';
 import { MenuTile, MenuToolButton } from './MenuTiles';
 import { BESIDE_GAP } from './beside-placement';
 

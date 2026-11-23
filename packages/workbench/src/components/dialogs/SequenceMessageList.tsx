@@ -7,7 +7,14 @@
 // their box loses focus, everything else at once.
 
 import { useEffect, useRef } from 'react';
-import { SEQUENCE_KINDS, SEQ_MESSAGES_MAX, SEQ_MESSAGE_LABEL_MAX, type SequenceElementMessage, type SequenceElementParticipant, type SequenceMessageKindName } from '@liveworkspace/element-model/sequence-element';
+import {
+  SEQUENCE_KINDS,
+  SEQ_MESSAGES_MAX,
+  SEQ_MESSAGE_LABEL_MAX,
+  type SequenceElementMessage,
+  type SequenceElementParticipant,
+  type SequenceMessageKindName,
+} from '@liveworkspace/element-model/sequence-element';
 import { CompactEmptyState, lucideGlyph, Select, Tooltip } from '@liveworkspace/ui';
 import {
   lucideChevronDown,

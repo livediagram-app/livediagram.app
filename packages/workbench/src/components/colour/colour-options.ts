@@ -2,7 +2,12 @@
 // option shape every surface hands the one picker, and builders for the standard colours, no
 // colour, and custom colours.
 import { colourWords } from '@liveworkspace/element-model/quick-swatches';
-import { isHexColour, standardColourAt, standardColours, type StandardTone } from '@liveworkspace/element-model/standard-colours';
+import {
+  isHexColour,
+  standardColourAt,
+  standardColours,
+  type StandardTone,
+} from '@liveworkspace/element-model/standard-colours';
 import { type Appearance } from '@liveworkspace/element-model/themes';
 
 export type ColourOption = {

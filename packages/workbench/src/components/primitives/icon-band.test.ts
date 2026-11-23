@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { captionBandAlignY, captionBandClass, iconBandClass, iconMakesRoomForLabel } from './icon-band';
+import {
+  captionBandAlignY,
+  captionBandClass,
+  iconBandClass,
+  iconMakesRoomForLabel,
+} from './icon-band';
 
 // The editor's CSS bands mirror iconBandBounds / iconCaptionBand in @livediagram/document
 // (docs/specs/010-palette/technology-icons.md), so a captioned icon draws as it exports.

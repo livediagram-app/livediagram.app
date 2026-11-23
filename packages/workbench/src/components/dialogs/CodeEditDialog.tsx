@@ -1,6 +1,10 @@
 import { useId, useRef, useState } from 'react';
 import { Button, CloseIcon, DialogHeader } from '@liveworkspace/ui';
-import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@liveworkspace/element-model/data-shapes';
+import {
+  CODE_LANGUAGES,
+  CODE_MAX_LENGTH,
+  type CodeLanguage,
+} from '@liveworkspace/element-model/data-shapes';
 import { Dialog } from './Dialog';
 
 // The code block's edit modal (docs/specs/009-elements/code-block.md): a monospace textarea + a language
