@@ -20,7 +20,7 @@ import {
   type ArticleParagraphStyle,
   type ArticleRun,
 } from '@livedocuments/document';
-import { OfficeImportError } from './errors';
+import { OfficeImportError } from '@liveworkspace/office-files/errors';
 import {
   readNumbering,
   readStyles,
@@ -29,10 +29,17 @@ import {
   type DocxNumbering,
   type DocxStyles,
 } from './docx-styles';
-import { EMU_PER_PX } from './limits';
-import type { OfficePackage, OfficeRel } from './package';
-import { addSkip, type SkipTally } from './tally';
-import { child, find, intAttr, kids, textOf, type XmlElement } from './xml';
+import { EMU_PER_PX } from '@liveworkspace/office-files/limits';
+import type { OfficePackage, OfficeRel } from '@liveworkspace/office-files/package';
+import { addSkip, type SkipTally } from '@liveworkspace/office-files/tally';
+import {
+  child,
+  find,
+  intAttr,
+  kids,
+  textOf,
+  type XmlElement,
+} from '@liveworkspace/office-files/xml';
 import { readFootnotes } from './docx-footnotes';
 import {
   ALIGN,

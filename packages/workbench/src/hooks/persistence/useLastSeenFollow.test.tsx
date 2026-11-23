@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { LastSeenItem } from '../../lib/api/last-seen-follower';
@@ -116,6 +116,6 @@ describe('useLastSeenFollow', () => {
       for (let i = 0; i < 1_000; i++) rerender({ ...base(f), tabs: [{ ...head }, ...rest] });
     });
     expect(f.followMeta).toHaveBeenCalledTimes(1);
-    expect(ms).toBeLessThan(2_000);
+    expect(ms).toBeLessThan(cpuBudgetMs(2_000));
   });
 });

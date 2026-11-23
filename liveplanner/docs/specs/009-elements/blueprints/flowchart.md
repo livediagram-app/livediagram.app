@@ -16,7 +16,7 @@ Scope, by file:
 | `../packages/element-model/src/flowchart-grow.ts`         | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
 | `../packages/element-model/src/flowchart-settle.ts`       | `settleFlowcharts`: a chart laid out again after any structural change                                                         |
 | `packages/project/src/flowchart.ts`, `flowchart-grow.ts`  | The bindings: the step and lane factories bound to this model's `createShape`                                                  |
-| `packages/project/src/auto-layout.ts`                     | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
+| `../packages/element-model/src/auto-layout.ts`            | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
 | `packages/project/src/element-types.ts`                   | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
 | `packages/project/src/element-fields.ts`                  | The three fields in the shape's field list                                                                                     |
 | `packages/project/src/validate-shape.ts`                  | The three fields validated                                                                                                     |

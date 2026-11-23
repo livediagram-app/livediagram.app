@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement, StickyElement, TextElement } from './index';
 import { defaultStrokeColor } from './colors';
-import { PEN_INK, penColourHex } from './pen-colours';
+import { PEN_INK, penColourHex } from '@liveworkspace/element-model/pen-colours';
 import { renderElementsToSvg, svgBoxed } from './svg-render';
 import { resolveStockColours } from './stock-colours';
 

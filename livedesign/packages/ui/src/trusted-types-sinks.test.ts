@@ -14,13 +14,11 @@ describeTrustedTypesSinks({
   // an export preview) goes through sanitizedHtml.
   builderMarkup: [
     'apps/live/app/pre-hydration-scripts.ts',
-    'apps/live/components/canvas/StickerView.tsx',
     'apps/live/components/canvas/WireframeDeviceOverlays.tsx',
     'apps/live/components/canvas/WireframeDeviceSheet.tsx',
     'apps/live/components/canvas/layout-render-thumb.tsx',
     'apps/live/components/canvas/wireframe/DeviceMiniature.tsx',
     'apps/live/components/dialogs/TabStylePreview.tsx',
-    'apps/live/components/primitives/tech-icon-glyph.tsx',
     'apps/live/lib/stale-html-guard.ts',
     'packages/ui/src/appearance/appearance-storage.ts',
   ],

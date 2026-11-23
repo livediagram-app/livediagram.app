@@ -18,29 +18,37 @@ import {
   isSelfDrawingShape,
 } from './data-shapes';
 import { defaultPadding, PADDING_PX } from './index';
-import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
-import { svgSankey } from './svg-render-sankey';
-import { isSankeyShape } from './sankey-model';
-import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
-import { svgEntityRows } from './svg-render-entity';
-import { svgPageMasthead } from './svg-render-page';
-import { progressTrackColour } from './progress-colours';
+import {
+  svgBarChart,
+  svgLineChart,
+  svgPieChart,
+} from '@liveworkspace/element-model/svg-render-charts';
+import { svgSankey } from '@liveworkspace/element-model/svg-render-sankey';
+import { isSankeyShape } from '@liveworkspace/element-model/sankey-model';
+import {
+  svgProgressBar,
+  svgProgressRing,
+  svgRating,
+} from '@liveworkspace/element-model/svg-render-data';
+import { svgEntityRows } from '@liveworkspace/element-model/svg-render-entity';
+import { svgPageMasthead } from '@liveworkspace/element-model/svg-render-page';
+import { progressTrackColour } from '@liveworkspace/element-model/progress-colours';
 import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
 import { svgCollabFace } from './svg-render-collab-faces';
-import { svgWebComponent } from './svg-render-web';
-import { isWebComponentShape } from './web-components';
-import { isChipShape } from './chip';
-import { svgChip } from './svg-render-chip';
-import { svgBoundary } from './svg-render-boundary';
-import { svgConcept } from './svg-render-concept';
-import type { TagColour } from './tag-colours';
-import type { Finish } from './finish';
-import { svgPointerNote } from './svg-render-pointer-note';
-import { svgPersonNode } from './svg-render-person-node';
-import { isPersonNode } from './person-node';
-import { svgDiagramKey } from './svg-render-diagram-key';
+import { svgWebComponent } from '@liveworkspace/element-model/svg-render-web';
+import { isWebComponentShape } from '@liveworkspace/element-model/web-components';
+import { isChipShape } from '@liveworkspace/element-model/chip';
+import { svgChip } from '@liveworkspace/element-model/svg-render-chip';
+import { svgBoundary } from '@liveworkspace/element-model/svg-render-boundary';
+import { svgConcept } from '@liveworkspace/element-model/svg-render-concept';
+import type { TagColour } from '@liveworkspace/element-model/tag-colours';
+import type { Finish } from '@liveworkspace/element-model/finish';
+import { svgPointerNote } from '@liveworkspace/element-model/svg-render-pointer-note';
+import { svgPersonNode } from '@liveworkspace/element-model/svg-render-person-node';
+import { isPersonNode } from '@liveworkspace/element-model/person-node';
+import { svgDiagramKey } from '@liveworkspace/element-model/svg-render-diagram-key';
 import { svgSequencePicture } from './svg-render-sequence';
-import { isConceptShape } from './concept';
+import { isConceptShape } from '@liveworkspace/element-model/concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
 import type { ResolveEmojiArt, ResolveIconArt } from './svg-render-describe';
@@ -99,14 +107,10 @@ export function svgElementBody(
 ): string {
   if (el.type !== 'shape') return '';
   const { labelColor, fontFamily, stroke, fill, chartPalette, label } = o;
-  if (isPieShape(el.shape))
-    return svgPieChart(el, labelColor, chartPalette, fontFamily);
-  if (isBarShape(el.shape))
-    return svgBarChart(el, labelColor, chartPalette, fontFamily);
-  if (isLineShape(el.shape))
-    return svgLineChart(el, labelColor, chartPalette, fontFamily);
-  if (isSankeyShape(el.shape))
-    return svgSankey(el, labelColor, chartPalette, fontFamily);
+  if (isPieShape(el.shape)) return svgPieChart(el, labelColor, chartPalette, fontFamily);
+  if (isBarShape(el.shape)) return svgBarChart(el, labelColor, chartPalette, fontFamily);
+  if (isLineShape(el.shape)) return svgLineChart(el, labelColor, chartPalette, fontFamily);
+  if (isSankeyShape(el.shape)) return svgSankey(el, labelColor, chartPalette, fontFamily);
   // The empty track is the element's OWN fill, else the paper's default track,
   // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
   const track = progressTrackColour(el, o.surface);

@@ -4,7 +4,7 @@
 // the canvas's own sizes, so a card built from them exports the way it looks.
 // Every size here is a canvas class, noted beside it.
 
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { PAD_Y, text, type CollabAccent } from './svg-render-face-kit';
 
 // Where a CollabPanel's body starts: the 14px padding, the header row (as

@@ -12,7 +12,7 @@ import {
   textHugPaddingCss,
   type BlockSize,
 } from '@/lib/text-hug';
-import { measureTextHug } from './text-hug-measure';
+import { measureTextHug } from '@liveworkspace/workbench/components/label-editor/plain-text-hug-measure';
 
 // What the label renderer needs to draw a hugging text box.
 export type TextHugLabel = {

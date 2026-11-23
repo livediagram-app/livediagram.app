@@ -14,7 +14,7 @@ import {
 import { RISKS } from '@liveplanner/items';
 import { canvasSurface } from './colors';
 import { THEMES } from './themes-data';
-import { themeHalf } from './theme-halves';
+import { themeHalf } from '@liveworkspace/element-model/theme-halves';
 import { mixHex } from './svg-render-face-kit';
 
 // docs/specs/026-plan/plan-board.md "Theme and style".

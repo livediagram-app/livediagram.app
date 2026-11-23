@@ -34,7 +34,8 @@ export type CanvasPanelProps = {
     group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
   ) => void;
   onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
-  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
+  formatBrushSource?:
+    import('@liveworkspace/workbench/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;

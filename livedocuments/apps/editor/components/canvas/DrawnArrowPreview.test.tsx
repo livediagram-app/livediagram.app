@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { arrowheadShapeOf, arrowheadSizeOf, type ArrowElement } from '@livedocuments/document';
-import { arrowheadMarkerId } from './arrow-defs';
+import { arrowheadMarkerId } from '@liveworkspace/workbench/components/canvas/arrow-defs';
 import { DrawnArrowPreview } from './DrawnArrowPreview';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Adding elements — tap-to-drop or drag-to-draw": a

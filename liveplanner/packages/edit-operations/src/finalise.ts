@@ -12,7 +12,7 @@ import {
   type Tab,
 } from '@liveplanner/project';
 import { kindOf } from './element-text';
-import { sameValue } from './equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { planBoardCapIssue } from './plan-elements';
 import { invalidResult } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';

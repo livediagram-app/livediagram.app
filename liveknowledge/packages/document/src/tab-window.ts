@@ -3,8 +3,8 @@
 // may show, its sizes, and its picture in an export (the frame named for its tab, or a drawing when one is given).
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
-import { r2, xmlEscape } from './svg-render-primitives';
-import { SKETCH_FACE_FILTER } from './svg-render-sketch';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
+import { SKETCH_FACE_FILTER } from '@liveworkspace/element-model/svg-render-sketch';
 
 /** Shape kinds no surface makes any more (no palette tile, no agent `add`), kept so stored ones load. */
 export const RETIRED_SHAPE_KINDS: ReadonlySet<string> = new Set(['tab-window']);

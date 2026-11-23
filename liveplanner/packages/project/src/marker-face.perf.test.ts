@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { MARKER_FACE_MAX_FRAMES, MARKER_FACE_MAX_PARTS } from './marker-face';
+import {
+  MARKER_FACE_MAX_FRAMES,
+  MARKER_FACE_MAX_PARTS,
+} from '@liveworkspace/element-model/marker-face';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import { svgMarkerFace } from './svg-render-face-finish';

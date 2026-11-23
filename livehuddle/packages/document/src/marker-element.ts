@@ -11,8 +11,12 @@ import {
 } from '@liveworkspace/model-core/border-style';
 import { MARKER_LINE_PX, finishCornerFallbackPx, finishHatches } from './finish';
 import type { BoxedElement } from './index';
-import { markerColouring, markerStrokes, type MarkerLayers } from './marker';
-import { sketchAreaPath, sketchSeed } from './sketch';
+import {
+  markerColouring,
+  markerStrokes,
+  type MarkerLayers,
+} from '@liveworkspace/element-model/marker';
+import { sketchAreaPath, sketchSeed } from '@liveworkspace/element-model/sketch';
 import { boxOutline, handDrawnOutline, isSeeThrough } from './sketch-element';
 
 /** Path data for each layer of an element in marker; an empty string draws nothing. */

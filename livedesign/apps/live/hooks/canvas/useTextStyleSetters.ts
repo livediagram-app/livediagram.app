@@ -9,7 +9,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { applyTextSizeToEl } from '@/lib/style-presets';
 import { hugsText, hugTextSize } from '@/lib/text-hug';
-import { measureDrawnText } from '@/components/canvas/text-hug-measure';
+import { measureDrawnText } from '@liveworkspace/workbench/components/label-editor/plain-text-hug-measure';
 
 type TextStyleSetterDeps = {
   currentSelectionIds: () => Set<string>;

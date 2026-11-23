@@ -3,7 +3,7 @@
 // column, label, assignee and priority with its filters, a metric's rows, nothing of a card beyond the count, and the
 // cards watch for the item that asked.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { defaultCatalogue, typesOf, type Item } from '@liveplanner/items';
 import type { Element, Tab } from '@liveplanner/project';
 import { insertItems } from '../db/items';
@@ -245,7 +245,7 @@ describe('the counts', () => {
         boardCounts(setup, reads, by);
       boardCounts(setup, reads, 'column', { label: 'l7', priority: 'high' });
     });
-    expect(ms).toBeLessThan(1500);
+    expect(ms).toBeLessThan(cpuBudgetMs(1500));
   });
 
   it('draws a ring as Done and Not Done, and a lone figure as one row', () => {

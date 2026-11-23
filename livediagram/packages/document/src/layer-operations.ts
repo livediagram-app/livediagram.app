@@ -1,5 +1,5 @@
 import type { Element, ElementId, Tab } from './index';
-import { bringManyToFront, sendManyToBack } from './layer-order';
+import { bringManyToFront, sendManyToBack } from '@liveworkspace/element-model/layer-order';
 import { withAttachedArrows } from './arrow-rebind';
 import { freeEndsAttachedTo } from './arrow-free-ends';
 import {

@@ -1,8 +1,8 @@
 // ER relationships hub first (docs/specs/020-import-export/mermaid.md "Hub first").
 import { describe, expect, it } from 'vitest';
 import { hubFirst, reversedArrow, turnBack } from './er-hub-first';
-import { arrowPolyline } from './arrow-path-hits';
-import { elementIndexFor } from './geometry';
+import { arrowPolyline } from '@liveworkspace/element-model/arrow-path-hits';
+import { elementIndexFor } from '@liveworkspace/element-model/geometry';
 import { layoutGraph, resolveGraphInput } from './graph-input';
 import type { ArrowElement } from './index';
 import type { GraphEdge } from './graph-authoring';

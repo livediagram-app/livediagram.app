@@ -24,17 +24,23 @@ import {
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
-import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
+import {
+  captionBandAlignY,
+  captionBandClass,
+} from '@liveworkspace/workbench/components/primitives/icon-band';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import {
+  SketchOverlay,
+  useSketchPaint,
+} from '@liveworkspace/workbench/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { useTagColours } from '@/components/canvas/TagColoursContext';
-import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
+import { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
+import { useIsSketchBackdrop } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';

@@ -16,7 +16,7 @@ import {
 } from '@liveknowledge/document';
 import type { Fit } from './labels';
 import { endRef, kindOf, labelOf } from './element-text';
-import { sameValue as same } from './equality';
+import { sameValue as same } from '@liveworkspace/edit-operations/equality';
 import { ALIAS_FIELDS } from './fields';
 import { fillValue } from './colours';
 import type { LaidOut, MoveReason, Removal, Touch } from './state';

@@ -14,7 +14,7 @@ import { resolvedDefaultStatus } from './type-catalogue';
 import type { ItemTypeDef } from './item-types';
 import { REPEAT_FIELD, previousOccurrence, type RepeatRule } from './repeat';
 import { addDays, dayNo, isDay } from './repeat-dates';
-import { sha256Fallback } from './sha256';
+import { sha256Fallback } from '@liveworkspace/model-core/sha256';
 import { isObj } from './validate';
 
 // Who makes a copy: the rule, never the person who set it (they may have left the plan). Its history says so.

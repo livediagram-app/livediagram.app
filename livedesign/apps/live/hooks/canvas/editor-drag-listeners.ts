@@ -17,14 +17,14 @@ import {
   resolveBoxedResize,
   translateBoxedSelection,
 } from './boxed-drag-resolve';
-import { measureDrawnText } from '@/components/canvas/text-hug-measure';
+import { measureDrawnText } from '@liveworkspace/workbench/components/label-editor/plain-text-hug-measure';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { beginCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import {
   dragWaitsToEngage,
   gestureOfDrag,
 } from '@liveworkspace/workbench/hooks/canvas/drag-gesture';
-import type { useSnapGuideState } from './useSnapGuideState';
+import type { useSnapGuideState } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import { createDragRelease } from './editor-drag-release';
 
 // Screen-pixel distance the pointer must travel before a body drag

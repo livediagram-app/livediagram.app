@@ -20,7 +20,7 @@ import { personTagFor } from '../person-tag';
 import { readRoomSelections, relayPages } from '../room-client';
 import type { DocumentDTO, DocumentEnv } from '../types';
 import type { HeldElement } from '@livedocuments/api-schema';
-import { heldTargets } from '../changesets/held-check';
+import { heldTargets } from '@liveworkspace/api-kit/changeset-plans';
 import { readStoredTab, type StoredTab } from '../changesets/stored-tab';
 import { SUBMIT_ATTEMPTS } from '../changesets/submit';
 import { writeChangeset, type Author } from '../changesets/write';

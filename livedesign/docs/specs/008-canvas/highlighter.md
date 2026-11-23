@@ -54,7 +54,7 @@ The current colour and width are **session-local editor state**, not a persisted
 
 ## Not a selection mode
 
-`'highlighter'` is not on the editor's `CanvasTool` union, not in the tool dropdown, and not a `SelectionMode` (`packages/design/src/selection-mode.ts`).
+`'highlighter'` is not on the editor's `CanvasTool` union, not in the tool dropdown, and not a `SelectionMode` (`../packages/model-core/src/selection-mode.ts`).
 
 ## Popular
 

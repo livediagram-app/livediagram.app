@@ -6,17 +6,17 @@ and the rows menu, and only what differs is written here.
 
 | File                                                                       | Role                                                                                                          |
 | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `packages/design/src/card.ts`                                              | `CardMedia`, bounds, `cardLayout`, `cardTagWidth`, `withCardMedia`, `withCardHeader`, `migrateLegacyCallouts` |
+| `../packages/element-model/src/card.ts`                                    | `CardMedia`, bounds, `cardLayout`, `cardTagWidth`, `withCardMedia`, `withCardHeader`, `migrateLegacyCallouts` |
 | `packages/design/src/shape-kind.ts`                                        | `'card'` in `ShapeKind` / `SHAPE_KINDS`                                                                       |
-| `packages/design/src/web-components.ts`                                    | `'card'` in `WebComponentShape`; `tags` in `WebRows`                                                          |
+| `../packages/element-model/src/web-components.ts`                          | `'card'` in `WebComponentShape`; `tags` in `WebRows`                                                          |
 | `packages/design/src/element-types.ts`, `element-fields.ts`                | `cardMedia`, `cardHeader`, `tags`                                                                             |
 | `packages/design/src/validate-shape.ts`                                    | Bounds for the three fields                                                                                   |
 | `packages/design/src/shape-factory.ts`, `component-factories.ts`           | Default size, starting content, the Callout preset                                                            |
 | `packages/design/src/colors.ts`                                            | `card` in `RADIUS_SHAPES`; `acceptsInlineIcon` true                                                           |
-| `packages/design/src/svg-render-card.ts`                                   | `svgCard`: the headless body                                                                                  |
+| `../packages/element-model/src/svg-render-card.ts`                         | `svgCard`: the headless body                                                                                  |
 | `packages/design/src/stored-elements.ts`                                   | `migrateLegacyCallouts` joins `migrateStoredElements`                                                         |
 | `packages/design/src/element-normalise.ts`                                 | An agent's `callout` becomes a card on write                                                                  |
-| `apps/live/components/canvas/web/CardFace.tsx`                             | The canvas face (`card`, and `callout` before migration)                                                      |
+| `../packages/workbench/src/components/canvas/web/CardFace.tsx`             | The canvas face (`card`, and `callout` before migration)                                                      |
 | `apps/live/components/palette/CardMenuSection.tsx`                         | Header Band, Media tiles, Tags rows                                                                           |
 | `apps/live/components/palette/palette-tile-defs.tsx`, `palette-layouts.ts` | Card tile, Callout tile → card preset                                                                         |
 | `apps/live/lib/element-telemetry.ts`                                       | `Card` tokens                                                                                                 |

@@ -4,7 +4,7 @@
 import { memo } from 'react';
 import type { TabIcon } from '@liveknowledge/document';
 import { Glyph } from '@liveknowledge/ui';
-import { IconPrims } from '@/components/primitives/icon-glyph';
+import { IconPrims } from '@liveworkspace/workbench/components/primitives/icon-glyph';
 
 export const EMOJI_FONT =
   "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', system-ui, sans-serif";

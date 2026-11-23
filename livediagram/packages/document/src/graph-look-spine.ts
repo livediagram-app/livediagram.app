@@ -1,7 +1,7 @@
 // The graph look's spine passes (graph-look.ts): the main path straightened down one centre line, and rejoins into
 // it from the side.
 
-import { edgeKey } from './auto-layout';
+import { edgeKey } from '@liveworkspace/element-model/auto-layout';
 import type { GraphEdge } from './graph-authoring';
 import { isBackdrop, pinnedId, segmentHitsBox, type Routes } from './graph-look-routes';
 import { inCount, MAIN_EXIT, outEdges, reachOf, type LookNode } from './graph-look-tones';

@@ -7,7 +7,7 @@
 
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import type { Element, ShapeKind } from './index';
-import { sha256 } from './sha256';
+import { sha256 } from '@liveworkspace/model-core/sha256';
 
 export type QaNoteState = 'discussing' | 'done';
 

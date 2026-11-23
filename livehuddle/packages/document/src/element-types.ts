@@ -11,20 +11,20 @@ import type { ArcadeScore } from './arcade-scores';
 import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
-import type { ElementAction } from './element-action';
+import type { ElementAction } from '@liveworkspace/element-model/element-action';
 import type {
   BorderStroke,
   BorderStyle,
   BorderRadius,
 } from '@liveworkspace/model-core/border-style';
-import type { ElementShadow } from './shadow';
+import type { ElementShadow } from '@liveworkspace/element-model/shadow';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
-import type { PenColourName } from './pen-colours';
+import type { PenColourName } from '@liveworkspace/element-model/pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { SelectionMode } from './selection-mode';
 import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
-import type { ImageCredit } from './image-credit';
+import type { ImageCredit } from '@liveworkspace/model-core/image-credit';
 import type { ChairFacing } from './collab-shapes';
 import { SHAPE_KINDS } from './shape-kinds';
 import { isRetiredElementType } from './retired-kinds';

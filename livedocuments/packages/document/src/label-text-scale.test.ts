@@ -11,7 +11,7 @@ import { dropMalformedStyles } from './malformed-styles';
 import { layOutPages, type Page } from './page';
 import { pageTurned } from './pages-edits';
 import { svgBoxed } from './svg-render';
-import { inlineIconMetrics } from './svg-render-inline-icon';
+import { inlineIconMetrics } from '@liveworkspace/element-model/svg-render-inline-icon';
 import { elementValidationIssue, isValidElement, TEXT_SCALE_MAX, TEXT_SCALE_MIN } from './validate';
 import type { Element, ShapeElement, StickyElement, Tab, TextElement } from './index';
 

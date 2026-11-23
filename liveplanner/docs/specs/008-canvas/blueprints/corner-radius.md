@@ -28,9 +28,9 @@ export function cornerRadiusPx(
 | ---------------------------------------------------------------------------- | ----------------------------------------- |
 | `apps/editor/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`), 12 mind node |
 | `apps/editor/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8, 12 mind node                           |
-| `packages/project/src/svg-render-border.ts` (`borderOf`)                     | `DEFAULT_BOX_RADIUS_PX`                   |
+| `../packages/element-model/src/svg-render-border.ts` (`borderOf`)            | `DEFAULT_BOX_RADIUS_PX`                   |
 | `packages/project/src/svg-render-describe.ts`                                | 4 (images)                                |
-| `packages/project/src/svg-render-web.ts`                                     | the caller's fallback                     |
+| `../packages/element-model/src/svg-render-web.ts`                            | the caller's fallback                     |
 | `packages/project/src/svg-render.ts`                                         | 12 (mind node)                            |
 | `packages/project/src/shape-hit.ts`                                          | `CSS_DEFAULT_RADIUS_PX`                   |
 

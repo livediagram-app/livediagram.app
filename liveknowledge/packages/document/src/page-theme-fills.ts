@@ -16,7 +16,7 @@ import {
 } from './page-default-background';
 import { pagesInkFor } from './page-ink';
 import { PAGE_GRADIENT_ANGLE, sameFill } from './page-paint';
-import { themePresetColors } from './theme-presets';
+import { themePresetColors } from '@liveworkspace/element-model/theme-presets';
 import { newPageBackgroundOf } from './tab-new-page-background';
 import type { Tab, ThemeDefinition } from './index';
 

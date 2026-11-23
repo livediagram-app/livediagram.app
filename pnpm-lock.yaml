@@ -50,14 +50,14 @@ importers:
         specifier: ^3.10.1
         version: 3.10.1
       turbo:
-        specifier: ^2.11.12
-        version: 2.11.12
+        specifier: ^2.11.13
+        version: 2.11.13
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedesign:
     devDependencies:
@@ -80,14 +80,14 @@ importers:
         specifier: ^3.10.1
         version: 3.10.1
       turbo:
-        specifier: ^2.11.12
-        version: 2.11.12
+        specifier: ^2.11.13
+        version: 2.11.13
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedesign/apps/api:
     dependencies:
@@ -168,8 +168,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/community-service':
         specifier: workspace:^
         version: link:../../../liveworkspace/apps/community
@@ -192,8 +192,8 @@ importers:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
       ts-json-schema-generator:
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.10.0
+        version: 2.10.0
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -201,8 +201,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedesign/apps/cli:
     dependencies:
@@ -595,8 +595,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -619,8 +619,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedesign/apps/router:
     dependencies:
@@ -638,8 +638,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -665,8 +665,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedesign/packages/agent-verbs:
     dependencies:
@@ -1205,14 +1205,14 @@ importers:
         specifier: ^3.10.1
         version: 3.10.1
       turbo:
-        specifier: ^2.11.12
-        version: 2.11.12
+        specifier: ^2.11.13
+        version: 2.11.13
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livediagram/apps/api:
     dependencies:
@@ -1296,8 +1296,8 @@ importers:
         version: 6.2.17
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/community-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/community
@@ -1323,8 +1323,8 @@ importers:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
       ts-json-schema-generator:
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.10.0
+        version: 2.10.0
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -1332,8 +1332,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livediagram/apps/cli:
     dependencies:
@@ -1756,8 +1756,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -1780,8 +1780,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livediagram/apps/router:
     dependencies:
@@ -1796,8 +1796,8 @@ importers:
         version: link:../../../packages/sites
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -1823,8 +1823,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livediagram/packages/agent-verbs:
     dependencies:
@@ -2374,14 +2374,14 @@ importers:
         specifier: ^3.10.1
         version: 3.10.1
       turbo:
-        specifier: ^2.11.12
-        version: 2.11.12
+        specifier: ^2.11.13
+        version: 2.11.13
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedocuments/apps/api:
     dependencies:
@@ -2459,8 +2459,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/community-service':
         specifier: workspace:^
         version: link:../../../liveworkspace/apps/community
@@ -2483,8 +2483,8 @@ importers:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
       ts-json-schema-generator:
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.10.0
+        version: 2.10.0
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2492,8 +2492,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedocuments/apps/cli:
     dependencies:
@@ -2621,6 +2621,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
+      '@liveworkspace/office-files':
+        specifier: workspace:*
+        version: link:../../../packages/office-files
       '@liveworkspace/page-background':
         specifier: workspace:*
         version: link:../../../packages/page-background
@@ -2907,8 +2910,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -2931,8 +2934,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedocuments/apps/router:
     dependencies:
@@ -2950,8 +2953,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@livedocuments/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -2977,8 +2980,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livedocuments/packages/agent-verbs:
     dependencies:
@@ -3484,14 +3487,14 @@ importers:
         specifier: ^3.10.1
         version: 3.10.1
       turbo:
-        specifier: ^2.11.12
-        version: 2.11.12
+        specifier: ^2.11.13
+        version: 2.11.13
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livehuddle/apps/api:
     dependencies:
@@ -3569,8 +3572,8 @@ importers:
         version: 6.2.17
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/community-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/community
@@ -3596,8 +3599,8 @@ importers:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
       ts-json-schema-generator:
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.10.0
+        version: 2.10.0
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -3605,8 +3608,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livehuddle/apps/editor:
     dependencies:
@@ -3902,8 +3905,8 @@ importers:
         version: link:../../../packages/sites
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@livehuddle/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -3929,8 +3932,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   livehuddle/packages/api-schema:
     dependencies:
@@ -4411,14 +4414,14 @@ importers:
         specifier: ^3.10.0
         version: 3.10.1
       turbo:
-        specifier: ^2.11.7
-        version: 2.11.12
+        specifier: ^2.11.13
+        version: 2.11.13
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       wrangler:
-        specifier: ^4.160.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveknowledge/apps/api:
     dependencies:
@@ -4496,8 +4499,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261110.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/community-service':
         specifier: workspace:^
         version: link:../../../liveworkspace/apps/community
@@ -4520,8 +4523,8 @@ importers:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
       ts-json-schema-generator:
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.10.0
+        version: 2.10.0
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -4529,8 +4532,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.160.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveknowledge/apps/cli:
     dependencies:
@@ -4670,6 +4673,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
+      '@liveworkspace/office-files':
+        specifier: workspace:*
+        version: link:../../../packages/office-files
       '@liveworkspace/page-background':
         specifier: workspace:*
         version: link:../../../packages/page-background
@@ -4968,8 +4974,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261110.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -4992,8 +4998,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.160.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveknowledge/apps/router:
     dependencies:
@@ -5011,8 +5017,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261110.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveknowledge/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -5038,8 +5044,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.160.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveknowledge/packages/agent-verbs:
     dependencies:
@@ -5607,14 +5613,14 @@ importers:
         specifier: ^3.10.1
         version: 3.10.1
       turbo:
-        specifier: ^2.11.12
-        version: 2.11.12
+        specifier: ^2.11.13
+        version: 2.11.13
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveplanner/apps/api:
     dependencies:
@@ -5707,8 +5713,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/community-service':
         specifier: workspace:^
         version: link:../../../liveworkspace/apps/community
@@ -5728,8 +5734,8 @@ importers:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
       ts-json-schema-generator:
-        specifier: ^2.9.0
-        version: 2.9.0
+        specifier: ^2.10.0
+        version: 2.10.0
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5737,8 +5743,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveplanner/apps/cli:
     dependencies:
@@ -6149,8 +6155,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -6173,8 +6179,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveplanner/apps/router:
     dependencies:
@@ -6192,8 +6198,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -6219,8 +6225,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveplanner/packages/agent-verbs:
     dependencies:
@@ -6868,8 +6874,8 @@ importers:
         version: 6.2.17
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
@@ -6892,8 +6898,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/community:
     dependencies:
@@ -6911,8 +6917,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
@@ -6935,8 +6941,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/drive:
     dependencies:
@@ -6972,8 +6978,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/fake-google':
         specifier: workspace:*
         version: link:../../../packages/fake-google
@@ -6993,8 +6999,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/export:
     dependencies:
@@ -7024,8 +7030,8 @@ importers:
         version: link:../../../packages/render-png
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/vitest-config':
         specifier: workspace:^
         version: link:../../../packages/vitest-config
@@ -7045,8 +7051,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/help:
     dependencies:
@@ -7235,8 +7241,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/index:
     dependencies:
@@ -7278,8 +7284,8 @@ importers:
         version: 6.2.17
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/vitest-config':
         specifier: workspace:^
         version: link:../../../packages/vitest-config
@@ -7299,8 +7305,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/media:
     dependencies:
@@ -7327,8 +7333,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
@@ -7345,8 +7351,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/migrate:
     dependencies:
@@ -7410,8 +7416,8 @@ importers:
         version: link:../../../packages/sites
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -7434,8 +7440,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/site:
     dependencies:
@@ -7645,8 +7651,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/status:
     dependencies:
@@ -7664,8 +7670,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -7685,8 +7691,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/subscription:
     dependencies:
@@ -7704,8 +7710,8 @@ importers:
         version: link:../../../packages/subscription
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261110.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
@@ -7728,8 +7734,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.160.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/apps/telemetry:
     dependencies:
@@ -7765,8 +7771,8 @@ importers:
         version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -7780,8 +7786,8 @@ importers:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
-        specifier: ^4.164.0
-        version: 4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6)
+        specifier: ^4.166.0
+        version: 4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1)
 
   liveworkspace/packages/status:
     dependencies:
@@ -7967,8 +7973,8 @@ importers:
         version: link:../subscription
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
@@ -8029,8 +8035,8 @@ importers:
         version: link:../sites
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
@@ -8176,8 +8182,8 @@ importers:
         version: link:../telemetry
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
@@ -8987,8 +8993,8 @@ importers:
         specifier: ^5.1.1
         version: 5.1.1(vitest@5.1.1)
       lucide-static:
-        specifier: 1.75.0
-        version: 1.75.0
+        specifier: 1.77.0
+        version: 1.77.0
       oxlint:
         specifier: ^1.94.0
         version: 1.94.0(oxlint-tsgolint@7.0.2007)
@@ -9015,8 +9021,8 @@ importers:
         version: link:../migration
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../api-kit
@@ -9180,8 +9186,8 @@ importers:
         version: 4.6.7
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: ^5.20261118.1
-        version: 5.20261118.1
+        specifier: ^5.20261120.1
+        version: 5.20261120.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
@@ -9280,6 +9286,37 @@ importers:
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      vitest:
+        specifier: ^5.0.1
+        version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/office-files:
+    dependencies:
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
+      '@liveworkspace/workbench':
+        specifier: workspace:*
+        version: link:../workbench
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@vitest/coverage-v8':
+        specifier: ^5.1.1
+        version: 5.1.1(vitest@5.1.1)
+      oxlint:
+        specifier: ^1.94.0
+        version: 1.94.0(oxlint-tsgolint@7.0.2007)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
       vitest:
         specifier: ^5.0.1
         version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
@@ -10198,8 +10235,8 @@ packages:
   '@better-fetch/fetch@1.3.3':
     resolution: {integrity: sha512-U6SlDt/GUWtK2JAxS/NhdoYTEim+EL1G5byz2TUj83KjLZBUpYzb5SmX0aXaCnbGkAjFKnV/o/0+cyXMbEcqqg==}
 
-  '@cloudflare/kv-asset-handler@0.5.0':
-    resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
+  '@cloudflare/kv-asset-handler@0.5.1':
+    resolution: {integrity: sha512-48OysfSW3MkQY1XjkhkpPkgrEkOvgfoyHzA2eyX5wpzFpijC02uWigv3hkNdJdT3C7ybW/U17yYHXeR68pLeww==}
     engines: {node: '>=22.0.0'}
 
   '@cloudflare/unenv-preset@2.16.2':
@@ -10211,38 +10248,46 @@ packages:
       workerd:
         optional: true
 
-  '@cloudflare/workerd-darwin-64@1.20261117.1':
-    resolution: {integrity: sha512-qfAYw6iPoey0BmPsp4z5ARWOa+XSBD3gQzmcBI2ql9pKTSA5eEC8F1oI6BIk/FVguhomfSn5gS4RzbWhTd/EpQ==}
+  '@cloudflare/workerd-darwin-64@1.20261119.1':
+    resolution: {integrity: sha512-yotoiTGXCl1gTRX+y5ZWSAmzAg6CcBJXhJL6C1DGWUhsjjezNe8FdzraNsefVTOeKsOid2EC+hqOzewczKLvmQ==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-arm64@1.20261117.1':
-    resolution: {integrity: sha512-cInx5Cr9O27oW+ujyI49lTRQZra/lMgWUFiKmGY3jxDncATSxzfQ6udXHkVvK4//1/PfxQTDyMjdQUIN8m6Aqg==}
+  '@cloudflare/workerd-darwin-arm64@1.20261119.1':
+    resolution: {integrity: sha512-VPOmfEmMubvw4SPcg/yDgamQXsiVAENgxeCJO8pDggRJFaF93SP0g/hktD8sbfmWBS19BO1kX1EsdgHSgRL9jA==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [darwin]
 
-  '@cloudflare/workerd-linux-64@1.20261117.1':
-    resolution: {integrity: sha512-gZLA8X11m/luZwn+YA3+mDu61vdxNJzpksP/QZqjydKTQ+VUCulsK5gtn9Bqst1p3KJu2kafQpJ1nDQv4B23jA==}
+  '@cloudflare/workerd-linux-64@1.20261119.1':
+    resolution: {integrity: sha512-aaDf78smiN12Uuwtg6TG6iLVS61sLpy/7DC5PYORf2+TCYw/bygcaqqb8zQJ+XwZ3xYhm/Ws80c/yMMhCMTFYA==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-arm64@1.20261117.1':
-    resolution: {integrity: sha512-gxWngFojq41ULKNKb9rpWYvKotN5hT2I/xot+Bpy31cXzrwcTgtDLSMb2t75sW5BJxH7hihFvikgYb577kB3Zg==}
+  '@cloudflare/workerd-linux-arm64@1.20261119.1':
+    resolution: {integrity: sha512-LkyAvTMcKqRUP73HRScWWwTSz3pw09um1hxR+rcGdvsGzao8IR59XXTp/tul6kFdVBL2mD8U3X6j2O8t7I4viw==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [linux]
 
-  '@cloudflare/workerd-windows-64@1.20261117.1':
-    resolution: {integrity: sha512-0OR2Btx5EDonOKvvuGDq8rxBSggxoF1ThQjbZN3vsu3GlaF/oXW5f9/iB78OgV0CzMPTi+hZgzc1NR95UJCURA==}
+  '@cloudflare/workerd-windows-64@1.20261119.1':
+    resolution: {integrity: sha512-y4RO3QFNWt4j4uq2kmP5tklTvdA3qOA0PXuA66vsCmEtZYYb71ldefJcq5Dt0jrexKf/i4BBaLXZMVYLnohb0g==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workers-types@5.20261118.1':
-    resolution: {integrity: sha512-b1ppAa/0wrXvboTHbfyYnyYsh13OHu4ONP1h0HclZ0fEabwh2qT18YPY/z+wjyOs3o/BkyD0HCA800Ox+nju/Q==}
+  '@cloudflare/workers-types@5.20261120.1':
+    resolution: {integrity: sha512-bpaDXQ1oYqWhLCAqV5fO0pPB2tduDEEFyIMedZVi0NqzW/7T8DlJ8hUe3DqoDG1RQ8X7zTbK555Qr9yAyyUhmQ==}
+
+  '@cloudflare/workers-utils@0.56.0':
+    resolution: {integrity: sha512-Fw3/zR+pQp+5hKn1CHIRkCYz49fyAb2qRqCq01jBGqlKL0rRnZyXYD4j0h9cjaWPYYQUOe5y6L7BNp2ZwsHg5A==}
+    peerDependencies:
+      vitest: ^5.0.1
+    peerDependenciesMeta:
+      vitest:
+        optional: true
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -10588,8 +10633,8 @@ packages:
     resolution: {integrity: sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==}
     engines: {node: '>=18.0.0'}
 
-  '@isaacs/nonrecursive-glob-match@1.0.3':
-    resolution: {integrity: sha512-SI7kyKHq4XXDRozw+r9GlRZkia1ZkFrpLW98r2IC2Bpr8YkFGE3fvjzmxCG0x78A++69HmDNrDvSMYBZmHGpKA==}
+  '@isaacs/nonrecursive-glob-match@1.1.0':
+    resolution: {integrity: sha512-GPm/Dbvk5RLmhRnxXIa7nTpK0xtl4E0wj0MslsuNiJ1FIROU+2+9lgUC/dgF7Ey4QCWhfEsgxilMRMCdHPfDfw==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -11180,33 +11225,33 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@turbo/darwin-64@2.11.12':
-    resolution: {integrity: sha512-IF9fY2GVKpwSs+aAmby8BKb8qgGPZl0lhBER3HpPRxfY5jtA3veKXPqphiI5+jEhqXh3OXXpG73kHv990lqfWQ==}
+  '@turbo/darwin-64@2.11.13':
+    resolution: {integrity: sha512-5IT29i4j55E5O66+la7L8Y46ut7dFaNZqrgUIYYNtcpMt9Ql7aYnSQb/6tZ+prE2AfX1RBCAtRJE41txS2rG3w==}
     cpu: [x64]
     os: [darwin]
 
-  '@turbo/darwin-arm64@2.11.12':
-    resolution: {integrity: sha512-2gEvJbwUEupoWFbMPCDU1ZxHXRqaq3w92gFBZ4+7ovJw90qONecUvX8IOQe/8pr3qMmYMiNjA5/+HkUNmTTFgg==}
+  '@turbo/darwin-arm64@2.11.13':
+    resolution: {integrity: sha512-YFJPayVNlhSPRIZSeERiZYGKKqPs6N6qGhim8J3GtBdv5ZjUNF1ixfnAAyCVTqFEnMSkn1W7F0Y07kca8EjWsg==}
     cpu: [arm64]
     os: [darwin]
 
-  '@turbo/linux-64@2.11.12':
-    resolution: {integrity: sha512-2yULGKE5+uVxU0ELgq3vprzBE/Ua/Loaui0eO1E17hFyCeesG9UpQpWmTlf/MjaU0kTlVAh6CfbMsziaTELSMw==}
+  '@turbo/linux-64@2.11.13':
+    resolution: {integrity: sha512-R5RIQflV4ffBDNuUwjmtmzIr6Y2UeyeeHTtultYF7cnFn3tG1RZ4GRBlpjUhHB6JxuR7l1B450hlbzdtlD3ghg==}
     cpu: [x64]
     os: [android, linux]
 
-  '@turbo/linux-arm64@2.11.12':
-    resolution: {integrity: sha512-OK2PbiujzK3y3WleafqL6eUa5SaKvsTFOnpSIXD6jDxAPqlF8bEr/VWxbThHWvN8XV/4iKi/mDXJAM9Tpx9PDg==}
+  '@turbo/linux-arm64@2.11.13':
+    resolution: {integrity: sha512-AwV8pVO/cH/lwx1B7SGfzUA/3e6vmPaygFp9NOSRESs6t3Wr63zrBuXlluDogAOIxIMlHDB2ZbBueDsBnQxh2Q==}
     cpu: [arm64]
     os: [android, linux]
 
-  '@turbo/windows-64@2.11.12':
-    resolution: {integrity: sha512-2LOX0kvuvtDtLYH2HQinE3v4Ch8OcR+8gO1RacAP1s1j/m1Spf/HbBGn0EOlkEBsBzKnnxFnYqBGYvBfzrtLNg==}
+  '@turbo/windows-64@2.11.13':
+    resolution: {integrity: sha512-PGXYTaFaN3FZloe4RffNGJmfB+TIWlqQgKK1PVyKwPN+PUzxGa+byxHBWFHredMaVbnUc6L/F6/QR4iHyM/wug==}
     cpu: [x64]
     os: [win32]
 
-  '@turbo/windows-arm64@2.11.12':
-    resolution: {integrity: sha512-Mg8HvtTCJLIfNdrXaU+CoLRzrMIgWBRTBohatbrsdfyO0Iw6Nvr6gC2bwiQXflSQ8u/7yWJ/J91f/H2u52lqeQ==}
+  '@turbo/windows-arm64@2.11.13':
+    resolution: {integrity: sha512-YdRHWstBUHWt/eChOEM4f9LT0dPiWK5SNgtV77bLCr3JNke9M5E7metqelNYj+tXe36dH0BZrk2CMnFlWqHKng==}
     cpu: [arm64]
     os: [win32]
 
@@ -11258,6 +11303,9 @@ packages:
   '@types/node-fetch@2.6.13':
     resolution: {integrity: sha512-QGpRVpzSaUs30JBSGPjOg4Uveu384erbHBoT1zeONvyCfwQxIkUshLAOqN/k9EjGviPRmWTTe6aH2qySWKTVSw==}
 
+  '@types/node@18.19.130':
+    resolution: {integrity: sha512-GRaXQx6jGfL8sKfaIDD6OupbIHBr9jv7Jnaml9tB7l4v068PAOXqfcujMMo5PhbIs6ggR1XODELqahT2R8v0fg==}
+
   '@types/node@26.6.6':
     resolution: {integrity: sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog==}
 
@@ -11289,6 +11337,12 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/yargs-parser@21.0.3':
+    resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
+
+  '@types/yargs@17.0.24':
+    resolution: {integrity: sha512-6i0aC7jV6QzQB8ne1joVZ0eSFIstHsCrobmOtghM11yGlH0j43FKL2UhWdELkyps0zuf7qVTUVCCR+tgSlyLLw==}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==}
@@ -11447,6 +11501,10 @@ packages:
   '@webgpu/types@0.1.38':
     resolution: {integrity: sha512-7LrhVKz2PRh+DD7+S+PVaFd5HxaWQvoMqBbsV9fNJO1pjUs1P8bM2vQVNfk+3URTqbuTI7gkXi0rfsN0IadoBA==}
 
+  abort-controller@3.0.0:
+    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
+    engines: {node: '>=6.5'}
+
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
     engines: {node: '>= 0.6'}
@@ -11460,6 +11518,10 @@ packages:
     resolution: {integrity: sha512-oJlA3XiRm7Cyk6qFD2Jn8ak9B7jSy0qy00ADO3+8dpT0LSjFihQYv4C02LFCSYJV3Q37xYwwRy5m+IpIiUzqWw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+
+  agentkeepalive@4.6.0:
+    resolution: {integrity: sha512-kja8j7PjmncONqaTsB8fQ+wE2mSU2DJ9D4XKoJ5PFWIdRMa6SLSN1ff4mOr4jCbfRSsxR4keIiySJU0N9T5hIQ==}
+    engines: {node: '>= 8.0.0'}
 
   ajv-formats@3.0.1:
     resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
@@ -11599,15 +11661,12 @@ packages:
       zod:
         optional: true
 
-  blake3-wasm@2.1.5:
-    resolution: {integrity: sha512-F1+K8EbfOZE49dtoPtmxUQrpXaBIl3ICvasLh+nJta0xkz+9kF/7uet9fLnwKqhDrmj6g+6K3Tw9yQPUg2ka5g==}
-
   body-parser@2.4.0:
     resolution: {integrity: sha512-Ifk1KcLrxaGt1occQagQNFNNOqRt1LFuehEnHHzB8Z6cRgIxRU1TBaiIsUiCdA+gy5PL7Y1IX31DNKkRmxtXjQ==}
     engines: {node: '>=18'}
 
-  brace-expansion@5.0.12:
-    resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
+  brace-expansion@5.1.0:
+    resolution: {integrity: sha512-aa11Dv491GKnYqxaul3aRJ0szew7yMJMfZPnqD44NjGrZXoj62l41OEDDpdpC4eE2P88vBFfLuSyRhpG91NUvg==}
     engines: {node: 20 || >=22}
 
   brotli@2.1.0:
@@ -11639,6 +11698,10 @@ packages:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
 
+  chalk@5.3.0:
+    resolution: {integrity: sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==}
+    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
+
   character-entities-html4@2.1.0:
     resolution: {integrity: sha512-1v7fgQRj6hnSwFpq1Eu0ynr/CDEw0rXo2B61qXrLNdHZmPKgb7fqS1a2JwF0rISo9q77jDI8VMEHoApn8qDoZA==}
 
@@ -11660,6 +11723,9 @@ packages:
 
   cliui@7.0.4:
     resolution: {integrity: sha512-OcRE68cOsVMXp1Yvonl/fzkQOyjLSu/8bhPDfQt0e0/Eb283TKP20Fs2MqoPsr9SwA595rRCA+QMzYc9nBP+JQ==}
+
+  cloudflare@5.2.0:
+    resolution: {integrity: sha512-dVzqDpPFYR9ApEC9e+JJshFJZXcw4HzM8W+3DHzO5oy9+8rLC53G7x6fEf9A7/gSuSCxuvndzui5qJKftfIM9A==}
 
   collapse-white-space@2.1.0:
     resolution: {integrity: sha512-loKTxY1zCOuG4j9f6EPnuyyYkf58RnhhWTvRoZEokgB+WbdXehfjFviyOVYkqzEWz1Q5kRiZdBYS5SwxbQYwzw==}
@@ -11769,6 +11835,9 @@ packages:
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
 
+  devtools-protocol@0.0.1182435:
+    resolution: {integrity: sha512-EmlkWb62wSbQNE1gRZZsi4KZYRaF5Skpp183LhRU7+sadKR06O1dHCjZmFSEG6Kv7P6S/UYLxcY3NlYwqKM99w==}
+
   dfa@2.0.0:
     resolution: {integrity: sha512-4Z/ig4JY/6CyXaPvkjuJu7q5+6SikugixA/1wf/52A9Z+WOJr8NFKd60pv6KCwsdVdDmCCE3JrGwPFYxNcw8xw==}
 
@@ -11777,6 +11846,10 @@ packages:
 
   dompurify@3.4.18:
     resolution: {integrity: sha512-ofe3wI/uNm68HInABYFJYqQxRw1EaKAjNdrFVKqjUY+UZurvNd2L/HuQe097s/4RivWiZyP6tT7aoT8atjfhwg==}
+
+  dotenv@16.3.1:
+    resolution: {integrity: sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==}
+    engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -11877,6 +11950,10 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
+  event-target-shim@5.0.1:
+    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
+    engines: {node: '>=6'}
+
   eventsource-parser@3.1.1:
     resolution: {integrity: sha512-EKN1vKAMcZ8MlYMpaNuxN6R9yakzH6uajHcHVTqWJzvu5pWw9DyhbP35HH8MVBQ+dZjAfDxk+A8NiR9KWaXiyQ==}
     engines: {node: '>=18.0.0'}
@@ -11934,9 +12011,16 @@ packages:
   fontkit@3.0.0:
     resolution: {integrity: sha512-sjSkmtEw6RYJcvEbd+LHHLp2HFDaXdAia2RTbaGcBu/5QaDhxz35249eH9G07E0PzrtlkPF9FYXHF6YXxcAa1w==}
 
+  form-data-encoder@1.7.2:
+    resolution: {integrity: sha512-qfqtYan3rxrnCk1VYaA4H+Ms9xdpPqvLZa6xmMgFvhO32x7/3J/ExcTd6qpxM0vH2GdMI+poehyBZvqfMTto8A==}
+
   form-data@4.0.6:
     resolution: {integrity: sha512-vKatAh4SlVfgbv+YtmhiRjhEMJsYpsG1Y2rMQtR+SVSbytsSD1YGzDIcrAJmdFec88u/+VoGmxnl+80gL1tRCQ==}
     engines: {node: '>= 6'}
+
+  formdata-node@4.4.1:
+    resolution: {integrity: sha512-0iirZp3uVDjVGt9p49aTaqjk84TrglENEDuqfdlZQ1roC9CWlPk6Avf8EEnZNcAqPonwkG35x4n3ww/1THYAeQ==}
+    engines: {node: '>= 12.20'}
 
   forwarded@0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
@@ -11969,8 +12053,8 @@ packages:
   gifenc@1.0.3:
     resolution: {integrity: sha512-xdr6AdrfGBcfzncONUOlXMBuc5wJDtOueE3c5rdG0oNgtINLD+f2iFZltrBRZYzACRbKr+mSVU/x98zv2u3jmw==}
 
-  glob@14.0.3:
-    resolution: {integrity: sha512-A1vjIwC3qpdCso45Iw127gnp7sPhqgY8lUQhDrArIs+GbmfaaVPFuoyy7WyLT9EPZCRZ7j7aLdwUhQmHWesEow==}
+  glob@14.0.6:
+    resolution: {integrity: sha512-OwXjVP2svY5EyLY75Vek96C8qK43gqrt4xsZ+qSILdnaEiJPXkd62mcfUSNx/TQErQRdu5uM5kF67sfONragKw==}
     engines: {node: 18 || 20 || >=22}
 
   global-agent@4.1.3:
@@ -12030,6 +12114,9 @@ packages:
   http-errors@2.0.1:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
     engines: {node: '>= 0.8'}
+
+  humanize-ms@1.2.1:
+    resolution: {integrity: sha512-Fl70vYtsAFb/C06PTS9dZBo7ihau+Tu/DNCk/OyHhea07S+aeMWpFFkUaXRa8fI+ScZbEI8dfSxwY7gxZ9SAVQ==}
 
   iconv-lite@0.7.3:
     resolution: {integrity: sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==}
@@ -12209,8 +12296,8 @@ packages:
     resolution: {integrity: sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==}
     engines: {node: 20 || >=22}
 
-  lucide-static@1.75.0:
-    resolution: {integrity: sha512-vtAnJzxoH8jp0++Ydf22CPAAL3WfQQjmDG+OuRlG+CXouLCrlfTz7zWuDvHkTtj61czkhJAISChHDXkxLLqKRw==}
+  lucide-static@1.77.0:
+    resolution: {integrity: sha512-v+BzpQrjlwDRWPDzzAu5IFhOkI6jVKb91fsjw1ZSS7Tsb2YvRX5olRN0DXGW99LF2wV4fycuTf5aPOMC62ZW0g==}
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -12417,8 +12504,8 @@ packages:
     resolution: {integrity: sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==}
     engines: {node: '>=18'}
 
-  miniflare@5.20261117.0-beta:
-    resolution: {integrity: sha512-D2ygY04wQUmbpwgBhj828piErZoj7UMlXNGr4EWQp/c1PNGHyYOh0dMIyobjwOXiD5Ifl1EaEVAoNuBHK+qtkw==}
+  miniflare@5.20261119.0-beta:
+    resolution: {integrity: sha512-HdNQIUPgde5Yg0qFaI6iiYd0aOxAgKQTXDstkBN2G1tPBdslNrUKdySwaGdBix0IFd+yh8M0gkqzw68dIZ2Ugw==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
       kerberos: ^2.0.0
@@ -12426,8 +12513,8 @@ packages:
       kerberos:
         optional: true
 
-  minimatch@11.0.4:
-    resolution: {integrity: sha512-/UJ1dEoVQTjPNDh6SGlUo+ueLMmoHTas4q+8yaAR/5t6nLAIiBDJtoYUh20IYleix7ehiQkgczb84PE3uzHkxg==}
+  minimatch@11.0.9:
+    resolution: {integrity: sha512-KCFkfyjqerNlSstjlhIGNXIKZGA/6O4V4RlhZ+Dsr621SPPw0mzlypE9D9ZOoPiVefHID+j7/XuMMlqfD/F60Q==}
     engines: {node: 20 || >=22}
 
   minipass@7.1.3:
@@ -12475,8 +12562,22 @@ packages:
       sass:
         optional: true
 
+  node-domexception@1.0.0:
+    resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
+    engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
+
   node-fetch@2.6.13:
     resolution: {integrity: sha512-StxNAxh15zr77QvvkmveSQ8uCQ4+v5FkvNTj0OESmiHu+VRi/gXArXtkWMElOsOUNLtUEvI4yS+rdtOHZTwlQA==}
+    engines: {node: 4.x || >=6.0.0}
+    peerDependencies:
+      encoding: ^0.1.0
+    peerDependenciesMeta:
+      encoding:
+        optional: true
+
+  node-fetch@2.7.0:
+    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
     engines: {node: 4.x || >=6.0.0}
     peerDependencies:
       encoding: ^0.1.0
@@ -12957,8 +13058,8 @@ packages:
   trough@2.2.0:
     resolution: {integrity: sha512-tmMpK00BjZiUyVyvrBK7knerNgmgvcV/KLVyuma/SC+TQN167GrMRciANTz09+k3zW8L8t60jWO1GpfkZdjTaw==}
 
-  ts-json-schema-generator@2.9.0:
-    resolution: {integrity: sha512-NR5ZE108uiPtBHBJNGnhwoUaUx5vWTDJzDFG9YlRoqxPU76n+5FClRh92dcGgysbe1smRmYalM9Saj97GW1J4Q==}
+  ts-json-schema-generator@2.10.0:
+    resolution: {integrity: sha512-cNa9NTcaY3HYsDGvW7jMs91XF+1UtZLvEx4MrxigXZ4wMBL0YazPWF4rpPnbs5qtCGUc0P5cS3xRW0Lq2l1u1A==}
     engines: {node: '>=22.0.0'}
     hasBin: true
 
@@ -12970,8 +13071,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  turbo@2.11.12:
-    resolution: {integrity: sha512-NbxpCtwXayklTelyQowpb6Qv483qLP+95cSD/gnpBaIL/tw14JtPhl1XIRwkz/tG2k5cq1De+xhX6/ph713Inw==}
+  turbo@2.11.13:
+    resolution: {integrity: sha512-2EZ8StW6tqaj71HGF60oUOmJrPQHidmZ5dcwv2VORofya9JthVrfZhxbzRMx/QxjPwYi754i2h5RFsZSDzpnaQ==}
     hasBin: true
 
   type-fest@0.20.2:
@@ -12982,8 +13083,8 @@ packages:
     resolution: {integrity: sha512-faYHw0anBbc/kWF3zFTEnxSFOAGUX9GFbOBthvDdLsIlEoWOFOtS0zgCiQYwIskL9iGXZL3kAXD8OoZ4GmMATA==}
     engines: {node: '>= 18'}
 
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+  typescript@6.0.3:
+    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -12991,6 +13092,9 @@ packages:
     resolution: {integrity: sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==}
     engines: {node: '>=16.20.0'}
     hasBin: true
+
+  undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
   undici-types@8.12.3:
     resolution: {integrity: sha512-EXE4ydL3S76dFb27UFjNVZHTyv/TLdATj/KUe29ptdcg6qXL48J2tZ3126E5kICj5jn781OR+XlVH1N6Mz8jbA==}
@@ -13144,6 +13248,10 @@ packages:
   wasm-feature-detect@1.9.0:
     resolution: {integrity: sha512-zonE+xlIIYtxPy++L24ow0hAD8CICb4+FgPyROd3buyXIqsJvUEDkBgfCCoXOd1Hu3DUr0GOfnPIdcGV+YpNaA==}
 
+  web-streams-polyfill@4.0.0-beta.3:
+    resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
+    engines: {node: '>= 14'}
+
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
@@ -13172,17 +13280,17 @@ packages:
     engines: {node: '>=20.11'}
     hasBin: true
 
-  workerd@1.20261117.1:
-    resolution: {integrity: sha512-iakDbGVtJRiErpWSM5fYT0z3spJ2Mo1x/POsEajBNLqUbTRwm8vMqbB7g8zPN2tzs6eZYNiO5ECyEnAXO9Foxw==}
+  workerd@1.20261119.1:
+    resolution: {integrity: sha512-lalSvY+ad5asqMgzA/DfrZo7wvuvOHJc/aS1UctUrwu76fJE/LkSKJlprfBu0LeU79Qai5d+xFooQA9CIfj+dQ==}
     engines: {node: '>=16'}
     hasBin: true
 
-  wrangler@4.164.0:
-    resolution: {integrity: sha512-WwM+DL4F+zvz1id0CAPa06CAmTb6nOq1adR+Dy5AdwDsDXH5xDjSmDUUBQQN8KgSEuPCOLvzkrdMDUODIDml1A==}
+  wrangler@4.166.0:
+    resolution: {integrity: sha512-qMz0sHGXqEC0Va8T6dAaG0ggp9tCcuHHYMUQzRKbtZg6+MPAPb6oBu1757IaeugNJHPAz+twHiA+zDyXWQLsLw==}
     engines: {node: '>=22.12.0'}
     hasBin: true
     peerDependencies:
-      '@cloudflare/workers-types': ^5.20261117.1
+      '@cloudflare/workers-types': ^5.20261119.1
     peerDependenciesMeta:
       '@cloudflare/workers-types':
         optional: true
@@ -13335,30 +13443,39 @@ snapshots:
 
   '@better-fetch/fetch@1.3.3': {}
 
-  '@cloudflare/kv-asset-handler@0.5.0': {}
+  '@cloudflare/kv-asset-handler@0.5.1': {}
 
-  '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261117.1)':
+  '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261119.1)':
     dependencies:
       unenv: 2.0.0-rc.24
     optionalDependencies:
-      workerd: 1.20261117.1
+      workerd: 1.20261119.1
 
-  '@cloudflare/workerd-darwin-64@1.20261117.1':
+  '@cloudflare/workerd-darwin-64@1.20261119.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-arm64@1.20261117.1':
+  '@cloudflare/workerd-darwin-arm64@1.20261119.1':
     optional: true
 
-  '@cloudflare/workerd-linux-64@1.20261117.1':
+  '@cloudflare/workerd-linux-64@1.20261119.1':
     optional: true
 
-  '@cloudflare/workerd-linux-arm64@1.20261117.1':
+  '@cloudflare/workerd-linux-arm64@1.20261119.1':
     optional: true
 
-  '@cloudflare/workerd-windows-64@1.20261117.1':
+  '@cloudflare/workerd-windows-64@1.20261119.1':
     optional: true
 
-  '@cloudflare/workers-types@5.20261118.1': {}
+  '@cloudflare/workers-types@5.20261120.1': {}
+
+  '@cloudflare/workers-utils@0.56.0(vitest@5.1.1)':
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      chalk: 5.3.0
+      dotenv: 16.3.1
+      undici: 7.30.2
+    optionalDependencies:
+      vitest: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(jsdom@31.0.1(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -13592,7 +13709,7 @@ snapshots:
     dependencies:
       minipass: 7.1.3
 
-  '@isaacs/nonrecursive-glob-match@1.0.3': {}
+  '@isaacs/nonrecursive-glob-match@1.1.0': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -14076,22 +14193,22 @@ snapshots:
       '@types/react': 19.3.0
       '@types/react-dom': 19.3.0(@types/react@19.3.0)
 
-  '@turbo/darwin-64@2.11.12':
+  '@turbo/darwin-64@2.11.13':
     optional: true
 
-  '@turbo/darwin-arm64@2.11.12':
+  '@turbo/darwin-arm64@2.11.13':
     optional: true
 
-  '@turbo/linux-64@2.11.12':
+  '@turbo/linux-64@2.11.13':
     optional: true
 
-  '@turbo/linux-arm64@2.11.12':
+  '@turbo/linux-arm64@2.11.13':
     optional: true
 
-  '@turbo/windows-64@2.11.12':
+  '@turbo/windows-64@2.11.13':
     optional: true
 
-  '@turbo/windows-arm64@2.11.12':
+  '@turbo/windows-arm64@2.11.13':
     optional: true
 
   '@tybys/wasm-util@0.10.5':
@@ -14148,6 +14265,10 @@ snapshots:
       '@types/node': 26.6.6
       form-data: 4.0.6
 
+  '@types/node@18.19.130':
+    dependencies:
+      undici-types: 5.26.5
+
   '@types/node@26.6.6':
     dependencies:
       undici-types: 8.9.0
@@ -14174,6 +14295,12 @@ snapshots:
   '@types/unist@2.0.11': {}
 
   '@types/unist@3.0.3': {}
+
+  '@types/yargs-parser@21.0.3': {}
+
+  '@types/yargs@17.0.24':
+    dependencies:
+      '@types/yargs-parser': 21.0.3
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     optional: true
@@ -14268,6 +14395,10 @@ snapshots:
 
   '@webgpu/types@0.1.38': {}
 
+  abort-controller@3.0.0:
+    dependencies:
+      event-target-shim: 5.0.1
+
   accepts@2.0.0:
     dependencies:
       mime-types: 3.0.2
@@ -14278,6 +14409,10 @@ snapshots:
       acorn: 8.19.0
 
   acorn@8.19.0: {}
+
+  agentkeepalive@4.6.0:
+    dependencies:
+      humanize-ms: 1.2.1
 
   ajv-formats@3.0.1(ajv@8.20.0):
     optionalDependencies:
@@ -14372,8 +14507,6 @@ snapshots:
     optionalDependencies:
       zod: 4.6.7
 
-  blake3-wasm@2.1.5: {}
-
   body-parser@2.4.0:
     dependencies:
       bytes: 3.1.2
@@ -14388,7 +14521,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  brace-expansion@5.0.12:
+  brace-expansion@5.1.0:
     dependencies:
       balanced-match: 4.0.4
 
@@ -14419,6 +14552,8 @@ snapshots:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
+  chalk@5.3.0: {}
+
   character-entities-html4@2.1.0: {}
 
   character-entities-legacy@3.0.0: {}
@@ -14436,6 +14571,18 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
+
+  cloudflare@5.2.0:
+    dependencies:
+      '@types/node': 18.19.130
+      '@types/node-fetch': 2.6.13
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
 
   collapse-white-space@2.1.0: {}
 
@@ -14523,6 +14670,8 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
+  devtools-protocol@0.0.1182435: {}
+
   dfa@2.0.0: {}
 
   dom-accessibility-api@0.5.16: {}
@@ -14530,6 +14679,8 @@ snapshots:
   dompurify@3.4.18:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
+
+  dotenv@16.3.1: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -14657,6 +14808,8 @@ snapshots:
 
   etag@1.8.1: {}
 
+  event-target-shim@5.0.1: {}
+
   eventsource-parser@3.1.1: {}
 
   eventsource@3.0.7:
@@ -14742,6 +14895,8 @@ snapshots:
       unicode-properties: 2.0.2
       unicode-trie: 3.0.0
 
+  form-data-encoder@1.7.2: {}
+
   form-data@4.0.6:
     dependencies:
       asynckit: 0.4.0
@@ -14749,6 +14904,11 @@ snapshots:
       es-set-tostringtag: 2.1.0
       hasown: 2.0.4
       mime-types: 2.1.35
+
+  formdata-node@4.4.1:
+    dependencies:
+      node-domexception: 1.0.0
+      web-streams-polyfill: 4.0.0-beta.3
 
   forwarded@0.2.0: {}
 
@@ -14781,9 +14941,9 @@ snapshots:
 
   gifenc@1.0.3: {}
 
-  glob@14.0.3:
+  glob@14.0.6:
     dependencies:
-      minimatch: 11.0.4
+      minimatch: 11.0.9
       minipass: 7.1.3
       path-scurry: 3.0.0
 
@@ -14881,6 +15041,10 @@ snapshots:
       setprototypeof: 1.2.0
       statuses: 2.0.2
       toidentifier: 1.0.1
+
+  humanize-ms@1.2.1:
+    dependencies:
+      ms: 2.1.3
 
   iconv-lite@0.7.3:
     dependencies:
@@ -15019,7 +15183,7 @@ snapshots:
 
   lru-cache@11.5.3: {}
 
-  lucide-static@1.75.0: {}
+  lucide-static@1.77.0: {}
 
   lz-string@1.5.0: {}
 
@@ -15494,12 +15658,12 @@ snapshots:
     dependencies:
       mime-db: 1.54.0
 
-  miniflare@5.20261117.0-beta(@types/node@26.6.6):
+  miniflare@5.20261119.0-beta(@types/node@26.6.6):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       sharp: 0.35.5(@types/node@26.6.6)
       undici: 7.30.2
-      workerd: 1.20261117.1
+      workerd: 1.20261119.1
       ws: 8.23.0
       youch: 4.1.0-beta.10
     transitivePeerDependencies:
@@ -15507,10 +15671,10 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  minimatch@11.0.4:
+  minimatch@11.0.9:
     dependencies:
-      '@isaacs/nonrecursive-glob-match': 1.0.3
-      brace-expansion: 5.0.12
+      '@isaacs/nonrecursive-glob-match': 1.1.0
+      brace-expansion: 5.1.0
 
   minipass@7.1.3: {}
 
@@ -15554,7 +15718,13 @@ snapshots:
       - '@types/node'
       - babel-plugin-macros
 
+  node-domexception@1.0.0: {}
+
   node-fetch@2.6.13:
+    dependencies:
+      whatwg-url: 5.0.0
+
+  node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
 
@@ -16141,16 +16311,16 @@ snapshots:
 
   trough@2.2.0: {}
 
-  ts-json-schema-generator@2.9.0:
+  ts-json-schema-generator@2.10.0:
     dependencies:
       '@types/json-schema': 7.0.15
       commander: 14.0.3
-      glob: 14.0.3
+      glob: 14.0.6
       json5: 2.2.3
       normalize-path: 3.0.0
       safe-stable-stringify: 2.5.0
       tslib: 2.9.1
-      typescript: 5.9.3
+      typescript: 6.0.3
 
   tslib@2.9.1: {}
 
@@ -16160,14 +16330,14 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  turbo@2.11.12:
+  turbo@2.11.13:
     optionalDependencies:
-      '@turbo/darwin-64': 2.11.12
-      '@turbo/darwin-arm64': 2.11.12
-      '@turbo/linux-64': 2.11.12
-      '@turbo/linux-arm64': 2.11.12
-      '@turbo/windows-64': 2.11.12
-      '@turbo/windows-arm64': 2.11.12
+      '@turbo/darwin-64': 2.11.13
+      '@turbo/darwin-arm64': 2.11.13
+      '@turbo/linux-64': 2.11.13
+      '@turbo/linux-arm64': 2.11.13
+      '@turbo/windows-64': 2.11.13
+      '@turbo/windows-arm64': 2.11.13
 
   type-fest@0.20.2: {}
 
@@ -16177,7 +16347,7 @@ snapshots:
       media-typer: 1.1.1
       mime-types: 3.0.2
 
-  typescript@5.9.3: {}
+  typescript@6.0.3: {}
 
   typescript@7.0.2:
     optionalDependencies:
@@ -16201,6 +16371,8 @@ snapshots:
       '@typescript/typescript-sunos-x64': 7.0.2
       '@typescript/typescript-win32-arm64': 7.0.2
       '@typescript/typescript-win32-x64': 7.0.2
+
+  undici-types@5.26.5: {}
 
   undici-types@8.12.3: {}
 
@@ -16318,6 +16490,8 @@ snapshots:
 
   wasm-feature-detect@1.9.0: {}
 
+  web-streams-polyfill@4.0.0-beta.3: {}
+
   webidl-conversions@3.0.1: {}
 
   webidl-conversions@8.0.1: {}
@@ -16343,33 +16517,39 @@ snapshots:
 
   why-is-node-running@3.2.1: {}
 
-  workerd@1.20261117.1:
+  workerd@1.20261119.1:
     optionalDependencies:
-      '@cloudflare/workerd-darwin-64': 1.20261117.1
-      '@cloudflare/workerd-darwin-arm64': 1.20261117.1
-      '@cloudflare/workerd-linux-64': 1.20261117.1
-      '@cloudflare/workerd-linux-arm64': 1.20261117.1
-      '@cloudflare/workerd-windows-64': 1.20261117.1
+      '@cloudflare/workerd-darwin-64': 1.20261119.1
+      '@cloudflare/workerd-darwin-arm64': 1.20261119.1
+      '@cloudflare/workerd-linux-64': 1.20261119.1
+      '@cloudflare/workerd-linux-arm64': 1.20261119.1
+      '@cloudflare/workerd-windows-64': 1.20261119.1
 
-  wrangler@4.164.0(@cloudflare/workers-types@5.20261118.1)(@types/node@26.6.6):
+  wrangler@4.166.0(@cloudflare/workers-types@5.20261120.1)(@types/node@26.6.6)(vitest@5.1.1):
     dependencies:
-      '@cloudflare/kv-asset-handler': 0.5.0
-      '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261117.1)
+      '@cloudflare/kv-asset-handler': 0.5.1
+      '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261119.1)
+      '@cloudflare/workers-utils': 0.56.0(vitest@5.1.1)
       '@cspotcode/source-map-support': 0.8.1
-      blake3-wasm: 2.1.5
+      '@types/yargs': 17.0.24
+      cloudflare: 5.2.0
+      devtools-protocol: 0.0.1182435
       esbuild: 0.28.2
-      miniflare: 5.20261117.0-beta(@types/node@26.6.6)
+      miniflare: 5.20261119.0-beta(@types/node@26.6.6)
       path-to-regexp: 6.3.0
+      undici: 7.30.2
       unenv: 2.0.0-rc.24
-      workerd: 1.20261117.1
+      workerd: 1.20261119.1
     optionalDependencies:
-      '@cloudflare/workers-types': 5.20261118.1
+      '@cloudflare/workers-types': 5.20261120.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - '@types/node'
       - bufferutil
+      - encoding
       - kerberos
       - utf-8-validate
+      - vitest
 
   wrap-ansi@7.0.0:
     dependencies:

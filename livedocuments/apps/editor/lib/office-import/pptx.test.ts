@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { OfficeImportError } from './errors';
-import { openOfficePackage } from './package';
+import { OfficeImportError } from '@liveworkspace/office-files/errors';
+import { openOfficePackage } from '@liveworkspace/office-files/package';
 import { readPptx, type SlideTextItem } from './pptx';
 import {
   ap,
@@ -11,7 +11,7 @@ import {
   sp,
   xfrm,
   type DeckOptions,
-} from './test-fixtures';
+} from '@liveworkspace/office-files/test-fixtures';
 
 const read = async (opts: DeckOptions) =>
   readPptx(await openOfficePackage(await makePptx(opts), 'powerpoint'));

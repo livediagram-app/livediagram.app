@@ -1,6 +1,6 @@
 'use client';
 
-import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
+import { TagColoursProvider } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
 import { PlanTextScaleProvider } from '@/components/plan/PlanTextScaleContext';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';

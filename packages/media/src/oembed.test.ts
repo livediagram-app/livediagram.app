@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WORKSPACE_CLIENT_IP_HEADER } from '@liveworkspace/sites/workspace-proxy';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   embedOpensReadOnly,
   embedSessionRole,
@@ -285,7 +285,7 @@ describe('readLimit', () => {
     const ms = cpuMsOf(() => {
       for (let i = 0; i < 100; i++) readLimit('9'.repeat(50_000));
     });
-    expect(ms).toBeLessThan(50);
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 });
 

@@ -119,6 +119,9 @@ editor app serves no `/explorer` page of its own, and its links to the Explorer 
 
 ## Implementation
 
+The routing table is `../packages/sites/src/app-router.ts` (`createAppRouter`, the one router every app runs), bound
+to liveplanner in `apps/router/src/index.ts`.
+
 In production the Worker has four **service bindings**, one to each downstream app (`MARKETING`, `EDITOR`, `API`,
 `HELP`). `HELP` is liveworkspace's `liveworkspace-help` Worker (staging `liveworkspace-help-staging`), and the router adds `x-help-app: liveplanner` so it serves liveplanner's scope; locally `HELP_ORIGIN` is `http://127.0.0.1:3020`. The platform's paths are fetched from liveworkspace's origins through `@liveworkspace/sites/workspace-proxy`
 (`routeToWorkspace`, `routeToPreviews`, `forwardToIndex`, `forwardToDrive`, `statusRedirect`), and `/telemetry` is a

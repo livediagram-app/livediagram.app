@@ -5,7 +5,7 @@ import {
   arrowLabelPass,
   layoutArrowLabels,
   type ArrowLabelLayoutOptions,
-} from './arrow-label-layout';
+} from '@liveworkspace/element-model/arrow-label-layout';
 import type { ArrowElement, Element, ShapeElement } from './index';
 
 // 6px per character at 12px, scaled with the font: deterministic stand-in

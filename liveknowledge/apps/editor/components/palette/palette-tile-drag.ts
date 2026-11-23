@@ -1,5 +1,10 @@
 import { SHAPE_DEFAULT_SIZE } from '@liveknowledge/document';
-import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
+import {
+  ICON_DND_MIME,
+  PALETTE_DND_MIME,
+  STICKER_DND_MIME,
+  TECH_ICON_DND_MIME,
+} from '@/lib/dnd-mime';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PaletteTileDef } from './palette-tile-defs';
 

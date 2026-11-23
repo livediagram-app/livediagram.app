@@ -10,10 +10,20 @@ import {
   svgWrappedLabel,
   type ExportLabel,
   type WordmarkAttrs,
-} from './svg-render-labels';
-import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
-import { textEffectIdPrefix } from './svg-render-text-effects';
-import { arcGeometry, arcText, resolvedFontWeight, wordmarkDisplayText } from './wordmark';
+} from '@liveworkspace/element-model/svg-render-labels';
+import {
+  labelMeasure,
+  r2,
+  wrapLabel,
+  xmlEscape,
+} from '@liveworkspace/element-model/svg-render-primitives';
+import { textEffectIdPrefix } from '@liveworkspace/element-model/svg-render-text-effects';
+import {
+  arcGeometry,
+  arcText,
+  resolvedFontWeight,
+  wordmarkDisplayText,
+} from '@liveworkspace/element-model/wordmark';
 
 /** A width measure that counts tracking: each glyph is followed by `letterSpacing` em. */
 export function trackedMeasure(

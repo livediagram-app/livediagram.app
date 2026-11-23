@@ -5,7 +5,7 @@ import { ctaHref } from '@livediagram/api-schema';
 import { TemplatePreview } from '@livediagram/template-previews';
 import { templateCreateHref } from '@livediagram/templates';
 import { TemplateCard } from '@/components/TemplateCard';
-import { TemplateCarousel } from '@/components/TemplateCarousel';
+import { TemplateCarousel } from '@liveworkspace/marketing-site/components/TemplateCarousel';
 import { galleryShelves, type GalleryTemplate } from '@/lib/template-gallery';
 
 // "Browse every template" (docs/specs/019-marketing/marketing-site.md), anchored #templates for the hero's search: every template the

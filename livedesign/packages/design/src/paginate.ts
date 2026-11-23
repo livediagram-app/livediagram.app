@@ -4,7 +4,7 @@
 // is the explicit action that breaks a Fit to Content page into one page per cluster (things
 // joined by arrows, and things close together), in reading order, each cluster moved onto its own
 // page and never scaled (withPageSplit). Pure: tab in, tab out, one edit.
-import { elementIndexFor, endpointPosition } from './geometry';
+import { elementIndexFor, endpointPosition } from '@liveworkspace/element-model/geometry';
 import {
   pageAt,
   pagesOf,

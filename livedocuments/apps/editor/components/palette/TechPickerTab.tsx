@@ -1,7 +1,7 @@
 import { createTechPickerTab } from '@liveworkspace/workbench/components/palette/TechPickerTab';
-import { TECH_ICON_DND_MIME } from '@/lib/icons';
+import { TECH_ICON_DND_MIME } from '@/lib/dnd-mime';
 import { IconButton } from '@/components/palette/palette-controls';
-import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
+import { TechIconArt } from '@liveworkspace/workbench/components/primitives/tech-icon-glyph';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 
 // The palette's Technology tab (docs/specs/010-palette/technology-icons.md), shared by the editors and bound to this

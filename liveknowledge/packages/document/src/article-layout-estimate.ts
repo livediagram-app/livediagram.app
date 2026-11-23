@@ -7,7 +7,7 @@
 // or later than the browser would, so a long article can end a few lines off. Pure.
 import { articleListMarkers, articlesOf } from './article-flow';
 import { articleBandsFor, bandDate } from './article-bands';
-import type { ArticleDrawOp } from './article-draw-ops';
+import type { ArticleDrawOp } from '@liveworkspace/element-model/article-draw-ops';
 import {
   ARTICLE_HEADER_BAND_PX,
   ARTICLE_LINE_HEIGHT,

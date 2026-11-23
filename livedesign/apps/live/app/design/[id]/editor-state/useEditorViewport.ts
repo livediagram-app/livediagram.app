@@ -8,7 +8,7 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useTabEntryEffects } from '../useTabEntryEffects';
 import { useCollabDeepLinkCapture } from '../useCollabDeepLink';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { boundsOfElements } from '@/lib/changeset-reveals';
+import { boundsOfElements } from '@liveworkspace/workbench/lib/changeset-reveals';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';

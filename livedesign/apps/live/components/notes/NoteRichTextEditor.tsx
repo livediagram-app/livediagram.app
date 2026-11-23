@@ -18,7 +18,7 @@ import {
 } from '@liveworkspace/workbench/components/label-editor/rich-text-dom';
 import { listEnter, type TextRun } from '@livedesign/design';
 import { formatShortcut } from '@liveworkspace/workbench/components/label-editor/rich-text-format';
-import { NOTE_BASE_PX } from './note-run-style';
+import { NOTE_BASE_PX } from '@liveworkspace/workbench/components/notes/note-run-style';
 import { NoteFormatToolbar } from './NoteFormatToolbar';
 import { useNoteRichTextSession } from './useNoteRichTextSession';
 

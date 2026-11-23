@@ -10,7 +10,7 @@ Scope, by file:
 | File                                                                                  | Role                                                                                                  |
 | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `packages/document/src/web-components.ts`                                             | `StatItem.change`, `STAT_CHANGE_MAX`, `statRowLayout` (value / caption / change rects), `withWebRows` |
-| `packages/document/src/stat-count.ts`                                                 | `statTrend`, `statTrendColour`, `parseCountable`, `countFrame`, `STAT_COUNT_MS`                       |
+| `../packages/element-model/src/stat-count.ts`                                         | `statTrend`, `statTrendColour`, `parseCountable`, `countFrame`, `STAT_COUNT_MS`                       |
 | `packages/document/src/shape-variants.ts`                                             | The `big-number` variant                                                                              |
 | `packages/document/src/validate-shape.ts`                                             | `stats[].change`, `statCountUp`                                                                       |
 | `packages/document/src/element-types.ts`, `element-fields.ts`                         | `statCountUp`                                                                                         |

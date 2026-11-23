@@ -8,8 +8,8 @@ Scope, by file:
 | File                                                | Role                                                              |
 | --------------------------------------------------- | ----------------------------------------------------------------- |
 | `../packages/element-model/src/hierarchy.ts`        | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
-| `packages/document/src/theme-graph.ts`              | The four wrappers and the per-element branch resolution           |
-| `packages/document/src/themes-data.ts`              | The five built-in multi-colour themes                             |
+| `../packages/element-model/src/theme-graph.ts`      | The four wrappers and the per-element branch resolution           |
+| `../packages/element-model/src/themes-data.ts`      | The five built-in multi-colour themes                             |
 | `packages/document/src/colors.ts`                   | `contrastRatio`, the WCAG contrast helper (D3)                    |
 | `apps/editor/components/primitives/ThemeSwatch.tsx` | The card preview                                                  |
 
@@ -126,7 +126,7 @@ null. A `NaN` fails every `>=` comparison, so the contrast test cannot pass on a
 ## Data and persistence
 
 - **Static data.** The `palette` and `rootColor` of built-in themes live in
-  `packages/document/src/themes-data.ts` and ship in the bundle.
+  `../packages/element-model/src/themes-data.ts` and ship in the bundle.
 - **Never persisted.** The branch map is derived on every apply and never stored. An element stores
   only the resolved colours the wrapper wrote.
 

@@ -4,7 +4,7 @@ import { createArrow, createShape, createSticky, createTable, createText } from 
 import type { Element, ShapeElement, TextElement } from './index';
 import { pagesOf, layOutPages, type Page, type PageFill } from './page';
 import { pageBackgroundSet } from './pages-edits';
-import { worstContrast } from './page-ink-contrast';
+import { worstContrast } from '@liveworkspace/element-model/page-ink-contrast';
 import { pageGroundUnder } from './page-ink-ground';
 import { pageInkFor, pagesInkFor, withPageInkFor, type InkMemory } from './page-ink';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';

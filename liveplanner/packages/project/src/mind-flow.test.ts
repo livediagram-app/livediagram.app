@@ -15,7 +15,7 @@ import {
   mindGaps,
   placeMindChild,
   type MindFlow,
-} from './mind-flow';
+} from '@liveworkspace/element-model/mind-flow';
 
 // The flow is the SHAPE a map grows in (docs/specs/009-elements/mind-node.md). The keystrokes are the
 // same in all of them, so each test here asks only one thing: did the child

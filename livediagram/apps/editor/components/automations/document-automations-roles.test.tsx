@@ -2,7 +2,7 @@
 // docs/specs/013-workspace/automations.md "Share roles": the footer's Automations row is there for an Editor of the
 // whole canvas and for nobody else; a guest Editor's opens Sign In, a canvas kept Offline's opens Sync Canvas.
 import { act, render, renderHook, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAutomationsToolsItem } from '@liveworkspace/automations-ui/automations-tools-item';
 import { DocumentAutomationsHost } from './DocumentAutomationsHost';
 import {
@@ -65,6 +65,13 @@ const withRow = (a: DocumentAutomations) =>
       <Row />
     </DocumentAutomationsHost>,
   );
+
+// The gate's code is a lazy chunk, fetched the first time it is drawn. That first load used to fall inside a
+// `findBy`'s one second, which a busy machine does not always give it (approvals-roles: 0.9 s for the load alone,
+// 2026-11-23). It is loaded here instead, on a wait that is a module load's, not the UI's.
+beforeAll(async () => {
+  await import('./DocumentAutomationsGate');
+}, 60_000);
 
 describe('who sees Automations', () => {
   it('gives an Editor of the whole canvas the screen, and the row', () => {

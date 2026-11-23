@@ -2,31 +2,53 @@
 // tests the push reaches, for what it changes since its merge base with origin/main, so a deterministic
 // failure surfaces on the machine in minutes. It asks CI's own planner (.github/scripts/ci-plan.mjs)
 // which product groups the change reaches for lint, type check, format and the guards, and runs only the
-// tests that import a changed file, plus the guard tests that scan files. Whole suites, coverage and
-// E2E are CI's. The test runs go a few at a time, a change that reaches most of a suite leaves that suite
-// to CI, and every failing step is reported in one run.
+// tests that import a changed file, plus the guard tests that scan files (pre-push-guards.mjs): a changed
+// workspace's, those of the suites that read what the push changes, and the repo guards on the push merged
+// with origin/main. A small suite that enforces coverage thresholds runs whole, with coverage. Other whole
+// suites and E2E are CI's. The test runs go a few at a time, a change that reaches most of a suite leaves
+// that suite to CI, and every failing step is reported in one run.
 //
 //   .githooks/pre-push -> node scripts/git-hooks/pre-push.mjs (the push's refs on stdin)
 //   node scripts/git-hooks/pre-push.mjs --dry-run   prints the steps for HEAD without running them
+//   node scripts/git-hooks/pre-push.mjs --quick     (`pnpm prepush:quick`) by hand, before a push with
+//     --no-verify: the guards, format, guard tests and coverage, without lint, type check and the related
+//     test runs; `--site-build` adds the site's build and its first-load budget
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { availableParallelism, loadavg, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { repoReaders } from '../../.github/scripts/ci-readers.mjs';
+import {
+  COVERAGE_MAX_FILES,
+  COVERAGE_ON_CI,
+  EMITTERS_TEST,
+  SCAN_TIMEOUT,
+  ciScriptSteps,
+  ciScriptTests,
+  enforcesCoverage,
+  mergedSteps,
+  readerSteps,
+  scanTests,
+  siteBuildStep,
+  workspaceDirs,
+} from './pre-push-guards.mjs';
 import { reachOf, runSteps } from './pre-push-run.mjs';
 
 export { listedTests, pooled } from './pre-push-run.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const BASE_REF = 'origin/main';
+// What the push is compared with. PRE_PUSH_BASE_REF names another ref, for a branch stacked on one not merged yet.
+const BASE_REF = process.env.PRE_PUSH_BASE_REF || 'origin/main';
 const ZERO_SHA = /^0+$/;
 
 /**
  * A step. `parallel` steps (the test runs) go a few at a time after the rest; a `stop` step (an install)
  * ends the run when it fails, since nothing after it could pass; a `skip` step runs nothing and says why.
  * @typedef {{ label: string, cmd: string, args: string[], env?: Record<string, string>,
- *   parallel?: boolean, stop?: boolean, skip?: boolean }} Step
+ *   parallel?: boolean, stop?: boolean, skip?: boolean, show?: boolean }} Step  `show`: a parallel step
+ *   whose output prints when it passes too
  */
 /**
  * @typedef {{ group: string, filters: string, format: string, base: string }} Group
@@ -39,11 +61,12 @@ const split = (/** @type {string} */ filters) => filters.split(' ').filter(Boole
  * The fast checks for a push, in the order they run, from ci-plan's groups: the repo-wide guards once,
  * then per group what ci.yml's Checks job runs (lint, type check, format, the speed-budget guard).
  * Tests come from `testSteps`: only those the change reaches, never a whole suite (CI runs those).
- * Two turbo tasks at a time, as on CI.
+ * Two turbo tasks at a time, as on CI. `lint: false` (the quick run) leaves lint and type check out.
  * @param {{ groups: Group[] }} plan
+ * @param {{ lint?: boolean }} [options]
  * @returns {Step[]}
  */
-export function prePushSteps({ groups }) {
+export function prePushSteps({ groups }, { lint = true } = {}) {
   /** @type {Step[]} */
   const steps = [];
   // Repo-wide, so once rather than per group, as every Checks job runs it.
@@ -66,8 +89,8 @@ export function prePushSteps({ groups }) {
       },
     );
   for (const g of groups) {
-    steps.push(
-      {
+    if (lint)
+      steps.push({
         label: `${g.group}: lint and typecheck`,
         cmd: 'pnpm',
         args: [
@@ -80,7 +103,8 @@ export function prePushSteps({ groups }) {
           '--continue',
           '--concurrency=2',
         ],
-      },
+      });
+    steps.push(
       {
         label: `${g.group}: format`,
         cmd: 'bash',
@@ -149,19 +173,20 @@ export function installStep({ groups }, changes, { workspaceOf, hasModules }) {
 /** A source or test file vitest can trace imports from. */
 const CODE = /\.[cm]?[jt]sx?$/;
 const TEST_FILE = /\.test\.[cm]?[jt]sx?$/;
+const GUARD_NAME = /guard\.test\.[cm]?[jt]sx?$/;
 
 /**
  * @typedef {{ status: string, path: string }} Change  one line of `git diff --name-status`
- * @typedef {{ dir: string, name: string, vitest: boolean }} Workspace
- * @typedef {{ ws: Workspace, tests: string[] }} HelpRepoPaths  the help centre and its repo-paths tests
+ * @typedef {{ dir: string, name: string, vitest: boolean, coverage?: boolean }} Workspace  `coverage`: it
+ *   enforces coverage thresholds (pre-push-guards.mjs `enforcesCoverage`)
  * @typedef {{
  *   workspaceOf: (file: string) => Workspace | null,
  *   guardTests: (dir: string) => string[],
- *   helpApps: () => HelpRepoPaths[],
  *   emitterTest: (product: string) => { ws: Workspace, file: string } | null,
  *   maxWorkers?: number,
  *   reach?: (ws: Workspace) => Reach | null,
- * }} TestContext
+ *   related?: boolean,
+ * }} TestContext  `related: false` (the quick run) leaves the related test runs out
  * @typedef {{ related: string[], total: number }} Reach  the test files a workspace's change reaches
  *   (relative to it), and how many it has; null where vitest could not say
  */
@@ -171,8 +196,7 @@ export const CAP_MIN_FILES = 20;
 /** Reaching this share of a workspace's test files is the suite, near enough: CI runs it. */
 export const CAP_SHARE = 0.8;
 
-/** The site's test, per product, that every telemetry event has a chart. */
-const EMITTERS_TEST = /^app\/telemetry\/[^/]+\/metric-emitters\.test\.ts$/;
+/** The site's tests, per product, that every telemetry event has a chart (`EMITTERS_TEST`). */
 const EMITTERS_GLOB = 'app/telemetry/*/metric-emitters.test.ts';
 
 /**
@@ -225,14 +249,15 @@ export function testWorkers(cores, load) {
  * - `vitest related` on its changed code files, which runs every test that imports them (and a changed
  *   test itself); when that is most of its suite (`CAP_SHARE` of `CAP_MIN_FILES` test files or more, by
  *   `reach`), only the changed tests run and the suite is left to CI, which runs it whole anyway;
+ * - where it enforces coverage thresholds and its suite is small (`COVERAGE_MAX_FILES` test files at most,
+ *   by `reach`, and not a product api: `COVERAGE_ON_CI`), the whole suite with coverage in place of the
+ *   related run, so a new function without a test fails here, not on CI's Coverage thresholds step;
  * - its guard tests, which scan files rather than import them, so `related` never picks them up (an
- *   app's root and `app/` tests, `lib/small-text-contrast.test.ts`, and an api's `src/openapi` tests,
- *   which catch stale generated schemas);
+ *   app's root and `app/` tests, `lib/small-text-contrast.test.ts`, an api's `src/openapi` tests,
+ *   which catch stale generated schemas, and every `*guard.test.*`);
  * - when the push changes a product's code, the site's metric-emitters test for that product, which
  *   fails when a telemetry event has no chart: one run for every such product, and for those the site's
- *   own change reaches, which its related run then leaves out, so none runs twice;
- * - when the push deletes or renames a file, the help centre's repo-paths tests (one per app's edition),
- *   which check each repo path a help article cites.
+ *   own change reaches, which its related run then leaves out, so none runs twice.
  * Paths are relative to the workspace, as vitest takes them from there. `maxWorkers` caps each run.
  * Every test step is `parallel`.
  * @param {Change[]} changes
@@ -241,7 +266,7 @@ export function testWorkers(cores, load) {
  */
 export function testSteps(
   changes,
-  { workspaceOf, guardTests, helpApps, emitterTest, maxWorkers, reach },
+  { workspaceOf, guardTests, emitterTest, maxWorkers, reach, related = true },
 ) {
   const workers = maxWorkers ? [`--maxWorkers=${maxWorkers}`] : [];
   const touched = touchedWorkspaces(changes, workspaceOf);
@@ -265,7 +290,20 @@ export function testSteps(
   for (const { ws, files } of touched) {
     const reached = files.size > 0 ? (reach?.(ws) ?? null) : null;
     const filter = ['--filter', ws.name, 'exec', 'vitest'];
-    if (files.size > 0) {
+    const covered =
+      files.size > 0 &&
+      ws.coverage === true &&
+      !COVERAGE_ON_CI.test(ws.dir) &&
+      reached !== null &&
+      reached.total <= COVERAGE_MAX_FILES;
+    if (covered)
+      steps.push({
+        label: `${ws.name}: its suite with coverage thresholds (${reached.total} test files)`,
+        cmd: 'pnpm',
+        args: [...filter, 'run', '--coverage', ...workers],
+        parallel: true,
+      });
+    else if (files.size > 0 && related) {
       const capped =
         reached !== null &&
         reached.total >= CAP_MIN_FILES &&
@@ -318,7 +356,7 @@ export function testSteps(
       steps.push({
         label: `${ws.name}: guard tests`,
         cmd: 'pnpm',
-        args: [...filter, 'run', ...guards, ...workers],
+        args: [...filter, 'run', ...guards, SCAN_TIMEOUT, ...workers],
         parallel: true,
       });
   }
@@ -337,14 +375,6 @@ export function testSteps(
       ],
       parallel: true,
     });
-  if (changes.some((c) => c.status.startsWith('D') || c.status.startsWith('R')))
-    for (const help of helpApps())
-      steps.push({
-        label: `${help.ws.name}: repo paths in help articles`,
-        cmd: 'pnpm',
-        args: ['--filter', help.ws.name, 'exec', 'vitest', 'run', ...help.tests, ...workers],
-        parallel: true,
-      });
   return steps;
 }
 
@@ -409,6 +439,7 @@ function workspaceOf(file) {
           dir,
           name: pkg.name ?? dir,
           vitest: /\bvitest\b/.test(pkg.scripts?.test ?? ''),
+          coverage: enforcesCoverage(ROOT, dir, pkg.scripts ?? {}),
         });
       } else workspaces.set(dir, null);
     }
@@ -419,9 +450,23 @@ function workspaceOf(file) {
   return null;
 }
 
+/** The suites turbo.json declares as reading other workspaces (ci-readers.mjs), and their folders. */
+let readerCache =
+  /** @type {{ readers: ReturnType<typeof repoReaders>, dirs: Map<string, string> } | null} */ (
+    null
+  );
+function readers() {
+  readerCache ??= {
+    readers: repoReaders(path.join(ROOT, 'turbo.json')),
+    dirs: workspaceDirs(ROOT),
+  };
+  return readerCache;
+}
+
 /**
  * A workspace's guard tests, relative to it: the tests at its root and in `app/`,
- * `lib/small-text-contrast.test.ts`, and an api's `src/openapi` tests.
+ * `lib/small-text-contrast.test.ts`, an api's `src/openapi` tests and every `*guard.test.*`; for a suite
+ * that reads other workspaces, every test that reads files (pre-push-guards.mjs `scanTests`).
  * @param {string} dir
  * @returns {string[]}
  */
@@ -439,22 +484,10 @@ function guardTests(dir) {
   );
   if (existsSync(path.join(ROOT, dir, 'lib/small-text-contrast.test.ts')))
     found.push('lib/small-text-contrast.test.ts');
-  return found.sort();
-}
-
-const HELP = 'liveworkspace/apps/help';
-
-/** The one help centre (liveworkspace/apps/help) and each app edition's test of the repo paths its articles cite
- *  (editions/<app>/tests/repo-paths-in-docs.test.ts), or none when it has no such test. */
-function helpApps() {
-  const ws = /** @type {Workspace | null} */ (workspaceOf(`${HELP}/package.json`));
-  const editions = path.join(ROOT, HELP, 'editions');
-  if (!ws || !existsSync(editions)) return [];
-  const tests = readdirSync(editions)
-    .map((edition) => `editions/${edition}/tests/repo-paths-in-docs.test.ts`)
-    .filter((file) => existsSync(path.join(ROOT, HELP, file)))
-    .sort();
-  return tests.length > 0 ? [{ ws, tests }] : [];
+  const { readers: all, dirs } = readers();
+  const reader = all.some((r) => dirs.get(r.name) === dir);
+  found.push(...scanTests(ROOT, dir).filter((file) => reader || GUARD_NAME.test(file)));
+  return [...new Set(found)].sort();
 }
 
 const SITE = 'liveworkspace/apps/site';
@@ -548,7 +581,11 @@ function takeLock() {
 
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
-  if (!dryRun) {
+  // By hand (`pnpm prepush:quick`), before a push with --no-verify: no lint, type check or related test runs.
+  const quick = process.argv.includes('--quick');
+  const siteBuild = process.argv.includes('--site-build');
+  const tag = quick ? '[prepush:quick]' : '[pre-push]';
+  if (!dryRun && !quick) {
     const shas = pushedShas(readFileSync(0, 'utf8'));
     if (shas.length === 0) {
       console.log('[pre-push] nothing to check: the push sends no branch commits');
@@ -563,6 +600,14 @@ async function main() {
       return 0;
     }
   }
+  // CI checks the push merged with main as it is now, so the merged guards need today's main: a short fetch,
+  // and the last one fetched where there is no network.
+  if (!dryRun && BASE_REF === 'origin/main')
+    spawnSync('git', ['fetch', '--quiet', 'origin', 'main'], {
+      cwd: ROOT,
+      stdio: 'ignore',
+      timeout: 20_000,
+    });
   let base;
   try {
     base = git('merge-base', 'HEAD', BASE_REF);
@@ -593,6 +638,7 @@ async function main() {
     }),
   );
   const changes = parseNameStatus(git('diff', '--name-status', '-M', base, 'HEAD'));
+  const touched = touchedWorkspaces(changes, workspaceOf);
   const install = installStep(plan, changes, {
     workspaceOf,
     hasModules: (dir) => existsSync(path.join(ROOT, dir, 'node_modules')),
@@ -605,23 +651,38 @@ async function main() {
     ? new Map()
     : await reachOf(
         ROOT,
-        touchedWorkspaces(changes, workspaceOf).filter((t) => t.files.size > 0),
+        touched.filter((t) => t.files.size > 0),
         base,
         env,
       );
+  // A busy machine (half the cores in use) caps each run, so a starved CPU doesn't fail timing tests;
+  // runs going side by side share the cores evenly.
+  const maxWorkers = testWorkers(cores, load);
+  const { readers: all, dirs } = readers();
   const steps = [
     ...(install ? [install] : []),
-    ...prePushSteps(plan),
+    ...prePushSteps(plan, { lint: !quick }),
+    ...ciScriptSteps(changes, ciScriptTests(ROOT)),
+    ...(siteBuild ? [siteBuildStep()] : []),
     ...testSteps(changes, {
       workspaceOf,
       guardTests,
-      helpApps,
       emitterTest,
-      // A busy machine (half the cores in use) caps each run, so a starved CPU doesn't fail timing tests;
-      // runs going side by side share the cores evenly.
-      maxWorkers: testWorkers(cores, load),
+      maxWorkers,
       reach: (ws) => reaches.get(ws.dir) ?? null,
+      related: !quick,
     }),
+    ...readerSteps(changes, {
+      readers: all,
+      workspaceNamed: (name) => {
+        const dir = dirs.get(name);
+        return dir ? workspaceOf(`${dir}/package.json`) : null;
+      },
+      scanTests: (dir) => guardTests(dir),
+      touched: new Set(touched.map((t) => t.ws.dir)),
+      maxWorkers,
+    }),
+    ...mergedSteps(plan.groups.length > 0 && git('rev-parse', BASE_REF) !== base),
   ];
   if (steps.length === 0) {
     console.log('[pre-push] the change reaches no workspace');
@@ -634,7 +695,8 @@ async function main() {
       );
     return 0;
   }
-  const release = takeLock();
+  // The quick run is light and by hand, so it never waits behind a push's checks.
+  const release = quick ? () => {} : takeLock();
   if (!release) {
     console.log(
       '[pre-push] skipped: another push held the checks for 15 minutes; CI checks this one',
@@ -642,7 +704,12 @@ async function main() {
     return 0;
   }
   try {
-    return await runSteps(ROOT, steps, env, testPool(cores, load));
+    const status = await runSteps(ROOT, steps, env, testPool(cores, load), undefined, tag);
+    if (quick)
+      console.log(
+        `${tag} left out: lint, type check and the tests the change reaches (the pre-push hook and CI run them)${siteBuild ? '' : "; the site's first-load budget (add --site-build)"}`,
+      );
+    return status;
   } finally {
     release();
   }

@@ -2,12 +2,20 @@
 // allow: 50,000 filled cells, 20,000 of them formulas. CI machines are slower and shared, so the asserted budget
 // is a multiple of the laptop target.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { Workbook } from './workbook';
 import { cellKey, type Sheet } from '../sheet';
 import { compileFormula } from '../formula/stored';
 
 const CI_FACTOR = 4;
+
+// A target times CI_FACTOR is this file's budget on every machine, CI's included: the factor is already the room a
+// slower, shared runner needs, so the budget takes none of cpuBudgetMs's CI headroom on top (three times as much
+// again). Under coverage it is unbounded, as every budget is, and `vitest-budgets` holds it in its plain rerun
+// (docs/ci.md "Speed budgets").
+const underCoverage = !Number.isFinite(cpuBudgetMs(1));
+const budgetMs = (targetMs: number) =>
+  underCoverage ? Number.POSITIVE_INFINITY : targetMs * CI_FACTOR;
 
 function bigSheet(): Sheet {
   const rows = 10_000;
@@ -88,9 +96,9 @@ describe('performance', () => {
     console.info(
       `[sheets perf] full ${full.toFixed(0)} ms, chain change ${change.toFixed(1)} ms, local change ${small.toFixed(2)} ms`,
     );
-    expect(full).toBeLessThan(400 * CI_FACTOR);
-    expect(change).toBeLessThan(100 * CI_FACTOR);
-    expect(small).toBeLessThan(5 * CI_FACTOR);
+    expect(full).toBeLessThan(budgetMs(400));
+    expect(change).toBeLessThan(budgetMs(100));
+    expect(small).toBeLessThan(budgetMs(5));
     // The budgets above are CPU time; the wall clock only bounds a hung run. On a loaded CI runner
     // building the 50,000-cell sheet outran vitest's default 5 s while its CPU budget still held.
   }, 30_000);

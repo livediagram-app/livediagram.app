@@ -86,3 +86,6 @@ export function ToolsBreadcrumb({
 }) {
   return <BackBar label={root} current={label} onClick={onBack} gap="tight" />;
 }
+
+/** A browse group with its entries: what the category browse and its two-pane rail are handed. */
+export type BrowserCategory<T> = ToolsCategory & { items: T[] };

@@ -28,8 +28,12 @@ import {
   type ThreadMentioner,
 } from '@liveworkspace/element-model/thread-mentioners';
 import type { Comment } from './comments';
-import { ACTION_CARD_MAX, elementActions, isClosedAction } from './element-action';
-import { elementDisplayLabel } from './element-display-label';
+import {
+  ACTION_CARD_MAX,
+  elementActions,
+  isClosedAction,
+} from '@liveworkspace/element-model/element-action';
+import { elementDisplayLabel } from '@liveworkspace/element-model/element-display-label';
 import { isBoxed, type Element } from './index';
 
 export type CollabActionRow = {

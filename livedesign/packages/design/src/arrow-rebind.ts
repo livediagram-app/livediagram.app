@@ -1,10 +1,23 @@
 import type { Anchor, ArrowElement, BoxedElement, Element, ElementId, Endpoint } from './index';
-import { anchorClass, anchorLiesOn, offeredOnSide } from './anchors';
-import { anchorAimPoint, exitSideTowards, facingSideTowards } from './anchor-choice';
-import { arrowPolyline, pathPassesThrough, pinnedBoxedElement } from './arrow-path-hits';
-import { swapCrossingEnds } from './arrow-rebind-swap';
+import { anchorClass, anchorLiesOn, offeredOnSide } from '@liveworkspace/element-model/anchors';
+import {
+  anchorAimPoint,
+  exitSideTowards,
+  facingSideTowards,
+} from '@liveworkspace/element-model/anchor-choice';
+import {
+  arrowPolyline,
+  pathPassesThrough,
+  pinnedBoxedElement,
+} from '@liveworkspace/element-model/arrow-path-hits';
+import { swapCrossingEnds } from '@liveworkspace/element-model/arrow-rebind-swap';
 import { type ElementIndex } from './index';
-import { anchorPosition, buildElementIndex, centreOf, endpointPosition } from './geometry';
+import {
+  anchorPosition,
+  buildElementIndex,
+  centreOf,
+  endpointPosition,
+} from '@liveworkspace/element-model/geometry';
 import { pointDistance, type Point } from '@liveworkspace/model-core/geometry-primitives';
 
 // THE AUTO-REBIND (docs/specs/008-canvas/arrow-anchors.md "Auto-rebind").

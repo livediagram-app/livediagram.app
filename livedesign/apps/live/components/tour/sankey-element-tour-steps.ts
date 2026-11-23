@@ -2,7 +2,7 @@
 // It reads the diagram on the canvas first, lifting its widest band and a leftover as a hover would, then opens the
 // Flows dialog and carries on with the dialog's own Show Me steps, so the two never drift.
 import { sankeyFrame, type ShapeElement } from '@livedesign/design';
-import { balanceNotes, rowsFromFlows } from '@/lib/sankey-flow-rows';
+import { balanceNotes, rowsFromFlows } from '@liveworkspace/workbench/lib/sankey-flow-rows';
 import type { SankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 import {
   sankeyFlowsTourSteps,

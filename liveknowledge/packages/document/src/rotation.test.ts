@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createPinnedArrow, createShape } from './factories';
-import { drawnBounds, rotationOf, supportsRotation } from './rotation';
+import { drawnBounds, rotationOf, supportsRotation } from '@liveworkspace/element-model/rotation';
 import { svgBoxed } from './svg-render';
 import type { BoxedElement, Element } from './index';
 

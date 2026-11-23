@@ -3,13 +3,13 @@
 // offline store's tab load and a file import all run this, so a new migration
 // is added once and reaches every entry point.
 import { upgradeLegacyLinks } from './legacy-links';
-import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
+import { migrateWhiteboardKind } from '@liveworkspace/element-model/legacy-whiteboard-tab';
 import { migrateRetiredPattern } from './retired-patterns';
-import { migrateRetiredScheme } from './retired-schemes';
+import { migrateRetiredScheme } from '@liveworkspace/element-model/retired-schemes';
 import { migrateRetiredTheme } from './retired-themes';
 import { migrateStoredElements } from './stored-elements';
-import { settleStacks } from './stack';
-import { settleTabFields } from './tab-fields';
+import { settleStacks } from '@liveworkspace/element-model/stack';
+import { settleTabFields } from '@liveworkspace/model-core/tab-fields';
 import type { Element, Tab } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 

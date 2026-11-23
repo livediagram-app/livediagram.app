@@ -25,7 +25,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 import { upgradeLegacyPreferences } from '@livedocuments/api-schema';
 import type { PageKind } from '@livedocuments/document';
 import type { ElementTourKind } from './element-tours';
-import type { SwatchOverrideStore } from './swatch-overrides';
+import type { SwatchOverrideStore } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livedocuments/telemetry-client';
 import { apiGetPreferences } from './api-client';
 import {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { coerceShapeKind, isValidElement, SHAPE_KINDS, type ShapeElement } from './index';
 import { svgBoxed } from './svg-render';
-import { RETIRED_SHAPE_KINDS, TAB_WINDOW_SIZE } from './tab-window';
+import { RETIRED_SHAPE_KINDS, TAB_WINDOW_SIZE } from '@liveworkspace/element-model/tab-window';
 
 // docs/specs/009-elements/tab-window.md (retired): a stored window still loads, and draws as a frame named for its tab.
 

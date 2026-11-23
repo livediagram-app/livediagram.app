@@ -2,7 +2,7 @@ import {
   BorderColourIcon,
   FillColourIcon,
   TextColourIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   defaultFillColor,
   defaultStrokeColor,
@@ -21,14 +21,14 @@ import {
   BorderGlyph,
   IconCategoryGlyph,
   PaletteMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuActionButton,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
 import { ColourRow } from '@/components/palette/context-menu-rows';
-import { ShadowSection } from '@/components/palette/ShadowSection';
+import { ShadowSection } from '@liveworkspace/workbench/components/palette/ShadowSection';
 import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';

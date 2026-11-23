@@ -21,7 +21,7 @@ import {
   quizOptionTop,
   quizTally,
 } from './quiz';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { svgAgenda } from './svg-render-agenda';
 import { svgRollCall } from './svg-render-roll-call';
 import { mixHex } from './svg-render-face-kit';

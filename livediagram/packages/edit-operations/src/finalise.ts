@@ -29,7 +29,7 @@ import {
 } from '@livediagram/document';
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
-import { sameValue } from './equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { invalidResult, retiredRefusal } from './rejections';
 import { currentElements, replaceElement, type EditState } from './state';
 import type { EditLog } from './types';

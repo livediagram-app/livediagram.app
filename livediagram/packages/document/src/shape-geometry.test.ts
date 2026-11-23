@@ -7,9 +7,9 @@ import {
   DIAMOND_POINTS,
   shapeGeometry,
   type ShapePart,
-} from './shape-geometry';
+} from '@liveworkspace/element-model/shape-geometry';
 import { scaledPolygonPoints } from './svg-render-shapes';
-import { boxFit, fitShapePart } from './svg-shape-fit';
+import { boxFit, fitShapePart } from '@liveworkspace/element-model/svg-shape-fit';
 import { SHAPE_KINDS } from './validate';
 import type { ShapeKind, Tab } from './index';
 

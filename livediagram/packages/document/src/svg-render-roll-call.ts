@@ -7,7 +7,7 @@
 
 import type { RollCallEntry } from './collab-shapes';
 import { initialsOf } from '@liveworkspace/model-core/names';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import {
   collabCard,
   PAD_X,

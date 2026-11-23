@@ -6,7 +6,11 @@
 import { createPinnedArrow } from './factories';
 import { createShape } from './shape-factory';
 import { layoutMindTree } from './mind-layout';
-import { MIND_CONNECTOR_LOOK, mindConnectorAnchors, type MindFlow } from './mind-flow';
+import {
+  MIND_CONNECTOR_LOOK,
+  mindConnectorAnchors,
+  type MindFlow,
+} from '@liveworkspace/element-model/mind-flow';
 import type { ArrowElement, Element, ShapeElement } from './index';
 
 /** One node of a template map: its label, its look, the look of the connector

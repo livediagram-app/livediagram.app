@@ -103,6 +103,9 @@ A handler that catches broadly and would turn an outage into another answer reth
    declared, else over the public route.
 3. On an app's address, its router first answers its platform paths through `routeToWorkspace`
    (`packages/sites/src/workspace-proxy.ts`), and everything else goes to the app's own Workers.
+   Every app's router is one routing table, `createAppRouter` (`packages/sites/src/app-router.ts`), which each
+   app's `apps/router/src/index.ts` binds once to its name, its editor's routes, its help categories and its own
+   old addresses; its tests are one suite too (`packages/sites/src/app-router-testing.ts`), run by each app.
 
 ### A router's forward (`routeToWorkspace`, in order)
 
@@ -336,6 +339,11 @@ drives it with fake timers.
   `flowchartId`, so they keep their own), `nearest-towards` (DSP), `path-geometry` (DS), `sankey-model` (DO),
   `shadow` (DHSP), `tab-folders` (DOH) and `tag-colours` (DOSP). `entity-geometry` (DP) reads no element, so it is
   `@liveworkspace/model-core/entity-geometry`.
+- From livedocuments and liveknowledge, whose copies were byte-identical and read neither product's union, tab or
+  page: `stat-count` (a stat's trend, its colours and its count-up frames) and `article-draw-ops` (an article's
+  writing as draw operations, and those as SVG), each with its test. The rest of the two models is typed on each
+  product's own `Tab` and `Page`, which differ (a flashcard page in one, the continuous page and the page tree in
+  the other), so it stays in each product.
 - Each of those products keeps `src/<module>.ts` as the binding `export * from '@liveworkspace/element-model/<module>'`
   (the copies guard leaves such a file out).
 - Generic over the caller's own type: `bringToFront`, `sendToBack`, `bringManyToFront`, `sendManyToBack`,
@@ -499,6 +507,13 @@ drives it with fake timers.
   `PanelField` hands its children the hint's id with the control's (`children(id, hintId)`), so Email Received's
   **From** and Add or Remove Label's **Label** are described by their hint, and the sheet's Custom Number Format
   field by its Preview line (which turns into "That format code can't be read").
+- `@liveworkspace/ui`'s `SegmentedToggle` (`packages/ui/src/SegmentedToggle.tsx`, Work Tracker 1384): the track is
+  `flex flex-wrap max-w-full`, each label `whitespace-nowrap`. A `ResizeObserver` on the track sets
+  `data-segments-wrapped` while its first and last segments sit on different rows (`segmentsWrapped`, offsetTop); under
+  it each segment (its `HoverCard` and its button) grows (`in-data-segments-wrapped:grow`) and, under a coarse
+  pointer, is `h-11`. On one row a segment is `h-7` with `relative touch-target-y`. Callers no longer add
+  `whitespace-nowrap`, `flex-wrap` or a scroller of their own (Live Data's Source and Needs Attention dropped theirs).
+  Tested in `SegmentedToggle.test.tsx` (narrow, normal and wide tracks).
 
 ## Testing
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { officeImportReport } from './report';
 import type { PictureOutcome } from './store-images';
-import { SKIP_KINDS, addSkip, type SkipTally } from './tally';
+import { SKIP_KINDS, addSkip, type SkipTally } from '@liveworkspace/office-files/tally';
 
 describe('officeImportReport', () => {
   it('says nothing when everything came across', () => {

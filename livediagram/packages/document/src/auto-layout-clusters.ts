@@ -8,8 +8,13 @@
 // shift into the placed frame. Import-path module — the editor's own Tidy
 // Up never runs this.
 
-import { autoLayoutElements, type LayoutDirection } from './auto-layout';
-import { LAYER_GAP, SIBLING_GAP, reanchorArrow, type Pt } from './auto-layout-shared';
+import { autoLayoutElements, type LayoutDirection } from '@liveworkspace/element-model/auto-layout';
+import {
+  LAYER_GAP,
+  SIBLING_GAP,
+  reanchorArrow,
+  type Pt,
+} from '@liveworkspace/element-model/auto-layout-shared';
 import {
   edgeToArrow,
   graphToElements,
@@ -18,7 +23,7 @@ import {
   type GraphLook,
 } from './graph-authoring';
 import { unionRects, type Rect } from '@liveworkspace/model-core/geometry-primitives';
-import { bowReciprocalEdges } from './arrow-reciprocal';
+import { bowReciprocalEdges } from '@liveworkspace/element-model/arrow-reciprocal';
 import { faceGroupEdges, headingLead, seatByMembers } from './auto-layout-cluster-seats';
 import { lineUpStackedFrames } from './auto-layout-cluster-stack';
 import { isRowHub, seatMembersByNeighbours } from './auto-layout-cluster-members';

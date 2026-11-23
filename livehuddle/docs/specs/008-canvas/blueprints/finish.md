@@ -74,7 +74,7 @@ export function finishHatches(element: Element, fill: string, backdrop?: boolean
 // finishHatchesKind, not a backdrop, fill not transparent
 ```
 
-### `packages/document/src/sketch.ts` (pure geometry, no DOM)
+### `../packages/element-model/src/sketch.ts` (pure geometry, no DOM)
 
 ```ts
 type Pt = { x: number; y: number };
@@ -114,7 +114,7 @@ export function pathEndTangents(
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
 
-### `packages/document/src/marker.ts` (pure geometry, no DOM)
+### `../packages/element-model/src/marker.ts` (pure geometry, no DOM)
 
 Marker draws the outlines `sketch.ts` builds (`SketchOutline`, exported for it, with `sketchPoint` for path text),
 with its own pen. Seeded from `sketchSeed(id)` through `sketchRandom`, each function on its own stream
@@ -210,7 +210,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   Professional corner / stroke fallbacks; Sketch makes the wrapper's background transparent and its border none for
   CSS shapes and stickies and drops the peel. Marker does the same through `finishDrawsBodyByHand`, except a sticky,
   which keeps its paper and peel.
-- `lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
+- `packages/workbench/src/lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
   `CanvasElementsLayer`) publishes `sketchBackdropIds` per tab; `useIsSketchBackdrop(id)` is a per-id
   `useSyncExternalStore` read, so only views whose flag flips re-render.
 - `components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
@@ -221,7 +221,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   each streak layer (stroke colour, `MARKER_STREAK_OPACITY`, `nibPx` wide), each ink layer (stroke colour,
   `MARKER_INK_OPACITY`, `strokePx`, the dash) and the details (`MARKER_DETAIL_PX`, the ink opacity), each its own
   `<path>` so crossings pool.
-- `livediagram/apps/editor/components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
+- `packages/workbench/src/components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
   (`finishArrowWidthPx`) and the memoised `handDrawnArrow` (`flowing` while a flow runs). Under Marker `ArrowView`
   sets `strokeOpacity` to the ink opacity on the line, draws `lineOver` as a second path (same stroke, dash and
   mask), and fills a `headFill` head in the head colour at the ink opacity. `ArrowView` draws the
@@ -250,7 +250,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   every `id` stripped), and re-takes it from a `MutationObserver` on the live div, `SKETCH_INK_SETTLE_MS` after the
   last change, never later than `SKETCH_INK_MAX_WAIT_MS` after the first. Each copy goes through
   `face-take-batch.ts` in the `copy` stage (after the faces' own pass), and `watch.taken()` drops the changes it already
-  holds. `app/sketch-face.css` hides the live
+  holds. `packages/workbench/src/styles/sketch-face.css` hides the live
   layer's backgrounds, borders, shadows (not on `:focus-visible`) and SVG shapes (`opacity: 0`), and gives the ink
   layer `filter: url(#lvd-sketch-face)`, `pointer-events: none`, transparent text fill and hidden SVG text.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
@@ -515,7 +515,7 @@ per command letter.
 | variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
 | menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
 | backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                              |
-| Professional new arrows angled; avoidance per finish         | `livediagram/apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                         |
+| Professional new arrows angled; avoidance per finish         | `packages/workbench/src/hooks/canvas/arrow-avoidance-apply.test.ts`                                          |
 | which palette tiles take the finish                          | `packages/workbench/src/components/palette/palette-tile-finish.test.ts`                                      |
 | applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
 | preview draws each finish, stable, in the tab's font         | `apps/editor/lib/room-preview.test.ts`                                                                       |

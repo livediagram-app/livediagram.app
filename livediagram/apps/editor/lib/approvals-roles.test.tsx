@@ -4,7 +4,7 @@
 // cannot, but each answers a request that names them; a guest has no door at all. The index's half is
 // liveworkspace/apps/index/src/approvals.test.ts.
 import { fireEvent, render, renderHook, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Approval } from '@liveworkspace/index-client';
 import {
   ApprovalBanner,
@@ -74,6 +74,19 @@ function doorFor(level: Level, opts: { tab?: boolean; accountId?: string | null 
 }
 
 describe('approvals by share role', () => {
+  // The banner's code is fetched the first time someone the request names opens it (BannerSlot's lazy import). The
+  // first test to draw it used to pay for that load inside `findByRole`'s one second, and on a busy machine the
+  // load alone took 0.9 s (2026-11-23). It is loaded here instead, on a wait that is a module load's, not the UI's.
+  beforeAll(async () => {
+    const { unmount } = render(
+      <ApprovalDoorProvider door={doorFor('view').door}>
+        <ApprovalBanner />
+      </ApprovalDoorProvider>,
+    );
+    await screen.findByRole('button', { name: 'Approve' }, { timeout: 30_000 });
+    unmount();
+  }, 60_000);
+
   it('lets only an Editor of the whole canvas ask and cancel', () => {
     expect(LEVELS.map((level) => doorFor(level).door?.canRequest)).toEqual([true, false, false]);
     expect(doorFor('edit', { tab: true }).door?.canRequest).toBe(false);

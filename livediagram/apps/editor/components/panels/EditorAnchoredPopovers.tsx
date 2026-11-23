@@ -6,7 +6,7 @@ import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { elementActions, isBoxed } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
-import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
+import { canonicalNote, noteFieldsEqual } from '@liveworkspace/workbench/lib/note-value';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 

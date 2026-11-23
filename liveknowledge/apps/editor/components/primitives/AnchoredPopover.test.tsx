@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import {
   AnchoredPopover,
   placeAnchored,

@@ -1,6 +1,6 @@
 import { FLOWCHART_STEP_LABEL, flowchartStepTypeOf, isFlowchartStep } from './flowchart';
 import type { Element, ShapeKind } from './index';
-import { CHART_TYPE_LABELS, chartTypeOf } from './chart-types';
+import { CHART_TYPE_LABELS, chartTypeOf } from '@liveworkspace/element-model/chart-types';
 
 // Human-readable name for a shape kind, e.g. 'square' -> 'Square',
 // 'speech-bubble' -> 'Speech Bubble'. Used in selection labels and any

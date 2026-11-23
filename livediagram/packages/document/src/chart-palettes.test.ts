@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CHART_PALETTES, chartPaletteColors, chartRamp, isChartPaletteId } from './chart-palettes';
+import {
+  CHART_PALETTES,
+  chartPaletteColors,
+  chartRamp,
+  isChartPaletteId,
+} from '@liveworkspace/element-model/chart-palettes';
 import { createShape, PIE_PALETTE } from './index';
 import { svgLegendShape } from './svg-render-shapes';
 

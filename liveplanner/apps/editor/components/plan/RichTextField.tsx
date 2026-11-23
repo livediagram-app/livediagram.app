@@ -11,7 +11,7 @@ import { PencilIcon } from '@liveplanner/ui';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { TextRun } from '@liveplanner/project';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
-import { NoteRichText } from '@/components/notes/NoteRichText';
+import { NoteRichText } from '@liveworkspace/workbench/components/notes/NoteRichText';
 
 // Quiet time after the last keystroke before the text is written.
 export const RICH_TEXT_SAVE_MS = 800;

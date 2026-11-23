@@ -6,7 +6,7 @@
 // palette tile and shape silhouette, over its own shape kinds.
 import type { ShapeKind } from '@livedesign/design';
 import { createStylePresets } from '@liveworkspace/workbench/components/palette/StylePresets';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 
 export type { ArrowPreset } from '@liveworkspace/workbench/components/palette/StylePresets';

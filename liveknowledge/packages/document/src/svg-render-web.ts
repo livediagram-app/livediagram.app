@@ -6,7 +6,7 @@ import {
 } from '@liveworkspace/element-model/svg-render-web';
 import type { BoxedElement } from './index';
 import { svgQuote } from './svg-render-quote';
-import { statTrend, statTrendColours } from './stat-count';
+import { statTrend, statTrendColours } from '@liveworkspace/element-model/stat-count';
 import { STAT_VALUE_MAX_PX } from './web-components';
 
 type Shape = BoxedElement & { type: 'shape' };

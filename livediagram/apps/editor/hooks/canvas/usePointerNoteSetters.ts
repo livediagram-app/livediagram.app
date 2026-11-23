@@ -8,7 +8,7 @@ import {
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
+import type { SnapGuideStore } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 
 /** What the tip handle is doing: moving (show the anchors in reach), let go (commit), or taken back (clear). */
 export type PointerTipPhase = 'preview' | 'commit' | 'cancel';

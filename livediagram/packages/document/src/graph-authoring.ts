@@ -15,13 +15,13 @@
 
 import { BOLD_EM } from '@liveworkspace/model-core/text-advance';
 import { personCardText } from '@liveworkspace/model-core/person-card';
-import type { ErShape } from './er-heads';
+import type { ErShape } from '@liveworkspace/element-model/er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
-import { ARROW_THICKNESS_PX } from './arrow-style';
+import { ARROW_THICKNESS_PX } from '@liveworkspace/element-model/arrow-style';
 import { coerceShapeKind } from './validate';
 import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, type EntityField } from './data-shapes';
-import { entityHeight } from './entity-geometry';
-import { ENTITY_KEY_LABELS } from './entity-fields';
+import { entityHeight } from '@liveworkspace/model-core/entity-geometry';
+import { ENTITY_KEY_LABELS } from '@liveworkspace/element-model/entity-fields';
 import { C4_NODE, c4NodeElement, type C4NodeSpec } from './c4-look';
 // `Element` is defined on the barrel (index.ts); a type-only import back into
 // it is erased at runtime, so the cycle is harmless — the package's sanctioned

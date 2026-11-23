@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, createTable, renderElementsToSvg, type Element, type Tab } from './index';
-import { SKETCH_FACE_FILTER, svgSketchArtDefs, svgSketchFace } from './svg-render-sketch';
+import {
+  SKETCH_FACE_FILTER,
+  svgSketchArtDefs,
+  svgSketchFace,
+} from '@liveworkspace/element-model/svg-render-sketch';
 import { SHAPE_KINDS } from './validate';
 import type { ShapeKind } from './shape-kind';
 

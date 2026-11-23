@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { ShapeElement } from './element-types';
-import { fittedEntityHeight } from './entity-fields';
-import { entityRowTop, snapToEntityField } from './entity-geometry';
+import { fittedEntityHeight } from '@liveworkspace/element-model/entity-fields';
+import { entityRowTop, snapToEntityField } from '@liveworkspace/model-core/entity-geometry';
 import { buildRelatedEntity, RELATED_ENTITY_GAP_PX } from './entity-related';
-import { endpointPosition } from './geometry';
+import { endpointPosition } from '@liveworkspace/element-model/geometry';
 
 // docs/specs/009-elements/entity.md "Growing a model" and "Field to field".
 

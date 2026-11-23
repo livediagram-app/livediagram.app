@@ -36,19 +36,22 @@ import { useTextHug } from '@/components/canvas/useTextHug';
 import { PageCornerFold } from '@liveworkspace/workbench/components/canvas/PageCornerFold';
 import { LaneGutterStrip } from '@liveworkspace/workbench/components/canvas/LaneGutterStrip';
 import { laneTitleOf } from '@/components/canvas/lane-title';
-import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
+import { isCssNativeBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import {
+  SketchOverlay,
+  useSketchPaint,
+} from '@liveworkspace/workbench/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { PLAN_BOARD } from '@/components/canvas/plan-face-finish';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
-import { useTagColours } from '@/components/canvas/TagColoursContext';
-import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
+import { AccentEdgeOverlay } from '@liveworkspace/workbench/components/canvas/AccentEdgeOverlay';
+import { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
+import { useIsSketchBackdrop } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { indicatorBacking } from '@liveworkspace/workbench/components/canvas/indicator-items';

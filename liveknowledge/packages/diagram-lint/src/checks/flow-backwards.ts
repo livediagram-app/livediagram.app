@@ -4,7 +4,7 @@
 // would reverse what it means.
 
 import { arrowName } from '../arrow-names';
-import { LINT_FLOW_TOLERANCE_PX } from '../constants';
+import { LINT_FLOW_TOLERANCE_PX } from '@liveworkspace/diagram-lint/constants';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import { directedVector, directionOf, headOf, inferFlow, type LintFlow } from '../flow';

@@ -15,7 +15,7 @@ import {
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { cutText } from '@liveworkspace/model-core/text-cut';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { typedClockZone } from '@/lib/zone-time';
 
 type SectionProps = (id: string) => { open: boolean; onToggle: () => void };

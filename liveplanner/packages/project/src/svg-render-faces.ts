@@ -12,11 +12,11 @@
 // the canvas: a card is composed at its kind's default size and scaled to the
 // box, so a big one has bigger type rather than more padding.
 
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { formatTimerClock } from './session';
 import { sessionButtonPlan, type SessionButtonConfig } from './behaviour-config';
 import { sessionButtonText } from './session-button-text';
-import { borderOf } from './svg-render-border';
+import { borderOf } from '@liveworkspace/element-model/svg-render-border';
 import type { CanvasSurface } from './colors';
 import { collabAccent, fitLine, pill, text, wrapLines, type Face } from './svg-render-face-kit';
 import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';

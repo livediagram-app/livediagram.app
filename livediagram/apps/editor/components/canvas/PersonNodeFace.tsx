@@ -7,8 +7,8 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-import { LabelRegion } from '@/components/canvas/web/LabelRegion';
-import { rectStyle } from '@/components/canvas/web/web-face-props';
+import { LabelRegion } from '@liveworkspace/workbench/components/canvas/web/LabelRegion';
+import { rectStyle } from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // A person node (docs/specs/009-elements/org-chart.md): the initials disc, the name (the node's ordinary label, edited

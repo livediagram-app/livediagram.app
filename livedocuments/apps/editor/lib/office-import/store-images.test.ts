@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ImportImageSession } from '../import-images';
-import { OfficeImportError } from './errors';
+import { OfficeImportError } from '@liveworkspace/office-files/errors';
 import { pictureMimeType, storePictures } from './store-images';
 
 const picture = (path: string) => ({ path, widthPx: 100, heightPx: 50 });

@@ -25,7 +25,7 @@ spec.
 | `../packages/model-core/src/stroke-points.ts`       | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
 | `../packages/model-core/src/stroke-points-cache.ts` | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
 | `../packages/model-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
-| `packages/project/src/freehand-points.ts`           | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
+| `../packages/element-model/src/freehand-points.ts`  | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
 | `packages/project/scripts/expand-stroke-points.ts`  | The debug script: a tab or project JSON file with every block expanded                                                                                   |
 | `../scripts/ts-source-hooks.mjs`                    | Node resolve hook (the monorepo root's): lets repo scripts run workspace TypeScript sources                                                              |
 
@@ -165,7 +165,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Validation      | `packages/project/src/validate.ts`                                        | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
 | OpenAPI         | `apps/api/src/openapi/schemas.generated.ts`                               | regenerated from the type                                                           |
 | Factories       | `packages/project/src/factories.ts`                                       | `createFreehand` packs; geometry stays unpacked                                     |
-| Pen outline     | `packages/project/src/pen-stroke.ts`                                      | `freehandPenStroke` / `penStrokeSvg` decode                                         |
+| Pen outline     | `../packages/element-model/src/pen-stroke.ts`                             | `freehandPenStroke` / `penStrokeSvg` decode                                         |
 | SVG export      | `packages/project/src/svg-render-shapes.ts`                               | decode                                                                              |
 | Style presets   | `apps/editor/lib/style-presets.ts`                                        | re-pack without pressures                                                           |
 | Realtime        | `apps/editor/app/project/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |

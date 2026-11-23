@@ -3,6 +3,7 @@ import {
   initialIndex,
   menuKeyIntent,
   moveIndex,
+  typeaheadActive,
   typeaheadIndex,
   typeaheadQuery,
   type MenuKeyEvent,
@@ -30,6 +31,22 @@ describe('menuKeyIntent', () => {
   it('activates on Enter and Space', () => {
     expect(menuKeyIntent(key('Enter'), root)).toEqual({ kind: 'activate' });
     expect(menuKeyIntent(key(' '), root)).toEqual({ kind: 'activate' });
+  });
+
+  // Work Tracker 1380: "De " pressed the focused Delete instead of searching on.
+  it('types a space that falls inside a typeahead search into it', () => {
+    expect(menuKeyIntent(key(' '), { ...root, searching: true })).toEqual({
+      kind: 'type',
+      char: ' ',
+    });
+  });
+
+  it('activates on a space with no search under way', () => {
+    expect(menuKeyIntent(key(' '), { ...root, searching: false })).toEqual({ kind: 'activate' });
+  });
+
+  it('activates on Enter even mid-search', () => {
+    expect(menuKeyIntent(key('Enter'), { ...root, searching: true })).toEqual({ kind: 'activate' });
   });
 
   it('opens a submenu with Right Arrow only on its trigger', () => {
@@ -97,6 +114,25 @@ describe('typeaheadQuery', () => {
     expect(second.query).toBe('ne');
     const later = typeaheadQuery(second, 'd', second.at + MENU_TYPEAHEAD_RESET_MS);
     expect(later.query).toBe('d');
+  });
+});
+
+describe('typeaheadActive', () => {
+  it('is a search typed within the reset window', () => {
+    expect(typeaheadActive({ query: '', at: 0 }, 0)).toBe(false);
+    expect(typeaheadActive({ query: 'de', at: 1000 }, 1000 + MENU_TYPEAHEAD_RESET_MS - 1)).toBe(
+      true,
+    );
+    expect(typeaheadActive({ query: 'de', at: 1000 }, 1000 + MENU_TYPEAHEAD_RESET_MS)).toBe(false);
+  });
+
+  it('carries a space into the query, which then finds a label with one', () => {
+    const typed = [...'move t'].reduce((q, c, i) => typeaheadQuery(q, c, 1000 + i), {
+      query: '',
+      at: 0,
+    });
+    expect(typed.query).toBe('move t');
+    expect(typeaheadIndex(['Move', 'Rename', 'Move to Trash'], 0, typed.query)).toBe(2);
   });
 });
 

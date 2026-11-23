@@ -7,7 +7,7 @@
 import { lucideTrash2 } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { setLayer, type LayerEffects, type PhotoLayer } from '@livedesign/photo-engine';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';

@@ -293,7 +293,7 @@ the CPU budget).
 
 ### The zip reader
 
-`apps/editor/lib/office-import/zip.ts`, shared with Word import, takes `ZipOptions`:
+`../packages/office-files/src/zip.ts`, shared with Word import, takes `ZipOptions`:
 
 | Option             | Absent (an Office package)           | A Knowledgebase import                                          |
 | ------------------ | ------------------------------------ | --------------------------------------------------------------- |
@@ -453,7 +453,7 @@ pages, plus reading the pages).
 `write-plan.test.ts` (batches of 20, parents before subpages, a forward link in one pass, three pictures at a
 time and one stored once, a cancel between batches, a failed page and its subpages, a refusing and a stalled save
 layer, the CPU budget), `page-content.test.ts`, `save-layers.test.ts`, `archive-sources.test.ts`,
-`import-copy.test.ts`, `zip.test.ts` (names as written, the caps, `openZipFile`, Word's reading unchanged),
+`import-copy.test.ts`, `../packages/office-files/src/zip.test.ts` (names as written, the caps, `openZipFile`, Word's reading unchanged),
 `page-save-order.test.ts`; the dialog: `KnowledgeImportPanel.test.tsx` (pick, review, the tree's cap, the page
 picker, a blocked plan, no pages, the bar and Cancel, the summary with what failed) and
 `ImportTabDialog.knowledgebase.test.tsx` (the sources in the one dialog, and a role at a time).

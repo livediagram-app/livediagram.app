@@ -10,7 +10,7 @@
 
 import type { CSSProperties } from 'react';
 import { animLoops, PIE_LOOPING_ANIMS, type ShapeElement } from '@liveknowledge/document';
-import { animClass, animSpeedVars } from './icons';
+import { animClass, animSpeedVars } from '@liveworkspace/workbench/lib/icons';
 
 export { chartFrame } from '@liveknowledge/document';
 

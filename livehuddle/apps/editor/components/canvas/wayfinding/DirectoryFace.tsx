@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Chip, HoverCard } from '@livehuddle/ui';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { spacePlaces, type PlaceKind, type WayPerson } from '@/lib/wayfinding';
 import { useWayfindingSelect, type Wayfinding } from './wayfinding-store';
 import {

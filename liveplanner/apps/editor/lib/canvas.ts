@@ -8,22 +8,24 @@ import {
   type FrameHandle,
   type BoxedElement,
   type Element,
-  type IconPosition,
   isContainerKind,
   isChipShape,
   isConceptShape,
   isSelfDrawingShape,
 } from '@liveplanner/project';
+import type { ArrowEnd } from '@liveworkspace/workbench/lib/canvas-snap';
 
-// Which side of a boxed element a screen point sits nearest, normalised by
-// half-extent so a wide-but-short box still reads top / bottom correctly.
-// Shared by the icon-drop hover preview (BoxedElementView) and the drop-commit
-// (useEditorDrag) so both pick the same side.
-export function iconDropSide(clientX: number, clientY: number, rect: DOMRect): IconPosition {
-  const dx = (clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
-  const dy = (clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
-  return Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'above' : 'below';
-}
+// The snap thresholds, the arrow end and the icon drop side every editor shares
+// (@liveworkspace/workbench/lib/canvas-snap.ts), re-exported so importers keep resolving.
+export {
+  iconDropSide,
+  type ArrowEnd,
+  type QuickConnectKind,
+  SNAP_THRESHOLD,
+  ALIGN_SNAP_THRESHOLD,
+  ARROW_SNAP_REVEAL_PX,
+  ARROW_SNAP_THRESHOLD_PX,
+} from '@liveworkspace/workbench/lib/canvas-snap';
 
 // Convert a pointer's screen coords into canvas coords: shift by the canvas
 // element's top-left, then divide by zoom (the canvas transform is
@@ -122,25 +124,10 @@ export function framesFirst<T extends Element>(elements: T[]): T[] {
   return [...elements.filter(isContainer), ...elements.filter((el) => !isContainer(el))];
 }
 
-// One of the gestures a `BoxedElementView` can be in mid-drag. `move`
-// is the body drag; the four `resize-*` corners are the bounding-box
-// handles.
-export type DragMode =
-  | 'move'
-  | 'resize-nw'
-  | 'resize-ne'
-  | 'resize-sw'
-  | 'resize-se'
-  // Edge handles: single-axis resize. n/s change height only, e/w width only.
-  | 'resize-n'
-  | 'resize-s'
-  | 'resize-e'
-  | 'resize-w';
-
-// Resize geometry (nextBounds / union scaling / corner lookups) +
+// Resize geometry (nextBounds / union scaling / corner lookups), DragMode +
 // MIN_SIZE / ShapeBounds live in resize-geometry.ts; re-exported so
 // importers keep resolving.
-import type { ShapeBounds } from './resize-geometry';
+import type { DragMode, ShapeBounds } from '@liveworkspace/workbench/lib/resize-geometry';
 
 export {
   constrainedBounds,
@@ -152,29 +139,14 @@ export {
   snapLeadingAxis,
   snapModeOf,
   unionResizeMember,
+  type DragMode,
   type ShapeBounds,
-} from './resize-geometry';
-
-export type ArrowEnd = 'from' | 'to';
+} from '@liveworkspace/workbench/lib/resize-geometry';
 
 // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md): the side of a selected element a
 // quick-action targets, and which action the radial ring fired. 'duplicate'
 // clones the source; 'text' drops a label to the side.
 export type { QuickConnectDirection } from '@liveworkspace/workbench/lib/quick-connect';
-export type QuickConnectKind = 'duplicate' | 'text';
-
-export const SNAP_THRESHOLD = 24;
-// Pixel range within which a dragged element's edges/centres snap to
-// align with another element's edges/centres. Tight enough that nudging
-// off the line takes deliberate motion.
-export const ALIGN_SNAP_THRESHOLD = 6;
-// Arrow-to-arrow snapping (docs/specs/008-canvas/arrow-to-arrow.md). REVEAL is the perpendicular distance at
-// which a nearby arrow's snap dots appear while dragging an endpoint; THRESHOLD
-// (tighter) is where the endpoint actually connects — also used when committing
-// a freshly-drawn arrow so it can land on a line without a follow-up nudge. Both
-// a touch more generous than the element-anchor snap so a thin line is catchable.
-export const ARROW_SNAP_REVEAL_PX = 36;
-export const ARROW_SNAP_THRESHOLD_PX = 12;
 
 // Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel zoom
 // (@liveworkspace/workbench/lib/zoom-range.ts).

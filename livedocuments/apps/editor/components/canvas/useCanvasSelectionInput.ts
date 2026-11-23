@@ -5,7 +5,7 @@
 import { useMemo } from 'react';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
+import { useArrowLabelLayouts } from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import { flashcardStage } from '@/lib/flashcard-stack';
 import { articlePlusBlocked } from '@/lib/article-plus-blocked';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';

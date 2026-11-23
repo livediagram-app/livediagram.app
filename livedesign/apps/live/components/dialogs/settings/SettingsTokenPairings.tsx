@@ -6,7 +6,7 @@
 import { useId, useState } from 'react';
 import type { WorkbenchPairing, WorkbenchScope } from '@livedesign/api-schema';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
-import { relativeTime } from './relative-time';
+import { relativeTime } from '@liveworkspace/workbench/components/dialogs/settings/relative-time';
 
 const UNNAMED = 'Unnamed workbench';
 

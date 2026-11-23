@@ -3,14 +3,14 @@
 import { useCallback, useEffect, useRef, useEffectEvent } from 'react';
 import { useFollowMe } from '@liveworkspace/workbench/hooks/collab/useFollowMe';
 import { useShowFollowersMyView } from '@liveworkspace/workbench/hooks/collab/useShowFollowersMyView';
-import { useFocusLanding } from '@/hooks/collab/useFocusLanding';
-import { useFocusInvite } from '@/hooks/collab/useFocusInvite';
+import { useFocusLanding } from '@liveworkspace/workbench/hooks/collab/useFocusLanding';
+import { useFocusInvite } from '@liveworkspace/workbench/hooks/collab/useFocusInvite';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useTabEntryEffects } from '../useTabEntryEffects';
 import { useCollabDeepLinkCapture } from '../useCollabDeepLink';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { boundsOfElements } from '@/lib/changeset-reveals';
+import { boundsOfElements } from '@liveworkspace/workbench/lib/changeset-reveals';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorSelectionSlice } from './useEditorSelection';
 import type { EditorCollaborationSlice } from './useEditorCollaboration';

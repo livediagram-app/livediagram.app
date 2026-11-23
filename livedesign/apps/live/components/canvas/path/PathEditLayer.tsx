@@ -2,7 +2,12 @@
 
 import type { PathAnchor, PathElement } from '@livedesign/design';
 import { visibleHandles, type HandleSide } from '@/lib/path-edit';
-import { HandleMarker, NodeMarker, OVERLAY_SVG_CLASS, PATH_OVERLAY_Z } from './path-markers';
+import {
+  HandleMarker,
+  NodeMarker,
+  OVERLAY_SVG_CLASS,
+  PATH_OVERLAY_Z,
+} from '@liveworkspace/workbench/components/canvas/path/path-markers';
 import type { PathGuides } from './usePathEditGesture';
 
 type Point = { x: number; y: number };

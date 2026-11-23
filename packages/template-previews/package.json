@@ -10,6 +10,7 @@
   "exports": {
     "./motion": "./src/motion.ts",
     "./story-parts": "./src/story-parts.tsx",
+    "./article-preview-parts": "./src/article-preview-parts.tsx",
     "./preview-fan": "./src/PreviewFan.tsx",
     "./deferred-preview-fan": "./src/DeferredPreviewFan.tsx",
     "./template-catalogue": "./src/template-catalogue.ts",

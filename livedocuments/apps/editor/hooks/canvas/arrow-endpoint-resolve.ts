@@ -22,7 +22,7 @@ import {
   SNAP_THRESHOLD,
   type ArrowEnd,
 } from '@/lib/canvas';
-import { computeSnapTargets, NO_ALIGN_EXCLUDE } from '@/lib/drag-geometry';
+import { computeSnapTargets, NO_ALIGN_EXCLUDE } from '@liveworkspace/workbench/lib/drag-geometry';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 
 // What an arrow's dragged end may join (docs/specs/007-editor/pages-mode.md "Arrows stay on

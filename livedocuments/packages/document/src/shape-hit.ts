@@ -20,15 +20,20 @@ import { defaultFillColor } from './colors';
 import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
 import { SHAPE_GEOMETRY_KINDS } from './shape-kind';
-import { BROWSER_CHROME, FILLED_ROLES, shapeGeometry, type ShapePart } from './shape-geometry';
+import {
+  BROWSER_CHROME,
+  FILLED_ROLES,
+  shapeGeometry,
+  type ShapePart,
+} from '@liveworkspace/element-model/shape-geometry';
 import type { ShapeKind } from './shape-kind';
-import { boxFit } from './svg-shape-fit';
+import { boxFit } from '@liveworkspace/element-model/svg-shape-fit';
 import {
   PATH_ARC_SEGMENTS,
   PATH_CURVE_SEGMENTS,
   svgPathSubpaths,
 } from '@liveworkspace/model-core/svg-path-outline';
-import { insidePolygon, segmentDistance } from './segment-geometry';
+import { insidePolygon, segmentDistance } from '@liveworkspace/model-core/segment-geometry';
 
 type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };
 

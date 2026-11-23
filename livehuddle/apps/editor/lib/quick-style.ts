@@ -20,7 +20,11 @@ import {
   type TextElement,
   type ThemeDefinition,
 } from '@livehuddle/document';
-import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
+import {
+  applySwatchOverrides,
+  type ShownSwatch,
+  type SwatchOverrides,
+} from '@liveworkspace/workbench/lib/swatch-overrides';
 
 export type QuickStyleTarget = ShapeElement | TextElement;
 type QuickSectionId =

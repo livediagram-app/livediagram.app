@@ -28,8 +28,8 @@ import { registerSequenceDialog } from '@liveworkspace/workbench/lib/sequence-di
 import { useActiveTour } from '@/lib/tour-active';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SequenceFace } from '@/components/canvas/SequenceFace';
-import { SequenceParticipantStrip } from '@/components/dialogs/SequenceParticipantStrip';
-import { SequenceMessageList } from '@/components/dialogs/SequenceMessageList';
+import { SequenceParticipantStrip } from '@liveworkspace/workbench/components/dialogs/SequenceParticipantStrip';
+import { SequenceMessageList } from '@liveworkspace/workbench/components/dialogs/SequenceMessageList';
 
 type Tab = 'messages' | 'text';
 const TABS: readonly Tab[] = ['messages', 'text'];

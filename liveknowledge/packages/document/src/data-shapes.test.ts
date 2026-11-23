@@ -13,8 +13,8 @@ import {
   isRailShape,
   isRatingShape,
   isSelfDrawingShape,
-} from './data-shapes';
-import { isSankeyShape } from './sankey-model';
+} from '@liveworkspace/element-model/data-shapes';
+import { isSankeyShape } from '@liveworkspace/element-model/sankey-model';
 import { isMapShape } from './map-model';
 
 // The self-drawing shape family decides real behaviour: BoxedElementView picks

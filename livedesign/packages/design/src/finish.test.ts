@@ -24,7 +24,7 @@ import {
   finishHatches,
   isFinish,
   resolveFinish,
-} from './finish';
+} from '@liveworkspace/element-model/finish';
 import { SHAPE_KINDS } from './validate';
 import { createSticky, createText } from './factories';
 import { createShape } from './shape-factory';

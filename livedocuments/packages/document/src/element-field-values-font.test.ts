@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fieldValueIssue } from './element-field-values';
+import { fieldValueIssue } from '@liveworkspace/element-model/element-field-values';
 
 // docs/specs/024-agents/edit-operations.md "The vocabulary": a font is one of the editor's faces.
 describe('a font an agent writes', () => {

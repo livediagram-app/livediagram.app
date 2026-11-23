@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Drive a product's editor (livediagram, liveplanner, livedesign, livedocuments, livehuddle) end-to-end in a real browser to verify a change. Covers the dev servers and ports, signing in against the local accounts Worker, creating a document through the real path, and editor gotchas.
+description: Drive a product's editor (livediagram, liveplanner, livedesign, livedocuments, livehuddle, liveknowledge) end-to-end in a real browser to verify a change. Covers the dev servers and ports, signing in against the local accounts Worker, creating a document through the real path, and editor gotchas.
 ---
 
 # Verifying editor changes in the running app
@@ -18,6 +18,7 @@ puts the api on the same origin as production does; the editor's own port can't 
 | livedocuments | 3300              | 3302               | 8987                      |
 | livedesign    | 3400              | 3402 (`apps/live`) | 8989                      |
 | livehuddle    | 3500              | 3502               | 9087                      |
+| liveknowledge | 3600              | 3602               | 9287                      |
 
 - A verifier starts a product in its own port block from the shared verify kit (`.verify-kit/` beside `.turbo/`, local and
   gitignored): `.verify-kit/<product>/start.sh <worktree> <first port> <out dir>` for livediagram, livedocuments,
@@ -30,7 +31,7 @@ puts the api on the same origin as production does; the editor's own port can't 
   A Next app's `dev` refuses a port that is already held: it prints the holder's PID and folder and
   exits, leaving it running. Don't pass `--force` (which kills the holder) unless the holder is yours.
 - To start a product only when nothing is running: `corepack pnpm dev:diagram` (or `dev:planner`,
-  `dev:design`, `dev:documents`) from the monorepo root. `pnpm` is only available as `corepack pnpm`.
+  `dev:design`, `dev:documents`, `dev:huddle`, `dev:knowledge`) from the monorepo root. `pnpm` is only available as `corepack pnpm`.
 - Without the api worker, creating a document fails ("Couldn't create the diagram" or similar).
 - Concurrent `pnpm build` is safe: dev uses `.next-dev/`, builds use `.next/`.
 - Use `localhost`, not the machine's LAN address: plain http elsewhere isn't a secure context and the
@@ -97,4 +98,5 @@ clients sit beside it. Ask before editing a `.dev.vars` you didn't make.
   preview, not reality.
 - Persistence check: full page reload; tab data (elements, layers, locks) must survive the api
   round-trip.
-- Guest-owned test documents in the local dev D1 are harmless to leave behind.
+- Guest-owned test documents in the local api's state (its Durable Objects; D1 belongs to the platform services such as
+  accounts and the index) are harmless to leave behind.

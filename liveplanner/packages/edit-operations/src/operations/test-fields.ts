@@ -3,7 +3,7 @@
 // objects by value. Any difference refuses the changeset; it changes nothing.
 
 import type { EditRejection, JsonValue } from '@liveplanner/api-schema';
-import { sameValue } from '../equality';
+import { sameValue } from '@liveworkspace/edit-operations/equality';
 import { fieldValue, writeFieldsOnto } from '../fields';
 import { formatValue } from '../format-results';
 import { testFailed } from '../rejections';

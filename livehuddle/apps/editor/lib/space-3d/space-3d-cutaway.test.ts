@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate } from '@livehuddle/templates';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { SpaceWall } from './space-3d-walls';
 import { spaceWalls } from './space-3d-walls';
 import {
@@ -96,7 +96,7 @@ describe('the drawn area', () => {
       for (let i = 0; i < 100; i++) cutAwayIds(walls, { x: 500 + i, y: 300 });
     });
     // 100 poses: well under a millisecond each.
-    expect(ms).toBeLessThan(100);
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
   });
 });
 

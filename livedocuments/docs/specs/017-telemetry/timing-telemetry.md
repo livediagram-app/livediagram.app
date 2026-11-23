@@ -34,7 +34,7 @@ timing can identify a person or a device.
   `type` that is a known metric followed by one of that metric's own buckets (`isTimingType` in
   `@livedocuments/api-schema`), the same way `Cta` accepts only its own sources. Anything else is dropped.
 - **One definition.** The metrics, their scales and their buckets live in
-  `packages/api-schema/src/timing-telemetry.ts`, shared by every emitter, the ingest validator and the
+  `../packages/api-schema/src/timing-telemetry.ts`, shared by every emitter, the ingest validator and the
   dashboard, so a bucket the dashboard does not know cannot be sent.
 
 ### Buckets

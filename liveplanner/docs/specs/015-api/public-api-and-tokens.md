@@ -46,7 +46,7 @@ account). What follows records how liveplanner uses them; where it describes liv
 storing tokens itself, the account-level design below supersedes it.
 
 - **Verifying.** An `lwt_` bearer is checked with liveworkspace (`POST /api/account/internal/tokens/verify`,
-  client-credentials) by `createTokenChecker` in `apps/api/src/db/api-tokens.ts`. A verified token is cached for
+  client-credentials) by `createTokenChecker` in `../packages/auth-client/src/api-tokens.ts`. A verified token is cached for
   a minute per isolate, so a burst of MCP tool calls costs one round trip a minute. A token
   liveworkspace refuses gets `401 invalid_token`; if liveworkspace can't be reached, `503 accounts_unavailable`
   with `Retry-After: 5`.
@@ -120,7 +120,7 @@ alongside the account access token + the guest header:
 
 1. An account access token in `Authorization: Bearer`, when it verifies.
 2. Else `Authorization: Bearer lwt_…` (or `lvd_…`, §3.1) → checked with liveworkspace (`resolveApiToken` in
-   `apps/api/src/db/api-tokens.ts`, cached a minute per isolate) → the request's owner id is the token's account.
+   `../packages/auth-client/src/api-tokens.ts`, cached a minute per isolate) → the request's owner id is the token's account.
    (A token and a JWT can't both be the bearer.) An `lwt_`
    bearer liveworkspace does not accept (unknown, revoked or expired), or one too short to be a token at all (cut short or
    mistyped when pasted), is refused there and then with `401 invalid_token` and `WWW-Authenticate: Bearer

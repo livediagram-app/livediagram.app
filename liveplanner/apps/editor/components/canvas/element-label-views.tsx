@@ -23,7 +23,7 @@ import {
   TEXT_ALIGN,
   type LabelPadding,
   type LabelTextStyle,
-} from '@/components/canvas/label-style';
+} from '@liveworkspace/workbench/components/label-editor/label-style';
 import { svgPreserve } from '@liveworkspace/workbench/components/canvas/element-label-views';
 
 export function ScalingLabel({

@@ -8,7 +8,7 @@
 // Everything here is re-exported from './index'.
 
 import type { ShapeKind } from './index';
-import { isSelfDrawingShape } from './data-shapes';
+import { isSelfDrawingShape } from '@liveworkspace/element-model/data-shapes';
 
 // --- Temperature check (docs/specs/012-collaboration/temperature-check.md) -----------------------------------------
 

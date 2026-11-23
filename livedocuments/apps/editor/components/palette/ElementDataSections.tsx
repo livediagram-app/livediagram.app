@@ -45,20 +45,20 @@ import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitive
 import { LegendTextSize } from '@/components/palette/TypographySections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
-import { ChartAxisRows } from '@/components/palette/ChartAxisRows';
+import { ChartAxisRows } from '@liveworkspace/workbench/components/palette/ChartAxisRows';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
-import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
+import { ChartTypeTiles } from '@liveworkspace/workbench/components/palette/ChartTypeTiles';
 import { SheetLinkSection } from '@liveworkspace/workbench/components/sheet-links/SheetLinkSection';
 import {
   hasWebRowsSection,
   WebRowsMenuSection,
 } from '@/components/palette/context-menu-web-editors';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
   CodeSummary,
-  DataMenuGlyph,
   LegendDataEditor,
   LineDataSummary,
   PieDataEditor,

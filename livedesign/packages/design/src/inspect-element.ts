@@ -5,16 +5,16 @@
 import { displayFontById, FONTS } from './fonts';
 import { DEFAULT_BORDER_STYLE } from '@liveworkspace/model-core/border-style';
 import { SELF_PAINTING_SHAPES, supportsFillColor, type CanvasSurface } from './colors';
-import { isChipShape } from './chip';
-import { isChartShape } from './data-shapes';
-import { isSankeyShape } from './sankey-model';
-import { elementFontId, resolveFinish, type Finish } from './finish';
+import { isChipShape } from '@liveworkspace/element-model/chip';
+import { isChartShape } from '@liveworkspace/element-model/data-shapes';
+import { isSankeyShape } from '@liveworkspace/element-model/sankey-model';
+import { elementFontId, resolveFinish, type Finish } from '@liveworkspace/element-model/finish';
 import type { BoxedElement } from './index';
-import { rotationOf } from './rotation';
-import { borderOf } from './svg-render-border';
+import { rotationOf } from '@liveworkspace/element-model/rotation';
+import { borderOf } from '@liveworkspace/element-model/svg-render-border';
 import { describeBoxedExport, finishOf } from './svg-render-describe';
-import { LABEL_LINE_HEIGHT } from './svg-render-primitives';
-import { resolvedFontWeight } from './wordmark';
+import { LABEL_LINE_HEIGHT } from '@liveworkspace/element-model/svg-render-primitives';
+import { resolvedFontWeight } from '@liveworkspace/element-model/wordmark';
 
 /** A corner radius: px, or a circle (an ellipse's, written 50%). */
 export type InspectRadius = number | 'circle';

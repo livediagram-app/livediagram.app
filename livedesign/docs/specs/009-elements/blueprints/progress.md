@@ -10,17 +10,17 @@ Scope, by file:
 | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `packages/design/src/shape-kind.ts`                       | `'progress-bar'` and `'progress-ring'` in the `ShapeKind` union              |
 | `packages/design/src/element-types.ts`                    | `progress`, `progressAnim`, `progressAnimSpeed`, `progressAnimRepeat` fields |
-| `packages/design/src/animation.ts`                        | `ProgressAnim`, `PROGRESS_ANIMS`, `PROGRESS_LOOPING_ANIMS`, `animLoops`      |
-| `packages/design/src/data-shapes.ts`                      | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`        |
+| `../packages/model-core/src/animation.ts`                 | `ProgressAnim`, `PROGRESS_ANIMS`, `PROGRESS_LOOPING_ANIMS`, `animLoops`      |
+| `../packages/element-model/src/data-shapes.ts`            | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`        |
 | `packages/design/src/shape-factory.ts`                    | `SHAPE_DEFAULT_SIZE` rows and the `createShape` seeds                        |
 | `packages/design/src/colors.ts`                           | `SELF_PAINTING_SHAPES` membership (no wrapper border, no Border controls)    |
-| `packages/design/src/svg-render-data.ts`                  | `svgProgressBar`, `svgProgressRing`: the export body                         |
+| `../packages/element-model/src/svg-render-data.ts`        | `svgProgressBar`, `svgProgressRing`: the export body                         |
 | `packages/design/src/svg-render-body.ts`                  | `svgElementBody`: the export dispatch, its track from `progressTrackColour`  |
-| `packages/design/src/progress-colours.ts`                 | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
+| `../packages/element-model/src/progress-colours.ts`       | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
 | `apps/live/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                           |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
 | `apps/live/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                 |
-| `apps/live/lib/icons.ts`                                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
+| `../packages/workbench/src/lib/icons.ts`                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
 | `apps/live/components/palette/ElementDataSections.tsx`    | The Progress section inside the Tools flyout                                 |
 | `apps/live/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                            |

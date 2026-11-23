@@ -20,10 +20,10 @@ import type { Element, ShapeKind, Tab } from './index';
 // Value imports come from the data-shapes LEAF module (types only from
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ALL_ANCHORS } from './arrow-types';
-import { isPenColourName } from './pen-colours';
+import { isPenColourName } from '@liveworkspace/element-model/pen-colours';
 import { ADDER_KEY_LENGTH } from '@liveworkspace/model-core/adder';
-import { PAGE_HEADING_MAX } from './data-shapes';
-import { isQuickSwatchSlot } from './quick-swatches';
+import { PAGE_HEADING_MAX } from '@liveworkspace/element-model/data-shapes';
+import { isQuickSwatchSlot } from '@liveworkspace/element-model/quick-swatches';
 import { isImageCredit } from './image-credit';
 import {
   IMAGE_CROP_MIN,
@@ -31,8 +31,16 @@ import {
   isImageCrop,
   isImageMask,
 } from '@liveworkspace/element-model/image-frame';
-import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
-import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
+import {
+  isBendDelta,
+  isCurvePoints,
+  MAX_CURVE_POINTS,
+} from '@liveworkspace/element-model/malformed-bends';
+import {
+  ELEMENT_KEY_FIELDS,
+  ELEMENT_KEY_MAX,
+  isElementKey,
+} from '@liveworkspace/element-model/malformed-ids';
 import { parseStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import { isWellFormedLinkField, SCREEN_LINK_RULE } from './page-link';
@@ -45,7 +53,7 @@ import {
   LETTER_SPACING_MIN,
   TEXT_ARC_MAX,
   TEXT_CASES,
-} from './wordmark';
+} from '@liveworkspace/element-model/wordmark';
 import {
   type ElementValidationIssue,
   type FieldCheck,

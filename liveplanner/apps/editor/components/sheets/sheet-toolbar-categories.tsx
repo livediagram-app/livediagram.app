@@ -47,7 +47,7 @@ import {
   WrapIcon,
 } from './sheet-icons';
 import { type ToolbarMenuKind } from './SheetToolbarMenus';
-import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
+import { ChartTypeIcon } from '@liveworkspace/workbench/components/primitives/ChartTypeIcon';
 import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';
 
 export type ToolbarButton = {

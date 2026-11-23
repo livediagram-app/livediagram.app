@@ -9,7 +9,7 @@ import {
   type WebRows,
 } from '@livedesign/design';
 import { FLOATING_CONTROL_CLASS } from '@liveworkspace/workbench/components/chrome/floating-controls';
-import { rectStyle } from '@/components/canvas/web/web-face-props';
+import { rectStyle } from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { useGraceHover } from '@liveworkspace/workbench/hooks/ui/useGraceHover';
 import { track } from '@/lib/telemetry';

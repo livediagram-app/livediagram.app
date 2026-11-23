@@ -27,8 +27,8 @@ import {
   threadWithComment,
   threadWithEdit,
   threadWithoutComment,
-} from './comment-thread';
-import type { ChecklistItem } from './data-shapes';
+} from '@liveworkspace/element-model/comment-thread';
+import type { ChecklistItem } from '@liveworkspace/element-model/data-shapes';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
 import {
   commentWithReactions,

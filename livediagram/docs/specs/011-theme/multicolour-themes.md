@@ -1,6 +1,6 @@
 # Multi-colour (rainbow) themes
 
-Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `packages/document/src/themes-data.ts`) paint every element one colour: a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the diagram's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
+Most themes in the catalogue ([Canvas and palette](../008-canvas/canvas-and-palette.md), `../packages/element-model/src/themes-data.ts`) paint every element one colour: a single fill / stroke / text triple applied uniformly. **Multi-colour themes** instead carry a _palette_ of several colour triples and assign each branch of the diagram's hierarchy a different one, the way XMind's "Rainbow" theme tints each main branch of a mind map a distinct hue.
 
 ## What they are
 
@@ -38,7 +38,7 @@ The walk is a pure function over the element list, so it is unit-tested without 
 
 ## Where it applies
 
-Multi-colour assignment needs the **whole element list** (to see the arrow graph), unlike the single-colour path which is per-element. So `packages/document/src/theme-graph.ts` exposes graph-aware wrappers alongside the per-element helpers in `packages/document/src/themes.ts`:
+Multi-colour assignment needs the **whole element list** (to see the arrow graph), unlike the single-colour path which is per-element. So `../packages/element-model/src/theme-graph.ts` exposes graph-aware wrappers alongside the per-element helpers in `../packages/element-model/src/themes.ts`:
 
 - `recolourElementsForTheme(elements, theme)`: used when a template or Markdown import is painted with a theme.
 - `switchThemeElements(elements, prev, next)`: the Theme accordion / welcome picker "apply a theme" path. Preserves a field the user hand-customised away from the previous theme, same per-field rule as the single-colour `switchThemeElement`.

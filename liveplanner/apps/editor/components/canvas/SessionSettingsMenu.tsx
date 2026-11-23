@@ -16,7 +16,7 @@ import type { SessionButtonConfig } from '@liveplanner/project';
 import {
   ElementEllipsisMenu,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { loadSessionElementSettings } from '@/lib/editor-deferred-code';
 
 // The settings open from the element's options menu only; fetched once the editor is idle

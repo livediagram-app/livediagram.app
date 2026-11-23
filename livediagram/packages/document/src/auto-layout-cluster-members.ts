@@ -3,11 +3,11 @@
 // the services that own them: each database's line jogged across the next one's, and across the lines between.
 // Seated by the outside nodes they link to, each sits under its own.
 
-import { SIBLING_GAP } from './auto-layout-shared';
-import { legalise, rankOffsets } from './auto-layout-placement';
+import { SIBLING_GAP } from '@liveworkspace/element-model/auto-layout-shared';
+import { legalise, rankOffsets } from '@liveworkspace/element-model/auto-layout-placement';
 import { headingLead } from './auto-layout-cluster-seats';
 import { NOTCH_MAX } from './graph-notches';
-import type { LayoutDirection } from './auto-layout';
+import type { LayoutDirection } from '@liveworkspace/element-model/auto-layout';
 import type { DiagramGraph } from './graph-authoring';
 import type { BoxedElement } from './index';
 

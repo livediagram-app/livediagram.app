@@ -12,9 +12,9 @@ import { ContextMenu } from '@liveworkspace/workbench/components/palette/Context
 import {
   CopyIcon,
   CutIcon,
-  LinkMenuIcon,
   PasteMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { openHyperlink } from '@/lib/open-hyperlink';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import {
@@ -26,7 +26,7 @@ import {
   MenuToolButton,
   MenuToolbar,
 } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
+import { ChartTypeIcon } from '@liveworkspace/workbench/components/primitives/ChartTypeIcon';
 import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { useSheetController } from './sheet-controller';
 import { cellMenuLabels } from './sheet-cell-menu-labels';

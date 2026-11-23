@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { GRASS_MOTTLE, GRASS_TILES, flagstone, gravelSpecks } from './garden-ground';
 
 // docs/specs/009-elements/office.md "Garden Path", "Grass"; furniture-art-style.md.
@@ -30,7 +30,7 @@ describe("the garden's ground", () => {
       huge = gravelSpecks(20000, 64, 2, () => true);
     });
     expect(`${huge.light}${huge.dark}`.split('M').length - 1).toBeLessThanOrEqual(900);
-    expect(ms).toBeLessThan(40);
+    expect(ms).toBeLessThan(cpuBudgetMs(40));
   });
 
   it('keeps every blade and patch inside its tile, so none is cut at a seam', () => {

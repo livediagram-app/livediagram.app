@@ -13,10 +13,10 @@ Scope, by file:
 | `packages/project/src/shape-kind.ts`                                                  | `ShapeKind` includes `'page'`                                       |
 | `packages/project/src/shape-default-size.ts`, `packages/project/src/shape-factory.ts` | `SHAPE_DEFAULT_SIZE.page`; `createShape('page')` defaults           |
 | `packages/project/src/element-types.ts`                                               | `ShapeElement.pageTitle`, `pageSubtitle`                            |
-| `packages/project/src/data-shapes.ts`                                                 | `PAGE_HEADING_MAX`                                                  |
+| `../packages/element-model/src/data-shapes.ts`                                        | `PAGE_HEADING_MAX`                                                  |
 | `packages/project/src/validate.ts`                                                    | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
 | `packages/project/src/svg-render-body.ts`                                             | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
-| `packages/project/src/svg-render-page.ts`                                             | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
+| `../packages/element-model/src/svg-render-page.ts`                                    | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
 | `packages/project/src/svg-render.ts`                                                  | Export box (`borderedRect`) and the fold over it                    |
 | `packages/project/src/svg-render-describe.ts`                                         | Export body label starts at `pageBodyTop`                           |
 | `packages/project/src/themes.ts`                                                      | `themeColourFields`: page exempt from theme applies [QD15]          |
@@ -114,10 +114,10 @@ Invariants:
 pageTitle?: string;
 pageSubtitle?: string;
 
-// packages/project/src/data-shapes.ts
+// ../packages/element-model/src/data-shapes.ts
 export const PAGE_HEADING_MAX = 200;
 
-// packages/project/src/svg-render-page.ts (Page = BoxedElement & { type: 'shape' })
+// ../packages/element-model/src/svg-render-page.ts (Page = BoxedElement & { type: 'shape' })
 export const PAGE_MASTHEAD_PX: number; // 51.25
 export function pageBodyTop(el: Page, padding: number): number;
 export function svgPageMasthead(el: Page, padding: number, fontFamily?: string): string;

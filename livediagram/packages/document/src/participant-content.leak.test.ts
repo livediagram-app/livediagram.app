@@ -13,7 +13,7 @@ import {
   createVideo,
 } from './factories';
 import type { Element, Tab } from './index';
-import { createPath } from './path-element';
+import { createPath } from '@liveworkspace/element-model/path-element';
 import { applyParticipantOp, participantTabChange } from './participant-content';
 import { createShape } from './shape-factory';
 import { ELEMENT_TYPES, isValidElement } from './validate';

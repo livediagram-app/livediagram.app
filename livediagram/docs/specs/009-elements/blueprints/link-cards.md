@@ -12,7 +12,7 @@ Scope, by file:
 | `packages/document/src/factories.ts`                                           | `createLinkCard`: 280×120, no link, no meta                                                                               |
 | `packages/document/src/element-union.ts`                                       | `isBoxed` includes `link-card`; `elementSupportsText` excludes it                                                         |
 | `packages/document/src/colors.ts`                                              | Default fill, stroke, text; `supportsColours` true                                                                        |
-| `packages/document/src/themes.ts`                                              | `THEME_COLOUR_FIELDS['link-card'] = []`                                                                                   |
+| `../packages/element-model/src/themes.ts`                                      | `THEME_COLOUR_FIELDS['link-card'] = []`                                                                                   |
 | `packages/document/src/validate.ts`                                            | Link card carries no extra required fields                                                                                |
 | `packages/document/src/svg-render-boxed.ts`                                    | Export: generic `rect` branch                                                                                             |
 | `packages/api-schema/src/index.ts`                                             | `UnfurlResult`                                                                                                            |

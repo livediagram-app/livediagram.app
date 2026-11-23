@@ -9,19 +9,24 @@ import type { ImportImageSession } from '../import-images';
 import { buildArticleTab } from './build-article';
 import { buildDeckTab, type ImportedSlideDetail } from './build-deck';
 import { readDocx } from './docx';
-import { OfficeImportError, type FileImportFormat, type OfficeImportFailure } from './errors';
-import { OFFICE_MAX_FILE_BYTES } from './limits';
-import { openOfficePackage, type OfficePackage } from './package';
+import {
+  OfficeImportError,
+  type FileImportFormat,
+  type OfficeImportFailure,
+} from '@liveworkspace/office-files/errors';
+import { OFFICE_MAX_FILE_BYTES } from '@liveworkspace/office-files/limits';
+import { openOfficePackage, type OfficePackage } from '@liveworkspace/office-files/package';
 import { readPptx } from './pptx';
 import { officeImportReport, type ReportLine } from './report';
 import { storePictures, type PictureOutcome } from './store-images';
 import type { OfficePicture } from './docx';
-import type { SkipTally } from './tally';
+import type { SkipTally } from '@liveworkspace/office-files/tally';
 import { tabBytes } from './tab-bytes';
 
 export { tabBytes } from './tab-bytes';
 
-export { officeErrorMessage, type FileImportFormat } from './errors';
+export { officeErrorMessage } from './errors';
+export type { FileImportFormat } from '@liveworkspace/office-files/errors';
 export type { ImportedSlideDetail } from './build-deck';
 
 export type OfficeImportStage =

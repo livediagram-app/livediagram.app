@@ -22,7 +22,7 @@ Derived from [Finish](../finish.md). Defaults in [DEFAULTS.md](DEFAULTS.md) (D-f
 
 ## Interfaces and contracts
 
-### `packages/document/src/finish.ts`
+### `../packages/element-model/src/finish.ts`
 
 ```ts
 export type Finish = 'flexible' | 'professional' | 'sketch' | 'marker';
@@ -74,7 +74,7 @@ export function finishHatches(element: Element, fill: string, backdrop?: boolean
 // finishHatchesKind, not a backdrop, fill not transparent
 ```
 
-### `packages/document/src/sketch.ts` (pure geometry, no DOM)
+### `../packages/element-model/src/sketch.ts` (pure geometry, no DOM)
 
 ```ts
 type Pt = { x: number; y: number };
@@ -114,7 +114,7 @@ export function pathEndTangents(
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
 
-### `packages/document/src/marker.ts` (pure geometry, no DOM)
+### `../packages/element-model/src/marker.ts` (pure geometry, no DOM)
 
 Marker draws the outlines `sketch.ts` builds (`SketchOutline`, exported for it, with `sketchPoint` for path text),
 with its own pen. Seeded from `sketchSeed(id)` through `sketchRandom`, each function on its own stream
@@ -166,7 +166,7 @@ len * 0.04)`; the bow is `±min(len * MARKER_BOW_SHARE, MARKER_BOW_MAX_PX)`. Emi
   span too short for a stroke draws a dab. An area under 2 px across draws nothing (`nibPx` 0).
 - Every output is deterministic for the same input and seed; numbers are written in tenths (`sketchPoint`).
 
-### `packages/document/src/marker-element.ts` and `hand-drawn.ts`
+### `../packages/element-model/src/marker-element.ts` and `hand-drawn.ts`
 
 - `markerElementPaint(el, fill, backdrop)` returns `{ drawing: MarkerDrawing, strokePx, dash }` or null:
   - `MarkerDrawing = { pen: 'marker'; ink: MarkerLayers; details: string; solid: string; streaks: MarkerLayers;
@@ -189,7 +189,7 @@ nibPx: number }`.
 heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFill` false, `inkOpacity` 1, one
   pass while `flowing`; Marker: `inkOpacity` `MARKER_INK_OPACITY`). The canvas and the export call only these two.
 
-### `packages/document/src/sketch-element.ts` and `sketch-backdrop.ts`
+### `../packages/element-model/src/sketch-element.ts` and `sketch-backdrop.ts`
 
 - `sketchElement(el, { strokePx, radiusPx, fill, backdrop })` returns the `SketchDrawing` layers (`strokes`,
   `details`, `hatch`, `solid`); `sketchElementPaint(el, finish, fill, backdrop)` resolves stroke, dash and radius as an
@@ -210,10 +210,10 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   Professional corner / stroke fallbacks; Sketch makes the wrapper's background transparent and its border none for
   CSS shapes and stickies and drops the peel. Marker does the same through `finishDrawsBodyByHand`, except a sticky,
   which keeps its paper and peel.
-- `lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
+- `packages/workbench/src/lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
   `CanvasElementsLayer`) publishes `sketchBackdropIds` per tab; `useIsSketchBackdrop(id)` is a per-id
   `useSyncExternalStore` read, so only views whose flag flips re-render.
-- `components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
+- `../packages/workbench/src/components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
   reads (never position) and `SketchOverlay`, an absolutely positioned `<svg viewBox="0 0 w h">` drawing solid, hatch,
   strokes then details. `BoxedElementView` mounts it for every sketched boxed element (shapes, stickies, tables);
   `ShapeContentRouter` skips its silhouette overlay when `isHandDrawn(finish)`. `useSketchPaint` reads
@@ -221,7 +221,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   each streak layer (stroke colour, `MARKER_STREAK_OPACITY`, `nibPx` wide), each ink layer (stroke colour,
   `MARKER_INK_OPACITY`, `strokePx`, the dash) and the details (`MARKER_DETAIL_PX`, the ink opacity), each its own
   `<path>` so crossings pool.
-- `components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
+- `../packages/workbench/src/components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width
   (`finishArrowWidthPx`) and the memoised `handDrawnArrow` (`flowing` while a flow runs). Under Marker `ArrowView`
   sets `strokeOpacity` to the ink opacity on the line, draws `lineOver` as a second path (same stroke, dash and
   mask), and fills a `headFill` head in the head colour at the ink opacity. `ArrowView` draws the
@@ -236,7 +236,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   `useTabFinish()` when given the tile's `finishAction`, and `StickerPickerTab` wraps each sticker's art in it. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
   strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`) and `.palette-finish-marker` (round caps and joins, 2.75 px strokes at 0.88 (the default glyph line is close to 2.25, so 2.25 barely showed)
   opacity).
-  `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
+  `../packages/workbench/src/components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
   `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
 
 - Faces (spec "Every other face is drawn by hand too"): `finishSplitsFace(el)` (`finish.ts`) names the elements
@@ -250,7 +250,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   every `id` stripped), and re-takes it from a `MutationObserver` on the live div, `SKETCH_INK_SETTLE_MS` after the
   last change, never later than `SKETCH_INK_MAX_WAIT_MS` after the first. Each copy goes through
   `face-take-batch.ts` in the `copy` stage (after the faces' own pass), and `watch.taken()` drops the changes it already
-  holds. `app/sketch-face.css` hides the live
+  holds. `packages/workbench/src/styles/sketch-face.css` hides the live
   layer's backgrounds, borders, shadows (not on `:focus-visible`) and SVG shapes (`opacity: 0`), and gives the ink
   layer `filter: url(#lvd-sketch-face)`, `pointer-events: none`, transparent text fill and hidden SVG text.
 - `SketchFilterDefs` also renders `SKETCH_FACE_FILTER` (`svg-render-sketch.ts`): one `feTurbulence` (octaves 1,
@@ -258,7 +258,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - WebKit (spec "In WebKit"): `../packages/workbench/src/lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
   `GestureEvent` (WebKit's own; `navigator.vendor` is not used, since jsdom answers Apple too). When it holds,
   `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole), and `ShapeContentRouter` wraps
-  icon and sticker art in `components/canvas/SketchArtPicture.tsx` instead of the `filter: url(#lvd-sketch-tile)`
+  icon and sticker art in `../packages/workbench/src/components/canvas/SketchArtPicture.tsx` instead of the `filter: url(#lvd-sketch-tile)`
   div. `SketchArtPicture` renders an empty `[data-sketch-art-picture]` div (`aria-hidden`, `inert`, no pointer
   events) then a hider div holding the live art, all `absolute inset-0` in a `relative h-full w-full` box (the box
   the filtered div was). In a layout effect `sketchArtPictureCopy(live)` clones the art and swaps each top-level
@@ -376,7 +376,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 
 ### Menus and dialog
 
-- `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
+- `../packages/workbench/src/components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
   (`kind="single"`, label "Drawn As") with rows `follow-tab`, `flexible`, `professional`, `sketch`, `marker`: a glyph, the
   `FINISH_LABELS` name and the `FINISH_DETAILS` line. Hover previews through `OptionRows`' `onPreview` /
   `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Appearance flyout, arrows
@@ -514,9 +514,9 @@ per command letter.
 | budgets                                                      | `packages/document/src/sketch.perf.test.ts`                                                                  |
 | export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                                                            |
 | variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
-| menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
+| menu rows commit, preview, Follow Tab clears                 | `../packages/workbench/src/components/palette/FinishSection.test.tsx`                                        |
 | backdrops: what sits on a shape, order, finish, speed        | `../packages/element-model/src/sketch-backdrop.test.ts`                                                      |
-| Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                     |
+| Professional new arrows angled; avoidance per finish         | `../packages/workbench/src/hooks/canvas/arrow-avoidance-apply.test.ts`                                       |
 | which palette tiles take the finish                          | `packages/workbench/src/components/palette/palette-tile-finish.test.ts`                                      |
 | applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
 | preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                     |
@@ -533,7 +533,7 @@ per command letter.
 | face split per finish, element font on the wrapper           | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
 | WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/editor/components/canvas/BoxedElementView.sketch-face.test.tsx`                                        |
 | WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                     |
-| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/editor/components/canvas/SketchArtPicture.test.tsx`                                                    |
+| pictures: markup, colours, ids, scale, margin, settle, reuse | `../packages/workbench/src/components/canvas/SketchArtPicture.test.tsx`                                      |
 
 ## Constants and configuration
 

@@ -16,7 +16,7 @@ import {
   LOUD_ACCENT,
   stopPointer,
 } from '@/components/canvas/collab/qa/qa-parts';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { useFaceShadow } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 
 // The face of an Action panel (docs/specs/012-collaboration/action-panel.md): a card on the canvas that carries a

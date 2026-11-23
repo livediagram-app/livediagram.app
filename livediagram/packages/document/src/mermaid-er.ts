@@ -5,8 +5,8 @@
 // dashed. Export always emits flowchart text.
 
 import type { EntityField } from './data-shapes';
-import { entityKeyOf } from './entity-fields';
-import type { ErShape } from './er-heads';
+import { entityKeyOf } from '@liveworkspace/element-model/entity-fields';
+import type { ErShape } from '@liveworkspace/element-model/er-heads';
 import { hubFirst } from './er-hub-first';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import {

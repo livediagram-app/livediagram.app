@@ -1,6 +1,6 @@
 import { createStickerPickerTab } from '@liveworkspace/workbench/components/palette/StickerPickerTab';
 import { STICKER_DND_MIME } from '@/lib/icons';
-import { StickerArt } from '@/components/canvas/StickerView';
+import { StickerArt } from '@liveworkspace/workbench/components/canvas/StickerView';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 
 // The palette's Stickers tab (docs/specs/010-palette/stickers.md), shared by the editors and bound to this one's.

@@ -5,7 +5,7 @@
 // every field it carries (its heads, style, bends, label layout, flow) rides through a save, a sync and a copy.
 
 import type { CommentThread } from './comments';
-import type { ElementAction } from './element-action';
+import type { ElementAction } from '@liveworkspace/element-model/element-action';
 import type { ElementId, ElementLink } from './index';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { Point, Rect } from '@liveworkspace/model-core/geometry-primitives';

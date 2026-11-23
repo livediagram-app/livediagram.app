@@ -1,12 +1,12 @@
 // The Tab type (docs/specs/006-design/design-structure.md): one tab's elements, pages, look and settings.
 // Re-exported from the package root (./index). Type-only imports, so nothing here exists at runtime.
-import type { TagColour } from './tag-colours';
+import type { TagColour } from '@liveworkspace/element-model/tag-colours';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
 import type { Page, PageBackground, PageOrientation } from './page';
 import type { Photo } from '@livedesign/photo-engine';
 import type { Layer } from './layers';
-import type { Finish } from './finish';
+import type { Finish } from '@liveworkspace/element-model/finish';
 import type { TabId, TextSize } from '@liveworkspace/model-core/basics';
 import type { BackgroundPattern } from './retired-patterns';
 import type { Element } from './element-union';

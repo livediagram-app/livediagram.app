@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { barMarks, DOUGHNUT_HOLE, lineMarks, pieMarks, scatterX } from './chart-marks';
-import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
+import {
+  barMarks,
+  DOUGHNUT_HOLE,
+  lineMarks,
+  pieMarks,
+  scatterX,
+} from '@liveworkspace/element-model/chart-marks';
+import {
+  svgBarChart,
+  svgLineChart,
+  svgPieChart,
+} from '@liveworkspace/element-model/svg-render-charts';
 import { createShape } from './shape-factory';
 import type { BoxedElement, ShapeElement } from './index';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';

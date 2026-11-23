@@ -4,7 +4,7 @@
 // selected highlights, or for the armed Highlighter tile's next stroke when nothing is selected. The marker's own five
 // colours and three widths, one row per popover, as a whiteboard marker's (QuickPenRows).
 
-import { BorderStrokeIcon } from '@/components/palette/palette-style-previews';
+import { BorderStrokeIcon } from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
 import {
   HIGHLIGHTER_WIDTHS,
@@ -14,7 +14,7 @@ import type { QuickHighlighterStyle } from '@/lib/quick-style-highlighter';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 import { QuickMoreColours } from './QuickMoreColours';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { ColourChip, ValueGlyph } from './quick-style-icons';
 
 // The widths drawn with the border-width previews, thinnest first.
