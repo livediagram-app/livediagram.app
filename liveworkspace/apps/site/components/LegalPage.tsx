@@ -1,5 +1,6 @@
 import { BrandMark } from '@livediagram/ui';
 import { PLATFORM_SITE, TERMS_LABEL, type SiteId } from '@liveworkspace/sites';
+import { Chip as OpticalChip } from '@liveworkspace/ui';
 import type { CSSProperties, ReactNode } from 'react';
 import { listedApps, type ListedApp } from '@/lib/apps';
 import { Footer } from './Footer';
@@ -79,7 +80,7 @@ export function LegalPage({
                   aria-current={page.href === path ? 'page' : undefined}
                   className="rounded-full px-4 py-1.5 text-slate-600 transition-colors duration-micro hover:text-slate-900 aria-[current=page]:bg-slate-900 aria-[current=page]:text-white dark:text-slate-300 dark:hover:text-white dark:aria-[current=page]:bg-white dark:aria-[current=page]:text-slate-900 aria-[current=page]:hover:text-white dark:aria-[current=page]:hover:text-slate-900"
                 >
-                  {page.label}
+                  <span className="text-optical-line">{page.label}</span>
                 </a>
               ))}
             </nav>
@@ -95,13 +96,11 @@ export function LegalPage({
               <span className="mr-1 text-sm font-medium text-slate-500 dark:text-slate-400">
                 Covers
               </span>
-              <Chip>
-                <BrandMark accentColor={PLATFORM_SITE.accent} className="size-4" />
+              <Chip icon={<BrandMark accentColor={PLATFORM_SITE.accent} className="size-4" />}>
                 {PLATFORM_SITE.id}
               </Chip>
               {apps.map((app) => (
-                <Chip key={app.id} app={app}>
-                  <AppMark app={app} className="size-4" />
+                <Chip key={app.id} app={app} icon={<AppMark app={app} className="size-4" />}>
                   {app.id}
                 </Chip>
               ))}
@@ -221,14 +220,15 @@ export function LegalPage({
   );
 }
 
-function Chip({ app, children }: { app?: ListedApp; children: ReactNode }) {
+function Chip({ app, icon, children }: { app?: ListedApp; icon: ReactNode; children: ReactNode }) {
   return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-sm font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200"
+    <OpticalChip
+      icon={icon}
+      className="gap-1.5 border border-slate-200 bg-white/80 px-3 py-1 text-sm font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-200"
       style={app ? { borderColor: `${app.accent}55` } : undefined}
     >
       {children}
-    </span>
+    </OpticalChip>
   );
 }
 

@@ -1,4 +1,4 @@
-import { Tooltip } from '@liveworkspace/ui';
+import { Chip, Tooltip } from '@liveworkspace/ui';
 import type { Rising } from './metric-series';
 
 // The arrow beside a number saying which way it moved against the span just
@@ -50,12 +50,10 @@ export function TrendBadge({
   const comparison = `Against ${against}: ${before.toLocaleString()}`;
   return (
     <Tooltip label={comparison}>
-      <span
-        className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums ${TONES[tone]}`}
-      >
+      <Chip className={`px-2 py-0.5 text-[11px] font-medium tabular-nums ${TONES[tone]}`}>
         {arrow} {amount}
         <span className="sr-only"> ({comparison})</span>
-      </span>
+      </Chip>
     </Tooltip>
   );
 }

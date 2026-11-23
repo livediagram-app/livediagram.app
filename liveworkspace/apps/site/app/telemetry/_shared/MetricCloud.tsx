@@ -1,5 +1,6 @@
 'use client';
 
+import { Chip } from '@liveworkspace/ui';
 import { useMemo, type CSSProperties } from 'react';
 import { useTelemetryApp } from './app';
 import { typeLabel } from './event-vocab';
@@ -167,12 +168,12 @@ export function MetricCloud({
                 className="cloud-word group/word relative cursor-pointer leading-none tracking-tight opacity-[var(--o)] transition dark:opacity-[var(--o-dark)] duration-micro hover:-translate-y-0.5 hover:!opacity-100 focus-visible:!opacity-100 focus-visible:outline-none group-hover/cloud:opacity-40"
               >
                 {w.label}
-                <span
+                <Chip
                   aria-hidden
-                  className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white opacity-0 shadow transition group-hover/word:opacity-100 group-focus-visible/word:opacity-100 dark:bg-slate-200 dark:text-slate-900"
+                  className="pointer-events-none absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white opacity-0 shadow transition group-hover/word:opacity-100 group-focus-visible/word:opacity-100 dark:bg-slate-200 dark:text-slate-900"
                 >
                   {w.count.toLocaleString()}
-                </span>
+                </Chip>
               </button>
             );
           })}

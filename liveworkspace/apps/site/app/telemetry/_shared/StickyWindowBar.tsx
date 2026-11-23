@@ -111,8 +111,8 @@ export function StickyWindowBar({
                   : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')
               }
             >
-              <span className="sm:hidden">{w.short}</span>
-              <span className="max-sm:hidden">{w.label}</span>
+              <span className="text-optical-line sm:hidden">{w.short}</span>
+              <span className="text-optical-line max-sm:hidden">{w.label}</span>
             </button>
           );
         })}

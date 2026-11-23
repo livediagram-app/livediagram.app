@@ -130,7 +130,11 @@ export default function TelemetryDashboard() {
                     : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600')
                 }
               >
-                {choice.key === ALL_TELEMETRY_APPS ? choice.label : <AppBrand app={choice.key} />}
+                {choice.key === ALL_TELEMETRY_APPS ? (
+                  <span className="text-optical-line">{choice.label}</span>
+                ) : (
+                  <AppBrand app={choice.key} />
+                )}
               </button>
             ))}
           </div>

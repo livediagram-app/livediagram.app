@@ -100,7 +100,7 @@ export function Character({
       {name ? (
         <span className="mt-0.5 flex items-center gap-1 rounded-full bg-white px-1.5 py-px text-[9px] leading-tight font-semibold whitespace-nowrap text-slate-700 shadow-sm ring-1 ring-slate-200 sm:text-[10px] dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700">
           <span className="size-1.5 rounded-full" style={{ backgroundColor: look.shirt }} />
-          {name}
+          <span className="text-optical-line">{name}</span>
         </span>
       ) : null}
     </span>

@@ -1,5 +1,6 @@
 import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { lucideFolder } from '@liveworkspace/icons/lucide';
+import { Chip } from '@liveworkspace/ui';
 import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
 import type { CSSProperties, ReactNode } from 'react';
 import { listedApps } from '@/lib/apps';
@@ -269,9 +270,9 @@ function AccountArt() {
           >
             <AppMark app={app} className="size-5" />
             <span className="text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">{app.name}</span>
-            <span className="ml-auto rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+            <Chip className="ml-auto bg-emerald-100 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
               Signed in
-            </span>
+            </Chip>
           </div>
         ))}
       </div>

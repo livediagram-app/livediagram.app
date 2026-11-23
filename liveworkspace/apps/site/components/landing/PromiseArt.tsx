@@ -1,4 +1,5 @@
 import { lucideGlyph } from '@livediagram/ui';
+import { Chip } from '@liveworkspace/ui';
 import {
   lucideAtSign,
   lucideCheck,
@@ -186,9 +187,9 @@ export function InboxArt() {
     <ArtFrame className="p-3">
       <div className="flex items-center justify-between px-1">
         <span className="text-xs font-semibold text-slate-900 dark:text-white">Inbox</span>
-        <span className="rounded-full bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white dark:bg-white dark:text-slate-900">
+        <Chip className="bg-slate-900 px-1.5 py-0.5 text-[10px] font-semibold text-white dark:bg-white dark:text-slate-900">
           2 new
-        </span>
+        </Chip>
       </div>
       <div className="mt-2 flex flex-col gap-1.5">
         {rows.map((r) => {
@@ -322,7 +323,7 @@ export function KeyArt() {
       </div>
       <span className="absolute top-1 right-2 flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white ring-1 ring-white/15">
         <KeyGlyph />
-        One token
+        <span className="text-optical-line">One token</span>
       </span>
     </ArtFrame>
   );
@@ -349,7 +350,7 @@ export function DataArt() {
         </span>
         <span className="flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
           <GlobeGlyph />
-          Public
+          <span className="text-optical-line">Public</span>
         </span>
       </div>
       <div className="mt-3 flex flex-1 items-end gap-2 border-b border-slate-200 px-1 dark:border-slate-700">
@@ -511,9 +512,9 @@ export function ConnectedArt() {
           <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
             A {diagram.name} canvas in {plan.name}
           </p>
-          <span className="mt-2 inline-flex rounded-full bg-[var(--lw-ink)] px-3 py-1 text-[11px] font-semibold text-white">
+          <Chip className="mt-2 bg-[var(--lw-ink)] px-3 py-1 text-[11px] font-semibold text-white">
             Open
-          </span>
+          </Chip>
         </div>
       </div>
     </ArtFrame>
@@ -552,7 +553,7 @@ export function DriveArt() {
                 style={{ animationDelay: `${300 + i * 200}ms` }}
               >
                 <CheckGlyph />
-                Synced
+                <span className="text-optical-line">Synced</span>
               </span>
             </div>
           );

@@ -291,7 +291,7 @@ export function StatusBoard({
                     className="relative touch-target-y inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pr-1 pl-3 text-sm font-medium text-slate-700 transition-colors duration-micro hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-800"
                   >
                     <GroupMark id={g.site.id} />
-                    {g.title}
+                    <span className="text-optical-line">{g.title}</span>
                     {/* As wide as Checking at least: the shorter "All up" let the links fit one row where
                         Checking took two, and lifted every card under them. */}
                     <StateBadge state={mark} size="sm" word={words} hold="Checking" />

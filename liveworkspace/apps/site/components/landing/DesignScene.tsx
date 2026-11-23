@@ -180,7 +180,7 @@ export function DesignScene() {
             <span className="ml-auto">Routes</span>
             <span>Fares</span>
             <span className="rounded-full bg-slate-900 px-[0.8em] py-[0.3em] text-white dark:bg-white dark:text-slate-900">
-              Sign in
+              <span className="text-optical-line">Sign in</span>
             </span>
           </span>
           <span className="grid flex-1 grid-cols-[1.1fr_1fr] gap-[0.8em] px-[1em] pb-[1em]">
@@ -192,7 +192,7 @@ export function DesignScene() {
                 Direct routes to 40 cities, with fares that never change at the gate.
               </span>
               <span className="mt-[0.3em] w-fit rounded-full bg-rose-700 px-[0.9em] py-[0.4em] text-[0.7em] font-semibold text-white">
-                Get started
+                <span className="text-optical-line">Get started</span>
               </span>
             </span>
             <span className="overflow-hidden rounded-[0.6em]">
