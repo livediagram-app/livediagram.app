@@ -43,6 +43,13 @@ const PROVIDER_TILES: Readonly<Record<AiProviderId, string>> = {
 const TILE =
   'flex size-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset motion-safe:transition-colors';
 
+// The tile centres a glyph's ink, not its box (docs/specs/004-interface-design/optical-alignment.md): Glyph sets the
+// blank margin its drawing leaves as --glyph-ink-t / --glyph-ink-b, and the sparkle's small star leaves more above
+// than below, so the box alone sits its ink 0.6px low.
+const INK_CENTRED = {
+  translate: '0 calc((var(--glyph-ink-b, 0px) - var(--glyph-ink-t, 0px)) / 2)',
+} as const;
+
 function Mark({ line }: { line: Exclude<AiSourceLine, { kind: 'loading' }> }) {
   if (line.kind === 'built-in')
     return (
@@ -50,7 +57,7 @@ function Mark({ line }: { line: Exclude<AiSourceLine, { kind: 'loading' }> }) {
         aria-hidden
         className={`${TILE} bg-gradient-to-br from-brand-500 to-brand-700 text-white ring-brand-600/40 shadow-sm shadow-brand-500/20 dark:from-brand-400 dark:to-brand-600 dark:ring-brand-300/30`}
       >
-        <SparkleIcon size={15} />
+        <SparkleIcon size={15} style={INK_CENTRED} />
       </span>
     );
   if (line.kind === 'failed')
@@ -59,12 +66,12 @@ function Mark({ line }: { line: Exclude<AiSourceLine, { kind: 'loading' }> }) {
         aria-hidden
         className={`${TILE} bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-400/30`}
       >
-        <AlertGlyph />
+        <AlertGlyph style={INK_CENTRED} />
       </span>
     );
   return (
     <span aria-hidden className={`${TILE} ${PROVIDER_TILES[line.provider]}`}>
-      <KeyGlyph />
+      <KeyGlyph style={INK_CENTRED} />
     </span>
   );
 }

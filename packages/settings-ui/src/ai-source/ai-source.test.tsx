@@ -154,6 +154,22 @@ describe('the line', () => {
     expect(act_).toHaveBeenCalledTimes(1);
   });
 
+  it('centres each mark’s ink in its tile, not its box', () => {
+    const lines: AiSourceLine[] = [
+      { kind: 'built-in', canChange: true },
+      { kind: 'key', owner: 'you', provider: 'anthropic', model: 'm', canChange: true },
+      { kind: 'failed', owner: 'you', provider: 'anthropic', words: 'Refused.', canChange: true },
+    ];
+    for (const line of lines) {
+      render(<AiSource line={line} />);
+      const style = host.querySelector('[data-ai-source] > span > svg')?.getAttribute('style');
+      expect(style, line.kind).toContain('--glyph-ink-t');
+      expect(style, line.kind).toContain(
+        'calc((var(--glyph-ink-b, 0px) - var(--glyph-ink-t, 0px)) / 2)',
+      );
+    }
+  });
+
   it('names a key by provider and model with Change, and a team’s for its members with no action', () => {
     const key: AiSourceLine = {
       kind: 'key',
