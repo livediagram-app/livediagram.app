@@ -71,7 +71,7 @@ livediagram/apps/mcp/src/mcp-test-client.ts	livedocuments/apps/mcp/src/mcp-test-
 livediagram/packages/agent-verbs/src/verbs/shared.ts	livedocuments/packages/agent-verbs/src/verbs/shared.ts	liveknowledge/packages/agent-verbs/src/verbs/shared.ts
 livediagram/packages/api-schema/src/document-conversion.ts	livedocuments/packages/api-schema/src/document-conversion.ts	livehuddle/packages/api-schema/src/document-conversion.ts	liveknowledge/packages/api-schema/src/document-conversion.ts
 livediagram/packages/api-schema/src/document-paths.ts	livehuddle/packages/api-schema/src/document-paths.ts
-livediagram/packages/api-schema/src/responses.ts	livedocuments/packages/api-schema/src/responses.ts	liveknowledge/packages/api-schema/src/responses.ts
+livediagram/packages/api-schema/src/responses.ts	livedocuments/packages/api-schema/src/responses.ts
 livediagram/packages/api-schema/src/trash.ts	livehuddle/packages/api-schema/src/trash.ts
 livediagram/packages/document-views/src/__fixtures__/golden-path.ts	livedocuments/packages/document-views/src/__fixtures__/golden-path.ts	livehuddle/packages/document-views/src/__fixtures__/golden-path.ts	liveknowledge/packages/document-views/src/__fixtures__/golden-path.ts
 livediagram/packages/document/src/svg-render-temperature.ts	liveplanner/packages/project/src/svg-render-temperature.ts
@@ -82,7 +82,6 @@ livedocuments/apps/api/src/db/account.ts	liveknowledge/apps/api/src/db/account.t
 livedocuments/apps/api/src/db/index.ts	liveknowledge/apps/api/src/db/index.ts
 livedocuments/apps/api/src/db/tab-save-document.ts	liveknowledge/apps/api/src/db/tab-save-document.ts
 livedocuments/apps/api/src/document-room/automations/kit-outline.ts	liveknowledge/apps/api/src/document-room/automations/kit-outline.ts
-livedocuments/apps/api/src/document-room/document-room-wiring.ts	liveknowledge/apps/api/src/document-room/document-room-wiring.ts
 livedocuments/apps/api/src/routes/automation-hook-route.ts	liveknowledge/apps/api/src/routes/automation-hook-route.ts
 livedocuments/apps/api/src/routes/document-shared-tabs-route.ts	liveknowledge/apps/api/src/routes/document-shared-tabs-route.ts
 livedocuments/apps/api/src/routes/email-optout-route.ts	liveknowledge/apps/api/src/routes/email-optout-route.ts
