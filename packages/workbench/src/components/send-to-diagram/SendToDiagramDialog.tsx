@@ -35,29 +35,29 @@ const KINDS: readonly {
   line: string;
   icon: (p: { size?: number }) => ReactNode;
 }[] = [
-  { kind: 'auto', label: 'Auto', line: 'The AI picks', icon: lucideGlyph(lucideSparkles, 18) },
+  { kind: 'auto', label: 'Auto', line: 'AI picks', icon: lucideGlyph(lucideSparkles, 18) },
   {
     kind: 'flowchart',
     label: 'Flowchart',
-    line: 'Steps and decisions',
+    line: 'Steps, choices',
     icon: lucideGlyph(lucideWorkflow, 18),
   },
   {
     kind: 'mindmap',
     label: 'Mind Map',
-    line: 'Ideas round a topic',
+    line: 'Ideas on a topic',
     icon: lucideGlyph(lucideShare2, 18),
   },
   {
     kind: 'orgchart',
     label: 'Org Chart',
-    line: 'People and teams',
+    line: 'People, teams',
     icon: lucideGlyph(lucideUsers, 18),
   },
   {
     kind: 'architecture',
     label: 'Architecture',
-    line: 'Systems and links',
+    line: 'Systems, links',
     icon: lucideGlyph(lucideLayers, 18),
   },
   {
@@ -201,7 +201,7 @@ export function SendToDiagramDialog({
             <h3 className={LABEL}>Words</h3>
             <blockquote
               data-send-words=""
-              className="relative max-h-[6.5rem] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-4 pl-4 text-sm leading-relaxed whitespace-pre-line text-slate-700 before:absolute before:inset-y-2.5 before:left-0 before:w-[3px] before:rounded-full before:bg-[var(--app-accent,theme(colors.sky.500))] after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-8 after:bg-gradient-to-t after:from-slate-50 after:to-transparent dark:border-slate-700/70 dark:bg-slate-800/60 dark:text-slate-200 dark:after:from-slate-800/90"
+              className="relative max-h-[6.5rem] overflow-hidden rounded-xl border border-slate-200 bg-slate-50 py-2.5 pr-4 pl-4 text-sm leading-relaxed whitespace-pre-line text-slate-700 before:absolute before:inset-y-2.5 before:left-0 before:w-[3px] before:rounded-full before:bg-brand-500 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-8 after:bg-gradient-to-t after:from-slate-50 after:to-transparent dark:border-slate-700/70 dark:bg-slate-800/60 dark:text-slate-200 dark:after:from-slate-800/90"
             >
               {request.words}
             </blockquote>
@@ -242,16 +242,16 @@ export function SendToDiagramDialog({
                       sibling?.focus();
                     }}
                     tabIndex={on ? 0 : -1}
-                    className={`group flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 disabled:cursor-default disabled:opacity-60 ${
+                    className={`group flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:cursor-default disabled:opacity-60 ${
                       on
-                        ? 'border-sky-500 bg-sky-50 shadow-[0_0_0_1px_theme(colors.sky.500)] dark:border-sky-400 dark:bg-sky-500/10 dark:shadow-[0_0_0_1px_theme(colors.sky.400)]'
+                        ? 'border-brand-500 bg-brand-50 shadow-[0_0_0_1px_var(--color-brand-500)] dark:border-brand-400 dark:bg-brand-500/10 dark:shadow-[0_0_0_1px_var(--color-brand-400)]'
                         : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:bg-slate-800'
                     }`}
                   >
                     <span
                       className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition ${
                         on
-                          ? 'bg-sky-500 text-white dark:bg-sky-400 dark:text-slate-900'
+                          ? 'bg-brand-600 text-white dark:bg-brand-400 dark:text-slate-900'
                           : 'bg-slate-100 text-slate-500 group-hover:text-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:group-hover:text-slate-200'
                       }`}
                     >
@@ -261,7 +261,7 @@ export function SendToDiagramDialog({
                       <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                         {k.label}
                       </span>
-                      <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      <span className="text-xs leading-snug text-slate-500 dark:text-slate-400">
                         {k.line}
                       </span>
                     </span>

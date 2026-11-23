@@ -23,8 +23,8 @@ export const SEND_TO_DIAGRAM_GLYPH = (
 const PIECES = (
   <svg
     {...HERO_SVG}
-    width="132"
-    height="40"
+    width="96"
+    height="29"
     viewBox="0 0 132 40"
     className={`${HERO_PLACE.bottomRight} overflow-visible`}
   >
