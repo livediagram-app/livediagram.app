@@ -28,7 +28,7 @@ import {
   markersTakeLineColour,
 } from '@liveworkspace/workbench/components/canvas/arrow-defs';
 import { ArrowLabel } from '@liveworkspace/workbench/components/canvas/ArrowLabel';
-import { SelectedArrowHandles } from './SelectedArrowHandles';
+import { SelectedArrowHandles } from '@liveworkspace/workbench/components/canvas/SelectedArrowHandles';
 import { ArrowGripsPortal } from './ArrowGripsPortal';
 import {
   ArrowFlowOverlays,

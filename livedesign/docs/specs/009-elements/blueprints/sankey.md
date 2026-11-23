@@ -22,11 +22,11 @@ Scope, by file:
 | `apps/live/components/canvas/SankeyView.tsx`                                          | Canvas view (lazy chunk), hover, animations                                                                           |
 | `apps/live/components/palette/SankeyMenuSection.tsx`                                  | The Sankey flyout: Flows, Bands, Layout, Labels, Leftovers, Text sections                                             |
 | `apps/live/components/dialogs/SankeyFlowsDialog.tsx`                                  | Flows dialog shell, tabs, preview, import                                                                             |
-| `apps/live/components/dialogs/SankeyFlowsTable.tsx`                                   | Table tab: steps, node groups, Add a Flow area, leftover switches                                                     |
+| `../packages/workbench/src/components/dialogs/SankeyFlowsTable.tsx`                   | Table tab: steps, node groups, Add a Flow area, leftover switches                                                     |
 | `../packages/workbench/src/components/dialogs/SankeyFlowRow.tsx`                      | One row: → To, Amount, Send On, remove (a loose row adds its From)                                                    |
 | `../packages/workbench/src/lib/sankey-flow-levels.ts`                                 | `flowLevels` (rows into steps and node groups), `flowTotals`, `flowNodeColors`                                        |
 | `../packages/workbench/src/components/palette/sankey-menu-glyphs.tsx`                 | The Display option glyphs (on the raw-SVG art allowlist)                                                              |
-| `apps/live/components/dialogs/SankeyNodeStrip.tsx`                                    | Node chips and rename                                                                                                 |
+| `../packages/workbench/src/components/dialogs/SankeyNodeStrip.tsx`                    | Node chips and rename                                                                                                 |
 | `apps/live/components/tour/SankeyFlowsTour.tsx`, `sankey-flows-tour-steps.ts`         | Show Me on the Flows dialog, binding the workbench's `createSankeyFlowsTour`: button, stage, steps fixed at the press |
 | `apps/live/components/tour/sankey-element-tour-steps.ts`, `ElementTourHost.tsx`       | The Sankey element tour ([Element tours](../../007-editor/element-tours.md)): steps, the parts lifted, the host       |
 | `../packages/workbench/src/lib/sankey-tour-focus.ts`, `sankey-flows-dialog-handle.ts` | The band or node a tour step lifts (`data-sankey-band` / `data-sankey-node`); the open dialog's tab switches          |
@@ -210,7 +210,7 @@ generic `invalid tab` path.
 | Every kind renders / validates / sizes                            | `svg-render-coverage`, `shape-factory`, `export-consistency` tests                                               |
 | Draft rows, reasons, balance, paste                               | `../packages/workbench/src/lib/sankey-flow-rows.test.ts`                                                         |
 | Steps, groups, `rowFrom`, colours, budget                         | `../packages/workbench/src/lib/sankey-flow-levels.test.ts`                                                       |
-| Table: steps, Send On, Add a Flow, Enter, paste, leftover switch  | `apps/live/components/dialogs/SankeyFlowsTable.test.tsx`                                                         |
+| Table: steps, Send On, Add a Flow, Enter, paste, leftover switch  | `../packages/workbench/src/components/dialogs/SankeyFlowsTable.test.tsx`                                         |
 | Leftovers: drawn flows, paint, readout, merge, export, validation | `packages/design/src/sankey-render.test.ts`                                                                      |
 | Staggered animations by column                                    | `apps/live/components/canvas/SankeyView.test.tsx`                                                                |
 | Editor gate                                                       | `apps/live/lib/sankey-edit.test.ts`                                                                              |

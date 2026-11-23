@@ -11,7 +11,7 @@ import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { isCssNativeBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import type { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import type { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import type { useSketchPaint } from '@/components/canvas/SketchOverlay';
+import type { useSketchPaint } from '@liveworkspace/workbench/components/canvas/SketchOverlay';
 import { AccentEdgeOverlay } from '@liveworkspace/workbench/components/canvas/AccentEdgeOverlay';
 import { PointerNoteOverlay } from '@liveworkspace/workbench/components/canvas/PointerNoteOverlay';
 import type { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';

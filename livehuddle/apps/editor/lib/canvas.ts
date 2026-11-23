@@ -4,19 +4,16 @@ import {
   isRetiredBackdrop,
   type BoxedElement,
   type Element,
-  type IconPosition,
   isSelfDrawingShape,
 } from '@livehuddle/document';
 
-// Which side of a boxed element a screen point sits nearest, normalised by
-// half-extent so a wide-but-short box still reads top / bottom correctly.
-// Shared by the icon-drop hover preview (BoxedElementView) and the drop-commit
-// (useEditorDrag) so both pick the same side.
-export function iconDropSide(clientX: number, clientY: number, rect: DOMRect): IconPosition {
-  const dx = (clientX - (rect.left + rect.width / 2)) / (rect.width / 2 || 1);
-  const dy = (clientY - (rect.top + rect.height / 2)) / (rect.height / 2 || 1);
-  return Math.abs(dx) >= Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : dy < 0 ? 'above' : 'below';
-}
+// The snap thresholds, the arrow end and the icon drop side every editor shares
+// (@liveworkspace/workbench/lib/canvas-snap.ts), re-exported so importers keep resolving.
+export {
+  iconDropSide,
+  SNAP_THRESHOLD,
+  ALIGN_SNAP_THRESHOLD,
+} from '@liveworkspace/workbench/lib/canvas-snap';
 
 // Convert a pointer's screen coords into canvas coords: shift by the canvas
 // element's top-left, then divide by zoom (the canvas transform is
@@ -84,25 +81,10 @@ export function framesFirst<T extends Element>(elements: T[]): T[] {
   ];
 }
 
-// One of the gestures a `BoxedElementView` can be in mid-drag. `move`
-// is the body drag; the four `resize-*` corners are the bounding-box
-// handles.
-export type DragMode =
-  | 'move'
-  | 'resize-nw'
-  | 'resize-ne'
-  | 'resize-sw'
-  | 'resize-se'
-  // Edge handles: single-axis resize. n/s change height only, e/w width only.
-  | 'resize-n'
-  | 'resize-s'
-  | 'resize-e'
-  | 'resize-w';
-
-// Resize geometry (nextBounds / union scaling / corner lookups) +
+// Resize geometry (nextBounds / union scaling / corner lookups), DragMode +
 // MIN_SIZE / ShapeBounds live in resize-geometry.ts; re-exported so
 // importers keep resolving.
-import type { ShapeBounds } from '@liveworkspace/workbench/lib/resize-geometry';
+import type { DragMode, ShapeBounds } from '@liveworkspace/workbench/lib/resize-geometry';
 
 export {
   constrainedBounds,
@@ -114,14 +96,10 @@ export {
   snapLeadingAxis,
   snapModeOf,
   unionResizeMember,
+  type DragMode,
   type ShapeBounds,
 } from '@liveworkspace/workbench/lib/resize-geometry';
 
-export const SNAP_THRESHOLD = 24;
-// Pixel range within which a dragged element's edges/centres snap to
-// align with another element's edges/centres. Tight enough that nudging
-// off the line takes deliberate motion.
-export const ALIGN_SNAP_THRESHOLD = 6;
 // Viewport zoom bounds, shared by the +/- buttons and the pinch / wheel zoom
 // (@liveworkspace/workbench/lib/zoom-range.ts).
 export { ZOOM_MAX, ZOOM_MIN } from '@liveworkspace/workbench/lib/zoom-range';

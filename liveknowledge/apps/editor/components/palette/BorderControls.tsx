@@ -5,7 +5,7 @@ import {
   BorderRadiusIcon,
   BorderStrokeIcon,
   BorderStyleIcon,
-} from '@/components/palette/palette-style-previews';
+} from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 

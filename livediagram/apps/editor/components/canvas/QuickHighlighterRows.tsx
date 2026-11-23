@@ -5,7 +5,7 @@
 // nothing is selected. The marker's own five colours and three widths, in the same row rhythm as a
 // whiteboard marker's (QuickPenRows).
 
-import { BorderStrokeIcon } from '@/components/palette/palette-style-previews';
+import { BorderStrokeIcon } from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import type { QuickStyleApi } from '@/hooks/canvas/useQuickStyle';
 import {
   HIGHLIGHTER_WIDTHS,

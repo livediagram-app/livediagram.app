@@ -17,7 +17,7 @@ import {
   BorderRadiusIcon,
   BorderStrokeIcon,
   BorderStyleIcon,
-} from '@/components/palette/palette-style-previews';
+} from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import { QUICK_CORNERS } from '@/lib/quick-style-whiteboard';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@liveworkspace/workbench/hooks/ui/useQuickStylePlacement';

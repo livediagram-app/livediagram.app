@@ -531,7 +531,7 @@ per command letter.
 | face split per finish, element font on the wrapper           | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 | WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 | WebKit is told by `GestureEvent`                             | `../packages/workbench/src/lib/live-filter-cost.test.ts`                                                 |
-| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/live/components/canvas/SketchArtPicture.test.tsx`                                                  |
+| pictures: markup, colours, ids, scale, margin, settle, reuse | `../packages/workbench/src/components/canvas/SketchArtPicture.test.tsx`                                  |
 
 ## Constants and configuration
 

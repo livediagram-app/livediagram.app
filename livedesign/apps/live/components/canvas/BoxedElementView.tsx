@@ -31,7 +31,10 @@ import { useTextHug } from '@/components/canvas/useTextHug';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import {
+  SketchOverlay,
+  useSketchPaint,
+} from '@liveworkspace/workbench/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';

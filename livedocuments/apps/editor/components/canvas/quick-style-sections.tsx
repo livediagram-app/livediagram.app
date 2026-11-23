@@ -6,7 +6,10 @@
 
 import type { ReactNode } from 'react';
 
-import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
+import {
+  BorderStrokeIcon,
+  BorderStyleIcon,
+} from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,

@@ -1,8 +1,8 @@
 import { headlineCase } from '@livedesign/api-schema';
 import type { IconDef, StickerDef, TechIconDef } from '@liveworkspace/icons';
 import { StickerArt } from '@liveworkspace/workbench/components/canvas/StickerView';
-import { CatalogIconThumb } from '@/components/primitives/icon-glyph';
-import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
+import { CatalogIconThumb } from '@liveworkspace/workbench/components/primitives/icon-glyph';
+import { TechIconArt } from '@liveworkspace/workbench/components/primitives/tech-icon-glyph';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // Dynamic tiles: individual Icons / Stickers / Technology catalogue entries as palette tiles, for

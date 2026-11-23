@@ -10,7 +10,7 @@ look of that catalogue.
 
 ## Why a separate category, not more entries in Icons
 
-The Icons catalogue (`apps/editor/lib/icons.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md)) is Feather/Lucide-style:
+The Icons catalogue (`../packages/workbench/src/lib/icons.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md)) is Feather/Lucide-style:
 each glyph is a set of stroke primitives in a 0..24 box, drawn `fill="none"` and
 **tinted by the element's stroke colour** so it themes like a line drawing.
 Brand service icons are the opposite: fixed multi-colour fills that must NOT be
@@ -136,7 +136,7 @@ existing standalone tech icon over a shape leaves it standalone: the
 icon-fold-into-shape gesture (`useEditorDrag`, which absorbs a dragged line-art
 `icon` shape into the shape beneath it) excludes tech icons via `isTechIconId`.
 
-## Rendering: `apps/editor/components/primitives/tech-icon-glyph.tsx`
+## Rendering: `../packages/workbench/src/components/primitives/tech-icon-glyph.tsx`
 
 `TechIconGlyph` paints the brand-coloured tile + the icon's white `glyph` markup
 inside an `<svg>`. No stroke tint is applied; the brand colour is the tile fill

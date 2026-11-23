@@ -26,7 +26,7 @@ import {
   MenuToolButton,
   MenuToolbar,
 } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
+import { ChartTypeIcon } from '@liveworkspace/workbench/components/primitives/ChartTypeIcon';
 import { keyLabel } from '@liveworkspace/workbench/lib/key-label';
 import { useSheetController } from './sheet-controller';
 import { cellMenuLabels } from './sheet-cell-menu-labels';

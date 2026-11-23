@@ -22,7 +22,7 @@ import { canvasMainStyle, canvasWorldStyle } from './canvas-main-style';
 import { imageBackingInsetAttribute } from '@liveknowledge/document';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { useNoCanvasTextSelection } from '@liveworkspace/workbench/hooks/canvas/useNoCanvasTextSelection';
-import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
+import { AnimatedCanvasBackground } from '@liveworkspace/workbench/components/canvas/AnimatedCanvasBackground';
 import { canvasCursorClass } from '@/lib/canvas-chrome';
 import { useDockPopovers } from '@/hooks/canvas/useDockPopovers';
 import { useCanvasPanAndMarquee } from '@/hooks/canvas/useCanvasPanAndMarquee';

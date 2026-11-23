@@ -1,5 +1,5 @@
 import { createStickerPickerTab } from '@liveworkspace/workbench/components/palette/StickerPickerTab';
-import { STICKER_DND_MIME } from '@/lib/icons';
+import { STICKER_DND_MIME } from '@/lib/dnd-mime';
 import { StickerArt } from '@liveworkspace/workbench/components/canvas/StickerView';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 

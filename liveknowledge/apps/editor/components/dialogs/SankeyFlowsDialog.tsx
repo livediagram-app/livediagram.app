@@ -24,8 +24,8 @@ import {
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SankeyView } from '@/components/canvas/SankeyView';
-import { SankeyFlowsTable } from '@/components/dialogs/SankeyFlowsTable';
-import { SankeyNodeStrip } from '@/components/dialogs/SankeyNodeStrip';
+import { SankeyFlowsTable } from '@liveworkspace/workbench/components/dialogs/SankeyFlowsTable';
+import { SankeyNodeStrip } from '@liveworkspace/workbench/components/dialogs/SankeyNodeStrip';
 import { DialogTabs } from '@liveworkspace/workbench/components/dialogs/DialogTabs';
 import {
   SankeyFlowsShowMeButton,

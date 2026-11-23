@@ -9,8 +9,8 @@ import {
   labelOn,
   type ShapeElement,
 } from '@livediagram/document';
-import { IconGlyph } from '@/components/primitives/icon-glyph';
-import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
+import { IconGlyph } from '@liveworkspace/workbench/components/primitives/icon-glyph';
+import { TechIconArt } from '@liveworkspace/workbench/components/primitives/tech-icon-glyph';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { LabelRegion } from '@liveworkspace/workbench/components/canvas/web/LabelRegion';
 import { rectStyle } from '@liveworkspace/workbench/components/canvas/web/web-face-props';

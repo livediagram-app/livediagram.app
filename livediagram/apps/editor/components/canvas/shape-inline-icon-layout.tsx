@@ -18,8 +18,8 @@ import {
   labelTextStyleCss,
   TEXT_ALIGN,
 } from '@liveworkspace/workbench/components/label-editor/label-style';
-import { IconGlyph } from '@/components/primitives/icon-glyph';
-import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
+import { IconGlyph } from '@liveworkspace/workbench/components/primitives/icon-glyph';
+import { TechIconArt } from '@liveworkspace/workbench/components/primitives/tech-icon-glyph';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { ShapeMarkerGlyph } from '@liveworkspace/workbench/components/canvas/ShapeMarker';
 import { HoverCard } from '@livediagram/ui';

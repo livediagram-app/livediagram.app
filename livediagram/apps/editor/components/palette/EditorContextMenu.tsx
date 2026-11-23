@@ -30,7 +30,10 @@ import {
   isSelfDrawingShape,
   supportsRotation,
 } from '@livediagram/document';
-import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
+import {
+  ArrowLineControls,
+  ArrowPointerControls,
+} from '@liveworkspace/workbench/components/canvas/arrow-controls';
 import {
   ContextMenu,
   ContextMenuDivider,

@@ -15,7 +15,7 @@ and the rows menu, and only what differs is written here.
 | `packages/document/src/colors.ts`                                            | `card` in `RADIUS_SHAPES`; `acceptsInlineIcon` true                                   |
 | `../packages/element-model/src/svg-render-card.ts`                           | `svgCard`: the headless body                                                          |
 | `packages/document/src/shape-variants.ts`                                    | `CARD_PRESET_VARIANTS`, `applyShapeVariant`: the card presets, the Callout among them |
-| `apps/editor/components/canvas/web/CardFace.tsx`                             | The canvas face                                                                       |
+| `../packages/workbench/src/components/canvas/web/CardFace.tsx`               | The canvas face                                                                       |
 | `apps/editor/components/palette/CardMenuSection.tsx`                         | Header Band, Media tiles, Tags rows                                                   |
 | `apps/editor/components/palette/palette-tile-defs.tsx`, `palette-layouts.ts` | Card tile, Callout tile → card preset                                                 |
 | `apps/editor/lib/element-telemetry.ts`                                       | `Card` tokens                                                                         |
