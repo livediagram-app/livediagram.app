@@ -28,6 +28,7 @@ import { useTabSlider } from './useTabSlider';
 import { useStripRoving } from './useStripRoving';
 import { TabFolderGroup, type TabFolderGroupProps } from './TabFolderGroup';
 import { foldersOpenOnLoad } from './tab-folder-start';
+import { ConnectTabButton } from './ConnectTabButton';
 
 // The footer's tab strip, shared by every editor (docs/specs/007-editor/editor-app.md "Tab bar", "How a tab looks";
 // docs/specs/006-document/tab-folders.md "Tab bar rendering"): the scroller, the `toolbar` of tabs and folders, Add
@@ -45,6 +46,8 @@ export type TabStripProps<T extends { id: string; folderColor?: string }> = {
   renderTab: (tab: T) => ReactNode;
   // Add tab, after the last tab; omitted for a Viewer.
   onAdd?: () => void;
+  // Connect a File, right of Add tab (connected-tabs.md "From the tab bar"); given only where connecting can work.
+  onConnect?: () => void;
   // A tab dropped on a folder's chip joins it at its head (placed before its first member).
   onReorder: (sourceId: string, targetId: string, placeBefore?: boolean) => void;
   onRenameFolder: (oldName: string, newName: string) => void;
@@ -65,6 +68,7 @@ export function TabStrip<T extends { id: string; folderColor?: string }>({
   readOnly,
   renderTab,
   onAdd,
+  onConnect,
   onReorder,
   onRenameFolder,
   renderRenameField,
@@ -332,6 +336,7 @@ export function TabStrip<T extends { id: string; folderColor?: string }>({
             +
           </button>
         )}
+        {readOnly || !onConnect ? null : <ConnectTabButton onClick={onConnect} />}
       </div>
       {scrollButton('right')}
     </nav>

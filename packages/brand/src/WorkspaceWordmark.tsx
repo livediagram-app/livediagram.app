@@ -13,6 +13,25 @@ const SIZES = {
   md: { text: 'gap-2.5 text-lg font-semibold', mark: 'size-7' },
 } as const;
 
+// The liveworkspace logo's prism alone: livediagram's prism in the platform's slate accent, following the page's light
+// or dark scheme as every BrandMark does. The wordmark below draws it, and so does a tab bar's Connect a File.
+export function WorkspaceMark({
+  className,
+  spinning = false,
+}: {
+  className?: string;
+  spinning?: boolean;
+}) {
+  return (
+    <BrandMark
+      app="livediagram"
+      className={className}
+      accentColor={PLATFORM_SITE.accent}
+      spinning={spinning}
+    />
+  );
+}
+
 export function WorkspaceWordmark({
   className = '',
   size = 'md',
@@ -27,12 +46,7 @@ export function WorkspaceWordmark({
       onPointerEnter={(e) => e.pointerType !== 'touch' && setSpinning(true)}
       onPointerLeave={() => setSpinning(false)}
     >
-      <BrandMark
-        app="livediagram"
-        className={`${SIZES[size].mark} shrink-0`}
-        accentColor={PLATFORM_SITE.accent}
-        spinning={spinning}
-      />
+      <WorkspaceMark className={`${SIZES[size].mark} shrink-0`} spinning={spinning} />
       {/* A logotype: WCAG 1.4.3 sets text that is part of a logo no contrast minimum, and the
           contrast audits skip it by this mark. */}
       <span data-logotype="">

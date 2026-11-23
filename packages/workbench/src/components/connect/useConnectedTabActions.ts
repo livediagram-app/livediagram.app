@@ -9,7 +9,12 @@ import type { ConnectionMade } from '@liveworkspace/index-client';
 import { indexClient } from '../../lib/index-client';
 import { connectAgain, reverseUnreachedWords } from './connect-again';
 import { connectErrorWords } from './connect-words';
-import { connectedTargets, connectionOf, withConnection } from './tab-connection';
+import {
+  connectedTargets,
+  connectionOf,
+  followedConnectedTab,
+  withConnection,
+} from './tab-connection';
 import { toastName } from '../../lib/toast-name';
 
 type TabLike = { id: string; name: string };
@@ -97,10 +102,13 @@ export function useConnectedTabActions<T extends TabLike>(deps: ConnectedTabActi
         tabId,
         connection,
         addTab: async (answer) => {
-          await saveTab(withConnection({ ...tab, name: answer.name }, answer.connection));
+          // A tab with a name of its own keeps it: the answered name is the target's, held beside it.
+          await saveTab(withConnection(followedConnectedTab(tab, answer.name), answer.connection));
           commitTabs((ts) =>
             ts.map((t) =>
-              t.id === tabId ? withConnection({ ...t, name: answer.name }, answer.connection) : t,
+              t.id === tabId
+                ? withConnection(followedConnectedTab(t, answer.name), answer.connection)
+                : t,
             ),
           );
         },
