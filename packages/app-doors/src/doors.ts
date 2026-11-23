@@ -237,7 +237,8 @@ export function createAppDoors(
         throw new DoorError(res.status, `${caller}: plan-data ${res.status}`);
       }
       const listing: unknown = await res.json().catch(() => null);
-      if (!isPlanDataDoorListing(listing)) throw new DoorError(200, `${caller}: malformed plan-data`);
+      if (!isPlanDataDoorListing(listing))
+        throw new DoorError(200, `${caller}: malformed plan-data`);
       return listing;
     },
 

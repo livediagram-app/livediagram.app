@@ -30,8 +30,7 @@ function planApp(answer: (c: AppCall) => Response | undefined = () => undefined)
   h.appAnswer = (c) => {
     const given = answer(c);
     if (given) return given;
-    if (c.url.endsWith('/plan-data'))
-      return Response.json(c.method === 'POST' ? COUNTS : LISTING);
+    if (c.url.endsWith('/plan-data')) return Response.json(c.method === 'POST' ? COUNTS : LISTING);
     return new Response(null, { status: 202 });
   };
 }
@@ -56,7 +55,11 @@ async function setup() {
 const doorCalls = () => h.appCalls.filter((c) => c.url.endsWith('/plan-data'));
 
 async function linkVisitor(ownerAuth: string, itemId: string, input: Record<string, unknown>) {
-  const res = await call(`/items/${itemId}/share`, { method: 'POST', auth: ownerAuth, body: input });
+  const res = await call(`/items/${itemId}/share`, {
+    method: 'POST',
+    auth: ownerAuth,
+    body: input,
+  });
   const code = (await body<{ link: { code: string } }>(res)).link.code;
   const bo = await person('user_bo');
   await call(`/share/${code}`, { auth: bo.auth, headers: { 'X-Share-Code': code } });
@@ -121,7 +124,9 @@ describe('reading live data', () => {
     const { ada, plan } = await setup();
     const { bo } = await linkVisitor(ada.auth, plan.id, { level: 'view', tabId: 'tab-2' });
     expect((await readData(bo.auth, plan.id)).status).toBe(404);
-    expect((await readData(bo.auth, plan.id, { kind: 'metric', metric: 'count' })).status).toBe(404);
+    expect((await readData(bo.auth, plan.id, { kind: 'metric', metric: 'count' })).status).toBe(
+      404,
+    );
     const list = await body<PlanDataListing>(
       await call(`/items/${plan.id}/plan-data`, { auth: bo.auth }),
     );

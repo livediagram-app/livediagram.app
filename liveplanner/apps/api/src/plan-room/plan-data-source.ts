@@ -42,7 +42,8 @@ const NO_PRIORITY = 'No Priority';
 const NO_ASSIGNEE = 'Unassigned';
 const DASHBOARD_NAME = 'Dashboard';
 
-const isMetricKind = (v: string): v is MetricKind => (METRIC_KINDS as readonly string[]).includes(v);
+const isMetricKind = (v: string): v is MetricKind =>
+  (METRIC_KINDS as readonly string[]).includes(v);
 
 const boardOf = (tab: StoredTab) => {
   const el = tab.elements.find((e) => e.type === 'shape' && e.shape === 'plan-board');
@@ -105,7 +106,10 @@ export async function listPlanData(env: PlanEnv, planId: string): Promise<PlanDa
 }
 
 // The rows of a count, largest first (ties by name), capped, as one series.
-function countTable(counts: ReadonlyMap<string, number>, order?: readonly string[]): SheetChartTable {
+function countTable(
+  counts: ReadonlyMap<string, number>,
+  order?: readonly string[],
+): SheetChartTable {
   const rows = [...counts.entries()];
   if (order) rows.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0]));
   else rows.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));

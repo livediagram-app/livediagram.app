@@ -30,8 +30,7 @@ export type SheetRangeResult =
   | { status: 'invalid_range' };
 
 export type PlanDataListResult =
-  | { status: 'ok'; listing: PlanDataDoorListing }
-  | { status: 'not_found' };
+  { status: 'ok'; listing: PlanDataDoorListing } | { status: 'not_found' };
 export type PlanDataResult = { status: 'ok'; read: PlanDataDoorRead } | { status: 'not_found' };
 
 export type SheetSourceHandlers = {

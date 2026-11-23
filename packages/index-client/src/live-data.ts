@@ -90,7 +90,8 @@ export function readBoardCountFilter(v: unknown): BoardCountFilter | null | unde
 // An ask from a request body, or null for a malformed one. Fields besides these are ignored.
 export function readPlanDataAsk(raw: unknown): PlanDataAsk | null {
   if (!isRecord(raw)) return null;
-  if (raw.kind === 'metric') return isMetricId(raw.metric) ? { kind: 'metric', metric: raw.metric } : null;
+  if (raw.kind === 'metric')
+    return isMetricId(raw.metric) ? { kind: 'metric', metric: raw.metric } : null;
   if (raw.kind !== 'board' || !isSheetId(raw.boardId) || !isBoardCountBy(raw.by)) return null;
   const filter = readBoardCountFilter(raw.filter);
   if (filter === null) return null;
@@ -124,9 +125,14 @@ export function isPlanDataDoorListing(v: unknown): v is PlanDataDoorListing {
     isCapped(
       v.boards,
       PLAN_DATA_BOARDS_MAX,
-      (b) => isRecord(b) && isSheetId(b.id) && typeof b.name === 'string' && typeof b.tabId === 'string',
+      (b) =>
+        isRecord(b) && isSheetId(b.id) && typeof b.name === 'string' && typeof b.tabId === 'string',
     ) &&
-    isCapped(v.metrics, PLAN_DATA_LIST_MAX, (m) => isIdLabel('label')(m) && isMetricId((m as { id: unknown }).id)) &&
+    isCapped(
+      v.metrics,
+      PLAN_DATA_LIST_MAX,
+      (m) => isIdLabel('label')(m) && isMetricId((m as { id: unknown }).id),
+    ) &&
     isCapped(f.priorities, PLAN_DATA_LIST_MAX, isIdLabel('label')) &&
     isCapped(f.labels, PLAN_DATA_LIST_MAX, (l) => typeof l === 'string') &&
     isCapped(f.people, PLAN_DATA_LIST_MAX, isIdLabel('name')) &&

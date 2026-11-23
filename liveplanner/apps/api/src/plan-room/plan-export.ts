@@ -42,7 +42,12 @@ import { readContentTabRows, readPlanHead } from './plan-content';
 // shows the one the api's renders and agents use.
 export const EXPORT_LOCALE = 'en-GB';
 
-export type StoredTab = { id: string; name: string; kind: Tab['kind']; elements: readonly Element[] };
+export type StoredTab = {
+  id: string;
+  name: string;
+  kind: Tab['kind'];
+  elements: readonly Element[];
+};
 
 export async function readTabs(env: PlanEnv, planId: string): Promise<StoredTab[]> {
   return (await readContentTabRows(env, planId, null)).map((row) => {
