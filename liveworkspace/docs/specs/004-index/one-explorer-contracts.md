@@ -1071,7 +1071,7 @@ name an app reported, or as a teammate.
 
 ## Inbox
 
-`GET /inbox?app=`: `{threads, actions, forms, accessRequests, shares, suggestions, updates}` across every app: open actions and cards assigned
+`GET /inbox?app=`: `{threads, actions, forms, accessRequests, shares, suggestions, updates, calls}` across every app: open actions and cards assigned
 to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
 link; and open access requests on items I manage ([request-access.md](request-access.md#in-the-inbox)), and my own requests granted lately (`shares`, [inbox-notices.md](inbox-notices.md#shares-in-the-inbox-read)), which no list row draws (an access request's row is below); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
@@ -1141,6 +1141,12 @@ agent, reason, kind, before, after, createdAt}`. Its row reads the agent ("Claud
   row done here leaves the list at once (`settle`), as a resolved thread does. **Suggested Edits** joins the filter
   while one is listed (or it is the choice), as Access Requests does (`Activity·Changed` `SuggestedEdits`;
   `Activity·Resolved` `Suggestion` on Accept and Dismiss).
+- **Calls** ([Start a Call Here](./item-calls.md#invites)): `calls` answers my invites of the last
+  `ITEM_CALL_INVITE_DAYS` (1 day), on items I reach and not in the Trash, newest first, each `{id, app, itemId,
+  itemTitle, byName, at, live}`. One indexed query, from `item_call_invites (person_id, at)`. A row is **who** (the
+  inviter), its age; **what** (the item); and **why** as a phone icon and **Invited to a Call**, **Live** while the
+  call is. Opening it opens the item, where Join waits. It is never counted in the badge. **Calls** joins the filter
+  while one is listed (or it is the choice) (`Activity·Changed` `Calls`).
 - **Updates** (liveknowledge's [Watching](../../../../liveknowledge/docs/specs/030-knowledgebase/watching.md)):
   `updates` answers the rows pushed for me (`people` holds me) in the last `INBOX_UPDATES_MS` (14 days), on items I
   reach (as a thread: owner, scope or a live link, a link scoped to one tab reaching that tab's rows alone) and not in
