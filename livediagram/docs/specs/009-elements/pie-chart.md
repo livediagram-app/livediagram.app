@@ -251,6 +251,29 @@ signal) is [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs
   Participant and a Viewer see the line and the live values on the terms above; they never write.
 - **Telemetry.** `Element·Changed·ChartSheetLink` on Link, `Element·Changed·ChartSheetUnlink` on Unlink.
 
+## Live data from a plan
+
+A chart, and a table, can take its numbers from more of a liveplanner plan than a Sheet range (Work Tracker 1368): the
+platform's [live-data.md](../../../../liveworkspace/docs/specs/004-index/live-data.md) sets the sources, the reads and
+the bounds; this canvas's side is the shared workbench copy above.
+
+- **From a Plan.** The Data section's **From a Plan…** (it was Link to Sheet) opens the dialog: a plan, then
+  **Sheet Range**, **Board Counts** (cards per column, label, assignee or priority, filtered by priority, label,
+  assignee and card type) or **Dashboard Metric**, a preview, and **Series** chips that say which of the read's series
+  feed the element, in order.
+- **The live mark.** A small live dot and, on hover or selection, "Live from <plan> · updated 2 min ago". The Data
+  section adds **Open Plan** (the plan in liveplanner, in a new tab) and **Freeze**.
+- **Freeze** keeps the numbers and stops reading ("Frozen · as of 12 Nov"); **Unfreeze** reads again. Both are one
+  undo step.
+- **Tables.** A table's Data section offers the same **From a Plan…**. Linked, its cells are the read (a header row,
+  then a row per category), not typed into, and its look stays the Editor's; Unlink keeps the cells.
+- **Readers without the plan** see the snapshot, never the live source; exports, thumbnails, Offline and Community
+  copies draw the snapshot and carry no link.
+- **Who may.** From a Plan, Update, Freeze, Unfreeze, Change and Unlink are an Editor's; a Participant and a Viewer see
+  the mark and the numbers on their own access.
+- **Telemetry.** `Element·Changed·ChartBoardLink`, `ChartMetricLink`, `TableLiveLink`, `LiveDataFreeze` and
+  `LiveDataUnfreeze`, beside `ChartSheetLink` and `ChartSheetUnlink`.
+
 ## Chart palettes
 
 Without a chart-level palette, saying "this chart is greys" would mean opening
