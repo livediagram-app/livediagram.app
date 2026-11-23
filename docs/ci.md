@@ -144,14 +144,27 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   - **Editor coverage floors:** after the shards, each reached editor's merged line and branch coverage
     against its floor, which only rises (see [Editor coverage floors](#editor-coverage-floors)).
   - **Build:** the affected workspaces' builds (and what they build on), the CLI's `npm pack --dry-run`
-    when the CLI is reached, and the staging wrangler config check.
+    when the CLI is reached, and the staging wrangler config check. An editor whose E2E runs is left
+    out: E2E's smoke build runs the same `build` script, and no workspace builds on an editor. Until
+    2026-11-23 both built it, and in 490 product Build jobs on pull requests (2026-11-22 to 23) none
+    failed.
   - **Coverage report** (pull requests only): writes the coverage report into the pull request's
     description (below). Not part of the CI check.
   - **CI:** one job that fails when any of the above failed, and passes when nothing needed to run.
     It's the check to require on `main`.
 - **E2E** (`e2e.yml`, calling `e2e-product.yml` per product), on every pull request and push to
-  `main`, for each product whose editor a change reaches: one smoke build shared by the smoke shards (three for livediagram, whose smoke specs take about three minutes a shard; two for the others, whose shards take about a minute and a half on three), the sites audit and the
+  `main`, for each product whose editor a change reaches: one smoke build shared by the smoke shards (three for livediagram, whose smoke specs take about three minutes a shard; two for the others, whose shards take about a minute and a half on three) and the
   signed-in specs, in Playwright's container, with Turbopack's build cache restored from `main`.
+  The **sites audit** (each product's `test:e2e:sites`) checks the help centre, the Community and the
+  product's marketing site, never the editor, so it has a plan of its own (`sites` in `ci-plan.mjs`): it runs
+  when turbo reaches the product's marketing, `@liveworkspace/help`, `@liveworkspace/site` or
+  `@liveworkspace/e2e-kit`, or the change touches the editor's `e2e/` folder, its Playwright config or
+  `scripts/e2e-stack/`. Until 2026-11-23 it ran with the editor's suites: on every editor change, where of its
+  15 failures in 480 pull request jobs (2026-11-22 to 23) 14 were the Explorer's build, which the smoke
+  build failed on the same commits, and never on a marketing or help change, the pages it audits. When the
+  editor's suites run too, it waits for the smoke build and serves its exports (the editor's, and the
+  Explorer's where the smoke specs open it) instead of building them again, about 73 s a job; on its own it
+  builds both.
   **E2E** is its one result check.
 - **Canvas performance** runs in no workflow: each product's probe runs by hand (`pnpm perf:canvas` in its
   editor), before and after a change that touches the canvas. Its nightly run, which opened an issue per product
@@ -216,7 +229,9 @@ Coverage never judges a budget. Instrumentation runs the same work several times
 under it were the commonest red on CI (15 of 25 failed runs in November 2026, each a miss of 1% to 50%). In a
 coverage run `cpuBudgetMs` is unbounded: the test still runs and its lines still count. **`vitest-budgets`**
 (from `@liveworkspace/vitest-config`) then reruns, without coverage, every test file that imports
-`@liveworkspace/vitest-config/cpu-time`, where the budget holds. Each workspace's `test:coverage` runs
+`@liveworkspace/vitest-config/cpu-time`, where the budget holds. A file reruns whole, not only its budget
+tests: a budget test run alone pays the warm-up its file's earlier tests absorb (livehuddle's pet-wander
+budget read 1,342 ms against 200 that way, 2026-11-23). Each workspace's `test:coverage` runs
 `vitest run --coverage && vitest-budgets`, and each editor shard runs its share after its coverage run
 (`vitest-budgets --shard=n/3`). A budget used as a test timeout is a wall-clock limit, not a CPU budget, and
 never goes through `cpuBudgetMs`.
