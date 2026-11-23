@@ -6,9 +6,7 @@ import {
   dayStart,
   monthKey,
   monthStart,
-  nextDayStart,
   nextMonthStart,
-  periodKey,
 } from './periods';
 
 const at = (iso: string) => Date.parse(iso);
@@ -21,17 +19,9 @@ describe('periods', () => {
     expect(monthKey(at('2026-12-01T00:00:00Z'))).toBe('2026-12');
   });
 
-  it('file a daily, a monthly and a standing count under their own keys', () => {
-    const now = at('2026-11-20T12:00:00Z');
-    expect(periodKey('day', now)).toBe('2026-11-20');
-    expect(periodKey('month', now)).toBe('2026-11');
-    expect(periodKey('none', now)).toBe('all');
-  });
-
   it('start a day and a month at midnight UTC', () => {
     const now = at('2026-11-20T12:34:56Z');
     expect(dayStart(now)).toBe(at('2026-11-20T00:00:00Z'));
-    expect(nextDayStart(now)).toBe(at('2026-11-21T00:00:00Z'));
     expect(monthStart(now)).toBe(at('2026-11-01T00:00:00Z'));
     expect(nextMonthStart(now)).toBe(at('2026-12-01T00:00:00Z'));
     expect(nextMonthStart(at('2026-12-31T23:00:00Z'))).toBe(at('2027-01-01T00:00:00Z'));

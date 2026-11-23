@@ -7,6 +7,7 @@ import {
   ENTITLEMENT_CACHE_MAX,
   ENTITLEMENT_FRESH_MS,
   ENTITLEMENT_STALE_MS,
+  forgetEntitlementsForTests,
   freeEntitlement,
   refusedByService,
   limitOf,
@@ -293,6 +294,84 @@ describe('an entitlement', () => {
     await createSubscriptionClient(config).entitlement('p:shared');
     await createSubscriptionClient(config).entitlement('p:shared');
     expect(fetcher.fetch).toHaveBeenCalledTimes(1);
+    // Tests drop what the isolate remembers, so one test's tier never reaches the next.
+    forgetEntitlementsForTests();
+    await createSubscriptionClient(config).entitlement('p:shared');
+    expect(fetcher.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('is asked for once by every request that stands on one miss', async () => {
+    const waiting: (() => void)[] = [];
+    const { client, calls } = setup(
+      ({ body }) =>
+        new Promise<Response>((resolve) =>
+          waiting.push(() => resolve(Response.json(pro(body.owner as OwnerScope)))),
+        ),
+    );
+    const reads = [1, 2, 3, 4, 5].map(() => client.entitlement(ADA));
+    const confirmed = client.confirmedEntitlement(ADA);
+    // Another owner's read is its own.
+    const other = client.entitlement('p:user_bo');
+    await Promise.resolve();
+    expect(calls.map((call) => call.body.owner)).toEqual([ADA, 'p:user_bo']);
+    for (const answer of waiting) answer();
+    expect(await Promise.all(reads)).toEqual(reads.map(() => pro()));
+    expect(await confirmed).toEqual(pro());
+    await other;
+    // Answered from memory from here on.
+    await client.entitlement(ADA);
+    expect(calls).toHaveLength(2);
+  });
+
+  it('is asked for again after a read that failed: one bad answer is not kept for the next', async () => {
+    let up = false;
+    const { client, calls, clock } = setup(() => {
+      if (!up) throw new Error('network');
+      return Response.json(pro());
+    });
+    const failed = [client.confirmedEntitlement(ADA), client.confirmedEntitlement(ADA)];
+    expect(await Promise.all(failed)).toEqual(['unknown', 'unknown']);
+    expect(calls).toHaveLength(1);
+    up = true;
+    clock.now += SUBSCRIPTION_RETRY_MS;
+    expect(await client.confirmedEntitlement(ADA)).toEqual(pro());
+    expect(calls).toHaveLength(2);
+  });
+
+  it('is asked for again after a refusal too, and after a fetcher that fails outright', async () => {
+    const answers = [new Response('no', { status: 403 }), Response.json(pro())];
+    const { client, calls } = setup(() => answers.shift()!);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(await Promise.all([client.entitlement(ADA), client.entitlement(ADA)])).toEqual([
+      freeEntitlement(ADA),
+      freeEntitlement(ADA),
+    ]);
+    expect(await client.entitlement(ADA)).toEqual(pro());
+    expect(calls).toHaveLength(2);
+  });
+
+  it('asks again after forget even while an older read is under way', async () => {
+    const waiting: ((response: Response) => void)[] = [];
+    const { client, calls } = setup(
+      () => new Promise<Response>((resolve) => waiting.push(resolve)),
+    );
+    const old = client.entitlement(ADA);
+    await Promise.resolve();
+    client.forget(ADA);
+    const fresh = client.entitlement(ADA);
+    const joined = client.entitlement(ADA);
+    await Promise.resolve();
+    expect(calls).toHaveLength(2);
+    // The older read settling does not take the newer one's place.
+    waiting[0]!(Response.json(pro()));
+    await old;
+    client.forget(ADA);
+    const third = client.entitlement(ADA);
+    await Promise.resolve();
+    expect(calls).toHaveLength(3);
+    waiting[1]!(Response.json(pro()));
+    waiting[2]!(Response.json(pro()));
+    expect(await Promise.all([fresh, joined, third])).toEqual([pro(), pro(), pro()]);
   });
 });
 

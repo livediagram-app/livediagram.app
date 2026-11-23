@@ -17,11 +17,12 @@ import {
   photoReadCredits,
   refusedByService,
   type OwnerScope,
+  subscriptionClientOf,
 } from '@liveworkspace/subscription';
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 import { documentRoom } from '../document-client';
 import { utcDay } from '../document-room/owner-reads';
 import { json } from '../responses';
-import { subscriptionOf } from '../subscription';
 import type { RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 
@@ -54,14 +55,6 @@ async function mac(secret: string, message: string): Promise<string> {
   let bin = '';
   for (const byte of sig) bin += String.fromCharCode(byte);
   return btoa(bin).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
-}
-
-// Constant time over the shorter length, and unequal whenever the lengths differ.
-function sameString(a: string, b: string): boolean {
-  let diff = a.length ^ b.length;
-  const n = Math.min(a.length, b.length);
-  for (let i = 0; i < n; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
 }
 
 // The key a read pass is signed with: never the app's bearer key itself (a pass is held by a browser, and a signature
@@ -99,7 +92,7 @@ export async function readPassHolds(
   if (typeof pass !== 'string' || pass.length > 128) return false;
   const lapses = Number(pass.slice(0, pass.indexOf('.')));
   if (!Number.isSafeInteger(lapses) || lapses <= now) return false;
-  return sameString(await sealReadPass(secret, payer, read, notes, lapses), pass);
+  return timingSafeEqual(await sealReadPass(secret, payer, read, notes, lapses), pass);
 }
 
 /** A charged read's note count, as the request declares it: a whole number from 1 to the most one photo may yield,
@@ -205,7 +198,7 @@ export async function chargeRead(
   body: ReadNotesRequest,
   now: number = Date.now(),
 ): Promise<ReadCharge> {
-  const client = subscriptionOf(ctx.env);
+  const client = subscriptionClientOf(ctx.env, 'livediagram.app');
   if (!client.enabled) return { credits: null };
   const payer = await readPayer(ctx, body.documentId);
   if (!payer) return { credits: null };

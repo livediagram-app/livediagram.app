@@ -24,15 +24,16 @@ export function tierKey(tier: ItemTierView): string {
   return [tier.on ? 'on' : 'off', tier.action, view?.owner ?? '', view?.tier ?? ''].join('|');
 }
 
-/** Calls `again` when the tier's key changes after the first settled read, and when the window regains focus. */
-export function useTierReread(tier: ItemTierView, again: () => void): void {
+/** Calls `again` when the tier's key changes after the first settled read, and when the window regains focus.
+ *  `refreshes`: `again` itself asks the service afresh (useAiCredits), so a look again does not ask twice. */
+export function useTierReread(tier: ItemTierView, again: () => void, refreshes = false): void {
   const latest = useRef(again);
   const refresh = useRefreshSubscription();
-  const refreshing = useRef(refresh);
+  const refreshing = useRef<(() => Promise<void>) | null>(refreshes ? null : refresh);
   useEffect(() => {
     latest.current = again;
-    refreshing.current = refresh;
-  }, [again, refresh]);
+    refreshing.current = refreshes ? null : refresh;
+  }, [again, refresh, refreshes]);
   const key = tier.on && tier.settled ? tierKey(tier) : null;
   const seen = useRef<string | null>(null);
   useEffect(() => {
@@ -54,7 +55,7 @@ export function useTierReread(tier: ItemTierView, again: () => void): void {
       if (now - last < FOCUS_REREAD_MS) return;
       last = now;
       latest.current();
-      void refreshing.current();
+      void refreshing.current?.();
     };
     window.addEventListener('focus', focused);
     document.addEventListener('visibilitychange', focused);

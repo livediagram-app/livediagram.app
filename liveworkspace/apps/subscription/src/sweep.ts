@@ -19,7 +19,6 @@ import { STRIPE, stripeConfig, type StripeConfig } from './billing/stripe/config
 import { setStripeSeats } from './billing/stripe/provider';
 import { syncSubscription } from './billing/stripe/sync';
 import {
-  ITEM_USAGE_KEPT_MS,
   MOCK_RENEWALS_PER_SWEEP,
   SEATS_CHECK_EVERY_MS,
   SEATS_CHECKS_PER_SWEEP,
@@ -42,7 +41,6 @@ export type SweepResult = {
   ended: number;
   sessions: number;
   counters: number;
-  items: number;
   /** Requests for Pro for Teams older than they are kept. */
   requests: number;
   seats: number;
@@ -210,7 +208,7 @@ export async function sweepSubscriptions(
   const synced = await syncStripe(env, stripe, now);
   // First, so a mock subscription due a renewal is never ended by the statements below.
   const renewed = await renewMock(env, now);
-  const [period, grace, checkouts, portals, counters, items, requests] = await db.batch([
+  const [period, grace, checkouts, portals, counters, requests] = await db.batch([
     // An active row is live for the renewal tolerance past its period's end (`liveUntil`), which is when it ended
     // (`endedAt` says the same of a row not yet swept).
     db.prepare(ENDS_UNRENEWED).bind(RENEWAL_TOLERANCE_MS, now, now - RENEWAL_TOLERANCE_MS),
@@ -219,9 +217,6 @@ export async function sweepSubscriptions(
     db.prepare('DELETE FROM mock_checkout_sessions WHERE expires_at <= ?').bind(now),
     db.prepare('DELETE FROM mock_portal_sessions WHERE expires_at <= ?').bind(now),
     db.prepare('DELETE FROM spend_counters WHERE month < ?').bind(oldestMonthKept(now)),
-    db
-      .prepare(`DELETE FROM item_usage WHERE updated_at <= ? AND period != 'all'`)
-      .bind(now - ITEM_USAGE_KEPT_MS),
     db.prepare('DELETE FROM team_requests WHERE created_at <= ?').bind(now - TEAM_REQUESTS_KEPT_MS),
   ]);
   const changes = (result: D1Result | undefined) => result?.meta.changes ?? 0;
@@ -230,7 +225,6 @@ export async function sweepSubscriptions(
     ended: changes(period) + changes(grace),
     sessions: changes(checkouts) + changes(portals),
     counters: changes(counters),
-    items: changes(items),
     requests: changes(requests),
     seats: await checkSeats(env, stripe, now),
     synced,

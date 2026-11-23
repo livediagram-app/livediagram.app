@@ -1,7 +1,7 @@
 // The plan room's tier (plan-tier.ts; docs/specs/026-plan/blueprints/automations.md "Tiers (Pro)"): the PlanTier on
 // the room's own row and background work, and the two Automations limits it sets.
+import { subscriptionClientOf } from '@liveworkspace/subscription';
 import { AUTOMATION_RULES_MAX } from '@liveplanner/items';
-import { subscriptionOf } from '../../subscription';
 import type { PlanRoom } from '../plan-room';
 import { PlanTier, type TierHead } from './plan-tier';
 
@@ -19,7 +19,7 @@ function headOf(room: PlanRoom): TierHead | null {
 
 export function roomTier(room: PlanRoom): PlanTier {
   return new PlanTier({
-    client: () => (room.roomEnv ? subscriptionOf(room.roomEnv) : null),
+    client: () => (room.roomEnv ? subscriptionClientOf(room.roomEnv, 'liveplanner.app') : null),
     head: () => headOf(room),
     defer: (work) => room.state.waitUntil(work),
   });

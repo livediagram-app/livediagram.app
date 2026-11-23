@@ -288,7 +288,7 @@ service answers none, and the recorder runs on `WALKTHROUGH_MAX_MS`.
   passes `limits` on, and a start is parsed against `WALKTHROUGH_CEILING_MS` and sent on (with the item's owner when
   the app named one) for the service to hold: the service answers no limits and the legacy length with Pro off, so a
   door that has not said is right either way. livediagram, livedocuments, livedesign and liveplanner pass
-  `pro: proEnabled(env.PRO_ENABLED)` and `itemOwner: itemOwnerScope(grant)`.
+  `pro: proEnabled(env.PRO_ENABLED)` and `itemOwner: itemPayerScope(grant)`.
 - **Recorder** (`packages/walkthrough`): `useWalkthroughs` holds the list's `limits` and hands
   `limits?.maxMs ?? WALKTHROUGH_MAX_MS` to `useRecorder`, which stops there, seals to it and films at
   `walkthroughVideoBps(maxMs)`. `RecordDock` counts against `recorder.maxMs`. `limit-words.ts` words the limits from

@@ -60,7 +60,7 @@ import {
   mergeOwnerWalkthroughs,
 } from './walkthroughs';
 import { deleteOwnerItems, mergeOwnerItems } from './library/store';
-import { ownLimits, uploadLimits } from './tier';
+import { ownLimits, proOn, uploadLimits } from './tier';
 import { handleOwnersUsage, isSubscriptionCaller } from './owners-usage';
 import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 
@@ -185,12 +185,13 @@ export async function handleApp(
     if (segments.length === 1 && method === 'GET') {
       if (!isId(owner)) return badRequest('invalid_owner');
       // With Pro on the gallery also says what it uses of its owner's Image Storage (media.md "With Pro on").
-      const limits = await ownLimits(env, owner);
-      if (!limits) return json({ images: await listImages(env, owner, 'pictures') });
-      const [images, totals] = await Promise.all([
+      // With it off the list is the only read: no limits are asked for and nothing is totalled.
+      const [limits, images, totals] = await Promise.all([
+        ownLimits(env, owner),
         listImages(env, owner, 'pictures'),
-        ownerTotals(env, owner),
+        proOn(env) ? ownerTotals(env, owner) : null,
       ]);
+      if (!limits || !totals) return json({ images });
       return json({
         images,
         storage: {

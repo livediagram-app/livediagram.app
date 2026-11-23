@@ -64,13 +64,6 @@ export type Webhook = {
   lastDelivery: { state: 'delivered' | 'failed'; status: number | null; at: number } | null;
 };
 
-/** `GET /items/:id/webhooks`. Messages count as their owner's Automation Runs, spent by the app that sends them
- *  (webhooks.md "Messages count as Automation Runs (Pro)"): the list carries no tier. */
-export type WebhooksList = { webhooks: Webhook[] };
-
-/** `POST /items/:id/webhooks`: `secret` for a `json` webhook only, and only now. */
-export type WebhookCreated = { webhook: Webhook; secret: string | null };
-
 export type WebhookDeliveryState = 'pending' | 'delivered' | 'failed';
 
 /** One delivery in a webhook's recent list. `status`: the last response code, null when none came (`error` says

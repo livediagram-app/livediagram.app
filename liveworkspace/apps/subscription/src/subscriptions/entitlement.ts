@@ -4,6 +4,7 @@
 import {
   ENDED_SHOWN_MS,
   limitsFor,
+  paidTierOf,
   parseOwnerScope,
   seatsFor,
   type Entitlement,
@@ -18,7 +19,7 @@ import { endedAt, isLive, liveUntil, stateAt, type SubscriptionRow } from './sta
 /** The tier a row gives its owner at `now`. A person's row is only ever Pro, a team's only ever Pro for Teams. */
 export function tierAt(owner: OwnerScope, row: SubscriptionRow | null, now: number): Tier {
   if (!row || !isLive(row, now)) return 'free';
-  return parseOwnerScope(owner)?.kind === 'team' ? 'team' : 'pro';
+  return paidTierOf(owner);
 }
 
 export function entitlementAt(

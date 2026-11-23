@@ -3,13 +3,12 @@
 // theirs and limited by their tier; with Pro off, as many as they like.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PublishingState, PublishLimitBody } from '@liveknowledge/api-schema';
-import { ItemTier, type Tier } from '@liveworkspace/subscription';
+import { ItemTier, type Tier, subscriptionClientOf } from '@liveworkspace/subscription';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
 import { fakeSubscription, proEnv, type FakeSubscription } from '../knowledge/tier-test-kit';
 import { knowledgeKit, OWNER, type Kit } from '../routes/knowledge-test-kit';
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDocuments } from '../routes/documents';
-import { subscriptionOf } from '../subscription';
 import { handlePublicSite } from './public-site';
 import { leaveSiteGauge, moveSiteGauge, syncSiteGauge } from './published-gauge';
 
@@ -282,7 +281,7 @@ describe('a knowledgebase with no account behind it', () => {
 describe('the room’s own paths', () => {
   const roomTier = (head: { ownerId: string; teamId: string | null }) =>
     new ItemTier({
-      client: () => subscriptionOf(kit.db.env),
+      client: () => subscriptionClientOf(kit.db.env, 'liveknowledge.app'),
       head: () => ({ ...head, name: 'Handbook' }),
       defer: () => {},
     });

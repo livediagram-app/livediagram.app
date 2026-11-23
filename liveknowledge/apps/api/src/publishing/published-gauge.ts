@@ -9,6 +9,7 @@
 // guest's is counted here alone, against Free's 1, which it always fits (019 "A guest's item"). With Pro off nothing
 // here makes a call and no mark is read.
 import {
+  markChangedByClaim,
   refusedByService,
   type Gauge,
   type GaugeResult,
@@ -42,15 +43,6 @@ export function releaseSite(tier: SiteTier, documentId: string, of?: OwnerScope)
 }
 
 /**
- * What a claim's answer makes of the mark: true (it holds a place), false (refused at the limit), or null to leave
- * the mark as it is (nothing counted it: Pro off, the service out of reach or refusing the request).
- */
-export function markOfClaim(claim: GaugeResult | null): boolean | null {
-  if (!claim || claim.unmetered) return null;
-  return claim.ok;
-}
-
-/**
  * The site counted again, where one exists (the dialog's first read, the daily upkeep): one from before takes its
  * place, one refused takes it when the owner has room. Answers the claim (null: nothing published or counted) and
  * the mark as it now stands. The service refusing the request itself changes nothing.
@@ -64,8 +56,8 @@ export async function countSite(
   if (!site) return null;
   const claim = await claimSite(tier, documentId);
   if (claim && refusedByService(claim)) return { claim: null, counted: site.counted };
-  const next = markOfClaim(claim);
-  if (next === null || next === site.counted) return { claim, counted: site.counted };
+  const next = markChangedByClaim(claim, site.counted);
+  if (next === null) return { claim, counted: site.counted };
   await setSiteCounted(env, next);
   return { claim, counted: next };
 }
@@ -131,11 +123,9 @@ export async function moveSiteGauge(
     if (from !== null) await releaseSite(tier, documentId, from);
     await tier.refresh();
     if (mark === false) return;
-    const claim = await claimSite(tier, documentId);
-    if (claim && refusedByService(claim)) return;
-    const next = markOfClaim(claim);
-    if (next !== null && next !== mark)
-      sql.exec('UPDATE published_site SET counted = ? WHERE id = 1', next ? 1 : 0);
+    // Null where nothing counted it (the service's refusal of the request included), and where the mark stands.
+    const next = markChangedByClaim(await claimSite(tier, documentId), mark);
+    if (next !== null) sql.exec('UPDATE published_site SET counted = ? WHERE id = 1', next ? 1 : 0);
   } catch (error) {
     console.warn('[publishing] gauge.move.failed', { error: String(error) });
   }

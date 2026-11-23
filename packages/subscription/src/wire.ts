@@ -95,7 +95,6 @@ export const MEDIA_USAGE_CALLER = 'subscription';
 export const MEDIA_USAGE_CALLER_HEADER = 'X-Media-App';
 /** `POST <media>/app/usage/owners`: several owners' counts in one call. */
 export const MEDIA_USAGE_OWNERS_MAX = 60;
-export type MediaUsageRequest = { owners: OwnerScope[] };
 /** An owner media holds nothing for is absent. */
 export type MediaUsageResponse = { usage: Partial<Record<OwnerScope, Record<MediaCount, number>>> };
 
@@ -131,8 +130,6 @@ export type Entitlement = {
   seats: number;
   limits: Limits;
 };
-
-export type EntitlementRequest = { owner: OwnerScope };
 
 export type SpendRequest = { owner: OwnerScope; meter: SpendMeter; amount: number };
 /**
@@ -272,17 +269,11 @@ export function isLimitKey(value: unknown): value is LimitKey {
   return typeof value === 'string' && Object.hasOwn(TIER_LIMITS.free, value);
 }
 
-/** `POST /team-request`: a team's member asks its admins for Pro for Teams, naming the limit that prompted it. */
-export type TeamRequestBody = { owner: OwnerScope; limit?: LimitKey | null; note?: string | null };
-/** `sent` false means this member already asked this team today: nothing new was recorded, and `askedAt` is when
+/** `POST /team-request`: a team's member asks its admins for Pro for Teams, naming the limit that prompted it.
+ *  `sent` false means this member already asked this team today: nothing new was recorded, and `askedAt` is when
  *  they did. */
 export type TeamRequestResponse = { sent: boolean; askedAt: number };
 
-/** `POST /ended/dismiss`: the owner has read "You're Back on Free". */
-export type DismissEndedRequest = { owner: OwnerScope };
-
-export type CheckoutRequest = { owner: OwnerScope; returnTo: string };
-export type PortalRequest = { owner: OwnerScope; returnTo: string };
 /** Where to send the person: the checkout, or the billing portal. */
 export type RedirectResponse = { url: string };
 

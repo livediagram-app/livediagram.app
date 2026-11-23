@@ -10,8 +10,8 @@ import {
   personScope,
   refusedByService,
   type OwnerScope,
+  subscriptionClientOf,
 } from '@liveworkspace/subscription';
-import { subscriptionOf } from '../subscription';
 import type { Env } from '../types';
 
 /**
@@ -24,7 +24,7 @@ export async function spendDraftCredit(
   accountId: string,
   payer: OwnerScope | 'nobody' | null = null,
 ): Promise<TierLimitRefusal | 'unavailable' | null> {
-  const client = subscriptionOf(env);
+  const client = subscriptionClientOf(env, 'liveplanner.app');
   // A guest's plan has nobody to charge (019 "A guest's item"): nothing is spent or asked, and the day's cap holds.
   if (!client.enabled || payer === 'nobody') return null;
   const spent = await client.spend(

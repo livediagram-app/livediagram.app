@@ -7,7 +7,7 @@ import {
   type GaugeResult,
   type OwnerScope,
 } from '@liveworkspace/subscription';
-import { ENTITLED_LIMIT, limitBinds, limitFromSql, paidTierOf } from './limits';
+import { ENTITLED_LIMIT, limitBinds, meterResult, type MeterRow } from './limits';
 
 // What an owner holds of a gauge now: ?5 is the owner, ?7 the gauge.
 const HELD = `(SELECT COUNT(*) FROM gauge_entries WHERE owner = ?5 AND gauge = ?7)`;
@@ -23,16 +23,7 @@ SELECT ${HELD} AS used, paid, lim,
   EXISTS (SELECT 1 FROM gauge_entries WHERE owner = ?5 AND gauge = ?7 AND key = ?8) AS present
 FROM ent`;
 
-type State = { used: number; paid: number; lim: number; present: number };
-
-function result(owner: OwnerScope, ok: boolean, state: State): GaugeResult {
-  return {
-    ok,
-    used: state.used,
-    limit: limitFromSql(state.lim),
-    tier: state.paid ? paidTierOf(owner) : 'free',
-  };
-}
+type State = MeterRow & { present: number };
 
 function binds(owner: OwnerScope, gauge: Gauge, key: string, now: number): (string | number)[] {
   return [...limitBinds(owner, GAUGE_LIMIT[gauge], now), gauge, key];
@@ -59,7 +50,7 @@ export async function addToGauge(
     stateAfter(db, owner, gauge, key, now),
   ]);
   const state = after!.results[0]!;
-  return result(owner, state.present === 1, state);
+  return meterResult(owner, state.present === 1, state);
 }
 
 /** Removes an entry. One that was never there is a success too. */
@@ -76,5 +67,5 @@ export async function removeFromGauge(
       .bind(owner, gauge, key),
     stateAfter(db, owner, gauge, key, now),
   ]);
-  return result(owner, true, after!.results[0]!);
+  return meterResult(owner, true, after!.results[0]!);
 }

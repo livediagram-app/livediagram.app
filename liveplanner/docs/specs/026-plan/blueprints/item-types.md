@@ -766,7 +766,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   cards' insert queues the copy's `images` report. `importProjectFile` drops any `imageGrants` a file names.
 - Image limits with Pro on: `routes/images.ts` reads the plan's grant once (`resolvePlanGrant`) for the limit
   (`imageUploadAllowance`, `@liveworkspace/api-kit/image-upload`: the better of the uploader's tier and the plan's
-  owner's, `itemOwnerScope(grant)`) and for who may upload, answers `imageTooLargeBody` before the body is read, reads
+  owner's, `itemPayerScope(grant)`) and for who may upload, answers `imageTooLargeBody` before the body is read, reads
   no more than the limit (`readImageUpload`) and names the owner to the service (`itemOwner`). `index.ts` passes
   `imageGateBytes(env)` to `writeBodyCap` and skips `withCappedBody` for the upload (`leavesImageUploadUnread`). In
   the editor `checkImageFile` stops a file at `imageUploadCeiling`, `ImageUploadError.limit` carries

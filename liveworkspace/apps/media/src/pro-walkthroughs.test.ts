@@ -270,6 +270,32 @@ describe('what the recorder is told', () => {
     const plain = await calls(env).list('doc-1');
     expect(plain.ok && plain.value).not.toHaveProperty('limits');
   });
+
+  it('reads the list and the count in one batch with Pro on, and the list alone with it off or nobody to count for', async () => {
+    const owner = person('reads');
+    const sub = subscriptionStub();
+    const env = { ...db.env, ...sub.env };
+    const prepare = vi.spyOn(db.env.MEDIA_DB, 'prepare');
+    const batch = vi.spyOn(db.env.MEDIA_DB, 'batch');
+    const reads = async (list: () => Promise<unknown>) => {
+      prepare.mockClear();
+      batch.mockClear();
+      await list();
+      return { statements: prepare.mock.calls.length, batches: batch.mock.calls.length };
+    };
+    expect(await reads(() => calls(env).list('doc-1', { owner }))).toEqual({
+      statements: 2,
+      batches: 1,
+    });
+    expect(await reads(() => calls(env).listOwned(owner))).toEqual({ statements: 2, batches: 1 });
+    expect(await reads(() => calls(env).list('doc-1'))).toEqual({ statements: 1, batches: 0 });
+    const off = { ...env, PRO_ENABLED: '' };
+    expect(await reads(() => calls(off).list('doc-1', { owner }))).toEqual({
+      statements: 1,
+      batches: 0,
+    });
+    expect(await reads(() => calls(off).listOwned(owner))).toEqual({ statements: 1, batches: 0 });
+  });
 });
 
 describe('what the subscription service is told', () => {

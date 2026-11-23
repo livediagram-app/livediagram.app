@@ -53,6 +53,12 @@ export type SubscriptionHost = {
   signInHref: ((returnTo: string) => string) | null;
 };
 
+/** The pricing page's address on the service's origin. */
+export const pricingHrefOn = (origin: string): string => `${origin.replace(/\/+$/, '')}/pricing`;
+
+/** `refresh` where there is nothing to read again: no provider, Pro off, or the provider's working half not in yet. */
+export const noRefresh = async (): Promise<void> => {};
+
 // A subscription read this long ago is read again when the person comes back to the tab.
 export const SUBSCRIPTION_STALE_MS = 5 * 60 * 1000;
 

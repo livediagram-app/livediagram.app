@@ -486,7 +486,7 @@ function UploadZone({
           refusal={limit}
           className="mt-3"
           // This is where images are managed, so a full gallery needs no way here; a file too large picks another.
-          onChooseAnother={limit.kind === 'too_large' ? () => input.current?.click() : undefined}
+          onChooseAnother={() => input.current?.click()}
         />
       ) : null}
     </div>

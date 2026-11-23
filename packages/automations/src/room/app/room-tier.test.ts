@@ -1,9 +1,10 @@
-// An item room's tier over its head row (room-tier.ts): the owner read synchronously, and one cache per app.
+// An item room's tier over its head row (room-tier.ts): the owner read synchronously, and the isolate's one cache.
 import { describe, expect, it } from 'vitest';
+import { forgetEntitlementsForTests } from '@liveworkspace/subscription';
 import { fakeSubscription } from '@liveworkspace/subscription/testing';
 import type { Sql } from '../sql';
 import { itemDb } from '../item/test-kit';
-import { forgetRoomTiersForTests, roomHeadOf, roomTier } from './room-tier';
+import { roomHeadOf, roomTier } from './room-tier';
 
 function headDb(): Sql {
   const { sql } = itemDb(false);
@@ -52,7 +53,7 @@ describe('a room’s tier', () => {
     const again = roomTier({ ...base, env: () => env });
     await again.refresh();
     expect(fake.to('entitlement')).toHaveLength(1);
-    forgetRoomTiersForTests();
+    forgetEntitlementsForTests();
     const after = roomTier({ ...base, env: () => env });
     await after.refresh();
     expect(fake.to('entitlement')).toHaveLength(2);

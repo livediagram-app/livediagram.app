@@ -12,6 +12,8 @@ import {
 import { proOn } from '../flag';
 import { SUBSCRIPTION_LOADING, SUBSCRIPTION_SIGNED_OUT } from '../state';
 import {
+  noRefresh,
+  pricingHrefOn,
   SubscriptionContext,
   SUBSCRIPTION_STALE_MS,
   type AccountKnown,
@@ -60,12 +62,11 @@ const onServer = () => false;
 const EMPTY = {};
 const notYet = () => Promise.reject(new Error('The subscription service is still loading.'));
 const nothing = () => {};
-const noRefresh = async () => {};
 
 /**
  * Shares the signed-in person's subscription with everything under it (subscription.md "What people see"): read once
  * per page, again when they come back from the checkout or the billing portal, and whenever `refresh` is called. It
- * also mounts the one upgrade dialog, which any LimitNotice or ProGate under it opens.
+ * also mounts the one upgrade dialog, which any LimitNotice or ProNote under it opens.
  *
  * It is two halves so that a page pays almost nothing for it at first load. This one is the context and the dialogs'
  * open state; the half that asks the service and draws (SubscriptionDriver) is fetched once the page is interactive.
@@ -107,7 +108,7 @@ function Shell({ children, ...props }: SubscriptionProviderProps) {
       portal: notYet,
       askTeam: notYet,
       dismissEnded: nothing,
-      pricingHref: `${origin.replace(/\/+$/, '')}/pricing`,
+      pricingHref: pricingHrefOn(origin),
       signInHref: signInHref ?? null,
     }),
     [account, origin, signInHref, openUpgrade, openAskAdmin],

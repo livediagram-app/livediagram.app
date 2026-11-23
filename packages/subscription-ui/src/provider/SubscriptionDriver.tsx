@@ -18,7 +18,12 @@ import {
   type OwnerViewLoad,
   type SubscriptionLoad,
 } from '../state';
-import { SUBSCRIPTION_STALE_MS, type SubscriptionHost, type UpgradeTarget } from './context';
+import {
+  pricingHrefOn,
+  SUBSCRIPTION_STALE_MS,
+  type SubscriptionHost,
+  type UpgradeTarget,
+} from './context';
 import type { SubscriptionProviderProps } from './SubscriptionProvider';
 import {
   arrivedSubscribed,
@@ -154,10 +159,30 @@ export function SubscriptionDriver({
     [readOwner],
   );
 
-  const refresh = useCallback(async () => {
-    if (latestProps.current.account !== 'in') return;
-    await Promise.all([read(), ...[...asked.current].map((owner) => readOwner(owner))]);
+  // One refresh at a time (each is a `/me` and a request per asked owner). The read on its way may have left before
+  // what an asker just did (a credit spent, a checkout come back), so whoever asks meanwhile shares one more read
+  // after it: a focus that wakes several askers costs two reads however many they are, and nobody is told old news.
+  const refreshing = useRef<Promise<void> | null>(null);
+  const following = useRef<Promise<void> | null>(null);
+  const refresh = useCallback((): Promise<void> => {
+    if (latestProps.current.account !== 'in') return Promise.resolve();
+    if (refreshing.current) {
+      following.current ??= refreshing.current.then(() => {
+        following.current = null;
+        return refreshRef.current();
+      });
+      return following.current;
+    }
+    refreshing.current = Promise.all([
+      read(),
+      ...[...asked.current].map((owner) => readOwner(owner)),
+    ]).then(() => {
+      refreshing.current = null;
+    });
+    return refreshing.current;
   }, [read, readOwner]);
+  const refreshRef = useRef(refresh);
+  refreshRef.current = refresh;
 
   // ---- Prices, for a visitor the service has not answered for ----------------------------------------------------
   const [askedPrices, setAskedPrices] = useState<PriceList | null>(null);
@@ -217,28 +242,23 @@ export function SubscriptionDriver({
     },
     [origin],
   );
-  const checkout = useCallback(
-    async (owner: OwnerScope) => {
-      const { url } = await client.checkout(
+  // Off to the checkout or the portal for `owner`. Only the checkout's way back says so in the address.
+  const leaveFor = useCallback(
+    async (kind: Leaving['kind'], owner: OwnerScope) => {
+      const { url } = await client[kind](
         owner,
-        returnAddress(latestProps.current.returnTo?.() ?? window.location.href, true),
+        returnAddress(
+          latestProps.current.returnTo?.() ?? window.location.href,
+          kind === 'checkout',
+        ),
       );
-      markLeaving({ owner, kind: 'checkout' });
+      markLeaving({ owner, kind });
       leave(url);
     },
     [client, leave],
   );
-  const portal = useCallback(
-    async (owner: OwnerScope) => {
-      const { url } = await client.portal(
-        owner,
-        returnAddress(latestProps.current.returnTo?.() ?? window.location.href, false),
-      );
-      markLeaving({ owner, kind: 'portal' });
-      leave(url);
-    },
-    [client, leave],
-  );
+  const checkout = useCallback((owner: OwnerScope) => leaveFor('checkout', owner), [leaveFor]);
+  const portal = useCallback((owner: OwnerScope) => leaveFor('portal', owner), [leaveFor]);
 
   // What a write changed of the person's own read, kept on screen without reading it all again.
   const patchOwner = useCallback(
@@ -296,7 +316,7 @@ export function SubscriptionDriver({
       portal,
       askTeam,
       dismissEnded,
-      pricingHref: `${origin.replace(/\/+$/, '')}/pricing`,
+      pricingHref: pricingHrefOn(origin),
       signInHref: signInHref ?? null,
     }),
     [

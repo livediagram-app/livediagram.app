@@ -86,7 +86,7 @@ describe('imageUploadAllowance', () => {
     const uploader = person();
     expect(await imageUploadAllowance(env, 'livediagram.app', uploader, async () => null)).toEqual({
       pro: true,
-      maxBytes: 5_000_000,
+      maxBytes: 25_000_000,
       itemOwner: null,
       owner: `p:${uploader}`,
     });
@@ -115,24 +115,25 @@ describe('imageUploadAllowance', () => {
         person(),
         async () => held,
       );
-      expect(allowance).toMatchObject({ maxBytes: 5_000_000, itemOwner: null });
+      expect(allowance).toMatchObject({ maxBytes: 25_000_000, itemOwner: null });
     }
   });
 
   it('lends the owner’s Largest Image only on a grant to add to the item: an Editor’s or a Participant’s', async () => {
     // A Community post's public link is always `view` (the index refuses any other level for one), so a visitor from
     // the Community, like any viewer by link, is lent nothing. A link the owner made to edit or take part is the
-    // owner's own grant, and lends the size for uploads into that item.
+    // owner's own grant, and lends the size for uploads into that item. Every tier takes the same size today, so who
+    // was lent it shows in the item owner the allowance names.
     const { env } = service({ 't:team_garden': 'team' });
-    const lent = async (level: 'view' | 'participate' | 'edit') =>
+    const lender = async (level: 'view' | 'participate' | 'edit') =>
       (await imageUploadAllowance(env, 'livediagram.app', person(), async () => grant({ level })))
-        .maxBytes;
-    expect(await lent('view')).toBe(5_000_000);
-    expect(await lent('participate')).toBe(25_000_000);
-    expect(await lent('edit')).toBe(25_000_000);
+        .itemOwner;
+    expect(await lender('view')).toBeNull();
+    expect(await lender('participate')).toBe('t:team_garden');
+    expect(await lender('edit')).toBe('t:team_garden');
     // No grant at all (the item is not theirs to open): nothing.
     const none = await imageUploadAllowance(env, 'livediagram.app', person(), async () => null);
-    expect(none).toMatchObject({ maxBytes: 5_000_000, itemOwner: null });
+    expect(none).toMatchObject({ maxBytes: 25_000_000, itemOwner: null });
   });
 
   it('names a person’s item by its owner', async () => {

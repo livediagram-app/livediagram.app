@@ -13,6 +13,7 @@ import {
   AI_CREDIT_COSTS,
   aiCreditsWords,
 } from '@liveworkspace/subscription';
+import { formatShortDay } from '../price';
 import type { TierVoice } from './item-tier';
 
 /** A sentence for the notice, and what the tier above gives (empty when the sentence says it, or nobody is offered). */
@@ -45,9 +46,7 @@ export function usedOf(used: number, limit: number): string {
 
 /** The day a monthly count starts again, as the reader's locale writes it: "1 December". Months are UTC months. */
 export function monthResetDay(now: number, locale?: string): string {
-  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
-    new Date(nextMonthStart(now)),
-  );
+  return formatShortDay(nextMonthStart(now), locale);
 }
 
 // --- AI Credits ---

@@ -1,8 +1,5 @@
 // The database as the migrations leave it (blueprints/README.md "Tables"): every table the Worker reads, and an
 // index under every statement on a hot path or in the sweep, so none of them walks a whole table.
-import { readFileSync } from 'node:fs';
-import { DatabaseSync } from 'node:sqlite';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { ENDS_RUN_OUT, ENDS_UNRENEWED } from './sweep';
 import { ownRequests, requestsOfTeams } from './team-requests';
@@ -67,27 +64,6 @@ describe('the schema', () => {
     expect(() => anchor(31)).not.toThrow();
   });
 
-  it('gives a row from before the anchor day the day its period started on', () => {
-    // The second migration over a database the first one left with rows in it.
-    const old = new DatabaseSync(':memory:');
-    const migration = (name: string) =>
-      readFileSync(fileURLToPath(new URL(`../migrations/${name}`, import.meta.url).href), 'utf8');
-    old.exec(migration('0001_subscription.sql'));
-    const insert = old.prepare(
-      `INSERT INTO subscriptions (owner, tier, state, seats, currency, unit_amount, period_start, period_end,
-         provider, subscribed_by, created_at, updated_at) VALUES (?, 'pro', 'active', 1, 'GBP', 8, ?, ?, 'mock', 'a', 0, 0)`,
-    );
-    insert.run('p:a', Date.UTC(2027, 0, 31, 23, 59), Date.UTC(2027, 1, 28, 23, 59));
-    insert.run('p:b', Date.UTC(2026, 10, 1), Date.UTC(2026, 11, 1));
-    old.exec(migration('0002_renewal.sql'));
-    expect(old.prepare('SELECT owner, anchor_day FROM subscriptions ORDER BY owner').all()).toEqual(
-      [
-        { owner: 'p:a', anchor_day: 31 },
-        { owner: 'p:b', anchor_day: 1 },
-      ],
-    );
-  });
-
   const INDEXED: [string, string, (string | number)[]][] = [
     ['an entitlement', 'SELECT * FROM subscriptions WHERE owner = ?', ['p:a']],
     ['the sweep of renewals that never came', ENDS_UNRENEWED, [1, 1, 1]],
@@ -115,7 +91,6 @@ describe('the schema', () => {
     ['expired checkouts', 'DELETE FROM mock_checkout_sessions WHERE expires_at <= ?', [1]],
     ['expired portal sessions', 'DELETE FROM mock_portal_sessions WHERE expires_at <= ?', [1]],
     ['old spend counters', 'DELETE FROM spend_counters WHERE month < ?', ['2025-11']],
-    ['old item counts', `DELETE FROM item_usage WHERE updated_at <= ? AND period != 'all'`, [1]],
     [
       "an owner's spend this month",
       'SELECT owner, meter, used FROM spend_counters WHERE owner IN (?, ?) AND month = ?',
@@ -127,10 +102,9 @@ describe('the schema', () => {
       ['p:a', 't:b'],
     ],
     [
-      "an owner's busiest items",
-      `SELECT owner, meter, name, MAX(used) FROM item_usage
-       WHERE owner IN (?, ?) AND period IN (?, ?, 'all') GROUP BY owner, meter`,
-      ['p:a', 't:b', '2026-11-20', '2026-11'],
+      "an owner's standing counts",
+      'SELECT owner, meter, SUM(used) AS used FROM item_usage WHERE owner IN (?, ?) GROUP BY owner, meter',
+      ['p:a', 't:b'],
     ],
   ];
 

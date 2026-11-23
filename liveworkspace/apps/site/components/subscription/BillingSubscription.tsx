@@ -1,10 +1,10 @@
 'use client';
 
 import { TIER_NAMES, type MockPortal, type MockPortalRequest } from '@liveworkspace/subscription';
-import { ProBadge } from '@liveworkspace/subscription-ui';
+import { monthlyCost, ProBadge } from '@liveworkspace/subscription-ui';
 import { Button, Spinner } from '@liveworkspace/ui';
 import { BillingCard } from './BillingShell';
-import { cancelNote, monthly, seatPrice, STATE_LABEL, stateSentence } from './billing-copy';
+import { cancelNote, seatPrice, STATE_LABEL, stateSentence } from './billing-copy';
 
 const CHIP: Record<string, string> = {
   active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300',
@@ -26,7 +26,7 @@ export function BillingSubscription({
   const { subscription, members } = portal;
   const state = subscription.state ?? 'ended';
   const paid = subscription.tier !== 'free' && state !== 'ended';
-  const cost = monthly(subscription);
+  const cost = monthlyCost(subscription);
   const seat = seatPrice(subscription);
   return (
     <BillingCard>

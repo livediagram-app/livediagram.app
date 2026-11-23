@@ -472,16 +472,6 @@ describe('item counts', () => {
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM item_usage').get()).toEqual({ n: 0 });
   });
 
-  it('reads only standing rows: an older day or month meter is passed over', async () => {
-    db.sql
-      .prepare(
-        "INSERT INTO item_usage VALUES ('p:user_ada', 'rules', 'old', NULL, '2026-11', 5, 0)",
-      )
-      .run();
-    expect(await count({ meter: 'rules', item: 'plan-1', used: 1 })).toMatchObject({ used: 1 });
-    expect(await usage()).toEqual({ rules: { used: 1 } });
-  });
-
   it('refuses a request it cannot read', async () => {
     const bad = [
       { meter: 'aiCredits', item: 'i', used: 1 },
@@ -527,9 +517,7 @@ describe('usage for several owners at once', () => {
       .prepare("INSERT INTO spend_counters VALUES ('p:user_ada', 'retired', '2026-11', 5, 0)")
       .run();
     db.sql.prepare("INSERT INTO gauge_entries VALUES ('p:user_ada', 'retired', 'k', 0)").run();
-    db.sql
-      .prepare("INSERT INTO item_usage VALUES ('p:user_ada', 'retired', 'i', NULL, 'all', 5, 0)")
-      .run();
+    db.sql.prepare("INSERT INTO item_usage VALUES ('p:user_ada', 'retired', 'i', 5, 0)").run();
     await post('/spend', { owner: 'p:user_199', meter: 'aiCredits', amount: 2 });
     const owners = Array.from({ length: 200 }, (_, i) => `p:user_${i}` as const);
     const batch = vi.spyOn(db.env.SUBSCRIPTION_DB, 'batch');

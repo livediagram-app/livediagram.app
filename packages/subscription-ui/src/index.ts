@@ -3,7 +3,7 @@
 // the wire shapes all come from @liveworkspace/subscription; nothing here holds a number of its own.
 //
 // All of it draws nothing, and asks the service nothing, unless Pro is on in the build (flag.ts). See README.md for
-// how an editor mounts the provider and drops in a meter, a notice and a gate.
+// how an editor mounts the provider and drops in a meter and a notice.
 export { proOn } from './flag';
 export {
   ownerViewOf,
@@ -34,7 +34,6 @@ export {
   upgradeLabel,
   upgradeTier,
 } from './limit-copy';
-export { ProGate, type ProGateProps } from './ProGate';
 export { ProNote, type ProNoteProps } from './ProNote';
 export { ImageLimitNotice, type ImageLimitNoticeProps } from './images/ImageLimitNotice';
 export {

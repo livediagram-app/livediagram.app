@@ -5,7 +5,6 @@
 import {
   ItemTier,
   subscriptionClientOf,
-  type EntitlementCache,
   type SubscriptionApp,
   type SubscriptionEnv,
   type TierHead,
@@ -13,14 +12,6 @@ import {
 import type { Sql } from '../sql';
 
 type HeadRow = { owner_id: string | null; name: string | null; team_id: string | null };
-
-// One cache of entitlements per isolate and app, so the rooms of one owner's items share a read.
-const caches = new Map<SubscriptionApp, EntitlementCache>();
-
-/** Tests only: what the isolate remembers of every owner, dropped, so one test's tier never reaches the next. */
-export function forgetRoomTiersForTests(): void {
-  for (const cache of caches.values()) cache.clear();
-}
 
 export interface RoomTierInput {
   app: SubscriptionApp;
@@ -50,15 +41,11 @@ export function roomHeadOf(
 }
 
 export function roomTier(input: RoomTierInput): ItemTier {
-  let cache = caches.get(input.app);
-  if (!cache) caches.set(input.app, (cache = new Map()));
-  const held = cache;
   return new ItemTier({
+    // The isolate's one cache of entitlements (the client's own), so the rooms of one owner's items share a read.
     client: () => {
       const env = input.env();
-      return env
-        ? subscriptionClientOf(env, input.app, { cache: held, now: () => Date.now() })
-        : null;
+      return env ? subscriptionClientOf(env, input.app) : null;
     },
     head: () => roomHeadOf(input),
     defer: input.defer,

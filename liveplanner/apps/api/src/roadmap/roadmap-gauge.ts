@@ -10,7 +10,7 @@
 // plan's rows oldest first: within the limit none is ever taken down, and past it the oldest keep their places.
 // A guest's plan is counted here alone, against Free's limit (019 "A guest's item"). With Pro off nothing here makes
 // a call and no mark is read.
-import { refusedByService, type GaugeResult, type OwnerScope } from '@liveworkspace/subscription';
+import { markChangedByClaim, type GaugeResult, type OwnerScope } from '@liveworkspace/subscription';
 import type { Sql } from '../plan-room/automations/automation-store';
 import { tierOn, type PlanTier } from '../plan-room/tier/plan-tier';
 import type { PlanEnv } from '../types';
@@ -56,15 +56,6 @@ export function releaseRoadmap(
 }
 
 /**
- * What a claim's answer makes of the row's mark: true (it holds a place), false (refused at the limit), or null to
- * leave the mark as it is (nothing counted it: Pro off, the service out of reach or refusing the request).
- */
-export function markOfClaim(claim: GaugeResult | null): boolean | null {
-  if (!claim || claim.unmetered) return null;
-  return claim.ok;
-}
-
-/**
  * The plan's roadmaps as the service should hold them, `rows` oldest first: each whose board is there claims its
  * place (one from before Pro, one whose board came back, one published while the service was out of reach), each
  * whose board has gone gives it back. `mark` writes a row's changed mark. A key is asked about at most once a
@@ -93,9 +84,9 @@ export async function syncRoadmapGauge(
     }
     if (tier.told(key, true)) continue;
     const claim = await claimRoadmap(tier, planId, boardId, heldBut(boardId));
-    if (claim && refusedByService(claim)) continue;
-    const next = markOfClaim(claim);
-    if (next === null || next === before) continue;
+    // Null where nothing counted it (the service's refusal of the request included), and where the mark stands.
+    const next = markChangedByClaim(claim, before);
+    if (next === null) continue;
     marks.set(boardId, next);
     await mark(boardId, next);
   }

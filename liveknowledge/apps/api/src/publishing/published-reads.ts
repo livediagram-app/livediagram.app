@@ -2,6 +2,7 @@
 // contracts", P15, P20, P23, P26), answered inside its Durable Object from the published snapshot alone. Each read
 // names the columns it takes, all of them public ones: never `published_by`, `held_at`, a row's `links` or a tab id.
 // The knowledgebase's name and Style are the only fields read from outside the snapshot.
+import { subscriptionClientOf } from '@liveworkspace/subscription';
 import {
   ftsExpression,
   searchTerms,
@@ -12,7 +13,6 @@ import {
 import type { KnowledgeStyle } from '@liveknowledge/document';
 import { readDocumentMeta } from '../document-room/document-content';
 import { knowledgeDb } from '../knowledge/knowledge-db';
-import { subscriptionOf } from '../subscription';
 import type { DocumentEnv } from '../types';
 import { siteServes } from './published-gauge';
 import { readSite, refreshPublished } from './published-snapshot';
@@ -73,7 +73,8 @@ export async function readPublished(
   if (!site) return { status: 'none' };
   // With Pro on, a site answers only while it holds a counted place of its owner's Public Knowledgebases (spec
   // "Tiers"): one whose place was refused is the same not-found as any other miss. One mark read, no call.
-  if (!siteServes({ on: subscriptionOf(env).enabled }, site.counted)) return { status: 'none' };
+  if (!siteServes({ on: subscriptionClientOf(env, 'liveknowledge.app').enabled }, site.counted))
+    return { status: 'none' };
   const db = knowledgeDb(env);
   const [meta, treeRes] = await Promise.all([
     readDocumentMeta(env, documentId),

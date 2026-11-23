@@ -34,25 +34,16 @@ export function uploaderScope(owner: string): OwnerScope | null {
   return isOwnerScope(scope) ? scope : null;
 }
 
-/** An item's owner as the index's grant names it: its team when it has one, else the account that owns it. Null for
- *  a guest's item (Free) and a grant that names no owner. The one rule every app follows (`itemPayer`,
- *  @liveworkspace/subscription; 019 "Who pays for an item"), kept under this name for media's own callers. */
-export function itemOwnerScope(grant: {
-  team: string | null;
-  owner?: string | null;
-}): OwnerScope | null {
-  return itemPayerScope(grant);
-}
-
 /**
- * The same, for what deletes (a tier's retention of snapshots and versions): `undefined` where there is no grant or
- * it names neither a team nor an owner, so "nobody said" is never read as a guest's Free item.
+ * An item's owner as the index's grant names it (`itemPayerScope`, @liveworkspace/subscription; 019 "Who pays for an
+ * item"), for what deletes (a tier's retention of snapshots and versions): `undefined` where there is no grant or it
+ * names neither a team nor an owner, so "nobody said" is never read as a guest's Free item.
  */
 export function knownItemOwnerScope(
   grant: { team: string | null; owner?: string | null } | null | undefined,
 ): OwnerScope | null | undefined {
   if (!grant || (!grant.team && !grant.owner)) return undefined;
-  return itemOwnerScope(grant);
+  return itemPayerScope(grant);
 }
 
 /** What the uploader may do, and whose tier said so. */

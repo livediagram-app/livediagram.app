@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   isPerMemberLimit,
   isTier,
-  limitLeft,
   limitReached,
   limitsFor,
   PER_MEMBER_LIMITS,
@@ -139,14 +138,11 @@ describe('the tiers', () => {
     }).toEqual(TIER_LIMITS.team);
   });
 
-  it('say when a limit is reached and what is left, unlimited never running out', () => {
+  it('say when a limit is reached, unlimited never running out', () => {
     expect(limitReached(9, 10)).toBe(false);
     expect(limitReached(10, 10)).toBe(true);
     expect(limitReached(0, 0)).toBe(true);
     expect(limitReached(1e9, null)).toBe(false);
-    expect(limitLeft(4, 10)).toBe(6);
-    expect(limitLeft(12, 10)).toBe(0);
-    expect(limitLeft(12, null)).toBe(Number.POSITIVE_INFINITY);
   });
 });
 

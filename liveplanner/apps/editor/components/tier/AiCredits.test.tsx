@@ -26,6 +26,13 @@ import { ownerOf, proOnForTests, proService, withPro, type Who } from '@/test/pr
 import { usePlanTier } from './plan-tier';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// The source line is the workbench's (its own tests: packages/workbench WorkbenchAiSource.test.tsx); here, the
+// allowance each dialog hands it, which stays beside the credits line.
+vi.mock('@liveworkspace/workbench/components/ai/WorkbenchAiSource', () => ({
+  WorkbenchAiSource: ({ allowance, id }: { allowance?: string; id?: string }) => (
+    <p id={id}>{allowance}</p>
+  ),
+}));
 
 proOnForTests();
 // A fixed day, so "1 December" is the first of the month after it.
@@ -90,7 +97,7 @@ describe('Describe a Rule', () => {
     const meter = await screen.findByRole('meter', { name: 'AI Credits' });
     expect(meter.getAttribute('aria-valuetext')).toBe('38 of 50 AI credits left this month');
     // The day's cap is still said, as before.
-    expect(screen.getByText(/counts toward this plan’s 100 AI steps a day/)).toBeTruthy();
+    expect(screen.getByText(/Counts toward this plan’s 100 AI steps a day/)).toBeTruthy();
   });
 
   it('tells a collaborator the cost, never what the owner has left', async () => {
@@ -279,7 +286,7 @@ describe('Describe a Plan', () => {
   it('with Pro off shows no credits line and asks the service nothing', async () => {
     setProForTests(false);
     const { calls } = open('owner', {}, async () => ({ draft: PLAN }));
-    expect(screen.getByText(/plans and forms share/)).toBeTruthy();
+    expect(screen.getByText(/Plans and forms share/)).toBeTruthy();
     expect(screen.queryByText('A draft uses 1 AI credit.')).toBeNull();
     expect(calls).toEqual([]);
   });

@@ -1,9 +1,9 @@
 // The document's content state for its room (document-room.ts): the schema on first use, the write notes that arm the
 // outbox, the drains to the index and to shared tabs' holders, the daily upkeep, the Community post's checks and
 // the purge. Each takes the room it acts for.
+import { subscriptionClientOf } from '@liveworkspace/subscription';
 import { roomHeadOf } from '@liveworkspace/automations/room';
 import { confirmedHistoryDays, leaveItemCounts } from '../knowledge/tier-limits';
-import { subscriptionOf } from '../subscription';
 import {
   FLUSH_IDLE_MS,
   FLUSH_RETRY_MS,
@@ -176,7 +176,7 @@ export async function maintain(room: DocumentRoom, now: number): Promise<void> {
       table: 'document',
       id: () => room.documentId,
     });
-    const days = await confirmedHistoryDays(subscriptionOf(env), {
+    const days = await confirmedHistoryDays(subscriptionClientOf(env, 'liveknowledge.app'), {
       ownerId: head?.ownerId ?? null,
       teamId: head?.teamId ?? null,
     });

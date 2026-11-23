@@ -44,12 +44,11 @@ function statements(
          GROUP BY owner, gauge`,
       )
       .bind(...owners),
-    // An owner's standing counts: the sum over every item they own. Rows of a day or a month are an older meter's,
-    // read by nothing.
+    // An owner's standing counts: the sum over every item they own.
     db
       .prepare(
         `SELECT owner, meter, SUM(used) AS used FROM item_usage
-         WHERE owner IN (${marks}) AND period = 'all' GROUP BY owner, meter`,
+         WHERE owner IN (${marks}) GROUP BY owner, meter`,
       )
       .bind(...owners),
   ];

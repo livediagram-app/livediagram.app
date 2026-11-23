@@ -21,7 +21,7 @@ import {
   type RoadmapSettings,
   type RoadmapsResponse,
 } from '@liveplanner/api-schema';
-import { refusedByService } from '@liveworkspace/subscription';
+import { markOfClaim, refusedByService } from '@liveworkspace/subscription';
 import { getProject } from '../db';
 import { json, methodNotAllowed, noContent } from '../responses';
 import {
@@ -41,7 +41,6 @@ import {
 import { grantOn, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
 import {
   claimRoadmap,
-  markOfClaim,
   releaseRoadmap,
   roadmapServes,
   syncRoadmapGauge,

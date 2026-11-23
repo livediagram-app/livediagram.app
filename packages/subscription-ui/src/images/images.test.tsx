@@ -145,17 +145,14 @@ describe('what an editor says and sends', () => {
 });
 
 describe('ImageLimitNotice: an image over the largest', () => {
-  it('the owner: the limit, what Pro takes, Choose Another and See Pro', async () => {
+  it('the owner: the limit with no offer (every tier takes the same), Choose Another alone', async () => {
     const again = vi.fn();
     render(page(<ImageLimitNotice refusal={TOO_LARGE} onChooseAnother={again} />, 'upgrade'));
     const notice = screen.getByRole('status');
-    await waitFor(() => expect(notice.textContent).toContain('Pro takes 25 MB.'));
+    await waitFor(() => expect(notice.textContent).toContain('Free takes images up to 5 MB.'));
     expect(notice.textContent).toContain('This Image Is Over 5 MB');
-    expect(notice.textContent).toContain('Free takes images up to 5 MB.');
-    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'Choose Another',
-      'See Pro',
-    ]);
+    expect(notice.textContent).not.toContain('Pro takes');
+    expect(screen.getAllByRole('button').map((b) => b.textContent)).toEqual(['Choose Another']);
     fireEvent.click(screen.getByRole('button', { name: 'Choose Another' }));
     expect(again).toHaveBeenCalled();
   });

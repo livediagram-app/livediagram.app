@@ -18,15 +18,19 @@ import {
   tokenOf,
 } from './testing';
 
-/** Who is looking: the item's owner (on Free, or already on Pro), a member or an admin of the team that owns it, or a
- *  collaborator on someone else's item. */
-export type Who = 'owner' | 'owner-pro' | 'member' | 'admin' | 'collaborator';
+/** Who is looking: the item's owner (on Free, or already on Pro), a member or an admin of the team that owns it, a
+ *  collaborator on someone else's item, or a guest who is not signed in. */
+export type Who = 'owner' | 'owner-pro' | 'member' | 'admin' | 'collaborator' | 'guest';
 
 const SOMEONE: OwnerScope = 'p:user_bob';
 
 /** The owner scope the api would name for the item `who` is looking at. */
 export const ownerOf = (who: Who): OwnerScope =>
-  who === 'owner' || who === 'owner-pro' ? ME : who === 'collaborator' ? SOMEONE : GARDEN;
+  who === 'owner' || who === 'owner-pro'
+    ? ME
+    : who === 'collaborator' || who === 'guest'
+      ? SOMEONE
+      : GARDEN;
 
 /** The service as `who` meets it. `usage` is the item's owner's, which only the owner and the owning team read. */
 export function proService(who: Who, usage: Usage = {}) {
@@ -34,7 +38,7 @@ export function proService(who: Who, usage: Usage = {}) {
   const tier: Tier = who === 'owner-pro' ? 'pro' : 'free';
   // Someone outside the owner is told neither its tier nor its limits.
   const view: OwnerView =
-    who === 'collaborator'
+    who === 'collaborator' || who === 'guest'
       ? { owner, tier: null, limits: null, action: 'none' }
       : ownerView(
           owner,
@@ -58,10 +62,15 @@ export function proService(who: Who, usage: Usage = {}) {
   });
 }
 
-/** `node` under the provider, signed in, asking `fetcher`. */
-export function withPro(node: ReactNode, fetcher: typeof fetch) {
+/** `node` under the provider as `who`, asking `fetcher`: signed in, or a guest with no account. */
+export function withPro(node: ReactNode, fetcher: typeof fetch, who: Who = 'owner') {
   return (
-    <SubscriptionProvider getToken={tokenOf('tok')} fetch={fetcher} navigate={() => {}}>
+    <SubscriptionProvider
+      getToken={tokenOf(who === 'guest' ? null : 'tok')}
+      account={who === 'guest' ? 'out' : 'in'}
+      fetch={fetcher}
+      navigate={() => {}}
+    >
       {node}
     </SubscriptionProvider>
   );

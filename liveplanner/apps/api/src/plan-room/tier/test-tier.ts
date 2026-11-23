@@ -7,7 +7,7 @@ import {
   type FakeSubscription,
 } from '@liveworkspace/subscription/testing';
 import type { Tier } from '@liveworkspace/subscription';
-import { forgetEntitlementsForTests } from '../../subscription';
+import { forgetEntitlementsForTests } from '@liveworkspace/subscription';
 import type { Env } from '../../types';
 
 export type { FakeSubscription };

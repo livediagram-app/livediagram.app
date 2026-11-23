@@ -52,14 +52,7 @@ import type {
   UpdateItemInput,
   UpdateShareLinkInput,
 } from './types';
-import type {
-  CreateWebhookInput,
-  UpdateWebhookInput,
-  Webhook,
-  WebhookCreated,
-  WebhookDelivery,
-  WebhooksList,
-} from './webhooks';
+import type { CreateWebhookInput, UpdateWebhookInput, Webhook, WebhookDelivery } from './webhooks';
 import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from './connections';
 import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
@@ -412,10 +405,10 @@ export function createIndexClient({
     // Connections, once webhooks (webhooks.md): one document's, for someone who can edit all of it. `share`: the link the person
     // reaches it through, when it is not one they opened before (the index also finds those under Shared).
     listWebhooks: (itemId: string, share?: ShareAccess | null) =>
-      call<WebhooksList>(`/items/${enc(itemId)}/webhooks`, { share }),
+      call<{ webhooks: Webhook[] }>(`/items/${enc(itemId)}/webhooks`, { share }),
     // `secret` only for a `json` webhook, and only now.
     createWebhook: (itemId: string, input: CreateWebhookInput, share?: ShareAccess | null) =>
-      call<WebhookCreated>(`/items/${enc(itemId)}/webhooks`, {
+      call<{ webhook: Webhook; secret: string | null }>(`/items/${enc(itemId)}/webhooks`, {
         method: 'POST',
         body: input,
         share,

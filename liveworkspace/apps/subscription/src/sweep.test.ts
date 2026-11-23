@@ -254,18 +254,6 @@ describe('what nobody will read again', () => {
       { account: 'recent' },
     ]);
   });
-
-  it("goes: an item's day or month count long past, never a standing one", async () => {
-    const insert = db.sql.prepare("INSERT INTO item_usage VALUES ('p:a', ?, ?, NULL, ?, 5, ?)");
-    insert.run('automationRuns', 'old', '2026-08-01', NOW - 63 * DAY);
-    insert.run('automationRuns', 'recent', '2026-11-19', NOW - DAY);
-    insert.run('rules', 'standing', 'all', NOW - 400 * DAY);
-    expect((await sweepSubscriptions(db.env, NOW)).items).toBe(1);
-    expect(db.sql.prepare('SELECT item FROM item_usage ORDER BY item').all()).toEqual([
-      { item: 'recent' },
-      { item: 'standing' },
-    ]);
-  });
 });
 
 describe("a subscribed team's seats", () => {

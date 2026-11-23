@@ -10,6 +10,11 @@ export function subscriptionOf(env: Env): SubscriptionClient {
   return subscriptionClientOf(env, 'liveworkspace.app');
 }
 
+/** Whether Pro is on here: off, nothing is asked of the subscription service and no limit is read. */
+export function proOn(env: Env): boolean {
+  return subscriptionOf(env).enabled;
+}
+
 /**
  * The limits `owner`'s upload meets: what they keep by their own tier, and one upload's size or length by the better
  * of their own and the tier of the item's owner the app named in X-Media-Item-Owner. Null with Pro off. Only owners are read from the request, never a tier, and the header is the

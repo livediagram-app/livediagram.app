@@ -112,7 +112,7 @@ day, count }`) and never touches the plan schema, so the instance stays a room w
   they are. The log adds `rules` and `rulesDropped`.
 
 - **AI credits** (spec "Limits and cost"): with Pro on, after `spendPlanDraft` and before the first ask the route
-  spends one `aiCredits` of `personScope(accountId)` through `subscriptionOf(env)` (apps/api/src/subscription.ts);
+  spends one `aiCredits` of `personScope(accountId)` through `subscriptionClientOf(env, 'liveplanner.app')`;
   refused, `429 plan_draft_credits_used` with `limit`, `used` and `max` (`creditsRefusal`, routes/draft-credits.ts,
   shared with Describe a Form). With Pro off no call is made.
 

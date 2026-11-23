@@ -4,8 +4,8 @@
 // person in their own editor, and the index's grant on the plan, closed to a tab-scoped link, a Community visit and
 // a plan in the Trash.
 
-import { handleWalkthroughDoor, itemOwnerScope } from '@liveworkspace/media';
-import { proEnabled } from '@liveworkspace/subscription';
+import { handleWalkthroughDoor } from '@liveworkspace/media';
+import { itemPayerScope, proEnabled } from '@liveworkspace/subscription';
 import { planRoom } from '../plan-client';
 import { mediaClient, mediaOwner } from '../media';
 import { CORS_HEADERS, json } from '../responses';
@@ -40,7 +40,7 @@ export async function handleWalkthroughs(ctx: RouteContext): Promise<Response> {
           (post !== null && post.code === grant.shareCode),
         // Whose plan it is (its team's for a team's plan), for the service to read its tier beside the recorder's
         // (liveworkspace/docs/specs/006-media/walkthroughs.md "With Pro on").
-        itemOwner: itemOwnerScope(grant),
+        itemOwner: itemPayerScope(grant),
       };
     },
     pro: proEnabled(ctx.env.PRO_ENABLED),

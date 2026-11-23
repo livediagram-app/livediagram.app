@@ -1,9 +1,9 @@
+import { subscriptionClientOf } from '@liveworkspace/subscription';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BY_OTHERS_SCOPE, OWNER_CREDITS_BY_OTHERS_PER_DAY } from '../knowledge/ai-credits';
 import { runAll } from '../knowledge/knowledge-db';
 import { confirmedHistoryDays, leaveItemCounts } from '../knowledge/tier-limits';
 import { fakeSubscription, proEnv } from '../knowledge/tier-test-kit';
-import { subscriptionOf } from '../subscription';
 import { knowledgeKit, page, PAGES, type Kit } from './knowledge-test-kit';
 
 // What Pro changes in a knowledgebase (docs/specs/030-knowledgebase/tiers.md), through the routes.
@@ -118,6 +118,44 @@ describe('Knowledgebase Pages', () => {
       200,
     );
     expect(fake.items.get(`${OWNER_SCOPE}:pages:kb`)).toBe(10);
+  });
+
+  it('tells the Trash’s count behind the answer, and only logs a count that could not be told', async () => {
+    const fake = fakeSubscription();
+    const behind: Promise<unknown>[] = [];
+    const kit = await knowledgeKit({}, many(10), { waitUntil: (work) => void behind.push(work) });
+    // The service answers nothing until it is let: the answer to the delete cannot be waiting on it.
+    const heldService = () => {
+      let open!: () => void;
+      const gate = new Promise<void>((resolve) => (open = resolve));
+      const fetcher: typeof fake.fetcher = {
+        fetch: async (input, init) => {
+          await gate;
+          return fake.fetcher.fetch(input, init);
+        },
+      };
+      proEnv(kit.db.env, { ...fake, fetcher });
+      return open;
+    };
+    let open = heldService();
+    expect((await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/p3')).status).toBe(204);
+    expect(fake.calls).toHaveLength(0);
+    open();
+    await Promise.all(behind);
+    expect(fake.items.get(`${OWNER_SCOPE}:pages:kb`)).toBe(9);
+    // A count that cannot be read is said in the log, and the page has gone all the same.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    open = heldService();
+    expect((await kit.call('editor', 'DELETE', '/api/documents/kb/tabs/p4')).status).toBe(204);
+    vi.spyOn(kit.db.env.DOCUMENT_DB, 'prepare').mockImplementation(() => {
+      throw new Error('room gone');
+    });
+    open();
+    await Promise.allSettled(behind);
+    expect(warn).toHaveBeenCalledWith('[knowledge] pages.recount.failed', {
+      error: 'Error: room gone',
+    });
+    expect(fake.items.get(`${OWNER_SCOPE}:pages:kb`)).toBe(9);
   });
 
   it('refuses an add the service cannot check, as unavailable', async () => {
@@ -269,7 +307,7 @@ describe('AI Knowledge History', () => {
   it('prunes by a confirmed tier only', async () => {
     const env = {} as Record<string, unknown>;
     const days = (head: { ownerId: string | null; teamId?: string | null }) =>
-      confirmedHistoryDays(subscriptionOf(env), head);
+      confirmedHistoryDays(subscriptionClientOf(env, 'liveknowledge.app'), head);
     expect(await days({ ownerId: 'user_o' })).toBe(90);
     const fake = fakeSubscription({ [OWNER_SCOPE]: 'pro' });
     proEnv(env, fake);

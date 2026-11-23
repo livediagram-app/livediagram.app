@@ -5,7 +5,6 @@ import { proEnabled, TIER_LIMITS } from '@liveworkspace/subscription';
 import { proOn } from './flag';
 import { LimitNotice } from './LimitNotice';
 import { ProBadge } from './ProBadge';
-import { ProGate } from './ProGate';
 import {
   useOwnerView,
   usePrices,
@@ -46,11 +45,6 @@ function Everything() {
         used={250}
         owner={ownerView(ME, 'upgrade')}
         limit={TIER_LIMITS.free.automationRunsPerMonth}
-      />
-      <ProGate
-        title="Send Webhooks with Pro"
-        description="Post changes."
-        owner={ownerView(ME, 'upgrade')}
       />
     </>
   );

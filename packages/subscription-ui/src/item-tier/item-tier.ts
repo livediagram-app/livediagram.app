@@ -10,7 +10,7 @@ import {
   GAUGE_LIMIT,
   ITEM_METER_LIMIT,
   isOwnerScope,
-  parseOwnerScope,
+  paidTierOf,
   SPEND_METER_LIMIT,
   TIER_NAMES,
   type Gauge,
@@ -67,8 +67,8 @@ export const ITEM_TIER_OFF: ItemTierView = {
 
 function voiceOf(view: OwnerView | null): TierVoice {
   if (!view) return PLAIN_VOICE;
-  const team = parseOwnerScope(view.owner)?.kind === 'team';
-  const to: PaidTier = team ? 'team' : 'pro';
+  const to = paidTierOf(view.owner);
+  const team = to === 'team';
   const may = view.action === 'upgrade' || view.action === 'manage';
   return {
     tier: view.tier ? TIER_NAMES[view.tier] : null,

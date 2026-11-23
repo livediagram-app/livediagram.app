@@ -13,7 +13,6 @@ import {
   betterLimits,
   imageAllowance,
   imageTooLargeBody,
-  itemOwnerScope,
   knownItemOwnerScope,
   payerLimits,
   uploaderScope,
@@ -53,16 +52,6 @@ describe('uploaderScope', () => {
     expect(uploaderScope('team:team_garden')).toBe('t:team_garden');
     expect(uploaderScope('guest:0123')).toBeNull();
     expect(uploaderScope('not an id')).toBeNull();
-  });
-});
-
-describe('itemOwnerScope', () => {
-  it('is the item’s team, else its owning account, never a guest', () => {
-    expect(itemOwnerScope({ team: 'team_garden', owner: 'user_ada' })).toBe('t:team_garden');
-    expect(itemOwnerScope({ team: null, owner: 'user_ada' })).toBe('p:user_ada');
-    expect(itemOwnerScope({ team: null, owner: 'guest_1' })).toBeNull();
-    expect(itemOwnerScope({ team: null })).toBeNull();
-    expect(itemOwnerScope({ team: 'not an id', owner: null })).toBeNull();
   });
 });
 

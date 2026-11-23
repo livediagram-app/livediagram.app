@@ -1,4 +1,4 @@
-// `stripe_customers` (migrations/0004_stripe.sql): each owner's Stripe customer, made by its first checkout and kept,
+// `stripe_customers` (migrations/0001_subscription.sql): each owner's Stripe customer, made by its first checkout and kept,
 // and the one checkout an owner may have open (subscription.md "Stripe", "Checkout").
 
 import type { OwnerScope } from '@liveworkspace/subscription';

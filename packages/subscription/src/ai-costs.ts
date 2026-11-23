@@ -19,8 +19,6 @@ export const AI_CREDIT_COSTS = {
   planDraft: 1,
 } as const;
 
-export type AiOperation = keyof typeof AI_CREDIT_COSTS;
-
 /** livediagram: notes read from a photo for one credit. A photo's notes are read six to a request, so 24 is four
  *  requests. */
 export const PHOTO_NOTES_PER_CREDIT = 24;

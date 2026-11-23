@@ -285,6 +285,13 @@ describe('Image Storage', () => {
       maxImageBytes: FREE.imageMaxBytes,
       owner: `p:${owner}`,
     });
+    // The list and the total are two reads with Pro on; with it off the list is the only one.
+    const prepare = vi.spyOn(db.env.MEDIA_DB, 'prepare');
+    await list(env, owner);
+    expect(prepare).toHaveBeenCalledTimes(2);
+    prepare.mockClear();
+    expect(await list({ ...env, PRO_ENABLED: '' }, owner)).not.toHaveProperty('storage');
+    expect(prepare).toHaveBeenCalledTimes(1);
   });
 
   it('reports nothing to the subscription service: it is asked, live, when a person reads their usage', async () => {

@@ -1747,7 +1747,7 @@ adds only what holds a plan's entitlement and where each limit reads it.
   when. `limit(key, legacy)` is `limitOf(entitlement, key, legacy)`: a synchronous read, the only thing a hot path
   does. `fresh()` is true with Pro off, and with Pro on while the entitlement is under 60 s old
   (`ENTITLEMENT_FRESH_MS`) and the plan's owner has not changed; `refresh()` reads the owner from the room's `plan`
-  row (`owner_id`, `team_id`, `name`: one synchronous SQL read) and asks `client.entitlement(ownerScopeOf(...))`,
+  row (`owner_id`, `team_id`, `name`: one synchronous SQL read) and asks `client.entitlement` for `itemPayer`'s scope,
   which never throws. The wake and the hook write `if (!tier.fresh()) await tier.refresh()` so a fresh tier, and
   every one with Pro off, adds no await at all. `tierOn(env)` (same file) does that for a route: it answers the tier
   with its limits current, or null with Pro off.
@@ -1765,8 +1765,9 @@ adds only what holds a plan's entitlement and where each limit reads it.
 - `room-tier.ts`: `roomTier(room)` (the tier on the room's `plan` row), `automationLimitsOf(tier)` and
   `rulesCopyMax(env)`. `plan-meters.ts`: the plan's own counts (Email to Board's day). `tier-refusal.ts`:
   `tierRefusal(tier, limit, used, max)`, the marker a refusal carries with Pro on.
-- `apps/api/src/subscription.ts` `subscriptionOf(env)`: `subscriptionClientOf(env, 'liveplanner.app')` on one
-  module-level cache (an isolate's rooms of one owner share one read), with `forgetEntitlementsForTests()`.
+- The client is `subscriptionClientOf(env, 'liveplanner.app')` wherever it is asked for, on the package's one
+  cache per isolate (an isolate's rooms of one owner share one read), dropped in tests by the package's
+  `forgetEntitlementsForTests()`.
 - With Pro off `PlanTier` makes no client call: `fresh()` is true, `limit` answers the legacy value, `spend` and
   `report` return at once.
 

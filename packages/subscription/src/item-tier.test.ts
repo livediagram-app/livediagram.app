@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { subscriptionClientOf, type EntitlementCache, type SubscriptionEnv } from './client';
-import { ItemTier as PlanTier, RECHECK_EVERY_MS, tierOn, type TierHead } from './item-tier';
+import {
+  ItemTier as PlanTier,
+  markChangedByClaim,
+  markOfClaim,
+  RECHECK_EVERY_MS,
+  tierOn,
+  type TierHead,
+} from './item-tier';
 import { tierRefusal } from './tier-refusal';
 import { fakeSubscription, type FakeSubscription } from './testing/fake.test-kit';
 
@@ -295,5 +302,29 @@ describe('with Pro on', () => {
       max: 10,
       guest: true,
     });
+  });
+});
+
+describe('a claim’s answer', () => {
+  const held = { ok: true, used: 1, limit: 1, tier: 'free' } as const;
+  const full = { ok: false, used: 1, limit: 1, tier: 'free' } as const;
+
+  it('marks the entry by the service’s own answer only', () => {
+    expect(markOfClaim(held)).toBe(true);
+    expect(markOfClaim(full)).toBe(false);
+    // Nothing counted it: Pro off, the service out of reach, or the request itself refused.
+    expect(markOfClaim(null)).toBeNull();
+    expect(markOfClaim({ ...held, unmetered: 'unreachable' })).toBeNull();
+    expect(markOfClaim({ ...full, unmetered: 'refused' })).toBeNull();
+  });
+
+  it('changes a mark only where it says something new', () => {
+    expect(markChangedByClaim(held, null)).toBe(true);
+    expect(markChangedByClaim(held, false)).toBe(true);
+    expect(markChangedByClaim(full, true)).toBe(false);
+    expect(markChangedByClaim(held, true)).toBeNull();
+    expect(markChangedByClaim(full, false)).toBeNull();
+    expect(markChangedByClaim(null, true)).toBeNull();
+    expect(markChangedByClaim({ ...full, unmetered: 'refused' }, true)).toBeNull();
   });
 });

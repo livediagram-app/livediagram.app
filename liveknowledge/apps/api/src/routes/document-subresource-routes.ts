@@ -234,15 +234,21 @@ export async function handleDocumentSubresources(
               ? { id: owner, name: ctx.token ? ctx.token.name || 'An agent' : author.name }
               : null,
         });
-      // One page fewer, told to the owner's Knowledgebase Pages without waiting (tiers.md). Asked only with Pro on.
+      // One page fewer, told to the owner's Knowledgebase Pages without waiting (tiers.md): the tier's read, the
+      // count and the telling all run behind the answer. Asked only with Pro on.
       if (toTrash) {
-        const tier = await workerTierOf(env, existing);
-        if (tier) {
-          const pages = pageCount(await readStoredPages(env, id));
-          const told = tier.recount('pages', id, pages);
-          if (ctx.waitUntil) ctx.waitUntil(told);
-          else await told;
-        }
+        const told = (async () => {
+          const tier = await workerTierOf(env, existing);
+          if (tier) await tier.recount('pages', id, pageCount(await readStoredPages(env, id)));
+        })();
+        if (ctx.waitUntil) {
+          // A count that could not be told is said in the log: the page is in the Trash either way.
+          ctx.waitUntil(
+            told.catch((error) =>
+              console.warn('[knowledge] pages.recount.failed', { error: String(error) }),
+            ),
+          );
+        } else await told;
       }
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
       return noContent();

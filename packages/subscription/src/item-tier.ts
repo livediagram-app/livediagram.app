@@ -281,6 +281,25 @@ export class ItemTier {
   }
 }
 
+/**
+ * What a claim's answer makes of an entry's stored mark: true (it holds a place), false (refused at the limit), or
+ * null to leave the mark as it is (nothing counted it: Pro off, the service out of reach or refusing the request).
+ */
+export function markOfClaim(claim: GaugeResult | null): boolean | null {
+  if (!claim || claim.unmetered) return null;
+  return claim.ok;
+}
+
+/** The mark a claim's answer changes `before` to, or null where it leaves it: nothing counted it (`markOfClaim`), or
+ *  the mark already says so. */
+export function markChangedByClaim(
+  claim: GaugeResult | null,
+  before: boolean | null,
+): boolean | null {
+  const next = markOfClaim(claim);
+  return next === before ? null : next;
+}
+
 /** The item's tier with its limits current, or null with Pro off (or outside a room): nothing is metered. */
 export async function tierOn(env: { TIER?: ItemTier }): Promise<ItemTier | null> {
   const tier = env.TIER;

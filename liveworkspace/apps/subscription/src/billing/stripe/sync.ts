@@ -7,12 +7,12 @@ import {
   GRACE_MS,
   isCurrency,
   isOwnerScope,
+  paidTierOf,
   PRICES,
   seatsFor,
   type OwnerScope,
   type SubscriptionState,
 } from '@liveworkspace/subscription';
-import { paidTierOf } from '../../meters/limits';
 import { clearTeamRequests } from '../../team-requests';
 import { isLive, type SubscriptionRow } from '../../subscriptions/state';
 import { readSubscription, writeSubscriptionStatement } from '../../subscriptions/store';

@@ -23,10 +23,10 @@ import {
   type SpendResult,
   type SubscriptionClient,
   type SubscriptionEnv,
+  subscriptionClientOf,
 } from '@liveworkspace/subscription';
 import type { KnowledgeTierInfo } from '@liveknowledge/api-schema';
 import { json } from '../responses';
-import { subscriptionOf } from '../subscription';
 import { READS_KEPT_DAYS } from '@liveknowledge/knowledge';
 
 /** What the figures here read of a tier. */
@@ -233,7 +233,7 @@ export async function workerTierOf(
   env: SubscriptionEnv,
   head: { ownerId?: string | null; teamId?: string | null },
 ): Promise<WorkerTier | null> {
-  const client = subscriptionOf(env);
+  const client = subscriptionClientOf(env, 'liveknowledge.app');
   return client.enabled ? WorkerTier.of(client, head) : null;
 }
 

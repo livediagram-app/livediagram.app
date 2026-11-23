@@ -1,8 +1,8 @@
 # @liveworkspace/subscription-ui
 
 Everything a page shows about Pro (liveworkspace/docs/specs/019-subscription/subscription.md "What people see"),
-built once for liveworkspace.app and every app: the Pro badge, the usage meter, the limit notice, the "part of Pro"
-gate and the upgrade dialog, over one provider that reads the signed-in person's subscription.
+built once for liveworkspace.app and every app: the Pro badge, the usage meter, the limit notice, the Pro note
+and the upgrade dialog, over one provider that reads the signed-in person's subscription.
 
 Every limit, row label, explanation and price comes from `@liveworkspace/subscription`. Nothing here holds a number
 of its own, and no limit is enforced here: the server decides, and these only show what it decided.
@@ -17,10 +17,9 @@ its `off` state, so an app can mount all of this without a check of its own.
 ## An editor, in fifteen lines
 
 ```tsx
-import { ownerScopeOf } from '@liveworkspace/subscription';
+import { itemPayerScope } from '@liveworkspace/subscription';
 import {
   LimitNotice,
-  ProGate,
   SubscriptionProvider,
   UsageMeter,
   useOwnerView,
@@ -34,7 +33,7 @@ const { getToken } = useDeferredAuth();
 </SubscriptionProvider>;
 
 // Anywhere under it. The owner is the open item's, never the person acting:
-const owner = useOwnerView(ownerScopeOf(plan.ownerId, plan.teamId));
+const owner = useOwnerView(itemPayerScope(head));
 const limit = owner.status === 'ready' ? owner.view.limits.automationRunsPerMonth : null;
 <UsageMeter
   limitKey="automationRunsPerMonth"
@@ -43,17 +42,6 @@ const limit = owner.status === 'ready' ? owner.view.limits.automationRunsPerMont
   limit={limit}
 />;
 <LimitNotice limitKey="automationRunsPerMonth" used={runsThisMonth} owner={owner} />;
-{
-  limit === 0 ? (
-    <ProGate
-      title="Send Webhooks with Pro"
-      description="Post a card's changes to your own services."
-      owner={owner}
-    />
-  ) : (
-    <Webhooks />
-  );
-}
 ```
 
 `@liveworkspace/subscription-ui/provider` is the light half: the provider's shell and the hooks, with nothing that
@@ -79,7 +67,6 @@ The app's stylesheet scans this package, as it does the other shared ones:
 | `ProBadge`                                                    | The ink pill. `form`: `solid` (you have Pro), `outline` (part of Pro), `mark` (logo alone). `size`: `sm` or `md`. `ground="ink"` on a dark band. `label` names it; `decorative` hides it inside a control that already says it.                                                                                                                                                 |
 | `UsageMeter`                                                  | `limitKey`, `used`, `limit` (null is unlimited), `label`, `showLabel`, `layout` (`auto`, `inline`, `stacked`), `words` (the numbers in the caller's words), `showWords` (false: the bar alone, where the caller draws the numbers itself), `pro`. `role="meter"`; amber at the limit.                                                                                           |
 | `LimitNotice`                                                 | `limitKey`, `used`, `owner` (the hook's answer or the view), optional `limit`, `sentence`, `offer`, `near`. Upgrade for the owner or a team admin, Ask an Admin for a member, no offer for anyone else; a quiet once-a-day nudge from 80% for someone on Free.                                                                                                                  |
-| `ProGate`                                                     | `title`, `description`, `points`, `owner`, `art`, `noun` (the item's word in its app, for a collaborator's line), `footnote`, `heading`, `density` (`page`, or `panel` inside a side panel). The same action rules.                                                                                                                                                             |
 | `ProNote`                                                     | The quiet line under a list a tier trims: a sentence (its children) and See Pro (or Ask an Admin) wearing the Pro mark; the outline badge leads only when there is no button. `owner`, `limitKey`, `layout` (`foot`, `rail`, `box`). The same action rules.                                                                                                                     |
 | `ComparisonGrid`                                              | Every row of `LIMIT_ROWS` by tier, grouped, beside `usage`. One tier at a time below 768px.                                                                                                                                                                                                                                                                                     |
 | `RowAppLogo`, `InfoPopover`                                   | A row's app logo, and the info button with its explanation.                                                                                                                                                                                                                                                                                                                     |

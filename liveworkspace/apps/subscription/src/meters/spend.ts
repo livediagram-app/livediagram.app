@@ -9,9 +9,7 @@ import {
   type SpendMeter,
   type SpendResult,
 } from '@liveworkspace/subscription';
-import { ENTITLED_LIMIT, limitBinds, limitFromSql, paidTierOf } from './limits';
-
-type Spent = { used: number; paid: number; lim: number };
+import { ENTITLED_LIMIT, limitBinds, meterResult, type MeterRow } from './limits';
 
 const SPEND = `${ENTITLED_LIMIT}
 INSERT INTO spend_counters (owner, meter, month, used, updated_at)
@@ -24,15 +22,6 @@ RETURNING used, (SELECT paid FROM ent) AS paid, (SELECT lim FROM ent) AS lim`;
 const REFUSED = `${ENTITLED_LIMIT}
 SELECT COALESCE((SELECT used FROM spend_counters WHERE owner = ?5 AND meter = ?7 AND month = ?8), 0) AS used,
   paid, lim FROM ent`;
-
-function result(owner: OwnerScope, ok: boolean, row: Spent): SpendResult {
-  return {
-    ok,
-    used: row.used,
-    limit: limitFromSql(row.lim),
-    tier: row.paid ? paidTierOf(owner) : 'free',
-  };
-}
 
 /** Spends `amount` from an owner's meter for this month, or refuses when that would pass the limit (a limit of 0
  *  refuses everything, and no limit, as gauges have it, refuses nothing). `amount` is a positive whole number: the
@@ -48,12 +37,12 @@ export async function spend(
   const spent = await db
     .prepare(SPEND)
     .bind(...binds, amount)
-    .first<Spent>();
-  if (spent) return result(owner, true, spent);
+    .first<MeterRow>();
+  if (spent) return meterResult(owner, true, spent);
   const refused = await db
     .prepare(REFUSED)
     .bind(...binds)
-    .first<Spent>();
+    .first<MeterRow>();
   // The clause always answers one row.
-  return result(owner, false, refused!);
+  return meterResult(owner, false, refused!);
 }

@@ -1,5 +1,7 @@
 // Who pays for an item (subscription.md "Who pays for an item"): its owner, written as the index writes a scope.
 
+import type { PaidTier } from './prices';
+
 export type OwnerKind = 'person' | 'team';
 
 /** `p:<accountId>` for a person, `t:<teamId>` for a team. */
@@ -18,11 +20,6 @@ export function teamScope(teamId: string): OwnerScope {
   return `t:${teamId}`;
 }
 
-/** The owner an item's head names: its team when it has one, otherwise the person who owns it. */
-export function ownerScopeOf(ownerId: string, teamId: string | null | undefined): OwnerScope {
-  return teamId ? teamScope(teamId) : personScope(ownerId);
-}
-
 /** A scope's parts, or null when it is not a well-formed owner scope. */
 export function parseOwnerScope(value: unknown): Owner | null {
   if (typeof value !== 'string') return null;
@@ -34,4 +31,11 @@ export function parseOwnerScope(value: unknown): Owner | null {
 
 export function isOwnerScope(value: unknown): value is OwnerScope {
   return parseOwnerScope(value) !== null;
+}
+
+/** The tier an owner pays for when it pays: Pro for Teams for a team, Pro for a person (and for anything that is
+ *  not an owner). Takes a scope as written, or one already parsed. */
+export function paidTierOf(owner: string | Owner | null | undefined): PaidTier {
+  const parsed = typeof owner === 'string' ? parseOwnerScope(owner) : owner;
+  return parsed?.kind === 'team' ? 'team' : 'pro';
 }

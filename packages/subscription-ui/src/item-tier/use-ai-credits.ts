@@ -36,7 +36,7 @@ export function useAiCredits(tier: ItemTierView) {
     setRefused(null);
     void refresh();
   }, [refresh]);
-  useTierReread(tier, again);
+  useTierReread(tier, again, true);
   const known = tier.on ? tierUsage(tier, 'aiCredits') : null;
   const spent: CreditsSpent | null =
     refused ??

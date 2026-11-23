@@ -4,13 +4,13 @@
 
 import {
   isPerMemberLimit,
-  parseOwnerScope,
+  paidTierOf,
   RENEWAL_TOLERANCE_MS,
   TEAM_SEATS_MIN,
   TIER_LIMITS,
   type LimitKey,
   type OwnerScope,
-  type PaidTier,
+  type SpendResult,
 } from '@liveworkspace/subscription';
 import { freeLimits } from '../dev-limits';
 
@@ -44,11 +44,6 @@ function numeric(value: number | boolean | null): number {
   return typeof value === 'number' ? value : UNLIMITED;
 }
 
-/** The tier an owner's subscription would be: a person's is Pro, a team's Pro for Teams. */
-export function paidTierOf(owner: OwnerScope): PaidTier {
-  return parseOwnerScope(owner)?.kind === 'team' ? 'team' : 'pro';
-}
-
 /** ENTITLED_LIMIT's binds for one owner and limit: ?1 to ?6. */
 export function limitBinds(owner: OwnerScope, key: LimitKey, now: number): (string | number)[] {
   const tier = paidTierOf(owner);
@@ -66,4 +61,17 @@ export function limitBinds(owner: OwnerScope, key: LimitKey, now: number): (stri
 /** A limit SQL answered, as the contract writes it: null for unlimited. */
 export function limitFromSql(value: number): number | null {
   return value < 0 ? null : value;
+}
+
+/** What a meter's statement answers beside ENTITLED_LIMIT's row: the owner's total, and `paid` and `lim` from `ent`. */
+export type MeterRow = { used: number; paid: number; lim: number };
+
+/** A meter's answer as the contract writes it: a spend, a gauge and an item count answer alike. */
+export function meterResult(owner: OwnerScope, ok: boolean, row: MeterRow): SpendResult {
+  return {
+    ok,
+    used: row.used,
+    limit: limitFromSql(row.lim),
+    tier: row.paid ? paidTierOf(owner) : 'free',
+  };
 }

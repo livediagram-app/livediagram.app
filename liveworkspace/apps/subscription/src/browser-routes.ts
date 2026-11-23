@@ -5,6 +5,7 @@
 import {
   isLimitKey,
   isOwnerScope,
+  paidTierOf,
   parseOwnerScope,
   personScope,
   priceList,
@@ -30,7 +31,6 @@ import type { Env } from './env';
 import { badRequest, json, methodNotAllowed, notFound, readObject, refusal } from './http';
 import { mediaUsage, withMediaUsage } from './media-usage';
 import { readOwners } from './meters/usage';
-import { paidTierOf } from './meters/limits';
 import { safeReturnTo } from './origins';
 import { withinBudget } from './rate';
 import { accountName, teamMemberNow, teamMembers, teamsMembers } from './seats';

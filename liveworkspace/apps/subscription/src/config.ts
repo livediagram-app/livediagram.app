@@ -45,8 +45,6 @@ export const MEMBERS_CACHE_MAX = 500;
 
 /** The sweep keeps this many months of spend counters, the current one included. */
 export const SPEND_MONTHS_KEPT = 13;
-/** The sweep drops an item's day or month count once it has not been reported for this long. */
-export const ITEM_USAGE_KEPT_MS = 62 * DAY_MS;
 /** A subscribed team's seats are set from its joined members again after this long. */
 export const SEATS_CHECK_EVERY_MS = DAY_MS;
 /** The sweep checks no more teams' seats than this in one run. */

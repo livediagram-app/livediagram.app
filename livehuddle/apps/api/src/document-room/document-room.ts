@@ -2,6 +2,7 @@ import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/in
 import * as crossApp from './automations/cross-app-door';
 import { roomTier } from '@liveworkspace/automations/room';
 import type { ItemTier } from '@liveworkspace/subscription';
+import { subscriptionClientOf } from '@liveworkspace/subscription';
 import type { PutAwayRefusal } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import {
@@ -47,7 +48,6 @@ import {
 } from '../calls/call-meter';
 import { callsConfigured } from '../calls/calls-gate';
 import { severSession, type RealtimeEnv } from '../calls/realtime-api';
-import { subscriptionOf } from '../subscription';
 import {
   ItemDb,
   type ExportCommentsResult,
@@ -355,7 +355,7 @@ export class DocumentRoom extends DurableObject<Env> {
   // with Pro on, one minute spent from the owner's month for each person in a call, at the start of each minute.
   // With Pro off it does nothing: no storage, no alarm, no request.
   readonly callMeter = new CallMeter({
-    client: () => (this.roomEnv ? subscriptionOf(this.roomEnv) : null),
+    client: () => (this.roomEnv ? subscriptionClientOf(this.roomEnv, 'livehuddle.app') : null),
     now: () => Date.now(),
     load: () => this.state.storage.get<CallMeterState>(CALL_METER_KEY),
     save: (state) => void this.state.storage.put(CALL_METER_KEY, state),

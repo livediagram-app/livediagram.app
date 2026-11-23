@@ -37,12 +37,6 @@ export function stateSentence(summary: SubscriptionSummary): string {
   }
 }
 
-/** What a subscription costs a month in all: "£36 a month". Null once it has ended. */
-export function monthly(summary: SubscriptionSummary): string | null {
-  if (summary.amount === null || summary.currency === null) return null;
-  return `${formatPrice(summary.amount, summary.currency)} a month`;
-}
-
 /** One seat's price, from the month's total. */
 export function seatPrice(summary: SubscriptionSummary): string | null {
   if (summary.amount === null || summary.currency === null || summary.seats <= 0) return null;

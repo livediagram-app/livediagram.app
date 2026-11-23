@@ -5,9 +5,9 @@
 // load with the dialogs that show them, never on the first load; all of them are nothing with Pro off.
 
 import type { LimitKey } from '@liveworkspace/subscription';
-import { parseOwnerScope } from '@liveworkspace/subscription';
 import { useState, type ReactNode } from 'react';
 import { Button, type ButtonSize } from '@liveworkspace/ui';
+import { upgradeLabel } from '../limit-copy';
 import { LimitNotice } from '../LimitNotice';
 import { useUpgrade } from '../provider';
 import { UsageMeter } from '../UsageMeter';
@@ -33,7 +33,7 @@ export function TierOfferButton({
   if (tier.voice.offer)
     return (
       <Button size={size} onClick={() => upgrade.openUpgrade(target)}>
-        {parseOwnerScope(view.owner)?.kind === 'team' ? 'Upgrade Team' : 'Upgrade to Pro'}
+        {upgradeLabel(view)}
       </Button>
     );
   if (tier.action === 'ask_admin')

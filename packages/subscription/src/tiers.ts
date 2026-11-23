@@ -148,8 +148,3 @@ export function limitsFor(tier: Tier, seats = TEAM_SEATS_MIN): Limits {
 export function limitReached(used: number, limit: number | null): boolean {
   return limit !== null && used >= limit;
 }
-
-/** How much of a limit is left, never below zero. Unlimited is Infinity. */
-export function limitLeft(used: number, limit: number | null): number {
-  return limit === null ? Number.POSITIVE_INFINITY : Math.max(0, limit - used);
-}

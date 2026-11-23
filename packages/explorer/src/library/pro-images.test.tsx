@@ -155,7 +155,7 @@ describe('the Image Gallery', () => {
     expect(screen.queryByRole('meter')).toBeNull();
   });
 
-  it('draws a tier’s refusal as the shared notice: the offer for the owner, Choose Another for anyone', async () => {
+  it('draws a tier’s refusal as the shared notice: Choose Another, and no offer (every tier takes the same)', async () => {
     const upload = vi.fn(async () => {
       throw new UploadLimitError('That image is too large.', {
         kind: 'too_large',
@@ -169,9 +169,11 @@ describe('the Image Gallery', () => {
     const input = screen.getByLabelText('Upload an image') as HTMLInputElement;
     fireEvent.change(input, { target: { files: [png()] } });
     const notice = await limitNotice();
-    await waitFor(() => expect(notice.textContent).toContain('Pro takes 25 MB.'));
+    await waitFor(() => expect(notice.textContent).toContain('Free takes images up to 5 MB.'));
     expect(notice.textContent).toContain('This Image Is Over 5 MB');
-    expect(screen.getByRole('button', { name: 'See Pro' })).toBeTruthy();
+    // The largest image is the same on every tier: nothing to offer.
+    expect(notice.textContent).not.toContain('Pro takes');
+    expect(screen.queryByRole('button', { name: /Upgrade|See Pro/ })).toBeNull();
     const click = vi.spyOn(input, 'click');
     fireEvent.click(screen.getByRole('button', { name: 'Choose Another' }));
     expect(click).toHaveBeenCalled();

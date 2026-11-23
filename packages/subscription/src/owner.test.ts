@@ -1,17 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { isOwnerScope, ownerScopeOf, parseOwnerScope, personScope, teamScope } from './owner';
+import { isOwnerScope, paidTierOf, parseOwnerScope, personScope, teamScope } from './owner';
 
 describe('an owner', () => {
   it('is written as the index writes a scope', () => {
     expect(personScope('user_ada')).toBe('p:user_ada');
     expect(teamScope('team_1')).toBe('t:team_1');
-  });
-
-  it("is an item's team when it has one, otherwise the person who owns it", () => {
-    expect(ownerScopeOf('user_ada', 'team_1')).toBe('t:team_1');
-    expect(ownerScopeOf('user_ada', null)).toBe('p:user_ada');
-    expect(ownerScopeOf('user_ada', undefined)).toBe('p:user_ada');
-    expect(ownerScopeOf('user_ada', '')).toBe('p:user_ada');
   });
 
   it('parses to its kind and id', () => {
@@ -41,5 +34,14 @@ describe('an owner', () => {
       expect(isOwnerScope(value)).toBe(false);
     }
     expect(isOwnerScope('t:team_1')).toBe(true);
+  });
+
+  it('pays for Pro for Teams as a team, and Pro as anyone else', () => {
+    expect(paidTierOf('t:team_1')).toBe('team');
+    expect(paidTierOf('p:user_ada')).toBe('pro');
+    expect(paidTierOf({ kind: 'team', id: 'team_1' })).toBe('team');
+    expect(paidTierOf({ kind: 'person', id: 'user_ada' })).toBe('pro');
+    for (const value of ['', 't:', 'team_1', null, undefined])
+      expect(paidTierOf(value)).toBe('pro');
   });
 });

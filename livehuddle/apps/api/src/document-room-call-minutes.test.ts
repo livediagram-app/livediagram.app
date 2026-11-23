@@ -4,10 +4,10 @@
 // the subscription service being down never drops a call.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { OwnerScope } from '@liveworkspace/subscription';
+import { forgetEntitlementsForTests } from '@liveworkspace/subscription';
 import { CALL_METER_KEY, CALL_MINUTE_MS, CALL_ORPHAN_GRACE_MS } from './calls/call-meter';
 import { sealSessionToken } from './calls/call-tokens';
 import { DocumentRoom } from './document-room/document-room';
-import { forgetEntitlementsForTests } from './subscription';
 import { fakeSubscription, type FakeSubscription } from './test-subscription-service';
 
 type Socket = { sent: string[]; attachment: Record<string, unknown> };

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TIER_NAMES, type PaidTier } from '@liveworkspace/subscription';
 import { CheckIcon, CloseIcon, Portal, safeInset, Tooltip } from '@liveworkspace/ui';
+import { ON_INK_ICON_BUTTON } from '../on-ink';
 import { ProBadge } from '../ProBadge';
 import { subscribedGains } from './subscribed-gains';
 
@@ -80,7 +81,7 @@ export function SubscribedNotice({
                 type="button"
                 aria-label="Dismiss"
                 onClick={onDismiss}
-                className="touch-target relative -mt-1.5 -mr-1.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className={`${ON_INK_ICON_BUTTON} -mt-1.5 -mr-1.5 size-8`}
               >
                 <CloseIcon />
               </button>

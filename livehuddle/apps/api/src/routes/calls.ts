@@ -47,9 +47,8 @@ import { splitByHearing, withRefusals } from '../calls/subscribe-hearing';
 import { documentRoom } from '../document-client';
 import type { ItemGrant } from '../index-service';
 import { documentTrashed, forbidden, json, notFound } from '../responses';
-import { subscriptionOf } from '../subscription';
 import { isAccountIdShape } from '@liveworkspace/api-kit/request-auth';
-import { itemPayer } from '@liveworkspace/subscription';
+import { itemPayer, subscriptionClientOf } from '@liveworkspace/subscription';
 import { GUEST_SPACE, type CallsPayer } from '../calls/call-meter';
 import { isCommunityCode } from './community-link';
 import type { RouteContext } from './context';
@@ -238,7 +237,7 @@ export function minutesAudience(
  * With Pro off: `{ metered: false }`, and nothing is asked of the room or the service.
  */
 async function minutes(ctx: RouteContext, documentId: string, grant: ItemGrant): Promise<Response> {
-  const payer = subscriptionOf(ctx.env).enabled ? callsPayer(grant) : null;
+  const payer = subscriptionClientOf(ctx.env, 'livehuddle.app').enabled ? callsPayer(grant) : null;
   const reading = payer ? await documentRoom(ctx.env, documentId).callMinutes(payer) : null;
   if (!payer || !reading) return json({ metered: false } satisfies CallMinutesResponse);
   const { numbers, ...who } = minutesAudience(ctx, grant, payer);
@@ -449,7 +448,7 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
   if (gate.open && segments[4] === 'session') {
     // With Pro on, the Space's room says first whether its owner has call minutes left (call-minutes.md "A join is
     // admitted first"). With Pro off nothing is asked.
-    const payer = subscriptionOf(env).enabled ? callsPayer(grant) : null;
+    const payer = subscriptionClientOf(env, 'livehuddle.app').enabled ? callsPayer(grant) : null;
     if (payer) {
       const admitted = await documentRoom(env, documentId).callsAdmit(payer);
       if (!admitted.ok && admitted.unchecked) {
@@ -471,7 +470,7 @@ export async function handleCallRoutes(ctx: RouteContext): Promise<Response | nu
   if (!body) return invalid();
   // With Pro on, media is refused while the Space's owner's month of call minutes is used: the room is asked, once
   // a request and only past every other check. A subscribe rides the room call it already makes.
-  const metered = subscriptionOf(env).enabled && callsPayer(grant) !== null;
+  const metered = subscriptionClientOf(env, 'livehuddle.app').enabled && callsPayer(grant) !== null;
   const paused: Paused = metered
     ? () =>
         documentRoom(env, documentId)

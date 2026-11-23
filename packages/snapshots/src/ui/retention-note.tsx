@@ -4,7 +4,7 @@
 // 014-snapshots/snapshots.md "With Pro on"): the kit's ProNote, with See Pro for someone who may upgrade the owner.
 // The server said how long; nothing here works a limit out. Nothing with Pro off, or on a tier with no age limit.
 
-import { isOwnerScope, parseOwnerScope, TIER_NAMES } from '@liveworkspace/subscription';
+import { isOwnerScope, paidTierOf, TIER_NAMES } from '@liveworkspace/subscription';
 import { ProNote, useOwnerView } from '@liveworkspace/subscription-ui';
 import type { SnapshotRetentionInfo } from '../wire';
 import { othersRetentionSentence, retentionSentence } from './snapshot-words';
@@ -21,7 +21,7 @@ export function SnapshotRetentionNote({
   if (!retention || retention.days === null) return null;
   // A team's admin and member are told the team's tier; anyone else reads how long snapshots last, with no tier.
   const action = owner.status === 'ready' ? owner.view.action : 'none';
-  const team = parseOwnerScope(retention.owner ?? '')?.kind === 'team' && action !== 'none';
+  const tier = action === 'none' ? 'pro' : paidTierOf(retention.owner);
   return (
     <ProNote
       owner={owner}
@@ -29,7 +29,7 @@ export function SnapshotRetentionNote({
       layout={layout}
       others={othersRetentionSentence(retention.days)}
     >
-      {retentionSentence(retention.days, team ? TIER_NAMES.team : TIER_NAMES.pro)}
+      {retentionSentence(retention.days, TIER_NAMES[tier])}
     </ProNote>
   );
 }

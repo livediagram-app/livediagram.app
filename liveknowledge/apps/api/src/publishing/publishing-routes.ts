@@ -19,20 +19,18 @@ import type {
   PublishingState,
   PublishingTierSaid,
 } from '@liveknowledge/api-schema';
-import { refusedByService, tierRefusal, type GaugeResult } from '@liveworkspace/subscription';
+import {
+  markOfClaim,
+  refusedByService,
+  tierRefusal,
+  type GaugeResult,
+} from '@liveworkspace/subscription';
 import { readDocumentOutline } from '../document-room/document-content';
 import { knowledgeDb } from '../knowledge/knowledge-db';
 import { workerTierOf, type WorkerTier } from '../knowledge/tier-limits';
 import { json, methodNotAllowed } from '../responses';
 import type { KnowledgeRoute } from '../routes/knowledge-routes';
-import {
-  claimSite,
-  countSite,
-  markOfClaim,
-  releaseSite,
-  SITE_GAUGE,
-  siteServes,
-} from './published-gauge';
+import { claimSite, countSite, releaseSite, SITE_GAUGE, siteServes } from './published-gauge';
 import {
   dropSite,
   heldSiteAddresses,

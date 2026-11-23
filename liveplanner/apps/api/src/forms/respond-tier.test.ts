@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FormLinkResponse, PublicFormResponse } from '@liveplanner/api-schema';
 import { MONTHLY_LIMIT_MESSAGE, type FormDefinition } from '@liveplanner/forms';
 import { presetSetup } from '@liveplanner/items';
-import { monthKey } from '@liveworkspace/subscription';
+import { monthKey, subscriptionClientOf } from '@liveworkspace/subscription';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { formMonthFull, getFormLink, listItems } from '../db';
 import { PlanTier } from '../plan-room/tier/plan-tier';
@@ -10,7 +10,6 @@ import { fakeSubscription, proEnv, type FakeSubscription } from '../plan-room/ti
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleProjects } from '../routes/projects';
 import { handleForms } from '../routes/forms';
-import { subscriptionOf } from '../subscription';
 import { stubFormIndex } from './test-form-index';
 
 // The owner's month of responses (docs/specs/030-forms/forms.md "Abuse and limits → Tiers"): with Pro on, each
@@ -78,7 +77,11 @@ function world(tiers?: Parameters<typeof fakeSubscription>[0]) {
   Reflect.set(
     sql.env,
     'TIER',
-    new PlanTier({ client: () => subscriptionOf(sql.env), head: () => head, defer: () => {} }),
+    new PlanTier({
+      client: () => subscriptionClientOf(sql.env, 'liveplanner.app'),
+      head: () => head,
+      defer: () => {},
+    }),
   );
   Reflect.set(sql.env, 'PLAN_ROOM', {
     idFromName: (n: string) => n,

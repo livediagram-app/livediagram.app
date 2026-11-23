@@ -12,7 +12,12 @@ import {
   type OwnerViewLoad,
   type SubscriptionLoad,
 } from '../state';
-import { SubscriptionContext, type SubscriptionHost, type UpgradeTarget } from './context';
+import {
+  noRefresh,
+  SubscriptionContext,
+  type SubscriptionHost,
+  type UpgradeTarget,
+} from './context';
 
 /** The provider above, or null when none is mounted or Pro is off. */
 export function useSubscriptionHost(): SubscriptionHost | null {
@@ -31,7 +36,6 @@ export function useSubscription(): SubscriptionLoad {
 export function useRefreshSubscription(): () => Promise<void> {
   return useSubscriptionHost()?.refresh ?? noRefresh;
 }
-const noRefresh = async () => {};
 
 /** What this person may know of the owner of the open item (`p:<accountId>` or `t:<teamId>`): its tier, its limits
  *  and the action they may take. Asked once per owner per page. `off` when Pro is off, no provider is mounted or

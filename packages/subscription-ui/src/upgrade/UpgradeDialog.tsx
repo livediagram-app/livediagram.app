@@ -16,6 +16,7 @@ import {
 } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { ComparisonGrid } from '../comparison/ComparisonGrid';
+import { ON_INK_ICON_BUTTON } from '../on-ink';
 import { pricePeriod, teamTotal, tierPrice } from '../price';
 import { ProBadge } from '../ProBadge';
 import type { UpgradeTarget } from '../provider/context';
@@ -161,7 +162,7 @@ export function UpgradeDialog({ target, onClose }: { target: UpgradeTarget; onCl
               type="button"
               aria-label="Close"
               onClick={onClose}
-              className="touch-target relative flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-300 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className={`${ON_INK_ICON_BUTTON} size-9`}
             >
               <CloseIcon size={14} />
             </button>

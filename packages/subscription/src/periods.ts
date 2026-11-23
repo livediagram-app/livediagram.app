@@ -12,19 +12,9 @@ export function monthKey(now: number): string {
   return new Date(now).toISOString().slice(0, 7);
 }
 
-/** The key a count with this period is filed under. A standing count has the one key `all`. */
-export function periodKey(period: 'day' | 'month' | 'none', now: number): string {
-  return period === 'day' ? dayKey(now) : period === 'month' ? monthKey(now) : 'all';
-}
-
 /** Midnight UTC at the start of `now`'s day. */
 export function dayStart(now: number): number {
   return Math.floor(now / DAY_MS) * DAY_MS;
-}
-
-/** Midnight UTC at the start of the day after `now`'s: when a daily count starts again. */
-export function nextDayStart(now: number): number {
-  return dayStart(now) + DAY_MS;
 }
 
 /** Midnight UTC on the first of `now`'s month. */

@@ -114,6 +114,35 @@ describe('SubscriptionProvider', () => {
     expect(calls.filter((call) => call.path === '/me')).toHaveLength(2);
   });
 
+  it('refreshes asked for while one is on its way share one more read after it, never one each', async () => {
+    const { fetcher, calls } = serviceFetch();
+    let done: Promise<void>[] = [];
+    function Refresh() {
+      const refresh = useRefreshSubscription();
+      return <button onClick={() => void (done = [refresh(), refresh(), refresh()])}>Again</button>;
+    }
+    render(
+      withProvider(
+        <>
+          <Tier id="a" />
+          <Refresh />
+        </>,
+        fetcher,
+      ),
+    );
+    await waitFor(() => expect(screen.getByTestId('a').textContent).toBe('free'));
+    const reads = () => calls.filter((call) => call.path === '/me').length;
+    fireEvent.click(screen.getByRole('button', { name: 'Again' }));
+    // The second and third asked while the first was on its way: they share the one read that follows it.
+    expect(done[1]).toBe(done[2]);
+    expect(done[1]).not.toBe(done[0]);
+    await act(() => done[1]);
+    expect(reads()).toBe(3);
+    fireEvent.click(screen.getByRole('button', { name: 'Again' }));
+    await act(() => Promise.all(done).then(() => undefined));
+    expect(reads()).toBe(5);
+  });
+
   it('an owner view is asked once per owner, whoever asks', async () => {
     const { fetcher, calls } = serviceFetch({
       owners: { [GARDEN]: ownerView(GARDEN, 'ask_admin') },

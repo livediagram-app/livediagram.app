@@ -399,7 +399,7 @@ before any request, and every caller keeps the path it had.
 
 | File                                               | Role                                                                                                                                                                                                                                       |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/media/src/payer.ts`                      | `uploaderScope` (account, `team:` gallery, null for a guest), `itemOwnerScope` and `knownItemOwnerScope` (a grant's owner), `betterLimits`, `payerLimits(client, uploader, itemOwner)`, `imageAllowance`, `imageTooLargeBody`              |
+| `packages/media/src/payer.ts`                      | `uploaderScope` (account, `team:` gallery, null for a guest), `knownItemOwnerScope` (a grant's owner, or nobody said), `betterLimits`, `payerLimits(client, uploader, itemOwner)`, `imageAllowance`, `imageTooLargeBody`                   |
 | `packages/media/src/tier-limits.ts`                | `IMAGE_UPLOAD_CEILING_BYTES`, `WALKTHROUGH_CEILING_MS`: the most any tier allows, from `TIER_LIMITS`                                                                                                                                       |
 | `packages/media/src/wire.ts`                       | `MEDIA_ITEM_OWNER_HEADER` (`X-Media-Item-Owner`), `MediaStorage`, `MediaFileTooLarge`, `owner` on `MediaGalleryFull`                                                                                                                       |
 | `liveworkspace/apps/media/src/tier.ts`             | `subscriptionOf(env)` (the service's client, as `liveworkspace.app`), `uploadLimits(env, request, owner)` (reads the header), `ownLimits`                                                                                                  |
@@ -421,7 +421,7 @@ before any request, and every caller keeps the path it had.
   the uploader's own scope (null for a guest), for an offer at Image Storage or Walkthroughs Stored and for the
   `owner` of a `gallery_full` or `walkthroughs_full` refusal and of the list's `storage`.
 - **The header.** Read with `isOwnerScope`; the uploader's own scope, or anything that is not a scope, is dropped.
-  An app's api builds it from `itemOwnerScope(grant)` and only for a grant that lets the caller add to the item
+  An app's api builds it from `itemPayerScope(grant)` and only for a grant that lets the caller add to the item
   (`participate` or `edit`, not in the Trash).
 - **What Subscription shows** (`liveworkspace/apps/media/src/owners-usage.ts`). Nothing is reported. `handleApp`
   hands a request whose `X-Media-App` is `subscription` to `isSubscriptionCaller` (Pro on, and the bearer equal, in

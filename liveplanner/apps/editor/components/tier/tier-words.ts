@@ -5,7 +5,7 @@
 
 import {
   monthResetDay,
-  tierAbove,
+  offerAbove,
   tierCount,
   tierPlural,
   type TierVoice,
@@ -39,13 +39,13 @@ export function emailsSpentWords(
 ): TierWords {
   const whose = whoseMonth(voice);
   const until = `More are turned away until ${monthResetDay(now, locale)}, and the sender is told.`;
-  const more = voice.offer ? tierAbove('emailToBoardPerMonth', voice.offer.tier) : null;
+  const above = offerAbove(voice, 'emailToBoardPerMonth');
   return {
     sentence:
       whose && voice.tier
         ? `This month’s ${tierCount(max)} emails to ${whose} boards have become cards. ${until}`
         : `This plan’s owner has used this month’s emails to boards. ${until}`,
-    offer: more ? `${voice.offer!.name} takes ${more} a month.` : '',
+    offer: above ? `${above.name} takes ${above.more} a month.` : '',
   };
 }
 
@@ -62,9 +62,9 @@ export function formMonthFullWords(
   locale?: string,
 ): string {
   const whose = whoseMonth(voice);
-  const more = voice.offer ? tierAbove('formResponsesPerMonth', voice.offer.tier) : null;
-  const or = more
-    ? `, or now with ${more}${more.endsWith('a member') ? '' : ' a month'} on ${voice.offer!.name}`
+  const above = offerAbove(voice, 'formResponsesPerMonth');
+  const or = above
+    ? `, or now with ${above.more}${above.more.endsWith('a member') ? '' : ' a month'} on ${above.name}`
     : '';
   const again = `This form takes responses again on ${monthResetDay(now, locale)}${or}.`;
   if (!whose || !voice.tier)
@@ -107,11 +107,11 @@ export function roadmapsFullWords(max: number, holder: RoadmapHolder, voice: Tie
         ? ' Unpublish it there to publish this board.'
         : ' Unpublish one to publish this board.';
   if (!voice.offer) return { sentence: `${sentence}${byHand}`, offer: '' };
-  const more = tierAbove('publicRoadmaps', voice.offer.tier);
+  const above = offerAbove(voice, 'publicRoadmaps');
   return {
     sentence: `${sentence}${byHand}`,
-    offer: more
-      ? `${voice.offer.name} publishes ${more}.`
+    offer: above
+      ? `${above.name} publishes ${above.more}.`
       : `${voice.offer.name} publishes as many as you like.`,
   };
 }

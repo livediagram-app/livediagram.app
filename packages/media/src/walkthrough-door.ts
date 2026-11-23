@@ -33,7 +33,7 @@ export type WalkthroughAccess = {
   // A tab-scoped link, a Community visit or an item in the Trash: no walkthroughs (they can travel across tabs, and
   // a Community post's visitors are the public).
   closed: boolean;
-  // The item's owner as a subscription scope (`itemOwnerScope` of the grant), for the service to read its tier beside
+  // The item's owner as a subscription scope (`itemPayerScope` of the grant), for the service to read its tier beside
   // the recorder's with Pro on (walkthroughs.md "With Pro on"). Left out, the recorder's own tier applies.
   itemOwner?: string | null;
 };

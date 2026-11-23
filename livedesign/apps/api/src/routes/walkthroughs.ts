@@ -4,8 +4,8 @@
 // person in their own editor, and the index's grant on the design, closed to a tab-scoped link, a Community visit and
 // a design in the Trash.
 
-import { handleWalkthroughDoor, itemOwnerScope } from '@liveworkspace/media';
-import { proEnabled } from '@liveworkspace/subscription';
+import { handleWalkthroughDoor } from '@liveworkspace/media';
+import { itemPayerScope, proEnabled } from '@liveworkspace/subscription';
 import { designRoom } from '../design-client';
 import { mediaClient, mediaOwner } from '../media';
 import { CORS_HEADERS, json } from '../responses';
@@ -39,7 +39,7 @@ export async function handleWalkthroughs(ctx: RouteContext): Promise<Response> {
           grant.tab !== null ||
           (post !== null && post.code === grant.shareCode),
         // Whose item it is, for the service to read its tier beside the recorder's (walkthroughs.md "With Pro on").
-        itemOwner: itemOwnerScope(grant),
+        itemOwner: itemPayerScope(grant),
       };
     },
     pro: proEnabled(ctx.env.PRO_ENABLED),

@@ -62,15 +62,16 @@ function field(who: Who | null) {
 }
 
 describe('an upload over the tier’s limit, Pro on', () => {
-  it('shows the owner the notice with the server’s limit, Choose Another and the offer', async () => {
+  it('shows the owner the notice with the server’s limit, and Choose Another', async () => {
     refuses(() => refusal('owner', 'too_large'));
     const { input, pick } = field('owner');
     // The hint names no size: the limit is the server's to say.
     expect(screen.getByText('PNG, JPEG, WebP or GIF')).toBeTruthy();
     await pick();
     expect(await screen.findByText('This Image Is Over 5 MB')).toBeTruthy();
-    expect(await screen.findByText(/Free takes images up to 5 MB\./)).toBeTruthy();
-    expect(await screen.findByText(/Pro takes 25 MB\./)).toBeTruthy();
+    expect(await screen.findByText('Free takes images up to 5 MB.')).toBeTruthy();
+    // The largest image is the same on every tier: nothing to offer.
+    expect(screen.queryByText(/Pro takes/)).toBeNull();
     // The plain sentence is not said twice.
     expect(screen.queryByText('the plain sentence')).toBeNull();
     const click = vi.spyOn(input, 'click');

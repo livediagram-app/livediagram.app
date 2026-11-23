@@ -115,7 +115,11 @@ export async function knowledgeKit(
   base: Partial<Env> = {},
   pages: unknown[] = PAGES,
   // Each signed-in caller presents `jwt-<their id>` as their bearer, as a browser does (the AI key tests).
-  { bearers = false }: { bearers?: boolean } = {},
+  // `waitUntil`: the Worker's background work, for a test that watches what runs behind an answer.
+  {
+    bearers = false,
+    waitUntil,
+  }: { bearers?: boolean; waitUntil?: (work: Promise<unknown>) => void } = {},
 ): Promise<Kit> {
   const db = sqliteD1({ DOCUMENT_ROOM: roomBinding(), ...base } as unknown as Partial<Env>);
   const call: Kit['call'] = (who, method, path, body) => {
@@ -129,6 +133,7 @@ export async function knowledgeKit(
         token: caller.token ? { id: TOKEN_ID, readOnly: caller.readOnly === true } : null,
         ...(bearers && caller.account ? { bearer: `jwt-${caller.account}` } : {}),
         ...(caller.stored ? { agent: 'stored' as const } : {}),
+        ...(waitUntil ? { waitUntil } : {}),
         body,
         headers: {
           ...(caller.code ? { 'X-Share-Code': caller.code } : {}),

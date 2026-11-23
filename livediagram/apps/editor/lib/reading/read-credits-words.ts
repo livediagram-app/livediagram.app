@@ -3,21 +3,18 @@
 // gives is read from the subscription contract, and only for someone who may move to it. Pure.
 import {
   aiCreditsWords,
-  isPerMemberLimit,
-  nextMonthStart,
-  TIER_LIMITS,
+  TIER_NAMES,
   usesAiCredits,
   type PaidTier,
 } from '@liveworkspace/subscription';
-
-const count = (n: number) => n.toLocaleString('en-GB');
+import {
+  monthResetDay,
+  tierAbove,
+  tierCount as count,
+} from '@liveworkspace/subscription-ui/item-tier';
 
 /** The day the month's credits come back, as the reader's locale writes it: "1 December". Months are UTC months. */
-export function creditsResetDay(now: number, locale?: string): string {
-  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
-    new Date(nextMonthStart(now)),
-  );
-}
+export const creditsResetDay = monthResetDay;
 
 /** The quiet line: "Uses 2 AI credits" while the photo is read, "Used 2 AI credits" once it has been. */
 export function readCreditLine(reading: boolean, cost: number): string {
@@ -65,8 +62,5 @@ export const CREDITS_USED_PLAIN = `This month’s AI credits are used. ${ON_DEVI
 
 /** What the tier above has: "Pro has 1,000 a month." or "Pro for Teams has 500 a member a month." */
 export function creditsOffer(tier: PaidTier): string {
-  const most = count(TIER_LIMITS[tier].aiCreditsPerMonth);
-  return tier === 'team' && isPerMemberLimit('aiCreditsPerMonth')
-    ? `Pro for Teams has ${most} a member a month.`
-    : `Pro has ${most} a month.`;
+  return `${TIER_NAMES[tier]} has ${tierAbove('aiCreditsPerMonth', tier)} a month.`;
 }

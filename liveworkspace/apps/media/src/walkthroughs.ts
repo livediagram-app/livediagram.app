@@ -17,6 +17,7 @@ import {
   WALKTHROUGHS_PER_OWNER_LIST_MAX,
   walkthroughMediaType,
   type MediaApp,
+  type PayerLimits,
   type Walkthrough,
   type WalkthroughEvents,
   type WalkthroughLimits,
@@ -26,7 +27,7 @@ import {
 import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { parsePositiveCap, type Env } from './env';
 import { badRequest, forbidden, json, notFound, ok } from './http';
-import { ownLimits, uploadLimits } from './tier';
+import { ownLimits, proOn, uploadLimits } from './tier';
 
 type Row = {
   id: string;
@@ -111,14 +112,29 @@ async function deleteObjects(bucket: R2Bucket, ids: readonly string[]): Promise<
   }
 }
 
-// How many walkthroughs a person holds, in every app, started ones included: what Walkthroughs Stored counts.
-async function storedCount(env: Env, owner: string): Promise<number> {
-  const row = await env.MEDIA_DB.prepare(
+/**
+ * A list's rows and, with Pro on, what `recorder` may record and keep: how many walkthroughs they hold in every app
+ * (started ones included: what Walkthroughs Stored counts) read in the list's own batch, beside the read of their
+ * limits. With Pro off, or nobody to count for, the list is the only read.
+ */
+async function listWithLimits(
+  env: Env,
+  list: D1PreparedStatement,
+  recorder: string | null,
+  limitsOf: (recorder: string) => Promise<PayerLimits | null>,
+): Promise<{ rows: Row[]; tier: PayerLimits | null; stored: number }> {
+  if (recorder === null || !proOn(env)) {
+    return { rows: (await list.all<Row>()).results, tier: null, stored: 0 };
+  }
+  const count = env.MEDIA_DB.prepare(
     'SELECT COUNT(*) AS count FROM walkthroughs WHERE owner = ?',
-  )
-    .bind(owner)
-    .first<{ count: number }>();
-  return row?.count ?? 0;
+  ).bind(recorder);
+  const [[listed, counted], tier] = await Promise.all([
+    env.MEDIA_DB.batch<Row | { count: number }>([list, count]),
+    limitsOf(recorder),
+  ]);
+  const held = counted!.results[0] as { count: number } | undefined;
+  return { rows: listed!.results as Row[], tier, stored: held?.count ?? 0 };
 }
 
 export async function handleWalkthroughs(
@@ -138,26 +154,32 @@ export async function handleWalkthroughs(
     // GET /app/walkthroughs?owner=: a person's own ready ones in this app, newest first (the Explorer's library).
     if (method === 'GET' && item === null && owner !== null) {
       if (!isId(owner)) return badRequest('invalid_owner');
-      const { results } = await env.MEDIA_DB.prepare(
-        `SELECT * FROM walkthroughs WHERE owner = ? AND app = ? AND ready = 1
-          ORDER BY created_at DESC, id LIMIT ${WALKTHROUGHS_PER_OWNER_LIST_MAX}`,
-      )
-        .bind(owner, app)
-        .all<Row>();
       // With Pro on, what the person's own tier keeps and how many they hold, in every app (walkthroughs.md "The
       // Explorer's Walkthroughs"): the library's usage meter. Their own tier alone: no item is named here.
-      const own = await ownLimits(env, owner);
+      const {
+        rows,
+        tier: own,
+        stored,
+      } = await listWithLimits(
+        env,
+        env.MEDIA_DB.prepare(
+          `SELECT * FROM walkthroughs WHERE owner = ? AND app = ? AND ready = 1
+            ORDER BY created_at DESC, id LIMIT ${WALKTHROUGHS_PER_OWNER_LIST_MAX}`,
+        ).bind(owner, app),
+        owner,
+        (person) => ownLimits(env, person),
+      );
       const limits: WalkthroughLimits | null = own
         ? {
             maxMs: own.walkthroughMaxMs,
-            stored: await storedCount(env, owner),
+            stored,
             storedLimit: own.walkthroughsStored,
             owner: own.storageOwner,
             storedOwner: own.storageOwner,
           }
         : null;
       return json({
-        walkthroughs: results.map((row) => ({
+        walkthroughs: rows.map((row) => ({
           walkthrough: rowToWalkthrough(row),
           owner: row.owner,
         })),
@@ -166,27 +188,28 @@ export async function handleWalkthroughs(
     }
     if (method === 'GET') {
       if (!isId(item)) return badRequest('invalid_item');
-      const { results } = await env.MEDIA_DB.prepare(
-        `SELECT * FROM walkthroughs WHERE app = ? AND item = ? AND ready = 1
-          ORDER BY created_at DESC, id LIMIT ${WALKTHROUGHS_PER_ITEM_MAX}`,
-      )
-        .bind(app, item)
-        .all<Row>();
       // `&for=<recorder>`: with Pro on, what that person may record on this item (walkthroughs.md "With Pro on").
       const recorder = url.searchParams.get('for');
-      const tier = isId(recorder) ? await uploadLimits(env, request, recorder) : null;
-      const limits: WalkthroughLimits | null =
-        tier && isId(recorder)
-          ? {
-              maxMs: tier.walkthroughMaxMs,
-              stored: await storedCount(env, recorder),
-              storedLimit: tier.walkthroughsStored,
-              owner: tier.owner,
-              storedOwner: tier.storageOwner,
-            }
-          : null;
+      const { rows, tier, stored } = await listWithLimits(
+        env,
+        env.MEDIA_DB.prepare(
+          `SELECT * FROM walkthroughs WHERE app = ? AND item = ? AND ready = 1
+            ORDER BY created_at DESC, id LIMIT ${WALKTHROUGHS_PER_ITEM_MAX}`,
+        ).bind(app, item),
+        isId(recorder) ? recorder : null,
+        (person) => uploadLimits(env, request, person),
+      );
+      const limits: WalkthroughLimits | null = tier
+        ? {
+            maxMs: tier.walkthroughMaxMs,
+            stored,
+            storedLimit: tier.walkthroughsStored,
+            owner: tier.owner,
+            storedOwner: tier.storageOwner,
+          }
+        : null;
       return json({
-        walkthroughs: results.map((row) => ({
+        walkthroughs: rows.map((row) => ({
           walkthrough: rowToWalkthrough(row),
           owner: row.owner,
         })),

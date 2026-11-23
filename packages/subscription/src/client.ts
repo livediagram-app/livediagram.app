@@ -88,6 +88,22 @@ function sharedHealth(base: string): SubscriptionHealth {
 /** One isolate's entitlements, shared by every client made without its own cache. */
 const SHARED_CACHE: EntitlementCache = new Map();
 
+/** The reads of the service under way for a cache, by owner: the callers of one miss share one request. */
+type EntitlementReads = Map<string, Promise<Entitlement | 'unknown'>>;
+const READS = new WeakMap<EntitlementCache, EntitlementReads>();
+
+function readsOf(cache: EntitlementCache): EntitlementReads {
+  let reads = READS.get(cache);
+  if (!reads) READS.set(cache, (reads = new Map()));
+  return reads;
+}
+
+/** Tests only: what the isolate remembers of every owner, dropped, so one test's tier never reaches the next. */
+export function forgetEntitlementsForTests(): void {
+  SHARED_CACHE.clear();
+  readsOf(SHARED_CACHE).clear();
+}
+
 export function freeEntitlement(owner: OwnerScope): Entitlement {
   return { owner, tier: 'free', seats: 1, limits: limitsFor('free') };
 }
@@ -189,8 +205,10 @@ type Answer =
 const UNREACHABLE: Answer = { kind: 'unreachable' };
 
 export function createSubscriptionClient(config: SubscriptionClientConfig): SubscriptionClient {
-  const now = config.now ?? Date.now;
+  // The clock read at each call, so a test's clock moves it.
+  const now = config.now ?? (() => Date.now());
   const cache = config.cache ?? SHARED_CACHE;
+  const reads = readsOf(cache);
   const base = (config.url ?? SUBSCRIPTION_API_URL).replace(/\/+$/, '');
   const fetcher: SubscriptionFetcher = config.fetcher ?? {
     fetch: (input, init) => fetch(input, init),
@@ -264,6 +282,21 @@ export function createSubscriptionClient(config: SubscriptionClientConfig): Subs
     if (!ready) return 'unknown';
     const cached = cache.get(owner);
     if (cached && now() - cached.at < ENTITLEMENT_FRESH_MS) return cached.entitlement;
+    // A miss asks once however many requests stand on it: the rest wait on the one under way.
+    const pending = reads.get(owner);
+    if (pending) return pending;
+    const read = askEntitlement(owner, cached).finally(() => {
+      // A read `forget` dropped has been replaced by now: only its own place is cleared.
+      if (reads.get(owner) === read) reads.delete(owner);
+    });
+    reads.set(owner, read);
+    return read;
+  }
+
+  async function askEntitlement(
+    owner: OwnerScope,
+    cached: CacheEntry | undefined,
+  ): Promise<Entitlement | 'unknown'> {
     const answer = await post('entitlement', { owner });
     if (answer.kind === 'answered') {
       const entitlement = entitlementFrom(owner, answer.body);
@@ -352,6 +385,8 @@ export function createSubscriptionClient(config: SubscriptionClientConfig): Subs
     },
     forget: (owner) => {
       cache.delete(owner);
+      // A read under way was asked before whatever is being forgotten: the next read asks again.
+      reads.delete(owner);
     },
   };
 }

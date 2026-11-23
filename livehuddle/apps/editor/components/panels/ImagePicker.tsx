@@ -182,13 +182,8 @@ export function ImagePicker({
               <ImageLimitNotice
                 refusal={uploadLimit}
                 className="mt-3"
-                onChooseAnother={
-                  uploadLimit.kind === 'too_large'
-                    ? () =>
-                        uploadZone.current
-                          ?.querySelector<HTMLInputElement>('input[type="file"]')
-                          ?.click()
-                    : undefined
+                onChooseAnother={() =>
+                  uploadZone.current?.querySelector<HTMLInputElement>('input[type="file"]')?.click()
                 }
                 // Where images are deleted: this picker's own Gallery.
                 onManageImages={() => setTab('gallery')}

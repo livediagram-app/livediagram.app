@@ -10,7 +10,7 @@ from the code. Paths are relative to `livehuddle/`.
 | `packages/api-schema/src/call-minutes.ts`                        | `CALL_MINUTES_LOW` (80), `CallSessionMinutes`, `CallMinutesRefusal`, `CallMinutesResponse`, `CallMinutesOp`, `parseCallMinutesOp`             |
 | `packages/api-schema/src/call-control.ts`                        | `CallSessionOp.left`, kept by `parseCallSession` only when exactly `true`                                                                     |
 | `packages/api-schema/src/room-op-kinds.ts`                       | `call-minutes` in `SYSTEM_OP_KINDS`: the room drops one sent by a client                                                                      |
-| `apps/api/src/subscription.ts`                                   | `subscriptionOf(env)`: the api's one subscription client (`livehuddle.app`), one entitlement cache per isolate                                |
+| `@liveworkspace/subscription`                                    | `subscriptionClientOf(env, 'livehuddle.app')`: the api's subscription client, on the package's one entitlement cache per isolate              |
 | `apps/api/src/calls/call-meter.ts`                               | `CallMeter`: the room's meter. `admit`, `proved`, `left`, `dropped`, `alarm`, `due`, `read`, `restore`, `forget`                              |
 | `apps/api/src/calls/realtime-api.ts`                             | `sessionMids` (`GET sessions/:id`), `severSession` (force-close every track of a session, in batches of 64)                                   |
 | `apps/api/src/routes/calls.ts`                                   | `callsPayer(grant)`, the admit before `mintSession`, `GET calls/minutes`                                                                      |

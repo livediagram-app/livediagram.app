@@ -70,7 +70,6 @@ describe('an outgoing step’s panel', () => {
     expect(
       await screen.findByText('Each message this step sends counts as one automation run.'),
     ).toBeTruthy();
-    expect(document.querySelector('[data-pro-gate]')).toBeNull();
     expect(screen.getByRole('textbox', { name: /Message/ })).toBeTruthy();
   });
 

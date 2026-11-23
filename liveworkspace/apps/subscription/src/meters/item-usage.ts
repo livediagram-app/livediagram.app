@@ -10,7 +10,7 @@ import {
   type ItemMeter,
   type OwnerScope,
 } from '@liveworkspace/subscription';
-import { ENTITLED_LIMIT, LIMIT_BINDS, limitBinds, limitFromSql, paidTierOf } from './limits';
+import { ENTITLED_LIMIT, LIMIT_BINDS, limitBinds, meterResult, type MeterRow } from './limits';
 
 export type ItemCount = {
   owner: OwnerScope;
@@ -20,18 +20,16 @@ export type ItemCount = {
   adding?: boolean;
 };
 
-type Counted = { used: number; paid: number; lim: number };
-
 const B = LIMIT_BINDS;
 // ?7 meter, ?8 item, ?9 the count, ?10 whether it is an add, ?11 now.
-const OTHERS = `(SELECT COALESCE(SUM(used), 0) FROM item_usage WHERE owner = ?5 AND meter = ?${B + 1} AND item <> ?${B + 2} AND period = 'all')`;
-const HELD = `COALESCE((SELECT used FROM item_usage WHERE owner = ?5 AND meter = ?${B + 1} AND item = ?${B + 2} AND period = 'all'), 0)`;
+const OTHERS = `(SELECT COALESCE(SUM(used), 0) FROM item_usage WHERE owner = ?5 AND meter = ?${B + 1} AND item <> ?${B + 2})`;
+const HELD = `COALESCE((SELECT used FROM item_usage WHERE owner = ?5 AND meter = ?${B + 1} AND item = ?${B + 2}), 0)`;
 const ALLOWED = `(?${B + 4} = 0 OR ?${B + 3} <= ${HELD} OR (SELECT lim FROM ent) < 0 OR ${OTHERS} + ?${B + 3} <= (SELECT lim FROM ent))`;
 
 const COUNT = `${ENTITLED_LIMIT}
-INSERT INTO item_usage (owner, meter, item, period, used, updated_at)
-SELECT ?5, ?${B + 1}, ?${B + 2}, 'all', ?${B + 3}, ?${B + 5} FROM ent WHERE ${ALLOWED}
-ON CONFLICT (owner, meter, item) DO UPDATE SET period = 'all', used = excluded.used, updated_at = excluded.updated_at
+INSERT INTO item_usage (owner, meter, item, used, updated_at)
+SELECT ?5, ?${B + 1}, ?${B + 2}, ?${B + 3}, ?${B + 5} FROM ent WHERE ${ALLOWED}
+ON CONFLICT (owner, meter, item) DO UPDATE SET used = excluded.used, updated_at = excluded.updated_at
 RETURNING ${OTHERS} + used AS used, (SELECT paid FROM ent) AS paid, (SELECT lim FROM ent) AS lim`;
 
 // Only after a refusal: the owner's total as it stands, and their limit.
@@ -43,17 +41,8 @@ const DROP = 'DELETE FROM item_usage WHERE owner = ? AND meter = ? AND item = ?'
 const LEFT = `${ENTITLED_LIMIT}
 SELECT ${OTHERS} AS used, paid, lim FROM ent`;
 
-function result(owner: OwnerScope, ok: boolean, row: Counted): ItemCountResult {
-  return {
-    ok,
-    used: row.used,
-    limit: limitFromSql(row.lim),
-    tier: row.paid ? paidTierOf(owner) : 'free',
-  };
-}
-
 /** Records an item's count, or refuses a growing one past the owner's limit. A count of nothing drops the item's
- *  row: it holds none now, or is gone. */
+ *  row: it holds none now, or is gone (one round trip: the drop and the read after it are one batch). */
 export async function countItem(
   db: D1Database,
   count: ItemCount,
@@ -65,22 +54,21 @@ export async function countItem(
     count.item,
   ];
   if (count.used === 0) {
-    await db.prepare(DROP).bind(count.owner, count.meter, count.item).run();
-    const left = await db
-      .prepare(LEFT)
-      .bind(...binds)
-      .first<Counted>();
-    return result(count.owner, true, left!);
+    const [, left] = await db.batch<MeterRow>([
+      db.prepare(DROP).bind(count.owner, count.meter, count.item),
+      db.prepare(LEFT).bind(...binds),
+    ]);
+    return meterResult(count.owner, true, left!.results[0]!);
   }
   const written = await db
     .prepare(COUNT)
     .bind(...binds, count.used, count.adding ? 1 : 0, now)
-    .first<Counted>();
-  if (written) return result(count.owner, true, written);
+    .first<MeterRow>();
+  if (written) return meterResult(count.owner, true, written);
   const refused = await db
     .prepare(REFUSED)
     .bind(...binds)
-    .first<Counted>();
+    .first<MeterRow>();
   // The clause always answers one row.
-  return result(count.owner, false, refused!);
+  return meterResult(count.owner, false, refused!);
 }

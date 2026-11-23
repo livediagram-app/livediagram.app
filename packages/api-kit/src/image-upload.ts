@@ -6,12 +6,12 @@
 import {
   imageAllowance,
   IMAGE_UPLOAD_CEILING_BYTES,
-  itemOwnerScope,
   MAX_IMAGE_BYTES,
   type ImageAllowance,
   type MediaListResponse,
 } from '@liveworkspace/media';
 import {
+  itemPayerScope,
   proEnabled,
   subscriptionClientOf,
   type SubscriptionApp,
@@ -66,7 +66,7 @@ export function imageUploadAllowance(
   return imageAllowance(subscriptionClientOf(env, app), uploader, async () => {
     const grant = await itemGrant();
     if (!grant || grant.level === 'view' || grant.trashed) return null;
-    return itemOwnerScope(grant);
+    return itemPayerScope(grant);
   });
 }
 

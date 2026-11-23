@@ -2,20 +2,13 @@
 // v1 an HMAC-SHA256 of `<t>.<raw body>` with the endpoint's signing secret. Checked with WebCrypto, in constant time,
 // and only within a few minutes of `t`, so an old event can't be sent again.
 
+import { timingSafeEqual } from '@liveworkspace/index-app/timing-safe';
 import { STRIPE_SIGNATURE_TOLERANCE_S } from '../../config';
 
 const encoder = new TextEncoder();
 
 function hexOf(bytes: ArrayBuffer): string {
   return Array.from(new Uint8Array(bytes), (byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
-/** Two strings equal in constant time for their length. */
-function sameText(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let at = 0; at < a.length; at++) diff |= a.charCodeAt(at) ^ b.charCodeAt(at);
-  return diff === 0;
 }
 
 export async function signatureOf(
@@ -51,5 +44,8 @@ export async function isSignedByStripe(
   if (timestamp === null || signatures.length === 0) return false;
   if (Math.abs(now / 1000 - timestamp) > STRIPE_SIGNATURE_TOLERANCE_S) return false;
   const expected = await signatureOf(secret, timestamp, payload);
-  return signatures.some((signature) => sameText(signature, expected));
+  const matches = await Promise.all(
+    signatures.map((signature) => timingSafeEqual(signature, expected)),
+  );
+  return matches.includes(true);
 }
