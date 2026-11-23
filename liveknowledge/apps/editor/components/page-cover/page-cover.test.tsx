@@ -12,6 +12,7 @@ import type { EditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { PageCoverBand } from './PageCoverBand';
 import { AddCoverButton } from './AddCoverButton';
 import {
+  coverAddable,
   coverEditable,
   coverOfTab,
   coverThemeOf,
@@ -124,6 +125,13 @@ describe('who may change a cover', () => {
       expect(screen.queryByRole('button', { name: 'Remove Cover' })).toBeNull();
     },
   );
+
+  // Owner 2026-11-23: Add Cover shows while the page is read too; the band's controls stay edit mode's.
+  it('adds one (Add Cover) whether the page is read or edited, for a writer alone', () => {
+    expect(coverAddable({ isReadOnly: false, participating: false })).toBe(true);
+    expect(coverAddable({ isReadOnly: true, participating: false })).toBe(false);
+    expect(coverAddable({ isReadOnly: false, participating: true })).toBe(false);
+  });
 
   it('shows an Editor reading a page with edit mode none of them either', () => {
     mount(<PageCoverBand />, PICTURE, 'edit', { pageEditing: { editing: false } });
@@ -346,6 +354,27 @@ describe('the cover menu', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Theme Soft' }));
     expect(page.cover()).toEqual({ motion: 'aurora', colouring: 'soft' });
     expect(screen.queryByRole('radio', { name: 'Custom Colours' })).toBeNull();
+  });
+});
+
+describe('Add Cover while the page is read', () => {
+  it('sets a gradient with no Edit first', () => {
+    const page = mount(<AddCoverButton />, undefined, 'edit', { pageEditing: { editing: false } });
+    fireEvent.click(screen.getByRole('button', { name: /Add Cover/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Theme Dawn' }));
+    expect(page.cover()).toEqual({ gradient: 'theme-dawn' });
+  });
+
+  it('sets a motion and hands no menu on to a band with no controls, nor to the next Edit', () => {
+    const page = mount(<MetaAndBand />, undefined, 'edit', { pageEditing: { editing: false } });
+    fireEvent.click(screen.getByRole('button', { name: /Add Cover/ }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Aurora' }));
+    expect(page.cover()).toEqual({ motion: 'aurora', colouring: 'deep' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // Edit: the band's controls arrive, and no menu opens by itself.
+    act(() => page.store.set({ ...page.store.get(), pageEditing: { editing: true } } as never));
+    expect(screen.getByRole('button', { name: /Change Cover/ })).toBeTruthy();
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
 

@@ -203,15 +203,14 @@ test("an agent's write shows as AI Edited, with its name in the card", async ({
   await expect(edited).toHaveAttribute('data-maker-kind', 'ai');
   await expect(edited).toHaveText('AI Edited');
   await expect(page.locator('[data-page-maker="created"]')).toHaveText('Human Generated');
-  // Its hover card names the agent for its person and the door: the pill is described by the card's words.
-  await expect(edited).toHaveAccessibleDescription(
-    /^Last edited by Coding Agent for .+ through the API, /,
-  );
+  // No hover card (the meta row's labelled buttons have none, owner 2026-11-23): a press opens its words, the agent for
+  // its person and the door, as a popover.
   await edited.hover();
-  await expect(page.getByRole('tooltip')).toContainText('Coding Agent');
-  // A tap (a phone has no hover) opens the same words as a popover.
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
   await edited.click();
-  await expect(page.getByRole('dialog', { name: 'AI Edited' })).toContainText('Coding Agent for');
+  await expect(page.getByRole('dialog', { name: 'AI Edited' })).toContainText(
+    /Last edited by Coding Agent for .+ through the API, /,
+  );
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: 'AI Edited' })).toHaveCount(0);
   expectNoPageErrors(pageErrors);

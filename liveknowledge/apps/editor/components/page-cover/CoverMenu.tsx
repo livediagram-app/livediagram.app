@@ -79,10 +79,13 @@ export function CoverMenu({
   menu,
   cover,
   align = 'start',
+  handOff = false,
 }: {
   menu: CoverMenuState;
   cover: TabCover | undefined;
   align?: 'start' | 'end';
+  /** Add Cover's: a motion picked here carries on from the band's Change Cover, which is there in edit mode alone. */
+  handOff?: boolean;
 }) {
   const titleId = useId();
   const setCover = useSetPageCover();
@@ -151,7 +154,7 @@ export function CoverMenu({
               onPick={(fill) => {
                 const next = animatedCoverOf(fill, theme);
                 if (!next) return;
-                if (!cover) handedOff = true;
+                if (!cover && handOff) handedOff = true;
                 setCover(next);
               }}
             />
