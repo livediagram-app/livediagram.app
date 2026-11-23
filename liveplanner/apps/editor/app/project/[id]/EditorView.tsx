@@ -1,4 +1,6 @@
 'use client';
+import { SendToPlanHost } from '@liveworkspace/workbench/components/send-to-plan/SendToPlanHost';
+import { canSendToPlan } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
 
 import { useAiSourceScope } from '@liveworkspace/workbench/components/ai/ai-source-scope';
 import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
@@ -334,6 +336,20 @@ export function EditorView() {
             >
               <CursorsDrawnContext.Provider value={cursorsDrawn}>
                 <SelectionStoreProvider store={ctx.selectionStore}>
+                  {/* Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): the chips' sends and the picker. */}
+                  <SendToPlanHost
+                    app="liveplanner"
+                    itemId={ctx.authLoaded && hydrated ? ctx.projectId : null}
+                    tabId={activeId}
+                    title={projectName?.trim() || 'Untitled plan'}
+                    share={sessionShareCode ? { code: sessionShareCode } : null}
+                    enabled={canSendToPlan({
+                      signedIn: !!accountUserId,
+                      offline: isOffline,
+                      embed: !appChrome,
+                      community: sessionCommunity !== null,
+                    })}
+                  />
                   <ViewportStoreProvider store={ctx.viewport}>
                     <CanvasSurfaceProvider surface={canvasSurface(backdrop.backgroundColor)}>
                       {/* The canvas style, for the pages that cover the canvas and must draw its motion themselves. */}

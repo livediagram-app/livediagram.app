@@ -18,6 +18,7 @@ import {
 import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
+import { SEND_TO_PLAN } from '../_shared/send-to-plan-metrics';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { LIBRARY } from '../_shared/library-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
@@ -313,6 +314,7 @@ export const LIVEDIAGRAM: TelemetryAppConfig = {
           SIDE_BY_SIDE,
           CONNECTED_TABS,
           SNAPSHOTS,
+          SEND_TO_PLAN,
           WALKTHROUGHS,
           LIBRARY,
           LIVE_EMBEDS_SHOWN,

@@ -252,6 +252,14 @@ export function connectRoom(
         } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
+        else if (msg.kind === 'source-changed') {
+          handlers.onSourceChanged?.({
+            app: msg.app,
+            itemId: msg.itemId,
+            sheetIds: msg.sheetIds,
+            ...(Array.isArray(msg.cards) ? { cards: msg.cards } : {}),
+          });
+        }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {
           noteServerDocumentFormat(msg.format);

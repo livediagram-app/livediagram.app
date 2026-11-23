@@ -41,7 +41,13 @@ export type RoomClientHandlers<Op, Participant> = {
   onFollowers?: (ids: string[]) => void;
   // A Sheet a linked chart in the item reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping
   // in step"): ids only; the editor reads the range again with this person's own access.
-  onSourceChanged?: (msg: { app: string; itemId: string; sheetIds: string[] }) => void;
+  // A plan's sent cards changed too (send-to-plan.md "The chip"): their ids in `cards`.
+  onSourceChanged?: (msg: {
+    app: string;
+    itemId: string;
+    sheetIds: string[];
+    cards?: string[];
+  }) => void;
   // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
   // sent to this socket alone after each hello: our answers and reactions are recorded under it.
   onCollabKey?: (key: string) => void;
@@ -141,7 +147,7 @@ type RoomClientIncoming<Op, Participant> =
     }
   | { kind: 'selection-released'; elementId: string; by: string }
   | { kind: 'followers'; ids: string[] }
-  | { kind: 'source-changed'; app: string; itemId: string; sheetIds: string[] }
+  | { kind: 'source-changed'; app: string; itemId: string; sheetIds: string[]; cards?: string[] }
   | { kind: 'cursor'; epoch: string; seq: number; ref?: number }
   | { kind: 'format'; format: number; build?: string }
   | { kind: 'grant-renew'; expiresAt: number }
@@ -383,7 +389,12 @@ export function connectRoomClient<
         } else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
         else if (msg.kind === 'source-changed') {
-          handlers.onSourceChanged?.({ app: msg.app, itemId: msg.itemId, sheetIds: msg.sheetIds });
+          handlers.onSourceChanged?.({
+            app: msg.app,
+            itemId: msg.itemId,
+            sheetIds: msg.sheetIds,
+            ...(Array.isArray(msg.cards) ? { cards: msg.cards } : {}),
+          });
         }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {

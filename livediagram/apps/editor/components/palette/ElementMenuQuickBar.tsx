@@ -4,6 +4,7 @@
 // above the menu's first category holding the element kind's own verbs (a mind node's Add Child and Add Sibling, a
 // flowchart step's, a relationship's cardinality), which the floating selection toolbar no longer carries. Not drawn on
 // an element with none. Also here: quickBarItems, the Resources category's rows.
+import { elementSendItem } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
 import { elementKindLabel, type BoxedElement, type Element } from '@livediagram/document';
 import {
@@ -80,6 +81,10 @@ export function quickBarItems(
       on: target.type === 'shape' && typeof target.statusUrl === 'string',
       run: () => onEditLiveStatus(target.id),
     });
+  // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner, while this session
+  // may send.
+  const send = elementSendItem(target);
+  if (send) items.push(send);
   return items;
 }
 

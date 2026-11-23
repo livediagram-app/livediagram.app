@@ -330,4 +330,24 @@ describe('the item panel’s authorship', () => {
     expect(screen.queryByText(/^Created by/)).toBeNull();
     expect(screen.queryByText(/^Edited by/)).toBeNull();
   });
+
+  // Work Tracker 1365 (docs/specs/026-plan/items.md "Sent From"): a card Send to Plan made links back to its place.
+  it('says Sent From with a link back for a card Send to Plan made', () => {
+    const sentFrom = JSON.stringify({
+      app: 'livediagram',
+      itemId: 'D',
+      title: 'Retro',
+      kind: 'element',
+      label: '',
+      text: 'Fix login',
+      link: 'https://www.livediagram.app/d/D#t=t1&el=e1',
+    });
+    const task = { ...item('t', 1, 'task'), fields: { ...item('t', 1, 'task').fields, sentFrom } };
+    render(<ItemMeta item={task} now={Date.now()} />);
+    const row = screen.getByText(/^Sent from/).closest('[data-item-meta-row]')!;
+    expect(row.textContent).toMatch(/^Sent from Retro · livediagram/);
+    const link = row.querySelector<HTMLAnchorElement>('a[data-sent-from]')!;
+    expect(link.href).toBe('https://www.livediagram.app/d/D#t=t1&el=e1');
+    expect(link.target).toBe('_blank');
+  });
 });

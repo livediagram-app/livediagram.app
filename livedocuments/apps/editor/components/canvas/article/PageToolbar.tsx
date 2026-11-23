@@ -59,6 +59,10 @@ import { articleSchema } from '@/lib/article/article-schema';
 import { articleCountsOf } from '@/lib/article/article-word-count';
 import { selectNextLongSentence } from '@/lib/article/article-long-sentences';
 import { track } from '@/lib/telemetry';
+import { articleSendPick } from '@liveworkspace/workbench/components/send-to-plan/article-sent';
+import { canSendHere } from '@liveworkspace/workbench/components/send-to-plan/send-to-plan-entry';
+import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
+import { sendArticleWords } from '@liveworkspace/workbench/components/send-to-plan/article-send-dom';
 import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
 import { insertFootnote } from '@/lib/article/article-footnotes';
 import {
@@ -395,6 +399,19 @@ export function PageToolbar({
           </Button>
         </>
       )}
+      {canSendHere() ? (
+        <>
+          <Divider />
+          <Button
+            label="Send to Plan"
+            disabled={!articleSendPick(handle.state())}
+            why="Put the caret in some words first."
+            onPress={() => sendArticleWords(articleSendPick(handle.state()))}
+          >
+            <SendToPlanMenuIcon size={16} />
+          </Button>
+        </>
+      ) : null}
     </div>
   );
 

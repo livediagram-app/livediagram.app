@@ -1,4 +1,5 @@
 import { useRef, type ReactNode } from 'react';
+import { SendToPlanMenuIcon } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
 import { useEdgeAwarePlacement } from '@liveworkspace/workbench/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@liveworkspace/workbench/components/chrome/FloatingTitle';
 import { DuplicateIcon, FormatPainterIcon, TrashIcon, HoverCard } from '@livehuddle/ui';
@@ -43,6 +44,8 @@ type SelectionPopoverProps = {
   // layers, which is what the element menu's Bring to Front does.
   onBringToFront?: () => void;
   onSendToBack?: () => void;
+  // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md), where this session may send and it has words.
+  onSendToPlan?: () => void;
   // Open the same context menu that a right-click on the element
   // would open, anchored under the ellipsis button. Surfaces the
   // full action list on touch devices that can't right-click.
@@ -83,6 +86,7 @@ export function SelectionPopover({
   onFormatPainter,
   onBringToFront,
   onSendToBack,
+  onSendToPlan,
   onOpenContextMenu,
   compact = false,
   suspended = false,
@@ -232,6 +236,17 @@ export function SelectionPopover({
               </PopoverButton>
               <Divider />
             </>
+          ) : null}
+
+          {/* Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner. */}
+          {onSendToPlan ? (
+            <PopoverButton
+              label="Send to Plan"
+              description="Make a card for it in one of your plans."
+              onClick={onSendToPlan}
+            >
+              <SendToPlanMenuIcon size={16} />
+            </PopoverButton>
           ) : null}
 
           {showDelete ? (

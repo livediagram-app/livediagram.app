@@ -1,6 +1,6 @@
 import type { CSSProperties, Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { EditorState, TextSelection, type Plugin, type Transaction } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
+import { EditorState, Plugin, TextSelection, type Transaction } from 'prosemirror-state';
+import { Decoration, DecorationSet, EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
 import { cleanFootnoteText, isContinuousPage, type ArticleFlow } from '@liveknowledge/document';
 import { blocksToDoc } from '@/lib/article/article-convert';
@@ -26,6 +26,10 @@ import { readSlashPicks, recentIds } from '@/lib/article/slash-recent';
 import { articleLookOf } from '@/lib/article/article-style-vars';
 import { setLocalArticleCaret } from '@/lib/article/article-carets-store';
 import { articlePeersPlugin, onlyPeers } from '@/lib/article/article-peers';
+import {
+  articleSentSpec,
+  onlySent,
+} from '@liveworkspace/workbench/components/send-to-plan/article-sent';
 import { articleHoldsPlugin, holdSpotOf, onlyHolds } from '@/lib/article/article-holds';
 import { noteArticleTyping, releaseArticleHold } from '@/lib/article/article-holds-store';
 import { announceArticleHeld } from '@/lib/article/article-hold-notice';
@@ -57,6 +61,16 @@ import type { ArticleEditorProps, SlashState } from './article-editor-types';
 import { articleFlowClass } from './read-mode-selection';
 import { articleClipboardSerializer } from '@/lib/article/article-clipboard-lists';
 
+// Sent blocks' chips, and a reader's Send to Plan under the words picked (docs/specs/013-workspace/send-to-plan.md),
+// built on this editor's own ProseMirror (@liveworkspace/workbench's article-sent).
+const sentPlugin = (editable: () => boolean) =>
+  new Plugin(
+    articleSentSpec<Decoration, DecorationSet, EditorState>(editable, {
+      widget: (pos, toDOM, spec) => Decoration.widget(pos, toDOM, spec),
+      set: (doc, decos) => DecorationSet.create(doc, decos),
+      empty: DecorationSet.empty,
+    }),
+  );
 // The writing's paste, tables composed over it.
 const pasteProps = articleTablePasteProps(articlePasteProps);
 
@@ -205,6 +219,7 @@ export function mountArticleView({
       // Collaborators' holds: outlined, and our typing in them refused with a notice naming the writer
       // (docs/specs/007-editor/article-pages.md "Holding a paragraph").
       articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
+      sentPlugin(isEditable),
       // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
       findHighlightPlugin(() => latest.current.flow),
       // Agents' suggested edits on the page (docs/specs/030-knowledgebase/insights.md "On the page").
@@ -305,7 +320,7 @@ export function mountArticleView({
       if (!v) return;
       v.updateState(v.state.apply(tr));
       // Collaborators' carets and holds arriving change nothing of ours: no commit, no toolbar update.
-      if (onlyPeers(tr) || onlyHolds(tr)) return;
+      if (onlyPeers(tr) || onlyHolds(tr) || onlySent(tr)) return;
       if (tr.docChanged) {
         // The page tree names the page from its Title as it is typed (knowledgebases-and-pages.md "Name"): an
         // Editor's own Title edit sets it; any other change keeps a live title current.

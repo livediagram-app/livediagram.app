@@ -27,6 +27,7 @@ export function EllipsisMenuButton({
   onClearContent,
   onImport,
   onExport,
+  onSendStickies,
   onCopyTo,
   onDelete,
   selfId,
@@ -56,6 +57,9 @@ export function EllipsisMenuButton({
   onClearContent: () => void;
   onImport: () => void;
   onExport: () => void;
+  // Send to Plan's Send All (docs/specs/013-workspace/send-to-plan.md): absent when the tab has no sticky with words or
+  // this session cannot send.
+  onSendStickies?: (() => void) | null;
   onCopyTo: (targetDocumentId: string) => void;
   onDelete: () => void;
   // A connected tab: its own short menu (TabPortalMenu).
@@ -91,6 +95,7 @@ export function EllipsisMenuButton({
             onClearContent={onClearContent}
             onImport={onImport}
             onExport={onExport}
+            onSendStickies={onSendStickies}
             onCopyTo={onCopyTo}
             selfId={selfId}
             otherDocuments={otherDocuments}

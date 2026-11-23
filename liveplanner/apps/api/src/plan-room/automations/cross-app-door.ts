@@ -66,7 +66,7 @@ export function openLinkingCard(
   });
 }
 
-async function authorPerson(
+export async function authorPerson(
   env: Parameters<typeof getParticipants>[0],
   author: string,
 ): Promise<ItemPerson> {
@@ -167,15 +167,18 @@ export async function planAutomationStep(
 export async function planAutomationTarget(
   room: PlanRoom,
   planId: string,
-): Promise<Pick<AutomationTargetDescription, 'boards'>> {
+): Promise<Pick<AutomationTargetDescription, 'boards' | 'people'>> {
   if (!bindStoredPlan(room, planId)) return { boards: [] };
   const deps = automationDeps(room);
   if (!deps) return { boards: [] };
-  const [head, tabs] = await Promise.all([
+  const [head, tabs, plan] = await Promise.all([
     readPlanOutline(deps.env, deps.planId),
     planTabs({ env: deps.env }, deps.planId, null),
+    readAutomationPlan(deps.env, deps.planId),
   ]);
   return {
+    // Send to Plan's Assignee picker: the plan's people by name (send-to-plan.md "The picker").
+    people: plan.outline.people.slice(0, 200).map((p) => ({ name: p.name })),
     boards: planOutline(tabs, head.itemTypes).boards.map((b) => ({
       id: b.elementId,
       name: b.title.trim() || 'Board',

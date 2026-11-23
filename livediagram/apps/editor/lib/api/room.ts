@@ -55,7 +55,13 @@ export type RoomHandlers = {
   onFollowers?: (ids: string[]) => void;
   // A Sheet a linked chart in the document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md "Keeping
   // in step"): ids only; the editor reads the range again with this person's own access.
-  onSourceChanged?: (msg: { app: string; itemId: string; sheetIds: string[] }) => void;
+  // `cards`: a plan's sent cards changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip").
+  onSourceChanged?: (msg: {
+    app: string;
+    itemId: string;
+    sheetIds: string[];
+    cards?: string[];
+  }) => void;
   // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
   // sent to this socket alone after each hello: our answers and reactions are recorded under it.
   onCollabKey?: (key: string) => void;
@@ -354,7 +360,12 @@ export function connectRoom(
         else if (msg.kind === 'selection-released') handlers.onSelectionReleased?.(msg);
         else if (msg.kind === 'followers') handlers.onFollowers?.(msg.ids);
         else if (msg.kind === 'source-changed') {
-          handlers.onSourceChanged?.({ app: msg.app, itemId: msg.itemId, sheetIds: msg.sheetIds });
+          handlers.onSourceChanged?.({
+            app: msg.app,
+            itemId: msg.itemId,
+            sheetIds: msg.sheetIds,
+            ...(Array.isArray(msg.cards) ? { cards: msg.cards } : {}),
+          });
         }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {

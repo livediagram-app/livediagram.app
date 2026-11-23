@@ -41,6 +41,29 @@ describe('the template door', () => {
     expect(run).toHaveBeenCalledWith(BODY);
   });
 
+  it('passes a bare ask on, and refuses a bare that is not a boolean', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const run = making();
+    expect(
+      (await send(request('POST', 'index-key', { ...BODY, bare: true }), { fromTemplate: run }))
+        .status,
+    ).toBe(201);
+    expect(run).toHaveBeenCalledWith({ ...BODY, bare: true });
+    await send(request('POST', 'index-key', { ...BODY, bare: false }), { fromTemplate: run });
+    expect(run).toHaveBeenLastCalledWith(BODY);
+    expect(
+      (await send(request('POST', 'index-key', { ...BODY, bare: 'yes' }), { fromTemplate: run }))
+        .status,
+    ).toBe(400);
+    const fileOf = vi.fn(() => '{"file":1}');
+    await itemFromTemplate(
+      { ...BODY, bare: true },
+      fileOf,
+      vi.fn(async () => ({ status: 'ok' as const, id: 'N' })),
+    );
+    expect(fileOf).toHaveBeenCalledWith('kanban', 'Apollo Plan', { bare: true });
+  });
+
   it('takes a null folder', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const run = making();

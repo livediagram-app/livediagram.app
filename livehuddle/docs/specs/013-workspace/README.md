@@ -30,4 +30,5 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./shape-libraries.md - (Gone from livehuddle, Work Tracker #423 part 4) when working on Shape libraries: named, owner-scoped sets of reusable shapes (draw.io libraries imported, one library per file, never merged), the palette My shapes category, the shared Explorer's Shape Libraries and the previews route that draws its shapes, the `/api/shape-libraries` resource, limits and sign-up migration
 - ./snapshots.md - when working on Snapshots: manual save points of the whole Space, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./automations.md - when working on Automations: rules a Space runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
+- ./send-to-plan.md - when working on Send to Plan: what livehuddle sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles)

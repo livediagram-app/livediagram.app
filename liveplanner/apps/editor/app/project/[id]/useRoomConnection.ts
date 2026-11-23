@@ -1,3 +1,4 @@
+import { emitSourceChanged } from '@liveworkspace/workbench/components/sheet-links/sheet-link-signal';
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { useAnnounceSelf } from '@liveworkspace/workbench/hooks/collab/useAnnounceSelf';
 import { noteAccessEnded } from '@/lib/access-notice';
@@ -206,6 +207,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
 
     const handlers: RoomHandlers = {
       onCollabKey: (key) => roomCollabKey(key),
+      onSourceChanged: (msg) => emitSourceChanged(msg),
       onPresence: (participants, agents) => roomPresence(participants, agents),
       // Elements in a former stored shape from a peer loaded before a deploy are migrated
       // before anything applies them (docs/specs/006-project/stroke-points.md); an op that is not the
