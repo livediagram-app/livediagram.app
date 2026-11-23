@@ -8406,6 +8406,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "targetName": {
+        "type": "string"
+      },
       "templateChosen": {
         "type": "boolean"
       },
@@ -8555,6 +8558,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/TagColour"
         },
         "type": "array"
+      },
+      "targetName": {
+        "type": "string"
       },
       "templateChosen": {
         "type": "boolean"

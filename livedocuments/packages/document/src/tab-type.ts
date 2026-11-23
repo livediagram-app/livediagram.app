@@ -13,6 +13,9 @@ import type { Element } from './element-union';
 export type Tab = {
   id: TabId;
   name: string;
+  // A connected tab an Editor renamed (liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"): the
+  // file's own name as last seen, while `name` is this document's label for it. Absent, the name follows the file.
+  targetName?: string;
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).
