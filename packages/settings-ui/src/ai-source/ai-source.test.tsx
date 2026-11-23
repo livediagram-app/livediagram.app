@@ -206,6 +206,39 @@ describe('the line', () => {
     expect(button()?.textContent).toBe('Fix Key');
   });
 
+  it('takes back the focus Settings returns on closing without its tooltip, and shows it on the next focus', () => {
+    const key: AiSourceLine = {
+      kind: 'key',
+      owner: 'you',
+      provider: 'anthropic',
+      model: 'Claude Fable 5.2',
+      canChange: true,
+    };
+    vi.useFakeTimers();
+    render(<AiSource line={key} act={() => {}} />);
+    const tooltip = () => document.querySelector('[role="tooltip"]');
+    // A blur closes it after the hint's grace.
+    const leave = () => {
+      act(() => button()!.blur());
+      act(() => vi.advanceTimersByTime(2000));
+    };
+    // Keyboard focus (jsdom counts every focus as keyboard) shows it.
+    act(() => button()!.focus());
+    expect(tooltip()?.textContent).toBe('Change, in Settings › AI');
+    leave();
+    expect(tooltip()).toBeNull();
+    // Opened Settings, which hands focus back as it closes: no tooltip.
+    act(() => button()!.click());
+    act(() => button()!.focus());
+    expect(document.activeElement).toBe(button());
+    expect(tooltip()).toBeNull();
+    // The person's own next focus is theirs again.
+    leave();
+    act(() => button()!.focus());
+    expect(tooltip()).not.toBeNull();
+    vi.useRealTimers();
+  });
+
   it('holds its place while it reads, and shows nothing with nothing to say', () => {
     render(<AiSource line={{ kind: 'loading' }} act={null} id="src" />);
     expect(host.querySelector('[aria-busy]')?.id).toBe('src');

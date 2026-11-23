@@ -2,6 +2,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
+import { modelFailureWords } from '@liveworkspace/ai';
 import { announceAiKeyChanged } from '@liveworkspace/settings-ui/ai-source';
 
 // The source line in liveknowledge (docs/specs/030-knowledgebase/search-and-ask.md "The source line"): which key
@@ -19,7 +20,7 @@ const store = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/knowledge-ask/ai-settings-store', () => ({ aiSettingsStore: store }));
 
-import { KnowledgeAiSource, knowledgeAiLine } from './KnowledgeAiSource';
+import { KnowledgeAiSource, knowledgeAiLine, saidOnLine } from './KnowledgeAiSource';
 
 const settings = (over: Partial<KnowledgeAiSettings> = {}): KnowledgeAiSettings => ({
   provider: 'anthropic',
@@ -86,6 +87,68 @@ describe('which AI answers here', () => {
       provider: null,
       canChange: true,
     });
+  });
+});
+
+describe('a key the provider refused on the last call', () => {
+  const mine = ready({ uses: 'personal', usesModel: 'gpt-6.2-astra', usesProvider: 'openai' });
+
+  it('turns the key’s line to Key Needs Attention, named by the provider that refused it', () => {
+    expect(knowledgeAiLine(mine, false, { kind: 'bad-key' })).toEqual({
+      kind: 'failed',
+      owner: 'you',
+      provider: 'openai',
+      words: modelFailureWords('openai', 'bad-key'),
+      canChange: true,
+    });
+    expect(
+      knowledgeAiLine(ready({ hasKey: true }), true, { kind: 'no-credit', provider: 'anthropic' }),
+    ).toMatchObject({ kind: 'failed', owner: 'item', provider: 'anthropic' });
+    expect(
+      knowledgeAiLine(mine, false, { kind: 'model-unavailable', provider: 'built-in' }),
+    ).toMatchObject({ kind: 'failed', provider: 'openai' });
+    expect(saidOnLine(mine, false, { kind: 'bad-key' })).toBe(true);
+  });
+
+  it('leaves the line as it was for a passing failure, built-in AI or no failure', () => {
+    for (const kind of ['rate-limited', 'overloaded', 'network', 'unreadable']) {
+      expect(knowledgeAiLine(mine, false, { kind })).toMatchObject({ kind: 'key' });
+      expect(saidOnLine(mine, false, { kind })).toBe(false);
+    }
+    expect(knowledgeAiLine(ready(), false, { kind: 'bad-key' })).toMatchObject({
+      kind: 'built-in',
+    });
+    expect(saidOnLine(ready(), false, { kind: 'bad-key' })).toBe(false);
+    expect(saidOnLine(mine, false, null)).toBe(false);
+  });
+
+  it('says so with Fix Key until a change of key in Settings, then the key again', async () => {
+    const failure = { kind: 'bad-key' };
+    const { rerender } = render(
+      <KnowledgeAiSource
+        state={mine}
+        who={WHO}
+        documentId="d1"
+        manageAi={false}
+        failure={failure}
+      />,
+    );
+    expect(screen.getByText('Your Key Needs Attention')).toBeTruthy();
+    expect(screen.getByText(modelFailureWords('openai', 'bad-key'))).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Fix Key, in Settings › AI' })).toBeTruthy();
+    await act(async () => announceAiKeyChanged());
+    expect(screen.getByText('Your Key')).toBeTruthy();
+    // The next call's failure says so again.
+    rerender(
+      <KnowledgeAiSource
+        state={mine}
+        who={WHO}
+        documentId="d1"
+        manageAi={false}
+        failure={{ kind: 'no-credit' }}
+      />,
+    );
+    expect(screen.getByText('Your Key Needs Attention')).toBeTruthy();
   });
 });
 

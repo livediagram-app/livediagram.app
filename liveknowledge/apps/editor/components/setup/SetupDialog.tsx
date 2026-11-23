@@ -10,7 +10,7 @@ import { Callout } from '@liveworkspace/ui/callout';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
 import { SETUP_BUILT_IN_PER_PERSON_PER_DAY } from '@liveknowledge/knowledge';
-import { KnowledgeAiSource } from '@/components/ask/KnowledgeAiSource';
+import { KnowledgeAiSource, saidOnLine } from '@/components/ask/KnowledgeAiSource';
 import { useAiSettingsState, useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import type { SetupMode } from '@/lib/knowledge-setup/setup-open';
@@ -93,6 +93,12 @@ function SetupDialogBody({
     ? setupFailureWords(flow.failure.kind, { provider: flow.failure.provider ?? ready?.provider })
     : null;
 
+  // Describe to Set Up always has built-in AI (describe-to-set-up.md "The model").
+  const lineState = ready
+    ? ({ status: 'ready', settings: { ...ready, builtIn: true } } as const)
+    : null;
+  const onLine = lineState !== null && saidOnLine(lineState, session.rights.manageAi, flow.failure);
+
   let body;
   if (flow.step === 'suggesting') body = <SetupSuggesting />;
   else if (flow.step === 'review')
@@ -111,7 +117,11 @@ function SetupDialogBody({
   else
     body = (
       <>
-        {failure ? (
+        {failure && onLine ? (
+          <span role="alert" className="sr-only">
+            {failure.title}. {failure.text}
+          </span>
+        ) : failure ? (
           <Callout
             tone="warning"
             size="md"
@@ -130,15 +140,15 @@ function SetupDialogBody({
           onSubmit={flow.suggest}
           adding={mode === 'add'}
         />
-        {ready ? (
+        {lineState ? (
           <div className="-mt-1" data-setup-ai="">
-            {/* Describe to Set Up always has built-in AI (describe-to-set-up.md "The model"). */}
             <KnowledgeAiSource
-              state={{ status: 'ready', settings: { ...ready, builtIn: true } }}
+              state={lineState}
               who={who}
               documentId={documentId}
               manageAi={session.rights.manageAi}
               allowance={`${SETUP_BUILT_IN_PER_PERSON_PER_DAY} set-ups a person a day.`}
+              failure={flow.failure}
             />
           </div>
         ) : null}

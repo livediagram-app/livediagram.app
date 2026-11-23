@@ -420,7 +420,8 @@ describe('step 1, Describe', () => {
   });
 
   it.each([
-    ['bad-key', 'Claude Did Not Accept the Key', 'Open AI Settings'],
+    // A refused key's fix is the source line's Fix Key (below): the alert is heard, not drawn twice.
+    ['bad-key', 'Claude Did Not Accept the Key', null],
     ['no-credit', 'The Claude Account Is Out of Credit', null],
     ['overloaded', 'Claude Is Busy Right Now', null],
     ['person-limit', 'You Have Asked for 5 Structures This Hour', null],
@@ -450,6 +451,17 @@ describe('step 1, Describe', () => {
       );
     },
   );
+
+  it('says a refused key on the source line, with Fix Key to its AI Settings, the alert out of sight', async () => {
+    setupApi.apiSuggestSetup.mockResolvedValue({ ok: false, kind: 'bad-key' });
+    await openDialog();
+    describe_(DESCRIPTION);
+    press('Suggest a Structure');
+    expect((await screen.findByRole('alert')).className).toContain('sr-only');
+    const line = document.querySelector('[data-setup-ai]')!;
+    expect(line.textContent).toContain('This Knowledgebase’s Key Needs Attention');
+    expect(within(line as HTMLElement).getByRole('button').textContent).toBe('Fix Key');
+  });
 
   it('names OpenAI when the failure says so', async () => {
     setupApi.apiSuggestSetup.mockResolvedValue({ ok: false, kind: 'bad-key', provider: 'openai' });

@@ -279,6 +279,28 @@ describe('the dialog', () => {
     expect(await screen.findByText('The AI Could Not Draft This Page')).toBeTruthy();
   });
 
+  it('says a key the provider refused on the line, with Fix Key, its words heard once', async () => {
+    api.apiKnowledgeAi.mockResolvedValue(
+      settings({ uses: 'personal', usesModel: 'gpt-6.2-astra', usesProvider: 'openai' }),
+    );
+    structureApi.apiDescribeStructure.mockResolvedValue({
+      ok: false,
+      kind: 'bad-key',
+      provider: 'openai',
+    });
+    renderInEditor(
+      <DescribeStructureDialog tabId="p1" onClose={vi.fn()} />,
+      chrome(EMPTY(), { editing: true }).value,
+    );
+    await waitFor(() => expect(screen.getByText('Your Key')).toBeTruthy());
+    fireEvent.click(screen.getByRole('button', { name: 'Describe' }));
+    expect(await screen.findByText('Your Key Needs Attention')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Fix Key, in Settings › AI' })).toBeTruthy();
+    // The dialog's own callout is read out, not drawn beside the line.
+    const alert = screen.getByRole('alert');
+    expect(alert.className).toContain('sr-only');
+  });
+
   it('enters edit mode first when it ended while the request was out', async () => {
     const { value, start, commitTabs } = chrome(EMPTY(), { editing: false });
     structureApi.apiDescribeStructure.mockResolvedValue({

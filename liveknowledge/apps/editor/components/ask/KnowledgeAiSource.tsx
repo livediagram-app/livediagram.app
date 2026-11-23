@@ -4,11 +4,16 @@
 // AiSource, worked out from the knowledgebase's own `GET ai` (which already answers which key applies for this asker:
 // the knowledgebase's, the team's, the person's or built-in AI) rather than from accounts again. The knowledgebase's key
 // is changed in AI Settings, by those who manage it; the person's own, or a first key, in Settings › AI over the view;
-// the team's by its admins. A key that will not open says so, with Fix Key. Closing Settings reads `GET ai` again, so
-// the line follows with no reload.
+// the team's by its admins. A key that will not open says so, with Fix Key, and so does a key the provider refused on the
+// view's last call (Ask, Describe to Set Up, Describe the Structure), until the next answer or a change of key.
+// Closing Settings reads `GET ai` again, so the line follows with no reload.
 
-import { useEffect, useRef } from 'react';
-import { aiKeyFailureWords, type AiKeySource } from '@liveworkspace/ai/key-failure';
+import { useEffect, useRef, useState } from 'react';
+import {
+  aiKeyFailureWords,
+  isKeyFailureKind,
+  type AiKeySource,
+} from '@liveworkspace/ai/key-failure';
 import type { KnowledgeAiSettings } from '@liveknowledge/api-schema';
 import {
   AI_KEY_CHANGED_EVENT,
@@ -47,10 +52,16 @@ type LineSettings = Pick<
   | 'usesProvider'
 >;
 
-/** The line for this asker. `manageAi`: may change the knowledgebase's own key. Null where no AI answers here. */
+/** The view's last call's failure: its kind (`bad-key`, `rate-limited`, …) and, where the answer named it, the
+ *  provider that refused. */
+export type KnowledgeCallFailure = { kind: string; provider?: string | null | undefined };
+
+/** The line for this asker. `manageAi`: may change the knowledgebase's own key. `failure`: the view's last call's,
+ *  which turns a key's line to Key Needs Attention when the provider refused the key. Null where no AI answers here. */
 export function knowledgeAiLine(
   state: AiSettingsState | { status: 'ready'; settings: LineSettings },
   manageAi: boolean,
+  failure: KnowledgeCallFailure | null = null,
 ): AiSourceLine | null {
   if (state.status === 'loading') return { kind: 'loading' };
   if (state.status !== 'ready') return null;
@@ -76,6 +87,21 @@ export function knowledgeAiLine(
       }),
       canChange,
     };
+  // A refusal the person fixes in Settings (a rejected key, no credit, a model the key cannot use); a passing one (busy,
+  // rate limited) changes nothing here.
+  if (failure && failure.kind !== 'unreadable' && isKeyFailureKind(failure.kind)) {
+    const refused =
+      failure.provider === 'anthropic' || failure.provider === 'openai'
+        ? failure.provider
+        : provider;
+    return {
+      kind: 'failed',
+      owner,
+      provider: refused,
+      words: aiKeyFailureWords({ source: SOURCE[uses], provider: refused, kind: failure.kind }),
+      canChange,
+    };
+  }
   return {
     kind: 'key',
     owner,
@@ -90,6 +116,17 @@ export function knowledgeAiLine(
   };
 }
 
+/** Whether the line says the view's failure itself (a key the provider refused): the view's own callout is then
+ *  heard, not drawn twice (ai-keys.md "The source line"). */
+export const saidOnLine = (
+  state: Parameters<typeof knowledgeAiLine>[0],
+  manageAi: boolean,
+  failure: KnowledgeCallFailure | null,
+): boolean =>
+  failure !== null &&
+  isKeyFailureKind(failure.kind) &&
+  knowledgeAiLine(state, manageAi, failure)?.kind === 'failed';
+
 export function KnowledgeAiSource({
   state,
   who,
@@ -97,23 +134,29 @@ export function KnowledgeAiSource({
   manageAi,
   allowance,
   id,
+  failure = null,
 }: {
   state: AiSettingsState;
+  // The view's last call's failure (held by the view, a new one per call), until its next answer.
+  failure?: KnowledgeCallFailure | null;
   who: KnowledgeCaller;
   documentId: string;
   manageAi: boolean;
   allowance?: string;
   id?: string;
 }) {
-  const line = knowledgeAiLine(state, manageAi);
+  // A change of key in Settings answers the failure: the next call says again if it still fails.
+  const [settled, setSettled] = useState<KnowledgeCallFailure | null>(null);
+  const line = knowledgeAiLine(state, manageAi, failure === settled ? null : failure);
   // Set when the action opened Settings on built-in AI, so a key added there is counted once.
   const openedOnBuiltIn = useRef(false);
-  const live = useRef({ who, documentId });
+  const live = useRef({ who, documentId, failure });
   useEffect(() => {
-    live.current = { who, documentId };
-  }, [who, documentId]);
+    live.current = { who, documentId, failure };
+  }, [who, documentId, failure]);
   useEffect(() => {
     const changed = () => {
+      setSettled(live.current.failure);
       const { who: caller, documentId: doc } = live.current;
       void aiSettingsStore.refresh(caller, doc).then(() => {
         const next = aiSettingsStore.get(doc);

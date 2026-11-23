@@ -5,7 +5,7 @@
 // part of a key), the feature's allowance on built-in AI, and one action that opens Settings › AI over the dialog.
 // Drawn from a line the app's hook worked out (useAiSource); it reads nothing itself.
 
-import type { ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { lucideKey, lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { SparkleIcon, Tooltip, lucideGlyph } from '@liveworkspace/ui';
 import type { AiProviderId } from '../account-panels/ai/ai-keys';
@@ -72,6 +72,9 @@ function Mark({ line }: { line: Exclude<AiSourceLine, { kind: 'loading' }> }) {
 const ACTION_WORDS = { 'built-in': 'Use Your Own Key', key: 'Change', failed: 'Fix Key' } as const;
 
 export function AiSource({ line, act, allowance, itemKeyName, id }: AiSourceProps) {
+  // Set when the action opens Settings: the focus Settings hands back on closing is the page's, not the person's, so
+  // it shows no tooltip (a keyboard close would otherwise count as keyboard focus, and so would a tap's on a phone).
+  const returning = useRef(false);
   if (!line) return null;
   if (line.kind === 'loading')
     return (
@@ -142,7 +145,16 @@ export function AiSource({ line, act, allowance, itemKeyName, id }: AiSourceProp
           <button
             type="button"
             aria-label={name}
-            onClick={act}
+            onClick={() => {
+              returning.current = true;
+              act();
+            }}
+            onFocus={(event) => {
+              if (!returning.current) return;
+              returning.current = false;
+              // Kept from the tooltip's wrapper, which opens on keyboard focus.
+              event.stopPropagation();
+            }}
             className="relative shrink-0 cursor-pointer rounded-md px-2 py-1 text-[12px] font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:hover:bg-brand-100 touch-target-y dark:text-brand-200 dark:hover:bg-brand-500/15 dark:hover:text-brand-100 dark:active:hover:bg-brand-500/25"
           >
             {action}

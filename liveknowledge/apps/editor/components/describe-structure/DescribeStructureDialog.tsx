@@ -13,7 +13,7 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useEditorChromeStore, type EditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
 import { STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY } from '@liveknowledge/knowledge';
-import { KnowledgeAiSource } from '@/components/ask/KnowledgeAiSource';
+import { KnowledgeAiSource, saidOnLine } from '@/components/ask/KnowledgeAiSource';
 import { useAiSettingsState, useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import { useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
@@ -152,7 +152,11 @@ function DialogBody({
         <DialogCloseButton onClick={close} />
       </DialogHeader>
       <div className="flex flex-col gap-3 px-6 py-5" data-describe-structure-dialog="">
-        {words ? (
+        {words && saidOnLine(lineState, session.rights.manageAi, failure) ? (
+          <span role="alert" className="sr-only">
+            {words.title}. {words.text}
+          </span>
+        ) : words ? (
           <Callout
             tone="warning"
             size="md"
@@ -214,6 +218,7 @@ function DialogBody({
           documentId={documentId}
           manageAi={session.rights.manageAi}
           allowance={`${STRUCTURE_BUILT_IN_PER_PERSON_PER_DAY} structures a person a day.`}
+          failure={failure}
         />
       </div>
       <DialogFooter>

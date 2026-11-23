@@ -4,7 +4,7 @@
 // question a dark bubble at the right, each answer a card, a Knowledge Gap card for each part no page covers, the
 // question field at the foot, and beside them the passages of the answer showing. Nothing here renders while an
 // answer streams: the stream draws itself (StreamingAnswer) and the turn list is the same list until it ends.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AskSource } from '@liveknowledge/api-schema';
 import { ASK_BUILT_IN_PER_PERSON_PER_DAY, ASK_MAX_TURNS } from '@liveknowledge/knowledge';
 import { EmptyState } from '@liveknowledge/ui';
@@ -78,6 +78,11 @@ export function AskConversationPane({
       : 'built-in'
     : undefined;
   const last = turns[turns.length - 1];
+  // The last answer's failure, for the source line (a key the provider refused); one per turn, gone with the next.
+  const lastFailure = useMemo(
+    () => (last?.status === 'failed' && last.failure ? { kind: last.failure } : null),
+    [last],
+  );
   const streaming = last?.status === 'streaming';
 
   // The answer whose Sources show: the one a citation was pressed in, else the newest. `lit` is the pressed source,
@@ -263,6 +268,7 @@ export function AskConversationPane({
                   documentId={session.documentId}
                   manageAi={rights.manageAi}
                   allowance={`${ASK_BUILT_IN_PER_PERSON_PER_DAY} questions a person a day.`}
+                  failure={lastFailure}
                 />
               </div>
             )}

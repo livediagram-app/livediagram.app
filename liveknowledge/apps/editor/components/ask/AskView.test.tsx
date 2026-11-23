@@ -649,6 +649,25 @@ describe('a failure, in words with the next step', () => {
     },
   );
 
+  it('turns the source line to Key Needs Attention, with Fix Key, after the key was refused', async () => {
+    // With no built-in AI beside the key there is no choice to make, so the line says which answers.
+    api.apiKnowledgeAi.mockResolvedValue(
+      settings({
+        builtIn: false,
+        hasKey: false,
+        keyHint: '',
+        uses: 'personal',
+        usesProvider: 'anthropic',
+        usesModel: 'm',
+        usesModelLabel: 'M',
+      }),
+    );
+    await fail('no-credit');
+    const line = document.querySelector('[data-ask-ai]')!;
+    expect(line.textContent).toContain('Your Key Needs Attention');
+    expect(within(line as HTMLElement).getByRole('button').textContent).toBe('Fix Key');
+  });
+
   it('asks again in place', async () => {
     const alert = await fail('overloaded');
     fireEvent.click(within(alert).getByRole('button', { name: 'Ask Again' }));
