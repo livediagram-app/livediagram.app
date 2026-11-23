@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Auth } from './auth.ts';
-import { clientApp, CLIENTS_PATH, registerClient } from './clients.ts';
+import { clientApp, CLIENTS_PATH, registerClient, withGuestReturns } from './clients.ts';
 import type { Env } from './env.ts';
 import { testD1 } from './test-d1.ts';
 
@@ -12,7 +12,7 @@ vi.mock('./secrets.ts', () => ({
 
 const ADMIN = 'admin-token';
 let env: Env;
-let made: { client_name: string }[];
+let made: { client_name: string; redirect_uris?: string[] }[];
 
 // Stands in for Better Auth's registration: makes the oauthClient row, as the provider does.
 function stubAuth(db: D1Database): Auth {
@@ -26,7 +26,11 @@ function stubAuth(db: D1Database): Auth {
       },
     }),
     api: {
-      adminCreateOAuthClient: async ({ body }: { body: { client_name: string } }) => {
+      adminCreateOAuthClient: async ({
+        body,
+      }: {
+        body: { client_name: string; redirect_uris?: string[] };
+      }) => {
         made.push(body);
         const clientId = `client-${made.length}`;
         await db
@@ -75,6 +79,24 @@ describe('registering a client', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ client_id: 'client-1', app: 'livediagram.app' });
     expect(await clientApp(env.AUTH_DB, 'client-1')).toBe('livediagram.app');
+  });
+
+  it('registers the guest return on every origin it was given a callback for', async () => {
+    const www = 'https://www.liveknowledge.app/api/auth/callback';
+    const bare = 'https://liveknowledge.app/api/auth/callback';
+    await register({ ...valid, redirectUris: [www, bare] });
+    expect(made[0]?.redirect_uris).toEqual([
+      www,
+      bare,
+      'https://www.liveknowledge.app/auth/guest',
+      'https://liveknowledge.app/auth/guest',
+    ]);
+  });
+
+  it('adds no second guest return, and leaves what is not a URL as given', () => {
+    const given = ['http://localhost:3100/api/auth/callback', 'http://localhost:3100/auth/guest'];
+    expect(withGuestReturns(given)).toEqual(given);
+    expect(withGuestReturns(['nonsense'])).toEqual(['nonsense']);
   });
 
   it('refuses a client without a known app, before making anything', async () => {

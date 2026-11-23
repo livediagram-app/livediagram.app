@@ -5,9 +5,12 @@
 //     --accounts https://www.liveworkspace.app \
 //     --name livediagram \
 //     --app livediagram.app \
-//     --redirect https://www.livediagram.app/auth/callback \
-//     --redirect https://www.livediagram.app/auth/callback \
+//     --redirect https://www.livediagram.app/api/auth/callback \
+//     --redirect https://livediagram.app/api/auth/callback \
 //     --resource https://livediagram.app/api
+//
+// One --redirect per origin the app serves (www and bare). The Worker adds each origin's /auth/guest, where the
+// guest hand-off returns, so it is never left out.
 import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({
