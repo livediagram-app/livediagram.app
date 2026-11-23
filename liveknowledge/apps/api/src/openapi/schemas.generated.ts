@@ -13138,6 +13138,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           {
             "additionalProperties": false,
             "properties": {
+              "agent": {
+                "type": "string"
+              },
               "color": {
                 "type": "string"
               },

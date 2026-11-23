@@ -27,7 +27,11 @@ import {
   itemAutomationSchemaSteps,
 } from '@liveworkspace/automations/room';
 import { NAMED_STORE_STEP } from '../versions/named-store-schema';
-import { VERSION_SAVE_STEP, VERSION_SCHEMA } from '../versions/version-schema';
+import {
+  VERSION_SAVE_STEP,
+  VERSION_SCHEMA,
+  versionAgentSchemaStep,
+} from '../versions/version-schema';
 import { knowledgeSchemaStep, knowledgeShapeStep } from '../knowledge/knowledge-schema';
 import { pageAuthorsSchemaStep } from '../knowledge/page-authors';
 import { pageAuthorKindsSchemaStep } from '../knowledge/page-writer';
@@ -457,6 +461,11 @@ const V40 = suggestionsOutboxStep;
 // docs/specs/030-knowledgebase/watching.md). Additive, IF NOT EXISTS.
 const V41 = pageWatchSchemaStep;
 
+// Step 43: the agent an agent's version was kept for, beside its person (versions/version-schema.ts
+// versionAgentSchemaStep; docs/specs/006-document/version-history.md "An agent's mark"). Additive, the table asked
+// first. It follows step 42 (Required Reading's) in STEPS once both are in.
+const V43 = versionAgentSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -491,6 +500,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V39,
   V40,
   V41,
+  V43,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
