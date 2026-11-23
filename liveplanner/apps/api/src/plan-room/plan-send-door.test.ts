@@ -108,17 +108,26 @@ describe('Send to Plan at the plan', () => {
     vi.useFakeTimers({ toFake: ['setTimeout'] });
     const answer = await room().planSend('A', call());
     const id = answer.ok ? answer.cards[0]!.id : '';
-    // The burst's tell, its board read and all, settled.
-    const settled = async () => {
+    // The burst's tell, its board read and all, settled: the change can reach the gather after the request answers,
+    // so the 1.5 s timer is run again until the tell lands (real time bounds the wait), then once more to see it was
+    // the only one.
+    const settledTo = async (n: number) => {
+      await vi.waitFor(
+        async () => {
+          await vi.runAllTimersAsync();
+          await new Promise((r) => setImmediate(r));
+          expect(told).toHaveLength(n);
+        },
+        { timeout: 5000, interval: 10 },
+      );
       await vi.runAllTimersAsync();
-      for (let i = 0; i < 20; i += 1) await new Promise((r) => setImmediate(r));
+      for (let i = 0; i < 5; i += 1) await new Promise((r) => setImmediate(r));
+      expect(told).toHaveLength(n);
     };
-    await settled();
-    expect(told).toHaveLength(1);
+    await settledTo(1);
     told.length = 0;
     await w.send('POST', `/api/projects/A/items/${id}/move`, { status: 'done' });
-    await settled();
-    expect(told).toHaveLength(1);
+    await settledTo(1);
     expect(told[0]).toEqual({
       planId: 'A',
       cards: [{ id, title: 'Fix the login', column: 'Done', done: true, gone: false }],
