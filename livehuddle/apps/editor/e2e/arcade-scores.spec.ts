@@ -165,10 +165,10 @@ test("a Participant's score lands on the owner's machine and a Viewer's table, a
   await viewerPage.screenshot({ path: test.info().outputPath('viewer.png') });
   await expect(best(guestPage)).toHaveText(line);
 
-  // The owner clears it from the element menu: Edit, a right-click on the machine, Tools, High Scores.
+  // The owner clears it from the element menu: Edit, a right-click on the machine, High Scores. Its one section
+  // stands in the menu itself, with no row to open first (canvas-and-palette.md "An element's own settings open in
+  // a dialog").
   await machine(ownerPage).click({ button: 'right' });
-  // The element menu's Tools flyout, not the footer's Tools menu.
-  await ownerPage.locator('[data-menu-section="Tools"]').click();
   await ownerPage.getByRole('button', { name: 'High Scores', exact: true }).click();
   await ownerPage.getByText('1 Score on the table').waitFor();
   await ownerPage.getByRole('button', { name: 'Clear High Scores' }).click();
