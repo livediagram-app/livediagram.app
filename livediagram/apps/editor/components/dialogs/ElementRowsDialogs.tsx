@@ -6,14 +6,19 @@ import {
   PIE_DEFAULT_SLICES,
   type ConceptShape,
   type ShapeElement,
+  type TableElement,
 } from '@livediagram/document';
+import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { ElementRowsDialog } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
+import { TableSettings } from '@liveworkspace/workbench/components/dialogs/TableSettings';
 import { checklistHeroArt } from '@liveworkspace/ui/dialog-hero-art/checklist';
 import { elementRowsHeroArt } from '@liveworkspace/ui/dialog-hero-art/element-rows';
 import { legendHeroArt } from '@liveworkspace/ui/dialog-hero-art/legend';
 import { lineDataHeroArt } from '@liveworkspace/ui/dialog-hero-art/line-data';
 import { tableHeroArt } from '@liveworkspace/ui/dialog-hero-art/table';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
+import { standardGroup } from '@/components/colour/colour-options';
 import {
   ChecklistRowsEditor,
   LegendDataEditor,
@@ -22,8 +27,10 @@ import {
 import { AgendaSegmentsEditor } from '@/components/palette/CollabMenuSections';
 import { ConceptSettings, hasConceptSettings } from '@/components/palette/ConceptMenuSection';
 import { WebRowsEditor, webRowsTitle } from '@/components/palette/context-menu-web-editors';
+import { shownColour } from '@/components/palette/ink-row';
+import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { getTheme, themeChartPalette } from '@/lib/themes';
-import { TableSettings } from './TableSettings';
 import { agendaSegmentsHeroArt } from './AgendaSegmentsHeroArt';
 
 type ConceptElement = ShapeElement & { shape: ConceptShape };
@@ -57,7 +64,7 @@ export function ElementRowsDialogs() {
         subtitle="Its header, its striping and its cells' text."
         onClose={close}
       >
-        <TableSettings tableId={el.id} />
+        <TableDialogSettings table={el} />
       </ElementRowsDialog>
     ) : null;
   if (el.type !== 'shape') return null;
@@ -148,4 +155,57 @@ export function ElementRowsDialogs() {
       </ElementRowsDialog>
     );
   return null;
+}
+
+// The Table dialog's controls (docs/specs/008-canvas/canvas-and-palette.md "The Table dialog"): the workbench's one
+// copy, handed this editor's text colour picker and Text Size control.
+function TableDialogSettings({ table }: { table: TableElement }) {
+  const {
+    setTableHeaderRowSelected,
+    setTableHeaderColumnSelected,
+    setTableZebraSelected,
+    toggleTextStyleSelected,
+    commitTextSize,
+    previewTextSize,
+    clearStylePreview,
+    setTextColorSelected,
+  } = useEditorContext();
+  const surface = useCanvasSurface();
+  const yours = useDocumentColours();
+  const colour = shownColour(table, 'text', surface, '#0f172a');
+  return (
+    <TableSettings
+      look={table}
+      onHeaderRow={setTableHeaderRowSelected}
+      onHeaderColumn={setTableHeaderColumnSelected}
+      onZebra={setTableZebraSelected}
+      onToggleStyle={toggleTextStyleSelected}
+      colour={
+        <ColourSwatchButton
+          label="Text colour"
+          value={table.textColor ?? null}
+          swatch={colour}
+          standard={[standardGroup('strong', 'light', 'hex')]}
+          yours={yours}
+          className="h-9 w-9"
+          onPick={setTextColorSelected}
+        >
+          <span
+            aria-hidden
+            className="size-6 rounded-md border border-slate-300 dark:border-slate-600"
+            style={{ backgroundColor: colour }}
+          />
+        </ColourSwatchButton>
+      }
+      size={
+        <TextSizeControl
+          current={table.textSize ?? 'sm'}
+          presetPx={presetPxFor('table')}
+          onSet={commitTextSize}
+          onPreview={previewTextSize}
+          onPreviewEnd={clearStylePreview}
+        />
+      }
+    />
+  );
 }

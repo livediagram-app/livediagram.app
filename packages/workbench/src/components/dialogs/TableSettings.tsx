@@ -2,25 +2,20 @@
 
 import type { ReactNode } from 'react';
 import { Switch, Tooltip } from '@liveworkspace/ui';
-import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
-import { shownColour } from '@/components/palette/ink-row';
 import {
   BoldIcon,
   ItalicIcon,
   StrikethroughIcon,
   UnderlineIcon,
-} from '@/components/palette/palette-icons';
-import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+} from '../palette/text-style-icons';
 
-// The Table dialog's controls (docs/specs/008-canvas/canvas-and-palette.md "The Table dialog"): how the table reads (a header
-// row, a header column, zebra striping) and its cells' words (bold, italic, underline, strikethrough, size and
-// colour, for every cell at once). They were two categories of the element menu, Table and Text; the menu's Table
-// row opens them here instead. Each change is made at once, on the selected table.
-type TableLook = {
+// The Table dialog's controls (each editor's docs/specs/008-canvas/canvas-and-palette.md "The Table dialog"): how
+// the table reads (a header row, a header column, zebra striping) and its cells' words (bold, italic, underline,
+// strikethrough, size and colour, for every cell at once). They were two categories of the element menu, Table and
+// Text; the menu's Table row opens them here instead. Each change is made at once, on the selected table. The
+// editor hands in the table's look, what each control does, and its own colour picker and Text Size control (both
+// read the editor's model), from its components/dialogs/ElementRowsDialogs.tsx.
+export type TableLook = {
   headerRow?: boolean;
   headerColumn?: boolean;
   zebra?: boolean;
@@ -29,6 +24,9 @@ type TableLook = {
   textUnderline?: boolean;
   textStrikethrough?: boolean;
 };
+
+/** The text styles the Text group toggles, named as the element stores them. */
+export type TableTextStyle = 'textBold' | 'textItalic' | 'textUnderline' | 'textStrikethrough';
 
 function Group({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
   return (
@@ -100,24 +98,25 @@ function StyleToggle({
   );
 }
 
-export function TableSettings({ tableId }: { tableId: string }) {
-  const {
-    activeTab,
-    setTableHeaderRowSelected,
-    setTableHeaderColumnSelected,
-    setTableZebraSelected,
-    toggleTextStyleSelected,
-    commitTextSize,
-    previewTextSize,
-    clearStylePreview,
-    setTextColorSelected,
-  } = useEditorContext();
-  const surface = useCanvasSurface();
-  const yours = useDocumentColours();
-  const table = activeTab.elements.find((e) => e.id === tableId);
-  if (table?.type !== 'table') return null;
-  const look: TableLook = table;
-  const colour = shownColour(table, 'text', surface, '#0f172a');
+export function TableSettings({
+  look,
+  onHeaderRow,
+  onHeaderColumn,
+  onZebra,
+  onToggleStyle,
+  colour,
+  size,
+}: {
+  look: TableLook;
+  onHeaderRow: (next: boolean) => void;
+  onHeaderColumn: (next: boolean) => void;
+  onZebra: (next: boolean) => void;
+  onToggleStyle: (style: TableTextStyle) => void;
+  /** The editor's text colour picker, a swatch button. */
+  colour: ReactNode;
+  /** The editor's Text Size control. */
+  size: ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-5">
       <Group title="Table">
@@ -125,19 +124,19 @@ export function TableSettings({ tableId }: { tableId: string }) {
           label="Header Row"
           description="Style the first row as a header."
           checked={look.headerRow ?? false}
-          onChange={setTableHeaderRowSelected}
+          onChange={onHeaderRow}
         />
         <SwitchLine
           label="Header Column"
           description="Style the first column as a header."
           checked={look.headerColumn ?? false}
-          onChange={setTableHeaderColumnSelected}
+          onChange={onHeaderColumn}
         />
         <SwitchLine
           label="Zebra Striping"
           description="Tint alternate body rows."
           checked={look.zebra ?? false}
-          onChange={setTableZebraSelected}
+          onChange={onZebra}
         />
       </Group>
       <Group title="Text" note="Applies to every cell.">
@@ -145,59 +144,37 @@ export function TableSettings({ tableId }: { tableId: string }) {
           <StyleToggle
             label="Bold"
             active={!!look.textBold}
-            onClick={() => toggleTextStyleSelected('textBold')}
+            onClick={() => onToggleStyle('textBold')}
           >
             <BoldIcon />
           </StyleToggle>
           <StyleToggle
             label="Italic"
             active={!!look.textItalic}
-            onClick={() => toggleTextStyleSelected('textItalic')}
+            onClick={() => onToggleStyle('textItalic')}
           >
             <ItalicIcon />
           </StyleToggle>
           <StyleToggle
             label="Underline"
             active={!!look.textUnderline}
-            onClick={() => toggleTextStyleSelected('textUnderline')}
+            onClick={() => onToggleStyle('textUnderline')}
           >
             <UnderlineIcon />
           </StyleToggle>
           <StyleToggle
             label="Strikethrough"
             active={!!look.textStrikethrough}
-            onClick={() => toggleTextStyleSelected('textStrikethrough')}
+            onClick={() => onToggleStyle('textStrikethrough')}
           >
             <StrikethroughIcon />
           </StyleToggle>
           <span className="ml-auto flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
             Colour
-            <ColourSwatchButton
-              label="Text colour"
-              value={table.textColor ?? null}
-              swatch={colour}
-              standard={[standardGroup('strong', 'light', 'hex')]}
-              yours={yours}
-              className="h-9 w-9"
-              onPick={setTextColorSelected}
-            >
-              <span
-                aria-hidden
-                className="size-6 rounded-md border border-slate-300 dark:border-slate-600"
-                style={{ backgroundColor: colour }}
-              />
-            </ColourSwatchButton>
+            {colour}
           </span>
         </div>
-        <div className="border-t border-slate-100 py-1 dark:border-slate-800">
-          <TextSizeControl
-            current={table.textSize ?? 'sm'}
-            presetPx={presetPxFor('table')}
-            onSet={commitTextSize}
-            onPreview={previewTextSize}
-            onPreviewEnd={clearStylePreview}
-          />
-        </div>
+        <div className="border-t border-slate-100 py-1 dark:border-slate-800">{size}</div>
       </Group>
     </div>
   );
