@@ -74,9 +74,11 @@ export function SeriesChips({
                     : 'border border-dashed border-slate-300 dark:border-slate-600'
                 }`}
               >
-                {on ? at + 1 : ''}
+                <span className="text-optical-centre">{on ? at + 1 : ''}</span>
               </span>
-              <span className="min-w-0 truncate">{name || `Series ${i + 1}`}</span>
+              <span className="text-optical-centre min-w-0 truncate">
+                {name || `Series ${i + 1}`}
+              </span>
             </button>
           );
         })}

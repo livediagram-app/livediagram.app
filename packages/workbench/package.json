@@ -570,6 +570,8 @@
     "./lib/relative-now": "./src/lib/relative-now.ts",
     "./components/sheet-links/SheetLinkedCharts": "./src/components/sheet-links/SheetLinkedCharts.tsx",
     "./components/sheet-links/LinkSheetDialog": "./src/components/sheet-links/LinkSheetDialog.tsx",
+    "./components/sheet-links/PlanDataFields": "./src/components/sheet-links/PlanDataFields.tsx",
+    "./components/sheet-links/SeriesChips": "./src/components/sheet-links/SeriesChips.tsx",
     "./components/sheet-links/SheetLinkSection": "./src/components/sheet-links/SheetLinkSection.tsx",
     "./components/sheet-links/SheetPendingChart": "./src/components/sheet-links/SheetPendingChart.tsx",
     "./components/sheet-links/useSheetLinkedCharts": "./src/components/sheet-links/useSheetLinkedCharts.ts",
