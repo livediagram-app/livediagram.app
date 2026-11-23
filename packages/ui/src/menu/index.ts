@@ -10,12 +10,14 @@ export {
   initialIndex,
   menuKeyIntent,
   moveIndex,
+  typeaheadActive,
   typeaheadIndex,
   typeaheadQuery,
   type MenuInitialFocus,
   type MenuKeyEvent,
   type MenuKeyIntent,
   type MenuMove,
+  type TypeaheadState,
 } from './menu-keys';
 export {
   focusablesOf,

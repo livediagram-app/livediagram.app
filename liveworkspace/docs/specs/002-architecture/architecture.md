@@ -245,6 +245,16 @@ says why (or the hint it shows) is tied to it with `aria-describedby`, so the re
 is wrong and what to type instead. A caller that sets its own `aria-invalid` or `aria-describedby` keeps it (the
 hint is added to its own list, never in place of it).
 
+### The shared segmented toggle
+
+Every app's small "show this or that" switch (the Explorer's This app / All Apps, a dialog's Source, Live Data's
+Sheet Range / Board Counts / Dashboard Metric) is `@liveworkspace/ui`'s `SegmentedToggle`. It fits any label without
+a caller's layout help (Work Tracker 1384): a label never breaks inside itself, and when the segments don't fit
+their place the track wraps whole segments onto another row. Wrapped, the segments share each row's width, so the
+rows read as one grid, and every segment keeps the same height. On a touch screen each segment is a 44 px target
+(`touch-target-y` on one row; 44 px tall once wrapped, where rows sit too close for a pad). At a width where its
+segments fit on one row, it looks as it always has.
+
 ### The shared element model
 
 Each product's element union (`Element`, `BoxedElement`, `ShapeElement`, `ArrowElement`) differs: its kinds, its

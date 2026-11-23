@@ -277,14 +277,19 @@ livehuddle was forked from livediagram (`livehuddle/.forked-from`) and carried a
 Tracker #423 livehuddle is for meeting in Spaces and keeps only the meeting kit, so these features exist twice, once in
 each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-project-roadmap/build-plan.md#keeping-the-two-products-from-drifting)):
 
-- **The Navigate elements kept here**: Bring Focus and the Link card, and the Selection Mode buttons without the
-  Avatar mode (`docs/specs/009-elements/mode-button.md`). The Portal moved to livehuddle too (Work Tracker 1318); a
-  stored one is a retired placeholder (`docs/specs/009-elements/retired-elements.md`).
-- **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the Reaction Pads, the
-  facilitator baton and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`,
-  `docs/specs/009-elements/reaction-pad.md`).
-- **Comments and actions**: comments with mentions, reactions, assigned actions and the Collaborate Panel.
+- **The Navigate elements both keep**: Bring Focus, the Link card and the Selection Mode buttons
+  (`docs/specs/009-elements/`); livediagram's buttons offer no Avatar mode (`docs/specs/009-elements/mode-button.md`).
+- **The light meeting tools**: Bring Focus, the facilitator baton and follow-me (`docs/specs/012-collaboration/bring-focus.md`,
+  `facilitator.md`).
 - **Share roles on a board**: what a Participant may do (`docs/specs/013-workspace/share-roles.md`).
+
+**livediagram's alone**, removed from livehuddle: the Session strip (its Timer, Vote and Poll,
+`docs/specs/012-collaboration/session-tools.md`; livehuddle's clock is a Timer piece of its own), the Reaction Pads
+(`docs/specs/009-elements/reaction-pad.md`), and comments, assigned actions and the Collaborate Panel (owner,
+2026-11-11, Work Tracker #714). A stored one in livehuddle is dropped or drawn as a retired element.
+
+**Moved to livehuddle**: the Portal (Work Tracker 1318, 2026-11-19); a stored one here is a retired placeholder
+(`docs/specs/009-elements/retired-elements.md`).
 
 **Left livediagram for livehuddle** (Work Tracker #650, [Not in livediagram](docs/specs/002-project-scope/not-in-livediagram.md)):
 Avatar mode (the walk, speech, push, statuses, the Avatar panel, button and tour), the Spaces templates (Virtual Office,
@@ -294,8 +299,8 @@ the Office pieces, Fence, Avatar Pad, turning and seats. They are livehuddle's a
 drops the old avatar ops unread.
 
 **Leaving livehuddle** (Work Tracker #423, [Not in livehuddle](../livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md)):
-the retro and workshop templates, the quizzes and games, every Collaborate element but the Reaction Pads (polls,
-quizzes, Q&A, agendas, reveals and the rest), the Session strip's Poll, the Session button, the Workshop tour, the
+the retro and workshop templates, the quizzes and games, every Collaborate element (polls, quizzes, Q&A, agendas,
+reveals, the Reaction Pads and the rest), the Session strip (its Timer, Vote and Poll), the Session button, the Workshop tour, the
 diagram tools, and (gone since part 2) Presentation mode, the Slide Deck and the Page element. These are livediagram's
 alone. Until #423's code parts land livehuddle still carries copies of the rest: a fix to one lands in livediagram only, and livehuddle's copy is left for deletion.
 
@@ -303,12 +308,12 @@ The rules:
 
 - **A fix or change to one of these lands in both products in the same PR**, specs and code, **or the code moves to
   `packages/` first** (as `@liveworkspace/*`, the root AGENTS.md order) so there is one copy to change. The pure parts
-  of the Session strip's Timer and Vote, Bring Focus and the facilitator baton are the next extraction, to
+  of Bring Focus and the facilitator baton are the next extraction, to
   `@liveworkspace/session-tools`, the first time a change has to land in both.
 - What is already one copy stays one: the realtime room's shared shapes, and everything else in `packages/`. The
   avatar core is livehuddle's own (`livehuddle/packages/avatar` since #650's second part) and livediagram imports none
   of it; the reaction bursts its Reaction Pad throws are `@liveworkspace/model-core/reaction-bursts`.
-- Only livediagram has: Diagram and Draw modes and the elements only they offer, the rest of Workshop mode (the retro and workshop templates, the Collaborate elements, the Poll, Presentation mode and the Slide Deck, the Page), Event Storming, repository links, the wall-photo import (`sticky-vision`, `sticky-model`).
+- Only livediagram has: Diagram and Draw modes and the elements only they offer, the rest of Workshop mode (the retro and workshop templates, the Collaborate elements and the Reaction Pads, the Session strip, comments, assigned actions and the Collaborate Panel, Presentation mode and the Slide Deck, the Page), Event Storming, repository links, the wall-photo import (`sticky-vision`, `sticky-model`).
 - CI's **Drift report** (the Plan job's summary, `.github/scripts/drift-report.mjs`, the root docs/ci.md) counts the
   identical, changed and one-only files between `livediagram/` and `livehuddle/`, names ignored. It never fails a
   build; read it before picking what to share next.

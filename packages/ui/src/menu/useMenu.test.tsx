@@ -127,6 +127,25 @@ describe('useMenu', () => {
     now.mockRestore();
   });
 
+  // Work Tracker 1380: a space inside a search joined nothing and pressed the focused row.
+  it('takes a space typed mid-search into the search, never pressing the row', () => {
+    const onPick = vi.fn();
+    render(<Harness onPick={onPick} />);
+    open();
+    const now = vi.spyOn(performance, 'now').mockReturnValue(1000);
+    key('d');
+    key('e');
+    expect(focused()).toBe('Delete');
+    key(' ');
+    expect(onPick).not.toHaveBeenCalled();
+    expect(screen.getByRole('menu')).toBeTruthy();
+    // After the pause a space is a press again.
+    now.mockReturnValue(2000);
+    key(' ');
+    expect(onPick).toHaveBeenLastCalledWith('delete');
+    now.mockRestore();
+  });
+
   it('activates with Enter and Space, and returns focus to the trigger', () => {
     const onPick = vi.fn();
     render(<Harness onPick={onPick} />);

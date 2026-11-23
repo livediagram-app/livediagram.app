@@ -99,11 +99,19 @@ describe('useRightClickRelease', () => {
 });
 
 describe('useRightClickRelease — propagation', () => {
-  it('suppresses the native menu on the press but lets the press through', () => {
+  it('stops the press by default, so the canvas under an element opens no menu of its own', () => {
     const { result } = renderHook(() => useRightClickRelease(vi.fn()));
     const e = ctxEvent();
     result.current.onContextMenu(e);
+    expect(e.stopPropagation).toHaveBeenCalled();
+  });
+
+  it('lets the press through on the canvas surface, the last stop', () => {
+    const { result } = renderHook(() => useRightClickRelease(vi.fn(), { stopPropagation: false }));
+    const e = ctxEvent();
+    result.current.onContextMenu(e);
     expect(e.preventDefault).toHaveBeenCalled();
+    expect(e.stopPropagation).not.toHaveBeenCalled();
   });
 
   it('never stops the release from propagating', () => {

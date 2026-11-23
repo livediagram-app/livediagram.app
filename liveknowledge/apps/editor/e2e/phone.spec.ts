@@ -1,4 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
+import { expectAtLeastPx } from '@liveworkspace/e2e-kit/rounded-size';
+import { settled } from '@liveworkspace/e2e-kit/settled';
 import { expect, expectNoPageErrors, test } from './fixtures';
 import {
   ensureEditing,
@@ -34,24 +36,6 @@ async function longPress(page: Page, target: Locator): Promise<void> {
   await cdp.detach();
 }
 
-// A control that has stopped moving: in view, and the same box on two frames running (a sheet slides in, and a tap on
-// a row mid-slide lands on whatever is under the finger by then).
-async function settled(target: Locator): Promise<void> {
-  await expect(target).toBeInViewport({ ratio: 1 });
-  await expect
-    .poll(async () =>
-      target.evaluate(
-        (el) =>
-          new Promise<boolean>((done) => {
-            const box = () => JSON.stringify(el.getBoundingClientRect());
-            const before = box();
-            requestAnimationFrame(() => requestAnimationFrame(() => done(box() === before)));
-          }),
-      ),
-    )
-    .toBe(true);
-}
-
 // The phone's keyboard put away (its Done key): the writing lets go of the caret, as it does on a phone.
 const putKeyboardAway = (page: Page) =>
   page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
@@ -79,7 +63,9 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({
   await expect(sheet.getByRole('treeitem', { name: 'Handbook', exact: true })).toBeVisible();
 
   // A new page from the sheet takes the caret in its Title.
-  await sheet.getByRole('button', { name: 'New Page' }).tap();
+  const newPage = sheet.getByRole('button', { name: 'New Page' });
+  await settled(newPage);
+  await newPage.tap();
   await expectCaretInTitle(page);
   await page.keyboard.type('Expenses');
   await page.keyboard.press('Enter');
@@ -95,7 +81,7 @@ test('the Pages sheet opens, a row opens its page, and writing works', async ({
   const rows = sheet.getByRole('treeitem');
   await expect(rows).toHaveCount(2);
   // Rows are finger sized.
-  expect((await rows.first().boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  expectAtLeastPx((await rows.first().boundingBox())!.height, 44);
   const handbook = sheet.getByRole('treeitem', { name: 'Handbook', exact: true });
   await settled(handbook);
   await handbook.tap();
@@ -124,7 +110,7 @@ test('the view switch is within reach, and no view scrolls sideways', async ({
     const link = views.getByRole('link', { name: view, exact: true });
     await expect(link).toBeInViewport({ ratio: 1 });
     const box = (await link.boundingBox())!;
-    expect(box.height, `${view} is a finger's height`).toBeGreaterThanOrEqual(40);
+    expectAtLeastPx(box.height, 40, `${view} is a finger's height`);
   }
   await expectNoSidewaysScroll(page, 'Pages');
 

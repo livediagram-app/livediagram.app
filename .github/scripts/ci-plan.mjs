@@ -11,7 +11,7 @@
 //   BASE=<sha or empty> HEAD=<sha> node .github/scripts/ci-plan.mjs
 //
 // With no BASE (a manual run, the nightly run, a new branch's first push) or a change to CI itself
-// or to the root's shared config (ci-run-all.mjs; a guard's baseline list is not one), everything runs. Writes `groups`, `editors`, `e2e`, `deploys` and
+// or to the root's shared config or the parts of .github/ every job runs (ci-run-all.mjs), everything runs. Writes `groups`, `editors`, `e2e`, `sites`, `deploys` and
 // `any` to $GITHUB_OUTPUT when it is set, and prints the plan either way.
 //
 // The deploys (docs/ci.md "Deploys") read the same answer with PLAN_MODE=deploy and BASE set to the
@@ -24,7 +24,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { readersReached, repoReaders } from './ci-readers.mjs';
-import { GUARD_DATA_HOST, forcesAll, isGuardData } from './ci-run-all.mjs';
+import { GUARD_DATA_HOST, forcesAll, forcesE2e, needsPlatformChecks } from './ci-run-all.mjs';
 import { deployGroups, groupOf } from './deploy-group.mjs';
 
 // turbo without installing the workspace (it reads only the manifests and the lockfile). Locally:
@@ -131,6 +131,8 @@ else {
 }
 
 const packages = turboPackages(!all);
+// What turbo itself reached, before the suites that only read a change join below: the sites audit plans on it.
+const reachedByTurbo = new Set(packages.map((p) => p.name));
 
 // The suites that read another workspace's files (turbo.json's `$TURBO_ROOT$/…` test inputs, see
 // ci-readers.mjs) run when the change touches what they read, though turbo's graph never reaches them.
@@ -149,15 +151,15 @@ if (!all && !deployMode) {
   }
 }
 
-// A guard's baseline list (ci-run-all.mjs) is data, so it forces nothing; where the change reaches no
-// platform workspace, one small one stands in, so the platform's Checks job still runs the guards on it.
-if (!all && !deployMode && changed.some(isGuardData)) {
+// The rest of `.github/` (ci-run-all.mjs) forces nothing; where the change reaches no platform workspace,
+// one small one stands in, so the platform's Checks job still runs the guards and the CI script tests on it.
+if (!all && !deployMode && changed.some(needsPlatformChecks)) {
   const platform = GROUPS.find((g) => g.group === 'platform').dirs;
   if (!packages.some((p) => platform.some((dir) => `${p.path}/`.startsWith(dir)))) {
     const host = turboPackages(false).find((p) => p.name === GUARD_DATA_HOST);
     if (host) {
       packages.push(host);
-      reason += `, plus ${GUARD_DATA_HOST} for the guards' baseline`;
+      reason += `, plus ${GUARD_DATA_HOST} for the platform's Checks on .github/`;
     }
   }
 }
@@ -193,6 +195,11 @@ for (const spec of GROUPS) {
     group: spec.group,
     count: runnable.length,
     filters: filters(runnable.map((p) => p.name)),
+    // Build leaves out the editor when its E2E runs: the smoke build there runs the same `build` script
+    // (docs/ci.md "Workflows"), and no workspace builds on an editor.
+    build: filters(
+      runnable.filter((p) => !(editorAffected && p.name === spec.editor)).map((p) => p.name),
+    ),
     coverage: filters(coverage),
     plain: filters(plain),
     cli: spec.cli && runnable.some((p) => p.path === spec.cli) ? spec.cli : '',
@@ -212,6 +219,32 @@ for (const spec of GROUPS) {
     }
     e2e.push(spec.group);
   }
+}
+
+// The sites audit (each product's `test:e2e:sites`) checks the help centre, the Community (liveworkspace's site)
+// and the product's marketing site, never the editor, so it runs when one of those, or the audit itself, changed
+// (docs/ci.md "Workflows", E2E). Until 2026-11-23 it ran with the editor's suites instead: on every editor change,
+// where it had nothing new to check, and never on a marketing or help change, which it audits.
+const SITES_SHARED = ['@liveworkspace/help', '@liveworkspace/site', '@liveworkspace/e2e-kit'];
+const SITES_FILES = ['scripts/e2e-stack/'];
+const sites = [];
+for (const spec of GROUPS) {
+  if (!spec.editor) continue;
+  const own = changed.some((file) => spec.dirs.some((dir) => file.startsWith(dir)));
+  if (spec.held && !all && !own) continue;
+  const reached = (name) => reachedByTurbo.has(name);
+  if (
+    all ||
+    reached(`@${spec.group}/marketing`) ||
+    SITES_SHARED.some(reached) ||
+    changed.some(
+      (file) =>
+        file.startsWith(`${spec.editorDir}/e2e/`) ||
+        file === `${spec.editorDir}/playwright.config.ts` ||
+        SITES_FILES.some((prefix) => file.startsWith(prefix)),
+    )
+  )
+    sites.push(spec.group);
 }
 
 // The Workers among the affected workspaces. Tier 0: the services and apis everything else calls
@@ -275,7 +308,18 @@ function deployOf(p) {
 }
 const deploys = packages.map(deployOf).filter(Boolean);
 
-const plan = { reason, groups, editors, e2e, deploys, any: groups.length > 0 };
+// What only the e2e jobs run (ci-run-all.mjs) runs every product's E2E (its editor suites and its sites
+// audit), and no other job for it.
+if (!all && !deployMode && changed.some(forcesE2e)) {
+  for (const spec of GROUPS) {
+    if (!spec.editor) continue;
+    if (!e2e.includes(spec.group)) e2e.push(spec.group);
+    if (!sites.includes(spec.group)) sites.push(spec.group);
+  }
+  reason += ", plus every product's E2E for its workflow";
+}
+
+const plan = { reason, groups, editors, e2e, sites, deploys, any: groups.length > 0 };
 console.error(`[ci-plan] ${reason}; ${packages.length} workspaces`);
 for (const g of groups) console.error(`[ci-plan]   ${g.group}: ${g.count}${g.cli ? ', CLI' : ''}`);
 if (deployMode) {
@@ -289,6 +333,7 @@ if (deployMode) {
 console.error(
   `[ci-plan]   editor shards: ${[...new Set(editors.map((e) => e.group))].join(', ') || 'none'}`,
 );
+console.error(`[ci-plan]   sites audit: ${sites.join(', ') || 'none'}`);
 console.log(JSON.stringify(plan, null, 2));
 
 if (process.env.GITHUB_OUTPUT) {
@@ -296,6 +341,7 @@ if (process.env.GITHUB_OUTPUT) {
     `groups=${JSON.stringify(groups)}`,
     `editors=${JSON.stringify(editors)}`,
     `e2e=${JSON.stringify(e2e)}`,
+    `sites=${JSON.stringify(sites)}`,
     ...[0, 1, 2].map(
       (tier) => `deploys${tier}=${JSON.stringify(deploys.filter((d) => d.tier === tier))}`,
     ),

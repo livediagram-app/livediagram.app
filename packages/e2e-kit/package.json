@@ -9,6 +9,8 @@
     "./optical": "./src/optical.ts",
     "./optical-discover": "./src/optical-discover.ts",
     "./optical-snap": "./src/optical-snap.ts",
+    "./rounded-size": "./src/rounded-size.ts",
+    "./settled": "./src/settled.ts",
     "./perf/budget": "./src/perf/budget.ts",
     "./perf/calibrate": "./src/perf/calibrate.ts",
     "./perf/canvas-probe": "./src/perf/canvas-probe.ts",
