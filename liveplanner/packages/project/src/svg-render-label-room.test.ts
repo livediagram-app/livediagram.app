@@ -6,11 +6,11 @@ import {
   LABEL_ESTIMATE_CHAR_EM,
   labelMaxWidth,
   labelMeasure,
-} from './svg-render-primitives';
-import { pageBodyTop } from './svg-render-page';
+} from '@liveworkspace/element-model/svg-render-primitives';
+import { pageBodyTop } from '@liveworkspace/element-model/svg-render-page';
 import { describeBoxedExport } from './svg-render-describe';
 import { defaultPadding } from './colors';
-import { labelBodyInset } from './label-body';
+import { labelBodyInset } from '@liveworkspace/element-model/label-body';
 
 // The headless label measure and the label's room: what every headless render wraps a label with.
 

@@ -8,10 +8,10 @@ Scope, by file:
 
 | File                                                                         | Role                                                                             |
 | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `livediagram/packages/document/src/web-components.ts`                        | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `../packages/element-model/src/web-components.ts`                            | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
 | `packages/document/src/component-factories.ts`                               | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
 | `packages/document/src/shape-factory.ts`                                     | Default sizes and starting content per kind                                      |
-| `livediagram/packages/document/src/svg-render-web.ts`                        | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `../packages/element-model/src/svg-render-web.ts`                            | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
 | `packages/document/src/themes.ts`                                            | `themeColourFields`: accent bars retheme only their stroke                       |
 | `packages/document/src/colors.ts`                                            | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
 | `packages/document/src/data-shapes.ts`                                       | `isSelfDrawingShape`: stat row and process carry no label                        |
@@ -144,7 +144,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// livediagram/packages/document/src/web-components.ts
+// ../packages/element-model/src/web-components.ts
 export type WebComponentShape = 'banner' | 'callout' | 'stat-row' | 'process' | 'site-header';
 export type StatItem = { value: string; caption: string };
 export type HeroCaption = { title: string; subtitle: string };

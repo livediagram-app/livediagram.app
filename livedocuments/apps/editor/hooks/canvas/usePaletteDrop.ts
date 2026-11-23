@@ -10,7 +10,12 @@
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import type { ShapeKind } from '@livedocuments/document';
 import { pointerToCanvas } from '@/lib/canvas';
-import { ICON_DND_MIME, PALETTE_DND_MIME, STICKER_DND_MIME, TECH_ICON_DND_MIME } from '@/lib/icons';
+import {
+  ICON_DND_MIME,
+  PALETTE_DND_MIME,
+  STICKER_DND_MIME,
+  TECH_ICON_DND_MIME,
+} from '@/lib/dnd-mime';
 import { getPaletteDragSnap, setPaletteDragSnap } from '@/lib/palette-drag-preview';
 import { overFloatingPanel } from '@liveworkspace/workbench/lib/canvas-pointer';
 import {

@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
-import { handDrawnElementPaint } from './hand-drawn';
-import { MARKER_LINE_PX } from './finish';
-import { isPolygonOutline, polygonStrokePx } from './drawn-outline-finish';
+import { handDrawnElementPaint } from '@liveworkspace/element-model/hand-drawn';
+import { MARKER_LINE_PX } from '@liveworkspace/element-model/finish';
+import {
+  isPolygonOutline,
+  polygonStrokePx,
+} from '@liveworkspace/element-model/drawn-outline-finish';
 import { svgBoxed } from './svg-render';
 
 // docs/specs/008-canvas/finish.md "Polygons".

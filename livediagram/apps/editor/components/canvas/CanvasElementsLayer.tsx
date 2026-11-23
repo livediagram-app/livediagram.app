@@ -7,7 +7,7 @@ import { arrowViewGeometry } from './arrow-view-frame';
 import { arrowGeometryCache, buildArrowLinks } from './drag-affected-arrows';
 import { shownWithOverlay, useLayerDragPreview } from '@/hooks/canvas/useLayerDragPreview';
 import { CanvasElementList } from './CanvasElementList';
-import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
+import { usePublishSketchBackdrops } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import {
   elementFontId,
@@ -23,8 +23,8 @@ import {
 } from '@livediagram/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
-import { ArrowDefs } from '@/components/canvas/arrow-defs';
-import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
+import { ArrowDefs } from '@liveworkspace/workbench/components/canvas/arrow-defs';
+import type { ArrowLabels } from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import { DrawnArrowPreview } from '@/components/canvas/DrawnArrowPreview';
 import {
   SelectionGripsContext,
@@ -32,7 +32,7 @@ import {
   type SelectionGripHosts,
 } from '@liveworkspace/workbench/components/canvas/SelectionGripsLayer';
 import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverlay';
-import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
+import { AgentFocusOverlay } from '@liveworkspace/workbench/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';

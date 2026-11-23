@@ -31,13 +31,13 @@ import {
   type TextSize,
 } from '@livedocuments/document';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { OptionRows } from '@liveworkspace/workbench/components/primitives/OptionRows';
 import { LegendTextSize } from '@/components/palette/TypographySections';
-import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { lucideGlyph } from '@livedocuments/ui';
@@ -56,7 +56,7 @@ import {
   BandGlyph,
   LeftoverGlyph,
   ValueGlyph,
-} from '@/components/palette/sankey-menu-glyphs';
+} from '@liveworkspace/workbench/components/palette/sankey-menu-glyphs';
 
 // The Display pickers are option lists (one choice to a row, its glyph at the left), inset like the menu's rows.
 const LIST = 'mx-3 mt-1';

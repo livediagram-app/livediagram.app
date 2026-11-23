@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM"],
     // The layout slots table's test reads the spec off disk (node:fs); the source never touches the filesystem.

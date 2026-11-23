@@ -120,18 +120,22 @@ describe('wwwRedirect', () => {
   });
 
   it('is what every app’s router answers first, ahead of any page it forwards', () => {
+    // Every app's router is the shared one (app-router.ts), bound to the app.
     for (const app of APP_NAMES) {
-      const router = readFileSync(
+      const entry = readFileSync(
         new URL(`../../../${app}/apps/router/src/index.ts`, import.meta.url),
         'utf8',
       );
-      const route = router.slice(router.indexOf('async function route('));
-      const www = route.indexOf('wwwRedirect(request, url');
-      expect(www, app).toBeGreaterThan(0);
-      // Only the redirects that leave the site come before it.
-      expect(route.indexOf('routeToWorkspace('), app).toBeGreaterThan(www);
-      expect(route.indexOf('forward('), app).toBeGreaterThan(www);
+      expect(entry, app).toContain(`export default createAppRouter<`);
+      expect(entry, app).toContain(`app: '${app}',`);
     }
+    const router = readFileSync(new URL('./app-router.ts', import.meta.url), 'utf8');
+    const route = router.slice(router.indexOf('async function route('));
+    const www = route.indexOf('wwwRedirect(request, url');
+    expect(www).toBeGreaterThan(0);
+    // Only the redirects that leave the site come before it.
+    expect(route.indexOf('routeToWorkspace(')).toBeGreaterThan(www);
+    expect(route.indexOf('forward(')).toBeGreaterThan(www);
   });
 });
 

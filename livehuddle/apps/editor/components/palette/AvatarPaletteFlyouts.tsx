@@ -25,7 +25,7 @@ import { Button, HoverCard, RefreshIcon } from '@livehuddle/ui';
 import { behaviourStill, titleCase, type AvatarPaletteCategoryId } from '@/lib/avatar-palette';
 import { setJukeboxListening, useJukeboxListening } from '@/lib/jukebox-listening';
 import { previewHandlers, setAvatarPreview } from '@/lib/avatar-preview';
-import { ColourSwatch } from '@/components/colour/ColourSwatch';
+import { ColourSwatch } from '@liveworkspace/workbench/components/colour/ColourSwatch';
 import { MenuToggleRow } from './context-menu-input-rows';
 import {
   FlyoutGroupTitle,

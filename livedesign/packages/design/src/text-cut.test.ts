@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cutText } from './text-cut';
-import { CARD_TAG_MAX, clampCardTag } from './card';
+import { CARD_TAG_MAX, clampCardTag } from '@liveworkspace/element-model/card';
 import { COMPONENT_NAME_MAX, clampComponentName } from './components';
-import { SANKEY_NAME_MAX, cleanSankeyName } from './sankey-model';
+import { SANKEY_NAME_MAX, cleanSankeyName } from '@liveworkspace/element-model/sankey-model';
 import { pageRenamed } from './pages-edits';
 import { PAGE_NAME_MAX, pagesOf } from './page';
 

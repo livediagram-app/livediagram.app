@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { graphToElements } from './graph-authoring';
 import { isValidTab } from './validate';
-import { autoLayoutElements } from './auto-layout';
+import { autoLayoutElements } from '@liveworkspace/element-model/auto-layout';
 
 // Deterministic edge ids so assertions don't depend on randomUUID.
 let n = 0;

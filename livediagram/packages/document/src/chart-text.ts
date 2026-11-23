@@ -3,7 +3,7 @@
 // instead. A heading naming its type, then one line per row of data.
 import { isChartShape, isLegendShape, isLineShape } from './data-shapes';
 import { elementKindLabel } from './element-kind-label';
-import { isSankeyShape } from './sankey-model';
+import { isSankeyShape } from '@liveworkspace/element-model/sankey-model';
 import type { Element } from './index';
 
 export type ChartText = { heading: string; rows: string[] };

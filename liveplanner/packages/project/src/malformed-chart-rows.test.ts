@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { migrateIncomingTab } from './stored-tab';
 import { elementValidationIssue, isValidTab } from './validate';
-import { settleChartRows } from './malformed-chart-rows';
-import { pieMarks } from './chart-marks';
+import { settleChartRows } from '@liveworkspace/element-model/malformed-chart-rows';
+import { pieMarks } from '@liveworkspace/element-model/chart-marks';
 import type { Element, ShapeElement, Tab } from './index';
 
 // A chart's rows on the way in (docs/specs/009-elements/pie-chart.md "Model").

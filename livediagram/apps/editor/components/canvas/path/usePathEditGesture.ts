@@ -10,7 +10,10 @@ import {
 } from '@livediagram/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { PATH_DOUBLE_PRESS_MS, PATH_DRAG_THRESHOLD_PX } from '@/lib/path-draw';
+import {
+  PATH_DOUBLE_PRESS_MS,
+  PATH_DRAG_THRESHOLD_PX,
+} from '@liveworkspace/workbench/lib/path-draw';
 
 // How long a finger rests on a node before it is a long-press (the canvas long-press's own).
 const PATH_LONG_PRESS_MS = 500;

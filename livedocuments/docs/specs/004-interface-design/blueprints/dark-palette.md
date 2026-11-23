@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/ui/src/Brand.tsx`                                     | Wordmark accent `dark:text-amber-400`                                                    |
 | `../packages/model-core/src/canvas-colors.ts`                   | Dark canvas + pattern constants                                                          |
 | `packages/document/src/colors.ts`                               | `DARK_INK`, `defaultArrowLabelColor`                                                     |
-| `packages/document/src/svg-render-arrows.ts`                    | Export caption colour through `defaultArrowLabelColor`                                   |
+| `../packages/element-model/src/svg-render-arrows.ts`            | Export caption colour through `defaultArrowLabelColor`                                   |
 | `../packages/template-previews/src/preview-art-tile.css`        | Editor `.dark` tile rule landing on the canvas colour                                    |
 | `apps/editor/components/canvas/ArrowView.tsx`                   | Canvas caption colour through `defaultArrowLabelColor`                                   |
 | `apps/editor/components/canvas/element-variant.ts`              | `DARK_SELECTION_RING` on every single selection                                          |

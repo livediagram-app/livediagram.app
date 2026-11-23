@@ -23,7 +23,7 @@ recomputed then, and when the chrome moves or resizes; never on a timer, and nev
 
 ## Colours
 
-`packages/project/src/quick-swatches.ts` derives seven **theme-relative** colours per colour row (stroke, fill, text):
+`../packages/element-model/src/quick-swatches.ts` derives seven **theme-relative** colours per colour row (stroke, fill, text):
 
 - **First, the theme default**: the colour the theme gives a new shape.
 - **Then six from the theme's own palette.** A multi-colour theme has six branch colours, used as they are: branch

@@ -361,7 +361,7 @@ pages livedesign's. livediagram has neither mode, and reads a stored tab that ca
   content intact. livediagram never reads its own tabs through it.
 - An ordinary element keeps what a page layout gave it, and livediagram draws and exports it without offering the
   controls that set it: a text's **wordmark type** (its tracking, weight, case and arc,
-  `packages/document/src/wordmark.ts`), and a **combined** or **mirrored** path of several contours. A path of
+  `../packages/element-model/src/wordmark.ts`), and a **combined** or **mirrored** path of several contours. A path of
   several contours moves and restyles as a whole; its points are not edited one by one.
 - The help articles about boards, cards, Sheets, dashboards and forms redirect to Editor Modes, which points to
   liveplanner, and the marketing site's Plan, Sheets and Forms feature pages redirect to liveplanner.app.

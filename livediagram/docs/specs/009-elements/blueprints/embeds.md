@@ -15,7 +15,7 @@ Scope, by file:
 | `packages/document/src/factories.ts`                                             | `createVideo`: 480×270, `aspectLocked`, optional `embedProvider`                  |
 | `packages/document/src/element-union.ts`                                         | `isBoxed` includes `video`                                                        |
 | `packages/document/src/colors.ts`                                                | Default fill / stroke / text, `supportsColours`, paper-independent ink            |
-| `packages/document/src/themes.ts`                                                | `THEME_COLOUR_FIELDS.video` is empty                                              |
+| `../packages/element-model/src/themes.ts`                                        | `THEME_COLOUR_FIELDS.video` is empty                                              |
 | `../packages/element-model/src/shadow.ts`                                        | `supportsShadow` includes `video`                                                 |
 | `packages/document/src/validate.ts`                                              | `ELEMENT_TYPES` has `video`; `embedProvider` must be in `EMBED_PROVIDERS`         |
 | `packages/document/src/element-kind-label.ts`                                    | `elementKindLabel`: `video` reads "Embed"                                         |

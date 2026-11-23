@@ -9,15 +9,15 @@
 // (Workers / jsdom), so wrapping still works headless.
 
 import { hasShapeSilhouette } from './svg-render-shapes';
-import { resolveFinish, type Finish } from './finish';
-import { svgSketchArtDefs } from './svg-render-sketch';
-import { sketchBackdropIds } from './sketch-backdrop';
+import { resolveFinish, type Finish } from '@liveworkspace/element-model/finish';
+import { svgSketchArtDefs } from '@liveworkspace/element-model/svg-render-sketch';
+import { sketchBackdropIds } from '@liveworkspace/element-model/sketch-backdrop';
 import { acceptsInlineIcon, canvasSurface } from './colors';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody } from './svg-render-body';
 // Text/number primitives shared with the per-element emitters, re-exported
 // below so existing importers of this module keep resolving.
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 
 export {
   clampLabelLines,
@@ -33,8 +33,8 @@ export {
   r2,
   wrapLabel,
   xmlEscape,
-} from './svg-render-primitives';
-import { hasWordmarkType } from './wordmark';
+} from '@liveworkspace/element-model/svg-render-primitives';
+import { hasWordmarkType } from '@liveworkspace/element-model/wordmark';
 
 export {
   EXPORT_DEFAULT_FONT,
@@ -46,15 +46,27 @@ export {
   wrapExportRuns,
   type ExportLabel,
   type ExportRun,
-} from './svg-render-labels';
-import { arrowLabelFontStack, svgArrow } from './svg-render-arrows';
-import { arrowLabelPass, arrowRoutePoints, type ArrowLabelPass } from './arrow-label-layout';
+} from '@liveworkspace/element-model/svg-render-labels';
+import { arrowLabelFontStack, svgArrow } from '@liveworkspace/element-model/svg-render-arrows';
+import {
+  arrowLabelPass,
+  arrowRoutePoints,
+  type ArrowLabelPass,
+} from '@liveworkspace/element-model/arrow-label-layout';
 
-export { arrowLabelFontStack, svgArrow, svgArrowhead } from './svg-render-arrows';
+export {
+  arrowLabelFontStack,
+  svgArrow,
+  svgArrowhead,
+} from '@liveworkspace/element-model/svg-render-arrows';
 import type { BoxedElement, Element, Tab } from './index';
 import { layerBands, layerOpacityOf, visibleLayerElements } from './layers';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
-import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
+import {
+  shadowFilterId,
+  supportsShadow,
+  svgShadowFilterDef,
+} from '@liveworkspace/element-model/shadow';
 // One boxed element's markup (svg-render-boxed.ts), re-exported for the callers that import it from here.
 import { svgBoxed } from './svg-render-boxed';
 
@@ -97,14 +109,14 @@ import {
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from '@liveworkspace/model-core/fonts';
 import { boundsOfPoints, type Point } from '@liveworkspace/model-core/geometry-primitives';
-import { getBuiltInTheme } from './themes';
-import { themeChartPalette } from './theme-presets';
-import { resolvedAccentEdge } from './accent-edge';
-import { isPointerNote, pointerTipOf } from './pointer-note';
-import { isPersonNode } from './person-node';
+import { getBuiltInTheme } from '@liveworkspace/element-model/themes';
+import { themeChartPalette } from '@liveworkspace/element-model/theme-presets';
+import { resolvedAccentEdge } from '@liveworkspace/element-model/accent-edge';
+import { isPointerNote, pointerTipOf } from '@liveworkspace/element-model/pointer-note';
+import { isPersonNode } from '@liveworkspace/element-model/person-node';
 import { bpmnSymbolOf } from './bpmn';
 import { drawnBounds, rotationOf, supportsRotation } from './rotation';
-import { tagColoursOf } from './tag-colours';
+import { tagColoursOf } from '@liveworkspace/element-model/tag-colours';
 
 // Bounding box of the visible content. Arrows count via free endpoints; boxed
 // elements via their rectangle. Empty / degenerate tabs default to a page.
@@ -149,7 +161,7 @@ export function contentBounds(
   return { x: b.x, y: b.y, w: b.width, h: b.height };
 }
 
-export { svgIconShape } from './svg-render-image-icon';
+export { svgIconShape } from '@liveworkspace/element-model/svg-render-image-icon';
 
 // The <style> block declaring the webfonts an export actually used
 // (docs/specs/004-interface-design/fonts.md), so the file carries its own typography instead of relying on

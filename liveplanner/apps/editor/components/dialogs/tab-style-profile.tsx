@@ -21,7 +21,10 @@ import {
 import { seasonalLooksFor } from '@liveworkspace/workbench/lib/seasonal-looks';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { ClusterPanel } from '@/components/canvas/ClusterPanel';
-import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
+import {
+  FINISH_LABELS,
+  FinishSwatch,
+} from '@liveworkspace/workbench/components/palette/FinishSection';
 import { patternLabel } from '@/components/palette/palette-patterns';
 import { TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ThemeBrowser } from '@/components/palette/ThemeBrowser';

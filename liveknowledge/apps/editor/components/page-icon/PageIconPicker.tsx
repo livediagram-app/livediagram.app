@@ -19,7 +19,7 @@ import { samePageIcon, type TabIcon } from '@liveknowledge/document';
 import { ResponsivePopover, SegmentedToggle, TextInput } from '@liveknowledge/ui';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { getLoadedIconCatalog } from '@liveworkspace/workbench/lib/icon-registry';
-import { ICON_CATEGORIES, iconsInCategory, type IconDef } from '@/lib/icons';
+import { ICON_CATEGORIES, iconsInCategory, type IconDef } from '@liveworkspace/workbench/lib/icons';
 import { useToast } from '@/hooks/ui/useToast';
 import type { EmojiEntry, EmojiGroup } from './emoji-catalogue';
 import { PageIconGlyph } from './PageIconGlyph';

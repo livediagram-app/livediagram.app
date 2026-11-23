@@ -11,7 +11,7 @@
 
 import { useState } from 'react';
 import { isBoxed, type Element, type TextRun } from '@liveplanner/project';
-import { canonicalNote } from '@/lib/note-value';
+import { canonicalNote } from '@liveworkspace/workbench/lib/note-value';
 import { track } from '@/lib/telemetry';
 
 type EditorNotesDeps = {

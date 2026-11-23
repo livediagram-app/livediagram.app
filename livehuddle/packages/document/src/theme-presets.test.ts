@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { legacyShapeColorPresets, shapeColorPresets, STICKY_PRESETS } from './theme-presets';
 import { THEMES } from './themes-data';
 import { themeHalf } from './theme-halves';
-import { THEME_TEXT_CONTRAST } from './readable-colour';
+import { THEME_TEXT_CONTRAST } from '@liveworkspace/element-model/readable-colour';
 import { contrastRatio, isLightColor } from './colors';
 
 describe('STICKY_PRESETS', () => {

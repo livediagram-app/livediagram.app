@@ -10,8 +10,10 @@ import { expect, test } from '@playwright/test';
 // honour the stylesheet's avoid between rows, is kept by the header-row pass: lib/article/article-table-layout.test.ts.)
 
 const app = join(dirname(fileURLToPath(import.meta.url)), '..', 'app');
-const css = ['article-pages.css', 'article-tables.css']
-  .map((f) => readFileSync(join(app, f), 'utf8'))
+// The tables' look is the one copy livedocuments and liveknowledge share (@liveworkspace/workbench/styles).
+const styles = join(app, '..', '..', '..', '..', 'packages', 'workbench', 'src', 'styles');
+const css = [join(app, 'article-pages.css'), join(styles, 'article-tables.css')]
+  .map((f) => readFileSync(f, 'utf8'))
   .join('\n');
 
 const article = (lines: number) => `<style>${css}</style>

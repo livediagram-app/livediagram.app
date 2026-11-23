@@ -40,7 +40,7 @@ Without a label it centres in the whole box. The caption is confined to the comp
 the full width, a side caption is confined to its half and centred on the glyph's row.
 
 `iconBandBounds`, `techIconMarkBounds` and `iconCaptionBand` (`icon-size.ts`) are the single geometry; the editor's
-CSS bands (`iconBandClass`, `captionBandClass` in `components/primitives/icon-band.ts`) mirror their numbers, and the
+CSS bands (`iconBandClass`, `captionBandClass` in `../packages/workbench/src/components/primitives/icon-band.ts`) mirror their numbers, and the
 export renderer (`svg-render-describe.ts`, `svg-render-image-icon.ts`) applies them, so a captioned icon exports as
 drawn.
 
@@ -77,4 +77,4 @@ An added Technology icon counts as `Element·Added·TechIcon` (`lib/element-tele
 
 `packages/project/src/svg-render.test.ts` (the fixed size and every band), `geometry.test.ts` (anchoring on the mark),
 `malformed-ids.test.ts` (keys are text), `collab-shapes.test.ts` (alignment places the caption),
-`apps/editor/components/primitives/icon-band.test.ts` (the CSS bands match the export).
+`../packages/workbench/src/components/primitives/icon-band.test.ts` (the CSS bands match the export).

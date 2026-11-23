@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
-import { freehandGeometry } from './freehand-points';
+import { freehandGeometry } from '@liveworkspace/element-model/freehand-points';
 import { catmullRomToBezierPath } from './polyline';
-import { freehandPenStroke, penStrokePath } from './pen-stroke';
-import { r2 } from './svg-render-primitives';
+import { freehandPenStroke, penStrokePath } from '@liveworkspace/element-model/pen-stroke';
+import { r2 } from '@liveworkspace/element-model/svg-render-primitives';
 import { svgFreehandShape } from './svg-render-shapes';
 import {
   STROKE_POINT_MAX_ERROR,

@@ -5,13 +5,13 @@
 import { finishSplitsFace, finishWobblesArt, resolveFinish, type Finish } from './finish';
 import { defaultStrokeColor } from './colors';
 import { handDrawnElementPaint } from './hand-drawn';
-import { handDrawnInk } from './marker-face';
+import { handDrawnInk } from '@liveworkspace/element-model/marker-face';
 import type { BoxedElement, Element } from './index';
-import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
+import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from '@liveworkspace/element-model/marker';
 import type { MarkerDrawing } from './marker-element';
 import { SKETCH_HATCH_OPACITY, type SketchDrawing } from './sketch-element';
 import type { ExportShape } from './svg-render-describe';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { markedGroup, replaceBlocks } from '@liveworkspace/model-core/svg-markup-blocks';
 
 function svgSketchDrawing(

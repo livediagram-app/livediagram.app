@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createFreehand } from './factories';
 import { svgFreehandShape } from './svg-render-shapes';
-import { freehandPenStroke, penStrokePath } from './pen-stroke';
-import { r2 } from './svg-render-primitives';
+import { freehandPenStroke, penStrokePath } from '@liveworkspace/element-model/pen-stroke';
+import { r2 } from '@liveworkspace/element-model/svg-render-primitives';
 
 const stroke = (over: object = {}) => ({
   ...createFreehand(

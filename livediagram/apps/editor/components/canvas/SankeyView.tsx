@@ -22,7 +22,7 @@ import {
   type SankeyLabel,
   type ShapeElement,
 } from '@livediagram/document';
-import { animClass, animSpeedVars } from '@/lib/icons';
+import { animClass, animSpeedVars } from '@liveworkspace/workbench/lib/icons';
 import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';
 import { useSankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 

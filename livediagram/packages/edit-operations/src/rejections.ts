@@ -9,7 +9,7 @@ import {
 } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
 import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
-import { nearestName } from './nearest';
+import { nearestName } from '@liveworkspace/edit-operations/nearest';
 import {
   DID_YOU_MEAN_MAX_DISTANCE,
   EDIT_OPERATION_NAMES,

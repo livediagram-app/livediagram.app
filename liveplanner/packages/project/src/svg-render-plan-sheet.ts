@@ -6,7 +6,7 @@ import type { BoxedElement } from './index';
 import { bestInk, type CanvasSurface } from './colors';
 import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { planOwnColoursOf, planPalette } from './plan-palette';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { wrapLines } from './svg-render-face-kit';
 
 type Shape = BoxedElement & { type: 'shape' };

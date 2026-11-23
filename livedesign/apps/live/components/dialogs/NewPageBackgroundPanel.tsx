@@ -13,7 +13,8 @@ import { themeBackgroundPresets } from '@/lib/page-paint';
 import type { TabStyleCanvasPanelProps } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
 import { PanelSection } from '@/components/canvas/page-panel-sections';
-import { ColorSwatch, PATTERNS, PatternButton } from '@/components/palette/palette-controls';
+import { PatternButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
+import { ColorSwatch, PATTERNS } from '@/components/palette/palette-controls';
 import { getTheme } from '@/lib/themes';
 import { useTabStylePages } from './tab-style-pages';
 

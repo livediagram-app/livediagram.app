@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ColourField } from './ColourField';
 import { ColourSwatchButton } from './ColourSwatchButton';
-import { noColour, standardGroup } from './colour-options';
+import { noColour, standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 
 // docs/specs/004-interface-design/colour-picker.md "Skins".
 const picker = {

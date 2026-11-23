@@ -4,7 +4,7 @@
 // forms share one validation.
 
 import type { FieldValue } from './types';
-import { hasQuotes, unquotedPrefix, type Word } from './tokenise';
+import { hasQuotes, unquotedPrefix, type Word } from '@liveworkspace/edit-operations/tokenise';
 import {
   EDIT_OPERATION_NAMES,
   FLAG_MEMBERS,

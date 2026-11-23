@@ -3,7 +3,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { PAGE_LAYOUTS, SLIDE_LAYOUTS } from '@liveknowledge/templates';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { getIcon, PLACEHOLDER_ICON } from './icons';
+import { getIcon, PLACEHOLDER_ICON } from '@liveworkspace/workbench/lib/icons';
 
 beforeAll(async () => {
   await ensureIconCatalogs();

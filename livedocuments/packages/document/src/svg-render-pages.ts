@@ -4,10 +4,10 @@
 // size, or every page in a grid of rows, so each stays legible in an image whose longer side is bounded. Pure.
 import { pagesOf, layOutPages, type LaidOutPage } from './page';
 import { pageExportFrame } from './page-frame';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { renderElementsToSvg } from './svg-render';
 import type { Tab } from './index';
-import { articleOpsToSvg } from './article-draw-ops';
+import { articleOpsToSvg } from '@liveworkspace/element-model/article-draw-ops';
 import { estimateArticle } from './article-layout-estimate';
 import { themeAccent } from './page-default-background';
 import { getBuiltInTheme } from './themes';

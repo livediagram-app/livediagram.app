@@ -16,7 +16,7 @@ import {
 } from './retired-arrow';
 import { text } from './svg-render-face-kit';
 import { svgFace } from './svg-render-faces';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 
 export function svgRetiredElement(
   el: Pick<BoxedElement, 'x' | 'y' | 'width' | 'height' | 'type' | 'label'> & {

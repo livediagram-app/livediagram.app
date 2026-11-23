@@ -2,7 +2,7 @@
 // its main's elements placed in its box, overrides applied, and a tab with every instance expanded for an export.
 // Pure and linear: one pass over the main's elements per instance, one lookup per instance.
 import type { ArrowElement, Endpoint } from './arrow-types';
-import { isPointerTip } from './pointer-note';
+import { isPointerTip } from '@liveworkspace/element-model/pointer-note';
 import type { BoxedElement, Element, ShapeElement } from './index';
 import {
   INSTANCE_ID_SEPARATOR,

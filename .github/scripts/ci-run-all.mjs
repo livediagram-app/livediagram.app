@@ -11,7 +11,7 @@ export const RUN_ALL = [
   /^prettier\.config\.js$/,
   /^\.prettierignore$/,
   /^\.npmrc$/,
-  /^(livediagram|liveplanner|livedesign|livedocuments|livehuddle|liveknowledge)\/(package\.json|tsconfig\.base\.json|prettier\.config\.js|\.prettierignore)$/,
+  /^(livediagram|liveplanner|livedesign|livedocuments|livehuddle|liveknowledge)\/(package\.json|\.prettierignore)$/,
 ];
 
 // A guard's baseline list (the copies and the files over 800 lines that exist today): data only its own

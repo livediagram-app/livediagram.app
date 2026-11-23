@@ -45,6 +45,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client, the Library
 │  ├─ migration                the move from the historical livediagram.app: the payload contract and the splitter
 │  ├─ next-config              the Next.js settings every Next app spreads (liveworkspaceNextConfig), and the dev entry every app's dev script runs (scripts/next-dev.mjs, which refuses a busy port)
+│  ├─ office-files             Word and PowerPoint files read and written, for livedocuments and liveknowledge: the zip and XML readers, the opened package, a slide's shapes, the PowerPoint writer and the package both writers share
 │  ├─ oxlint-config            the lint rules every workspace runs, with the liveworkspace plugin
 │  ├─ page-background          a colour background (fill, gradient, pattern, motion) and its parser, and an animated background's moving parts, and a page's background edit: pages and form covers
 │  ├─ prettier-config          the formatting settings, for the root and every product
@@ -56,9 +57,9 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ snapshots                manual save points in every app: the store in each item's object, the five kept, revert and its fence, the footer button and dialog
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher, and the one profile picture URL rule (`/picture`)
 │  ├─ source-ast               parses the repo's own TypeScript, for the static guards that read code
-│  ├─ style-guards             the motion tokens and the motion, optical and touch-target guards
+│  ├─ style-guards             the motion tokens and the motion, optical, touch-target and source-scan guards
 │  ├─ tailwind-config          the Tailwind theme every app paints with, sky by default; each other product re-declares its ramps
-│  ├─ template-previews        the template previews' hover motion, fan and story parts, the template search and catalogue, the templates' inks, and the analysis templates' data, for every editor
+│  ├─ template-previews        the template previews' hover motion, fan, story parts and written-page parts, the template search and catalogue, the templates' inks, and the analysis templates' data, for every editor
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script, header and HTML sanitiser every app's pages share
@@ -693,6 +694,6 @@ Each step is its own PR, and both products build and pass their tests after ever
 
 This monorepo is the one home of every product. Their work, CI and deploys happen here; the old
 per-product repositories are history. The products came in with `git subtree add` and keep their
-history; the `.github/` folders under each product are inert, since GitHub reads workflows only from
+history; the `.github/` folders they brought are gone, since GitHub reads workflows only from
 the root ([ci.md](ci.md)). The pre-push hook is the root's, driven by CI's planner
 ([ci.md](ci.md#before-a-push)); the products' own `.githooks/` are not installed.

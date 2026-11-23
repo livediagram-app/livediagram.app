@@ -8,7 +8,7 @@ import {
   DARK_CANVAS_BACKGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
 } from '@liveworkspace/model-core/canvas-colors';
-import { PEN_INK } from './pen-colours';
+import { PEN_INK } from '@liveworkspace/element-model/pen-colours';
 import type { Appearance } from './themes';
 import type { BackgroundPattern } from './index';
 

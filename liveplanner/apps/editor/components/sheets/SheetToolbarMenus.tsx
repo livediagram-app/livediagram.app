@@ -5,7 +5,7 @@
 import { BORDER_LINES, SheetBordersPicker, type BorderLine } from './SheetBordersPicker';
 import { useState } from 'react';
 import { CHART_TYPE_LABELS, CHART_TYPES, PLANNER_FONTS } from '@liveplanner/project';
-import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
+import { ChartTypeIcon } from '@liveworkspace/workbench/components/primitives/ChartTypeIcon';
 import {
   FONT_SIZE_DEFAULT,
   formatRange,

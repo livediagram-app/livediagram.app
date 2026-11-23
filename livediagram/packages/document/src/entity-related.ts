@@ -9,8 +9,8 @@ import {
   fittedEntityHeight,
   primaryKeyIndex,
   relatedEntityFields,
-} from './entity-fields';
-import { entityRowTop } from './entity-geometry';
+} from '@liveworkspace/element-model/entity-fields';
+import { entityRowTop } from '@liveworkspace/model-core/entity-geometry';
 import type { ShapeElement } from './element-types';
 import { createShape } from './shape-factory';
 import { isBoxed, type Element } from './index';

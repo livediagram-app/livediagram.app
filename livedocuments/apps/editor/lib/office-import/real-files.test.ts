@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { readDocx, type DocxBlock } from './docx';
-import { openOfficePackage } from './package';
+import { openOfficePackage } from '@liveworkspace/office-files/package';
 import { readPptx, type SlideTextItem } from './pptx';
 import { buildDeckTab } from './build-deck';
 import { pagesOf, layOutPages, type TextElement } from '@livedocuments/document';

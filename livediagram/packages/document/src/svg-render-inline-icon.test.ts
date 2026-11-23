@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { boxedNeedsSvgRaster, svgBoxed } from './svg-render';
-import { inlineIconMetrics } from './svg-render-inline-icon';
+import { inlineIconMetrics } from '@liveworkspace/element-model/svg-render-inline-icon';
 import type { ShapeElement } from './index';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Icons inside shapes": a box's icon beside its label, in every export.

@@ -12,7 +12,7 @@
 // wraps at its width.
 // An unset background read as Plain on a board and the theme's pattern on a general tab, so it is
 // written down as Plain.
-import { WHITEBOARD_UNSET_PATTERN } from './whiteboard';
+import { WHITEBOARD_UNSET_PATTERN } from '@liveworkspace/element-model/whiteboard';
 import type { Element, Tab } from './index';
 
 const LEGACY_WHITEBOARD_KIND = 'whiteboard';

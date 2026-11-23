@@ -4,7 +4,7 @@
 // public `@livedocuments/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { MapPin, MapRegion } from './map-model';
-import type { Finish } from './finish';
+import type { Finish } from '@liveworkspace/element-model/finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from './element-action';
@@ -16,18 +16,18 @@ import type {
 import type { ElementShadow } from './shadow';
 import type { ImageCrop, ImageMask } from '@liveworkspace/element-model/image-frame';
 import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
-import type { AccentEdge } from './accent-edge';
+import type { AccentEdge } from '@liveworkspace/element-model/accent-edge';
 import type { ElementBuild } from './build-types';
-import type { CardMedia } from './card';
+import type { CardMedia } from '@liveworkspace/element-model/card';
 import type { QuoteLook } from './quote';
-import type { ChipLook } from './chip';
-import type { AttachPoint } from './attachment';
-import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
-import type { PenColourName } from './pen-colours';
-import type { QuickSwatchSlot } from './quick-swatches';
+import type { ChipLook } from '@liveworkspace/element-model/chip';
+import type { AttachPoint } from '@liveworkspace/element-model/attachment';
+import type { ConceptAnim, ConceptRow, PyramidVariant } from '@liveworkspace/element-model/concept';
+import type { PenColourName } from '@liveworkspace/element-model/pen-colours';
+import type { QuickSwatchSlot } from '@liveworkspace/element-model/quick-swatches';
 import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
-import type { ChartPaletteId } from './chart-palettes';
-import type { ChartVariant } from './chart-types';
+import type { ChartPaletteId } from '@liveworkspace/element-model/chart-palettes';
+import type { ChartVariant } from '@liveworkspace/element-model/chart-types';
 import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import type {
   SankeyAlign,
@@ -37,13 +37,13 @@ import type {
   SankeyLinkColor,
   SankeyNodeStyle,
   SankeyValueLabel,
-} from './sankey-model';
+} from '@liveworkspace/element-model/sankey-model';
 import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
 import type { EmbedProvider } from './youtube';
 import type { LiveItem } from '@liveworkspace/element-model/live-item';
 import type { HeroCaption, StatItem } from './web-components';
-import type { ImageCredit } from './image-credit';
+import type { ImageCredit } from '@liveworkspace/model-core/image-credit';
 import type {
   AnimationSpeed,
   ChecklistItem,
@@ -67,7 +67,7 @@ import type {
   TextSize,
   TextSizePreset,
 } from './index';
-import type { StackAlign, StackDirection } from './stack';
+import type { StackAlign, StackDirection } from '@liveworkspace/element-model/stack';
 import type { Anchor } from './arrow-types';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled

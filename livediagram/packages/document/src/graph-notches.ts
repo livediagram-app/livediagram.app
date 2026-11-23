@@ -4,8 +4,8 @@
 // notch a reader sees, where a slant of a few pixels over the edge's length cannot be seen. An elbow whose straight
 // line would cross a box it was routed round keeps its bends. Graph input only, before its labels are placed.
 
-import { arrowPolyline } from './arrow-path-hits';
-import { buildElementIndex } from './geometry';
+import { arrowPolyline } from '@liveworkspace/element-model/arrow-path-hits';
+import { buildElementIndex } from '@liveworkspace/element-model/geometry';
 import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { segmentHitsBox } from './graph-look';
 import { isBoxed, type BoxedElement, type Element, type Endpoint } from './index';

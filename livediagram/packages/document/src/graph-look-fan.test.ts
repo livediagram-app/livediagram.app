@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrowEndpointSpread } from './arrow-endpoint-spread';
+import { arrowEndpointSpread } from '@liveworkspace/element-model/arrow-endpoint-spread';
 import { fanNeighbourhood } from './graph-look';
 import { layoutGraph, type GraphInput } from './graph-input';
 import type { ArrowElement } from './index';

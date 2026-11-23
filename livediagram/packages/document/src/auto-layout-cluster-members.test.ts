@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { seatMembersByNeighbours } from './auto-layout-cluster-members';
-import { SIBLING_GAP } from './auto-layout-shared';
+import { SIBLING_GAP } from '@liveworkspace/element-model/auto-layout-shared';
 import { NOTCH_MAX } from './graph-notches';
 import type { BoxedElement, DiagramGraph, Element } from './index';
 

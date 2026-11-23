@@ -25,7 +25,7 @@ import {
   sketchSeed,
   sketchStrokes,
   type SketchOutline,
-} from './sketch';
+} from '@liveworkspace/element-model/sketch';
 
 /** Path data for each layer of a sketched element; an empty string draws nothing. */
 export type SketchDrawing = {

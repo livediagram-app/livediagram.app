@@ -6,10 +6,10 @@ import {
   LABEL_ESTIMATE_CHAR_EM,
   labelMaxWidth,
   labelMeasure,
-} from './svg-render-primitives';
+} from '@liveworkspace/element-model/svg-render-primitives';
 import { describeBoxedExport } from './svg-render-describe';
 import { defaultPadding } from './colors';
-import { labelBodyInset } from './label-body';
+import { labelBodyInset } from '@liveworkspace/element-model/label-body';
 
 // The headless label measure and the label's room (docs/specs/024-agents/blueprints/diagram-lint.md LN4, LN5):
 // what the lint and every headless render wrap with.

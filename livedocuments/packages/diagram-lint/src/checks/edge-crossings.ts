@@ -3,7 +3,10 @@
 
 import { pathsCross } from '@livedocuments/document';
 import { arrowName, arrowSelector } from '../arrow-names';
-import { LINT_CROSSINGS_PER_ARROW, LINT_REFS_PER_FINDING_MAX } from '../constants';
+import {
+  LINT_CROSSINGS_PER_ARROW,
+  LINT_REFS_PER_FINDING_MAX,
+} from '@liveworkspace/diagram-lint/constants';
 import { containedTab, refOf } from '../context';
 import { fixes } from '../fixes';
 import { restyledRoutes } from '../restyle';

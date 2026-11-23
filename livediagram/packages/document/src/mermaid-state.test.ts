@@ -4,7 +4,7 @@ import { parseMermaid } from './mermaid';
 import { layoutClusteredGraph } from './auto-layout-clusters';
 import { isValidTab } from './validate';
 import { layoutGraph } from './graph-input';
-import { shapeGeometry } from './shape-geometry';
+import { shapeGeometry } from '@liveworkspace/element-model/shape-geometry';
 
 // Tested through parseMermaid so the dispatch is covered too.
 describe('parseMermaid: state diagrams', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { TextElement } from './element-types';
 import { boxedNeedsSvgRaster, svgBoxed } from './svg-render';
-import { trackedMeasure } from './svg-render-wordmark';
+import { trackedMeasure } from '@liveworkspace/element-model/svg-render-wordmark';
 
 // docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments": tracking, weight, case and arc in exports.
 describe('wordmark type in an export', () => {

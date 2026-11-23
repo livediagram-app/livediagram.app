@@ -27,7 +27,7 @@ import type { MapSize } from '@/lib/user-preferences';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useTabFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { selectionBoxColors } from '@/lib/selection-box';
-import { useSettledElements } from '@/hooks/canvas/useSettledElements';
+import { useSettledElements } from '@liveworkspace/workbench/hooks/canvas/useSettledElements';
 
 // The "Map" panel (docs/specs/008-canvas/minimap.md): a movable floating panel — like the Palette — with
 // a zoomed-out, true-to-shape overview of the whole tab. Each boxed element is

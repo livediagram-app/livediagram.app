@@ -10,7 +10,7 @@ import {
   elementGridFor,
   queryElementGrid,
   updateElementGrid,
-} from './element-grid';
+} from '@liveworkspace/element-model/element-grid';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 // docs/specs/008-canvas/canvas-performance.md "Questions about neighbours ask a spatial index".

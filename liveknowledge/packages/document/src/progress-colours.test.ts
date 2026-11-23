@@ -8,9 +8,13 @@ import {
   type CanvasSurface,
 } from './colors';
 import { createShape } from './shape-factory';
-import { svgProgressBar } from './svg-render-data';
+import { svgProgressBar } from '@liveworkspace/element-model/svg-render-data';
 import { svgBoxed } from './svg-render';
-import { PROGRESS_TRACK_DEFAULT, progressLabelInks, progressTrackColour } from './progress-colours';
+import {
+  PROGRESS_TRACK_DEFAULT,
+  progressLabelInks,
+  progressTrackColour,
+} from '@liveworkspace/element-model/progress-colours';
 import type { ShapeElement } from './index';
 
 // docs/specs/009-elements/progress.md "The percentage stays legible".

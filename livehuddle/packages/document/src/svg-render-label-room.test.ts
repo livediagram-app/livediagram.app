@@ -6,7 +6,7 @@ import {
   LABEL_ESTIMATE_CHAR_EM,
   labelMaxWidth,
   labelMeasure,
-} from './svg-render-primitives';
+} from '@liveworkspace/element-model/svg-render-primitives';
 
 // The headless label measure and the label's room: what every headless render wraps with.
 

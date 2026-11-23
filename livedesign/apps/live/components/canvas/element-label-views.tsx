@@ -25,7 +25,7 @@ import {
   TEXT_ALIGN,
   type LabelPadding,
   type LabelTextStyle,
-} from '@/components/canvas/label-style';
+} from '@liveworkspace/workbench/components/label-editor/label-style';
 import { createLabelViews } from '@liveworkspace/workbench/components/canvas/element-label-views';
 
 export const { ScalingLabel, FixedSizeLabel, MultilineLabel } = createLabelViews<

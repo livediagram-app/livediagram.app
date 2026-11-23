@@ -576,7 +576,7 @@ false, an absent `projectFormat` as equal to its own.
   liveworkspace described without an expiry gets 404, CLI39) →
   200 `CurrentTokenResponse = { accountId, accountName, tokenId, tokenName, role, expiresAt }`; `role` is
   `read-only` when `ctx.token.readOnly`, else `full`. `accountName` is the owner's participant name, `null` when none.
-- `DELETE /api/tokens/current` → 204 after `revokePresentedToken(env, secret)` (`db/api-tokens.ts`), which asks
+- `DELETE /api/tokens/current` → 204 after `revokePresentedToken(env, secret)` (`../packages/auth-client/src/api-tokens.ts`), which asks
   liveworkspace's accounts Worker to revoke the presented secret ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../../liveworkspace/docs/specs/003-accounts/accounts.md)).
 - Both are reached before the session-only gate in `handleTokens`, through `ctx.token`. The token write choke point
   admits `DELETE /api/tokens/current` for a token of any role, as revoking itself escalates nothing.
@@ -982,6 +982,10 @@ Requests carry `X-Liveplanner-Client: cli` and `User-Agent: liveplanner-cli/<ver
 
 Every suite runs on fakes (an in-memory `CliIo`: stdout, stderr, stdin, TTY flags, env, clock and its timers, room sockets, SIGINT, files, fetch and
 WebSocket) with a fixed clock; none waits on a real timer or the network.
+
+The suites every product's CLI shares (the keychain, credentials, config, transport, debug log, `workbench pair`,
+`workbench open` and sign-in) are written once, in `../packages/cli-kit/src/testing/suites/`; the test files named
+below run them over this CLI's own modules.
 
 | Spec rule                                                                                                              | Test                                                                                                                                                                            |
 | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

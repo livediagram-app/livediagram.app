@@ -7,7 +7,7 @@ import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelecti
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFontEpoch';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
+import { useArrowLabelLayouts } from '@liveworkspace/workbench/hooks/canvas/useArrowLabelLayouts';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 
 export function useCanvasSelectionInput({

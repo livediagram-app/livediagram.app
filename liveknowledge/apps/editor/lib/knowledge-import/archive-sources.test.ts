@@ -3,7 +3,7 @@
 
 import { planImport } from '@liveknowledge/knowledge-import';
 import { describe, expect, it, vi } from 'vitest';
-import { makeZip } from '@/lib/office-import/test-fixtures';
+import { makeZip } from '@liveworkspace/office-files/test-fixtures';
 import {
   droppedArchive,
   folderArchive,

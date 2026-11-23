@@ -10,7 +10,7 @@ look of that catalogue.
 
 ## Why a separate category, not more entries in Icons
 
-The Icons catalogue (`apps/editor/lib/icons.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md)) is Feather/Lucide-style:
+The Icons catalogue (`../packages/workbench/src/lib/icons.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md)) is Feather/Lucide-style:
 each glyph is a set of stroke primitives in a 0..24 box, drawn `fill="none"` and
 **tinted by the element's stroke colour** so it themes like a line drawing.
 Brand service icons are the opposite: fixed multi-colour fills that must NOT be
@@ -129,14 +129,14 @@ still used for search, the aria-label, and the on-canvas element.
 Unlike the Icons tab, a Technology tile is **always a standalone element**: it
 never drops _inside_ a selected shape as an inline icon (a coloured brand tile
 beside a shape's text is not meaningful, and the inline-icon renderer only knows
-line-art prims). It therefore carries its own DnD MIME (`TECH_ICON_DND_MIME`, beside `ICON_DND_MIME` in `lib/icons.ts`),
+line-art prims). It therefore carries its own DnD MIME (`TECH_ICON_DND_MIME`, beside `ICON_DND_MIME` in `../packages/workbench/src/lib/icons.ts`),
 which the canvas drop handler routes to a standalone-icon create and which the
 shape drop target ignores. The same rule holds _after_ placement: dragging an
 existing standalone tech icon over a shape leaves it standalone: the
 icon-fold-into-shape gesture (`useEditorDrag`, which absorbs a dragged line-art
 `icon` shape into the shape beneath it) excludes tech icons via `isTechIconId`.
 
-## Rendering: `apps/editor/components/primitives/tech-icon-glyph.tsx`
+## Rendering: `../packages/workbench/src/components/primitives/tech-icon-glyph.tsx`
 
 `TechIconGlyph` paints the brand-coloured tile + the icon's white `glyph` markup
 inside an `<svg>`. No stroke tint is applied; the brand colour is the tile fill

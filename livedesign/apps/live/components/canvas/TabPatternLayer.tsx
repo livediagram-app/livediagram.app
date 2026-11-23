@@ -7,7 +7,7 @@
 // motion as the canvas's is.
 import { isAnimatedPattern, type BackgroundPattern } from '@livedesign/design';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
-import { AnimatedCanvasBackground } from './AnimatedCanvasBackground';
+import { AnimatedCanvasBackground } from '@liveworkspace/workbench/components/canvas/AnimatedCanvasBackground';
 
 // The tile's origin: a covering layer never pans, so the pattern starts at its corner.
 const ORIGIN = { x: 0, y: 0 };

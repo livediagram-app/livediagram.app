@@ -9,14 +9,14 @@ Scope, by file:
 | File                                                           | Role                                                                                                                               |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/mind-map.ts`                            | Tree walks, free placement (`nextMindChildPosition`), `makeRoom`, root sibling                                                     |
-| `packages/document/src/mind-flow.ts`                           | `MindFlow`, per-flow free placement, gaps, `mindConnectorAnchors`                                                                  |
+| `../packages/element-model/src/mind-flow.ts`                   | `MindFlow`, per-flow free placement, gaps, `mindConnectorAnchors`                                                                  |
 | `packages/document/src/mind-layout.ts`                         | `layoutMindTree`, `isMindTreeTidy`, `reanchorMindConnectors`                                                                       |
 | `packages/document/src/mind-grow.ts`                           | `planMindGrowth`, `relayoutMindMap`, `mindStyleSource`, `applyMindMoves`                                                           |
 | `packages/document/src/mind-fit.ts`                            | `fitMindNodeHeight`: grow a node taller, re-lay a tidy map around it                                                               |
 | `packages/document/src/mind-outline-text.ts`                   | `mindOutlineText`, `mindOutlineEntryText`, `mindOutlineLines`, `parseMindOutline`, `mindOutlineNodeText`: outline to and from text |
 | `packages/document/src/mind-outline-marks.ts`                  | `mindNodeMarks`, `mindMarkdownToMarks`, `mindMarksToMarkdown`, `restyleMindNode`, `mindRichTextFor`: bold / italic / underline     |
 | `packages/document/src/mind-outline.ts`                        | `summariseMindOutline`, `applyMindOutline`: match nodes, apply, re-lay out on a structure change                                   |
-| `packages/document/src/mind-connector-route.ts`                | `finishMindConnectorRoute`, `finishRoutedArrow`, `finishArrowEnds`: Professional's bracket routing                                 |
+| `../packages/element-model/src/mind-connector-route.ts`        | `finishMindConnectorRoute`, `finishRoutedArrow`, `finishArrowEnds`: Professional's bracket routing                                 |
 | `../packages/element-model/src/anchor-choice.ts`               | `bestAnchorTowards`: the bubble flow's connector faces                                                                             |
 | `packages/document/src/shape-factory.ts`                       | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                                                                                       |
 | `packages/document/src/element-types.ts`                       | `mindParentId`, `mindFlow`                                                                                                         |
@@ -357,7 +357,7 @@ mindParentId?: ElementId;
 mindFlow?: MindFlow;
 mindSpacing?: MindSpacing;
 
-// packages/document/src/mind-flow.ts
+// ../packages/element-model/src/mind-flow.ts
 export type MindFlow = 'tree' | 'leftward' | 'balanced' | 'downward' | 'upward' | 'bubble';
 export const MIND_FLOWS: readonly MindFlow[]; // the Branching order: each mirror after its original
 export const isVerticalMindFlow: (flow: MindFlow) => boolean; // downward, upward
@@ -397,7 +397,7 @@ export function mindConnectorAnchors(
   child: ShapeElement,
 ): [Anchor, Anchor];
 
-// packages/document/src/mind-connector-route.ts
+// ../packages/element-model/src/mind-connector-route.ts
 export type MindConnectorRoute =
   | { style: 'angled'; corners: Point[] } // absolute, from-to order; [] when the ends line up
   | { style: 'straight'; corners: [] }; // bubble

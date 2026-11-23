@@ -21,7 +21,11 @@
 
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
-import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
+import {
+  threadResolved,
+  threadWithComment,
+  threadWithoutComment,
+} from '@liveworkspace/element-model/comment-thread';
 import { holdsNotes, isNoticeNote, noteFields, NOTES_MAX, type NoticeNote } from './office-social';
 import { arcadeTableWith, type ArcadeScore } from './arcade-scores';
 import { isPieceTimer, isTimerPieceShape, samePieceTimer, type PieceTimer } from './timer-pieces';

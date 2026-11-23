@@ -28,7 +28,7 @@ import {
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
-import { ThemeStrip } from '@/components/canvas/ThemeStrip';
+import { ThemeStrip } from '@liveworkspace/workbench/components/canvas/ThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import { Fragment, useCallback, useRef } from 'react';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
@@ -47,7 +47,7 @@ import { kindCounts } from '@liveworkspace/workbench/components/panels/collabora
 import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
+import { useSnapGuides } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import type { CanvasChromeProps } from './CanvasChrome.types';
 
 export type { CanvasChromeProps } from './CanvasChrome.types';

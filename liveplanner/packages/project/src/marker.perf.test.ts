@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { markerElementPaint } from './marker-element';
+import { markerElementPaint } from '@liveworkspace/element-model/marker-element';
 import { createShape } from './shape-factory';
 
 // docs/specs/008-canvas/finish.md "Performance": Marker is held to Sketch's budgets (sketch.perf.test.ts), one

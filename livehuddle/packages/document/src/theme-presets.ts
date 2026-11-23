@@ -1,7 +1,11 @@
 import type { BorderStroke, BorderStyle } from '@liveworkspace/model-core/border-style';
 import { canvasSurface, DARK_INK, isLightColor, shade, tint } from './colors';
 import type { Element } from './index';
-import { labelOn as readableLabelOn, reachContrast, THEME_TEXT_CONTRAST } from './readable-colour';
+import {
+  labelOn as readableLabelOn,
+  reachContrast,
+  THEME_TEXT_CONTRAST,
+} from '@liveworkspace/element-model/readable-colour';
 import type { ThemeDefinition } from './themes';
 
 // Design-system defaults used when a theme defers its element colours

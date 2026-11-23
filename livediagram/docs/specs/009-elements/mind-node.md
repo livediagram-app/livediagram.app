@@ -344,7 +344,7 @@ Resizing a node resizes only that node.
 The arrangement a keyboard-driven outline wants is a child to the right,
 siblings stacked down it. That is a **tree**, and it is only one of the shapes
 people draw. There are six (`MindFlow` in
-`packages/document/src/mind-flow.ts`), picked from **Branching** in the **Mind
+`../packages/element-model/src/mind-flow.ts`), picked from **Branching** in the **Mind
 Map** menu of a selected node's menu (see "The Mind Map menu"):
 
 - **Tree**: branches right, siblings stacked down. The default, so every map
@@ -393,7 +393,7 @@ the next sibling's slot.
 ## Spacing
 
 How far apart a map's nodes sit is the map's **spacing** (`MindSpacing` in
-`packages/document/src/mind-flow.ts`), picked from **Spacing** in the Mind Map
+`../packages/element-model/src/mind-flow.ts`), picked from **Spacing** in the Mind Map
 menu. It scales both gaps the layout uses, parent to child along the flow and
 sibling to sibling across it, by one factor:
 

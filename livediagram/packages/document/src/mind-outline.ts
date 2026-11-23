@@ -7,7 +7,7 @@
 // theme), and commits the result as one change.
 import type { ArrowElement, Element, ElementId, ShapeElement } from './index';
 import { createPinnedArrow, createShape } from './factories';
-import { MIND_CONNECTOR_LOOK } from './mind-flow';
+import { MIND_CONNECTOR_LOOK } from '@liveworkspace/element-model/mind-flow';
 import {
   applyMindMoves,
   mindConnectorBetween,

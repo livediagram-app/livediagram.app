@@ -6,23 +6,23 @@ precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
 Scope, by file:
 
-| File                                                                                 | Role                                                                                                                   |
-| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `packages/model-core/src/rich-text.ts` (shared)                                      | `TextRun.highlight`, `TextRun.gradient`, `RunPatch`, `ATTR_KEYS`                                                       |
-| `packages/element-model/src/text-effects.ts` (shared)                                | `TEXT_GRADIENTS`, `TextGradientId`, `textGradientOf`, `isHighlightColour`, `highlightBandCss`, band geometry constants |
-| `liveknowledge/packages/document/src/shadow.ts`                                      | `supportsShadow` takes `text`; `shadowTextCss`                                                                         |
-| `liveknowledge/packages/document/src/element-types.ts`                               | `TextElement.shadow`                                                                                                   |
-| `liveknowledge/packages/document/src/svg-render-describe.ts`                         | `ExportRun.highlight` / `.gradient` resolved from runs                                                                 |
-| `packages/element-model/src/svg-render-labels.ts` (shared)                           | Band rects and gradient defs in `svgRichWrappedLabel`; `wrapExportRuns` keeps fragments apart by effect                |
-| `packages/element-model/src/svg-render-text-effects.ts` (shared)                     | `svgLineEffects`, `highlightBandRect`, `sameEffects`, `exportRunEffects`, `hasTextEffects`                             |
-| `apps/editor/components/canvas/label-style.ts`                                       | `effectiveRunStyle` paints both effects                                                                                |
-| `apps/editor/components/canvas/element-variant.ts`                                   | Text `textShadow`                                                                                                      |
-| `../packages/workbench/src/components/label-editor/rich-text-dom.ts`                 | `data-rt-highlight`, `data-rt-gradient` round trip                                                                     |
-| `../packages/workbench/src/components/label-editor/rich-text-format.ts`              | `ActiveFormat.highlight` / `.gradient` (uniform or null)                                                               |
-| `apps/editor/components/rich-text/TextEffectsPanel.tsx`                              | The panel (Highlight picker, Gradient tiles)                                                                           |
-| `apps/editor/components/canvas/RichTextToolbar.tsx`                                  | The Text Effects dropdown                                                                                              |
-| `apps/editor/lib/export-tab-canvas-draw.ts`                                          | PNG bands and gradients                                                                                                |
-| `apps/editor/lib/office-export/pptx-native.ts`, `pptx-types.ts`, `pptx-slide-xml.ts` | `highlight`, `gradFill`, `outerShdw` on runs                                                                           |
+| File                                                                                                              | Role                                                                                                                   |
+| ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `packages/model-core/src/rich-text.ts` (shared)                                                                   | `TextRun.highlight`, `TextRun.gradient`, `RunPatch`, `ATTR_KEYS`                                                       |
+| `packages/element-model/src/text-effects.ts` (shared)                                                             | `TEXT_GRADIENTS`, `TextGradientId`, `textGradientOf`, `isHighlightColour`, `highlightBandCss`, band geometry constants |
+| `liveknowledge/packages/document/src/shadow.ts`                                                                   | `supportsShadow` takes `text`; `shadowTextCss`                                                                         |
+| `liveknowledge/packages/document/src/element-types.ts`                                                            | `TextElement.shadow`                                                                                                   |
+| `liveknowledge/packages/document/src/svg-render-describe.ts`                                                      | `ExportRun.highlight` / `.gradient` resolved from runs                                                                 |
+| `packages/element-model/src/svg-render-labels.ts` (shared)                                                        | Band rects and gradient defs in `svgRichWrappedLabel`; `wrapExportRuns` keeps fragments apart by effect                |
+| `packages/element-model/src/svg-render-text-effects.ts` (shared)                                                  | `svgLineEffects`, `highlightBandRect`, `sameEffects`, `exportRunEffects`, `hasTextEffects`                             |
+| `apps/editor/components/canvas/label-style.ts`                                                                    | `effectiveRunStyle` paints both effects                                                                                |
+| `apps/editor/components/canvas/element-variant.ts`                                                                | Text `textShadow`                                                                                                      |
+| `../packages/workbench/src/components/label-editor/rich-text-dom.ts`                                              | `data-rt-highlight`, `data-rt-gradient` round trip                                                                     |
+| `../packages/workbench/src/components/label-editor/rich-text-format.ts`                                           | `ActiveFormat.highlight` / `.gradient` (uniform or null)                                                               |
+| `apps/editor/components/rich-text/TextEffectsPanel.tsx`                                                           | The panel (Highlight picker, Gradient tiles)                                                                           |
+| `apps/editor/components/canvas/RichTextToolbar.tsx`                                                               | The Text Effects dropdown                                                                                              |
+| `apps/editor/lib/export-tab-canvas-draw.ts`                                                                       | PNG bands and gradients                                                                                                |
+| `apps/editor/lib/office-export/pptx-native.ts`, `../packages/office-files/src/pptx-types.ts`, `pptx-slide-xml.ts` | `highlight`, `gradFill`, `outerShdw` on runs                                                                           |
 
 ## Domain and naming
 

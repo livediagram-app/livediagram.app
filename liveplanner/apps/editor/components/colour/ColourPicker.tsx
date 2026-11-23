@@ -15,7 +15,7 @@ import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { YOUR_COLOURS_MAX } from '@/lib/project-colours';
 import { CustomColourEditor } from '@liveworkspace/workbench/components/colour/CustomColourEditor';
 import { MoreColoursGlyph } from './MoreColoursGlyph';
-import { ColourSwatch } from './ColourSwatch';
+import { ColourSwatch } from '@liveworkspace/workbench/components/colour/ColourSwatch';
 import { COLOUR_PICKER_WIDTH } from '@liveworkspace/workbench/components/colour/colour-metrics';
 import {
   hexOption,
@@ -23,7 +23,7 @@ import {
   stableColours,
   type ColourGroup,
   type ColourOption,
-} from './colour-options';
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { onColourKeys } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { useThemeColours } from './useThemeColours';
 

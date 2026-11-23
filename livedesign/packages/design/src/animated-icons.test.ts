@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_ICON_ANIMATION, ICON_ANIMATIONS, defaultIconAnimation } from './animation';
+import {
+  DEFAULT_ICON_ANIMATION,
+  ICON_ANIMATIONS,
+  defaultIconAnimation,
+} from '@liveworkspace/model-core/animation';
 
 // The catalogue carries four glyphs drawn to MOVE (docs/specs/008-canvas/canvas-and-palette.md): a spinner whose
 // arc has a gap so the rotation reads, a gear, a heart, a broadcast signal.

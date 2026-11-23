@@ -12,7 +12,10 @@ import {
   type TabStyleProfile,
 } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 import type { TabStyleTourBinding } from '@liveworkspace/workbench/components/tour/tab-style-tour-steps';
-import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
+import {
+  FINISH_LABELS,
+  FinishSwatch,
+} from '@liveworkspace/workbench/components/palette/FinishSection';
 import { ThemeBrowser } from '@/components/palette/ThemeBrowser';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useAppearance } from '@/hooks/ui/useAppearance';

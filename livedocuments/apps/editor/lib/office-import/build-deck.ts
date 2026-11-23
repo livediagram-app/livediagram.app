@@ -17,11 +17,11 @@ import {
   type TextElement,
 } from '@livedocuments/document';
 import { pictureElement } from './build-article';
-import { EMU_PER_PT } from './limits';
-import { fitTextBox } from './text-fit';
+import { EMU_PER_PT } from '@liveworkspace/office-files/limits';
+import { fitTextBox } from '@liveworkspace/office-files/text-fit';
 import type { PptxRead, SlideItem } from './pptx';
 import type { PictureOutcome } from './store-images';
-import { zipKey } from './zip';
+import { zipKey } from '@liveworkspace/office-files/zip';
 
 /** What the Slide Deck takes for one imported slide page. */
 export type ImportedSlideDetail = { pageId: string; notes?: string; hidden?: true };

@@ -2,18 +2,18 @@
 // (docs/specs/011-theme/retired-schemes.md): the api worker's tab read and thumbnail render, the
 // offline store's tab load and a file import all run this, so a new migration
 // is added once and reaches every entry point.
-import { upgradeLegacyLinks } from './legacy-links';
-import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
-import { migrateRetiredScheme } from './retired-schemes';
+import { upgradeLegacyLinks } from '@liveworkspace/element-model/legacy-links';
+import { migrateWhiteboardKind } from '@liveworkspace/element-model/legacy-whiteboard-tab';
+import { migrateRetiredScheme } from '@liveworkspace/element-model/retired-schemes';
 import { migrateRetiredTheme } from './retired-themes';
-import { dropCustomTheme } from './retired-custom-themes';
+import { dropCustomTheme } from '@liveworkspace/element-model/retired-custom-themes';
 import { dropRetiredPages } from './retired-pages';
 import { dropRetiredPlan } from './retired-plan';
 import { migrateStoredElements } from './stored-elements';
-import { settleDiagramKeys } from './diagram-key';
-import { settleStacks } from './stack';
+import { settleDiagramKeys } from '@liveworkspace/element-model/diagram-key';
+import { settleStacks } from '@liveworkspace/element-model/stack';
 import { settleTabFields } from './tab-fields';
-import { tagColoursOf } from './tag-colours';
+import { tagColoursOf } from '@liveworkspace/element-model/tag-colours';
 import type { Element, Tab } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
 

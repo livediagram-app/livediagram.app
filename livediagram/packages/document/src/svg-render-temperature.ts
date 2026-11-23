@@ -12,7 +12,7 @@ import {
   temperaturePosition,
 } from './collab-shapes';
 import { responseStats, responseTally } from './responses';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { collabCard, moodFace, PAD_X, PAD_Y, text, type Face } from './svg-render-face-kit';
 import { BODY_GAP, BODY_TOP, roundRect } from './svg-render-collab-parts';
 

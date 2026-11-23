@@ -16,7 +16,7 @@ import { apiSaveDocumentMeta } from '@/lib/api-client';
 import { useTabEntryEffects } from '../useTabEntryEffects';
 import { useCollabDeepLinkCapture } from '../useCollabDeepLink';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { boundsOfElements } from '@/lib/changeset-reveals';
+import { boundsOfElements } from '@liveworkspace/workbench/lib/changeset-reveals';
 import type { EditorDocument } from './useEditorDocument';
 import type { EditorSelection } from './useEditorSelection';
 import type { EditorSession } from './useEditorSession';

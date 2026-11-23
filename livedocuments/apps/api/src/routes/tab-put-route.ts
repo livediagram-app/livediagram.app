@@ -25,7 +25,7 @@ import {
   tabConnectionOf,
 } from '@liveworkspace/index-app';
 import { indexAppClient } from '../index-service';
-import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
+import { mergeChangesetsIntoSave } from '../changesets/plans';
 import { newCommentsBy, rewriteCommentAuthors } from '../comments';
 import { changesetMergePages, getTab, isTabRevStale, upsertTabAtRev } from '../db';
 import { getParticipant } from '../person/profiles';

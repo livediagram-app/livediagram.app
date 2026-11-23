@@ -46,7 +46,7 @@ import { kindCounts } from '@liveworkspace/workbench/components/panels/collabora
 import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
+import { useSnapGuides } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import type { CanvasChromeProps } from './CanvasChrome.types';
 import { PageEditBar } from '@/components/page-edit/PageEditBar';
 import { PageReactionsBesideZen } from '@/components/page-reactions/PageReactions';

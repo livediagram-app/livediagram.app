@@ -3,7 +3,7 @@ import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time
 import { buildDocx } from './docx-build';
 import { writeDocx } from './docx-write';
 import { buildDeck } from './pptx-build';
-import { writePptx } from './pptx-write';
+import { writePptx } from '@liveworkspace/office-files/pptx-write';
 import { fakeDrawer, longArticleTab, longDeckTab } from './test-tabs';
 
 // docs/specs/020-import-export/office-export.md "Performance": the card's two worst cases, a 50-slide deck and a

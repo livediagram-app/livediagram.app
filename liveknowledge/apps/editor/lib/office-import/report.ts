@@ -7,10 +7,10 @@ import {
   MAX_ARTICLE_TABLE_ROWS,
 } from '@liveknowledge/document';
 import type { ImportImageFailure } from '../import-images';
-import type { FileImportFormat } from './errors';
-import { OFFICE_MAX_IMAGES, OFFICE_MAX_SLIDE_ITEMS } from './limits';
+import type { FileImportFormat } from '@liveworkspace/office-files/errors';
+import { OFFICE_MAX_IMAGES, OFFICE_MAX_SLIDE_ITEMS } from '@liveworkspace/office-files/limits';
 import type { PictureOutcome } from './store-images';
-import { SKIP_KINDS, type SkipKind, type SkipTally } from './tally';
+import { SKIP_KINDS, type SkipKind, type SkipTally } from '@liveworkspace/office-files/tally';
 
 export type ReportLine = { title: string; message: string };
 

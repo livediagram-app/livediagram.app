@@ -1,8 +1,11 @@
 import type { Element } from './index';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
-import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
+import {
+  rederiveColorPresetForTheme,
+  rederiveTablePresetForTheme,
+} from '@liveworkspace/element-model/theme-presets';
 import { isPlanPresetId } from './plan-presets';
-import { rederiveQuickSwatches } from './quick-swatch-rederive';
+import { rederiveQuickSwatches } from '@liveworkspace/element-model/quick-swatch-rederive';
 import {
   recolourElementForTheme,
   resetThemeElement,

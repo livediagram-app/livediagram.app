@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     // DOM for the Confluence reader, which walks the inert document `parseInert` answers. `node` for the tests
     // alone (the CPU-time budget reads the process's CPU clock); the source never touches the filesystem.

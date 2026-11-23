@@ -4,7 +4,7 @@ import {
   AURORA_GLOWS,
   RINGS_PER_ORIGIN,
   RIPPLE_ORIGINS,
-} from './animated-pattern-still';
+} from '@liveworkspace/workbench/lib/animated-pattern-still';
 import { renderTabToSvg } from './export-tab';
 import { lookPreviewSvg, lookPreviewTab } from './look-preview';
 import { TAB_LOOKS } from './tab-looks';

@@ -23,13 +23,16 @@ import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext'
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
-import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import {
+  SketchOverlay,
+  useSketchPaint,
+} from '@liveworkspace/workbench/components/canvas/SketchOverlay';
 import { SketchFace } from '@liveworkspace/workbench/components/canvas/SketchFace';
 import { FaceFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@liveworkspace/workbench/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@liveworkspace/workbench/lib/live-filter-cost';
-import { useTagColours } from '@/components/canvas/TagColoursContext';
-import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
+import { useTagColours } from '@liveworkspace/workbench/components/canvas/TagColoursContext';
+import { useIsSketchBackdrop } from '@liveworkspace/workbench/lib/sketch-backdrop-store';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { clearingInset } from '@liveworkspace/workbench/components/canvas/InsetContent';

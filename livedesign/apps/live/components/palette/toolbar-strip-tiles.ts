@@ -1,4 +1,4 @@
-import { getLineArtIconCatalog } from '@/lib/icons';
+import { getLineArtIconCatalog } from '@liveworkspace/workbench/lib/icons';
 import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
 import { tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { iconTileDef, techTileDef } from './palette-dynamic-tiles';

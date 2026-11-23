@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { TEMPERATURE_COLORS, TEMPERATURE_MOODS, TEMPERATURE_VALUES } from '@livediagram/document';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { stopPointer } from '../qa/qa-parts';
 import { MoodGlyph } from './MoodGlyph';

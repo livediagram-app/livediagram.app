@@ -12,9 +12,10 @@ import {
 } from '@livedesign/design';
 import { Glyph } from '@livedesign/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
-import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
+import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
+import { MenuToggleRow } from '@/components/palette/context-menu-rows';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

@@ -25,7 +25,7 @@ import {
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { noColour, standardGroup } from '@/components/colour/colour-options';
+import { noColour, standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { GREY_PEN_COLOUR, INK_PEN_COLOUR, standardColours } from '@liveplanner/project';
 import { useSheetController, type SheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';

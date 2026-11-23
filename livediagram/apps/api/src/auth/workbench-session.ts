@@ -4,7 +4,7 @@
 // This hands in livediagram's credentials, what a session reaches in its names, and the outage error.
 
 import { createWorkbenchSessions } from '@liveworkspace/auth-client/workbench-sessions';
-import { AccountsUnavailable } from '../db/api-tokens';
+import { AccountsUnavailable } from '@liveworkspace/auth-client/api-tokens';
 import { accountCredentials } from './accounts';
 
 export { sessionPrefixOf } from '@liveworkspace/auth-client/workbench-sessions';

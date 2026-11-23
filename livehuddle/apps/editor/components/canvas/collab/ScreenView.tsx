@@ -16,7 +16,7 @@ import { lucidePlay } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livehuddle/ui';
 import { setCallMaximised, useCallMedia } from '@/lib/calls/calls-store';
 import { useMeetingLive } from '@/lib/office/meeting-live';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { track } from '@/lib/telemetry';
 import { MediaVideo, mediaTitle } from '@/components/calls/MediaBubble';
 import { ScreenPlayer } from './ScreenPlayer';

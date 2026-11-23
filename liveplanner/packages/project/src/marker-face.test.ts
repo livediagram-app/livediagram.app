@@ -13,8 +13,12 @@ import {
   markerFaceSeed,
   markerFrameInk,
   type FacePartPaint,
-} from './marker-face';
-import { outlineOfEllipse, outlineOfPath, outlineOfRect } from './sketch';
+} from '@liveworkspace/element-model/marker-face';
+import {
+  outlineOfEllipse,
+  outlineOfPath,
+  outlineOfRect,
+} from '@liveworkspace/element-model/sketch';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';
 import { svgMarkerFace } from './svg-render-face-finish';

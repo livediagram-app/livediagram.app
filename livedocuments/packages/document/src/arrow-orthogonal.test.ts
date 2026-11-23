@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { curveAnchorPoints } from './arrow-path';
-import { orthogonalBends, withFacingBends, withOrthogonalBends } from './arrow-orthogonal';
+import { curveAnchorPoints } from '@liveworkspace/element-model/arrow-path';
+import {
+  orthogonalBends,
+  withFacingBends,
+  withOrthogonalBends,
+} from '@liveworkspace/element-model/arrow-orthogonal';
 import { createPinnedArrow, createShape } from './factories';
 import type { ArrowElement, Element } from './index';
 

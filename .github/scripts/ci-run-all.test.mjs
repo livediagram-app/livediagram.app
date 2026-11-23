@@ -11,7 +11,7 @@ test('shared config and CI itself check everything', () => {
     'package.json',
     'turbo.json',
     'pnpm-workspace.yaml',
-    'liveplanner/tsconfig.base.json',
+    'liveplanner/package.json',
     '.prettierignore',
   ])
     assert.equal(forcesAll(file), true, file);
