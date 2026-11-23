@@ -6,13 +6,12 @@ import type { ReactNode } from 'react';
 import type { KnowledgeAgent } from '@liveknowledge/api-schema';
 import { CodeSnippet } from '@liveworkspace/marketing-site/components/ai/CodeSnippet';
 import { Button, CompactEmptyState } from '@liveknowledge/ui';
-import { InsightsSection, INSIGHTS_CHIP, INSIGHTS_MUTED } from '@/components/insights/InsightsSection';
 import {
-  AgentIcon,
-  CliIcon,
-  McpIcon,
-  TokenIcon,
-} from '@/components/insights/insights-icons';
+  InsightsSection,
+  INSIGHTS_CHIP,
+  INSIGHTS_MUTED,
+} from '@/components/insights/InsightsSection';
+import { AgentIcon, CliIcon, McpIcon, TokenIcon } from '@/components/insights/insights-icons';
 import { ConnectViewIcon } from '@/components/ask/ask-icons';
 import { agentDoor, agentScopeChips, type AgentDoor } from '@/lib/knowledge-ask/overview-words';
 import { track } from '@/lib/telemetry';

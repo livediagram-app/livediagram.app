@@ -5,11 +5,7 @@
 // how writing is allowed. Presentation only: the api is the rule.
 import type { ReactNode } from 'react';
 import { Button } from '@liveknowledge/ui';
-import {
-  AllowWritingIcon,
-  ReadsIcon,
-  SuggestionIcon,
-} from '@/components/insights/insights-icons';
+import { AllowWritingIcon, ReadsIcon, SuggestionIcon } from '@/components/insights/insights-icons';
 import { INSIGHTS_MUTED } from '@/components/insights/InsightsSection';
 import {
   accessRows,
