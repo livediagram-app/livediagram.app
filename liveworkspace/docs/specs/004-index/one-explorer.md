@@ -1088,7 +1088,12 @@ walks the index, asks each item's app for an export of its content, and keeps Dr
   were about 28 KiB gzipped of `/explorer`'s first load). An item's or folder's ⋯ menu fetches the dialogs it
   offers as it opens, so a press on one of its rows finds the code in and the dialog opens in that press's own
   commit, taking focus as it always has; a dialog opened before its code lands draws once it does. A dialog whose
-  code cannot load draws nothing. `dialogs-lazy-load.test.ts` keeps them out of the first load.
+  code cannot load draws nothing. Since 2026-11-23 the rest of them are out of the first load too: the open dialog's
+  own code (`OpenDialog.tsx`: the confirmations, Change Folder's spaces and This Browser's dialogs), New Team's form
+  and the confirmation Trash and Shared With Me ask (`lazy-dialogs.ts`), with the dialog frame they share. The
+  Explorer keeps only a shell (`Dialogs.tsx`) that draws the open one, and fetches their code once the page is idle
+  (and the open dialog's as a ⋯ menu opens), about 12 KiB gzipped. `dialogs-lazy-load.test.ts` keeps them out of
+  the first load.
 - **The sections most visits never open load when shown.** Inbox, Invites, Gallery and Shape Libraries
   are each fetched from their own chunk (`packages/explorer/src/explorer/lazy-panes.ts`), and the Explorer fetches
   them all once it has drawn and the page is idle, so moving to one later draws it in the move's own commit.
