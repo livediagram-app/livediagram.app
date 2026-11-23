@@ -106,6 +106,7 @@ import { alarm, armAlarm, purge } from './room-lifecycle';
 import { renamePerson } from './room-names';
 import { sweepStaleAttendance } from './room-attendance';
 import { roomMessage } from './room-message';
+import { ORDER_STATE_KEY, sequenceMutation } from './room-order';
 import { callSessions, storedTabRev } from './room-call-sessions';
 import {
   broadcastPresence,
@@ -135,9 +136,9 @@ import {
 //
 // The class holds the room's state and its doors; what each door does lives beside it, in functions that take the
 // room: room-content-state.ts (schema, outbox, upkeep), room-rpc.ts and room-community.ts (the worker's calls),
-// room-grants.ts (the upgrade and grants), room-sockets.ts (fan-out and closes), room-message.ts (inbound frames),
-// room-call-sessions.ts (calls, nudges), room-roster.ts (presence) and room-lifecycle.ts (alarm, purge). So the
-// members those functions read are not `private`.
+// room-grants.ts (the upgrade and grants), room-sockets.ts (fan-out and closes), room-order.ts (the ordered stream),
+// room-message.ts (inbound frames), room-call-sessions.ts (calls, nudges), room-roster.ts (presence) and
+// room-lifecycle.ts (alarm, purge). So the members those functions read are not `private`.
 //
 // Duration cost: the object is billed while it runs a request or an alarm, not while sockets idle (hibernation,
 // below). Content requests and thumbnail renders now run here rather than in the worker, so a document with heavy
@@ -163,18 +164,6 @@ import {
 //     the DO, so a client can learn its socket is still alive (or find out it
 //     died silently, a laptop asleep or a NAT that dropped the connection)
 //     without costing the room a wake per ping.
-
-// How many recent mutation ops the room keeps for reconnect catch-up
-// (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1). A reconnecting client within this many ops of the
-// live tail replays the delta; further behind, it re-hydrates from the document's stored tabs.
-// Bounded so an idle-but-connected room can't grow the buffer without end;
-// the log lives in memory (like opRates) and resets on hibernation, which
-// only ever forces the safe path (a resync), never data loss.
-const OP_LOG_LIMIT = 256;
-
-// DO storage key holding `{ epoch, seq }` so the room keeps its ordering
-// identity across a hibernation wake (docs/specs/012-collaboration/resync-without-reload.md).
-const ORDER_STATE_KEY = 'order-state';
 
 // How long the outbox waits after a write before it pushes, the least gap between two pushes, and the retry after a
 // failed one: @liveworkspace/index-app's (outbox.ts), the same for every app's items.
@@ -662,13 +651,6 @@ export class DocumentRoom extends DurableObject<Env> {
     return this.roomEnv;
   }
 
-  // Record the seq we just handed out. Not awaited: the DO output gate holds
-  // outbound messages until pending writes land, so a peer can never see an
-  // op whose seq failed to persist.
-  private persistOrder(): void {
-    void this.state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
-  }
-
   // ---------- Sessions: the upgrade, grants and fan-out (room-grants.ts, room-sockets.ts) --------------------------
 
   override fetch(input: Request | string, init?: RequestInit): Promise<Response> {
@@ -713,17 +695,9 @@ export class DocumentRoom extends DurableObject<Env> {
     return purge(this, documentId);
   }
 
-  // Put a mutation into the ordered stream: a seq, the catch-up log, every
-  // socket but the sender's, and the ledger. One path for a peer's op and for
-  // one the worker made (docs/specs/012-collaboration/collab-race-hardening.md), so the two can't drift. Returns the seq.
+  // Put a mutation into the ordered stream (room-order.ts). Returns the seq.
   sequenceMutation(from: string, op: unknown, except?: WebSocket): number {
-    const seq = ++this.seq;
-    this.persistOrder();
-    this.opLog.push({ seq, from, op });
-    if (this.opLog.length > OP_LOG_LIMIT) this.opLog.shift();
-    this.broadcast({ kind: 'op', from, op, seq, epoch: this.epoch }, except);
-    this.ledger.record(op, seq);
-    return seq;
+    return sequenceMutation(this, from, op, except);
   }
 
   broadcastSystemOp(op: unknown): void {

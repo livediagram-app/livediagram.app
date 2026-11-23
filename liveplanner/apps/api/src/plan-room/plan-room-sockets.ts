@@ -19,7 +19,21 @@ import type { PlanRoom } from './plan-room';
 
 // DO storage key holding `{ epoch, seq }` so the room keeps its ordering
 // identity across a hibernation wake (docs/specs/012-collaboration/resync-without-reload.md).
-export const ORDER_STATE_KEY = 'order-state';
+const ORDER_STATE_KEY = 'order-state';
+
+// On a wake, the stored epoch and seq replace the constructor's fresh ones, so a caught-up client that reconnects
+// matches them and gets an empty delta instead of a resync.
+export async function restoreOrder(room: PlanRoom): Promise<void> {
+  const storage = room.state.storage;
+  const saved = await storage.get<{ epoch: string; seq: number }>(ORDER_STATE_KEY);
+  if (saved) {
+    room.epoch = saved.epoch;
+    room.seq = saved.seq;
+  } else {
+    // First instantiation for this project: adopt the random epoch the constructor made.
+    await storage.put(ORDER_STATE_KEY, { epoch: room.epoch, seq: room.seq });
+  }
+}
 
 // Share-link ops that end the sessions their code admitted.
 const SHARE_LINK_OPS = new Set(['share-revoked', 'share-rescoped']);

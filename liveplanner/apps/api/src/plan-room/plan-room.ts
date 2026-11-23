@@ -59,7 +59,6 @@ import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import { type RouteIdentity } from './plan-route';
 import { answerRoomRoadmap } from '../roadmap/roadmap-room';
-import { RoadmapMemo } from '../roadmap/roadmap-memo';
 import {
   answerRoomIntake,
   type IntakeDelivery,
@@ -100,20 +99,18 @@ import {
 } from './plan-room-doors';
 import { renewGrant, acceptSession } from './plan-room-grants';
 import {
-  ORDER_STATE_KEY,
+  restoreOrder,
   broadcast,
   broadcastSystemOp,
   broadcastOrderedSystemOp,
-  closeAllReverted,
 } from './plan-room-sockets';
 import { webSocketMessage } from './plan-room-frames';
 import { answerHookCall, type HookAnswer, type HookCall } from './automations/automation-incoming';
 import { optOutAddress } from './automations/automation-addresses';
 import { answerGithubCall, type GithubRoomAnswer, type GithubRoomCall } from './github/github-room';
-import { localNamespace, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
-import { dropSession, roomPeople, broadcastPresence } from './plan-room-presence';
+import { roomEnv, roomHead, roomParticipantWrites, roomInternal } from './plan-room-wiring';
+import { dropSession, broadcastPresence } from './plan-room-presence';
 import { purgedAt } from './plan-room-purged';
-import { RemovalGuard } from './removal-guard-store';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import type { SheetWatches } from './sheet-watchers';
 import type { SentCards } from './sent-cards';
@@ -304,21 +301,7 @@ export class PlanRoom extends DurableObject<Env> {
       ensureSchema: () => ensureSchema(this),
       onWrite: () => noteWrite(this),
     });
-    this.roomEnv = env
-      ? {
-          ...env,
-          PLAN_DB: this.db.asD1(),
-          PLAN_ROOM: localNamespace(this, env.PLAN_ROOM),
-          ROOM_PEOPLE: () => roomPeople(this),
-          AUTOMATIONS: this.automations,
-          REMOVAL_GUARD: new RemovalGuard(state.storage),
-          SNAPSHOT_REVERTED: () => closeAllReverted(this),
-          // Stamped with SQLite's change count, which every write in this room moves, whichever path made it.
-          ROADMAP_MEMO: new RoadmapMemo(() =>
-            Number(state.storage.sql.exec('SELECT total_changes() AS n').toArray()[0]?.n ?? 0),
-          ),
-        }
-      : undefined;
+    this.roomEnv = env ? roomEnv(this, env) : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.sheetWatches = roomSheetWatches(this);
     this.sentCards = roomSentCards(this);
@@ -340,14 +323,7 @@ export class PlanRoom extends DurableObject<Env> {
     // the constructor, so without this gate a socket could be handed the
     // freshly-minted field values above and defeat the whole point.
     void state.blockConcurrencyWhile(async () => {
-      const saved = await state.storage.get<{ epoch: string; seq: number }>(ORDER_STATE_KEY);
-      if (saved) {
-        this.epoch = saved.epoch;
-        this.seq = saved.seq;
-      } else {
-        // First instantiation for this project: adopt the random epoch above.
-        await state.storage.put(ORDER_STATE_KEY, { epoch: this.epoch, seq: this.seq });
-      }
+      await restoreOrder(this);
       for (const r of await this.agents.restore()) agentPresenceLog('expired', r);
       // Before the schedules restore, so a plan put away asks for no wake.
       this.standing.restore(await state.storage.get(STANDING_KEY));

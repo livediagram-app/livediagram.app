@@ -6,6 +6,12 @@ import { NON_PATTERN_CANVAS_TYPES } from '../../_shared/look-feel-types';
 import { isNonThemePick } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
+import {
+  ASK_AI_ANSWERS_COPIED,
+  ASK_AI_QUESTIONS,
+  ASK_AI_SOURCES_OPENED,
+  ASK_AI_SWITCHED,
+} from './ask-ai';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -500,37 +506,9 @@ export const AI_SOURCE_KEYS_ADDED = chart(
   { types: ['AiSourceKey'] },
 );
 
-// Ask AI in the footer's Tools (liveworkspace/docs/specs/019-ask/ask.md): questions asked of the open plan, and an
-// answer's sources looked at. Never a question, an answer or which AI.
-export const ASK_AI_QUESTIONS = chart(
-  'UI',
-  'Used',
-  'Ask AI Questions',
-  'A question asked of the open plan in Ask AI, in Tools.',
-  { types: ['AskAi'] },
-);
-
-export const ASK_AI_SOURCES_OPENED = opened(
-  'Ask AI Sources Opened',
-  'An answer’s Sources opened in Ask AI, or one of them followed to its place in the plan.',
-  (t) => t === 'AskAiSources' || t === 'AskAiSource',
-);
-
-export const ASK_AI_ANSWERS_COPIED = chart(
-  'UI',
-  'Used',
-  'Ask AI Answers Copied',
-  'An Ask AI answer copied with Copy Answer.',
-  { types: ['AskAiCopy'] },
-);
-
-export const ASK_AI_SWITCHED = chart(
-  'UI',
-  'Changed',
-  'Ask AI Switched',
-  'Answer With changed in Ask AI, to built-in AI or to a key.',
-  { types: ['AskAiBuiltIn', 'AskAiKey'] },
-);
+// Ask AI's charts (./ask-ai.ts); its Sources chart is a home among the opened ones.
+export * from './ask-ai';
+OPENED_HOMES.push(ASK_AI_SOURCES_OPENED.typeIn!);
 
 export const SETTINGS_CATEGORIES_VISITED = opened(
   'Settings Categories Visited',
