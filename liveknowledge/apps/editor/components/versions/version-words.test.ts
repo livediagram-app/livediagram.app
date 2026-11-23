@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VersionSummary } from '@liveknowledge/api-schema';
 import {
+  aiVersionWords,
   copyName,
   dayHeading,
   kindWords,
   timeOfDay,
   versionsByDay,
+  versionAuthorWords,
   versionTitle,
   whenWords,
 } from './version-words';
@@ -51,6 +53,22 @@ describe('titles', () => {
     expect(kindWords('manual')).toBe('Named');
     // Each Save of a page (docs/specs/006-document/version-history.md "When a version is kept").
     expect(versionTitle({ name: null, kind: 'save' })).toBe('Saved');
+  });
+});
+
+// version-history.md "In the editor": an agent's version names the agent for its person, its sparkle what it did.
+describe('authors', () => {
+  it('names a person, or an agent for its person', () => {
+    expect(versionAuthorWords({ name: 'Ada', color: '#000' })).toBe('Ada');
+    expect(versionAuthorWords({ name: 'Ada', color: '#000', agent: 'Claude' })).toBe(
+      'Claude for Ada',
+    );
+  });
+
+  it('words the sparkle by what the agent did', () => {
+    expect(
+      (['save', 'agent', 'restore', 'manual', 'idle'] as const).map((kind) => aiVersionWords(kind)),
+    ).toEqual(['Saved by AI', 'Edited by AI', 'Restored by AI', 'Named by AI', 'Changed by AI']);
   });
 });
 

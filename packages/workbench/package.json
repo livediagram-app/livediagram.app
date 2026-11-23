@@ -144,6 +144,8 @@
     "./components/colour/CustomColourEditor": "./src/components/colour/CustomColourEditor.tsx",
     "./components/colour/ContrastHint": "./src/components/colour/ContrastHint.tsx",
     "./components/colour/useJudgedSwatch": "./src/components/colour/useJudgedSwatch.ts",
+    "./components/ai-writer/AiWriterMark": "./src/components/ai-writer/AiWriterMark.tsx",
+    "./components/ai-writer/agent-for-person": "./src/components/ai-writer/agent-for-person.ts",
     "./components/comments/CommentMarks": "./src/components/comments/CommentMarks.tsx",
     "./components/comments/CommentReactions": "./src/components/comments/CommentReactions.tsx",
     "./components/comments/CommentReactionsContext": "./src/components/comments/CommentReactionsContext.tsx",
