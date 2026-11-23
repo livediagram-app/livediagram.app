@@ -12,7 +12,7 @@ import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { PlanCornerActions } from '@/components/chrome/EditorHeader';
 // The tab bar with Connect a File beside its + (connected-tabs.md "From the tab bar").
-import { TabBarWithConnect } from '@/components/connect/useConnectFileDialog';
+import { TabBarWithConnect } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { WorkbenchBackButton, WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';

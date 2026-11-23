@@ -29,6 +29,9 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
+import { track } from '@/lib/telemetry';
+import { useConnectFileDialog } from '@liveworkspace/workbench/components/connect/useConnectedTabActions';
+import { useConnectHost } from '@/components/connect/useConnectHost';
 import type { AccessLevel } from '@liveplanner/api-schema';
 import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
@@ -388,3 +391,20 @@ export function TabBar({
 // TabBar. Distinct from the per-tab theme grid (Palette →
 // Theme accordion): this only flips editor chrome, not the canvas.
 // docs/specs/007-editor/editor-app.md "UI light / dark mode" projects the full surface.
+
+// The tab bar's Connect a File (liveworkspace/docs/specs/004-index/connected-tabs.md "From the tab bar"): offered where
+// connecting can work (useConnectHost), the press counted as this app's own.
+export function useTabBarConnect() {
+  return useConnectFileDialog(useConnectHost(), () => track('Tab', 'Opened', 'ConnectButton'));
+}
+
+// The tab bar with its Connect a File: the bar given its `onConnect`, and the dialog drawn beside it.
+export function TabBarWithConnect(props: Omit<TabBarProps, 'onConnect'>) {
+  const { open, dialog } = useTabBarConnect();
+  return (
+    <>
+      <TabBar {...props} onConnect={open} />
+      {dialog}
+    </>
+  );
+}

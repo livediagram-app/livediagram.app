@@ -344,9 +344,9 @@ the tab menu's connected mode for an Editor, nothing for a Viewer).
   connected tab (`Tab·Changed·ConnectedName`, or `ConnectedNameReset` when it follows again) and `followConnectedTab(id, name)`
   runs `followedConnectedTab` with no event, which `ConnectedTabHost` hands the page as its `onRename`, the page's
   `name` being `targetNameOf(tab)`; its tab pill gives a connected tab the rename field (an empty commit allowed) and
-  `targetName`; its connected menu gains Rename first; its tab bar passes `onConnect` from `useConnectFileDialog`
-  (`components/connect/useConnectFileDialog.tsx`, the start entry's rules from `useConnectHost`), which mounts the
-  dialog and counts `Tab·Opened·ConnectButton`; `editor-view.ts` hands `followConnectedTab` on where an app's context
+  `targetName`; its connected menu gains Rename first; its `TabBar.tsx` exports `TabBarWithConnect`, passing `onConnect` from the shared
+  `useConnectFileDialog` (in `useConnectedTabActions.ts`, which mounts the dialog) given the app's `useConnectHost`
+  (the start entry's rules) and a press that counts `Tab·Opened·ConnectButton`; `editor-view.ts` hands `followConnectedTab` on where an app's context
   is built from it. The apis keep the stored `targetName` on a tab-scoped save and refuse it in a scoped room patch:
   livediagram's `tab-put-route.ts` and room `scopedRenames`; livedocuments' and livedesign's `tab-put-route.ts` and
   room-scope `renamesTab` (a whole `tab` op from a scoped session relays without `name` or `targetName`);

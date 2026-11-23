@@ -2,7 +2,7 @@
 
 // The tab bar's Connect a File (liveworkspace/docs/specs/004-index/connected-tabs.md "From the tab bar"): offered only
 // where connecting can work, an Editor's session that may change the tabs (never a Participant's or a Viewer's, a
-// tab-scoped link's, an embed's, a workbench's, a guest's or an Offline document's). A press counts and opens the dialog;
+// tab-scoped link's, an embed's, a workbench's, a guest's or an Offline plan's). A press counts and opens the dialog;
 // a file connected there is added at the end of the bar, giving no empty tab way, and the start screen's own entry
 // still gives way to it.
 import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
@@ -12,11 +12,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const { state } = vi.hoisted(() => ({
   state: { ctx: null as Record<string, unknown> | null, offline: false },
 }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({
+vi.mock('@/app/project/[id]/EditorContext', () => ({
   useOptionalEditorContext: () => state.ctx,
 }));
-vi.mock('@/hooks/persistence/useIsOfflineDocument', () => ({
-  useIsOfflineDocument: () => state.offline,
+vi.mock('@/hooks/persistence/useIsOfflineProject', () => ({
+  useIsOfflineProject: () => state.offline,
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', async (importOriginal) => ({
@@ -26,8 +26,8 @@ vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', async (importOriginal)
 
 import { track } from '@/lib/telemetry';
 import { tabBarProps } from '@/components/chrome/TabBar.test-props';
-import { TabBarWithConnect, useConnectFileDialog } from './useConnectFileDialog';
-import { useConnectStart } from './useConnectStart';
+import { TabBarWithConnect, useTabBarConnect } from './TabBar';
+import { useConnectStart } from '@/components/connect/useConnectStart';
 
 const connectedTabs = {
   connected: new Map(),
@@ -37,13 +37,13 @@ const connectedTabs = {
   goTo: vi.fn(),
 };
 
-// An Editor on their own document, on the server, unless a test says otherwise.
+// An Editor on their own plan, on the server, unless a test says otherwise.
 const editor = (over: Record<string, unknown> = {}) => ({
   accountUserId: 'user-1',
-  documentId: 'doc-1',
+  projectId: 'doc-1',
   isStructureReadOnly: false,
   embedMode: false,
-  workbench: null,
+  workbenchMode: false,
   sessionShareCode: null,
   connectedTabs,
   activeTab: { id: 't2' },
@@ -59,7 +59,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-const hook = () => renderHook(() => useConnectFileDialog());
+const hook = () => renderHook(() => useTabBarConnect());
 
 describe('Connect a File on the tab bar', () => {
   it('is offered to an Editor, and a press counts and opens the dialog', () => {
@@ -74,7 +74,7 @@ describe('Connect a File on the tab bar', () => {
       hostManaged: boolean;
     }>;
     expect(isValidElement(dialog)).toBe(true);
-    expect(dialog.props).toMatchObject({ hostKind: 'document', hostManaged: true });
+    expect(dialog.props).toMatchObject({ hostKind: 'plan', hostManaged: true });
     const { newTabId, onOpenExplorer } = dialog.props as unknown as {
       newTabId: () => string;
       onOpenExplorer: () => void;
@@ -95,9 +95,9 @@ describe('Connect a File on the tab bar', () => {
   it.each([
     ['a Participant or a Viewer (the tabs read-only)', { isStructureReadOnly: true }],
     ['a guest', { accountUserId: null }],
-    ['a document not yet saved', { documentId: null }],
+    ['a plan not yet saved', { projectId: null }],
     ['an embed', { embedMode: true }],
-    ['a workbench frame', { workbench: { shareCode: null } }],
+    ['a workbench frame', { workbenchMode: true }],
   ])('is not offered to %s', (_who, over) => {
     state.ctx = editor(over);
     const { result } = hook();
@@ -105,7 +105,7 @@ describe('Connect a File on the tab bar', () => {
     expect(result.current.dialog).toBeNull();
   });
 
-  it('is not offered on an Offline document, or outside the editor', () => {
+  it('is not offered on an Offline plan, or outside the editor', () => {
     state.offline = true;
     expect(hook().result.current.open).toBeUndefined();
     state.offline = false;
@@ -113,7 +113,7 @@ describe('Connect a File on the tab bar', () => {
     expect(hook().result.current.open).toBeUndefined();
   });
 
-  it("asks the both-ways question only of who manages the document's links", () => {
+  it("asks the both-ways question only of who manages the plan's links", () => {
     state.ctx = editor({ sessionShareCode: 'abc' });
     const { result } = hook();
     act(() => result.current.open!());
@@ -143,6 +143,9 @@ describe('Connect File on the start screen', () => {
       column: '#eee',
       card: '#fff',
       focus: '#00f',
+      cardBorder: '#ddd',
+      warning: '#a60',
+      warningBg: '#fff7e6',
     };
     const panel = render(palette) as ReactElement<{
       addTab: (made: unknown, tabId: string) => Promise<void>;

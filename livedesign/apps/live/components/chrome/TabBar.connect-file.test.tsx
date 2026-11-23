@@ -26,8 +26,8 @@ vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', async (importOriginal)
 
 import { track } from '@/lib/telemetry';
 import { tabBarProps } from '@/components/chrome/TabBar.test-props';
-import { TabBarWithConnect, useConnectFileDialog } from './useConnectFileDialog';
-import { useConnectStart } from './useConnectStart';
+import { TabBarWithConnect, useTabBarConnect } from './TabBar';
+import { useConnectStart } from '@/components/connect/useConnectStart';
 
 const connectedTabs = {
   connected: new Map(),
@@ -59,7 +59,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-const hook = () => renderHook(() => useConnectFileDialog());
+const hook = () => renderHook(() => useTabBarConnect());
 
 describe('Connect a File on the tab bar', () => {
   it('is offered to an Editor, and a press counts and opens the dialog', () => {
