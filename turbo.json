@@ -125,12 +125,55 @@
         "$TURBO_ROOT$/liveknowledge/apps/**",
         "$TURBO_ROOT$/liveknowledge/packages/**",
         "$TURBO_ROOT$/liveworkspace/apps/accounts/src/**",
-        "$TURBO_ROOT$/packages/help-site/src/**",
-        "$TURBO_ROOT$/packages/telemetry-client/src/**",
+        // Its style guards (dark-pair, hover-tie) read the classes of every shared package the site draws from.
+        "$TURBO_ROOT$/packages/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",
         "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**"
+      ]
+    },
+    // The Callout guard (src/callout/callout-guard.test.ts) reads every package's and app's .tsx for a hand-tinted
+    // note box, so those sources are inputs: the pull request that adds one runs the guard itself, instead of
+    // merging green and failing every later pull request (three on 2026-11-23, docs/ci.md "Before a push").
+    "@liveworkspace/ui#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/packages/**/*.tsx",
+        "$TURBO_ROOT$/liveworkspace/apps/**/*.tsx",
+        "$TURBO_ROOT$/livediagram/apps/**/*.tsx",
+        "$TURBO_ROOT$/liveplanner/apps/**/*.tsx",
+        "$TURBO_ROOT$/livedocuments/apps/**/*.tsx",
+        "$TURBO_ROOT$/livedesign/apps/**/*.tsx",
+        "$TURBO_ROOT$/livehuddle/apps/**/*.tsx",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/.wrangler/**"
+      ]
+    },
+    // Its tree scans read every workspace: history-state.test.js greps all tracked scripts for a history call
+    // that hands Next its own state back, and apps-use-shared.test.js reads every Next app's config and
+    // manifest. The pull request that adds an offender runs them itself (three Dependabot runs failed on one
+    // that had merged green, 2026-11-21).
+    "@liveworkspace/next-config#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/**/*.ts",
+        "$TURBO_ROOT$/**/*.tsx",
+        "$TURBO_ROOT$/**/*.js",
+        "$TURBO_ROOT$/**/*.mjs",
+        "$TURBO_ROOT$/**/package.json",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
         "!$TURBO_ROOT$/**/.turbo/**",
         "!$TURBO_ROOT$/**/.wrangler/**"
       ]

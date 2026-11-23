@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { COVERAGE_MAX_FILES } from './pre-push-guards.mjs';
 import {
   CAP_MIN_FILES,
   CAP_SHARE,
@@ -32,6 +33,17 @@ test('a group gets the fast checks only, after the repo-wide guards', () => {
     'no new files over 800 lines',
     'one path for markup',
     'liveplanner: lint and typecheck',
+    'liveplanner: format',
+    'liveplanner: speed budgets use CPU time',
+  ]);
+});
+
+test('the quick run leaves lint and type check out', () => {
+  const labels = prePushSteps({ groups: [group] }, { lint: false }).map((s) => s.label);
+  assert.deepEqual(labels, [
+    'no new copies across products',
+    'no new files over 800 lines',
+    'one path for markup',
     'liveplanner: format',
     'liveplanner: speed budgets use CPU time',
   ]);
@@ -73,15 +85,6 @@ const ctx = {
   /** @param {string} dir */
   guardTests: (dir) =>
     dir === editor.dir ? ['app/dark-palette.test.ts', 'lib/small-text-contrast.test.ts'] : [],
-  helpApps: () => [
-    {
-      ws: help,
-      tests: [
-        'editions/livediagram/tests/repo-paths-in-docs.test.ts',
-        'editions/liveplanner/tests/repo-paths-in-docs.test.ts',
-      ],
-    },
-  ],
   /** @param {string} product */
   emitterTest: (product) =>
     product === 'liveplanner'
@@ -124,6 +127,7 @@ test('changed code runs the tests that import it, then the guard tests', () => {
           'run',
           'app/dark-palette.test.ts',
           'lib/small-text-contrast.test.ts',
+          '--testTimeout=60000',
         ],
       ],
       [
@@ -162,24 +166,6 @@ test('a workspace without vitest, or a file outside any workspace, runs nothing'
   );
 });
 
-test("a deletion or rename runs every edition's repo-paths test in the help centre", () => {
-  for (const status of ['D', 'R100']) {
-    const steps = testSteps([{ status, path: 'docs/old.md' }], ctx);
-    assert.deepEqual(
-      steps.map((s) => [s.label, s.args.slice(-2)]),
-      [
-        [
-          '@liveworkspace/help: repo paths in help articles',
-          [
-            'editions/livediagram/tests/repo-paths-in-docs.test.ts',
-            'editions/liveplanner/tests/repo-paths-in-docs.test.ts',
-          ],
-        ],
-      ],
-    );
-  }
-});
-
 test('a deleted code file is not passed to vitest related', () => {
   const steps = testSteps([{ status: 'D', path: 'liveplanner/apps/editor/lib/gone.ts' }], ctx);
   assert.equal(
@@ -196,7 +182,7 @@ test('a busy machine caps every test run', () => {
     ],
     { ...ctx, maxWorkers: 2 },
   );
-  assert.equal(steps.length, 4);
+  assert.equal(steps.length, 3);
   for (const s of steps) assert.equal(s.args.at(-1), '--maxWorkers=2');
 });
 
@@ -582,4 +568,109 @@ test('a command that cannot start is a failure, not a crash', async () => {
   ]);
   assert.equal(status, 1);
   assert.match(text, /failed: tests gone/);
+});
+
+const items = {
+  dir: 'liveplanner/packages/items',
+  name: '@liveplanner/items',
+  vitest: true,
+  coverage: true,
+};
+const gated = {
+  ...ctx,
+  /** @param {string} file */
+  workspaceOf: (file) => (file.startsWith(items.dir) ? items : ctx.workspaceOf(file)),
+  emitterTest: () => null,
+};
+const itemChange = [{ status: 'M', path: 'liveplanner/packages/items/src/rules.ts' }];
+
+test('a small suite that enforces coverage thresholds runs whole, with coverage, not its related run', () => {
+  const steps = testSteps(itemChange, {
+    ...gated,
+    reach: () => ({ related: ['src/rules.test.ts'], total: COVERAGE_MAX_FILES }),
+    maxWorkers: 2,
+  });
+  assert.deepEqual(
+    steps.map((s) => [s.label, s.args.slice(2)]),
+    [
+      [
+        `@liveplanner/items: its suite with coverage thresholds (${COVERAGE_MAX_FILES} test files)`,
+        ['exec', 'vitest', 'run', '--coverage', '--maxWorkers=2'],
+      ],
+    ],
+  );
+  assert.equal(steps[0]?.parallel, true);
+});
+
+test('a large gated suite, one vitest cannot size, or one without thresholds keeps its related run', () => {
+  const related = (/** @type {Parameters<typeof testSteps>[1]} */ context) =>
+    testSteps(itemChange, context).map((s) => s.label);
+  const label = ['@liveplanner/items: tests the change reaches'];
+  assert.deepEqual(
+    related({ ...gated, reach: () => ({ related: [], total: COVERAGE_MAX_FILES + 1 }) }),
+    label,
+  );
+  assert.deepEqual(related(gated), label);
+  assert.deepEqual(
+    related({
+      ...gated,
+      workspaceOf: () => ({ ...items, coverage: false }),
+      reach: () => ({ related: [], total: 3 }),
+    }),
+    label,
+  );
+});
+
+test("a product api's coverage stays CI's: it keeps its related run", () => {
+  const api = {
+    dir: 'liveplanner/apps/api',
+    name: '@liveplanner/api',
+    vitest: true,
+    coverage: true,
+  };
+  const steps = testSteps([{ status: 'M', path: 'liveplanner/apps/api/src/index.ts' }], {
+    ...gated,
+    workspaceOf: () => api,
+    reach: () => ({ related: [], total: 30 }),
+  });
+  assert.deepEqual(
+    steps.map((s) => s.label),
+    ['@liveplanner/api: tests the change reaches'],
+  );
+});
+
+test('the quick run keeps coverage and the guard tests, and leaves the related runs out', () => {
+  const steps = testSteps(
+    [...itemChange, { status: 'M', path: 'liveplanner/apps/editor/lib/a.ts' }],
+    { ...gated, related: false, reach: (ws) => (ws === items ? { related: [], total: 5 } : null) },
+  );
+  assert.deepEqual(
+    steps.map((s) => s.label),
+    [
+      '@liveplanner/editor: guard tests',
+      '@liveplanner/items: its suite with coverage thresholds (5 test files)',
+    ],
+  );
+});
+
+test('a parallel step marked show prints its output when it passes too', async () => {
+  const { status, text } = await ran([node('merged', 0, { parallel: true, show: true })]);
+  assert.equal(status, 0);
+  assert.match(text, /merged ran/);
+});
+
+test('the quick run reports under its own name', async () => {
+  const lines = /** @type {string[]} */ ([]);
+  const say = (/** @type {string} */ line) => void lines.push(line);
+  const status = await runSteps(
+    process.cwd(),
+    [{ ...node('format', 1), args: ['-e', 'process.exit(1)'] }],
+    process.env,
+    1,
+    { log: say, error: say, write: say },
+    '[prepush:quick]',
+  );
+  assert.equal(status, 1);
+  assert.match(lines.join('\n'), /\[prepush:quick\] failed: format \(exit 1\)/);
+  assert.doesNotMatch(lines.join('\n'), /\[pre-push\]/);
 });
