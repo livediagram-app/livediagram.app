@@ -134,13 +134,13 @@ which takes Verify out of the meta row, Page Health, the tree's row menu and the
 `pageHealthFacts` reads an `off` page's fields for the score's own state (it leaves verification out under Never
 regardless). Wire states from the api (an Ask source, a search result, a conflict side) arrive as `off` and draw
 no badge (`sourceTrust` answers mark `off`, `trustText` an empty string); `answerTrust` answers none when every
-source is `off`. AI Knowledge reads the period from the live settings store (`useReviewEvery`, as the rail does; the read's
+source is `off`. Insights reads the period from the live settings store (`useReviewEvery`, as the rail does; the read's
 `overview.reviewEvery` only where no knowledgebase is named), so a change shows at once with no new read: `FigureTiles` draws Average Health in Verified's place
 and `HealthSection` drops the share, the bar, the legend and Remind the Owners. Tests: `page-knowledge.test.ts`
 (`pageTrust`, `trustMarks`, `knowledgeRights` a role at a time), `page-knowledge-ui.test.tsx` (the meta row and the
 Page Health card a role at a time), `page-knowledge-store-ui.test.tsx` (Never and back), `PageHealthScore.test.tsx`
 (the facts, Knowledge Health, a conflict side), `source-meta.test.ts`, `ask-words.test.ts`, `AskView.test.tsx`,
-`AiDashboard.test.tsx`, each for Never and a set period.
+`InsightsDashboard.test.tsx`, each for Never and a set period.
 
 ### Share roles
 
@@ -236,8 +236,8 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
 - **The read.** Page Health answers `created` and `updated` as `{ by, at, kind, agent?, via? }`
   (`PageAuthorStamp`, `@liveknowledge/api-schema`).
 - **The editor.** `PageMakersBadges` (`components/knowledge/PageMakersBadges.tsx`), in `PageMetaRowView` after the
-  reading time: two pills of the meta row's own size, neutral (`slate`), each with a `HoverCard` from
-  `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`). A page without a row draws neither.
+  reading time: two pills of the meta row's own size, neutral (`slate`), each opening an `AnchoredPopover` (no hover card: the meta row's labelled
+  buttons have none, owner 2026-11-23) of `makerWords(stamp, which, nameOf, now)` (`lib/knowledge/page-makers.ts`); 20 px tall, with a 44 px tap on touch (`MAKER_PILL_TOUCH`: `relative touch-target-y`). A page without a row draws neither.
 - **An agent for its person.** Every named surface words an `ai` stamp with `agentForPerson(stamp.agent, nameOf(stamp.by),
 fallback)` (`@liveworkspace/workbench/components/ai-writer/agent-for-person`, shared with the approval line and
   Version History): the pills' hover cards ("Created by Claude for Priya Shah through MCP on 12 Nov", fallback "an
@@ -476,7 +476,7 @@ has not been seen in a browser.
 
 ## Not built
 
-The Ask tab, the AI Knowledge tab, Settings > AI and Home (another change's), over the client above.
+The Ask tab, the Insights tab, Settings > AI and Home (another change's), over the client above.
 
 ## Where this differs from the specs
 

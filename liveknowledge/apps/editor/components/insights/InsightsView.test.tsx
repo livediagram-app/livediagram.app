@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// AI Knowledge (docs/specs/030-knowledgebase/ai-knowledge.md, "Share roles"): one read when the view opens and one
+// Insights (docs/specs/030-knowledgebase/insights.md, "Share roles"): one read when the view opens and one
 // after each action, every section with its rows or its empty state, and each Editor action per role.
 import {
   act,
@@ -58,7 +58,7 @@ import { track } from '@/lib/telemetry';
 import { goToBlock } from '@/lib/knowledge/go-to-block';
 import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
 import { ROLES, chromeValue, renderInEditor, type Role } from '@/components/ask/test-chrome';
-import { AiKnowledgeView } from './AiKnowledgeView';
+import { InsightsView } from './InsightsView';
 
 const VERIFIED_AT = new Date(2026, 10, 8).getTime();
 const full = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverviewResponse => ({
@@ -185,9 +185,9 @@ afterEach(() => {
 });
 
 async function open(role: Role = 'edit', over: Record<string, unknown> = {}) {
-  const utils = renderInEditor(<AiKnowledgeView />, chromeValue(role, over));
+  const utils = renderInEditor(<InsightsView />, chromeValue(role, over));
   await waitFor(() =>
-    expect(screen.queryByRole('status', { name: 'Loading AI Knowledge' })).toBeNull(),
+    expect(screen.queryByRole('status', { name: 'Loading Insights' })).toBeNull(),
   );
   return utils;
 }
@@ -243,15 +243,15 @@ describe('reading it', () => {
     api.apiKnowledgeOverview.mockRejectedValueOnce(new Error('down'));
     await open();
     const alert = screen.getByRole('alert');
-    expect(alert.textContent).toContain('AI Knowledge Could Not Be Read');
+    expect(alert.textContent).toContain('Insights Could Not Be Read');
     fireEvent.click(within(alert).getByRole('button', { name: 'Try Again' }));
     await screen.findByRole('region', { name: 'Connected Agents' });
   });
 
   it('reads nothing for a knowledgebase kept Offline', async () => {
     offline.value = true;
-    renderInEditor(<AiKnowledgeView />);
-    expect(screen.getByText('No AI Knowledge in an Offline Knowledgebase')).toBeTruthy();
+    renderInEditor(<InsightsView />);
+    expect(screen.getByText('No Insights in an Offline Knowledgebase')).toBeTruthy();
     expect(api.apiKnowledgeOverview).not.toHaveBeenCalled();
   });
 });
@@ -361,7 +361,7 @@ describe('what it shows', () => {
 
   it('says nothing of a key when built-in AI checks for conflicts', async () => {
     api.apiKnowledgeOverview.mockResolvedValue(full({ hasKey: false, hasAi: true, conflicts: [] }));
-    renderInEditor(<AiKnowledgeView />);
+    renderInEditor(<InsightsView />);
     await screen.findByRole('region', { name: 'Needs Attention' });
     showDisagreements();
     expect(screen.queryByRole('note')).toBeNull();
@@ -374,7 +374,7 @@ describe('what it shows', () => {
     const Open = () => <output data-testid="open">{String(useAiSettingsOpen())}</output>;
     renderInEditor(
       <>
-        <AiKnowledgeView />
+        <InsightsView />
         <Open />
       </>,
     );
@@ -393,7 +393,7 @@ describe('what it shows', () => {
   });
 });
 
-// ai-knowledge.md "Share roles": everyone sees it; every action below is a writer's (an Editor or a Participant),
+// insights.md "Share roles": everyone sees it; every action below is a writer's (an Editor or a Participant),
 // but allowing an agent to write and AI Settings, which are an Editor's.
 describe.each(ROLES)('as %s', (role) => {
   const editor = role === 'edit';
@@ -549,7 +549,7 @@ describe('an Editor’s actions', () => {
 
   it('opens the Connect view from Connect an Agent, for every role', async () => {
     for (const role of ['edit', 'view'] as const) {
-      window.history.replaceState(null, '', '/document/d1?view=ai');
+      window.history.replaceState(null, '', '/document/d1?view=insights');
       const { unmount } = await open(role);
       fireEvent.click(screen.getAllByRole('button', { name: 'Connect an Agent' })[0]!);
       expect(window.location.search).toBe('?view=connect');
@@ -641,7 +641,7 @@ describe('allowing an agent to write', () => {
   });
 });
 
-// ai-knowledge.md "Pages that disagree", "Knowledge Health": the two emails an Editor asks for.
+// insights.md "Pages that disagree", "Knowledge Health": the two emails an Editor asks for.
 describe('emailing the owners', () => {
   const health = () => section('Knowledge Health');
   const conflicts = () => section('Needs Attention');

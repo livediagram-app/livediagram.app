@@ -84,7 +84,7 @@ Owner, 2026-11-21: "Each section on the landing page needs a drill-in page like 
 | `pages`     | A Page Tree; Read First, Edit on Purpose; Links Between Pages; Linked From; Covers; Start From a Structure (Describe to Set Up)        |
 | `trust`     | An Owner for Every Page; Verified, With a Name and a Date; Reviews That Come Due; Changed Since Verified; Page Health; Yours to Review |
 | `ask`       | Every Claim Cited; A Sources Rail; It Does Not Guess; Your Own Claude or OpenAI Key; Search Needs No Key; Save an Answer as a Page     |
-| `agents`    | An MCP Server; A Command Line; Always in Context; Trust Fields on Every Passage; Suggested Edits; AI Knowledge                         |
+| `agents`    | An MCP Server; A Command Line; Always in Context; Trust Fields on Every Passage; Suggested Edits; Insights                             |
 | `import`    | From Notion; From Confluence; A Folder of Markdown; A Review Before Anything Lands; Links Become Page Links; Export Whenever You Like  |
 | `workspace` | Live Embeds From Five Apps; Editor, Participant and Viewer; Knowledgebase Style; Offline; The Google Drive Mirror; One Account         |
 
@@ -103,7 +103,7 @@ Plain, concrete sentences. Title Case for headings and buttons. No em dashes. No
 
 ## Auth messaging
 
-The editor works without signing in, and the site says so. It also says what needs an account, because a knowledgebase's trust features do: Verify, Ask, AI Knowledge, sharing and the agent connection. A guest's knowledgebase is kept Offline in the browser until they sign in.
+The editor works without signing in, and the site says so. It also says what needs an account, because a knowledgebase's trust features do: Verify, Ask, Insights, sharing and the agent connection. A guest's knowledgebase is kept Offline in the browser until they sign in.
 
 ## Comparisons
 

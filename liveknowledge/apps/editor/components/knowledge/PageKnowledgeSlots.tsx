@@ -13,6 +13,7 @@ import { LinkedFrom } from './LinkedFrom';
 import { PageMetaRow } from './PageMetaRow';
 import { PageComments } from '@/components/page-comments/PageComments';
 import { PageIconHead } from '@/components/page-icon/PageIconHead';
+import { RequiredReadingAsk } from '@/components/required-reading/RequiredReadingAsk';
 import { RequiredReadingBanner } from '@/components/required-reading/RequiredReadingBanner';
 
 export function PageKnowledgeSlots({ slots }: { slots: PageSlots }) {
@@ -25,6 +26,8 @@ export function PageKnowledgeSlots({ slots }: { slots: PageSlots }) {
         <>
           {/* Required Reading's ask, above the meta row (required-reading.md "Where it shows"). */}
           <RequiredReadingBanner />
+          {/* The page menu's Require Reading opens its setup here, in a modal. */}
+          <RequiredReadingAsk />
           <PageMetaRow />
         </>,
         slots.meta,

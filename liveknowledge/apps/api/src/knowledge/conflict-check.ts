@@ -1,4 +1,4 @@
-// "Pages that disagree" (docs/specs/030-knowledgebase/ai-knowledge.md): after a page's writing is saved or the page
+// "Pages that disagree" (docs/specs/030-knowledgebase/insights.md): after a page's writing is saved or the page
 // is verified, its changed passages are looked up on other pages and the model is asked whether any pair states
 // opposite facts. Never in the save: the save owes the check (`knowledge_work`), and the room's alarm runs it here,
 // outside any transaction, on the team's own key or, with none, on built-in AI (search-and-ask.md "Built-in AI").

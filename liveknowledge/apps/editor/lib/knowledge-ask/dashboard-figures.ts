@@ -1,4 +1,4 @@
-// AI Knowledge's figures band and Needs Attention (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as
+// Insights' figures band and Needs Attention (docs/specs/030-knowledgebase/insights.md "The view, as
 // built"): every figure from the one overview read, and the waiting work in the order it is shown. Pure.
 import type {
   KnowledgeConflict,
@@ -64,7 +64,7 @@ export function readsSparkLabel(days: readonly KnowledgeReadsDay[]): string {
 }
 
 /** "12 reads by people, 4 by agents", "1 read by people, 0 by agents": reads, never readers (no reader's
- *  identity is kept, ai-knowledge.md "Reads"). */
+ *  identity is kept, insights.md "Reads"). */
 export const readersText = (people: number, agents: number): string =>
   `${count(people)} ${people === 1 ? 'read' : 'reads'} by people, ${count(agents)} by agents`;
 

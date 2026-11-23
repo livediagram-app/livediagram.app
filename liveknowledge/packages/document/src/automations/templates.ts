@@ -25,7 +25,7 @@ import {
 /** The gallery's sections, in order. */
 export const TEMPLATE_CATEGORIES = [
   { id: 'trust', name: 'Keep Pages Trusted' },
-  { id: 'ai', name: 'AI Knowledge' },
+  { id: 'ai', name: 'Insights' },
   { id: 'loop', name: 'Stay in the Loop' },
   { id: 'safe', name: 'Keep It Safe' },
 ] as const;
@@ -184,7 +184,7 @@ export const DOCUMENT_TEMPLATES: readonly Template[] = [
     { kind: QUESTION_UNANSWERED_EVENT },
     [
       toSlack(
-        'Nobody’s pages answer “{{question}}”. Draft a page for it in AI Knowledge: {{item.url}}',
+        'Nobody’s pages answer “{{question}}”. Draft a page for it in Insights: {{item.url}}',
       ),
     ],
     SLACK_PICK,
@@ -207,7 +207,7 @@ export const DOCUMENT_TEMPLATES: readonly Template[] = [
     [
       toPageOwner(
         '{{person}} suggested an edit to {{tab.name}}',
-        '{{person}} suggested an edit to {{tab.name}}: {{suggestion.reason}}\n\nAccept or dismiss it in AI Knowledge: {{item.url}}',
+        '{{person}} suggested an edit to {{tab.name}}: {{suggestion.reason}}\n\nAccept or dismiss it in Insights: {{item.url}}',
       ),
     ],
     [],

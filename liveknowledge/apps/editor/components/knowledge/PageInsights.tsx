@@ -1,13 +1,13 @@
 'use client';
 
-// Page Insights in the right rail (docs/specs/030-knowledgebase/ai-knowledge.md "Page Insights"): the page's reads over
+// Page Insights in the right rail (docs/specs/030-knowledgebase/insights.md "Page Insights"): the page's reads over
 // the last 30 days, drawn inside Read This Week (owner 2026-11-22), and the questions it answered most. It reads
 // nothing of its own: everything rides Page Health's one read.
 import type { PageAnsweredQuestion, PageInsightsWire } from '@liveknowledge/api-schema';
 import { isNewPage } from '@liveknowledge/knowledge';
 import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { ReadsSparkline } from '@/components/ai-knowledge/ReadsSparkline';
+import { ReadsSparkline } from '@/components/insights/ReadsSparkline';
 import { NewPageSproutIcon } from './knowledge-icons';
 import type { PageKnowledgeView } from './usePageKnowledge';
 
@@ -38,7 +38,7 @@ export const readsSoFarText = (people: number, agents: number): string => {
   return `${count(total)} ${total === 1 ? 'read' : 'reads'} so far: ${parts.join(', ')}`;
 };
 
-/** The questions Ask answered from the page, most asked first (ai-knowledge.md "AI Context on a page"). */
+/** The questions Ask answered from the page, most asked first (insights.md "AI Context on a page"). */
 export function AnsweredQuestions({ answered }: { answered: readonly PageAnsweredQuestion[] }) {
   return (
     <div data-answered-from-page="">
@@ -69,7 +69,7 @@ export function AnsweredQuestions({ answered }: { answered: readonly PageAnswere
 }
 
 /** Read This Week's trend (owner 2026-11-22: Page Insights merged into Read This Week): the page's reads over the
- *  last 30 days, a bar a day with people under agents in AI Knowledge's two tones. A page in its first week has no
+ *  last 30 days, a bar a day with people under agents in Insights' two tones. A page in its first week has no
  *  history to show, so it says its reads so far instead. */
 export function ReadsTrend({ insights, createdAt, now }: Omit<PageInsightsProps, 'answered'>) {
   if (insights === undefined)

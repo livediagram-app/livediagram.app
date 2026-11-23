@@ -70,7 +70,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need an account?',
-        a: 'Not to write. Open the editor and start a knowledgebase, and it is kept Offline in your browser. Verifying pages, Ask, Describe to Set Up, AI Knowledge, sharing and connecting an agent need a free account, because each of them has to know who you are.',
+        a: 'Not to write. Open the editor and start a knowledgebase, and it is kept Offline in your browser. Verifying pages, Ask, Describe to Set Up, Insights, sharing and connecting an agent need a free account, because each of them has to know who you are.',
       },
       {
         q: 'What is liveknowledge not?',
@@ -117,7 +117,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'A section in every page’s right rail: whether the page is Always in Context (handed to every agent first, with its size in tokens), the questions Ask answered from it, and which agents read it this week, each shown once there is one. Always in Context pages share a budget of 8,000 tokens, and a page that would pass it says so.',
       },
       {
-        q: 'What does AI Knowledge show?',
+        q: 'What does Insights show?',
         a: 'Which agents read your knowledgebase and what they read most, the questions nobody could answer, pages that disagree with each other, the edits agents have suggested, and the pages you marked Always in Context. Finding pages that disagree uses a model, built-in AI or your own key; the rest needs none.',
       },
     ],
@@ -146,7 +146,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What happens when the pages do not cover my question?',
-        a: 'Ask says so instead of guessing. The part it could not answer is shown as a Knowledge Gap, recorded in AI Knowledge with how often it was asked, and an Editor can start a page from it.',
+        a: 'Ask says so instead of guessing. The part it could not answer is shown as a Knowledge Gap, recorded in Insights with how often it was asked, and an Editor can start a page from it.',
       },
       {
         q: 'Does search need AI?',
@@ -234,7 +234,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Does liveknowledge work offline?',
-        a: 'Yes. A knowledgebase kept Offline lives only in your browser, where it is written, searched and exported without an account. Verification, Ask, Describe to Set Up, AI Knowledge and sharing need the server, so they are not available for an Offline knowledgebase.',
+        a: 'Yes. A knowledgebase kept Offline lives only in your browser, where it is written, searched and exported without an account. Verification, Ask, Describe to Set Up, Insights and sharing need the server, so they are not available for an Offline knowledgebase.',
       },
       {
         q: 'Can I publish a knowledgebase as a public website?',

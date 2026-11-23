@@ -9,7 +9,7 @@ field stands at the head of the page tree. Ask (step 9) is its own change.
 Owner, 2026-11-20: the sidebar's search is the **universal search**, with this knowledgebase's results first.
 
 - **No second list of pages** (sweep 2026-11-21): the panel has no Pages or canvas-elements group and no Add to Canvas group; This Knowledgebase lists the pages and their passages.
-- **Where it opens** (owner 2026-11-21): over the view showing. Ask and AI Knowledge stay behind it; only picking a page
+- **Where it opens** (owner 2026-11-21): over the view showing. Ask and Insights stay behind it; only picking a page
   shows Pages, at that page.
 - The search field at the head of the page tree, and Cmd or Ctrl K, open the universal search panel every
   liveworkspace editor has (Tools > Search…): one field over everything the person can reach. liveknowledge adds a
@@ -84,7 +84,7 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   set-aside carries its reason; a bare mark with none (a small model marks any passage it skipped) sets nothing
   aside, so a page is never called Stale without a why.
 - **It does not guess.** The model is told to say so when the passages do not answer the question or part of it. That
-  part is recorded as an unanswered question ([AI Knowledge](ai-knowledge.md)) and shown as a **Knowledge Gap** card
+  part is recorded as an unanswered question ([Insights](insights.md)) and shown as a **Knowledge Gap** card
   with **Draft a Page From What We Know** and, once it has an email of its own (the review emails are built; this
   one is not), **Ask <owner> to Write It**.
 - **Scope:** an answer reads only pages the asker can open. A follow-up keeps the conversation (up to 10 turns).
@@ -129,7 +129,7 @@ The knowledgebase's own key stays, and comes first.
   "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's
   **Answer With**, whose second choice names the key's model and its source ("Claude Fable 5.2 (Team Key)", "(Your
   Key)", "(Knowledgebase Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
-  `usesModel` and its name `usesModelLabel`, and the key's provider `usesProvider` (a team's or a person's may be another than the knowledgebase's), read for the asker; the AI Knowledge overview does not ask accounts.
+  `usesModel` and its name `usesModelLabel`, and the key's provider `usesProvider` (a team's or a person's may be another than the knowledgebase's), read for the asker; the Insights overview does not ask accounts.
 - **The source line** ([ai-keys.md "The source line"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#the-source-line-aisource)):
   Ask, Describe to Set Up and Describe the Structure show the shared `AiSource` line in place of their own "Uses …"
   words: the mark, which key ("This Knowledgebase's Key", "Your Team's Key", "Your Key", "Built-in AI") with the
@@ -226,12 +226,12 @@ strangers.
   **Accept Answer** in its footer, calm and first. Accepting moves the chat out of the dated groups into
   **Completed Questions**, a group closed by default that shows its count ("Completed Questions 3"), and the
   conversation returns to a fresh question field. For an Editor or a Participant, accepting also takes the chat's
-  question and the gaps its answers named off AI Knowledge's unanswered questions: they are answered. A completed chat opens to read, with **Reopen** where the field
+  question and the gaps its answers named off Insights' unanswered questions: they are answered. A completed chat opens to read, with **Reopen** where the field
   was: Reopen moves it back among the dated groups and gives it the field again.
 - **Delete** (owner, 2026-11-21): every chat, in the dated groups and in Completed Questions, has **Delete**, an icon
   button with a tooltip at the row's end (shown on hover or focus, always on touch). It asks first ("Delete This
   Question?", naming it, "This cannot be undone."), as deleting a comment does. Deleting the open chat returns the
-  conversation to a fresh question field. It removes the chat from this browser; what AI Knowledge already counted
+  conversation to a fresh question field. It removes the chat from this browser; what Insights already counted
   (questions asked, pages answered from) stays, since those hold no asker.
 - **The conversation.** A question is a dark bubble at the right. An answer is a white bordered card that streams
   in, then shows numbered citation chips (each goes to its source card and lights it), the trust line, an amber note
@@ -290,9 +290,9 @@ strangers.
   and opens those same words in a dialog over it, a sheet on a phone. Its actions close it first (Open AI Settings
   opens over Pages). The key is read on the first press only, never on load. Ask's address followed from a link
   still shows them in the view.
-- **Offline, in the footer** (owner 2026-11-21): a knowledgebase kept Offline keeps the Ask, AI Knowledge and Connect
+- **Offline, in the footer** (owner 2026-11-21): a knowledgebase kept Offline keeps the Ask, Insights and Connect
   tabs, quieter and going nowhere. Hovering one (a long press on a phone, focus from the keyboard) shows "Ask Needs
-  Syncing" (or "AI Knowledge Needs Syncing", "Connect Needs Syncing"), why ("This knowledgebase is kept in this browser. Ask, AI Knowledge and Connect require your content to be synced to our servers.") and **Sync
+  Syncing" (or "Insights Needs Syncing", "Connect Needs Syncing"), why ("This knowledgebase is kept in this browser. Ask, Insights and Connect require your content to be synced to our servers.") and **Sync
   Knowledgebase**, the Share dialog's sync in place. Once it lands the tabs open as usual.
 - **A failure** is said in the answer's place in words with its next step: the key not accepted or the model not
   allowed (Open AI Settings for an Editor), no credit, the account's rate limit, Claude busy, a lost connection (Ask
@@ -307,7 +307,7 @@ strangers.
 
 ## AI Settings
 
-- A dialog of the knowledgebase, opened by **AI Settings** in the Ask view's and AI Knowledge's header. It is not a
+- A dialog of the knowledgebase, opened by **AI Settings** in the Ask view's and Insights' header. It is not a
   category of the Settings panel: Settings holds a person's own preferences on a device and an account, and has a
   copy on liveworkspace.app where no knowledgebase is open; the key and the model belong to one knowledgebase and
   are the same for everyone in it.
@@ -332,14 +332,14 @@ strangers.
 
 ## The views
 
-- A knowledgebase has four views: **Pages** (the editor), **Ask**, **AI Knowledge**
-  ([AI Knowledge](ai-knowledge.md)) and **Connect** ([Connect](mcp-connect.md), owner 2026-11-21). They are four
-  tabs at the left of the footer, **Pages | Ask | AI Knowledge | Connect** ([The page surface](page-surface.md) "The
+- A knowledgebase has four views: **Pages** (the editor), **Ask**, **Insights**
+  ([Insights](insights.md)) and **Connect** ([Connect](mcp-connect.md), owner 2026-11-21). They are four
+  tabs at the left of the footer, **Pages | Ask | Insights | Connect** ([The page surface](page-surface.md) "The
   footer"), on a phone too.
-- The view is in the address (`?view=ask`, `?view=ai`, `?view=connect`; none is Pages), not the hash, which is the
+- The view is in the address (`?view=ask`, `?view=insights`, `?view=connect`; none is Pages; `?view=ai`, its name before, still opens Insights), not the hash, which is the
   open page's. A reload keeps it, each change is a history entry, so Back returns to the view before, and each tab
   is a link.
-- Ask, AI Knowledge and Connect cover the canvas and the page tree, down to the footer; their header is the top row
+- Ask, Insights and Connect cover the canvas and the page tree, down to the footer; their header is the top row
   every view shares, with Share and the account button at its right end. The editor under them takes no key, press
   or focus.
 - Not offered in an embed, in zen mode, in a workbench, behind the welcome flow, to a Community visitor or through a

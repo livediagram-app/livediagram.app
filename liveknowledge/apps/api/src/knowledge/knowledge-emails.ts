@@ -1,4 +1,4 @@
-// The Knowledgebase Reviews emails (docs/specs/030-knowledgebase/verification.md "Reminders", ai-knowledge.md "Pages
+// The Knowledgebase Reviews emails (docs/specs/030-knowledgebase/verification.md "Reminders", insights.md "Pages
 // that disagree", "Knowledge Health"), sent through the platform's notifier (`notifyKnowledgeReviews`,
 // email/notifications.ts), so each goes to an account's verified address and only while its Knowledgebase Reviews
 // switch is on. Nothing here holds an address.

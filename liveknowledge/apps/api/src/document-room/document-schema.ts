@@ -458,7 +458,7 @@ const V38 = knowledgeShapeStep;
 const V39 = pageReactionsSchemaStep;
 
 // Step 40: a suggested edit writes its page's outbox key, so its owner's Inbox follows it
-// (knowledge/suggestions-outbox.ts; docs/specs/030-knowledgebase/ai-knowledge.md "In the owner's Inbox"). Additive,
+// (knowledge/suggestions-outbox.ts; docs/specs/030-knowledgebase/insights.md "In the owner's Inbox"). Additive,
 // IF NOT EXISTS; the pages with a suggestion already waiting are owed a push.
 const V40 = suggestionsOutboxStep;
 

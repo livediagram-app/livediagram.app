@@ -183,7 +183,7 @@ the index mints is long enough, from the CSPRNG, that guessing one is out of rea
 
 ### Knowledge
 
-Search, verification, Ask and the AI Knowledge tab ([Knowledgebase](../030-knowledgebase/README.md)), each under
+Search, verification, Ask and the Insights tab ([Knowledgebase](../030-knowledgebase/README.md)), each under
 `/api/documents/<id>/` and answered inside the knowledgebase's Durable Object
 (`routes/knowledge-routes.ts`; the wiring is in the
 [knowledge blueprint](../030-knowledgebase/blueprints/knowledge-package.md#wiring-what-the-room-and-its-callers-do)).

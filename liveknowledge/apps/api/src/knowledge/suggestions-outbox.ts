@@ -1,4 +1,4 @@
-// A suggested edit's way to its owner's Inbox (docs/specs/030-knowledgebase/ai-knowledge.md "In the owner's Inbox";
+// A suggested edit's way to its owner's Inbox (docs/specs/030-knowledgebase/insights.md "In the owner's Inbox";
 // liveworkspace/docs/specs/004-index/one-explorer-contracts.md "What an item pushes"): the page's suggestions ride
 // its tab's collab push, so a suggestion made, accepted, dismissed or pruned writes the page's `tab` outbox key, by a
 // trigger in the write's own transaction, as every other change the Inbox reads does (document-schema.ts). The drain

@@ -207,7 +207,7 @@ export function mountArticleView({
       articleHoldsPlugin((hold) => announceArticleHeld(hold.name)),
       // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
       findHighlightPlugin(() => latest.current.flow),
-      // Agents' suggested edits on the page (docs/specs/030-knowledgebase/ai-knowledge.md "On the page").
+      // Agents' suggested edits on the page (docs/specs/030-knowledgebase/insights.md "On the page").
       suggestionMarksPlugin(() => latest.current.flow),
       // The footnotes' numbers and the breaks above their notes; a press on a reference puts the caret in its note.
       footnotesPlugin((n) => {

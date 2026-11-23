@@ -2,7 +2,7 @@
 
 // AI Settings (docs/specs/030-knowledgebase/search-and-ask.md "AI Settings", "Built-in AI", "Providers"): which AI
 // this knowledgebase runs on, built-in AI (the default, no key) or the team's own key, and for a key its provider,
-// the key and the model. A dialog of the knowledgebase, opened from Ask and from AI Knowledge, not a row of the
+// the key and the model. A dialog of the knowledgebase, opened from Ask and from Insights, not a row of the
 // Settings panel: Settings holds a person's own preferences on this device and account, and the key is the
 // knowledgebase's, the same for everyone who opens it. An Editor chooses the provider, adds, replaces or removes the
 // key and chooses the model; everyone else sees how things stand, with no controls. Choosing Built-In AI with a key
@@ -178,7 +178,7 @@ export function AiSettingsDialog({
       <Dialog open onClose={onClose} titleId={titleId} size="md" phoneSheet>
         <DialogHeader
           title={<span id={titleId}>AI Settings</span>}
-          subtitle="Ask, AI Knowledge and Describe to Set Up run on built-in AI, or on your team's own key."
+          subtitle="Ask, Insights and Describe to Set Up run on built-in AI, or on your team's own key."
         >
           <DialogCloseButton onClick={onClose} />
         </DialogHeader>

@@ -1,12 +1,12 @@
 'use client';
 
-// Connected Agents (docs/specs/030-knowledgebase/ai-knowledge.md "Connected agents"): a card for each connection
+// Connected Agents (docs/specs/030-knowledgebase/insights.md "Connected agents"): a card for each connection
 // seen here in the last 30 days (AgentCard.tsx), at most AGENTS_CAP before Show All, and Connect an Agent.
 import type { KnowledgeAgent } from '@liveknowledge/api-schema';
 import { Button, CompactEmptyState } from '@liveknowledge/ui';
 import { AgentCard, type AgentWriteAsk } from './AgentCard';
-import { AddIcon, AgentIcon } from './ai-knowledge-icons';
-import { AiSection } from './AiSection';
+import { AddIcon, AgentIcon } from './insights-icons';
+import { InsightsSection } from './InsightsSection';
 import { useShowAll } from './useShowAll';
 
 export const AGENTS_CAP = 4;
@@ -31,7 +31,7 @@ export function AgentsSection({
 }) {
   const { shown, toggle } = useShowAll(agents, AGENTS_CAP);
   return (
-    <AiSection
+    <InsightsSection
       id="ai-agents"
       title="Connected Agents"
       icon={<AgentIcon />}
@@ -80,6 +80,6 @@ export function AgentsSection({
           {toggle}
         </>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }

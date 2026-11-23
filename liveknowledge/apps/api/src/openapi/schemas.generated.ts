@@ -5468,7 +5468,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeAgent": {
     "additionalProperties": false,
-    "description": "One connection of AI Knowledge's Connected Agents (ai-knowledge.md \"Connected agents\"). What the room knows of the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its reads, before the room kept its token.",
+    "description": "One connection of Insights' Connected Agents (insights.md \"Connected agents\"). What the room knows of the token behind it (`door`, `scopes`, `lastSeenAt`, `canHoldWrite`) is absent for an agent counted only by its reads, before the room kept its token.",
     "properties": {
       "canHoldWrite": {
         "description": "Whether granting `write` would let it write: a full token acting for an Editor.",
@@ -5880,7 +5880,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "health": {
         "additionalProperties": false,
-        "description": "The page's Health Score: the higher side is the likelier right (ai-knowledge.md \"Pages that disagree\").",
+        "description": "The page's Health Score: the higher side is the likelier right (insights.md \"Pages that disagree\").",
         "properties": {
           "label": {
             "$ref": "#/components/schemas/KnowledgeHealthLabel"
@@ -6288,7 +6288,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeOverviewResponse": {
     "additionalProperties": false,
-    "description": "`GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md).",
+    "description": "`GET .../knowledge`: the Insights tab (insights.md).",
     "properties": {
       "agents": {
         "items": {
@@ -6368,7 +6368,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "notRead": {
         "additionalProperties": false,
-        "description": "`days`: the days asked about, 90, or the days the owner's tier keeps reads where fewer; absent from an older api.",
+        "description": "Not Read in 90 Days (insights.md): the first 10, touched longest ago first, and how many. `days`: the days asked about, 90, or the days the owner's tier keeps reads where fewer. Absent from an older api.",
         "properties": {
           "days": {
             "type": "number"
@@ -6840,7 +6840,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeReadsDay": {
     "additionalProperties": false,
-    "description": "One day of AI Knowledge's reads (ai-knowledge.md \"Reads\"): `day` is the UTC day, `YYYY-MM-DD`.",
+    "description": "One day of Insights' reads (insights.md \"Reads\"): `day` is the UTC day, `YYYY-MM-DD`.",
     "properties": {
       "agents": {
         "type": "number"
@@ -6881,7 +6881,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeRequiredReadingPage": {
     "additionalProperties": false,
-    "description": "A Required Reading page in the AI Knowledge overview: counts, never who.",
+    "description": "A Required Reading page in the Insights overview: counts, never who.",
     "properties": {
       "audience": {
         "$ref": "#/components/schemas/ReadingAudience"
@@ -7244,7 +7244,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeSuggestion": {
     "additionalProperties": false,
-    "description": "An agent's edit waiting for an Editor (ai-knowledge.md \"Edits suggested by agents\"): a passage of the page's Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty).",
+    "description": "An agent's edit waiting for an Editor (insights.md \"Edits suggested by agents\"): a passage of the page's Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty).",
     "properties": {
       "after": {
         "type": "string"
@@ -8872,7 +8872,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "array"
       },
       "answered": {
-        "description": "The questions Ask answered citing this page in the last 30 days, the most asked first, 3 at most (ai-knowledge.md \"AI Context on a page\").",
+        "description": "The questions Ask answered citing this page in the last 30 days, the most asked first, 3 at most (insights.md \"AI Context on a page\").",
         "items": {
           "$ref": "#/components/schemas/PageAnsweredQuestion"
         },
@@ -8898,7 +8898,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "insights": {
         "$ref": "#/components/schemas/PageInsightsWire",
-        "description": "Page Insights (ai-knowledge.md \"Page Insights\"); absent from an older api."
+        "description": "Page Insights (insights.md \"Page Insights\"); absent from an older api."
       },
       "knowledge": {
         "$ref": "#/components/schemas/PageKnowledge"
@@ -8938,7 +8938,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "object"
       },
       "suggestions": {
-        "description": "The page's suggested edits waiting, newest first, the knowledgebase's cap at most (ai-knowledge.md \"On the page\"); absent from an older api.",
+        "description": "The page's suggested edits waiting, newest first, the knowledgebase's cap at most (insights.md \"On the page\"); absent from an older api.",
         "items": {
           "$ref": "#/components/schemas/KnowledgeSuggestion"
         },

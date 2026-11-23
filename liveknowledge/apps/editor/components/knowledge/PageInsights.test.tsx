@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// Page Insights (docs/specs/030-knowledgebase/ai-knowledge.md "Page Insights"), from plain props: the 30 days of reads
+// Page Insights (docs/specs/030-knowledgebase/insights.md "Page Insights"), from plain props: the 30 days of reads
 // drawn inside Read This Week, and the questions Ask answered from the page. Everyone who can read the page sees the
 // same: it has no control, so no role changes it.
 import { cleanup, render, screen } from '@testing-library/react';

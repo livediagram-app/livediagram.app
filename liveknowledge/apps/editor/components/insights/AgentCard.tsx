@@ -1,6 +1,6 @@
 'use client';
 
-// One connection in Connected Agents (docs/specs/030-knowledgebase/ai-knowledge.md "Connected agents"): its name,
+// One connection in Connected Agents (docs/specs/030-knowledgebase/insights.md "Connected agents"): its name,
 // how it connects, when it was last seen, what it may do here as chips from the scopes the room answers, its reads,
 // and, for an Editor, a menu to allow it to write or to stop it.
 import { useRef, type ReactNode } from 'react';
@@ -22,8 +22,8 @@ import {
   MoreIcon,
   StopWritingIcon,
   TokenIcon,
-} from './ai-knowledge-icons';
-import { AI_CHIP, AI_MUTED } from './AiSection';
+} from './insights-icons';
+import { INSIGHTS_CHIP, INSIGHTS_MUTED } from './InsightsSection';
 
 const DOOR_ICON: Record<AgentDoor, ReactNode> = {
   mcp: <McpIcon />,
@@ -75,7 +75,7 @@ export function AgentCard({
           <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
             {agent.name}
           </p>
-          <p className={`line-clamp-2 text-xs ${AI_MUTED}`}>{how}</p>
+          <p className={`line-clamp-2 text-xs ${INSIGHTS_MUTED}`}>{how}</p>
           {/* Connected, then when it was last seen, on one line under how it connects. */}
           <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs">
             <span className="flex items-center gap-1.5 font-medium text-emerald-800 dark:text-emerald-300">
@@ -84,10 +84,10 @@ export function AgentCard({
             </span>
             {agent.lastSeenAt ? (
               <>
-                <span aria-hidden className={AI_MUTED}>
+                <span aria-hidden className={INSIGHTS_MUTED}>
                   ·
                 </span>
-                <span className={AI_MUTED}>{lastSeenText(agent.lastSeenAt, now)}</span>
+                <span className={INSIGHTS_MUTED}>{lastSeenText(agent.lastSeenAt, now)}</span>
               </>
             ) : null}
           </p>
@@ -103,13 +103,13 @@ export function AgentCard({
       </div>
       <ul aria-label="What it may do" className="mt-3 flex flex-wrap gap-1.5">
         {agentScopeChips(agent).map((scope) => (
-          <li key={scope} className={AI_CHIP}>
+          <li key={scope} className={INSIGHTS_CHIP}>
             {scope}
           </li>
         ))}
       </ul>
       {choice.kind === 'none' && choice.why ? (
-        <p className={`mt-2 text-xs leading-5 ${AI_MUTED}`}>{choice.why}</p>
+        <p className={`mt-2 text-xs leading-5 ${INSIGHTS_MUTED}`}>{choice.why}</p>
       ) : null}
       <p className="mt-3 text-[13px] font-medium text-slate-900 dark:text-slate-100">
         {readsText(agent.readsThisWeek)}

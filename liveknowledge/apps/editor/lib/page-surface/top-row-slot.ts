@@ -7,7 +7,7 @@ import { useSyncExternalStore } from 'react';
 /** The row's height on a desktop, px (`--knowledge-top-row`, app/globals.css; a phone's is 56). */
 export const TOP_ROW_HEIGHT_PX = 48;
 
-/** The page's row, and a view drawn over the page (Ask, AI Knowledge), which outranks it. */
+/** The page's row, and a view drawn over the page (Ask, Insights), which outranks it. */
 export type TopRowRank = 'page' | 'view';
 
 const slots = new Map<TopRowRank, HTMLElement>();

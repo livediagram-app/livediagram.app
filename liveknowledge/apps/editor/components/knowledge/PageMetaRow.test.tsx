@@ -1,12 +1,14 @@
 // @vitest-environment jsdom
 
-// The meta row's Add Cover (docs/specs/030-knowledgebase/page-surface.md "The cover") and its maker pills
-// (verification.md "Made by a person or an agent").
+// The meta row's Add Cover (docs/specs/030-knowledgebase/page-surface.md "The cover"), its maker pills
+// (verification.md "Made by a person or an agent") and its labelled buttons' lack of tooltips (page-surface.md "What a
+// page looks like", owner 2026-11-23).
 import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { pageTrust } from '@/lib/knowledge/page-trust';
 import { renderInEditor } from '@/components/ask/test-chrome';
 import { PageMetaRowView } from './PageMetaRow';
+import { SuggestedEditsPillView } from './suggestions/SuggestedEditsPill';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -27,15 +29,8 @@ describe('the meta row’s Add Cover', () => {
       />,
     );
     const row = container.querySelector('[data-page-meta]')!;
-    // The hover card's words ride a hidden copy the button is described by, not the row's text.
-    const parts = [...row.children].map((c) => c.textContent?.replace(/Add a picture.*$/, ''));
+    const parts = [...row.children].map((c) => c.textContent);
     expect(parts).toEqual(['3 min read', '·Add Cover']);
-    const button = screen.getByRole('button', { name: /Add Cover/ });
-    expect(button.getAttribute('aria-describedby')).toBeTruthy();
-    expect(
-      document.getElementById(button.getAttribute('aria-describedby')!.split(' ').at(-1)!)
-        ?.textContent,
-    ).toBe('Add a picture or a gradient across the top of this page.');
     // An empty page with no cover still shows the row, Add Cover alone.
     unmount();
     const empty = renderInEditor(
@@ -68,7 +63,7 @@ describe('the meta row’s Add Cover', () => {
 });
 
 describe('the meta row’s maker pills', () => {
-  it('shows who made and last edited the page, each with its card', () => {
+  it('shows who made and last edited the page, each with its card on a press', () => {
     const { container } = renderInEditor(
       <PageMetaRowView
         minutes={2}
@@ -88,17 +83,22 @@ describe('the meta row’s maker pills', () => {
       ['Human Generated', 'human'],
       ['AI Edited', 'ai'],
     ]);
-    const described = (el: Element) =>
-      (el.getAttribute('aria-describedby') ?? '')
-        .split(' ')
-        .map((id) => document.getElementById(id)?.textContent)
-        .join('');
-    expect(described(pills[0]!)).toBe('Created by Priya Shah on 12 Nov');
-    expect(described(pills[1]!)).toBe(
+    fireEvent.click(pills[0]!);
+    expect(screen.getByRole('dialog', { name: 'Human Generated' }).textContent).toContain(
+      'Created by Priya Shah on 12 Nov',
+    );
+    fireEvent.click(pills[1]!);
+    expect(screen.getByRole('dialog', { name: 'AI Edited' }).textContent).toContain(
       'Last edited by Claude for Priya Shah through MCP, 1 hour ago',
     );
     // Neutral grey: never the accent, never a state colour.
     for (const p of pills) expect(p.className).not.toMatch(/(bg|text)-(brand|amber|red|green)-/);
+    // A 44 px tap on touch from the shared pad, on a positioned host; the drawn pill stays 20 px everywhere.
+    for (const p of pills) {
+      const classes = p.className.split(' ');
+      expect(classes).toEqual(expect.arrayContaining(['relative', 'touch-target-y', 'h-5']));
+      expect(p.className).not.toMatch(/(phone|pointer-coarse):h-/);
+    }
   });
 
   // A phone has no hover: a tap (a click) opens the pill's card as a popover, and Escape closes it.
@@ -139,5 +139,55 @@ describe('the meta row’s maker pills', () => {
       />,
     );
     expect(container.querySelector('[data-page-makers]')).toBeNull();
+  });
+});
+
+// Owner 2026-11-23: "remove the tooltips from add cover, icon, label, verify etc they get in the way and aren't
+// needed". A deliberate exception to tooltips on every control, for the row's labelled buttons alone.
+describe('the meta row’s labelled buttons', () => {
+  it('carry no tooltip or hover card, on hover or focus', () => {
+    const { container } = renderInEditor(
+      <>
+        <PageMetaRowView
+          minutes={3}
+          trust={never}
+          now={NOW}
+          verifiedBy={undefined}
+          changedSinceVerified={false}
+          nameOf={nameOf}
+          addCover
+          addIcon
+          addLabel
+          verify={{ again: false, period: 'in 90 days', becomesOwner: false, onVerify: () => {} }}
+          makers={{ created: { by: 'u1', at: NOW - 3_600_000, kind: 'human' } }}
+        />
+        <SuggestedEditsPillView count={2} open={false} onOpen={() => {}} />
+      </>,
+    );
+    const buttons = [...container.querySelectorAll('button')];
+    expect(buttons.map((b) => b.textContent)).toEqual([
+      'Add Cover',
+      'Add Icon',
+      'Add Label',
+      'Verify',
+      'Human Generated',
+      '2 Suggested Edits',
+    ]);
+    vi.useFakeTimers();
+    try {
+      for (const button of buttons) {
+        expect(button.getAttribute('aria-describedby')).toBeNull();
+        fireEvent.pointerEnter(button);
+        fireEvent.mouseEnter(button);
+        fireEvent.focus(button);
+        vi.advanceTimersByTime(2_000);
+        expect(document.querySelector('[role="tooltip"]')).toBeNull();
+        fireEvent.pointerLeave(button);
+        fireEvent.mouseLeave(button);
+        fireEvent.blur(button);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

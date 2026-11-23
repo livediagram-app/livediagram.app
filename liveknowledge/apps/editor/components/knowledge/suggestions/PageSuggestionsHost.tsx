@@ -1,6 +1,6 @@
 'use client';
 
-// The open page's suggested edits in its writing and over it (docs/specs/030-knowledgebase/ai-knowledge.md "On the
+// The open page's suggested edits in its writing and over it (docs/specs/030-knowledgebase/insights.md "On the
 // page"; blueprint suggested-edits-ui.md): mounted once with the canvas chrome. It hands the page's suggestions to the
 // writing (lib/article/article-suggestion-plugin.ts), draws a margin marker into each one the writing found, opens
 // the popover (a sheet on a phone) and Show in Page's bar, reads the page's health again when the room says

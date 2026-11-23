@@ -11,10 +11,12 @@ import {
 afterEach(() => window.history.replaceState(null, '', '/document/d1'));
 
 describe('the view an address names', () => {
-  it('is Pages unless it names Ask, AI Knowledge or Connect', () => {
+  it('is Pages unless it names Ask, Insights or Connect', () => {
     expect(knowledgeViewOf('')).toBe('pages');
     expect(knowledgeViewOf('?view=ask')).toBe('ask');
-    expect(knowledgeViewOf('?s=abc&view=ai')).toBe('ai');
+    expect(knowledgeViewOf('?s=abc&view=insights')).toBe('insights');
+    // Its name before the rename still opens it.
+    expect(knowledgeViewOf('?view=ai')).toBe('insights');
     expect(knowledgeViewOf('?view=connect')).toBe('connect');
     expect(knowledgeViewOf('?view=slides')).toBe('pages');
     expect(knowledgeViewOf('?view=toString')).toBe('pages');
@@ -53,8 +55,8 @@ describe('showing a view', () => {
 
   it('replaces the entry when asked', () => {
     const before = window.history.length;
-    showKnowledgeView('ai', { replace: true });
+    showKnowledgeView('insights', { replace: true });
     expect(window.history.length).toBe(before);
-    expect(currentKnowledgeView()).toBe('ai');
+    expect(currentKnowledgeView()).toBe('insights');
   });
 });

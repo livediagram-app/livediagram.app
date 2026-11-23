@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// docs/specs/030-knowledgebase/required-reading.md "Where it shows": AI Knowledge's Required Reading card lists each
+// docs/specs/030-knowledgebase/required-reading.md "Where it shows": Insights' Required Reading card lists each
 // page with its bar and counts, in the order the api sends (least read first), a row opening its page; empty, it says
 // how a page becomes Required Reading. Counts only: nothing here names a person.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
@@ -36,7 +36,7 @@ describe('RequiredReadingCard', () => {
     render(<RequiredReadingCard pages={[]} onOpenPage={vi.fn()} />);
     expect(screen.getByText('No Required Reading')).toBeTruthy();
     expect(
-      screen.getByText('An Editor marks a page Required Reading from its Page Info.'),
+      screen.getByText('An Editor marks a page Required Reading from its menu in the page tree.'),
     ).toBeTruthy();
   });
 });

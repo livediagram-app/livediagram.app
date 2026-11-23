@@ -20,6 +20,9 @@ import { pageTrust, trustMarks } from '@/lib/knowledge/page-trust';
 import { approvalActionsOf, approvalMarks, approvalOfFields } from '@/lib/knowledge/approval-view';
 import { useApprovalDoor } from '@/components/knowledge/approval/usePageApproval';
 import { askApproval } from '@/lib/knowledge/approval-asked';
+import { askReading, requireReadingOffered } from '@/lib/required-reading/reading-asked';
+import { readingStore } from '@/lib/required-reading/reading-store';
+import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { PageWatchMenuRows } from '@/components/page-watch/PageWatchMenuRows';
 import { useRelativeNow } from '@/lib/relative-time';
 import { useFeedOpenPagesBound } from '@/lib/use-pages-bound';
@@ -150,6 +153,12 @@ export function usePageTreeModel(): PageTreeModel {
   // The knowledgebase's Review Period: a change of it moves every row's tick or Due pill at once.
   const reviewEvery = useReviewEvery(documentId);
   const approvalCaller = useApprovalDoor().caller;
+  // Required Reading needs the knowledgebase's room: never Offline or in an embed (required-reading.md).
+  const offline = useIsOfflineDocument(documentId);
+  const embedded = useEditorChrome((s) => !!s.embedMode);
+  // Setting it up is an Editor's in person (signed in): the api's `manages`.
+  const signedIn = useEditorChrome((s) => !!s.accountUserId);
+  const readingReachable = !!documentId && !offline && !embedded && signedIn;
   const knowledge = useMemo<PageTreeKnowledge>(() => {
     // Read for the memo's sake: a field set here moves the version, not the tab list.
     void knowledgeVersion;
@@ -181,6 +190,19 @@ export function usePageTreeModel(): PageTreeModel {
         selectPage(chrome.get(), id);
         askApproval(id);
       },
+      // Require Reading, in the page's menu while the page is not Required Reading (owner 2026-11-23: "require
+      // reading should be in the page context menu until enabled, not always shown"): an Editor's, read when the menu
+      // opens. A page not read yet this session offers it too; its modal shows the page as it stands.
+      canRequireReading: (id) =>
+        requireReadingOffered(
+          knowledgeActions.rights.editFields,
+          readingReachable,
+          readingStore.entryOf(documentId ?? '', id),
+        ),
+      onRequireReading: (id) => {
+        selectPage(chrome.get(), id);
+        askReading(id);
+      },
       watchRows: (id, onClose, separated) => (
         <PageWatchMenuRows id={id} onClose={onClose} separated={separated} />
       ),
@@ -194,6 +216,7 @@ export function usePageTreeModel(): PageTreeModel {
     approvalCaller,
     chrome,
     documentId,
+    readingReachable,
   ]);
 
   const onRenameKnowledgebase = useCallback(

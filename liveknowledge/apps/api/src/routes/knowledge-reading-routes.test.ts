@@ -439,7 +439,7 @@ describe('pages/:tab/remind-readers', () => {
   });
 });
 
-describe('the AI Knowledge overview', () => {
+describe('the Insights overview', () => {
   it('lists each Required Reading page with its counts, least read first, for every role', async () => {
     await require('editor', { audience: 'everyone' });
     await require('editor', { audience: 'people', people: ['user_p'] }, 'holidays');

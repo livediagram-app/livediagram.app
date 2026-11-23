@@ -20,7 +20,7 @@ one set of pages, kept right by the people who own them, read the same way by a 
    ([Verification](../030-knowledgebase/verification.md)). People see it; agents receive it with every passage.
 2. **Agents are first-class readers.** The MCP server and CLI speak in pages and passages, count what agents read,
    record what they could not find, and let them suggest edits a person accepts
-   ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md), [AI Knowledge](../030-knowledgebase/ai-knowledge.md)).
+   ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md), [Insights](../030-knowledgebase/insights.md)).
 3. **It does not guess.** Ask answers only from the knowledgebase, cites every claim and turns what is missing into a page to
    write ([Search and Ask](../030-knowledgebase/search-and-ask.md)).
 4. **It belongs to the workspace.** One account, the One Explorer, the same sharing, Offline, Drive mirror and

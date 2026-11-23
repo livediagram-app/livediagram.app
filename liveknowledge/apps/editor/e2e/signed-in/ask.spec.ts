@@ -128,7 +128,7 @@ test('an answer streams in, and each citation chip goes to its source card', asy
   expectNoPageErrors(pageErrors);
 });
 
-test('what the pages do not cover shows as a Knowledge Gap and is listed under AI Knowledge', async ({
+test('what the pages do not cover shows as a Knowledge Gap and is listed under Insights', async ({
   page,
   pageErrors,
 }) => {
@@ -146,8 +146,8 @@ test('what the pages do not cover shows as a Knowledge Gap and is listed under A
   const gap = ask(page).getByRole('region', { name: 'Knowledge Gap' });
   await expect(gap).toContainText(question);
 
-  await openView(page, 'AI Knowledge');
-  // Needs Attention, at Questions: the questions nobody could answer (ai-knowledge.md "The view, as built").
+  await openView(page, 'Insights');
+  // Needs Attention, at Questions: the questions nobody could answer (insights.md "The view, as built").
   const questions = page.getByRole('region', { name: 'Needs Attention' });
   const show = questions
     .getByRole('group', { name: 'Show' })

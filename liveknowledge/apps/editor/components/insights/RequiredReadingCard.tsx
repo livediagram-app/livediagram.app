@@ -7,8 +7,8 @@ import type { KnowledgeRequiredReadingPage } from '@liveknowledge/api-schema';
 import { CompactEmptyState } from '@liveknowledge/ui';
 import { ReadingBookIcon } from '@/components/required-reading/reading-icons';
 import { audienceText } from '@/lib/required-reading/reading-words';
-import { RowChevronIcon } from './ai-knowledge-icons';
-import { AI_MUTED, AiSection } from './AiSection';
+import { RowChevronIcon } from './insights-icons';
+import { INSIGHTS_MUTED, InsightsSection } from './InsightsSection';
 
 const ROW =
   'group flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors duration-micro hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 phone:min-h-11 dark:hover:bg-slate-800/60';
@@ -21,7 +21,7 @@ export function RequiredReadingCard({
   onOpenPage: (tab: string) => void;
 }) {
   return (
-    <AiSection
+    <InsightsSection
       id="ai-required-reading"
       title="Required Reading"
       icon={<ReadingBookIcon />}
@@ -32,7 +32,7 @@ export function RequiredReadingCard({
         <CompactEmptyState
           icon={<ReadingBookIcon />}
           title="No Required Reading"
-          description="An Editor marks a page Required Reading from its Page Info."
+          description="An Editor marks a page Required Reading from its menu in the page tree."
         />
       ) : (
         <ol className="-mx-2 flex flex-col">
@@ -47,7 +47,7 @@ export function RequiredReadingCard({
                       <span className="truncate text-sm font-medium text-slate-900 underline-offset-2 group-hover:underline dark:text-slate-100">
                         {page.title || 'Untitled Page'}
                       </span>
-                      <span className={`shrink-0 text-xs tabular-nums ${AI_MUTED}`}>
+                      <span className={`shrink-0 text-xs tabular-nums ${INSIGHTS_MUTED}`}>
                         {page.done.toLocaleString('en')} of {page.total.toLocaleString('en')}
                       </span>
                     </span>
@@ -69,7 +69,7 @@ export function RequiredReadingCard({
                         style={{ width: `${share * 100}%` }}
                       />
                     </span>
-                    <span className={`truncate text-xs ${AI_MUTED}`}>
+                    <span className={`truncate text-xs ${INSIGHTS_MUTED}`}>
                       {audienceText(page.audience, page.total)}
                     </span>
                   </span>
@@ -85,6 +85,6 @@ export function RequiredReadingCard({
           })}
         </ol>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }

@@ -1,9 +1,9 @@
-# AI Knowledge
+# Insights
 
 Status: **the view is built as a dashboard and was seen in a browser on 2026-11-21** (every tile and card action
 pressed, light and dark, 1440 to 390 wide; a conflict only through a stubbed read, since none can be found without a
 key) ([Build plan](../005-project-roadmap/build-plan.md)
-step 10). What is not built is under "Not built"; the [AI Knowledge UI blueprint](blueprints/ai-knowledge-ui.md) has
+step 10). What is not built is under "Not built"; the [Insights UI blueprint](blueprints/insights-ui.md) has
 the detail.
 
 The knowledgebase's third tab, beside Pages and Ask: what agents know, where they learned it and what they could not find.
@@ -40,7 +40,7 @@ nobody read in the last 90 days (Not Read in 90 Days).
 
 ### Not Read in 90 Days
 
-Owner, 2026-11-21: "isn't that already in AI Knowledge tab? if not add something useful". The pages to update, merge
+Owner, 2026-11-21: "isn't that already in Insights tab? if not add something useful". The pages to update, merge
 or delete: every page with no read, by a person or an agent, in the last 90 days (all `page_reads` keeps), or in
 the days the owner's tier keeps reads where fewer (30 on Free, "Not Read in 30 Days"; tiers.md). A page
 made in the last 90 days is left out: it has not had 90 days to be read. Up to 10 are listed, the one touched
@@ -49,7 +49,7 @@ ties in tree order), each with "Last edited 5 months ago" ("Last edit not kept" 
 the card's count is all of them, and "4 more not listed" follows the tenth. With none: "Every Page Was Read",
 saying every page older than 90 days was opened or read by an agent in that time. It comes from the overview's one
 read: the facts statement Knowledge Health already runs answers each page's last read day (`MAX(day)` on the
-`page_reads_tab` index), so it costs no request and no statement more. Every role that can see AI Knowledge sees
+`page_reads_tab` index), so it costs no request and no statement more. Every role that can see Insights sees
 it; it changes nothing.
 
 ### Page Insights
@@ -133,14 +133,14 @@ page's last table under its last row, never a paragraph of pipes (owner 2026-11-
 ### On the page
 
 Built by Work Tracker 1362 to the approved mockup (owner, 2026-11-22): a suggestion is seen where it applies, not only
-on AI Knowledge. Everything a suggestion draws on a page is in the AI Knowledge violet (violet-700 on violet-50, and
-violet-300 on violet-500/15 in the dark theme), the colour AI Knowledge's own count wears, so it never reads as a
+on Insights. Everything a suggestion draws on a page is in the Insights violet (violet-700 on violet-50, and
+violet-300 on violet-500/15 in the dark theme), the colour Insights' own count wears, so it never reads as a
 page's trust (green and amber) or a comment.
 
 - **The page tree:** a page with suggestions waiting has an 8 px violet dot at the end of its row, before its trust
   mark, with a tooltip and a spoken label ("1 Suggested Edit", "3 Suggested Edits"). None at 0.
 - **The meta row:** a **1 Suggested Edit** / **3 Suggested Edits** pill right after the verified badge, a pencil before
-  its words, a pointer cursor and a tooltip ("Review the edits agents suggested for this page"). Pressing it opens the
+  its words and a pointer cursor, with no tooltip (the meta row's labelled buttons have none, owner 2026-11-23). Pressing it opens the
   first suggestion's popover (below) on its marked passage, or the rail's section when no passage is marked. None at 0.
 - **The passage it replaces** is washed violet (the blocks it covers, a pale violet ground with a dashed violet
   underline), with a **margin marker**: a 28 px violet disc with a pencil, in the left margin at the passage's first
@@ -159,7 +159,7 @@ page's trust (green and amber) or a comment.
 - **The right rail:** a **Suggested Edits** section between Page Health and AI Context, its heading in violet with a
   count chip: a row per suggestion (the reason's first line, then "Claude, 4 min ago · 1 removed, 2 added"), pressing
   which opens its popover on the passage (or, with no passage marked, a popover of its own anchored to the row), and a
-  **Review All in AI Knowledge** link that opens AI Knowledge filtered to Suggested Edits. Not drawn at 0.
+  **Review All in Insights** link that opens Insights filtered to Suggested Edits. Not drawn at 0.
 - **A passage no longer found** (the page changed after the suggestion was made, so `before` is not in the page once,
   as it now reads) is never marked: no wash, no marker, nothing struck. The suggestion shows in the rail and its
   popover alone, which say "The page has changed since" in place of Show in Page; Accept is still offered and the api
@@ -268,7 +268,7 @@ rows and actions, long lists capped so the page never grows with the data.
 
 - One read of `GET .../knowledge` each time the view opens and one after each action taken in it. Nothing is polled.
   Every figure below comes from that one read.
-- **Header:** "AI Knowledge", one line, **Connect an Agent** and **AI Settings**.
+- **Header:** "Insights", one line, **Connect an Agent** and **AI Settings**.
 - **The figures band:** six tiles, each a button named by its words and its figure. Six across on a wide screen,
   three across from a tablet's width, two across on a phone.
 
@@ -397,7 +397,7 @@ rows and actions, long lists capped so the page never grows with the data.
 
 | Action                                                  | Editor | Participant | Viewer |
 | ------------------------------------------------------- | ------ | ----------- | ------ |
-| See AI Knowledge                                        | yes    | yes         | yes    |
+| See Insights                                            | yes    | yes         | yes    |
 | See a page's suggestions (tree dot, pill, wash, rail)   | yes    | yes         | yes    |
 | Accept or dismiss a suggestion                          | yes    | no          | no     |
 | Suggest an edit (an agent of theirs, the api)           | yes    | yes         | no     |

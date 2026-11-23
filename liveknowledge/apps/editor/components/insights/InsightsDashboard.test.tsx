@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The AI Knowledge dashboard (docs/specs/030-knowledgebase/blueprints/ai-knowledge-ui.md "The dashboard"): each
+// The Insights dashboard (docs/specs/030-knowledgebase/blueprints/insights-ui.md "The dashboard"): each
 // tile's figure and name, the amber mark, a filter tile pressed and unpressed, a tile bringing its card into view,
 // the sparkline said in words, the caps and Show All, and Most Read.
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
@@ -9,7 +9,7 @@ import type { KnowledgeOverviewResponse, KnowledgeQuestion } from '@liveknowledg
 import type { AskRights } from '@/lib/knowledge-ask/ask-rights';
 import { act } from 'react';
 import { knowledgeSettingsStore } from '@/lib/knowledge-settings/knowledge-settings-store';
-import { AiDashboard, type DashboardActions } from './AiDashboard';
+import { InsightsDashboard, type DashboardActions } from './InsightsDashboard';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -87,7 +87,7 @@ function draw(data = overview(), rights = RIGHTS) {
     ].map((name) => [name, vi.fn()]),
   ) as unknown as DashboardActions & Record<string, ReturnType<typeof vi.fn>>;
   render(
-    <AiDashboard
+    <InsightsDashboard
       overview={data}
       rights={rights}
       agents={data.agents}
@@ -112,7 +112,7 @@ afterEach(() => {
 describe('the figures band', () => {
   it('names each tile by its words and its figure, and marks what asks for someone', () => {
     draw();
-    const tiles = within(screen.getByRole('group', { name: 'AI Knowledge at a glance' }))
+    const tiles = within(screen.getByRole('group', { name: 'Insights at a glance' }))
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label'));
     expect(tiles).toEqual([
@@ -332,7 +332,7 @@ describe('the cards', () => {
     const read = vi.fn(() => data);
     knowledgeSettingsStore.take('kb-live', { reviewEvery: 90 });
     render(
-      <AiDashboard
+      <InsightsDashboard
         overview={read()}
         documentId="kb-live"
         rights={RIGHTS}

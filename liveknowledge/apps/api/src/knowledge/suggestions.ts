@@ -1,4 +1,4 @@
-// Agents' edits waiting for an Editor (docs/specs/030-knowledgebase/ai-knowledge.md "Edits suggested by agents";
+// Agents' edits waiting for an Editor (docs/specs/030-knowledgebase/insights.md "Edits suggested by agents";
 // docs/specs/024-agents/blueprints/knowledgebase-for-agents.md "Suggestions"): the `suggestions` table of the
 // knowledgebase's room. A suggestion is a passage of the page's Markdown replaced by another, or Markdown appended.
 // It changes nothing until an Editor accepts it, so it is bookkeeping, written through the handle that notes no
@@ -42,7 +42,7 @@ export const listSuggestions = (env: DocumentEnv, now: number): Promise<StoredSu
     ),
   );
 
-/** One page's pending suggestions, newest first, for its Page Health read (ai-knowledge.md "On the page"): on the
+/** One page's pending suggestions, newest first, for its Page Health read (insights.md "On the page"): on the
  *  `suggestions_tab` index, at most the knowledgebase's cap. */
 export const listPageSuggestions = (
   env: DocumentEnv,

@@ -1,13 +1,13 @@
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
 import { Btn, Code, HAIR, MenuRows, Pill, StackedBar, Surface } from './kit';
 
-// The AI Knowledge figures (liveworkspace/docs/specs/017-help/help-centre.md "Figures and card icons"): the Connect
+// The Insights figures (liveworkspace/docs/specs/017-help/help-centre.md "Figures and card icons"): the Connect
 // view, a connected agent's card and its menu, a suggested edit, the questions nobody could answer, two
 // pages that disagree, and the Always in Context budget. Each is drawn from the view's own words.
 
 const W = 420;
 
-/** A section's heading in the AI Knowledge view, with its one line under it. */
+/** A section's heading in the Insights view, with its one line under it. */
 function SectionHead({
   x,
   y,

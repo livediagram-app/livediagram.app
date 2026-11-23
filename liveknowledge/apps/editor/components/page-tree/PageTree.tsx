@@ -86,7 +86,7 @@ export type PageTreeKnowledge = {
   marks: ReadonlyMap<string, TrustMark>;
   // A page Pending Approval or Rejected: a dot after its title (approval.md "Where it shows").
   approvalMarks?: ReadonlyMap<string, ApprovalMark>;
-  // Suggested edits waiting, by page (ai-knowledge.md "On the page"), from the newest Page Health read.
+  // Suggested edits waiting, by page (insights.md "On the page"), from the newest Page Health read.
   suggestionCounts?: Readonly<Record<string, number>> | undefined;
   inContext: ReadonlySet<string>;
   // Verify: an Editor with an account. The fields: an Editor.
@@ -97,6 +97,10 @@ export type PageTreeKnowledge = {
   // Request Approval, from the page's menu (approval.md "Asking").
   canRequestApproval?: (id: string) => boolean;
   onRequestApproval?: (id: string) => void;
+  // Require Reading, from the page's menu while the page is not Required Reading (required-reading.md "Where it
+  // shows"): read when its menu opens.
+  canRequireReading?: (id: string) => boolean;
+  onRequireReading?: (id: string) => void;
   // Watch, Watch This Section and Unwatch, for every signed-in reader (watching.md "Where it shows"): the rows for the
   // page, read when its menu opens, a separator above them when `separated`.
   watchRows?: (id: string, onClose: () => void, separated: boolean) => ReactNode;

@@ -1,4 +1,4 @@
-// Page Insights and Not Read in 90 Days (docs/specs/030-knowledgebase/ai-knowledge.md "Page Insights", "Not Read
+// Page Insights and Not Read in 90 Days (docs/specs/030-knowledgebase/insights.md "Page Insights", "Not Read
 // in 90 Days").
 import { describe, expect, it } from 'vitest';
 import { daysBefore } from './days';

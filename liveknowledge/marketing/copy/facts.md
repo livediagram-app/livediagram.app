@@ -47,7 +47,7 @@ livedocuments, livedesign and livehuddle.
 - **Ask**: answers from the knowledgebase's own pages with a citation on every
   claim, a Sources rail and a trust line. It says what the pages do not cover
   instead of guessing. Runs on the team's own Claude or OpenAI key.
-- **AI Knowledge**: which agents read what, questions nobody could answer,
+- **Insights**: which agents read what, questions nobody could answer,
   pages that disagree, edits agents suggest for a person to accept, and Always
   in Context pages.
 - **An MCP server and a CLI** that speak in pages and passages. Every passage
@@ -68,7 +68,7 @@ provider.
 ## Accounts
 
 Writing needs no account: a guest's knowledgebase is kept Offline in the
-browser. Verify, Ask, AI Knowledge, sharing and connecting an agent need a free
+browser. Verify, Ask, Insights, sharing and connecting an agent need a free
 account.
 
 ## Out of scope (never imply these)
