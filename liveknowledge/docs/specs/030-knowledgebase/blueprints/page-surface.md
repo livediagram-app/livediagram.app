@@ -423,8 +423,21 @@ Spec [Knowledgebases and pages](../knowledgebases-and-pages.md) "The knowledgeba
 (`useStyleOffered`, `useDescribeToAddPages`, `useAskSession().rights.manageAi`);
 `KnowledgebaseMenu` is the name's button and the shared `PortalMenu` with `MenuHeader` and `MenuActionRow`.
 `PageTreeSidebar` and `PageTreeSheet` take it as `menu`, a render prop handed the shown name and how a rename
-starts in place, from their hosts in `usePageTreeChrome`, where the editor's store is. Tests:
-`KnowledgebaseMenu.test.tsx` (the rows in order, each row's action, the keys, every role), `PageTreeSidebar.test.tsx`.
+starts in place, from their hosts in `usePageTreeChrome`, where the editor's store is.
+
+A name typed at the open menu ("Typing a new name renames"): `typedNameKey(prev, key, labels)` (`typed-rename.ts`, pure)
+reads each key against the rows' labels and answers `search` (the letters still spell a row's start, a letter typed
+again counting as itself, as `typeaheadIndex` does; the text carries on), `rename` with the text typed so far, or null
+(a named key, a shortcut, a space with nothing typed). The search restarts after `MENU_TYPEAHEAD_RESET_MS` (D49, the
+menu's own). `KnowledgebaseMenu` runs it in a capture-phase `onKeyDownCapture` on a `display: contents` wrapper round
+the `PortalMenu`, so it sees each key before `useMenu`'s listener on the menu, and on the button's `onKeyDown` while
+open; a `rename` prevents the key, closes the menu, tells `onChosen('rename')` and calls `onRename(text)`, only where
+the rows hold Rename. `KnowledgebaseHead.onRename(typed?)` sets the head's `HeadRename` (`{ typed }`), and the shared
+`NameEditor`'s `typed` opens the field on those letters with the caret after them instead of selecting the old name
+(an IME's composing keys are skipped). Tests: `KnowledgebaseMenu.test.tsx` (the rows in order, each row's action, the
+keys, every role, a typed name), `typed-rename.test.ts`, `PageTreeSidebar.test.tsx` (the field carries on from the
+typed letters, in the sidebar and the sheet), `e2e/knowledgebase-rename.spec.ts` (a two-word name typed right after
+the knowledgebase is made, and Rename from the row, each saved and kept through a reload).
 
 ## The cover
 

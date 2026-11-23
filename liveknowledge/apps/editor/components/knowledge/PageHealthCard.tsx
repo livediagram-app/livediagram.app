@@ -251,7 +251,9 @@ function tintOf(name: string | undefined): string {
   return DISC_TINTS[Math.abs(h) % DISC_TINTS.length]!;
 }
 
-function Disc({
+/** A person's initials on their own colour where it is known, else their name's tint (a guest's figure), for Page
+ *  Health's stamps and Required Reading's people. */
+export function Disc({
   name,
   color,
   size = 'size-6',

@@ -81,6 +81,21 @@ describe('the settings store', () => {
     expect(store.take('d3', undefined)).toBe(false);
   });
 
+  it("holds the knowledgebase's labels beside its period, one list until they change", () => {
+    const store = createKnowledgeSettingsStore();
+    const labels = [{ id: 'lbl_a', name: 'Alpha', colour: 'blue' }];
+    expect(store.labelsOf('d1')).toEqual([]);
+    expect(store.labelsOf(null)).toBe(store.labelsOf('d9'));
+    expect(store.take('d1', { reviewEvery: 90, labels: [...labels, { id: 'bad id' }] })).toBe(true);
+    const held = store.labelsOf('d1');
+    expect(held).toEqual(labels);
+    expect(store.take('d1', { reviewEvery: 90, labels })).toBe(false);
+    expect(store.labelsOf('d1')).toBe(held);
+    expect(store.setLabels('d1', [{ ...labels[0]!, name: 'Beta' }])).toBe(true);
+    expect(store.take('d1', { reviewEvery: 30 })).toBe(true);
+    expect([store.reviewEveryOf('d1'), store.labelsOf('d1')]).toEqual([30, []]);
+  });
+
   it('stops telling a reader that left', () => {
     const store = createKnowledgeSettingsStore();
     const heard = vi.fn();

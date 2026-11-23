@@ -415,6 +415,33 @@ export const CONNECTED_TABS_OPENED: Metric = {
   blurb: 'Someone opened the file a connected tab stands for. Read against files connected.',
 };
 
+// This app's own (connected-tabs.md "From the tab bar", "A tab's own name"): the tab bar's Connect a File pressed,
+// and a connected tab given a name of its own or renamed back to following its file.
+export const CONNECT_BUTTON_PRESSED: Metric = {
+  category: 'Tab',
+  action: 'Opened',
+  type: 'ConnectButton',
+  title: 'Connect Button Pressed',
+  blurb:
+    "The tab bar's Connect a File pressed, opening the Connect list. Read against files connected.",
+};
+
+export const CONNECTED_TABS_RENAMED: Metric = {
+  category: 'Tab',
+  action: 'Changed',
+  type: 'ConnectedName',
+  title: 'Connected Tabs Renamed',
+  blurb: 'A connected tab given a name of its own; the file keeps its name.',
+};
+
+export const CONNECTED_TABS_RENAMED_BACK: Metric = {
+  category: 'Tab',
+  action: 'Changed',
+  type: 'ConnectedNameReset',
+  title: 'Connected Tabs Renamed Back',
+  blurb: "A renamed connected tab renamed to nothing, so it follows its file's name again.",
+};
+
 export const CONNECTED_TABS: MetricStack = {
   stack: true,
   title: 'Connected Tabs',
@@ -425,6 +452,9 @@ export const CONNECTED_TABS: MetricStack = {
     FILES_CONNECTED_BOTH_WAYS,
     FILES_CONNECTED_AGAIN,
     CONNECTED_TABS_OPENED,
+    CONNECT_BUTTON_PRESSED,
+    CONNECTED_TABS_RENAMED,
+    CONNECTED_TABS_RENAMED_BACK,
   ],
 };
 
@@ -927,6 +957,18 @@ export const PLAN_AUTOMATIONS_AI_FAILED = chart(
   'Automation AI Steps Failed or Capped',
   "An AI action that couldn't write its answer (the model erred, was slow or answered something unusable), or one the plan's 100 a day skipped.",
   { types: ['AutomationAiFailed', 'AutomationAiCapped'], rising: 'bad' },
+);
+
+// Snapshot steps (docs/specs/026-plan/automations.md "Snapshot steps", in the liveplanner folder), counted by the api.
+export const PLAN_AUTOMATION_SNAPSHOTS = chart(
+  'Plan',
+  'Ran',
+  'Automation Snapshot Steps',
+  "A rule's Take Snapshot saving the whole plan, its Revert to Snapshot putting the plan back, or either failing (a snapshot gone, or the plan's snapshots full).",
+  {
+    types: ['AutomationSnapshotTaken', 'AutomationSnapshotReverted', 'AutomationSnapshotFailed'],
+    rising: 'neutral',
+  },
 );
 
 // Automatic runs (docs/specs/026-plan/automations.md "Telemetry", in the liveplanner folder): what each run a wake
@@ -1682,6 +1724,7 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_AUTOMATIONS_TAKEN_OVER,
   PLAN_AUTOMATIONS_AI,
   PLAN_AUTOMATIONS_AI_FAILED,
+  PLAN_AUTOMATION_SNAPSHOTS,
   PLAN_AUTOMATION_RUN_RESULTS,
   PLAN_AUTOMATION_RUN_TRIGGERS,
   PLAN_AUTOMATION_TROUBLE,

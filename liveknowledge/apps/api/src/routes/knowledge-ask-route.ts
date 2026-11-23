@@ -41,6 +41,7 @@ import { spendSetupDraft } from '../knowledge/setup-draft-count';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { pageHealthWires } from '../knowledge/page-health-read';
+import { labelScopeOf, labelsOfBody } from '../knowledge/label-scope';
 import { CORS_HEADERS, json } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
 
@@ -132,6 +133,10 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
     return refused(403, 'sign_in_required', 'Sign in to ask this knowledgebase a question.');
   const body = (await ctx.request.json().catch(() => null)) as Record<string, unknown> | null;
   const question = typeof body?.question === 'string' ? body.question : '';
+  // `labels`: answer only from the pages carrying any of them (search-and-ask.md "By label"), refused before anything
+  // is counted.
+  const scope = labelScopeOf(document, labelsOfBody(body?.labels));
+  if (scope instanceof Response) return scope;
   const now = Date.now();
   const counters = askCounters(person, now);
   const refusal = askRefusal(question, {
@@ -174,10 +179,14 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
     };
   }
   const { provider } = caller;
-  const search = askSearch(question, {
-    now,
-    reviewEvery: document.knowledgeSettings.reviewEvery,
-  });
+  const search =
+    scope && scope.tabs.size === 0
+      ? undefined
+      : askSearch(question, {
+          now,
+          reviewEvery: document.knowledgeSettings.reviewEvery,
+          ...(scope ? { onlyTabs: [...scope.tabs] } : {}),
+        });
   const chosen = chooseAskPassages(
     search ? (await rowsOf<SearchRow>(env, search)).map(foundPassage) : [],
   );
@@ -225,8 +234,10 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           const passage = byNumber.get(n.sent);
           return passage ? [{ ...sourceOf(passage), number: n.number, reason: n.reason }] : [];
         });
-        // Each part the pages did not cover is a question nobody could answer (ai-knowledge.md).
-        const gaps = read.gaps.flatMap((gap) => {
+        // Each part the pages did not cover is a question nobody could answer (ai-knowledge.md); not under a label
+        // scope, which asked only some of the pages (search-and-ask.md "By label").
+        const recorded = scope ? [] : read.gaps;
+        const gaps = recorded.flatMap((gap) => {
           const key = questionKey(gap);
           return key ? upsertQuestion(key, gap, asker, now) : [];
         });
@@ -242,7 +253,7 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
             );
         const fresh = await newQuestions(
           ctx,
-          read.gaps.flatMap((gap) => {
+          recorded.flatMap((gap) => {
             const key = questionKey(gap);
             return key ? [{ key, question: gap }] : [];
           }),
@@ -261,6 +272,7 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
           passages: passages.length,
           cited: sources.length,
           gaps: read.gaps.length,
+          labels: scope?.ids.length ?? 0,
           provider,
           model: reply.model,
         });

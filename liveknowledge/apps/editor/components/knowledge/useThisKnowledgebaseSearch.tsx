@@ -33,6 +33,9 @@ import { pageTrust } from '@/lib/knowledge/page-trust';
 import { readRecentPages } from '@/lib/knowledge/recent-pages';
 import { track } from '@/lib/telemetry';
 import { KnowledgeResultRow } from './KnowledgeResultRow';
+import { pagesLabelled } from '@liveknowledge/document';
+import { useChosenLabels } from '@/components/page-labels/useLabelFilter';
+import { labelFilterStore, labelNamesText } from '@/lib/page-labels/label-selection-store';
 
 export const THIS_KNOWLEDGEBASE = 'This Knowledgebase';
 /** The one line shown when nothing in this knowledgebase matches: it was searched, and the other groups follow. */
@@ -85,6 +88,13 @@ export function recentResults(
 
 const NO_RESULTS: KnowledgeSearchResult[] = [];
 
+// The filter's labels that still exist, by id, for the knowledgebase open now.
+const chosenIdsNow = (editor: EditorContextValue): string[] => {
+  if (!editor.documentId) return [];
+  const exists = new Set(knowledgeSettingsStore.labelsOf(editor.documentId).map((l) => l.id));
+  return labelFilterStore.idsOf(editor.documentId).filter((id) => exists.has(id));
+};
+
 // The recent pages as the panel opens: read from this browser once, with the time their trust is told at.
 const recentNow = (pages: readonly Page[], documentId: string | null, every: ReviewEvery) =>
   recentResults(pages, readRecentPages(documentId), every, Date.now());
@@ -96,24 +106,30 @@ function knowledgeRunner(
   offline: boolean,
   tell: (outcome: SearchOutcome) => void,
   debounceMs: number | undefined,
+  // The label filter's labels, by id, read as each search starts (page-surface.md "The label filter").
+  labelsNow: () => readonly string[],
 ): SearchRunner {
   return createSearchRunner(
     (q, signal) => {
       const editor = editorNow();
-      if (!editor.documentId || offline)
+      const labels = labelsNow();
+      if (!editor.documentId || offline) {
+        const kept = labels.length ? pagesLabelled(editor.tabs, labels) : null;
         return Promise.resolve(
           searchLoadedPages(
-            editor.tabs,
+            kept ? editor.tabs.filter((t) => kept.has(t.id)) : editor.tabs,
             q,
             knowledgeSettingsStore.reviewEveryOf(editor.documentId),
             Date.now(),
           ),
         );
+      }
       return apiSearchKnowledge(
         { ownerId: editor.selfParticipant.id, shareCode: editor.sessionShareCode },
         editor.documentId,
         q,
         signal,
+        labels,
       );
     },
     tell,
@@ -130,6 +146,9 @@ export function useThisKnowledgebaseSearch(
   const offline = useIsOfflineDocument(documentId);
   const pages = useEditorChrome((s) => s.tabs, sameTabsForBar);
   const every = useReviewEvery(documentId);
+  // The tree's label filter, which This Knowledgebase follows (search-and-ask.md "By label").
+  const chosen = useChosenLabels();
+  const filterKey = chosen.map((l) => l.id).join(',');
   const [outcome, setOutcome] = useState<SearchOutcome>({ status: 'idle' });
   // What is listed: the last results, kept while the next search is on its way so the group does not blink.
   const [results, setResults] = useState<KnowledgeSearchResult[]>([]);
@@ -146,22 +165,27 @@ export function useThisKnowledgebaseSearch(
           else if (next.status !== 'searching') setResults([]);
         },
         debounceMs,
+        () => chosenIdsNow(chrome.get()),
       ),
     [chrome, offline, debounceMs],
   );
   // The panel closing, or the editor going: nothing pending, the request in flight aborted.
+  // A change of the filter searches again.
   useEffect(() => {
     if (enabled) runner.search(query);
     else runner.stop();
-  }, [enabled, query, runner]);
+  }, [enabled, query, runner, filterKey]);
   useEffect(() => () => runner.stop(), [runner]);
 
   const typed = query.trim() !== '';
   // Read as the panel opens (and per knowledgebase), not per keystroke.
-  const recent = useMemo(
-    () => (enabled ? recentNow(pages, documentId, every) : NO_RESULTS),
-    [enabled, pages, documentId, every],
-  );
+  const recent = useMemo(() => {
+    if (!enabled) return NO_RESULTS;
+    const all = recentNow(pages, documentId, every);
+    if (!filterKey) return all;
+    const kept = pagesLabelled(pages, filterKey.split(','));
+    return all.filter((r) => kept.has(r.tab));
+  }, [enabled, pages, documentId, every, filterKey]);
   return useMemo(() => {
     if (!enabled) return undefined;
     const shown = typed ? results : recent;
@@ -183,7 +207,9 @@ export function useThisKnowledgebaseSearch(
       : items.length > 0
         ? undefined
         : !typed
-          ? 'Pages you open are listed here.'
+          ? chosen.length
+            ? 'Pages with these labels you open are listed here.'
+            : 'Pages you open are listed here.'
           : outcome.status === 'done'
             ? NO_PAGES_MATCH
             : 'Searching…';
@@ -193,6 +219,14 @@ export function useThisKnowledgebaseSearch(
       note,
       alert: failed,
       busy: typed && outcome.status === 'searching',
+      ...(chosen.length && documentId
+        ? {
+            filter: {
+              text: `Labelled ${labelNamesText(chosen)}`,
+              onClear: () => labelFilterStore.clear(documentId),
+            },
+          }
+        : {}),
     };
-  }, [enabled, typed, results, recent, pages, outcome, chrome]);
+  }, [enabled, typed, results, recent, pages, outcome, chrome, chosen, documentId]);
 }

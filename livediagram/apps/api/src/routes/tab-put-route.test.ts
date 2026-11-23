@@ -262,6 +262,44 @@ describe('a tab-scoped whole-tab save', () => {
     expect(stored(db).map((e) => e.id)).toEqual(['a']);
   });
 
+  // A connected tab's own name (liveworkspace/docs/specs/004-index/connected-tabs.md "A tab's own name"): the file's name
+  // kept beside it is structure too, so the save neither writes nor drops it.
+  it("keeps the stored file name beside a connected tab's own, writing none it lacks", async () => {
+    const scoped: ItemGrant = {
+      item: 'D',
+      level: 'edit',
+      tab: 't1',
+      sub: 'link:abc',
+      team: null,
+      exp: 2_000_000_000,
+      shareCode: 'abc',
+      token: 'g',
+    };
+    const saved = async (storedTargetName: string | null) => {
+      const db = await documentWith([]);
+      const read = () =>
+        JSON.parse(
+          db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
+        ) as Record<string, unknown>;
+      if (storedTargetName !== null)
+        db.sql
+          .prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'")
+          .run(JSON.stringify({ ...read(), targetName: storedTargetName }));
+      const res = await handleDocuments(
+        makeTestRouteContext('PUT', '/api/documents/D/tabs/t1', {
+          env: db.env,
+          owner: 'guest_v',
+          body: { id: 't1', name: 'Board', elements: [], targetName: 'Forged' },
+          grant: scoped,
+        }),
+      );
+      expect(res.status).toBe(200);
+      return read();
+    };
+    expect(await saved(null)).not.toHaveProperty('targetName');
+    expect((await saved('Launch plan')).targetName).toBe('Launch plan');
+  });
+
   // Its tab deleted while the editor was open reads as missing rather than coming back.
   it("never recreates a tab-scoped editor's deleted tab", async () => {
     const db = await documentWith([box('a')]);

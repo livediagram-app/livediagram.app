@@ -91,6 +91,7 @@ import type { DocumentDTO } from '../types';
 import { refreshAfterRead } from './changesets';
 import { handleTabPages } from './tab-pages-route';
 import { requireOwner, writesPages } from './context';
+import { labelNamesOf, labelScopeOf, labelsParam } from '../knowledge/label-scope';
 import type { KnowledgeRoute } from './knowledge-routes';
 
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
@@ -109,8 +110,12 @@ const pagesOf = (document: DocumentDTO) => document.tabs.filter((t) => !isConnec
 async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> {
   const now = Date.now();
   const { reviewEvery } = document.knowledgeSettings;
+  // `labels=` lists only the pages carrying any of them (page-surface.md "Page labels"), in tree order.
+  const scope = labelScopeOf(document, labelsParam(ctx.url.searchParams));
+  if (scope instanceof Response) return scope;
   const { byTab } = await openConflictPages(ctx.env, document.tabs);
-  const pages: KnowledgeTreeRow[] = treeOf(document).map(({ page, depth, subpages }) => {
+  const rows = treeOf(document).filter((row) => !scope || scope.tabs.has(row.page.id));
+  const pages: KnowledgeTreeRow[] = rows.map(({ page, depth, subpages }) => {
     if (page.connection)
       return {
         ...refOf(page),
@@ -121,6 +126,7 @@ async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> 
         subpages: 0 as const,
       };
     const fields = parseKnowledgeFields(page.knowledge);
+    const labels = labelNamesOf(document, page.labels);
     return {
       ...refOf(page),
       depth,
@@ -131,6 +137,7 @@ async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> 
       trust: pageTrustOf(page.knowledge, reviewEvery, now, {
         conflictsWith: byTab.get(page.id),
       }),
+      ...(labels ? { labels } : {}),
     } satisfies KnowledgePageRow;
   });
   // The Review Period, said once: every page's `reviewAt` is its `verifiedAt` plus this.
@@ -204,6 +211,9 @@ async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Resp
   // Its icon, an emoji or a catalogue icon (page-surface.md "The page icon").
   const icon = agentPageIconOf(stored.tab.icon);
   if (icon) page.icon = icon;
+  // Its labels by name (page-surface.md "Page labels").
+  const labels = labelNamesOf(document, summary.labels);
+  if (labels) page.labels = labels;
   return json({ page }, { headers: { ETag: `"${stored.rev}"` } });
 }
 

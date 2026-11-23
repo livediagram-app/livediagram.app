@@ -26,6 +26,7 @@ import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
 import { PageActivity, PageHealthCard } from './PageHealthCard';
 import { PageWatchButton } from '@/components/page-watch/PageWatchButton';
+import { PageRailReading } from '@/components/required-reading/PageRailReading';
 import { ReviewPeriodButton } from '@/components/knowledge-settings/ReviewPeriodButton';
 import { useSettingsOffered } from '@/components/knowledge-settings/useSettingsOffered';
 import { PageHealthApproval } from './approval/PageHealthApproval';
@@ -206,6 +207,8 @@ export function PageRailBody({ docked = false }: { docked?: boolean }) {
         }
         watch={<PageWatchButton />}
       />
+      {/* Required Reading under Page Health (required-reading.md "Where it shows"). */}
+      <PageRailReading />
       {/* Page Health leads, On This Page under it (owner 2026-11-21). */}
       <OnThisPage headings={writing.headings} current={current} onGo={go} />
       {/* The questions Ask answered from the page; its reads over time are in Read This Week (owner 2026-11-22). */}

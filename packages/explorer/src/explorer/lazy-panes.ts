@@ -2,6 +2,7 @@
 
 import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
 import { preloadTeamCard } from './TeamPane';
+import { whenIdle } from './when-idle';
 
 // The sections most visits never open, each from its own chunk (liveworkspace/docs/specs/004-index/one-explorer.md
 // "Cost and performance"): Inbox, Invites, Gallery and Shape Libraries, kept out of the
@@ -33,11 +34,5 @@ export function preloadExplorerPanes(): Promise<void> {
 
 /** Fetches every section's code once the page is idle; returns a cancel for an unmount before then. */
 export function preloadExplorerPanesWhenIdle(): () => void {
-  const idle = typeof window !== 'undefined' ? window.requestIdleCallback : undefined;
-  if (idle) {
-    const handle = idle(() => void preloadExplorerPanes(), { timeout: 3000 });
-    return () => window.cancelIdleCallback(handle);
-  }
-  const timer = setTimeout(() => void preloadExplorerPanes(), 1500);
-  return () => clearTimeout(timer);
+  return whenIdle(() => void preloadExplorerPanes());
 }

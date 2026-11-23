@@ -290,6 +290,7 @@ export function editorView({
     remoteSelectionsByElement: commentsSlice.remoteSelectionsByElement,
     removeImageFromElement: elementsSlice.removeImageFromElement,
     renameTab: tabsSlice.renameTab,
+    followConnectedTab: tabsSlice.followConnectedTab,
     renameTabFolder: tabsSlice.renameTabFolder,
     moveTabToFolder: tabsSlice.moveTabToFolder,
     removeTabFromFolder: tabsSlice.removeTabFromFolder,

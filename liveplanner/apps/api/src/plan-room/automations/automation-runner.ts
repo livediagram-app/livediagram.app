@@ -70,6 +70,7 @@ import type { AutomationStore, Sql } from './automation-store';
 import { applyPlannedRun, type WriteDeps } from './automation-writes';
 import { heldSends, sendMessages, sendsClient } from './automation-sends';
 import { runPlanCrossSteps } from './automation-cross';
+import { runPlanSnapshotSteps } from './automation-snapshots';
 import { aiClient, heldCardSteps, runAiSteps } from './automation-ai';
 import { tallyRun, type AutomationTally } from './automation-telemetry';
 
@@ -307,8 +308,9 @@ export async function runRule(
     lines.push(triggerLine(event, plan, rule));
     if (resume && rule.edited.at !== event.edited) return end('skipped', WAIT_RULE_CHANGED);
     const stop = chainStop(event, deps.store);
-    // An Incoming Webhook call that named no card: the rule runs once with none, when its steps need none.
-    const cardless = event.kind === 'incoming' && !event.cardId;
+    // An Incoming Webhook call that named no card, or a Scheduled moment of a rule that runs for the plan: the rule runs
+    // once with none, when its steps need none.
+    const cardless = (event.kind === 'incoming' || event.kind === 'time') && !event.cardId;
     if (cardless && !runsWithoutCard(rule)) return end('skipped', NO_CARDS_NAMED);
     const item = cardless ? cardlessCard() : await readItem(deps.env, deps.planId, event.cardId);
     if (!item || isTrashed(item)) {
@@ -448,10 +450,19 @@ export async function runRule(
       now: at,
       tally: state.tally,
     };
+    // Take Snapshot and Revert to Snapshot (automation-snapshots.ts): after everything else, a revert last of all.
+    const snapshotRun = {
+      env: deps.env,
+      planId: deps.planId,
+      rule: { name: rule.name },
+      dry: opts.dry === true,
+      tally: state.tally,
+    };
     if (opts.dry) {
       await ai(true);
       await sendMessages(messages, live.sends, lines, offset);
       await runPlanCrossSteps(crossRun, writes.cross ?? [], lines, offset);
+      await runPlanSnapshotSteps(snapshotRun, writes.snapshots ?? [], lines, offset);
       const related = writes.related.filter((r) => r.failed);
       const reason = live.failed ?? (related.length ? relatedFailure(related, plan.types) : null);
       return end(
@@ -567,6 +578,19 @@ export async function runRule(
       }
       failed = crossed.failed ?? null;
       capped ??= crossed.skipped;
+    }
+    if (failed === null && writes.snapshots?.length) {
+      const snapped = await runPlanSnapshotSteps(snapshotRun, writes.snapshots, lines, offset);
+      // The plan was put back: what this wake read of it (its types, columns, cards) is read again.
+      if (snapped.reverted) {
+        state.plan = null;
+        delete state.planCards;
+        delete state.cards;
+      }
+      if (snapped.failed !== undefined) {
+        failed = snapped.failed;
+        gone = snapped.gone;
+      }
     }
     if (failed !== null) return end('failed', failed, gone);
     turns = live.turns;

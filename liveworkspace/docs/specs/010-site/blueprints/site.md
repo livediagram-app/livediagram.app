@@ -247,6 +247,19 @@ left kept in `leaving` (`'closed'`) and the record removed by `settleToast(id, '
 the floor hook marks the rect it already measures (`rises`) instead of copying it: 389,119 bytes, the same 19 scripts.
 On top of the lazy team card above it measures 386,312 bytes. The budget stays at 380 KiB.
 
+**The dialogs leave the first load (2026-11-23).** Main had grown back to 388,681 bytes (379.6 KiB) gzipped, 19
+scripts, so every PR that added to the Explorer tripped the 380 KiB budget. The Explorer's dialog switch
+(`packages/explorer/src/explorer/Dialogs.tsx`) drew every confirmation, Change Folder's spaces and This Browser's
+dialogs from static imports, and took two constants from `dialogs/PlacementBrowser.tsx`, so the whole placement
+browser came too; the sidebar's, Home's and the rail's New Team imported the team form; and Trash and Shared With Me
+imported `ConfirmDialog`, which with the rest kept the dialog frame and focus trap up front. The switch is now
+`OpenDialog.tsx`, a `lazyPanel` that `Dialogs.tsx` draws only while a dialog is open; New Team's dialog and the
+lists' confirmation (`@liveworkspace/ui/confirm-dialog`) are `lazyPanel`s too (`lazy-dialogs.ts`). All three are
+fetched once the page is idle, and the open dialog's as a ⋯ menu opens, so a press still opens its dialog in its
+own commit. Measured the same way: 388,681 to 375,932 bytes (379.6 to 367.1 KiB), 19 to 18 scripts, 12,749 bytes
+saved and 13,188 under. `/` is unchanged at 212,832 bytes. `dialogs-lazy-load.test.ts` keeps them out of a static
+import. The budget stays at 380 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from

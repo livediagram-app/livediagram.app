@@ -423,6 +423,33 @@ export const CONNECTED_TABS_OPENED: Metric = {
   blurb: 'Someone opened the file a connected tab stands for. Read against files connected.',
 };
 
+// This app's own (connected-tabs.md "From the tab bar", "A tab's own name"): the tab bar's Connect a File pressed,
+// and a connected tab given a name of its own or renamed back to following its file.
+export const CONNECT_BUTTON_PRESSED: Metric = {
+  category: 'Tab',
+  action: 'Opened',
+  type: 'ConnectButton',
+  title: 'Connect Button Pressed',
+  blurb:
+    "The tab bar's Connect a File pressed, opening the Connect list. Read against files connected.",
+};
+
+export const CONNECTED_TABS_RENAMED: Metric = {
+  category: 'Tab',
+  action: 'Changed',
+  type: 'ConnectedName',
+  title: 'Connected Tabs Renamed',
+  blurb: 'A connected tab given a name of its own; the file keeps its name.',
+};
+
+export const CONNECTED_TABS_RENAMED_BACK: Metric = {
+  category: 'Tab',
+  action: 'Changed',
+  type: 'ConnectedNameReset',
+  title: 'Connected Tabs Renamed Back',
+  blurb: "A renamed connected tab renamed to nothing, so it follows its file's name again.",
+};
+
 export const CONNECTED_TABS: MetricStack = {
   stack: true,
   title: 'Connected Tabs',
@@ -433,6 +460,9 @@ export const CONNECTED_TABS: MetricStack = {
     FILES_CONNECTED_BOTH_WAYS,
     FILES_CONNECTED_AGAIN,
     CONNECTED_TABS_OPENED,
+    CONNECT_BUTTON_PRESSED,
+    CONNECTED_TABS_RENAMED,
+    CONNECTED_TABS_RENAMED_BACK,
   ],
 };
 

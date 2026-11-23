@@ -1,5 +1,7 @@
 import { AUTOMATION_ERRORS } from '@liveworkspace/api-schema/automations';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { KeyAnswer } from '@liveworkspace/ai';
+import { answerEvents, errorResponse, fakeFetch, streamResponse } from '@liveworkspace/ai/testing';
 import { AI_DRAFT_PER_DAY } from '../../ai-draft';
 import type { ItemRuleBody, ItemRun } from '../../item';
 import { AUTOMATION_AI_PER_DAY, AUTOMATION_RULES_MAX, AUTOMATION_RUNS_PER_DAY } from '../../limits';
@@ -751,5 +753,94 @@ describe('Describe a Rule', () => {
       'automation_draft_unreadable',
     ]);
     expect(second.asked).toHaveLength(1);
+  });
+
+  // ai-keys.md "Every AI feature honours the choice": the caller's key, or the item's team's, drafts it.
+  describe('on a key', () => {
+    const KEY = 'sk-ant-api03-planted-secret-key-9z9z';
+    const keyed = (answer: KeyAnswer | null): ItemCaller => ({
+      ...EDITOR,
+      aiKey: async () => answer,
+    });
+    const teamKey: KeyAnswer = {
+      status: 'key',
+      source: 'team',
+      provider: 'anthropic',
+      model: 'claude-opus-5-5',
+      key: KEY,
+    };
+    const onProvider = (respond: () => Response) => {
+      const faked = fakeFetch(respond);
+      vi.stubGlobal('fetch', faked.fetch);
+      return faked.sent;
+    };
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('drafts on the provider, spending none of the item’s AI asks or drafts', async () => {
+      const sent = onProvider(() => streamResponse(answerEvents([JSON.stringify(drafted)])));
+      const { w, asked } = drafting();
+      w.addTab('t1', 'Roadmap');
+      w.sql.exec(
+        `WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < ${AUTOMATION_AI_PER_DAY})
+         INSERT INTO automation_ai_drafts (at, retry) SELECT ?, 1 FROM n`,
+        Date.now(),
+      );
+      const before = rowsOf(w.sql, 'SELECT COUNT(*) AS n FROM automation_ai_drafts');
+      const answer = await call(w, 'POST', '/draft', ask, keyed(teamKey));
+      expect(answer.status).toBe(200);
+      expect(asked).toHaveLength(0);
+      expect(sent).toHaveLength(1);
+      expect(sent[0]!.headers['x-api-key']).toBe(KEY);
+      expect(sent[0]!.body['model']).toBe('claude-opus-5-5');
+      expect(rowsOf(w.sql, 'SELECT COUNT(*) AS n FROM automation_ai_drafts')).toEqual(before);
+    });
+
+    it('says a key the provider refuses, whose it is, and never drafts on built-in AI instead', async () => {
+      onProvider(() => errorResponse(401, 'authentication_error'));
+      const { w, asked } = drafting(drafted);
+      const answer = await call(w, 'POST', '/draft', ask, keyed(teamKey));
+      expect(error(answer)).toEqual([422, 'ai_key_failed']);
+      expect(answer.body['aiKey']).toEqual({
+        source: 'team',
+        provider: 'anthropic',
+        kind: 'bad-key',
+      });
+      expect(JSON.stringify(answer.body)).not.toContain(KEY);
+      expect(asked).toHaveLength(0);
+    });
+
+    it('says the provider’s own busy words where the key is fine', async () => {
+      onProvider(() => errorResponse(529, 'overloaded_error'));
+      const answer = await call(drafting().w, 'POST', '/draft', ask, keyed(teamKey));
+      expect(error(answer)).toEqual([503, 'automation_ai_unavailable']);
+      expect(answer.body['aiKey']).toBeUndefined();
+    });
+
+    it('refuses a key that will not open, and says accounts was unreachable, before any ask', async () => {
+      const { w, asked } = drafting(drafted);
+      const unreadable = await call(
+        w,
+        'POST',
+        '/draft',
+        ask,
+        keyed({ status: 'unreadable', source: 'account' }),
+      );
+      expect(error(unreadable)).toEqual([422, 'ai_key_failed']);
+      expect(unreadable.body['aiKey']).toEqual({
+        source: 'account',
+        provider: null,
+        kind: 'unreadable',
+      });
+      const away = await call(w, 'POST', '/draft', ask, keyed({ status: 'unavailable' }));
+      expect(error(away)).toEqual([503, 'automation_ai_unavailable']);
+      expect(asked).toHaveLength(0);
+    });
+
+    it('drafts on built-in AI with no key, counting as before', async () => {
+      const { w, asked } = drafting(drafted, drafted);
+      expect((await call(w, 'POST', '/draft', ask, keyed({ status: 'none' }))).status).toBe(200);
+      expect((await call(w, 'POST', '/draft', ask, keyed(null))).status).toBe(200);
+      expect(asked).toHaveLength(2);
+    });
   });
 });

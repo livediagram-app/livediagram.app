@@ -107,3 +107,9 @@ export const TAB_DASHED_CLASS =
 // Add tab: a quiet `+` after the last tab, with the tabs' inset wash on hover.
 export const TAB_ADD_CLASS =
   'relative mb-1.5 ml-1 flex size-7 shrink-0 cursor-pointer touch-target items-center justify-center rounded-lg text-lg leading-none text-slate-500 transition-colors duration-150 hover:bg-slate-400/[0.16] hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:bg-slate-400/[0.08] dark:hover:text-slate-100 motion-reduce:transition-none';
+
+// Connect a File, right of Add tab (liveworkspace/docs/specs/004-index/connected-tabs.md "From the tab bar"): Add tab's
+// size and wash around the liveworkspace logo. A desktop's only: gone below `md` and on a phone, where Connect File
+// stays on the start screen.
+export const TAB_CONNECT_CLASS =
+  'relative mb-1.5 ml-0.5 flex size-7 shrink-0 cursor-pointer touch-target items-center justify-center rounded-lg transition-colors duration-150 hover:bg-slate-400/[0.16] focus-visible:outline-2 focus-visible:outline-brand-500 dark:hover:bg-slate-400/[0.08] motion-reduce:transition-none max-md:hidden phone:hidden';

@@ -44,6 +44,7 @@ import { publishedSchemaStep } from '../publishing/published-schema';
 import { pageTrashSchemaStep } from './page-trash';
 import { pageReactionsSchemaStep } from '../knowledge/page-reactions';
 import { pageWatchSchemaStep } from '../knowledge/page-watch';
+import { requiredReadingSchemaStep } from '../knowledge/page-reading';
 import { suggestionsOutboxStep } from '../knowledge/suggestions-outbox';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -461,9 +462,13 @@ const V40 = suggestionsOutboxStep;
 // docs/specs/030-knowledgebase/watching.md). Additive, IF NOT EXISTS.
 const V41 = pageWatchSchemaStep;
 
+// Step 42: each page's Required Reading and who confirmed they read it (knowledge/page-reading.ts;
+// docs/specs/030-knowledgebase/required-reading.md). Additive, IF NOT EXISTS.
+const V42 = requiredReadingSchemaStep;
+
 // Step 43: the agent an agent's version was kept for, beside its person (versions/version-schema.ts
 // versionAgentSchemaStep; docs/specs/006-document/version-history.md "An agent's mark"). Additive, the table asked
-// first. It follows step 42 (Required Reading's) in STEPS once both are in.
+// first.
 const V43 = versionAgentSchemaStep;
 
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
@@ -500,6 +505,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V39,
   V40,
   V41,
+  V42,
   V43,
 ];
 

@@ -30,6 +30,8 @@ export type AskTurnView = {
   /** Why it failed: the stream's `error` kind, the route's refusal, or `network`. */
   failure?: string;
   feedback?: AskFeedback;
+  /** The labels it was answered from, by id (search-and-ask.md "By label"); absent for the whole knowledgebase. */
+  labels?: string[];
 };
 
 export type AskSend = (
@@ -82,6 +84,8 @@ export function createAskConversation(deps: {
   /** Told when a question is sent (to remember it) and when a turn ends. */
   onAsked?: (question: string) => void;
   onEnded?: (turn: AskTurnView) => void;
+  /** The labels the next question is answered from (Answer From), read as it is asked; none for every page. */
+  labels?: () => readonly string[];
 }): AskConversation {
   const frame = deps.frame ?? browserFrame;
   const newId = deps.newId ?? (() => crypto.randomUUID());
@@ -122,7 +126,12 @@ export function createAskConversation(deps: {
     return arrived;
   };
 
-  const run = (id: string, question: string, earlier: readonly AskTurnView[]) => {
+  const run = (
+    id: string,
+    question: string,
+    earlier: readonly AskTurnView[],
+    labels: readonly string[] = [],
+  ) => {
     const abort = new AbortController();
     live = { id, arrived: '', shown: 0, frameId: null, abort, watchers: new Set() };
     // What was answered before rides along, so a follow-up is read in its light; a failed turn says nothing.
@@ -132,7 +141,11 @@ export function createAskConversation(deps: {
     deps.onAsked?.(question);
     deps
       .send(
-        { question, ...(sent.length > 0 ? { turns: sent } : {}) },
+        {
+          question,
+          ...(sent.length > 0 ? { turns: sent } : {}),
+          ...(labels.length > 0 ? { labels: [...labels] } : {}),
+        },
         {
           signal: abort.signal,
           onDelta: (text) => {
@@ -173,8 +186,13 @@ export function createAskConversation(deps: {
     const id = newId();
     chat ??= newId();
     const earlier = turns;
-    setTurns([...turns, { id, question, status: 'streaming', ...NOTHING }]);
-    run(id, question, earlier);
+    // Each question carries its own labels, so a follow-up may widen or narrow what it is answered from.
+    const labels = [...(deps.labels?.() ?? [])];
+    setTurns([
+      ...turns,
+      { id, question, status: 'streaming', ...NOTHING, ...(labels.length ? { labels } : {}) },
+    ]);
+    run(id, question, earlier, labels);
     return true;
   };
 
@@ -194,7 +212,7 @@ export function createAskConversation(deps: {
       const earlier = turns.slice(0, at);
       const { failure: _failure, ...rest } = turn;
       setTurns(turns.map((t) => (t.id === turnId ? { ...rest, status: 'streaming' } : t)));
-      run(turnId, turn.question, earlier);
+      run(turnId, turn.question, earlier, turn.labels);
     },
     stop: () => {
       if (!live) return;

@@ -96,9 +96,11 @@ test('signed in, a single imported board is in Home’s Most Used or Recent; a t
   const headers = await signedIn(page, freshUserId('importer'));
   await importBoards(page, 2);
   await page.goto('/explorer/home');
-  await expect(page.getByRole('region', { name: 'Recent' })).toContainText(/will gather here\./, {
+  // Both are New's alone; Most Used and Recent, with nothing in them, are left out.
+  await expect(page.getByRole('region', { name: 'New' }).getByRole('listitem')).toHaveCount(2, {
     timeout: 30_000,
   });
+  await expect(page.getByRole('region', { name: /^(Most Used|Recent)$/ })).toHaveCount(0);
 
   await importBoards(page, 1);
   await fillNew(page, headers);

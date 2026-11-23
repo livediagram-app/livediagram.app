@@ -180,6 +180,9 @@ export type TabSummary = {
   // A connected tab (liveworkspace/docs/specs/004-index/connected-tabs.md): the item it stands for, in any app. Kept in
   // its own column beside the name, never in the tab's body; dropped with the name outside a visitor's scope.
   connection?: TabConnectionWire;
+  // A renamed connected tab's file name (connected-tabs.md "A tab's own name"), read from its body, so the bar names
+  // the file before the tab loads. Only beside `connection`.
+  targetName?: string;
 };
 
 // Full tab payload returned by `GET /api/projects/:id/tabs/:tabId`:

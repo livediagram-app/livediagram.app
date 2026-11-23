@@ -7,7 +7,7 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder, Level } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
-import { ConfirmDialog } from '@liveworkspace/ui';
+import { ConfirmDialog } from './lazy-dialogs';
 import { LIST_CARD, LIST_HEADER } from '../ui/classes';
 import { DismissIcon, ItemIcon } from '../ui/icons';
 import { RelativeTimeChip } from '../ui/RelativeTimeChip';

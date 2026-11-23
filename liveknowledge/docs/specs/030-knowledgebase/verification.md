@@ -329,7 +329,7 @@ mark back, the pages' dates as they were. The Health Score already leaves verifi
 - It goes through the platform's notifier ([accounts.md "An app's own notices"](../../../liveworkspace/docs/specs/003-accounts/accounts.md#notification-emails)),
   to the owner's verified address, and only while their **Knowledgebase Reviews** setting is on (Settings, Account,
   Notifications; on by default; one switch for this email, a conflict's Ask Both Owners and Knowledge Health's
-  Remind the Owners, which [AI Knowledge](ai-knowledge.md) specifies). The knowledgebase keeps no address.
+  Remind the Owners, which [AI Knowledge](ai-knowledge.md) specifies, and [Required Reading](required-reading.md#remind)'s Remind). The knowledgebase keeps no address.
 - Only someone who can still open the knowledgebase is emailed: its own owner, a joined member of its team, or
   someone the index still grants it to. An owner who is a guest has no address and gets none.
 - The three emails together are at most 50 a knowledgebase a day; an owner the ceiling leaves out is emailed the
@@ -344,7 +344,9 @@ mark back, the pages' dates as they were. The Health Score already leaves verifi
 
 Verify and change a page's owner: an Editor or a Participant, in person or through a workbench, never an agent
 (`needs_a_person`). A version restore keeps the page's own fields, and a version's copy is a new page with none: no
-Verify, owner or approval rides a version. Change the Review Period: an Editor only
+Verify, owner or approval rides a version. Nor does any ride the room from a person's or a token's socket: an open
+editor hears a page's fields only from the api, after it stored them, so no writer can make a page look Verified,
+owned or unverified on anyone's screen. Change the Review Period: an Editor only
 ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); everyone sees the period in Page Health, and
 only an Editor sees its pencil. Everyone sees the states.
 

@@ -207,4 +207,19 @@ describe('a tree row', () => {
     expect(row).toMatchObject({ page: 'deploys', subpages: 2, always_in_context: true });
     expect(treeRowLine(row)).toContain('always in context');
   });
+
+  it("carries a page's labels by name, and none for a page without", () => {
+    const page = (labels?: string[]) =>
+      treeRowOf({
+        tab: 'deploys',
+        title: 'Deploys',
+        depth: 1,
+        subpages: 0,
+        ...(labels ? { labels } : {}),
+        trust: { state: 'never-verified', stale: false },
+      });
+    expect(page(['Engineering'])).toMatchObject({ labels: ['Engineering'] });
+    expect(page([])).not.toHaveProperty('labels');
+    expect(page()).not.toHaveProperty('labels');
+  });
 });

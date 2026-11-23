@@ -20,6 +20,7 @@ import {
 } from '@liveworkspace/automations';
 import type { ItemPerson } from '../item';
 import type { CrossAppStep } from '@liveworkspace/automations/cross-app';
+import type { ItemSnapshotStep } from '@liveworkspace/automations/item';
 
 // The limits every app's rules share, the rule shell and the steps every app has (Wait, a message through a webhook)
 // are @liveworkspace/automations' (liveworkspace/docs/specs/018-automations/automations.md); the card kinds are here.
@@ -335,7 +336,9 @@ export type AutomationStep =
   | AutomationAi
   | AutomationWait
   // Steps in other apps (liveworkspace automations.md "Steps in other apps"): the shared kinds, at the top level only.
-  | CrossAppStep;
+  | CrossAppStep
+  // Take Snapshot and Revert to Snapshot (automations.md "Snapshot steps"): the shared kinds, at the top level only.
+  | ItemSnapshotStep;
 
 // ---- A rule ------------------------------------------------------------------------------------------------------
 
@@ -358,7 +361,7 @@ export type AutomationRule = Rule<
 // What a failed step or an unheld condition names that the plan lacks, as data: its kind and its stored id (by
 // construction the plan no longer has its name). The text keeps the id for agents ("Field estimate_x is gone"); the
 // editor words the line without it ("A field is gone"). Set only on such a line, and on the run or pause it explains.
-export type AutomationGone = Gone<'column' | 'type' | 'field' | 'person' | 'filter'>;
+export type AutomationGone = Gone<'column' | 'type' | 'field' | 'person' | 'filter' | 'snapshot'>;
 
 // The shared lines (trigger, condition, action), and a branch's: how many cards it ran on.
 export type AutomationStepLine = StepLine<

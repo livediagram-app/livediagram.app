@@ -12,6 +12,7 @@ import { MenuJoinBand } from '@liveworkspace/workbench/components/canvas/menu-jo
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
+import { LabelFilterHeading } from '@/components/page-labels/LabelFilterHeading';
 import { PageTree, type PageTreeProps } from './PageTree';
 import { AddToSidebar } from './AddToSidebar';
 import { PAGE_RENAME_FIELD } from './page-tree-row-styles';
@@ -32,8 +33,14 @@ const ICON_BUTTON =
   'flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-200/70 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 export { NEW_PAGE_BUTTON, NewPageButton } from './AddToSidebar';
 
-/** What the head hands the knowledgebase's menu: the name as shown, and how a rename starts in place. */
-export type KnowledgebaseHead = { name: string; onRename: (() => void) | undefined };
+/**
+ * What the head hands the knowledgebase's menu: the name as shown, and how a rename starts in place (from the name typed
+ * at the menu, when the person typed one: KnowledgebaseMenu's typed-rename.ts).
+ */
+export type KnowledgebaseHead = { name: string; onRename: ((typed?: string) => void) | undefined };
+
+/** A rename under way in the head: `typed` is the name typed at the menu that started it, if any. */
+export type HeadRename = { typed?: string | undefined };
 
 export type PageTreeSidebarProps = PageTreeProps & {
   // The knowledgebase's name, and its rename where the session may rename it.
@@ -69,7 +76,7 @@ export function PageTreeSidebar({
 }: PageTreeSidebarProps) {
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
-  const [renaming, setRenaming] = useState(false);
+  const [renaming, setRenaming] = useState<HeadRename | null>(null);
   // Open, the tree slides out to the left before the rail takes its place.
   const open = useSlideOut(!collapsed);
   // The peek: the whole tree over the page while the pointer rests on the rail.
@@ -180,18 +187,19 @@ export function PageTreeSidebar({
           <NameEditor
             label="Knowledgebase name"
             initial={name}
+            typed={renaming.typed}
             onCommit={(next) => {
               onRenameKnowledgebase(next);
-              setRenaming(false);
+              setRenaming(null);
             }}
-            onCancel={() => setRenaming(false)}
+            onCancel={() => setRenaming(null)}
             className={`${PAGE_RENAME_FIELD} h-8 text-sm`}
           />
         ) : menu ? (
           // The name is its menu's button (knowledgebases-and-pages.md "The knowledgebase's menu"): Rename is a row.
           menu({
             name: shownName,
-            onRename: onRenameKnowledgebase ? () => setRenaming(true) : undefined,
+            onRename: onRenameKnowledgebase ? (typed) => setRenaming({ typed }) : undefined,
           })
         ) : (
           <p
@@ -206,9 +214,8 @@ export function PageTreeSidebar({
       <div className="px-3 pt-2">
         <SearchField />
       </div>
-      <p className="px-[18px] pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-        Pages
-      </p>
+      {/* The Pages heading, with Filter by Label and its bar (page-surface.md "The label filter"). */}
+      <LabelFilterHeading only={tree.only} inset="px-[18px]" top="pt-3" />
       {/* The pages, then the Trash as the list's last item, scrolling together (knowledgebases-and-pages.md "The page
           Trash"); the row draws nothing while the Trash is empty. */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-2">

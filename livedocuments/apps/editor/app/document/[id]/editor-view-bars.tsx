@@ -15,7 +15,8 @@ import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/
 import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
-import { TabBar } from '@/components/chrome/TabBar';
+// The tab bar with Connect a File beside its + (connected-tabs.md "From the tab bar").
+import { TabBarWithConnect } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { offersHistory, openHistoryFromFooter } from '@/components/versions/history-tools-item';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -162,7 +163,7 @@ function EditorViewFooterBar(view: {
   return (
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
-        <TabBar
+        <TabBarWithConnect
           workbenchLink={
             inWorkbench && documentId
               ? (labelled) => (

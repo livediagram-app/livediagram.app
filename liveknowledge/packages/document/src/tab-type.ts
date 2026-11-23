@@ -62,6 +62,10 @@ export type Tab = {
   // icon, above the Title and before the page's name in the tree. Settled on every read (`withSettledIcon`), synced
   // in a `tab-meta` patch, as the cover is.
   icon?: TabIcon;
+  // The labels the page carries (docs/specs/030-knowledgebase/page-surface.md "Page labels"): ids of the
+  // knowledgebase's labels (`KnowledgeSettings.labels`). Settled on every read (`withSettledLabels`), synced in a
+  // `tab-meta` patch, as the icon is.
+  labels?: string[];
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).

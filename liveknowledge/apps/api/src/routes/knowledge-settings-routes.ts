@@ -8,6 +8,7 @@
 // is worked out when read (trust.ts), so no page, trust row or index entry is rewritten however many pages there
 // are. The room then owes its review check (the next review to wait for moved) and tells every open editor.
 import { isReviewEvery } from '@liveknowledge/knowledge';
+import type { KnowledgeSettings } from '@liveknowledge/document';
 import type {
   KnowledgeSettingsPreviewResponse,
   KnowledgeSettingsResponse,
@@ -46,15 +47,26 @@ async function handleSet({ ctx, document }: KnowledgeRoute): Promise<Response> {
   const { reviewEvery } = body;
   if (!isReviewEvery(reviewEvery)) return invalid('invalid_review_every', PERIODS);
   const was = document.knowledgeSettings.reviewEvery;
-  const knowledgeSettings = { reviewEvery };
+  // The labels ride the same value (page-surface.md "Page labels"): a new period keeps them.
+  const knowledgeSettings = { ...document.knowledgeSettings, reviewEvery };
   if (was === reviewEvery) return json({ knowledgeSettings } satisfies KnowledgeSettingsResponse);
   if (!(await setKnowledgeSettings(ctx.env, document.id, knowledgeSettings, Date.now())))
     return notFound();
   console.info('[knowledge] review period', { documentId: document.id, reviewEvery, was });
-  // To every open editor, as the document's other metadata goes: the tab list as it stands, and the settings.
-  const after = (await getDocument(ctx.env, document.id)) ?? document;
+  await relayKnowledgeSettings(ctx.env, document, knowledgeSettings);
+  return json({ knowledgeSettings } satisfies KnowledgeSettingsResponse);
+}
+
+/** To every open editor, as the document's other metadata goes: the tab list as it stands, and the settings (the
+ *  Review Period and the labels). */
+export async function relayKnowledgeSettings(
+  env: KnowledgeRoute['ctx']['env'],
+  document: KnowledgeRoute['document'],
+  knowledgeSettings: KnowledgeSettings,
+): Promise<void> {
+  const after = (await getDocument(env, document.id)) ?? document;
   await relayPages(
-    ctx.env,
+    env,
     document.id,
     [
       {
@@ -72,7 +84,6 @@ async function handleSet({ ctx, document }: KnowledgeRoute): Promise<Response> {
     ],
     '[knowledge]',
   );
-  return json({ knowledgeSettings } satisfies KnowledgeSettingsResponse);
 }
 
 /** Null when the path is none of these routes. */

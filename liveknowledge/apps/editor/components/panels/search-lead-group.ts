@@ -19,4 +19,6 @@ export type SearchLeadGroup = {
   /** A failure, said to a screen reader at once. */
   alert?: boolean | undefined;
   busy?: boolean | undefined;
+  /** What narrows the group (the page tree's label filter): said after its heading, with a button that clears it. */
+  filter?: { text: string; onClear: () => void } | undefined;
 };

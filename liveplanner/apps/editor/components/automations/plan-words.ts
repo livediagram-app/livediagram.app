@@ -17,6 +17,7 @@ export const REFUSAL_PICKS: Readonly<Record<string, string>> = {
   tab: 'a board',
   filter: 'a saved filter',
   card: 'a card',
+  snapshot: 'a snapshot',
 };
 
 // What a template left to pick: a message step's is a connection (every app's word for what was a webhook).

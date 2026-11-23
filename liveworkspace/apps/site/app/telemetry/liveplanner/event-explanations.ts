@@ -814,6 +814,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Ended|GithubConnectRequested':
     "Someone came back from GitHub waiting for an organisation's owner to approve the install.",
   'Plan|Unlinked|Github': 'Someone disconnected the plan from GitHub in Automations.',
+  'UI|Opened|AiSourceSettings':
+    'Someone pressed Use Your Own Key, Change or Fix Key on an AI feature’s source line, opening Settings › AI.',
+  'UI|Added|AiSourceKey':
+    'Someone added an AI key of their own in Settings › AI after opening it from an AI feature on built-in AI.',
   'UI|Opened|CalendarFeed': 'Someone opened Subscribe to Calendar from the tab menu.',
   'Plan|Created|CalendarFeed':
     "Someone made a private calendar link for the plan's card dates, to add to their own calendar.",
@@ -879,6 +883,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     "An automation rule's AI action failed: the model erred or was slow, its reply couldn't be read or didn't fit, or the card refused the write.",
   'Plan|Ran|AutomationAiCapped':
     "An automation rule's AI action was skipped because the plan had used its 100 AI steps that day.",
+  'Plan|Ran|AutomationSnapshotTaken':
+    "An automation rule's Take Snapshot saved the whole plan as a snapshot.",
+  'Plan|Ran|AutomationSnapshotReverted':
+    "An automation rule's Revert to Snapshot put the whole plan back to one of its snapshots, for everyone.",
+  'Plan|Ran|AutomationSnapshotFailed':
+    "An automation rule's Take Snapshot or Revert to Snapshot failed: the snapshot was gone, or the plan's snapshots were full.",
   'Plan|Ran|AutomationDone': 'An automation rule ran on its own and did everything it set out to.',
   'Plan|Ran|AutomationFailed':
     'An automation rule ran on its own and one of its actions failed; the Audit Trail says why.',
@@ -1160,6 +1170,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Added|ConnectedAgain':
     'Someone mended a connected tab that opened nothing with Connect Again.',
   'Tab|Opened|Connected': 'Someone opened the file a connected tab stands for.',
+  'Tab|Opened|ConnectButton':
+    'Someone pressed Connect a File on the tab bar, opening the list of files to connect.',
+  'Tab|Changed|ConnectedName':
+    'Someone gave a connected tab a name of its own; the file it stands for keeps its name.',
+  'Tab|Changed|ConnectedNameReset':
+    "Someone renamed a connected tab to nothing, so it follows its file's name again.",
   'Tab|Selected|SideBySideClick':
     'Someone clicked into the other side by side pane, moving the editor (its toolbars and panels) there.',
   'Tab|Selected|SideBySideHover':

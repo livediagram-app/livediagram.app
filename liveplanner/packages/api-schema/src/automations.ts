@@ -29,6 +29,7 @@ export type {
 // was made and last used (null before Make Secret). Never the secret or its hash. The shapes, and the Audit Trail's
 // filters, are every app's (@liveworkspace/automations).
 import type { AutomationHookInfo } from '@liveworkspace/automations';
+import type { AiKeyFailureBody } from './plan-drafts';
 
 export type {
   AutomationHookInfo,
@@ -133,7 +134,7 @@ export interface AutomationDraftRequest {
 
 export interface AutomationDraftPick {
   path: string;
-  pick: 'column' | 'type' | 'field' | 'label' | 'people' | 'webhook' | 'target';
+  pick: 'column' | 'type' | 'field' | 'label' | 'people' | 'webhook' | 'target' | 'snapshot';
 }
 
 export interface AutomationDraftResponse {
@@ -159,6 +160,9 @@ export const AUTOMATION_ERRORS = [
   'automation_not_manual',
   // Run Rule past the day's budget (AUTOMATION_RUNS_PER_DAY): 429, nothing ran.
   'automation_budget_spent',
+  // A token's save of a rule holding Revert to Snapshot (403), and a save naming a sixth snapshot kept for rules (409).
+  'automation_needs_a_person',
+  'automation_snapshots_full',
   // Make Secret for a rule whose trigger is not Incoming Webhook: 409.
   'automation_not_incoming',
   // Describe a Rule: an empty or over-long request, or no time zone (400); a request that is not a rule for the plan,
@@ -169,6 +173,8 @@ export const AUTOMATION_ERRORS = [
   'automation_draft_unreadable',
   'automation_ai_capped',
   'automation_ai_unavailable',
+  // Describe a Rule on the person's key, or the plan's team's: refused by the provider or unopenable (422).
+  'ai_key_failed',
 ] as const;
 export type AutomationError = (typeof AUTOMATION_ERRORS)[number];
 
@@ -177,4 +183,6 @@ export interface AutomationErrorBody {
   error: AutomationError;
   path?: string;
   message?: string;
+  // `ai_key_failed` (Describe a Rule on a key): whose key, its provider and the kind, never the key.
+  aiKey?: AiKeyFailureBody;
 }

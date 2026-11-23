@@ -24,12 +24,23 @@ export const PLAN_DRAFT_ERRORS = [
   'plan_draft_capped',
   // No model, one that erred or was slow, or a count that couldn't be read (503).
   'plan_draft_unavailable',
+  // On the person's own key: the provider refused it (revoked, out of credit, a model it can't use) or it will not
+  // open (422), with `aiKey` (ai-keys.md "Every AI feature honours the choice"). Never sent to built-in AI instead.
+  'ai_key_failed',
 ] as const;
 export type PlanDraftError = (typeof PLAN_DRAFT_ERRORS)[number];
 
 // A refusal's body: `message` is fixed words, never the model's; `path` names the request's field at fault.
+/** `ai_key_failed`'s whose key, its provider (null for one that will not open) and the kind; never the key. */
+export type AiKeyFailureBody = {
+  source: 'item' | 'team' | 'account';
+  provider: 'anthropic' | 'openai' | null;
+  kind: 'bad-key' | 'no-credit' | 'model-unavailable' | 'unreadable';
+};
+
 export interface PlanDraftErrorBody {
   error: PlanDraftError;
   path?: string;
   message?: string;
+  aiKey?: AiKeyFailureBody;
 }

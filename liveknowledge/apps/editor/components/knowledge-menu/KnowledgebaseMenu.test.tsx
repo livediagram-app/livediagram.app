@@ -148,11 +148,77 @@ describe('the knowledgebase’s menu', () => {
   });
 
   it('opens on Down Arrow from the button', () => {
-    open();
+    const { onRename } = open();
     button().focus();
+    // A letter at the closed button is nothing: the menu opens first.
+    fireEvent.keyDown(button(), { key: 'T' });
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(onRename).not.toHaveBeenCalled();
     fireEvent.keyDown(button(), { key: 'ArrowDown' });
     expect(screen.getByRole('menu')).toBeTruthy();
     expect(button().getAttribute('aria-expanded')).toBe('true');
+  });
+
+  // Work Tracker 1376: the name is the menu's button, so a person who presses it and types a new name is renaming. The
+  // letters spelled no row and the space pressed the focused Rename, so "Team Handbook" was saved as "Handbook".
+  describe('a name typed at the open menu', () => {
+    const typeAt = (text: string) => {
+      for (const key of text) fireEvent.keyDown(document.activeElement ?? document.body, { key });
+    };
+
+    it('starts Rename with the letters typed, the menu closed', () => {
+      const onChosen = vi.fn();
+      const { onRename } = open({}, { onChosen });
+      fireEvent.click(button());
+      screen.getByRole('menuitem', { name: 'Rename' }).focus();
+      typeAt('T');
+      expect(onRename).toHaveBeenCalledWith('T');
+      expect(onChosen).toHaveBeenCalledWith('rename');
+      expect(screen.queryByRole('menu')).toBeNull();
+    });
+
+    it('lets letters that spell a row jump to it, then renames with all of them', () => {
+      const { onRename } = open();
+      fireEvent.click(button());
+      screen.getByRole('menuitem', { name: 'Rename' }).focus();
+      typeAt('Ex');
+      expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'Export' }));
+      expect(onRename).not.toHaveBeenCalled();
+      typeAt('po');
+      expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'Export' }));
+      // The space after "Expo" is the name's: no row is pressed.
+      typeAt(' ');
+      expect(onRename).toHaveBeenCalledWith('Expo ');
+      expect(screen.queryByRole('menu')).toBeNull();
+    });
+
+    it('takes keys typed before the menu has taken focus, on the button', () => {
+      const { onRename } = open();
+      fireEvent.click(button());
+      button().focus();
+      typeAt('Re');
+      expect(onRename).not.toHaveBeenCalled();
+      typeAt('l');
+      expect(onRename).toHaveBeenCalledWith('Rel');
+    });
+
+    it('leaves Space, Enter and shortcuts to the menu', () => {
+      const { onRename, handlers } = open();
+      fireEvent.click(button());
+      screen.getByRole('menuitem', { name: 'Import' }).focus();
+      fireEvent.keyDown(document.activeElement!, { key: 'a', metaKey: true });
+      fireEvent.keyDown(document.activeElement!, { key: 'Enter' });
+      expect(handlers.setImportOpen).toHaveBeenCalledWith(true);
+      expect(onRename).not.toHaveBeenCalled();
+    });
+
+    it('is the menu’s alone where Rename is not a row (a Participant)', () => {
+      const { onRename } = open({ level: 'participate' });
+      fireEvent.click(button());
+      typeAt('Team');
+      expect(onRename).not.toHaveBeenCalled();
+      expect(screen.getByRole('menu')).toBeTruthy();
+    });
   });
 
   it('leaves out a row its feature does not offer', () => {
