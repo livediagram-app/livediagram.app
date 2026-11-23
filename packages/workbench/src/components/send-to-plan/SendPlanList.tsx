@@ -64,8 +64,8 @@ export function SendPlanList({
 }) {
   const [naming, setNaming] = useState<string | null>(null);
 
-  const create = () => {
-    const name = (naming ?? '').trim();
+  const create = (typed: string) => {
+    const name = typed.trim();
     if (name) onCreate(name);
   };
 
@@ -164,7 +164,7 @@ export function SendPlanList({
           className="flex items-center gap-2 rounded-lg bg-slate-50 p-1.5 dark:bg-slate-800/60"
           onSubmit={(e) => {
             e.preventDefault();
-            create();
+            create(naming);
           }}
         >
           <TextInput

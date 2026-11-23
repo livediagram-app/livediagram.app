@@ -25,7 +25,9 @@ export type CardChoices = {
 export function placeTitle(place: PlanSendPlace, today: Date): string {
   const read = readSendWords(place.text, today);
   if (read.title) return read.title;
-  const words = place.text.trim().split('\n')[0] ?? '';
+  const text = place.text.trim();
+  const line = text.indexOf('\n');
+  const words = line < 0 ? text : text.slice(0, line);
   return words.length > SEND_TITLE_MAX ? words.slice(0, SEND_TITLE_MAX) : words;
 }
 

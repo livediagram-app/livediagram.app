@@ -49,3 +49,26 @@ describe('send memory', () => {
     expect(recallSend('D')).toBeNull();
   });
 });
+
+describe('the browser storage', () => {
+  it('forgets, never fails, when storage cannot be reached, and skips an entry that is no memory', () => {
+    const real = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get: () => {
+        throw new Error('blocked');
+      },
+    });
+    try {
+      expect(recallSend('D')).toBeNull();
+      rememberSend('D', at(1));
+    } finally {
+      if (real) Object.defineProperty(globalThis, 'localStorage', real);
+      else delete (globalThis as { localStorage?: unknown }).localStorage;
+    }
+    const store = fake();
+    store.map.set(SEND_MEMORY_KEY, JSON.stringify({ D: null, E: at(3) }));
+    expect(recallSend('D', store)).toBeNull();
+    expect(recallSend('E', store)).toEqual(at(3));
+  });
+});

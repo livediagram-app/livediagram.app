@@ -159,3 +159,30 @@ describe('the chip and the indicator', () => {
     expect(Object.keys(SENT_CARD_GLYPHS)).toEqual(['card', 'card-done']);
   });
 });
+
+describe('the edges of the store', () => {
+  it('skips a send whose ref names no element, lists every send live, and renders none on a server', async () => {
+    setSendSource('D', null, { planSends: vi.fn().mockResolvedValue({ sends: [] }) });
+    await settle();
+    act(() => addSends([send('a', 'element'), send('b', 'thread:t1:e1:', {}, 'thread')]));
+    const { result } = renderHook(() => ({
+      all: useAllSends(),
+      thread: useSends('e1', 'thread'),
+      none: useSends(null, 'element'),
+    }));
+    expect(result.current.all).toHaveLength(2);
+    expect(result.current.thread.map((s) => s.id)).toEqual(['b']);
+    expect(result.current.none).toEqual([]);
+    expect(sendsOf(currentSends(), 'e1', ['element'])).toEqual([]);
+    const { renderToString } = await import('react-dom/server');
+    function Chips() {
+      return <span>{useSends('e1', 'thread').length + useAllSends().length}</span>;
+    }
+    expect(renderToString(<Chips />)).toContain('0');
+  });
+
+  it('counts the cards past the newest in the chip’s words', () => {
+    render(<SentChip sends={[send('a', 'r'), send('b', 'r'), send('c', 'r')]} />);
+    expect(screen.getByRole('button').textContent).toContain('+2');
+  });
+});

@@ -91,6 +91,9 @@ export function currentSends(): readonly PlanSend[] {
 // The element a send names, from its ref (`kind:tab:element:part`).
 export const refElement = (ref: string): string => ref.split(':')[2] ?? '';
 
+// Which of the element's threads a send names (a plan card's), or its picked words' key.
+export const refPart = (ref: string): string => ref.split(':')[3] ?? '';
+
 /** The sends of one element, of the kinds asked, newest first. */
 export function sendsOf(
   all: readonly PlanSend[],
@@ -99,9 +102,6 @@ export function sendsOf(
 ): PlanSend[] {
   return all.filter((s) => kinds.includes(s.kind) && refElement(s.ref) === elementId);
 }
-
-const ELEMENT_KINDS: readonly PlanSendKind[] = ['element', 'text', 'action'];
-const THREAD_KINDS: readonly PlanSendKind[] = ['thread'];
 
 // Each element's sends, worked out once a version so a canvas of chips reads a map, not the list each.
 let indexed: {
@@ -114,13 +114,10 @@ function byElement(): NonNullable<typeof indexed> {
   const element = new Map<string, PlanSend[]>();
   const thread = new Map<string, PlanSend[]>();
   for (const s of sends) {
-    const into = ELEMENT_KINDS.includes(s.kind)
-      ? element
-      : THREAD_KINDS.includes(s.kind)
-        ? thread
-        : null;
+    // A thread's chip sits on its thread; every other kind's (an element, its words, its action) on the element.
+    const into = s.kind === 'thread' ? thread : element;
     const el = refElement(s.ref);
-    if (!into || !el) continue;
+    if (!el) continue;
     const list = into.get(el);
     if (list) list.push(s);
     else into.set(el, [s]);

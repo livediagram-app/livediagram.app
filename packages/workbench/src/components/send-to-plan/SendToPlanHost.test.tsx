@@ -2,7 +2,7 @@
 // The editor's Send to Plan host (liveworkspace/docs/specs/004-index/send-to-plan.md): it names the open item to the
 // chips' store and opens the picker on a menu's ask, and does nothing at all for a session that cannot send.
 import { act, cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 const { planSends, listItems } = vi.hoisted(() => ({
   planSends: vi.fn().mockResolvedValue({ sends: [] }),
@@ -34,6 +34,11 @@ const ask = () =>
     ],
     noun: 'sticky',
   });
+
+// The picker is lazy: loaded once up front, so the test waits on the host, not on a cold transform under load.
+beforeAll(async () => {
+  await import('./SendToPlanDialog');
+});
 
 afterEach(() => {
   cleanup();

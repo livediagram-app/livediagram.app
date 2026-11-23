@@ -68,3 +68,14 @@ describe('the words read as a card', () => {
     expect(cpuMsOf(() => read(lines))).toBeLessThan(cpuBudgetMs(50));
   });
 });
+
+describe('words that look like a day but are not one', () => {
+  it('reads no day from a bare suffix, a dashed word, a month day past its end or an empty mention', () => {
+    expect(read('Ask st Dec').due).toBeNull();
+    expect(read('Code abcd-ef-gh').due).toBeNull();
+    expect(read('Launch Feb 31').due).toBeNull();
+    expect(read('Mail @. now').mention).toBeNull();
+    expect(read('Mail @@ben now').mention).toBeNull();
+    expect(read('Mail @:x now').mention).toBeNull();
+  });
+});

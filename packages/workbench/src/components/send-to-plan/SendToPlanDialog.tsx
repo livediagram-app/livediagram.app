@@ -94,7 +94,7 @@ export function SendToPlanDialog({
   const titleId = useId();
   const { places } = request;
   const several = places.length > 1;
-  const words = useMemo(() => readSendWords(places[0]?.text ?? '', today), [places, today]);
+  const words = useMemo(() => readSendWords(places[0]!.text, today), [places, today]);
   const remembered = useMemo(() => recallSend(sourceId), [sourceId]);
 
   const [query, setQuery] = useState('');

@@ -160,3 +160,43 @@ describe("a thread's header and a text toolbar", () => {
     expect(heard[0]!.places[0]!.part).toMatch(/^[0-9a-f]{8}$/);
   });
 });
+
+describe('a plan card’s thread', () => {
+  it('sends the card with the thread as its part and no tab, and shows each thread its own chip', () => {
+    up();
+    const { container, rerender } = render(
+      <ThreadSendToPlan elementId="card-1" threadId="th-a" words="Call the supplier" />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Send this thread to a plan' }));
+    expect(heard[0]).toMatchObject({
+      noun: 'thread',
+      places: [
+        {
+          app: 'livediagram',
+          itemId: 'D',
+          kind: 'thread',
+          tabId: null,
+          elementId: 'card-1',
+          part: 'th-a',
+          text: 'Call the supplier',
+        },
+      ],
+    });
+    act(() => addSends([sent('thread::card-1:th-b', 'thread'), sent('thread::card-1', 'thread')]));
+    expect(screen.getByRole('button', { name: 'Send this thread to a plan' })).toBeTruthy();
+    act(() => addSends([sent('thread::card-1:th-a', 'thread')]));
+    expect(container.querySelector('[data-send-to-plan]')).toBeNull();
+    rerender(<ThreadSendToPlan elementId="card-1" threadId="th-c" words="Other" />);
+    expect(screen.getByRole('button', { name: 'Send this thread to a plan' })).toBeTruthy();
+  });
+
+  it('sends a tab’s stickies with no place yet in reading order', () => {
+    up();
+    sendAllStickies('t2', [
+      { id: 'b', type: 'sticky', label: 'B', y: 10 },
+      { id: 'a', type: 'sticky', label: 'A' },
+      { id: 'c', type: 'sticky', label: 'C', y: 10, x: 5 },
+    ])!();
+    expect(heard[0]!.places.map((p) => p.elementId)).toEqual(['a', 'b', 'c']);
+  });
+});

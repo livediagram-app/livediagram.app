@@ -63,6 +63,15 @@ describe('the cards a send makes', () => {
       120,
     );
     expect(placeTitle({ ...place('x'), text: '@a tomorrow\nmore' }, TODAY)).toBe('more');
+    expect(placeTitle({ ...place('x'), text: '@a tomorrow\n@b' }, TODAY)).toBe('@a tomorrow');
+    expect(placeTitle(place(`@${'b'.repeat(300)}`), TODAY)).toHaveLength(120);
+    // A title typed longer than a card takes is cut to it.
+    const [long] = sendCards(
+      [place('x')],
+      { mode: 'checklist', title: 'z'.repeat(400), assignee: '', due: '' },
+      TODAY,
+    );
+    expect(long!.title.length).toBeLessThan(400);
   });
 
   it('finds the send already made from the same place', () => {

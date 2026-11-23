@@ -302,3 +302,123 @@ describe('SendToPlanDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 });
+
+// A read still running when the picker closes is dropped, never said as a failure.
+const hangs = (_: unknown, opts?: { signal?: AbortSignal }) =>
+  new Promise((_resolve, reject) => {
+    opts?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+  });
+
+describe('SendToPlanDialog, the edges', () => {
+  it('drops the plans and the plan read when it closes before they land', async () => {
+    const listing = client({ listItems: vi.fn(hangs) });
+    const { unmount } = open(listing);
+    await act(async () => {});
+    unmount();
+    const target = client({ automationTarget: vi.fn((id: string, o?: object) => hangs(id, o)) });
+    const second = open(target);
+    fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
+    await act(async () => {});
+    second.unmount();
+    expect(target.automationTarget).toHaveBeenCalled();
+  });
+
+  it('names an untitled source and plan, and says how many a cut send makes', async () => {
+    const c = client({
+      listItems: vi.fn().mockResolvedValue({ items: [plan('P', '')] }),
+      sendToPlan: vi.fn().mockResolvedValue({ sends: [] }),
+    });
+    const places = [place('One', 'e1'), place('Two', 'e2')];
+    render(
+      <SendToPlanDialog
+        request={{ places, noun: 'stickies', cut: 30 }}
+        sourceId="D"
+        sourceTitle=""
+        onClose={vi.fn()}
+        client={c as never}
+        today={TODAY}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: /Untitled plan/ }));
+    expect((await screen.findByText(/a send makes at most/)).textContent).toBe(
+      'The first 2 of 30: a send makes at most 2 cards.',
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'One Card with a Checklist' }));
+    expect(screen.getByLabelText<HTMLInputElement>('Title').value).toBe('Untitled actions');
+    const send = screen.getByRole('button', { name: 'Send to Plan' });
+    await waitFor(() => expect(send.hasAttribute('disabled')).toBe(false));
+    fireEvent.click(send);
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Sent 0 cards to the plan', {}));
+    fireEvent.click(screen.getByRole('button', { name: 'New Plan' }));
+    expect(screen.getByLabelText<HTMLInputElement>("New plan's name").value).toBe(
+      'Plans from Untitled',
+    );
+  });
+
+  it('picks the assignee and the due day by hand, and a board with no columns', async () => {
+    const c = client({
+      automationTarget: vi.fn().mockResolvedValue({
+        app: 'liveplanner',
+        title: 'Sprint',
+        boards: [
+          { id: 'b1', name: 'Board', columns: ['To Do'] },
+          { id: 'b2', name: 'Empty', columns: [] },
+        ],
+        people: [{ name: 'Ben Ito' }, { name: 'Ana Ruiz' }],
+      }),
+    });
+    open(c, [place('Fix login')]);
+    fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
+    const who = await screen.findByLabelText<HTMLSelectElement>('Assignee');
+    await waitFor(() => expect(who.disabled).toBe(false));
+    fireEvent.change(who, { target: { value: 'Ana Ruiz' } });
+    expect(who.value).toBe('Ana Ruiz');
+    const due = screen.getByLabelText<HTMLInputElement>('Due');
+    fireEvent.change(due, { target: { value: '2026-12-01' } });
+    expect(screen.getByLabelText<HTMLInputElement>('Due').value).toBe('2026-12-01');
+    fireEvent.change(screen.getByLabelText<HTMLInputElement>('Due'), { target: { value: '' } });
+    expect(screen.getByLabelText<HTMLInputElement>('Due').value).toBe('');
+    fireEvent.change(screen.getByLabelText('Board'), { target: { value: 'b2' } });
+    expect(screen.getByLabelText<HTMLSelectElement>('Column').value).toBe('');
+  });
+
+  it.each([
+    [new IndexError(404, 'not_found'), /can't add cards to this plan/],
+    [new IndexError(500, 'server_error'), /Check your connection/],
+  ])('says why a send was refused, by status (%s)', async (err, words) => {
+    open(client({ sendToPlan: vi.fn().mockRejectedValue(err) }), [place('Fix login')]);
+    fireEvent.click(await screen.findByRole('button', { name: /Sprint/ }));
+    const send = await screen.findByRole('button', { name: 'Send to Plan' });
+    await waitFor(() => expect(send.hasAttribute('disabled')).toBe(false));
+    fireEvent.click(send);
+    expect((await screen.findByRole('alert')).textContent).toMatch(words);
+  });
+
+  it('clears a search that matched nothing, and keeps typing in the new plan’s name', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const c = client();
+    c.listItems
+      .mockResolvedValueOnce({ items: [plan('P', 'Sprint')] })
+      .mockResolvedValueOnce({ items: [] })
+      .mockResolvedValue({ items: [plan('P', 'Sprint')] });
+    open(c);
+    await screen.findByRole('button', { name: /Sprint/ });
+    fireEvent.change(screen.getByLabelText('Search your plans'), { target: { value: 'zzz' } });
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    // The no-matches state's own Clear (the search box has one too).
+    await screen.findAllByText(/zzz/);
+    const clears = screen.getAllByRole('button', { name: /Clear/ });
+    fireEvent.click(clears.find((b) => b.textContent?.trim())!);
+    await act(async () => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(screen.getByLabelText<HTMLInputElement>('Search your plans').value).toBe('');
+    vi.useRealTimers();
+    fireEvent.click(screen.getByRole('button', { name: 'New Plan' }));
+    const name = screen.getByLabelText<HTMLInputElement>("New plan's name");
+    fireEvent.keyDown(name, { key: 'a' });
+    expect(screen.getByLabelText("New plan's name")).toBeTruthy();
+  });
+});
