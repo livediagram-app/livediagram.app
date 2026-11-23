@@ -26,9 +26,9 @@
     "oxlint": "^1.94.0",
     "oxlint-tsgolint": "^7.0.2007",
     "prettier": "^3.10.0",
-    "turbo": "^2.11.7",
+    "turbo": "^2.11.13",
     "typescript": "^7.0.2",
-    "wrangler": "^4.160.0"
+    "wrangler": "^4.166.0"
   },
   "engines": {
     "node": ">=22",
