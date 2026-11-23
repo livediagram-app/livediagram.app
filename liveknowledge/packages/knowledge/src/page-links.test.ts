@@ -9,6 +9,9 @@ import {
   isPageLinkTarget,
   pageLinkTargets,
 } from './page-links';
+// Loaded here, at collection: a first load inside the test below counted against its timeout (testing.md "A test
+// never pays a cold module load").
+import * as model from '@liveknowledge/document';
 import type { ArticleRun } from '@liveknowledge/document';
 
 const link = (text: string, page: unknown) => ({ text, [PAGE_LINK_KEY]: page }) as ArticleRun;
@@ -59,8 +62,7 @@ describe('backlinks', () => {
 // The article model keeps the run's field itself (it cannot import this package, which reads its types): the two
 // names for the key and for the id's length are one.
 describe('the page link key', () => {
-  it('is the one the article model stores', async () => {
-    const model = await import('@liveknowledge/document');
+  it('is the one the article model stores', () => {
     expect(PAGE_LINK_KEY).toBe(model.ARTICLE_PAGE_LINK_KEY);
     expect(MAX_PAGE_LINK_ID).toBe(model.MAX_PAGE_LINK_ID);
     const flow = model.parseArticleFlow({
