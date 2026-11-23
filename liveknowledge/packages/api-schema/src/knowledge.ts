@@ -21,7 +21,10 @@ export type KnowledgeTrustShown = KnowledgeTrustState | 'off';
 export type KnowledgeReviewEvery = 30 | 90 | 180 | 365 | 'never';
 /** What a knowledgebase decides for every page (verification.md "The Review Period"): how long after it was last
  *  verified a page comes due for review. In a document read, the `document-meta` op and the routes below. */
-export type KnowledgeSettingsWire = { reviewEvery: KnowledgeReviewEvery; labels?: KnowledgeLabelWire[] };
+export type KnowledgeSettingsWire = {
+  reviewEvery: KnowledgeReviewEvery;
+  labels?: KnowledgeLabelWire[];
+};
 /** One of the knowledgebase's labels (page-surface.md "Page labels"): its colour a standard colour's name ("blue")
  *  or a custom `#rrggbb`. Kept with the settings, so a rename is one write and no page's. */
 export type KnowledgeLabelWire = { id: string; name: string; colour: string };
@@ -32,7 +35,10 @@ export type CreateLabelRequest = { name: string; colour?: string; id?: string };
 /** `PUT .../labels/<label>`: a rename, a new colour, or both. A Writer's. */
 export type UpdateLabelRequest = { name?: string; colour?: string };
 /** What a label write answers: the label made or changed (absent after a delete), and every label now. */
-export type KnowledgeLabelChangeResponse = { label?: KnowledgeLabelWire; labels: KnowledgeLabelWire[] };
+export type KnowledgeLabelChangeResponse = {
+  label?: KnowledgeLabelWire;
+  labels: KnowledgeLabelWire[];
+};
 /** `PUT .../knowledge-settings`: Editor only. Answers the settings as stored. */
 export type KnowledgeSettingsRequest = { reviewEvery: KnowledgeReviewEvery };
 export type KnowledgeSettingsResponse = { knowledgeSettings: KnowledgeSettingsWire };

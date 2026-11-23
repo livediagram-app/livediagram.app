@@ -65,7 +65,9 @@ describe('GET labels', () => {
     ]);
     const read = await (
       await kit.call('viewer', 'GET', '/api/documents/kb')
-    ).json<{ document: { knowledgeSettings: unknown; tabs: { id: string; labels?: string[] }[] } }>();
+    ).json<{
+      document: { knowledgeSettings: unknown; tabs: { id: string; labels?: string[] }[] };
+    }>();
     expect(read.document.knowledgeSettings).toMatchObject({ reviewEvery: 90 });
     expect(read.document.tabs.find((t) => t.id === 'holidays')?.labels).toEqual(['lbl_people']);
   });
@@ -78,25 +80,28 @@ describe('GET labels', () => {
 });
 
 describe('changing labels', () => {
-  it.each(['editor', 'participant'] as const)('%s makes, renames, recolours and deletes one', async (who) => {
-    const kit = await knowledgeKit();
-    const made = await kit.call(who, 'POST', LABELS, { name: '  Onboarding ' });
-    expect(made.status).toBe(201);
-    const { label } = await made.json<KnowledgeLabelChangeResponse>();
-    expect(label).toMatchObject({ name: 'Onboarding', colour: 'blue' });
-    expect(label!.id).toMatch(/^lbl_[0-9a-z]{10}$/);
-    const renamed = await kit.call(who, 'PUT', `${LABELS}/${label!.id}`, {
-      name: 'New Starters',
-      colour: '#AA00CC',
-    });
-    expect(await renamed.json<KnowledgeLabelChangeResponse>()).toEqual({
-      label: { id: label!.id, name: 'New Starters', colour: '#aa00cc' },
-      labels: [{ id: label!.id, name: 'New Starters', colour: '#aa00cc' }],
-    });
-    const gone = await kit.call(who, 'DELETE', `${LABELS}/${label!.id}`);
-    expect(await gone.json<KnowledgeLabelChangeResponse>()).toEqual({ labels: [] });
-    expect(await labelsOf(kit)).toEqual([]);
-  });
+  it.each(['editor', 'participant'] as const)(
+    '%s makes, renames, recolours and deletes one',
+    async (who) => {
+      const kit = await knowledgeKit();
+      const made = await kit.call(who, 'POST', LABELS, { name: '  Onboarding ' });
+      expect(made.status).toBe(201);
+      const { label } = await made.json<KnowledgeLabelChangeResponse>();
+      expect(label).toMatchObject({ name: 'Onboarding', colour: 'blue' });
+      expect(label!.id).toMatch(/^lbl_[0-9a-z]{10}$/);
+      const renamed = await kit.call(who, 'PUT', `${LABELS}/${label!.id}`, {
+        name: 'New Starters',
+        colour: '#AA00CC',
+      });
+      expect(await renamed.json<KnowledgeLabelChangeResponse>()).toEqual({
+        label: { id: label!.id, name: 'New Starters', colour: '#aa00cc' },
+        labels: [{ id: label!.id, name: 'New Starters', colour: '#aa00cc' }],
+      });
+      const gone = await kit.call(who, 'DELETE', `${LABELS}/${label!.id}`);
+      expect(await gone.json<KnowledgeLabelChangeResponse>()).toEqual({ labels: [] });
+      expect(await labelsOf(kit)).toEqual([]);
+    },
+  );
 
   it.each(['viewer', 'link', 'agent-read-only', 'viewer-agent'] as const)(
     'refuses %s',
@@ -115,7 +120,10 @@ describe('changing labels', () => {
       const res = await kit.call('editor', method, path, body);
       return [res.status, (await res.json<{ error: string }>()).error];
     };
-    expect(await status('POST', LABELS, { name: 'engineering' })).toEqual([409, 'label_name_taken']);
+    expect(await status('POST', LABELS, { name: 'engineering' })).toEqual([
+      409,
+      'label_name_taken',
+    ]);
     expect(await status('POST', LABELS, { name: '' })).toEqual([400, 'invalid_label_name']);
     expect(await status('POST', LABELS, { name: 'X', colour: 'navy' })).toEqual([
       400,
@@ -131,7 +139,10 @@ describe('changing labels', () => {
       409,
       'label_name_taken',
     ]);
-    expect(await status('PUT', `${LABELS}/lbl_none`, { name: 'Y' })).toEqual([404, 'unknown_label']);
+    expect(await status('PUT', `${LABELS}/lbl_none`, { name: 'Y' })).toEqual([
+      404,
+      'unknown_label',
+    ]);
     expect(await status('DELETE', `${LABELS}/lbl_none`)).toEqual([404, 'unknown_label']);
     expect((await kit.call('editor', 'PATCH', `${LABELS}/lbl_eng`, {})).status).toBe(405);
     expect((await kit.call('editor', 'DELETE', LABELS)).status).toBe(405);

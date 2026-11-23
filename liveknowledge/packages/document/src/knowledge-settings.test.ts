@@ -33,7 +33,10 @@ describe("a knowledgebase's settings", () => {
 
   it('keeps the labels beside the period, stored when there are any', () => {
     const labels = [{ id: 'lbl_a', name: 'Engineering', colour: 'blue' }];
-    expect(parseKnowledgeSettings({ reviewEvery: 90, labels })).toEqual({ reviewEvery: 90, labels });
+    expect(parseKnowledgeSettings({ reviewEvery: 90, labels })).toEqual({
+      reviewEvery: 90,
+      labels,
+    });
     expect(parseKnowledgeSettings({ reviewEvery: 90, labels: [] })).toEqual({ reviewEvery: 90 });
     const stored = storedKnowledgeSettings({ reviewEvery: 90, labels });
     expect(stored).not.toBeNull();

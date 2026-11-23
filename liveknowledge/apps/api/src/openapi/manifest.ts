@@ -588,7 +588,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         name: 'labels',
         required: false,
         description:
-          "Only the pages carrying any of these labels: label ids or names (ignoring case), comma separated. A label the knowledgebase does not have is 400 `unknown_label`.",
+          'Only the pages carrying any of these labels: label ids or names (ignoring case), comma separated. A label the knowledgebase does not have is 400 `unknown_label`.',
       },
     ],
     responseSchema: 'KnowledgeSearchResponse',
@@ -637,7 +637,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "The knowledgebase's labels (page-surface.md \"Page labels\"): each its id, name, colour (a standard colour's name or `#rrggbb`) and how many pages carry it, most used first. Every role.",
+      'The knowledgebase\'s labels (page-surface.md "Page labels"): each its id, name, colour (a standard colour\'s name or `#rrggbb`) and how many pages carry it, most used first. Every role.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeLabelsResponse',

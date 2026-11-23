@@ -38,8 +38,7 @@ const STATUS: Record<LabelRefusal, number> = {
 
 const refused = (refusal: LabelRefusal) =>
   json({ error: refusal, message: LABEL_REFUSAL_WORDS[refusal] }, { status: STATUS[refusal] });
-const invalidBody = (message: string) =>
-  json({ error: 'invalid_body', message }, { status: 400 });
+const invalidBody = (message: string) => json({ error: 'invalid_body', message }, { status: 400 });
 
 async function bodyOf(route: KnowledgeRoute): Promise<Record<string, unknown> | null> {
   const body: unknown = await route.ctx.request.json().catch(() => null);
@@ -57,7 +56,10 @@ function handleList({ document }: KnowledgeRoute): Response {
 }
 
 /** The change a request asks for, or the response that refuses it. */
-async function changeOf(route: KnowledgeRoute, labelId: string | undefined): Promise<LabelChange[] | Response> {
+async function changeOf(
+  route: KnowledgeRoute,
+  labelId: string | undefined,
+): Promise<LabelChange[] | Response> {
   const { request } = route.ctx;
   const labels = route.document.knowledgeSettings.labels ?? [];
   if (request.method === 'DELETE') return labelId ? [{ kind: 'delete', id: labelId }] : [];
@@ -76,7 +78,8 @@ async function changeOf(route: KnowledgeRoute, labelId: string | undefined): Pro
   }
   if (!labelId) return [];
   const changes: LabelChange[] = [];
-  if (body.name !== undefined) changes.push({ kind: 'rename', id: labelId, name: body.name as string });
+  if (body.name !== undefined)
+    changes.push({ kind: 'rename', id: labelId, name: body.name as string });
   if (body.colour !== undefined)
     changes.push({ kind: 'recolour', id: labelId, colour: body.colour as string });
   if (changes.length === 0) return invalidBody('Send name, colour or both.');

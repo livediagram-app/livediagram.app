@@ -27,15 +27,17 @@ export function migrateStoredTab<
   // A page's own background, style and lock are not in liveknowledge (./page-looks): read without them.
   // An article that arrives on paper sheets reads as one continuous page (./continuous-article).
   // A page's cover, its icon and its labels keep what of them is valid (./page-cover, ./page-icon, ./page-labels).
-  const settled = withSettledLabels(withSettledIcon(
-    withSettledCover(
-      withArticleContinuous(
-        withoutPageLooks(
-          settleStoredArticles(migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab)))),
+  const settled = withSettledLabels(
+    withSettledIcon(
+      withSettledCover(
+        withArticleContinuous(
+          withoutPageLooks(
+            settleStoredArticles(migrateRetiredPattern(migrateRetiredTheme(settleTabFields(tab)))),
+          ),
         ),
       ),
     ),
-  ));
+  );
   if (!Array.isArray(settled.elements)) return settled;
   // Stacks lay out last (docs/specs/009-elements/stack.md), over the settled elements.
   const elements = settleStacks(migrateStoredElements(settled.elements));

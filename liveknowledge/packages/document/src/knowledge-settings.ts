@@ -26,7 +26,8 @@ export function parseKnowledgeSettings(v: unknown): KnowledgeSettings {
       raw = null;
     }
   }
-  const record = raw && typeof raw === 'object' ? (raw as { reviewEvery?: unknown; labels?: unknown }) : {};
+  const record =
+    raw && typeof raw === 'object' ? (raw as { reviewEvery?: unknown; labels?: unknown }) : {};
   const labels = parseKnowledgeLabels(record.labels);
   return {
     reviewEvery: isReviewEvery(record.reviewEvery) ? record.reviewEvery : DEFAULT_REVIEW_EVERY,
