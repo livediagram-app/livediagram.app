@@ -27,6 +27,7 @@ import {
 import { DOCUMENT_OUTBOX } from './document-outbox';
 import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
 import { hasDocumentSchema } from './document-schema';
+import { writePlanTab, type PlanTabOutcome, type PlanTabWrite } from './plan-diagram-tab';
 import { documentShares, type ShareAnswer, type ShareMessage } from './tab-shares';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
 import { communityOf } from './room-community';
@@ -158,6 +159,17 @@ export async function addConnectedTab(
     if (op) room.broadcastOrderedSystemOp(op);
   }
   return outcome;
+}
+
+// View As Diagram's redraw (plan-diagram-tab.ts): the plan's tab drawn again, as its maker, through the changeset path.
+export async function drawPlanTab(
+  room: DocumentRoom,
+  documentId: string,
+  write: PlanTabWrite,
+): Promise<PlanTabOutcome> {
+  room.bindDocument(documentId);
+  if (!room.hasSchema()) return { status: 'not_found' };
+  return writePlanTab(room.requireEnv(), documentId, write, (p) => room.state.waitUntil(p));
 }
 
 // Whether the canvas places this image (on one tab, for a tab-scoped visitor) and may serve it

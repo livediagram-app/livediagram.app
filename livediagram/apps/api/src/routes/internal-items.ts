@@ -43,6 +43,7 @@ import {
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
 import { documentFromTemplate } from './internal-template';
+import { documentFromPlan } from './internal-plan-diagram';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
 import type { Env } from '../types';
@@ -147,6 +148,8 @@ export function handleInternalItems(
       import: (input) => importDocumentFileFor(env, input),
       // A new item from one of this app's templates, a project kit's part (internal-template.ts).
       fromTemplate: (input) => documentFromTemplate(env, input),
+      // View As Diagram's new canvas or redrawn tab, from a liveplanner board's graph (internal-plan-diagram.ts).
+      drawPlanDiagram: (draw) => documentFromPlan(env, draw),
       // An old livediagram.app document's livediagram part, into its canvas's room (document-migration.ts). A tab over
       // the tab cap refuses the whole part (413) before the room is called.
       migrate: async (payload) => {
