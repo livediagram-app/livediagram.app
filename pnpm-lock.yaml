@@ -7684,6 +7684,9 @@ importers:
         specifier: workspace:*
         version: link:../ui
     devDependencies:
+      '@liveworkspace/style-guards':
+        specifier: workspace:^
+        version: link:../style-guards
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -8270,6 +8273,9 @@ importers:
         specifier: workspace:*
         version: link:../ui
     devDependencies:
+      '@liveworkspace/style-guards':
+        specifier: workspace:^
+        version: link:../style-guards
       '@liveworkspace/vitest-config':
         specifier: workspace:^
         version: link:../vitest-config
@@ -8303,6 +8309,9 @@ importers:
 
   packages/comparisons:
     devDependencies:
+      '@liveworkspace/style-guards':
+        specifier: workspace:^
+        version: link:../style-guards
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
@@ -8582,6 +8591,9 @@ importers:
       '@liveworkspace/icons':
         specifier: workspace:^
         version: link:../icons
+      '@liveworkspace/style-guards':
+        specifier: workspace:^
+        version: link:../style-guards
       '@liveworkspace/vitest-config':
         specifier: workspace:^
         version: link:../vitest-config
@@ -9172,6 +9184,9 @@ importers:
         specifier: workspace:^
         version: link:../ui
     devDependencies:
+      '@liveworkspace/style-guards':
+        specifier: workspace:^
+        version: link:../style-guards
       '@liveworkspace/vitest-config':
         specifier: workspace:^
         version: link:../vitest-config
@@ -9240,6 +9255,9 @@ importers:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:^
+        version: link:../style-guards
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
@@ -9582,6 +9600,9 @@ importers:
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:^
+        version: link:../style-guards
       '@liveworkspace/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config

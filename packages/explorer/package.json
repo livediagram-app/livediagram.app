@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@liveworkspace/icons": "workspace:^",
+    "@liveworkspace/style-guards": "workspace:^",
     "@liveworkspace/vitest-config": "workspace:^",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",

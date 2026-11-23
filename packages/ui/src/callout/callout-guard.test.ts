@@ -72,7 +72,17 @@ const ALLOWED: Readonly<Record<string, string>> = {
 
 const BOX =
   /className="[^"]*(?:bg-(?:rose|red|amber|emerald|sky)-50\b[^"]*\bp[xy]?-\d|\bp[xy]?-\d[^"]*bg-(?:rose|red|amber|emerald|sky)-50\b)[^"]*"/;
-const NOT_A_BOX = /hover:bg|aria-selected|data-\[|enabled:|group-hover|<button|<Button|<li |<span/;
+const NOT_A_BOX =
+  /hover:bg|aria-selected|data-\[|enabled:|group-hover|<button|<Button|<li |<span|<Chip\b/;
+// A className on a line of its own belongs to the tag opened a few lines above (prettier's wrap of a long chip).
+const NOT_A_BOX_TAG = /^\s*<(?:Chip|span|button|Button|li)\b[^>]*$/;
+function openedAsNotABox(lines: string[], i: number): boolean {
+  if (!/^\s*className=/.test(lines[i])) return false;
+  for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
+    if (/^\s*</.test(lines[j])) return NOT_A_BOX_TAG.test(lines[j]);
+  }
+  return false;
+}
 
 function PRODUCT_APPS(): string[] {
   return ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'].map(
@@ -103,7 +113,8 @@ describe('callouts', () => {
         if (path in ALLOWED || path.startsWith('packages/ui/src/callout/')) continue;
         const lines = readFileSync(file, 'utf8').split('\n');
         lines.forEach((line, i) => {
-          if (BOX.test(line) && !NOT_A_BOX.test(line)) found.push(`${path}:${i + 1}`);
+          if (BOX.test(line) && !NOT_A_BOX.test(line) && !openedAsNotABox(lines, i))
+            found.push(`${path}:${i + 1}`);
         });
       }
     }
