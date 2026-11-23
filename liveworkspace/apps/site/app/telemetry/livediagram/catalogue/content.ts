@@ -612,13 +612,32 @@ export const ELEMENTS_ADDED: MetricStack = {
 // `metric-emitters.test` fails if an event the repo can send has no chart.
 
 // Element editing: everything done to an element after it is placed.
+// Live data from a plan (liveworkspace/docs/specs/004-index/live-data.md "Telemetry"): links made, by source and for
+// tables, unlinks, Freeze and Unfreeze. Its own card, so Elements Changed leaves them out.
+const LIVE_DATA_TYPES: readonly string[] = [
+  'ChartSheetLink',
+  'ChartBoardLink',
+  'ChartMetricLink',
+  'TableLiveLink',
+  'ChartSheetUnlink',
+  'LiveDataFreeze',
+  'LiveDataUnfreeze',
+];
+export const LIVE_DATA = chart(
+  'Element',
+  'Changed',
+  'Live Data',
+  'A chart or table linked to a plan (a Sheet range, board counts or a Dashboard metric), unlinked, frozen or unfrozen.',
+  { types: [...LIVE_DATA_TYPES] },
+);
+
 export const ELEMENTS_CHANGED = chart(
   'Element',
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
   // An entity's fields and a relationship's cardinality are Data Models'.
-  { typeIn: (t) => !DATA_MODEL_CHANGED.includes(t ?? '') },
+  { typeIn: (t) => !LIVE_DATA_TYPES.includes(t ?? '') && !DATA_MODEL_CHANGED.includes(t ?? '') },
 );
 
 export const ELEMENTS_DELETED = chart(
@@ -748,6 +767,7 @@ export const ELEMENT_EDITING: MetricStack = {
     'Everything done to an element after it is placed: changed, deleted, copied, attached, reordered.',
   members: [
     ELEMENTS_CHANGED,
+    LIVE_DATA,
     ELEMENTS_DELETED,
     ELEMENTS_DUPLICATED,
     ELEMENTS_COPIED,

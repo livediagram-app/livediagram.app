@@ -55,6 +55,21 @@ describe('redactElementsForCommunity', () => {
     expect(frozen).toEqual({ id: 'chart', type: 'shape', pieSlices: [{ label: 'Q1', value: 4 }] });
   });
 
+  // Live data from a plan (liveworkspace/docs/specs/004-index/live-data.md "Offline and exports"): a table too.
+  it("drops a table's plan link and keeps its last cells", () => {
+    const table = {
+      id: 'table',
+      type: 'table',
+      cells: [
+        ['Column', 'Cards'],
+        ['Done', '4'],
+      ],
+      chartSheetSource: { app: 'liveplanner', itemId: 'plan_secret', kind: 'board' },
+    };
+    const [frozen] = redactElementsForCommunity([table]);
+    expect(frozen).toEqual({ id: 'table', type: 'table', cells: table.cells });
+  });
+
   it("drops a live embed's link and keeps its snapshot", () => {
     const embed = {
       id: 'embed',

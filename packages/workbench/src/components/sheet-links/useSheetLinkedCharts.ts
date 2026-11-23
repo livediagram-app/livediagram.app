@@ -1,8 +1,9 @@
 'use client';
 
-// Charts linked to a liveplanner sheet (each reader app's docs/specs/009-elements/pie-chart.md "Charts linked to a
-// liveplanner sheet"): the open tab's linked charts read, each distinct range once, when the tab opens and when the
-// room says one of their Sheets changed. Never polled. Each read is this person's own: one who can open the plan sees
+// Charts and tables with live data from a liveplanner plan (each reader app's docs/specs/009-elements/pie-chart.md
+// "Live data from a plan", liveworkspace/docs/specs/004-index/live-data.md): the open tab's linked elements read, each
+// distinct source once (one read and one watch per source per open item), when the tab opens and when the room says
+// one of their Sheets, or the plan's cards, changed. Never polled; a frozen element is never read. Each read is this person's own: one who can open the plan sees
 // its values live, one who cannot sees the saved values. An Editor's live values are saved quietly (no undo step), so
 // a reader without access and an export see them too.
 import {
@@ -14,17 +15,22 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
-import { IndexError, type SheetRangeRead } from '@liveworkspace/index-client';
+import {
+  isRangeSource,
+  type ChartSheetSource,
+} from '@liveworkspace/element-model/chart-sheet-source';
+import { IndexError } from '@liveworkspace/index-client';
 import { indexClient } from '../../lib/index-client';
 import { onSourceChanged } from './sheet-link-signal';
 import {
-  liveChartFields,
+  frameTouches,
   linkedChartsOn,
-  sameChartData,
+  liveFields,
   sameSource,
   sheetLinkKey,
   sourceAfterRead,
+  type Linkable,
+  type LiveRead,
   type SheetLinkElement,
   type SheetLinkStatus,
 } from './sheet-links';
@@ -46,16 +52,30 @@ export async function readSheetLink(
 ): Promise<SheetLinkStatus> {
   // The item's grant asks the plan to say when the Sheet changes; without one the read still answers.
   const grant = itemId ? await grantOf(itemId).catch(() => null) : null;
+  const options = { grant, watch: grant ? itemId : null };
   try {
-    const read: SheetRangeRead = await indexClient.readSheetRange(
-      source.itemId,
-      {
-        sheetId: source.sheetId,
-        range: source.range,
-        ...(source.cols ? { cols: source.cols } : {}),
-      },
-      { grant, watch: grant ? itemId : null },
-    );
+    const read: LiveRead = isRangeSource(source)
+      ? await indexClient.readSheetRange(
+          source.itemId,
+          {
+            sheetId: source.sheetId,
+            range: source.range,
+            ...(source.cols ? { cols: source.cols } : {}),
+          },
+          options,
+        )
+      : await indexClient.readPlanData(
+          source.itemId,
+          source.kind === 'board'
+            ? {
+                kind: 'board',
+                boardId: source.boardId,
+                by: source.by,
+                ...(source.filter ? { filter: source.filter } : {}),
+              }
+            : { kind: 'metric', metric: source.metric },
+          options,
+        );
     return { kind: 'live', read };
   } catch (err) {
     if (err instanceof IndexError) {
@@ -88,10 +108,12 @@ export function useSheetLinkedCharts<E extends SheetLinkElement>({
   read?: Read;
 }) {
   const linked = useMemo(() => linkedChartsOn(elements), [elements]);
-  // Each distinct range once, by its key, with the link it is read through (the first chart's).
+  // Each distinct source once, by its key, with the link it is read through (the first element's). A frozen link is
+  // never read.
   const sources = useMemo(() => {
     const byKey = new Map<string, ChartSheetSource>();
     for (const el of linked) {
+      if (el.chartSheetSource.frozen) continue;
       const key = sheetLinkKey(el.chartSheetSource);
       if (!byKey.has(key)) byKey.set(key, el.chartSheetSource);
     }
@@ -135,7 +157,8 @@ export function useSheetLinkedCharts<E extends SheetLinkElement>({
     return () => clearTimeout(timer);
   }, [ready]);
 
-  // The room's frame: the ranges of the Sheets it names, read again.
+  // The room's frame: the sources it touches (a range of a Sheet it names, a board or metric when it names the cards),
+  // read again.
   const sourcesRef = useRef(sources);
   const readyRef = useRef(ready);
   useLayoutEffect(() => {
@@ -147,7 +170,7 @@ export function useSheetLinkedCharts<E extends SheetLinkElement>({
       onSourceChanged(({ itemId: planId, sheetIds }) => {
         if (!readyRef.current) return;
         for (const [key, source] of sourcesRef.current) {
-          if (source.itemId === planId && sheetIds.includes(source.sheetId)) readKey(key, source);
+          if (frameTouches(source, planId, sheetIds)) readKey(key, source);
         }
       }),
     [readKey],
@@ -158,11 +181,12 @@ export function useSheetLinkedCharts<E extends SheetLinkElement>({
     if (!canSave) return;
     const patches = new Map<string, object>();
     for (const el of linked) {
+      if (el.chartSheetSource.frozen) continue;
       const status = statuses.get(sheetLinkKey(el.chartSheetSource));
       if (status?.kind !== 'live') continue;
-      const fields = liveChartFields(el, status.read);
+      const fields = liveFields(el as unknown as Linkable, status.read.table);
       const source = sourceAfterRead(el.chartSheetSource, status.read);
-      if (sameChartData(el, fields) && sameSource(el.chartSheetSource, source)) continue;
+      if (!fields && sameSource(el.chartSheetSource, source)) continue;
       patches.set(el.id, { ...fields, chartSheetSource: source });
     }
     if (patches.size === 0) return;
@@ -184,12 +208,14 @@ export function useSheetLinkedCharts<E extends SheetLinkElement>({
   );
   const statusOf = useCallback(
     (source: ChartSheetSource): SheetLinkStatus =>
-      statuses.get(sheetLinkKey(source)) ??
-      (waitedOut && !ready ? { kind: 'saved' } : { kind: 'reading' }),
+      source.frozen
+        ? { kind: 'frozen' }
+        : (statuses.get(sheetLinkKey(source)) ??
+          (waitedOut && !ready ? { kind: 'saved' } : { kind: 'reading' })),
     [statuses, waitedOut, ready],
   );
   // A link just made carries its own first read: no second read for it.
-  const seed = useCallback((source: ChartSheetSource, read: SheetRangeRead) => {
+  const seed = useCallback((source: ChartSheetSource, read: LiveRead) => {
     setStatuses((prev) => new Map(prev).set(sheetLinkKey(source), { kind: 'live', read }));
   }, []);
   return { statusOf, update, seed };

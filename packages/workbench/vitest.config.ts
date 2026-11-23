@@ -27,6 +27,10 @@ const HELD_AT_100 = [
   'src/components/sheet-links/SheetLinkedCharts.tsx',
   'src/components/sheet-links/SheetLinkSection.tsx',
   'src/components/sheet-links/LinkSheetDialog.tsx',
+  // Live data from a plan's boards and metrics, and the series picked (liveworkspace/docs/specs/004-index/live-data.md,
+  // Work Tracker 1368).
+  'src/components/sheet-links/PlanDataFields.tsx',
+  'src/components/sheet-links/SeriesChips.tsx',
   'src/lib/relative-now.ts',
   // Deleting an unused picture (each canvas product's 009-elements images.md).
   'src/lib/unused-image-choice.ts',

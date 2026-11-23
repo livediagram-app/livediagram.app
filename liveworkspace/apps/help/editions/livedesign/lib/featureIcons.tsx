@@ -536,6 +536,17 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 10.5l4-3 4.5 2.5 5-4" />
     </Glyph>
   ),
+  // A chart fed by a plan: three bars rising from a card, with a live dot at their corner.
+  'live-data': (
+    <Glyph>
+      <rect x="3.5" y="14" width="7" height="6.5" rx="1" />
+      <path d="M13.5 20.5v-5" />
+      <path d="M17 20.5v-8" />
+      <path d="M20.5 20.5V9" />
+      <path d="M10.5 17.25h3" />
+      <circle cx="18.5" cy="4.5" r="1.75" />
+    </Glyph>
+  ),
   // Filled dots beside rules: the key's own shape, and distinct from the
   // timeline rail below, whose dots sit ON one line rather than down a column.
   legend: (
