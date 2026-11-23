@@ -449,7 +449,7 @@ export function PublishDialog({ session, onClose }: { session: AskSession; onClo
                         </span>
                         <span className="min-w-0 flex-1 truncate">{p.title}</span>
                         <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {LEFT_OUT_WORDS[p.reason]}
+                          <span className="text-optical-line">{LEFT_OUT_WORDS[p.reason]}</span>
                         </span>
                       </li>
                     ))}

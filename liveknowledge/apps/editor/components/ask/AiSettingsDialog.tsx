@@ -266,7 +266,7 @@ export function AiSettingsDialog({
                       <span aria-hidden className="flex shrink-0">
                         <KeyIcon />
                       </span>
-                      <span className="truncate">
+                      <span className="text-optical-line min-w-0 truncate">
                         {settings
                           ? replacing
                             ? `${providerWords(stored).spoken} ${keyStateText(settings)}, in Use Until This One Is Saved`

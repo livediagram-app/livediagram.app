@@ -5,6 +5,7 @@
 // lines), the press opening its popover; a passage no longer in the page is marked "The page has changed since", the
 // rail and the popover being where it shows. Review All in AI Knowledge opens Needs Attention at Suggested Edits.
 import type { KnowledgeSuggestion } from '@liveknowledge/api-schema';
+import { Chip } from '@liveknowledge/ui';
 import { askAttentionFilter } from '@/lib/knowledge-ask/attention-filter-ask';
 import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
 import { suggestionsView } from '@/lib/knowledge/page-suggestions-view';
@@ -43,9 +44,9 @@ export function PageRailSuggestionsView({
     >
       <div className="flex items-center gap-2">
         <h2 className={RAIL_LABEL}>Suggested Edits</h2>
-        <span className="rounded-full bg-violet-100 px-1.5 text-[11px] font-semibold tabular-nums text-violet-700 dark:bg-violet-500/20 dark:text-violet-200">
+        <Chip className="bg-violet-100 px-1.5 text-[11px] font-semibold tabular-nums text-violet-700 dark:bg-violet-500/20 dark:text-violet-200">
           {suggestions.length.toLocaleString('en')}
-        </span>
+        </Chip>
       </div>
       <ul className="mt-3 flex flex-col gap-1">
         {shown.map((s) => (

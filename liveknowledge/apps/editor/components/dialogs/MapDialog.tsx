@@ -246,8 +246,11 @@ export function MapDialog({
                         className="h-2 w-2 rounded-full"
                         style={{ background: accent }}
                       />
-                      {nameOf(code)}
-                      <span aria-hidden className="text-slate-500 dark:text-slate-400">
+                      <span className="text-optical-line">{nameOf(code)}</span>
+                      <span
+                        aria-hidden
+                        className="text-optical-line text-slate-500 dark:text-slate-400"
+                      >
                         ×
                       </span>
                     </button>

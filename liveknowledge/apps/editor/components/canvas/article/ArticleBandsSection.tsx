@@ -148,7 +148,7 @@ export function ArticleBandsSection({
             onClick={() => insertField(f.token)}
             className="cursor-pointer rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
           >
-            {f.label}
+            <span className="text-optical-line">{f.label}</span>
           </button>
         ))}
       </div>

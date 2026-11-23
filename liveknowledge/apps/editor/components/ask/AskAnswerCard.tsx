@@ -6,7 +6,7 @@
 // a later one arrives.
 import { memo, useMemo, useState } from 'react';
 import type { KnowledgeSetupProvider } from '@liveknowledge/api-schema';
-import { Button, HoverCard } from '@liveknowledge/ui';
+import { Button, Chip, HoverCard } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { REVIEW_DUE_PILL, VERIFIED_PILL } from '@/components/knowledge/TrustBadge';
 import { answerMarkdown } from '@/lib/knowledge-ask/answer-parts';
@@ -88,14 +88,14 @@ function TrustLine({
       data-ask-trust=""
       className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] leading-5"
     >
-      <span
-        className={`inline-flex items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2 font-medium ${
+      <Chip
+        icon={trust.verified > 0 ? <VerifiedIcon /> : <WarningIcon />}
+        className={`py-0.5 pl-1.5 pr-2 font-medium ${
           trust.verified > 0 ? VERIFIED_PILL : REVIEW_DUE_PILL
         }`}
       >
-        {trust.verified > 0 ? <VerifiedIcon /> : <WarningIcon />}
         {trust.pill}
-      </span>
+      </Chip>
       {trust.rest ? <span className="text-slate-600 dark:text-slate-400">{trust.rest}</span> : null}
       {answeredBy ? (
         <>

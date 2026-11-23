@@ -74,7 +74,7 @@ export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChr
         className="pointer-events-auto flex shrink-0 items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-900 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-900 dark:hover:text-white"
       >
         <OpenExternalIcon />
-        Open in liveknowledge
+        <span className="text-optical-line">Open in liveknowledge</span>
       </a>
       {tabs.length > 1 ? (
         <div ref={menuRef} className="pointer-events-auto relative">
@@ -88,7 +88,7 @@ export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChr
             className="flex max-w-[44vw] items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-900 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-900 dark:hover:text-white"
           >
             <MenuIcon />
-            <span className="min-w-0 truncate">{activeName}</span>
+            <span className="text-optical-line min-w-0 truncate">{activeName}</span>
             <ChevronIcon />
           </button>
           {menuOpen ? (

@@ -6,7 +6,7 @@
 // Repositioning swaps them for Save Position and Cancel, and lays its one line across the band.
 import { useEffect, useRef } from 'react';
 import type { TabCover } from '@liveknowledge/document';
-import { Tooltip } from '@liveknowledge/ui';
+import { Chip, Tooltip } from '@liveknowledge/ui';
 import { useToast } from '@/hooks/ui/useToast';
 import { ChangeCoverIcon, RemoveCoverIcon, RepositionIcon } from './cover-icons';
 import { CoverMenu, takeCoverMenuHandoff, useCoverMenu } from './CoverMenu';
@@ -39,12 +39,12 @@ export function CoverControls({
   if (reposition.active)
     return (
       <>
-        <span
+        <Chip
           data-cover-reposition-hint=""
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/55 px-3 py-1.5 text-[13px] font-medium text-white shadow-sm backdrop-blur-sm"
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/55 px-3 py-1.5 text-[13px] font-medium text-white shadow-sm backdrop-blur-sm"
         >
           Drag the picture to reposition
-        </span>
+        </Chip>
         <div className={`absolute bottom-3 right-3 ${BAR} phone:bottom-2 phone:right-2`}>
           <button type="button" className={BUTTON} onClick={reposition.cancel}>
             Cancel
