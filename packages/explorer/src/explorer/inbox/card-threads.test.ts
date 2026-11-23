@@ -45,6 +45,7 @@ const sections = (threads: InboxThread[]): InboxSections => ({
   byMe: [],
   updates: [],
   calls: [],
+  notices: [],
   forms: [],
   threads,
   requests: [],

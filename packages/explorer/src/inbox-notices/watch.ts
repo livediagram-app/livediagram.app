@@ -10,6 +10,7 @@ import type { InboxResponse, IndexClient } from '@liveworkspace/index-client';
 import {
   actionKey,
   callKey,
+  noticeKey,
   suggestionKey,
   threadKey,
   updateKey,
@@ -273,5 +274,6 @@ export function inboxSignature(data: InboxResponse, app: string | null = null): 
   for (const g of mine(data.suggestions)) parts.push(`${suggestionKey(g)}@${g.createdAt}`);
   for (const u of mine(data.updates)) parts.push(`${updateKey(u)}@${u.latestAt}`);
   for (const c of mine(data.calls)) parts.push(`${callKey(c)}@${c.at}`);
+  for (const n of mine(data.notices)) parts.push(`${noticeKey(n)}@${n.at}`);
   return parts.sort().join('|');
 }

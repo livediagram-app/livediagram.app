@@ -30,6 +30,7 @@ export function entryPlace(e: InboxEntry): ItemPlace {
       // The item itself, where its Share dialog is.
       return {};
     case 'CallInvite':
+    case 'AutomationNotice':
       // The item itself, whose "3 in Call" pill joins the call.
       return {};
     case 'Update':
@@ -48,7 +49,8 @@ export function entryTarget(e: InboxEntry): InboxTarget | null {
     e.kind === 'FormResponses' ||
     e.kind === 'AccessRequest' ||
     e.kind === 'Update' ||
-    e.kind === 'CallInvite'
+    e.kind === 'CallInvite' ||
+    e.kind === 'AutomationNotice'
   )
     return null;
   if (e.kind === 'Suggestion') {

@@ -28,6 +28,8 @@ import { focusOrOpen, isBlank, nameItemTab } from '@liveworkspace/index-client/b
 import { meetingLength, meetingWhen, meetingWho } from './MeetingsDialog';
 
 const LINK = 'https://www.livehuddle.app/document/shared?s=abc';
+// The call's tab enters by way of livehuddle's no-click sign-in (call-tabs.ts viaSilentSignIn).
+const ENTRY = 'https://www.livehuddle.app/api/auth/silent?return=%2Fdocument%2Fshared%3Fs%3Dabc';
 
 const meeting = (over: Partial<ItemMeeting> = {}): ItemMeeting => ({
   id: 'ic_1',
@@ -177,7 +179,7 @@ describe('Call', () => {
     expect(open).toHaveBeenCalledWith('', 'lw-call-D1');
     await flush();
     expect(startItemCall).toHaveBeenCalledWith('D1', { code: 'link1' });
-    expect(tab.location.href).toBe(LINK);
+    expect(tab.location.href).toBe(ENTRY);
     expect(tab.opener).toBeNull();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'ItemCall');
   });
@@ -252,7 +254,7 @@ describe('the tabs', () => {
     const blank = fakeTab(true);
     const open = vi.spyOn(window, 'open').mockReturnValue(blank as unknown as Window);
     expect(focusOrOpen('n', LINK)).toBe(true);
-    expect(blank.location.href).toBe(LINK);
+    expect(blank.location.href).toBe(ENTRY);
     const there = fakeTab(false);
     open.mockReturnValue(there as unknown as Window);
     expect(isBlank(there as unknown as Window)).toBe(false);
@@ -297,7 +299,7 @@ describe('Meetings', () => {
     const tab = fakeTab(true);
     vi.spyOn(window, 'open').mockReturnValue(tab as unknown as Window);
     fireEvent.click(screen.getByRole('button', { name: 'Join' }));
-    expect(tab.location.href).toBe(LINK);
+    expect(tab.location.href).toBe(ENTRY);
     fireEvent.click(screen.getByRole('link', { name: /Summary/ }));
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'MeetingSummary');
   });

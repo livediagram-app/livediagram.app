@@ -58,6 +58,9 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
     case 'Suggestion':
       sentence = `${f.who} suggested an edit`;
       break;
+    case 'AutomationNotice':
+      sentence = `${who} sent you a notice`;
+      break;
     case 'CallInvite':
       sentence = `${who} invited you to a call about ${f.item}`;
       break;
@@ -264,6 +267,18 @@ export function Body({
       );
     case 'CallInvite':
       return <CallInviteBody entry={entry} />;
+    case 'AutomationNotice':
+      return (
+        <div className="flex flex-col gap-2" data-inbox-notice="">
+          <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-200">
+            {entry.row.text}
+          </p>
+          <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+            Sent by the rule {entry.row.rule ? `“${entry.row.rule}”` : 'an automation'} on {f.item}.
+            Its automations are in the item’s Tools.
+          </p>
+        </div>
+      );
     case 'FormResponses': {
       const r = entry.row;
       return (

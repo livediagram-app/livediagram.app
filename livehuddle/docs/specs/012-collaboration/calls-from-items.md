@@ -50,7 +50,7 @@ the line "Send the summary and the actions where they belong." Three parts:
    decided, the actions with who owns them, and the questions still open", and puts its answer in the text area,
    under the facts, its citations taken out. While it writes, the button reads **Writing…** and the text area is
    read-only; a failure shows its words under the text area and leaves the text as it was. The text stays editable.
-2. **Send To**: a knowledgebase, picked from the host's knowledgebases (most recent first, with a search), starting on
+2. **Send To**: a knowledgebase, picked from a list of the knowledgebases the host can edit (most recent first), starting on
    the default the index offers (the one connected to the item, else the newest of the item's team). **Send Summary**
    writes the page, "<item title> Call, <date>", and shows **Open Page** in its place once it is written.
 3. **Actions**: **Send Actions to Plan** opens Send to Plan with every sticky on the open floor (one card each, at most

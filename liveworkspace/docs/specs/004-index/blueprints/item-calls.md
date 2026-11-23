@@ -44,7 +44,8 @@ livehuddle room: hello / tab-focus / close ── 1.5 s settle ─▶ PUT /app/i
 - `readCallPeoplePush`, `readCallSummaryAsk`, `readCallInviteAsk` check a body; anything over a cap or of the wrong
   type is null. Names are trimmed, cut at 80 characters, blanks dropped, at most `ITEM_CALL_NAMES_MAX`.
 - `itemCallTabName(itemId)` is `lw-call-<id>` (the call's tab); `itemTabName(itemId)` is `lw-item-<id>` (the item's).
-- `@liveworkspace/index-client/browser` `call-tabs.ts`: `namedTab`, `isBlank`, `sendTab` (the opener cut),
+- `@liveworkspace/index-client/browser` `call-tabs.ts`: `namedTab`, `isBlank`, `sendTab` (the opener cut; a share
+  link (`?s=`) goes through its app's `/api/auth/silent?return=` first, `viaSilentSignIn`),
   `focusOrOpen(name, url)` and `nameItemTab(itemId)`, shared by the workbench, the Explorer's Inbox and livehuddle.
 - Constants as the spec's Limits table, plus `ITEM_CALL_START_GRACE_MS` (120,000: a call nobody has joined yet still
   counts as the item's call, so two quick presses never make two), `ITEM_CALL_TEMPLATE` (`team-pod`), and

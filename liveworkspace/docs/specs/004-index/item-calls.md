@@ -32,6 +32,10 @@ Here: a livehuddle call about this <noun>, in a new tab."
 - **One call an item.** While a call about the item is live, pressing starts nothing new: the person joins that call.
 - The call's tab is named for the item, so pressing Call or Join again brings the open call's tab to the front instead
   of opening another, and **Open Item** in the call brings the item's tab back.
+- The tab enters the call through livehuddle's no-click sign-in (`/api/auth/silent?return=<the call's address>`,
+  [Signing in without a click](../003-accounts/accounts.md)), so someone signed in to liveworkspace arrives in the call
+  signed in, with their own name, even on their first visit to livehuddle; a guest comes straight back as a guest.
+  The call's address is a share link (`?s=`), which a page's own no-click sign-in never bounces, so the tab asks first.
 - **Who may start one**: anyone who can open the item, at any level (an Editor, a Participant, a Viewer, a holder of a
   tab's link), signed in to an account: the Space needs an owner who keeps it. A guest is offered Join once a call is
   live, never Start.

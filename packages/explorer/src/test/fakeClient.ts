@@ -124,6 +124,7 @@ export function createFakeIndex(
     accessRequests: [],
     updates: [],
     calls: [],
+    notices: [],
   };
 
   function answer<T>(
@@ -362,6 +363,7 @@ export function createFakeIndex(
         suggestions: (inbox.suggestions ?? []).filter((r) => !query.app || r.app === query.app),
         updates: (inbox.updates ?? []).filter((u) => !query.app || u.app === query.app),
         calls: (inbox.calls ?? []).filter((c) => !query.app || c.app === query.app),
+        notices: (inbox.notices ?? []).filter((n) => !query.app || n.app === query.app),
       })),
     // Request Access (request-access.md): a grant or a decline closes the open request.
     grantAccessRequest: (itemId: string, requestId: string, input: { level?: string } = {}) =>

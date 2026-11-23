@@ -11,6 +11,7 @@
 import type {
   InboxAccessRequest,
   InboxAction,
+  InboxAutomationNotice,
   InboxCallInvite,
   InboxForm,
   InboxSuggestion,
@@ -49,6 +50,9 @@ export const ACCESS_REASON: InboxReason = { kind: 'access', label: 'Wants access
 
 /** A call invite's reason. */
 export const CALL_REASON: InboxReason = { kind: 'call', label: 'Invited you to a call' };
+
+/** A rule's notice's reason. */
+export const AUTOMATION_REASON: InboxReason = { kind: 'automation', label: 'Automation' };
 
 /** A suggested edit's reason. */
 export const SUGGESTION_REASON: InboxReason = { kind: 'suggestion', label: 'Suggested an edit' };
@@ -90,7 +94,8 @@ export type InboxEntryKind =
   | 'AccessRequest'
   | 'Suggestion'
   | 'Update'
-  | 'CallInvite';
+  | 'CallInvite'
+  | 'AutomationNotice';
 
 export type InboxActionEntry = {
   key: string;
@@ -142,6 +147,13 @@ export type InboxCallEntry = {
   row: InboxCallInvite;
   at: number;
 };
+export type InboxNoticeEntry = {
+  key: string;
+  kind: 'AutomationNotice';
+  forMe: false;
+  row: InboxAutomationNotice;
+  at: number;
+};
 export type InboxEntry =
   | InboxActionEntry
   | InboxThreadEntry
@@ -149,12 +161,13 @@ export type InboxEntry =
   | InboxAccessEntry
   | InboxSuggestionEntry
   | InboxUpdateEntry
-  | InboxCallEntry;
+  | InboxCallEntry
+  | InboxNoticeEntry;
 
 /** The filter bar's choices. `mine`: assigned to me; `waiting`: assigned by me; `comments`: threads (mentions, on my
  *  items, replies); `forms`: forms with new responses; `requests`: access requests on items I manage; `suggestions`:
- *  suggested edits waiting on my pages; `updates`: changes to pages I watch; `calls`: invites to calls about items. The
- *  last four are offered only while
+ *  suggested edits waiting on my pages; `updates`: changes to pages I watch; `calls`: invites to calls about items;
+ *  `notices`: a rule's Notify steps to me. The last five are offered only while
  *  there is one (or it is the choice: `shownFilters`). */
 export const INBOX_FILTERS = [
   'all',
@@ -166,6 +179,7 @@ export const INBOX_FILTERS = [
   'suggestions',
   'updates',
   'calls',
+  'notices',
 ] as const;
 export type InboxFilter = (typeof INBOX_FILTERS)[number];
 
@@ -179,6 +193,7 @@ export const INBOX_FILTER_LABEL: Record<InboxFilter, string> = {
   suggestions: 'Suggested Edits',
   updates: 'Updates',
   calls: 'Calls',
+  notices: 'Automations',
 };
 
 /** The token a filter change reports (`Activity·Changed`). */
@@ -192,6 +207,7 @@ export const INBOX_FILTER_TELEMETRY: Record<InboxFilter, string> = {
   suggestions: 'SuggestedEdits',
   updates: 'Updates',
   calls: 'Calls',
+  notices: 'Automations',
 };
 
 export function isInboxFilter(v: unknown): v is InboxFilter {
@@ -216,11 +232,19 @@ export function entryFilter(e: InboxEntry): Exclude<InboxFilter, 'all'> {
       return 'updates';
     case 'CallInvite':
       return 'calls';
+    case 'AutomationNotice':
+      return 'notices';
   }
 }
 
 // The filters offered only while they hold a row (or are the choice).
-const WHILE_LISTED: readonly InboxFilter[] = ['requests', 'suggestions', 'updates', 'calls'];
+const WHILE_LISTED: readonly InboxFilter[] = [
+  'requests',
+  'suggestions',
+  'updates',
+  'calls',
+  'notices',
+];
 
 /** The filters the dropdown offers: Access Requests, Suggested Edits and Updates only while there is one or it is the
  *  choice, so someone who never shares, has no agent suggesting edits, or never watches a page, never sees them. */
@@ -240,6 +264,7 @@ export {
   threadKey,
   updateKey,
   callKey,
+  noticeKey,
   withoutSettled,
   type InboxSettled,
 } from './inbox-keys';
@@ -247,6 +272,7 @@ import {
   actionKey,
   callKey,
   formKey,
+  noticeKey,
   requestKey,
   suggestionKey,
   threadKey,
@@ -321,6 +347,9 @@ export function inboxEntries(s: InboxSections): InboxEntry[] {
   for (const r of s.calls) {
     out.push({ key: callKey(r), kind: 'CallInvite', forMe: false, row: r, at: r.at });
   }
+  for (const r of s.notices) {
+    out.push({ key: noticeKey(r), kind: 'AutomationNotice', forMe: false, row: r, at: r.at });
+  }
   return out.sort((a, b) => b.at - a.at);
 }
 
@@ -336,6 +365,7 @@ export function inboxFilterCounts(entries: readonly InboxEntry[]): Record<InboxF
     suggestions: 0,
     updates: 0,
     calls: 0,
+    notices: 0,
   };
   for (const e of entries) c[entryFilter(e)]++;
   return c;

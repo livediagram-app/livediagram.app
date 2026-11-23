@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { focusOrOpen, isBlank, nameItemTab, sendTab } from './call-tabs';
+import { focusOrOpen, isBlank, nameItemTab, sendTab, viaSilentSignIn } from './call-tabs';
 import { fakeWindow } from './fake-window';
 
 // The call's own tab (liveworkspace/docs/specs/004-index/item-calls.md "Starting"): a blank tab of ours is sent on with
@@ -49,6 +49,18 @@ describe('call tabs', () => {
     };
     sendTab(tab as unknown as Window, 'https://huddle.test/s/b');
     expect(tab.location.href).toBe('https://huddle.test/s/b');
+  });
+
+  it('sends a share link through the no-click sign-in first, anything else as it is', () => {
+    const tab = blank();
+    sendTab(tab as unknown as Window, 'https://huddle.test/document/shared?s=AB12#t=x');
+    expect(tab.location.href).toBe(
+      'https://huddle.test/api/auth/silent?return=%2Fdocument%2Fshared%3Fs%3DAB12%23t%3Dx',
+    );
+    expect(viaSilentSignIn('https://huddle.test/document/d1')).toBe(
+      'https://huddle.test/document/d1',
+    );
+    expect(viaSilentSignIn('not a url')).toBe('not a url');
   });
 
   it("names the item's tab, never over a name of the page's own", () => {

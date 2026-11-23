@@ -20,6 +20,7 @@ import {
   updateKey,
   updateReason,
   callKey,
+  noticeKey,
 } from '../explorer/inbox/sections';
 import type { SeenStore } from './seen';
 
@@ -27,7 +28,7 @@ import type { SeenStore } from './seen';
 export const NOTICE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export type NoticeKind =
-  'mention' | 'comment' | 'assigned' | 'access' | 'share' | 'update' | 'call';
+  'mention' | 'comment' | 'assigned' | 'access' | 'share' | 'update' | 'call' | 'automation';
 
 export type NoticeRow = {
   key: string;
@@ -257,6 +258,22 @@ export function noticeRows(
       place: c.itemTitle,
       detail: null,
       href: inboxRowHref(c.app, key, here),
+    });
+  }
+  // A rule's Notify step (automations.md): the rule as who, the text's first line as the quote.
+  for (const n of data.notices ?? []) {
+    const key = noticeKey(n);
+    out.push({
+      key,
+      at: n.at,
+      kind: 'automation',
+      app: n.app,
+      who: n.rule || 'An automation',
+      verb: 'sent you a notice',
+      quote: firstLine(n.text),
+      place: n.itemTitle,
+      detail: null,
+      href: inboxRowHref(n.app, key, here),
     });
   }
   return out.sort((a, b) => b.at - a.at);

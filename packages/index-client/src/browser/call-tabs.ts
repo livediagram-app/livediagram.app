@@ -22,14 +22,29 @@ export function isBlank(tab: Window): boolean {
   }
 }
 
-/** Sends a blank tab to `url`, its opener cut so the call can't reach back into the item's tab. */
+/** A share link (`?s=`) by way of its app's no-click sign-in (`/api/auth/silent?return=`), else `url` unchanged.
+ *  A page never bounces a share link itself (@liveworkspace/auth-client/silent), so without this someone signed in to
+ *  liveworkspace would reach the call as a guest on their first visit to livehuddle; a guest comes straight back. */
+export function viaSilentSignIn(url: string): string {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return url;
+  }
+  if (!u.searchParams.has('s')) return url;
+  return `${u.origin}/api/auth/silent?return=${encodeURIComponent(u.pathname + u.search + u.hash)}`;
+}
+
+/** Sends a blank tab to `url` (a share link by way of the no-click sign-in), its opener cut so the call can't reach
+ *  back into the item's tab. */
 export function sendTab(tab: Window, url: string): void {
   try {
     tab.opener = null;
   } catch {
     // Some browsers keep it read-only; the call's own page drops it.
   }
-  tab.location.href = url;
+  tab.location.href = viaSilentSignIn(url);
 }
 
 /** The tab named `name`: brought forward when it is already somewhere, else sent to `url`. False when blocked. */

@@ -18,6 +18,7 @@ import {
   ShareIcon,
   EyeIcon,
   VideoIcon,
+  ZapIcon,
 } from '../ui/icons';
 import { NOTICE_LINES_MAX, type Notice } from './center';
 import { noticeHeadline, type NoticeKind, type NoticeRow } from './rows';
@@ -36,6 +37,7 @@ function kindIcon(row: NoticeRow, size = 14): ReactNode {
     share: <ShareIcon size={size} />,
     update: <EyeIcon size={size} />,
     call: <VideoIcon size={size} />,
+    automation: <ZapIcon size={size} />,
   };
   return icons[row.kind];
 }
