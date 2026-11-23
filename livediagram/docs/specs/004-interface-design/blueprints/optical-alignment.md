@@ -70,6 +70,11 @@ geometry check are [Iconography](../iconography.md)'s; this blueprint builds eve
   display: inline-block;
   text-box: trim-both cap alphabetic;
   padding-block: calc((1lh - 1cap) / 2);
+  /* The trimmed cap band lands on layout's 1/64px grid, so the plain sum can fall a 64th or two short
+   * of 1lh (a 25.97px chip) and shift everything below off its pixel grid. Rounding the padding down
+   * and holding one line as the minimum keeps the box exactly 1lh tall. */
+  padding-block: round(down, calc((1lh - 1cap) / 2), 1px / 64);
+  min-height: 1lh;
   @supports not (text-box: trim-both cap alphabetic) {
     padding-block: 0;
   }
