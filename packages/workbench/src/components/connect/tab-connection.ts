@@ -25,6 +25,18 @@ export function carryConnection<T extends object>(tab: T, from: object | null | 
   return withConnection(tab, connection);
 }
 
+/**
+ * A summary onto a tab built from it before its body loads (a placeholder on the first paint, or a tab a peer's outline
+ * adds): its connection, and a renamed connected tab's file name (connected-tabs.md "A tab's own name"), so the bar
+ * names the file at once. A tab already held keeps its own (carryConnection).
+ */
+export function fromSummary<T extends object>(tab: T, summary: object | null | undefined): T {
+  const carried = carryConnection(tab, summary);
+  const targetName = (summary as Named | null | undefined)?.targetName;
+  if (!connectionOf(carried) || typeof targetName !== 'string' || targetName === '') return carried;
+  return { ...carried, targetName };
+}
+
 /** The host's connected tabs, target item id to the tab holding it, for the Connect list's Connected rows. */
 export function connectedTargets(tabs: readonly ({ id: string } & object)[]): Map<string, string> {
   const targets = new Map<string, string>();

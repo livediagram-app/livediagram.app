@@ -206,6 +206,25 @@ describe('rowToTab', () => {
 });
 
 describe('rowToTabSummary', () => {
+  // A renamed connected tab's file name, read from its body by the outline (connected-tabs.md "A tab's own name").
+  it("carries a connected tab's file name, and none on any other tab", () => {
+    const connection = JSON.stringify({
+      id: 'cn_abcdefghijklmnop',
+      app: 'liveplanner',
+      itemId: 'p1',
+    });
+    expect(rowToTabSummary(baseRow({ connection, target_name: 'Launch plan' })).targetName).toBe(
+      'Launch plan',
+    );
+    expect(rowToTabSummary(baseRow({ connection, target_name: null }))).not.toHaveProperty(
+      'targetName',
+    );
+    expect(rowToTabSummary(baseRow({ connection, target_name: '' }))).not.toHaveProperty(
+      'targetName',
+    );
+    expect(rowToTabSummary(baseRow({ target_name: 'Stray' }))).not.toHaveProperty('targetName');
+  });
+
   it('returns only the columnar fields and never touches the data blob', () => {
     // The summary endpoint skips JSON parsing entirely (the editor's
     // tab list only needs id / name / order to render). The mapper

@@ -351,9 +351,9 @@ the tab menu's connected mode for an Editor, nothing for a Viewer).
   livediagram's `tab-put-route.ts` and room `scopedRenames`; livedocuments' and livedesign's `tab-put-route.ts` and
   room-scope `renamesTab` (a whole `tab` op from a scoped session relays without `name` or `targetName`);
   liveplanner's `tab-structure.ts` (`structureChange` counts it as the name, `keepStoredStructure` puts it back, the
-  room's stored-tab cache reads it) and `room-structure-gate.ts`. livediagram, livedocuments and livedesign declare
-  `Tab.targetName` in their document type; liveplanner's `Tab` type gains it once PR #2138, which regenerates its
-  api's OpenAPI file, has merged (the field rides its tab body meanwhile, typed by the shared helpers).
+  room's stored-tab cache reads it) and `room-structure-gate.ts`. Every app declares `Tab.targetName` in its tab type and `TabSummary.targetName`; its outline query reads it with
+  `json_extract(t.data, '$.targetName')` for connected rows only (`json_valid` first, so a bad body never fails the read),
+  `tab-row.ts` puts it beside `connection`, and the editor's placeholders take it through the shared `fromSummary`.
 
 Its tests: `tab-connection.test.ts` (every rename and follow case), `TabStrip` (the button, its absence read-only and
 without `onConnect`), `ConnectFileDialog` (closes on connect and on its close), `ConnectedTab` (the tooltip and phrase),

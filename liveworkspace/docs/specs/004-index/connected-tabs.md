@@ -215,7 +215,9 @@ nothing more: the target keeps its own name, and nothing is written to it.
 
 - **Kept on the host's tab.** The tab's `name` is the label, so every place that shows the host's tabs (the tab bar,
   its folders, search, agents' reads, the Drive file) shows it. Beside it the tab keeps `targetName`, the target's name
-  as last seen, in its body. A tab with no `targetName` has no name of its own and follows the target as before.
+  as last seen, in its body. A tab with no `targetName` has no name of its own and follows the target as before. Each host's tab summaries carry `targetName` beside
+  `connection`, read out of a connected tab's body where the outline is built (no column of its own), so a renamed tab
+  names its file from the first paint, before its body loads.
 - **Following.** An open's answered name (and Connect Again's) goes to `targetName` on a renamed tab, never to its
   name; on any other tab it goes to the name, as before.
 - **The file's name on show.** Pointing at a renamed connected tab shows "Connected to <targetName>"; a screen reader

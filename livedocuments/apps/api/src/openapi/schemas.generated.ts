@@ -8611,6 +8611,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": true,
         "type": "boolean"
       },
+      "targetName": {
+        "type": "string"
+      },
       "updatedAt": {
         "type": "number"
       }

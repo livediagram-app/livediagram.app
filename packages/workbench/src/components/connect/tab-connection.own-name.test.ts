@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   followedConnectedTab,
+  fromSummary,
   hasOwnName,
   renamedConnectedTab,
   targetNameOf,
@@ -69,5 +70,31 @@ describe('followedConnectedTab', () => {
 
   it('follows again once the target takes the tab’s own name', () => {
     expect(followedConnectedTab(renamed, 'Plan')).toEqual({ id: 'c', name: 'Plan' });
+  });
+});
+
+describe('fromSummary', () => {
+  const CONNECTION = {
+    id: 'cn_abcdefghijklmnopqrstuvwx',
+    app: 'liveplanner',
+    itemId: 'p1',
+  } as const;
+  const placeholder = { id: 't', name: 'Roadmap', elements: [] };
+  it("carries a summary's connection and a renamed tab's file name onto a placeholder", () => {
+    expect(fromSummary(placeholder, { connection: CONNECTION, targetName: 'Launch plan' })).toEqual(
+      { ...placeholder, connection: CONNECTION, targetName: 'Launch plan' },
+    );
+    expect(fromSummary(placeholder, { connection: CONNECTION })).toEqual({
+      ...placeholder,
+      connection: CONNECTION,
+    });
+    expect(fromSummary(placeholder, { connection: CONNECTION, targetName: '' })).not.toHaveProperty(
+      'targetName',
+    );
+  });
+
+  it('carries no file name without a connection', () => {
+    expect(fromSummary(placeholder, { targetName: 'Stray' })).toBe(placeholder);
+    expect(fromSummary(placeholder, null)).toBe(placeholder);
   });
 });

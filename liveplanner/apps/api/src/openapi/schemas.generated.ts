@@ -15603,6 +15603,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "targetName": {
+        "type": "string"
+      },
       "templateChosen": {
         "type": "boolean"
       },
@@ -15757,6 +15760,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "targetName": {
+        "type": "string"
+      },
       "templateChosen": {
         "type": "boolean"
       },
@@ -15810,6 +15816,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "boolean"
       },
       "projectId": {
+        "type": "string"
+      },
+      "targetName": {
         "type": "string"
       },
       "updatedAt": {
