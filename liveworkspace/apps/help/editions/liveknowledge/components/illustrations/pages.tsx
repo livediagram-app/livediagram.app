@@ -462,7 +462,7 @@ export function EmbedInAPage() {
   );
 }
 
-/** Choose a File: the picker an empty embed opens, with a pasted share link, a search and the recent files. */
+/** Embed File: the picker an empty embed opens, with a pasted share link, a search and the recent files. */
 export function ChooseAFile() {
   const files: readonly { name: string; app: string; tone: string }[] = [
     { name: 'Product Roadmap', app: 'liveplanner', tone: 'fill-violet-500' },
@@ -476,7 +476,7 @@ export function ChooseAFile() {
         y={12}
         w={300}
         h={182}
-        title="Choose a File"
+        title="Embed File"
         line="Show a canvas, plan, page or design here, live and read-only."
       >
         <Label x={74} y={56} size={6.5} weight={700} tone="muted">
