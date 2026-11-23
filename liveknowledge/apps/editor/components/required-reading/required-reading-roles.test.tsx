@@ -197,7 +197,9 @@ describe('Page Info', () => {
     api.remind.mockResolvedValue({ outcome: 'sent', sent: 1 });
     fireEvent.click(screen.getByRole('button', { name: /Remind/ }));
     await waitFor(() =>
-      expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/^Reminded 1 person( to read “.+”)?\.$/)),
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringMatching(/^Reminded 1 person( to read “.+”)?\.$/),
+      ),
     );
     expect(tracked).toHaveBeenCalledWith('UI', 'Used', 'ReadingReminded');
   });
