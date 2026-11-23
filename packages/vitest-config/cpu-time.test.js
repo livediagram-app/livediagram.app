@@ -4,6 +4,7 @@ import {
   cpuBudgetMs,
   cpuGrowthLimitMs,
   cpuGrowthRatio,
+  cpuLeastMsOf,
   cpuNowMs,
   cpuRatioCeiling,
 } from './cpu-time.js';
@@ -141,6 +142,22 @@ describe('cpuGrowthRatio', () => {
   });
 });
 
+describe('cpuLeastMsOf', () => {
+  it('keeps the least of its runs, five by default', () => {
+    // What each run read, in microseconds: a collection landed on the first and the third.
+    const spent = [9000, 400, 2500, 700, 3000, 100];
+    let read = 0;
+    const usage = vi
+      .spyOn(process, 'cpuUsage')
+      .mockImplementation((before) => ({ user: before ? spent[read++] : 0, system: 0 }));
+    let runs = 0;
+    expect(cpuLeastMsOf(() => void (runs += 1))).toBe(0.4);
+    expect(runs).toBe(5);
+    expect(cpuLeastMsOf(() => undefined, 1)).toBe(0.1);
+    usage.mockRestore();
+  });
+});
+
 describe('cpuNowMs', () => {
   it('only moves on while the process works, and counts none of the time it waits', async () => {
     const before = cpuNowMs();
@@ -148,10 +165,13 @@ describe('cpuNowMs', () => {
     const waited = cpuNowMs() - before;
     // A wall clock would read 60 here; a CPU clock reads the few ms the timer itself took.
     expect(waited).toBeLessThan(30);
+    // Works until the CPU clock itself has moved on 5 ms, however long that takes on the wall: with every core
+    // busy, 20 ms of spinning held 2.2 ms of this process's CPU (2026-11-23), and a clock that never moved would
+    // spin to the limit and fail below.
     const start = cpuNowMs();
-    const end = Date.now() + 20;
+    const giveUp = Date.now() + 10_000;
     let n = 0;
-    while (Date.now() < end) n += 1;
+    while (cpuNowMs() - start <= 5 && Date.now() < giveUp) n += 1;
     expect(n).toBeGreaterThan(0);
     expect(cpuNowMs() - start).toBeGreaterThan(5);
   });

@@ -155,8 +155,12 @@ export function servePlanSnapshots(
   ctx: PlanRouteContext,
   handle: () => Promise<Response>,
 ): Promise<Response> {
-  const [api, collection, planId, ...rest] = ctx.segments;
-  if (api !== 'api' || collection !== 'projects' || !planId) return handle();
+  // By index, and the rest as a slice: the drift test's sweep follows which segments a request reads
+  // (docs/specs/015-api/api-documentation.md "Drift test"), and a rest pattern reads them all.
+  const { segments } = ctx;
+  const planId = segments[2];
+  if (segments[0] !== 'api' || segments[1] !== 'projects' || !planId) return handle();
+  const rest = segments.slice(3);
   return serveSnapshots({
     db: ctx.env.PLAN_DB,
     itemId: planId,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate } from '@livehuddle/templates';
 import { SHAPE_KINDS, type Element } from '@livehuddle/document';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { viewArea } from './space-3d-cutaway';
 import {
   SPACE_HANG_ACROSS,
@@ -115,7 +115,7 @@ describe('the near pieces', () => {
       buildTemplate('virtual-office', i * 2000, 0),
     ).flat();
     const area = viewArea({ zoom: 1, offset: { x: 0, y: 0 } }, { width: 1200, height: 800 });
-    expect(cpuMsOf(() => standingIdsInArea(big, area))).toBeLessThan(20);
+    expect(cpuMsOf(() => standingIdsInArea(big, area))).toBeLessThan(cpuBudgetMs(20));
   });
 });
 

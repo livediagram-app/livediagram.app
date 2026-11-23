@@ -6,6 +6,7 @@
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "prepare": "node scripts/git-hooks/install.mjs",
+    "prepush:quick": "node scripts/git-hooks/pre-push.mjs --quick",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",

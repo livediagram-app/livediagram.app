@@ -3,14 +3,16 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ROUTE_MANIFEST } from './manifest';
 import {
-  candidatePaths,
   instantiate,
   matchesTemplate,
   probeDispatch,
   routeSourceFiles,
   routeVocabulary,
+  sweepDispatch,
   templateSegments,
+  type DispatchSweep,
   type ProbeResult,
+  type SweepSpan,
 } from './dispatch-probe';
 
 // (method, path-template) parity between the published manifest and the real
@@ -43,19 +45,23 @@ const vocabulary = routeVocabulary();
 const show = (r: Pick<ProbeResult, 'method' | 'path'>) => `${r.method} /${r.path.join('/')}`;
 
 let results: ProbeResult[] = [];
+let sweep: DispatchSweep;
 
-// The sweep is about 35,000 paths in five methods each: some 175,000 dispatches. They take 5 s on a
-// developer's machine and 15 s under coverage, and CI's shared runners, under coverage beside another
-// package, took 19 to 62 s for the same work. A wall-clock timeout, not a CPU budget (testing.md), so a
-// fixed 120 s: three times the 40 s it once allowed a plain run.
-const PROBE_TIMEOUT_MS = 120_000;
+// The sweep answers for every path built from the vocabulary, in five methods each: 450,000 requests under one
+// resource when each was sent, 60 to 160 s on CI's shared runners and past this hook's timeout on a loaded one.
+// It now sends one path of each class the dispatch tells apart (dispatch-probe.ts `sweepDispatch`): a few
+// thousand requests, 1 to 3 s of CPU in the largest api. The timeout is on the wall clock, not a CPU budget
+// (testing.md): with every core of a machine busy twenty times over, those seconds of CPU took more than
+// Vitest's 10 s to come by, so it keeps a minute.
+const SAMPLED_MEMBERS = 2000;
+const PROBE_TIMEOUT_MS = 60_000;
 
 beforeAll(async () => {
   // Trapped requests end in index.ts's catch-all, which logs each one.
   vi.spyOn(console, 'error').mockImplementation(() => undefined);
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
-  const candidates: string[][] = [];
+  const spans: SweepSpan[] = [];
   for (const [segment, byPosition] of vocabulary) {
     // One level deeper than the deepest literal or documented template, so a
     // handler that serves an extension of a known path is caught too.
@@ -66,9 +72,10 @@ beforeAll(async () => {
       ),
     );
     const maxLength = Math.max(documentedDepth, ...byPosition.keys()) + 1;
-    candidates.push(...candidatePaths(segment, byPosition, maxLength));
+    spans.push({ segment, vocabulary: byPosition, maxLength });
   }
-  results = await probeDispatch(candidates);
+  sweep = await sweepDispatch(spans, SAMPLED_MEMBERS);
+  results = sweep.results;
 }, PROBE_TIMEOUT_MS);
 
 afterAll(() => {
@@ -80,10 +87,25 @@ describe('OpenAPI manifest ↔ dispatch (method, path-template) parity', () => {
     // Vacuity guard: a broken source walk or an env that routes nothing would
     // pass every case below without checking anything.
     expect(vocabulary.size).toBeGreaterThan(15);
-    expect(results.length).toBeGreaterThan(1000);
+    expect(sweep.stoodFor).toBeGreaterThan(1000);
     expect(results.filter((r) => r.outcome === 'routed').length).toBeGreaterThan(10);
     // Fewer since folders, sharing and filing moved to the index: what is left reaches a design or a workbench.
     expect(results.filter((r) => r.outcome === 'storage').length).toBeGreaterThan(30);
+  });
+
+  it('answers for a whole class of paths with one request', () => {
+    // The sweep sends one path of each class of paths the dispatch tells apart. These members of the classes,
+    // the same ones every run, were sent for real: one that answers unlike its class is a read of the path the
+    // sweep does not follow (@liveworkspace/vitest-config/route-sweep), and would hide a route from the cases below.
+    expect(sweep.members.length).toBeGreaterThanOrEqual(SAMPLED_MEMBERS);
+    const strays = sweep.members
+      .filter(
+        ({ sent, classed }) =>
+          classed?.outcome !== sent.outcome ||
+          (sent.outcome !== 'storage' && classed.status !== sent.status),
+      )
+      .map(({ sent, classed }) => `${show(sent)}: ${sent.outcome}, its class ${classed?.outcome}`);
+    expect(strays).toEqual([]);
   });
 
   it('serves every documented (method, path)', async () => {

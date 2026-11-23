@@ -3,7 +3,7 @@
 // one AI credit (with what is left for the diagram's owner or the owning team), and, once the month's are used, the
 // right way on for whoever is looking. With Pro off, or a read the api did not count, nothing is drawn.
 import { act, cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setProForTests } from '@liveworkspace/subscription-ui/testing';
 import {
   noteReadCredits,
@@ -53,6 +53,13 @@ const counted = (who: Who) =>
   act(() => noteReadCredits({ owner: ownerOf(who), pass: 'p', used: 12, max: 50 }));
 const used = (who: Who) =>
   act(() => noteReadCreditsUsed({ owner: ownerOf(who), used: 50, max: 50 }));
+
+// The credits line's code is a lazy chunk, fetched the first time it is drawn. That first load used to fall inside a
+// `findBy`'s one second, which a busy machine does not always give it (approvals-roles: 0.9 s for the load alone,
+// 2026-11-23). It is loaded here instead, on a wait that is a module load's, not the UI's.
+beforeAll(async () => {
+  await import('./ReadCreditsStatus');
+}, 60_000);
 
 describe('a counted read', () => {
   it('tells the owner the cost and what is left', async () => {
