@@ -215,6 +215,19 @@ root AGENTS.md); the Workers keep their own ports (8787 and up, 3010 and 3011). 
 livediagram 3100, liveplanner 3200, livedocuments 3300, livedesign 3400, livehuddle 3500 and liveknowledge 3600 (its
 api on 9287 and its MCP on 9288, outside the block as every product's Workers are).
 
+`dev:workspace` runs liveworkspace's eight services in one `wrangler dev` (`packages/local-workers`): one wrangler,
+one workerd and one bundler for all eight, where each used to start its own. Measured on 2026-11-23, peak while
+starting then steady a minute later: 3.5 GB then 2.0 GB in 48 processes before, 1.3 GB then 1.1 GB in 8 after. Each
+service keeps its port, its `.dev.vars`, its migrations and its local data, so nothing that calls it changes.
+Wrangler serves only the first Worker of such a run, so that is a local gateway on 3009, and each service's own port
+is piped to it. It is local only: no deploy, CI run or wrangler.toml changes, and each service's own `dev` script
+still runs it alone. A product's router, api and MCP keep a `wrangler dev` each: run the same way they saved only 0.2
+to 0.3 GB steady, too little for the work their `--env local` router would need.
+
+Tests take a quarter of the machine's cores per run locally and turbo runs two workspaces at a time (the root `build`,
+`lint`, `test`, `test:coverage` and `typecheck` scripts), so several agents testing at once can't run a laptop out of
+memory. CI keeps Vitest's default, a worker per core but one, and its own turbo concurrency.
+
 ## Shared code
 
 Code two or more products need lives once, in `packages/` as `@liveworkspace/*`, each module a subpath
