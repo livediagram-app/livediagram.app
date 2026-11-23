@@ -11,7 +11,21 @@ const api = vi.hoisted(() => ({
 vi.mock('@liveworkspace/workbench/bindings', () => ({ workbench: { api } }));
 vi.mock('@liveworkspace/workbench/lib/api/base', () => ({ API_BASE: '/api' }));
 
-import { ASK_CUT_SHORT, ASK_FAILED, askSender } from './ask-client';
+import { ASK_CUT_SHORT, ASK_FAILED, askSender, readCreditsUsed } from './ask-client';
+
+describe('a refusal for AI credits', () => {
+  it('is read only for ai_credits_used with an owner, and its numbers only in pairs', () => {
+    expect(readCreditsUsed(null)).toBeNull();
+    expect(readCreditsUsed({ error: 'ask_built_in_limit', owner: 'p:a' })).toBeNull();
+    expect(readCreditsUsed({ error: 'ai_credits_used' })).toBeNull();
+    expect(readCreditsUsed({ error: 'ai_credits_used', owner: 't:team', used: 3 })).toEqual({
+      owner: 't:team',
+    });
+    expect(
+      readCreditsUsed({ error: 'ai_credits_used', owner: 't:team', used: 'x', max: Infinity }),
+    ).toEqual({ owner: 't:team' });
+  });
+});
 
 const body: AskRequestBody = { question: 'Q?', passages: [] };
 const sse = (...events: object[]) =>
@@ -71,6 +85,19 @@ describe('asking from an editor', () => {
       type: 'error',
       kind: 'ask_built_in_limit',
       message: 'Tomorrow.',
+    });
+    // With Pro on, the month's AI credits: whose month, and its numbers only where the api sent both.
+    api.fetch.mockResolvedValue(
+      Response.json(
+        { error: 'ai_credits_used', message: 'Used.', owner: 'p:user_a', used: 50, max: 50 },
+        { status: 429 },
+      ),
+    );
+    expect(await ask().outcome).toEqual({
+      type: 'error',
+      kind: 'ai_credits_used',
+      message: 'Used.',
+      credits: { owner: 'p:user_a', used: 50, max: 50 },
     });
     api.fetch.mockResolvedValue(new Response('<html>', { status: 502 }));
     expect(await ask().outcome).toEqual({ type: 'error', kind: 'other', message: ASK_FAILED });

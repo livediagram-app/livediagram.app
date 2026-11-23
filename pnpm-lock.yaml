@@ -8073,6 +8073,12 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
+      '@liveworkspace/subscription':
+        specifier: workspace:*
+        version: link:../subscription
+      '@liveworkspace/subscription-ui':
+        specifier: workspace:*
+        version: link:../subscription-ui
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
