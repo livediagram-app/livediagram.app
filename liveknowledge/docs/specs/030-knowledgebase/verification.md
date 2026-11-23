@@ -310,7 +310,7 @@ mark back, the pages' dates as they were. The Health Score already leaves verifi
 - It goes through the platform's notifier ([accounts.md "An app's own notices"](../../../liveworkspace/docs/specs/003-accounts/accounts.md#notification-emails)),
   to the owner's verified address, and only while their **Knowledgebase Reviews** setting is on (Settings, Account,
   Notifications; on by default; one switch for this email, a conflict's Ask Both Owners and Knowledge Health's
-  Remind the Owners, which [AI Knowledge](ai-knowledge.md) specifies). The knowledgebase keeps no address.
+  Remind the Owners, which [AI Knowledge](ai-knowledge.md) specifies, and [Required Reading](required-reading.md#remind)'s Remind). The knowledgebase keeps no address.
 - Only someone who can still open the knowledgebase is emailed: its own owner, a joined member of its team, or
   someone the index still grants it to. An owner who is a guest has no address and gets none.
 - The three emails together are at most 50 a knowledgebase a day; an owner the ceiling leaves out is emailed the

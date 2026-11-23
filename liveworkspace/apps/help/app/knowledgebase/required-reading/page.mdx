@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Required Reading',
+  description:
+    'Mark a Knowledgebase page Required Reading so everyone, or chosen people, confirm they read it. See who has, remind the rest, and ask again after a change.',
+  path: '/help/knowledgebase/required-reading/',
+});
+
+<ArticleLayout path="knowledgebase/required-reading" title="Required Reading" description="Ask everyone, or chosen people, to confirm they read a page, see who has, and remind the rest." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+Some pages everyone needs to have read: a security policy, the code of conduct, how expenses work. Mark one **Required Reading** and each person asked confirms they read it.
+
+## Make a Page Required Reading
+
+An Editor does this from the page's Page Info, beside the page.
+
+1. Under **Required Reading**, press **Require Reading**.
+2. Choose **Everyone**, every member of the team, or **Chosen People** and tick who.
+3. Press **Require Reading**.
+
+To change who is asked, press **Change** beside the section's heading. To stop, press **Stop Requiring** at the foot of the same panel: the requirement and everyone's confirmations go.
+
+## Confirm You Read It
+
+When you are asked, a **Required Reading** banner sits at the top of the page. Read the page, then press **I've Read This**. The banner goes, and Page Info says when you read it. You confirm once: pressing again changes nothing.
+
+## See Who Has Read It
+
+Everyone who reads the page sees how many have confirmed, such as "7 of 12 have read it", and their own state.
+
+Editors and the page's owner also see who: **Not Yet** first, then **Read** with the date each person confirmed. Nobody else sees names.
+
+## Remind People
+
+Editors and the page's owner can press **Remind** to email everyone not yet read. Each person is reminded of a page at most once a week, so pressing again the next day reaches only people not yet reminded.
+
+Reminders follow the **Knowledgebase Reviews** email setting in Settings, under Notifications, and share its limit of 50 emails a Knowledgebase a day.
+
+## Ask Everyone Again After a Change
+
+When you edit a Required Reading page, the bar at the bottom shows **Ask Everyone to Read Again**. Turn it on before you press **Save** and every confirmation clears, so everyone is asked again. Leave it off for a small fix, such as a typo or a link, and confirmations stay.
+
+## In AI Knowledge
+
+The **Required Reading** card lists every Required Reading page with how many have read it, the least read first. Press a row to open its page.
+
+Confirming needs an account: a guest, a share link without signing in, and an agent can't confirm. A Knowledgebase kept Offline, in this browser only, has no Required Reading.
+
+</ArticleLayout>
