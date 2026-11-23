@@ -79,6 +79,7 @@ export type TreeRowFields =
       subpages: number;
       owner?: string;
       always_in_context?: true;
+      labels?: string[];
     } & TrustFields)
   | {
       page: string;
@@ -102,6 +103,7 @@ export function treeRowOf(row: KnowledgeTreeRow): TreeRowFields {
     subpages: row.subpages,
     ...(row.owner ? { owner: row.owner } : {}),
     ...(row.context ? { always_in_context: true as const } : {}),
+    ...(row.labels?.length ? { labels: row.labels } : {}),
     ...trustFieldsOf(row.trust),
   };
 }

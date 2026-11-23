@@ -73,6 +73,9 @@ export type PageTreeProps = {
   // The connected files among the pages (links-and-embeds.md "Connected files in the sidebar"); absent, a connected
   // row is drawn as a page.
   connected?: PageTreeConnected | undefined;
+  // The pages a label filter keeps (page-surface.md "The label filter"), drawn with the pages above them; null or
+  // absent with no filter on.
+  only?: ReadonlySet<string> | null | undefined;
   className?: string;
 };
 
@@ -120,10 +123,14 @@ export function PageTree({
   actions,
   knowledge,
   connected,
+  only = null,
   className = '',
 }: PageTreeProps) {
-  // Read once per change of the list or of what is closed, never per row.
-  const rows = useMemo(() => visiblePageRows(tabs, closed, activeId), [tabs, closed, activeId]);
+  // Read once per change of the list, of what is closed or of the filter, never per row.
+  const rows = useMemo(
+    () => visiblePageRows(tabs, closed, activeId, only),
+    [tabs, closed, activeId, only],
+  );
   const [ui] = useState(createPageTreeUi);
   const tree = useRef<HTMLDivElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);

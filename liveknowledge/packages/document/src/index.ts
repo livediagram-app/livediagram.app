@@ -126,6 +126,7 @@ export * from '@liveworkspace/model-core/page-fit';
 export * from './page-image';
 export * from './page-cover';
 export * from './page-icon';
+export * from './page-labels';
 export * from './page-lock';
 export * from './page-of';
 export * from './wordmark';

@@ -386,16 +386,40 @@ export function SearchPanel({
           {lead ? (
             <div
               role="group"
-              aria-label={lead.label}
+              aria-label={lead.filter ? `${lead.label}, ${lead.filter.text}` : lead.label}
               aria-busy={lead.busy === true}
               data-search-lead=""
             >
-              <p
-                aria-hidden
-                className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
-              >
-                {lead.label}
-              </p>
+              {lead.filter ? (
+                // The label filter the group follows, and the way to clear it (search-and-ask.md "By label").
+                <div className="flex items-center gap-2 px-3 pb-1 pt-2">
+                  <p
+                    aria-hidden
+                    className="min-w-0 truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                  >
+                    {lead.label}
+                    <span className="font-medium normal-case tracking-normal">
+                      {' '}
+                      · {lead.filter.text}
+                    </span>
+                  </p>
+                  <button
+                    type="button"
+                    data-search-lead-clear=""
+                    onClick={lead.filter.onClear}
+                    className="ml-auto shrink-0 cursor-pointer rounded px-1.5 py-0.5 text-[11px] font-medium text-brand-700 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-brand-300 dark:hover:bg-brand-500/15"
+                  >
+                    Clear Label Filter
+                  </button>
+                </div>
+              ) : (
+                <p
+                  aria-hidden
+                  className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                >
+                  {lead.label}
+                </p>
+              )}
               {lead.items.map((item, idx) => {
                 const active = idx === activeIndex;
                 return (
