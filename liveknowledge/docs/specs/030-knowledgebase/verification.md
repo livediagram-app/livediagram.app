@@ -325,7 +325,9 @@ mark back, the pages' dates as they were. The Health Score already leaves verifi
 
 Verify and change a page's owner: an Editor or a Participant, in person or through a workbench, never an agent
 (`needs_a_person`). A version restore keeps the page's own fields, and a version's copy is a new page with none: no
-Verify, owner or approval rides a version. Change the Review Period: an Editor only
+Verify, owner or approval rides a version. Nor does any ride the room from a person's or a token's socket: an open
+editor hears a page's fields only from the api, after it stored them, so no writer can make a page look Verified,
+owned or unverified on anyone's screen. Change the Review Period: an Editor only
 ([Knowledgebases and pages](knowledgebases-and-pages.md#share-roles)); everyone sees the period in Page Health, and
 only an Editor sees its pencil. Everyone sees the states.
 

@@ -11,6 +11,7 @@ import { MAX_TAB_ID_LEN, admitFrame, helloPresence, resolveCatchup } from '../do
 import { followTargetOf } from '@liveworkspace/api-kit/room-follows';
 import { opFromScopedSender } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
+import { withoutApiOnlyFields } from '../room-api-only-fields';
 import { helloChangesRoster } from '@liveworkspace/api-kit/room-roster';
 import { type SessionAttachment } from '../room-session';
 import type { DocumentRoom } from './document-room';
@@ -139,13 +140,9 @@ export function webSocketMessage(
     // room's check").
     if (!gate.presence && refusesPageTreeOp(room, ws, session.documentId ?? null, msg)) return;
     const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
-    // The knowledgebase's settings are the api's to send (routes/knowledge-settings-routes.ts, after it stored
-    // them): a session's own `document-meta` never carries them, so no peer hears a period that was not saved.
-    if (opKind === 'document-meta')
-      delete (msg.op as { knowledgeSettings?: unknown }).knowledgeSettings;
-    // Nor the Knowledgebase Style, which the api sends after an Editor's metadata write stored it
-    // (routes/documents.ts): a Participant's or a Viewer's socket can never restyle the knowledgebase.
-    if (opKind === 'document-meta') delete (msg.op as { knowledgeStyle?: unknown }).knowledgeStyle;
+    // The knowledgebase's settings and style, and a page's own fields (owner, Verify, approval), are the api's to
+    // send after it stored them: a session's own op never carries them (room-api-only-fields.ts).
+    withoutApiOnlyFields(msg.op);
     const isPresenceOp = gate.presence;
     // A paragraph hold is the room's to give, never relayed as sent (docs/specs/007-editor/article-pages.md
     // "Holding a paragraph").
