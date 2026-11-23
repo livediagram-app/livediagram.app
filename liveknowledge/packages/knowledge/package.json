@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@liveknowledge/document": "workspace:*",
-    "@liveworkspace/ai": "workspace:*"
+    "@liveworkspace/ai": "workspace:*",
+    "@liveworkspace/ask": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

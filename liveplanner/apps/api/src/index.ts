@@ -54,6 +54,7 @@ import { handleFolders } from './routes/folders';
 import { handleShare } from './routes/share';
 import { handleTeams } from './routes/teams';
 import { handleTrash } from './routes/trash';
+import { handleAsk } from './routes/ask';
 import { handleAutomationHook } from './routes/automation-hook-routes';
 import { handleEmailOptOut } from './routes/email-optout-route';
 import { handleCalendarFeed } from './routes/calendar-feed-route';
@@ -378,6 +379,9 @@ async function routeApiRequest(
       return await handleFormDrafts(ctx);
     case 'trash':
       return await handleTrash(ctx);
+    // Ask AI (liveworkspace/docs/specs/020-ask/ask.md): a question answered from the open item's own words.
+    case 'ask':
+      return await handleAsk(ctx);
     case 'preferences':
       return await handlePreferences(ctx);
     case 'participants':

@@ -5,10 +5,7 @@ import { agentPresenceLog } from '@liveworkspace/api-kit/room-agent-presence';
 import type { DocumentRoom } from './document-room';
 import { sweepStaleAttendance } from './room-attendance';
 import { MAINTENANCE_KEY, restoreContentState } from './room-content-state';
-
-// DO storage key holding `{ epoch, seq }` so the room keeps its ordering identity across a hibernation wake
-// (docs/specs/012-collaboration/resync-without-reload.md).
-export const ORDER_STATE_KEY = 'order-state';
+import { ORDER_STATE_KEY } from './room-order';
 
 export async function restoreRoom(room: DocumentRoom): Promise<void> {
   const { storage } = room.state;
