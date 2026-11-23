@@ -73,6 +73,17 @@ export function coverEditable(s: {
   return s.pageEditing ? s.pageEditing.editing : true;
 }
 
+/** Whether this person may add a cover or an icon to the open page (Add Cover, Add Icon in the meta row): the
+ *  cover's writers, whether the page is being read or edited (owner 2026-11-23: "I should also see Add Cover and Add
+ *  Icon and Add Label even when the page isn't in edit mode"). Changing one stays an edit-mode control. */
+export function coverAddable(s: { isReadOnly: boolean; participating: boolean }): boolean {
+  return !s.isReadOnly && !s.participating;
+}
+
+export function useCoverAddable(): boolean {
+  return useEditorChrome(coverAddable);
+}
+
 export function useCoverEditable(): boolean {
   return useEditorChrome((s) =>
     coverEditable({

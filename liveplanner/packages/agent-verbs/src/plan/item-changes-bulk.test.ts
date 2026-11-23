@@ -85,6 +85,14 @@ const BULK = `/projects/${D}/items/bulk`;
 const ONE = `/projects/${D}/items`;
 
 describe('adding many cards in one change_items', () => {
+  it('carries where in another app a card came from (plan-agents.md "Cards from another app")', async () => {
+    const { api: a, seen } = api();
+    const state = await readPlanState(a, D);
+    const sentFrom = { app: 'livediagram', itemId: 'D', elementId: 'e1', text: 'Fix it' };
+    await applyItemChanges(a, D, [add('One', { sentFrom })], state);
+    expect(seen[0]).toMatchObject({ path: ONE, body: { sentFrom } });
+  });
+
   it('writes a run of new cards in one request, in order, each with its line', async () => {
     const { api: a, seen } = api();
     const state = await readPlanState(a, D);

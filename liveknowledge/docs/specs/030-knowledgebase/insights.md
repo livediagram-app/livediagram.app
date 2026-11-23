@@ -139,7 +139,7 @@ page's trust (green and amber) or a comment.
 - **The page tree:** a page with suggestions waiting has an 8 px violet dot at the end of its row, before its trust
   mark, with a tooltip and a spoken label ("1 Suggested Edit", "3 Suggested Edits"). None at 0.
 - **The meta row:** a **1 Suggested Edit** / **3 Suggested Edits** pill right after the verified badge, a pencil before
-  its words, a pointer cursor and a tooltip ("Review the edits agents suggested for this page"). Pressing it opens the
+  its words and a pointer cursor, with no tooltip (the meta row's labelled buttons have none, owner 2026-11-23). Pressing it opens the
   first suggestion's popover (below) on its marked passage, or the rail's section when no passage is marked. None at 0.
 - **The passage it replaces** is washed violet (the blocks it covers, a pale violet ground with a dashed violet
   underline), with a **margin marker**: a 28 px violet disc with a pencil, in the left margin at the passage's first

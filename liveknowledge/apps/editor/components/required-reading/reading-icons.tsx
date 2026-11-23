@@ -14,3 +14,5 @@ export const SmallBookIcon = lucideGlyph(lucideBookOpen, 16);
 export const ReadTickIcon = lucideGlyph(lucideCheck, 14);
 export const RemindIcon = lucideGlyph(lucideBell, 14);
 export const AudienceIcon = lucideGlyph(lucideUsers, 16);
+// The page menu's Require Reading row, the menu's 14 px.
+export const RequireReadingIcon = lucideGlyph(lucideBookOpenText, 14);

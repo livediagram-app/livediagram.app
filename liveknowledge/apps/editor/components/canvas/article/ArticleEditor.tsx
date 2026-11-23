@@ -51,7 +51,7 @@ import type { ArticleEditorProps, SlashState } from './article-editor-types';
 import { measureArticleLayout } from './article-measure';
 import { mountArticleView } from './article-view-mount';
 import { PageLimitNotice, replaceContent } from './article-editor-parts';
-import { createPageSlots } from '@/lib/knowledge/page-slots-plugin';
+import { createPageSlots, observePageSlots } from '@/lib/knowledge/page-slots-plugin';
 import { keepTitlePlugin } from '@/lib/article/keep-title-plugin';
 import { focusMovedSince } from '@/lib/page-title-focus';
 import { PageKnowledgeSlots } from '@/components/knowledge/PageKnowledgeSlots';
@@ -392,6 +392,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
 
   // A link hovered: its address, Open, Edit and Remove (made after the view, which it listens on).
   const linkCard = useArticleLinkHover(viewRef, props.editable);
+
+  // A slot that grows as its content arrives (the meta row's pills) moves the blocks under it: measure again, so the
+  // zones (and the elements drawn at them, a phone's narrow view above all) follow the blocks.
+  useEffect(() => observePageSlots(pageSlots, scheduleMeasure), [pageSlots]);
 
   // A request to put the caret in this article (a new article: its title).
   const request = props.focusRequest;

@@ -20,7 +20,7 @@ import { editorsPhrase } from '@/lib/page-edit/page-edit-text';
 import { EditorDiscs } from '@/components/page-edit/EditorDiscs';
 import { periodPhrase, VerifyPageButton, type VerifyPageButtonProps } from './VerifyPageButton';
 import { AddCoverButton } from '@/components/page-cover/AddCoverButton';
-import { useCoverEditable, usePageHasCover } from '@/components/page-cover/page-cover-state';
+import { useCoverAddable, usePageHasCover } from '@/components/page-cover/page-cover-state';
 import { AddIconButton } from '@/components/page-icon/AddIconButton';
 import { usePageIcon } from '@/components/page-icon/page-icon-state';
 import { PageMakersBadges, type PageMakers } from './PageMakersBadges';
@@ -217,13 +217,13 @@ export function PageMetaRow() {
   const tabId = useEditorChrome((s) => s.pageTab.id);
   const editingHere = useEditorChrome((s) => s.pageEditing.editing);
   const editors = usePageEditors(tabId);
-  // Both hooks run every render: Edit and Save flip whether the cover may change, and a hook skipped by && would
-  // change the hook count (React #300).
-  const coverEditable = useCoverEditable();
+  // Each hook runs every render: a hook skipped by && would change the hook count (React #300). Add Cover and Add Icon
+  // show read or edited, to the cover's writers (page-surface.md "The cover", owner 2026-11-23).
+  const coverAddable = useCoverAddable();
   const hasCover = usePageHasCover();
-  const addCover = coverEditable && !hasCover;
+  const addCover = coverAddable && !hasCover;
   const hasIcon = usePageIcon() !== undefined;
-  const addIcon = coverEditable && !hasIcon;
+  const addIcon = coverAddable && !hasIcon;
   const addLabel = useAddLabel();
   const hasLabels = usePageLabels().length > 0;
   const labelsEditable = useLabelsEditable();

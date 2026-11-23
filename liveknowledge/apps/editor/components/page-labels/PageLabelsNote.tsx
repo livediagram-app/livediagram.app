@@ -17,29 +17,22 @@ const GHOST =
   'inline-flex h-6 cursor-pointer items-center gap-1 rounded-md px-1.5 text-[13px] font-normal leading-5 text-slate-500 transition-colors hover:bg-brand-50 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-brand-600 phone:h-11 dark:text-slate-400 dark:hover:bg-brand-500/15 dark:hover:text-brand-200';
 const PRESSED = 'bg-brand-50 text-brand-800 dark:bg-brand-500/15 dark:text-brand-200';
 
-/** Add Label, for a page with no labels: the dress pair's third button. */
+/** Add Label, for a page with no labels: the dress pair's third button. No tooltip: its words say it (owner
+ *  2026-11-23, page-surface.md "What a page looks like"). */
 export function AddLabelButton() {
   const picker = useLabelPicker();
   return (
-    <>
-      <HoverCard
-        title="Add Label"
-        description="Add a label to group this page with others, across sections."
-        disabled={picker.open}
-      >
-        <button
-          type="button"
-          data-add-label=""
-          aria-haspopup="dialog"
-          aria-expanded={picker.open}
-          onClick={(e) => picker.openFrom(e.currentTarget)}
-          className={`-mx-1.5 ${GHOST} ${picker.open ? PRESSED : ''}`}
-        >
-          <LabelIcon />
-          Add Label
-        </button>
-      </HoverCard>
-    </>
+    <button
+      type="button"
+      data-add-label=""
+      aria-haspopup="dialog"
+      aria-expanded={picker.open}
+      onClick={(e) => picker.openFrom(e.currentTarget)}
+      className={`-mx-1.5 ${GHOST} ${picker.open ? PRESSED : ''}`}
+    >
+      <LabelIcon />
+      Add Label
+    </button>
   );
 }
 

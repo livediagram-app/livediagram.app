@@ -31,7 +31,7 @@ const actions = (): PageTreeActions => ({
   onCopyLink: vi.fn(),
 });
 
-function mount(level: AccessLevel) {
+function mount(level: AccessLevel, extra: Partial<PageTreeKnowledge> = {}) {
   const can = resolveEditorCapabilities(level);
   const rights = knowledgeRights({
     can,
@@ -45,6 +45,7 @@ function mount(level: AccessLevel) {
     canEditFields: rights.editFields,
     onVerify: vi.fn(),
     onSetContext: vi.fn(),
+    ...extra,
   };
   render(
     <PageTree
@@ -125,5 +126,23 @@ describe('the row menu', () => {
     mount(level);
     openMenu('Notes', 'Notes');
     expect(menuItems()).toEqual(['Copy Link']);
+  });
+
+  // Owner 2026-11-23: "require reading should be in the page context menu until enabled, not always shown".
+  it('offers Require Reading after Request Approval on a page that is not Required Reading, and not on one that is', () => {
+    const knowledge = mount('edit', {
+      // Notes is Required Reading already (requireReadingOffered decides, reading-asked.test.ts).
+      canRequireReading: (id) => id !== 'c',
+      onRequireReading: vi.fn(),
+      canRequestApproval: () => true,
+      onRequestApproval: vi.fn(),
+    });
+    openMenu('Release Process, Review Due', 'Release Process');
+    const items = menuItems();
+    expect(items.indexOf('Require Reading')).toBe(items.indexOf('Request Approval') + 1);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Require Reading' }));
+    expect(knowledge.onRequireReading).toHaveBeenCalledWith('b');
+    openMenu('Notes', 'Notes');
+    expect(menuItems()).not.toContain('Require Reading');
   });
 });

@@ -13,6 +13,7 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
 import { SNAPSHOT_BY_ACTION } from '../_shared/snapshot-walkthrough-metrics';
 import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@livehuddle/api-schema';
 
@@ -30,6 +31,7 @@ const perReportReason = Object.fromEntries(
 );
 
 export const EXACT: Readonly<Record<string, string>> = {
+  ...SEND_TO_PLAN_EXACT,
   'Editor|Changed|LeavePagesConfirmed':
     'Someone confirmed leaving Pages on a tab with pages, after the warning that its pages do not show in Diagram or Draw.',
   'Editor|Changed|ModeDiagram':
@@ -2245,6 +2247,7 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   ...SNAPSHOT_BY_ACTION,
+  ...SEND_TO_PLAN_BY_ACTION,
   'Timing|Measured':
     'A key moment was timed: a document opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',

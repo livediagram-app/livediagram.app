@@ -106,6 +106,15 @@ describe('a card', () => {
     }
   });
 
+  it("leaves out a sent card's Sent From, which names another item", () => {
+    const base = card();
+    const out = redactItemForCommunity(
+      { ...base, fields: { ...base.fields, sentFrom: '{"app":"livediagram"}' } },
+      [TASK],
+    );
+    expect('sentFrom' in out.fields).toBe(false);
+  });
+
   it('reads an unknown type as the fallback, still dropping every built-in people field', () => {
     const out = redactItemForCommunity(card({ type: 'gone' }), []);
     expect(out.fields).not.toHaveProperty('assignee');

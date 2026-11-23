@@ -32,7 +32,7 @@ export function RequiredReadingCard({
         <CompactEmptyState
           icon={<ReadingBookIcon />}
           title="No Required Reading"
-          description="An Editor marks a page Required Reading from its Page Info."
+          description="An Editor marks a page Required Reading from its menu in the page tree."
         />
       ) : (
         <ol className="-mx-2 flex flex-col">

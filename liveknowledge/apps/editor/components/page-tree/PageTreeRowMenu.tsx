@@ -2,9 +2,9 @@
 
 // A page's menu in the tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Row menu"; owner 2026-11-21:
 // "some items should be a toolbar, some should be sub items of a category"): a toolbar of Rename, Duplicate, Copy Link
-// and Delete under the page's name, then rows: Add Subpage, Connect File Here, Verify, Request Approval, Always in
-// Context (a checkmark row), Watch (watching.md, every signed-in reader's) and a closed Move section (Move Up, Move
-// Down, Indent, Outdent). A verb that cannot run stays, greyed, and says why in its hover card. A Viewer or a
+// and Delete under the page's name, then rows: Add Subpage, Connect File Here, Verify, Request Approval, Require
+// Reading (while the page is not Required Reading), Always in Context (a checkmark row), Watch (watching.md, every
+// signed-in reader's) and a closed Move section (Move Up, Move Down, Indent, Outdent). A verb that cannot run stays, greyed, and says why in its hover card. A Viewer or a
 // Participant has Copy Link and Watch alone.
 import { useState, type ReactNode } from 'react';
 import {
@@ -32,6 +32,7 @@ import {
   MenuToolbar,
 } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { RequestIcon } from '@/components/knowledge/approval/feedback-icons';
+import { RequireReadingIcon } from '@/components/required-reading/reading-icons';
 import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
 import {
   AddIcon,
@@ -57,6 +58,8 @@ export type PageMenuVerb =
   | 'copy-link'
   | 'verify'
   | 'approval'
+  // Require Reading (required-reading.md "Where it shows"): while the page is not Required Reading.
+  | 'reading'
   | 'context'
   | 'up'
   | 'down'
@@ -119,7 +122,12 @@ export function PageTreeRowMenu({
   knowledge?:
     | Pick<
         PageTreeKnowledge,
-        'canVerify' | 'canEditFields' | 'inContext' | 'canRequestApproval' | 'watchRows'
+        | 'canVerify'
+        | 'canEditFields'
+        | 'inContext'
+        | 'canRequestApproval'
+        | 'canRequireReading'
+        | 'watchRows'
       >
     | undefined;
   // Connect File Here is offered (signed in, on the server, a session that may change the tree).
@@ -198,6 +206,9 @@ export function PageTreeRowMenu({
       {knowledge?.canVerify ? row('verify', 'Verify', <TickIcon />) : null}
       {knowledge?.canRequestApproval?.(id)
         ? row('approval', 'Request Approval', <RequestIcon />)
+        : null}
+      {knowledge?.canRequireReading?.(id)
+        ? row('reading', 'Require Reading', <RequireReadingIcon />)
         : null}
       {/* Watch, Watch This Section, Unwatch: every role that reads the page (watching.md "Where it shows"). */}
       {knowledge?.watchRows?.(id, onClose, !separated)}

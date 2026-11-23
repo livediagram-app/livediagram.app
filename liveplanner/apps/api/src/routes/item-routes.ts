@@ -70,6 +70,7 @@ import { patches } from './item-patches-route';
 import { moves } from './item-moves-route';
 import { historyTagOf, itemHistory } from './item-history-route';
 import { appendItemHistory } from '../db/item-history';
+import { withAgentSentFrom } from './item-sent-from';
 import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
 import { listAssistants } from './item-assistants-route';
@@ -181,6 +182,9 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   // Blockers are an Editor's, and never close a loop (docs/specs/026-plan/item-types.md "Blocked By").
   const blocked = await blockersRefused(ctx, caller, [{ next: { ...input, id: input.id ?? '' } }]);
   if (blocked) return blocked;
+  // An agent's card from another app (item-sent-from.ts): an Editor's, its Sent From filled in by the index.
+  const sent = await withAgentSentFrom(ctx, caller, [body], [input]);
+  if (sent) return sent;
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
@@ -214,6 +218,8 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     creates.map((c) => ({ next: { ...c, id: c.id ?? '' } })),
   );
   if (blocked) return blocked;
+  const sent = await withAgentSentFrom(ctx, caller, body.items as unknown[], creates);
+  if (sent) return sent;
   const made = await createMany(ctx, caller, creates);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);

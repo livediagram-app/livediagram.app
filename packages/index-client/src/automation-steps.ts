@@ -158,6 +158,8 @@ export type AutomationTargetDescription = {
   pages?: { id: string; name: string; parent: string | null }[];
   templates?: { id: string; name: string }[];
   tabs?: { id: string; name: string }[];
+  // A plan's people by name, for Send to Plan's Assignee (send-to-plan.md "The picker").
+  people?: { name: string }[];
 };
 
 // The internal door's path on the target app, under its origin.
