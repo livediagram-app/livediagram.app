@@ -88,7 +88,7 @@ export function TopCenterChrome({
               onClick={onStopFollowing}
               className="cursor-pointer rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold transition hover:bg-white/30"
             >
-              Stop
+              <span className="text-optical-line">Stop</span>
             </button>
           </TopCenterBanner>
         </TopCenterRow>
