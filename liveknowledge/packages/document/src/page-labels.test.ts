@@ -29,7 +29,19 @@ describe('a label', () => {
   it('keeps a name trimmed, its spaces made one, within 40 characters', () => {
     expect(labelName('  Product   Team ')).toBe('Product Team');
     expect(labelName('x'.repeat(LABEL_NAME_MAX))).toHaveLength(LABEL_NAME_MAX);
-    for (const bad of ['', '   ', 'x'.repeat(LABEL_NAME_MAX + 1), 'a\u0007b', 'a,b', 3, null])
+    // Letters past the C1 controls are kept: an accent, a dash, a CJK name.
+    expect(labelName('Caf\u00e9 \u2013 \u7814\u7a76')).toBe('Caf\u00e9 \u2013 \u7814\u7a76');
+    for (const bad of [
+      '',
+      '   ',
+      'x'.repeat(LABEL_NAME_MAX + 1),
+      'a\u0007b',
+      'a\u0085b',
+      'a\u007fb',
+      'a,b',
+      3,
+      null,
+    ])
       expect(labelName(bad)).toBeUndefined();
   });
 
@@ -135,16 +147,17 @@ describe('changing the labels', () => {
       name: `L${i}`,
       colour: 'blue',
     }));
-    expect(applyLabelChange(full, { kind: 'add', id: 'lbl_n', name: 'N', colour: 'red' })).toEqual(
-      { refusal: 'label_limit' },
-    );
+    expect(applyLabelChange(full, { kind: 'add', id: 'lbl_n', name: 'N', colour: 'red' })).toEqual({
+      refusal: 'label_limit',
+    });
   });
 
   it('renames in one change, a case change of its own name included', () => {
     const both = [eng, onb];
-    expect(applyLabelChange(both, { kind: 'rename', id: 'lbl_eng', name: 'engineering' })).toEqual(
-      { labels: [{ ...eng, name: 'engineering' }, onb], label: { ...eng, name: 'engineering' } },
-    );
+    expect(applyLabelChange(both, { kind: 'rename', id: 'lbl_eng', name: 'engineering' })).toEqual({
+      labels: [{ ...eng, name: 'engineering' }, onb],
+      label: { ...eng, name: 'engineering' },
+    });
     expect(applyLabelChange(both, { kind: 'rename', id: 'lbl_eng', name: 'onboarding' })).toEqual({
       refusal: 'label_name_taken',
     });
@@ -160,9 +173,10 @@ describe('changing the labels', () => {
     expect(applyLabelChange(list, { kind: 'recolour', id: 'lbl_eng', colour: 'GREEN' })).toEqual({
       refusal: 'invalid_label_colour',
     });
-    expect(applyLabelChange(list, { kind: 'recolour', id: 'lbl_eng', colour: '#00FF00' })).toEqual(
-      { labels: [{ ...eng, colour: '#00ff00' }], label: { ...eng, colour: '#00ff00' } },
-    );
+    expect(applyLabelChange(list, { kind: 'recolour', id: 'lbl_eng', colour: '#00FF00' })).toEqual({
+      labels: [{ ...eng, colour: '#00ff00' }],
+      label: { ...eng, colour: '#00ff00' },
+    });
     expect(applyLabelChange(list, { kind: 'recolour', id: 'lbl_eng', colour: 'x' })).toEqual({
       refusal: 'invalid_label_colour',
     });

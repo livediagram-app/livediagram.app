@@ -5,8 +5,9 @@
 // forgiving (what is valid is kept), a change is strict (it answers a refusal by name).
 import { STANDARD_COLOUR_NAMES, isHexColour, type StandardColourName } from './standard-colours';
 
-/** A label's colour: a standard colour's name (drawn in its version for the appearance) or a custom `#rrggbb`. */
-export type LabelColour = StandardColourName | string;
+/** A label's colour: a standard colour's name (`StandardColourName`, drawn in its version for the appearance) or a
+ *  custom `#rrggbb`; `isLabelColour` says which strings are either. */
+export type LabelColour = string;
 
 export type KnowledgeLabel = { id: string; name: string; colour: LabelColour };
 
@@ -29,7 +30,13 @@ export const LABEL_COLOUR_ORDER: readonly StandardColourName[] = [
 
 const LABEL_ID = /^[A-Za-z0-9_-]{1,40}$/;
 // C0, DEL and C1 controls, which no name keeps.
-const CONTROL = /[\u0000-\u001f\u007f-\u009f]/;
+const hasControl = (text: string): boolean => {
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if (code <= 0x1f || (code >= 0x7f && code <= 0x9f)) return true;
+  }
+  return false;
+};
 const SPACES = /\s+/gu;
 
 export const isLabelId = (v: unknown): v is string => typeof v === 'string' && LABEL_ID.test(v);
@@ -44,7 +51,7 @@ export function isLabelColour(v: unknown): v is LabelColour {
 /** A name as kept: NFC, trimmed, each run of white space one space; undefined when empty, too long, or holding a
  *  control character or a comma (a comma separates the labels of a search's scope). */
 export function labelName(raw: unknown): string | undefined {
-  if (typeof raw !== 'string' || CONTROL.test(raw) || raw.includes(',')) return undefined;
+  if (typeof raw !== 'string' || hasControl(raw) || raw.includes(',')) return undefined;
   const name = raw.normalize('NFC').replace(SPACES, ' ').trim();
   return name.length > 0 && name.length <= LABEL_NAME_MAX ? name : undefined;
 }
@@ -118,10 +125,7 @@ export function withTabLabels<T extends object>(tab: T, ids: readonly string[]):
 }
 
 /** The page's labels that exist, in the page's order. */
-export function pageLabelsOf(
-  ids: unknown,
-  labels: readonly KnowledgeLabel[],
-): KnowledgeLabel[] {
+export function pageLabelsOf(ids: unknown, labels: readonly KnowledgeLabel[]): KnowledgeLabel[] {
   const list = parseTabLabels(ids);
   if (list.length === 0) return [];
   const byId = new Map(labels.map((l) => [l.id, l]));
@@ -156,8 +160,7 @@ export const LABEL_REFUSAL_WORDS: Record<LabelRefusal, string> = {
 };
 
 export type LabelChangeResult =
-  | { labels: KnowledgeLabel[]; label?: KnowledgeLabel }
-  | { refusal: LabelRefusal };
+  { labels: KnowledgeLabel[]; label?: KnowledgeLabel } | { refusal: LabelRefusal };
 
 const taken = (labels: readonly KnowledgeLabel[], name: string, except?: string) => {
   const key = labelKey(name);
@@ -230,7 +233,8 @@ export function resolveLabels(
     const value = raw.trim();
     if (!value) continue;
     const key = labelKey(value);
-    const label = labels.find((l) => l.id === value) ?? labels.find((l) => labelKey(l.name) === key);
+    const label =
+      labels.find((l) => l.id === value) ?? labels.find((l) => labelKey(l.name) === key);
     if (!label) return { unknown: value };
     if (!ids.includes(label.id)) ids.push(label.id);
   }
