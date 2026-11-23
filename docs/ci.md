@@ -456,6 +456,16 @@ eleven minutes, 82% of it the test runs, one after another; lint and type check 
 replayed from turbo's cache. So the test runs go a few at a time, a change that reaches most of a suite
 leaves that suite to CI, and the telemetry chart tests run once.
 
+What the checks added on 2026-11-23 cost, measured the same day on one small push (a one-line change to
+`@livehuddle/avatar`, lint and type check replayed from turbo's cache, a load of 10 on 10 cores): the hook
+took 15 s before and 40 s after, 57 s when `main` had moved on. Of the extra time, 13 s is the help
+centre's guard tests, which read the whole repository and so run on every push; 6 s is the package's suite
+with coverage (13 s) in place of its related run (7 s); 17 s is the guards on the merge with `main`.
+`pnpm prepush:quick` took 45 s on the same push, 59 s with the merge. Each of three planted faults stopped
+it: a hand-tinted note box in an editor (43 s, the Callout guard), a function without a test in a gated
+package (41 s, its thresholds), and a note box already on `main` (85 s, the merged guards). At a load of
+100 the same runs took three to seven times as long.
+
 - `pnpm install` installs it: the root `prepare` script runs `scripts/git-hooks/install.mjs`, which
   points `core.hooksPath` at the tracked `.githooks/` (for every worktree of the repository). It skips,
   saying so, when `CI` is set or outside a git work tree, and it never rewrites a `core.hooksPath` that is
