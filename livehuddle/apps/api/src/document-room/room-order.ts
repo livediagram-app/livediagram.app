@@ -1,7 +1,7 @@
 import type { DocumentRoom } from './document-room';
 
 // The room's ordered mutation stream (document-room.ts): the key its `{ epoch, seq }` is kept under across a
-// hibernation wake (the constructor restores it), and the one path that puts a mutation into the stream. Each
+// hibernation wake (room-restore.ts restores it), and the one path that puts a mutation into the stream. Each
 // function takes the room it acts for.
 
 // How many recent mutation ops the room keeps for reconnect catch-up

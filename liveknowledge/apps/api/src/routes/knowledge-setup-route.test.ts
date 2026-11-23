@@ -4,6 +4,7 @@ import {
   SETUP_PER_KNOWLEDGEBASE_PER_DAY,
   SETUP_PER_PERSON_PER_HOUR,
 } from '@liveknowledge/knowledge';
+import { fakeSubscription, proEnv } from '../knowledge/tier-test-kit';
 import { fakeClaude, fakeOpenAi, knowledgeKit, type Kit, type Who } from './knowledge-test-kit';
 
 // docs/specs/030-knowledgebase/describe-to-set-up.md "The model", "Share roles".
@@ -547,4 +548,16 @@ describe('POST setup/suggest on built-in AI', () => {
       expect(await accountCount(kit).spendSetupDraft(today(), 1)).toBe(true);
     },
   );
+
+  it('spends two of the owner’s AI credits with Pro on, and says the month in the answer', async () => {
+    const fake = fakeSubscription();
+    const kit = await builtInKit(fakeAi({ response: JSON.parse(STRUCTURE) }), {});
+    proEnv(kit.db.env, fake);
+    const res = await suggest(kit, 'editor');
+    expect(res.status).toBe(200);
+    expect((await res.json<{ credits?: unknown }>()).credits).toEqual({ used: 2, limit: 50 });
+    expect(fake.to('spend')).toEqual([
+      expect.objectContaining({ owner: 'p:user_o', meter: 'aiCredits', amount: 2 }),
+    ]);
+  });
 });

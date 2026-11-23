@@ -387,7 +387,8 @@ ask, 2026-11-11): first the picture, then the card.
   `data` and `url`, takes the bytes as livediagram's `upload_image` does (livediagram mcp-server.md §4.5c, the shared
   `packages/agent-verbs/src/images/upload.ts` (`@liveworkspace/agent-verbs`)): base64 or a `data:` URL, or a public https URL fetched through the
   SSRF-safe fetch; PNG, JPEG, WebP or GIF read from the bytes (`sniffImageType`), never SVG, at most `MAX_IMAGE_BYTES`
-  (10 MB), with a size in its header. It uploads through the api's own route, `POST /api/images?p={projectId}`, as the
+  (10 MB on every tier: the Worker holds the whole body), with a size in its header. With Pro on the api may refuse
+  under that for the caller's tier (5 MB on Free), and the tool's refusal says the limit the api named. It uploads through the api's own route, `POST /api/images?p={projectId}`, as the
   caller with their own bearer token, naming the tool (`X-Image-Source: mcp`, so the gallery shows it **Made by AI**).
   That route is the one place the rules are held, for the editor and agents alike: the caller must be able to edit
   the plan's cards (an Editor or a Participant; a Viewer, a link that only reads and a read-only token are refused,

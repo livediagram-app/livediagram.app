@@ -1,4 +1,4 @@
-// A server-sent-events body, read (liveworkspace/docs/specs/019-ask/ask.md "The route"): the events of one answer,
+// A server-sent-events body, read (liveworkspace/docs/specs/020-ask/ask.md "The route"): the events of one answer,
 // in order. Shared by liveknowledge's Ask and every other app's Ask AI, each with its own event shape.
 
 /** The events of one server-sent-events body, in order. Reads `data:` lines (an event may span several), ends an

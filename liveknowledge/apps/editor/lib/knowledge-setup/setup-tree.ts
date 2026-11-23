@@ -9,6 +9,9 @@ import {
 } from '@liveknowledge/document';
 import type { KnowledgeSetupPage } from '@liveknowledge/api-schema';
 import { SETUP_MAX_TITLE_CHARS } from '@liveknowledge/knowledge';
+import { TIER_NAMES } from '@liveworkspace/subscription';
+import { pagesTierOf } from '@/lib/knowledge-import/import-trim';
+import { openPagesBound, openPagesMax } from '@/lib/knowledge-tier';
 
 export type ReviewPage = KnowledgeSetupPage & { ticked: boolean };
 
@@ -58,7 +61,7 @@ export function setupLimitRefusal(
   where: { existing: number; replacing: boolean; parentDepth: number },
 ): PageTreeRefusal | null {
   const ticked = tickedPages(pages);
-  if (where.existing - (where.replacing ? 1 : 0) + ticked.length > MAX_KNOWLEDGEBASE_PAGES)
+  if (where.existing - (where.replacing ? 1 : 0) + ticked.length > openPagesMax())
     return 'page_limit';
   const deepest = ticked.reduce((most, page) => Math.max(most, page.depth), 0);
   return where.parentDepth + deepest > MAX_PAGE_DEPTH ? 'depth_limit' : null;
@@ -68,5 +71,15 @@ export function setupLimitRefusal(
 export function setupLimitText(refusal: PageTreeRefusal): string {
   return refusal === 'depth_limit'
     ? `These pages would sit more than ${MAX_PAGE_DEPTH} levels deep, which is as deep as a knowledgebase goes. Untick the deepest pages, or add them under a page nearer the top.`
-    : `A knowledgebase holds at most ${MAX_KNOWLEDGEBASE_PAGES} pages, and these would pass that. Untick some pages to make room.`;
+    : `${pagesHeldWords()}, and these would pass that. Untick some pages to make room.`;
+}
+
+/** What holds the pages: the owner's limit across their knowledgebases, or the one knowledgebase's bound. */
+export function pagesHeldWords(): string {
+  const account = openPagesBound()?.account;
+  if (!account) return `A knowledgebase holds at most ${MAX_KNOWLEDGEBASE_PAGES} pages`;
+  const tier = pagesTierOf(account.limit);
+  const name = tier ? TIER_NAMES[tier] : 'Your plan';
+  const across = account.whose === 'yours' ? 'your Knowledgebases' : 'this team’s Knowledgebases';
+  return `${name} holds ${account.limit.toLocaleString('en-US')} pages across ${across}`;
 }

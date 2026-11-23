@@ -67,6 +67,12 @@ export type ListResponse<Rule extends ListedRule = ListedRule> = {
   rules: Rule[];
   runsToday: number;
   runsPerDay: number;
+  // The most rules the item holds itself (50, or Free's 25 for a guest's item). With Pro on
+  // (liveworkspace/docs/specs/019-subscription/subscription.md) the owner as a scope for the offer and their monthly
+  // figures, or `guest`. Absent with Pro off.
+  rulesMax?: number | undefined;
+  owner?: string | undefined;
+  guest?: true | undefined;
 };
 
 // A drafted rule (Describe a Rule) and a template's rule: the body and what it left to pick.

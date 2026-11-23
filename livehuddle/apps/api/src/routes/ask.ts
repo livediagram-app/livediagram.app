@@ -1,4 +1,4 @@
-// Ask AI, `POST /api/ask` (liveworkspace/docs/specs/019-ask/ask.md "The route"): a question answered from the passages
+// Ask AI, `POST /api/ask` (liveworkspace/docs/specs/020-ask/ask.md "The route"): a question answered from the passages
 // of the open space its editor sent, on the person's own key (or the space's team's) when one applies, else on
 // built-in AI under its daily allowance. The route itself is the platform's (@liveworkspace/ask/server); this file
 // says who is calling, how accounts is asked for the key, and where the allowance is counted.

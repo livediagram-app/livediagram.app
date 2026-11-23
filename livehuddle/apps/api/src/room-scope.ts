@@ -6,13 +6,15 @@
 // withheld from, and refused from, a scoped session.
 
 // Ops that carry no tab and say nothing about one, which a scoped session
-// still receives: the worker's share-link and Trash notices, and a nudge, which names a person and is only ever
+// still receives: the worker's share-link and Trash notices, the room's word on call minutes, and a nudge, which names a person and is only ever
 // sent to that one session (docs/specs/012-collaboration/nudge.md "Share roles": anyone may be nudged).
 const TAB_LESS_DELIVERED = new Set([
   'share-revoked',
   'share-rescoped',
   'document-trashed',
   'nudge',
+  // The Space's owner's call minutes (docs/specs/012-collaboration/call-minutes.md): a scoped visitor's call ends too.
+  'call-minutes',
 ]);
 
 // The tab-less ops a scoped session may itself send.

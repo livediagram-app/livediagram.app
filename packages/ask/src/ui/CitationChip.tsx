@@ -1,6 +1,6 @@
 'use client';
 
-// A citation in an answer (liveworkspace/docs/specs/019-ask/ask.md "What an answer shows"): a small numbered square
+// A citation in an answer (liveworkspace/docs/specs/020-ask/ask.md "What an answer shows"): a small numbered square
 // that goes to its source card. brand-900 on brand-100 is over 4.5:1. Shared by liveknowledge's Ask and every other
 // app's Ask AI.
 export const NUMBER_CHIP =

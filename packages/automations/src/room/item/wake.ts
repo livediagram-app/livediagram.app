@@ -6,7 +6,6 @@
 // gives up after 12 in a row (automation-wake.ts). One telemetry batch a wake.
 import { BUDGET_SPENT, runItemRule, type ItemRunState } from './run';
 import { ITEM_RESUME_EVENT, type ItemEvent, type ItemKinds, type ItemRule } from '../../item';
-import { AUTOMATION_RUNS_PER_DAY } from '../../limits';
 import { burstLineId, runsToday, settleRun, settleWaiting, trimRuns } from '../automation-log';
 import { AutomationTally } from '../automation-telemetry';
 import { WAIT_RULE_CHANGED, runWaits } from '../automation-waits';
@@ -80,7 +79,7 @@ export async function runItemWake(
         sql,
         event.origin,
         'skipped',
-        state.today >= AUTOMATION_RUNS_PER_DAY ? BUDGET_SPENT : WAIT_RULE_CHANGED,
+        state.today >= deps.store.runsPerDay ? BUDGET_SPENT : WAIT_RULE_CHANGED,
       );
     schedule.done(row.id);
   }
@@ -139,6 +138,9 @@ export async function runItemAutomations(engine: ItemEngine, now: number): Promi
   // The wake's counts, posted once when it ends, a failed wake's too.
   const tally = new AutomationTally();
   try {
+    // The item's tier's limits, read again when over a minute old: once a wake at most, before any run, so a run's
+    // claim reads its day's limit from memory. With Pro off (and while fresh) nothing is awaited.
+    if (deps.tier && !deps.tier.fresh()) await deps.tier.refresh();
     await wakeOnce(deps, schedule, now, tally);
     wakeDone(deps.sql(), schedule);
   } catch (error) {

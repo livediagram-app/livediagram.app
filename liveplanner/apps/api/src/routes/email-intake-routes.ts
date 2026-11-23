@@ -40,6 +40,9 @@ import type { ItemTypeDef } from '@liveplanner/items';
 import { json, methodNotAllowed, noContent } from '../responses';
 import { planTypesOf } from '../roadmap/roadmap-boards';
 import { grantOn, missingProject, readBody, requireOwner, type PlanRouteContext } from './context';
+import { monthKey } from '@liveworkspace/subscription';
+import { EMAIL_METER, monthFull } from '../plan-room/tier/plan-meters';
+import { tierOn } from '../plan-room/tier/plan-tier';
 
 // The longest board id a path names: element ids are far shorter.
 const BOARD_ID_MAX = 200;
@@ -97,6 +100,19 @@ const wire = (row: IntakeRow, domain: string, world: World): EmailIntake => ({
   lastAt: row.lastAt,
 });
 
+// With Pro on, the owner's monthly limit of emails to boards, whether this plan found it used this month, and that
+// owner (spec "Tiers"). What the owner used is theirs alone: the dialog reads it from their own subscription.
+async function monthOf(
+  ctx: PlanRouteContext,
+  projectId: string,
+): Promise<Pick<EmailIntakesResponse, 'month' | 'owner'>> {
+  const tier = await tierOn(ctx.env);
+  if (!tier?.owner) return {};
+  const limit = tier.limit('emailToBoardPerMonth', 0);
+  const full = await monthFull(ctx.env, projectId, EMAIL_METER, monthKey(Date.now()), limit);
+  return { month: { limit, full }, owner: tier.owner };
+}
+
 async function list(ctx: PlanRouteContext, projectId: string): Promise<Response> {
   const domain = ctx.env.EMAIL_INTAKE_DOMAIN || null;
   if (!domain) {
@@ -120,6 +136,7 @@ async function list(ctx: PlanRouteContext, projectId: string): Promise<Response>
       .map((r) => wire(r, domain, world)),
     boards: boards.map((b) => wireBoard(b, boards, types)),
     types: intakeTypesOf(boards, types),
+    ...(await monthOf(ctx, projectId)),
   };
   return answer(body);
 }

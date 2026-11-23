@@ -242,6 +242,65 @@ roadmap_not_found`. A path no roadmap could have (no code, a malformed plan id, 
 A body names columns by their status and types by id, each among the board's; fields from the allowlist; a form by its
 code. Anything else is `400 roadmap_invalid`. Every answer is `no-store`.
 
+## Tiers
+
+With Pro off nothing here applies: a person publishes as many roadmaps as they have boards. With [Pro on](../../../../liveworkspace/docs/specs/019-subscription/subscription.md) the
+roadmaps an owner has published at once, over all their plans, are limited by the **owner's tier** (Free 1, Pro 10,
+Pro for Teams unlimited): a team's for a plan in a team's library, otherwise the owning person's.
+
+- **Publish** asks the subscription service for one more before it makes the link. At the limit it is refused with
+  **409** `roadmap_limit_reached`, carrying `limit` (`publicRoadmaps`), `used` and `max`, and nothing is published.
+  If the subscription service refuses the app's own request, nothing is published uncounted and the request fails
+  as a server error, never as a limit.
+- **Changing** a published roadmap's settings never counts, and is never refused by a tier.
+- **Unpublish**, a board or tab that has gone, the plan's purge and the plan moving to another owner each give the
+  place back. A plan in the Trash or archived keeps its places: it can come back.
+- **A roadmap answers only while it holds a counted place.** Each roadmap keeps a mark: counted, not counted, or
+  never counted. One whose place was given back (its board or tab went) or refused holds none: its link answers
+  the same not-found as any other miss, its row and its link are kept, and its board reads as not published in the
+  dialog, with the limit beside it. So deleting a board, publishing another and undoing the delete never leaves two
+  answering on a limit of one.
+- **A board that came back** asks for its place again the next time the plan's roadmaps are counted (the list, a
+  Publish, the plan's daily upkeep). It answers again, on the same link, if the owner has a place for it; otherwise
+  Publish Roadmap on it is refused at the limit like any other.
+- **Roadmaps from before** (published before Pro, or while the subscription service could not be reached) were
+  never counted and keep answering until their first count. That count takes the plan's roadmaps **oldest first**:
+  within the owner's limit none ever comes down; past it the oldest keep the places and the rest hold none until
+  the owner has room (unpublishing one, or a higher tier). Nothing is deleted.
+- **A plan that moves** to another owner or team gives its places back and asks the new owner for them, oldest
+  first, by the same rule. A move is never a way past a limit.
+- **A higher tier takes effect at once**: a Publish refused at the limit asks for the owner's limits once more
+  before it answers, and the list does when it holds a roadmap with no place.
+- **A guest's plan** (its owner has no account) is held to Free's 1, counted in the plan itself. The subscription
+  service is never asked about it, `owner` is absent and `guest: true` is sent in its place, on the list and on
+  the refusal. Nobody is offered an upgrade there.
+- `GET` carries `usage` (`used` and `limit`, null for unlimited) and `owner` (the owner's scope) so the dialog can
+  say how many are left and ask the subscription service which action to offer.
+
+### What the dialog shows
+
+Only with Pro on. A board not yet published, while the owner has published every roadmap their tier allows (the
+list's `usage`, or a refused Publish's own numbers; a plan with no roadmap out gets no count from the list, so the
+owner and the owning team read it from their own subscription), shows a panel above the settings, **Publish This Board as a
+Roadmap**. Publish Roadmap stays on: the numbers may be from before an upgrade, so a press asks the api, which
+answers with the limit when it still holds. The list is read again when the owner's tier changes and when the
+window is looked at again, so the panel goes by itself after an upgrade, with no reload.
+
+In a guest's plan the panel is a single note in its place: "This plan has its one public roadmap. Sign in to keep
+this plan as your own." with **Sign In**. No offer and nothing about a tier.
+
+- It says who holds the place. One roadmap of this plan: "Free publishes 1 roadmap, and "Product Roadmap" is using
+  it." A board of another of the owner's plans (the list is this plan's alone, so it cannot be named): "Free publishes
+  1 roadmap, and a board in another plan is using it. Unpublish it there to publish this board."
+- The owner (or an admin of the owning team) also reads what the tier above publishes ("Pro publishes 10.") with
+  **Upgrade to Pro**; another member of the team is pointed at an admin with **Ask an Admin**.
+- **Publish This One Instead** is offered only when exactly one roadmap of this plan holds a place. After a confirm
+  that names it ("Unpublish “Product Roadmap” and publish this board?", with **Publish Instead**), that roadmap is unpublished (its link stops at once) and this board is published with the settings
+  chosen. With several of this plan's out, or the place held by another plan, the panel says to unpublish one.
+- It ends "Visitors and votes on a published roadmap are never limited."
+
+A published roadmap's own view never shows the panel: changing or unpublishing it is never limited.
+
 ## Share roles
 
 | Role                         | Publish, change, Unpublish | See the dialog | The board's Roadmap pill | Open the public page |

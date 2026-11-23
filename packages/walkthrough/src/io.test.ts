@@ -66,6 +66,14 @@ describe('the recorder', () => {
     expect(canRecordHere(undefined)).toBe(false);
   });
 
+  it('films a longer recording at the rate it is given', () => {
+    startRecording({ stream: {} as MediaStream, camera: true, Recorder, videoBps: 301_333 });
+    expect(FakeRecorder.last.options).toMatchObject({
+      videoBitsPerSecond: 301_333,
+      audioBitsPerSecond: 48_000,
+    });
+  });
+
   it('records at the walkthrough bit rates and hands back the bytes', async () => {
     const rec = startRecording({ stream: {} as MediaStream, camera: true, Recorder });
     expect(FakeRecorder.last.options).toMatchObject({
@@ -93,6 +101,16 @@ describe('the recorder', () => {
     startRecording({ stream: {} as MediaStream, camera: false, Recorder, onFull });
     FakeRecorder.last.emit(WALKTHROUGH_MEDIA_MAX_BYTES);
     FakeRecorder.last.emit(1);
+    FakeRecorder.last.emit(1);
+    expect(onFull).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops at the bytes its length limit makes, when told them: the service weighs it by the same', () => {
+    const onFull = vi.fn();
+    const half = WALKTHROUGH_MEDIA_MAX_BYTES / 2;
+    startRecording({ stream: {} as MediaStream, camera: false, Recorder, onFull, maxBytes: half });
+    FakeRecorder.last.emit(half);
+    expect(onFull).not.toHaveBeenCalled();
     FakeRecorder.last.emit(1);
     expect(onFull).toHaveBeenCalledTimes(1);
   });

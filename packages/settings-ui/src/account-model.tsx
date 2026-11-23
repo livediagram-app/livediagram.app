@@ -20,6 +20,10 @@ import {
   DATA_EXPORT_CATEGORY,
   type AccountToggle,
 } from '@liveworkspace/settings/account';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
+import type { SubscriptionAccess } from './account-panels/host';
+import { subscriptionRows, SUBSCRIPTION_SECTION_NOTES } from './account-panels/subscription/rows';
+import { SubscriptionTierHint } from './account-panels/subscription/TierHint';
 import { SettingsCategoryTile, type SettingsTileId } from './glyphs';
 import { profileRows } from './profile/profile-rows';
 import type { AccountIdentity } from './profile/ProfileHeader';
@@ -59,6 +63,10 @@ export interface AccountSection {
   // account. A host without an account (a guest, a workbench, a self-hosted editor) hands none.
   renderTokens?: () => ReactNode;
   renderDataExport?: () => ReactNode;
+  // The Subscription category (liveworkspace/docs/specs/019-subscription/subscription.md "What people see"): how it
+  // reaches the subscription service, for a signed-in account. Listed only with Pro on in the build; a host without
+  // an account, or one that hands none, lists no such category.
+  subscription?: SubscriptionAccess | null;
   // The person's AI key and their teams' (liveworkspace/docs/specs/003-accounts/ai-keys.md "Settings"), drawn here
   // (accountPanels) for a signed-in account; none for a guest or a workbench.
   renderAi?: () => ReactNode;
@@ -103,6 +111,7 @@ const TOKENS_KEYWORDS =
 // (glyphs.tsx): Profile (`account`) the person, the rest their shared marks.
 export const ACCOUNT_CATEGORY_IDS = [
   'account',
+  'subscription',
   'notifications',
   'privacy',
   'accessibility',
@@ -120,8 +129,8 @@ export function accountCategoryTile(id: AccountCategoryId): ReactNode {
 }
 
 /** The account's categories, by their own ids (the panel prefixes them `account:`), in the order they are listed:
- *  Profile, Notifications, Privacy, Accessibility, AI and Your Data (the rail's Account), then API Tokens
- *  (its Developers). */
+ *  Profile, Subscription (with Pro on), Notifications, Privacy, Accessibility, AI and Your Data (the rail's
+ *  Account), then API Tokens (its Developers). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
   const { all, set, renderAi, renderTokens, renderDataExport, emails = true } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
@@ -141,6 +150,16 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
       label: 'Profile',
       icon: accountCategoryTile('account'),
       rows: profile,
+    });
+  }
+  if (section.subscription && proOn()) {
+    categories.push({
+      id: 'subscription',
+      label: 'Subscription',
+      icon: accountCategoryTile('subscription'),
+      hint: <SubscriptionTierHint />,
+      sectionNotes: SUBSCRIPTION_SECTION_NOTES,
+      rows: subscriptionRows(),
     });
   }
   categories.push(

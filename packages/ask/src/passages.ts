@@ -1,4 +1,4 @@
-// The passages a question is answered from (liveworkspace/docs/specs/019-ask/ask.md "What is sent"): the open item's
+// The passages a question is answered from (liveworkspace/docs/specs/020-ask/ask.md "What is sent"): the open item's
 // own text, a passage per element, card or block that holds words. The editor makes them from the tabs it already
 // holds (the ones Search reads), chooses the ones the question is about, and sends those; the server reads what it is
 // sent within the same bounds. Pure, and linear in the item's text.

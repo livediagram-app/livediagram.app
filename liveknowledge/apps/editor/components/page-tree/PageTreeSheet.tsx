@@ -14,6 +14,7 @@ import { useLabelFilterReveal } from '@/components/page-labels/useLabelFilter';
 import { PageTree, type PageTreeProps } from './PageTree';
 import { type HeadRename, type KnowledgebaseHead } from './PageTreeSidebar';
 import { AddToSidebar } from './AddToSidebar';
+import { PageTreeLimit } from './PageTreeLimit';
 import { PAGE_RENAME_FIELD } from './page-tree-row-styles';
 import { PagesIcon } from './page-tree-icons';
 import { PageTrashRow } from '@/components/page-trash/PageTrashRow';
@@ -156,6 +157,9 @@ export function PageTreeSheet({
           </div>
           {tree.canEdit ? (
             <div className="border-t border-slate-200 p-3 dark:border-slate-800">
+              {/* Knowledgebase Pages, with Pro on, from 80% of the limit (tiers.md), as in the sidebar: a disabled New
+                  Page says why. */}
+              <PageTreeLimit tabs={tree.tabs} />
               {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"): its
                   dialog opens over the page, so the sheet closes. */}
               <DescribeToSetUpButton onOpen={() => setOpen(false)} />
@@ -168,7 +172,12 @@ export function PageTreeSheet({
                 }
               />
             </div>
-          ) : null}
+          ) : (
+            // Someone who may not add still reads the meter; empty, the strip takes no room.
+            <div className="border-t border-slate-200 px-3 pt-3 empty:hidden dark:border-slate-800">
+              <PageTreeLimit tabs={tree.tabs} />
+            </div>
+          )}
         </BottomSheet>
       ) : null}
     </>

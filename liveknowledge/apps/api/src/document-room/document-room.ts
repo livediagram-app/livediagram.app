@@ -11,6 +11,8 @@ import {
 import type { DocumentGrant } from '../index-service';
 import * as crossApp from './automations/cross-app-door';
 import { roomFetch } from './room-fetch';
+import { roomTier } from '@liveworkspace/automations/room';
+import type { ItemTier } from '@liveworkspace/subscription';
 import { tellSourceChanged } from '@liveworkspace/index-app';
 import { DurableObject } from 'cloudflare:workers';
 import { ROOM_PING, ROOM_PONG, type AccessLevel } from '@liveknowledge/api-schema';
@@ -270,6 +272,9 @@ export class DocumentRoom extends DurableObject<Env> {
   // The knowledgebase's Automations (automations/; docs/specs/013-workspace/automations.md): its rules, what they
   // hear, and what waits to run on the alarm.
   readonly automations: ItemEngine;
+  // The item's tier (liveworkspace/docs/specs/019-subscription/subscription.md "Who pays for an item"): what its
+  // Automations allow and spend, read from its owner. With Pro off it asks nothing and every limit is the legacy one.
+  readonly tier: ItemTier;
   // The comment and action triggers' watch over each page's threads.
   readonly collab: CollabWatch;
 
@@ -370,6 +375,15 @@ export class DocumentRoom extends DurableObject<Env> {
           OUTBOX_OWED: () => noteOutboxOwed(this),
         }
       : undefined;
+    this.tier = roomTier({
+      app: 'liveknowledge.app',
+      env: () => this.roomEnv ?? null,
+      sql: () => this.state.storage.sql,
+      ready: () => this.schemaReady,
+      table: 'document',
+      id: () => this.documentId,
+      defer: (work) => this.state.waitUntil(work),
+    });
     this.drainEnv = this.roomEnv ? { ...this.roomEnv, DOCUMENT_DB: quiet } : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = roomHead(this);

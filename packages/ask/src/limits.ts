@@ -1,4 +1,4 @@
-// The bounds of Ask AI (liveworkspace/docs/specs/019-ask/ask.md "Bounds"): what one question may carry, and built-in
+// The bounds of Ask AI (liveworkspace/docs/specs/020-ask/ask.md "Bounds"): what one question may carry, and built-in
 // AI's daily allowance. The editor keeps to them before it sends; the server holds them again, since a request is
 // whatever its sender wrote.
 

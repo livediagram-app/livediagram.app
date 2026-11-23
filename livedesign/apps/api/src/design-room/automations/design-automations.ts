@@ -34,6 +34,7 @@ export function newDesignAutomations(room: DesignRoom): ItemEngine {
     kinds: KINDS,
     kit: () => designKit(room),
     putAway: () => room.standing.putAway,
+    tier: () => room.tier,
   });
 }
 

@@ -550,6 +550,17 @@ describe('the account API, for the apps', () => {
     expect((await internal('/teams/members', {})).status).toBe(400);
   });
 
+  it("answers several teams' joined member counts in one call", async () => {
+    const made = await call('/teams', { method: 'POST', body: { name: 'Counted' } });
+    const team = (await made.json()) as { id: string };
+    const found = await internal('/teams/member-counts', { teamIds: [team.id, 'nope'] });
+    expect(await found.json()).toEqual({ counts: { [team.id]: 1 } });
+    expect((await internal('/teams/member-counts', {})).status).toBe(400);
+    expect((await internal('/teams/member-counts', { teamIds: [''] })).status).toBe(400);
+    const many = Array.from({ length: 51 }, (_, i) => `team_${i}`);
+    expect((await internal('/teams/member-counts', { teamIds: many })).status).toBe(400);
+  });
+
   it("answers the teams someone is in now, to an app and to the index's key", async () => {
     const made = await call('/teams', { method: 'POST', body: { name: 'Design' } });
     const team = (await made.json()) as { id: string };

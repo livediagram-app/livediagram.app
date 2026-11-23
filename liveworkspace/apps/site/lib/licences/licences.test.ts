@@ -24,11 +24,11 @@ describe('LICENCE_APPS', () => {
 });
 
 describe('serverServices', () => {
-  it('names every service the page lists, Drive, the gateway and status included', () => {
+  it('names every service the page lists, Drive, the gateway, status and subscription included', () => {
     const phrase = serverServices();
     for (const app of LICENCE_APPS.filter((a) => a.side === 'server'))
       expect(phrase, app.id).toContain(app.label);
-    expect(phrase).toMatch(/, Status and Telemetry$/);
+    expect(phrase).toMatch(/, Status, Subscription and Telemetry$/);
   });
 });
 

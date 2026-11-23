@@ -1557,45 +1557,144 @@ rule turned off after its failures in a row), `AutomationCrashed` (a run that th
 moment found too late to run) and `AutomationWakeFailed` (a wake that failed as a whole and tries again later,
 backing off) and `AutomationWakeGaveUp` (the 12th failed wake in a row, which gave up). Test on a Card and Run Rule count as above from the browser and not again here. Each Incoming Webhook call to
 a rule that is on sends `AutomationHookAccepted`, `AutomationHookUnauthorized` (a wrong secret or signature),
-`AutomationHookRateLimited`, `AutomationHookBudget` (the day's runs spent) or `AutomationHookInvalid` (a body it could
+`AutomationHookRateLimited`, `AutomationHookBudget` (the day's runs spent), `AutomationHookMonthUsed` (the owner's month of runs used) or `AutomationHookInvalid` (a body it could
 not read); a call to an address no such rule holds counts nothing, so strangers trying addresses cannot fill the
 dashboard. A wake's events go in one post when it ends, at most 100 (the service's batch), results first, so a
 wake is one request however many rules ran. Like every row, none carries a rule's name, a card or a plan.
 
+## Tiers
+
+liveworkspace's [Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md) sets some of a
+plan's limits by its **owner's tier**. With Pro off (the default, and every self-hosted server that sets nothing)
+nothing here applies: every limit is the one in Limits below, nothing is counted beyond what it says, and the api
+never asks the subscription service.
+
+With Pro on:
+
+- **Whose tier**: the plan's owner's, never the person acting. A plan in a team's library takes the team's tier
+  (Pro for Teams or Free), whatever its members hold themselves; any other plan takes its owning person's. A
+  collaborator, an Editor link and an agent's token all run on the owner's limits. Every limit is checked on the
+  server: nothing a browser or a token sends names a tier.
+- **Automation Runs** are the owner's, a month, over every item they own in every app (owner, 2026-11-22): Free 500,
+  Pro 10,000, Pro for Teams 5,000 a member, pooled (019 "Tiers and limits"). Each run that does something spends one,
+  once its trigger and conditions have matched and before its first action, so a No Match costs nothing; a run going
+  on after a Wait spent when it started. Each message a run sends (Send to Webhook, Send to Slack, Send to Teams)
+  spends one more before it is sent, and only for a message the index will take (the index is asked first, nothing
+  queued by asking), so a paused, full or deleted webhook costs nothing. With the month used, a run never starts:
+  one Skipped line a rule a UTC day says "This month's automation runs are used" and the rule is not paused; a
+  message the month has none left for is not sent, its line says the same, the run carries on and ends **Skipped**.
+  Run Rule and an Incoming Webhook call answer 429 `automation_runs_used` (`limit` `automationRunsPerMonth`, `used`,
+  `max`, `Retry-After` until the 1st, UTC). Where the subscription service cannot be reached, or refuses the plan's
+  own request, the run goes on (the 1,000 a day still bounds it). A wake told the month is used asks no more.
+- **The fixed bounds** hold on every tier and offer no upgrade: 1,000 runs a plan a UTC day (the "Daily limit
+  reached" line, 429 `automation_budget_spent`) and 50 rules a plan.
+- **Automation Rules** are the owner's total over every item they own in every app, on or off: Free 25, Pro 500, Pro
+  for Teams 250 a member, pooled. New Rule, Duplicate, a template and an agent's `add` ask the subscription service
+  first and are refused at the total (409 `automation_rules_full`, `limit` `automationRules`, `used` the owner's
+  total); where the service refuses the request itself the rule is added, held by the plan's own 50. An owner over a
+  lower limit (their subscription ended)
+  keeps every rule, running and editable, and a rule that is off is not switched on while they hold more than the
+  limit (owner, 2026-11-22; its switch off with the reason as its tooltip). Nothing is ever turned off or deleted
+  because a tier changed. A copy of a plan and a plan made from a file keep their rules the same way, and are counted.
+- **AI Credits** are counted per owner per month: one credit for each AI step a run asks and one for each rule
+  Describe a Rule drafts (its second ask rides the first), spent before the model is asked and never given back. An
+  AI step takes its place in the day's 100 before its credit is spent, so a credit is never spent on a call the
+  day's cap then refuses, and gives that place back when the credit is refused. With
+  none left an AI step is skipped as the daily cap skips it, its line reading "This month's AI credits are used", and
+  Describe a Rule answers **429** `automation_ai_credits_used`. Where the subscription service refuses the plan's
+  own request, the step is skipped with "AI credits could not be checked, so the AI was not asked", and Describe a
+  Rule answers **503** `automation_ai_unavailable`: nothing is asked uncounted, and no upgrade is offered. The 100 AI steps a day and 20 drafts a day stay in
+  force on every tier, as safety caps. Test on a Card asks no model and spends nothing.
+- **A guest's plan** (its owner has no account) runs on Free's limits, counted in the plan itself (at most 25 rules),
+  and the subscription service is never asked about it: no entitlement, spend or count. Its runs and AI steps are not
+  counted beyond the fixed bounds. The list sends `guest: true` and no `owner`, a
+  refusal carries `guest: true`, and nobody is offered an upgrade: the note says to sign in to keep the plan. A
+  plan that is nobody's yet is not counted at all.
+- **A higher tier takes effect at once**: a refusal at a tier's limit (a rule, the month's runs) asks the
+  subscription service for the owner's limits once more before it answers, at most once every few seconds a plan,
+  and the list does when the plan is at its limit. The screen reads the list again when the owner's tier changes
+  and when its window is looked at again, so New Rule, Duplicate and the templates come back on with no reload.
+  A look again also asks the subscription service afresh for the owner's tier, so the badge and the words follow
+  the limits at once (not when the page's own copy goes stale), and a change of tier reads the list once more
+  about a minute later, when the api's cached limits have caught up too (a lapse back to Free shows its notices).
+- **What the editor reads**: the rules list carries the plan's `runsPerDay` (the fixed 1,000) and `rulesMax` (the
+  fixed 50, or Free's 25 for a guest's plan) and `owner` (the owner's scope, `p:<account>` or `t:<team>`), so the
+  screen asks the subscription service which action to offer (Upgrade to Pro for the owner or a team admin, Ask an
+  Admin, or nothing) and, for the owner and the owning team alone, what is used of the month's runs. A refusal a tier
+  caused carries `limit` (the limit's name), `used` and `max`.
+- **Counted**: the plan's rule count is told to the subscription service as it changes (a growing one first, a
+  shrinking one in the background), and its runs are spent as they go.
+
+### What the editor shows
+
+With Pro off the screen is as it always was, its numbers (the rule limit, the runs a day) read from the rules list
+rather than written into the editor. With Pro on in the editor's build too, every number below is the one the api
+answered, and what is offered follows the plan's **owner**, never the person looking:
+
+| Who is looking                               | At a limit                                                                                 |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| The owner, or an admin of the owning team    | What happened, what the tier above gives, **Upgrade to Pro** (**Upgrade Team** for a team) |
+| Another member of the owning team            | What happened, "A team admin can move this team to Pro for Teams.", **Ask an Admin**       |
+| Anyone else (a collaborator, an Editor link) | What happened, and nothing more: no tier is named                                          |
+| An owner already on the tier above           | What happened, with no offer                                                               |
+
+- **Automation Runs**: for the owner and the owning team, the meter beside the tabs (at the foot on a phone) reads
+  the owner's runs this month over everything they own ("Runs This Month", a bar, "205 of 500"), with the solid Pro
+  badge after it when the owner has Pro. From 80% of the month a Free owner sees, dismissable, "45 automation runs
+  left this month. Pro gives you 10,000 a month." with **See Pro**. With the month used the meter is amber and
+  everyone sees "This month's automation runs are used. Rules run again on 1 December.", the owner also the offer.
+  Anyone else sees no meter. With Pro off the meter is Runs Today against the plan's 1,000, as before; past the 1,000
+  everyone sees "Daily limit reached: rules run again tomorrow."
+- **Automation Rules**: once the owner holds every rule they may, New Rule, each template tile and a rule's
+  **Duplicate** are refused by the api with the tier's words under the tabs: "You have 25 rules, the most Free holds.
+  Delete one to add another, or hold 500 with Pro." An owner over their limit is told how many they hold and how many
+  the tier holds. At the plan's own 50, the buttons are off with a tooltip saying why.
+- **Run Rule** refused says so: "This month's automation runs are used. Rules run again on 1 December." for the
+  month, "Today's 1,000 runs are used. Rules run again tomorrow." for the plan's day.
+- **Messages to connections**: Send to Webhook, Send to Slack and Send to Teams are on every tier with no badge; each
+  message is a run, and the step's panel says so ("Each message this step sends counts as one automation run.").
+- **AI Credits**: an AI step's panel and Describe a Rule keep their line about the day's AI steps, and under it say
+  what the ask costs ("Each run of this step uses 1 AI credit.", "A draft uses 1 AI credit.") with a meter of what is
+  left this month for the owner or the owning team ("3 of 3 AI credits left this month"). With the month's credits used (known from that usage, or from the
+  api's refusal, which says so to anyone): "This month's AI credits are used. They start again on 1 December.", the
+  offer for whoever may take it, and in Describe a Rule **Build the Rule by Hand**; Draft Rule is off meanwhile. The
+  Add an Action picker's AI group says what is left beside its daily allowance.
+- The day a monthly count starts again is the first of the next UTC month, written in the reader's locale.
+
 ## Limits
 
-| Limit                            | Value                                  |
-| -------------------------------- | -------------------------------------- |
-| Rules per plan                   | 50                                     |
-| Conditions per rule (and per If) | 10                                     |
-| Actions per rule                 | 20                                     |
-| Chain of rules                   | 5                                      |
-| Runs per plan per day            | 1,000                                  |
-| Triggers waiting                 | 500                                    |
-| Failures in a row before pausing | 10                                     |
-| Audit Trail                      | 2,000 runs and 500 No Matches, 30 days |
-| Comment or email body            | 2,000 characters                       |
-| Rule name                        | 60 characters                          |
-| Cards a time trigger runs on     | 100 a moment                           |
-| Related cards a branch runs on   | 100                                    |
-| Actions in a branch              | 10 (of the rule's 20)                  |
-| Outgoing actions per rule        | 5                                      |
-| People in turn                   | 2 to 10                                |
-| Changes in one `change_rules`    | 20                                     |
-| Runs `list_rules` returns        | 20 by default, up to 50                |
-| AI actions per rule              | 3, at the top level                    |
-| AI steps per plan per day        | 100                                    |
-| An AI summary                    | 600 characters                         |
-| Labels Triage adds               | 3                                      |
-| An AI call                       | 15 seconds                             |
-| Incoming Webhook call body       | 16 KB, JSON                            |
-| Incoming Webhook calls per rule  | 60 a minute                            |
-| Cards one call names             | 10                                     |
-| A webhook value                  | 5 names deep, 500 characters           |
-| Addresses one Send Email types   | 10                                     |
-| Emails to typed-in addresses     | 50 per plan per UTC day                |
-| Snapshots kept for rules         | 5                                      |
-| A snapshot step's name           | 120 characters                         |
+| Limit                            | Value                                           |
+| -------------------------------- | ----------------------------------------------- |
+| Rules per plan                   | 50 (with Pro on, also the owner's total: Tiers) |
+| Conditions per rule (and per If) | 10                                              |
+| Actions per rule                 | 20                                              |
+| Chain of rules                   | 5                                               |
+| Runs per plan per day            | 1,000 on every tier (Tiers)                     |
+| Triggers waiting                 | 500                                             |
+| Failures in a row before pausing | 10                                              |
+| Audit Trail                      | 2,000 runs and 500 No Matches, 30 days          |
+| Comment or email body            | 2,000 characters                                |
+| Rule name                        | 60 characters                                   |
+| Cards a time trigger runs on     | 100 a moment                                    |
+| Related cards a branch runs on   | 100                                             |
+| Actions in a branch              | 10 (of the rule's 20)                           |
+| Outgoing actions per rule        | 5                                               |
+| People in turn                   | 2 to 10                                         |
+| Changes in one `change_rules`    | 20                                              |
+| Runs `list_rules` returns        | 20 by default, up to 50                         |
+| AI actions per rule              | 3, at the top level                             |
+| AI steps per plan per day        | 100                                             |
+| An AI summary                    | 600 characters                                  |
+| Labels Triage adds               | 3                                               |
+| An AI call                       | 15 seconds                                      |
+| Incoming Webhook call body       | 16 KB, JSON                                     |
+| Incoming Webhook calls per rule  | 60 a minute                                     |
+| Cards one call names             | 10                                              |
+| A webhook value                  | 5 names deep, 500 characters                    |
+| Addresses one Send Email types   | 10                                              |
+| Emails to typed-in addresses     | 50 per plan per UTC day                         |
+| Snapshots kept for rules         | 5                                               |
+| A snapshot step's name           | 120 characters                                  |
 
 ## Not yet
 

@@ -48,6 +48,16 @@ OLD.rev)` exists. A statement the revision trigger aborts takes the insert with 
   past the newest `VERSION_AUTO_MAX` (by `created_at DESC, rowid DESC`), unnamed rows with `created_at < NEW.created_at -
 VERSION_AUTO_MAX_DAYS`, and unnamed rows whose running byte total from the newest passes
   `VERSION_AUTO_MAX_BYTES` (a window `SUM`). The newest row is never pruned by bytes.
+- **VH25 retention row (Pro).** Schema step 24 (`versions/version-retention-schema.ts`, after the Automations steps): `version_retention`, one row
+  (`id = 1`, `max_age_ms` nullable, `max_count`, `max_bytes`), inserted with the spec's Bounds, and
+  `tab_versions_prune` dropped and made again to read it: age only where `max_age_ms IS NOT NULL`, count by a window
+  `ROW_NUMBER`, bytes by the window `SUM`. An existing room runs the step once and prunes exactly as before.
+  `versionRetentionOf(historyDays)` (`versions/version-retention.ts`) maps a tier to the row: 7 days / 50 / 16 MiB,
+  or null / `VERSION_AUTO_MAX_PAID` (500) / `VERSION_AUTO_MAX_BYTES_PAID` (64 MiB). `learnVersionRetention(ctx)` runs
+  as each request reaches the room (`answerDocumentRequest`): nothing with Pro off, nothing without a grant that names
+  the owner, at most once an hour per room, through `waitUntil`; it reads `confirmedEntitlement` and writes the row
+  only for a confirmed tier. The list route awaits the same write (`applyVersionRetention`) and answers `retention`.
+  `maintain` deletes by the row's age (VH6) and, with Pro off, first sets the row back to the Bounds.
 - **VH3 one per revision.** Every insert guards `NOT EXISTS (… tab_id = ? AND rev = ?)`; no UNIQUE index, so no
   conflict can abort the write that fired it.
 - **VH4 agent capture.** `agentVersionStatement` inserts the stored row as kind `agent` before a changeset's tab
@@ -56,8 +66,8 @@ VERSION_AUTO_MAX_DAYS`, and unnamed rows whose running byte total from the newes
   page-only write runs it first, as its own statement.
 - **VH5 restore capture.** The restore reads the version for the stored revision, or inserts one (kind `restore`)
   in the restore's batch with an id minted in the api; that id is `undoVersionId`.
-- **VH6 upkeep.** `maintain` deletes unnamed rows with `created_at < now - VERSION_AUTO_MAX_DAYS` beside the
-  changeset retention.
+- **VH6 upkeep.** `maintain` deletes unnamed rows older than the retention row's `max_age_ms` (VH25; none where it
+  is null) beside the changeset retention. With Pro off the row holds `VERSION_AUTO_MAX_DAYS`.
 - **VH7 anonymise.** `anonymiseDocument` rewrites `tab_versions.data` through `anonymiseJsonText` where
   `instr(data, person)`, and sets `author_id`/`author_name` to the anonymised person.
 - **VH8 copies.** A document copy (`exportCopy`) reads `tabs` only: no versions travel.

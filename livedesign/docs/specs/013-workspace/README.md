@@ -32,4 +32,4 @@ Follow the references below only as needed; never upfront.
 - ./automations.md - when working on Automations: rules a design runs on its own, this app's own triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
 - ./send-to-plan.md - when working on Send to Plan: what livedesign sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, local opens)
-- ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the design is read, where a source opens, the suggested questions (the platform's `019-ask`)
+- ./ask-ai.md - when working on Ask AI in the footer's Tools: what of the design is read, where a source opens, the suggested questions (the platform's `020-ask`)

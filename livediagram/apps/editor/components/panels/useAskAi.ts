@@ -1,6 +1,6 @@
 'use client';
 
-// Ask AI for the open canvas, in the footer's Tools (liveworkspace/docs/specs/019-ask/ask.md "In each app"): the tool
+// Ask AI for the open canvas, in the footer's Tools (liveworkspace/docs/specs/020-ask/ask.md "In each app"): the tool
 // is the platform's (@liveworkspace/ask); this says what the canvas's words are (every tab's elements, the ones Search
 // reads) and how to go to a source (its tab, the element selected).
 import { useAskTool } from '@liveworkspace/ask/use-ask-tool';

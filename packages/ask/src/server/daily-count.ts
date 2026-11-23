@@ -1,4 +1,4 @@
-// Built-in AI's allowance for Ask AI, per account (liveworkspace/docs/specs/019-ask/ask.md "Built-in AI's
+// Built-in AI's allowance for Ask AI, per account (liveworkspace/docs/specs/020-ask/ask.md "Built-in AI's
 // allowance"): ASK_BUILT_IN_PER_PERSON_PER_DAY questions a UTC day in one app, wherever the person asks.
 //
 // The count lives in one instance of the app's existing item room Durable Object per account (no new binding, class

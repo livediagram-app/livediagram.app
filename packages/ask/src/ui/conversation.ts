@@ -1,4 +1,4 @@
-// One item's conversation with Ask AI (liveworkspace/docs/specs/019-ask/ask.md "The conversation"): its turns, the
+// One item's conversation with Ask AI (liveworkspace/docs/specs/020-ask/ask.md "The conversation"): its turns, the
 // answer streaming into the last one, and the calls that make them. Kept in the page's memory per item while the
 // page is open (closing Tools and opening it again finds the thread), never stored: a reload starts afresh. No React
 // here: the tool reads it through `subscribe` and `turns`.

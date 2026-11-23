@@ -12,7 +12,7 @@ vi.mock('@liveworkspace/auth-client/ai-key', async (importOriginal) => ({
   personAiKey: keyFor,
 }));
 
-// Ask AI's door in this app (liveworkspace/docs/specs/019-ask/ask.md "The route"): who may ask, that built-in AI
+// Ask AI's door in this app (liveworkspace/docs/specs/020-ask/ask.md "The route"): who may ask, that built-in AI
 // answers about a document through the app's own binding, and that its allowance is counted in the account's own room
 // instance. The route itself is tested where it lives (packages/ask). No network.
 const passages = [

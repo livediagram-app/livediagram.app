@@ -1,4 +1,4 @@
-// The plan's cards as Ask AI reads them (docs/specs/026-plan/ask-ai.md; liveworkspace/docs/specs/019-ask/ask.md "In
+// The plan's cards as Ask AI reads them (docs/specs/026-plan/ask-ai.md; liveworkspace/docs/specs/020-ask/ask.md "In
 // each app"): a passage per card that is neither archived nor trashed, holding its number, title, description and
 // status, on the tab whose board shows it (the first tab for a card no board shows, so it can still be opened). Pure,
 // and linear in the cards: read when a question is asked, never on load.

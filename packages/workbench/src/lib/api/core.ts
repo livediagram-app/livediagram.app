@@ -337,9 +337,14 @@ export function createApiCore(config: ApiCoreConfig) {
     action: string,
     expected?: (code: string | null) => boolean,
   ): Promise<ApiError> {
+    // The body is read twice: once whole, for a refusal that says more than its code, then for the code.
+    const body: unknown = await res
+      .clone()
+      .json()
+      .catch(() => null);
     const code = await readErrorCode(res);
     if (!expected?.(code)) report.apiError(res.status, action, code);
-    const err = new ApiError(action, res.status, code);
+    const err = new ApiError(action, res.status, code, body);
     report.markReported(err);
     return err;
   }

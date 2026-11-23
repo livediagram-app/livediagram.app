@@ -1,6 +1,6 @@
 'use client';
 
-// An answer's sources (liveworkspace/docs/specs/019-ask/ask.md "Sources"): Tools has no room for a rail, so they open
+// An answer's sources (liveworkspace/docs/specs/020-ask/ask.md "Sources"): Tools has no room for a rail, so they open
 // in a popover beside it (a drawer on a phone; the host's ResponsivePopover draws the surface), every source the
 // answer cites as a card, the one whose citation was pressed lit and brought into view. A card goes to its place in the item. Passages are other people's text: drawn as text, the question's
 // words softly marked.

@@ -1,4 +1,4 @@
-// Ask AI's words that depend on the app or on which AI answers (liveworkspace/docs/specs/019-ask/ask.md). Pure.
+// Ask AI's words that depend on the app or on which AI answers (liveworkspace/docs/specs/020-ask/ask.md). Pure.
 import { APP_ITEMS, siteOfApp, type AppName } from '@liveworkspace/sites';
 import type { AiSourceLine } from '@liveworkspace/settings-ui/ai-source';
 import type { AskProvider } from '../wire';

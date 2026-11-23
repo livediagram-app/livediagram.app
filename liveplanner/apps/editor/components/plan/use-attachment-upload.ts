@@ -15,6 +15,7 @@ import {
   withAttachmentsAdded,
   type ItemAttachment,
 } from '@liveplanner/items';
+import type { ImageLimitRefusal } from '@liveworkspace/subscription-ui/images';
 import { ImageUploadError, apiUploadImage } from '@/lib/api/images';
 import { track } from '@/lib/telemetry';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
@@ -37,6 +38,9 @@ export type AttachmentUpload = {
   // The share of the bytes sent of the file going now (0 to 1), or undefined until the browser says.
   progress: number | undefined;
   error: string | null;
+  // A tier's limit the server refused one of the last files for (Pro on): the panel draws the shared notice for it,
+  // and `error` leaves its sentence out. Null otherwise, and always with Pro off.
+  limit: ImageLimitRefusal | null;
   // Answers what went wrong, in words to show (null: every file landed).
   add: (files: readonly File[]) => Promise<string | null>;
   // Stops every upload going now and drops the files still to go.
@@ -62,6 +66,7 @@ export function useAttachmentUpload(
   // The share of the bytes sent of the file going now (0 to 1), once the browser says.
   const [progress, setProgress] = useState<number | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+  const [limit, setLimit] = useState<ImageLimitRefusal | null>(null);
   const [unavailable, setUnavailable] = useState(false);
   // The plan as it is now, read when the uploads end (the closure's would be stale by then).
   const planRef = usePlanLatest();
@@ -76,6 +81,7 @@ export function useAttachmentUpload(
       const item = now?.items.get(itemId);
       if (!canAdd || !scope || !now || !item || files.length === 0) return null;
       setError(null);
+      setLimit(null);
       // An offline plan takes none (its pictures would never be reported, and the sweep would take them).
       if (await isOfflineId(scope.projectId)) {
         setError(ATTACHMENTS_OFFLINE);
@@ -84,6 +90,10 @@ export function useAttachmentUpload(
       const room = ITEM_ATTACHMENTS_MAX - itemAttachments(item).length;
       const taken = files.slice(0, Math.max(0, room));
       let failure: string | null = taken.length < files.length ? ATTACHMENTS_FULL : null;
+      // What the panel says in words: `failure` (what a board's card drop is answered), less a tier's limit, which
+      // the panel draws as the notice.
+      let shown: string | null = failure;
+      let met: ImageLimitRefusal | null = null;
       const added: ItemAttachment[] = [];
       const stop = new AbortController();
       stops.current.add(stop);
@@ -118,6 +128,8 @@ export function useAttachmentUpload(
             err instanceof ImageUploadError ? err : new ImageUploadError('upload_failed');
           if (refused.code === 'images_unavailable') setUnavailable(true);
           failure ??= refused.message;
+          if (refused.limit) met = refused.limit;
+          else shown ??= refused.message;
         } finally {
           left -= 1;
           setUploading((n) => Math.max(0, n - 1));
@@ -132,20 +144,26 @@ export function useAttachmentUpload(
         if (latest && card) {
           const had = itemAttachments(card);
           const { list, skipped } = withAttachmentsAdded(had, added);
-          if (skipped > 0) failure ??= ATTACHMENTS_FULL;
+          if (skipped > 0) {
+            failure ??= ATTACHMENTS_FULL;
+            shown ??= ATTACHMENTS_FULL;
+          }
           // What lands is what the card had room for when the uploads ended (it may have filled meanwhile), and
           // only that is announced; nothing landing writes nothing.
           const landed = list.length - had.length;
           const saved =
             landed > 0 ? await latest.patchItem(itemId, { set: { attachments: list } }) : true;
-          if (!saved) failure ??= IMAGE_NOT_SAVED;
-          else if (landed > 0) {
+          if (!saved) {
+            failure ??= IMAGE_NOT_SAVED;
+            shown ??= IMAGE_NOT_SAVED;
+          } else if (landed > 0) {
             track('Plan', 'Added', 'CardAttachment');
             latest.announce(landed === 1 ? 'Image attached' : `${landed} images attached`);
           }
         }
       }
-      setError(failure);
+      setError(shown);
+      setLimit(met);
       return failure;
     },
     [canAdd, scope, itemId, planRef],
@@ -161,6 +179,7 @@ export function useAttachmentUpload(
     uploading,
     progress,
     error,
+    limit,
     add,
     cancel,
   };

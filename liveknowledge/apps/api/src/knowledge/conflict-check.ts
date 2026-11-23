@@ -4,6 +4,7 @@
 // outside any transaction, on the team's own key or, with none, on built-in AI (search-and-ask.md "Built-in AI").
 // Bounds (the package's, checked by `conflictCheckRefusal`): once a page per 10 minutes, 50 a knowledgebase a day on
 // a key and 20 on built-in AI, 5 passages looked up, 5 pairs asked about, one call.
+import { spendBuiltInCredit } from './ai-credits';
 import type { ItemSql } from '@liveworkspace/index-app';
 import {
   CONFLICT_BUILT_IN_CHECKS_PER_DAY,
@@ -132,10 +133,21 @@ export async function runConflictCheck(
   const after: Passage[] = stored.map((p) => ({ ...p, headings: headingsOf(p.headings) }));
   const probes = conflictProbes(beforeOf(work.payload), after);
   if (probes.length === 0) return null;
+  // The row, read once a check: its Review Period says which of the pages found count as verified, and its owner
+  // and team who pays for a check on built-in AI.
+  const meta = await readDocumentMeta(env, documentId);
+  if (!meta) return null;
+  if (caller.provider === 'built-in') {
+    // With Pro on, one of the owner's AI credits a check (tiers.md). Used for the month: skipped quietly, and owed
+    // again after the next edit.
+    const credit = await spendBuiltInCredit(env, meta, 'knowledgeConflictCheck', 'edit');
+    if (!credit.ok) {
+      console.info('[knowledge] conflict check skipped', { documentId, tab, reason: 'ai-credits' });
+      return null;
+    }
+  }
   await runAll(env, [noteConflictCheck(tab, now), bumpCounter(CONFLICT_CHECK_SCOPE, dayOf(now))]);
-  // The Review Period, read once a check: which of the pages found count as verified.
-  const every = (await readDocumentMeta(env, documentId))?.knowledgeSettings.reviewEvery;
-  if (every === undefined) return null;
+  const every = meta.knowledgeSettings.reviewEvery;
   const lookups = [];
   for (const probe of probes) {
     const search = probeSearch(probe, every, now);

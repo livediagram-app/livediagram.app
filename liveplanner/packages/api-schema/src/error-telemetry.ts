@@ -45,7 +45,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   // The person's My Work calendar feed (docs/specs/026-plan/calendar-feed.md "The My Work feed"): `/my-work/calendar-feed`.
   'my-work',
   'trash',
-  // Ask AI (liveworkspace/docs/specs/019-ask/ask.md "The route").
+  // Ask AI (liveworkspace/docs/specs/020-ask/ask.md "The route").
   'ask',
   'preferences',
   'participants',

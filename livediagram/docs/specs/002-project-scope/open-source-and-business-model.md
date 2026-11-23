@@ -1,6 +1,6 @@
 # Open source + distribution
 
-livediagram is **open source software** with one official deployment, livediagram.app. There is no paid tier and no plan to introduce one.
+livediagram is **open source software** with one official deployment, livediagram.app. The hosted service can also sell **Pro**, a subscription that raises limits, when a deployment turns it on ([Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)). It is off by default: a self-hosted copy has no tiers.
 
 ## License
 
@@ -10,12 +10,12 @@ The third-party work the apps ship is credited on the generated `/licences` page
 
 ## Distribution model
 
-People use livediagram at [livediagram.app](https://livediagram.app), the official deployment. Free for everyone, no tiers. It is a place for the project to live publicly; it is not a commercial product. The code stays public so anyone can read and audit it.
+People use livediagram at [livediagram.app](https://livediagram.app), the official deployment. Free for everyone to use; Pro, where it is on, raises limits for those who subscribe. It is a place for the project to live publicly. The code stays public so anyone can read and audit it.
 
 ## Implications for how we build
 
-- **No license checks.** Don't gate any feature behind a server call, license string, or runtime telemetry check.
-- **No paid-tier shims.** The codebase contains no "Pro features" feature-flag, no billing integration (no Stripe), no "upgrade" CTAs. If we ship it, every user gets it.
+- **No license checks.** Don't gate any feature behind a license string or runtime telemetry. The one server check a feature may make is its owner's tier limit, and only with Pro on.
+- **Pro is one flag, off by default, and the platform's.** Tiers, billing and upgrade prompts live in the subscription service and `@liveworkspace/subscription`, behind `PRO_ENABLED` ([Subscription](../../../../liveworkspace/docs/specs/019-subscription/subscription.md)). With it off the app shows no Pro UI and imposes no tier limit. The product keeps no billing code and no copy of who is subscribed, and every tier limit is checked on the server, against the item's owner.
 - **Optional SaaS, not required SaaS.** The OSS core never calls home. Its SaaS integrations are all optional, each gated on its own key or binding: the liveworkspace accounts Worker for sign-in ([Auth + guest access](../014-identity/auth-and-guest-access.md)), Cloudflare Email Service for email, gated on its `send_email` binding ([Transactional & lifecycle email](../014-identity/transactional-email.md)), and a model provider for the event-storming photo reader ([Note reader](../021-event-storming/note-reader.md)). The editor always offers sign-in; when the api's accounts settings (`ACCOUNTS_URL` / `API_RESOURCE`) aren't set, visitors have no identity and the editor still draws, keeping documents kept Offline ([Auth + guest access](../014-identity/auth-and-guest-access.md#sign-in-is-always-on)).
 - All design decisions assume the codebase is visible to the public, which constrains how we handle [secrets](secrets-policy.md).
 

@@ -437,7 +437,7 @@ export const AI_SOURCE_KEYS_ADDED = chart(
   { types: ['AiSourceKey'] },
 );
 
-// Ask AI in the footer's Tools (liveworkspace/docs/specs/019-ask/ask.md): questions asked of the open space, and an
+// Ask AI in the footer's Tools (liveworkspace/docs/specs/020-ask/ask.md): questions asked of the open space, and an
 // answer's sources looked at. Never a question, an answer or which AI.
 export const ASK_AI_QUESTIONS = chart(
   'UI',

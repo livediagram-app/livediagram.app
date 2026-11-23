@@ -1,4 +1,4 @@
-// An answer as a page draws it (liveworkspace/docs/specs/019-ask/ask.md "What an answer shows"). The model's answer is
+// An answer as a page draws it (liveworkspace/docs/specs/020-ask/ask.md "What an answer shows"). The model's answer is
 // other people's text and the model's: it is drawn as text, never as HTML. The only marks are the page's own: a
 // citation marker (`[2]`, `[1, 3]`) that names a passage the answer came with becomes a chip, and a matched word in a
 // passage is softly marked. Everything else stays the characters it was. Pure and linear in the text. Shared by

@@ -1,4 +1,4 @@
-// What an editor hands Ask AI (liveworkspace/docs/specs/019-ask/ask.md "In each app"): which item is open, who is
+// What an editor hands Ask AI (liveworkspace/docs/specs/020-ask/ask.md "In each app"): which item is open, who is
 // asking, the item's words as passages, and how to go to a source. Types only, so the Tools row (ask-tools-item.tsx)
 // takes them without loading the tool.
 import type { AppName } from '@liveworkspace/sites';

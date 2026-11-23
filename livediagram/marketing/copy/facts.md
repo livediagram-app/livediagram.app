@@ -62,7 +62,8 @@ is the team, not the individual.
 ## Open source and price
 
 - MIT-licensed and publicly viewable.
-- Hosted free at livediagram.app. No paid tier and no plan to introduce one.
+- Hosted free at livediagram.app, every feature works on the free plan. Pro, a paid tier,
+  only raises a few limits; no feature is Pro-only.
 - The OSS core never calls home and never gates features behind a license
   check. Sign-in through liveworkspace accounts is the one optional dependency;
   without it the app degrades to full-featured guest mode.
@@ -77,7 +78,8 @@ the Next.js frontends. No Node-hosted backend, no SSR.
 
 - Conflict-free (CRDT) editing. Edits to different elements merge; two people
   changing the same element at the same moment is last-writer-wins, by design.
-- A paid tier, or any feature reserved for one.
+- That there is no paid tier (Pro exists), or any feature reserved for one.
+  Don't lead with Pro either.
 
 ## Links
 

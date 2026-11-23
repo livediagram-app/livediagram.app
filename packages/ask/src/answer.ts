@@ -1,4 +1,4 @@
-// A model's answer to a question asked of some passages, read (liveworkspace/docs/specs/019-ask/ask.md "What an answer
+// A model's answer to a question asked of some passages, read (liveworkspace/docs/specs/020-ask/ask.md "What an answer
 // shows"; liveknowledge's search-and-ask.md "What an answer shows"): the text with its citation markers, the passages
 // cited, the passages found but not used with the reason, and the parts of the question the passages do not cover.
 // Shared by liveknowledge's Ask and every other app's Ask AI. The model's reply is untrusted too: only numbers of

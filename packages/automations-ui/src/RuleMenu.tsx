@@ -5,7 +5,7 @@
 // the app runs from the list (kit.runRule) opens with Run Rule.
 
 import { useState } from 'react';
-import { ConfirmPopover, DuplicateIcon, TrashIcon, lucideGlyph } from '@liveworkspace/ui';
+import { ConfirmPopover, DuplicateIcon, Tooltip, TrashIcon, lucideGlyph } from '@liveworkspace/ui';
 import { lucideHistory, lucidePencil, lucidePlay } from '@liveworkspace/icons/lucide';
 import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import {
@@ -17,18 +17,22 @@ import {
 const EditIcon = lucideGlyph(lucidePencil, 16);
 const LogIcon = lucideGlyph(lucideHistory, 16);
 export const RunIcon = lucideGlyph(lucidePlay, 16);
+const noop = () => {};
 
 export function RuleMenu({
   name,
   onRun,
   onEdit,
   onDuplicate,
+  duplicateOff,
   onRunLog,
   onDelete,
 }: {
   name: string;
   // Run Rule, for a rule the app runs from the list; absent otherwise.
   onRun?: (() => void) | undefined;
+  // With Pro on, why Duplicate is off (the item holds every rule its tier allows), said as its tooltip.
+  duplicateOff?: string | undefined;
   onEdit: () => void;
   onDuplicate: () => void;
   onRunLog: () => void;
@@ -56,12 +60,24 @@ export function RuleMenu({
             <MenuActionRow plain label="Run Rule" icon={<RunIcon />} onClick={run(onRun)} />
           ) : null}
           <MenuActionRow plain label="Edit" icon={<EditIcon />} onClick={run(onEdit)} />
-          <MenuActionRow
-            plain
-            label="Duplicate"
-            icon={<DuplicateIcon />}
-            onClick={run(onDuplicate)}
-          />
+          {duplicateOff ? (
+            <Tooltip label={duplicateOff}>
+              <MenuActionRow
+                plain
+                disabled
+                label="Duplicate"
+                icon={<DuplicateIcon />}
+                onClick={noop}
+              />
+            </Tooltip>
+          ) : (
+            <MenuActionRow
+              plain
+              label="Duplicate"
+              icon={<DuplicateIcon />}
+              onClick={run(onDuplicate)}
+            />
+          )}
           <MenuActionRow plain label="Audit Trail" icon={<LogIcon />} onClick={run(onRunLog)} />
           <MenuGroupSeparator />
           <MenuActionRow

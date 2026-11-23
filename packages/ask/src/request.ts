@@ -1,4 +1,4 @@
-// The request Ask AI sends a model (liveworkspace/docs/specs/019-ask/ask.md "Answering"): the question and the chosen
+// The request Ask AI sends a model (liveworkspace/docs/specs/020-ask/ask.md "Answering"): the question and the chosen
 // passages, with a system prompt that has the model answer only from them and cite each claim by passage number. The
 // passages and the questions are people's own writing: they are fenced, and the model is told they are material to
 // read, never instructions.

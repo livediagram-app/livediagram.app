@@ -4,13 +4,19 @@
 // height in three steps, Describe, Review and Create. It runs on built-in AI with no key, and on the team's own key
 // when one is set (owner, 2026-11-21): step 1 is there at once either way, with one quiet line saying which. Fetched
 // when first opened (SetupHost.tsx).
+import {
+  AiCreditsNotice,
+  useAiCreditsLine,
+  useAiCreditsUsedUp,
+} from '@/components/ask/AiCreditsNotice';
+import { openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
 import { useEffect, useId } from 'react';
 import { Button, DialogCloseButton, DialogFooter, DialogHeader } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { openAiSettingsFrom } from '@/components/ask/AiSettingsButton';
 import { SETUP_BUILT_IN_PER_PERSON_PER_DAY } from '@liveknowledge/knowledge';
 import { KnowledgeAiSource, saidOnLine } from '@/components/ask/KnowledgeAiSource';
+import { aiInUse } from '@/lib/knowledge-ask/ai-settings-words';
 import { useAiSettingsState, useAskSession, type AskSession } from '@/components/ask/useAskSession';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import type { SetupMode } from '@/lib/knowledge-setup/setup-open';
@@ -87,6 +93,11 @@ function SetupDialogBody({
 
   // Read only for the line that says which AI answers: nothing waits for it, and the api decides.
   const ready = settings.status === 'ready' ? settings.settings : null;
+  // With Pro on, setting up on built-in AI (no knowledgebase, team or personal key applies) spends one of the owner's AI
+  // credits (tiers.md): the source line's allowance says so, and once they are used up the notice says it all.
+  const creditLine = useAiCreditsLine(documentId, 'knowledgeSetup');
+  const onBuiltIn = ready !== null && aiInUse({ ...ready, builtIn: true }) === 'built-in';
+  const usedUp = useAiCreditsUsedUp(documentId);
   // The request and the run end with the dialog; while pages are being made it does not close under the person.
   const close = flow.step === 'creating' ? flow.cancelCreate : onClose;
   const failure = flow.failure
@@ -140,17 +151,26 @@ function SetupDialogBody({
           onSubmit={flow.suggest}
           adding={mode === 'add'}
         />
-        {lineState ? (
+        {lineState && !(onBuiltIn && usedUp) ? (
           <div className="-mt-1" data-setup-ai="">
             <KnowledgeAiSource
               state={lineState}
               who={who}
               documentId={documentId}
               manageAi={session.rights.manageAi}
-              allowance={`${SETUP_BUILT_IN_PER_PERSON_PER_DAY} set-ups a person a day.`}
+              allowance={
+                creditLine ?? `${SETUP_BUILT_IN_PER_PERSON_PER_DAY} set-ups a person a day.`
+              }
               failure={flow.failure}
             />
           </div>
+        ) : null}
+        {onBuiltIn ? (
+          <AiCreditsNotice
+            documentId={documentId}
+            doing="set up"
+            onAddKey={session.rights?.manageAi ? openAiSettingsFrom : undefined}
+          />
         ) : null}
       </>
     );

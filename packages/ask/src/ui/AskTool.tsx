@@ -1,6 +1,6 @@
 'use client';
 
-// Ask AI, inside the footer's Tools (liveworkspace/docs/specs/019-ask/ask.md "The tool"): the conversation as a
+// Ask AI, inside the footer's Tools (liveworkspace/docs/specs/020-ask/ask.md "The tool"): the conversation as a
 // thread, the question field at its foot with the AI pill, and each answer's sources in a popover beside Tools. For a
 // signed-in person; a guest is asked to sign in.
 import {

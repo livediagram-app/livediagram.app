@@ -7,10 +7,12 @@
 
 import type { Tab } from '@liveplanner/project';
 import { ruleSnapshotIds } from '@liveworkspace/automations/item';
+import { knownItemOwnerScope } from '@liveworkspace/media';
 import {
   serveSnapshots,
   type SnapshotCaller,
   type SnapshotDoor,
+  snapshotRetention,
 } from '@liveworkspace/snapshots/server';
 import { replaceTabs } from '../db/tabs';
 import { authorOf } from '../routes/changesets';
@@ -18,6 +20,7 @@ import { gateEdit, type PlanRouteContext } from '../routes/context';
 import type { PlanEnv } from '../types';
 import { chunksOf, type PlanCopy } from './plan-copy';
 import { exportProjectFile, readProjectFile } from './project-file';
+import { rulesCopyMax } from './tier/room-tier';
 
 const idsOf = (rows: readonly Record<string, unknown>[]) => JSON.stringify(rows.map((r) => r.id));
 
@@ -105,7 +108,7 @@ export function planSnapshotDoor(env: PlanEnv, planId: string): SnapshotDoor {
     },
     replaceContent: async (text) => {
       const now = Date.now();
-      const read = readProjectFile(text, now, { keepIds: true });
+      const read = readProjectFile(text, now, { keepIds: true, rulesMax: rulesCopyMax() });
       if (!read.ok) return read.failure === 'too_large' ? 'too_large' : 'invalid';
       const { copy } = read.content;
       await env.PLAN_DB.batch([
@@ -162,5 +165,15 @@ export function servePlanSnapshots(
     caller: () => snapshotCaller(ctx, planId),
     door: () => planSnapshotDoor(ctx.env, planId),
     handle,
+    // With Pro on, what the plan's owner's tier keeps (liveworkspace/docs/specs/014-snapshots/snapshots.md "With Pro
+    // on"): Free the latest five for 7 days, Pro and Pro for Teams the latest 50. The owner is the index's grant's
+    // (the team for a team's plan), whoever acts, and only an entitlement the service confirmed is applied
+    // (snapshotRetention), so an unknown tier prunes nothing. Nothing is asked with Pro off.
+    retention: () =>
+      snapshotRetention(
+        ctx.env,
+        'liveplanner.app',
+        knownItemOwnerScope(ctx.grant?.item === planId ? ctx.grant : null),
+      ),
   });
 }

@@ -2,6 +2,7 @@
 // about its link, and what a form link's page reads and sends.
 import type { FormLook } from '@liveplanner/project';
 import type { AnswerError, PublicForm } from '@liveplanner/forms';
+import type { TierOwner } from './tiers';
 
 // A Form tab's live link, as an Editor sees it.
 export type FormLink = {
@@ -21,6 +22,11 @@ export type FormLinkResponse = {
   suspendedAt: number | null;
   // Whether this project may still publish (its links have not been suspended too often).
   canPublish: boolean;
+  // With Pro on: the plan's owner's monthly limit of responses over every form they own, whether their month (UTC)
+  // was found used (which closes the form to respondents now), and that owner. What they used is theirs alone: the
+  // editor reads it from the owner's own subscription.
+  month?: { limit: number; full: boolean };
+  owner?: TierOwner;
 };
 
 // The form's look (its tab's theme, finish and font, and its colour), each colour for both halves: the form page

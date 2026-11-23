@@ -1,4 +1,4 @@
-// Ask AI from an editor (liveworkspace/docs/specs/019-ask/ask.md "The route"): one POST to the app's own api whose
+// Ask AI from an editor (liveworkspace/docs/specs/020-ask/ask.md "The route"): one POST to the app's own api whose
 // answer streams back as server-sent events (`AskEvent`): `delta` pieces, then one `done`, or one `error`. A refusal
 // before the stream opens (not signed in, a limit, a key that failed) arrives as JSON and is handed on as an `error`
 // event with the server's own words, so the tool has one shape to show.

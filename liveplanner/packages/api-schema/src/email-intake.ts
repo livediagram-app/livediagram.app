@@ -1,6 +1,8 @@
 // Email to Board on the wire (docs/specs/026-plan/email-to-board.md "Managing an address"; blueprint
 // email-to-board.md "Interfaces and contracts"): the routes an Editor of the whole plan manages a board's address with.
 
+import type { TierOwner } from './tiers';
+
 /** Who Can Send: the plan's members only, or anyone with the address. */
 export const EMAIL_INTAKE_SENDERS = ['members', 'anyone'] as const;
 export type EmailIntakeSenders = (typeof EMAIL_INTAKE_SENDERS)[number];
@@ -61,6 +63,10 @@ export type EmailIntakesResponse = {
   boards: EmailIntakeBoard[];
   // The card types some board shows, each with its columns: what an address's Card Type and Column offer.
   types: EmailIntakeType[];
+  // With Pro on: the owner's monthly limit of emails to boards over every plan they own, whether this plan found
+  // their month (UTC) used, and that owner. What they used is theirs alone.
+  month?: { limit: number; full: boolean };
+  owner?: TierOwner;
 };
 
 /** PUT /api/projects/:id/email-intake/:boardId and POST …/new-address. */

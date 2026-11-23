@@ -1,6 +1,6 @@
 'use client';
 
-// Ask AI wired into an editor in one call (liveworkspace/docs/specs/019-ask/ask.md "In each app"): the editor says
+// Ask AI wired into an editor in one call (liveworkspace/docs/specs/020-ask/ask.md "In each app"): the editor says
 // which item is open, who is asking, its tabs and how to load the rest, and how to go to a source; this publishes the
 // Tools row. Small on purpose: the tool loads when the row is opened (ask-tools-item.tsx).
 import { useEffect, useMemo, useRef } from 'react';

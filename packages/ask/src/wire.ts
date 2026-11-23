@@ -1,4 +1,4 @@
-// What Ask AI's one route takes and answers (liveworkspace/docs/specs/019-ask/ask.md "The route"): `POST /api/ask`
+// What Ask AI's one route takes and answers (liveworkspace/docs/specs/020-ask/ask.md "The route"): `POST /api/ask`
 // with the question, the passages chosen for it and the conversation so far; answered as server-sent events
 // (`AskEvent`): `delta` pieces of the answer, then one `done` with the sources it cites, or one `error`. A refusal
 // before the stream opens is JSON, `{ error, message }`.

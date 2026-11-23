@@ -1,6 +1,6 @@
 'use client';
 
-// The Ask AI row in the footer's Tools (liveworkspace/docs/specs/019-ask/ask.md "The tool"; footer-tools-menu.md),
+// The Ask AI row in the footer's Tools (liveworkspace/docs/specs/020-ask/ask.md "The tool"; footer-tools-menu.md),
 // under Find after Search, in every app but liveknowledge (whose Ask is a tab of its own). It opens inside Tools, and
 // Tools stays open beside the canvas while a source is looked at. This module is the row alone: the tool, its model
 // and its popovers load when the row is first opened, so an editor's first load carries none of them.

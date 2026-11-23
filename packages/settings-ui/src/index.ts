@@ -77,7 +77,8 @@ export {
 export { bearerAccountSecurity } from './profile/bearer-security';
 export { foldIntoAccount } from './fold-account';
 export { accountPanels, preloadAccountPanels } from './account-panels/lazy';
-export type { AccountPanelsHost } from './account-panels/host';
+export type { AccountPanelsHost, SubscriptionAccess } from './account-panels/host';
+export { preloadSubscriptionPanel } from './account-panels/subscription/rows';
 export { useAccountTokensInPlace } from './account-panels/tokens-in-place';
 export { accountErrorMessage } from './account-panels/errors';
 export { BUTTON as ACCOUNT_BUTTON } from './account-panels/account-ui';

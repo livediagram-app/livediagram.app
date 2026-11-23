@@ -1,6 +1,6 @@
 'use client';
 
-// Ask AI for the open plan, in the footer's Tools (docs/specs/026-plan/ask-ai.md; liveworkspace/docs/specs/019-ask/
+// Ask AI for the open plan, in the footer's Tools (docs/specs/026-plan/ask-ai.md; liveworkspace/docs/specs/020-ask/
 // ask.md "In each app"): the tool is the platform's (@liveworkspace/ask); this says what the plan's words are (every
 // tab's elements, the ones Search reads, and every card) and how to go to a source: a card opens, on the tab whose
 // board shows it; anything else is its tab with the element selected.

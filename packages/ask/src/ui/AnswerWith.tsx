@@ -1,6 +1,6 @@
 'use client';
 
-// Which AI answers, in the question field (liveworkspace/docs/specs/019-ask/ask.md "Choosing which AI answers"): a
+// Which AI answers, in the question field (liveworkspace/docs/specs/020-ask/ask.md "Choosing which AI answers"): a
 // pill that says it ("Built-In AI", or the key's model and whose it is), opening Answer With, where the person picks
 // between built-in AI and the key that applies, and goes to Settings › AI to add or change a key. The choice applies
 // to the next question, mid-chat too.

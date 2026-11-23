@@ -1,5 +1,6 @@
 import { TERMS_LABEL } from '@liveworkspace/sites';
 import { SECURITY_POLICY_URL } from '@liveworkspace/sites/security';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 import { listedApps } from '@/lib/apps';
 import { AppLogo } from './landing/AppLogo';
 import { Wordmark } from './Wordmark';
@@ -35,6 +36,12 @@ export function Footer({ base = '' }: { base?: string }) {
           ))}
         </FooterColumn>
         <FooterColumn title="Platform">
+          {/* Only where Pro is on in the build (liveworkspace/docs/specs/019-subscription/subscription.md). */}
+          {proOn() ? (
+            <a href={`${base}/pricing`} className={linkClass}>
+              Pricing
+            </a>
+          ) : null}
           <a href={`${base}/compare`} className={linkClass}>
             Comparison
           </a>

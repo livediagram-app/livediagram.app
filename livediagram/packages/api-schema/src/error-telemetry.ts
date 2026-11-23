@@ -44,7 +44,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'oauth',
   'account',
   'trash',
-  // Ask AI (liveworkspace/docs/specs/019-ask/ask.md "The route").
+  // Ask AI (liveworkspace/docs/specs/020-ask/ask.md "The route").
   'ask',
   'preferences',
   'participants',

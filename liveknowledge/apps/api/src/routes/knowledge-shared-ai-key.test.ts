@@ -196,11 +196,13 @@ describe('which key answers', () => {
         error: 'ask_unavailable',
         message:
           "Your team's AI key could not be read. An admin can replace it in Settings, under AI.",
+        reason: 'team-unreadable',
       },
     ]);
     const own = await ask(kit, 'viewer');
     expect(await own.json()).toMatchObject({
       message: 'Your AI key could not be read. Replace it in Settings, under AI.',
+      reason: 'personal-unreadable',
     });
     expect(fetch).not.toHaveBeenCalled();
     expect(await uses(kit, 'viewer')).toEqual(expect.objectContaining({ uses: 'personal' }));
@@ -218,6 +220,7 @@ describe('which key answers', () => {
       {
         error: 'ask_unavailable',
         message: "Your AI key settings couldn't be reached just now. Try again in a moment.",
+        reason: 'shared-unavailable',
       },
     ]);
     expect(fetch).not.toHaveBeenCalled();

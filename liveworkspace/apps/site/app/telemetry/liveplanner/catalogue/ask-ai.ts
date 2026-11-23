@@ -1,4 +1,4 @@
-// Ask AI in the footer's Tools (liveworkspace/docs/specs/019-ask/ask.md): questions asked of the open plan, and an
+// Ask AI in the footer's Tools (liveworkspace/docs/specs/020-ask/ask.md): questions asked of the open plan, and an
 // answer's sources looked at. Never a question, an answer or which AI.
 // Part of the metric catalogue: import from ../metric-catalogue (./features.ts re-exports these, and stacks them
 // in Dialogs & Panels).

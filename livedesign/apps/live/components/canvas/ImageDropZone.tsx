@@ -5,6 +5,7 @@ import { IMAGE_TYPES_LABEL, MAX_IMAGE_MB } from '@livedesign/api-schema';
 import { UPLOAD_ACCEPT_ATTR } from '@/lib/upload-image';
 import { Glyph } from '@livedesign/ui';
 import { Callout } from '@liveworkspace/ui/callout';
+import { imageSizeHint } from '@liveworkspace/subscription-ui/images';
 
 // Drop / click target for image uploads: the dashed-border tile
 // ImagePicker (the editor's modal, 192px tall) draws, its size and
@@ -80,7 +81,7 @@ export function ImageDropZone({
           {uploading ? 'Uploading...' : prompt}
         </p>
         <p className="text-[11px] text-slate-500 dark:text-slate-400">
-          {hint ?? `${IMAGE_TYPES_LABEL} up to ${MAX_IMAGE_MB} MB`}
+          {hint ?? imageSizeHint(IMAGE_TYPES_LABEL, MAX_IMAGE_MB)}
         </p>
         <input
           ref={fileInputRef}

@@ -3,7 +3,7 @@
 Status: built
 
 A question typed in the footer's Tools, answered from the open plan's own words with the places the answer came
-from, built once for every app. The platform spec, [Ask AI](../../../../liveworkspace/docs/specs/019-ask/ask.md), is
+from, built once for every app. The platform spec, [Ask AI](../../../../liveworkspace/docs/specs/020-ask/ask.md), is
 the source of truth for the tool, what is sent, which AI answers and how the person switches, Sources, built-in AI's
 allowance and the route. This spec says only what is liveplanner's own.
 

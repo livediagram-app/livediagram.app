@@ -1,4 +1,4 @@
-// An editor's first load carries the Ask AI row and none of the tool (liveworkspace/docs/specs/019-ask/ask.md "What
+// An editor's first load carries the Ask AI row and none of the tool (liveworkspace/docs/specs/020-ask/ask.md "What
 // it costs"): the hook an editor calls and the row it publishes load with the editor; the tool, the conversation, the
 // client, the popovers and the settings line load when the row is first opened. A static import of any of them from
 // what the editor always loads passes every other test, and this one fails.

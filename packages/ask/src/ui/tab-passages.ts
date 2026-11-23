@@ -1,4 +1,4 @@
-// An item's tabs as passages (liveworkspace/docs/specs/019-ask/ask.md "What is sent"): the walk every editor shares,
+// An item's tabs as passages (liveworkspace/docs/specs/020-ask/ask.md "What is sent"): the walk every editor shares,
 // over the same tabs its Search panel reads. An element gives a passage when it holds words: its label, a table's
 // cells, and whatever other text fields the app names. Pure, and linear in the item's elements.
 import { ASK_MAX_LABEL_CHARS } from '../limits';

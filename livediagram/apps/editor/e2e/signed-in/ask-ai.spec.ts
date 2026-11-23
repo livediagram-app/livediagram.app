@@ -2,7 +2,7 @@ import type { Page, TestInfo } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
 import { freshUserId, installSession } from './session';
 
-// Ask AI in the footer's Tools (docs/specs/013-workspace/ask-ai.md; liveworkspace/docs/specs/019-ask/ask.md), signed
+// Ask AI in the footer's Tools (docs/specs/013-workspace/ask-ai.md; liveworkspace/docs/specs/020-ask/ask.md), signed
 // in, against the signed-in export. The tool's answers come from a stand-in for `POST /api/ask` that streams as the
 // route does, so what is asserted never depends on a model; the route itself is called once, for its shape. No real
 // key exists.

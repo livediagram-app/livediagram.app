@@ -1,4 +1,4 @@
-// `POST /api/ask` in every app (liveworkspace/docs/specs/019-ask/ask.md "The route"): a question answered from the
+// `POST /api/ask` in every app (liveworkspace/docs/specs/020-ask/ask.md "The route"): a question answered from the
 // passages of the open item the editor sent with it, on the person's own key (or their team's) when one applies and
 // they did not choose built-in AI, else on built-in AI under its daily allowance. Streamed as server-sent events
 // (`AskEvent`). For a signed-in account only: a guest or a link visitor would spend built-in AI for strangers.

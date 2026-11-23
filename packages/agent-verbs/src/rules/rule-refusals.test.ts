@@ -51,10 +51,11 @@ describe('a rule refusal', () => {
     const words: Record<string, RegExp> = {
       automation_snapshots_full: /more than 5 snapshots/,
       automation_name_taken: /1 to 60 characters/,
-      automation_rules_full: /holds 50 rules/,
+      automation_rules_full: /holds 50, the most one can, or its owner holds every rule/,
       automation_not_found: /list_rules lists the rules/,
       automation_not_manual: /Run by Hand rule/,
       automation_budget_spent: /1,000 runs today/,
+      automation_runs_used: /automation runs for this month are used/,
       tab_not_found: /that tab is gone from the sketch/,
     };
     for (const [code, said] of Object.entries(words))

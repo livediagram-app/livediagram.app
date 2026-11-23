@@ -1,4 +1,4 @@
-// An answer's light Markdown as Ask AI draws it in Tools (liveworkspace/docs/specs/019-ask/ask.md "What an answer
+// An answer's light Markdown as Ask AI draws it in Tools (liveworkspace/docs/specs/020-ask/ask.md "What an answer
 // shows"): paragraphs and lists, with bold and code text and the citation chips. The tool is 480 px wide and its
 // answers are short, so this reads only what such an answer uses; anything else stays the characters it was. Nothing
 // is ever HTML, and nothing the model writes is a link. Pure, and linear in the answer.

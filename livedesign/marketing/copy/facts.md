@@ -62,12 +62,14 @@ The unit of value is the team, not the individual.
 
 - Not a diagramming tool or a whiteboard (that is livediagram).
 - Not a deck builder or a word processor (that is livedocuments).
-- Not a desktop app, and not a paid product.
+- Not a desktop app, and no feature is paid.
 
 ## Open source and price
 
 - MIT-licensed and publicly viewable.
-- Hosted free at livedesign.app. No paid tier and no plan to introduce one.
+- Hosted free at livedesign.app, every feature works on the free plan. Pro, a paid tier,
+  only raises a few limits; no feature is Pro-only. Don't claim there is no
+  paid tier, and don't lead with Pro.
 - The open-source core never calls home and never gates features behind a
   license check. Sign-in through liveworkspace accounts is the one optional
   dependency; without it the app runs in full-featured guest mode.

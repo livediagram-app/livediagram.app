@@ -4,6 +4,8 @@
 // pieces of the answer, then one `done` with the sources, what was found but not used and the gaps; or one `error`.
 // A signed-in Editor, Participant or Viewer may ask (an API token asks for its account); a guest or a visitor
 // through a share link may not, since it would spend the team's key or liveknowledge's built-in AI for strangers.
+import type { KnowledgeAiCredits } from '@liveknowledge/api-schema';
+import { creditCallerOf, creditsHeader, spendBuiltInCredit } from '../knowledge/ai-credits';
 import { newQuestions, queueNewQuestions } from '../document-room/automations/question-events';
 import {
   ASK_BUILT_IN_PER_KNOWLEDGEBASE_PER_DAY,
@@ -89,8 +91,8 @@ export const ASK_BUILT_IN = {
   },
 } as const;
 
-const refused = (status: number, error: string, message: string) =>
-  json({ error, message }, { status });
+const refused = (status: number, error: string, message: string, more: object = {}) =>
+  json({ error, message, ...more }, { status });
 const refusedBuiltIn = (why: (typeof ASK_BUILT_IN)[keyof typeof ASK_BUILT_IN]) =>
   refused(why.status, why.error, why.message);
 
@@ -152,8 +154,10 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
       : await applyingAi(env, document.id, askerOf(ctx, document.teamId));
   // A key that is kept but does not open, or accounts that could not say whose key applies, is refused, never swapped
   // quietly for the next in line or built-in AI.
-  if (isAiRefusal(ai)) return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai]);
+  if (isAiRefusal(ai))
+    return refused(409, 'ask_unavailable', ASK_UNAVAILABLE_WORDS[ai], { reason: ai });
   let caller: ModelCaller;
+  let credits: KnowledgeAiCredits | null = null;
   if (typeof ai === 'string') {
     // Chosen, or no key (or no secret to keep one under): built-in AI, under its own caps.
     const client = builtInAi(env);
@@ -166,6 +170,15 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
     // The count guards a bill: unreachable, the question is refused rather than the cap lifted.
     if (spent === 'unavailable') return refusedBuiltIn(ASK_BUILT_IN.failed);
     if (!spent) return refusedBuiltIn(ASK_BUILT_IN['person-limit']);
+    // With Pro on, one of the owner's AI credits, once every cap has passed (tiers.md).
+    const credit = await spendBuiltInCredit(
+      env,
+      document,
+      'knowledgeAsk',
+      creditCallerOf(ctx, person),
+    );
+    if (!credit.ok) return credit.response;
+    credits = credit.credits;
     await runAll(env, [...counters.bump, bumpCounter(ASK_BUILT_IN_SCOPE, day)]);
     caller = { provider: 'built-in', ai: client };
   } else {
@@ -303,6 +316,7 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
       ...CORS_HEADERS,
       'Content-Type': 'text/event-stream; charset=utf-8',
       'Cache-Control': 'no-store',
+      ...creditsHeader(credits),
     },
   });
 }

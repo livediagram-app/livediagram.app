@@ -93,6 +93,7 @@ export function CollaboratorsDialog({
       onClose={onClose}
       titleId={TITLE_ID}
       size="md"
+      phoneSheet
       className="max-h-[min(36rem,calc(100dvh-2rem))]"
     >
       {/* The dialog hero header (liveworkspace/docs/specs/004-index/dialog-hero-header.md): the presence stack's band,

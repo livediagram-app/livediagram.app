@@ -1,6 +1,6 @@
 'use client';
 
-// A finished answer, formatted (liveworkspace/docs/specs/019-ask/ask.md "What an answer shows"): its paragraphs and
+// A finished answer, formatted (liveworkspace/docs/specs/020-ask/ask.md "What an answer shows"): its paragraphs and
 // lists (answer-lite.ts) with its citation chips. Every piece is a React text node or an element made here: nothing
 // the model wrote is set as HTML.
 import { Fragment, useMemo, type ReactNode } from 'react';
