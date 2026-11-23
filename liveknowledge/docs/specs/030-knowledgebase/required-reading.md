@@ -51,9 +51,9 @@ Status: **built, not yet verified on a deployed Worker** ([blueprint](blueprints
 - **Ask Everyone to Read Again**, while an Editor edits a Required Reading page: a small toggle in the draft bar, left
   of Cancel, off by default and off again after each Save or Cancel. Saving with it on asks everyone again; the
   save's toast says so: "Expenses Saved. Everyone is asked to read it again.".
-- **AI Knowledge**: a **Required Reading** card in the right column under Knowledge Health: each Required Reading
+- **Insights**: a **Required Reading** card in the right column under Knowledge Health: each Required Reading
   page with its bar and "7 of 12", the least read first, each row opening its page; empty, "No Required Reading" and
-  "An Editor marks a page Required Reading from its Page Info.". Counts only, for everyone who sees AI Knowledge.
+  "An Editor marks a page Required Reading from its Page Info.". Counts only, for everyone who sees Insights.
 - Hidden in an embed, a published site and a knowledgebase kept Offline (no room).
 
 ## Remind

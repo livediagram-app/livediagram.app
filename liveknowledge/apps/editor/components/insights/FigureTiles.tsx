@@ -1,6 +1,6 @@
 'use client';
 
-// AI Knowledge's figures band (docs/specs/030-knowledgebase/ai-knowledge.md "The view, as built"): six tiles, each
+// Insights' figures band (docs/specs/030-knowledgebase/insights.md "The view, as built"): six tiles, each
 // a button named by its words and its figure. Three filter Needs Attention; the others bring their card into view.
 // A figure that asks for someone carries a small amber mark.
 import { useId, useState, type ReactNode } from 'react';
@@ -14,7 +14,7 @@ import {
   QuestionIcon,
   ReadsIcon,
   SuggestionIcon,
-} from './ai-knowledge-icons';
+} from './insights-icons';
 import { readsSparkLabel } from '@/lib/knowledge-ask/dashboard-figures';
 import {
   agentShares,
@@ -143,7 +143,7 @@ export function FigureTiles({
   return (
     <div
       role="group"
-      aria-label="AI Knowledge at a glance"
+      aria-label="Insights at a glance"
       className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6"
     >
       <Tile
@@ -235,7 +235,7 @@ export function FigureTiles({
           attention={figures.reviewDue > 0}
           onPress={() => onGo({ card: 'health' })}
           line={
-            // The average Health Score under the verified share (ai-knowledge.md "Every tile draws a picture").
+            // The average Health Score under the verified share (insights.md "Every tile draws a picture").
             figures.verifiedShare === null
               ? 'No pages to verify'
               : figures.averageHealth === undefined

@@ -212,7 +212,7 @@ export function receiveRoomOp(
     // A reaction on a page (docs/specs/030-knowledgebase/page-reactions.md "Live"): the api's, never a client's.
     if (from === 'system' && opts.documentId) pageReactionsStore.receive(opts.documentId, op);
   } else if (op.kind === 'page-suggestions') {
-    // An agent suggested an edit, or one was accepted or dismissed (docs/specs/030-knowledgebase/ai-knowledge.md "On
+    // An agent suggested an edit, or one was accepted or dismissed (docs/specs/030-knowledgebase/insights.md "On
     // the page"): the api's, never a client's. The open page reads its health again once.
     if (from === 'system') suggestionsView.notePushed();
   }

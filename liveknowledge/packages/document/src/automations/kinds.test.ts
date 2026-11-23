@@ -113,10 +113,10 @@ describe('KINDS', () => {
       'Trust: Page Verified',
       'Trust: Review Due',
       'Trust: Page Owner Changed',
-      'AI Knowledge: Unanswered Question',
-      'AI Knowledge: Pages Disagree',
-      'AI Knowledge: Agent Suggested a Change',
-      'AI Knowledge: Agent Made Changes',
+      'Insights: Unanswered Question',
+      'Insights: Pages Disagree',
+      'Insights: Agent Suggested a Change',
+      'Insights: Agent Made Changes',
       'Versions: Version Named',
       'Versions: Version Restored',
     ]);
@@ -140,7 +140,7 @@ describe('KINDS', () => {
   });
 });
 
-describe('the trust and AI Knowledge triggers', () => {
+describe('the trust and Insights triggers', () => {
   const by = { id: 'user_ana', name: 'Ana Costa', color: '#111' };
   it.each([
     [PAGE_VERIFIED_EVENT, true, false, 'Ana Costa verified Letter'],
@@ -203,7 +203,7 @@ describe('the trust and AI Knowledge triggers', () => {
   });
 });
 
-describe('the trust and AI Knowledge steps', () => {
+describe('the trust and Insights steps', () => {
   const steps = (step: ItemPart, trigger: ItemPart = { kind: 'manual' }) =>
     rule(trigger, { steps: [step] });
   const ctx = { names: NAMES, fill: (text: string) => text } as never;

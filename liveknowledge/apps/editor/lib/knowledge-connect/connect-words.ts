@@ -53,8 +53,8 @@ export function accessRows(role: ConnectRole): readonly AccessRow[] {
 /** The line under the rows on writing: how an Editor allows it, or who can. */
 export function writingLine(role: ConnectRole): string {
   return role === 'editor'
-    ? 'To let it write, choose Allow Writing on its card in AI Knowledge once it connects. That applies to this knowledgebase only, and you can stop it there at any time.'
-    : 'Only an Editor’s connection can be allowed to write, by that Editor, from its card in AI Knowledge.';
+    ? 'To let it write, choose Allow Writing on its card in Insights once it connects. That applies to this knowledgebase only, and you can stop it there at any time.'
+    : 'Only an Editor’s connection can be allowed to write, by that Editor, from its card in Insights.';
 }
 
 /** The connection acts for the person, across everything they can open: so the knowledgebase is named. */

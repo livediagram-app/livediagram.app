@@ -5,6 +5,7 @@ import {
   coverGradientLabel,
   coverImageId,
   coverKindOf,
+  coverThemeFrom,
   parseTabCover,
   withSettledCover,
 } from './page-cover';
@@ -81,6 +82,21 @@ describe('a page’s cover', () => {
     );
     expect(coverFill({ imageId: 'img_a' }, OCEAN)).toBeUndefined();
     expect(coverGradientLabel('theme-twilight')).toBe('Theme Twilight');
+  });
+
+  it('leads its theme’s palette with the writing accent (coverThemeFrom)', () => {
+    const palette = [
+      { fill: '#eff6ff', stroke: '#2563eb', text: '#1e3a8a' },
+      { fill: '#fdf2f8', stroke: '#db2777', text: '#831843' },
+    ];
+    expect(coverThemeFrom({ palette }, '#7c3aed')).toEqual({
+      elementStroke: '#7c3aed',
+      palette: [{ ...palette[0], stroke: '#7c3aed' }, palette[1]],
+    });
+    expect(coverThemeFrom({}, '#7c3aed')).toEqual({
+      elementStroke: '#7c3aed',
+      palette: [{ fill: '', text: '', stroke: '#7c3aed' }],
+    });
   });
 
   it('settles a stored tab’s cover, the same tab when there is nothing to settle', () => {

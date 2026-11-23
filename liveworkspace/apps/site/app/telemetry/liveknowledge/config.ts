@@ -49,7 +49,7 @@ import {
   CALLS_TO_ACTION,
   FORMAT_PAINTER,
   ASK,
-  AI_KNOWLEDGE,
+  INSIGHTS,
   VERIFICATION,
   KNOWLEDGE_SEARCH,
   PAGE_NAVIGATION,
@@ -253,7 +253,7 @@ export const LIVEKNOWLEDGE: TelemetryAppConfig = {
       title: 'Knowledge',
       metrics: [
         ASK,
-        AI_KNOWLEDGE,
+        INSIGHTS,
         VERIFICATION,
         KNOWLEDGE_SEARCH,
         PAGE_NAVIGATION,

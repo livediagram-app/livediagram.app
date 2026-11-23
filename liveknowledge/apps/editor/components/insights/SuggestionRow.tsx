@@ -1,12 +1,12 @@
 'use client';
 
-// An edit suggested by an agent, as a row of Needs Attention (docs/specs/030-knowledgebase/ai-knowledge.md "Edits
+// An edit suggested by an agent, as a row of Needs Attention (docs/specs/030-knowledgebase/insights.md "Edits
 // suggested by agents"): an agent with Suggests Edits never changes a page; its edit waits here with its reason, as
 // the lines it takes out and puts in. Accept applies it as one undo step in the acceptor's name and does not verify the page. The lines are text.
 import type { KnowledgeSuggestion } from '@liveknowledge/api-schema';
 import { Button } from '@liveknowledge/ui';
 import { SuggestionChange } from '@/components/knowledge/suggestions/SuggestionChange';
-import { AI_CHIP, AI_MUTED } from './AiSection';
+import { INSIGHTS_CHIP, INSIGHTS_MUTED } from './InsightsSection';
 
 export function SuggestionRow({
   suggestion,
@@ -31,9 +31,9 @@ export function SuggestionRow({
         <p className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900 dark:text-white">
           {suggestion.title || 'Untitled Page'}
         </p>
-        <span className={AI_CHIP}>{suggestion.agent}</span>
+        <span className={INSIGHTS_CHIP}>{suggestion.agent}</span>
       </div>
-      <p className={`mt-1 break-words text-[13px] leading-5 ${AI_MUTED}`}>
+      <p className={`mt-1 break-words text-[13px] leading-5 ${INSIGHTS_MUTED}`}>
         {suggestion.summary || suggestion.reason}
       </p>
       <SuggestionChange suggestion={suggestion} className="mt-3" />

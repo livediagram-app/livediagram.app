@@ -35,7 +35,7 @@ const shot = async (page: Page, name: string) => {
   await page.screenshot({ path: `${dir}/${name}.png` });
 };
 
-test('Required Reading: required, confirmed, seen by the owner, asked again, listed in AI Knowledge', async ({
+test('Required Reading: required, confirmed, seen by the owner, asked again, listed in Insights', async ({
   page,
   browser,
   baseURL,
@@ -112,14 +112,14 @@ test('Required Reading: required, confirmed, seen by the owner, asked again, lis
   await pageRow(viewer, 'Expenses Policy').click();
   await expect(banner(viewer)).toContainText('This page changed on');
 
-  // AI Knowledge lists it with its counts.
-  await openView(page, 'AI Knowledge');
+  // Insights lists it with its counts.
+  await openView(page, 'Insights');
   const card = page.locator('[data-ai-section="ai-required-reading"]');
   await expect(card.locator('[data-required-reading]')).toHaveCount(1);
   // Without a team, Everyone counts the owner and those who confirmed this round: Alan counts again once he confirms.
   await expect(card).toContainText('0 of 1');
   await card.scrollIntoViewIfNeeded();
-  await shot(page, '08-ai-knowledge-card');
+  await shot(page, '08-insights-card');
 
   // On a phone the banner's button takes the whole width.
   await viewer.setViewportSize({ width: 390, height: 844 });

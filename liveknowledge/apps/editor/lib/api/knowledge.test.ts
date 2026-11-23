@@ -137,7 +137,7 @@ describe('verify and the fields', () => {
   });
 });
 
-describe('the AI settings and the AI Knowledge tab', () => {
+describe('the AI settings and the Insights tab', () => {
   const ai = { hasKey: true, keyHint: '4f2a', model: 'claude-fable-5-2', models: [] };
 
   it('reads and writes the key and the model', async () => {

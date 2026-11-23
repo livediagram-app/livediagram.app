@@ -1,6 +1,6 @@
 'use client';
 
-// The pictures of a knowledgebase's own trust and AI Knowledge kinds (docs/specs/013-workspace/automations.md "The
+// The pictures of a knowledgebase's own trust and Insights kinds (docs/specs/013-workspace/automations.md "The
 // screen"; the platform's item-ui.md "Pictures"): the moment each trigger hears, or each step makes, resting just
 // before and playing on hover or focus of its tile. Drawn from the platform's scene parts at their fixed sizes and
 // moved by its automation-scenes.css alone (transform and opacity, no timers), so they sit beside the shared kinds'

@@ -159,7 +159,7 @@ function EditorViewFooterBar(view: {
             track('UI', 'Opened', 'Settings');
           }}
           // The command search reads the pages this editor already holds: it loads none (a page fetched counts as
-          // read by this person, docs/specs/030-knowledgebase/ai-knowledge.md).
+          // read by this person, docs/specs/030-knowledgebase/insights.md).
           onOpenSearch={() => chrome.get().setSearchOpen(true)}
           // History, between Search and Settings, on a document stored on the server, for every role.
           onOpenHistory={history ? () => openHistoryFromFooter(chrome.get().activeId) : undefined}

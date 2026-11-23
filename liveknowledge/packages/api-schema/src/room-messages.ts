@@ -129,7 +129,7 @@ export const SYSTEM_OP_KINDS = [
   // A reaction on a page was added or taken back (docs/specs/030-knowledgebase/page-reactions.md "Live"): the api
   // wrote it and sends it through /mutation. A forged one would show a reaction nobody made.
   'page-reaction',
-  // A suggested edit was made, accepted or dismissed (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"):
+  // A suggested edit was made, accepted or dismissed (docs/specs/030-knowledgebase/insights.md "On the page"):
   // the pages' ids only, each session reads its open page's health again. A forged one costs a read, nothing more.
   'page-suggestions',
 ] as const;
@@ -506,7 +506,7 @@ export type RoomOp =
   // A reaction on a page, added or taken back (docs/specs/030-knowledgebase/page-reactions.md "Live").
   // Worker-originated through /mutation.
   | PageReactionOp
-  // A page's suggested edits changed (docs/specs/030-knowledgebase/ai-knowledge.md "On the page"): ids only.
+  // A page's suggested edits changed (docs/specs/030-knowledgebase/insights.md "On the page"): ids only.
   // Worker-originated through /mutation.
   | PageSuggestionsOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every

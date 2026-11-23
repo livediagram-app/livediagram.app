@@ -1,14 +1,14 @@
 'use client';
 
-// A question nobody could answer, as a row of Needs Attention (docs/specs/030-knowledgebase/ai-knowledge.md
+// A question nobody could answer, as a row of Needs Attention (docs/specs/030-knowledgebase/insights.md
 // "Questions nobody could answer"): what Ask, an agent's empty search or its `report_gap` logged, grouped, with how
 // often and by whom. Draft a Page and Dismiss are a writer's.
 import type { KnowledgeQuestion } from '@liveknowledge/api-schema';
 import { Spinner } from '@/components/palette/template-picker-icons';
 import { Button, HoverCard } from '@liveknowledge/ui';
 import { askedByText } from '@/lib/knowledge-ask/overview-words';
-import { DismissIcon } from './ai-knowledge-icons';
-import { AI_MUTED } from './AiSection';
+import { DismissIcon } from './insights-icons';
+import { INSIGHTS_MUTED } from './InsightsSection';
 
 /** One question nobody could answer, as Needs Attention draws it. */
 export function QuestionRow({
@@ -35,7 +35,7 @@ export function QuestionRow({
         <p className="break-words text-sm font-medium text-slate-900 dark:text-slate-100">
           {question.question}
         </p>
-        <p className={`text-xs ${AI_MUTED}`}>{askedByText(question)}</p>
+        <p className={`text-xs ${INSIGHTS_MUTED}`}>{askedByText(question)}</p>
       </div>
       {canDraft ? (
         <Button

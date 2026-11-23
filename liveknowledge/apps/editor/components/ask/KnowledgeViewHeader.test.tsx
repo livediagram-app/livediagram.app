@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The header Ask and AI Knowledge share (docs/specs/030-knowledgebase/blueprints/ask-ui.md "The frame", WI-1337): the
+// The header Ask and Insights share (docs/specs/030-knowledgebase/blueprints/ask-ui.md "The frame", WI-1337): the
 // view's name and its one line stand in one column with one left edge, the name over the line, and the view's buttons
 // after that column in the row, so the line never sits beside the name on a baseline of its own.
 import { cleanup, render, screen } from '@testing-library/react';
@@ -12,11 +12,11 @@ afterEach(cleanup);
 describe('KnowledgeViewHeader', () => {
   it('stacks the name over its line in one column, the buttons beside the column', () => {
     render(
-      <KnowledgeViewHeader title="AI Knowledge" about="What agents know of this knowledgebase.">
+      <KnowledgeViewHeader title="Insights" about="What agents know of this knowledgebase.">
         <button type="button">AI Settings</button>
       </KnowledgeViewHeader>,
     );
-    const title = screen.getByRole('heading', { level: 1, name: 'AI Knowledge' });
+    const title = screen.getByRole('heading', { level: 1, name: 'Insights' });
     const about = screen.getByText('What agents know of this knowledgebase.');
     const column = title.parentElement!;
     expect(column.hasAttribute('data-view-heading')).toBe(true);

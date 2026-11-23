@@ -1,6 +1,6 @@
 'use client';
 
-// Knowledge Health and Always in Context (docs/specs/030-knowledgebase/ai-knowledge.md). Health is one stacked bar:
+// Knowledge Health and Always in Context (docs/specs/030-knowledgebase/insights.md). Health is one stacked bar:
 // Verified, Review Due and Never Verified, dark, mid and light, so the three differ in lightness as well as hue,
 // with a legend that says each count. Remind the Owners emails each owner their due and never-verified pages, once
 // a week (knowledge-email-routes.ts); in that week the section says when they were reminded in the button's place.
@@ -20,8 +20,8 @@ import {
   tokensText,
   type HealthPart,
 } from '@/lib/knowledge-ask/overview-words';
-import { AddIcon, ContextIcon, DismissIcon, HealthIcon, RemindIcon } from './ai-knowledge-icons';
-import { AI_MUTED, AiSection } from './AiSection';
+import { AddIcon, ContextIcon, DismissIcon, HealthIcon, RemindIcon } from './insights-icons';
+import { INSIGHTS_MUTED, InsightsSection } from './InsightsSection';
 import { useShowAll } from './useShowAll';
 
 export const CONTEXT_CAP = 5;
@@ -36,7 +36,7 @@ export const HEALTH_FILL: Record<HealthPart['key'], string> = {
 const LOW_ROW =
   'group flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors duration-micro hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 dark:hover:bg-slate-800/60';
 
-/** Pages With Low Health (ai-knowledge.md "Knowledge Health"): up to 5, lowest first, each opening its page. */
+/** Pages With Low Health (insights.md "Knowledge Health"): up to 5, lowest first, each opening its page. */
 function LowHealthPages({
   pages,
   onOpenPage,
@@ -50,7 +50,7 @@ function LowHealthPages({
         Pages With Low Health
       </p>
       {pages.length === 0 ? (
-        <p className={`mt-2 text-[13px] ${AI_MUTED}`}>
+        <p className={`mt-2 text-[13px] ${INSIGHTS_MUTED}`}>
           <span className="font-medium text-slate-900 dark:text-slate-100">
             Every Page Is Healthy
           </span>
@@ -65,7 +65,7 @@ function LowHealthPages({
                   <span className="block truncate text-sm font-medium text-slate-900 underline-offset-2 group-hover:underline dark:text-slate-100">
                     {page.title || 'Untitled Page'}
                   </span>
-                  <span className={`block truncate text-xs ${AI_MUTED}`}>{page.reason}</span>
+                  <span className={`block truncate text-xs ${INSIGHTS_MUTED}`}>{page.reason}</span>
                 </span>
                 <HealthChip score={page.score} label={page.label} />
               </button>
@@ -107,7 +107,7 @@ export function HealthSection({
   // Nobody to remind while every page is verified.
   const toReview = health.reviewDue + health.neverVerified;
   return (
-    <AiSection
+    <InsightsSection
       id="ai-health"
       title="Knowledge Health"
       icon={<HealthIcon />}
@@ -121,7 +121,7 @@ export function HealthSection({
             remindedAt,
             now,
           ) ? (
-          <span className={`flex min-h-8 items-center gap-1.5 text-xs ${AI_MUTED}`}>
+          <span className={`flex min-h-8 items-center gap-1.5 text-xs ${INSIGHTS_MUTED}`}>
             <RemindIcon />
             {ownersEmailedText('remind', remindedAt!, now)}
           </span>
@@ -155,7 +155,7 @@ export function HealthSection({
             <span className="text-3xl font-semibold tabular-nums tracking-tight text-slate-900 dark:text-white">
               {health.average ?? 0}
             </span>
-            <span className={`text-[13px] ${AI_MUTED}`}>
+            <span className={`text-[13px] ${INSIGHTS_MUTED}`}>
               average health across {health.total.toLocaleString('en')}{' '}
               {health.total === 1 ? 'page' : 'pages'}
             </span>
@@ -168,7 +168,7 @@ export function HealthSection({
             <span className="text-3xl font-semibold tabular-nums tracking-tight text-slate-900 dark:text-white">
               {share}%
             </span>
-            <span className={`text-[13px] ${AI_MUTED}`}>
+            <span className={`text-[13px] ${INSIGHTS_MUTED}`}>
               of {health.total.toLocaleString('en')} {health.total === 1 ? 'page' : 'pages'}{' '}
               verified
             </span>
@@ -206,7 +206,7 @@ export function HealthSection({
               <li key={part.key} className="flex items-center gap-2 text-[13px]">
                 <span aria-hidden className={`h-2.5 w-2.5 rounded-sm ${HEALTH_FILL[part.key]}`} />
                 <span className="text-slate-900 dark:text-slate-100">{part.label}</span>
-                <span className={`tabular-nums ${AI_MUTED}`}>
+                <span className={`tabular-nums ${INSIGHTS_MUTED}`}>
                   {part.pages.toLocaleString('en')}
                 </span>
               </li>
@@ -215,7 +215,7 @@ export function HealthSection({
           {lowHealth ? <LowHealthPages pages={lowHealth} onOpenPage={onOpenPage} /> : null}
         </>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }
 
@@ -238,7 +238,7 @@ export function ContextSection({
   const { shown, toggle } = useShowAll(context.pages, CONTEXT_CAP);
   const share = context.budget > 0 ? Math.min(100, (context.used / context.budget) * 100) : 0;
   return (
-    <AiSection
+    <InsightsSection
       id="ai-context"
       title="Always in Context"
       icon={<ContextIcon />}
@@ -270,7 +270,7 @@ export function ContextSection({
             style={{ width: `${share}%` }}
           />
         </div>
-        <p className={`mt-1.5 text-[13px] tabular-nums ${AI_MUTED}`} data-context-budget="">
+        <p className={`mt-1.5 text-[13px] tabular-nums ${INSIGHTS_MUTED}`} data-context-budget="">
           {budgetText(context.used, context.budget)}
         </p>
       </div>
@@ -300,7 +300,7 @@ export function ContextSection({
                 >
                   {page.title || 'Untitled Page'}
                 </button>
-                <span className={`shrink-0 text-[13px] tabular-nums ${AI_MUTED}`}>
+                <span className={`shrink-0 text-[13px] tabular-nums ${INSIGHTS_MUTED}`}>
                   {tokensText(page.tokens)}
                 </span>
                 {canEdit ? (
@@ -323,7 +323,7 @@ export function ContextSection({
           {toggle}
         </>
       )}
-    </AiSection>
+    </InsightsSection>
   );
 }
 

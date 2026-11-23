@@ -1,6 +1,6 @@
 // A page's Health Score (docs/specs/030-knowledgebase/verification.md "Health Score"): how far a reader, a person or
 // an agent, can lean on a page, 0 to 100, from eight factors, each a whole number of points. One pure function for
-// the editor's Page Health, the api's agent answers, Ask and AI Knowledge, so everyone sees the same number. Constant
+// the editor's Page Health, the api's agent answers, Ask and Insights, so everyone sees the same number. Constant
 // work: nothing in the facts grows it (the words arrive as a band).
 
 import type { TrustStateName } from './trust';
