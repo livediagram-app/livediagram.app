@@ -1,3 +1,4 @@
+import type { AgentHeaders } from '@liveworkspace/index-app';
 import { CLIENT_HEADER, CLIENT_KINDS, type ClientKind } from '@livedesign/api-schema';
 
 // Which surface sent a changeset or a revert, for the Agent telemetry type
@@ -15,3 +16,7 @@ export function frontDoorOf(request: Request): FrontDoor {
   const value = request.headers.get(CLIENT_HEADER)?.trim().toLowerCase();
   return isClientKind(value) ? DOORS[value] : 'Api';
 }
+
+/** The headers an agent's request names its door in, for the History it leaves (@liveworkspace/index-app itemAgentOf,
+ *  Work Tracker 1381): its client's name is its token's. */
+export const AGENT_HEADERS: AgentHeaders = { client: CLIENT_HEADER };

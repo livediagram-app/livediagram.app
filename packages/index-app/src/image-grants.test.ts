@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nodeSql } from './test-sqlite';
+import { editKeyOf } from './outbox';
 import {
   createImageGrants,
   editorsOfKeys,
@@ -145,5 +146,9 @@ describe('grants', () => {
 
   it('reads the people edit keys name', () => {
     expect(editorsOfKeys(['user_bob@1', 'a@b@2', '@3'])).toEqual(['user_bob', 'a@b']);
+    // An agent's edit for its person names the person.
+    expect(editorsOfKeys([editKeyOf('user_cy', 4, { name: 'Claude', via: 'mcp' })])).toEqual([
+      'user_cy',
+    ]);
   });
 });

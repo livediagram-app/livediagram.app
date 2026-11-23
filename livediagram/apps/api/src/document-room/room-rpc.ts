@@ -1,3 +1,4 @@
+import { AGENT_HEADERS } from '../changesets/front-door';
 import {
   openRoomSockets,
   recordItemEditor,
@@ -5,6 +6,7 @@ import {
   type ExportQuery,
   type ExportResult,
   putAwayGate,
+  itemAgentOf,
 } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite, SourceChange } from '@liveworkspace/index-client';
 import { tellSourceChanged } from '@liveworkspace/index-app';
@@ -80,6 +82,8 @@ export async function route(
         documentId,
         identity.owner,
         Date.now(),
+        // An agent's write for its person names the agent (Work Tracker 1381).
+        itemAgentOf(request, identity.token, AGENT_HEADERS),
       );
     }
     room.noteWrite();
