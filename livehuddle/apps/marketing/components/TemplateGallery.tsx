@@ -5,7 +5,7 @@ import { TemplatePreview } from '@livehuddle/template-previews';
 import { templateCreateHref } from '@livehuddle/templates';
 import { TemplateGallery as Gallery } from '@liveworkspace/marketing-site/components/TemplateGallery';
 import { TemplateCard } from '@/components/TemplateCard';
-import { TemplateCarousel } from '@/components/TemplateCarousel';
+import { TemplateCarousel } from '@liveworkspace/marketing-site/components/TemplateCarousel';
 import { LEAD_CATEGORY, galleryShelves, type GalleryTemplate } from '@/lib/template-gallery';
 
 // "Browse every template" (docs/specs/019-marketing/marketing-site.md), anchored #templates for the hero's search: every template the

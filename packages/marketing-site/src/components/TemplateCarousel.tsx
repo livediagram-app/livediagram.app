@@ -1,10 +1,10 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { BAND_LABEL } from '@liveworkspace/marketing-site/lib/band-classes';
-import { SnapCarousel } from '@livedocuments/ui';
+import { SnapCarousel } from '@liveworkspace/ui';
+import { BAND_LABEL } from '../lib/band-classes';
 
-// One category's row of the template gallery (docs/specs/019-marketing/marketing-site.md): the shared
+// One category's row of the template gallery (each product's docs/specs/019-marketing/marketing-site.md): the shared
 // SnapCarousel (the editor's template picker browses a category with the same
 // one) showing four cards across on desktop, two on a tablet and one on a
 // phone, under the band's own heading style.
