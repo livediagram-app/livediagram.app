@@ -20,10 +20,17 @@ async function open(page: Page, screen: Screen): Promise<void> {
   const saved = savedWith(page, 'blue lever');
   await writeLines(page, 'Restart the queue worker with the blue lever.');
   await saved;
+  // Verify shows at once and reaches the api after: wait for the api's answer too, so each screen is read with
+  // the page verified. Leaving on the words alone, a busy runner read Insights and Home with the page still
+  // never verified (a lower Health Score, so other rows and chips), and audited one screen or the other by chance.
+  const verified = page.waitForResponse(
+    (r) => r.request().method() === 'POST' && /\/verify$/.test(new URL(r.url()).pathname),
+  );
   await page
     .getByRole('region', { name: 'Page Health' })
     .getByRole('button', { name: 'Verify', exact: true })
     .click();
+  expect((await verified).ok(), 'the api verified the page').toBe(true);
   await expect(page.locator('[data-page-meta]')).toContainText('Verified by');
   if (screen === 'Home') {
     await page.goto('/home');

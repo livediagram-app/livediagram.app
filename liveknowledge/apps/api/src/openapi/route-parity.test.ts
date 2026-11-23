@@ -43,11 +43,13 @@ const show = (r: Pick<ProbeResult, 'method' | 'path'>) => `${r.method} /${r.path
 
 let results: ProbeResult[] = [];
 
-// The sweep is about 35,000 paths in five methods each: some 175,000 dispatches. They take 5 s on a
-// developer's machine and 15 s under coverage, and CI's shared runners, under coverage beside another
-// package, took 19 to 62 s for the same work. A wall-clock timeout, not a CPU budget (testing.md), so a
-// fixed 120 s: three times the 40 s it once allowed a plain run.
-const PROBE_TIMEOUT_MS = 120_000;
+// The sweep is about 91,000 paths in five methods each: some 455,000 dispatches, all but 78 of the paths under
+// `documents`, whose every literal multiplies the rest (27 x 5 x 29 x 7 at its four positions, 2026-11-23). They
+// take about 17 s on a developer's machine at rest and 90 s on a busy one, and CI's shared runners, under
+// coverage beside another package, took 86 to 120 s for this file against the 120 s it then allowed (three green
+// runs, 2026-11-23): one slow runner from red. A wall-clock timeout, not a CPU budget (testing.md), so a fixed 300 s, as liveplanner's
+// has: room for a busy runner, still well short of the job's own limit.
+const PROBE_TIMEOUT_MS = 300_000;
 
 beforeAll(async () => {
   // Trapped requests end in index.ts's catch-all, which logs each one.
