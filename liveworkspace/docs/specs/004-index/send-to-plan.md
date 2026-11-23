@@ -103,7 +103,7 @@ Trash shows no chip, and the place may be sent again. A place sent to several ca
   who could not open them. The sender always can.
 - **Live, never polled.** liveplanner tells the index when a sent card's title, column, done state or Trash changes,
   gathered for `PLAN_CARDS_SETTLE_MS` (1.5 s), as one call (`POST /app/items/:id/plan-cards`, at most
-  `PLAN_CARDS_CHANGED_MAX` cards). The index updates the sends and tells each source item whose send changed (at most
+  `PLAN_CARDS_CHANGED_MAX` cards; a burst of more goes as several calls, so none is dropped). The index updates the sends and tells each source item whose send changed (at most
   `PLAN_SEND_SOURCES_SIGNAL_MAX` (50) a call, ten at a time) through its app's `source-changed` door, naming the cards;
   that item's room tells its open sessions, and each reads its item's sends again with its own access. The signal names
   ids, never titles or columns.
@@ -126,8 +126,8 @@ an item its person could not open. Agents read a card's Sent From with the card.
 | ------------------------------ | ----- | ----------------------------------------------------- |
 | `PLAN_SEND_CARDS_MAX`          | 20    | Cards one send makes (Send All on a huddle's actions) |
 | `PLAN_SEND_CHECKLIST_MAX`      | 50    | Checklist rows on one card                            |
-| `PLAN_SENDS_PER_SOURCE_MAX`    | 500   | Sends one source item holds; the next is refused      |
-| `PLAN_SEND_READ_MAX`           | 200   | Sends a source's read answers, newest first           |
+| `PLAN_SENDS_PER_SOURCE_MAX`    | 1,000 | Sends one source item holds; the next is refused      |
+| `PLAN_SEND_READ_MAX`           | 500   | Sends a source's read answers, newest first           |
 | `PLAN_SEND_PLANS_CHECKED_MAX`  | 20    | Plans a read checks the reader's access to            |
 | `PLAN_CARDS_CHANGED_MAX`       | 100   | Cards in one of liveplanner's change calls            |
 | `PLAN_SEND_SOURCES_SIGNAL_MAX` | 50    | Source items one change call tells                    |
