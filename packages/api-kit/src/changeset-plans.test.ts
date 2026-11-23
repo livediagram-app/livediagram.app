@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { heldTargets } from './held-check';
+import { heldTargets } from './changeset-plans';
 
-// docs/specs/024-agents/agent-changesets.md "Held elements".
+// Each product's docs/specs/024-agents/agent-changesets.md "Held elements". The plans that read elements are
+// tested over each product's model (testing/changeset-plans-suite.ts).
 describe('heldTargets', () => {
   const bea = { elementIds: ['a', 'b'], name: 'Bea', color: '#f00', mine: false };
   const owner = { elementIds: ['c'], name: 'Webber', color: '#0ea5e9', mine: true };
