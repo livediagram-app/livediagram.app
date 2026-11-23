@@ -2,6 +2,7 @@
 // model"). The reply is untrusted text: every field is checked, what is over a bound is cut to it, and anything
 // that is not what the shape asks for is dropped. What comes out is plain text in a tree no deeper and no larger
 // than the bounds, which the editor only ever places as text.
+import { COVER_GRADIENT_IDS, isPageIconId } from '@liveknowledge/document';
 import {
   SETUP_MAX_DEPTH,
   SETUP_MAX_HEADINGS,
@@ -21,6 +22,10 @@ export type SetupPage = {
   parent: string | null;
   /** 1 at the top, at most SETUP_MAX_DEPTH. */
   depth: number;
+  /** A line-art page icon's id, when the page has one (a structure's, never a model's ask). */
+  icon?: string;
+  /** A theme gradient cover (`theme-<name>`), when the page has one. */
+  cover?: string;
 };
 
 export type SetupSuggestion = { name: string; pages: SetupPage[] };
@@ -53,7 +58,17 @@ type RawPage = {
   title: string;
   summary: string;
   headings: string[];
+  icon: string | undefined;
+  cover: string | undefined;
 };
+
+/** The page icon an object holds if it is the shape of an icon id, else none. */
+const iconOf = (value: unknown): string | undefined => (isPageIconId(value) ? value : undefined);
+/** The cover a value names if it is one of the built-in theme gradients, else none: never a picture. */
+const coverOf = (value: unknown): string | undefined =>
+  typeof value === 'string' && (COVER_GRADIENT_IDS as readonly string[]).includes(value)
+    ? value
+    : undefined;
 
 function rawPage(value: unknown, at: number): RawPage | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined;
@@ -70,6 +85,8 @@ function rawPage(value: unknown, at: number): RawPage | undefined {
     title,
     summary: plainLine(page.summary, SETUP_MAX_SUMMARY_CHARS),
     headings,
+    icon: iconOf(page.icon),
+    cover: coverOf(page.cover),
   };
 }
 
@@ -134,6 +151,8 @@ export function parseSetupSuggestion(reply: string): SetupSuggestion | undefined
         headings: page.headings,
         parent,
         depth,
+        ...(page.icon ? { icon: page.icon } : {}),
+        ...(page.cover ? { cover: page.cover } : {}),
       });
       if (depth < SETUP_MAX_DEPTH) place(page.key, id, depth + 1);
     }

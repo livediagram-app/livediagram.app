@@ -72,7 +72,19 @@ and picks that structure on its start, so it is created exactly as a pick here i
   first page, every page gets its title, its one italic line on what belongs on it and its headings with room to
   write under each, and the knowledgebase opens on its first page. The knowledgebase takes the structure's name
   ("Team Handbook") while it is still "Untitled Knowledgebase". A structure is at most 30 pages, 3 levels deep, its
-  titles unique under each parent: the bounds a suggestion keeps. It is one undo step. Whoever picks it owns its pages
+  titles unique under each parent: the bounds a suggestion keeps. It is one undo step.
+- **Icons and covers.** Owner, 2026-11-21: "Templates should use icons for pages when it makes sense, and covers too
+  if it makes sense, like for parent pages." So a structure's pages are not bare in the tree. Each **section**
+  (a page with subpages) has an **icon**, and so does any leaf whose title plainly names a thing (Glossary, Contacts,
+  Budget, Timeline); the rest keep none, so the tree reads calm, not dressed. Each **top-level parent page** and
+  the structure's **first page** have a **cover**: one theme gradient, the same on every page of that structure
+  (one calm light gradient to a group, so the structure reads as one), never a picture, never an animation, never a
+  link to an outside image. An icon is a line-art icon of the page icon picker's Icons tab
+  (page-surface.md "The page icon"), never an emoji, so every template follows the knowledgebase's
+  text colour and style; a cover is a built-in cover of the cover picker (page-surface.md "The cover").
+  Both are stored as the page's own `icon` and `cover`, so the owner changes or removes either as on any page. They
+  go through Review into the made pages (Review lists a page with its icon, as the tree shows it). A suggestion the
+  AI proposes carries none: its reply shape has no icon or cover, so only a structure picked on the start does. Whoever picks it owns its pages
   (verification.md "The owner"): Start Here's place keeps the owner the create gave it, and each page added takes its
   creator from the save that makes it.
 - The writing templates (Meeting Notes, Design Doc and the rest, `@liveknowledge/templates`) are a page's, so they

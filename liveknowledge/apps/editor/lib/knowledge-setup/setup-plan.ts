@@ -41,6 +41,8 @@ export function setupPlan(pages: readonly ReviewPage[]): ImportPlan {
     pictures: [],
     attachments: [],
     warnings: [],
+    ...(page.icon ? { icon: page.icon } : {}),
+    ...(page.cover ? { cover: page.cover } : {}),
   }));
   return {
     pages: planned,

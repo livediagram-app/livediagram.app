@@ -185,7 +185,7 @@ describe('the facts under a Review Period of Never', () => {
 describe('the score elsewhere', () => {
   it('a chip says the figure and the word', () => {
     render(<HealthChip score={42} label="needs-work" prefix />);
-    expect(screen.getByText('Health 42,').parentElement!.textContent).toBe('Health 42,Needs Work');
+    expect(screen.getByText('Health 42,').parentElement!.textContent).toBe('Health 42, Needs Work');
   });
 
   const counts = { verified: 1, reviewDue: 0, neverVerified: 2, total: 3, average: 60 };

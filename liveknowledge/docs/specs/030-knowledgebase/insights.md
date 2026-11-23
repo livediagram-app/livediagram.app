@@ -11,8 +11,9 @@ Most of it needs no model: it is bookkeeping the room already has.
 
 ## Connected agents
 
-One card per agent that has read or written this knowledgebase in the last 30 days: its name (the MCP client's, the CLI, or an
-API token's label), how it connects, what it may do (**Reads**, **Suggests Edits**, **Writes**), pages read this week and the
+One card per agent that has read or written this knowledgebase in the last 30 days: its name (the MCP client's, else its
+API token's label, the same name a page's Created and Updated give its writes, so a CLI connection is "Claude Code" on
+both and never "Agent"; "MCP", "CLI" or "API Token" only for a connection with neither), how it connects, what it may do (**Reads**, **Suggests Edits**, **Writes**), pages read this week and the
 three it read most. **Connect an Agent** opens the [Connect](mcp-connect.md) view: the steps for an AI app over the
 MCP server, the CLI and tokens.
 

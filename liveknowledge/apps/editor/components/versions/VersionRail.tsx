@@ -9,7 +9,14 @@ import { NAME_MAX_LENGTH } from '@liveknowledge/document';
 import { Button, CompactEmptyState, SwitchRow, TextInput } from '@liveknowledge/ui';
 import { HistoryIcon } from './history-tools-item';
 import type { VersionList } from './useVersionHistory';
-import { timeOfDay, versionsByDay, versionTitle } from './version-words';
+import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
+import {
+  aiVersionWords,
+  timeOfDay,
+  versionAuthorWords,
+  versionsByDay,
+  versionTitle,
+} from './version-words';
 
 export const NOW = 'now';
 
@@ -185,13 +192,18 @@ function VersionRow({
           {versionTitle(version)}
         </span>
         {version.author ? (
-          <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span
+            data-version-author={version.author.agent ? 'ai' : 'human'}
+            className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400"
+          >
             <span
               aria-hidden
-              className="h-2 w-2 rounded-full"
+              className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: version.author.color }}
             />
-            {version.author.name}
+            <span className="truncate">{versionAuthorWords(version.author)}</span>
+            {/* An agent's version: the AI sparkle, worded by what it did (version-history.md "In the editor"). */}
+            {version.author.agent ? <AiWriterMark words={aiVersionWords(version.kind)} /> : null}
           </span>
         ) : null}
       </button>

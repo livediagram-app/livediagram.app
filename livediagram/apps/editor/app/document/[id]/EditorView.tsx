@@ -103,7 +103,17 @@ const sheetLinkGrantOf = async (itemId: string): Promise<string | null> =>
 const trackSheetLink = (event: SheetLinkEvent): void =>
   event === 'ChartSheetLink'
     ? track('Element', 'Changed', 'ChartSheetLink')
-    : track('Element', 'Changed', 'ChartSheetUnlink');
+    : event === 'ChartBoardLink'
+      ? track('Element', 'Changed', 'ChartBoardLink')
+      : event === 'ChartMetricLink'
+        ? track('Element', 'Changed', 'ChartMetricLink')
+        : event === 'TableLiveLink'
+          ? track('Element', 'Changed', 'TableLiveLink')
+          : event === 'LiveDataFreeze'
+            ? track('Element', 'Changed', 'LiveDataFreeze')
+            : event === 'LiveDataUnfreeze'
+              ? track('Element', 'Changed', 'LiveDataUnfreeze')
+              : track('Element', 'Changed', 'ChartSheetUnlink');
 
 // The editor's full view (header + canvas + tab bar + all dialogs),
 // lifted out of editor-page.tsx. Every value/handler it needs is read

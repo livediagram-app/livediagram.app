@@ -7,6 +7,10 @@ export type StructurePage = {
   summary: string;
   headings: readonly string[];
   pages: readonly StructurePage[];
+  /** A line-art icon of the page icon picker (structures/looks.ts); absent for a page that has none. */
+  icon?: string;
+  /** A theme gradient cover, `theme-<name>`; absent for a page that has none. */
+  cover?: string;
 };
 
 /** Who a structure is for: the start's rail group it sits in. */

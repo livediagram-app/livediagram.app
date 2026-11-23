@@ -220,6 +220,16 @@ describe('a page', () => {
     expect(html).toContain('Updated 21 November 2026');
     expect(html).not.toContain('Written by');
     expect(html).not.toContain('<script');
+    expect(html).toContain('<main id="main"><article class="column">');
+  });
+
+  it('opens the page with its cover band, as the snapshot drew it (P33)', () => {
+    const cover = '<div class="cover"><img src="/kb/acme/media/pic" alt=""></div>';
+    const html = renderSitePage(view(), page({ cover }));
+    expect(html).toContain(`<main id="main">${cover}<article class="column">`);
+    expect(renderSitePage(view(), page({ cover: '' }))).toContain(
+      '<main id="main"><article class="column">',
+    );
   });
 
   it('draws the front page with Next, its icon, writers and noindex', () => {

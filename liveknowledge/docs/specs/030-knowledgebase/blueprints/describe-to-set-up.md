@@ -63,6 +63,13 @@ group, pages }`, its pages a nested outline (title, one-line summary, headings, 
   through, so a structure is a `SetupSuggestion` exactly as an AI one is: ids `p1`, `p2`, ... in tree order, depth
   from 1, within `SETUP_MAX_PAGES` and `SETUP_MAX_DEPTH`, sibling titles unique. `setup-structures.test.ts` pins every
   structure to those bounds and to its outline surviving the parser whole.
+  **Looks** (`structures/looks.ts`): a page may carry `icon` (a line-art icon id) and `cover` (a theme gradient id,
+  `theme-<name>`). `styleStructure` gives each structure its looks as it is joined into `SETUP_STRUCTURES`: an icon on
+  every section and on each leaf whose title a rule in `ICON_RULES` names, and the structure's group's gradient on
+  each top-level section and the first page. `structureSuggestion` carries both into the suggestion, where
+  `parseSetupSuggestion` keeps them only when valid (an icon id's shape, a cover from `SETUP_COVER_IDS`). In the
+  editor, `structure-looks.test.ts` holds every icon to `ICON_CATEGORIES` (the picker's Icons tab) and every cover to
+  `COVER_GRADIENT_IDS`, so none draws the placeholder.
 - **The rail** (`start-structure-items.ts`): a first group **Start** (`id: 'start'`) holding `blank` (Blank
   Knowledgebase) and, where `useSetupOffered() === 'set-up'`, `describe` (Describe to Set Up); then the eight
   `STRUCTURE_GROUPS` (**Company**, **Engineering**, **Product**, **Customers**,
@@ -200,6 +207,10 @@ step) stored by the autosave before the next begins. 30 pages are two batches (`
   title or heading that writes Markdown, a link or a picture is its characters. Angle brackets are left: the
   reader knows no HTML. `withRoomUnderHeadings` then puts an empty paragraph under each heading (Markdown cannot
   say one) before the batch is stored.
+- **A page's icon and cover.** `setupPlan` copies a ticked page's `icon` and `cover` onto its `PlannedPage`;
+  `importedPageTab` (`lib/knowledge-import/page-content.ts`) stores them as `Tab.icon` (`{ iconId }`) and `Tab.cover`
+  (`{ gradient }`) after reading them with `parseTabIcon` and `parseTabCover`, so a value that is not valid is
+  dropped. Import's own plans carry none.
 - **The untouched page.** When setting up and the knowledgebase is one untouched page, `runSetup` gives the plan's
   first page that page's id (`newId` answers it first) and passes `replaceId`: `openKnowledgebaseLayer` swaps the
   page in place in the same edit as its batch (its place in the tree kept) and waits for its save with the rest.

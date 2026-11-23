@@ -17,7 +17,7 @@ import type { ThreadOp, ThreadsRelay, ThreadWriteResult } from './plan-room/card
 import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { CommunityShareInfo } from '@liveplanner/api-schema';
 import type { Copier, PutAwayRefusal, StandingGrant } from '@liveworkspace/index-app';
-import type { SheetRangeAsk } from '@liveworkspace/index-client';
+import type { PlanDataAsk, SheetRangeAsk } from '@liveworkspace/index-client';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { CalendarFeed } from './calendar/feed-store';
 import type { FeedRead } from './calendar/feed-events';
@@ -27,6 +27,8 @@ import type { GithubRoomAnswer, GithubRoomCall } from './plan-room/github/github
 import type { ProjectFileImport } from './plan-room/project-file';
 import type {
   ExportCommentsResult,
+  PlanDataListResult,
+  PlanDataResult,
   SheetListResult,
   SheetRangeResult,
   ExportQuery,
@@ -68,6 +70,8 @@ export type PlanRoomClient = {
   exportComments(): Promise<ExportCommentsResult>;
   listSheets(): Promise<SheetListResult>;
   readSheetRange(ask: SheetRangeAsk, watcher: string | null): Promise<SheetRangeResult>;
+  planDataList(): Promise<PlanDataListResult>;
+  planData(ask: PlanDataAsk, watcher: string | null): Promise<PlanDataResult>;
   // Whether the plan holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // The index's reverse write of a connected tab (plan-room/connected-tab.ts).
@@ -165,6 +169,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     exportComments: () => room.exportComments(planId),
     listSheets: () => room.listSheets(planId),
     readSheetRange: (ask, watcher) => room.readSheetRange(planId, ask, watcher),
+    planDataList: () => room.planDataList(planId),
+    planData: (ask, watcher) => room.planData(planId, ask, watcher),
     hasTab: (tabId) => room.hasTab(planId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(planId, write),
     item: (itemId) => room.item(planId, itemId),
@@ -221,6 +227,8 @@ export type PlanRoomRpc = {
     ask: SheetRangeAsk,
     watcher: string | null,
   ): Promise<SheetRangeResult>;
+  planDataList(planId: string): Promise<PlanDataListResult>;
+  planData(planId: string, ask: PlanDataAsk, watcher: string | null): Promise<PlanDataResult>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
   addConnectedTab(planId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   item(planId: string, itemId: string): Promise<Item | null>;

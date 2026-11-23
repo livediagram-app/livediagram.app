@@ -1,7 +1,8 @@
 // A page's saved writing as the public site shows it (docs/specs/030-knowledgebase/publishing.md "What goes public",
 // blueprint P11 to P13 and P22): safe HTML built from the blocks, never from stored markup. Every text is escaped,
 // every attribute is one this file writes, a link is a web address the article model allows or a page of the same
-// site, and what never goes public is dropped here: a margin note's mark, its id, any block id, a zone's picture.
+// site, and what never goes public is dropped here: a margin note's mark, its id, any block id. A zone is the figure
+// the caller draws for it (the api, which holds the renderer and decides which pictures may be fetched).
 import {
   articleRunsText,
   isArticleHex,
@@ -10,6 +11,7 @@ import {
   type ArticleBlock,
   type ArticleListBlock,
   type ArticleRun,
+  type ArticleZoneBlock,
 } from '@liveknowledge/document';
 import { blockText } from '../writing-text';
 import { addressFrom, uniqueAddress } from './publish-address';
@@ -108,10 +110,14 @@ const LIST_TAG: Readonly<Record<ArticleListBlock['list'], 'ul' | 'ol'>> = {
   todo: 'ul',
 };
 
+/** A zone's figure as the public site draws it (blueprint P31), markup the caller built safe, or null for none. */
+export type ZoneFigure = (zone: ArticleZoneBlock) => string | null;
+
 /** The writing of one page, from its blocks (the saved writing), as the public site draws it. */
 export function publishedWriting(
   blocks: readonly ArticleBlock[],
   href: PageHref,
+  figure: ZoneFigure = () => null,
 ): PublishedWriting {
   // The first Title block is the page's title, drawn by the page itself.
   const titleAt = blocks.findIndex((b) => b.type === 'paragraph' && b.style === 'title');
@@ -199,7 +205,11 @@ export function publishedWriting(
       case 'toc':
         html += tocHtml(headings, b.depth ?? 3);
         break;
-      // A zone holds a picture, chart or drawing, which are not published; a page break draws nothing on a page.
+      // A zone holds a picture, chart or drawing: its figure, drawn by the caller (P31).
+      case 'zone':
+        html += figure(b) ?? '';
+        break;
+      // A page break draws nothing on a page.
       default:
         break;
     }

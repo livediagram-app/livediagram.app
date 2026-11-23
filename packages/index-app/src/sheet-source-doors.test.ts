@@ -115,6 +115,57 @@ describe('the sheet-range door', () => {
   });
 });
 
+describe('the plan-data door', () => {
+  const LISTING = {
+    boards: [{ id: 't1', name: 'Roadmap', tabId: 't1' }],
+    metrics: [{ id: 'count', label: 'Cards' }],
+    filters: { priorities: [], labels: [], people: [], types: [] },
+  };
+  const COUNTS = {
+    sourceName: 'Roadmap',
+    tabId: 't1',
+    label: 'Cards per column',
+    table: { categories: ['To Do'], series: [{ name: 'Cards', values: [2] }] },
+  };
+
+  it("lists a plan's data, and answers a plan it does not have as missing", async () => {
+    const planDataList = vi.fn(async () => ({ status: 'ok' as const, listing: LISTING }));
+    const res = await send(call('P1/plan-data', 'index-key'), { planDataList });
+    expect(await res.json()).toEqual(LISTING);
+    expect(planDataList).toHaveBeenCalledWith('P1');
+    const gone = await send(call('P1/plan-data', 'index-key'), {
+      planDataList: async () => ({ status: 'not_found' }),
+    });
+    expect(gone.status).toBe(404);
+  });
+
+  it('reads a board count, handing on a watcher, and a metric without one', async () => {
+    const planData = vi.fn(async () => ({ status: 'ok' as const, read: COUNTS }));
+    const ask = { kind: 'board', boardId: 't1', by: 'column' };
+    const res = await send(call('P1/plan-data', 'index-key', { ...ask, watcher: 'D1' }), {
+      planData,
+    });
+    expect(await res.json()).toEqual(COUNTS);
+    expect(planData).toHaveBeenCalledWith('P1', ask, 'D1');
+    await send(call('P1/plan-data', 'index-key', { kind: 'metric', metric: 'count' }), {
+      planData,
+    });
+    expect(planData).toHaveBeenLastCalledWith('P1', { kind: 'metric', metric: 'count' }, null);
+  });
+
+  it('refuses a malformed ask, a missing board and other keys', async () => {
+    const planData = vi.fn(async () => ({ status: 'not_found' as const }));
+    const bad = await send(call('P1/plan-data', 'index-key', { kind: 'board' }), { planData });
+    expect(bad.status).toBe(400);
+    expect(await bad.json()).toEqual({ error: 'invalid_source' });
+    expect(planData).not.toHaveBeenCalled();
+    const ask = { kind: 'metric', metric: 'count' };
+    expect((await send(call('P1/plan-data', 'index-key', ask), { planData })).status).toBe(404);
+    expect((await send(call('P1/plan-data', 'drive-key', ask), { planData })).status).toBe(401);
+    expect((await send(call('P1/plan-data', 'index-key', ask), {})).status).toBe(404);
+  });
+});
+
 describe('the source-changed door', () => {
   const change = { app: 'liveplanner', itemId: 'P1', sheetIds: ['s1'] };
 
