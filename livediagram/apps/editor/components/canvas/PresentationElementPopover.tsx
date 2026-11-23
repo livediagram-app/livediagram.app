@@ -27,7 +27,7 @@ import {
 import { CloseIcon } from '@livediagram/ui';
 
 import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';
-import { NoteRichText } from '@/components/notes/NoteRichText';
+import { NoteRichText } from '@liveworkspace/workbench/components/notes/NoteRichText';
 import { useRelativeNow } from '@/lib/relative-time';
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

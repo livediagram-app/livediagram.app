@@ -1,12 +1,12 @@
 import type { BorderRadius, BorderStroke, BorderStyle } from '@livediagram/document';
 import { BORDER_RADII, BORDER_STROKES, BORDER_STYLES } from './context-menu-constants';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   BorderRadiusIcon,
   BorderStrokeIcon,
   BorderStyleIcon,
 } from '@/components/palette/palette-style-previews';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
+import { BorderGrid } from '@liveworkspace/workbench/components/palette/BorderGrid';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 
 // The Border category's three grids: Strength, Pattern, and Radius.

@@ -45,7 +45,7 @@ import {
   TableGlyph,
   TextColourIcon,
   TextGlyph,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,

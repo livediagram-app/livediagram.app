@@ -8,7 +8,7 @@ import { useRef, useState, type RefObject } from 'react';
 import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
 import { Button, CheckIcon, IDENTITY_FILL, PictureDisc, identityVars } from '@liveplanner/ui';
 import type { CommentMention, CommentThread } from '@liveplanner/project';
-import { MentionMenu } from '@/components/primitives/MentionMenu';
+import { MentionMenu } from '@liveworkspace/workbench/components/primitives/MentionMenu';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import { useMentionScope } from '@/components/canvas/collab/comment/MentionContext';
 import { initialsOf } from '@/lib/identity';

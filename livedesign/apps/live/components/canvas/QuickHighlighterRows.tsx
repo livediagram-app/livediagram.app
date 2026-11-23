@@ -14,7 +14,7 @@ import type { QuickHighlighterStyle } from '@/lib/quick-style-highlighter';
 import { QuickRadioRow } from './quick-style-rows';
 import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 import { QuickMoreColours } from './QuickMoreColours';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { ColourChip, ValueGlyph } from './quick-style-icons';
 
 // The widths drawn with the border-width previews, thinnest first.

@@ -3,7 +3,7 @@
 import { withSequenceNumbered, type ShapeElement } from '@liveplanner/project';
 import { Button } from '@liveplanner/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { MenuToggleRow } from '@/components/palette/context-menu-rows';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

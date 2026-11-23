@@ -33,7 +33,7 @@ import { LandscapeBarFold, LandscapeBarsHandle } from '@/components/chrome/Lands
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { EditorModals } from '@/components/dialogs/EditorModals';
-import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
+import { FocusInviteDialog } from '@liveworkspace/workbench/components/dialogs/FocusInviteDialog';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { TabAttendanceHost } from '@/components/dialogs/TabAttendanceHost';

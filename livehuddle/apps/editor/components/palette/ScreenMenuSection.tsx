@@ -8,7 +8,7 @@ import { useState } from 'react';
 import type { ShapeElement } from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
-import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { ToolsMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { isScreenLink, normalisedScreenLink } from '@/lib/screen-link';
 
 export function ScreenMenuSection({

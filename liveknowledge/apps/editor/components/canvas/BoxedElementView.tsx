@@ -24,7 +24,10 @@ import {
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
-import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
+import {
+  captionBandAlignY,
+  captionBandClass,
+} from '@liveworkspace/workbench/components/primitives/icon-band';
 import { useTextHug } from '@/components/canvas/useTextHug';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';

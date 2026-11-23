@@ -5,8 +5,8 @@ import {
   KIND_CASCADE_MS,
   KIND_ITEM_MS,
   kindStagger,
-  usePaletteKindMotion,
-} from './usePaletteKindMotion';
+} from '@liveworkspace/workbench/components/palette/usePaletteKindMotion';
+import { usePaletteKindMotion } from './usePaletteKindMotion';
 
 vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
   prefersReducedMotion: () => reduced,

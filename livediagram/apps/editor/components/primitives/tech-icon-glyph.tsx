@@ -24,7 +24,7 @@ import { techGlyphStrokeUnits } from '@liveworkspace/icons';
 import { iconAnimationClass, iconAnimationStyle } from '@/lib/icons';
 import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
-import { iconBandClass } from '@/components/primitives/icon-band';
+import { iconBandClass } from '@liveworkspace/workbench/components/primitives/icon-band';
 
 // The white line-art group the glyph markup sits in. A bare path/circle in
 // the markup strokes white; a filled mark sets fill="#fff" stroke="none"

@@ -18,8 +18,8 @@ Scope, by file:
 | `apps/live/components/notes/NoteRichTextEditor.tsx`                             | The contentEditable surface and its keys                                         |
 | `apps/live/components/notes/useNoteRichTextSession.ts`                          | Note session over the shared design hook (`collapsedScope: 'word'`)              |
 | `apps/live/components/notes/NoteFormatToolbar.tsx`                              | Docked toolbar and the inline link field                                         |
-| `apps/live/components/notes/NoteRichText.tsx`                                   | The one read-only renderer; `runsToLines`, `noteRuns`                            |
-| `apps/live/components/notes/note-run-style.ts`                                  | Note typography; `noteRunHref`, `noteRunStyle`                                   |
+| `../packages/workbench/src/components/notes/NoteRichText.tsx`                   | The one read-only renderer; `runsToLines`, `noteRuns`                            |
+| `../packages/workbench/src/components/notes/note-run-style.ts`                  | Note typography; `noteRunHref`, `noteRunStyle`                                   |
 | `../packages/workbench/src/components/label-editor/useRichTextRuns.ts`          | Runs ⇄ DOM machine shared with the label editor; `liveText`                      |
 | `../packages/workbench/src/components/label-editor/useRichTextFormatActions.ts` | Command dispatch and the collapsed-caret scope rule                              |
 | `../packages/workbench/src/components/label-editor/rich-text-format.ts`         | `ActiveFormat`, `computeActiveFormat`, `wordRangeAt`, `PLAIN_RUN_DEFAULTS`       |
@@ -321,9 +321,9 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 | `link` / `heading` split, merge, count as rich         | link + heading run attributes                        | `../packages/model-core/src/rich-text.test.ts`                               |
 | Heading spans whole lines                              | `expandRangeToLines`, `applyHeadingToLines`          | `../packages/model-core/src/rich-text.test.ts`                               |
 | Lists are prefix text, scoped to touched lines         | `applyListStyle / stripListPrefixes`                 | `../packages/model-core/src/rich-text.test.ts`                               |
-| Only safe links render as anchors (I5)                 | `noteRunHref`, `noteRunStyle` link underline         | `apps/live/components/notes/note-run-style.test.ts`                          |
-| Note sizes 13 / 11-13-16 / headings                    | `noteRunStyle` body and heading                      | `apps/live/components/notes/note-run-style.test.ts`                          |
-| Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | `apps/live/components/notes/note-run-style.test.ts`                          |
+| Only safe links render as anchors (I5)                 | `noteRunHref`, `noteRunStyle` link underline         | `../packages/workbench/src/components/notes/note-run-style.test.ts`          |
+| Note sizes 13 / 11-13-16 / headings                    | `noteRunStyle` body and heading                      | `../packages/workbench/src/components/notes/note-run-style.test.ts`          |
+| Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | `../packages/workbench/src/components/notes/note-run-style.test.ts`          |
 | Editor opens painted, focused, caret at the end (D79)  | opens painted, focused, with the caret at the end    | `apps/live/components/notes/NoteRichTextEditor.test.tsx`                     |
 | A format apply repaints and reports up (E8)            | repaints and reports a format apply over a selection | `apps/live/components/notes/NoteRichTextEditor.test.tsx`                     |
 | The plain text follows an edit                         | `useRichTextRuns` live text                          | `../packages/workbench/src/components/label-editor/useRichTextRuns.test.tsx` |

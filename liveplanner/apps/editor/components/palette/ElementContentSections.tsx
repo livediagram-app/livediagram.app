@@ -8,13 +8,13 @@ import {
 } from '@/components/palette/palette-icons';
 import {
   ImageGlyph,
-  LinkMenuIcon,
   RemoveIconGlyph,
   FillColourIcon,
   TableGlyph,
   TextColourIcon,
   TextGlyph,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';

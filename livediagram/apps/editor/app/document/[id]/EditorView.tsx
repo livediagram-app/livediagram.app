@@ -48,7 +48,7 @@ import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
-import { FocusInviteDialog } from '@/components/dialogs/FocusInviteDialog';
+import { FocusInviteDialog } from '@liveworkspace/workbench/components/dialogs/FocusInviteDialog';
 import { EditorTabDialogs } from '@/components/dialogs/EditorTabDialogs';
 import { CollaboratorsHost } from '@/components/dialogs/CollaboratorsHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';

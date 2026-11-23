@@ -54,7 +54,7 @@ columns as the monospace face draws them: a character takes one, a wide one
 
 ## Editing
 
-- **Double-click** opens an **Edit code dialog** (`../livediagram/apps/editor/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces; Shift+Tab moves focus back out as anywhere, and ⌘/Ctrl+Enter saves, so a keyboard is never trapped in the field; a hint under it says so where there is a keyboard) plus a language dropdown. Save commits one history entry; read-only gating as usual.
+- **Double-click** opens an **Edit code dialog** (`../packages/workbench/src/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces; Shift+Tab moves focus back out as anywhere, and ⌘/Ctrl+Enter saves, so a keyboard is never trapped in the field; a hint under it says so where there is a keyboard) plus a language dropdown. Save commits one history entry; read-only gating as usual.
 - The element context menu has a **Code** section (in `ElementDataSections.tsx`, inside the menu's Tools flyout, per the data-shape pattern): a summary of the line count and language, an "Edit Code" row opening the same dialog, and a Wrap toggle. The language is chosen in the dialog only; the menu has no language picker.
 
 ## Headless render (share thumbnails, exports)

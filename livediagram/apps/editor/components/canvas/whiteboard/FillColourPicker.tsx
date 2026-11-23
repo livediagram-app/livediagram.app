@@ -5,7 +5,11 @@
 // standard colours drawn for the board, Custom colours from the document, and +.
 import type { Appearance } from '@livediagram/document';
 import { ColourPicker } from '@/components/colour/ColourPicker';
-import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
+import {
+  noColour,
+  standardGroup,
+  themeOptions,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { FILL_TRANSPARENT } from '@liveworkspace/workbench/lib/fill-choice';
 

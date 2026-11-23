@@ -19,7 +19,7 @@ import {
   type StatusPhase,
 } from '@liveplanner/items';
 import { PRIORITY_COLOURS } from '@liveplanner/project';
-import { colourName } from '@/components/colour/colour-options';
+import { colourName } from '@liveworkspace/workbench/components/colour/colour-options';
 
 // A chip's colour: a status's stage (its dot as the Details status pill draws it), or a priority's own colour.
 export type ActivityTone = { phase: StatusPhase } | { colour: string };

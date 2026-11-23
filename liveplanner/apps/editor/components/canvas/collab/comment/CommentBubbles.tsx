@@ -7,7 +7,7 @@ import { reactionDef, reactionGroups, type Comment } from '@liveplanner/project'
 import { IDENTITY_FILL, PictureDisc, identityVars } from '@liveplanner/ui';
 import { useOwnPicture } from '@/lib/own-picture';
 import { relativeSince } from '@/lib/relative-time';
-import { MentionText } from '@/components/primitives/MentionText';
+import { MentionText } from '@liveworkspace/workbench/components/primitives/MentionText';
 import { tint } from '../collab-chrome';
 import { COLLAB_ACCENT } from '../collab-parts';
 

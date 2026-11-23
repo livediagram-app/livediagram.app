@@ -32,7 +32,7 @@ import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { elementRunDefaults } from './label-style';
 import { HoverCard } from '@livedesign/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
 import { useTextContrast } from '@/hooks/ui/useTextContrast';

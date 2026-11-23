@@ -268,12 +268,3 @@ export function PlacementCard({
     </button>
   );
 }
-
-// Tile glyphs, sized to sit above the card label.
-export function FolderPlaceIcon() {
-  return (
-    <Glyph size={20} units={20}>
-      <path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.8 2H15.5A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-9Z" />
-    </Glyph>
-  );
-}

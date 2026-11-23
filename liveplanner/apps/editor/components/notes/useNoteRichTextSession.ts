@@ -17,7 +17,7 @@ import {
 import { PLAIN_RUN_DEFAULTS } from '@liveworkspace/workbench/components/label-editor/rich-text-format';
 import { useRichTextRuns } from '@liveworkspace/workbench/components/label-editor/useRichTextRuns';
 import { track } from '@/lib/telemetry';
-import { noteRunStyle } from './note-run-style';
+import { noteRunStyle } from '@liveworkspace/workbench/components/notes/note-run-style';
 
 export function useNoteRichTextSession({
   initialRuns,

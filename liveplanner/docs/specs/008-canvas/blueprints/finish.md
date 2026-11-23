@@ -395,7 +395,7 @@ is. `svgChecklistShape`, `svgLegendShape` and a stored tab window's frame letter
 
 ### Menus and dialog
 
-- `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
+- `../packages/workbench/src/components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
   (`kind="single"`, label "Drawn As") with rows `follow-tab`, `flexible`, `professional`, `sketch`, `marker`: a glyph, the
   `FINISH_LABELS` name and the `FINISH_DETAILS` line. Hover previews through `OptionRows`' `onPreview` /
   `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Appearance flyout, arrows
@@ -530,7 +530,7 @@ per command letter.
 | budgets                                                                              | `packages/project/src/sketch.perf.test.ts`                                                                   |
 | export draws sketch strokes / hatching / Professional radius                         | `packages/project/src/svg-render-finish.test.ts`                                                             |
 | variant drops shadow / peel / border per finish                                      | `apps/editor/components/canvas/element-variant.test.ts`                                                      |
-| menu rows commit, preview, Follow Tab clears                                         | `apps/editor/components/palette/FinishSection.test.tsx`                                                      |
+| menu rows commit, preview, Follow Tab clears                                         | `../packages/workbench/src/components/palette/FinishSection.test.tsx`                                        |
 | backdrops: what sits on a shape, order, finish, speed                                | `../packages/element-model/src/sketch-backdrop.test.ts`                                                      |
 | Professional new arrows angled; avoidance per finish                                 | `../packages/workbench/src/hooks/canvas/arrow-avoidance-apply.test.ts`                                       |
 | which palette tiles take the finish                                                  | `packages/workbench/src/components/palette/palette-tile-finish.test.ts`                                      |

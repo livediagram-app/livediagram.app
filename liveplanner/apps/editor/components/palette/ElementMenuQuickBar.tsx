@@ -10,9 +10,9 @@ import { type BoxedElement, type Element } from '@liveplanner/project';
 import { Glyph, Tooltip } from '@liveplanner/ui';
 import {
   ActionMenuIcon,
-  LinkMenuIcon,
   NoteMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
