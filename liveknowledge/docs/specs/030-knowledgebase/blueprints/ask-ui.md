@@ -126,8 +126,8 @@ provider, key)`).
 - **Words.** "Your team's AI key" wherever it does not matter which provider it is (the no-AI state of Ask, the
   key note under Insights' Disagreements on a server with no built-in AI); the source line
   (`components/ask/KnowledgeAiSource.tsx`: the shared `AiSource` from `knowledgeAiLine(state, manageAi)`, read from
-  `GET ai`'s `uses` and `usesModelLabel`) under Ask's field (with a key and built-in AI both here, Ask's becomes the
-  Answer With picker), in Describe to Set Up and in Describe the Structure; its action opens AI Settings on the
+  `GET ai`'s `uses` and `usesModelLabel`) in Describe to Set Up and in Describe the Structure, and the same line
+  (`useKnowledgeAiSource`, `{ line, act }`) behind Ask's AI pill; its action opens AI Settings on the
   knowledgebase's key (`manageAi`) and Settings › AI otherwise, and `liveworkspace:ai-key-changed` refreshes
   `aiSettingsStore`; the provider's name where a failure is the provider's own
   (`askFailureWords(kind, { manageAi, provider })`: "OpenAI Did Not Accept the Key"). The provider comes from the
@@ -159,7 +159,7 @@ console after a save, Remove with its question, the model, and the controls per 
 | the view and its gates                            | `components/ask/AskView.tsx`, `AskStates.tsx`                                             |
 | the conversation and Sources                      | `AskConversationPane.tsx`, `AskAnswerCard.tsx`, `AskSourcesRail.tsx`                      |
 | the stream                                        | `StreamingAnswer.tsx`                                                                     |
-| the field                                         | `AskComposer.tsx`                                                                         |
+| the question box and its AI pill                  | `AskComposer.tsx` (over `@liveworkspace/ask/composer`)                                    |
 | chips, gaps, recents, the page picker             | `CitationChip.tsx`, `KnowledgeGapCard.tsx`, `RecentQuestions.tsx`, `PagePickerDialog.tsx` |
 | Draft a Page, opening a page                      | `useDraftPage.ts`, `open-passage.ts`                                                      |
 
@@ -261,8 +261,8 @@ draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
 `ask_unavailable`, `sign_in_required`, `network`, built-in AI's `built-in-unavailable`, `built-in-limit`,
 `built-in-knowledgebase-limit`, `built-in-failed` and anything else to a title, a line and a step (`ai-settings`,
 `ask-again`, `none`). On `provider: 'built-in'` a model's failure (`bad-key`, `overloaded`, `other`, ...) is "The
-Built-In AI Could Not Answer". The server's own `message` is never shown. Under the field, with no key, the source line says **Built-in AI**
-with **Use Your Own Key** (`data-ask-ai`).
+Built-In AI Could Not Answer". The server's own `message` is never shown. Inside the question box, with no key, the AI pill says **Built-In AI**
+(`data-ask-ai="built-in"`), and its menu offers **Use Your Own Key**.
 
 ### Which AI answers
 
@@ -273,16 +273,21 @@ with **Use Your Own Key** (`data-ask-ai`).
   `liveknowledge:ask-ai:v1:<person>:<knowledgebase>` (a value it does not know, or storage that throws, reads as
   `key`). `askConversationFor` sends it with each question (`send` reads it at the moment of asking, so a follow-up
   takes the choice in force), and `useAskAiChoice(who, documentId)` reads it for the view.
-- **The picker.** `components/ask/AskAiPicker.tsx`, drawn under the field in place of the quiet line once a key is
-  set (`settings.hasKey`, and `settings.builtIn`: a server without built-in AI has nothing to choose): the shared
-  `SegmentedToggle` named and led by "Answer With", **Built-In AI** ("Included with liveknowledge, with daily limits. Applies to your next question.") and
-  `teamKeyLabel(settings)` ("Claude Fable 5.2 (Team Key)", from the model's label; "Team Key" when it is not
-  listed), each with its hover card. A change sends `UI·Changed·AskAiBuiltIn` or `UI·Changed·AskAiKey`.
+- **The question box.** `components/ask/AskComposer.tsx` hands the shared `AskComposer`
+  (`@liveworkspace/ask/composer`) the knowledgebase's words ("Ask this knowledgebase a question", "Ask a
+  follow-up"), `maxFieldHeight` 160, `autoFocus` false, no New Chat (New Question is the chats'), and the AI pill:
+  the shared `AnswerWith` over `askAiView(knowledgeAiLine(state, manageAi, lastFailure), choice, 'This
+Knowledgebase’s Key')`. On a server with no built-in AI (`settings.builtIn` false) the view is worked out for
+  `key` whatever the stored choice, and `AnswerWith` gets `builtIn={false}`, so the menu holds the key alone. Its
+  built-in row reads "Included with liveknowledge, 30 questions a person a day" (`builtInDetail`). Its `manage` is
+  `useKnowledgeAiSource`'s `act`. A pick sends `UI·Changed·AskAiBuiltIn` or `UI·Changed·AskAiKey` and sets
+  `askAiChoiceStore` for this person and knowledgebase. With Pro on and built-in AI answering, `useAiCreditsLine`
+  is the box's `cost`. Nothing about which AI answers is drawn outside the box (no `KnowledgeAiSource`, no picker).
 - **Which answered.** The `done` event's `provider` is kept on the turn (`AskTurnView.provider`); with a key set the
   answer card shows `answeredByLabel(turn, settings)` (`data-ask-answered-by`) at the end of its trust line.
 - **The route** (`knowledge-ask-route.ts`) reads `body.ai`: `'built-in'` runs built-in AI whatever key is stored
   (an unreadable key included); anything else is today's path (the key when it opens, built-in AI with none).
-- Tests: `ask-ai-choice.test.ts`, `AskView.test.tsx` (the picker, its persistence, the request's `ai`, the caption),
+- Tests: `ask-ai-choice.test.ts`, `AskView.test.tsx` (the pill and its menu, its persistence, the request's `ai`, the caption),
   `knowledge-ask-built-in.test.ts` (built-in chosen with a key set counts against built-in caps; key chosen uses the key).
 
 ### Share roles

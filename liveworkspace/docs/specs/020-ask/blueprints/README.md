@@ -21,7 +21,9 @@ Implements [ask.md](../ask.md).
 | `src/ui/AskCreditsNotice.tsx` | a question the month's AI credits refused: the kit's `LimitNotice` with Ask Again                |
 | `src/ui/ask-tools-item.tsx`   | `useAskToolsItem(host)`: the Tools row, the tool behind `lazy` (`@liveworkspace/ask/tools-item`) |
 | `src/ui/AskTool.tsx`          | the tool: thread, field, Sources                                                                 |
-| `src/ui/AnswerWith.tsx`       | the AI pill and its menu                                                                         |
+| `src/ui/AskComposer.tsx`      | the question box: field, count, AI pill slot, New Chat, Send and Stop; no app's words or context |
+| `src/ui/AnswerWith.tsx`       | the AI pill and its menu (`builtIn: false` drops the built-in row; `builtInDetail` its words)    |
+| `src/ui/composer.ts`          | `@liveworkspace/ask/composer`: the box, the pill and `askAiView`, for liveknowledge's Ask        |
 | `src/ui/AskSources.tsx`       | the Sources popover's content                                                                    |
 | `src/ui/conversation.ts`      | `AskConversation`, one per item (`conversationOf`), the six most recent kept                     |
 | `src/ui/tab-passages.ts`      | `tabPassages(tabs, options)`: the walk every editor shares                                       |
