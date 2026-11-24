@@ -187,6 +187,23 @@ describe('saved designs', () => {
     expect(edits.applySavedDesign).toHaveBeenLastCalledWith({ id: 'waves' }, 'a');
   });
 
+  it('shows the saved tile the tab or the page wears as selected, as the catalogue’s tiles do', async () => {
+    open({ id: 'aurora', scale: 1.4 }, { id: 'waves' }, { api: fakeApi() });
+    const saved = await screen.findByRole('region', { name: 'Saved' });
+    const aurora = within(saved).getByRole('button', { name: 'Brand Aurora, saved to My Work' });
+    const waves = within(saved).getByRole('button', { name: 'Team Waves, saved to Brand' });
+    expect(aurora.getAttribute('aria-pressed')).toBe('true');
+    expect(aurora.querySelector('.ring-brand-500')).toBeTruthy();
+    expect(waves.getAttribute('aria-pressed')).toBe('false');
+    expect(waves.querySelector('.ring-brand-500')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'This Page' }));
+    const onPage = await screen.findByRole('region', { name: 'Saved' });
+    const pressed = (name: string) =>
+      within(onPage).getByRole('button', { name }).getAttribute('aria-pressed');
+    expect(pressed('Team Waves, saved to Brand')).toBe('true');
+    expect(pressed('Brand Aurora, saved to My Work')).toBe('false');
+  });
+
   it('lets only whoever may tidy rename or delete: My Work’s owner, not a team’s member', async () => {
     const api = fakeApi();
     open({ id: 'aurora' }, undefined, { api });
