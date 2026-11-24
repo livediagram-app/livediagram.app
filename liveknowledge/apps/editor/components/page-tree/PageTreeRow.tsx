@@ -186,7 +186,11 @@ function PageTreeRowView({
       ) : (
         <span aria-hidden className={`shrink-0 ${touch ? 'w-7' : 'w-5'}`} />
       )}
-      {icon ? <PageIconGlyph icon={icon} size={16} className="mr-1.5" /> : null}
+      {icon ? (
+        <PageIconGlyph icon={icon} size={16} className="mr-1.5" />
+      ) : row.iconSlot ? (
+        <span aria-hidden className="mr-1.5 w-4 shrink-0" />
+      ) : null}
       {editing ? (
         <NameEditor
           label="Page name"

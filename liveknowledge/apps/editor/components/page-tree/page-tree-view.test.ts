@@ -40,6 +40,25 @@ describe('visiblePageRows', () => {
     ]);
   });
 
+  it('keeps an icon’s place on a page with none whose siblings show one, so the titles line up', () => {
+    // a > (b with an icon, c with none), d with none, e with none: only c sits beside an icon.
+    const tabs: TreeTab[] = [
+      tab('a'),
+      { ...tab('b', 'a'), icon: { iconId: 'rocket' } },
+      tab('c', 'a'),
+      tab('d'),
+      tab('e'),
+    ];
+    const rows = visiblePageRows(tabs, NONE, null);
+    expect(rows.map((r) => [r.id, r.icon !== null, r.iconSlot])).toEqual([
+      ['a', false, false],
+      ['b', true, false],
+      ['c', false, true],
+      ['d', false, false],
+      ['e', false, false],
+    ]);
+  });
+
   it('folds a closed page’s subpages away, at every level under it', () => {
     expect(ids(visiblePageRows(TABS, new Set(['a']), null))).toEqual(['a', 'e']);
     expect(ids(visiblePageRows(TABS, new Set(['b']), null))).toEqual(['a', 'b', 'c', 'e']);

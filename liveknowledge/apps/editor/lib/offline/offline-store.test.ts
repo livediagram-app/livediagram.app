@@ -53,6 +53,18 @@ describe('offline transforms', () => {
     expect(d.tabs.map((t) => t.parent)).toEqual([undefined, 't1']);
   });
 
+  it('tabToSummary carries a page’s icon and verified state, so the tree shows them before its body loads', () => {
+    const knowledge = { verifiedAt: 1 };
+    expect(
+      tabToSummary(tab('t1', { icon: { iconId: 'rocket' }, knowledge }), 'd1', 0, 5),
+    ).toMatchObject({
+      icon: { iconId: 'rocket' },
+      knowledge,
+    });
+    const bare = tabToSummary(tab('t1'), 'd1', 0, 5);
+    expect(Object.hasOwn(bare, 'icon') || Object.hasOwn(bare, 'knowledge')).toBe(false);
+  });
+
   it('tabToSummary omits folder when absent', () => {
     expect(tabToSummary(tab('t1'), 'd1', 2, 5)).toEqual({
       id: 't1',
