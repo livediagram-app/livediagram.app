@@ -57,6 +57,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'changing-the-background': '#64748b',
   'changing-theme': '#d946ef',
   'multicolour-themes': '#ec4899',
+  'page-designs': '#8b5cf6',
   'multi-select': '#8b5cf6',
   'choosing-fonts': '#0284c7',
   // Canvas category: Undo / Redo

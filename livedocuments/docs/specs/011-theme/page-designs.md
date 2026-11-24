@@ -32,16 +32,16 @@ Forty-three designs in eight families, each **procedural**: drawn as SVG from it
 theme, never a fixed picture, so it fits any page size, stays crisp at any zoom and in every export, and weighs
 nothing to store. The catalogue's order is the picker's.
 
-| Family          | Designs                                                                                |
-| --------------- | -------------------------------------------------------------------------------------- |
-| Gradients       | Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Sunset Bands                            |
-| Geometric       | Grid, Dots, Isometric, Hexagons, Triangles, Concentric Rings, Diagonal Stripes         |
-| Organic         | Blobs, Waves, Topographic, Flowing Ribbons, Marbled                                    |
-| Texture         | Paper Grain, Noise, Linen, Risograph, Halftone, Blueprint                              |
-| Light and depth | Glass Panels, Spotlight, Bokeh, Soft Shadows, Layered Cards                            |
-| Frames          | Corner Accents, Edge Bands, Side Rail, Torn Paper, Offset Border                       |
-| Bold            | Brutalist Blocks, Memphis, Swiss Grid, Split Fields, Type Watermark                    |
-| Tech and space  | Circuit, Starfield, Constellations, Data Grid, Scanlines                               |
+| Family          | Designs                                                                        |
+| --------------- | ------------------------------------------------------------------------------ |
+| Gradients       | Soft Mesh, Aurora, Duotone Sweep, Radial Glow, Sunset Bands                    |
+| Geometric       | Grid, Dots, Isometric, Hexagons, Triangles, Concentric Rings, Diagonal Stripes |
+| Organic         | Blobs, Waves, Topographic, Flowing Ribbons, Marbled                            |
+| Texture         | Paper Grain, Noise, Linen, Risograph, Halftone, Blueprint                      |
+| Light and depth | Glass Panels, Spotlight, Bokeh, Soft Shadows, Layered Cards                    |
+| Frames          | Corner Accents, Edge Bands, Side Rail, Torn Paper, Offset Border               |
+| Bold            | Brutalist Blocks, Memphis, Swiss Grid, Split Fields, Type Watermark            |
+| Tech and space  | Circuit, Starfield, Constellations, Data Grid, Scanlines                       |
 
 - **Decoration only.** A design adds nothing selectable, searchable or exported as content: it is drawn inside the
   page's sheet, under the element layer, takes no pointer events and is hidden from screen readers. Type Watermark
@@ -63,18 +63,18 @@ nothing to store. The catalogue's order is the picker's.
 
 Every design exposes the controls that mean something for it; each design lists its own.
 
-| Control   | What it sets                                                                 | Range              | Default            |
-| --------- | ---------------------------------------------------------------------------- | ------------------ | ------------------ |
-| Colours   | Three colours the design draws in: the theme's, or three of the person's own | theme or three hex | theme              |
-| Intensity | How strongly the design shows                                                | 10% to 100%        | the design's own   |
-| Scale     | How large or dense its parts are                                             | 50% to 200%        | 100%               |
-| Angle     | Which way it runs or turns                                                   | 0° to 355°         | the design's own   |
-| Position  | Where its focus sits (a glow's centre, a spotlight's source)                 | the page, x and y  | the design's own   |
-| Seed      | Which variation of its random parts, with **Shuffle** for a new one          | 1 to 9999          | 1                  |
-| Blur      | How soft its edges are                                                       | 0% to 100%         | the design's own   |
-| Grain     | A fine film grain over it                                                    | 0% to 100%         | 0%                 |
-| Safe area | How calm the middle of the page stays                                        | 0% to 100%         | the design's own   |
-| Style     | The design's own options (Grid's lines, dashes or crosses, say)              | the design's       | its first          |
+| Control   | What it sets                                                                 | Range              | Default          |
+| --------- | ---------------------------------------------------------------------------- | ------------------ | ---------------- |
+| Colours   | Three colours the design draws in: the theme's, or three of the person's own | theme or three hex | theme            |
+| Intensity | How strongly the design shows                                                | 10% to 100%        | the design's own |
+| Scale     | How large or dense its parts are                                             | 50% to 200%        | 100%             |
+| Angle     | Which way it runs or turns                                                   | 0° to 355°         | the design's own |
+| Position  | Where its focus sits (a glow's centre, a spotlight's source)                 | the page, x and y  | the design's own |
+| Seed      | Which variation of its random parts, with **Shuffle** for a new one          | 1 to 9999          | 1                |
+| Blur      | How soft its edges are                                                       | 0% to 100%         | the design's own |
+| Grain     | A fine film grain over it                                                    | 0% to 100%         | 0%               |
+| Safe area | How calm the middle of the page stays                                        | 0% to 100%         | the design's own |
+| Style     | The design's own options (Grid's lines, dashes or crosses, say)              | the design's       | its first        |
 
 - **Live preview.** Every control applies as it moves; a slider's drag is one undo step on release.
 - **Reset** puts the design back on its own defaults, keeping the design.
@@ -139,16 +139,16 @@ the tab design with rhythm on, and its layouts: each empty slide or infographic 
 layout (the first page) or its content layout (the rest), the slide ones below on a deck and their infographic
 counterparts on infographic pages. A page with anything on it keeps its content. One undo step.
 
-| Set           | Theme    | Font          | Finish       | Pages          | Design            | Slide layouts (title, content) |
-| ------------- | -------- | ------------- | ------------ | -------------- | ----------------- | ------------------------------ |
-| Keynote Dark  | Midnight | Inter         | Professional | Theme ink      | Aurora            | Title, Bullets                |
-| Editorial     | Cream    | Lora          | Professional | Paper          | Offset Border     | Title, Two Columns            |
-| Startup Pitch | Ocean    | Poppins       | Flexible     | Theme dawn     | Soft Mesh         | Title, Three Stats            |
-| Field Notes   | Mocha    | Nunito        | Sketch       | Theme mist     | Topographic       | Title, Bullets                |
-| Blueprint     | Steel    | Space Grotesk | Professional | Theme ink      | Blueprint         | Title, Three Points           |
-| Gallery       | Mono     | Inter         | Professional | Paper          | Swiss Grid        | Title, Two Columns            |
-| Neon Night    | Abyss    | Space Grotesk | Professional | Theme twilight | Circuit           | Title, Three Points           |
-| Playground    | Rainbow  | Nunito        | Flexible     | Paper          | Memphis           | Title, Bullets                |
+| Set           | Theme    | Font          | Finish       | Pages          | Design        | Slide layouts (title, content) |
+| ------------- | -------- | ------------- | ------------ | -------------- | ------------- | ------------------------------ |
+| Keynote Dark  | Midnight | Inter         | Professional | Theme ink      | Aurora        | Title, Bullets                 |
+| Editorial     | Cream    | Lora          | Professional | Paper          | Offset Border | Title, Two Columns             |
+| Startup Pitch | Ocean    | Poppins       | Flexible     | Theme dawn     | Soft Mesh     | Title, Three Stats             |
+| Field Notes   | Mocha    | Nunito        | Sketch       | Theme mist     | Topographic   | Title, Bullets                 |
+| Blueprint     | Steel    | Space Grotesk | Professional | Theme ink      | Blueprint     | Title, Three Points            |
+| Gallery       | Mono     | Inter         | Professional | Paper          | Swiss Grid    | Title, Two Columns             |
+| Neon Night    | Abyss    | Space Grotesk | Professional | Theme twilight | Circuit       | Title, Three Points            |
+| Playground    | Rainbow  | Nunito        | Flexible     | Paper          | Memphis       | Title, Bullets                 |
 
 A set is not stored, as a Look is not: the tab carries the ordinary settings.
 
@@ -156,7 +156,7 @@ A set is not stored, as a Look is not: the tab carries the ordinary settings.
 
 - `Tab.pageDesign?: PageDesign` and `Page.design?: PageDesign | { id: 'none' }`.
 - `PageDesign = { id, colors?, intensity?, scale?, angle?, focus?, seed?, blur?, grain?, calm?, variant?, animate?,
-  speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, so a stored design is small.
+speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, so a stored design is small.
 - **Read leniently.** A design whose id the catalogue does not hold is dropped (the page wears the tab design, or
   none); a field out of range or of the wrong type is dropped (its default stands). An older editor, which knows no
   designs, ignores the fields and draws the page without one.
@@ -166,9 +166,9 @@ A set is not stored, as a Look is not: the tab carries the ordinary settings.
 
 - `change_pages` sets a page's override (`design` on `add` and `set`: a design, `"none"`, or `"tab"` to clear it) and
   the tab design (the `tab_design` change: a design, `null` to clear, or `"auto"`), and `create_document` takes a
-  `design` for its tabs; `"auto"` picks a fitting design for the tab's words ([Pages for
+  `design` for its tabs (an id, or `"auto"`, picked for each tab's words); `"auto"` picks a fitting design for the tab's words ([Pages for
   agents](../024-agents/pages-for-agents.md) "Page designs"). The `pages` view names each page's design.
-- The command line (`livedocuments pages`) takes the same, as `--design` and `--tab-design`.
+- The command line (`livedocuments page set`) takes the same, as `--design` and `--tab-design`.
 
 ## Share roles
 

@@ -299,9 +299,8 @@ on the tab as `newPageBackground` (a fill and a pattern, never a picture; `packa
 The **Page Design** panel ([Page Designs](page-designs.md)) picks and tunes the backdrop drawn behind every element of
 the tab's pages, on every surface (`apps/editor/components/dialogs/page-design/PageDesignPanel.tsx`). Top to bottom:
 
-- **A preview**: a page of the kind the dialog styles, wearing the design as the page someone is on would (its
-  background, the theme, the tuning), drawn by the page exporter as the other panels' previews are, so it shows the
-  still frame.
+- **A preview**: the page someone is on, wearing its design as it does (its background, the theme, the tuning, its
+  role in the deck and the scrims its texts get), drawn as exports draw it, so it shows the still frame.
 - **Applies to**: a switch of two, **Whole Tab** (the default) and **This Page** (the page someone is on, by its
   name or place). On This Page every pick and tune sets the page's override; the switch shows **Use the Tab's
   Design** while the page has one, which clears it. On a tab with no pages yet it is not shown.
@@ -404,8 +403,8 @@ the New Page Background and its setters, the article's Style door), and the prof
 names the **surface** as it opens the dialog: the kind of the page someone is on (`article`, `slide`, `infographic`
 or `flashcard`), and `canvas` on a tab with no pages yet.
 
-| Surface                          | Panels                                     | Home                                    |
-| -------------------------------- | ------------------------------------------ | --------------------------------------- |
+| Surface                          | Panels                                                  | Home                                    |
+| -------------------------------- | ------------------------------------------------------- | --------------------------------------- |
 | `slide`, `infographic`, `canvas` | Colours, Finish, Text, New Page Background, Page Design | Looks, Fine-tune                        |
 | `article`, `flashcard`           | Colours, New Page Background, Page Design               | Looks, the Article Style row, Fine-tune |
 
