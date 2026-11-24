@@ -16,7 +16,7 @@ What the fork from livedocuments brought that liveknowledge does not keep, and w
 
 - A model paid for by liveworkspace, and semantic (embedding) search. Search is keyword search in the Durable Object.
 - Ask across several knowledgebases at once, and Ask through anonymous share links.
-- Google Docs import (it needs Google consent changes only the owner can make).
+- Reading from a Google account (it needs Google consent changes only the owner can make). A Google Doc comes in through its own File › Download › Markdown file and the Markdown import.
 - File attachments other than pictures.
 - Page-level permissions inside a knowledgebase. Sharing is per knowledgebase, as every app's is.
 - Public knowledgebases as websites with their own domain.
