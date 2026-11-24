@@ -179,7 +179,7 @@ export function PageToolbar({
   });
 
   // Send to Plan's words, read as a press on the bar starts: a tap may clear them before its click lands.
-  const sendPress = useArticleSendPress(() => shown!.handle.state());
+  const sendPress = useArticleSendPress(() => shown?.handle.state() ?? null);
   if (!shown) return null;
   const { handle, selection } = shown;
   // A card: no Insert, no margin notes (a note is an element in its margin).

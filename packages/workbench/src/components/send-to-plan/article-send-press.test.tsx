@@ -52,6 +52,14 @@ describe('useArticleSendPress', () => {
     expect(result.current.pick()).toEqual({ blockId: 'b1', text: 'Book the venue' });
   });
 
+  it('reads nothing while no article is shown', () => {
+    setSendSource('D', null, { planSends: vi.fn().mockResolvedValue({ sends: [] }) });
+    setSendHere({ app: 'liveknowledge', tabId: 't1' });
+    const { result } = renderHook(() => useArticleSendPress(() => null));
+    result.current.onPress();
+    expect(result.current.pick()).toBeNull();
+  });
+
   it('holds nothing while this session cannot send', () => {
     let state = stateOn(1, 5);
     const { result } = renderHook(() => useArticleSendPress(() => state));

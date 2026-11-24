@@ -9,14 +9,19 @@ import { articleSendPick, type PMState } from './article-sent';
 import { pressHold } from './press-hold';
 import { canSendHere } from './send-to-plan-entry';
 
-export function useArticleSendPress(read: () => PMState) {
+// `read` answers the article shown, or null with none (it may be read while rendering, so it never throws).
+export function useArticleSendPress(read: () => PMState | null) {
+  const pickNow = (): ArticlePick | null => {
+    const state = read();
+    return state ? articleSendPick(state) : null;
+  };
   const [held] = useState(() => pressHold<ArticlePick | null>());
   return {
     // On the toolbar's pointerdown: nothing to read while this session cannot send.
     onPress: () => {
-      if (canSendHere()) held.hold(articleSendPick(read()));
+      if (canSendHere()) held.hold(pickNow());
     },
     // The words to send: those the press held, else those the caret or selection is on now.
-    pick: (): ArticlePick | null => held.take() ?? articleSendPick(read()),
+    pick: (): ArticlePick | null => held.take() ?? pickNow(),
   };
 }

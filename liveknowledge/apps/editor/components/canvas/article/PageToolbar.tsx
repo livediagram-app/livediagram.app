@@ -174,7 +174,7 @@ export function PageToolbar({
     topRoomOf,
   });
   // Send to Plan's words, read as a press on the bar starts: a tap may clear them before its click lands.
-  const sendPress = useArticleSendPress(() => shown!.handle.state());
+  const sendPress = useArticleSendPress(() => shown?.handle.state() ?? null);
 
   if (!shown || phoneIdle) return null;
   const { handle, selection } = shown;
