@@ -108,7 +108,7 @@ describe('slide layouts', () => {
         // No text box sits on an accent rule (a short round bar with no label): the line under a title never
         // runs through the text after it.
         const rules = els.filter(
-          (e) =>
+          (e): e is Extract<Element, { type: 'shape' }> =>
             e.type === 'shape' && e.shape === 'square' && e.borderRadius === 'full' && !e.label,
         );
         for (const r of rules) {
