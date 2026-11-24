@@ -170,6 +170,23 @@ describe('NextAppSuggestion', () => {
     expect(maySuggest('make-plan', 'D1')).toBe(true);
   });
 
+  it('goes, undecided, when the switch is turned off while it shows, and comes back when on again', async () => {
+    mount(() => found());
+    await idle();
+    expect(screen.getByRole('status')).toBeTruthy();
+    await idle(SUGGEST_CHECK_MS);
+    expect(screen.getByRole('status')).toBeTruthy();
+    prefs = { suggestNextApp: false };
+    await idle(SUGGEST_CHECK_MS);
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(maySuggest('make-plan', 'D1')).toBe(true);
+    await idle(SUGGEST_CHECK_MS);
+    expect(screen.queryByRole('status')).toBeNull();
+    prefs = {};
+    await idle(SUGGEST_CHECK_MS);
+    expect(screen.getByRole('status')).toBeTruthy();
+  });
+
   it('takes an async check, and suggests nothing for one that finds nothing or fails', async () => {
     const check = vi
       .fn<SuggestionCheck>()

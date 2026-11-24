@@ -98,6 +98,19 @@ export function useSuggestion({
     setFind(null);
   }, [allowed, id]);
 
+  // Suggest Other Apps turned off while on show ("One switch for all"): it goes at the next tick, undecided, so it
+  // can come back if the switch is turned on again. A read of the preferences each tick, only while one shows.
+  useEffect(() => {
+    if (!find) return undefined;
+    const every = window.setInterval(() => {
+      if (suggestionsOn()) return;
+      if (showing === id) showing = null;
+      shownRef.current = false;
+      setFind(null);
+    }, SUGGEST_CHECK_MS);
+    return () => window.clearInterval(every);
+  }, [find, id]);
+
   // Gone with the editor (or the item changed): the page's one place is free again.
   useEffect(
     () => () => {
