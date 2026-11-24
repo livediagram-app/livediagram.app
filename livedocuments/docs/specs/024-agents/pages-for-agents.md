@@ -56,13 +56,14 @@ changes before it would have done.
 
 | Change                    | Fields                                                                                                             | Does                                                                                                                                                                                                                                |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `add`                     | `kind` (infographic, slide, flashcard), `size?`, `orientation?`, `name?`, `background?`, `layout?`, `text?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
-| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `locked?`                                                 | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
+| `add`                     | `kind` (infographic, slide, flashcard), `size?`, `orientation?`, `name?`, `background?`, `design?`, `layout?`, `text?`, `at?` | A new page of the kind, sized as the editor's **+** sizes it unless told, at place `at` (default the end)                                                                                                                           |
+| `set`                     | `page`, `name?`, `size?`, `orientation?`, `background?`, `design?`, `locked?`                                      | The page panel's edits; on an article page size, orientation and background change every page of the article                                                                                                                        |
 | `layout`                  | `page`, `layout`, `text?`                                                                                          | Puts a layout onto the page in place of everything on it, as the panel's Layouts do                                                                                                                                                 |
 | `move`                    | `page`, `to`                                                                                                       | Moves the page (an article page: its whole article) to place `to`, its content with it                                                                                                                                              |
 | `duplicate`               | `page`                                                                                                             | A copy after it, content and all (an article: the whole article and its writing)                                                                                                                                                    |
 | `delete`                  | `page`                                                                                                             | Removes the page and everything on it (an article page: the whole article, writing and all); never the last page. A later delete in the same change naming, by id, a page an earlier one took is done already, never a missing page |
 | `apply_background_to_all` | `page`                                                                                                             | Every other page of the page's kind takes its background, as the Background tab's **Apply to All** does                                                                                                                             |
+| `tab_design`              | `design`                                                                                                           | The tab's page design ([Page Designs](../011-theme/page-designs.md)): a design, `null` to clear it, or `"auto"` for one fitting the tab's words                                                                                     |
 
 - **Article pages are made by `write_article`**, never by `add`: an `add` of kind `article` is refused
   (`article_by_write`) with that hint.
@@ -96,6 +97,17 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   A locked page keeps its own and the line says how many did ("Gave 34 other slide pages the background of page 1;
   2 locked kept their own"). With no other page of the kind it is refused (`no_other_pages`). It is how an agent
   gives a whole deck one background: `set` the first slide's, then this, in the same call.
+- **Page designs** ([Page Designs](../011-theme/page-designs.md)): `design` on `add` and `set` is the page's
+  override: `{ id, ...tuning }` (the tuning fields as stored: `colors` three hex, `intensity`, `scale`, `calm`,
+  `blur`, `grain` 0 to 1 (intensity 0.1 to 1, scale 0.5 to 2), `angle` in degrees, `focus` `[x, y]` 0 to 1, `seed`
+  1 to 9999, `variant` one of the design's styles, `animate`, `speed` 0.25 to 3, `guard` `scrim` or `warn`), `"none"`
+  (no design on this page) or `"tab"` (back to the tab design). A design id may also be given alone as a string. The
+  `tab_design` change sets the tab design with the same object (plus `rhythm` and `flow`), `null` clears it and
+  `"auto"` picks a design fitting the tab's words (`pickPageDesign`: its titles and texts matched against each
+  design's keywords, Soft Mesh when nothing matches). An unknown id is refused (`design_unknown`) naming the closest
+  ids and the families; a tuning value out of range is refused (`invalid_value`). A locked page's override is
+  refused (`page_locked`) as any page edit is. The answer's pages each name their design (`design`: its id, `none`,
+  or null for the tab's).
 - **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`). **A layout by its plain name**: ids carry
   their page kind as a prefix (`slide-`), which a caller does not know before a first refusal, so a name is also read
   without it, in any case and with spaces for hyphens, when exactly one of the kind's layouts has it (a slide asked for `title` is `slide-title`, `Three Points` is `slide-three-points`;

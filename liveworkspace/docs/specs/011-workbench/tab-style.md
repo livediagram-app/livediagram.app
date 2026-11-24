@@ -98,6 +98,10 @@ The surface settings say, for a surface:
   work: a diagram, a page, a frame.
 - **Copy**: the header's line for each view, and each panel's name (the Fine-tune row's label and the breadcrumb's
   chip). The shared lines are the default; a product changes only the ones it words differently.
+- **A Page Design panel** (`design`, optional): a fifth panel a product draws entirely itself (livedocuments' page
+  designs), offered only on the surfaces whose panels name it. The product gives its body (`renderPanel('design')`),
+  its Fine-tune row's value (`panelValues.design`) and its row's icon (`panelIcons.design`); the shared copy names it
+  **Page Design** ("The backdrop drawn behind every page's elements."). No product shows it unless it lists it.
 - **Links**: rows after the panels' in the Fine-tune list for settings that live outside the dialog but style this
   surface (liveplanner's Board Configure on a board, say). Each has a name and a line saying what it holds; pressing
   one closes the dialog and runs the product's opener. None by default.

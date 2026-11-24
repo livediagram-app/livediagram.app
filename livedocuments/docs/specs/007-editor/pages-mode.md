@@ -283,7 +283,7 @@ per change, not per page per render).
 
 ## A page
 
-`Page = { id, orientation, size?, fit?, rowAt?, background?, name?, kind?, flow?, locked? }`. Every
+`Page = { id, orientation, size?, fit?, rowAt?, background?, design?, name?, kind?, flow?, locked? }`. Every
 field after `orientation` is optional and absent on a page that never set it:
 
 - `size` absent is **A4**. `fit` (`{ width, height }`, whole canvas px) is present exactly on a page
@@ -295,6 +295,9 @@ field after `orientation` is optional and absent on a page that never set it:
   that would lose it (deleting the page that carries it) hands it to the new first page, so the row
   stays where it is.
 - `background` absent is the **paper**: white in light chrome, slate-900 in dark, as before.
+- `design` absent wears the tab's page design, if it has one; a design of its own (or `{ id: 'none' }`, no design)
+  overrides it ([Page Designs](../011-theme/page-designs.md)). A design is drawn over the background and under
+  everything on the page.
 - `name` absent shows the page's place ("Page 2"); a name replaces it in the label.
 - `locked` is present (`true`) exactly on a locked page ("Locking a page").
 - `kind` absent is **infographic**; `flow` is present exactly on an article page (its article's

@@ -277,7 +277,9 @@ Its `tabs` list gives each tab in a [tab folder](../006-document/tab-folders.md#
 Create a new document from elements the model produced. Input: `name`, `tabs:
 [{ name, elements: Element[] }]` (one tab, or several to build a **multi-tab**
 document in one call, an overview plus a detail tab per subsystem), the
-optional `layout`, and the optional `markUsed` (boolean, default `true`). Each tab may instead pass `template: TemplateKind` in place
+optional `layout`, the optional `markUsed` (boolean, default `true`) and the optional `design` (a page design for
+every tab made: a design id, a design object as `change_pages` takes it, or `"auto"` for one fitting each tab's
+words, [Page Designs](../011-theme/page-designs.md)). Each tab may instead pass `template: TemplateKind` in place
 of `elements`: the server materialises the hand-tuned scaffold from
 `@livedocuments/templates` ([§4.5](#45-list_templates)), keeping its curated
 layout (`layout` is ignored for a template tab) and applying that template's
@@ -700,8 +702,9 @@ Pages are named by id, place (`2`) or name; articles by flow id or title. Both t
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
   `add` `{ kind, size, orientation, name, background, layout, at }` (infographic or slide), `set`
   `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
-  `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
-  takes its background), written as one edit; a refusal writes nothing and names the
+  `duplicate` `{ page }`, `delete` `{ page }`, `apply_background_to_all` `{ page }` (every other page of its kind
+  takes its background) and `tab_design` `{ design }` (the tab's page design; `add` and `set` take a page's own
+  `design` too, [Page Designs](../011-theme/page-designs.md)), written as one edit; a refusal writes nothing and names the
   change. The answer lists each page with its rectangle on the canvas, where `update_document` puts elements.
   An `add` with a `layout`, or a `layout` change, takes `text` by slot (`title`, `subtitle`, `bullets`, `body`), and
   each page the call laid out answers its `texts` (`{ ref, slot, text }`), so a six-slide deck with real text is
