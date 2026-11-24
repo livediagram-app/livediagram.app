@@ -1,5 +1,6 @@
 // The Verification page's card drawings (docs/specs/019-marketing/marketing-site.md "Feature pages", `trust`): the
-// owner, the verified tick, the Review Period, Changed Since Verified, Page Health and Yours to Review.
+// owner, the verified tick, the Review Period, Changed Since Verified, Page Health, Yours to Review, the Health Score,
+// Required Reading and Not Read in 90 Days.
 import type { CSSProperties } from 'react';
 
 import { Avatar, Bars, Button, PageGlyph, Pill, Scene, Sheet, Tick, Txt, at } from './kit';
@@ -247,6 +248,162 @@ export function YoursToReviewArt() {
             <Button x={196} y={25 + i * 20} w={54} filled>
               Still Right
             </Button>
+          </g>
+        ))}
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** A page's Health Score: its ring, its label, and the reason it lost most. */
+export function HealthScoreArt() {
+  const factors = [
+    { n: 'Verification', w: 60 },
+    { n: 'Freshness', w: 44 },
+    { n: 'Owner', w: 60 },
+  ];
+  return (
+    <Scene>
+      <Sheet x={14} y={10} w={272} h={76}>
+        <circle
+          cx={50}
+          cy={46}
+          r={22}
+          strokeWidth={5}
+          fill="none"
+          className="stroke-slate-200 dark:stroke-slate-700"
+        />
+        <circle
+          cx={50}
+          cy={46}
+          r={22}
+          strokeWidth={5}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray="114 139"
+          transform="rotate(-90 50 46)"
+          className="kb-in stroke-emerald-500"
+          style={at(0.4)}
+        />
+        <Txt x={50} y={49} size={11} weight={800} anchor="middle">
+          82
+        </Txt>
+        <Pill x={86} y={20} w={40} tone="verified" delay={0.8}>
+          Healthy
+        </Pill>
+        <Txt x={132} y={28} size={5.8} weight={500} tone="quiet">
+          Lost most: last edited 8 months ago
+        </Txt>
+        {factors.map((f, i) => (
+          <g key={f.n} className="kb-in" style={at(1 + i * 0.2)}>
+            <Txt x={86} y={46 + i * 12} size={5.8} weight={600}>
+              {f.n}
+            </Txt>
+            <rect
+              x={140}
+              y={41.5 + i * 12}
+              width={60}
+              height={5}
+              rx={2.5}
+              className="fill-slate-100 dark:fill-slate-700"
+            />
+            <rect
+              x={140}
+              y={41.5 + i * 12}
+              width={f.w}
+              height={5}
+              rx={2.5}
+              className="fill-emerald-500"
+            />
+          </g>
+        ))}
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** The Required Reading banner with I've Read This, and the count beside it. */
+export function RequiredReadingArt() {
+  return (
+    <Scene>
+      <Sheet x={14} y={10} w={160} h={76}>
+        <Txt x={22} y={24} size={7.2} weight={700}>
+          Security Policy
+        </Txt>
+        <g className="kb-in" style={at(0.4)}>
+          <rect
+            x={22}
+            y={31}
+            width={144}
+            height={24}
+            rx={4}
+            className="fill-brand-50 dark:fill-brand-900"
+          />
+          <Txt x={28} y={41} size={6} weight={700} tone="brand">
+            Required Reading
+          </Txt>
+          <Txt x={28} y={50} size={5.4} weight={500} tone="quiet">
+            Please read this page, then confirm.
+          </Txt>
+        </g>
+        <g className="kb-pop" style={at(0.9)}>
+          <Button x={108} y={62} w={56} filled>
+            I’ve Read This
+          </Button>
+        </g>
+        <Bars x={22} y={64} widths={[78]} />
+      </Sheet>
+      <Sheet x={186} y={22} w={100} h={52}>
+        <Txt x={194} y={35} size={6.2} weight={700}>
+          7 of 12 have read it
+        </Txt>
+        <rect
+          x={194}
+          y={42}
+          width={84}
+          height={5}
+          rx={2.5}
+          className="fill-slate-100 dark:fill-slate-700"
+        />
+        <rect
+          x={194}
+          y={42}
+          width={49}
+          height={5}
+          rx={2.5}
+          className="kb-in fill-brand-600"
+          style={at(1.2)}
+        />
+        <Txt x={194} y={62} size={5.6} weight={500} tone="quiet">
+          Remind the rest
+        </Txt>
+      </Sheet>
+    </Scene>
+  );
+}
+
+/** Insights' list of pages nobody has read in 90 days, each with when it was last read. */
+export function NotReadArt() {
+  const rows = [
+    { t: 'Old VPN Setup', w: 'Last read 7 months ago' },
+    { t: 'Office Wi-Fi', w: 'Last read 4 months ago' },
+    { t: '2023 Offsite', w: 'Never read' },
+  ];
+  return (
+    <Scene>
+      <Sheet x={14} y={8} w={272} h={80}>
+        <Txt x={24} y={22} size={6} weight={700} tone="quiet">
+          NOT READ IN 90 DAYS
+        </Txt>
+        {rows.map((r, i) => (
+          <g key={r.t} className="kb-in" style={at(0.4 + i * 0.25)}>
+            <PageGlyph x={24} y={30 + i * 17} />
+            <Txt x={34} y={36.5 + i * 17} size={6.4} weight={600}>
+              {r.t}
+            </Txt>
+            <Txt x={276} y={36.5 + i * 17} size={5.6} weight={500} tone="quiet" anchor="end">
+              {r.w}
+            </Txt>
           </g>
         ))}
       </Sheet>

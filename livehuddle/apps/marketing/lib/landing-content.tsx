@@ -7,6 +7,7 @@ import {
   BringFocusArt,
   BrowserSpaceArt,
   BubbleArt,
+  CallFromItemArt,
   CameraBubbleArt,
   CameraArt,
   CharacterArt,
@@ -34,6 +35,7 @@ import {
   RevokeArt,
   RoomBuilderArt,
   ScreenShareArt,
+  SendToPlanArt,
   SelectedNoteArt,
   SessionToolsArt,
   ShareLinksArt,
@@ -44,6 +46,7 @@ import {
   TalkNearArt,
   TeamsArt,
   WalkInArt,
+  WrapUpArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -234,9 +237,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore meetings',
     title: 'Talk it through, right where you stand',
     description:
-      'Walk up to someone and you are talking: voices fade as you walk apart, a room’s walls keep its call private, and a camera or a shared screen shows above your head. The rest of the meeting is in the room too: a timer, a stage and a baton for whoever runs it.',
+      'Walk up to someone and you are talking: voices fade as you walk apart, a room’s walls keep its call private, and a camera or a shared screen shows above your head. The rest of the meeting is in the room too: a timer, a stage and a baton for whoever runs it. Start a call from your work in livediagram, liveplanner or livedocuments, and Wrap Up sends what was decided back to it.',
     metaDescription:
-      'Talk in a Space by walking up to people: private rooms, cameras and screens above your head, a stage for the all-hands, and a timer on the wall.',
+      'Talk in a Space by walking up to people: private rooms, cameras and screens, a stage, a timer, and calls started from your work in the other apps.',
     highlights: [
       'Talk to whoever is near you',
       'Rooms keep a call private',
@@ -347,6 +350,30 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Who came, and for how long',
         description:
           'Open a tab’s Attendance after the stand-up to see who came in, when they joined and left, and how long they stayed, kept for 90 days. A dropped connection or a quick reload is never counted as leaving.',
+      },
+      {
+        art: <CallFromItemArt />,
+        href: '/help/collaboration/start-a-call/',
+        group: 'Calls from your work',
+        title: 'Start a call from any app',
+        description:
+          'Press Call on your work in livediagram, liveplanner, livedocuments, livedesign or liveknowledge and a livehuddle call about it opens in a new tab. Anyone who opens that work sees the call is on and joins it with one press.',
+      },
+      {
+        art: <WrapUpArt />,
+        href: '/help/collaboration/start-a-call/',
+        group: 'Calls from your work',
+        title: 'Wrap up where the work lives',
+        description:
+          'When the call ends, Wrap Up writes the summary to a knowledgebase page, with Write With AI to draft it from the notes on the walls, and sends the actions to a plan. Nothing is recorded.',
+      },
+      {
+        art: <SendToPlanArt />,
+        href: '/help/collaboration/send-to-plan/',
+        group: 'Calls from your work',
+        title: 'Send stickies to a plan',
+        description:
+          'Pick the stickies on the wall and Send to Plan turns each into a card on a liveplanner board, linked back to its sticky, so the actions from a meeting land where the work is planned.',
       },
     ],
   },
@@ -477,7 +504,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Your Spaces, your way',
         title: 'Automations that keep the office',
         description:
-          'Signed in, give a Space rules of its own: put a room back as it was once everyone leaves, tell Slack or Teams when the first person arrives, or post a stand-up reminder every weekday.',
+          'Signed in, give a Space rules of its own: put a room back as it was once everyone leaves, tell Slack or Teams when the first person arrives, or, once a meeting ends, summarise it with AI and add the actions to a liveplanner plan.',
       },
       {
         art: <ApiArt />,

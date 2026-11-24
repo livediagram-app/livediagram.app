@@ -63,7 +63,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
     art: <PagesArt />,
     metaDescription:
-      'Pages in a tree, read first and edited on purpose in a shared draft, linked with [[ and Linked From, with covers, structures and Describe to Set Up.',
+      'Pages in a tree, edited in a shared draft, linked with [[ and Linked From, with labels, Watch, comments, reactions, covers and Describe to Set Up.',
     items: [
       {
         title: 'A Page Tree',
@@ -107,6 +107,27 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <PagesCardArt.DescribeArt />,
         href: '/help/knowledgebase/the-page-tree/',
       },
+      {
+        title: 'Labels Across the Tree',
+        description:
+          'Labels such as Onboarding or Security cut across the sections. Press one to filter the page tree to it, and narrow a search or a question in Ask to it.',
+        art: <PagesCardArt.LabelsArt />,
+        href: '/help/knowledgebase/the-page-tree/',
+      },
+      {
+        title: 'Watch a Page',
+        description:
+          'Watch a page, or a whole section and every page added under it later, and hear when someone changes it. Nobody sees who watches, only how many.',
+        art: <PagesCardArt.WatchArt />,
+        href: '/help/knowledgebase/watching-a-page/',
+      },
+      {
+        title: 'Comments and Reactions',
+        description:
+          'Comment threads at the foot of a page hold the questions and corrections, and anyone may react with any emoji, Viewers too. Neither is an edit, and a reaction notifies nobody.',
+        art: <PagesCardArt.ReactionsArt />,
+        href: '/help/collaboration/comments/',
+      },
     ],
   },
   {
@@ -122,7 +143,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
     art: <TrustArt />,
     metaDescription:
-      'Owners, verified ticks with a name and a date, a Review Period, Changed Since Verified, Page Health and Yours to Review: trust on every page.',
+      'Owners, verified ticks with a name and a date, a Review Period, a Health Score, Required Reading and Yours to Review: trust on every page.',
     items: [
       {
         title: 'An Owner for Every Page',
@@ -166,6 +187,27 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TrustCardArt.YoursToReviewArt />,
         href: '/help/knowledgebase/knowledge-health-and-reminders/',
       },
+      {
+        title: 'A Health Score for Every Page',
+        description:
+          'Every page scores 0 to 100 from its verification, freshness, owner, length, structure, links and open issues, with the reason it lost most. Agents get the same score.',
+        art: <TrustCardArt.HealthScoreArt />,
+        href: '/help/knowledgebase/page-health/',
+      },
+      {
+        title: 'Required Reading',
+        description:
+          'Ask everyone, or chosen people, to read a policy page and press I’ve Read This. Editors see who has and who has not, and a big change can ask everyone again.',
+        art: <TrustCardArt.RequiredReadingArt />,
+        href: '/help/knowledgebase/required-reading/',
+      },
+      {
+        title: 'Not Read in 90 Days',
+        description:
+          'Insights lists the pages nobody has read in 90 days, so a team can see what to check, merge or retire before it misleads someone.',
+        art: <TrustCardArt.NotReadArt />,
+        href: '/help/knowledgebase/knowledge-health-and-reminders/',
+      },
     ],
   },
   {
@@ -181,7 +223,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
     art: <AskArt />,
     metaDescription:
-      'Ask answers from your own pages with a citation on every claim, a Sources rail, Knowledge Gaps, and built-in AI or your own Claude or OpenAI key.',
+      'Ask answers from your pages and connected items with a citation on every claim, Knowledge Gaps, and built-in AI or your own Claude or OpenAI key.',
     items: [
       {
         title: 'Every Claim Cited',
@@ -225,6 +267,27 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <AskCardArt.SaveAsPageArt />,
         href: '/help/knowledgebase/ask/',
       },
+      {
+        title: 'Ask Across Your Apps',
+        description:
+          'Ask also answers from the diagrams, plans, documents, designs and Spaces connected to the knowledgebase, pages first, each source named with its app and a link to it.',
+        art: <AskCardArt.AskAcrossAppsArt />,
+        href: '/help/knowledgebase/ask-across-apps/',
+      },
+      {
+        title: 'Ask Within a Label',
+        description:
+          'Pick a label and Ask answers only from the pages that carry it, so a question about security is answered from the security pages.',
+        art: <AskCardArt.AskLabelArt />,
+        href: '/help/knowledgebase/ask/',
+      },
+      {
+        title: 'Choose What Ask Reads',
+        description:
+          'AI Settings says what Ask may read: the knowledgebase always, the items connected to it unless an Editor turns them off, and one team folder if an Editor picks it.',
+        art: <AskCardArt.SourcesSettingsArt />,
+        href: '/help/knowledgebase/ask-across-apps/',
+      },
     ],
   },
   {
@@ -232,15 +295,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Agents',
     title: 'The Knowledgebase Your Agents Read',
     description:
-      'An MCP server and a command line give your agents the pages your team reads, as pages and passages. Every passage arrives with how far to trust it: verified or not, when, and whether its review is due. An agent’s edit lands as a suggestion for a person to accept, and a question no page answered is kept so someone can write that page.',
+      'An MCP server and a command line give your agents the pages your team reads, as pages and passages. Every passage arrives with how far to trust it: verified or not, when, and whether its review is due. An agent’s edit lands as a suggestion for a person to accept unless AI Editing lets it write, and a question no page answered is kept so someone can write that page.',
     points: [
       'An MCP server and a CLI',
       'Trust fields on every passage',
-      'Suggested edits a person accepts',
+      'Suggested edits, or AI Editing',
     ],
     art: <AgentsArt />,
     metaDescription:
-      'An MCP server and a CLI for your agents: Always in Context pages, trust fields on every passage, suggested edits and Insights.',
+      'An MCP server and a CLI for your agents: Always in Context pages, trust fields on every passage, suggested edits, AI Editing and Insights.',
     items: [
       {
         title: 'An MCP Server',
@@ -273,7 +336,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         title: 'Suggested Edits',
         description:
-          'An agent’s edit arrives with its reason for a person to accept or dismiss. An Editor can let one connection write, never on a Verified or Review Due page.',
+          'By default an agent’s edit arrives with its reason, for a person to accept or dismiss on the page or from the Inbox. Accepting it never verifies the page.',
         art: <AgentsCardArt.SuggestedEditArt />,
         href: '/help/knowledgebase/suggested-edits/',
       },
@@ -283,6 +346,27 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'One tab shows which agents read what, the questions nobody could answer and the pages that disagree. Finding those runs on built-in AI or your own key.',
         art: <AgentsCardArt.InsightsArt />,
         href: '/help/knowledgebase/pages-that-disagree/',
+      },
+      {
+        title: 'AI Editing',
+        description:
+          'One setting says how far agents may change pages: Suggest Edits Only, Edit Unverified Pages or Edit Any Page. An agent’s connection still needs the write scope.',
+        art: <AgentsCardArt.AiEditingArt />,
+        href: '/help/knowledgebase/suggested-edits/',
+      },
+      {
+        title: 'Agents Draft and Arrange',
+        description:
+          'An agent can add a page, never verified, and move the drafts it made into place in the tree, for a person to check and verify.',
+        art: <AgentsCardArt.DraftArrangeArt />,
+        href: '/help/knowledgebase/what-agents-can-do/',
+      },
+      {
+        title: 'Named in History',
+        description:
+          'A page an agent made or changed says so: Created, Updated and Version History name the agent and the person it acts for, such as Claude for Priya.',
+        art: <AgentsCardArt.NamedInHistoryArt />,
+        href: '/help/knowledgebase/what-agents-can-do/',
       },
     ],
   },
@@ -358,7 +442,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     ],
     art: <WorkspaceArt />,
     metaDescription:
-      'Live embeds from five liveworkspace apps, Editor, Participant and Viewer roles, Knowledgebase Style, Offline, the Google Drive mirror and one account.',
+      'Live embeds from five apps, Editor, Participant and Viewer roles, Publish to the Web, Automations, calls, Offline and the Google Drive mirror.',
     items: [
       {
         title: 'Live Embeds From Five Apps',
@@ -401,6 +485,27 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'One liveworkspace account opens every app, and the Explorer keeps your knowledgebases beside your diagrams, plans, documents, designs and Spaces.',
         art: <WorkspaceCardArt.OneAccountArt />,
         href: '/help/knowledgebase/knowledgebase-roles/',
+      },
+      {
+        title: 'Publish to the Web',
+        description:
+          'Make a knowledgebase, or one section of it, a public, read-only site anyone can read and search, with no account. Only saved pages go public, never drafts or comments.',
+        art: <WorkspaceCardArt.PublishArt />,
+        href: '/help/knowledgebase/publishing-to-the-web/',
+      },
+      {
+        title: 'Automations',
+        description:
+          'Rules that run on their own, with steps in the other apps: when a page comes due for review, a card for its owner lands in a liveplanner plan.',
+        art: <WorkspaceCardArt.AutomationsArt />,
+        href: '/help/tools/automations/',
+      },
+      {
+        title: 'Calls and Cards From a Page',
+        description:
+          'Start a livehuddle call about the knowledgebase from its Call button, and send a paragraph or a comment to a liveplanner board as a card.',
+        art: <WorkspaceCardArt.CallsCardsArt />,
+        href: '/help/collaboration/start-a-call/',
       },
     ],
   },

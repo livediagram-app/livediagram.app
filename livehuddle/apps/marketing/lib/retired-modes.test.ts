@@ -11,7 +11,8 @@ describe('marketing copy', () => {
   const COPY_FILES = ['alternatives.ts', 'faq-content.tsx', 'landing-content.tsx'];
   const RETIRED_MODE_CLAIMS = [
     /\bPlan mode\b/,
-    /\bto Plan\b/,
+    // Send to Plan (and the Wrap Up's Send Actions to Plan) is the platform's way to liveplanner, not a mode.
+    /(?<!Send |Actions )\bto Plan\b/,
     /\bPlan tab\b/,
     /\bWIP limits?\b/,
     /\bPages mode\b/,

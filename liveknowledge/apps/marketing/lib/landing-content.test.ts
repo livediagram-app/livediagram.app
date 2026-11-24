@@ -49,9 +49,10 @@ describe('the landing sections', () => {
 
 // docs/specs/019-marketing/marketing-site.md "Feature pages".
 describe('the feature pages', () => {
-  it('give each section six illustrated cards, each with a help link', () => {
+  it('give each section six to nine illustrated cards, each with a help link', () => {
     for (const s of LANDING_SECTIONS) {
-      expect(s.items, s.id).toHaveLength(6);
+      expect(s.items.length, s.id).toBeGreaterThanOrEqual(6);
+      expect(s.items.length, s.id).toBeLessThanOrEqual(9);
       for (const item of s.items) {
         expect(item.art, item.title).toBeTruthy();
         expect(item.href, item.title).toMatch(/^\/help\/[a-z-]+\/[a-z0-9-]+\/$/);
@@ -71,6 +72,29 @@ describe('the feature pages', () => {
       const titles = s.items.map((i) => i.title);
       expect(new Set(titles).size, s.id).toBe(titles.length);
     }
+  });
+
+  it('sell the features shipped since launch, each on its own card', () => {
+    const titles = LANDING_SECTIONS.flatMap((s) => s.items.map((i) => i.title));
+    for (const t of [
+      'Labels Across the Tree',
+      'Watch a Page',
+      'Required Reading',
+      'Ask Across Your Apps',
+      'AI Editing',
+      'Publish to the Web',
+      'Automations',
+    ]) {
+      expect(titles).toContain(t);
+    }
+  });
+
+  it('never say an agent cannot change a verified page, since AI Editing can allow it', () => {
+    const text = LANDING_SECTIONS.flatMap((s) => [
+      s.description,
+      ...s.items.map((i) => i.description),
+    ]);
+    for (const t of text) expect(t).not.toMatch(/never on a Verified/);
   });
 
   it('carry the cards the hero’s Notion and Confluence marks link to', () => {
