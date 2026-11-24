@@ -21,7 +21,7 @@ import {
 } from '@liveworkspace/icons/lucide';
 
 // Glyphs for the Layers panel (docs/specs/006-document/layers.md): the row controls (grip, eye,
-// lock, ellipsis), the header's New Layer, the footer's merge + delete, the row menu's verbs, and
+// lock, ellipsis), the foot's New Layer, the footer's merge + delete, the row menu's verbs, and
 // the LayersStackIcon the CanvasChrome cluster button wears. Row controls draw at 16px inside
 // 32px targets; the footer and menu draw at 14-16px.
 

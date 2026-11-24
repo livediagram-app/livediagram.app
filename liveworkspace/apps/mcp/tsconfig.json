@@ -1,0 +1,11 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types", "node"],
+    "lib": ["ES2024"],
+    "target": "ES2024",
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "eval/**/*.ts"],
+  "exclude": ["node_modules", "dist", ".wrangler"]
+}

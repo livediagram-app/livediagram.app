@@ -1,0 +1,82 @@
+# liveworkspace's one MCP (docs/specs/021-mcp/mcp.md): a thin router in front of each app's MCP Worker, with one
+# OAuth consent and one token. Unlisted while it is tried: nothing public names its host yet.
+name = "liveworkspace-mcp"
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# nodejs_compat for the MCP SDK's transport internals and mcp-kit's AsyncLocalStorage.
+compatibility_flags = ["nodejs_compat"]
+routes = [{ pattern = "mcp.liveworkspace.app", custom_domain = true }]
+# Reached only at its custom domain, behind the zone's WAF and rate-limit rules.
+workers_dev = false
+preview_urls = false
+
+[dev]
+port = 3013
+
+[vars]
+# The consent page: liveworkspace.app's /oauth/consent.
+CONSENT_BASE_URL = "https://www.liveworkspace.app"
+
+# Each app's MCP Worker, called as the person with their own Bearer token (an account token works on every app).
+# The deploy tiers put this Worker after the MCP Workers it binds (TIER_OF in .github/scripts/ci-plan.mjs).
+[[services]]
+binding = "LIVEDIAGRAM"
+service = "livediagram-mcp"
+
+[[services]]
+binding = "LIVEDOCUMENTS"
+service = "livedocuments-mcp"
+
+[[services]]
+binding = "LIVEPLANNER"
+service = "liveplanner-mcp"
+
+[[services]]
+binding = "LIVEDESIGN"
+service = "livedesign-mcp"
+
+[[services]]
+binding = "LIVEKNOWLEDGE"
+service = "liveknowledge-mcp"
+
+# OAuth 2.1 state (client registrations, authorize sessions, codes) and each grant's ticked apps. No id: the first
+# deploy provisions the namespace (wrangler's automatic provisioning) and keeps it bound from then on.
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+
+# ---------------------------------------------------------------------------
+# Staging: `liveworkspace-mcp-staging` on mcp-staging.liveworkspace.app, bound to the staging MCP Workers.
+# Routes, vars, service bindings and KV are not inherited, so they are restated.
+# ---------------------------------------------------------------------------
+[env.staging]
+name = "liveworkspace-mcp-staging"
+routes = [{ pattern = "mcp-staging.liveworkspace.app", custom_domain = true }]
+workers_dev = false
+preview_urls = false
+
+[env.staging.vars]
+CONSENT_BASE_URL = "https://staging.liveworkspace.app"
+
+[[env.staging.services]]
+binding = "LIVEDIAGRAM"
+service = "livediagram-mcp-staging"
+
+[[env.staging.services]]
+binding = "LIVEDOCUMENTS"
+service = "livedocuments-mcp-staging"
+
+[[env.staging.services]]
+binding = "LIVEPLANNER"
+service = "liveplanner-mcp-staging"
+
+[[env.staging.services]]
+binding = "LIVEDESIGN"
+service = "livedesign-mcp-staging"
+
+[[env.staging.services]]
+binding = "LIVEKNOWLEDGE"
+service = "liveknowledge-mcp-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "OAUTH_KV"

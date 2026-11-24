@@ -102,6 +102,8 @@ import { restoreRoom } from './plan-room-restore';
 import { answerFeedCall, type FeedRoomAnswer, type FeedRoomCall } from '../calendar/feed-room';
 import type { SheetWatches } from './sheet-watchers';
 import type { SentCards } from './sent-cards';
+import type { PlanViews } from './plan-views';
+import { planDiagramHere } from './plan-diagram-door';
 import {
   listSheets,
   planData,
@@ -109,9 +111,15 @@ import {
   readSheetRange,
   roomSheetWatches,
   roomSentCards,
+  roomPlanViews,
   type SheetRangeAsk,
 } from './plan-room-doors';
-import type { PlanDataAsk, PlanSendDoorCall, SourceChange } from '@liveworkspace/index-client';
+import type {
+  PlanDataAsk,
+  PlanDiagramDoorCall,
+  PlanSendDoorCall,
+  SourceChange,
+} from '@liveworkspace/index-client';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -217,6 +225,8 @@ export class PlanRoom extends DurableObject<Env> {
   readonly sheetWatches: SheetWatches;
   // Cards sent from other apps, their changes told to the index for the sources' chips (sent-cards.ts).
   readonly sentCards: SentCards;
+  // Live diagrams drawn from this plan's boards, redrawn as its cards change (plan-views.ts, View As Diagram).
+  readonly planViews: PlanViews;
   // When the plan was purged (plan-room-purged.ts): null when it is not, undefined until read.
   purgedAt: number | null | undefined = undefined;
   // The outbox's next push (null: nothing pending), the last one, and whether one is running now.
@@ -297,6 +307,7 @@ export class PlanRoom extends DurableObject<Env> {
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.sheetWatches = roomSheetWatches(this);
     this.sentCards = roomSentCards(this);
+    this.planViews = roomPlanViews(this);
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);
     this.scopedStructure = new RoomScopedStructure(cachedStoredTab(this.roomEnv));
@@ -579,6 +590,12 @@ export class PlanRoom extends DurableObject<Env> {
     return planSendHere(this, planId, call);
   }
 
+  // Diagrams and Plans (plan-diagram-door.ts): a make, a graph, a watch or an edit, the person's grant checked by the
+  // internal door.
+  planDiagram(planId: string, call: PlanDiagramDoorCall) {
+    return planDiagramHere(this, planId, call);
+  }
+
   // Cards this plan's threads sent to another plan changed: every open session reads its chips again.
   async sourceChanged(planId: string, change: SourceChange): Promise<void> {
     sourceChangedHere(this, planId, change);
@@ -728,6 +745,7 @@ export class PlanRoom extends DurableObject<Env> {
   broadcastOrderedSystemOp(op: unknown): void {
     broadcastOrderedSystemOp(this, op);
     this.sentCards.changed(op);
+    this.planViews.changed(op);
   }
 
   override webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {

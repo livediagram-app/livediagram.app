@@ -21,6 +21,7 @@ import type {
   PlanDataAsk,
   PlanSendDoorAnswer,
   PlanSendDoorCall,
+  PlanDiagramDoorCall,
   SheetRangeAsk,
   SourceChange,
 } from '@liveworkspace/index-client';
@@ -145,6 +146,7 @@ export type PlanRoomClient = {
   automationTarget(): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
   // Send to Plan's cards, the person's grant checked (plan-room/plan-send-door.ts).
   planSend(call: PlanSendDoorCall): Promise<PlanSendDoorAnswer>;
+  planDiagram(call: PlanDiagramDoorCall): Promise<Record<string, unknown>>;
   // Cards this plan sent elsewhere changed (the index's source-changed door): every open session is told.
   sourceChanged(change: SourceChange): Promise<void>;
   // A rule email's unsubscribe (plan-room/automations/automation-addresses.ts): false for a token the plan never made.
@@ -211,6 +213,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     automationStep: (call) => room.automationStep(planId, call),
     automationTarget: () => room.automationTarget(planId),
     planSend: (call) => room.planSend(planId, call),
+    planDiagram: (call) => room.planDiagram(planId, call),
     sourceChanged: (change) => room.sourceChanged(planId, change),
     emailOptOut: (token) => room.emailOptOut(planId, token),
     github: (call) => room.github(planId, call),
@@ -285,6 +288,7 @@ export type PlanRoomRpc = {
   automationStep(planId: string, call: AutomationStepDoorCall): Promise<AutomationStepAnswer>;
   automationTarget(planId: string): Promise<Omit<AutomationTargetDescription, 'app' | 'title'>>;
   planSend(planId: string, call: PlanSendDoorCall): Promise<PlanSendDoorAnswer>;
+  planDiagram(planId: string, call: PlanDiagramDoorCall): Promise<Record<string, unknown>>;
   sourceChanged(planId: string, change: SourceChange): Promise<void>;
   emailOptOut(planId: string, token: string): Promise<boolean>;
   github(planId: string, call: GithubRoomCall): Promise<GithubRoomAnswer>;

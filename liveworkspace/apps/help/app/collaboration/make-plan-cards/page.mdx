@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Make Plan Cards',
+  description:
+    'Turn a roadmap or flow into liveplanner cards: shapes become cards, arrows Blocked By, lanes columns or labels, and timeline dates Start and Due.',
+  path: '/help/collaboration/make-plan-cards/',
+});
+
+<ArticleLayout path="collaboration/make-plan-cards" title="Make Plan Cards" description="Turn a roadmap or a flow into cards in one of your plans, with its arrows, lanes and dates, and keep the two in step." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("make-plan-cards")}>
+
+A roadmap drawn on a canvas, or a flow of steps joined by arrows, is a plan waiting to be tracked. **Make Plan Cards** turns it into cards in one of your liveplanner plans in one go: each shape with words becomes a card, each arrow becomes a **Blocked By** link, each lane becomes a column or a label, and dates written on the shapes or along a timeline become the cards' **Start** and **Due** days. Each shape keeps a chip that shows where its card stands, as [Send to Plan](/help/collaboration/send-to-plan/) does.
+
+You need to be signed in and able to add cards to the plan you pick. Reading the canvas is enough to make cards from it. Make Plan Cards is not offered in an embed, for a canvas saved only in this browser (Offline), or on Community.
+
+## Making cards
+
+<Step n={1}>
+  Pick what to make cards from:
+
+- **A whole tab**: open the tab's menu and press **Make Plan Cards**.
+- **Some shapes**: select two or more and press **Make Plan Cards** on the selection's toolbar, beside Send to Plan. Arrows and lanes are still read from the whole tab.
+
+</Step>
+
+<Step n={2}>
+  Pick a **Plan**, its **Board** and the **Column** new cards land in. Your most recent plans come
+  first, and **New Plan** makes one on the spot.
+</Step>
+
+<Step n={3}>
+  Check the preview. Every shape is a row, ticked: untick any you want left out, or search when
+  there are many. Each row says where the card lands, its dates and how many cards it waits on.
+  Choose what **Lanes Become**: **Columns** (a lane lands in the board's column of the same name),
+  **Labels** (the lane's name becomes a label) or **Nothing**.
+</Step>
+
+<Step n={4}>
+  Press **Make Cards**. A message says how many cards went in, with **Open Plan**.
+</Step>
+
+## What becomes what
+
+| On the canvas | In the plan |
+| --- | --- |
+| A shape or sticky with words | A card, titled by its first line |
+| An arrow from A to B | B is **Blocked By** A |
+| The lane or frame a shape sits in | Its column, or a label |
+| "1 Dec to 12 Dec" in the words | **Start** 1 Dec, **Due** 12 Dec |
+| "by Friday" or "12 Dec" in the words | **Due** that day |
+| A shape on a timeline, with dates along it | **Start** and **Due** from where it stands |
+
+A link that would make cards wait on each other in a loop is left out, and the preview says how many. A board without a Blocked By field gains one when a card needs it.
+
+## Making again
+
+Change the drawing and make again: a shape that made a card before **updates** that card (its row says **Updates Card**), so nothing is made twice. Its title, dates, labels and links change; its column stays where the team moved it. A card whose shape you deleted is listed under **Removed from the diagram**, unticked: tick it to move the card to the plan's Trash. Nothing is ever removed without you ticking it.
+
+## A plan drawn as a diagram
+
+A tab made by liveplanner's [View As Diagram](/help/collaboration/view-as-diagram/) is drawn from the plan and redrawn when the plan changes. When an Editor draws an arrow between two of its cards, or drags a card into another lane, a pill at the top offers the change to the plan: **Review** lists each one, with **Apply**, **Dismiss** and **Apply All**. Nothing reaches the plan until you apply it, and a change the plan refuses (a loop, a card gone) says why.
+
+<Tip>
+  At most 500 shapes go in one make. The preview lists the first 200 rows; search to find the rest.
+</Tip>
+
+</ArticleLayout>

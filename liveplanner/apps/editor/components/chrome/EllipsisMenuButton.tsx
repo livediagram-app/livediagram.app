@@ -32,6 +32,7 @@ export function EllipsisMenuButton({
   onToggleLock,
   onDelete,
   connected,
+  onViewAsDiagram,
 }: {
   open: boolean;
   onToggle: () => void;
@@ -61,6 +62,8 @@ export function EllipsisMenuButton({
   onDelete: () => void;
   // A connected tab: its own short menu (TabPortalMenu).
   connected?: ConnectedTabMenu | undefined;
+  // View As Diagram from this Board tab, where it is offered.
+  onViewAsDiagram?: (() => void) | undefined;
 }) {
   // In state, so the menu anchors to the button on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
@@ -102,6 +105,7 @@ export function EllipsisMenuButton({
             deleteWarning={deleteWarning}
             canClearContent={canClearContent}
             connected={connected}
+            onViewAsDiagram={onViewAsDiagram}
           />
         </MenuErrorBoundary>
       ) : null}

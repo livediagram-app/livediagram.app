@@ -8,6 +8,7 @@ import {
   REPEAT_MIN_CHARS,
   sayDescriptionsOnce,
   shallowOutputSchema,
+  untuple,
 } from './tool-list-compact';
 
 const LONG = 'How a rule starts. '.repeat(20);
@@ -143,6 +144,50 @@ describe('sayDescriptionsOnce', () => {
       ],
     });
     expect(JSON.stringify(out)).toContain(LONG);
+  });
+});
+
+describe('untuple', () => {
+  it('says a tuple of like positions as one item schema with an exact length', () => {
+    const hex = { type: 'string', description: 'A hex colour.' };
+    expect(
+      untuple({
+        type: 'array',
+        items: [hex, hex],
+        additionalItems: false,
+        minItems: 2,
+        maxItems: 2,
+      }),
+    ).toEqual({
+      type: 'array',
+      items: hex,
+      minItems: 2,
+      maxItems: 2,
+    });
+  });
+
+  it('says unlike positions as anyOf, finds tuples deep down, and leaves plain arrays alone', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        pair: { type: 'array', items: [{ type: 'string' }, { type: 'number' }] },
+        list: { type: 'array', items: { type: 'string' } },
+        open: { type: 'array', items: [{ type: 'string' }], additionalItems: { type: 'number' } },
+      },
+    };
+    expect(untuple(schema)).toEqual({
+      type: 'object',
+      properties: {
+        pair: {
+          type: 'array',
+          items: { anyOf: [{ type: 'string' }, { type: 'number' }] },
+          minItems: 2,
+          maxItems: 2,
+        },
+        list: { type: 'array', items: { type: 'string' } },
+        open: { type: 'array', items: { type: 'string' }, minItems: 1 },
+      },
+    });
   });
 });
 

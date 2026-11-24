@@ -7,4 +7,6 @@ Follow the references below only as needed; never upfront.
   the profile a product hands it
 - ./label-editor.md - when working on the label editor all five editors share: what is
   shared, what each product binds, mixed-direction lines
+- ./phone-drawers.md - when working on a tool panel (Layers, Tidy Up, Collaborate, Timer, Vote, Poll, ...) on a phone:
+  the bottom drawer every editor's tool popovers open as, its handle, focus, safe area and which panels
 - ./blueprints/README.md - when implementing a workbench spec: the blueprints hold the engineering detail derived from it

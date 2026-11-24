@@ -17,7 +17,7 @@ export { ElementLayerMenuScene, LayerRowMenuScene } from './layers-menus';
 
 export function LayersPanelScene() {
   return (
-    <Scene w={436} h={264}>
+    <Scene w={436} h={295}>
       <LayeredCanvas />
       <LayersPanel
         x={206}
@@ -37,7 +37,7 @@ export function LayersPanelScene() {
  *  and its notes are gone from the canvas while everything else stays. */
 export function LayerHiddenScene() {
   return (
-    <Scene w={436} h={224}>
+    <Scene w={436} h={255}>
       <LayeredCanvas showNotes={false} />
       <LayersPanel
         x={206}

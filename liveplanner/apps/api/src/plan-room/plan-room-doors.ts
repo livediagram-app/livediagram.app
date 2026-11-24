@@ -49,7 +49,10 @@ import { PLAN_DATA_CARDS, type PlanDataAsk, type SheetRangeAsk } from '@livework
 import { indexAppClient } from '../index-service';
 import { SheetWatches } from './sheet-watchers';
 import { SentCards } from './sent-cards';
-import { planOutline } from '@liveplanner/items';
+import { listItems } from '../db/items';
+import { PlanViews } from './plan-views';
+import { boardGraph, readBoard } from './plan-diagram-door';
+import { planOutline, typesOf, type PlanGraph } from '@liveplanner/items';
 import { planTabs } from '../routes/plan-route';
 import { readAutomationPlan } from './automations/automation-plan';
 import { listPlanSheets, readPlanSheetRange } from './sheet-source';
@@ -492,4 +495,40 @@ export async function planData(
   const result = await readPlanData(room.requireEnv(), planId, ask);
   if (result.status === 'ok' && watcher) room.sheetWatches.watch(planId, PLAN_DATA_CARDS, watcher);
   return result;
+}
+
+// View As Diagram's live diagrams (plan-views.ts): each view's board drawn again for its maker, read once a burst.
+export function roomPlanViews(room: PlanRoom): PlanViews {
+  return new PlanViews(
+    () => room.state.storage.sql,
+    () => room.planId,
+    async (views) => {
+      const env = room.roomEnv;
+      const planId = room.planId;
+      if (!env || !planId) return null;
+      const items = await listItems(env, planId);
+      const boards = new Map<string, Awaited<ReturnType<typeof readBoard>>>();
+      const out = new Map<string, PlanGraph | null>();
+      for (const view of views) {
+        if (!boards.has(view.board))
+          boards.set(view.board, await readBoard(env, planId, view.board));
+        const board = boards.get(view.board);
+        out.set(
+          view.diagramId,
+          board
+            ? boardGraph(
+                env,
+                planId,
+                { setup: board.setup, types: typesOf(board.head.itemTypes) },
+                items,
+                view.person,
+                view.filtered,
+              )
+            : null,
+        );
+      }
+      return out;
+    },
+    () => (room.roomEnv ? indexAppClient(room.roomEnv) : null),
+  );
 }

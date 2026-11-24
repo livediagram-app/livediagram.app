@@ -3,7 +3,7 @@
 // gone; a card that was never sent costing nothing.
 import { DatabaseSync } from 'node:sqlite';
 import { nodeItemSql } from '@liveworkspace/index-app/testing';
-import type { PlanCardChange } from '@liveworkspace/index-client';
+import { PLAN_CARDS_CHANGED_MAX, type PlanCardChange } from '@liveworkspace/index-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SentCards } from './sent-cards';
 
@@ -106,5 +106,17 @@ describe('sent cards', () => {
     store.changed(items([card('a', 'todo')], ['b']));
     await vi.runAllTimersAsync();
     expect(told).not.toHaveBeenCalled();
+  });
+
+  it("tells a burst past one call's cap as several calls, dropping none", async () => {
+    const { store, told } = cards();
+    const many = Array.from({ length: PLAN_CARDS_CHANGED_MAX + 5 }, (_, i) =>
+      card(`c${i}`, 'todo'),
+    );
+    store.changed(items(many));
+    await vi.runAllTimersAsync();
+    expect(told).toHaveBeenCalledTimes(2);
+    expect(told.mock.calls[0]![1]).toHaveLength(PLAN_CARDS_CHANGED_MAX);
+    expect(told.mock.calls[1]![1]).toHaveLength(5);
   });
 });

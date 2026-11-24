@@ -28,6 +28,10 @@ import { isAnthropicEgress } from './anthropic-egress';
 export type OauthServer<E extends OauthEnv> = {
   appBase: (env: E) => string;
   builtInClients: BuiltInClients;
+  // Told of each grant /oauth/complete accepts, with the minted token and the consent page's whole body, before the
+  // code goes back: liveworkspace's one MCP keeps the apps the person ticked (liveworkspace/docs/specs/021-mcp/mcp.md
+  // "Sign-in and per-app consent"). A product's MCP leaves it out.
+  onGrant?: (env: E, token: string, body: Record<string, unknown>) => Promise<void>;
 };
 
 // ---- KV record shapes (all short-lived) ----
@@ -347,6 +351,7 @@ export function registerOauthRoutes<E extends OauthEnv>(
         400,
       );
     await c.env.OAUTH_KV.delete(`session:${body.session}`);
+    if (server.onGrant) await server.onGrant(c.env, body.token, body);
     const code = randomId();
     const record: AuthCode = {
       token: body.token,

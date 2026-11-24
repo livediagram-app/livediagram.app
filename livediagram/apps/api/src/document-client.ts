@@ -5,6 +5,7 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
+import type { PlanTabOutcome, PlanTabWrite } from './document-room/plan-diagram-tab';
 import type { GraphTabOutcome, GraphTabWrite } from './document-room/graph-tab';
 import type {
   AutomationStepAnswer,
@@ -117,6 +118,8 @@ export type DocumentRoomClient = {
   notifyMention(input: MentionNotice): Promise<boolean>;
   // The index's reverse write of a connected tab (document-room/connected-tab.ts).
   addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  // View As Diagram's redraw of a plan's tab (document-room/plan-diagram-tab.ts).
+  drawPlanTab(write: PlanTabWrite): Promise<PlanTabOutcome>;
   // Send to Diagram's new or redrawn tab (document-room/graph-tab.ts).
   drawGraphTab(write: GraphTabWrite): Promise<GraphTabOutcome>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the
@@ -148,6 +151,7 @@ export function documentRoom(
     exportComments: () => room.exportComments(documentId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     addConnectedTab: (write) => room.addConnectedTab(documentId, write),
+    drawPlanTab: (write) => room.drawPlanTab(documentId, write),
     drawGraphTab: (write) => room.drawGraphTab(documentId, write),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     grantOwnImages: (ids, personId) => room.grantOwnImages(documentId, ids, personId),
@@ -190,6 +194,7 @@ export type DocumentRoomRpc = {
   exportComments(documentId: string): Promise<ExportCommentsResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
   addConnectedTab(documentId: string, write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
+  drawPlanTab(documentId: string, write: PlanTabWrite): Promise<PlanTabOutcome>;
   drawGraphTab(documentId: string, write: GraphTabWrite): Promise<GraphTabOutcome>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   grantOwnImages(documentId: string, ids: string[], personId: string): Promise<number>;

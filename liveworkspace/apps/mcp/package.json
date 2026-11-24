@@ -1,0 +1,36 @@
+{
+  "name": "@liveworkspace/mcp-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --inspector-port 9139 --port 3013 --var CONSENT_BASE_URL:http://localhost:3000",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "staging:check": "wrangler deploy --dry-run --env staging",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "eval": "esbuild eval/run.ts --bundle --platform=node --format=esm --packages=external --outfile=.wrangler/eval/run.mjs --log-level=warning && node .wrangler/eval/run.mjs",
+    "eval:snapshot": "node eval/snapshot.mjs",
+    "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@liveworkspace/api-kit": "workspace:*",
+    "@liveworkspace/mcp-kit": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "hono": "^4.13.19"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^1.13.0",
+    "@cloudflare/workers-types": "^5.20261118.1",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@types/node": "^26.6.6",
+    "oxlint": "^1.94.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.1",
+    "wrangler": "^4.164.0"
+  }
+}
