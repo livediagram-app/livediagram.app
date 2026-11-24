@@ -282,7 +282,7 @@ describe('expansion', () => {
     );
   });
 
-  it("ignores a kept state for a team the person is no longer in", async () => {
+  it('ignores a kept state for a team the person is no longer in', async () => {
     localStorage.setItem(EXPANDED_KEY, JSON.stringify(['team:GONE', 'team:T1']));
     const index = createFakeIndex({ folders: [folder('t1', 'Team Root', null, 'T1')] });
     page(index, { kind: 'home' }, [{ id: 'T1', name: 'Alpha' }]);

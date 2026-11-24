@@ -111,7 +111,8 @@ const rowOf = (target: EventTarget | null): HTMLElement | null =>
 const actionOf = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>('[data-row-action]') : null;
 // A finger or a pen: it never hovers a row, and the focus its tap gives one is not the keyboard's.
-const fingered = (pointerType: string | undefined) => pointerType === 'touch' || pointerType === 'pen';
+const fingered = (pointerType: string | undefined) =>
+  pointerType === 'touch' || pointerType === 'pen';
 /** How long after a finger's press the focus that arrives is that press's (a tap's synthetic mousedown focuses the
  *  row well inside it), so it marks nothing (blueprint page-tree.md "A tap never re-mounts what it lands on"). */
 export const TOUCH_FOCUS_MS = 1000;

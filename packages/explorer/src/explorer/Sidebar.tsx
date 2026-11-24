@@ -389,7 +389,9 @@ export function Sidebar() {
               icon={<TeamIcon />}
               tone="indigo"
               label={t.name}
-              selected={(view.kind === 'team' && view.id === t.id && !view.folderId) || inFolded(key)}
+              selected={
+                (view.kind === 'team' && view.id === t.id && !view.folderId) || inFolded(key)
+              }
               onActivate={() => navigate({ kind: 'team', id: t.id })}
               depth={0}
               dropTo={{ teamId: t.id, folderId: null }}
@@ -412,11 +414,7 @@ export function Sidebar() {
           );
         })}
         {/* While this browser holds anything (one-explorer.md "Offline, a Space"). */}
-        <ThisBrowserSpaceRow
-          expanded={expanded}
-          toggle={toggle}
-          rename={rename}
-        />
+        <ThisBrowserSpaceRow expanded={expanded} toggle={toggle} rename={rename} />
         {/* Shown while an invitation waits, or while its view is open, so the highlight never vanishes. */}
         {signedIn && (invites > 0 || view.kind === 'invites') ? (
           <SidebarRow
