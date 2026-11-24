@@ -50,6 +50,9 @@ export type PageRow = {
   // The page's icon as one plain key (pageIconKey: `e:🚀`, `i:rocket`), null for none: compared by value, so a row
   // renders only when its own icon changes (page-surface.md "The page icon").
   icon: string | null;
+  // A page with no icon among siblings that show one (an icon, or a connected file's app mark): it keeps the icon's
+  // place empty, so its title lines up with theirs (page-surface.md "The page icon"). False otherwise.
+  iconSlot: boolean;
   // Under a label filter (page-surface.md "The label filter"): a page shown only because a match sits under it, drawn
   // quieter than the matches. False with no filter.
   context: boolean;
@@ -78,12 +81,15 @@ export function visiblePageRows(
   const path: string[] = [];
   const counts = new Map<string | undefined, number>();
   const parents: (string | undefined)[] = [];
+  // The parents with at least one child that shows a mark before its title.
+  const marked = new Set<string | undefined>();
   for (const row of rows) {
     path.length = row.depth - 1;
     const parent = path[row.depth - 2];
     parents.push(parent);
     counts.set(parent, (counts.get(parent) ?? 0) + 1);
     path[row.depth - 1] = row.page.id;
+    if (pageIconKey(row.page.icon) !== null || connectionOf(row.page)) marked.add(parent);
   }
   const seen = new Map<string | undefined, number>();
   const out: PageRow[] = [];
@@ -113,6 +119,7 @@ export function visiblePageRows(
       connectionId: connection?.id ?? null,
       app: connection?.app ?? null,
       icon: pageIconKey(page.icon),
+      iconSlot: pageIconKey(page.icon) === null && !connection && marked.has(parent),
       context: only !== null && !only.has(page.id),
     });
   });

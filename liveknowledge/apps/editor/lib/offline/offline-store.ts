@@ -107,7 +107,13 @@ export function tabToSummary(
   orderIndex: number,
   at: number,
 ): TabSummary {
-  const summary = sharedTabToSummary(tab, documentId, orderIndex, at);
+  const summary: TabSummary = {
+    ...sharedTabToSummary(tab, documentId, orderIndex, at),
+    // Its verified state and its icon (verification.md "The fields", page-surface.md "The page icon"), as the
+    // server's summary carries them: without them every page but the open one came back unverified and iconless.
+    ...(tab.knowledge !== undefined ? { knowledge: tab.knowledge } : {}),
+    ...(tab.icon !== undefined ? { icon: tab.icon } : {}),
+  };
   // And its labels (page-surface.md "Page labels"), so the label filter reads the tree before the page's body loads.
   const labelled = tab.labels?.length ? { ...summary, labels: tab.labels } : summary;
   return tab.parent === undefined ? labelled : { ...labelled, parent: tab.parent };

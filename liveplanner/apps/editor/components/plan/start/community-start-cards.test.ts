@@ -26,7 +26,7 @@ const tile = (id: string, title: string, category = 'planning'): CommunityStartP
   authorName: 'Ada',
   line: 'A line.',
 });
-// Out of the categories' order on purpose: Finance comes before Projects and Teams, Something Else last.
+// Out of the categories' order on purpose: Finance comes before Projects, Something Else last.
 const posts = {
   other: [tile('o1', 'Odd Jobs', 'other')],
   planning: [tile('p1', 'Release Train'), tile('p2', 'Hiring Loop')],

@@ -47,20 +47,20 @@ the same ids, labels and descriptions, so a shared plan is found beside the temp
 `@liveplanner/templates` pins it to the template categories, so neither changes without the other. The id is stored;
 the label is shown; the description is the line the publish dialog shows for the chosen category.
 
-| id          | Label                   | For                                                |
-| ----------- | ----------------------- | -------------------------------------------------- |
-| `support`   | Customer Support        | Tickets, contact forms and what customers say.     |
-| `education` | Education               | Study plans, coursework and a class grade book.    |
-| `events`    | Events                  | Plans, guest lists and RSVPs for any occasion.     |
-| `finance`   | Finance                 | Budgets, invoices, expenses, loans and stock.      |
-| `hiring`    | Hiring and People       | Open roles, candidates and their first month.      |
-| `marketing` | Marketing               | Content and launches, planned to the day.          |
-| `meetings`  | Meetings                | Agendas, retros and the actions they lead to.      |
-| `personal`  | Personal                | Your week, goals, habits and household money.      |
-| `product`   | Product and Engineering | Sprints, bugs and feedback for product teams.      |
-| `planning`  | Projects and Teams      | Boards, trackers and goals that keep teams moving. |
-| `sales`     | Sales                   | Deals, contacts and the forecast they add up to.   |
-| `other`     | Something Else          | Anything that fits nowhere above.                  |
+| id          | Label            | For                                                |
+| ----------- | ---------------- | -------------------------------------------------- |
+| `support`   | Customer Support | Tickets, contact forms and what customers say.     |
+| `education` | Education        | Study plans, coursework and a class grade book.    |
+| `events`    | Events           | Plans, guest lists and RSVPs for any occasion.     |
+| `finance`   | Finance          | Budgets, invoices, expenses, loans and stock.      |
+| `hiring`    | Hiring           | Open roles, candidates and their first month.      |
+| `marketing` | Marketing        | Content and launches, planned to the day.          |
+| `meetings`  | Meetings         | Agendas, retros and the actions they lead to.      |
+| `personal`  | Personal         | Your week, goals, habits and household money.      |
+| `product`   | Product          | Sprints, bugs and feedback for product teams.      |
+| `planning`  | Projects         | Boards, trackers and goals that keep teams moving. |
+| `sales`     | Sales            | Deals, contacts and the forecast they add up to.   |
+| `other`     | Something Else   | Anything that fits nowhere above.                  |
 
 ## What a post shows
 

@@ -59,8 +59,8 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'hiring',
-    label: 'Hiring and People',
-    searchWords: 'hr recruiting',
+    label: 'Hiring',
+    searchWords: 'hr recruiting people',
     description: 'Open roles, candidates and their first month.',
   },
   {
@@ -83,14 +83,14 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'product',
-    label: 'Product and Engineering',
-    searchWords: 'software development agile',
+    label: 'Product',
+    searchWords: 'software development agile engineering',
     description: 'Sprints, bugs and feedback for product teams.',
   },
   {
     id: 'planning',
-    label: 'Projects and Teams',
-    searchWords: 'plan track project management',
+    label: 'Projects',
+    searchWords: 'plan track project management teams',
     description: 'Boards, trackers and goals that keep teams moving.',
   },
   {
@@ -136,7 +136,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'expense-report': 'finance',
   'loan-calculator': 'finance',
   inventory: 'finance',
-  // Hiring and People.
+  // Hiring.
   'hiring-pipeline': 'hiring',
   'job-application-form': 'hiring',
   // Marketing.
@@ -151,14 +151,14 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'habit-tracker': 'personal',
   'personal-goals': 'personal',
   'trip-planner': 'personal',
-  // Product and Engineering.
+  // Product.
   'project-planner': 'product',
   'sprint-board': 'product',
   'bug-triage': 'product',
   'feedback-board': 'product',
   'bug-report-form': 'product',
   'feature-request-form': 'product',
-  // Projects and Teams: running any team's work.
+  // Projects: running any team's work.
   kanban: 'planning',
   'task-tracker': 'planning',
   okrs: 'planning',

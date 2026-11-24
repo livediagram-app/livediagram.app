@@ -48,19 +48,19 @@ set (Logos & Branding, Wireframes & Mockups, Photo Edits, Social & Marketing, Po
 Illustrations) were moved by the service's migration (the platform spec's [Moving to the template
 categories](../../../../liveworkspace/docs/specs/007-community/community.md#moving-to-the-template-categories)).
 
-| id           | Label                  | For                                                |
-| ------------ | ---------------------- | -------------------------------------------------- |
-| `branding`   | Branding               | Logos, wordmarks, emblems and app icons.           |
-| `health`     | Health and Fitness     | Workouts, heart rate and activity on the wrist.    |
-| `media`      | Music and Video        | Music, podcast and video players, and galleries.   |
-| `photos`     | Photos                 | Photo edits, retouches and layered pictures.       |
-| `shopping`   | Shopping               | Stores, carts, checkouts and order tracking.       |
-| `onboarding` | Sign Up and Onboarding | First runs: welcome, sign up, verify, permissions. |
-| `social`     | Social and Messaging   | Feeds, stories, posts, chat and profiles.          |
-| `travel`     | Travel and Transport   | Flights, boarding passes, maps and rides.          |
-| `websites`   | Websites               | Landing pages, blogs, stores and help sites.       |
-| `work`       | Work and Productivity  | Dashboards, boards, tasks, calendars and inboxes.  |
-| `other`      | Something Else         | Anything that fits nowhere above.                  |
+| id           | Label          | For                                                |
+| ------------ | -------------- | -------------------------------------------------- |
+| `branding`   | Branding       | Logos, wordmarks, emblems and app icons.           |
+| `media`      | Entertainment  | Music, podcast and video players, and galleries.   |
+| `health`     | Health         | Workouts, heart rate and activity on the wrist.    |
+| `onboarding` | Onboarding     | First runs: welcome, sign up, verify, permissions. |
+| `photos`     | Photos         | Photo edits, retouches and layered pictures.       |
+| `shopping`   | Shopping       | Stores, carts, checkouts and order tracking.       |
+| `social`     | Social         | Feeds, stories, posts, chat and profiles.          |
+| `travel`     | Travel         | Flights, boarding passes, maps and rides.          |
+| `websites`   | Websites       | Landing pages, blogs, stores and help sites.       |
+| `work`       | Work           | Dashboards, boards, tasks, calendars and inboxes.  |
+| `other`      | Something Else | Anything that fits nowhere above.                  |
 
 The month's most liked posts in each category also show in the editor's template start, after that category's
 templates ([Start Making Pages "From the Community"](../007-editor/start-diagramming.md#from-the-community)).

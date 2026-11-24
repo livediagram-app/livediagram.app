@@ -31,7 +31,13 @@ import {
   type ItemTypeDef,
   type LabelUse,
 } from '@liveplanner/items';
-import { ChecklistEditor, DateField, EstimateSelect, PriorityPicker } from './item-field-editors';
+import {
+  ChecklistEditor,
+  DateField,
+  EstimateSelect,
+  PriorityPicker,
+  detailSelectClass,
+} from './item-field-editors';
 import { LabelsEditor } from './LabelsEditor';
 import { ParagraphField } from './ParagraphField';
 import { PersonPicker } from './PersonPicker';
@@ -266,7 +272,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           <Select
             id={id}
             className="w-full"
-            selectClassName={`text-[13px] font-medium ${phase ? 'pl-6' : ''}`}
+            selectClassName={detailSelectClass(!status, `font-medium ${phase ? 'pl-6' : ''}`)}
             disabled={disabled}
             value={status}
             onChange={(e) => void onSave('status', e.target.value || undefined)}

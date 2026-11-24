@@ -39,6 +39,19 @@ describe('dateCommit', () => {
 });
 
 describe('DateInput', () => {
+  it("mutes an empty date's mask as a placeholder, and keeps the caller's classes", () => {
+    const { rerender } = render(
+      <DateInput aria-label="Due" className="min-h-[34px]" value={undefined} onCommit={vi.fn()} />,
+    );
+    expect(field().className).toContain('[&::-webkit-datetime-edit]:text-slate-400');
+    expect(field().className).toContain('min-h-[34px]');
+    rerender(
+      <DateInput aria-label="Due" className="min-h-[34px]" value="2026-10-30" onCommit={vi.fn()} />,
+    );
+    expect(field().className).not.toContain('datetime-edit');
+    expect(field().className).toContain('min-h-[34px]');
+  });
+
   it('saves only the whole year when 30/10/2026 is typed a digit at a time', () => {
     const onCommit = vi.fn();
     render(<DateInput aria-label="Due" value={undefined} onCommit={onCommit} />);
