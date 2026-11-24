@@ -280,17 +280,43 @@ describe('the view tabs', () => {
     ).toBeTruthy();
   });
 
-  it('drops the short labels under 360 px, each link keeping its full name', () => {
+  it('drops the short label under 360 px on the open tab, each link keeping its full name', () => {
     renderInEditor(<KnowledgeViewTabs />);
-    for (const name of ['Pages', 'Ask', 'Insights', 'Connect MCP']) {
-      const a = link(name);
-      expect(a.getAttribute('aria-label')).toBe(name);
-      const short = a.querySelector('span.phone\\:inline');
-      expect(short?.className).toContain('phone:max-[359px]:hidden');
-      expect(a.closest('[data-knowledge-view-tab]')?.className).toContain('phone:max-[359px]:px-0');
-      expect(a.className).toContain('phone:max-[359px]:min-w-11');
-    }
+    const a = link('Pages');
+    expect(a.getAttribute('aria-label')).toBe('Pages');
+    const short = a.querySelector('span.phone\\:inline');
+    expect(short?.textContent).toBe('Pages');
+    expect(short?.className).toContain('phone:max-[359px]:hidden');
+    expect(a.closest('[data-knowledge-view-tab]')?.className).toContain('phone:max-[359px]:px-0');
+    expect(a.className).toContain('phone:max-[359px]:min-w-11');
   });
+
+  // page-surface.md "The footer": four labels and Connect's X ran under More at 390 px.
+  it.each(['pages', 'ask', 'insights', 'connect'] as const)(
+    'on a phone, with %s open, name only the open tab; the rest are 44 px icons named in full',
+    (view) => {
+      keyed(true);
+      window.history.replaceState(
+        null,
+        '',
+        view === 'pages' ? '/document/d1' : `/document/d1?view=${view}`,
+      );
+      renderInEditor(<KnowledgeViewTabs />);
+      const nav = screen.getByRole('navigation', { name: 'Knowledgebase Views' });
+      const shorts = [...nav.querySelectorAll('span.phone\\:inline')];
+      expect(shorts).toHaveLength(1);
+      expect(
+        shorts[0]!.closest('[data-knowledge-view-tab]')?.getAttribute('data-knowledge-view-tab'),
+      ).toBe(view);
+      for (const tab of nav.querySelectorAll('[data-knowledge-view-tab]:not([data-open])')) {
+        expect(tab.className).toContain('phone:px-0');
+        const a = tab.querySelector('a')!;
+        expect(a.className).toContain('phone:min-w-11');
+        expect(a.getAttribute('aria-label')).toBeTruthy();
+        expect(a.querySelector('span.phone\\:inline')).toBeNull();
+      }
+    },
+  );
 
   it.each(ROLES)('are offered to a session of the %s role', (role) => {
     renderInEditor(<KnowledgeViewTabs />, chromeValue(role));

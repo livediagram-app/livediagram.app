@@ -168,8 +168,10 @@ browser's.
   No button, no drag, no menu. Not offered (`useKnowledgeViewsOffered`), the `nav` is not drawn.
 - **The footer** (`BottomBar`) is a child of the editor's column under the canvas, 48 px and the bottom safe inset:
   the page's scroll container ends above it. Tabs, a spacer, then `ChromeControls`. On a phone (`phone`, the
-  editor's `isMobileViewport`) the tabs share the row at 44 px with their short names (`KNOWLEDGE_VIEWS[].short`;
-  the link keeps its full name as `aria-label`), `ChromeControls parts="bell"` follows, and `FooterMore` holds
+  editor's `isMobileViewport`) the tabs share the row at 44 px: the open tab with its short name
+  (`KNOWLEDGE_VIEWS[].short`, `phone:px-3`, gone under 360 px) and Connect's X, every other tab its icon in a
+  `min-w-11` square (`phone:px-0`, `KnowledgeViewTabs` `PHONE_TAB`/`PHONE_LINK`); each link keeps its full name as
+  `aria-label` and in its `HoverCard`. `ChromeControls parts="bell"` follows, and `FooterMore` holds
   `ChromeControls parts="rest"`: a button with `aria-expanded` and a `group` named More that opens above it, kept
   mounted while closed (`hidden`), closed by Escape (the focus back on the button) or a press outside.
 - **The top row** is `KnowledgeTopRow`: `--knowledge-top-row` tall (`globals.css`: 3rem, 3.5rem under the `phone`

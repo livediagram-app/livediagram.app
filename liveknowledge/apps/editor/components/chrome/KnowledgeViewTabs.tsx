@@ -96,6 +96,14 @@ export const OFFLINE_VIEW_WHY =
 export const offlineOff = (view: KnowledgeView, offline: boolean): boolean =>
   offline && view !== 'pages';
 
+// A phone's row (page-surface.md "The footer"): the open tab keeps its short name (and Connect's X), every other tab
+// is its icon in a 44 px square, so the row fits beside the notification list and More from 320 px up. Under 360 px
+// the open tab is its icon too.
+const PHONE_OPEN_TAB = 'phone:px-3 phone:max-[359px]:px-0';
+const PHONE_TAB = 'phone:px-0';
+const PHONE_OPEN_LINK = 'phone:max-[359px]:min-w-11 phone:max-[359px]:justify-center';
+const PHONE_LINK = 'phone:min-w-11 phone:justify-center';
+
 /** The four tabs, or nothing for a session that is not offered the views (useKnowledgeViewsOffered). */
 export function KnowledgeViewTabs() {
   const offered = useKnowledgeViewsOffered();
@@ -127,7 +135,7 @@ export function KnowledgeViewTabs() {
                 data-knowledge-view-tab={view}
                 data-open={open ? '' : undefined}
                 data-off={off ? '' : undefined}
-                className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} self-end phone:h-11 phone:min-w-0 phone:justify-center phone:px-3 phone:max-[359px]:px-0 ${closable ? 'pr-1! phone:pr-1!' : ''}`}
+                className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} self-end phone:h-11 phone:min-w-0 phone:justify-center ${open ? PHONE_OPEN_TAB : PHONE_TAB} ${closable ? 'pr-1! phone:pr-1!' : ''}`}
               >
                 {/* The card is the link's alone, so the X's own tooltip never sits under it. */}
                 <HoverCard
@@ -147,18 +155,21 @@ export function KnowledgeViewTabs() {
                     onClick={(event) =>
                       off ? event.preventDefault() : pressed(event, view, current, session)
                     }
-                    className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11 phone:max-[359px]:min-w-11 phone:max-[359px]:justify-center`}
+                    className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11 ${open ? PHONE_OPEN_LINK : PHONE_LINK}`}
                   >
                     <span aria-hidden className="flex shrink-0">
                       {ICONS[view]}
                     </span>
-                    {/* The full name, and a phone's short one (icon only under 360 px, where four labels no longer fit); the link is named by the full name either way. */}
+                    {/* The full name; on a phone the open tab's short one alone (icon only under 360 px), every other
+                        tab its icon. The link is named by the full name either way, and its card says it. */}
                     <span className={`${TAB_NAME_CLASS} phone:hidden`}>{label}</span>
-                    <span
-                      className={`${TAB_NAME_CLASS} hidden phone:inline phone:max-[359px]:hidden`}
-                    >
-                      {short}
-                    </span>
+                    {open ? (
+                      <span
+                        className={`${TAB_NAME_CLASS} hidden phone:inline phone:max-[359px]:hidden`}
+                      >
+                        {short}
+                      </span>
+                    ) : null}
                   </a>
                 </HoverCard>
                 {closable ? <ConnectTabClose /> : null}

@@ -329,7 +329,7 @@ Owner, 2026-11-20: "Pages, Ask and Insights should be represented like tabs in t
   button stand at its right end, always; the floating corner card is gone. The page scrolls under the row, never
   behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
   Share, so nothing stands over the reading column at any width.
-- On a phone the four tabs are the footer's row, icons with short labels (Pages, Ask, Insights, Connect), 44 px targets; under 360 px wide the labels go and the tabs are icons alone (each still named in full for a screen reader), so nothing overlaps at 320 px; the
+- On a phone the four tabs are the footer's row, 44 px targets: the open view's tab shows its icon and short label (Pages, Ask, Insights, Connect, with Connect's X when open), every other tab its icon alone, named in full for a screen reader and in its card (coordinator 2026-11-24: four labels and the X ran under More at 390 px). Under 360 px wide the open tab's label goes too, so nothing overlaps from 320 px up; the
   notification list stays beside them and the footer's other items go behind one **More** button. Its card opens above the Ask, Insights and Connect
   views too (at the popover layer), so Get Started, Tools and Settings stay in reach on every view. The top row
   there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's

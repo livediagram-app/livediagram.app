@@ -35,7 +35,8 @@ across all knowledgebases".
 
 - **The X.** While Connect MCP is the open tab, an **X** sits right of its name, inside the tab; on any other view
   the tab has no X. It is a button named "Hide Connect MCP", with the tooltip "Hide Connect MCP. Settings, Appearance
-  brings it back", a pointer cursor and the tabs' focus ring. On a phone it is the same, in the footer's view row.
+  brings it back", a pointer cursor and the tabs' focus ring. On a phone it is the same, in the footer's view row, where the open tab alone shows its name ("Connect") beside its X and
+  the other views show their icons ([The page surface](page-surface.md) "The footer").
 - **Pressing it** hides the tab and moves to **Pages** in place (the view's address is replaced, so Back does not
   return to a view that is gone), and turns off **Show Connect MCP**, an account setting of liveknowledge's own
   ([User preferences](../007-editor/user-preferences.md) `showConnectMcp`): the tab is gone in every knowledgebase,
