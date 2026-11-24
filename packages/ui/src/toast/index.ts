@@ -8,3 +8,6 @@ export * from './ToastBell';
 export * from './toast-floor';
 export * from './useToastFloor';
 export { TOAST_BELL_ATTR, TOAST_COLLAPSE_MS } from './toast-collapse';
+export * from './ToastNotice';
+export { holdNoticeSlot, noticeSlotHeld, onNoticeSlot } from './notice-slot';
+export { dialogOpenNow, subscribeDialogs, DIALOG_WATCH_MS } from './dialog-open';

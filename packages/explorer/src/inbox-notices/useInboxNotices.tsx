@@ -14,7 +14,7 @@ import { inboxCount, withoutSettled } from '../explorer/inbox/sections';
 import type { InboxData } from '../data/useInbox';
 import { settledStoreFor, type SettledStore } from '../data/inbox-settled';
 import { createNoticeCenter, type NoticeCenter } from './center';
-import { dialogOpenNow, subscribeDialogs } from './dialog-open';
+import { dialogOpenNow, subscribeDialogs } from '@liveworkspace/ui/toast';
 import { InboxNotice } from './InboxNotice';
 import { freshRows, noticeRows } from './rows';
 import { seenStoreFor, type SeenStore } from './seen';

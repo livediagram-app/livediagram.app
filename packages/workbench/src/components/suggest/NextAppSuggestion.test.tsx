@@ -5,7 +5,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureWorkbench, resetWorkbenchForTests, workbench } from '../../bindings';
-import { holdNoticeSlot } from '../../lib/notice-slot';
+import { holdNoticeSlot, ToastProvider } from '@liveworkspace/ui/toast';
 import { resetActivityForTests } from './suggest-activity';
 import { maySuggest, resetSuggestionMemoryForTests } from './suggest-memory';
 import { NextAppSuggestion } from './NextAppSuggestion';
@@ -60,6 +60,26 @@ function mount(
 }
 
 describe('NextAppSuggestion', () => {
+  // toasts.md "One place for everything that pops up" and "Stacked" (the owner, 2026-11-24).
+  it('sits in the toast stack in the stacked card: words at full width, its answers on the foot row', async () => {
+    render(
+      <ToastProvider>
+        <NextAppSuggestion id="make-plan" itemId="D1" allowed check={() => found()} />
+      </ToastProvider>,
+    );
+    await idle();
+    const card = document.querySelector<HTMLElement>('[data-suggestion="make-plan"]')!;
+    expect(screen.getByRole('region', { name: 'Notifications' }).contains(card)).toBe(true);
+    expect(card.getAttribute('data-toast-layout')).toBe('stacked');
+    expect(card.querySelector('[data-toast-title]')!.textContent).toBe('Make These a Plan');
+    const foot = card.querySelector('[data-toast-foot]')!;
+    expect(foot.contains(screen.getByRole('button', { name: 'Send to Plan' }))).toBe(true);
+    expect(foot.contains(screen.getByRole('button', { name: 'Don’t Suggest This Again' }))).toBe(
+      true,
+    );
+    expect(foot.lastElementChild!.textContent).toBe('Send to Plan');
+  });
+
   it('shows after an idle check, says what and why, and counts it shown once', async () => {
     const check = vi.fn(() => found());
     mount(check);

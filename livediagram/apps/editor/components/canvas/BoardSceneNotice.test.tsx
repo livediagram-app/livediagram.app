@@ -2,6 +2,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { noticeSlotHeld, ToastProvider } from '@liveworkspace/ui/toast';
 import { BoardSceneNotice } from './BoardSceneNotice';
 
 // docs/specs/020-import-export/board-scene.md "In the editor": the paste notice's copy and role.
@@ -62,5 +63,29 @@ describe('BoardSceneNotice', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
     fireEvent.keyDown(screen.getByRole('button', { name: 'Dismiss' }), { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  // liveworkspace/docs/specs/016-notifications/toasts.md "One place for everything that pops up".
+  it('sits in the toast stack, stacked, holding the notice slot while it shows', () => {
+    const notice = {
+      kind: 'refused' as const,
+      source: 'excalidraw' as const,
+      message: 'That file has no scene in it.',
+    };
+    const { rerender } = render(
+      <ToastProvider>
+        <BoardSceneNotice notice={notice} onClose={() => {}} />
+      </ToastProvider>,
+    );
+    const card = screen.getByTestId('board-scene-notice');
+    expect(screen.getByRole('region', { name: 'Notifications' }).contains(card)).toBe(true);
+    expect(card.getAttribute('data-toast-layout')).toBe('stacked');
+    expect(noticeSlotHeld()).toBe(true);
+    rerender(
+      <ToastProvider>
+        <BoardSceneNotice notice={null} onClose={() => {}} />
+      </ToastProvider>,
+    );
+    expect(noticeSlotHeld()).toBe(false);
   });
 });
