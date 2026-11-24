@@ -38,6 +38,7 @@ import { Body, Byline } from './InboxReaderBody';
 import { AccessRequestFailure, AccessRequestVerbs, useAccessAnswer } from './AccessRequestPane';
 import { KBD, PRIMARY, SECONDARY } from './pane-buttons';
 import { suggestionOffered } from './suggestion-answer';
+import { openInPlace } from './open-in-place';
 
 // A suggested edit's Accept, Dismiss and failure line load only when one is opened, off the Explorer's first load.
 const SuggestionActions = lazy(() =>
@@ -333,7 +334,11 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         ) : null}
         <Link
           href={href}
-          onClick={() => inboxHost?.onTelemetry?.('Selected', entry.kind)}
+          onClick={(e) => {
+            inboxHost?.onTelemetry?.('Selected', entry.kind);
+            // The open item's own place: a page load, or only the address would move (./open-in-place).
+            openInPlace(e, href);
+          }}
           className={canReply || primaryVerb || access || suggestionVerbs ? SECONDARY : PRIMARY}
         >
           <span ref={openRef} data-inbox-open="" className="inline-flex items-center gap-1.5">
