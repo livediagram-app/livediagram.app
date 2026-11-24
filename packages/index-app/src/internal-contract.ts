@@ -173,6 +173,9 @@ export type InternalItemHandlers = {
   automationTarget?: AutomationTargetHandler;
   // Send to Plan's cards made in this plan as the person (plan-send-door.ts), their grant checked. liveplanner alone.
   planSend?: PlanSendHandler;
+  // Start a Call Here (item-calls.md): this Space is a call about an item, its id kept by the room, which then tells
+  // the index who is in it. livehuddle alone; an app without it answers 404.
+  itemCall?: (spaceId: string, callId: string) => Promise<void>;
   // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
   // Community's sweep. An app without it answers 404.
   communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;

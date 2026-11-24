@@ -47,6 +47,7 @@ export type RoomClientHandlers<Op, Participant> = {
     itemId: string;
     sheetIds: string[];
     cards?: string[];
+    calls?: true;
   }) => void;
   // The collab key the room pinned on this session (docs/specs/013-workspace/share-roles.md "The collab key"),
   // sent to this socket alone after each hello: our answers and reactions are recorded under it.
@@ -147,7 +148,14 @@ type RoomClientIncoming<Op, Participant> =
     }
   | { kind: 'selection-released'; elementId: string; by: string }
   | { kind: 'followers'; ids: string[] }
-  | { kind: 'source-changed'; app: string; itemId: string; sheetIds: string[]; cards?: string[] }
+  | {
+      kind: 'source-changed';
+      app: string;
+      itemId: string;
+      sheetIds: string[];
+      cards?: string[];
+      calls?: true;
+    }
   | { kind: 'cursor'; epoch: string; seq: number; ref?: number }
   | { kind: 'format'; format: number; build?: string }
   | { kind: 'grant-renew'; expiresAt: number }
@@ -394,6 +402,7 @@ export function connectRoomClient<
             itemId: msg.itemId,
             sheetIds: msg.sheetIds,
             ...(Array.isArray(msg.cards) ? { cards: msg.cards } : {}),
+            ...(msg.calls === true ? { calls: true as const } : {}),
           });
         }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).

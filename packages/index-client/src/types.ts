@@ -18,6 +18,7 @@ import type {
 } from './constants';
 import type { InboxAccessRequest, InboxShare } from './access-requests';
 import type { InboxUpdate } from './updates';
+import type { InboxCallInvite } from './item-calls';
 
 export type ItemSummary = {
   elements?: number;
@@ -327,6 +328,8 @@ export type InboxResponse = {
   // A rule's Notify steps to the reader, newest first (automations.md "Steps in other apps"); absent from an index
   // before them.
   notices?: InboxAutomationNotice[];
+  // Invites to calls about items the reader reaches (item-calls.md "Invites"); absent from an index before them.
+  calls?: InboxCallInvite[];
 };
 
 // One Notify step's notice: the item whose rule sent it, the rule's name and its text.

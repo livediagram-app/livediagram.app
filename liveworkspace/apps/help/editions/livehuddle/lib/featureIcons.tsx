@@ -1,4 +1,5 @@
 import {
+  lucidePhone,
   lucideAppWindow,
   lucideBrushCleaning,
   lucideCalendarClock,
@@ -309,6 +310,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'send-to-plan': (
     <Glyph>
       <Prims prims={lucideSend} />
+    </Glyph>
+  ),
+  // A handset: Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md), a call about the open item.
+  'start-a-call': (
+    <Glyph>
+      <Prims prims={lucidePhone} />
     </Glyph>
   ),
   // Calls: the headphones the call strip shows a listener, and the camera its Camera button shows.

@@ -69,12 +69,14 @@ export type SheetRangeRead = SheetRangeDoorRead & {
 export type SheetList = { itemId: string; itemName: string; sheets: SheetListing[] };
 
 // What a reader app's door is told when a watched sheet changes: ids only, never values. A plan whose sent cards
-// changed (send-to-plan.md "The chip") names them in `cards`, with `sheetIds` then empty.
+// changed (send-to-plan.md "The chip") names them in `cards`, with `sheetIds` then empty. A call's Space whose people
+// changed (item-calls.md "Joining") says `calls`, with nothing else: the item reads its calls again.
 export type SourceChange = {
-  app: SheetSourceApp;
+  app: SheetSourceApp | 'livehuddle';
   itemId: string;
   sheetIds: string[];
   cards?: string[];
+  calls?: true;
 };
 
 // The most cards one change names (send-to-plan.md, PLAN_CARDS_CHANGED_MAX).
@@ -158,7 +160,13 @@ export function isSheetListing(v: unknown): v is SheetListing {
 
 // A change from a door's body, or null.
 export function readSourceChange(raw: unknown): SourceChange | null {
-  if (!isRecord(raw) || !isSheetSourceApp(raw.app) || !isSheetId(raw.itemId)) return null;
+  if (!isRecord(raw) || !isSheetId(raw.itemId)) return null;
+  // A call's Space: `calls` alone.
+  if (raw.app === 'livehuddle')
+    return raw.calls === true
+      ? { app: 'livehuddle', itemId: raw.itemId, sheetIds: [], calls: true }
+      : null;
+  if (!isSheetSourceApp(raw.app)) return null;
   const { sheetIds, cards } = raw;
   if (
     !Array.isArray(sheetIds) ||

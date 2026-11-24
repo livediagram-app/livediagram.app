@@ -22,6 +22,7 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
 import type { useSelectTab } from './useSelectTab';
 import type { documentIsPublic } from '@/lib/community-public';
+import { ItemCallButton } from '@liveworkspace/workbench/components/item-call/ItemCallButton';
 
 type EditorContextValue = ReturnType<typeof useEditorContext>;
 
@@ -64,6 +65,7 @@ export function editorViewHeader(
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
         approval={<ApprovalBadge corner />}
+        call={<ItemCallButton />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
         // The Share button's words wear who can see the document; hovering it shows the legend.

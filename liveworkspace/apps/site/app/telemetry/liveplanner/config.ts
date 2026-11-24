@@ -19,6 +19,7 @@ import { noun, type TelemetryAppConfig } from '../_shared/app';
 import { communityGroups } from '../_shared/community-groups';
 import { createCtaFunnel } from '../_shared/cta-funnel';
 import { SEND_TO_PLAN } from '../_shared/send-to-plan-metrics';
+import { ITEM_CALLS } from '../_shared/item-call-metrics';
 import { SNAPSHOTS, WALKTHROUGHS } from '../_shared/snapshot-walkthrough-metrics';
 import { createEventExplanation } from '../_shared/event-explanation';
 import type { RetiredCategory } from '../_shared/retired-explorer';
@@ -301,6 +302,7 @@ export const LIVEPLANNER: TelemetryAppConfig = {
           CONNECTED_TABS,
           SNAPSHOTS,
           SEND_TO_PLAN,
+          ITEM_CALLS,
           WALKTHROUGHS,
           EDITOR_SEARCH,
           EDITOR_CHROME,

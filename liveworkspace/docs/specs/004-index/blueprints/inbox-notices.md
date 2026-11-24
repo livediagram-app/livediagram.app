@@ -73,9 +73,13 @@ answers with one signature list the same Inbox.
   is the row's `firstAt`, which never moves, so the row's key is seen once and later changes folded into it never
   notify again. The place line is the item, then the page's name and `updateReason`'s label (`Expenses · Edited`).
   The card's icon is the eye.
+- `calls`: `call` (**invited you to a call**), who the inviter, the place the item; the card's icon is the video.
+- `notices`: `automation` (**sent you a notice**), who the rule's name (**An automation** when it has none), the quote
+  the text's first line, the place the item; the card's icon is the bolt.
 
-Keys are the Inbox list's (`threadKey`, `actionKey`, `updateKey`), `r:<id>` for a request, `s:<id>` for a share. A
-row's `href`: a thread, action or update, `<app's address>/explorer/inbox?at=<key>` (this app's own path when it is this app); a request or
+Keys are the Inbox list's (`threadKey`, `actionKey`, `updateKey`, `callKey` `k:<id>`, `noticeKey` `n:<id>`), `r:<id>` for a
+request, `s:<id>` for a share. A
+row's `href`: a thread, action, update, call invite or automation notice, `<app's address>/explorer/inbox?at=<key>` (this app's own path when it is this app); a request or
 a share, the item in its app (`APP_ITEMS[app].itemPath`).
 
 `freshRows(rows, seen, now)`: those whose `at` is after `seen.since`, within `NOTICE_MAX_AGE_MS` (24 h), and whose

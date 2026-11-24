@@ -58,6 +58,13 @@ import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
+import type {
+  CallInviteAsk,
+  CallSummaryAsk,
+  ItemCallStart,
+  ItemCallsRead,
+  SpaceCall,
+} from './item-calls';
 import type { PlanDataAsk, PlanDataListing, PlanDataRead } from './live-data';
 import type {
   Approval,
@@ -369,6 +376,37 @@ export function createIndexClient({
       }),
     newPlanForSend: (name: string) =>
       call<{ item: Item }>('/plan-sends/plans', { method: 'POST', body: { name } }),
+
+    // Start a Call Here (item-calls.md): start the item's call (or join the live one), the item's calls for its pill and
+    // Meetings, a Space's call for livehuddle's editor, and the call's summary and invites.
+    startItemCall: (itemId: string, share?: ShareAccess | null) =>
+      call<ItemCallStart>(`/items/${enc(itemId)}/calls`, { method: 'POST', body: {}, share }),
+    itemCalls: (itemId: string, options: RequestOptions & { share?: ShareAccess | null } = {}) =>
+      call<ItemCallsRead>(`/items/${enc(itemId)}/calls`, {
+        share: options.share ?? null,
+        signal: options.signal,
+      }),
+    spaceCall: (spaceId: string, options: RequestOptions & { share?: ShareAccess | null } = {}) =>
+      call<{ call: SpaceCall | null }>(`/items/${enc(spaceId)}/call`, {
+        share: options.share ?? null,
+        signal: options.signal,
+      }),
+    sendCallSummary: (spaceId: string, ask: CallSummaryAsk) =>
+      call<{ summary: { title: string; link: string } }>(`/items/${enc(spaceId)}/call/summary`, {
+        method: 'POST',
+        body: ask,
+      }),
+    callInvitePeople: (spaceId: string, share?: ShareAccess | null) =>
+      call<{ teamId: string | null; people: ApprovalCandidate[] }>(
+        `/items/${enc(spaceId)}/call/people`,
+        { share },
+      ),
+    inviteToCall: (spaceId: string, ask: CallInviteAsk, share?: ShareAccess | null) =>
+      call<{ invited: number }>(`/items/${enc(spaceId)}/call/invite`, {
+        method: 'POST',
+        body: ask,
+        share,
+      }),
 
     // Live data (live-data.md), on the person's own access: a plan's boards, metrics and filter values, and one board's
     // counts or one metric's rows now. `watch` as readSheetRange's.

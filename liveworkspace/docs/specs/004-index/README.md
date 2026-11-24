@@ -10,6 +10,7 @@ Follow the references below only as needed; never upfront.
 - ./sheet-sources.md - when a chart in one app draws from a sheet in another: the range read on each reader's own access, the door, the change signal, freezing
 - ./knowledge-sources.md - when a knowledgebase answers from other apps' items: the indexable-text door, the index's source, reach and likely routes, the change signal, each reader's own access
 - ./send-to-plan.md - when working on Send to Plan: a sticky, a comment, words or an action in any app made a liveplanner card as the person, the send's record, the live status chip, the picker, agents
+- ./item-calls.md - when working on Start a Call Here: a livehuddle call about any item in a new tab, one call an item, the live pill and Join, invites in the Inbox, the summary and actions after it, the item's Meetings in Tools
 - ./live-data.md - when a chart or table draws from a plan: Sheet ranges, board counts and dashboard metrics, Freeze, tables, the cards watch, bounds, agents
 - ./team-audit-log.md - when working on the team audit log: what a team's admins can look back on, how it is written, kept a year, anonymised and read
 - ./approvals.md - when working on approvals: asking named people to approve an item, their decisions, the badge, Changed Since Approval, who may approve (a Viewer included), the email, History and the audit log
