@@ -222,18 +222,18 @@ its own. A new piece takes its category's key in the same change as its palette 
 What people do in a Space with their characters is one stack, **In the Space**, on the Dashboard's Features group.
 Each event says that something happened, never who, where or which:
 
-| Chart               | Event                                  | Sent when                                                                                                                 |
-| ------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Avatar Pad Arrivals | `Canvas·Used·AvatarPadArrival`         | Walking starts on an [Avatar Pad](../009-elements/avatar-pad.md)                                                          |
-| Avatar Messages     | `Canvas·Used·AvatarMessage[Panel]`     | A speech bubble is said ([Avatar mode](../008-canvas/avatar-mode.md#speech-bubbles))                                      |
-| Avatar Actions      | `Canvas·Used·AvatarAction`             | A move is performed from the Avatar palette's Actions or its keys ([Avatar mode](../008-canvas/avatar-mode.md#telemetry)) |
-| Avatar Reactions    | `Canvas·Used·AvatarReaction`           | A burst is played from the Avatar palette's React or its keys ([Avatar mode](../008-canvas/avatar-mode.md#telemetry))     |
-| Sat Down            | `Canvas·Used·Sit`                      | A character sits on a seat ([Chair](../009-elements/chair.md#telemetry))                                                  |
-| Office Drinks       | `Canvas·Used·WaterCooler` and the rest | A drink is taken ([Office](../009-elements/office.md#telemetry))                                                          |
-| Bells and Pats      | `Canvas·Used·ReceptionBell`, `PatPet`  | The bell is rung, the dog patted ([Workday pieces](../009-elements/workday-pieces.md#telemetry))                          |
-| Ping-Pong Games     | `Canvas·Used·PingPong`                 | A game is played to its end ([Social pieces](../009-elements/social-pieces.md#telemetry))                                 |
-| Doors Swung         | `Canvas·Used·Door`                     | A door is swung ([Room builder](../009-elements/room-builder.md#telemetry))                                               |
-| Screens Opened      | `Canvas·Used·ScreenOpen`               | A Screen is opened large ([Screen and room sign](../009-elements/screen-and-room-sign.md#telemetry))                      |
+| Chart               | Event                                              | Sent when                                                                                                                          |
+| ------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Avatar Pad Arrivals | `Canvas·Used·AvatarPadArrival`                     | Walking starts on an [Avatar Pad](../009-elements/avatar-pad.md)                                                                   |
+| Avatar Messages     | `Canvas·Used·AvatarMessage[Panel]`                 | A speech bubble is said ([Avatar mode](../008-canvas/avatar-mode.md#speech-bubbles))                                               |
+| Avatar Actions      | `Canvas·Used·AvatarAction`                         | A move is performed from the Avatar palette's Actions or its keys ([Avatar mode](../008-canvas/avatar-mode.md#telemetry))          |
+| Avatar Reactions    | `Canvas·Used·AvatarReaction`                       | A burst is played from the Avatar palette's React or its keys ([Avatar mode](../008-canvas/avatar-mode.md#telemetry))              |
+| Sat Down            | `Canvas·Used·Sit`                                  | A character sits on a seat ([Chair](../009-elements/chair.md#telemetry))                                                           |
+| Office Drinks       | `Canvas·Used·WaterCooler` and the rest             | A drink is taken ([Office](../009-elements/office.md#telemetry))                                                                   |
+| Bells and Pats      | `Canvas·Used·ReceptionBell`, `PatPet`              | The bell is rung, the dog patted ([Workday pieces](../009-elements/workday-pieces.md#telemetry))                                   |
+| Ping-Pong Games     | `Canvas·Used·PingPong`                             | A game is played to its end ([Social pieces](../009-elements/social-pieces.md#telemetry))                                          |
+| Doors Swung         | `Canvas·Used·Door`                                 | A door is swung ([Room builder](../009-elements/room-builder.md#telemetry))                                                        |
+| Screens Opened      | `Canvas·Used·ScreenOpen`                           | A Screen is opened large ([Screen and room sign](../009-elements/screen-and-room-sign.md#telemetry))                               |
 | Screen Files        | `Element·Added·LiveEmbed`, `Canvas·Used·LiveEmbed` | A file is put on a Screen, and its live frame is shown ([Screen and room sign](../009-elements/screen-and-room-sign.md#telemetry)) |
 
 Travelling (a Portal, the stairs, an elevator, a Directory) and walking into a room are navigation, like panning, and

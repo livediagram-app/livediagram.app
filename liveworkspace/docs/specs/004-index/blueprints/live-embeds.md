@@ -196,20 +196,20 @@ originHost, kind }`.
 
 ## Constants and configuration
 
-| Constant                    | Value      | Where                      | Safe range        |
-| --------------------------- | ---------- | -------------------------- | ----------------- |
-| `LIVE_EMBEDS_MAX`           | 3          | live-embed-slots.ts        | 1 to 6            |
-| `LIVE_EMBED_VISIBLE_RATIO`  | 0.1        | useLiveEmbedSlot.ts        | 0.01 to 0.5       |
-| `LIVE_EMBED_SETTLE_MS`      | 400        | useLiveEmbedSlot.ts        | 100 to 1,000      |
-| `LIVE_EMBED_UNLOAD_MS`      | 2,000      | useLiveEmbedSlot.ts        | 500 to 10,000     |
-| `LIVE_EMBED_SESSION_TTL_MS` | 30 minutes | accounts route-kit.ts      | 5 to 60 minutes   |
-| `LIVE_NAME_MAX`             | 200        | element-model live-item.ts | as the index's    |
-| `LIVE_POSTER_MAX_EDGE`      | 480        | element-model live-item.ts | 240 to 960        |
-| `LIVE_POSTER_MAX_CHARS`     | 60,000     | element-model live-item.ts | 20,000 to 120,000 |
-| `LIVE_PICKER_CONNECTED_MAX` | 8          | LiveEmbedChooser.tsx       | 1 to 50           |
-| `LIVE_PICKER_SEARCH_MAX`    | 20         | useFileSearch.ts           | 10 to 50          |
-| `LIVE_PICKER_SEARCH_SETTLE_MS` | 250     | useFileSearch.ts           | 150 to 500        |
-| `EMBED_TOKEN_ID`            | `embed`    | accounts store-types.ts    | fixed             |
+| Constant                       | Value      | Where                      | Safe range        |
+| ------------------------------ | ---------- | -------------------------- | ----------------- |
+| `LIVE_EMBEDS_MAX`              | 3          | live-embed-slots.ts        | 1 to 6            |
+| `LIVE_EMBED_VISIBLE_RATIO`     | 0.1        | useLiveEmbedSlot.ts        | 0.01 to 0.5       |
+| `LIVE_EMBED_SETTLE_MS`         | 400        | useLiveEmbedSlot.ts        | 100 to 1,000      |
+| `LIVE_EMBED_UNLOAD_MS`         | 2,000      | useLiveEmbedSlot.ts        | 500 to 10,000     |
+| `LIVE_EMBED_SESSION_TTL_MS`    | 30 minutes | accounts route-kit.ts      | 5 to 60 minutes   |
+| `LIVE_NAME_MAX`                | 200        | element-model live-item.ts | as the index's    |
+| `LIVE_POSTER_MAX_EDGE`         | 480        | element-model live-item.ts | 240 to 960        |
+| `LIVE_POSTER_MAX_CHARS`        | 60,000     | element-model live-item.ts | 20,000 to 120,000 |
+| `LIVE_PICKER_CONNECTED_MAX`    | 8          | LiveEmbedChooser.tsx       | 1 to 50           |
+| `LIVE_PICKER_SEARCH_MAX`       | 20         | useFileSearch.ts           | 10 to 50          |
+| `LIVE_PICKER_SEARCH_SETTLE_MS` | 250        | useFileSearch.ts           | 150 to 500        |
+| `EMBED_TOKEN_ID`               | `embed`    | accounts store-types.ts    | fixed             |
 
 ## Presentation and UX
 
