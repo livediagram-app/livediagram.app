@@ -43,6 +43,15 @@ const INTEGRATIONS: Record<string, string[]> = {
   'Do I need an account to use livedesign?': ['liveworkspace'],
   // The one status page on liveworkspace.app checks every app's services, livedesign's among them.
   'Is livedesign up right now?': ['liveworkspace'],
+  // A design connects and embeds the other apps' files, sends cards to a plan, and keeps a chart in step with one.
+  'Does it work with my other liveworkspace apps?': [
+    'liveworkspace',
+    'liveplanner',
+    'livedocuments',
+  ],
+  'Can I show data, like a chart?': ['liveplanner'],
+  // A rule's step can make a card in a plan.
+  'Can routine steps happen on their own?': ['liveplanner'],
 };
 
 const entries = FAQ_CATEGORIES.flatMap((c) => [
