@@ -9,6 +9,7 @@ import { isNonThemePick } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { elementTourTokens } from '../element-tour-kinds';
+import { isSuggestionType } from '../../_shared/suggestion-metrics';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -136,8 +137,8 @@ export const MODE_OPTIONS = chart(
   'UI',
   'Changed',
   'Mode Options',
-  'Settings inside a canvas mode: eraser, laser, spotlight and format painter options.',
-  { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
+  'Settings inside a canvas mode: eraser, laser, spotlight, format painter and magnifier options.',
+  { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format|Magnifier)/.test(t ?? '') },
 );
 
 // The photo import (event storming): a wall photo read into sticky notes.
@@ -537,6 +538,7 @@ export const PALETTE_GROUPS_OPENED = chart(
       (type ?? '').endsWith('Group') ||
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
+      type === 'PhoneApps' ||
       type === 'ToolbarSearch' ||
       type === 'ToolbarSearchOtherModes' ||
       type === 'ToolbarSearchUnavailable',
@@ -566,6 +568,7 @@ const MODE_TITLES: Record<string, string> = {
   Spotlight: 'Spotlight',
   Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
+  Magnifier: 'Magnifier',
   Isometric: 'Isometric',
 };
 
@@ -833,6 +836,8 @@ OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram');
 // Diagrams and Plans' too (_shared/diagrams-and-plans-metrics.ts).
 OPENED_HOMES.push((t) => t !== null && DIAGRAMS_AND_PLANS_OPENED.has(t));
+// Suggestions have a stack each (_shared/suggestion-metrics.ts).
+OPENED_HOMES.push(isSuggestionType);
 OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');
 
 export const OTHER_OPENED = chart(

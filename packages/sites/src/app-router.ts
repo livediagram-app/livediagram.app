@@ -4,6 +4,7 @@
 // with `createAppRouter` once at module scope: its name, its editor's route segments, its help categories, its
 // oEmbed and Community steps, where /telemetry lands, and the redirects only it keeps for its old addresses.
 
+import { negotiatePage, requestFor } from '@liveworkspace/agent-markdown/negotiate';
 import type { AppName } from './index';
 import { applyCachePolicy } from './cache-policy';
 import { httpsRedirect } from './https-redirect';
@@ -401,7 +402,22 @@ export function createAppRouter<E extends AppRouterEnv, S>(
       url.pathname = helpPath;
       return Response.redirect(url.toString(), 308);
     }
-    return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
+    // The marketing pages answer their Markdown to a request that prefers it, with Vary: Accept either way
+    // (liveworkspace/docs/specs/010-site/markdown-for-agents.md); a request that does not ask for it takes the fast path.
+    return negotiatePage(
+      request,
+      url.pathname,
+      (path) =>
+        Promise.resolve(
+          forward(
+            requestFor(request, path),
+            new URL(path, url),
+            env.MARKETING,
+            env.MARKETING_ORIGIN,
+          ),
+        ),
+      () => forward(request, url, env.MARKETING, env.MARKETING_ORIGIN),
+    );
   }
 
   // Where this router's own redirects send `url`'s path, or null where none would: the bare domain's one hop lands

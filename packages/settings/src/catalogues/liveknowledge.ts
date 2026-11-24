@@ -105,6 +105,17 @@ export const CATALOGUE: AppCatalogue = {
       },
     },
     {
+      key: 'suggestNextApp',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'SuggestionsOn',
+        off: 'SuggestionsOff',
+      },
+    },
+    {
       key: 'telemetryEnabled',
       on: true,
       off: false,
@@ -117,6 +128,33 @@ export const CATALOGUE: AppCatalogue = {
     },
   ],
   categories: [
+    {
+      id: 'appearance',
+      label: 'Appearance',
+      aliases: ['editor', 'pages'],
+      tile: 'appearance',
+      rows: [
+        {
+          kind: 'toggle',
+          id: 'showConnectMcp',
+          label: 'Show Connect MCP',
+          description:
+            'The Connect MCP tab beside Pages, Ask and Insights in every knowledgebase. Its X turns this off.',
+          keywords:
+            'connect mcp tab footer ai app agent claude chatgpt cursor hide show close remove x views',
+          section: 'Interface',
+          key: 'showConnectMcp',
+          on: true,
+          off: false,
+          fallback: true,
+          event: {
+            category: 'UI',
+            on: 'ConnectMcpTabOn',
+            off: 'ConnectMcpTabOff',
+          },
+        },
+      ],
+    },
     {
       id: 'documents',
       label: 'Explorer',
@@ -212,7 +250,6 @@ export const CATALOGUE: AppCatalogue = {
           key: 'notifyWatchDigest',
           on: true,
           off: false,
-          // Off by default (docs/specs/030-knowledgebase/watching.md "The daily digest email").
           fallback: false,
           event: {
             category: 'UI',

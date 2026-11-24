@@ -15,7 +15,7 @@ admins and members. Anyone signed in can make one (up to 50 per account) and bec
 Explorer (`POST /api/account/teams`, by the session on liveworkspace.app or by the app's access token on an app's
 address and in its editor), or from an app's own API (`POST /api/account/internal/teams`, the app vouching for
 them with their access token, as it does for a token; `createTeamFor` in `@liveworkspace/auth-client`).
-Admins rename it, change its organisation, invite people by email, turn its join link on and off,
+Admins rename it, change its organisation, invite people by email, resend an invitation, turn its join link on and off,
 change roles (making someone else admin is how a team changes hands), remove people, clear
 answered invitations and delete it; anyone can leave. A team always keeps an admin: the last one
 can't step down or leave while others remain, and the last member leaving deletes the team.
@@ -38,13 +38,13 @@ team takes effect when the person's token is next minted.
 back `{ deleted }`: those of the ids, up to 100 a call, whose team is deleted (`deletedAt` set). A live team and an
 id that is no team are left out, so the service never deletes for a team that still stands.
 
-| Who may                                                        | Admin                                      | Member |
-| -------------------------------------------------------------- | ------------------------------------------ | ------ |
-| See the team, its members and invitations                      | ✓                                          | ✓      |
-| Invite by email, turn the join link on / off                   | ✓                                          |        |
-| Change a role, remove someone, withdraw or clear an invitation | ✓                                          |        |
-| Rename it, change its organisation, delete it                  | ✓                                          |        |
-| Leave                                                          | ✓ (not the last admin while others remain) | ✓      |
+| Who may                                                            | Admin                                      | Member |
+| ------------------------------------------------------------------ | ------------------------------------------ | ------ |
+| See the team, its members and invitations                          | ✓                                          | ✓      |
+| Invite by email, resend an invitation, turn the join link on / off | ✓                                          |        |
+| Change a role, remove someone, withdraw or clear an invitation     | ✓                                          |        |
+| Rename it, change its organisation, delete it                      | ✓                                          |        |
+| Leave                                                              | ✓ (not the last admin while others remain) | ✓      |
 
 **The team audit log.** A team's admins can look back on who joined, left or changed role, who shared a team document or
 made or revoked its links, which documents came in, went out or were deleted, and who added or removed its connections:
@@ -87,6 +87,25 @@ who invited them and when), for the account's verified address, in two indexed r
 (`src/internal-invitations.ts`). The app vouches for the account, as it does for settings, and
 remembers the answer for 30 seconds (`pendingInvitationsFor` in `@liveworkspace/auth-client`).
 
+**Who invited them, and when it ends.** The team's members read (`GET /api/account/teams/:id/members`) gives each
+row `invitedByName`, the inviter's display name as it is now (null when there is none, or the inviter's account is
+anonymised or closed), and `sentAt`, an open invitation's `clockStartedAt`, when its 28 days started (null for any
+other row). So the team page can say "Member · invited by Maya · ends in 5 days". Both come in the same one
+statement as the rest of the list.
+
+**Resending an invitation.** An admin can send an open invitation's email again: `POST
+/api/account/teams/:id/members/:member/resend`, on both doors. It sends the same invitation email the invite sends,
+with a fresh decline token, and starts the invitation over: its 28 days start again (`clockStartedAt = now`) and its
+reminders are cleared (`reminder1SentAt` to `reminder3SentAt`, `reminderAttempts`), so they run again from the new
+start. The decline links already sent keep working: the new token's hash is added to `declineTokenHashes`, which
+keeps the newest four. A member answers `403 admin_only`; someone not in the team, `404 not_found`; a row that is not
+an open, unexpired invitation of that team (joined, declined, removed, another team's, or past its 28 days),
+`404 invite_not_found`. An invitation sent (or resent) under 10 minutes ago answers `429 resend_too_soon`, so one
+admin can't flood an inbox. An expired invitation is closed, so it can't be resent: inviting the address again is
+the way, which replaces the closed row with a fresh invitation. The resend is counted as an invitation email is
+(`Email·Sent·TeamInvite`, and `Team·Changed·Invite`) and written to the audit log as `team_invite_sent`, with
+`detail.resent` `'1'`.
+
 An invitation turned down is `declined`. It grants nothing and counts toward nothing, but stays on
 the team's list so the admins can see the answer, until an admin clears it or invites the address
 again, which replaces it with a fresh invitation.
@@ -94,7 +113,7 @@ again, which replaces it with a fresh invitation.
 **Declining from the email.** Every invitation email (and every reminder) carries a Decline link,
 `/join/decline?token=<member id>.<secret>`, which works without an account or signing in. The
 secret is 32 random bytes; only its SHA-256 hash is kept, in the row's `declineTokenHashes` (at
-most four: the invitation and its three reminders). The token can read that one invitation's team
+most four, the newest: the invitation, its reminders and any resends). The token can read that one invitation's team
 name and state and decline it, nothing else. The page only reads (`GET`) until its button is
 pressed (`POST`), so a mail scanner opening the link changes nothing. Declining twice changes
 nothing; an expired invitation stays expired; a membership can't be undone this way (`409
@@ -118,9 +137,10 @@ Worker's hourly cron (`17 * * * *`, `sweepInvitations` in `src/teams.ts`):
    run inside it. At most 100 per stage a run; a failed send is tried again in the next run inside the
    window, three times at most (`reminderAttempts`).
 
-Reminders stop the moment the row is no longer `invited`.
+Reminders stop the moment the row is no longer `invited`. An admin [resending it](#invitations) starts it over:
+its clock starts again and its reminders run again from there.
 
-**Counting them.** Each invitation, reminder and answer email sent is counted on the telemetry
+**Counting them.** Each invitation (sent or resent), reminder and answer email sent is counted on the telemetry
 service as `Email·Sent·<kind>` (`TeamInvite`, `TeamInviteReminder1` to `3`, and `InviteResponse`
 for each admin told of an answer, the kinds the apps' own team emails used), under the app the
 invitation's sender [signed up through](#onboarding-emails), so that app's dashboard keeps its team
@@ -264,7 +284,7 @@ tells the index what happened to a team, marked as liveworkspace's:
 
 | Event                 | When                                                                                                  |
 | --------------------- | ----------------------------------------------------------------------------------------------------- |
-| `team_invite_sent`    | An admin invites an address                                                                           |
+| `team_invite_sent`    | An admin invites an address, or resends an invitation (`detail.resent` `'1'`)                         |
 | `team_joined`         | An invitation is accepted, or someone joins by the link                                               |
 | `team_declined`       | An invitation is turned down, on the site or from email                                               |
 | `team_role_changed`   | An admin makes a member an admin, or an admin a member                                                |
@@ -1667,12 +1687,13 @@ sessions and connects Google, a trade-off accepted on purpose
 | `GET /api/account/teams`                                       | their teams (counts and first four members each, one query) and the invitations waiting                              |
 | `POST /api/account/teams` `{ name, organisation? }`            | makes a team, with them as admin                                                                                     |
 | `PATCH` / `DELETE /api/account/teams/:id`                      | `{ name?, organisation? }` / deletes (admins)                                                                        |
-| `GET /api/account/teams/:id/members`                           | the team, their role, members and invitations, and `inviteLink` (admins)                                             |
+| `GET /api/account/teams/:id/members`                           | the team, their role, members and invitations (each with `invitedByName`, `sentAt`), and `inviteLink` (admins)       |
 | `POST` / `DELETE /api/account/teams/:id/invite-link`           | makes the join link anew / turns it off (admins)                                                                     |
 | `GET /api/account/join/:token`                                 | no session needed: the team a join link names                                                                        |
 | `POST /api/account/join/:token`                                | joins through the link, as a member                                                                                  |
 | `GET` / `POST /api/account/invitations/decline/:token`         | no session needed: reads / declines the invitation an email's Decline link names                                     |
 | `POST /api/account/teams/:id/members` `{ email, role }`        | invites an address and emails it (admins)                                                                            |
+| `POST /api/account/teams/:id/members/:member/resend`           | emails an open invitation again and restarts its 28 days (admins; at most once in 10 minutes)                        |
 | `PATCH /api/account/teams/:id/members/:member`                 | changes a role (admins)                                                                                              |
 | `DELETE /api/account/teams/:id/members/:member`                | removes someone (admins), or leaves (oneself)                                                                        |
 | `POST /api/account/invitations/:member/accept`                 | joins (the invited, verified address only)                                                                           |

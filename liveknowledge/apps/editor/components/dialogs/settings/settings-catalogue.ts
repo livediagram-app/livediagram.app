@@ -10,7 +10,7 @@ import type {
   SettingsIconId,
 } from '@liveworkspace/workbench/components/dialogs/settings/settings-icons';
 import type { TelemetryCategory } from '@liveknowledge/api-schema';
-import type { UserPreferences } from '@/lib/user-preferences';
+import { connectTabShown, type UserPreferences } from '@/lib/user-preferences';
 import {
   KNOWLEDGE_TOURS,
   KNOWLEDGE_TOUR_COPY,
@@ -397,6 +397,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, dockButtonNames: v }),
         event: { category: 'UI', on: 'DockButtonNamesOn', off: 'DockButtonNamesOff' },
       },
+      {
+        // The knowledgebase footer's Connect MCP tab (docs/specs/030-knowledgebase/mcp-connect.md "Closing the tab"):
+        // its own X turns this off, here it comes back. Yours alone, in every knowledgebase.
+        kind: 'toggle',
+        key: 'showConnectMcp',
+        keywords:
+          'connect mcp tab footer ai app agent claude chatgpt cursor hide show close remove x views',
+        section: 'Interface',
+        label: 'Show Connect MCP',
+        description:
+          'The Connect MCP tab beside Pages, Ask and Insights in every knowledgebase. Its X turns this off.',
+        read: (p) => connectTabShown(p),
+        write: (p, v) => ({ ...p, showConnectMcp: v }),
+        event: { category: 'UI', on: 'ConnectMcpTabOn', off: 'ConnectMcpTabOff' },
+      },
       // UI scale (docs/specs/007-editor/ui-scale.md): the working chrome only,
       // never the canvas, dialogs or menus. The master sets every part; each
       // part's row beneath it overrides that part alone.
@@ -560,6 +575,21 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'tour share invite people reactions comments makers work together',
         event: { category: 'UI', on: 'WorkTogetherTourSeenOff', off: 'WorkTogetherTourSeenOn' },
       }),
+      // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md "One switch for all"): every
+      // app's suggestions at once, the same switch in every app (the `all` scope).
+      {
+        kind: 'toggle',
+        key: 'suggestNextApp',
+        keywords:
+          'suggestions suggest offers tips nudges cross app plan knowledgebase other apps turn off quiet annoying',
+        section: 'Suggestions',
+        label: 'Suggest Other Apps',
+        description:
+          'Now and then, offers to carry what you are working on into another app, such as a retro’s actions into a plan. Off, no app suggests anything.',
+        read: (p) => p.suggestNextApp !== false,
+        write: (p, v) => ({ ...p, suggestNextApp: v }),
+        event: { category: 'UI', on: 'SuggestionsOn', off: 'SuggestionsOff' },
+      },
     ],
   },
   {

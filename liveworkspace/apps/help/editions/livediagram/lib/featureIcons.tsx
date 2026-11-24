@@ -1,5 +1,6 @@
 import {
   lucidePhone,
+  lucideCompass,
   lucideAppWindow,
   lucideBrushCleaning,
   lucideChartPie,
@@ -130,6 +131,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   spotlight: (
     <Glyph>
       <Prims prims={lucideLocateFixed} />
+    </Glyph>
+  ),
+  magnifier: (
+    <Glyph>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.2 15.2L21 21M10.5 7.5v6M7.5 10.5h6" />
     </Glyph>
   ),
   'isometric-mode': (
@@ -403,6 +410,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   'make-plan-cards': (
     <Glyph>
       <Prims prims={lucideWorkflow} />
+    </Glyph>
+  ),
+  // A compass: Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md), the way to the next app.
+  suggestions: (
+    <Glyph>
+      <Prims prims={lucideCompass} />
     </Glyph>
   ),
   // A handset: Start a Call Here (liveworkspace/docs/specs/004-index/item-calls.md), a call about the open item.

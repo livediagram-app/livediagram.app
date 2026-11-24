@@ -9,6 +9,7 @@ import {
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@liveworkspace/workbench/hooks/canvas/useSmallElementDoubleTap';
 import { useRef, ViewTransition } from 'react';
+import dynamic from 'next/dynamic';
 import { useFocusCanvasOnMount } from '@liveworkspace/workbench/hooks/canvas/useFocusCanvasOnMount';
 import { isAnimatedPattern } from '@livediagram/document';
 import { canvasMainStyle } from './canvas-main-style';
@@ -53,6 +54,11 @@ import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGesture
 import { useCanvasSelectHandlers } from '@liveworkspace/workbench/hooks/canvas/useCanvasSelectHandlers';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from '@liveworkspace/workbench/components/canvas/slide-transition';
 import { useStickyPeelVars } from '@liveworkspace/workbench/lib/sticky-peel-image';
+
+// The Magnifier's lens (docs/specs/008-canvas/magnifier.md), loaded the first time the mode is picked.
+const MagnifierLens = dynamic(() => import('./MagnifierLens').then((m) => m.MagnifierLens), {
+  ssr: false,
+});
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.
@@ -413,6 +419,12 @@ function CanvasView(props: CanvasProps) {
             setQuickRingOpen={setQuickRingOpen}
             drawDrag={drawDrag}
           />
+
+          {/* The Magnifier's lens (docs/specs/008-canvas/magnifier.md): after the drawn layer, so its copy of it
+          comes second in the document and paints over the canvas, under the chrome. */}
+          {canvasTool === 'magnifier' ? (
+            <MagnifierLens mainRef={mainRef} layerRef={wrapperRef} contentKey={elements} />
+          ) : null}
 
           {canvasToolOverlays({
             canvasTool,

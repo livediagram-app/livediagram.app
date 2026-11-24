@@ -1,8 +1,8 @@
 'use client';
 
-// A team's Audit Log, on its view under the team's library (liveworkspace/docs/specs/004-index/team-audit-log.md "The
-// Audit Log on a team's view"): the team's admins alone see it. Closed until opened, so nothing is read until asked
-// for. Open, it is the filters (Person, Event, From, To), Export CSV, and the rows under day bands, newest
+// A team's Audit Log tab (liveworkspace/docs/specs/004-index/team-audit-log.md "The Audit Log on a team's page"):
+// the team's admins alone see it. It is read when the tab opens: a note on what it records, the filters (Person,
+// Event, From, To) with the count and Export CSV in one card, then the rows under day bands in another, newest
 // first, a page at a time.
 
 import { useId, useMemo, useState } from 'react';
@@ -13,21 +13,30 @@ import {
   type TeamAuditEventType,
   isTeamAuditEventType,
 } from '@liveworkspace/index-client';
-import { Button, DateInput, EmptyState, GlyphDisc, Select } from '@liveworkspace/ui';
+import { Button, DateInput, EmptyState, GlyphDisc, PictureDisc, Select } from '@liveworkspace/ui';
+import { avatarFill } from '@liveworkspace/account-menu/initials';
+import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
 import { downloadBlob } from '@liveworkspace/ui/download-blob';
 import { MEDIUM_DATE, TIME } from '@liveworkspace/ui/date-format';
 import type { TeamMember } from '../../data/teams';
 import { memberName } from '../../teams/rules';
 import { auditIcon, ShieldIcon } from '../../library/event-icons';
 import { LIST_CARD, MUTED, SKELETON } from '../../ui/classes';
-import { ChevronDownIcon } from '../../ui/icons';
 import { HistoryIcon } from '../../ui/library-icons';
 import { useToast } from '../../ui/Toasts';
 import { siteOf } from '../../words';
 import { AppMark } from '../badges';
 import { useExplorer } from '../context';
 import { MoreFailed } from '../MoreFailed';
-import { auditDetail, auditGroups, auditSentence, dayRange, fileSlug, personWords } from './rows';
+import {
+  auditDetail,
+  auditGroups,
+  auditPill,
+  auditSentence,
+  dayRange,
+  fileSlug,
+  personWords,
+} from './rows';
 import { pickCsvSink } from './csv-sink';
 import { exportAuditCsv, streamAuditCsv, useAuditLog, type AuditFilter } from './useAuditLog';
 
@@ -36,7 +45,7 @@ export const AUDIT_LOG_TITLE = 'Audit Log';
 // The two selects at the date fields' height and 13px type, so the four filters line up in one row.
 const FILTER_SELECT = 'h-[34px] text-[13px]';
 
-/** The section, closed by default. Drawn only for a team admin; keyed on the team by its caller. */
+/** The tab's body. Drawn only for a team admin; keyed on the team by its caller. */
 export function AuditLog({
   teamId,
   teamName,
@@ -48,37 +57,19 @@ export function AuditLog({
   members: readonly TeamMember[];
   helpHref?: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const bodyId = useId();
   return (
-    <section className={LIST_CARD} data-audit-log={teamId}>
-      <h2 className="m-0">
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls={bodyId}
-          onClick={() => setOpen((was) => !was)}
-          className="flex w-full cursor-pointer items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-slate-800 transition duration-micro hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:text-slate-100 dark:hover:bg-slate-800/60"
-        >
-          <span className="text-emerald-600 dark:text-emerald-400" aria-hidden>
-            <ShieldIcon size={14} />
-          </span>
-          <span className="flex-1">{AUDIT_LOG_TITLE}</span>
-          <span className={`text-xs font-normal ${MUTED}`}>Admins only · kept a year</span>
-          <span
-            aria-hidden
-            className={`transition-transform duration-micro ${open ? 'rotate-180' : ''}`}
-          >
-            <ChevronDownIcon />
-          </span>
-        </button>
-      </h2>
-      {open ? (
-        <div id={bodyId} className="border-t border-slate-100 px-4 py-4 dark:border-slate-700/60">
-          <AuditBody teamId={teamId} teamName={teamName} members={members} helpHref={helpHref} />
-        </div>
-      ) : null}
-    </section>
+    <div className="flex flex-col gap-4" data-audit-log={teamId}>
+      <p className={`m-0 flex items-start gap-2 text-[13px] leading-normal ${MUTED}`}>
+        <span className="mt-0.5 text-emerald-600 dark:text-emerald-400" aria-hidden>
+          <ShieldIcon size={14} />
+        </span>
+        <span>
+          Only admins see the {AUDIT_LOG_TITLE}: who joined, left or changed role, what was shared,
+          moved or deleted, and every approval and connection. Kept for a year.
+        </span>
+      </p>
+      <AuditBody teamId={teamId} teamName={teamName} members={members} helpHref={helpHref} />
+    </div>
   );
 }
 
@@ -124,7 +115,13 @@ function AuditBody({
   const log = useAuditLog(client, query);
   const people = usePeopleOptions(members, log.events, filters.person, filters.personLabel);
   const days = useMemo(() => byDay(log.events), [log.events]);
+  const byUser = useMemo(
+    () => new Map(members.flatMap((m) => (m.userId ? [[m.userId, m] as const] : []))),
+    [members],
+  );
   const [exporting, setExporting] = useState<number | null>(null);
+  // On a phone the four fields fold behind Filters, so the rows start higher; from sm: they always show.
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const set = (patch: Partial<Filters>) => setFilters((was) => ({ ...was, ...patch }));
 
@@ -168,129 +165,142 @@ function AuditBody({
 
   return (
     <div className="flex flex-col gap-4">
-      <div
-        role="group"
-        aria-label="Filter the audit log"
-        className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,9rem)_minmax(0,9rem)]"
-      >
-        <div className="col-span-2 sm:col-span-1">
-          <label htmlFor={`${ids}-person`} className={FIELD_LABEL}>
-            Person
-          </label>
-          <Select
-            id={`${ids}-person`}
-            className="w-full"
-            selectClassName={FILTER_SELECT}
-            value={filters.person}
-            onChange={(e) => {
-              const id = e.target.value;
-              set({ person: id, personLabel: people.find((p) => p.id === id)?.label });
-            }}
-          >
-            <option value="">Everyone</option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div className="col-span-2 sm:col-span-1">
-          <label htmlFor={`${ids}-kind`} className={FIELD_LABEL}>
-            Event
-          </label>
-          <Select
-            id={`${ids}-kind`}
-            className="w-full"
-            selectClassName={FILTER_SELECT}
-            value={filters.kind}
-            onChange={(e) => {
-              const kind = e.target.value;
-              set({ kind: isTeamAuditEventType(kind) ? kind : '' });
-            }}
-          >
-            <option value="">All Events</option>
-            {groups.map((group) => (
-              <optgroup key={group.label} label={group.label}>
-                {group.kinds.map((kind) => (
-                  <option key={kind} value={kind}>
-                    {TEAM_AUDIT_EVENT_LABELS[kind]}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </Select>
-        </div>
-        <div className="min-w-0">
-          <label htmlFor={`${ids}-from`} className={FIELD_LABEL}>
-            From
-          </label>
-          <DateInput
-            id={`${ids}-from`}
-            compact
-            value={filters.from}
-            onCommit={(day) => set({ from: day })}
-          />
-        </div>
-        <div className="min-w-0">
-          <label htmlFor={`${ids}-to`} className={FIELD_LABEL}>
-            To
-          </label>
-          <DateInput
-            id={`${ids}-to`}
-            compact
-            value={filters.to}
-            onCommit={(day) => set({ to: day })}
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className={`m-0 text-xs ${MUTED}`} aria-live="polite">
-          {log.loading || log.error
-            ? ' '
-            : log.events.length === 0
-              ? 'No events'
-              : `${log.events.length.toLocaleString()}${log.hasMore ? '+' : ''} ${
-                  log.events.length === 1 ? 'event' : 'events'
-                }${filtered ? ' match' : ''}`}
-        </p>
-        <div className="flex items-center gap-1.5">
-          {filtered ? (
-            <Button variant="ghost" size="xs" onClick={() => setFilters(NO_FILTERS)}>
-              Clear Filters
-            </Button>
-          ) : null}
-          {helpHref ? (
-            <a
-              href={helpHref}
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="Help: the audit log"
-              title="Help"
-              className="relative touch-target-y inline-flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+      <div className={`${LIST_CARD} flex flex-col gap-3 p-4`}>
+        <div
+          role="group"
+          id={`${ids}-filters`}
+          aria-label="Filter the audit log"
+          className={`${filtersOpen ? 'grid' : 'max-sm:hidden sm:grid'} grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,9rem)_minmax(0,9rem)]`}
+        >
+          <div className="col-span-2 sm:col-span-1">
+            <label htmlFor={`${ids}-person`} className={FIELD_LABEL}>
+              Person
+            </label>
+            <Select
+              id={`${ids}-person`}
+              className="w-full"
+              selectClassName={FILTER_SELECT}
+              value={filters.person}
+              onChange={(e) => {
+                const id = e.target.value;
+                set({ person: id, personLabel: people.find((p) => p.id === id)?.label });
+              }}
             >
-              ?
-            </a>
-          ) : null}
-          <Button
-            variant="secondary"
-            size="xs"
-            busy={exporting !== null}
-            disabled={log.error !== null || (!log.loading && log.events.length === 0)}
-            title={
-              !log.loading && log.error === null && log.events.length === 0
-                ? 'Nothing to export'
-                : 'Save every event these filters match as a CSV file'
-            }
-            onClick={() => void exportCsv()}
-          >
-            {exporting === null
-              ? 'Export CSV'
-              : exporting > 0
-                ? `Exporting… ${exporting.toLocaleString()}`
-                : 'Exporting…'}
-          </Button>
+              <option value="">Everyone</option>
+              {people.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label htmlFor={`${ids}-kind`} className={FIELD_LABEL}>
+              Event
+            </label>
+            <Select
+              id={`${ids}-kind`}
+              className="w-full"
+              selectClassName={FILTER_SELECT}
+              value={filters.kind}
+              onChange={(e) => {
+                const kind = e.target.value;
+                set({ kind: isTeamAuditEventType(kind) ? kind : '' });
+              }}
+            >
+              <option value="">All Events</option>
+              {groups.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.kinds.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {TEAM_AUDIT_EVENT_LABELS[kind]}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </Select>
+          </div>
+          <div className="min-w-0">
+            <label htmlFor={`${ids}-from`} className={FIELD_LABEL}>
+              From
+            </label>
+            <DateInput
+              id={`${ids}-from`}
+              compact
+              value={filters.from}
+              onCommit={(day) => set({ from: day })}
+            />
+          </div>
+          <div className="min-w-0">
+            <label htmlFor={`${ids}-to`} className={FIELD_LABEL}>
+              To
+            </label>
+            <DateInput
+              id={`${ids}-to`}
+              compact
+              value={filters.to}
+              onCommit={(day) => set({ to: day })}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className={`m-0 text-xs ${MUTED}`} aria-live="polite">
+            {log.loading || log.error
+              ? ' '
+              : log.events.length === 0
+                ? 'No events'
+                : `${log.events.length.toLocaleString()}${log.hasMore ? '+' : ''} ${
+                    log.events.length === 1 ? 'event' : 'events'
+                  }${filtered ? ' match' : ''}`}
+          </p>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="secondary"
+              size="xs"
+              className="sm:hidden"
+              aria-expanded={filtersOpen}
+              aria-controls={`${ids}-filters`}
+              onClick={() => setFiltersOpen((was) => !was)}
+            >
+              {filtered ? 'Filters On' : 'Filters'}
+            </Button>
+            {filtered ? (
+              <Button variant="ghost" size="xs" onClick={() => setFilters(NO_FILTERS)}>
+                Clear Filters
+              </Button>
+            ) : null}
+            {helpHref ? (
+              <a
+                href={helpHref}
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="Help: the audit log"
+                title="Help"
+                className="relative touch-target-y inline-flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+              >
+                ?
+              </a>
+            ) : null}
+            <Button
+              variant="secondary"
+              size="xs"
+              busy={exporting !== null}
+              disabled={log.error !== null || (!log.loading && log.events.length === 0)}
+              title={
+                !log.loading && log.error === null && log.events.length === 0
+                  ? 'Nothing to export'
+                  : 'Save every event these filters match as a CSV file'
+              }
+              onClick={() => void exportCsv()}
+            >
+              {exporting === null
+                ? 'Export CSV'
+                : exporting > 0
+                  ? `Exporting… ${exporting.toLocaleString()}`
+                  : 'Exporting…'}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -336,26 +346,31 @@ function AuditBody({
         )
       ) : (
         <div className="flex flex-col gap-3">
-          {days.map((day) => (
-            <section key={day.key} aria-label={day.label} data-audit-day={day.key}>
-              <h3
-                className={`m-0 mb-1 px-1 text-xs font-semibold text-slate-600 dark:text-slate-300`}
-              >
-                {day.label}
-              </h3>
-              <ul className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 dark:divide-slate-700/60 dark:border-slate-700">
-                {day.events.map((event) => (
-                  <AuditRow key={event.id} event={event} teamId={teamId} />
-                ))}
-              </ul>
-            </section>
-          ))}
+          <div className={LIST_CARD}>
+            {days.map((day) => (
+              <section key={day.key} aria-label={day.label} data-audit-day={day.key}>
+                <h3 className="m-0 border-b border-slate-100 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 dark:border-slate-700/60 dark:bg-slate-900/40 dark:text-slate-300">
+                  {day.label}
+                </h3>
+                <ul className="m-0 list-none divide-y divide-slate-100 p-0 dark:divide-slate-700/60 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-slate-100 dark:[&:not(:last-child)]:border-slate-700/60">
+                  {day.events.map((event) => (
+                    <AuditRow
+                      key={event.id}
+                      event={event}
+                      teamId={teamId}
+                      person={event.actor ? byUser.get(event.actor.id) : undefined}
+                    />
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
           {log.moreFailed ? (
             <MoreFailed onRetry={log.loadMore} loading={log.loadingMore} />
           ) : log.hasMore ? (
             <div className="flex justify-center">
               <Button variant="secondary" size="xs" busy={log.loadingMore} onClick={log.loadMore}>
-                {log.loadingMore ? 'Loading…' : 'Show More'}
+                {log.loadingMore ? 'Loading…' : 'Show Older Events'}
               </Button>
             </div>
           ) : null}
@@ -365,20 +380,49 @@ function AuditBody({
   );
 }
 
-function AuditRow({ event, teamId }: { event: TeamAuditEvent; teamId: string }) {
-  const line = auditSentence(event, teamId);
+function AuditRow({
+  event,
+  teamId,
+  person,
+}: {
+  event: TeamAuditEvent;
+  teamId: string;
+  /** The actor as a member of the team, for their picture and colour. */
+  person?: TeamMember;
+}) {
+  // The index keeps no names of people: its rows take the member's name from the team's list.
+  const named =
+    event.actor && !event.actor.name?.trim() && person
+      ? { ...event, actor: { ...event.actor, name: memberName(person, false) } }
+      : event;
+  const line = auditSentence(named, teamId);
   const detail = auditDetail(event);
   const at = new Date(event.occurredAt);
   const app = isApp(event.app) ? event.app : null;
+  const who = personWords(named.actor);
+  const pill = auditPill(event.type);
   return (
-    <li className="flex items-start gap-3 px-3 py-2.5" data-audit-event={event.id}>
-      <GlyphDisc
-        aria-hidden
-        size={28}
-        className="mt-0.5 bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
-      >
-        {auditIcon(event.type)}
-      </GlyphDisc>
+    <li className="flex items-start gap-3 px-4 py-3" data-audit-event={event.id}>
+      {event.actor && event.actor.id !== 'deleted' && who !== 'Someone' ? (
+        <PictureDisc
+          aria-hidden
+          pictureUrl={person?.picture ?? null}
+          name={who}
+          size={30}
+          style={{ backgroundColor: avatarFill(who, person?.color) }}
+          className="mt-0.5 flex shrink-0 text-[11px] font-semibold text-white"
+        >
+          {personInitials(who, null)}
+        </PictureDisc>
+      ) : (
+        <GlyphDisc
+          aria-hidden
+          size={30}
+          className="mt-0.5 bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+        >
+          {auditIcon(event.type)}
+        </GlyphDisc>
+      )}
       <div className="min-w-0 flex-1">
         <p className="m-0 text-sm leading-snug text-slate-700 dark:text-slate-200">
           <bdi className="font-semibold text-slate-900 dark:text-slate-100">{line.who}</bdi>{' '}
@@ -393,15 +437,16 @@ function AuditRow({ event, teamId }: { event: TeamAuditEvent; teamId: string }) 
           ) : null}
           {line.after ? ` ${line.after}` : null}
         </p>
-        <p className={`m-0 mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs ${MUTED}`}>
-          <span>{TEAM_AUDIT_EVENT_LABELS[event.type]}</span>
-          {detail ? (
-            <>
-              <span aria-hidden>·</span>
-              <bdi>{detail}</bdi>
-            </>
-          ) : null}
-          <span aria-hidden>·</span>
+        <p className={`m-0 mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs ${MUTED}`}>
+          <span
+            data-audit-pill={pill}
+            className="rounded-full bg-slate-100 px-2 py-px text-[11px] font-medium text-slate-600 ring-1 ring-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:ring-slate-600"
+            title={TEAM_AUDIT_EVENT_LABELS[event.type]}
+          >
+            <span className="text-optical-line">{pill}</span>
+          </span>
+          {detail ? <bdi>{detail}</bdi> : null}
+          {detail ? <span aria-hidden>·</span> : null}
           <span className="inline-flex items-center gap-1">
             {app ? <AppMark app={app} size={12} /> : null}
             <span aria-hidden={app ? true : undefined}>

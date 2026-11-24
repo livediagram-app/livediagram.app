@@ -55,7 +55,7 @@ Automatically Open Explorer setting, mirrored into the cookie by the editor and 
 | `/explorer/*`                                                                                                                                                                                | liveworkspace's Explorer, address bar unchanged ("The Explorer on livediagram.app" below)                                                                                                                                           |
 | live page routes: `/auth/*`, `/document/*`, `/email-optout`, `/embed/*`, `/get-started`, `/import`, `/join`, `/new`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                                                                                                                                                   |
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                                             | 308 redirect to `/help/<path>`                                                                                                                                                                                                      |
-| everything else                                                                                                                                                                              | marketing app (`apps/marketing`)                                                                                                                                                                                                    |
+| everything else                                                                                                                                                                              | marketing app (`apps/marketing`); a page's Markdown to a request that prefers `text/markdown`, with `Vary: Accept` on every page ([Markdown for agents](../../../../liveworkspace/docs/specs/010-site/markdown-for-agents.md))      |
 
 The editor app serves at **clean URLs**: there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livediagram/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip: the editor worker's `out/` files are already prefix-free).
 
@@ -121,7 +121,7 @@ In production the Worker has four **service bindings**, one to each downstream a
 // sketch, real source: ../packages/sites/src/app-router.ts (createAppRouter, the one router every app runs),
 // bound to this app in apps/router/src/index.ts
 // LIVE_ROUTE_SEGMENTS (packages/api-schema/src/page-views.ts): auth, document, embed, explorer, form, get-started,
-// import, join, new, oauth, offline, sign-in
+// import, join, new, offline, sign-in
 // Before these: routeCommunity, routeToWorkspace, the previews, /api/index/* and /api/drive/* (above).
 export default {
   async fetch(request, env) {

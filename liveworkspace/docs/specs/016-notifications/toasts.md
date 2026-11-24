@@ -19,7 +19,34 @@ example content): those are part of the editor's chrome.
 
 Each product keeps its own copy rules for naming what a toast acted on (its `docs/specs/004-interface-design/toasts.md`).
 
-## One line by default
+## One place for everything that pops up
+
+Everything that floats up to tell the person something sits in **the one toast stack, bottom centre**, and wears the
+one toast card (`ToastCard`): every toast, and the **notices** that are not toasts but say something on their own
+time (the owner, 2026-11-24: "all toasts / notifications should appear in the same place, not randomly at the top of
+the screen"):
+
+- **Inbox notices** ([Inbox notices](../004-index/inbox-notices.md)): a new mention, comment, card or request.
+- **Suggestions** ([Suggestions](./suggestions.md)): Make These a Plan, Write It Up and the rest.
+- **The paste notice** (livediagram's board scenes): what a paste from Excalidraw or Microsoft Whiteboard changed.
+- **Google Drive sync is paused** ([Drive](../005-drive/drive.md)), with Reconnect, in the Explorer.
+- **You're on Pro** ([Subscription](../019-subscription/subscription.md) "Back from the checkout"), which keeps its own
+  ink card: the one celebration in the stack.
+
+Nothing pops up at the top of the screen, in a corner or over the canvas's middle. A notice keeps its own rules (when
+it shows, how long it stays, what closing it means); only where and how it looks are the toast's. It is not one of the
+three toasts the stack holds at most, it never collapses into the bell and it is not written to the notification
+list (the Inbox and the suggestion's own memory keep it). In the stack, notices sit above the toasts, so the newest
+toast is still nearest the bottom edge. A notice waits, undrawn, while a dialog is open over the page, so it never
+sits on a dialog (a phone's bottom sheet above all); a toast still shows over a dialog, as a failure must.
+
+**One floating notice at a time** (the notice slot): an Inbox notice, the paste notice and Nothing in View each hold
+the slot while they show, and a suggestion shows only while nothing holds it ([Suggestions](./suggestions.md) "One at a
+time").
+
+The editor's top-centre pills and palette trays are not notices and stay where they are: they are chrome.
+
+## One line by default, stacked when there is more to say
 
 A toast reads as one line: **icon, message, actions, close**, left to right. A short message with its action
 ("“Roadmap” moved to the Trash", Undo) is a single row, never a card with its button stacked underneath. It wraps only
@@ -29,6 +56,27 @@ under it), and only then do the actions drop to a row of their own under it, ali
 
 **Every toast keeps one width.** A message that has to sit on one line is written short enough for it, never given a
 wider card (the owner, 2026-11-20, of the guest sign-in toast).
+
+**Stacked, when there is more to say** (the owner, 2026-11-24, of Make These a Plan on a phone: "this toast could have
+the button Send to Plan at the bottom, which frees up a lot of wasted space on the right that the text could move
+into"). A card with a **title**, a second row of its own (a switch, a quiet answer such as Don't Suggest This Again, a
+list of rows) or more than one paragraph never squeezes its words beside its buttons. It reads top to bottom:
+
+1. **The icon, the title and the close** on the first line. The close stays in the top corner, and only the first
+   line runs short of it: every line under it takes the card's full width.
+2. **The message** under the title, at the card's full width (less the icon's column), so a two-line message stays two
+   lines, not four.
+3. **What else it holds** (a list of rows, a place in small text), each at full width.
+4. **The actions on a row of their own at the foot**, aligned to the end, the toast's own text buttons (the primary
+   in the brand colour, rose for a destructive one, a secondary in slate) standing 24px tall (44px to tap on a touch
+   screen), so the row costs little more than the line of words it replaces; a switch (Remember My Choice) or a quiet
+   answer (Don't Suggest This Again, in small slate text) at the row's start. Where the row runs out of room, the
+   answers wrap under the switch.
+
+A stacked card is as tall as its words, never taller: a phone's Make These a Plan went from title, action and close
+over a three-line column with Don't Suggest This Again under it, to the title and close, two full lines and one foot
+row, and is shorter for it. From 640px it is as wide as its words, at least 20rem (so its foot row has room) and at most 36rem, the toast's own widest, so a message that fits on one line stays one line; on a phone it spans the screen, as every toast does. A plain toast, one
+short message with its buttons, never stacks: it keeps the one row above, however its words wrap.
 
 The copy is written to fit. A message is one short sentence, or two very short ones: what happened, then what to do
 ("Couldn't duplicate that canvas. Try again."). Aim for about 50 characters, so it sits on one line on a laptop with
@@ -77,7 +125,7 @@ Storage** (each product's `docs/specs/009-elements/images.md` "Deleting an unuse
 can't be undone, and timing out or closing it is the safe answer.
 
 **A switch on a toast** (an action toast's `toggle`): one iOS-style switch, the house `Switch`, on a row of its own
-under the message, its words beside it as its label, for an answer the person may want to stop being asked: "Remember
+at the start of the foot row under the message (so the toast is stacked, its answers at the row's end), its words beside it as its label, for an answer the person may want to stop being asked: "Remember
 My Choice" on the unused-picture offer. It starts off each time the toast appears, is read only when an answer is
 pressed, and flipping it answers nothing: it neither closes the toast nor counts as seeing it, and the toast's timer
 pauses while it has focus or the pointer, as for the buttons. Closing the toast or letting it time out with the switch
@@ -169,7 +217,9 @@ A toast is easy to miss. Every one is also written to a list the person can open
 
 ## Placement
 
-- **Bottom centre.** The newest sits nearest the bottom edge, older ones above it, 8px apart.
+- **Bottom centre, for everything.** The newest toast sits nearest the bottom edge, older ones above it, and any
+  notice (an Inbox notice, a suggestion, the paste notice) above those, 8px apart. Nothing else that pops up has a
+  place of its own.
 - **Desktop and tablet** (from 640px): each toast is as wide as its content, at most 36rem (576px).
 - **Phone** (under 640px): each toast spans the screen, 16px in from each side, or clear of a landscape notch where
   that is wider.
@@ -239,6 +289,5 @@ not make, because the feature never raises one for them.
 
 ## Out of scope
 
-- The paste notice (livediagram's board scenes) keeps its own surface beside the pasted content.
 - The canvas's screen-reader announcements are a separate, unconditional live region; a toast is not a substitute.
 - The editor's top-centre pills and palette trays, as above.

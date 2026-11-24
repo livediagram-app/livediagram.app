@@ -23,6 +23,7 @@ import {
   EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
+  MagnifierIcon,
   LaserIcon,
   PanIcon,
   SelectIcon,
@@ -38,6 +39,7 @@ const MODE_ICON: Record<ButtonMode, React.ReactNode> = {
   spotlight: <SpotlightIcon />,
   eraser: <EraserIcon />,
   format: <FormatPainterIcon />,
+  magnifier: <MagnifierIcon />,
   isometric: <IsometricIcon />,
 };
 

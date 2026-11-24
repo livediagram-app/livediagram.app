@@ -6,6 +6,7 @@
 liveworkspace/                 git root, one pnpm workspace, one lockfile, one turbo.json
 ├─ packages/                   shared by every product (@liveworkspace/*)
 │  ├─ account-menu             the signed-in account menu, for liveworkspace.app and every app
+│  ├─ agent-markdown           Markdown for agents (liveworkspace/docs/specs/010-site/markdown-for-agents.md): the Accept negotiation the site's, the help centre's and the routers' Workers run, and the build step that writes each page's Markdown and /llms.txt
 │  ├─ agent-verbs              the parts of every product's CLI and MCP verbs that read no element union: addressing, refusals, argv lines
 │  ├─ ai                       the one model call every app's server makes (liveworkspace/docs/specs/003-accounts/ai-keys.md): the providers and their models, the provider-neutral request, `callModel` over built-in Workers AI, Anthropic and OpenAI (streamed), their failures in words, the key check and the fixed provider hosts
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)

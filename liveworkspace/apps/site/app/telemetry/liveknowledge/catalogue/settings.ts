@@ -60,6 +60,13 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     'Button Labels',
     'Names beside the bottom-right buttons’ icons on a wide desktop.',
   ),
+  toggle(
+    'UI',
+    'ConnectMcpTabOn',
+    'ConnectMcpTabOff',
+    'Show Connect MCP',
+    'The footer’s Connect MCP tab, hidden by its X or switched back in Settings.',
+  ),
   changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons’ size slider.', true),
   changed('UiScalePanels', 'Panel Scale', 'The panels’ own size slider.', true),
   changed('UiScaleToolbar', 'Toolbar Scale', 'The toolbar’s own size slider.', true),
@@ -110,6 +117,14 @@ export const TOURS_SETTINGS = settingsStack(
   'Getting Started Settings',
   'The Get Started tours switched back on or off.',
   [
+    // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md), the same switch in every app.
+    toggle(
+      'UI',
+      'SuggestionsOn',
+      'SuggestionsOff',
+      'Suggest Other Apps',
+      'Every app\u2019s suggestions switched on or off at once.',
+    ),
     {
       category: 'UI',
       action: 'Toggled',

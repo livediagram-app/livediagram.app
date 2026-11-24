@@ -15,6 +15,10 @@
 
 import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
 import { SEND_TO_DIAGRAM_EXACT, SENT_DIAGRAM_EXACT } from '../_shared/send-to-diagram-metrics';
+import {
+  SUGGESTIONS_SWITCH_EXACT,
+  SUGGEST_ADD_TO_KNOWLEDGEBASE_EXACT,
+} from '../_shared/suggestion-metrics';
 import { ITEM_CALL_EXACT } from '../_shared/item-call-metrics';
 import {
   SNAPSHOT_BY_ACTION,
@@ -34,6 +38,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   ...SEND_TO_PLAN_EXACT,
   ...SEND_TO_DIAGRAM_EXACT,
   ...SENT_DIAGRAM_EXACT,
+  ...SUGGESTIONS_SWITCH_EXACT,
+  ...SUGGEST_ADD_TO_KNOWLEDGEBASE_EXACT,
   ...ITEM_CALL_EXACT,
   ...WALKTHROUGH_EXACT,
   ...LIBRARY_EXACT,
@@ -1115,6 +1121,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",
   'UI|Opened|ThemePicker': "Someone opened the tab's look-and-feel dialog on its Theme tab.",
+  'UI|Opened|PhoneApps':
+    'On a phone, someone opened the Apps drawer from the menu card (Explorer, Call, Share, Inbox and the account).',
   'UI|Opened|ToolbarExplorer':
     'In the Toolbar panel layout, someone clicked the top-left menu button to open the Explorer as a popover.',
   'UI|Opened|ToolbarMore':

@@ -524,16 +524,23 @@ Every access is wrapped so a blocked storage reads as empty.
 
 ## Constants and configuration: the Worker
 
-`liveworkspace/apps/site/wrangler.toml`, account `851be7d244b76a6557bcbe6c4ded80f5`, main ``, compatibility date `2026-05-29`.
+`liveworkspace/apps/site/wrangler.toml`, account `851be7d244b76a6557bcbe6c4ded80f5`, main `worker/index.ts`, compatibility date `2026-05-29`.
+
+The script ([Markdown for agents](../markdown-for-agents.md)) is `negotiatePage` from `@liveworkspace/agent-markdown/negotiate`
+over the `ASSETS` binding. It runs first only on the Markdown pages; `agent-markdown.test.ts` pins `run_worker_first`
+in both environments to the sitemap's pages but the build's `--skip` (`/community`, `/status`, `/telemetry`), plus
+`/pricing`. The build writes the Markdown after `scripts/first-load-budget.ts`
+(`packages/agent-markdown/scripts/agent-markdown.ts --out out --name liveworkspace --skip … --link 'Help Centre=/help/llms.txt'`).
 
 **Production**
 
-| Setting     | Value                                   |
-| ----------- | --------------------------------------- |
-| Worker name | `liveworkspace-site`                    |
-| Route       | `liveworkspace.app` (custom domain)     |
-| Route       | `www.liveworkspace.app` (custom domain) |
-| Assets      | `./out`                                 |
+| Setting     | Value                                                          |
+| ----------- | -------------------------------------------------------------- |
+| Worker name | `liveworkspace-site`                                           |
+| Route       | `liveworkspace.app` (custom domain)                            |
+| Route       | `www.liveworkspace.app` (custom domain)                        |
+| Assets      | `./out`, binding `ASSETS`                                      |
+| Runs first  | `/`, `/compare`, `/pricing`, `/privacy`, `/terms`, `/licences` |
 
 **`env.staging`**
 
@@ -541,7 +548,8 @@ Every access is wrapped so a blocked storage reads as empty.
 | ----------- | ------------------------------------------- |
 | Worker name | `liveworkspace-site-staging`                |
 | Route       | `staging.liveworkspace.app` (custom domain) |
-| Assets      | `./out`                                     |
+| Assets      | `./out`, binding `ASSETS`                   |
+| Runs first  | the same six paths                          |
 
 ## Constants and configuration: named constants
 

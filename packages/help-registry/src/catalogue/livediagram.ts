@@ -82,6 +82,17 @@ export const articles: Article[] = [
     apps: ['livediagram'],
   },
   {
+    slug: 'magnifier',
+    title: 'Magnifier',
+    description:
+      'A lens that follows the cursor and enlarges what is under it, without zooming the canvas.',
+    keywords:
+      'magnifier magnify magnifying glass lens loupe enlarge zoom closer detail inspect big map small text read wheel size round square',
+    category: 'Selection Modes',
+    categorySlug: 'selection-modes',
+    apps: ['livediagram'],
+  },
+  {
     slug: 'isometric-mode',
     title: 'Isometric Mode',
     description: 'Look at the tab as a tilted 3D scene, orbit it, and export it that way.',
@@ -643,5 +654,6 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram'],
+    group: 'Other Apps',
   },
 ];

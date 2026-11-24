@@ -1,4 +1,5 @@
 import { planHidesCursors } from '@/lib/plan-cursors';
+import { noteStatusWrite } from '@/lib/write-up-trigger';
 import { leaveArchivedElsewhere } from '@liveworkspace/workbench/lib/archived';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
@@ -148,6 +149,8 @@ export function useEditorPlanData(
     typesOf: () => itemTypesRef.current,
     onOwnWrite: (write, before) => {
       linkedActionsRef.current?.noteOwnWrite(write, before);
+      // Write It Up's watch (lib/write-up-trigger): the cards this person moved, noted in O(1), read when idle.
+      noteStatusWrite(write);
       // A card deleted, or put back, changes the threads it was on: read them again once it has landed.
       if (write.kind === 'delete' || write.kind === 'create') cardThreadsRef.current?.refetch();
     },

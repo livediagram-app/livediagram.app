@@ -296,6 +296,11 @@ type UserPreferences = {
   // docked as a sidebar beside the canvas, or minimised to its cluster button.
   // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
   contentsPlacement?: 'sidebar' | 'button';
+  // Show Connect MCP (../030-knowledgebase/mcp-connect.md "Closing the tab"): when false, the knowledgebase footer
+  // has no Connect MCP tab, in every knowledgebase, unless the Connect view is the one open. The tab's own X writes
+  // false; Settings, Appearance, Interface turns it back on. Missing / undefined / true === shown. liveknowledge's
+  // own scope, not every app's (it is not in ALL_SETTING_KEYS). Read through connectTabShown.
+  showConnectMcp?: boolean;
 };
 ```
 
@@ -535,7 +540,7 @@ and the dialog stays as the one complete, browsable index of them.
   pan; a **Pages** section: Contents, Sidebar or Button), **Presenting** (its own category, right after Editor: the
   presenter settings, Slides, Playback and While Presenting,
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings"), **Appearance** (theme, then an **Interface** section:
-  Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
+  Button Labels, Show Connect MCP (liveknowledge's footer tab, `showConnectMcp`), and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity, then a section per panel: **Quick Style**, **Map** and
   **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md))),
@@ -559,7 +564,7 @@ and the dialog stays as the one complete, browsable index of them.
   category"), so a category reads the same here as in every app and in liveworkspace's merged panel: the rows with
   no section lead (a category's broadest setting, like Panel Opacity), then the sections in the shared order
   (`SECTION_ORDER` in `@liveworkspace/settings/sections`): Canvas, Mouse, Draw, Pages, Logo Pages; Slides, Playback,
-  While Presenting; Layers, Quick Style, Map, Collaborate; Offer Again, Show Me; Default Folders; In the Editor,
+  While Presenting; Layers, Quick Style, Map, Collaborate; Offer Again, Show Me, Suggestions; Default Folders; In the Editor,
   Email, Phone. Email reads Comments, Mentions, Assigns and Invite responses, then this app's own emails, then Tips
   and Check-Ins and Milestones last (`closesSection`), the emails from us rather than about your work. In the
   merged panel Reset All Settings and Delete Account carry every app's mark: both act on every app.
@@ -855,7 +860,9 @@ liveknowledge's Settings (`apps/editor/components/dialogs/settings/settings-cata
 liveworkspace.app, `packages/settings/src/catalogues/liveknowledge.ts`) offer only what acts on its pages, the page
 tree, comments, Ask, Insights and the account:
 
-- **Appearance:** Theme, Button Labels, UI Scale and its Panel, Toolbar and Corner Buttons parts.
+- **Appearance:** Theme, Button Labels, **Show Connect MCP** (the knowledgebase footer's Connect MCP tab, turned off
+  by its X, [Connect](../030-knowledgebase/mcp-connect.md) "Closing the tab"), UI Scale and its Panel, Toolbar and
+  Corner Buttons parts.
 - **Keyboard:** Keyboard Shortcuts and All Shortcuts.
 - **Panels:** Panel Opacity, and Collaborate's Hide Cursors.
 - **Accessibility:** Reduce Motion.

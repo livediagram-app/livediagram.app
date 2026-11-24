@@ -66,6 +66,8 @@ export const ALL_SETTING_KEYS = [
   'dockButtonNames',
   // Your own colours, offered in every app's swatches.
   'customSwatches',
+  // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md "One switch for all").
+  'suggestNextApp',
   // The editor settings two or more apps have.
   ...COMMON_SETTING_KEYS,
 ] as const;

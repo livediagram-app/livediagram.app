@@ -25,8 +25,9 @@ export type ExplorerView =
   // Search results: every item the person can open, narrowed by the lens (words and filters).
   | { kind: 'search'; q: string }
   | ({ kind: 'folder'; id: string } & Lensed)
-  // A team's library, at its root or one of its folders.
-  | ({ kind: 'team'; id: string; folderId?: string } & Lensed)
+  // A team's view: at its root a tab (People, the default, its Library or, for admins, its Audit Log), or one of its
+  // folders.
+  | ({ kind: 'team'; id: string; folderId?: string; tab?: TeamTab } & Lensed)
   // The team invitations waiting for the person, each answered where teams are run.
   | { kind: 'invites' }
   // The person's images, from the host's media source (only where the host has one).
@@ -41,6 +42,14 @@ export type ExplorerView =
 
 /** How a view takes the lens: `scoped` (its breadcrumb is the place), `aggregate` (it lists every place), or
  *  null for a view that lists no items of its own (typing there opens Search results). */
+/** A team's view's tabs at its root; People is the default and rides no `tab` in the address. */
+export const TEAM_TABS = ['people', 'library', 'audit'] as const;
+export type TeamTab = (typeof TEAM_TABS)[number];
+
+export function teamTabOf(raw: string | null | undefined): TeamTab {
+  return TEAM_TABS.includes(raw as TeamTab) ? (raw as TeamTab) : 'people';
+}
+
 export type LensViewKind = 'scoped' | 'aggregate';
 
 const LENS_VIEWS: Partial<Record<ExplorerView['kind'], LensViewKind>> = {
@@ -96,10 +105,13 @@ export function explorerPath(view: ExplorerView, base = DEFAULT_BASE_PATH): stri
       return `${b}/search${lens('?')}`;
     case 'folder':
       return `${b}/folder?id=${enc(view.id)}${lens('&')}`;
-    case 'team':
-      return view.folderId
-        ? `${b}/team?id=${enc(view.id)}&folder=${enc(view.folderId)}${lens('&')}`
-        : `${b}/team?id=${enc(view.id)}${lens('&')}`;
+    case 'team': {
+      if (view.folderId) {
+        return `${b}/team?id=${enc(view.id)}&folder=${enc(view.folderId)}${lens('&')}`;
+      }
+      const tab = view.tab && view.tab !== 'people' ? `&tab=${view.tab}` : '';
+      return `${b}/team?id=${enc(view.id)}${tab}${lens('&')}`;
+    }
     // livediagram's address for its gallery, kept so its links still land.
     case 'gallery':
       return `${b}/images`;
@@ -160,7 +172,9 @@ export function viewFromLocation(
     case 'team': {
       if (!id) return { kind: 'home' };
       const folderId = params.get('folder');
-      return lensed(folderId ? { kind: 'team', id, folderId } : { kind: 'team', id });
+      if (folderId) return lensed({ kind: 'team', id, folderId });
+      const tab = teamTabOf(params.get('tab'));
+      return lensed(tab === 'people' ? { kind: 'team', id } : { kind: 'team', id, tab });
     }
     default:
       return { kind: 'home' };
@@ -169,7 +183,15 @@ export function viewFromLocation(
 
 /** Whether two views show the same place, whatever their lens (the sidebar's highlight). */
 export function sameView(a: ExplorerView, b: ExplorerView): boolean {
-  return explorerPath(withLens(a, '')) === explorerPath(withLens(b, ''));
+  return explorerPath(placeOf(a)) === explorerPath(placeOf(b));
+}
+
+/** A view without its lens, and a team's without its tab: the place it shows. */
+function placeOf(view: ExplorerView): ExplorerView {
+  const bare = withLens(view, '');
+  if (bare.kind !== 'team' || !bare.tab) return bare;
+  const { tab: _tab, ...rest } = bare;
+  return rest;
 }
 
 // The sidebar's words, Title Case, as liveplanner's (sidebar-structure.ts).

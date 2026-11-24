@@ -11,7 +11,10 @@ import {
   MENU_CARD_FRAME_MOTION,
   MENU_CARD_JOINED,
 } from '@liveworkspace/workbench/components/canvas/menu-join';
-import { PHONE_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
+import {
+  PHONE_TOOLBAR_ITEMS,
+  PHONE_TOP_ROW_CARD,
+} from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 
 // The card at the canvas's top left, before the palette strip (docs/specs/007-editor/toolbar-layout.md): the
 // Explorer's menu button in the app, a workspace frame's Back in a workbench. `data-toolbar-menu` is what the strip
@@ -77,7 +80,7 @@ export function ToolbarMenuCard({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>*]:shrink-0 ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
+          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 phone:left-1.5 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} ${PHONE_TOP_ROW_CARD} [&>*]:shrink-0 ${MENU_CARD_FRAME_MOTION} ${joined ? MENU_CARD_JOINED : ''}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

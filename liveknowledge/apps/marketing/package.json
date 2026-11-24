@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node ../../../packages/next-config/scripts/next-dev.mjs --port 3601",
-    "build": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out . && next build && node ../../../packages/licences/scripts/verify.ts .",
+    "build": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out . && next build && node ../../../packages/agent-markdown/scripts/agent-markdown.ts --out out --name liveknowledge --skip /community --link 'Help Centre=/help/llms.txt' && node ../../../packages/licences/scripts/verify.ts .",
     "licences": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out .",
     "lint": "oxlint",
     "test": "vitest run",
@@ -36,6 +36,7 @@
     "@liveknowledge/help-registry": "workspace:*",
     "@liveknowledge/licences": "workspace:*",
     "@liveknowledge/tailwind-config": "workspace:*",
+    "@liveworkspace/agent-markdown": "workspace:*",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

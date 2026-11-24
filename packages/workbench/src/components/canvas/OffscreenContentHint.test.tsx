@@ -2,6 +2,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ToastActionSpec } from '../../hooks/ui/useToast';
+import { noticeSlotHeld } from '@liveworkspace/ui/toast';
 import { OFFSCREEN_TOAST_KEY, OffscreenContentHint } from './OffscreenContentHint';
 
 // liveworkspace/docs/specs/016-notifications/toasts.md "Timing": Nothing in view is a standing toast with Show All.
@@ -32,6 +33,17 @@ describe('OffscreenContentHint', () => {
     expect(fit).toHaveBeenCalledOnce();
     unmount();
     expect(toast.dismissAction).toHaveBeenCalledWith(OFFSCREEN_TOAST_KEY);
+  });
+
+  it('holds the notice slot while it shows, and frees it when closed or gone', () => {
+    const first = render(<OffscreenContentHint onBringBack={() => {}} />);
+    expect(noticeSlotHeld()).toBe(true);
+    first.unmount();
+    expect(noticeSlotHeld()).toBe(false);
+    render(<OffscreenContentHint onBringBack={() => {}} />);
+    expect(noticeSlotHeld()).toBe(true);
+    toast.action.mock.calls.at(-1)![0].onDismiss!();
+    expect(noticeSlotHeld()).toBe(false);
   });
 
   it('closed, it is not raised again while the hint stays', () => {

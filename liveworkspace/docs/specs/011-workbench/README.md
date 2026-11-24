@@ -9,4 +9,6 @@ Follow the references below only as needed; never upfront.
   shared, what each product binds, mixed-direction lines
 - ./phone-drawers.md - when working on a tool panel (Layers, Tidy Up, Collaborate, Timer, Vote, Poll, ...) on a phone:
   the bottom drawer every editor's tool popovers open as, its handle, focus, safe area and which panels
+- ./phone-apps-drawer.md - when working on a phone's top row in any editor: the logo and Apps in the menu card, the
+  corner card's actions in the Apps drawer, its tiles per role, the unread dot and the 56 px row
 - ./blueprints/README.md - when implementing a workbench spec: the blueprints hold the engineering detail derived from it

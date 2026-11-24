@@ -108,6 +108,7 @@ describe('settings catalogue', () => {
       ['knowledgeTour-ask', 'toggle', 'Ask Your Knowledgebase', 'ask'],
       ['knowledgeTour-connect', 'toggle', 'Connect an AI Agent', 'connectAiTool'],
       ['knowledgeTour-share', 'toggle', 'Share and Work Together', 'sharing'],
+      ['suggestNextApp', 'toggle', 'Suggest Other Apps', undefined],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/Get Started in the bottom bar/);
@@ -153,6 +154,7 @@ describe('settings catalogue', () => {
         ['AskTourSeenOff', 'AskTourSeenOn'],
         ['ConnectTourSeenOff', 'ConnectTourSeenOn'],
         ['WorkTogetherTourSeenOff', 'WorkTogetherTourSeenOn'],
+        ['SuggestionsOn', 'SuggestionsOff'],
       ],
     );
   });
@@ -367,7 +369,7 @@ describe('settings sub-categories', () => {
       visibleCategories({ emailEnabled: false, signedIn: false, preferences })
         .find((c) => c.id === 'tours')!
         .rows.map((r) => r.key);
-    expect(rows({ knowledgeToursSeen: true })).toEqual(['knowledgeToursSeen']);
+    expect(rows({ knowledgeToursSeen: true })).toEqual(['knowledgeToursSeen', 'suggestNextApp']);
     expect(rows({})).toContain('knowledgeTour-trust');
   });
 
@@ -426,5 +428,29 @@ describe('Automatically Open Explorer row', () => {
       on: 'AutoOpenExplorerOn',
       off: 'AutoOpenExplorerOff',
     });
+  });
+});
+
+// Show Connect MCP (docs/specs/030-knowledgebase/mcp-connect.md "Closing the tab"): the tab's X turns it off.
+describe('Show Connect MCP row', () => {
+  const appearance = SETTINGS_CATEGORIES.find((category) => category.id === 'appearance')!;
+  const row = appearance.rows.find((r) => r.key === 'showConnectMcp')!;
+
+  it('sits in Appearance, Interface, right after Button Labels', () => {
+    const keys = appearance.rows.map((r) => r.key);
+    expect(keys.indexOf('showConnectMcp')).toBe(keys.indexOf('dockButtonNames') + 1);
+    expect(row.section).toBe('Interface');
+    expect(row.label).toBe('Show Connect MCP');
+  });
+
+  it('is on by default and off once the X wrote false; on again writes true', () => {
+    if (row.kind !== 'toggle') throw new Error('expected a toggle');
+    expect(row.read({})).toBe(true);
+    expect(row.read({ showConnectMcp: false })).toBe(false);
+    expect(row.write({ showConnectMcp: false, homeBanner: false }, true)).toEqual({
+      showConnectMcp: true,
+      homeBanner: false,
+    });
+    expect(row.event).toEqual({ category: 'UI', on: 'ConnectMcpTabOn', off: 'ConnectMcpTabOff' });
   });
 });

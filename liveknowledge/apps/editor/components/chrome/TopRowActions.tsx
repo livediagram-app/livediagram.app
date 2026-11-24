@@ -16,12 +16,18 @@ import {
 import { ShareVisibilityButton } from '@liveworkspace/workbench/components/chrome/ShareVisibilityButton';
 import {
   shareStateOf,
+  shareStatesLabel,
   shareStatesOf,
   type ItemVisibility,
   type VisibilityActions,
 } from '@liveworkspace/workbench/components/chrome/share-states';
 import { ItemCallButton } from '@liveworkspace/workbench/components/item-call/ItemCallButton';
 import { useTopRowSlot } from '@/lib/page-surface/top-row-slot';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import {
+  usePublishPhoneApps,
+  type ItemName,
+} from '@liveworkspace/workbench/components/chrome/phone-apps/phone-apps-store';
 
 export type TopRowActionsProps = {
   // Where the knowledgebase's approval stands, first (an `<ApprovalBadge corner />`).
@@ -36,12 +42,32 @@ export type TopRowActionsProps = {
   onMakeCopy?: (() => void) | undefined;
   copying: boolean;
   onOpenAccount: () => void;
+  // The knowledgebase's name, for the phone's Apps drawer.
+  itemName?: ItemName;
 };
 
 export function TopRowActions(props: TopRowActionsProps) {
   const slot = useTopRowSlot();
-  if (!slot) return null;
   const { visibility, onOpenShare } = props;
+  // On a phone the row has no actions at its right: they open from Apps in the leading card, in the Apps drawer
+  // (liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md).
+  const phone = useIsMobileViewport();
+  usePublishPhoneApps(
+    {
+      itemName: props.itemName ?? null,
+      shareWords: shareStatesLabel(shareStatesOf(props.shareable, visibility)),
+      showShare: props.showShare,
+      onOpenShare,
+      onMakeCopy: props.onMakeCopy,
+      copying: props.copying,
+      onOpenAccount: props.onOpenAccount,
+      hasCall: true,
+      offline: !!visibility.offline,
+      approval: props.approval,
+    },
+    phone,
+  );
+  if (!slot || phone) return null;
   return createPortal(
     <>
       {props.approval ?? null}

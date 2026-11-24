@@ -33,6 +33,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'live-presence': '#06b6d4',
   'send-to-plan': '#0d9488',
   'make-plan-cards': '#4f46e5',
+  suggestions: '#0284c7',
   'start-a-call': '#059669',
   links: '#10b981',
   images: '#ec4899',
@@ -81,6 +82,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'format-painter': '#8b5cf6',
   laser: '#ef4444',
   spotlight: '#f59e0b',
+  magnifier: '#0d9488',
   'isometric-mode': '#9333ea',
   // Palette → Elements
   write: '#0891b2',

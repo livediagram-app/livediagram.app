@@ -9,7 +9,10 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 | `packages/ui/src/toast/ToastProvider.tsx`                               | `ToastProvider` (`quiet`, `historyScope`), `useToast`, `ToastApi`, `ToastOptions`; nesting hands over   |
 | `packages/ui/src/toast/toast-queue.ts`                                  | Pure queue writes: `pushToast`, `upsertActionToast`, `retireToasts`, `TOAST_LIMIT`, durations, `sticky` |
 | `packages/ui/src/toast/ToastStack.tsx`                                  | The always-mounted `Notifications` region, the floor, each toast's timer, exit and collapse             |
-| `packages/ui/src/toast/ToastCard.tsx`                                   | One toast: icon, message, actions, close; `TOAST_SURFACE`, `TOAST_ICONS`, `TOAST_ICON_TINT`             |
+| `packages/ui/src/toast/ToastCard.tsx`                                   | The one card, inline or stacked (`toastCardLayout`); `TOAST_SURFACE`, `TOAST_ICONS`, `TOAST_ICON_TINT`  |
+| `packages/ui/src/toast/ToastNotice.tsx`                                 | A notice drawn into the stack's notice row (`hold` false to yield the notice slot)                      |
+| `packages/ui/src/toast/notice-slot.ts`                                  | The stack's notice row and count; the notice slot's holders (`holdNoticeSlot`, `noticeSlotHeld`)        |
+| `packages/ui/src/toast/dialog-open.ts`                                  | `dialogOpenNow`, `subscribeDialogs` (at most every `DIALOG_WATCH_MS`): the notices wait under a dialog  |
 | `packages/ui/src/toast/toast-history.ts`                                | The notification list's module store: records, scopes, localStorage, seen and missed                    |
 | `packages/ui/src/toast/toast-collapse.ts`                               | `collapseIntoBell`, `collapseTarget`, `findToastBell`, `TOAST_BELL_ATTR`                                |
 | `packages/ui/src/toast/ToastBell.tsx`                                   | The footer's bell: the dot, the popover and its read-only list                                          |
@@ -123,7 +126,19 @@ An empty message is ignored. The Explorer keeps its own short API (`show(text, {
 ## Presentation and UX
 
 - Region and card: as before (`fixed inset-x-0 z-[var(--z-toast)]`, the card `rounded-xl border` with
-  `TOAST_SURFACE`, the tone's border and icon). The close is `h-8 w-8`, `CloseIcon` 12px, `aria-label="Dismiss"`.
+  `TOAST_SURFACE`, the tone's border and icon). The close is `h-8 w-8`, `CloseIcon` 12px, `aria-label="Dismiss"`, in
+  a `Tooltip` "Dismiss".
+- The region's first child is the notice row (`[data-toast-notices]`, `display: contents`, `hidden` while a dialog
+  is open); `ToastNotice` portals into it and counts itself (`countNotice`), so the floor is measured with only a
+  notice up. With no stack, a notice stands alone at `fixed bottom-4`, centred.
+- `ToastCard` layout (`data-toast-layout`): `toastCardLayout` answers `stacked` for a `title`, a `body`, a `toggle` or
+  a `quiet` action, else `inline`; `layout` overrides. Inline is the one row above. Stacked: `px-3 py-2.5`, `w-full
+sm:w-auto sm:min-w-[20rem] sm:max-w-[36rem]`; the icon (`h-5`) then a block column holding the close floated right (`-mr-1.5 -mt-1.5
+mb-[-0.75rem]`, so only the first line runs short of it), the title (`font-semibold`), the message (`slate-600`,
+  `slate-300` in dark, under a title), the body, the switch, and the foot row (`[data-toast-foot]`, `clear-both mt-2.5
+flex flex-wrap justify-end`): quiet actions in a `mr-auto` group (`text-xs` slate-500), secondaries as text
+  buttons `h-6` (the inline row's are `h-8`), the primary in the brand colour (rose when destructive, the white
+  button on the highlight). An action with `href` is a link.
 - Bell: `lucideBell` 16px in the host's button classes, `data-toast-bell`, `aria-haspopup="dialog"`,
   `aria-expanded`, `aria-label` "Notifications" or "Notifications, new"; a `HoverCard` "Notifications". The dot:
   `absolute right-1 top-1 h-2 w-2 rounded-full bg-brand-600 ring-2 ring-white dark:bg-brand-400

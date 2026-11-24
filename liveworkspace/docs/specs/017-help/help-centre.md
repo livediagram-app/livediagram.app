@@ -154,6 +154,7 @@ groups, in order:
 | livediagram   | Canvas                    | Basics, Modes and Boards, Text and Notes, Styling Elements, Layers and Locking |
 | livediagram   | Palette                   | Everyday Elements, Diagram Kits, Workshop Kits, Palette Settings               |
 | livediagram   | Explorer                  | Your Library, Activity, Assets and Imports                                     |
+| livediagram   | Collaboration             | Working Together, Other Apps, Running Sessions                                 |
 | liveplanner   | Plan                      | Getting Going, Boards and Cards, Sheets, Forms and Dashboards                  |
 | livedocuments | Pages                     | Basics, Kinds of Page                                                          |
 | livedocuments | Canvas                    | Basics, Text and Notes, Styling Elements, Layers and Locking                   |
@@ -447,6 +448,16 @@ article or category from being redirected away. What each app has retired:
 - **Every item app** (livediagram, livedocuments, livedesign, livehuddle): Webhooks, under both Collaboration and
   Tools, to Automations (`tools/automations#connections`), where outgoing messages are now Connections; on
   liveplanner both old addresses land on Plan Automations.
+
+## Markdown for agents
+
+Every page a scope serves, the home, each category and each article, answers its Markdown to an AI agent whose
+request prefers `text/markdown`, and its HTML with `Vary: Accept` to everyone else
+([Markdown for agents](../010-site/markdown-for-agents.md)). The Markdown is the page as the scope's build renders it
+(the article's MDX with its app notes for that scope), written beside the page at build time
+(`/help/<category>/<article>/index.md`), never at request time. An app's copy of an article several apps share
+answers too, though only the canonical scope's sitemap lists it. Each scope has its own `/help/llms.txt`, listing its
+pages; the liveworkspace site's and every marketing site's `/llms.txt` link it.
 
 ## Telemetry
 

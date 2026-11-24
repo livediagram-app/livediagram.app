@@ -22,6 +22,7 @@ export * from './plan-sends';
 export * from './plan-diagrams';
 export * from './diagram-sends';
 export * from './item-calls';
+export * from './write-up';
 export * from './updates';
 export * from './knowledge-sources';
 export * from './knowledge-client';

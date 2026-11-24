@@ -6,10 +6,12 @@ import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canv
 import { AuthControls } from './AuthControls';
 import { AskCitationBar } from '../ask/AskCitationBar';
 import { ShareVisibilityButton } from './ShareVisibilityButton';
-import { shareStateOf, shareStatesOf, type ItemVisibility } from './share-states';
+import { shareStateOf, shareStatesLabel, shareStatesOf, type ItemVisibility } from './share-states';
 import type { VisibilityActions } from './share-states';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
+import { useIsMobileViewport } from '../../hooks/ui/useIsMobileViewport';
+import { usePublishPhoneApps, type ItemName } from './phone-apps/phone-apps-store';
 
 // Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (the approval's badge, Copy, Present, Share and the account) float in a card of
 // their own at the canvas's top right, the same card as the menu card at its top left. The account control is the
@@ -75,9 +77,44 @@ export type EditorCornerActionsProps = {
   // Start a Call Here (liveworkspace item-calls.md): the shared ItemCallButton, its Call or its "3 in Call" pill, after
   // the approval. A slot, so the card bundles no call code of its own.
   call?: ReactNode;
+  // The open item's name, for the phone's Apps drawer (phone-apps-drawer.md), which stands in for this card there.
+  itemName?: ItemName;
 };
 
-export function EditorCornerActions({
+// On a phone (liveworkspace/docs/specs/011-workbench/phone-apps-drawer.md) the card is not drawn: what it would show is
+// published for the menu card's Apps drawer instead, and its room goes to the palette strip (the card's unmount clears
+// `--corner-card-room` and tells the strip). From the phone breakpoint up, the card.
+export function EditorCornerActions(props: EditorCornerActionsProps) {
+  const phone = useIsMobileViewport();
+  const { shareable, visibility = {} } = props;
+  usePublishPhoneApps(
+    {
+      itemName: props.itemName ?? null,
+      shareWords: shareStatesLabel(shareStatesOf(shareable, visibility)),
+      showShare: props.showShare,
+      onOpenShare: props.onOpenShare,
+      onMakeCopy: props.onMakeCopy,
+      copying: props.copying ?? false,
+      present: props.present,
+      onOpenAccount: props.onOpenAccount,
+      hasCall: !!props.call,
+      offline: !!visibility.offline,
+      approval: props.approval,
+      leadAction: props.leadAction,
+      shareAction: props.shareAction,
+    },
+    phone,
+  );
+  if (phone)
+    return (
+      <div className="relative z-[var(--z-modal)] h-0">
+        <AskCitationBar />
+      </div>
+    );
+  return <CornerCard {...props} />;
+}
+
+function CornerCard({
   showShare,
   shareable,
   visibility = {},
@@ -168,7 +205,7 @@ export function EditorCornerActions({
             ? undefined
             : { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), right: toSurfacePx(12, scale) }
         }
-        className="pointer-events-auto absolute right-3 top-3 phone:right-0 phone:rounded-r-none phone:border-r-0 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+        className="pointer-events-auto absolute right-3 top-3 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
         {/* Where the item's approval stands, first: the badge draws only inside an approvals door with an approval
             to show, so nothing here for anyone else. */}

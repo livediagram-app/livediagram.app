@@ -264,9 +264,16 @@ const INBOX_EVENTS = [
   ),
   ...['Action', 'Card', 'Thread'].map((t) => `Activity·Resolved·${t}`),
 ];
-const NO_CHART: Record<string, string> = Object.fromEntries(
-  INBOX_EVENTS.map((key) => [key, 'the Inbox, which livehuddle does not have']),
-);
+const NO_CHART: Record<string, string> = {
+  ...Object.fromEntries(
+    INBOX_EVENTS.map((key) => [key, 'the Inbox, which livehuddle does not have']),
+  ),
+  // The phone's Apps drawer (shared) reaches the Call tile's action; livehuddle passes no Call to its corner card, so
+  // the tile never shows and these never fire (a Space is a call already).
+  'UI·Opened·ItemCall': 'Start a Call Here, which livehuddle does not offer',
+  'UI·Started·ItemCall': 'Start a Call Here, which livehuddle does not offer',
+  'UI·Refused·ItemCall': 'Start a Call Here, which livehuddle does not offer',
+};
 
 describe('every event has a chart', () => {
   const charts = ALL.flatMap(groupMetrics);

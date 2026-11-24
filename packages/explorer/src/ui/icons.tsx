@@ -489,3 +489,22 @@ export const DefaultPinIcon = lucide(
   <path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />,
   12,
 );
+
+// A team's page (teams/page/): an invitation waiting (lucide mail), Leave Team (log-out), Export CSV (download) and
+// the Library's sort (arrow-up-down).
+export const MailIcon = lucide(
+  <>
+    <rect width="20" height="16" x="2" y="4" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </>,
+  16,
+);
+export const LogOutIcon = lucide(
+  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />,
+  15,
+);
+export const DownloadIcon = lucide(
+  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
+  15,
+);
+export const SortIcon = lucide(<path d="m21 16-4 4-4-4M17 20V4M3 8l4-4 4 4M7 4v16" />, 14);

@@ -7,6 +7,7 @@ import { isNonThemePick } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
 import { OPENED_HOMES, openedChart } from './opened';
+import { isSuggestionType } from '../../_shared/suggestion-metrics';
 
 // The one layer event still sent since the Layers panel went (2026-11-08, docs/specs/006-document/layers.md
 // "Retired: the Layers panel"): a layer named from the first labelled element put on it (smart naming).
@@ -391,6 +392,7 @@ export const PALETTE_GROUPS_OPENED = chart(
       (type ?? '').endsWith('Group') ||
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
+      type === 'PhoneApps' ||
       type === 'ToolbarSearch' ||
       type === 'ToolbarSearchOtherModes',
   },
@@ -555,6 +557,8 @@ OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!, FIND_BAR_OPENED.typeIn!);
 OPENED_HOMES.push(
   (t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram' || t === 'SentDiagram',
 );
+// Suggestions have a stack each (_shared/suggestion-metrics.ts).
+OPENED_HOMES.push(isSuggestionType);
 OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');
 
 export const OTHER_OPENED = chart(

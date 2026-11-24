@@ -4,6 +4,9 @@
 // none set. It checks the api's client credentials as accounts does; the token it takes on trust (the stack's own).
 // A product whose specs need a shared key would seed one here.
 
+// Set on a request this Worker passes on, so one that comes back to it is answered rather than passed on again.
+const FORWARDED = 'x-e2e-accounts-forwarded';
+
 const json = (status, body) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
@@ -11,8 +14,16 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     // Every other call over the binding already names the stack's accounts stand-in (its origin and /e2e/accounts
-    // path, ../accounts-stand-in.mjs), as it would with no Worker behind the binding: it goes on there unchanged.
-    if (url.pathname !== '/internal/ai-key') return fetch(request);
+    // path, ../accounts-stand-in.mjs), as it would with no Worker behind the binding: it goes on there, marked. A
+    // request that names this Worker itself (wrangler's HEAD on its own port) would come straight back here, and
+    // passed on again looped without end, holding a connection a hop until the machine ran out of them: the mark
+    // ends it at the second hop.
+    if (url.pathname !== '/internal/ai-key') {
+      if (request.headers.has(FORWARDED)) return json(404, { error: 'not_found' });
+      const forwarded = new Request(request);
+      forwarded.headers.set(FORWARDED, '1');
+      return fetch(forwarded);
+    }
     if (request.method !== 'POST') return json(405, { error: 'method_not_allowed' });
     const expected = `Basic ${btoa(`${encodeURIComponent(env.CLIENT_ID)}:${encodeURIComponent(env.CLIENT_SECRET)}`)}`;
     if (request.headers.get('authorization') !== expected)

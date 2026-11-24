@@ -3,6 +3,7 @@ import {
   EraserIcon,
   FormatPainterIcon,
   IsometricIcon,
+  MagnifierIcon,
   LaserIcon,
   PanIcon,
   PickerIcon,
@@ -125,6 +126,22 @@ export const BEHAVIOUR_TILES: PaletteTileDef[] = [
     // (buildCanvasToolOptions): eight identical pointers told the reader
     // nothing about which mode a row would hand out.
     icon: <FormatPainterIcon size={TILE_GLYPH_PX} />,
+  },
+  {
+    // Magnifier (docs/specs/008-canvas/magnifier.md): a lens on the cursor, before Isometric as in the picker.
+    id: 'tools:mode-magnifier',
+    tileGroup: 'mode',
+    blurb: 'Enlarge what is under the cursor',
+    caption: 'Magnifier',
+    section: 'tools',
+    toolGroup: 'behaviour',
+    label: 'Add Magnifier Mode Button',
+    description:
+      'A button that switches whoever presses it into Magnifier mode. It changes the mode for that person only, and pressing it again hands them back the mode they were in.',
+    filled: true,
+    action: { type: 'shape', kind: 'mode-button', mode: 'magnifier' },
+    // The mode's OWN glyph, the one the canvas-tool popover shows for it (buildCanvasToolOptions).
+    icon: <MagnifierIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:mode-isometric',

@@ -27,6 +27,22 @@ Derived from [Connect](../mcp-connect.md). The fourth view, on the frame and the
 - **Signed out:** a press opens the shared gate (`askGate`, `components/ask/AskGate.tsx`) at `'connect-signed-out'`,
   whose dialog draws `ConnectSignedOut bare`. No read is made: `rights.askOff` says it.
 - **Offline:** `offlineOff` already turns off every view but Pages; `OFFLINE_VIEW_WHY` names Connect.
+- **Closing the tab** ([Connect](../mcp-connect.md) "Closing the tab"): `connectTabShown(prefs)`
+  (`lib/user-preferences.ts`) is `prefs.showConnectMcp !== false`. `knowledgeViewsShown(showConnect, current)`
+  (`lib/knowledge-ask/knowledge-view.ts`) is `KNOWLEDGE_VIEWS` without Connect when the setting is off and Connect is
+  not the current view. `KnowledgeViewTabs` reads the setting from the chrome store's `userPreferences`.
+- The X is `ConnectTabClose` (`components/chrome/ConnectTabClose.tsx`), drawn inside the Connect tab only while it is
+  open (`data-open`) and the session has an account (`accountUserId`): a 24 px `button` (a 44 px touch target),
+  `aria-label` "Hide Connect MCP", `CloseIcon`, the shared `Tooltip` ("Hide Connect MCP. Settings, Appearance brings
+  it back"), `cursor-pointer`, the tabs' hover wash and a `focus-visible` brand outline. The open Connect tab then
+  pads `pl-3.5 pr-1`, as a tab with a trailing button does (`tabShapeClass`).
+- A press: `track('UI', 'Toggled', 'ConnectMcpTabOff')` first (settings flips report before they persist), then
+  `setUserPreferences(commitUserPreferences(prefs, { ...prefs, showConnectMcp: false }, selfParticipant.id))`, which
+  writes the device cache and the account (`lib/preferences-sync`), then `showKnowledgeView('pages', { replace: true
+})`.
+- Settings: an Appearance, Interface toggle `showConnectMcp`, "Show Connect MCP", after Button Labels, events
+  `ConnectMcpTabOn` and `ConnectMcpTabOff` (the site's catalogue copy and the telemetry dashboard's Appearance
+  Settings stack carry both).
 - `KnowledgeViewHost` loads `ConnectView` with `next/dynamic` (`ssr: false`), as the other two, and names its
   region "Connect".
 

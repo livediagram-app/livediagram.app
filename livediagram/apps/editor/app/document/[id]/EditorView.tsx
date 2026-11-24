@@ -49,6 +49,8 @@ import {
 import { LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
 import { useLandscapeBars } from '@/hooks/ui/useLandscapeBars';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
+import { MakePlanSuggestion } from '@/components/canvas/MakePlanSuggestion';
+import { maySuggestTo } from '@liveworkspace/workbench/components/suggest/suggest-gate';
 import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
@@ -611,6 +613,20 @@ export function EditorView() {
                                 <BoardSceneNotice
                                   notice={boardSceneInsert.notice}
                                   onClose={boardSceneInsert.dismissNotice}
+                                />
+                                {/* Make These a Plan (liveworkspace/docs/specs/016-notifications/suggestions.md): in the
+                                    notice slot, after the paste notice. */}
+                                <MakePlanSuggestion
+                                  itemId={ctx.authLoaded && hydrated ? documentId : null}
+                                  allowed={maySuggestTo({
+                                    level: ctx.can.level,
+                                    readOnly: isReadOnly,
+                                    signedIn: !!accountUserId,
+                                    offline: isOffline,
+                                    embed: !appChrome,
+                                    community: sessionCommunity !== null,
+                                  })}
+                                  elements={activeTab.elements}
                                 />
                                 <EditorStartPanels />
 

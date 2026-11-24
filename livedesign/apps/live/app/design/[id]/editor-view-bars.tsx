@@ -70,6 +70,7 @@ export function editorViewHeader(
         approval={<ApprovalBadge corner />}
         call={<ItemCallButton />}
         leadAction={prototype}
+        itemName={ctx.designName}
         showShare={canShareDesign && hydrated && !anyWelcomeOpen}
         shareable={designShareable}
         // The Share button's colour reads the design's visibility, as the header's badge did.

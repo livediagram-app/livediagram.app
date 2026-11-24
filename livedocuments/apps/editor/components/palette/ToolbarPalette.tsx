@@ -1,6 +1,5 @@
 'use client';
 
-import { PHONE_EDGE_LEFT_IN_ROW } from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
 import type { Element, Page } from '@livedocuments/document';
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type ReactNode } from 'react';
 import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
@@ -8,7 +7,10 @@ import { atLeastInset, safeInlinePadding } from '@livedocuments/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
-import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
+import {
+  PACKED_TOOLBAR_ITEMS,
+  PHONE_TOP_ROW_CARD,
+} from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from '@liveworkspace/workbench/components/palette/palette-group-state';
@@ -75,7 +77,7 @@ type Props = Pick<
 // screen each gets a full 44 x 44 pad behind it and a tap in a gap still picks a tile (PACKED_TOOLBAR_ITEMS,
 // docs/specs/004-interface-design/touch-targets.md); the category flyouts hang beside the card, not in it, so the
 // card's own stacking context traps none of them.
-const CARD_CLASS = `${TOOLBAR_CARD} ${PACKED_TOOLBAR_ITEMS}`;
+const CARD_CLASS = `${TOOLBAR_CARD} ${PACKED_TOOLBAR_ITEMS} ${PHONE_TOP_ROW_CARD}`;
 
 // On a phone's row, the menu card sits at the left gutter and the strip beside
 // it rather than centred (docs/specs/007-editor/toolbar-layout.md "On a phone");
@@ -98,7 +100,7 @@ function StripRow({ leading, children }: { leading?: ReactNode; children: ReactN
       className={`pointer-events-none flex w-full items-start gap-1.5 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
       {leading == null ? null : (
-        <div data-strip-leading="" className={`${CARD_CLASS} ${PHONE_EDGE_LEFT_IN_ROW}`}>
+        <div data-strip-leading="" className={CARD_CLASS}>
           {leading}
         </div>
       )}

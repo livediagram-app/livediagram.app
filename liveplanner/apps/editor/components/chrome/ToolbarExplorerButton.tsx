@@ -1,16 +1,16 @@
 'use client';
 
+import { ExplorerMenuButtons } from '@liveworkspace/workbench/components/chrome/phone-apps/ExplorerMenuButtons';
 import type { Ref } from 'react';
 
-import { track } from '@/lib/telemetry';
-import { Brand, Glyph } from '@liveplanner/ui';
+import { Brand } from '@liveplanner/ui';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { useEditorInbox } from '@liveworkspace/workbench/components/chrome/useEditorInbox';
 import {
   MENU_CARD_IN_ROW,
   MenuCardLogo,
-  PHONE_EDGE_LEFT,
 } from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
+import { PHONE_TOP_ROW_CARD } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
@@ -56,27 +56,16 @@ export function ToolbarExplorerButton({
   const projectId = useOptionalEditorContext()?.projectId ?? null;
   const withLogo = !inline && !phone;
   const inbox = useEditorInbox('liveplanner');
+  // The hamburger, or on a phone the logo and Apps (phone-apps-drawer.md), which then holds the logo itself.
   const button = (
-    <button
-      ref={buttonRef}
-      type="button"
-      aria-label={inbox.label('Explorer')}
-      aria-expanded={open}
-      onClick={(e) => {
-        if (!open) track('UI', 'Opened', 'ToolbarExplorer');
-        onToggle(e.currentTarget);
-      }}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-md transition ${
-        open
-          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
-      }`}
-    >
-      <Glyph size={18} units={20} strokeLinejoin="miter">
-        <path d="M4 6h12M4 10h12M4 14h12" />
-      </Glyph>
-      {inbox.badge}
-    </button>
+    <ExplorerMenuButtons
+      app="liveplanner"
+      open={open}
+      onToggle={onToggle}
+      buttonRef={buttonRef}
+      itemId={projectId}
+      inbox={inbox}
+    />
   );
   const card = (
     <div
@@ -94,7 +83,7 @@ export function ToolbarExplorerButton({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : `absolute left-3 top-3 phone:left-0 ${PHONE_EDGE_LEFT} z-[var(--z-toolbar)]`} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} ${PHONE_TOOLBAR_ITEMS}`
+          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : `absolute left-3 top-3 phone:left-1.5 z-[var(--z-toolbar)]`} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} ${PHONE_TOOLBAR_ITEMS} ${PHONE_TOP_ROW_CARD}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

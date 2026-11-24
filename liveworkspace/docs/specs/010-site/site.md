@@ -1172,7 +1172,7 @@ notifications from every app:
 
 ## Hosting
 
-One Worker, `liveworkspace-site`, static assets only, on the custom domains `www.liveworkspace.app` and
+One Worker, `liveworkspace-site`, on the custom domains `www.liveworkspace.app` and
 `liveworkspace.app` (`staging.` for staging), so a deploy creates their DNS records and certificates. The APIs are
 path routes on the same hosts, which win over a custom domain, so Cloudflare sends `/api/auth/*`, `/api/account/*` and
 the two `.well-known` discovery documents to the accounts Worker, `/api/index*` to the index, `/api/media*` and
@@ -1184,6 +1184,13 @@ each app's router sends for its own build ([Stale builds](../../../../livediagra
 "Caching rules"); the routers pass the header through on every app's address. Everything else keeps Cloudflare's
 `public, max-age=0, must-revalidate`, so a page is checked on every load. `/.well-known/security.txt` is the site's (accounts' routes name only its two
 discovery documents), and the bare-domain redirect leaves `/.well-known/*` alone, so both hosts answer it.
+
+The site is its static export, with one small script in front of six pages: `/`, `/compare`, `/pricing`, `/privacy`,
+`/terms` and `/licences` answer their Markdown to an agent that prefers `text/markdown`, and their HTML with
+`Vary: Accept` to everyone else ([Markdown for agents](markdown-for-agents.md)). The script runs first on those six
+paths only (`run_worker_first`); every other path, the build's assets and the app pages included, is served from the
+static assets as before. Each Markdown page is also at its own address (`/compare.md`), and `/llms.txt` lists them
+with the help centre's list.
 
 Staging stays out of search results: every page on `staging.liveworkspace.app` answers
 `X-Robots-Tag: noindex, nofollow`, from a host rule in `public/_headers` (one build serves both hosts, so the rule
