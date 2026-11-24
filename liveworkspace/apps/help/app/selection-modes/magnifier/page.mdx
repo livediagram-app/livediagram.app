@@ -1,0 +1,65 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { MagnifierMode } from '@/editions/livediagram/components/illustrations/palette-modes';
+
+export const metadata = helpMetadata({
+  title: 'Magnifier',
+  description:
+    'Use the Magnifier in livediagram to look closer at part of a big diagram: a lens follows the cursor and enlarges what is under it, without zooming the canvas.',
+  path: '/help/selection-modes/magnifier/',
+});
+
+<ArticleLayout
+  path="selection-modes/magnifier"
+  title="Magnifier"
+  description="A lens that follows the cursor and enlarges what is under it."
+  categoryTitle="Selection Modes"
+  categorySlug="selection-modes"
+  subArticles={getSubArticles("magnifier")}
+>
+
+The Magnifier puts a lens on the cursor that enlarges whatever is under it. On a big diagram, a map of services or a busy board zoomed out to fit, you can read the small print of one corner without zooming in and losing your place. Choose **Magnifier** from the **Preview** group of the tool picker at the start of the palette strip, or press **`M`**.
+
+## How it works
+
+The lens is a square (or a circle, if you prefer) centred on the cursor. It shows the live canvas under it, enlarged, with a small crosshair marking the exact point you are over. Move the mouse and it follows; move it over a panel or off the canvas and it hides, so the palette and menus work as usual.
+
+<Figure caption="The tool picker set to Magnifier, and the lens enlarging one corner of a crowded diagram.">
+  <MagnifierMode />
+</Figure>
+
+It is purely a view, and it is yours alone. Nothing on the canvas changes and nobody else sees your lens. What it shows stays live: if someone moves a box under it, the lens catches up within a moment.
+
+## Moving around
+
+- **Move the mouse** to move the lens.
+- **Scroll the wheel** while the lens is up to change how much it enlarges.
+- **Hold Shift and scroll** to make the lens bigger or smaller.
+- **Drag** to pan the canvas, as with the [Hand](/help/selection-modes/hand/) tool. **Ctrl or Cmd and the wheel**, a trackpad pinch, or the zoom controls still zoom the canvas itself.
+
+A small badge in the corner of the lens shows the new magnification or size while you scroll.
+
+On a phone or tablet, touch the canvas and drag: the lens follows your finger and sits just above it, so your finger never covers what you are looking at (near the top edge it drops below instead). Lift your finger and it goes away. Two fingers pinch-zoom the canvas as usual.
+
+Nothing can be selected, moved or edited while the Magnifier is on, but [Selection Mode buttons](/help/palette/behaviour/mode-buttons/) on the canvas still press. Press `Esc`, or pick another tool, to leave it (`Esc` lands on Select, or on Hand on a phone).
+
+## Settings
+
+While the Magnifier is on, a **Magnifier** button joins the zoom controls at the bottom right, showing the current magnification ("2x"). Press it for the settings:
+
+- **Magnification**: from 1.5x to 6x. It starts at 2x.
+- **Size**: **Small**, **Medium** (the default) or **Large**. If Shift and the wheel left the lens between those, it reads **Custom** with its size in pixels.
+- **Shape**: **Square** or **Round**.
+
+Changes apply at once. Your settings are remembered on this device, for every diagram, the next time you pick the Magnifier.
+
+## Exports and presenting
+
+The lens is never part of an export, a thumbnail or what others see while you present. It only ever shows on your own screen.
+
+## Availability
+
+The Magnifier is greyed out on an empty canvas; add an element and it becomes available. It works on desktop and touch, and anyone who can open the diagram can use it, Editors, Participants and view-only visitors alike (press `M`), since looking changes nothing.
+
+</ArticleLayout>

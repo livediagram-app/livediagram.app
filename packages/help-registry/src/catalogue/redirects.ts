@@ -45,6 +45,11 @@ export const HELP_REDIRECTS: readonly HelpRedirect[] = [
   { from: 'selection-modes/slide-deck/*', to: 'selection-modes', apps: ['livedesign'] },
   { from: 'selection-modes/slide-deck', to: 'selection-modes', apps: ['livedesign'] },
   {
+    from: 'selection-modes/magnifier',
+    to: 'selection-modes',
+    apps: ['livedocuments', 'livedesign'],
+  },
+  {
     from: 'selection-modes/isometric-mode',
     to: 'selection-modes',
     apps: ['livedocuments', 'livedesign'],

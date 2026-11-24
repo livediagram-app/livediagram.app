@@ -31,6 +31,18 @@ export {
 // origin). Kept here so the shared mode-row and the per-mode scenes draw the
 // same glyph for each tool.
 
+/** A magnifying glass glyph, a plus in its lens (the editor's Magnifier glyph, mode-glyphs.ts). */
+export function MagnifierGlyph({ on = false }: { on?: boolean }) {
+  const cls = on ? 'stroke-white' : 'stroke-slate-500';
+  return (
+    <g className={cls} fill="none" strokeLinecap="round">
+      <circle cx={-1.5} cy={-1.5} r={5} strokeWidth={1.4} />
+      <path d="M2.2 2.2 L6.5 6.5" strokeWidth={2} />
+      <path d="M-1.5 -3.8 V0.8 M-3.8 -1.5 H0.8" strokeWidth={1.2} />
+    </g>
+  );
+}
+
 /** An isometric cube glyph. */
 export function IsometricGlyph({ on = false }: { on?: boolean }) {
   const cls = on ? 'stroke-white' : 'stroke-slate-500';

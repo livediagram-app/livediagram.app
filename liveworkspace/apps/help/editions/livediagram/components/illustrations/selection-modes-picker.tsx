@@ -10,6 +10,7 @@ import {
   HandGlyph,
   IsometricGlyph,
   LaserGlyph,
+  MagnifierGlyph,
   PainterGlyph,
   SelectGlyph,
   SpotlightGlyph,
@@ -26,6 +27,7 @@ const TOOLS = [
   { key: 'format', label: 'Format', shortcut: undefined, band: 0, Glyph: PainterGlyph },
   { key: 'laser', label: 'Laser', shortcut: 'K', band: 1, Glyph: LaserGlyph },
   { key: 'spotlight', label: 'Spotlight', shortcut: undefined, band: 1, Glyph: SpotlightGlyph },
+  { key: 'magnifier', label: 'Magnifier', shortcut: 'M', band: 2, Glyph: MagnifierGlyph },
   { key: 'isometric', label: 'Isometric', shortcut: 'I', band: 2, Glyph: IsometricGlyph },
   { key: 'zen', label: 'Zen', shortcut: 'Z', band: 2, Glyph: ZenGlyph },
 ] as const;
