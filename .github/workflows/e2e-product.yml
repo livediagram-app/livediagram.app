@@ -67,6 +67,9 @@ permissions:
 
 env:
   BUILD_SKIP_TYPECHECK: '1'
+  # An unset value is production's Community (www.liveworkspace.app): every E2E build would call it from
+  # each test's template picker. Same-origin, the e2e stack's api answers 404 (no Community tiles).
+  NEXT_PUBLIC_COMMUNITY_API: /api/community
 
 jobs:
   # The smoke shards' builds, once per run: the editor's export (and the Explorer's, when the smoke
