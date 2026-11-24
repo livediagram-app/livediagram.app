@@ -104,6 +104,10 @@ The surface settings say, for a surface:
 
 ## Placement
 
+The popover carries **an arrow pointing at what it hangs from**, as the cluster's other popovers (Tidy Up, Layers)
+do: out of its foot at the Theme & canvas button when it rises from the cluster, out of its header band at the
+opener when it hangs below one. The centred dialog and the phone sheet have none.
+
 On a screen 640 px wide and up the modal frame is a popover: hanging 8 px below the product's opener when it names one
 and it is on screen (livedocuments' page Style), else rising 8 px above the Theme & canvas button
 (`[data-tour-id="canvas-theme"]`) with its right edge on the bottom-right cluster's (`[data-zoom-cluster]`). With

@@ -1,4 +1,5 @@
 import { getOnline } from '@liveworkspace/workbench/lib/online-status';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useCallback, useEffect, useRef, useState, type SetStateAction } from 'react';
 
 import { UNTITLED_DOCUMENT_NAME } from '@livedocuments/templates';
@@ -24,16 +25,21 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   useEffect(() => {
     toastRef.current = toast;
   }, [toast]);
+  // Read by the failed-save toast, which names the document.
+  const documentNameRef = useRef(UNTITLED_DOCUMENT_NAME);
   const setSaveStatus = useCallback((next: SetStateAction<SaveStatus>) => {
     const was = saveStatusRef.current;
     const now = typeof next === 'function' ? next(was) : next;
     saveStatusRef.current = now;
-    if (now !== was) toastSaveFailure(now, toastRef.current);
+    if (now !== was) toastSaveFailure(now, toastRef.current, documentNameRef.current);
   }, []);
   const setSavedAt = useCallback((next: SetStateAction<number | null>) => {
     savedAtRef.current = typeof next === 'function' ? next(savedAtRef.current) : next;
   }, []);
   const [documentName, setDocumentName] = useState(UNTITLED_DOCUMENT_NAME);
+  useEffect(() => {
+    documentNameRef.current = documentName;
+  }, [documentName]);
   // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md) exactly as the api returned it, seeded on
   // load and never read again after useSlideDeck parses it. Kept as raw text
   // rather than a parsed Deck so hydration has one obvious moment, and a deck
@@ -69,13 +75,17 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
 // A toast when an autosave fails (network / 5xx). Nothing else shows the 'error' status, and a failed save risks lost
 // work, so it gets the bottom-centre toast. Raised on the move into a failed status; the toast layer dedupes a streak
 // of retries while one is still on screen.
-function toastSaveFailure(status: SaveStatus, toast: ReturnType<typeof useToast>): void {
+function toastSaveFailure(
+  status: SaveStatus,
+  toast: ReturnType<typeof useToast>,
+  documentName: string,
+): void {
   if (status === 'error') {
     // Offline, the cause is known and so is the way out (docs/specs/007-editor/load-recovery.md
     // "Offline"): the changes are only in this tab until the connection is back.
     toast.error(
       getOnline()
-        ? 'Couldn’t save your changes. Check your connection.'
+        ? `Couldn’t save ${toastName(documentName) ?? 'your changes'}. Check your connection.`
         : 'You’re offline. Keep this tab open to save when you reconnect.',
     );
   }

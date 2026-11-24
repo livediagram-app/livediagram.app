@@ -256,7 +256,8 @@ describe('the sheet store client', () => {
     s.write('sheet0001', set(2, 0, 1));
     await s.settle();
     await flush();
-    expect(toast).toHaveBeenLastCalledWith('This sheet holds the most cells it can');
+    // Named by the sheet's own title where the store knows it (the bell lists it later, on its own).
+    expect(toast).toHaveBeenLastCalledWith(expect.stringMatching(/holds the most cells it can$/));
     expect(value(2, 0)).toBeNull();
     expect(s.write('nope', set(0, 0, 1))).toBe('write_invalid');
   });
@@ -492,7 +493,11 @@ describe('the sheet store client', () => {
       toast: () => {},
     };
     expect(sheetStoreFor(deps)).toBe(sheetStoreFor(deps));
-    expect(sheetRefusalMessage(null)).toBe("Couldn't save that change");
+    expect(sheetRefusalMessage(null)).toBe('Couldn’t save the change to that sheet');
+    expect(sheetRefusalMessage(null, 'Budget')).toBe('Couldn’t save the change to “Budget”');
+    expect(sheetRefusalMessage('sheet_full', 'Budget')).toBe(
+      '“Budget” holds the most cells it can',
+    );
     expect(cellKey('a', 'b')).toBe('a:b');
   });
 });
@@ -680,7 +685,7 @@ describe('the sheet store client, edges', () => {
     s.write('sheet0001', cellAt(0, 0, 4));
     await s.settle();
     await flush();
-    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this plan');
+    expect(toast).toHaveBeenCalledWith(expect.stringMatching(/ is no longer in this plan$/));
     expect(s.sheet('sheet0001')).toBeUndefined();
   });
 
@@ -688,7 +693,7 @@ describe('the sheet store client, edges', () => {
     srv.api.createSheet.mockRejectedValueOnce(new ApiError('sheet create', 404, 'sheet_not_found'));
     s.create({ id: 'sheet0005', tabId: 't1', title: 'Copy', copyOf: 'gone00001' });
     await s.settle();
-    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this plan');
+    expect(toast).toHaveBeenCalledWith(expect.stringMatching(/ is no longer in this plan$/));
     expect(s.sheet('sheet0005')).toBeUndefined();
   });
 
@@ -696,7 +701,7 @@ describe('the sheet store client, edges', () => {
     srv.api.deleteSheet.mockRejectedValueOnce(new ApiError('sheet delete', 403, 'forbidden'));
     s.release(['sheet0001']);
     await s.settle();
-    expect(toast).toHaveBeenCalledWith("Couldn't save that change");
+    expect(toast).toHaveBeenCalledWith(expect.stringMatching(/^Couldn’t save the change to /));
     toast.mockClear();
     srv.api.deleteSheet.mockRejectedValueOnce(new ApiError('sheet delete', 404, 'sheet_not_found'));
     s.restoreReleased('sheet0001');

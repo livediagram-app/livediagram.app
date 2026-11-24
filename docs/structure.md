@@ -9,7 +9,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ agent-verbs              the parts of every product's CLI and MCP verbs that read no element union: addressing, refusals, argv lines
 │  ├─ ai                       the one model call every app's server makes (liveworkspace/docs/specs/003-accounts/ai-keys.md): the providers and their models, the provider-neutral request, `callModel` over built-in Workers AI, Anthropic and OpenAI (streamed), their failures in words, the key check and the fixed provider hosts
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
-│  ├─ ask                      Ask AI in every app but liveknowledge (liveworkspace/docs/specs/020-ask/ask.md): the passages, the request and the answer's reader (shared with liveknowledge's Ask), the `/api/ask` route and built-in AI's daily count, the tool in the footer's Tools
+│  ├─ ask                      Ask AI in every app but liveknowledge (liveworkspace/docs/specs/020-ask/ask.md): the passages, the request and the answer's reader (shared with liveknowledge's Ask), the `/api/ask` route, built-in AI's daily count and its AI credits with Pro on, the tool in the footer's Tools
 │  ├─ app-doors                the platform's calls on each app's internal doors (export, import, link), for the Drive mirror and the data export
 │  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, a write body's byte cap, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, a Durable Object alarm's one-second floor, the server renders' image embedder (`embedImages`), the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
@@ -40,6 +40,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ fake-google              an in-memory Google (Drive v3 and OAuth) for the Drive mirror's tests
 │  ├─ model-core               what every product's model shares and needs nothing of its element union (the Reaction Pad's five bursts among it); each re-exports it
 │  ├─ licences                 the /licences generator, its contract and the one pool of licence texts; each product binds its tables
+│  ├─ local-workers            local dev only: runs liveworkspace's eight services in one wrangler dev for dev:workspace, each on its own port
 │  ├─ marketing-site           the marketing pages every product shares (hero, Build with AI, FAQ, licences)
 │  ├─ mcp-kit                  an MCP Worker's app: the Streamable-HTTP transport and CORS, the OAuth 2.1 server with the device grant, request and tool scopes, preview fonts, tool results and fixable errors; each product hands in its server and OAuth config; and the MCP benchmark's client, report and shared diagram tasks
 │  ├─ media                    the media contract: apps, upload limits, wire shapes, a client, the Library

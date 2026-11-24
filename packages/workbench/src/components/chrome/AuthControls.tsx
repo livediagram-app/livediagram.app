@@ -15,7 +15,15 @@
 
 import Link from 'next/link';
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { Glyph, PictureDisc, useClickOutside, useMenu, useMenuButton } from '@liveworkspace/ui';
+import { lucideUser } from '@liveworkspace/icons/lucide';
+import {
+  Glyph,
+  PictureDisc,
+  lucideGlyph,
+  useClickOutside,
+  useMenu,
+  useMenuButton,
+} from '@liveworkspace/ui';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import { onProfileSaved } from '@liveworkspace/settings-ui/profile-events';
 import { workbench } from '../../bindings';
@@ -41,8 +49,11 @@ export type AuthControlsProps = {
   picture?: string | null;
 };
 
+// Each item leads with its glyph, as the Explorer's account menu and every other menu in the editor do.
 const MENU_ITEM =
-  'block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700';
+  'flex w-full cursor-pointer items-center gap-2.5 rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700';
+const MENU_ICON = 'shrink-0 text-slate-400';
+const AccountIcon = lucideGlyph(lucideUser, 15);
 
 export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
   const { authLoaded, isSignedIn, user, signOut } = useDeferredAuth();
@@ -136,6 +147,9 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
               ) : null}
             </div>
           ) : null}
+          {displayName ? (
+            <div role="separator" className="my-1 h-px bg-slate-100 dark:bg-slate-700" />
+          ) : null}
           {/* Account (docs/specs/007-editor/user-preferences.md): identity, email notifications and account deletion
               all live in the Settings dialog, so this opens it on its Account category, in place when the host can. */}
           {onOpenAccount ? (
@@ -149,6 +163,9 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
               }}
               className={MENU_ITEM}
             >
+              <span aria-hidden className={MENU_ICON}>
+                <AccountIcon />
+              </span>
               Account
             </button>
           ) : (
@@ -159,6 +176,9 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
               onClick={closeMenu}
               className={MENU_ITEM}
             >
+              <span aria-hidden className={MENU_ICON}>
+                <AccountIcon />
+              </span>
               Account
             </Link>
           )}
@@ -175,6 +195,9 @@ export function AuthControls({ onOpenAccount, picture }: AuthControlsProps) {
             }}
             className={MENU_ITEM}
           >
+            <span aria-hidden className={MENU_ICON}>
+              <SignOutIcon size={15} />
+            </span>
             Sign Out
           </button>
         </AccountMenu>
@@ -209,6 +232,17 @@ function AccountMenu({
     >
       {children}
     </div>
+  );
+}
+
+// Sign In's glyph turned round: the arrow leaves the door.
+function SignOutIcon({ size = 13 }: { size?: number } = {}) {
+  return (
+    <Glyph size={size} units={16}>
+      <path d="M7 3H3.5A1.5 1.5 0 0 0 2 4.5v7A1.5 1.5 0 0 0 3.5 13H7" />
+      <path d="M7 8h7" />
+      <path d="M11 5l3 3-3 3" />
+    </Glyph>
   );
 }
 

@@ -170,7 +170,7 @@ describe('restoring', () => {
       message: string;
       actions: { label: string; onSelect: () => void }[];
     };
-    expect(spec.message).toMatch(/^Restored the version kept today at/);
+    expect(spec.message).toMatch(/^Restored “Pitch” to the version kept today at/);
     api.apiRestoreVersion.mockResolvedValueOnce({
       tabId: 't1',
       rev: 6,
@@ -180,7 +180,7 @@ describe('restoring', () => {
     await act(async () => spec.actions[0]!.onSelect());
     await waitFor(() =>
       expect(toast.action).toHaveBeenLastCalledWith(
-        expect.objectContaining({ message: 'Restore undone' }),
+        expect.objectContaining({ message: 'Restore of “Pitch” undone' }),
       ),
     );
     expect(api.apiRestoreVersion).toHaveBeenLastCalledWith(expect.anything(), 'd1', 't1', 'v9');
@@ -193,13 +193,15 @@ describe('restoring', () => {
     await openVersion();
     fireEvent.click(screen.getByRole('button', { name: 'Restore This Version' }));
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Restore' })));
-    expect(toast.info).toHaveBeenCalledWith('Already the current version');
+    expect(toast.info).toHaveBeenCalledWith('“Pitch” is already at that version');
     api.apiRestoreVersion.mockRejectedValueOnce(
       Object.assign(new Error('x'), { code: 'elements_held' }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Restore This Version' }));
     await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Restore' })));
-    expect(toast.error).toHaveBeenCalledWith(expect.stringMatching(/Someone is working/));
+    expect(toast.error).toHaveBeenCalledWith(
+      expect.stringMatching(/^Couldn’t restore “Pitch”: someone is working/),
+    );
   });
 
   it('makes a copy named for its day, with a way to open it', async () => {

@@ -8,9 +8,9 @@ import { posRangeOf, formatRange } from '@liveplanner/sheets';
 import { SheetRuleLayer } from './SheetRuleLayer';
 import {
   NO_FORMAT_RULES,
-  NO_FORMAT_RULES_READ,
+  NO_FORMAT_RULES_HINT,
   NO_VALIDATION_RULES,
-  NO_VALIDATION_RULES_READ,
+  NO_VALIDATION_RULES_HINT,
   SheetFormatRuleList,
   SheetValidationRules,
   validationRuleShortLine,
@@ -220,8 +220,8 @@ describe('the Conditional Formatting popover', () => {
     act(() => h.select('C2:C6'));
     act(() => actions().openFormatRules(anchor));
     let dialog = await screen.findByRole('dialog', { name: 'Conditional Formatting' });
-    expect(within(dialog).getByText('No format rules on these cells yet.')).toBeTruthy();
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Add Another Rule' }));
+    expect(within(dialog).getByText('No format rules on these cells')).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add Rule' }));
     fireEvent.change(within(dialog).getByLabelText('Condition'), { target: { value: 'gt' } });
     fireEvent.change(within(dialog).getByLabelText('Value'), { target: { value: '10' } });
     await waitFor(() => expect(h.ctl().rules.formatPreview).toMatchObject({ op: 'gt', a: '10' }));
@@ -235,7 +235,7 @@ describe('the Conditional Formatting popover', () => {
       style: { bg: '#f4c7c3', fc: '#a50e0e', b: true },
     });
     // A colour scale, last.
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Add Another Rule' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add Rule' }));
     fireEvent.click(within(dialog).getByText('Colour Scale'));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Green, Yellow, Red' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Done' }));
@@ -256,7 +256,7 @@ describe('the Conditional Formatting popover', () => {
     act(() => h.select('A2:D6'));
     act(() => actions().openFormatRules(anchor));
     const dialog = await screen.findByRole('dialog', { name: 'Conditional Formatting' });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Add Another Rule' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add Rule' }));
     fireEvent.change(within(dialog).getByLabelText('Condition'), { target: { value: 'formula' } });
     fireEvent.change(within(dialog).getByLabelText('Custom Formula'), {
       target: { value: '=$C2>(' },
@@ -318,7 +318,7 @@ describe('the Sheet Settings sections', () => {
     expect(h.ctl().selection.ranges[0]).toEqual({ r1: 1, c1: 1, r2: 3, c2: 1 });
     fireEvent.click(within(fRows).getByRole('button', { name: 'Remove Is Empty' }));
     expect(fRules(h)).toEqual([]);
-    expect(screen.getByText(/No validation rules yet/)).toBeTruthy();
+    expect(screen.getByText(/No validation rules/)).toBeTruthy();
   });
   it('words each kind of rule', async () => {
     const { h } = await open();
@@ -360,11 +360,13 @@ describe('who may (docs/specs/013-workspace/share-roles.md)', () => {
   // Empty states describe instead of instructing someone with no toolbar to follow.
   it('tells an Editor how to make a rule, and a Participant only that there is none', async () => {
     await open({}, { canShape: false });
-    expect(screen.getByText(NO_VALIDATION_RULES_READ)).toBeTruthy();
-    expect(screen.getByText(NO_FORMAT_RULES_READ)).toBeTruthy();
-    cleanup();
-    await open();
     expect(screen.getByText(NO_VALIDATION_RULES)).toBeTruthy();
     expect(screen.getByText(NO_FORMAT_RULES)).toBeTruthy();
+    expect(screen.queryByText(NO_VALIDATION_RULES_HINT)).toBeNull();
+    expect(screen.queryByText(NO_FORMAT_RULES_HINT)).toBeNull();
+    cleanup();
+    await open();
+    expect(screen.getByText(NO_VALIDATION_RULES_HINT)).toBeTruthy();
+    expect(screen.getByText(NO_FORMAT_RULES_HINT)).toBeTruthy();
   });
 });

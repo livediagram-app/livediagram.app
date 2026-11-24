@@ -187,7 +187,7 @@ describe('Tidy Up a page', () => {
     const h = harness(tab);
     h.edits().tidyPage!('page-1');
     expect(h.tab()).toBe(tab);
-    expect(h.toastInfo).toHaveBeenCalledWith('This page is already tidy.');
+    expect(h.toastInfo).toHaveBeenCalledWith('Page 1 is already tidy.');
     expect(track).not.toHaveBeenCalled();
   });
 

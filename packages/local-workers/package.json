@@ -1,0 +1,14 @@
+{
+  "name": "@liveworkspace/local-workers",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Runs liveworkspace's eight services in one wrangler dev for dev:workspace, each on its own port. Local only.",
+  "scripts": {
+    "dev": "node start.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@liveworkspace/vitest-config": "workspace:*"
+  }
+}

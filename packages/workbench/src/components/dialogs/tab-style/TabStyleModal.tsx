@@ -16,7 +16,7 @@ import {
   useFocusTrap,
   useSheetDrag,
 } from '@liveworkspace/ui';
-import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { canvasThemeHeroArt } from '@liveworkspace/ui/dialog-hero-art/canvas-theme';
 import { useUiScale } from '../../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../../lib/ui-scale';
@@ -93,6 +93,25 @@ export function TabStyleModal({
               : { ...uiScaleStyle(panelScale), ...sheet.style, paddingBottom: safeInset('bottom') }
           }
         >
+          {/* The arrow at what the popover hangs from, as Tidy Up's and Layers' popovers have: out of its foot when
+              it rises from the cluster's button, out of the header's band (the band's paper) when it hangs below
+              an opener. Kept inside the panel's corners. */}
+          {anchor ? (
+            <div
+              aria-hidden
+              data-tab-style-arrow=""
+              style={{
+                // The hero's tokens on the arrow itself, so it can take the band's paper when it points out of it.
+                ...(hanging ? HERO_TOKEN_STYLE : {}),
+                right: Math.max(14, toSurfacePx(anchor.arrow, panelScale) - 7),
+              }}
+              className={`pointer-events-none absolute h-3.5 w-3.5 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${
+                hanging
+                  ? '-top-[7px] rounded-tl-sm border-l border-t bg-[var(--hero-paper)]! [color-scheme:light] dark:bg-[var(--hero-paper)]! dark:[color-scheme:dark]'
+                  : '-bottom-[7px] rounded-br-sm border-b border-r'
+              }`}
+            />
+          ) : null}
           {/* The grab handle stands over the header's band, which runs up under it on a phone. */}
           <SheetHandle handleProps={sheet.handleProps} className="relative z-10 sm:hidden" />
           {/* "Appearance" is the VIEWER's own light / dark chrome, so this dialog, the tab's look shared with

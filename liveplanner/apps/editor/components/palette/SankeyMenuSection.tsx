@@ -5,7 +5,7 @@
 // Edit Flows, and each node's colour. Bands, Layout, Labels and Leftovers: one choice each. Text: the unit and the
 // text size. Every pick commits at once, one undo step each, through the Sankey setters.
 
-import { useMemo, type ComponentProps } from 'react';
+import { useMemo } from 'react';
 import { Button } from '@liveplanner/ui';
 import {
   chartRamp,
@@ -39,7 +39,11 @@ import { OptionRows } from '@/components/plan/OptionRows';
 import { LegendTextSize } from '@/components/palette/TypographySections';
 import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
-import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
+import { MenuToolsSection } from '@liveworkspace/workbench/components/primitives/MenuToolsSection';
+import {
+  ChoiceTiles,
+  SettingsGroup,
+} from '@liveworkspace/workbench/components/dialogs/settings-layout';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideALargeSmall,
@@ -86,7 +90,8 @@ export function SankeyMenuSections({
   target,
   handlers: h,
   sectionProps,
-  flyoutProps,
+  onOpen,
+  inline,
   onPreviewTextSize,
   onPreviewEnd,
 }: {
@@ -94,7 +99,9 @@ export function SankeyMenuSections({
   handlers: SankeyMenuHandlers;
   sectionProps: (id: string) => SectionProps;
   // The Sankey category's own row: open state and placement, as the host gives every flyout.
-  flyoutProps: Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
+  // Opens the settings dialog; inside it (`inline`) the sections draw laid open.
+  onOpen: () => void;
+  inline: boolean;
   onPreviewTextSize: (size: TextSize) => void;
   onPreviewEnd: () => void;
 }) {
@@ -112,8 +119,135 @@ export function SankeyMenuSections({
   const valueLabel = target.sankeyValueLabel ?? 'value';
   const leftover = target.sankeyLeftover ?? 'show';
 
+  // In its Configure dialog: the flows at the left, how it draws at the right, every choice on show.
+  if (inline) {
+    const set = h.onSetOption;
+    return (
+      <div
+        data-sankey-configure=""
+        className="grid gap-x-8 gap-y-6 px-6 py-5 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)]"
+      >
+        <SettingsGroup title="Flows" hint={summary}>
+          <Button variant="secondary" size="sm" onClick={() => h.onEditFlows(target.id)}>
+            Edit Flows
+          </Button>
+          {graph.nodes.length > 0 ? (
+            <>
+              <p className="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                Node Colours
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {graph.nodes.map((n) => {
+                  const own = sankeyNodeColor(target.sankeyNodes, n.name);
+                  return (
+                    <NodeColourRow
+                      key={n.name}
+                      name={n.name}
+                      own={own}
+                      shown={own ?? ramp[n.index % ramp.length]!}
+                      paletteColour={ramp[n.index % ramp.length]!}
+                      onPick={(color) => h.onSetNodeColor(n.name, color)}
+                    />
+                  );
+                })}
+              </div>
+            </>
+          ) : null}
+        </SettingsGroup>
+        <div className="flex min-w-0 flex-col gap-5">
+          <SettingsGroup title="Bands" hint="What colours each flow.">
+            <ChoiceTiles
+              label="Bands"
+              selected={linkColor}
+              options={SANKEY_LINK_COLORS.map((mode) => ({
+                id: mode,
+                label: SANKEY_LINK_COLOR_LABELS[mode],
+                icon: <BandGlyph mode={mode} from={ramp[0]!} to={ramp[1 % ramp.length]!} />,
+              }))}
+              onPick={(id) => set({ sankeyLinkColor: id })}
+            />
+          </SettingsGroup>
+          <SettingsGroup title="Layout" hint="Where the nodes that end a flow sit.">
+            <ChoiceTiles
+              label="Layout"
+              selected={align}
+              options={SANKEY_ALIGNS.map((a) => ({
+                id: a,
+                label: SANKEY_ALIGN_LABELS[a],
+                icon: <AlignGlyph align={a} />,
+              }))}
+              onPick={(id) => set({ sankeyAlign: id })}
+            />
+          </SettingsGroup>
+          <SettingsGroup title="Labels" hint="What each node says beside its name.">
+            <ChoiceTiles
+              label="Labels"
+              selected={valueLabel}
+              options={SANKEY_VALUE_LABELS.map((v) => ({
+                id: v,
+                label: SANKEY_VALUE_LABEL_LABELS[v],
+                icon: <ValueGlyph label={v} />,
+              }))}
+              onPick={(id) => set({ sankeyValueLabel: id })}
+            />
+          </SettingsGroup>
+          <SettingsGroup title="Leftovers" hint="What a node takes in and does not pass on.">
+            <ChoiceTiles
+              label="Leftovers"
+              selected={leftover}
+              options={SANKEY_LEFTOVERS.map((l) => ({
+                id: l,
+                label: SANKEY_LEFTOVER_LABELS[l],
+                icon: <LeftoverGlyph leftover={l} color={ramp[0]!} />,
+              }))}
+              onPick={(id) => set({ sankeyLeftover: id })}
+            />
+            {leftover === 'show' ? (
+              <TextOptionRow
+                flush
+                label="Leftover Name"
+                value={target.sankeyLeftoverName ?? ''}
+                placeholder={SANKEY_LEFTOVER_NAME}
+                maxLength={SANKEY_NAME_MAX}
+                width="w-36"
+                onSet={(name) => set({ sankeyLeftoverName: name })}
+              />
+            ) : null}
+          </SettingsGroup>
+          <SettingsGroup title="Text">
+            <TextOptionRow
+              flush
+              label="Unit"
+              value={target.sankeyUnit ?? ''}
+              placeholder="£, kWh…"
+              maxLength={SANKEY_UNIT_MAX}
+              width="w-36"
+              onSet={(u) => set({ sankeyUnit: u })}
+            />
+            <div className="-mx-3">
+              <LegendTextSize
+                current={target.textSize ?? 'md'}
+                presetPx={sankeyLabelPx}
+                onSet={(size) => set({ textSize: size })}
+                onPreview={onPreviewTextSize}
+                onPreviewEnd={onPreviewEnd}
+              />
+            </div>
+          </SettingsGroup>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <MenuFlyoutSection title="Sankey" icon={<DataMenuGlyph />} {...flyoutProps}>
+    // One Configure row in the menu, never six categories: it opens them all in the settings dialog, laid open.
+    <MenuToolsSection
+      title="Configure"
+      icon={<DataMenuGlyph />}
+      onOpen={onOpen}
+      inline={inline}
+      always
+    >
       <MenuAccordionSection title="Flows" icon={<FlowsGlyph />} {...sectionProps('sankey-flows')}>
         <div className="px-2 py-1.5">
           <p className="text-[11px] text-slate-600 dark:text-slate-300">{summary}</p>
@@ -245,7 +379,7 @@ export function SankeyMenuSections({
           onPreviewEnd={onPreviewEnd}
         />
       </MenuAccordionSection>
-    </MenuFlyoutSection>
+    </MenuToolsSection>
   );
 }
 
@@ -295,6 +429,7 @@ function TextOptionRow({
   placeholder,
   maxLength,
   width,
+  flush = false,
   onSet,
 }: {
   label: string;
@@ -302,6 +437,8 @@ function TextOptionRow({
   placeholder: string;
   maxLength: number;
   width: string;
+  // In the Configure dialog: no menu inset, and the label at the dialog's size.
+  flush?: boolean;
   onSet: (value: string) => void;
 }) {
   const [draft, setDraft] = useFollowingDraft(value);
@@ -309,8 +446,10 @@ function TextOptionRow({
     if (draft.trim() !== value) onSet(draft);
   };
   return (
-    <div className="px-3 pt-2">
-      <label className="flex items-center justify-between gap-2 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+    <div className={flush ? '' : 'px-3 pt-2'}>
+      <label
+        className={`flex items-center justify-between gap-2 ${flush ? 'text-sm text-slate-700 dark:text-slate-200' : 'text-[10px] font-medium text-slate-500 dark:text-slate-400'}`}
+      >
         {label}
         <input
           className={`${MENU_CELL_INPUT} ${width}`}

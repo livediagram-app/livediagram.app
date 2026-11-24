@@ -2,7 +2,7 @@
 
 // The plan's board addresses as an Email Received rule's Board picker marks them (docs/specs/026-plan/automations.md
 // "Email Received"): read from the api (`GET /api/projects/:id/email-intake`) the first time the panel opens, once
-// per builder, and again when the Email to Board dialog its Turn On Email to Board opened closes. Only an Editor of the
+// per builder, and again when the Email to Board dialog its Turn On opened closes. Only an Editor of the
 // whole plan may read them: for anyone else, a server that takes no mail or a failed read, nothing is marked. The
 // builder provides it; EmailTriggerFields reads it.
 
@@ -13,7 +13,7 @@ import { readEmailIntakes } from '../email-intake/email-intake-client';
 import type { AutomationsScope } from './automations-client';
 import type { EmailIntakeScope } from '../email-intake/email-intake-gate';
 
-// The dialog's code loads the first time Turn On Email to Board is pressed.
+// The dialog's code loads the first time Turn On is pressed.
 const EmailIntakeDialog = dynamic(
   () => import('../email-intake/EmailIntakeDialog').then((m) => m.EmailIntakeDialog),
   { ssr: false },

@@ -212,9 +212,9 @@ export function GithubRepositories({
         </p>
       ) : null}
       {error ? (
-        <p role="alert" className="text-[12px] font-medium text-red-700 dark:text-red-300">
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       {dirty ? (
         <div className={`flex gap-2 ${phone ? 'flex-col-reverse' : 'justify-end'}`}>

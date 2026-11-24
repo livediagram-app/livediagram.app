@@ -1,11 +1,14 @@
 'use client';
 
 // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): a name, where it goes (Personal or one of the
-// person's teams) and an optional folder, then Save. A quick question, so the plain header. A refusal stays in the
+// person's teams) and an optional folder, then Save. It wears the dialog hero header, like every modal. A refusal stays in the
 // dialog, in words, with what was typed kept.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useId, useState } from 'react';
-import { Button, DialogFooter, DialogHeader, TextInput } from '@liveworkspace/ui';
+import { Button, DialogFooter, TextInput } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { saveToLibraryHeroArt } from '@liveworkspace/ui/dialog-hero-art/save-to-library';
 import {
   LIBRARY_FOLDER_MAX,
   LIBRARY_TITLE_MAX,
@@ -127,8 +130,11 @@ function SaveToLibraryForm({
         void submit();
       }}
     >
-      <DialogHeader
-        title={<span id={titleId}>Save to Library</span>}
+      {/* No close in the header: Cancel, below, is the way out, and it holds while a save is in flight. */}
+      <HeroDialogHeader
+        art={saveToLibraryHeroArt}
+        titleId={titleId}
+        title="Save to Library"
         subtitle={
           count === 1
             ? 'Keep a copy of this element to place in any document, in every app.'
@@ -215,9 +221,9 @@ function SaveToLibraryForm({
           ) : null}
         </label>
         {error ? (
-          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+          <Callout tone="error" role="alert">
             {error}
-          </p>
+          </Callout>
         ) : null}
       </div>
       <DialogFooter>

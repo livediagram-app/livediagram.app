@@ -338,9 +338,9 @@ function RenameInput({
         className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-800 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
       />
       {error ? (
-        <p role="alert" className="mt-1 text-xs text-rose-700 dark:text-rose-300">
+        <Callout tone="error" role="alert" className="mt-1">
           {error}
-        </p>
+        </Callout>
       ) : null}
     </div>
   );

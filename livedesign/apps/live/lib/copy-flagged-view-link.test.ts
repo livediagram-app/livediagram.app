@@ -16,6 +16,7 @@ function input(overrides: Partial<CopyFlaggedViewLinkInput> = {}) {
     writeClipboard: vi.fn(async () => {}),
     openShare: vi.fn(),
     toast,
+    link: 'Prototype link',
     copied: 'Copied a link that opens the prototype',
     makeFirst: 'Make a Viewer link, then copy the Prototype link.',
     now: 1_000,
@@ -68,7 +69,9 @@ describe('copyFlaggedViewLink', () => {
       writeClipboard: vi.fn(async () => Promise.reject(new Error('denied'))),
     });
     expect(await copyFlaggedViewLink(refused)).toBe(false);
-    expect(refused.toast.error).toHaveBeenCalledWith('Couldn’t copy the link. Try again.');
+    expect(refused.toast.error).toHaveBeenCalledWith(
+      'Couldn’t copy the Prototype link. Try again.',
+    );
   });
 
   it('copies nothing for a design with neither a visitor’s link nor an id', async () => {

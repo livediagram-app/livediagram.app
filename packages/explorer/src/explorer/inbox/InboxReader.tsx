@@ -10,6 +10,7 @@
 // Its verbs come from the host (`InboxHost.actions`), asked per row; nothing is offered that the page can't do. On a
 // phone and in the editor's panel the pane takes the list's place, with Back.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import {
   lazy,
   Suspense,
@@ -37,6 +38,7 @@ import { Body, Byline } from './InboxReaderBody';
 import { AccessRequestFailure, AccessRequestVerbs, useAccessAnswer } from './AccessRequestPane';
 import { KBD, PRIMARY, SECONDARY } from './pane-buttons';
 import { suggestionOffered } from './suggestion-answer';
+import { openInPlace } from './open-in-place';
 
 // A suggested edit's Accept, Dismiss and failure line load only when one is opened, off the Explorer's first load.
 const SuggestionActions = lazy(() =>
@@ -332,7 +334,11 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         ) : null}
         <Link
           href={href}
-          onClick={() => inboxHost?.onTelemetry?.('Selected', entry.kind)}
+          onClick={(e) => {
+            inboxHost?.onTelemetry?.('Selected', entry.kind);
+            // The open item's own place: a page load, or only the address would move (./open-in-place).
+            openInPlace(e, href);
+          }}
           className={canReply || primaryVerb || access || suggestionVerbs ? SECONDARY : PRIMARY}
         >
           <span ref={openRef} data-inbox-open="" className="inline-flex items-center gap-1.5">
@@ -399,9 +405,9 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           />
           <div className="flex items-center justify-between gap-2">
             {failed === 'reply' ? (
-              <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+              <Callout tone="error" role="alert">
                 Couldn’t send your reply. Try again.
-              </p>
+              </Callout>
             ) : (
               <span
                 aria-hidden

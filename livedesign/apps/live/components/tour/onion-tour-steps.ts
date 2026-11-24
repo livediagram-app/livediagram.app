@@ -40,8 +40,8 @@ export function onionTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourA
           inTheMenu(
             'rows',
             'Reorder in the Menu',
-            'In its menu, Tools › Rows lets you rename, reorder or remove rings.',
-            ['Tools', 'Rows'],
+            'In its menu, the Onion row opens a dialog to rename, reorder or remove rings.',
+            [],
           ),
         ]
       : []),

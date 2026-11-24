@@ -34,6 +34,7 @@ export function EditorContextMenuHost() {
     isReadOnly,
     editingId,
     closeContextMenu,
+    setContextMenu,
     openLinkPicker,
     removeIconFromElement,
     imageContext,
@@ -158,6 +159,9 @@ export function EditorContextMenuHost() {
       // right-button RELEASE, so the entrance never fires under a held button.
       key={contextMenu.mode === 'element' ? contextMenu.elementId : contextMenu.mode}
       menu={contextMenu}
+      onOpenTools={() =>
+        setContextMenu((cur) => (cur?.mode === 'element' ? { ...cur, tools: true } : cur))
+      }
       editingId={editingId}
       elements={activeTab.elements}
       tabFont={activeTab.font}

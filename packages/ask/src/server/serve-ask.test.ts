@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { answerEvents, errorResponse, fakeFetch, streamResponse } from '@liveworkspace/ai/testing';
 import type { KeyAnswer } from '@liveworkspace/ai';
+import type { SpendResult } from '@liveworkspace/subscription';
 import { readEvents } from '../events';
 import { ASK_MAX_BODY_CHARS, ASK_MAX_QUESTION_CHARS } from '../limits';
 import { isAskEvent, type AskEvent } from '../wire';
+import { ASK_CREDITS_WORDS, type AskCreditsDoor } from './ask-credits';
 import { ASK_WORDS, serveAsk, type AskDoor } from './serve-ask';
 
 // Planted wherever a key goes: it must reach the provider's own request and nothing else.
@@ -218,6 +220,82 @@ describe('POST /api/ask on built-in AI', () => {
       { error: 'ask_unavailable', message: ASK_WORDS.countFailed },
     ]);
     expect(builtIn.run).not.toHaveBeenCalled();
+  });
+
+  it("with Pro on, spends the item's AI credit after the day's count, and is refused by it", async () => {
+    const order: string[] = [];
+    const spendCredit = vi.fn(async (): Promise<SpendResult> => {
+      order.push('credit');
+      return { ok: true, used: 1, limit: 50, tier: 'free' };
+    });
+    const credits: AskCreditsDoor = {
+      client: { spend: spendCredit },
+      teams: [],
+      grant: async () => ({ level: 'edit', owner: 'user_owner', team: null }),
+      byOthers: async () => true,
+    };
+    const spend = vi.fn(async () => (order.push('day'), true));
+    const res = await serveAsk(
+      doorOf({ credits, spend, request: post({ question: 'Q?', passages, itemId: 'doc_1' }) }),
+    );
+    expect((await eventsOf(res)).at(-1)!.type).toBe('done');
+    expect(order).toEqual(['day', 'credit']);
+    expect(spendCredit).toHaveBeenCalledWith('p:user_owner', 'aiCredits', 1);
+
+    // An item id that is no id is not read: the asker's own month pays.
+    spendCredit.mockClear();
+    await eventsOf(
+      await serveAsk(
+        doorOf({ credits, request: post({ question: 'Q?', passages, itemId: 'x'.repeat(201) }) }),
+      ),
+    );
+    expect(spendCredit).toHaveBeenCalledWith('p:acc_1', 'aiCredits', 1);
+
+    spendCredit.mockResolvedValue({ ok: false, used: 50, limit: 50, tier: 'free' });
+    const builtIn = builtInOf({ response: 'x' });
+    const used = await serveAsk(doorOf({ credits, builtIn }));
+    expect([used.status, await used.json()]).toEqual([
+      429,
+      {
+        error: 'ai_credits_used',
+        message: ASK_CREDITS_WORDS.used,
+        limit: 'aiCreditsPerMonth',
+        owner: 'p:acc_1',
+        used: 50,
+        max: 50,
+      },
+    ]);
+    expect(builtIn.run).not.toHaveBeenCalled();
+  });
+
+  it('with Pro off (no credits door), or on a key, spends no credit', async () => {
+    const spendCredit = vi.fn();
+    const credits: AskCreditsDoor = {
+      client: { spend: spendCredit },
+      teams: [],
+      grant: vi.fn(),
+      byOthers: vi.fn(),
+    };
+    expect((await eventsOf(await serveAsk(doorOf({ credits: null })))).at(-1)!.type).toBe('done');
+    const { fetch } = fakeFetch(() =>
+      streamResponse(answerEvents(['<answer>It waits [1].</answer>'])),
+    );
+    const keyed = await serveAsk(
+      doorOf({
+        credits,
+        through: fetch,
+        aiKey: async () => ({
+          status: 'key',
+          source: 'account',
+          provider: 'anthropic',
+          model: 'claude-fable-5-2',
+          key: KEY,
+        }),
+      }),
+    );
+    expect((await eventsOf(keyed)).at(-1)!.type).toBe('done');
+    expect(spendCredit).not.toHaveBeenCalled();
+    expect(credits.grant).not.toHaveBeenCalled();
   });
 
   it('says a failed call in fixed words', async () => {

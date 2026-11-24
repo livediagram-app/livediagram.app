@@ -1,3 +1,4 @@
+import { CloseIcon } from '@livedesign/ui';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
@@ -10,12 +11,17 @@ import {
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useDesignColours } from '@/hooks/ui/useDesignColours';
-import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
-import {
-  MENU_ADD_ROW_BUTTON,
-  MENU_CELL_INPUT,
-} from '@liveworkspace/workbench/components/palette/menu-editor-classes';
+import { useRowMotion } from '@liveworkspace/workbench/hooks/ui/useRowMotion';
+
+// The rows' controls at a dialog's size (canvas-and-palette.md "A category that opens a dialog"): 36px tall, 14px
+// text (16px on a phone, the app's anti-zoom rule), so a finger lands on each.
+const CELL =
+  'h-9 min-w-0 rounded-md border border-slate-200 bg-white px-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100';
+const REMOVE_ROW =
+  'flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-lg leading-none text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-200';
+const ADD_ROW =
+  'mt-1 inline-flex h-9 w-full items-center justify-center rounded-md border border-dashed border-slate-300 text-sm font-medium text-slate-600 transition enabled:cursor-pointer enabled:hover:border-brand-400 enabled:hover:bg-brand-50/50 enabled:hover:text-brand-700 disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:enabled:hover:border-brand-500 dark:enabled:hover:bg-brand-500/10 dark:enabled:hover:text-brand-200';
 
 // A data row's colour (a pie slice, a legend row): its chip, shaped like the chart's own, opening
 // the one colour picker (docs/specs/004-interface-design/colour-picker.md): the strong standard
@@ -71,54 +77,62 @@ export function PieDataEditor({
   onChange: (slices: PieSlice[]) => void;
 }) {
   const [rows, setRows] = useFollowingDraft<PieSlice[]>(slices);
+  // Rows slide in and out (docs/specs/004-interface-design/motion.md "Rows that come and go").
+  const motion = useRowMotion();
   const colorAt = (i: number, s: PieSlice) => s.color ?? palette[i % palette.length]!;
   const patch = (i: number, p: Partial<PieSlice>) =>
     setRows((r) => r.map((s, j) => (j === i ? { ...s, ...p } : s)));
   return (
-    <div className="px-2 py-1.5">
-      <div className="flex flex-col gap-1">
+    <div>
+      <div className="flex flex-col">
         {rows.map((s, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <DataColour
-              label={`Slice ${i + 1} colour`}
-              value={s.color}
-              shown={colorAt(i, s)}
-              shape="rounded-[3px]"
-              onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
-            />
-            <input
-              className={`${MENU_CELL_INPUT} flex-1`}
-              value={s.label}
-              placeholder="Label"
-              aria-label={`Slice ${i + 1} label`}
-              onChange={(e) => patch(i, { label: e.target.value })}
-              onBlur={() => onChange(rows)}
-            />
-            <input
-              className={`${MENU_CELL_INPUT} w-12 text-right tabular-nums`}
-              type="number"
-              min={0}
-              value={s.value}
-              aria-label={`Slice ${i + 1} value`}
-              onChange={(e) => patch(i, { value: Math.max(0, Number(e.target.value) || 0) })}
-              onBlur={() => onChange(rows)}
-            />
-            <button
-              type="button"
-              aria-label={`Remove slice ${i + 1}`}
-              disabled={rows.length <= 1}
-              onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
-            >
-              ×
-            </button>
+          // Its own bottom padding, not a gap on the list, so a row sliding out takes its spacing with it.
+          <div key={i} {...motion.rowProps(i)}>
+            <div className="flex items-center gap-2 pb-2">
+              <DataColour
+                label={`Slice ${i + 1} colour`}
+                value={s.color}
+                shown={colorAt(i, s)}
+                shape="rounded-[3px]"
+                onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
+              />
+              <input
+                className={`${CELL} flex-1`}
+                value={s.label}
+                placeholder="Label"
+                aria-label={`Slice ${i + 1} label`}
+                onChange={(e) => patch(i, { label: e.target.value })}
+                onBlur={() => onChange(rows)}
+              />
+              <input
+                className={`${CELL} w-20 text-right tabular-nums`}
+                type="number"
+                min={0}
+                value={s.value}
+                aria-label={`Slice ${i + 1} value`}
+                onChange={(e) => patch(i, { value: Math.max(0, Number(e.target.value) || 0) })}
+                onBlur={() => onChange(rows)}
+              />
+              <button
+                type="button"
+                aria-label={`Remove slice ${i + 1}`}
+                disabled={rows.length <= 1}
+                onClick={() => motion.leave(i, () => onChange(rows.filter((_, j) => j !== i)))}
+                className={REMOVE_ROW}
+              >
+                <CloseIcon size={12} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
       <button
         type="button"
-        onClick={() => onChange([...rows, { label: `Item ${rows.length + 1}`, value: 10 }])}
-        className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+        onClick={() => {
+          motion.enter(rows.length);
+          onChange([...rows, { label: `Item ${rows.length + 1}`, value: 10 }]);
+        }}
+        className={ADD_ROW}
       >
         + Add Slice
       </button>
@@ -141,51 +155,100 @@ export function LegendDataEditor({
   onChange: (items: LegendItem[]) => void;
 }) {
   const [rows, setRows] = useFollowingDraft<LegendItem[]>(items);
+  // Rows slide in and out (docs/specs/004-interface-design/motion.md "Rows that come and go").
+  const motion = useRowMotion();
   const colorAt = (i: number, item: LegendItem) => item.color ?? palette[i % palette.length]!;
   return (
-    <div className="px-2 py-1.5">
-      <div className="flex flex-col gap-1">
+    <div>
+      <div className="flex flex-col">
         {rows.map((item, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <DataColour
-              label={`Legend row ${i + 1} colour`}
-              value={item.color}
-              shown={colorAt(i, item)}
-              // Round, matching the swatch on the card rather than the pie
-              // editor's square chip: the editor should look like the thing
-              // it edits.
-              shape="rounded-full"
-              onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
-            />
-            <input
-              className={`${MENU_CELL_INPUT} flex-1`}
-              value={item.label}
-              placeholder="Label"
-              aria-label={`Legend row ${i + 1} label`}
-              onChange={(e) =>
-                setRows((r) => r.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))
-              }
-              onBlur={() => onChange(rows)}
-            />
-            <button
-              type="button"
-              aria-label={`Remove legend row ${i + 1}`}
-              disabled={rows.length <= 1}
-              onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
-            >
-              ×
-            </button>
+          // Its own bottom padding, not a gap on the list, so a row sliding out takes its spacing with it.
+          <div key={i} {...motion.rowProps(i)}>
+            <div className="flex items-center gap-2 pb-2">
+              <DataColour
+                label={`Legend row ${i + 1} colour`}
+                value={item.color}
+                shown={colorAt(i, item)}
+                // Round, matching the swatch on the card rather than the pie
+                // editor's square chip: the editor should look like the thing
+                // it edits.
+                shape="rounded-full"
+                onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
+              />
+              <input
+                className={`${CELL} flex-1`}
+                value={item.label}
+                placeholder="Label"
+                aria-label={`Legend row ${i + 1} label`}
+                onChange={(e) =>
+                  setRows((r) => r.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))
+                }
+                onBlur={() => onChange(rows)}
+              />
+              <button
+                type="button"
+                aria-label={`Remove legend row ${i + 1}`}
+                disabled={rows.length <= 1}
+                onClick={() => motion.leave(i, () => onChange(rows.filter((_, j) => j !== i)))}
+                className={REMOVE_ROW}
+              >
+                <CloseIcon size={12} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
       <button
         type="button"
         // No colour on the new row, so it takes the next one from the ramp.
-        onClick={() => onChange([...rows, { label: `Item ${rows.length + 1}` }])}
-        className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+        onClick={() => {
+          motion.enter(rows.length);
+          onChange([...rows, { label: `Item ${rows.length + 1}` }]);
+        }}
+        className={ADD_ROW}
       >
         Add Row
+      </button>
+    </div>
+  );
+}
+
+// A pie, column or bar chart's rows in the menu (docs/specs/009-elements/pie-chart.md): each one's colour and
+// label, and the button that opens them in the Chart Data dialog, as a line chart's series are summarised.
+export function PieDataSummary({
+  slices,
+  palette = PIE_PALETTE,
+  onEdit,
+}: {
+  slices: PieSlice[];
+  palette?: readonly string[];
+  onEdit: () => void;
+}) {
+  return (
+    <div className="px-2 py-1.5">
+      <div className="flex flex-col gap-1">
+        {slices.map((s, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-200"
+          >
+            <span
+              className="inline-block h-2.5 w-2.5 shrink-0 rounded-[2px]"
+              style={{ backgroundColor: s.color ?? palette[i % palette.length]! }}
+            />
+            <span className="min-w-0 flex-1 truncate">{s.label || `Item ${i + 1}`}</span>
+            <span className="shrink-0 tabular-nums text-slate-500 dark:text-slate-400">
+              {s.value}
+            </span>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+      >
+        Edit Data
       </button>
     </div>
   );
@@ -249,94 +312,61 @@ export function ChecklistRowsEditor({
   onToggle?: (index: number) => void;
 }) {
   const [rows, setRows] = useFollowingDraft<ChecklistItem[]>(items);
+  // Rows slide in and out (docs/specs/004-interface-design/motion.md "Rows that come and go").
+  const motion = useRowMotion();
   return (
-    <div className="px-2 py-1.5">
-      <div className="flex flex-col gap-1">
+    <div>
+      <div className="flex flex-col">
         {rows.map((item, i) => (
-          <div key={i} className="flex items-center gap-1">
-            <input
-              type="checkbox"
-              checked={item.done}
-              aria-label={`Row ${i + 1} done`}
-              onChange={(e) =>
-                onToggle
-                  ? onToggle(i)
-                  : onChange(rows.map((r, j) => (j === i ? { ...r, done: e.target.checked } : r)))
-              }
-              className="h-3.5 w-3.5 shrink-0 cursor-pointer accent-brand-500"
-            />
-            <input
-              className={`${MENU_CELL_INPUT} flex-1`}
-              value={item.text}
-              placeholder="Task"
-              aria-label={`Row ${i + 1} task`}
-              maxLength={CHECKLIST_MAX_TEXT}
-              onChange={(e) =>
-                setRows((r) => r.map((s, j) => (j === i ? { ...s, text: e.target.value } : s)))
-              }
-              onBlur={() => onChange(rows)}
-            />
-            <button
-              type="button"
-              aria-label={`Remove row ${i + 1}`}
-              disabled={rows.length <= 1}
-              onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
-            >
-              ×
-            </button>
+          // Its own bottom padding, not a gap on the list, so a row sliding out takes its spacing with it.
+          <div key={i} {...motion.rowProps(i)}>
+            <div className="flex items-center gap-2 pb-2">
+              <input
+                type="checkbox"
+                checked={item.done}
+                aria-label={`Row ${i + 1} done`}
+                onChange={(e) =>
+                  onToggle
+                    ? onToggle(i)
+                    : onChange(rows.map((r, j) => (j === i ? { ...r, done: e.target.checked } : r)))
+                }
+                className="mx-1 size-4 shrink-0 cursor-pointer accent-brand-500"
+              />
+              <input
+                className={`${CELL} flex-1`}
+                value={item.text}
+                placeholder="Task"
+                aria-label={`Row ${i + 1} task`}
+                maxLength={CHECKLIST_MAX_TEXT}
+                onChange={(e) =>
+                  setRows((r) => r.map((s, j) => (j === i ? { ...s, text: e.target.value } : s)))
+                }
+                onBlur={() => onChange(rows)}
+              />
+              <button
+                type="button"
+                aria-label={`Remove row ${i + 1}`}
+                disabled={rows.length <= 1}
+                onClick={() => motion.leave(i, () => onChange(rows.filter((_, j) => j !== i)))}
+                className={REMOVE_ROW}
+              >
+                <CloseIcon size={12} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
       <button
         type="button"
         disabled={rows.length >= CHECKLIST_MAX_ITEMS}
-        onClick={() => onChange([...rows, { text: '', done: false }])}
-        className={MENU_ADD_ROW_BUTTON}
+        onClick={() => {
+          motion.enter(rows.length);
+          onChange([...rows, { text: '', done: false }]);
+        }}
+        className={ADD_ROW}
       >
         + Add Row
       </button>
-    </div>
-  );
-}
-
-// Code block summary (docs/specs/009-elements/code-block.md): a multi-line editor is too big for the menu,
-// so the Code category shows the language + line count and an "Edit Code"
-// button that opens the modal — the LineDataSummary pattern.
-export function CodeSummary({
-  code,
-  language,
-  wrap,
-  onSetWrap,
-  onEdit,
-}: {
-  code: string;
-  language: string;
-  // Long-line wrapping (docs/specs/009-elements/code-block.md). On by default, so this is the switch that
-  // turns it OFF for the rare block whose lines mean something at their full
-  // length (a table of fixed columns, say).
-  wrap: boolean;
-  onSetWrap: (wrap: boolean) => void;
-  onEdit: () => void;
-}) {
-  const lineCount = code.trim().length === 0 ? 0 : code.split('\n').length;
-  return (
-    <div className="px-2 py-1.5">
-      <p className="text-[11px] text-slate-700 dark:text-slate-200">
-        {lineCount === 0
-          ? 'No code yet'
-          : `${lineCount} ${lineCount === 1 ? 'line' : 'lines'} · ${language === 'plain' ? 'plain text' : language}`}
-      </p>
-      <button
-        type="button"
-        onClick={onEdit}
-        className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
-      >
-        Edit Code
-      </button>
-      <div className="-mx-2 mt-1">
-        <MenuToggleRow label="Wrap Long Lines" checked={wrap} onToggle={() => onSetWrap(!wrap)} />
-      </div>
     </div>
   );
 }

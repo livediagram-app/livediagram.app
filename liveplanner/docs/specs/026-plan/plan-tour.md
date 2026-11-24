@@ -202,7 +202,7 @@ The Practice Sprint's cards live **on this screen alone**:
 3. **WIP limits.** When, during the sprint, a column with a WIP limit goes over it (the count turning amber), the
    strip shows that once, in place of the current mission's why: "In Progress is over its limit of 3, so its count
    turns amber. Finish something before starting more." A board with no limits never mentions them.
-4. **The finish** (`outro`): "Sprint done." with **Keep as Real Cards** (the practice cards become real cards where
+4. **The finish** (`outro`): "Sprint done." with **Keep Them** (the practice cards become real cards where
    they are, one undo step) and **Clear Them** (they go). Either ends the tour as completed, as does **Learn More**
    followed by either.
 

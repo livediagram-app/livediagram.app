@@ -3,7 +3,7 @@
 // The photo chrome's small controls (docs/specs/031-photo/photo-pages.md "The options flyout"): a slider
 // that shows its value and takes typing, a toggle and a choice, each labelled for a screen reader,
 // at the strip's height.
-import { Select, SwitchChip } from '@livedesign/ui';
+import { Select, Switch, SwitchChip } from '@livedesign/ui';
 import { SliderRow } from './flyout-controls';
 
 const LABEL = 'shrink-0 text-[11px] font-medium text-slate-500 dark:text-slate-400';
@@ -67,6 +67,25 @@ export function OptionToggle({
     >
       {label}
     </SwitchChip>
+  );
+}
+
+/** A toggle as a dialog's row: its name on the left, a switch on the right. The chip above belongs in the options
+ *  strip; stacked in a dialog it stretched into a full-width bar. */
+export function OptionSwitch({
+  label,
+  on,
+  onChange,
+}: {
+  label: string;
+  on: boolean;
+  onChange: (on: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-0.5 text-[13px] font-medium text-slate-700 dark:text-slate-200">
+      {label}
+      <Switch size="sm" label={label} checked={on} onChange={onChange} />
+    </div>
   );
 }
 

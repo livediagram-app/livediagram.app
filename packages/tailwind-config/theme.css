@@ -288,6 +288,10 @@
  * controls and scrollbars follow the reader's pick rather than the OS. */
 :root {
   color-scheme: light;
+  /* Native checkboxes, radios, sliders and progress bars take the brand, in whichever theme and tab tint is
+   * showing (it reads the token, and inherits), so no control falls back to the browser's blue. A control
+   * with its own `accent-*` class keeps it. */
+  accent-color: var(--color-brand-600);
 }
 
 .dark {

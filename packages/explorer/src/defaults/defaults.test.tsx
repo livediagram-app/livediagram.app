@@ -339,7 +339,7 @@ describe('a template picked after creation', () => {
       intent: 'plan:board:kanban',
       noun: () => 'Kanban plans',
     });
-    expect(message).toBe('Moved to Boards, your default folder for Kanban plans.');
+    expect(message).toBe('Moved “⁨Item 1⁩” to Boards, your default folder for Kanban plans.');
     expect(index.items[0]!.folderId).toBe('Boards');
 
     const chosen = await moveOnTemplatePick(index.client, {

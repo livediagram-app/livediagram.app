@@ -4,6 +4,7 @@
 // Average and Count (and Min and Max, picked in its menu), over the cells that show (rows a filter hides are left
 // out), as a spreadsheet's does. The pick is the viewer's own, kept in their browser.
 import { useMemo, useState } from 'react';
+import { ChevronDownIcon } from '@liveplanner/ui';
 import { formatNumber } from '@liveplanner/sheets';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { STATS, toggleStatusPick, useStatusPick, type Stat } from './sheet-status-pick';
@@ -104,8 +105,8 @@ export function SheetStatusBar() {
             </span>
           </span>
         ))}
-        <span aria-hidden className="text-[9px] opacity-70">
-          ▾
+        <span aria-hidden className="flex self-center opacity-70">
+          <ChevronDownIcon />
         </span>
       </button>
       {open ? (

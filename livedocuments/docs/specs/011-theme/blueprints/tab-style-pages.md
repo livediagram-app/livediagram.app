@@ -11,7 +11,7 @@ background".
 | New Page Background | `Tab.newPageBackground: PageBackground` (`{}` the chosen paper)              | `packages/document/src/tab-type.ts`                                         |
 | Read it             | `newPageBackgroundOf(tab)`: undefined, `{}`, or fill and pattern             | `packages/document/src/tab-new-page-background.ts`                          |
 | Set it              | `withNewPageBackground(tab, patch \| null)`                                  | same                                                                        |
-| Apply to Every Page | `pagesGivenNewPageBackground(tab, memory?, reaches?)`                        | `packages/document/src/pages-background-copy.ts`                            |
+| Apply to All        | `pagesGivenNewPageBackground(tab, memory?, reaches?)`                        | `packages/document/src/pages-background-copy.ts`                            |
 | A look's pages      | `withLookPageBackground(tab, background, theme, memory?)`                    | same                                                                        |
 | A look's background | `TabLook.page: { fill?: ThemeGradientName; pattern? }`, `lookPageBackground` | `apps/editor/lib/tab-looks.ts`                                              |
 | The dialog's pages  | `TabStylePages`, `TabStylePagesContext`                                      | `apps/editor/components/dialogs/tab-style-pages.ts`                         |
@@ -60,19 +60,19 @@ background".
 
 ## Performance and limits
 
-- The dialog's `pages` value is memoised; `pageUnits` is O(pages), at most 100. Apply to Every Page is one walk and
+- The dialog's `pages` value is memoised; `pageUnits` is O(pages), at most 100. Apply to All is one walk and
   one ink pass, O(pages + elements), on a press. The sample page is built in a `useMemo` over kind, background,
   theme, finish, font and size: one page export per change, as the old sample was.
 
 ## Presentation and UX
 
 - Panel: the `SegmentedToggle` (Like the Page Before | Choose One) and its line, the `BackgroundSection`
-  (`only={['solid','gradient','animated']}`, `noPattern` on an article or card), Apply to Every Page with its line,
+  (`only={['solid','gradient','animated']}`, `noPattern` on an article or card), Apply to All with its line,
   then Around the Pages (`ColorSwatch`, and four `PatternButton`s but on an article or card).
 
 ## Testing
 
-- `packages/document/src/tab-new-page-background.test.ts`: read, set, a new page, a first page, Apply to Every Page,
+- `packages/document/src/tab-new-page-background.test.ts`: read, set, a new page, a first page, Apply to All,
   a look's pages, the theme follow.
 - `apps/editor/lib/tab-looks.test.ts`, `lib/new-page-background.test.ts`, `lib/page-preview.test.ts`,
   `components/dialogs/CanvasThemeDialog.test.tsx` (surfaces, the panel, the Article row, the summary),

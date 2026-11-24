@@ -2,6 +2,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AiSourceLine } from '@liveworkspace/settings-ui/ai-source';
+import { setProForTests } from '@liveworkspace/subscription-ui/testing';
 import type { AskPassage } from '../passages';
 import type { AskRequestBody } from '../wire';
 import type { AskOutcome } from './ask-client';
@@ -342,5 +343,76 @@ describe('Ask AI, which AI answers', () => {
     mocks.line = { kind: 'loading' } satisfies AiSourceLine;
     const { container } = render(<AskTool host={hostOf()} ctx={ctx} />);
     expect(container.querySelector('[data-ask-ai="loading"]')).toBeTruthy();
+  });
+});
+
+describe('Ask AI, AI credits (020-ask "AI credits")', () => {
+  afterEach(() => setProForTests(null));
+
+  it('says what a built-in question costs with Pro on, and nothing with Pro off or on a key', () => {
+    setProForTests(false);
+    const { unmount } = render(<AskTool host={hostOf()} ctx={ctx} />);
+    expect(document.querySelector('[data-ask-credits]')).toBeNull();
+    unmount();
+    setProForTests(true);
+    const on = render(<AskTool host={hostOf()} ctx={ctx} />);
+    expect(screen.getByText('Uses 1 AI credit')).toBeTruthy();
+    on.unmount();
+    mocks.line = {
+      kind: 'key',
+      owner: 'you',
+      provider: 'anthropic',
+      model: 'Claude Fable 5.2',
+      canChange: true,
+    } satisfies AiSourceLine;
+    render(<AskTool host={hostOf()} ctx={ctx} />);
+    expect(document.querySelector('[data-ask-credits]')).toBeNull();
+  });
+
+  it('sends the open item, so the api learns who pays', async () => {
+    render(<AskTool host={hostOf()} ctx={ctx} />);
+    type('Q?');
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+    await settle();
+    expect((mocks.calls[0]!.body as AskRequestBody).itemId).toBe('doc_1');
+  });
+
+  it("with Pro off, a credits refusal is the usual warning in the server's words", async () => {
+    setProForTests(false);
+    render(<AskTool host={hostOf()} ctx={ctx} />);
+    type('Q?');
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+    await settle();
+    await act(async () =>
+      mocks.calls[0]!.end({
+        type: 'error',
+        kind: 'ai_credits_used',
+        message: 'Credits used.',
+        credits: { owner: 'p:user_a' },
+      }),
+    );
+    await settle();
+    expect(screen.getByRole('alert').textContent).toContain('Credits used.');
+    expect(document.querySelector('[data-ask-credits-used]')).toBeNull();
+  });
+
+  it('with Pro on, a credits refusal is the limit notice', async () => {
+    setProForTests(true);
+    render(<AskTool host={hostOf()} ctx={ctx} />);
+    type('Q?');
+    fireEvent.keyDown(screen.getByRole('textbox'), { key: 'Enter' });
+    await settle();
+    await act(async () =>
+      mocks.calls[0]!.end({
+        type: 'error',
+        kind: 'ai_credits_used',
+        message: 'Credits used.',
+        credits: { owner: 'p:user_a' },
+      }),
+    );
+    await settle();
+    // No provider is mounted here: the owner is not known, so the plain fact with no offer.
+    expect(document.querySelector('[data-ask-credits-used="none"]')).toBeTruthy();
+    expect(screen.getByText('Credits used.')).toBeTruthy();
   });
 });

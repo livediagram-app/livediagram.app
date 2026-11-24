@@ -44,8 +44,8 @@ export function layerStackTourSteps(ctx: ConceptTourContext): TourStepOf<Element
           inTheMenu(
             'rows',
             'Reorder in the Menu',
-            'In its menu, Tools › Rows lets you rename, reorder or remove layers.',
-            ['Tools', 'Rows'],
+            'In its menu, the Layer Stack row opens a dialog to rename, reorder or remove layers.',
+            [],
           ),
         ]
       : []),

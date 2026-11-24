@@ -210,6 +210,8 @@ export default function SiteSettingsDialog({
       onClose={onClose}
       ariaLabel="Settings"
       size={SETTINGS_DIALOG_SIZE}
+      // A screen of its own on a phone, not a drawer (a top-level dialog).
+      phoneSheet={false}
       initialFocus="container"
       className={SETTINGS_DIALOG_CLASS}
     >

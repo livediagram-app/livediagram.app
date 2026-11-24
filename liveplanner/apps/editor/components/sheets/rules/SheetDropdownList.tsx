@@ -4,7 +4,8 @@
 // each option with its colour's dot, the cell's own ticked; over DROPDOWN_SEARCH_FROM options a search field filters
 // them; Clear at the foot empties the cell. Escape closes it and hands the keys back to the grid.
 import { useMemo, useState } from 'react';
-import { TextInput } from '@liveplanner/ui';
+import { CompactEmptyState, NoMatches, TextInput } from '@liveplanner/ui';
+import { DropdownIcon } from '../sheet-icons';
 import { formatA1, optionFor, rangeOptions, type ValidationRule } from '@liveplanner/sheets';
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
@@ -90,10 +91,10 @@ export function SheetDropdownList({
               rows={shown.map((o) => ({ id: o.v, label: o.v, icon: <Dot colour={o.c} /> }))}
               onPick={(v) => onPick(v)}
             />
+          ) : options.length ? (
+            <NoMatches things="options" query={query} />
           ) : (
-            <p className="px-2 py-1.5 text-[12px] text-slate-500 dark:text-slate-400">
-              {options.length ? `No options match “${query.trim()}”` : 'No options yet.'}
-            </p>
+            <CompactEmptyState size="small" icon={<DropdownIcon />} title="No options" />
           )}
         </div>
         <button

@@ -1,5 +1,7 @@
 import { useId, useRef, useState } from 'react';
-import { Button, CloseIcon, DialogHeader } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { codeEditHeroArt } from '@liveworkspace/ui/dialog-hero-art/code-edit';
+import { Button, Select } from '@liveworkspace/ui';
 import {
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
@@ -15,20 +17,29 @@ import { Dialog } from './Dialog';
 export function CodeEditDialog({
   code,
   language,
+  wrap = true,
+  onSetWrap,
   onCommit,
   onClose,
 }: {
   code: string;
   language: CodeLanguage;
+  // Long-line wrapping (code-block.md): on by default, so this turns it off for the rare block whose lines mean
+  // something at their full length. Saved with the code, as its own change when it differs. A product whose code
+  // block has no wrap setting leaves both out, and the dialog shows no wrap checkbox.
+  wrap?: boolean;
+  onSetWrap?: (wrap: boolean) => void;
   onCommit: (code: string, language: CodeLanguage) => void;
   onClose: () => void;
 }) {
   const [draft, setDraft] = useState(code);
   const [lang, setLang] = useState<CodeLanguage>(language);
+  const [wrapLines, setWrapLines] = useState(wrap);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const save = () => {
     onCommit(draft.slice(0, CODE_MAX_LENGTH), lang);
+    if (onSetWrap && wrapLines !== wrap) onSetWrap(wrapLines);
     onClose();
   };
 
@@ -53,21 +64,17 @@ export function CodeEditDialog({
     });
   };
 
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel="Edit code" size="lg" className="max-h-[90vh]">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} size="lg" className="max-h-[90vh]">
+      {/* The dialog hero header (dialog-hero-header.md): an editor window, the caret at the end of its line. */}
+      <HeroDialogHeader
+        art={codeEditHeroArt}
+        titleId={titleId}
         title="Code"
         subtitle="Paste or type the snippet; pick a language for highlighting."
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        >
-          <CloseIcon size={18} />
-        </button>
-      </DialogHeader>
+        onClose={onClose}
+      />
       <div className="flex flex-col gap-3 px-6 py-4">
         <textarea
           ref={textareaRef}
@@ -90,21 +97,34 @@ export function CodeEditDialog({
         >
           Tab indents, Shift+Tab moves on, ⌘/Ctrl+Enter saves.
         </p>
-        <div className="flex items-center justify-between gap-3">
-          <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-            Language
-            <select
-              value={lang}
-              onChange={(e) => setLang(e.target.value as CodeLanguage)}
-              className="rounded-md border border-slate-200 bg-white px-2 py-1.5 text-sm text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-            >
-              {CODE_LANGUAGES.map((l) => (
-                <option key={l} value={l}>
-                  {l === 'plain' ? 'Plain text' : l}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              Language
+              <Select
+                value={lang}
+                onChange={(e) => setLang(e.target.value as CodeLanguage)}
+                selectClassName="text-sm"
+              >
+                {CODE_LANGUAGES.map((l) => (
+                  <option key={l} value={l}>
+                    {l === 'plain' ? 'Plain text' : l}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            {onSetWrap && (
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                <input
+                  type="checkbox"
+                  checked={wrapLines}
+                  onChange={(e) => setWrapLines(e.target.checked)}
+                  className="size-4 cursor-pointer accent-brand-500"
+                />
+                Wrap Long Lines
+              </label>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={onClose}>
               Cancel

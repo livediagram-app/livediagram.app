@@ -5,13 +5,17 @@
 // or migration), under a name no item id can take: item ids are server-minted, and none starts with `~`. The instance
 // only ever holds the one storage key below, never an item's schema, so nothing that reads an item has anything to do
 // there. It keeps no question, no answer and no account id: only the day and how many.
-import { ASK_BUILT_IN_PER_PERSON_PER_DAY } from '../limits';
+import { ASK_BUILT_IN_PER_PERSON_PER_DAY, ASK_OWNER_CREDITS_BY_OTHERS_PER_DAY } from '../limits';
 
 /** The storage key of the count, `{ day, count }`. */
 export const ASK_COUNT_KEY = 'ask-ai';
 
 /** The room instance that keeps an account's count. */
 export const askCountName = (accountId: string): string => `~ask-ai:${accountId}`;
+
+/** The room instance that keeps an item's count of questions charged to its owner's AI credits by others ("AI
+ *  credits"): the same one storage key, under a name no item id can take. */
+export const askOthersCountName = (itemId: string): string => `~ask-ai-others:${itemId}`;
 
 /** The UTC day `now` falls on, as `YYYY-MM-DD`: the count starts again from zero on a new one. */
 export const utcDay = (now: number): string => new Date(now).toISOString().slice(0, 10);
@@ -46,23 +50,43 @@ export type AskCountNamespace = {
   get(id: never): unknown;
 };
 
+// Count one in the instance `name` against `cap` for today: `'unavailable'` when it cannot be reached. A cap guards a
+// bill: a fault refuses the question rather than lifting it.
+async function countIn(
+  rooms: AskCountNamespace | undefined | null,
+  name: string,
+  cap: number,
+  now: number,
+): Promise<boolean | 'unavailable'> {
+  if (!rooms) return 'unavailable';
+  try {
+    const room = rooms.get(rooms.idFromName(name) as never) as AskCountRpc;
+    return await room.spendAsk(utcDay(now), cap);
+  } catch {
+    // Only that it failed: the fault's own words could name the account or the item.
+    console.warn('[ask] count_unavailable');
+    return 'unavailable';
+  }
+}
+
 /**
  * Count one built-in question for `accountId` against today's allowance: `true` to go ahead, `false` at the cap,
- * `'unavailable'` when the count cannot be reached or there is no room namespace. This cap guards a bill: a fault
- * refuses the question rather than lifting the cap.
+ * `'unavailable'` when the count cannot be reached or there is no room namespace.
  */
-export async function spendAsk(
+export function spendAsk(
   rooms: AskCountNamespace | undefined | null,
   accountId: string,
   now: number = Date.now(),
 ): Promise<boolean | 'unavailable'> {
-  if (!rooms) return 'unavailable';
-  try {
-    const room = rooms.get(rooms.idFromName(askCountName(accountId)) as never) as AskCountRpc;
-    return await room.spendAsk(utcDay(now), ASK_BUILT_IN_PER_PERSON_PER_DAY);
-  } catch {
-    // Only that it failed: the fault's own words could name the account.
-    console.warn('[ask] count_unavailable');
-    return 'unavailable';
-  }
+  return countIn(rooms, askCountName(accountId), ASK_BUILT_IN_PER_PERSON_PER_DAY, now);
+}
+
+/** Count one question charged to `itemId`'s owner by someone who is not the owner or the owning team, against the
+ *  item's day (`ASK_OWNER_CREDITS_BY_OTHERS_PER_DAY`). Only with Pro on. */
+export function spendAskByOthers(
+  rooms: AskCountNamespace | undefined | null,
+  itemId: string,
+  now: number = Date.now(),
+): Promise<boolean | 'unavailable'> {
+  return countIn(rooms, askOthersCountName(itemId), ASK_OWNER_CREDITS_BY_OTHERS_PER_DAY, now);
 }

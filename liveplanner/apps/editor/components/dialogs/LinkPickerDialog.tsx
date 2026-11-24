@@ -1,12 +1,7 @@
-import { useState } from 'react';
-import {
-  Button,
-  CompactEmptyState,
-  TextInput,
-  Glyph,
-  DialogCloseButton,
-  DialogHeader,
-} from '@liveplanner/ui';
+import { useId, useState } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { linkPickerHeroArt } from '@liveworkspace/ui/dialog-hero-art/link-picker';
+import { Button, CompactEmptyState, TextInput, Glyph } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
@@ -116,23 +111,30 @@ export function LinkPickerDialog({
     currentLink?.kind === 'tab' || currentLink?.kind === 'element' ? currentLink.tabId : null;
   const linkedProjectId = currentLink?.kind === 'project' ? currentLink.projectId : null;
 
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="max-h-[90vh]">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} size="lg" className="max-h-[90vh]">
+      {/* The dialog hero header (dialog-hero-header.md): two links of a chain, locked. */}
+      <HeroDialogHeader
+        art={linkPickerHeroArt}
+        titleId={titleId}
         title={title}
         subtitle={
           urlOnly ? urlOnly.subtitle : 'Jump to a tab, open another plan, or go to a web address.'
         }
-      >
-        {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
-            it points at the embed article rather than the generic links one:
-            "which links work here" is the question being asked. */}
-        <HelpArticleLink
-          size="md"
-          article={urlOnly ? 'embedElements' : mode === 'tab' ? 'linkingTabs' : 'links'}
-        />
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        actions={
+          <>
+            {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
+              it points at the embed article rather than the generic links one:
+              "which links work here" is the question being asked. */}
+            <HelpArticleLink
+              size="md"
+              article={urlOnly ? 'embedElements' : mode === 'tab' ? 'linkingTabs' : 'links'}
+            />
+          </>
+        }
+        onClose={onClose}
+      />
 
       {/* Mode switcher — hidden entirely when the caller restricts to a URL:
           a one-button switcher is a control that can't do anything. */}

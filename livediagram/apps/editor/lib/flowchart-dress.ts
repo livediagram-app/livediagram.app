@@ -5,6 +5,7 @@
 import type { ArrowElement, ShapeElement, Tab } from '@livediagram/document';
 import { paintableArrowFields } from '@/lib/format-painter';
 import { dressMindNode } from '@/lib/mind-dress';
+import { deriveNewBoxedColours } from '@/lib/themes';
 
 /** A new step in the tab's theme, then in `styleFrom`'s look at its own size. */
 export function dressFlowchartStep(
@@ -14,6 +15,14 @@ export function dressFlowchartStep(
 ): ShapeElement {
   const dressed = dressMindNode(step, styleFrom, tab);
   return { ...dressed, width: step.width, height: step.height };
+}
+
+/** A new lane in the tab's theme, as a lane added from the palette is ("Swimlanes"): Add Lane makes it bare. */
+export function dressFlowchartLane(
+  lane: ShapeElement,
+  tab: Pick<Tab, 'backgroundColor' | 'patternColor' | 'theme'>,
+): ShapeElement {
+  return { ...lane, ...deriveNewBoxedColours(lane, tab) };
 }
 
 /** A new connector in `from`'s look (its own label kept), else the angled default it was made with. */

@@ -2,7 +2,7 @@
 
 // The Import dialog's A Whole Plan section (docs/specs/026-plan/plan-tabs.md "The Import dialog"): a liveplanner Plan
 // row for an Editor beside the tools (a guest's too), dimmed while offline; a plan's file picked or dropped is read and previewed in the
-// browser (its name and what it holds), and Import as New Plan makes it. A file that is not a plan, one from a newer
+// browser (its name and what it holds), and Import Plan makes it. A file that is not a plan, one from a newer
 // liveplanner and one past the cap are refused where they came in, the step left as it was.
 
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -150,7 +150,7 @@ describe('ImportTabDialog: A Whole Plan', () => {
     pickReturns(PLAN_FILE);
     const { onClose, plan } = open();
     fireEvent.click(planRow());
-    fireEvent.click(await screen.findByRole('button', { name: 'Import as New Plan' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Import Plan' }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(plan.importFile).toHaveBeenCalledWith(PLAN_FILE, 'Roadmap');
   });
@@ -161,7 +161,7 @@ describe('ImportTabDialog: A Whole Plan', () => {
     pickReturns(PLAN_FILE);
     const { onClose } = open(planFile({ importFile }));
     fireEvent.click(planRow());
-    fireEvent.click(await screen.findByRole('button', { name: 'Import as New Plan' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Import Plan' }));
     const running = await screen.findByRole('button', { name: 'Importing…' });
     expect(running.getAttribute('aria-busy') ?? running.hasAttribute('disabled')).toBeTruthy();
     settle({ ok: false, error: 'Couldn’t import that plan. Try again.' });

@@ -10,6 +10,7 @@
 // results and the End control live in the floating Poll panel everyone can
 // see, not behind a menu only the host has open.
 
+import { CloseIcon } from '@livediagram/ui';
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import {
@@ -222,7 +223,7 @@ export function PollComposerBody({
                   onClick={() => setOptions(options.filter((_, j) => j !== i))}
                   className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
-                  ×
+                  <CloseIcon size={12} />
                 </button>
               ) : null}
             </div>

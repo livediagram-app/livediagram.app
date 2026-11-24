@@ -97,6 +97,16 @@ describe('pieceTypeChoices', () => {
   });
 });
 
+// The row that opens the element's own settings in their dialog (MenuToolsSection): there is no Tools flyout.
+const settingsRow = () =>
+  screen
+    .queryAllByRole('button')
+    .find(
+      (b) =>
+        b.getAttribute('aria-haspopup') === 'dialog' &&
+        b.getAttribute('data-menu-section') !== 'Resources',
+    );
+
 describe('a piece’s Type section', () => {
   it('presses the piece’s own type, the first for one with none stored', () => {
     showSection(piece('door', 'sliding'));
@@ -120,8 +130,8 @@ describe('a piece’s Type section', () => {
     expect(screen.queryAllByRole('button')).toEqual([]);
   });
 
-  // A lone section stands in the menu itself; beside a piece's facing it folds under Tools with it.
-  it('is in the element menu of a door and a corridor, and under Tools beside a rug’s and a table’s facing', () => {
+  // A lone section stands in the menu itself; beside a piece's facing it goes to the piece's settings dialog with it.
+  it('is in the element menu of a door and a corridor, and in the settings dialog beside a rug’s and a table’s facing', () => {
     for (const kind of ['door', 'corridor'] as const) {
       openMenu(piece(kind));
       expect(tiles(), kind).toContain('Type');
@@ -129,7 +139,8 @@ describe('a piece’s Type section', () => {
     }
     for (const kind of ['rug', 'meeting-table'] as const) {
       openMenu(piece(kind));
-      expect(tiles(), kind).toContain('Tools');
+      expect(tiles(), kind).not.toContain('Tools');
+      expect(settingsRow(), kind).toBeTruthy();
       cleanup();
     }
   });

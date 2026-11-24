@@ -249,6 +249,17 @@ export function OpenDialog() {
         // The Team tab's link: the item's own address, absolute, as a member opens it (never through a link).
         itemUrl: absoluteHref(itemHref({ ...item, sharedVia: null })),
         teamName: item.teamId ? (teams.find((t) => t.id === item.teamId)?.name ?? null) : null,
+        // The Team tab's list, from accounts.
+        loadTeamMembers:
+          item.teamId && teamsCtx.host
+            ? async () => {
+                const details = await teamsCtx.host!.team(item.teamId!);
+                return (details?.members ?? []).map((m) => ({
+                  ...m,
+                  self: m.id === details!.team.myMemberId,
+                }));
+              }
+            : undefined,
         loadTabs: loadTabs ? () => loadTabs(item) : undefined,
         shareUrl: shareUrl ?? defaultShareUrl,
         handOver: shareHost?.handOver?.(item),

@@ -56,16 +56,16 @@ describe('the list', () => {
     expect(tabCount(3)).toBe('3 tabs');
   });
 
-  it('lists No Folder, every folder in full with its count, and New Folder, the current one marked', () => {
+  it('lists New Folder, No Folder and every folder in full with its count, the current one marked', () => {
     setup();
     const items = within(screen.getByRole('list', { name: 'Tab folders' })).getAllByRole(
       'listitem',
     );
     expect(items.map((li) => li.getAttribute('data-tab-folder-row'))).toEqual([
+      'new',
       'none',
       'Platform Services and Infrastructure Planning',
       'Plans',
-      'new',
     ]);
     // The long name in full, never cut.
     expect(screen.getByText('Platform Services and Infrastructure Planning').className).not.toMatch(

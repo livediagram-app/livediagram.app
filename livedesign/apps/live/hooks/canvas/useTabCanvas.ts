@@ -255,7 +255,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     track('Tab', 'Changed', patch === null ? 'NewPageBackgroundCarried' : 'NewPageBackground');
   };
 
-  // Apply to Every Page: every page of the tab but a photo page given that background, re-inked, as one undo step; a
+  // Apply to All: every page of the tab but a photo page given that background, re-inked, as one undo step; a
   // locked page keeps its own, and a notice says what it did.
   const applyNewPageBackgroundToEveryPage = () => {
     if (editsBlocked) return;

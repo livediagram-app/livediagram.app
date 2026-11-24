@@ -51,6 +51,7 @@ function OpenEditorContextMenu() {
     setTagColour,
     editingId,
     closeContextMenu,
+    setContextMenu,
     openLinkPicker,
     removeIconFromElement,
     imageContext,
@@ -126,7 +127,8 @@ function OpenEditorContextMenu() {
     setChartTypeSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
-    setCodeWrapSelected,
+    setRowsEditorOpenFor,
+    setResourcesOpenForId,
     setLegendItemsSelected,
     sankey,
     setSankeyFlowsOpenForId,
@@ -135,7 +137,6 @@ function OpenEditorContextMenu() {
     can,
     setChecklistItemsSelected,
     toggleChecklistItem,
-    setWebRowsSelected,
     setHeroCaptionSelected,
     commitShapeColorPreset,
     previewShapeColorPreset,
@@ -249,6 +250,9 @@ function OpenEditorContextMenu() {
       // right-button RELEASE, so the entrance never fires under a held button.
       key={contextMenu.mode === 'element' ? contextMenu.elementId : contextMenu.mode}
       menu={contextMenu}
+      onOpenTools={() =>
+        setContextMenu((cur) => (cur?.mode === 'element' ? { ...cur, tools: true } : cur))
+      }
       editingId={editingId}
       elements={activeTab.elements}
       onClose={closeContextMenu}
@@ -321,7 +325,10 @@ function OpenEditorContextMenu() {
       onSetChartType={setChartTypeSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
-      onSetCodeWrap={setCodeWrapSelected}
+      onEditRows={(id, kind) => {
+        closeContextMenu();
+        setRowsEditorOpenFor({ id, kind });
+      }}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
       build={buildSlide ? { slideElements: buildSlide } : undefined}
@@ -329,7 +336,6 @@ function OpenEditorContextMenu() {
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
-      onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
       shapeColorPresets={shapeColorPresets(getTheme(activeTab.theme))}
       onApplyShapeColorPreset={commitShapeColorPreset}
@@ -404,6 +410,10 @@ function OpenEditorContextMenu() {
       onToggleTableZebra={setTableZebraSelected}
       onOpenComments={openComments}
       onAssignAction={openAssignAction}
+      onOpenResources={(id) => {
+        closeContextMenu();
+        setResourcesOpenForId(id);
+      }}
       onDeleteElement={deleteSelected}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))

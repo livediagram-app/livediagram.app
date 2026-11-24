@@ -103,7 +103,8 @@ export function PageEditBarView({
           // Toasts stand on this button's line, beside it (liveworkspace toasts.md "Placement").
           data-toast-side=""
           data-page-read-corner=""
-          className="fixed z-[var(--z-toolbar)] flex items-center gap-2 phone:gap-1.5"
+          // Out of the way while the phone's More tray is open: it opens in this same corner, and these stood on it.
+          className="fixed z-[var(--z-toolbar)] flex items-center gap-2 phone:gap-1.5 [body:has([data-footer-more-tray]:not([hidden]))_&]:invisible"
         >
           {reactions}
           {onDescribe ? <DescribeStructureButton onPress={onDescribe} /> : null}

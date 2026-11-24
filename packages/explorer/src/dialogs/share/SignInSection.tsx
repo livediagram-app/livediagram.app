@@ -1,7 +1,7 @@
 'use client';
 
 // Sign In (one-explorer-contracts.md "Sharing and access", Work Tracker 1330 and 1331): who may open the item's passes,
-// one rule over every pass as Password Protection is, in the same settings-card look, just under it. Two rows in one
+// one rule over every pass as Password Protection is, in the same card, just under it. Two rows of the access
 // card: Require Sign In (accounts only, no guests), and Anybody With Email Address Domain (only accounts with a
 // verified email at these domains), whose switch opens a domain box. Domains imply sign-in, so with domains saved the
 // first switch reads on and is held there. The index checks the rule; the card only sets it, and reads back what the
@@ -17,7 +17,7 @@ import {
 import { Button, Switch, TextInput } from '@liveworkspace/ui';
 import { AtSignIcon, UserIcon } from '../../ui/icons';
 import { HelpLink } from './HelpLink';
-import { SETTING_CARD, SETTING_DETAIL, SETTING_DETAIL_ROW, SETTING_NOTE } from './parts';
+import { SETTING_DETAIL, SETTING_DETAIL_ROW, SETTING_ICON_TILE, SETTING_NOTE } from './parts';
 import type { ShareHelpHref } from './types';
 
 const ROW = 'relative flex items-center gap-4 px-4 py-3';
@@ -106,18 +106,16 @@ export function SignInSection({
   const domainsOn = hasDomains || editing;
 
   return (
+    // The access card's last rows (ShareDialog draws the card), under Password Protection's.
     <section
-      aria-label="Who can open passes"
+      aria-label="Sign in"
       data-tour-id="share-sign-in"
-      className="border-t border-slate-100 pt-4 dark:border-slate-800"
+      className="rounded-b-[inherit] border-t border-slate-100 dark:border-slate-700/70"
     >
-      <div className={SETTING_CARD}>
+      <div className="rounded-b-[inherit]">
         {/* Require Sign In: the Settings dialog's row, its switch covering the row. */}
-        <div className={`${ROW} rounded-t-[inherit] ${lockRequire || hasDomains ? '' : ROW_HOVER}`}>
-          <span
-            aria-hidden
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-700/70 dark:text-slate-300"
-          >
+        <div className={`${ROW} ${lockRequire || hasDomains ? '' : ROW_HOVER}`}>
+          <span aria-hidden className={SETTING_ICON_TILE}>
             <UserIcon size={15} />
           </span>
           <div className={`min-w-[9rem] flex-1 ${lockRequire ? 'opacity-50' : ''}`}>
@@ -155,10 +153,7 @@ export function SignInSection({
             domainsOn || locked ? '' : 'rounded-b-[inherit]'
           } ${lockDomains ? '' : ROW_HOVER}`}
         >
-          <span
-            aria-hidden
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-700/70 dark:text-slate-300"
-          >
+          <span aria-hidden className={SETTING_ICON_TILE}>
             <AtSignIcon size={15} />
           </span>
           <div className={`min-w-[9rem] flex-1 ${lockDomains ? 'opacity-50' : ''}`}>

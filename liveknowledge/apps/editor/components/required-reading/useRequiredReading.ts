@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import type { PageReadingChange } from '@liveknowledge/api-schema';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import {
   confirmedToast,
@@ -78,7 +79,7 @@ export function useRequiredReading(tab?: string): RequiredReadingView {
       .confirm(who, id, pageId, selfId)
       .then(
         () => toast.success(confirmedToast(name)),
-        (err: unknown) => toast.error(readingFailureText(err, 'confirm')),
+        (err: unknown) => toast.error(readingFailureText(err, 'confirm', toastName(name))),
       )
       .finally(() => setBusy(null));
   }, [busy, context, pageId, toast]);
@@ -97,7 +98,7 @@ export function useRequiredReading(tab?: string): RequiredReadingView {
         );
         return true;
       } catch (err) {
-        toast.error(readingFailureText(err, stop ? 'stop' : 'set'));
+        toast.error(readingFailureText(err, stop ? 'stop' : 'set', toastName(name)));
         return false;
       } finally {
         setBusy(null);
@@ -107,16 +108,19 @@ export function useRequiredReading(tab?: string): RequiredReadingView {
   );
 
   const remind = useCallback(() => {
-    const { who, documentId: id } = context();
+    const { who, documentId: id, name } = context();
     if (!id || busy) return;
+    const page = toastName(name);
     track('UI', 'Used', 'ReadingReminded');
     setBusy('remind');
     readingStore
       .remind(who, id, pageId)
       .then(
         (result) =>
-          remindSent(result) ? toast.success(remindText(result)) : toast.info(remindText(result)),
-        (err: unknown) => toast.error(readingFailureText(err, 'remind')),
+          remindSent(result)
+            ? toast.success(remindText(result, page))
+            : toast.info(remindText(result)),
+        (err: unknown) => toast.error(readingFailureText(err, 'remind', page)),
       )
       .finally(() => setBusy(null));
   }, [busy, context, pageId, toast]);

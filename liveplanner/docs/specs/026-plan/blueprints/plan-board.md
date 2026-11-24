@@ -358,7 +358,7 @@ PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fi
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
 copy-card-link.ts        Copy Card Link: copyCardLink(link, notify) writes the card's address to the clipboard, toasts
-                         LINK_COPIED ("Link copied") or LINK_NOT_COPIED ("Couldn't copy the link"; no clipboard too)
+                         "Link to “Fix login” copied" or "Couldn’t copy the link to “Fix login”" (no clipboard too)
 ../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel (a board maximised from a slot): PLAN_BOARD_SECTIONS (Board Setup, Columns,
                          Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
                          Cards / Archive), each Body given `open` so it can defer work while shut
@@ -950,7 +950,7 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
 | Address names a deleted or unseen card        | Nothing opens; the address drops the card       |
 | Address names a tab gone or out of scope      | The first tab; the card still opens             |
 | Card deleted by someone while open            | Its entry is stepped back off                   |
-| Clipboard missing or refused (Copy Card Link) | Toast "Couldn't copy the link"                  |
+| Clipboard missing or refused (Copy Card Link) | Toast "Couldn’t copy the link to “Fix login”"   |
 
 ## Observability
 

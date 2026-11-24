@@ -135,6 +135,12 @@ rows of one app whose `card.id` is set and whose `elementId` is the same (a thre
 the newer. Such a row's title is its `elementLabel` (the thread's title), its place `card.id` and `threadId`, and its
 verbs go to `…/threads/:elementId/comments` and `…/threads/:elementId/resolve` (`inbox-actions.ts`).
 
+The pane's Open link (`InboxReader.tsx`) goes through `openInPlace` (`packages/explorer/src/explorer/inbox/open-in-place.ts`):
+a plain click whose href is this page's address but for its fragment (`sameDocument`: same origin, path without a
+trailing slash, and query) replaces the history entry with the href (`replaceState`, as the editors' tab switches
+do) and reloads, since a client router only moves the hash and the editors read
+their deep link once on mount. Modified and non-primary clicks, and any other href, are the host `Link`'s.
+
 An element part's thread (a Sheet cell's, `elementId` `<elementId>:<cell>`) is found in the item's listing
 (`GET …/comments?status=all`) by `listedThreadKey` (`inbox-actions.ts`: `elementId`, then `:cell` when the listing
 gives one); Reply posts the listed thread's own `elementId` and `cell`, Resolve its first comment as any thread's.

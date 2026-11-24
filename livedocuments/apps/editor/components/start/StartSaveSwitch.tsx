@@ -6,6 +6,7 @@ import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useToast } from '@/hooks/ui/useToast';
 import { ConversionInProgressError, syncFailureMessage } from '@/lib/offline/offline-convert';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import type { StartPalette } from './start-palette';
 
 const KIND = kindWords('livedocuments').one;
@@ -43,8 +44,8 @@ export function StartSaveSwitch({ palette }: { palette: StartPalette }) {
         if (e instanceof ConversionInProgressError) return;
         toast.error(
           move === 'server'
-            ? syncFailureMessage(e)
-            : 'Couldn’t move this to this browser. It stays safe on the server.',
+            ? syncFailureMessage(e, ctx.documentName)
+            : `Couldn’t move ${toastName(ctx.documentName) ?? 'this document'} to this browser. It’s safe on the server.`,
         );
       }}
       ink={{

@@ -18,6 +18,7 @@ import { Callout } from '@liveworkspace/ui/callout';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import { useToast } from '@/hooks/ui/useToast';
 import { pageTrashStore, usePageTrashState } from '@/lib/knowledge/page-trash-store';
 import { track } from '@/lib/telemetry';
@@ -45,10 +46,10 @@ export function trashedLine(
 }
 
 /** What a restore's refusal says. */
-export function restoreFailure(error: unknown): string {
+export function restoreFailure(error: unknown, name?: string): string {
   if (error instanceof ApiError && error.code === 'page_limit')
     return 'A knowledgebase holds 500 pages at most: delete a page before restoring this one.';
-  return 'Could not restore the page. Try again.';
+  return `Could not restore ${toastName(name) ?? 'the page'}. Try again.`;
 }
 
 export function PageTrashDialog({
@@ -79,7 +80,7 @@ export function PageTrashDialog({
         toast.success(`Restored ${nameOf(page)} at the top level: its parent page is gone.`);
       else toast.success(`Restored ${nameOf(page)}.`);
     } catch (error) {
-      toast.error(restoreFailure(error));
+      toast.error(restoreFailure(error, nameOf(page)));
     } finally {
       setBusy(null);
     }
@@ -99,7 +100,7 @@ export function PageTrashDialog({
       await pageTrashStore.deleteForever(page.id);
       track('UI', 'Used', 'DeletePageForever');
     } catch {
-      toast.error('Could not delete the page. Try again.');
+      toast.error(`Could not delete ${toastName(nameOf(page)) ?? 'the page'}. Try again.`);
     } finally {
       setBusy(null);
     }

@@ -1,6 +1,7 @@
 // What the sheet store says when a change to a sheet is refused (docs/specs/029-sheets/sheet-store.md "Changing a
 // sheet"): the api's refusal codes in words, and a validation rule's refusal naming its cell.
 import { formatA1, layoutIndex, splitCellKey, type SheetLayout } from '@liveplanner/sheets';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 
 const REFUSALS: Partial<Record<string, string>> = {
   sheet_full: 'This sheet holds the most cells it can',
@@ -29,6 +30,10 @@ export function writeRefusalMessage(
   return sheetRefusalMessage(check.error);
 }
 
-export function sheetRefusalMessage(code: string | null): string {
-  return (code && REFUSALS[code]) ?? "Couldn't save that change";
+// `title` names the sheet in place of "This sheet", so the line still reads in the notification list.
+export function sheetRefusalMessage(code: string | null, title?: string | null): string {
+  const name = toastName(title);
+  const said = code ? REFUSALS[code] : undefined;
+  if (!said) return `Couldn’t save the change to ${name ?? 'that sheet'}`;
+  return name ? said.replace(/^This sheet\b/, name) : said;
 }

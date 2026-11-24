@@ -38,11 +38,11 @@ import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 // resolving.
 export {
   ChecklistRowsEditor,
-  CodeSummary,
   LegendDataEditor,
   LineDataSummary,
   LinkedChartData,
   PieDataEditor,
+  PieDataSummary,
 } from './context-menu-data-editors';
 export {
   ChartMenuGlyph,

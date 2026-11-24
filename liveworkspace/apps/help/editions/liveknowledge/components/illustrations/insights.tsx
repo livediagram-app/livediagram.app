@@ -381,14 +381,7 @@ function Side({
             {line}
           </Label>
         ))}
-        <Btn
-          x={x + 10}
-          y={y + 74}
-          w={146}
-          h={15}
-          label={`${page} Is Right, Fix the Other`}
-          size={6.4}
-        />
+        <Btn x={x + 10} y={y + 74} w={146} h={15} label={`${page} Is Right`} size={6.4} />
       </Surface>
     </g>
   );

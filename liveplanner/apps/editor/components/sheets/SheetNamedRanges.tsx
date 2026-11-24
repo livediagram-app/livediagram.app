@@ -2,14 +2,18 @@
 
 // Sheet Settings' Named Ranges (docs/specs/029-sheets/sheet.md "Named ranges"): each name with its range, Go To
 // (selects it) and, for an Editor, Remove (one undo step). Names are made in the name box.
-import { CloseIcon } from '@liveplanner/ui';
+import { CloseIcon, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
+import { lucideSquareDashed } from '@liveworkspace/icons/lucide';
 import { formatRange, posRangeOf } from '@liveplanner/sheets';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 
-export const NO_NAMES = 'No named ranges yet. Select cells and type a name in the name box.';
-// For someone who cannot name cells: what is there, never how to do what they cannot.
-export const NO_NAMES_READ = 'No named ranges.';
+// The empty state's heading, and its line for someone who can name cells: anyone else is told what is there, never
+// how to do what they cannot.
+export const NO_NAMES = 'No named ranges';
+export const NO_NAMES_HINT = 'Select cells and type a name in the name box.';
+
+const NamesGlyph = /* @__PURE__ */ lucideGlyph(lucideSquareDashed, 14);
 
 export function SheetNamedRanges({
   actions,
@@ -23,9 +27,12 @@ export function SheetNamedRanges({
   const names = [...(layout.names ?? [])].sort((a, b) => a.name.localeCompare(b.name));
   if (!names.length)
     return (
-      <p className="px-0.5 text-[12px] leading-relaxed text-slate-500 dark:text-slate-400">
-        {c.canShape ? NO_NAMES : NO_NAMES_READ}
-      </p>
+      <CompactEmptyState
+        size="small"
+        icon={<NamesGlyph />}
+        title={NO_NAMES}
+        description={c.canShape ? NO_NAMES_HINT : undefined}
+      />
     );
   return (
     <ul aria-label="Named ranges" className="flex flex-col gap-1">

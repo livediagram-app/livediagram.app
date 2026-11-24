@@ -37,8 +37,8 @@ export function cycleTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourA
     inTheMenu(
       'rows',
       'Reorder in the Menu',
-      'In its menu, Tools › Rows lets you rename, reorder or remove steps.',
-      ['Tools', 'Rows'],
+      'In its menu, the Cycle row opens a dialog to rename, reorder or remove steps.',
+      [],
     ),
     onGraphic(
       'animate',

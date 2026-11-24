@@ -17,7 +17,7 @@ import { sendOrHold, type PreRoomOutbox } from '@liveworkspace/workbench/lib/pre
 // false, so the composer puts the draft back.
 
 // What a post that lost the last card says (the Q&A board's refused note, in the box's words).
-export const IDEA_BOX_FULL_MESSAGE = 'The box filled up before your idea landed.';
+export const IDEA_BOX_FULL_MESSAGE = 'The idea box filled up before your idea landed.';
 
 type IdeaPost = {
   tabId: string;

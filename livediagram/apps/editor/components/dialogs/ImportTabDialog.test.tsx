@@ -179,3 +179,29 @@ describe('ImportTabDialog for a screen reader', () => {
     expect((await screen.findByRole('alert')).textContent).toBe('No nodes found.');
   });
 });
+
+// docs/specs/020-import-export/markdown-import.md: the warning is the first screen's.
+describe('ImportTabDialog, the replace warning', () => {
+  const dialog = (formats?: readonly ['mermaid']) =>
+    render(
+      <ImportTabDialog
+        tabName="Board"
+        formats={formats}
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+
+  it('shows on the format grid and not on a format step reached from it', () => {
+    dialog();
+    expect(screen.getByText(/This replaces everything on/).textContent).toContain('Board');
+    fireEvent.click(screen.getByRole('button', { name: /Mermaid/ }));
+    expect(screen.queryByText(/This replaces everything/)).toBeNull();
+  });
+
+  it('shows on the step a single-format dialog opens at', () => {
+    dialog(['mermaid']);
+    expect(screen.getByText(/This replaces everything on/)).toBeTruthy();
+  });
+});

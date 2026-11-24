@@ -3,7 +3,9 @@
 // Sheet Settings' Data Validation and Conditional Formatting sections (docs/specs/029-sheets/data-validation.md,
 // conditional-formatting.md "Making and changing rules"): every rule as a row (its line and range), Edit (Sheet
 // Settings closes, the rule's cells are selected and its editor opens against them), Go To and, for an Editor, Remove.
-import { CloseIcon } from '@liveplanner/ui';
+import type { ReactNode } from 'react';
+import { CloseIcon, CompactEmptyState } from '@liveplanner/ui';
+import { ConditionalFormatIcon, ValidationIcon } from '../sheet-icons';
 import {
   formatRange,
   formatRuleLine,
@@ -17,13 +19,13 @@ import {
 import { useSheetController, type SheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
 
-export const NO_VALIDATION_RULES =
-  "No validation rules yet. Select cells and choose Dropdown or Checkbox from the toolbar's Data menu.";
-export const NO_FORMAT_RULES =
-  "No format rules yet. Select cells and choose Conditional Formatting from the toolbar's Data menu.";
-// For someone with no toolbar (a Participant, a Viewer): what is there, never how to do what they cannot.
-export const NO_VALIDATION_RULES_READ = 'No validation rules.';
-export const NO_FORMAT_RULES_READ = 'No format rules.';
+// Each list's empty heading, and its line for someone with the toolbar.
+export const NO_VALIDATION_RULES = 'No validation rules';
+export const NO_VALIDATION_RULES_HINT =
+  "Select cells and choose Dropdown or Checkbox from the toolbar's Data menu.";
+export const NO_FORMAT_RULES = 'No format rules';
+export const NO_FORMAT_RULES_HINT =
+  "Select cells and choose Conditional Formatting from the toolbar's Data menu.";
 
 // A validation rule's short line: "Dropdown: To Do, Doing, Done", "Checkbox", "Number between 1 and 10".
 export function validationRuleShortLine(rule: ValidationRule, c: SheetController): string {
@@ -117,8 +119,8 @@ function RuleRows<T extends IdRange & { id: string }>({
   );
 }
 
-const empty = (text: string) => (
-  <p className="px-0.5 text-[12px] leading-relaxed text-slate-500 dark:text-slate-400">{text}</p>
+const empty = (icon: ReactNode, title: string, hint?: string) => (
+  <CompactEmptyState size="small" icon={icon} title={title} description={hint} />
 );
 
 export function SheetValidationRules({
@@ -130,7 +132,12 @@ export function SheetValidationRules({
 }) {
   const c = useSheetController();
   const rules = c.sheet.layout.rules ?? [];
-  if (!rules.length) return empty(c.canShape ? NO_VALIDATION_RULES : NO_VALIDATION_RULES_READ);
+  if (!rules.length)
+    return empty(
+      <ValidationIcon />,
+      NO_VALIDATION_RULES,
+      c.canShape ? NO_VALIDATION_RULES_HINT : undefined,
+    );
   return (
     <RuleRows
       rules={rules}
@@ -153,7 +160,12 @@ export function SheetFormatRuleList({
 }) {
   const c = useSheetController();
   const rules = c.sheet.layout.formatRules ?? [];
-  if (!rules.length) return empty(c.canShape ? NO_FORMAT_RULES : NO_FORMAT_RULES_READ);
+  if (!rules.length)
+    return empty(
+      <ConditionalFormatIcon />,
+      NO_FORMAT_RULES,
+      c.canShape ? NO_FORMAT_RULES_HINT : undefined,
+    );
   const lineOf = (r: FormatRule) =>
     formatRuleLine(r, r.fx ? renderFormula(r.fx, c.workbook.ctxFor(c.sheet.id)) : undefined);
   return (

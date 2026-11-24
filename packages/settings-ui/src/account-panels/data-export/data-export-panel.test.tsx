@@ -157,7 +157,7 @@ describe('Settings › Your Data', () => {
     expect(calls.filter((c) => c.method === 'GET').length).toBe(reads);
   });
 
-  it('shows a ready one with Download and Make a New One, and what was left out', async () => {
+  it('shows a ready one with Download and New Export, and what was left out', async () => {
     state = { personal: view({ leftOut: 2, problems: 1 }), teams: [] };
     await render();
     const link = row('personal').querySelector('a')!;
@@ -165,7 +165,7 @@ describe('Settings › Your Data', () => {
     expect(link.textContent).toContain('Download');
     expect(row('personal').textContent).toContain('12.4 MB');
     expect(row('personal').textContent).toContain('2 items were left out');
-    expect(button('Make a New One')).toBeTruthy();
+    expect(button('New Export')).toBeTruthy();
   });
 
   it('offers Try Again for a failed one, and a new one for a lapsed one', async () => {

@@ -82,8 +82,8 @@ export const LINKS_ADDED = chart(
   'Element',
   'Linked',
   'Links Added',
-  'A link put on an element or a table cell: a web address, another document, or another tab.',
-  { types: ['Url', 'Document', 'Tab'] },
+  'A link put on an element or a table cell: a web address, another document, another tab, or a file in another app.',
+  { types: ['Url', 'Document', 'Tab', 'App'] },
 );
 
 export const LINKS_REMOVED = chart(
@@ -464,7 +464,7 @@ export const FILES_CONNECTED_BOTH_WAYS: Metric = {
   action: 'Added',
   type: 'ConnectedBoth',
   title: 'Connected Both Ways',
-  blurb: 'A file connected with Add connection to both files, so it gained a tab back here too.',
+  blurb: 'A file connected with Connect both files, so it gained a tab back here too.',
 };
 
 export const FILES_CONNECTED_AGAIN: Metric = {

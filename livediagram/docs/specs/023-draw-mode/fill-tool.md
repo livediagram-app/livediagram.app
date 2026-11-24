@@ -66,7 +66,7 @@ of these that applies:
    time):
    - on the bare board or open ink: "Click inside a closed shape, or a loop whose ends meet, to fill
      it."
-   - on something locked: "That's locked, so its fill stays."
+   - on something locked: "That element is locked, so its fill stays."
 
 What a press looks past, on its way down: open ink (a marker stroke whose ends do not meet, a
 highlight), lines and arrows, text boxes, and a shape or path whose outline the press is outside.

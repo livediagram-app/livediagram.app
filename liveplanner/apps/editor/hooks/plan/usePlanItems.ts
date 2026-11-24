@@ -40,6 +40,7 @@ import { fetchItems, writeItem, type ItemWriteAnswer, type ItemsScope } from '@/
 import { refusedFieldOf } from '@/lib/api/refused-field';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { getOnline } from '@liveworkspace/workbench/lib/online-status';
+import { toastName } from '@liveworkspace/workbench/lib/toast-name';
 import {
   PLAN_QUEUE_FULL_MESSAGE,
   nextSeq,
@@ -135,7 +136,8 @@ export function titlesIn(state: ItemStoreState, ids: readonly string[]): string[
   return heldTitles(ids.flatMap((id) => (byId.has(id) ? [byId.get(id)!] : [])));
 }
 
-export function refusalMessage(code: string): string {
+// `card` is what the generic line names: the card's quoted title or "3 cards" (absent: "that card").
+export function refusalMessage(code: string, card?: string | null): string {
   switch (code) {
     case 'title_too_long':
       return `That title is too long: a card title holds up to ${ITEM_TITLE_MAX} characters`;
@@ -159,7 +161,7 @@ export function refusalMessage(code: string): string {
     case 'removal_held':
       return 'That would remove too many cards at once, so it was held';
     default:
-      return "Couldn't save that change";
+      return `Couldn’t save the change to ${card ?? 'that card'}`;
   }
 }
 
@@ -173,6 +175,7 @@ export const PLAN_FULL_MESSAGE =
 export function writeFailureMessage(
   err: unknown,
   nameOf: (field: string) => string = (field) => field,
+  card?: string | null,
 ): string {
   const code = (err as { code?: string } | null)?.code;
   if (code === 'items_full')
@@ -181,7 +184,7 @@ export function writeFailureMessage(
   const { field, limit } = refusedFieldOf(err);
   if (code === 'field_value_invalid' && field && limit)
     return fieldLimitWords(nameOf(field), limit);
-  return code ? refusalMessage(code) : "Couldn't save that change";
+  return refusalMessage(code ?? '', card);
 }
 
 // The undo of a card's delete carries the threads the card was on, as they were when it went.
@@ -439,14 +442,15 @@ export function usePlanItems(opts: {
   const failureMessage = useCallback(
     (err: unknown, write: ItemWrite): string => {
       const types = callbacks.current.typesOf?.() ?? [];
-      const first = itemIdsOfWrite(write)[0];
-      const typeId =
-        write.kind === 'create'
-          ? write.creates[0]?.type
-          : storeRef.current.items.find((i) => i.id === first)?.type;
+      const ids = itemIdsOfWrite(write);
+      const first = ids[0];
+      const held = storeRef.current.items.find((i) => i.id === first);
+      const typeId = write.kind === 'create' ? write.creates[0]?.type : held?.type;
       return writeFailureMessage(
         err,
         fieldNamer(types, () => types.find((t) => t.id === typeId)),
+        // Which card the generic line names (a toast is read later, in the notification list).
+        ids.length > 1 ? `${ids.length} cards` : held ? toastName(itemTitle(held)) : null,
       );
     },
     [callbacks],

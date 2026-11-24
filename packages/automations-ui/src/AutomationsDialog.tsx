@@ -74,6 +74,7 @@ import {
 import type { ListedRule, RuleBody, RuleStart } from './types';
 import { readAutomations, useAutomations } from './use-automations';
 import { useCarriedRule } from './use-carried-rule';
+import { useBusyIds } from './useBusyIds';
 
 /** A template's rule over this item, named so no rule here has its name, and what it left to pick. */
 export function templateStart(
@@ -159,7 +160,7 @@ export function AutomationsDialog({
   const phone = !useMediaQuery('(min-width: 640px)');
   const titleId = useId();
   const tabsId = useId();
-  const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
+  const [busy, withBusy] = useBusyIds();
   const [dirty, setDirty] = useState(false);
   const [leaving, setLeaving] = useState<(() => void) | null>(null);
   // The rule Run Rule was pressed on, while the app's own run (kit.runRule) is up.
@@ -239,19 +240,9 @@ export function AutomationsDialog({
     [scope, signedIn, onTarget],
   );
 
-  const withBusy = async (id: string, work: () => Promise<unknown>) => {
-    setBusy((s) => new Set(s).add(id));
-    try {
-      await work();
-    } finally {
-      setBusy((s) => {
-        const next = new Set(s);
-        next.delete(id);
-        return next;
-      });
-    }
-  };
-  const failed = (what: string) => (error: unknown) => {
+  // `verb` and the rule's name say what failed ("Couldn’t delete “Tidy Up”."), so the toast
+  // reads right later.
+  const failed = (what: string, verb: string, name: string) => (error: unknown) => {
     debugLog(`[automations] ${what}.failed`, { error: String(error) });
     toast.error(
       error instanceof AutomationRefusal
@@ -260,7 +251,7 @@ export function AutomationsDialog({
           error.code === 'automation_rules_full'
           ? rulesRefusedWords(error.tier, what === 'toggle')
           : error.message
-        : 'That didn’t work. Check your connection and try again.',
+        : `Couldn’t ${verb} “${name}”. Check your connection and try again.`,
     );
   };
 
@@ -271,11 +262,14 @@ export function AutomationsDialog({
       void withBusy(rule.id, async () => {
         await api.toggle(rule.id, enabled);
         track(enabled ? 'rule_on' : 'rule_off');
-      }).catch(failed('toggle')),
+      }).catch(failed('toggle', enabled ? 'turn on' : 'turn off', rule.name)),
     onDuplicate: () =>
       void api
         .duplicate(rule.id)
-        .then((copy) => toast.success(`Made ${copy.name}`), failed('duplicate')),
+        .then(
+          (copy) => toast.success(`Made the rule “${copy.name}”`),
+          failed('duplicate', 'duplicate', rule.name),
+        ),
     // With Pro on, a full item's Duplicate is off and says why, and so is a rule's switch while the item holds more
     // rules than its tier allows (owner, 2026-11-22): never a press the api refuses.
     duplicateOff:
@@ -294,13 +288,16 @@ export function AutomationsDialog({
         await api.save(rule.id, { name, trigger, conditions, steps, chain, timeZone });
         await api.toggle(rule.id, true);
         track('rule_taken_over');
-        toast.success(`${rule.name} now runs as you`);
-      }).catch(failed('take over')),
+        toast.success(`The rule “${rule.name}” now runs as you`);
+      }).catch(failed('take over', 'take over', rule.name)),
     onDelete: () =>
-      void api.remove(rule.id).then(() => {
-        track('rule_deleted');
-        toast.info(`Deleted ${rule.name}`);
-      }, failed('delete')),
+      void api.remove(rule.id).then(
+        () => {
+          track('rule_deleted');
+          toast.info(`Deleted the rule “${rule.name}”`);
+        },
+        failed('delete', 'delete', rule.name),
+      ),
   });
 
   const openRunSubject = openSubject
@@ -707,6 +704,8 @@ export function AutomationsDialog({
       onClose={close}
       titleId={titleId}
       size="3xl"
+      // A screen of its own on a phone, not a drawer (a top-level dialog).
+      phoneSheet={false}
       className="flex flex-col overflow-hidden sm:h-[min(52rem,calc(100dvh-2rem))] sm:w-[min(67.5rem,calc(100vw-2rem))] sm:max-w-none max-h-[calc(100dvh-2rem)] max-sm:h-dvh max-sm:max-h-dvh"
     >
       {view && !view.tab ? (

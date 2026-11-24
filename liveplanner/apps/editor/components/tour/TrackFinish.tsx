@@ -1,7 +1,7 @@
 'use client';
 
 // The finish of a track that changed the real plan (Card Types, Board Setup; docs/specs/026-plan/plan-tour.md): a line,
-// Keep and Put It Back, and Learn More. The Practice Sprint's finish is its own (Clear Them, Keep as Real Cards).
+// Keep and Put It Back, and Learn More. The Practice Sprint's finish is its own (Clear Them, Keep Them).
 
 import type { ReactNode } from 'react';
 import { Button } from '@liveplanner/ui';

@@ -1,12 +1,7 @@
-import { useState } from 'react';
-import {
-  Button,
-  CompactEmptyState,
-  TextInput,
-  Glyph,
-  DialogCloseButton,
-  DialogHeader,
-} from '@livehuddle/ui';
+import { useId, useState } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { linkPickerHeroArt } from '@liveworkspace/ui/dialog-hero-art/link-picker';
+import { Button, CompactEmptyState, TextInput, Glyph } from '@livehuddle/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import type { ElementLink } from '@livehuddle/document';
@@ -89,14 +84,17 @@ export function LinkPickerDialog({
     currentLink?.kind === 'tab' || currentLink?.kind === 'element' ? currentLink.tabId : null;
   const linkedDocumentId = currentLink?.kind === 'document' ? currentLink.documentId : null;
 
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel={title} size="lg" className="max-h-[90vh]">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} size="lg" className="max-h-[90vh]">
+      {/* The dialog hero header (dialog-hero-header.md): two links of a chain, locked. */}
+      <HeroDialogHeader
+        art={linkPickerHeroArt}
+        titleId={titleId}
         title={title}
         subtitle="Jump to a tab, open another space, or go to a web address."
-      >
-        <DialogCloseButton onClick={onClose} />
-      </DialogHeader>
+        onClose={onClose}
+      />
 
       <div className="flex gap-1 border-b border-slate-100 px-6 py-3 dark:border-slate-800">
         {MODES.map((m) => (

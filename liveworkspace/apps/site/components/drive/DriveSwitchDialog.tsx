@@ -5,6 +5,8 @@
 // lasts 30 minutes; answered after that, the dialog says so and offers the way back.
 import { useEffect, useRef, useState } from 'react';
 import { Button, Dialog, DialogFooter } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { driveSwitchHeroArt } from '@liveworkspace/ui/dialog-hero-art/drive-switch';
 import type { DriveClient } from '@liveworkspace/drive/client';
 import { switchOutcome } from '@/lib/drive/pages';
 import { ACCOUNT_BUTTON as BUTTON } from '@liveworkspace/settings-ui';
@@ -67,14 +69,14 @@ export function DriveSwitchDialog({
 
   return (
     <Dialog open onClose={keep} titleId="drive-account-switch-title" closeOnEscape={!busy}>
-      <div className="border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
-        <h2
-          id="drive-account-switch-title"
-          className="text-lg font-semibold text-slate-900 dark:text-slate-50"
-        >
-          {ACCOUNT_SWITCH_TITLE}
-        </h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+      {/* No close in the header: Keep Current Account is the way out, and it holds while an answer is sent. */}
+      <HeroDialogHeader
+        art={driveSwitchHeroArt}
+        titleId="drive-account-switch-title"
+        title={ACCOUNT_SWITCH_TITLE}
+      />
+      <div className="border-b border-slate-100 px-6 py-4 dark:border-slate-800">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
           {phase === 'expired' ? ACCOUNT_SWITCH_EXPIRED : ACCOUNT_SWITCH_BODY}
         </p>
         {phase === 'failed' ? (

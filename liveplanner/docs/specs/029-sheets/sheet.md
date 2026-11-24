@@ -665,8 +665,8 @@ coloured in one theme reads in the other (`@liveplanner/project` `cellColours`):
 - **Naming** (an Editor): select the cells and type the name in the formula bar's name box, then Enter (one undo
   step). Typing an existing name there selects its range, for anyone.
 - **Sheet Settings** has a **Named Ranges** section: each name with its range (`A1:B4`), **Go To** (selects it) and
-  **Remove** (an Editor; one undo step); "No named ranges yet. Select cells and type a name in the name box." when there
-  are none, and "No named ranges." for a Participant or Viewer, who cannot name cells.
+  **Remove** (an Editor; one undo step); the empty state "No named ranges" when there are none, with the
+  line "Select cells and type a name in the name box." (no line for a Participant or Viewer, who cannot name cells).
 - Formulas offer the sheet's names in their autocomplete, after the functions that match.
 - Deleting every row or every column a range covers removes its name; Clear Sheet removes them all. A copied sheet
   keeps its names (they are its own).
