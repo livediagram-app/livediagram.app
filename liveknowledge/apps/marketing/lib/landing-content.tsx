@@ -55,11 +55,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Pages',
     title: 'Pages That Stay Organised',
     description:
-      'A knowledgebase is a tree of pages, so a how-to lives under the team it belongs to and is found there again. Each page is one continuous page of writing, with tables, contents, footnotes, pictures, charts and drawings in the text. Type [[ to link to another page, and every page lists the pages that link to it.',
+      'A knowledgebase is a tree of pages, so a how-to lives under the team it belongs to and is found there again. Each page is one continuous page of writing, with tables, contents, footnotes, pictures, charts and drawings in the text. Type [[ to link to another page, label pages across the tree, and watch the ones you rely on to hear when they change.',
     points: [
       'A page tree with subpages',
-      'Links that follow a page when it is renamed',
-      'Linked From at the foot of every page',
+      'Labels that cut across the tree',
+      'Watch a page, and hear when it changes',
     ],
     art: <PagesArt />,
     metaDescription:
@@ -135,11 +135,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Verification',
     title: 'Trust Built Into Every Page',
     description:
-      'Every page has an owner, and says who verified it and when. A review comes due after 30, 90, 180 or 365 days, and the page reads Review Due until its owner checks it again. People see this on the page, and agents receive it with every passage.',
+      'Every page has an owner, and says who verified it and when. A review comes due after 30, 90, 180 or 365 days, and a Health Score from 0 to 100 says how far each page can be relied on. People see this on the page, agents receive it with every passage, and Required Reading asks the team to read the pages that matter.',
     points: [
-      'An owner for every page',
       'Verified, with a name and a date',
-      'Reviews that come due',
+      'A Health Score for every page',
+      'Required Reading, and who has read it',
     ],
     art: <TrustArt />,
     metaDescription:
@@ -215,11 +215,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Ask',
     title: 'Ask, With Sources',
     description:
-      'Ask a question in plain words and get an answer written only from your pages, each claim numbered to the passage it came from and to the person who verified it. When the pages do not cover something, Ask says so and offers to start that page: it does not guess. Ask runs on built-in AI, included, or your own Claude or OpenAI key, and search needs no AI at all.',
+      'Ask a question in plain words and get an answer written from your pages, and from the diagrams, plans and Spaces connected to them, each claim numbered to the passage it came from and to the person who verified it. When the pages do not cover something, Ask says so and offers to start that page: it does not guess. Ask runs on built-in AI, included, or your own Claude or OpenAI key, and search needs no AI at all.',
     points: [
       'A citation on every claim',
       'It says what the pages do not cover',
-      'Built-in AI, or your own key',
+      'Answers from your other apps too',
     ],
     art: <AskArt />,
     metaDescription:
@@ -434,11 +434,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'liveworkspace',
     title: 'Part of liveworkspace',
     description:
-      'Embed a diagram from livediagram, a board from liveplanner, a document from livedocuments, a design from livedesign or a Space from livehuddle, and the page shows it as it is now. One account opens every app, and a knowledgebase is shared like everything else, with Editor, Participant and Viewer roles. Keep one Offline in your browser, or mirror it to Google Drive.',
+      'Embed a diagram from livediagram, a board from liveplanner, a document from livedocuments, a design from livedesign or a Space from livehuddle, and the page shows it as it is now. One account opens every app, and a knowledgebase is shared like everything else, with Editor, Participant and Viewer roles. Publish one, or a section of it, as a public site anyone can read, keep one Offline, or mirror it to Google Drive.',
     points: [
       'Live embeds from five apps',
       'Editor, Participant and Viewer roles',
-      'Offline and the Google Drive mirror',
+      'Publish to the web for anyone to read',
     ],
     art: <WorkspaceArt />,
     metaDescription:

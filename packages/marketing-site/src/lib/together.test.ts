@@ -2,7 +2,7 @@ import { canonicalScope } from '@liveworkspace/help-registry';
 import { allArticles } from '@liveworkspace/help-registry/catalogue';
 import { APP_SITES } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
-import { TOGETHER, togetherHref } from './together';
+import { PRODUCT_CARD_LIMIT, TOGETHER, togetherFor, togetherHref } from './together';
 
 const APP_IDS = new Set(APP_SITES.map((s) => s.id));
 const appOf = (id: string) => id.replace(/\.app$/, '');
@@ -45,5 +45,23 @@ describe('how work moves between the apps', () => {
       expect(`${card.title} ${card.body}`, card.key).not.toMatch(
         /\b(pro|paid|price|pricing|subscription|mcp)\b|\u2014/i,
       );
+  });
+
+  it('gives each product the cards it takes part in, at most two rows, Ask AI first', () => {
+    for (const { id } of APP_SITES) {
+      const cards = togetherFor(id);
+      expect(cards.length, id).toBeGreaterThanOrEqual(3);
+      expect(cards.length, id).toBeLessThanOrEqual(PRODUCT_CARD_LIMIT);
+      expect(cards[0]!.key, id).toBe('ask-ai');
+      for (const card of cards) expect([...card.from, ...(card.to ?? [])], card.key).toContain(id);
+    }
+    expect(togetherFor('liveknowledge.app').map((c) => c.key)).toContain('send-to-diagram');
+    expect(togetherFor('livehuddle.app').map((c) => c.key)).not.toContain('send-to-diagram');
+  });
+
+  it('keeps a page link relative on liveworkspace.app and absolute on a product site', () => {
+    const link = { kind: 'page', href: '/kits', label: 'Start a Project' } as const;
+    expect(togetherHref(link)).toBe('/kits');
+    expect(togetherHref(link, false)).toMatch(/^https?:\/\/.+\/kits$/);
   });
 });

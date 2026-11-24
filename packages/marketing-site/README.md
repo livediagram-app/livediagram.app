@@ -20,11 +20,14 @@ packages/marketing-site/src
 │  │                            teammate Cursor), canvas-marks, page-kit, versatility-parts
 │  ├─ ai/                       the Build with AI page (BuildWithAi) and its client picker, code
 │  │                            blocks, copy buttons, address card, prompts, control and help
+│  ├─ together/                 the "Better together" band: every cross-app card on liveworkspace.app,
+│  │                            a product's own (at most six) on its landing page
 │  ├─ faq/                      the FAQ browser (search, category index) and the question card
 │  └─ licences/                 the /licences page body and its lazy licence texts
 ├─ lib/
 │  ├─ ai-clients.ts             the AI clients as data, bound to a product by aiClients()
 │  ├─ faq.ts                    the FAQ's shape, its plain-text answers and its search
+│  ├─ together.ts               the cross-app cards, their links, and togetherFor (a product's pick)
 │  ├─ licences-manifest.ts      reads generated/licences.json at build time
 │  ├─ legal-moved.ts            the /terms, /privacy and /security stubs' metadata and words, by product
 │  ├─ view-transition-guard.ts  the inline script that skips a transition into another app

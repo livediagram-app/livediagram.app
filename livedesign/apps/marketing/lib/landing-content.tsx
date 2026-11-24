@@ -269,14 +269,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the pages with you: live cursors, comments and walkthroughs. Take a snapshot before a big change, ask for approval when it is done, keep your best parts in a Library, send the feedback to a plan, or hand the work to your AI.',
+      'Share a link and your team is on the pages with you: live cursors, comments and walkthroughs. Take a snapshot before a big change, ask for approval when it is done, keep your best parts in a Library, ask AI what the screens say, or send the feedback to a plan.',
     metaDescription:
       'Work on designs together: live cursors, comments, walkthroughs, snapshots, approvals, a shared Library, calls, cards sent to a plan and an MCP server for AI.',
     highlights: [
       'Live presence',
       'Comments on anything',
       'Record a walkthrough',
-      'Make designs with AI',
+      'Ask AI about the design',
     ],
     items: [
       {

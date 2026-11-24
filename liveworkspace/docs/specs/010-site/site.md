@@ -177,7 +177,8 @@ moves between them, and the one account that joins them.
    WCAG AA. On a dark page, text in an app's colour (a link, a name, a card's call to action, here and on every
    page of the site) is its light shade, `light` in `@liveworkspace/sites` (its brand-400), which passes AA on every
    dark surface; the accent itself does not for each app (liveplanner's violet-500 is 4.1:1 on slate-900).
-3. **How work moves between them** (`#together`, `components/landing/Together.tsx`, its copy in `lib/together.ts`):
+3. **How work moves between them** (`#together`, `Together` and its copy in `@liveworkspace/marketing-site`
+   (`components/together/Together.tsx`, `lib/together.ts`), shared with every product's landing page):
    the suite story, the features that hand work from one app to another, between the apps and the promises. Eyebrow
    "Better together", heading "Work moves between the apps.", then "Each app hands its work to the next, so nothing is
    typed twice and nothing goes stale." Nine cards, three columns from `lg` and two from `sm` (the ninth across the
@@ -193,9 +194,15 @@ moves between them, and the one account that joins them.
    knowledgebase and its actions to a plan); **Automations Across Apps** (the five steps in other apps); **Ask AI**
    (every app's Tools, and a knowledgebase's Ask reading its connected items); **Start a Project** (a kit, every file
    connected). Only what is on main is named; the unlisted liveworkspace MCP is not (021-mcp). A test
-   (`lib/together.test.ts`) holds every card's apps to the listed apps, its help link to an article in the catalogue
-   for one of the apps it names, and its words free of Pro or prices. A feature that joins apps changes this
-   list in the same change.
+   (`lib/together.test.ts` in the package) holds every card's apps to the listed apps, its help link to an article in
+   the catalogue for one of the apps it names, and its words free of Pro or prices. A feature that joins apps changes
+   this list in the same change.
+   Each product's landing page shows the same band after its story beats, before Privacy: eyebrow "Better together",
+   heading "Works with your other apps", the lede "<app> hands its work to the other liveworkspace apps and takes
+   theirs in.", then at most six of these cards, those the product takes part in, picked in a fixed order (Ask AI,
+   Send to Plan, Diagrams and Plans, Send to Diagram, Live Data From a Plan, Start a Call Here, Automations Across
+   Apps, Embed File, Start a Project), and a closing link, "See how every app works together", to this section. On a
+   product's site Start a Project's link is this site's `/kits`, absolute.
 4. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
    the same promises", thirteen tiles that fill every row (18 cells over three columns, 16 over two), each with a small piece of the product drawn
    in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
