@@ -127,6 +127,18 @@ describe('the wake', () => {
     expect(schedule.settleDue(Date.now() + 6 * 60_000)).toBe(true);
   });
 
+  it('finds a trigger the SQL triggers queued due at the alarm’s own now, whatever the clock says after it', () => {
+    const w = world();
+    const { schedule } = w.engine;
+    w.rule({ trigger: { kind: 'tab_added' } });
+    w.addTab('t1');
+    const now = Date.now();
+    // The clock ticks on between the alarm taking its now and asking whether the queue is due.
+    vi.spyOn(Date, 'now').mockReturnValue(now + 1);
+    expect(schedule.due(now)).toBe(true);
+    expect(schedule.queueDue(now)).toBe(true);
+  });
+
   it('takes the settle’s time when nothing else waits, and the earlier of the two otherwise', () => {
     const sql = itemSql();
     const schedule = new ItemSchedule(
