@@ -73,13 +73,13 @@ height is already right, and after `ARTICLE_GROW_SETTLE_TRIES` writes at most.
 
 **Who settles it, and when** (spec "Who settles the stored height", Work Tracker 1413):
 
-| Session and view                                  | Writes the stored height                                             | The absent-writer mark  |
-| ------------------------------------------------- | -------------------------------------------------------------------- | ----------------------- |
-| Editor or Participant, edit mode, full-width      | Yes: its own changes, and the marked first layout (grow or shrink)   | Spent as before         |
-| Editor or Participant, read mode (`pageReadLens`) | No: the read lens is locked                                          | **Kept** for Edit       |
-| A page or tab locked in Pages mode                | No                                                                   | **Kept** for the unlock |
-| Any session in the narrow view (`isPageViewLens`) | No: `onLayout` hands the layout to the narrow store before any write | Kept (never reached)    |
-| Viewer, link visitor (`canEdit` false)            | No                                                                   | Cleared                 |
+| Session and view                                  | Writes the stored height                                                                                                                                                                  | The absent-writer mark  |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| Editor or Participant, edit mode, full-width      | Yes: its own changes, and the marked first layout (grow or shrink)                                                                                                                        | Spent as before         |
+| Editor or Participant, read mode (`pageReadLens`) | No: the read lens is locked                                                                                                                                                               | **Kept** for Edit       |
+| A page or tab locked in Pages mode                | No                                                                                                                                                                                        | **Kept** for the unlock |
+| Any session in the narrow view (`isPageViewLens`) | Its own measure, no: `onLayout` hands it to the narrow store. An Editor's or Participant's own writing there (`layout.local`), yes: the full-width estimate once the typing rests (below) | Kept (never reached)    |
+| Viewer, link visitor (`canEdit` false)            | No                                                                                                                                                                                        | Cleared                 |
 
 `growForAbsentWriter` on a continuous page under a lock returns **without** `clearArticleGrow` (it cleared the mark
 before, so a page opened in read mode was never settled by the Editor's later Edit). Pressing Edit lifts the read
@@ -91,6 +91,18 @@ the saved page while there is no draft (`lowerPage`: "only the saved page's own 
 draft's `height`, which Save carries to the page. The narrow view never writes, because its column is narrower than
 the stored page's and would store a height that is too tall for every full-width reader; two full-width Editors
 whose fonts differ cannot trade heights for ever, since the mark is spent after `ARTICLE_GROW_SETTLE_TRIES` writes.
+
+**Writing done in the narrow view** (Work Tracker 1418: since the page widened, a desktop between the 760 and 960 px
+columns is in the narrow view too) stores the estimator's full-width height instead. `onLayout`'s narrow branch, for
+a layout of this person's own change (`layout.local`) that `articleEditRefused` lets through, calls
+`useNarrowHeightEstimate` (`hooks/editor/useNarrowHeightEstimate.ts`): each call restarts a
+`NARROW_ESTIMATE_DELAY_MS` (800 ms) wait, so one estimate is written per pause in the typing, never per keystroke.
+The wait ends with a `tickTabs` of `withNarrowHeightEstimated(ts, tabId, flow)`: on the narrow lens (and not on a
+locked tab or article) `withFullWidthHeightEstimated(lens)` (`lib/page-surface/page-view-lens.ts`) runs
+`withArticleHeightEstimated` on the lens's real tab and hands back a lens page marked with that height, which
+`lowerPageView` lowers as the stored page's height, its width and everything else as stored. The same tabs come back
+when the height is already that, so a pause that changed nothing writes nothing. A full-width layout settles the
+measured height over it as before.
 
 ### The drawn height
 
@@ -242,6 +254,9 @@ The height is content, written under the same gate as the writing: an Editor's s
   own sync.
 - **Reading a page stored at the first width:** two estimator passes, once per read until the page is saved at the
   new width; any other tab costs one look at its pages. Measured in `continuous-page-width.test.ts` (CPU budget).
+- **Writing in the narrow view:** one estimator pass per pause in the typing (`NARROW_ESTIMATE_DELAY_MS`), on the
+  timer, never in the keystroke's own commit: lowering a hundred narrow commits of a 2,000 block page costs what it
+  did (`page-view-lens.perf.test.ts`).
 - **Estimator:** linear in the writing. A 100,000 character article (100 paragraphs of 1,000 characters) lays out as
   one page 30,720 px tall in the 760 px column, in about 33 ms of CPU cold (measured 2026-11-20, three runs), held
   under
@@ -277,16 +292,18 @@ the measured height, "The drawn height"); nothing is painted for it
 | The left edge stays put as the page widens               | `continuous-page.test.ts` "where a continuous page sits"                                          |
 | A peer's first-width pages patch reads at the new width  | `room-op-migrate.test.ts`                                                                         |
 | The absent writer's settle moves margin notes too        | `useArticles.height.test.ts`                                                                      |
+| Narrow-view writing stores the full-width estimate       | `useNarrowHeightEstimate.test.ts`, `useArticles.height.test.ts`                                   |
 
 Not covered by a test: the layout pass itself on a continuous page (`article-measure.ts` reads live DOM rects, which
 jsdom does not lay out). None of this is verified in a browser yet.
 
 ## Constants and configuration
 
-| Constant                     | Value     | Where                     | Why                                                                                               |
-| ---------------------------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| `CONTINUOUS_PAGE_WIDTH`      | 1,056     | `page-sizes.ts`           | The spec's 960 px reading column and its 48 px margins either side (Work Tracker 1418)            |
-| `CONTINUOUS_PAGE_LEFT`       | 428       | `page-sizes.ts`           | Half the first width (856): where a continuous page's left edge stands from the row anchor        |
-| `CONTINUOUS_PAGE_MIN_HEIGHT` | 240       | `page-sizes.ts`           | The margins and a Title's line; 192 px at least, or `flowFrame` would shrink the 72 px top margin |
-| `CONTINUOUS_PAGE_MAX_HEIGHT` | 4,000,000 | `page-sizes.ts`           | Over 100 times the 100,000 character page; under the px a browser lays a box out to               |
-| `CUT_FROM_FORK`              | `false`   | `not-in-liveknowledge.ts` | One constant every closed door reads, so the deletion finds them all                              |
+| Constant                     | Value     | Where                        | Why                                                                                               |
+| ---------------------------- | --------- | ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| `CONTINUOUS_PAGE_WIDTH`      | 1,056     | `page-sizes.ts`              | The spec's 960 px reading column and its 48 px margins either side (Work Tracker 1418)            |
+| `CONTINUOUS_PAGE_LEFT`       | 428       | `page-sizes.ts`              | Half the first width (856): where a continuous page's left edge stands from the row anchor        |
+| `NARROW_ESTIMATE_DELAY_MS`   | 800       | `useNarrowHeightEstimate.ts` | How long narrow-view writing rests before its full-width estimate is stored; one estimate a pause |
+| `CONTINUOUS_PAGE_MIN_HEIGHT` | 240       | `page-sizes.ts`              | The margins and a Title's line; 192 px at least, or `flowFrame` would shrink the 72 px top margin |
+| `CONTINUOUS_PAGE_MAX_HEIGHT` | 4,000,000 | `page-sizes.ts`              | Over 100 times the 100,000 character page; under the px a browser lays a box out to               |
+| `CUT_FROM_FORK`              | `false`   | `not-in-liveknowledge.ts`    | One constant every closed door reads, so the deletion finds them all                              |

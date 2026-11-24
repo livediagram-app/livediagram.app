@@ -7,6 +7,7 @@
 // ever stored or synced. Pure, cached by tab as lens.ts is.
 import {
   articleMarginPx,
+  withArticleHeightEstimated,
   articlesOf,
   asViewPage,
   continuousPageHeight,
@@ -205,6 +206,29 @@ export function pageViewLens(tab: Tab, room: number | null, layout?: NarrowLayou
   return lens;
 }
 
+// Lens pages carrying a full-width height for the stored page (withFullWidthHeightEstimated): drawn as the lens page
+// they copy, lowered with that height.
+const estimatedHeights = new WeakMap<object, number>();
+
+/**
+ * The lens with its page asking for the stored page's height as the estimator lays the writing out at full width
+ * (docs/specs/030-knowledgebase/blueprints/continuous-page.md "Who settles it, and when"): the narrow view's own
+ * measure is never stored, so writing done on a narrow or mid-size window would otherwise leave the stored height
+ * (its PDF, its thumbnail) stale until a full-width layout. The same lens when the stored height is already that,
+ * or the tab is no lens. Lowered (lowerPageView), only the height changes on the stored page.
+ */
+export function withFullWidthHeightEstimated(lens: Tab): Tab {
+  const m = metas.get(lens);
+  if (!m) return lens;
+  const estimated = withArticleHeightEstimated(m.real, m.flow);
+  if (estimated === m.real) return lens;
+  const height = estimated.pages?.find((p) => p.id === m.page.id)?.fit?.height;
+  if (height === undefined || height === m.page.fit?.height) return lens;
+  const page = asViewPage({ ...m.lensPage });
+  estimatedHeights.set(page, height);
+  return { ...lens, pages: lens.pages!.map((p) => (p === m.lensPage ? page : p)) };
+}
+
 /** Whether a tab is a narrow lens: what it lays out is this window's own. */
 export const isPageViewLens = (tab: Tab): boolean => metas.has(tab);
 
@@ -229,7 +253,11 @@ export function lowerPageView(real: Tab, lens: Tab, mapped: Tab): Tab {
     const pages = mapped.pages.map((p) => {
       if (p.id !== m.page.id) return p;
       if (p === m.lensPage) return m.page;
-      const kept = { ...p, fit: m.page.fit };
+      // The full-width estimate asked for (withFullWidthHeightEstimated) is the one height that lowers to the page.
+      const estimate = estimatedHeights.get(p);
+      const fit =
+        estimate !== undefined && m.page.fit ? { ...m.page.fit, height: estimate } : m.page.fit;
+      const kept = { ...p, fit };
       return sameKeys(kept, m.page) ? m.page : kept;
     });
     out.pages =

@@ -20,6 +20,7 @@ import {
   resetMeasuredPageHeights,
 } from '@/lib/page-surface/page-measured-height-store';
 import { useArticles } from './useArticles';
+import { NARROW_ESTIMATE_DELAY_MS } from './useNarrowHeightEstimate';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/article/article-editor-store', () => ({
@@ -173,15 +174,35 @@ describe('who settles the stored height', () => {
     expect(isArticleGrowPending('t', FLOW)).toBe(false);
   });
 
-  it('the narrow view never writes it, nor notes a full-width measure', () => {
-    const narrow = pageViewLens(stale(), 300);
-    expect(narrow).not.toBe(stale());
-    const { hook, tickTabs } = setup(narrow);
-    hook.result.current!.onLayout({ ...laidOut, heightNeeded: 4000 });
-    hook.result.current!.onLayout({ ...laidOut, heightNeeded: 4000, local: true });
-    expect(tickTabs).not.toHaveBeenCalled();
-    expect(hook.result.current!.measured.size).toBe(0);
-    expect(isArticleGrowPending('t', FLOW)).toBe(true);
+  it('the narrow view never writes its own measure, nor notes a full-width one', () => {
+    vi.useFakeTimers();
+    try {
+      const narrow = pageViewLens(stale(), 300);
+      expect(narrow).not.toBe(stale());
+      const { hook, tickTabs } = setup(narrow);
+      hook.result.current!.onLayout({ ...laidOut, heightNeeded: 4000 });
+      hook.result.current!.onLayout({ ...laidOut, heightNeeded: 4000, local: true });
+      expect(tickTabs).not.toHaveBeenCalled();
+      expect(hook.result.current!.measured.size).toBe(0);
+      expect(isArticleGrowPending('t', FLOW)).toBe(true);
+      // Only the full-width estimate is asked for, once the writing rests (useNarrowHeightEstimate.test.ts).
+      vi.advanceTimersByTime(NARROW_ESTIMATE_DELAY_MS);
+      expect(tickTabs).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('a Viewer in the narrow view asks for no estimate', () => {
+    vi.useFakeTimers();
+    try {
+      const { hook, tickTabs } = setup(pageViewLens(stale(), 300), false);
+      hook.result.current!.onLayout({ ...laidOut, local: true });
+      vi.advanceTimersByTime(NARROW_ESTIMATE_DELAY_MS * 2);
+      expect(tickTabs).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

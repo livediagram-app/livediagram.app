@@ -248,7 +248,11 @@ A page is one article that never breaks onto paper pages while it is being writt
   opened), growing or shrinking it to the writing. Reading never writes it: not a Viewer or a link visitor, not an
   Editor in read mode, and not the narrow view (a phone, or a desktop with the page tree and rail docked), whose
   column wraps the writing taller than the stored page's. A page opened in read mode keeps that first settle waiting
-  until its Editor presses Edit.
+  until its Editor presses Edit. **Writing done in the narrow view** (an Editor or a Participant typing on a phone, or
+  on a desktop between the 760 px and 960 px columns, 1,432 to 1,632 px with the tree and the rail open) stores the
+  height the estimator lays the writing out to at full width, once the typing rests: never the narrow measure, and
+  never on each keystroke. The PDF, the thumbnail and other readers then follow it, until a full-width layout
+  settles the measured height (Work Tracker 1418).
 - **Pages stored at the first width** (856 px, before Work Tracker 1418) are read at 1,056 px wherever a stored page
   is read (the editor, the api, the MCP and CLI, thumbnails, exports, a file import), with no stored-data migration
   and nothing waiting for an Editor. The page widens to the right from a left edge that never moves, so what is
