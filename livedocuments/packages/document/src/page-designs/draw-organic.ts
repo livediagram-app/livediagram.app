@@ -111,7 +111,11 @@ const topographic: Drawer = (c) => {
   }));
   const lines: string[] = [];
   const index: string[] = [];
+  const reach = Math.max(c.w, c.h) * 0.6;
   peaks.forEach((pk, i) => {
+    // A summit too far along the strip to reach this page is skipped before its neighbours are weighed: on a long
+    // flowing deck that kept each page's drawing to its own few summits rather than every one of them.
+    if (pk.x + reach < c.ox || pk.x - reach > c.ox + c.w) return;
     const near = Math.min(
       ...peaks.filter((_, j) => j !== i).map((q) => Math.hypot(q.x - pk.x, q.y - pk.y)),
     );
