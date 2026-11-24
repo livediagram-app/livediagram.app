@@ -234,6 +234,17 @@ A page is one article that never breaks onto paper pages while it is being writt
 - The page's stored height is the writing's (never under 240 px, the margins and a Title's line), and it grows
   downwards from a top that never moves, so nothing placed in the writing shifts. Its height is written only when the laid-out height
   changes, by whoever made the change, in the same undo step.
+- **Who settles the stored height** (Work Tracker 1413): only someone who may edit the page (an Editor or a
+  Participant), editing it, in a window wide enough for its full 760 px column. Their own change settles it, and so
+  does their first layout of a page whose height nobody here has settled yet (an agent wrote it, or the page just
+  opened), growing or shrinking it to the writing. Reading never writes it: not a Viewer or a link visitor, not an
+  Editor in read mode, and not the narrow view (a phone, or a desktop with the page tree and rail docked), whose
+  column wraps the writing taller than the stored page's. A page opened in read mode keeps that first settle waiting
+  until its Editor presses Edit.
+- **The page is drawn as tall as its writing here**, whatever height it last stored: its box is the taller of the
+  stored height and the height this browser measured its writing to need, so a page stored short (written in the
+  narrow view, or by an agent, and not yet opened for editing) still takes a press anywhere under its writing, which
+  puts the caret at the end of the writing. What this browser measured is drawn only, never stored or synced.
 - Page breaks, headers, footers and page numbers are not offered while writing, and a template carries none. A page
   break block imported from elsewhere is kept and draws nothing.
 - **Export:** Word export writes the blocks and Word paginates them onto its paper. PDF export draws the page as it

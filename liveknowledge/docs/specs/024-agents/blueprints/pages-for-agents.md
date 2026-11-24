@@ -153,7 +153,9 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
   `withArticlePageCount(t, flow, count)` and logs `[article] grown for an absent writer`. The first grow records the
   count it found (`noteArticleGrown`, the floor) and keeps the mark, so the next lay-outs, measured on the real
   pages, settle the pages it added; the mark clears when a lay-out needs no change, when the editor may not edit,
-  or after `ARTICLE_GROW_SETTLE_TRIES` (4) grows.
+  or after `ARTICLE_GROW_SETTLE_TRIES` (4) grows. On a continuous page a lock (read mode, a locked page) keeps the
+  mark, so the Editor's Edit settles the height ([continuous page blueprint](../../030-knowledgebase/blueprints/continuous-page.md)
+  "Who settles it, and when").
 - The pure decision is `absentWriterPageCount({ local, pending, needed, have, locked, floor })` in
   `packages/document/src/article-pages.ts`: null for the writer, an unmarked or locked flow; with no floor (nothing
   grown yet) `needed` when it is more than `have`, else null; with a floor, `max(needed, floor)` when that differs

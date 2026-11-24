@@ -62,12 +62,55 @@ and the height has not followed). The only transition is a layout pass.
    returns the same list: **no write, no render, no sync when the height is unchanged.**
 
 Guards, unchanged from page adds: only the writer of a change settles it (a change made here within
-`WRITER_WINDOW_MS`, or an import's claim); a locked page or tab holds its height; a Participant or Viewer never
-writes it (`articleEditRefused`).
+`WRITER_WINDOW_MS`, or an import's claim); a locked page or tab holds its height; a session that may not edit (a
+Viewer, a link visitor: `canEdit` false) never writes it (`articleEditRefused`). A Participant in liveknowledge may
+edit (`writesKnowledgebase`), so settles as an Editor does.
 
 An article nobody here is writing (an agent wrote it, or the tab just loaded) takes its height from this editor once
 the web fonts are in, through the existing absent-writer mark (`article-grow-store.ts`): the mark clears when the
 height is already right, and after `ARTICLE_GROW_SETTLE_TRIES` writes at most.
+
+**Who settles it, and when** (spec "Who settles the stored height", Work Tracker 1413):
+
+| Session and view                                  | Writes the stored height                                             | The absent-writer mark  |
+| ------------------------------------------------- | -------------------------------------------------------------------- | ----------------------- |
+| Editor or Participant, edit mode, full-width      | Yes: its own changes, and the marked first layout (grow or shrink)   | Spent as before         |
+| Editor or Participant, read mode (`pageReadLens`) | No: the read lens is locked                                          | **Kept** for Edit       |
+| A page or tab locked in Pages mode                | No                                                                   | **Kept** for the unlock |
+| Any session in the narrow view (`isPageViewLens`) | No: `onLayout` hands the layout to the narrow store before any write | Kept (never reached)    |
+| Viewer, link visitor (`canEdit` false)            | No                                                                   | Cleared                 |
+
+`growForAbsentWriter` on a continuous page under a lock returns **without** `clearArticleGrow` (it cleared the mark
+before, so a page opened in read mode was never settled by the Editor's later Edit). Pressing Edit lifts the read
+lens's lock: the `ArticleEditor`'s `editable` flips, which schedules a layout (`ArticleEditor`'s rights effect), and
+that layout, now unlocked, settles the page as the absent writer's settle does: through the edit lens, straight onto
+the saved page while there is no draft (`lowerPage`: "only the saved page's own height settled"), else onto the
+draft's `height`, which Save carries to the page. The narrow view never writes, because its column is narrower than
+the stored page's and would store a height that is too tall for every full-width reader; two full-width Editors
+whose fonts differ cannot trade heights for ever, since the mark is spent after `ARTICLE_GROW_SETTLE_TRIES` writes.
+
+### The drawn height
+
+What the page's box is drawn at is this browser's own, and never stored (spec "The page is drawn as tall as its
+writing here"):
+
+1. Every full-width layout of a continuous page (`useArticles.onLayout`, after the narrow view's early return and
+   before any gate) notes `continuousPageHeight(heightNeeded)` at the page's stored width in
+   `lib/page-surface/page-measured-height-store.ts` (`noteMeasuredPageHeight(tabId, flow, width, height)`), for
+   every role, the tab locked or not. A note equal to the kept one tells nobody.
+2. `useArticles` reads the active tab's notes (`useMeasuredPageHeights(tabId)`) and hands them on as
+   `ArticlesView.measured` (by flow).
+3. `drawnPageHeight(page, measured)` is the page's `rect.height`, or the measured height when the page is continuous,
+   the measure was taken at its width (so a full-width measure never stretches the narrow view's page, which the lens
+   already draws at its own measure) and it is taller. `withDrawnHeight(page, measured)` answers the same page object
+   when nothing changes, so the memoised `PageSurfaceSheet` does not re-render.
+4. Drawn at it: the page's box (`Canvas` hands `PageSurfaceSheet` `withDrawnHeight(leadPage, …)`) and the writing's
+   paper (`ArticleFlows` `data-article-paper`: `max(drawn, var(--page-free-height))`). Not the `ArticleEditor`'s
+   pages: the engine lays the writing out on the stored page, so the measure never feeds itself.
+5. A press on the paper below the writing's last line puts the caret at the end of the writing
+   (`article-editor-handle.ts` `focusAt` via `pressedPos`), not on the last line at the pressed x.
+
+The store keeps the notes of the last `MEASURED_PAGES_KEPT` (32) tabs, the oldest dropped first.
 
 ### Where the page sits
 
@@ -121,7 +164,13 @@ always `CONTINUOUS_PAGE_WIDTH` and its height `continuousPageHeight(stored)`. An
   spent after `ARTICLE_GROW_SETTLE_TRIES` writes, so two browsers that measure a line differently cannot trade
   heights for ever.
 - **A reader's view before the writer's height arrives:** the writing is as tall as itself in every browser, so for
-  one sync it may run past the sheet's foot or stop short of it. Nothing is clipped.
+  one sync it may run past the sheet's foot or stop short of it. Nothing is clipped, and the box is drawn at this
+  browser's measure ("The drawn height").
+- **A page stored short** (240 px stored for a 2,600 px page, written in the narrow view or by an agent, then only
+  read): drawn at the measure, so its paper takes a press anywhere under the writing; the first full-width Edit
+  settles the stored height.
+- **A stored height taller than this browser's measure** (another browser's fonts): the box keeps the stored height;
+  the drawn height only ever adds.
 - **Footnotes:** the footnote layout still ends the page's text above its notes; the notes' room is added to the
   height, so the text ends above them once the page has grown. Until it has, a break it asks for has no column to
   break to and draws nothing.
@@ -154,7 +203,8 @@ The height is content, written under the same gate as the writing: an Editor's s
 
 ## Presentation and UX
 
-The page's box is 856 canvas px wide and as tall as its writing (240 px at least); nothing is painted for it
+The page's box is 856 canvas px wide and as tall as its writing here (240 px at least, the taller of the stored and
+the measured height, "The drawn height"); nothing is painted for it
 ([page surface blueprint](page-surface.md) "What is painted"). The start screen is titled "Start a Page".
 
 ## Testing
@@ -170,6 +220,10 @@ The page's box is 856 canvas px wide and as tall as its writing (240 px at least
 | Templates carry no header, footer, page numbers or break | `article-templates.test.ts`                                                                       |
 | Nothing makes a slide or an infographic                  | `not-in-liveknowledge.test.ts`, `parse.test.ts`, `tab-pages-route.test.ts`, `pages-tools.test.ts` |
 | `write_article` starts on the continuous page            | `article-write.test.ts`                                                                           |
+| Read mode and a lock keep the mark; Edit settles it      | `useArticles.height.test.ts` "who settles the stored height"                                      |
+| A Viewer and the narrow view never write the height      | `useArticles.height.test.ts` "who settles the stored height"                                      |
+| The box is drawn at the taller of stored and measured    | `page-measured-height-store.test.ts`, `useArticles.height.test.ts` "the drawn height"             |
+| A press under the writing puts the caret at its end      | `article-press-pos.test.ts`                                                                       |
 
 Not covered by a test: the layout pass itself on a continuous page (`article-measure.ts` reads live DOM rects, which
 jsdom does not lay out). None of this is verified in a browser yet.
