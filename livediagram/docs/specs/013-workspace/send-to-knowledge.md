@@ -52,12 +52,12 @@ reader who can open the knowledgebase sees it.
 
 ## Who sees it
 
-| Role                             | Entry                                                     | Chips |
-| -------------------------------- | --------------------------------------------------------- | ----- |
-| Editor                           | The selection toolbars, the element menu (Resources)      | Yes   |
-| Participant                      | The selection toolbars                                    | Yes   |
-| Viewer                           | The selection toolbars                                    | Yes   |
-| Guest, Offline, embed, Community | None (the platform's "Who may send")                      | No    |
+| Role                             | Entry                                                | Chips |
+| -------------------------------- | ---------------------------------------------------- | ----- |
+| Editor                           | The selection toolbars, the element menu (Resources) | Yes   |
+| Participant                      | The selection toolbars                               | Yes   |
+| Viewer                           | The selection toolbars                               | Yes   |
+| Guest, Offline, embed, Community | None (the platform's "Who may send")                 | No    |
 
 A send needs only read access here: what decides is the person's Edit on the knowledgebase they pick, which the
 picker and the index check.

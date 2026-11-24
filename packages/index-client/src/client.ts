@@ -60,6 +60,13 @@ import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type { PlanSendAnswer, PlanSendAsk, PlanSendsRead } from './plan-sends';
 import type { DiagramSendAnswer, DiagramSendAsk, DiagramSendsRead } from './diagram-sends';
 import type {
+  KnowledgeOutlineRead,
+  KnowledgeReceivedRead,
+  KnowledgeSendAnswer,
+  KnowledgeSendAsk,
+  KnowledgeSendsRead,
+} from './knowledge-sends';
+import type {
   PlanEdit,
   PlanEditsAnswer,
   PlanMakeAnswer,
@@ -412,6 +419,35 @@ export function createIndexClient({
         signal: options.signal,
         bounded: true,
       }),
+
+    // Send to Knowledge Base (send-to-knowledge.md): a section written on a knowledgebase page from a selection, as the
+    // person; a source's sends (only those whose knowledgebase the reader can open); a knowledgebase's received sends
+    // (only those whose source the reader can open), for its Sent From chips; a page's headings, for an Editor.
+    sendToKnowledge: (ask: KnowledgeSendAsk) =>
+      call<KnowledgeSendAnswer>('/knowledge-sends/sections', { method: 'POST', body: ask }),
+    knowledgeSends: (
+      sourceId: string,
+      options: RequestOptions & { share?: ShareAccess | null } = {},
+    ) =>
+      call<KnowledgeSendsRead>(`/items/${enc(sourceId)}/knowledge-sends`, {
+        share: options.share ?? null,
+        signal: options.signal,
+        bounded: true,
+      }),
+    knowledgeReceived: (
+      kbId: string,
+      options: RequestOptions & { share?: ShareAccess | null } = {},
+    ) =>
+      call<KnowledgeReceivedRead>(`/items/${enc(kbId)}/knowledge-sends?received=1`, {
+        share: options.share ?? null,
+        signal: options.signal,
+        bounded: true,
+      }),
+    knowledgeOutline: (kbId: string, pageId: string, options: RequestOptions = {}) =>
+      call<KnowledgeOutlineRead>(
+        `/items/${enc(kbId)}/knowledge-sends/outline?page=${enc(pageId)}`,
+        { signal: options.signal },
+      ),
 
     // Start a Call Here (item-calls.md): start the item's call (or join the live one), the item's calls for its pill and
     // Meetings, a Space's call for livehuddle's editor, and the call's summary and invites.

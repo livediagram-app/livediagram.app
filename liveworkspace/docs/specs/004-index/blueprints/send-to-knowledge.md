@@ -34,19 +34,19 @@ agents:       liveknowledge api → POST /api/index/app/items/:kb/knowledge-send
 
 ## Wire (`@liveworkspace/index-client`, src/knowledge-sends.ts)
 
-| Shape                        | Fields                                                                                                   |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `KnowledgeSendItem`          | `id`, `kind`, `label`, `note?`, `in?`                                                                    |
-| `KnowledgeSendLink`          | `from` (id or null), `to` (id or null), `label?`                                                         |
-| `KnowledgeSendSelection`     | `items`, `links`, `cut?` (true when the editor left items out)                                           |
-| `KnowledgeSendPlace`         | `{page, after?}` or `{newPage: {title, parent}}`                                                         |
-| `KnowledgeSendPicture`       | `png` (base64, ≤ `KNOWLEDGE_SEND_PICTURE_BYTES_MAX` bytes decoded), `width`, `height`                    |
-| `KnowledgeSendSource`        | `app`, `itemId`, `tabId`, `elementIds` (1 to 80)                                                         |
-| `KnowledgeSendAsk`           | `knowledgebase`, `place`, `heading`, `markdown`, `picture?`, `source`                                    |
-| `KnowledgeSend`              | `id`, `tabId`, `elementIds`, `knowledgebase: {id, title}`, `page: {id, title}`, `link` (the page), `at`  |
-| `KnowledgeReceived`          | `id`, `page`, `place` (the link back), `source: {app, id, title}`                                        |
-| `KnowledgeSendDoorCall`      | `{op: 'outline', person, page}` or `{op: 'write', person, place, heading, markdown, picture?, sentFrom}` |
-| `KnowledgeSendDoorAnswer`    | `{ok: true, page, link}` / `{ok: true, headings}` / `{ok: false, code, reason}`                          |
+| Shape                     | Fields                                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `KnowledgeSendItem`       | `id`, `kind`, `label`, `note?`, `in?`                                                                    |
+| `KnowledgeSendLink`       | `from` (id or null), `to` (id or null), `label?`                                                         |
+| `KnowledgeSendSelection`  | `items`, `links`, `cut?` (true when the editor left items out)                                           |
+| `KnowledgeSendPlace`      | `{page, after?}` or `{newPage: {title, parent}}`                                                         |
+| `KnowledgeSendPicture`    | `png` (base64, ≤ `KNOWLEDGE_SEND_PICTURE_BYTES_MAX` bytes decoded), `width`, `height`                    |
+| `KnowledgeSendSource`     | `app`, `itemId`, `tabId`, `elementIds` (1 to 80)                                                         |
+| `KnowledgeSendAsk`        | `knowledgebase`, `place`, `heading`, `markdown`, `picture?`, `source`                                    |
+| `KnowledgeSend`           | `id`, `tabId`, `elementIds`, `knowledgebase: {id, title}`, `page: {id, title}`, `link` (the page), `at`  |
+| `KnowledgeReceived`       | `id`, `page`, `place` (the link back), `source: {app, id, title}`                                        |
+| `KnowledgeSendDoorCall`   | `{op: 'outline', person, page}` or `{op: 'write', person, place, heading, markdown, picture?, sentFrom}` |
+| `KnowledgeSendDoorAnswer` | `{ok: true, page, link}` / `{ok: true, headings}` / `{ok: false, code, reason}`                          |
 
 - `readKnowledgeSendSelection` cuts to the caps (items, links, text) and drops a link whose ends name no item;
   `readKnowledgeSendAsk`, `readKnowledgeSendDoorCall` read every id at most 200 characters, the Markdown at most
@@ -105,17 +105,17 @@ refuses answers 429 `ai_credits_used` and the summary is dropped; the service re
 
 ## The editors (packages/workbench src/components/send-to-knowledge)
 
-| File                            | What                                                                                              |
-| ------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `send-to-knowledge-entry.ts`    | The relay: `setKnowledgeSummariser`, `canSendKnowledgeHere`, `sendToKnowledge(request)`          |
-| `knowledge-send-store.ts`       | The open item's sends, by element: read on open and after a send                                 |
-| `knowledge-received-store.ts`   | A knowledgebase's received sends, by place link, for the page's chips                             |
-| `article-received.ts`           | The ProseMirror plugin drawing the Sent From chip                                                 |
-| `sent-knowledge-indicator.ts`   | The canvas indicator's glyph and hook                                                             |
-| `KnowledgeWhere.tsx`            | Knowledgebase list, Existing Page (tree, search, Where) or New Page (title, parent)               |
-| `KnowledgePreview.tsx`          | The preview: heading, summary rendered (or a text area under Edit), picture, Sent From            |
-| `SendToKnowledgeDialog.tsx`     | The picker; loaded on its first open (`SendToPlanHost`'s lazy import)                             |
-| `SendToKnowledgeButton.tsx`     | The toolbar button (liveknowledge's logo), `data-send-to-knowledge`                               |
+| File                          | What                                                                                    |
+| ----------------------------- | --------------------------------------------------------------------------------------- |
+| `send-to-knowledge-entry.ts`  | The relay: `setKnowledgeSummariser`, `canSendKnowledgeHere`, `sendToKnowledge(request)` |
+| `knowledge-send-store.ts`     | The open item's sends, by element: read on open and after a send                        |
+| `knowledge-received-store.ts` | A knowledgebase's received sends, by place link, for the page's chips                   |
+| `article-received.ts`         | The ProseMirror plugin drawing the Sent From chip                                       |
+| `sent-knowledge-indicator.ts` | The canvas indicator's glyph and hook                                                   |
+| `KnowledgeWhere.tsx`          | Knowledgebase list, Existing Page (tree, search, Where) or New Page (title, parent)     |
+| `KnowledgePreview.tsx`        | The preview: heading, summary rendered (or a text area under Edit), picture, Sent From  |
+| `SendToKnowledgeDialog.tsx`   | The picker; loaded on its first open (`SendToPlanHost`'s lazy import)                   |
+| `SendToKnowledgeButton.tsx`   | The toolbar button (liveknowledge's logo), `data-send-to-knowledge`                     |
 
 ## Tests
 

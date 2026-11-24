@@ -138,18 +138,18 @@ of the source through that app's MCP: no AI credit is spent for it here.
 
 ## Limits
 
-| Limit                                   | Value   | What it bounds                                          |
-| --------------------------------------- | ------- | ------------------------------------------------------- |
-| `KNOWLEDGE_SEND_ITEMS_MAX`              | 80      | Items one selection sends                               |
-| `KNOWLEDGE_SEND_LINKS_MAX`              | 120     | Arrows one selection sends                              |
-| `KNOWLEDGE_SEND_TEXT_MAX`               | 12,000  | Characters of labels and notes one selection sends      |
-| `KNOWLEDGE_SEND_FOCUS_MAX`              | 300     | Characters in the focus note                            |
-| `KNOWLEDGE_SEND_SUMMARY_MAX`            | 6,000   | Characters of summary kept from the model               |
-| `KNOWLEDGE_SEND_MARKDOWN_MAX`           | 12,000  | Characters of a section's Markdown (after Edit)         |
-| `KNOWLEDGE_SEND_PICTURE_BYTES_MAX`      | 300,000 | Bytes of the picture (a PNG; the editor draws it smaller until it fits, else none) |
-| `KNOWLEDGE_SEND_READ_MAX`               | 200     | A source's or a knowledgebase's newest sends one read takes |
-| `KNOWLEDGE_SEND_ITEMS_CHECKED_MAX`      | 20      | Distinct items one read checks the reader's access on   |
-| Sends a person                          | 10/m    | The kit run limiter (`KIT_RUN_LIMITER`), its own key    |
+| Limit                              | Value   | What it bounds                                                                     |
+| ---------------------------------- | ------- | ---------------------------------------------------------------------------------- |
+| `KNOWLEDGE_SEND_ITEMS_MAX`         | 80      | Items one selection sends                                                          |
+| `KNOWLEDGE_SEND_LINKS_MAX`         | 120     | Arrows one selection sends                                                         |
+| `KNOWLEDGE_SEND_TEXT_MAX`          | 12,000  | Characters of labels and notes one selection sends                                 |
+| `KNOWLEDGE_SEND_FOCUS_MAX`         | 300     | Characters in the focus note                                                       |
+| `KNOWLEDGE_SEND_SUMMARY_MAX`       | 6,000   | Characters of summary kept from the model                                          |
+| `KNOWLEDGE_SEND_MARKDOWN_MAX`      | 12,000  | Characters of a section's Markdown (after Edit)                                    |
+| `KNOWLEDGE_SEND_PICTURE_BYTES_MAX` | 300,000 | Bytes of the picture (a PNG; the editor draws it smaller until it fits, else none) |
+| `KNOWLEDGE_SEND_READ_MAX`          | 200     | A source's or a knowledgebase's newest sends one read takes                        |
+| `KNOWLEDGE_SEND_ITEMS_CHECKED_MAX` | 20      | Distinct items one read checks the reader's access on                              |
+| Sends a person                     | 10/m    | The kit run limiter (`KIT_RUN_LIMITER`), its own key                               |
 
 ## Telemetry
 

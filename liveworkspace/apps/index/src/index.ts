@@ -11,6 +11,7 @@ import { handleApproval } from './approvals';
 import { handleNewPlanForSend, handlePlanSends } from './plan-sends';
 import { handlePlanDiagramRoutes } from './plan-diagrams';
 import { handleDiagramSends, readDiagramSends } from './diagram-sends';
+import { handleKnowledgeSends, readKnowledgeSends } from './knowledge-sends';
 import { handleItemCalls, handleSpaceCall } from './item-calls';
 import { handleWriteUp } from './write-up';
 import { callerOf } from './auth';
@@ -83,6 +84,8 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   'plan-sends': handleNewPlanForSend,
   // Send to Diagram's new diagram (diagram-sends.ts).
   'diagram-sends': handleDiagramSends,
+  // Send to Knowledge Base's section (knowledge-sends.ts).
+  'knowledge-sends': handleKnowledgeSends,
 };
 
 async function route(ctx: RouteContext): Promise<Response> {
@@ -139,6 +142,8 @@ async function route(ctx: RouteContext): Promise<Response> {
     )
       return handlePlanDiagramRoutes(ctx, id, segments[2]);
     if (segments[2] === 'diagram-sends' && segments.length === 3) return readDiagramSends(ctx, id);
+    // Send to Knowledge Base (knowledge-sends.ts): a source's sends, a knowledgebase's received sends, a page's headings.
+    if (segments[2] === 'knowledge-sends') return readKnowledgeSends(ctx, id, segments.slice(3));
     // Start a Call Here (item-calls.ts): the item's calls, and a Space's call with its summary and invites.
     if (segments[2] === 'calls' && segments.length === 3) return handleItemCalls(ctx, id);
     if (segments[2] === 'call') return handleSpaceCall(ctx, id, segments.slice(3));
@@ -235,6 +240,9 @@ const routeLabel = createApiRouteLabel(
     'access-requests',
     'decline',
     'plan-sends',
+    'knowledge-sends',
+    'sections',
+    'outline',
     'plan-cards',
     'plans',
     'plan-makes',

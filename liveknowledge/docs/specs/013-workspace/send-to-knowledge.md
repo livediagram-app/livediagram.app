@@ -44,8 +44,8 @@ source sees the line's words alone. The chip is never written into the text, typ
 
 ## Who
 
-| Role                     | Written to by a send | Sees the Sent From chip            |
-| ------------------------ | -------------------- | ---------------------------------- |
-| Editor (whole item)      | Yes                  | When they can open the source      |
-| Participant, Viewer      | No (not listed)      | When they can open the source      |
-| Guest, embed, Community  | No                   | No (the line's words and its link) |
+| Role                    | Written to by a send | Sees the Sent From chip            |
+| ----------------------- | -------------------- | ---------------------------------- |
+| Editor (whole item)     | Yes                  | When they can open the source      |
+| Participant, Viewer     | No (not listed)      | When they can open the source      |
+| Guest, embed, Community | No                   | No (the line's words and its link) |

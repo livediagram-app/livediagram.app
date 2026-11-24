@@ -178,7 +178,7 @@ spend these amounts and the screens say them from one table (`AI_CREDIT_COSTS` i
 | liveplanner: Describe a Plan, Describe a Form          | 1                    | 2,000 tokens written                                |
 | livediagram: read a photo's notes                      | 1 for every 24 notes | six notes a request, 2,000 tokens written a request |
 | Ask AI in any app's Tools (built-in)                   | 1                    | 24,000 characters of passages read, 2,000 written   |
-| Send to Knowledge Base: a selection's summary         | 1                    | 12,000 characters of items read, 1,500 written      |
+| Send to Knowledge Base: a selection's summary          | 1                    | 12,000 characters of items read, 1,500 written      |
 
 - **Said before, in the words the operation's own screen uses:** "Uses 2 AI credits" beside the button that starts
   it, "Each run of this step uses 1 AI credit." in a step's panel, and for a photo, "Read 60 notes with AI · Uses 3

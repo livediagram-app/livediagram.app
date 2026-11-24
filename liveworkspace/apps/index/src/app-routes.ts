@@ -22,6 +22,7 @@ import { FUTURE_SLACK_MS } from './events';
 import { pushAutomationSends } from './webhooks/automation-sends';
 import { pushAutomationStep } from './automation-steps';
 import { handleAgentPlanSends, handlePlanCards } from './plan-sends';
+import { handleAgentKnowledgeSends } from './knowledge-sends';
 import { handlePlanDiagrams } from './plan-diagrams';
 import { handleCallPeople } from './item-call-people';
 
@@ -79,6 +80,10 @@ export async function handleApp(
   // /app/items/:id/connections/:connectionId?tab=: a connected tab in its host, or gone from it (connection-doors.ts).
   if (segments.length === 5 && segments[3] === 'connections') {
     return handleAppConnection(request, env, app, segments[2], segments[4]!, waitUntil);
+  }
+  // /app/items/:kb/knowledge-sends: an agent's write with a source (knowledge-sends.ts), before the sources' prefix.
+  if (segments.length === 4 && segments[3] === 'knowledge-sends') {
+    return handleAgentKnowledgeSends(request, env, app, segments[2]);
   }
   // /app/items/:kb/knowledge-sources, -text, -reach, -likely: a knowledgebase's sources (knowledge-sources.ts).
   if (segments.length === 4 && segments[3]?.startsWith('knowledge-')) {
