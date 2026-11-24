@@ -351,7 +351,7 @@ export function registerOauthRoutes<E extends OauthEnv>(
         400,
       );
     await c.env.OAUTH_KV.delete(`session:${body.session}`);
-    if (server.onGrant) await server.onGrant(c.env, body.token, body as Record<string, unknown>);
+    if (server.onGrant) await server.onGrant(c.env, body.token, body);
     const code = randomId();
     const record: AuthCode = {
       token: body.token,
