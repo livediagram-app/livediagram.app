@@ -16,8 +16,9 @@ The attachments it used to hold at its left (Action, Comment, Link, Note) are th
 
 ## Resources
 
-**Everything in Resources happens inside its dialog** (owner, 2026-11-23). The list has a short line saying what
-Resources are, over the options as centred tiles. **Assign an Action** opens as a screen of the dialog under a back
+**Everything in Resources happens inside its dialog** (owner, 2026-11-23). The list opens with a picture of the element
+wearing the badges its resources give it on the canvas, over the options as one grouped list (owner,
+2026-11-24). **Assign an Action** opens as a screen of the dialog under a back
 bar (its own dialog draws in the slot the screen holds, never over it). **Link** offers a web address, a tab, then a
 file of each product, this app's first, each named by the product's logo and wordmark over what it calls a file
 (livediagram Canvas, liveplanner Plan, livedocuments Document, livedesign Design, livehuddle Space); a product's
@@ -25,8 +26,7 @@ step lists that person's recent files of it with a search, and every one reads t
 yet"), when nothing matches (the shared no-matches line with Clear) and when the list could not be read (Try
 Again). Another product's file is linked by its address.
 A product's step is named on the back bar by what it calls a file alone ("Knowledgebase"), and its messages
-write that word as the product does ("No Knowledgebases Yet"). The list's opening line is one short sentence
-("Attach an action, comments, a link or a note to this Square.").
+write that word as the product does ("No Knowledgebases Yet").
 
 What attaches to the element sits behind one **Resources** row, always the menu's last. It looks like its neighbours
 and wears the small window mark of a row that opens a dialog
@@ -34,8 +34,10 @@ and wears the small window mark of a row that opens a dialog
 (owner, 2026-11-23). Nothing Resources offers sits loose in the menu's list.
 
 The modal is a centred card, a bottom sheet on a phone, under the dialog hero header (two sheets held by a paperclip),
-titled **Resources** with a line naming the element ("What is attached to this Square."). It keeps one height on
-every screen, so it never jumps as its screens change. **Done** closes it.
+titled **Resources** with a line naming the element ("What is attached to this Square."). Its height is the first screen's,
+which shows whole on a desktop, never scrolling; every other screen keeps that height and scrolls inside it, so the
+card never jumps (a hosted Assign an Action takes the room its form needs). On a phone it is a drawer docked to the
+bottom edge with a grab handle, as tall as the same first screen. **Done** closes it.
 
 **Its first screen** lists each option as a row of its own, in this order, whichever this app offers:
 
@@ -46,17 +48,16 @@ every screen, so it never jumps as its screens change. **Done** closes it.
 | **Link**     | "A page or tab it opens"   | Where it goes: the address, "Tab: Roadmap", a file's name        |
 | **Note**     | "Words kept behind it"     | The note's first line                                            |
 
-- Each row shows the option's glyph on a plate, its name, the line saying what it is, and under them what the element
-  has now, or "No action yet", "No comments yet", "No link yet", "No note yet". An option the element has fills its
-  plate and wears an **Added** badge.
+- Each row shows the option's glyph on a plate and its name, then at its right what the element has now, or the
+  verb that adds one in the accent (**Assign Action**, **Add Comment**, **Add Link**, **Add Note**), then a chevron.
+  An option the element has fills its plate, and the picture above wears its glyph as a badge. A screen reader hears
+  the verb a press runs on a row that has one.
 - **Link** is not offered on a link card or a video, whose link is their own **Link** category's.
 - After them, where this session may: **Live Status** ("Whether its service is up", the status address it is bound
   to, or "No status URL yet"; [Live status](../009-elements/live-status.md)), for an Editor on a shape that can be
   bound, and **Send to Plan** ("A card for it in liveplanner", "Sent: " and where the card stands once sent, or "Not
   sent yet"; [Send to Plan](../013-workspace/send-to-plan.md)), on an element with words. Each closes the modal and
   opens its own dialog.
-- At the row's right is what a press does: the verb it runs (**Assign Action** or **View Action**, **Add Comment** or
-  **View Comments**, **Add Note**), or a chevron where the option has options of its own.
 - Up, Down, Home and End move between the rows; Tab does too.
 
 **An option with options of its own** opens its screen inside the modal. At its top is the back bar
