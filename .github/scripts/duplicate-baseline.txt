@@ -59,7 +59,6 @@ livediagram/apps/editor/hooks/ui/useImageSearch.ts	livehuddle/apps/editor/hooks/
 livediagram/apps/editor/lib/add-to-document-targets.ts	livedocuments/apps/editor/lib/add-to-document-targets.ts	liveknowledge/apps/editor/lib/add-to-document-targets.ts
 livediagram/apps/editor/lib/api/preferences.ts	livehuddle/apps/editor/lib/api/preferences.ts
 livediagram/apps/editor/lib/explorer-organise.ts	livedocuments/apps/editor/lib/explorer-organise.ts	liveknowledge/apps/editor/lib/explorer-organise.ts
-livediagram/apps/editor/lib/explorer-thumbnail.tsx	livehuddle/apps/editor/lib/explorer-thumbnail.tsx
 livediagram/apps/editor/lib/tour-tracks.ts	livehuddle/apps/editor/lib/tour-tracks.ts
 livediagram/apps/editor/lib/workbench-bindings.ts	livehuddle/apps/editor/lib/workbench-bindings.ts
 livediagram/apps/editor/test/no-document-grants.ts	livedocuments/apps/editor/test/no-document-grants.ts	livehuddle/apps/editor/test/no-document-grants.ts	liveknowledge/apps/editor/test/no-document-grants.ts
@@ -160,7 +159,6 @@ livedocuments/apps/editor/lib/article/article-telemetry.ts	liveknowledge/apps/ed
 livedocuments/apps/editor/lib/canvas-chrome.ts	liveknowledge/apps/editor/lib/canvas-chrome.ts
 livedocuments/apps/editor/lib/editor-path.ts	liveknowledge/apps/editor/lib/editor-path.ts
 livedocuments/apps/editor/lib/explorer-landing.ts	liveknowledge/apps/editor/lib/explorer-landing.ts
-livedocuments/apps/editor/lib/explorer-thumbnail.tsx	liveknowledge/apps/editor/lib/explorer-thumbnail.tsx
 livedocuments/apps/editor/lib/find/find-highlight-store.ts	liveknowledge/apps/editor/lib/find/find-highlight-store.ts
 livedocuments/apps/editor/lib/find/find-matches.ts	liveknowledge/apps/editor/lib/find/find-matches.ts
 livedocuments/apps/editor/lib/find/find-text.ts	liveknowledge/apps/editor/lib/find/find-text.ts
