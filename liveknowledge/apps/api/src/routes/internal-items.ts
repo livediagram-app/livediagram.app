@@ -157,6 +157,9 @@ export function handleInternalItems(
       automationStep: (id, call, claims, grant) =>
         documentRoom(env, id).automationStep(call, documentGrantOf(claims, null, grant)),
       automationTarget: (id) => documentRoom(env, id).automationTarget(),
+      // Send to Knowledge Base (document-room/knowledge-send-door.ts): the person's Editor grant checked first.
+      knowledgeSend: (id, call, claims, grant) =>
+        documentRoom(env, id).knowledgeSend(call, documentGrantOf(claims, null, grant)),
       copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
         // to them, other people's authors redacted; through the document's Community post's link, without its

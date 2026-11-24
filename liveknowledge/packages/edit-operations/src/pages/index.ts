@@ -15,3 +15,11 @@ export {
   sizeLabel,
 } from './summary';
 export { newPageFromMarkdown, withTitleFrontMatter, type NewPage } from './new-page';
+export {
+  PICTURE_MARK,
+  articleHeadings,
+  headingLevel,
+  pictureZone,
+  pictureZoneSize,
+  sectionEndOf,
+} from './section';

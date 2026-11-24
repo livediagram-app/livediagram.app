@@ -77,6 +77,7 @@ function fakeIndex(options: { open?: string[]; failText?: boolean; likely?: stri
   };
   const client: Record<keyof KnowledgeSourcesClient, unknown> = {
     sources: async () => LISTED,
+    agentSend: async () => null,
     text: async (_kb: string, itemId: string) => {
       fake.calls.text.push(itemId);
       if (options.failText) throw new Error('index away');

@@ -11,6 +11,7 @@ import {
   type KnowledgeSourceListing,
   type KnowledgeText,
 } from './knowledge-sources';
+import type { AgentKnowledgeSend, KnowledgeSentFrom } from './knowledge-sends';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // Who a reach or a likely look is for: the account liveknowledge verified, and the teams their token named.
@@ -32,6 +33,13 @@ export type KnowledgeSourcesClient = {
     words: readonly string[],
     exclude: readonly string[],
   ): Promise<KnowledgeLikelyItem[]>;
+  // An agent's Send to Knowledge Base (send-to-knowledge.md "Agents"): the Sent From line's source, when the person
+  // can read it, and with `record` the send kept for both sides' chips. Null when the index will not name it.
+  agentSend(
+    kb: string,
+    send: AgentKnowledgeSend,
+    record: boolean,
+  ): Promise<KnowledgeSentFrom | null>;
 };
 
 export function createKnowledgeSourcesClient({
@@ -82,6 +90,11 @@ export function createKnowledgeSourcesClient({
       return listOf<unknown>(answer, 'itemIds').filter(
         (id): id is string => typeof id === 'string',
       );
+    },
+    async agentSend(kb, send, record) {
+      const answer = await post(kb, 'knowledge-sends', { ...send, record });
+      const from = answer?.sentFrom as KnowledgeSentFrom | null | undefined;
+      return from && typeof from.link === 'string' && typeof from.title === 'string' ? from : null;
     },
     async likely(kb, reader, words, exclude) {
       if (words.length === 0) return [];

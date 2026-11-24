@@ -30,6 +30,7 @@ import {
 } from '@liveknowledge/document';
 import { enterPages, type PagesIds } from './enter';
 import { kindNotOffered } from './page-changes';
+import { isPictureMark, pictureZone, sectionEndOf } from './section';
 
 type ArticleWriteOutcome =
   { tab: Tab; flow: string; created: boolean; lines: string[] } | { refusal: PagesRefusal };
@@ -144,7 +145,23 @@ export function applyArticleWrite(
       blocks = set.blocks;
       if (set.replaced) headsSet++;
     }
-    blocks.push(...added.slice(front));
+    // The new blocks, and after them the picture's zone (section.ts), go at the end, or at the end of a heading's part.
+    const body = added.slice(front);
+    if (write.picture) {
+      const placed = pictureZone(current, flow!, doc, write.picture);
+      current = placed.tab;
+      // A `[picture]` line marks where it goes; without one it follows the words.
+      const marked = body.findIndex(isPictureMark);
+      if (marked >= 0) body.splice(marked, 1, placed.zone);
+      else body.push(placed.zone);
+    }
+    const at = write.after === undefined ? blocks.length : sectionEndOf(blocks, write.after);
+    if (at === null)
+      return refuse(
+        'heading_unknown',
+        `The page has no heading "${write.after}". Its headings are the lines starting with #, ## or ### that read_page shows.`,
+      );
+    blocks.splice(at, 0, ...body);
   } else {
     blocks = read.blocks;
     gone = doc.blocks.filter(
