@@ -86,8 +86,14 @@ Show Me tours, the strip's rail items, AreaErrorBoundary) is not moved.
 
 The Table dialog's controls (`components/dialogs/TableSettings`) take the product's part as props: the table's look,
 what each switch and style toggle does, and the editor's own text colour picker and Text Size control as two slots
-(both read the editor's model, so they stay in the editor). Each editor fills them in its
-`components/dialogs/ElementRowsDialogs.tsx`, inside the shared `ElementRowsDialog`. The four text style glyphs
+(both read the editor's model, so they stay in the editor). The rows dialogs around them
+(`components/dialogs/ElementRowsDialogs`: a checklist's, a legend's, a chart's slices, a concept's or web's rows, the
+Table dialog and livediagram's agenda segments) are one copy too: it picks the dialog, its art and its words, and
+each editor's `components/dialogs/ElementRowsDialogs.tsx` hands it the editor's state and a profile of the editor's
+own row editors, colour picker and Text Size control, bound once at module scope. The element Resources dialog
+(`components/dialogs/ElementResourcesDialog`) is the same: each editor's `components/dialogs/ElementResourcesDialog.tsx`
+hands it the element the menu's row took, its `quickBarItems`, and where its links go (its app, its own file kind,
+its tabs and its link setter); livedocuments, whose elements take no links, hands no link places. The four text style glyphs
 (`components/palette/text-style-icons`) are one copy too; each editor's `components/palette/palette-icons.tsx`
 re-exports them.
 

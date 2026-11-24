@@ -30,6 +30,14 @@ export const ITEM_CALL_SUMMARY_TITLE_MAX = 200;
 /** The app whose Spaces calls are. */
 export const ITEM_CALL_APP = 'livehuddle' as const satisfies App;
 
+// Your Calls Space (item-calls.md "Your Calls Space"): where a person's Call opens, when they chose one.
+/** The `all` scope's key for it (@liveworkspace/settings ALL_SETTING_KEYS): a livehuddle Space's id, absent for Default. */
+export const CALL_SPACE_SETTING = 'callSpace';
+/** Spaces Settings › Calls lists to choose from. */
+export const CALL_SPACES_LISTED = 200;
+/** Days a Calls Space's call link works after its latest call started. */
+export const CALL_SPACE_LINK_DAYS = 7;
+
 /** A call as the item's readers see it: its Space, the link that lets them in, and who is in it now. */
 export type ItemCall = {
   id: string;
@@ -52,7 +60,11 @@ export type ItemMeeting = ItemCall & {
 };
 
 export type ItemCallsRead = { live: ItemCall | null; meetings: ItemMeeting[] };
-export type ItemCallStart = { call: ItemCall; started: boolean };
+/** Why a start skipped the person's Calls Space: it can't be chosen now, or it is in another item's live call. */
+export type CallSpaceFallback = 'unavailable' | 'busy';
+export type ItemCallStart = { call: ItemCall; started: boolean; fallback?: CallSpaceFallback };
+/** A start's body: the person's Calls Space, when they chose one. */
+export type ItemCallAsk = { space?: string };
 
 /** A Space's call, as livehuddle's editor shows it. `summaryDefault` is the host's alone. */
 export type SpaceCall = {
@@ -100,6 +112,31 @@ export function callNames(raw: readonly unknown[]): string[] {
     if (out.length === ITEM_CALL_NAMES_MAX) break;
   }
   return out;
+}
+
+/** A start's body, or null when malformed. No body, or no `space` (or null), is a start with no Calls Space. */
+export function readItemCallAsk(raw: unknown): ItemCallAsk | null {
+  if (raw === null || raw === undefined) return {};
+  if (!isRecord(raw)) return null;
+  const { space } = raw;
+  // '' is Default as the setting stores it (readCallSpaceSetting), so it asks for no Space.
+  if (space === undefined || space === null || space === '') return {};
+  return isId(space) ? { space } : null;
+}
+
+/** The person's Calls Space from their preferences (the `all` scope's `callSpace`), or null for Default. */
+export function readCallSpaceSetting(
+  prefs: Readonly<Record<string, unknown>> | null,
+): string | null {
+  const value = prefs?.[CALL_SPACE_SETTING];
+  return isId(value) ? value : null;
+}
+
+/** The toast a start that skipped the Calls Space answers with. */
+export function callFallbackWords(fallback: CallSpaceFallback): string {
+  return fallback === 'busy'
+    ? 'Your Calls Space is in another call, so this call has a Space of its own.'
+    : 'Your Calls Space isn’t available, so this call has a new Space. Choose another in Settings › Calls.';
 }
 
 /** The room's push, or null. */

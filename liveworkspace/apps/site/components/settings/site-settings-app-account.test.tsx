@@ -40,6 +40,7 @@ vi.mock('@/lib/explorer/app-session', async (original) => ({
 // The account API through the app's router, with the app's token: answered by the fetch below.
 vi.mock('@/lib/explorer/token', () => ({
   accountFetch: (url: string, init?: RequestInit) => fetch(url, init),
+  workspaceToken: async () => null,
 }));
 // liveworkspace.app's own session, which the page on an app's address never signs out of here.
 const siteSignOut = vi.hoisted(() => vi.fn(async () => true));

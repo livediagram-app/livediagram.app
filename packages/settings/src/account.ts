@@ -152,7 +152,23 @@ export const ACCOUNT_TOGGLES: readonly AccountToggle[] = [
   ...ACCESSIBILITY_ROWS,
 ];
 
-export const ACCOUNT_KEYS: ReadonlySet<string> = new Set(ACCOUNT_TOGGLES.map((row) => row.key));
+// Settings › Calls' one row, Calls Open In (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): a
+// livehuddle Space's id, absent for a new Space each call. Not a switch: the Account section draws it as a picker.
+export const CALL_SPACE_KEY = 'callSpace' satisfies AllSettingKey;
+
+export const CALLS_CATEGORY = {
+  label: 'Calls',
+  rowLabel: 'Calls Open In',
+  description:
+    'Where Call opens in every app: a new livehuddle Space for each call, or one of your own Spaces.',
+  keywords:
+    'call calls video meeting huddle livehuddle space room open start default where join meet',
+} as const;
+
+export const ACCOUNT_KEYS: ReadonlySet<string> = new Set([
+  ...ACCOUNT_TOGGLES.map((row) => row.key),
+  CALL_SPACE_KEY,
+]);
 
 // Shared keys the Account section leaves to the apps: they only mean something inside an editor.
 export const EDITOR_ONLY_KEYS: readonly AllSettingKey[] = [

@@ -433,7 +433,11 @@ jobs:
         with:
           node-version: 22
 
+      # GitHub can refuse artifacts (503, egress over the account limit): the report then says coverage
+      # was unavailable instead of failing.
       - name: Download this run's coverage
+        id: head
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           pattern: coverage-*
@@ -449,6 +453,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           DIFF_HEAD: HEAD
           HEAD_DIR: coverage-head
+          HEAD_DOWNLOAD: ${{ steps.head.outcome }}
         run: |
           mkdir -p coverage-head
           node .github/scripts/coverage-report.mjs

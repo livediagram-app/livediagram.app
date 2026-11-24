@@ -46,7 +46,7 @@ export { SettingsScopeSwitch, useSettingsScope, type SettingsScope } from './sco
 export { SettingsPanel, settingsPanelApp, type SettingsPanelApp } from './SettingsPanel';
 export { preloadSettingsPanel } from './settings-panel-preload';
 export type { AccountHost } from './CatalogueSettingsView';
-export { accountCategories, type AccountSection } from './account-model';
+export { accountCategories, type AccountSection, type CallSpaceChoice } from './account-model';
 export {
   ProfileHeaderCard,
   colourLabel,
@@ -77,7 +77,7 @@ export {
 export { bearerAccountSecurity } from './profile/bearer-security';
 export { foldIntoAccount } from './fold-account';
 export { accountPanels, preloadAccountPanels } from './account-panels/lazy';
-export type { AccountPanelsHost, SubscriptionAccess } from './account-panels/host';
+export type { AccountPanelsHost, CallSpacesHost, SubscriptionAccess } from './account-panels/host';
 export { preloadSubscriptionPanel } from './account-panels/subscription/rows';
 export { useAccountTokensInPlace } from './account-panels/tokens-in-place';
 export { accountErrorMessage } from './account-panels/errors';

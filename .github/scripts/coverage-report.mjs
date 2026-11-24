@@ -177,6 +177,29 @@ export function withReport(/** @type {string | null} */ body, /** @type {string}
   return `${text.slice(0, start)}${section}${after}`;
 }
 
+/** The section written when this run's own coverage couldn't be downloaded. */
+export function renderUnavailable(/** @type {number} */ pr, /** @type {string} */ headSha) {
+  return [
+    '## Coverage report',
+    `:warning: Coverage was unavailable for #${pr} at \`${headSha.slice(0, 7)}\` this run: GitHub didn't hand over its artifacts. The next run tries again.`,
+  ].join('\n');
+}
+
+/**
+ * Runs one artifact download; a failure (GitHub refusing it, say over the account's egress limit) logs
+ * one line and returns false, so that artifact is treated as missing rather than crashing the report.
+ */
+export function tryDownload(/** @type {string} */ name, /** @type {() => void} */ download) {
+  try {
+    download();
+    return true;
+  } catch (error) {
+    const reason = String(error instanceof Error ? error.message : error).split('\n')[0];
+    console.log(`[coverage-report] couldn't download ${name}, no baseline from main: ${reason}`);
+    return false;
+  }
+}
+
 function gh(/** @type {string[]} */ args) {
   return execFileSync('gh', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
 }
@@ -199,8 +222,10 @@ function downloadBase(repo, wanted) {
     ]),
   );
   const root = mkdtempSync(path.join(tmpdir(), 'coverage-base-'));
+  /** Names GitHub refused once: an older run would most likely be refused too. */
+  const refused = new Set();
   for (const run of runs) {
-    if (found.size === wanted.size) break;
+    if (found.size + refused.size === wanted.size) break;
     const names = JSON.parse(
       gh([
         'api',
@@ -210,13 +235,27 @@ function downloadBase(repo, wanted) {
       ]),
     );
     for (const name of names) {
-      if (!wanted.has(name) || found.has(name)) continue;
+      if (!wanted.has(name) || found.has(name) || refused.has(name)) continue;
       const dir = path.join(root, name);
-      gh(['run', 'download', String(run.id), '--repo', repo, '--name', name, '--dir', dir]);
-      found.set(name, { dir, sha: run.sha });
+      const ok = tryDownload(name, () =>
+        gh(['run', 'download', String(run.id), '--repo', repo, '--name', name, '--dir', dir]),
+      );
+      if (ok) found.set(name, { dir, sha: run.sha });
+      else refused.add(name);
     }
   }
   return found;
+}
+
+/** main's artifacts, or none when listing them fails too: every row then shows no baseline. */
+function baseOrNone(/** @type {() => Map<string, { dir: string, sha: string }>} */ find) {
+  try {
+    return find();
+  } catch (error) {
+    const reason = String(error instanceof Error ? error.message : error).split('\n')[0];
+    console.log(`[coverage-report] couldn't reach main's runs, no baseline from main: ${reason}`);
+    return new Map();
+  }
 }
 
 const PRODUCT_NAMES = {
@@ -236,6 +275,7 @@ async function main() {
     BASE_SHA,
     DIFF_HEAD,
     HEAD_DIR,
+    HEAD_DOWNLOAD,
     BASE_DIR,
     GITHUB_REPOSITORY,
     COVERAGE_REPORT_DRY_RUN,
@@ -246,6 +286,13 @@ async function main() {
       'usage: PR=… HEAD_SHA=… BASE_SHA=… HEAD_DIR=… GITHUB_REPOSITORY=… coverage-report.mjs',
     );
     return 2;
+  }
+  // The download step failed (GitHub refusing artifacts): say so in place of numbers from part of them.
+  if (HEAD_DOWNLOAD === 'failure') {
+    console.log(
+      "[coverage-report] this run's coverage couldn't be downloaded; reporting it unavailable",
+    );
+    return writeReport(renderUnavailable(Number(PR), HEAD_SHA), PR, GITHUB_REPOSITORY, dryRun);
   }
   const headArtifacts = readdirSync(HEAD_DIR)
     .map((name) => ({ name, ...parseArtifact(name) }))
@@ -261,7 +308,7 @@ async function main() {
           .filter((n) => wanted.has(n))
           .map((n) => [n, { dir: path.join(BASE_DIR, n), sha: 'local' }]),
       )
-    : downloadBase(/** @type {string} */ (GITHUB_REPOSITORY), wanted);
+    : baseOrNone(() => downloadBase(/** @type {string} */ (GITHUB_REPOSITORY), wanted));
 
   const groupNames = [...new Set(headArtifacts.map((a) => a.group))];
   const groups = groupNames.map((group) => {
@@ -292,6 +339,16 @@ async function main() {
   const patch = totalsOf(all, () => true, addedLines(diff));
 
   const report = renderReport({ pr: Number(PR), headSha: HEAD_SHA, patch, groups });
+  return writeReport(report, PR, GITHUB_REPOSITORY, dryRun);
+}
+
+/** Prints the report on a dry run, else writes it into the pull request's description. */
+function writeReport(
+  /** @type {string} */ report,
+  /** @type {string} */ PR,
+  /** @type {string | undefined} */ GITHUB_REPOSITORY,
+  /** @type {boolean} */ dryRun,
+) {
   if (dryRun) {
     console.log(report);
     return 0;

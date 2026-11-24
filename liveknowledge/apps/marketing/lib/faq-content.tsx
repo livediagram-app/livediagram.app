@@ -202,7 +202,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I import from Notion and Confluence?',
-        a: 'Yes. In the editor’s Import dialog choose Notion (its Markdown and CSV export, a .zip), Confluence (a space’s HTML export, a .zip) or a folder of Markdown. You see the pages and pictures it found before anything is imported. Google Docs import is not built yet.',
+        a: 'Yes. In the editor’s Import dialog choose Notion (its Markdown and CSV export, a .zip), Confluence (a space’s HTML export, a .zip) or a folder of Markdown. You see the pages and pictures it found before anything is imported. For a Google Doc, choose File › Download › Markdown (.md) in Google Docs, then in Import choose Into This Page and Markdown, and pick the file. Several docs: download each, put them in one folder and import the folder.',
       },
       {
         q: 'What comes across in an import?',

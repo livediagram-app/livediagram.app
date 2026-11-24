@@ -10,8 +10,12 @@
 import type { ReactNode } from 'react';
 import { PLATFORM_SITE, workspaceOriginFor } from '@liveworkspace/sites';
 import type { SettingsBlob } from '@liveworkspace/settings';
+import type { StoredValue } from '@liveworkspace/settings/catalogue';
+import { readCallSpaceSetting } from '@liveworkspace/index-client';
 import {
   ACCESSIBILITY_ROWS,
+  CALL_SPACE_KEY,
+  CALLS_CATEGORY,
   IN_APP_ROWS,
   NOTIFICATION_ROWS,
   PRIVACY_ROWS,
@@ -35,9 +39,9 @@ import { PHONE_SECTION, phoneRows } from './push/phone-rows';
 import type { SettingsCategory, SettingsRow } from './model';
 
 export interface AccountSection {
-  // The `all` scope as it stands, and how to change one of its keys.
+  // The `all` scope as it stands, and how to change one of its keys (null deletes it).
   all: SettingsBlob;
-  set: (key: string, value: boolean) => void;
+  set: (key: string, value: StoredValue) => void;
   // Who is signed in, for the Profile's header card (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile").
   identity?: AccountIdentity | null;
   // The profile collaborators see (the display name and presence colour), edited in place over the host's door: the
@@ -70,6 +74,9 @@ export interface AccountSection {
   // The person's AI key and their teams' (liveworkspace/docs/specs/003-accounts/ai-keys.md "Settings"), drawn here
   // (accountPanels) for a signed-in account; none for a guest or a workbench.
   renderAi?: () => ReactNode;
+  // Settings › Calls' Calls Open In (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"), drawn here
+  // (accountPanels) where the host can list the person's livehuddle Spaces; none for a guest or a workbench.
+  renderCalls?: (choice: CallSpaceChoice) => ReactNode;
   // The email switches, only where the person has an address the emails can go to (default true).
   emails?: boolean;
   // Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): where the deployment offers Drive and the person is signed
@@ -79,6 +86,9 @@ export interface AccountSection {
   // panel's own door to the accounts API, whose Phone section turns them on and lists the devices.
   phone?: PhoneHost | null;
 }
+
+/** Calls Open In as it stands: the chosen Space's id (null for a new Space each call), and how to change it. */
+export type CallSpaceChoice = { value: string | null; onChange: (space: string | null) => void };
 
 // liveworkspace.app as this page sees it (staging's from a staging app), for a row's link to a page there.
 const workspaceOrigin = () =>
@@ -115,6 +125,7 @@ export const ACCOUNT_CATEGORY_IDS = [
   'notifications',
   'privacy',
   'accessibility',
+  'calls',
   'ai',
   'data',
   'tokens',
@@ -129,10 +140,18 @@ export function accountCategoryTile(id: AccountCategoryId): ReactNode {
 }
 
 /** The account's categories, by their own ids (the panel prefixes them `account:`), in the order they are listed:
- *  Profile, Subscription (with Pro on), Notifications, Privacy, Accessibility, AI and Your Data (the rail's
+ *  Profile, Subscription (with Pro on), Notifications, Privacy, Accessibility, Calls (with a host that lists Spaces), AI and Your Data (the rail’s
  *  Account), then API Tokens (its Developers). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
-  const { all, set, renderAi, renderTokens, renderDataExport, emails = true } = section;
+  const {
+    all,
+    set,
+    renderAi,
+    renderCalls,
+    renderTokens,
+    renderDataExport,
+    emails = true,
+  } = section;
   const toggle = (rows: readonly AccountToggle[], heading?: string) =>
     rows.map(toggleRow(all, set, heading));
 
@@ -186,6 +205,30 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
       rows: toggle(ACCESSIBILITY_ROWS),
     },
   );
+  if (renderCalls) {
+    const choice: CallSpaceChoice = {
+      value: readCallSpaceSetting(all),
+      // Default stores an empty choice rather than deleting the key: each editor lays the account's settings over
+      // its own saved copy, so only a value overwrites a Space it still holds. '' reads as Default everywhere.
+      onChange: (space) => set(CALL_SPACE_KEY, space ?? ''),
+    };
+    categories.push({
+      id: 'calls',
+      label: CALLS_CATEGORY.label,
+      icon: accountCategoryTile('calls'),
+      rows: [
+        {
+          kind: 'custom',
+          key: CALL_SPACE_KEY,
+          label: CALLS_CATEGORY.rowLabel,
+          description: CALLS_CATEGORY.description,
+          keywords: CALLS_CATEGORY.keywords,
+          section: CALLS_CATEGORY.rowLabel,
+          render: () => renderCalls(choice),
+        },
+      ],
+    });
+  }
   if (renderAi) {
     categories.push({
       id: 'ai',
