@@ -29,37 +29,106 @@ Both pieces belong to one **call area**: a Room or an Office Pod (`roomZones`, c
 
 A flat wall screen: a dark panel in a thin bezel, a small status light on its lower edge, a soft shadow on the wall.
 
-- **Default 192 × 120**, aspect locked. Placed like any office piece (a tap places it at its size, a drag moves the
-  drop). Not a destination, never blocks walking, takes no label (it has nothing to write on).
+- **Default 192 × 120**, its proportions kept. Placed like any office piece (a tap places it at its size, a drag moves
+  the drop). Not a destination, never blocks walking, takes no label (it has nothing to write on).
+- **Any size up to a wall** (Work Tracker 1427). Unlike the other placed pieces a Screen keeps its resize handles: an
+  Editor drags it, or types its size in the Size section, from `SCREEN_MIN` (96 × 60) up to `SCREEN_MAX` (1600 × 1000), a wall-filling screen. It keeps its
+  proportions by default (`aspectLocked`), and the Size section's lock frees them, as for any shape. A Screen draws
+  under the characters and never blocks walking, so a big one over a row of chairs leaves every chair to sit in.
 - **What it shows**, the first of these that applies, for each viewer:
   1. **A screen share in its room.** When someone standing in the Screen's room is sharing their screen in the call,
      and this viewer receives that share, the Screen shows it, scaled to fit inside the panel (letterboxed, never
      cropped), with the sharer's name in a small chip in its corner. Your own share shows on the Screen of the room
      you are in. Several sharers in one room: the one nearest the Screen.
-  2. **Its video link.** A YouTube, Vimeo or Loom link set from its menu (`screenUrl`) shows the video's poster (a
-     named card for providers without one) with a play mark. Nothing third-party loads until somebody opens it, as
-     for every embed.
+  2. **Its source**, which an Editor chooses ([Choosing what it shows](#choosing-what-it-shows)): a **file** from any
+     of the apps, or a **video**. A Screen has one source at a time; choosing one replaces the other.
+     - **A file** ([A file on the Screen](#a-file-on-the-screen)) shows as a title card, and live in its own app's
+       frame while you are in its room.
+     - **A video** (`screenUrl`, a YouTube, Vimeo or Loom link) shows the video's poster (a named card for providers
+       without one) with a play mark. Nothing third-party loads until somebody opens it, as for every embed.
   3. **The idle face**: the panel dark, a faint screen glyph and **No one is sharing**.
 - **Who receives the share** is the call's own rule, unchanged ([Who sees
   what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)): whoever in the room hears the sharer
   (within earshot, [Rooms are calls](../012-collaboration/meeting-rooms-and-stage.md#rooms-are-calls-part-1-built))
-  can receive the share; someone outside the room never does, and sees the video link or the idle
-  face. The share's bubble rules still apply (the sharer's character is on screen, at most two screens, a hidden tab
-  receives none), so the Screen costs no extra traffic: it shows a stream this viewer already receives.
+  can receive the share; someone outside the room never does, and sees the source or the idle face. The share's
+  bubble rules still apply (the sharer's character is on screen, at most two screens, a hidden tab receives none), so
+  the Screen costs no extra traffic: it shows a stream this viewer already receives.
 - **Pressing it** (a click that is not a drag, `usePressWithoutDrag`) opens it large:
   - a share opens the call's maximised panel for that sharer ([Maximised](../012-collaboration/video-and-screen-bubbles.md#maximised)),
     exactly as pressing their bubble does;
-  - a video link opens a large player over the canvas (at most 1280 px wide, 16:9, never more than 90% of the window),
+  - a file opens the **file overlay** ([A file on the Screen](#a-file-on-the-screen) "Opened large");
+  - a video opens a large player over the canvas (at most 1280 px wide, 16:9, never more than 90% of the window),
     with the video's name and a **Close** button in a bar above it; Escape or the backdrop closes it. The player
     mounts only then, on the provider's embed origin (youtube-nocookie.com for YouTube).
   - The idle face is not pressable.
-- **Not synced (yet).** The video plays for whoever opens it, from the start, on their own screen. Play and pause
-  synced across the room is a follow-up (Not in scope).
-- **Video Link** is set from the element menu's **Screen** section: a link field with **Set** and **Clear**. A link
-  that is not a YouTube, Vimeo or Loom video says "That isn't a video link" and is not saved. `screenUrl` is an
-  http(s) address of at most 2,048 characters; anything else makes the element invalid.
-- **No per-frame work**: the face re-renders when the call's received streams change or when who is in its room
-  changes, never on a step or a frame.
+- **The same for everyone in the room.** The source is the element's own fields, so a new choice reaches everyone
+  with the Space open at once, as any edit does, and each of them sees it with their own access. A video still plays
+  for whoever opens it, from the start, on their own screen; play and pause synced across the room is a follow-up
+  (Not in scope).
+- `screenUrl` is an http(s) address of at most 2,048 characters; a link that is not a YouTube, Vimeo or Loom video
+  says "That isn't a video link" and is not saved.
+- **No per-frame work**: the face re-renders when the call's received streams change, when who is in its room
+  changes, or when its file's frame says something, never on a step or a frame.
+
+### Choosing what it shows
+
+An Editor chooses a Screen's source in **Show on the Screen**, a dialog centred on screen with the hero header (the
+Embed File art), titled **Show on the Screen**, "A file from any of our apps, live for everyone with access, or a
+video." Two sources sit in a segmented switch under the header, **File** first:
+
+- **File** is Embed File's list (the platform's [Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md)
+  "Making one", its chooser): **Paste a Share Link**, then **Find a File**, which searches every file the person can
+  open across livediagram, liveplanner, livedocuments, livedesign and liveknowledge by name (the index's search, as
+  the Explorer's filter field), and with nothing typed shows their **Recent** files. A Space, and this Space itself,
+  is never listed. Pressing a row puts the file on the Screen and closes the dialog. livehuddle has no connected
+  tabs, so the role is not asked and a file is shown with no tab: only people with access see it.
+- **Video** is the Video Link field with **Set**, as the menu had it, and a line saying a video plays for whoever
+  opens it.
+- **The tab or page.** A file of several tabs (a canvas's tabs, a plan's tabs, a document's tabs, a design's pages,
+  a knowledgebase's pages) opens on its first. To show another, an Editor opens the Screen large, goes to the tab in
+  the file's own switcher, and presses **Show This Tab on the Screen** ([A file on the Screen](#a-file-on-the-screen)
+  "Opened large"): the Screen keeps that tab (`liveTab`, its id and name) and opens on it for everyone from then on.
+  Choosing it in the file itself means the tabs offered are the Editor's own to see, never names read for someone who
+  can't open the file.
+
+It opens from:
+
+- the element menu's **Screen** section: what the Screen shows now (the file's app logo and name, the video's name,
+  or **Nothing chosen**), **Choose** (opens the dialog on the source shown, File when none) and **Clear**;
+- the walking reader of an idle Screen ([The reader](../008-canvas/avatar-mode.md#the-reader)), **Choose What It
+  Shows**, beside Share Your Screen, for an Editor.
+
+### A file on the Screen
+
+The Screen is a live embed's host (the platform's [Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md),
+Work Tracker 1427): it keeps the link (`liveItem`, `{app, itemId}`), the file's name as it was chosen (`liveName`) and
+the tab it shows (`liveTab`, absent for the first). It keeps **no snapshot picture** (`livePoster`): a still of the
+file would show its content to people who can't open it, so the Screen's still is a **title card** instead.
+
+- **The title card**, on the panel: the file's app logo, its name in two lines at most and its app under it, on the
+  screen's dark glass, and a small **Live** dot in the corner once the frame is showing. Its status light is green.
+- **Live while you are in its room.** A frame is a whole app, so the Screen asks for one only while your character
+  stands in the Screen's room (`ScreenLive.inside` holds you), the Screen is on screen and the page has a place for
+  it (the platform's `LIVE_EMBEDS_MAX`, 3, and its on-screen rules). Then the file's own read-only frame, opened with
+  your own access, fades in over the title card. Anyone not in the room, or not walking, sees the title card, and
+  pressing the Screen opens it live anyway. While the Screen is opened large its wall frame is given up.
+- **Drawn as a screen shows a page.** The wall frame lays the file out at `SCREEN_FRAME_LAYOUT_WIDTH` (1280 px) wide
+  and scales it down to the panel, as a real screen shows a desktop page, so a small Screen shows the whole file
+  small, never a phone's layout of it. The frame takes no pointer on the wall: pressing the Screen opens it.
+- **Your own access, always.** The frame's ticket is minted for you, at the view level, by the platform's door (on
+  livehuddle's address, `POST /api/workbench/embed-tickets`, forwarded to liveworkspace as for every app). Someone who
+  can't open the file never gets a frame: the title card shows a lock and **No Access** in place of Live, and opened
+  large says "You don't have access to <name>." with **Request Access** (signed in) and **Open in <App>**. A file in
+  the Trash or gone reads **No longer there**; a failure reads **Couldn't show it just now**, with **Try Again**
+  opened large.
+- **Opened large** (pressing the Screen): the **file overlay**, the reader's dark shell at most 1280 px wide and 90%
+  of the window tall, the file's frame filling it at its own size and taking the pointer, so a reader scrolls, pans
+  and switches tabs in it at once (read-only, as every live embed). Its bar holds the app logo and the file's name,
+  **Show This Tab on the Screen** (an Editor, once the frame is on another tab than the Screen's), **Open in <App>**
+  (the file in its own app, in a new browser tab) and **Close**. Escape or the backdrop closes it. Opening counts as
+  `Canvas · Used · ScreenOpen`.
+- **Community and exports.** A Community copy keeps the title card's name and loses the link, as every live embed
+  does (`redactElementsForCommunity`); an export draws the title card (the name and app, no picture).
 
 ## Room Sign
 
@@ -122,13 +191,16 @@ reads live: it changes as people come and go, and its time ticks once a minute w
 | Act                                                 | Editor | Participant | Viewer |
 | --------------------------------------------------- | ------ | ----------- | ------ |
 | Place, move, resize, delete a Screen or Room Sign   | Yes    | No          | No     |
-| Set or clear a Screen's Video Link                  | Yes    | No          | No     |
+| Choose or clear a Screen's file or video            | Yes    | No          | No     |
+| Show This Tab on the Screen                         | Yes    | No          | No     |
 | See a Screen (share, video poster, idle) and a Sign | Yes    | Yes         | Yes    |
 | Open a Screen large                                 | Yes    | Yes         | Yes    |
 | Knock from a Room Sign                              | Yes    | Yes         | Yes    |
 | Walk In from a Room Sign's reader                   | Yes    | Yes         | Yes    |
 
-- Placing and the Video Link are editing (`can.edit`); a Participant has no palette.
+- Placing, resizing and the source are editing (`can.edit`); a Participant has no palette.
+- Seeing a file on a Screen is each person's own access to the file, whatever their role in the Space: a Viewer who
+  can open the file sees it live, an Editor who can't sees the lock.
 - Seeing and opening are your own view. Knocking is presence: anyone who may walk may knock (a Viewer walks).
 - Sharing the screen the Screen shows stays an Editor's act ([Share
   roles](../012-collaboration/video-and-screen-bubbles.md#share-roles)).
@@ -136,13 +208,15 @@ reads live: it changes as people come and go, and its time ticks once a minute w
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - Placing one: `Element · Added · Screen`, `Element · Added · Room-sign`.
-- A Video Link set or cleared: `Element · Changed · Screen`.
+- A source chosen or cleared, or a tab shown: `Element · Changed · Screen`. A file's frame going live counts as every
+  live embed does, `Canvas · Used · LiveEmbed`.
 - Opening a Screen large: `Canvas · Used · ScreenOpen`. Knocking is counted by [Knock](../012-collaboration/knock.md).
 - Never who, never which room, never the link.
 
 ## Export
 
-An export draws a Screen's idle face (or its video's named card when it has a link) and a Room Sign's plaque reading
+An export draws a Screen's idle face (its video's named card when it has a link, its file's name and app when it
+has a file) and a Room Sign's plaque reading
 **Free** under the name **Room**: an export is a still picture of one element, with nobody in it.
 
 ## Not in scope
@@ -152,6 +226,8 @@ An export draws a Screen's idle face (or its video's named card when it has a li
 - A Room Sign snapping onto the nearest Door or doorway as it is placed (the placement preview work owns snapping).
 - The time in use shared across machines (an optional `enteredAt` on the avatar presence, so a late viewer sees the
   same minutes as everyone else).
+- Picking a file's tab in Show on the Screen before it is opened (the dialog would need each app to list a file's
+  tabs to someone in another app; the frame already lists them, to the reader's own access).
 - A Screen that receives a share whose sharer is off screen (the bubble rules would need to count a Screen in view as
   the sharer in view), or more than two at once.
 - A schedule or booking on a Room Sign.

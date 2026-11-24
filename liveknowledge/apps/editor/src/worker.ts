@@ -5,6 +5,7 @@
 // for why we can't enumerate user-minted ids at build time.
 
 import { TRUSTED_TYPES_CSP } from '@liveknowledge/ui/trusted-types';
+import { liveEmbedFrameAncestors } from '@liveworkspace/sites';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
 // PREVIEWS_ORIGIN: where the share page's link preview (./share-page.ts) asks liveworkspace's previews for the
@@ -49,7 +50,10 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
 };
 
-function withSecurityHeaders(res: Response, opts?: { frameable?: boolean }): Response {
+function withSecurityHeaders(
+  res: Response,
+  opts?: { frameable?: boolean; frameAncestors?: string | null },
+): Response {
   // Response headers from the assets binding are immutable when the
   // body is a stream, so we clone into a fresh Response with the
   // merged headers. Status / body pass through.
@@ -61,6 +65,13 @@ function withSecurityHeaders(res: Response, opts?: { frameable?: boolean }): Res
   // reopen the attack the DENY exists for. Every other route keeps
   // DENY.
   if (opts?.frameable) merged.delete('X-Frame-Options');
+  // A live embed's frame (liveworkspace/docs/specs/004-index/live-embeds.md "Framed by our apps alone") is framed by
+  // our apps' pages alone: `frame-ancestors` names them, so no other site can frame a reader's live view.
+  if (opts?.frameAncestors)
+    merged.set(
+      'Content-Security-Policy',
+      `${SECURITY_HEADERS['Content-Security-Policy']}; frame-ancestors ${opts.frameAncestors}`,
+    );
   return new Response(res.body, {
     status: res.status,
     statusText: res.statusText,
@@ -102,7 +113,10 @@ export default {
         { frameable: true },
       );
     }
-    return withSecurityHeaders(await env.ASSETS.fetch(request), { frameable });
+    return withSecurityHeaders(await env.ASSETS.fetch(request), {
+      frameable,
+      frameAncestors: liveEmbedFrameAncestors(url),
+    });
   },
 };
 import { isEditorPath } from '../lib/editor-path';

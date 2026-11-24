@@ -4,8 +4,8 @@
 // open it, an export and a Community copy. Pure, and free of the index client (its guards are restated here).
 import { stringRule, type FieldCheck } from '@liveworkspace/model-core/validate-primitives';
 
-// The apps that serve a workbench frame, so the ones a live embed can show: every app but livehuddle (Work Tracker
-// 1375 added liveknowledge, a knowledgebase shown at its pages).
+// The apps that serve a workbench frame, so the ones a live embed can show: every app but livehuddle, which shows them
+// on its Screen (Work Tracker 1427) and is never one (Work Tracker 1375 added liveknowledge, shown at its pages).
 export const LIVE_EMBED_APPS = [
   'livediagram',
   'liveplanner',
@@ -16,6 +16,10 @@ export const LIVE_EMBED_APPS = [
 export type LiveEmbedApp = (typeof LIVE_EMBED_APPS)[number];
 
 export type LiveItem = { app: LiveEmbedApp; itemId: string };
+
+// The target's tab (or page) a host keeps beside the link (live-embeds.md "Names"): the frame opens on it, the first
+// when absent or gone. Its name is the tab's as the frame told the host, for showing which tab without a frame.
+export type LiveTab = { id: string; name: string };
 
 // The snapshot's caps: a name as the index keeps one, and a small raster picture.
 export const LIVE_NAME_MAX = 200;
@@ -49,6 +53,15 @@ export function isLiveItem(v: unknown): v is LiveItem {
 export const isLiveName = (v: unknown): v is string =>
   typeof v === 'string' && v.length <= LIVE_NAME_MAX;
 
+/** A tab id as the apps mint them: the item id's shape (a UUID fits). */
+export const isLiveTabId = (v: unknown): v is string => typeof v === 'string' && ITEM_ID.test(v);
+
+export function isLiveTab(v: unknown): v is LiveTab {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
+  const { id, name, ...rest } = v as Record<string, unknown>;
+  return Object.keys(rest).length === 0 && isLiveTabId(id) && isLiveName(name);
+}
+
 export function isLivePoster(v: unknown): v is string {
   if (typeof v !== 'string' || v.length > LIVE_POSTER_MAX_CHARS) return false;
   const prefix = POSTER_PREFIXES.find((p) => v.startsWith(p));
@@ -69,6 +82,13 @@ export const LIVE_EMBED_CHECKS: readonly FieldCheck[] = [
     rule: `a webp, jpeg or png data URL of at most ${LIVE_POSTER_MAX_CHARS} characters`,
   },
 ];
+
+// A host's tab beside the link (livehuddle's Screen, Work Tracker 1427).
+export const LIVE_TAB_CHECK: FieldCheck = {
+  field: 'liveTab',
+  valid: isLiveTab,
+  rule: `{ id, name }, the name at most ${LIVE_NAME_MAX} characters`,
+};
 
 // A Community copy keeps the snapshot and loses the link (live-embeds.md "Snapshots"), so a stranger is told of no
 // other item and nothing can open it.

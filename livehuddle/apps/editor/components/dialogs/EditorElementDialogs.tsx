@@ -6,6 +6,8 @@ import { isBoxed } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
+import { ScreenSourcePanel } from '@/components/dialogs/screen-source-panel';
+import { useScreenPicker } from '@/lib/office/screen-picker-store';
 
 const LinkPickerDialog = dynamic(
   () => import('@/components/dialogs/LinkPickerDialog').then((m) => m.LinkPickerDialog),
@@ -59,6 +61,9 @@ export function EditorElementDialogs() {
   );
 
   const linkTarget = activeTab.elements.find((e) => e.id === linkPickerOpenForId);
+  // Show on the Screen (docs/specs/009-elements/screen-and-room-sign.md "Choosing what it shows"): its code loads
+  // only once it opens, and it closes itself when its Screen or the role goes.
+  const screenPicker = useScreenPicker();
 
   return (
     <>
@@ -116,6 +121,7 @@ export function EditorElementDialogs() {
           onClose={closeImagePicker}
         />
       ) : null}
+      {screenPicker ? <ScreenSourcePanel /> : null}
     </>
   );
 }

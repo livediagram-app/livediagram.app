@@ -52,6 +52,8 @@ import { overRunLimit } from './kits';
 import { getItemRow, type ItemRow } from './rows';
 
 const NAME_MAX = 120;
+// The Screen's file name: a live embed's (@liveworkspace/element-model LIVE_NAME_MAX).
+const SCREEN_NAME_MAX = 200;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const newCallId = () => `ic_${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
 
@@ -93,13 +95,19 @@ async function startCall(ctx: RouteContext, itemId: string): Promise<Response> {
     fallback = started;
   }
 
-  // The Space: a Team Pod of the person's own, named for the item.
+  // The Space: a Document Room of the person's own, named for the item, the item on its wall Screen (item-calls.md
+  // "Starting", Work Tracker 1427). Only a link and a name: each person in the room sees it with their own access.
   const name = cut(`${item.row.title || 'Untitled'}${ITEM_CALL_NAME_SUFFIX}`, NAME_MAX);
+  const screen = {
+    app: item.row.app,
+    itemId: item.row.id,
+    name: cut(item.row.title || 'Untitled', SCREEN_NAME_MAX),
+  };
   const res = await callAppForJson(
     env,
     ITEM_CALL_APP,
     '/items/from-template',
-    { owner: person.id, folderId: null, name, template: ITEM_CALL_TEMPLATE },
+    { owner: person.id, folderId: null, name, template: ITEM_CALL_TEMPLATE, screen },
     KIT_CREATE_TIMEOUT_MS,
   );
   const spaceId = res.ok ? res.body.id : undefined;

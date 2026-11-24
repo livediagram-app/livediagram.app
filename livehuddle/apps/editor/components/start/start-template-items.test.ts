@@ -92,6 +92,7 @@ describe('Start a Space', () => {
       'focus-library',
       'interview-suite',
       'client-lounge',
+      'document-room',
     ]);
     expect(group('events')).toEqual([
       'all-hands-hall',

@@ -147,8 +147,9 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'world-clock': ['clockZones'],
   jukebox: ['jukeboxSource', 'chairFacing'],
   portal: ['portalTarget'],
-  // docs/specs/009-elements/screen-and-room-sign.md "Screen": its Video Link.
-  screen: ['screenUrl'],
+  // docs/specs/009-elements/screen-and-room-sign.md "Screen": its Video Link, or the file it shows (read as stored; a
+  // file is chosen in the editor, where the person's own access is at hand).
+  screen: ['screenUrl', 'liveItem', 'liveName', 'liveTab'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

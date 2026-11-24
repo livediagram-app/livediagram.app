@@ -2,8 +2,10 @@ import { MAX_SIZE_PX, MIN_SIZE_PX } from '@liveworkspace/workbench/lib/element-s
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import {
   SHAPE_DEFAULT_SIZE,
+  clampScreenBox,
   isRetiredElement,
   type BorderStroke,
+  type BoxedElement,
   type BorderStyle,
   type Element,
   type ShapeElement,
@@ -33,6 +35,32 @@ type ShapeStyleSetterDeps = {
 export { MAX_SIZE_PX, MIN_SIZE_PX };
 const clampSizePx = (n: number): number =>
   Math.round(Math.min(MAX_SIZE_PX, Math.max(MIN_SIZE_PX, Number.isFinite(n) ? n : MIN_SIZE_PX)));
+
+/**
+ * An element's box after a typed size: the aspect lock carries the other dimension, each is clamped to the typed-size
+ * bounds, and a Screen is kept between SCREEN_MIN and SCREEN_MAX as its drag resize keeps it
+ * (livehuddle/docs/specs/009-elements/screen-and-room-sign.md "Any size up to a wall").
+ */
+export function typedSize<E extends BoxedElement>(
+  el: E,
+  size: { width?: number; height?: number },
+): E {
+  const locked = (el as { aspectLocked?: boolean }).aspectLocked === true;
+  const ratio = el.height > 0 ? el.width / el.height : 1;
+  let width = size.width ?? el.width;
+  let height = size.height ?? el.height;
+  if (locked && ratio > 0) {
+    if (size.width !== undefined && size.height === undefined) {
+      height = Math.round(width / ratio);
+    } else if (size.height !== undefined && size.width === undefined) {
+      width = Math.round(height * ratio);
+    }
+  }
+  const box = { width: clampSizePx(width), height: clampSizePx(height) };
+  if (el.type === 'shape' && el.shape === 'screen')
+    return { ...el, ...clampScreenBox(box, locked) };
+  return { ...el, ...box };
+}
 
 // The selection-wide setters for shape geometry + styling: kind (morph),
 // aspect-ratio reset, rotation, border weight / pattern / radius, status
@@ -92,22 +120,7 @@ export function useShapeStyleSetters({
       els.map((el) => {
         // A retired element never resizes (docs/specs/002-project-scope/blueprints/element-engine.md).
         if (el.id !== selectedId || !isStyleable(el)) return el;
-        const locked = (el as { aspectLocked?: boolean }).aspectLocked === true;
-        const ratio = el.height > 0 ? el.width / el.height : 1;
-        let width = size.width ?? el.width;
-        let height = size.height ?? el.height;
-        if (locked && ratio > 0) {
-          if (size.width !== undefined && size.height === undefined) {
-            height = Math.round(width / ratio);
-          } else if (size.height !== undefined && size.width === undefined) {
-            width = Math.round(height * ratio);
-          }
-        }
-        return {
-          ...el,
-          width: clampSizePx(width),
-          height: clampSizePx(height),
-        };
+        return typedSize(el, size);
       }),
     );
     track('Element', 'Changed', 'Size');

@@ -1,14 +1,16 @@
 'use client';
 
 // The Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): a wall screen that shows, for each viewer,
-// a screen share from someone standing in its room, else its Video Link's poster, else an idle face. Pressing it
-// opens the share in the call's maximised panel, or the video in a large player. It shows only a stream this viewer
-// already receives (the bubble rules), and re-renders when its room's people or the received streams change, never
-// on a step.
+// a screen share from someone standing in its room, else its source: a file from any of the apps (a title card, live
+// in the file's own frame while the viewer stands in the room, ScreenFileFace), or its Video Link's poster; else an
+// idle face. Pressing it opens the share in the call's maximised panel, the file in the file overlay, or the video in
+// a large player. It shows only a stream this viewer already receives (the bubble rules), and re-renders when its
+// room's people or the received streams change, never on a step.
 import { useState } from 'react';
 import {
   SCREEN_ART,
   SCREEN_IDLE_TEXT,
+  screenFile,
   screenVideoTarget,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -19,6 +21,9 @@ import { useMeetingLive } from '@/lib/office/meeting-live';
 import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { track } from '@/lib/telemetry';
 import { MediaVideo, mediaTitle } from '@/components/calls/MediaBubble';
+import { SELF_MEDIA_ID } from '@/lib/calls/calls-media-store';
+import { ScreenFileOverlayPanel } from '@/components/dialogs/screen-source-panel';
+import { ScreenFileFace } from './ScreenFileFace';
 import { ScreenPlayer } from './ScreenPlayer';
 
 const PlayIcon = lucideGlyph(lucidePlay, 18);
@@ -48,38 +53,58 @@ export function ScreenGlyph({ size = 14, className }: { size?: number; className
   );
 }
 
-// Who in the Screen's room is sharing and received here: the nearest the Screen.
-function useShownShare(id: string) {
+// Who in the Screen's room is sharing and received here (the nearest the Screen), and whether you stand in it.
+function useScreenRoom(id: string) {
   const live = useMeetingLive(id);
   const media = useCallMedia();
-  if (!live || !('inside' in live)) return null;
+  if (!live || !('inside' in live)) return { share: null, inRoom: false };
+  let share: { id: string; name: string | null; stream: MediaStream } | null = null;
   for (const p of live.inside) {
     const stream = media.get(p.id)?.screen;
-    if (stream) return { id: p.id, name: p.name, stream };
+    if (stream) {
+      share = { id: p.id, name: p.name, stream };
+      break;
+    }
   }
-  return null;
+  return { share, inRoom: live.inside.some((p) => p.id === SELF_MEDIA_ID) };
 }
 
+const preloadOverlay = () => void ScreenFileOverlayPanel.preload();
+
 export function ScreenView({ element, animClass }: { element: ShapeElement; animClass?: string }) {
-  const share = useShownShare(element.id);
-  const video = share ? null : screenVideoTarget(element.screenUrl);
+  const { share, inRoom } = useScreenRoom(element.id);
+  const file = share ? null : screenFile(element);
+  const video = share || file ? null : screenVideoTarget(element.screenUrl);
   const [playing, setPlaying] = useState(false);
+  const [reading, setReading] = useState(false);
   const open = share
     ? () => {
         track('Canvas', 'Used', 'ScreenOpen');
         setCallMaximised({ id: share.id, media: 'screen' });
       }
-    : video
+    : file
       ? () => {
           track('Canvas', 'Used', 'ScreenOpen');
-          setPlaying(true);
+          setReading(true);
         }
-      : undefined;
+      : video
+        ? () => {
+            track('Canvas', 'Used', 'ScreenOpen');
+            setPlaying(true);
+          }
+        : undefined;
   const press = usePressWithoutDrag(open);
-  const title = share ? mediaTitle(share.name, 'screen') : video ? video.label : SCREEN_IDLE_TEXT;
+  const title = share
+    ? mediaTitle(share.name, 'screen')
+    : file
+      ? file.liveName || 'a file'
+      : video
+        ? video.label
+        : SCREEN_IDLE_TEXT;
+  const verb = share || file ? 'Open' : 'Play';
   const panel = (
     <div
-      data-screen-face={share ? 'share' : video ? 'video' : 'idle'}
+      data-screen-face={share ? 'share' : file ? 'file' : video ? 'video' : 'idle'}
       className="absolute overflow-hidden"
       style={{
         left: pct(A.panel.x, A.bezel.w),
@@ -104,6 +129,8 @@ export function ScreenView({ element, animClass }: { element: ShapeElement; anim
             {title}
           </span>
         </>
+      ) : file ? (
+        <ScreenFileFace file={file} inRoom={inRoom} paused={reading} />
       ) : video ? (
         <>
           {video.posterUrl ? (
@@ -176,14 +203,16 @@ export function ScreenView({ element, animClass }: { element: ShapeElement; anim
       />
       {open ? (
         <HoverCard
-          title={share ? `Open ${title}` : `Play ${title}`}
+          title={`${verb} ${title}`}
           description="Opens it large"
           className="pointer-events-auto absolute inset-0"
         >
           <button
             type="button"
-            aria-label={share ? `Open ${title}` : `Play ${title}`}
+            aria-label={`${verb} ${title}`}
             {...press}
+            onPointerEnter={file ? preloadOverlay : undefined}
+            onFocus={file ? preloadOverlay : undefined}
             data-piece-main=""
             className="group/screen pointer-events-auto absolute inset-0 cursor-pointer rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           >
@@ -204,11 +233,18 @@ export function ScreenView({ element, animClass }: { element: ShapeElement; anim
           top: `calc(${pct(A.light.cy, A.bezel.h)} - ${A.light.r}px)`,
           width: A.light.r * 2,
           height: A.light.r * 2,
-          background: share || video ? '#4ade80' : A.tones.bezelEdge,
-          boxShadow: share || video ? '0 0 4px #4ade80' : undefined,
+          background: share || file || video ? '#4ade80' : A.tones.bezelEdge,
+          boxShadow: share || file || video ? '0 0 4px #4ade80' : undefined,
         }}
       />
       {playing && video ? <ScreenPlayer target={video} onClose={() => setPlaying(false)} /> : null}
+      {reading && file ? (
+        <ScreenFileOverlayPanel
+          elementId={element.id}
+          file={file}
+          onClose={() => setReading(false)}
+        />
+      ) : null}
     </div>
   );
 }

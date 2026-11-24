@@ -1,6 +1,7 @@
 // A live embed's ticket (liveworkspace/docs/specs/011-workbench/workbench.md "Live embed tickets"): asked of this page's
 // own address with the reader's own token, for the item's app, bound to this page's origin. The answer in the words the
-// face needs: a ticket and the frame's path, or why there is none.
+// face needs: a ticket and the frame's path, or why there is none. A host that keeps a tab (livehuddle's Screen,
+// live-embeds.md "Which tab") asks for it, and the frame opens on it.
 import type { LiveItem } from '@liveworkspace/element-model/live-item';
 import { workbench } from '../../bindings';
 
@@ -14,6 +15,7 @@ export type LiveEmbedTicket =
 export async function requestLiveEmbedTicket(
   item: LiveItem,
   origin: string = window.location.origin,
+  tabId?: string,
 ): Promise<LiveEmbedTicket> {
   const bearer = await workbench.api.currentBearer();
   if (!bearer) return { ok: false, reason: 'no-access' };
@@ -22,7 +24,12 @@ export async function requestLiveEmbedTicket(
     res = await fetch(new URL(LIVE_EMBED_TICKET_PATH, origin), {
       method: 'POST',
       headers: { Authorization: `Bearer ${bearer}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: item.app, itemId: item.itemId, origin }),
+      body: JSON.stringify({
+        target: item.app,
+        itemId: item.itemId,
+        origin,
+        ...(tabId ? { tabId } : {}),
+      }),
       cache: 'no-store',
     });
   } catch {

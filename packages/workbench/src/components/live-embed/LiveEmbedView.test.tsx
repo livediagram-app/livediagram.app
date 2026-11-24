@@ -92,6 +92,7 @@ describe('a live embed', () => {
       state: 'live',
       src: `${'https://www.liveplanner.app'}/embed/workbench?d=p1#ticket=t`,
       ready: true,
+      tab: null,
     };
     const { container } = view();
     const iframe = container.querySelector('iframe')!;
@@ -110,6 +111,7 @@ describe('a live embed', () => {
       state: 'live',
       src: 'https://www.liveplanner.app/embed/workbench?d=p1#ticket=t',
       ready: true,
+      tab: null,
     };
     const { container } = view();
     const bar = container.querySelector('[data-live-embed-name]')!;
@@ -124,6 +126,7 @@ describe('a live embed', () => {
       state: 'live',
       src: 'https://www.liveplanner.app/embed/workbench?d=p1#ticket=t',
       ready: false,
+      tab: null,
     };
     const { container } = view();
     expect(container.querySelector('iframe')!.className).toContain('opacity-0');
@@ -260,6 +263,7 @@ describe('a live embed', () => {
       state: 'live',
       src: 'https://www.liveplanner.app/embed/workbench?d=p1#ticket=t',
       ready: true,
+      tab: null,
     };
     const onPointerDown = vi.fn();
     render(

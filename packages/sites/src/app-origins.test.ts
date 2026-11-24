@@ -3,6 +3,8 @@ import {
   appOfAnyOrigin,
   appOfOrigin,
   appOrigins,
+  isLiveEmbedFrameRequest,
+  liveEmbedFrameAncestors,
   siteHrefFrom,
   stagingOrigin,
 } from './app-origins';
@@ -76,6 +78,54 @@ describe('a link to a site from a staging page', () => {
     // A link that isn't on the site's own origin is left as it is.
     expect(siteHrefFrom(planner, 'https://example.com/x', 'staging.liveplanner.app')).toBe(
       'https://example.com/x',
+    );
+  });
+});
+
+// live-embeds.md "Framed by our apps alone" (Work Tracker 1427).
+describe("a live embed frame's frame-ancestors", () => {
+  const at = (href: string) => liveEmbedFrameAncestors(new URL(href));
+
+  it('names only the frame page with the live flag', () => {
+    expect(
+      isLiveEmbedFrameRequest(new URL('https://www.liveplanner.app/embed/workbench?d=p&live=1')),
+    ).toBe(true);
+    expect(
+      isLiveEmbedFrameRequest(new URL('https://www.liveplanner.app/embed/workbench/?d=p&live=1')),
+    ).toBe(true);
+    expect(
+      isLiveEmbedFrameRequest(new URL('https://www.liveplanner.app/embed/workbench?d=p')),
+    ).toBe(false);
+    expect(isLiveEmbedFrameRequest(new URL('https://www.liveplanner.app/embed?s=c&live=1'))).toBe(
+      false,
+    );
+    expect(
+      isLiveEmbedFrameRequest(
+        new URL('https://www.liveplanner.app/embed/workbench/explorer?live=1'),
+      ),
+    ).toBe(false);
+    expect(at('https://www.liveplanner.app/embed/workbench?d=p')).toBeNull();
+  });
+
+  it("is every app's production origins in production, and nothing else", () => {
+    const list = at('https://www.liveplanner.app/embed/workbench?d=p&live=1')!.split(' ');
+    expect(list[0]).toBe("'self'");
+    for (const site of APP_SITES) {
+      expect(list).toContain(`https://www.${site.id}`);
+      expect(list).toContain(`https://${site.id}`);
+    }
+    expect(list).toContain('https://www.livehuddle.app');
+    expect(list.some((s) => s.includes('staging') || s.includes('localhost') || s === '*')).toBe(
+      false,
+    );
+  });
+
+  it("is staging's apps on staging, and any local port on a loopback frame", () => {
+    const staging = at('https://staging.liveplanner.app/embed/workbench?d=p&live=1')!;
+    expect(staging).toContain('https://staging.livehuddle.app');
+    expect(staging).not.toContain('https://www.');
+    expect(at('http://localhost:3201/embed/workbench?d=p&live=1')).toBe(
+      "'self' http://localhost:* http://127.0.0.1:*",
     );
   });
 });

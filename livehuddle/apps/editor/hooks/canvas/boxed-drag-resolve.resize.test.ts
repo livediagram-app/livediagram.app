@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { createSticky, createText, type Element, type TextElement } from '@livehuddle/document';
+import {
+  createShape,
+  createSticky,
+  createText,
+  type Element,
+  type TextElement,
+} from '@livehuddle/document';
 import type { DragMode, ShapeBounds } from '@/lib/canvas';
 import { resizedElement, resolveBoxedResize } from './boxed-drag-resolve';
 
@@ -219,5 +225,23 @@ describe('resolveBoxedResize with Cmd/Ctrl held', () => {
     const elements = [box('a', 0, 0, 100, 50), box('wall', 300, 400, 80, 80)];
     const out = resize(elements, ['a'], 'resize-se', 197, 20, { shiftHeld: false });
     expect(out.boundsById.get('a')!.width).toBe(300);
+  });
+});
+
+// A Screen up to a wall (docs/specs/009-elements/screen-and-room-sign.md "Any size up to a wall", Work Tracker 1427).
+describe('resizedElement on a Screen', () => {
+  const screen = { ...createShape('screen', 0, 0), id: 's1' };
+
+  it('stops at wall size and at the smallest, keeping its ratio while locked', () => {
+    const big = resizedElement(screen, { x: 10, y: 20, width: 3840, height: 2400 }, null);
+    expect(big).toMatchObject({ x: 10, y: 20, width: 1600, height: 1000 });
+    const small = resizedElement(screen, { x: 0, y: 0, width: 48, height: 30 }, null);
+    expect(small).toMatchObject({ width: 96, height: 60 });
+  });
+
+  it('clamps each side alone once the Size section frees its ratio', () => {
+    const free = { ...screen, aspectLocked: false };
+    const out = resizedElement(free, { x: 0, y: 0, width: 1800, height: 40 }, null);
+    expect(out).toMatchObject({ width: 1600, height: 60 });
   });
 });

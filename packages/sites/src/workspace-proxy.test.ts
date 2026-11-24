@@ -24,6 +24,7 @@ import {
   PRODUCTION_DRIVE_ORIGIN,
   PRODUCTION_INDEX_ORIGIN,
   WORKBENCH_ROUTE,
+  EMBED_TICKETS_ROUTE,
   COMMUNITY_ROUTE,
 } from './workspace-proxy';
 import { APP_NAMES } from './index';
@@ -56,7 +57,7 @@ describe('which paths go to liveworkspace', () => {
   it('is the Explorer and its account reads, signing in, the Community page, and workbenches but for livehuddle', () => {
     const signIn = [...SIGN_IN_PAGE_ROUTES, ACCOUNTS_ROUTE, SITE_ASSETS_ROUTE];
     for (const app of APP_NAMES) {
-      const workbenches = app === 'livehuddle' ? [] : [WORKBENCH_ROUTE];
+      const workbenches = app === 'livehuddle' ? [EMBED_TICKETS_ROUTE] : [WORKBENCH_ROUTE];
       expect(workspaceRoutes(app)).toEqual([...ROUTES, ...signIn, COMMUNITY_ROUTE, ...workbenches]);
       expect(explorerHomeHref(app)).toBe('/explorer/home');
     }
@@ -82,8 +83,16 @@ describe('which paths go to liveworkspace', () => {
     expect(sent.headers.get(WORKSPACE_PROXY_HEADER)).toBe('livediagram');
   });
 
-  it('leaves /api/workbench/* to livehuddle’s own api, which has no workbenches', () => {
+  it('leaves /api/workbench/* to livehuddle’s own api, which has no workbenches, but for a live embed’s tickets', () => {
     expect(workspaceRouteFor('/api/workbench/pairings', workspaceRoutes('livehuddle'))).toBeNull();
+    expect(workspaceRouteFor('/api/workbench/tickets', workspaceRoutes('livehuddle'))).toBeNull();
+    expect(workspaceRouteFor('/api/workbench/sessions', workspaceRoutes('livehuddle'))).toBeNull();
+    expect(workspaceRouteFor('/api/workbench/embed-tickets', workspaceRoutes('livehuddle'))).toBe(
+      EMBED_TICKETS_ROUTE,
+    );
+    expect(
+      workspaceRouteFor('/api/workbench/embed-ticketsx', workspaceRoutes('livehuddle')),
+    ).toBeNull();
     expect(workspaceRouteFor('/api/workbench/pairings', workspaceRoutes('livediagram'))).toBe(
       WORKBENCH_ROUTE,
     );

@@ -136,6 +136,7 @@ export type {
   InternalItemsOptions,
   TemplateInput,
   TemplateResult,
+  TemplateScreen,
 } from './internal-contract';
 export { MIGRATION_MAX_BYTES, PERSON_ITEMS_MAX } from './internal-doors';
 

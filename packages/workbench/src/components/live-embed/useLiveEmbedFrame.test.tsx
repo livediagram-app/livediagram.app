@@ -36,17 +36,18 @@ afterEach(() => {
 });
 
 function setup(
-  props: { item?: LiveItem | null; active?: boolean },
-  request: (item: LiveItem) => Promise<LiveEmbedTicket>,
+  props: { item?: LiveItem | null; active?: boolean; tabId?: string | null },
+  request: (item: LiveItem, origin?: string, tabId?: string) => Promise<LiveEmbedTicket>,
 ) {
   const frameRef = { current: frame };
   return renderHook(
-    ({ item, active }: { item: LiveItem | null; active: boolean }) =>
-      useLiveEmbedFrame({ item, active, hostName: 'livedocuments', frameRef, request }),
+    ({ item, active, tabId }: { item: LiveItem | null; active: boolean; tabId: string | null }) =>
+      useLiveEmbedFrame({ item, active, hostName: 'livedocuments', frameRef, tabId, request }),
     {
       initialProps: {
         item: props.item === undefined ? ITEM : props.item,
         active: props.active ?? true,
+        tabId: props.tabId ?? null,
       },
     },
   );
@@ -69,7 +70,7 @@ describe('a live embed frame', () => {
     const { result, rerender } = setup({ active: false }, request);
     expect(result.current.state).toBe('idle');
     expect(request).not.toHaveBeenCalled();
-    rerender({ item: ITEM, active: true });
+    rerender({ item: ITEM, active: true, tabId: null });
     expect(result.current.state).toBe('loading');
     await waitFor(() => expect(result.current.state).toBe('live'));
     expect(result.current).toMatchObject({
@@ -141,12 +142,12 @@ describe('a live embed frame', () => {
   it('keeps an answer that needs no frame while inactive, and drops a frame off screen', async () => {
     const { result, rerender } = setup({}, async () => ({ ok: false, reason: 'gone' }));
     await waitFor(() => expect(result.current.state).toBe('gone'));
-    rerender({ item: ITEM, active: false });
+    rerender({ item: ITEM, active: false, tabId: null });
     expect(result.current.state).toBe('gone');
 
     const live = setup({}, async () => OK);
     await waitFor(() => expect(live.result.current.state).toBe('live'));
-    live.rerender({ item: ITEM, active: false });
+    live.rerender({ item: ITEM, active: false, tabId: null });
     await waitFor(() => expect(live.result.current.state).toBe('idle'));
   });
 
@@ -167,5 +168,34 @@ describe('a live embed frame', () => {
     say({ type: 'liveplanner:hello', v: 1 });
     expect(posted[1]!.message).toMatchObject({ colourScheme: 'dark' });
     document.documentElement.classList.remove('dark');
+  });
+});
+
+// live-embeds.md "Which tab" (Work Tracker 1427): a host that keeps a tab opens the frame on it, and hears the tab shown.
+describe("a live embed frame's tab", () => {
+  it('asks for the kept tab, and asks afresh when it changes', async () => {
+    const request = vi.fn(async () => OK);
+    const { result, rerender } = setup({ tabId: 'tab-2' }, request);
+    await waitFor(() => expect(result.current.state).toBe('live'));
+    expect(request).toHaveBeenCalledWith(ITEM, undefined, 'tab-2');
+    rerender({ item: ITEM, active: true, tabId: 'tab-3' });
+    await waitFor(() => expect(request).toHaveBeenCalledWith(ITEM, undefined, 'tab-3'));
+  });
+
+  it('hears the tab the frame shows on ready and on every change, and nothing malformed', async () => {
+    const { result } = setup({}, async () => OK);
+    await waitFor(() => expect(result.current.state).toBe('live'));
+    expect(result.current).toMatchObject({ tab: null });
+    say({ type: 'liveplanner:ready', v: 1, tabId: 't1', tabName: 'Board' });
+    expect(result.current).toMatchObject({ tab: { id: 't1', name: 'Board' } });
+    say({ type: 'liveplanner:tab', v: 1, tabId: 't2', tabName: 'Roadmap' });
+    expect(result.current).toMatchObject({ tab: { id: 't2', name: 'Roadmap' } });
+    say({ type: 'liveplanner:tab', v: 1, tabId: 'a b', tabName: 'Bad' });
+    say({ type: 'liveplanner:tab', v: 1, tabId: 't3' });
+    say(
+      { type: 'liveplanner:tab', v: 1, tabId: 't4', tabName: 'Elsewhere' },
+      { origin: 'https://evil.example' },
+    );
+    expect(result.current).toMatchObject({ tab: { id: 't2', name: 'Roadmap' } });
   });
 });

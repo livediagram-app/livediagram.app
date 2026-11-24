@@ -137,8 +137,9 @@ export type EditorContextMenuProps = {
   onSetStage: (patch: import('./StageMenuSection').StagePatch) => void;
   // The Receptionist on the tab's first Avatar Pad (docs/specs/008-canvas/receptionist.md "Asking him to leave").
   onSetPadReceptionist?: (here: boolean) => void;
-  // Screen (docs/specs/009-elements/screen-and-room-sign.md): its Video Link, undefined to clear it.
-  onSetScreenUrl?: (url: string | undefined) => void;
+  // Screen (docs/specs/009-elements/screen-and-room-sign.md "Choosing what it shows"): its source, a file, a video
+  // or none.
+  onSetScreenSource?: (source: import('@livehuddle/document').ScreenSource) => void;
   // The social pieces (docs/specs/009-elements/social-pieces.md): a World Clock's zones, a Jukebox's source.
   onSetClockZones?: (zones: import('@livehuddle/document').ClockZone[] | undefined) => void;
   onSetJukeboxSource?: (source: string | undefined) => void;

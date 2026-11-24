@@ -790,6 +790,33 @@ describe('live embed tickets', () => {
     expect(checked).toMatchObject({ level: 'view', expiresAt: session.expiresAt });
   });
 
+  // livehuddle's Screen keeps a tab (live-embeds.md "Which tab"): the frame opens on it.
+  it('keeps an asked tab on the ticket for the frame to open on, and refuses a tab of the wrong shape', async () => {
+    const res = await embed({ tabId: 'tab-2' });
+    expect(res.status).toBe(201);
+    const { ticket } = (await res.json()) as { ticket: string };
+    expect(((await (await redeem(ticket)).json()) as { tabId: string | null }).tabId).toBe('tab-2');
+    const none = (await (await embed({})).json()) as { ticket: string };
+    expect(
+      ((await (await redeem(none.ticket)).json()) as { tabId: string | null }).tabId,
+    ).toBeNull();
+    expect((await embed({ tabId: 'a b' })).status).toBe(400);
+    expect((await embed({ tabId: 7 })).status).toBe(400);
+  });
+
+  // livehuddle hosts live embeds on its Screen (Work Tracker 1427): its address is a host's.
+  it("takes livehuddle's address as a host", async () => {
+    const huddle = 'https://www.livehuddle.app';
+    const res = await call('/workbench/embed-tickets', {
+      method: 'POST',
+      bearer: 'at-ada',
+      app: 'livehuddle',
+      origin: huddle,
+      body: { target: 'liveplanner', itemId: 'plan1', origin: huddle },
+    });
+    expect(res.status).toBe(201);
+  });
+
   it('works for a guest reader too', async () => {
     const res = await embed({}, 'gt-guest');
     expect(res.status).toBe(201);

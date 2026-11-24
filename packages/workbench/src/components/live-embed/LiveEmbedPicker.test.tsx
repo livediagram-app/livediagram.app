@@ -19,6 +19,7 @@ const item = (
 ) => ({ id, app, title, updatedAt: 0, lastOpenedAt: 0, access, sharedVia }) as unknown as Item;
 
 let recent: Item[];
+let everywhere: Item[];
 let client: {
   listItems: ReturnType<typeof vi.fn>;
   getItem: ReturnType<typeof vi.fn>;
@@ -26,13 +27,26 @@ let client: {
 };
 
 beforeEach(() => {
+  everywhere = [
+    item('k1', 'Architecture handbook', 'liveknowledge'),
+    { ...item('old', 'Architecture archive', 'livediagram'), archivedAt: 5 },
+  ];
   recent = [
     item('doc1', 'This document', 'livedocuments'),
     item('p1', 'Roadmap'),
     item('d1', 'Architecture', 'livediagram'),
   ];
   client = {
-    listItems: vi.fn(async () => ({ items: recent, next: null })),
+    // Recent, or Find a File's search: every file whose title has the words.
+    listItems: vi.fn(async (query: { view?: string; q?: string }) => ({
+      items:
+        query.view === 'search'
+          ? [...recent, ...everywhere].filter((it) =>
+              it.title.toLowerCase().includes(query.q!.toLowerCase()),
+            )
+          : recent,
+      next: null,
+    })),
     getItem: vi.fn(async (id: string) => {
       if (id === 'gone') throw new IndexError(404, 'not_found');
       return { item: item(id, id === 'd1' ? 'Architecture' : 'Connected plan') };
@@ -67,6 +81,78 @@ function open(connectedIds: string[] = [], connect?: LiveEmbedConnect) {
   );
   return { onChoose, onClose };
 }
+
+type Asked = { view?: string; q?: string; apps?: readonly string[]; limit?: number };
+const searches = () =>
+  (client.listItems.mock.calls as [Asked][]).filter(([q]) => q.view === 'search').map(([q]) => q);
+
+describe('Find a File (Work Tracker 1427)', () => {
+  it('searches every file by name across the apps once typing pauses, in place of Recent', async () => {
+    const { onChoose } = open();
+    await screen.findByText('Roadmap');
+    fireEvent.change(screen.getByLabelText('Find a file'), { target: { value: 'arch' } });
+    expect(await screen.findByRole('heading', { name: 'Found' })).toBeTruthy();
+    expect(screen.getByText('Architecture handbook')).toBeTruthy();
+    expect(screen.queryByText('Architecture archive')).toBeNull();
+    const [asked] = searches();
+    expect(asked).toMatchObject({ q: 'arch', limit: 20 });
+    expect(asked!.apps).toEqual([
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'liveknowledge',
+    ]);
+    fireEvent.click(screen.getByText('Architecture handbook'));
+    await waitFor(() =>
+      expect(onChoose).toHaveBeenCalledWith({
+        liveItem: { app: 'liveknowledge', itemId: 'k1' },
+        liveName: 'Architecture handbook',
+      }),
+    );
+  });
+
+  it('falls back to Recent, saying so, when the search does not answer', async () => {
+    open();
+    await screen.findByText('Roadmap');
+    client.listItems.mockRejectedValueOnce(new Error('offline'));
+    fireEvent.change(screen.getByLabelText('Find a file'), { target: { value: 'road' } });
+    expect(
+      await screen.findByText('Search did not answer just now: showing your recent files.'),
+    ).toBeTruthy();
+    expect(screen.getByText('Roadmap')).toBeTruthy();
+  });
+
+  it('hands back a choice with no snapshot when the host keeps none (a Screen)', async () => {
+    const onChoose = vi.fn();
+    render(
+      <LiveEmbedPicker
+        client={client as never}
+        hostId="doc1"
+        connectedIds={[]}
+        poster={false}
+        onChoose={onChoose}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(await screen.findByText('Roadmap'));
+    await waitFor(() =>
+      expect(onChoose).toHaveBeenCalledWith({
+        liveItem: { app: 'liveplanner', itemId: 'p1' },
+        liveName: 'Roadmap',
+      }),
+    );
+  });
+
+  it('says when nothing matches, and asks nothing under two characters', async () => {
+    open();
+    await screen.findByText('Roadmap');
+    fireEvent.change(screen.getByLabelText('Find a file'), { target: { value: 'a' } });
+    fireEvent.change(screen.getByLabelText('Find a file'), { target: { value: 'zzzz' } });
+    expect(await screen.findByText('No file matches “zzzz”')).toBeTruthy();
+    expect(searches()).toHaveLength(1);
+  });
+});
 
 describe('Embed File', () => {
   it('is titled Embed File and asks no role where the session cannot connect', async () => {
