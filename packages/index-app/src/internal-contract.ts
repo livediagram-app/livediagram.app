@@ -211,7 +211,13 @@ export type TemplateInput = {
   template: string;
   // The template's first tab alone, with no example cards (kits.md "The apps' door"): Send to Plan's New Plan.
   bare?: boolean;
+  // A file for the new Space's Screens (kits.md "The apps' door", Work Tracker 1427): a call's Document Room opens
+  // with the call's item on its wall. livehuddle's alone; other apps ignore it.
+  screen?: TemplateScreen;
 };
+
+/** The file a template door puts on every Screen: its app (one a live embed shows), its index id and its name. */
+export type TemplateScreen = { app: string; itemId: string; name: string };
 
 export type GraphItemResult =
   // `tabId`: the tab drawn (absent for a new item's first tab, which the app names itself).

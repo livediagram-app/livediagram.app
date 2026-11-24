@@ -29,6 +29,10 @@ import {
 // LIVE_EMBED_APPS, restated as the sheet sources restate theirs): livehuddle serves none.
 const isTarget = (v: unknown): v is App => isAppName(v) && v !== 'livehuddle';
 
+// A tab id as the apps mint them (element-model live-item.ts isLiveTabId, restated): letters, digits, `_` and `-`.
+const TAB_ID = /^[A-Za-z0-9_-]{1,64}$/;
+const isTabId = (v: unknown): v is string => typeof v === 'string' && TAB_ID.test(v);
+
 // The host page's origin: an app's in this environment, or any loopback origin in development (each app's dev servers
 // answer on more than their router's port).
 function hostOrigin(ctx: WorkbenchContext, value: unknown): string | null {
@@ -63,6 +67,11 @@ export async function mintEmbedTicket(ctx: WorkbenchContext): Promise<Response> 
   }
   if (!isTarget(body.target)) return refused('invalid_value', invalidValue('invalid target'));
   if (!isId(body.itemId)) return refused('invalid_value', invalidValue('invalid itemId'));
+  // The tab the frame opens on (a host's `liveTab`, live-embeds.md "Which tab"): kept on the ticket as a workbench
+  // ticket's tab is, never checked (a tab that is gone opens the first).
+  if (body.tabId !== undefined && !isTabId(body.tabId))
+    return refused('invalid_value', invalidValue('invalid tabId'));
+  const tabId = typeof body.tabId === 'string' ? body.tabId : null;
   const origin = hostOrigin(ctx, body.origin);
   if (!origin) return refused('invalid_origin', fail(400, 'invalid_origin'));
   const app = body.target;
@@ -86,7 +95,7 @@ export async function mintEmbedTicket(ctx: WorkbenchContext): Promise<Response> 
     personId,
     pairingId: pairing.id,
     reach: { scope: 'item', itemId, folderId: null },
-    tabId: null,
+    tabId,
     role: 'view',
     now,
     expiresAt: now + WORKBENCH_TICKET_TTL_MS,

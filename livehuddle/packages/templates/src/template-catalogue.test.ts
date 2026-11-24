@@ -25,7 +25,7 @@ describe('templateCatalogue', () => {
       'venues',
       'blanks',
     ]);
-    expect(templates).toHaveLength(33);
+    expect(templates).toHaveLength(34);
     expect(templates.find((t) => t.kind === 'music-hall')!.category).toBe('venues');
     expect(templates.find((t) => t.kind === 'festival-field')!.category).toBe('venues');
     expect(templates.find((t) => t.kind === 'family-house')!.category).toBe('homes');

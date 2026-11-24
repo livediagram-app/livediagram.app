@@ -62,13 +62,13 @@ export function ElementReader({ element, onClose }: { element: Element; onClose:
   return (
     <ReaderShell title={title} onClose={onClose} footer={send} data-element-reader={element.id}>
       <div className="p-4 sm:p-6">
-        <ReaderBody element={element} />
+        <ReaderBody element={element} onClose={onClose} />
       </div>
     </ReaderShell>
   );
 }
 
-function ReaderBody({ element }: { element: Element }) {
+function ReaderBody({ element, onClose }: { element: Element; onClose: () => void }) {
   if (element.type === 'sticky' || element.type === 'text') {
     const words = element.label?.trim() ?? '';
     return (
@@ -85,7 +85,7 @@ function ReaderBody({ element }: { element: Element }) {
   }
   if (element.type === 'image') return <ImageBody id={element.id} />;
   if (element.type === 'shape' && element.shape === 'screen')
-    return <ScreenReaderBody element={element} />;
+    return <ScreenReaderBody element={element} onClose={onClose} />;
   if (element.type === 'shape' && element.shape === 'jukebox')
     return (
       <CompactEmptyState

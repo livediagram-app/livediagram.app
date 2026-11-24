@@ -32,6 +32,7 @@ import {
   oneOfRule,
 } from '@liveworkspace/model-core/validate-primitives';
 import { flag, shapeIssue } from '@liveworkspace/element-model/shape-field-checks';
+import { LIVE_EMBED_CHECKS, LIVE_TAB_CHECK } from '@liveworkspace/element-model/live-item';
 
 // Absent passes every check; a present value must satisfy its rule. Ids that point at nothing
 // (`portalTarget`, `mindParentId`) are legal: the element renders unpaired or as a root.
@@ -93,6 +94,10 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: isScreenUrl,
     rule: `an http(s) address of at most ${SCREEN_URL_MAX} characters`,
   },
+  // A Screen's file (screen-and-room-sign.md "A file on the Screen"): the live embed's link and name, and its tab. No
+  // snapshot picture: the poster is no Screen field, and nothing draws one.
+  ...LIVE_EMBED_CHECKS.filter((check) => check.field !== 'livePoster'),
+  LIVE_TAB_CHECK,
 ];
 
 // A shape's own issue, its box already checked: the kind is required, the rest optional.

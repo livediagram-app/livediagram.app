@@ -31,12 +31,12 @@ untitled.
 
 ## The catalogue
 
-- Thirty-two Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
+- Thirty-three Spaces in eight categories ([Template categories](../008-canvas/canvas-and-palette.md#template-categories),
   [Virtual Office template](../012-collaboration/virtual-office-template.md), its "The catalogue plan" lists the
   element types each one uses):
   - **Office**: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
-    (`team-pod`), **Focus Library** (`focus-library`), **Interview Suite** (`interview-suite`) and **Client Lounge**
-    (`client-lounge`).
+    (`team-pod`), **Focus Library** (`focus-library`), **Interview Suite** (`interview-suite`), **Client Lounge**
+    (`client-lounge`) and **Document Room** (`document-room`, the room a call about a file opens in).
   - **Events**: **All-Hands Hall** (`all-hands-hall`), **Training Room** (`training-room`), **Expo Hall**
     (`expo-hall`, also in Venues), **Classroom** (`classroom`), **Hackathon Hall** (`hackathon-hall`) and **Art Gallery** (`art-gallery`).
   - **Recreation**: **Rooftop Bar** (`rooftop-bar`), **Cafe** (`cafe`) and **Wellness Studio** (`wellness-studio`),

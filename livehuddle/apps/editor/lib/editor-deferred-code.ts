@@ -28,6 +28,12 @@ export const loadSuggestionBoxPanels = () =>
   import('@/components/canvas/collab/SuggestionBoxPopover');
 export const loadRoomSignReader = () =>
   import('@/components/canvas/collab/RoomSignReader').then((m) => m.RoomSignReader);
+// A file on a Screen opened large, and Show on the Screen (docs/specs/009-elements/screen-and-room-sign.md): fetched as
+// a pointer comes over a Screen showing a file, or over the menu's and the reader's Choose.
+export const loadScreenFileOverlay = () =>
+  import('@/components/canvas/collab/ScreenFileOverlayHost').then((m) => m.ScreenFileOverlayHost);
+export const loadScreenSourceDialog = () =>
+  import('@/components/dialogs/ScreenSourceDialog').then((m) => m.ScreenSourceDialogHost);
 export const loadWayfindingPopover = () =>
   import('@/components/canvas/wayfinding/WayfindingPopover').then((m) => m.WayfindingPopover);
 

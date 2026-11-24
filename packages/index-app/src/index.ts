@@ -16,7 +16,12 @@ export * from './knowledge-source-doors';
 export * from './knowledge-text';
 export * from './knowledge-text-plan';
 export * from './import-item';
-export { itemFromTemplate, type TemplateFile, type TemplateImport } from './template-item';
+export {
+  isTemplateScreen,
+  itemFromTemplate,
+  type TemplateFile,
+  type TemplateImport,
+} from './template-item';
 export { graphDoor } from './graph-item';
 export * from './migration-door';
 export * from './migration-room';

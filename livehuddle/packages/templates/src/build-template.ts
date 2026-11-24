@@ -28,6 +28,7 @@ import {
 import { buildMusicHall } from './template-builders-venues';
 import { buildFestivalField } from './template-builders-festival';
 import { buildClientLounge, buildInterviewSuite } from './template-builders-office-suites';
+import { buildDocumentRoom } from './template-builders-document-room';
 import { buildClassroom, buildHackathonHall } from './template-builders-events-more';
 import { buildArtGallery, buildWellnessStudio } from './template-builders-gallery-wellness';
 import {
@@ -132,6 +133,8 @@ function buildElements(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildFestivalField(cx, cy);
     case 'interview-suite':
       return buildInterviewSuite(cx, cy);
+    case 'document-room':
+      return buildDocumentRoom(cx, cy);
     case 'client-lounge':
       return buildClientLounge(cx, cy);
     case 'classroom':

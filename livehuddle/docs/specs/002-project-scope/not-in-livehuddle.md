@@ -243,7 +243,7 @@ menu's Lock) is the one to read for them.
   gone, and an Editor or a Participant opens and closes any door ([Room builder](../009-elements/room-builder.md)). A
   Suggestion Box closed only by being locked, so it no longer closes: it takes notes until it is full, and the
   `box_closed` refusal is gone ([Team pieces](../009-elements/team-pieces.md#suggestion-box)). A Notice Board and a
-  Calendar Wall always take notes, a portal's tour and a Screen's Set Link are an Editor's on any one, and an image
+  Calendar Wall always take notes, a portal's tour and what a Screen shows are an Editor's on any one, and an image
   always takes a new picture.
 - **Kept, because they are other things**: Lock Aspect Ratio (`aspectLocked`), the concurrent-selection lock ("Locked
   to <name>", [Editor app](../007-editor/editor-app.md)) and the facilitator freeing it, and a stored layer's `locked`
@@ -800,7 +800,9 @@ livediagram's specs ([MCP server](../../../../livediagram/docs/specs/015-api/mcp
   (liveworkspace's [Workbench](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)), so livehuddle no longer
   pairs one: the `/embed/workbench` frame, Settings' list of workbench pairings, the editor's workbench chrome and
   messages, and the api's `lvw_` session and its confinement are gone. An `lvw_` bearer now identifies nobody, and the
-  router's `/api/workbench` answers 404 from the api. liveworkspace's pairing service is unchanged; livehuddle simply
+  router's `/api/workbench` answers 404 from the api, but for the one route a Screen needs to show a file
+  live, `/api/workbench/embed-tickets`, which the router forwards to liveworkspace (Work Tracker 1427, [A file on the
+  Screen](../009-elements/screen-and-room-sign.md#a-file-on-the-screen)). liveworkspace's pairing service is unchanged; livehuddle simply
   never redeems a pairing. The room's share of the pairing contract went too (Work Tracker #583): no session
   carries a pairing, the api has no workbench-close door, and a platform close for a pairing matches nobody.
 - **Help**: the Connect an AI Tool, CLI and Workbenches articles go, and the developer articles show `curl` only. Old

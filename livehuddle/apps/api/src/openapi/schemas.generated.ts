@@ -3588,6 +3588,48 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "LiveEmbedApp": {
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign",
+      "liveknowledge"
+    ],
+    "type": "string"
+  },
+  "LiveItem": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/LiveEmbedApp"
+      },
+      "itemId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId"
+    ],
+    "type": "object"
+  },
+  "LiveTab": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
   "MediaAnimation": {
     "enum": [
       "kenburns",
@@ -4796,6 +4838,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "link": {
         "$ref": "#/components/schemas/ElementLink"
+      },
+      "liveItem": {
+        "$ref": "#/components/schemas/LiveItem"
+      },
+      "liveName": {
+        "type": "string"
+      },
+      "liveTab": {
+        "$ref": "#/components/schemas/LiveTab"
       },
       "marker": {
         "$ref": "#/components/schemas/ShapeMarker"

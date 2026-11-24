@@ -1,5 +1,6 @@
 import { useUnusedImageOffer } from '@/hooks/canvas/useUnusedImageOffer';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
+import { restingTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
 import { useEffect } from 'react';
 import { useMarkerPens } from '@/hooks/canvas/useMarkerPens';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
@@ -263,7 +264,8 @@ export function useEditorElements({
   useEffect(() => {
     putToolDownRef.current = () => {
       cancelDrawShape();
-      setCanvasTool('select');
+      // The tool the editor starts with: Hand on a phone or a touch-first screen, else Select.
+      setCanvasTool(restingTool());
     };
   });
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.

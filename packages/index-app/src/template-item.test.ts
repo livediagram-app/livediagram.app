@@ -64,6 +64,36 @@ describe('the template door', () => {
     expect(fileOf).toHaveBeenCalledWith('kanban', 'Apollo Plan', { bare: true });
   });
 
+  it('passes a Screen file on, and refuses one that is not a live embed link and a name', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const run = making();
+    const screen = { app: 'liveplanner', itemId: 'P1', name: 'Launch Plan' };
+    expect(
+      (await send(request('POST', 'index-key', { ...BODY, screen }), { fromTemplate: run })).status,
+    ).toBe(201);
+    expect(run).toHaveBeenLastCalledWith({ ...BODY, screen });
+    for (const bad of [
+      { app: 'livehuddle', itemId: 'S1', name: 'A Space' },
+      { app: 'liveplanner', itemId: '', name: 'x' },
+      { app: 'liveplanner', itemId: 'P1', name: 'x'.repeat(201) },
+      { app: 'liveplanner', itemId: 'P1', name: 'x', code: 'secret' },
+      'liveplanner:P1',
+      null,
+    ])
+      expect(
+        (await send(request('POST', 'index-key', { ...BODY, screen: bad }), { fromTemplate: run }))
+          .status,
+        JSON.stringify(bad),
+      ).toBe(400);
+    const fileOf = vi.fn(() => '{"file":1}');
+    await itemFromTemplate(
+      { ...BODY, template: 'document-room', screen },
+      fileOf,
+      vi.fn(async () => ({ status: 'ok' as const, id: 'N' })),
+    );
+    expect(fileOf).toHaveBeenCalledWith('document-room', 'Apollo Plan', { screen });
+  });
+
   it('takes a null folder', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const run = making();

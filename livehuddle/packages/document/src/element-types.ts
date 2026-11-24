@@ -12,6 +12,7 @@ import type { Finish } from './finish';
 import type { TextRun } from '@liveworkspace/model-core/rich-text';
 import type { CommentThread } from './comments';
 import type { ElementAction } from '@liveworkspace/element-model/element-action';
+import type { LiveItem, LiveTab } from '@liveworkspace/element-model/live-item';
 import type {
   BorderStroke,
   BorderStyle,
@@ -228,6 +229,12 @@ export type ShapeElement = {
   // Screen (docs/specs/009-elements/screen-and-room-sign.md "Screen"): its Video Link, a YouTube, Vimeo or Loom address it
   // shows when nobody in its room is sharing. Absent = none.
   screenUrl?: string;
+  // Screen (screen-and-room-sign.md "A file on the Screen", Work Tracker 1427): the file it shows instead, from any app,
+  // each viewer with their own access: the link, the file's name as chosen, and the tab it opens on (absent: the first).
+  // @liveworkspace/element-model/live-item checks them; a Screen keeps no snapshot picture.
+  liveItem?: LiveItem;
+  liveName?: string;
+  liveTab?: LiveTab;
   // A retired Reaction Pad's burst (docs/specs/002-project-scope/not-in-livehuddle.md "Retired elements"): kept as
   // stored so a save carries it through, never read.
   reaction?: Reaction;

@@ -51,7 +51,7 @@ livehuddle room: hello / tab-focus / close ── 1.5 s settle ─▶ PUT /app/i
   link (`?s=`) goes through its app's `/api/auth/silent?return=` first, `viaSilentSignIn`),
   `focusOrOpen(name, url)` and `nameItemTab(itemId)`, shared by the workbench, the Explorer's Inbox and livehuddle.
 - Constants as the spec's Limits table, plus `ITEM_CALL_START_GRACE_MS` (120,000: a call nobody has joined yet still
-  counts as the item's call, so two quick presses never make two), `ITEM_CALL_TEMPLATE` (`team-pod`), and
+  counts as the item's call, so two quick presses never make two), `ITEM_CALL_TEMPLATE` (`document-room`, Work Tracker 1427; the start sends `screen: {app, itemId, name}` with it), and
   `ITEM_CALL_NAME_SUFFIX` (" Call").
 - `CALL_SPACE_SETTING` (`callSpace`, the `all` scope's key), `CALL_SPACES_LISTED` (200), `CALL_SPACE_LINK_DAYS` (7),
   `readCallSpaceSetting(prefs)` (a stored id, else null).

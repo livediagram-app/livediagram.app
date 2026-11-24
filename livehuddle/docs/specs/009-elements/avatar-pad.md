@@ -119,6 +119,7 @@ away when joining, for example in the middle of a key room, or the centre of a c
 | Festival Field   | The crowd field in front of the Main Stage, the stage ahead and the stalls to the left  | 360        |
 | Interview Suite  | The waiting area, the interview rooms' doors and signs ahead                            | 360        |
 | Client Lounge    | The lounge, between the sofas and the coffee bar, every room's door ahead               | 360        |
+| Document Room    | The aisle behind the last row of chairs, the wall screen ahead                          | 200        |
 | Classroom        | The lobby, before the Classroom's door                                                  | 360        |
 | Hackathon Hall   | The hack floor below the Snack Bar, the team tables and the stage's door in view        | 360        |
 | Art Gallery      | The foyer below the galleries, the Main Gallery's door and the café in view             | 360        |

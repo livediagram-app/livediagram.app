@@ -53,6 +53,7 @@ const ALL_KINDS = [
   'festival-field',
   'interview-suite',
   'client-lounge',
+  'document-room',
   'classroom',
   'hackathon-hall',
   'art-gallery',

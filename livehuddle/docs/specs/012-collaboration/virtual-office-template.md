@@ -362,6 +362,24 @@ Two Spaces unlike the rest of the set (`template-builders-gallery-wellness.ts`, 
   nook). Below them the lobby: the front desk, a Notice Board of class times, a juice bar (a Bar, four stools, a
   drinks fridge and a water cooler) and a hammock. The Avatar Pad waits in the lobby.
 
+### Document Room
+
+A room built for meeting round one file (Work Tracker 1427, `template-builders-document-room.ts`), and the room a call
+started from a file in another app opens in ([Calls from other apps](calls-from-items.md) "The Space"). One room
+(Office, carpet), built with `officePlan` as the Team Pod is:
+
+- **The wall screen**: a [Screen](../009-elements/screen-and-room-sign.md) 640 × 400 on the middle of the back wall,
+  the room's reason. It shows a file from any of the apps live to everyone in the room with their own access ([A file
+  on the Screen](../009-elements/screen-and-room-sign.md#a-file-on-the-screen)); a call about a file starts with that
+  file on it. Pressing it opens the file large, with Open in its own app beside it.
+- **Twelve chairs facing it**: two rows of six, three either side of a 160 px aisle up from the door, every chair
+  facing the screen. Walk onto a chair to sit in it, as on any chair ([Chair](../009-elements/chair.md)).
+- A **Notice Board** of two notes left of the screen (how the screen works, and how to sit), a **Timer** right of it
+  to timebox the discussion, a coffee machine and a water cooler either side of the rows, a plant in each front
+  corner, and a window in each side wall.
+- The **Avatar Pad** waits in the aisle behind the last row, the screen ahead. Its how-to line: "You arrive on the
+  Avatar Pad: take a seat, and press the screen to open the file large."
+
 ## The catalogue plan
 
 Every category, the templates in it and the element types each one uses (Work Tracker #641). Floors are the Room and
@@ -389,6 +407,7 @@ heading, a Door on every room and, outside Homes, a Room Sign by every Door.
 | Homes       | Country Cottage               | 2    | Stairs, Fireplace, kitchen set, Meeting Table, Reading Nook, Sofa, Bookshelf, Pet Bed, Grass, Garden Fence, Pond, Bench, Tree, Hammock, Standing Desk, Desk, Team Photo Wall, Bean Bag, Window                                                                               |
 | Office      | Virtual Office                | 1    | Desk, Bookshelf, Printer, Meeting Table, kitchen set, Water Cooler, Coffee Machine, Sofa, Chair, Coat Rack, Umbrella Stand, Plant, Pet Bed, Window, glass walls, Reception Desk, World Clock, Screen, Room Sign, Suggestion Box, Notice Board, Jukebox, Nap Pod, Phone Booth |
 | Office      | Coworking Space               | 1    | Desk, Phone Booth, Coffee Machine, Water Cooler, Sofa, Chair, Bookshelf, Plant, Lockers, Window, glass walls, Meeting Table, Screen, Room Sign, Notice Board                                                                                                                 |
+| Office      | Document Room                 | 1    | Screen, Chair, Timer, Notice Board, Coffee Machine, Water Cooler, Plant, Window                                                                                                                                                                                              |
 | Office      | Team Pod                      | 1    | Desk, Meeting Table, Coffee Machine, Bookshelf, Plant, Sticky Note, Pet Bed, Window, World Clock, Phone Booth, Timer                                                                                                                                                         |
 | Office      | Interview Suite               | 1    | Meeting Table, Screen, Timer, Notice Board, Sofa, Rug, World Clock, Coffee Machine, Water Cooler, Phone Booth, Reception Desk, Directory, Plant, Window                                                                                                                      |
 | Office      | Client Lounge                 | 1    | Long Table, Screen, World Clock, Meeting Table, Phone Booth, Office Pod, Sofa, Rug, Bar, Bar Stool, Coffee Machine, Drinks Fridge, Reception Desk, Directory, Plant, Window, glass walls                                                                                     |

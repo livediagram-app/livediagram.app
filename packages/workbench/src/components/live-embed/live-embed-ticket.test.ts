@@ -86,6 +86,15 @@ describe('a live embed ticket', () => {
     }
   });
 
+  // livehuddle's Screen keeps a tab (live-embeds.md "Which tab").
+  it('asks for a tab when given one', async () => {
+    bind('at');
+    const fetchMock = answer(new Response(null, { status: 404 }));
+    await requestLiveEmbedTicket(item, ORIGIN, 'tab-2');
+    const [, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(JSON.parse(init.body as string)).toMatchObject({ itemId: 'p1', tabId: 'tab-2' });
+  });
+
   it("defaults to this page's origin", async () => {
     bind('at');
     const fetchMock = answer(new Response(null, { status: 404 }));

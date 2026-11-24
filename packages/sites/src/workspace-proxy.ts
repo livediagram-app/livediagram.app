@@ -226,12 +226,21 @@ export const WORKBENCH_ROUTE: WorkspaceRoute = {
   cookies: 'drop',
 };
 
+/** A live embed's tickets alone (workbench.md "Live embed tickets"): what an app that pairs no workbench still forwards,
+ *  so its pages can host a live embed (livehuddle's Screen, Work Tracker 1427). */
+export const EMBED_TICKETS_ROUTE: WorkspaceRoute = {
+  prefix: '/api/workbench/embed-tickets',
+  target: '/api/account/workbench/embed-tickets',
+  cookies: 'drop',
+};
+
 // The apps that pair no workbench: livehuddle has no CLI to pair one (liveworkspace/docs/specs/011-workbench/workbench.md
-// "Addresses"), so its router leaves `/api/workbench/*` to its api, which answers 404.
+// "Addresses"), so its router forwards only a live embed's tickets and leaves the rest of `/api/workbench/*` to its
+// api, which answers 404.
 const NO_WORKBENCHES: ReadonlySet<AppName> = new Set(['livehuddle']);
 
 /** The routes an app's router forwards to liveworkspace.app: the Explorer and its account reads, signing in (and the
- *  site's assets) and, for an app that has them, the Community page and workbenches. */
+ *  site's assets), the Community page, and workbenches (for an app that pairs none, a live embed's tickets alone). */
 export function workspaceRoutes(app: AppName): readonly WorkspaceRoute[] {
   return [
     EXPLORER_ROUTE,
@@ -240,7 +249,7 @@ export function workspaceRoutes(app: AppName): readonly WorkspaceRoute[] {
     ACCOUNTS_ROUTE,
     SITE_ASSETS_ROUTE,
     COMMUNITY_ROUTE,
-    ...(NO_WORKBENCHES.has(app) ? [] : [WORKBENCH_ROUTE]),
+    ...(NO_WORKBENCHES.has(app) ? [EMBED_TICKETS_ROUTE] : [WORKBENCH_ROUTE]),
   ];
 }
 

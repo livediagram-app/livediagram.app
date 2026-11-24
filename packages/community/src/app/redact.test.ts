@@ -89,6 +89,19 @@ describe('redactElementsForCommunity', () => {
     });
   });
 
+  it("drops a Screen's file link and its tab, keeping its name (Work Tracker 1427)", () => {
+    const screen = {
+      id: 's1',
+      type: 'shape',
+      shape: 'screen',
+      liveItem: { app: 'liveplanner', itemId: 'plan_secret' },
+      liveName: 'Roadmap',
+      liveTab: { id: 't2', name: 'Hiring' },
+    };
+    const [frozen] = redactElementsForCommunity([screen]);
+    expect(frozen).toEqual({ id: 's1', type: 'shape', shape: 'screen', liveName: 'Roadmap' });
+  });
+
   it("drops a Dashboard Embed File's link and keeps its snapshot (Work Tracker 1375)", () => {
     const embed = {
       type: 'embed',

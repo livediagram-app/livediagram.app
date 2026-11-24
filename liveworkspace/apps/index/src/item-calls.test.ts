@@ -65,7 +65,7 @@ async function visit(owner: string, itemId: string, visitor: string, level = 'vi
 }
 
 describe('starting a call', () => {
-  it("makes a Team Pod of the starter's, a Participant link on it, and tells the room the call", async () => {
+  it("makes a Document Room of the starter's with the item on its Screen, a Participant link on it, and tells the room the call", async () => {
     const { ada, doc } = await world();
     const space = await spaceFor(ada.auth);
     const res = await start(ada.auth, doc.id);
@@ -78,7 +78,8 @@ describe('starting a call', () => {
       owner: 'user_ada',
       folderId: null,
       name: 'Retro Call',
-      template: 'team-pod',
+      template: 'document-room',
+      screen: { app: doc.app, itemId: doc.id, name: 'Retro' },
     });
     const mark = h.appCalls.find((c) => c.url.endsWith(`/items/${space.id}/call`));
     expect(mark?.body).toEqual({ callId: made.id });

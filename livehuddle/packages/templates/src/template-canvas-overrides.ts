@@ -37,6 +37,7 @@ const TEMPLATE_FLOORS: Partial<Record<TemplateKind, FloorPattern>> = {
   'festival-field': 'grass',
   'interview-suite': 'carpet',
   'client-lounge': 'parquet',
+  'document-room': 'carpet',
   classroom: 'carpet-tiles',
   'hackathon-hall': 'concrete',
   'art-gallery': 'parquet',

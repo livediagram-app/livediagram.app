@@ -40,6 +40,11 @@ vi.mock('@/lib/api/knowledge', async (actual) => ({
   ...api,
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const openSettings = vi.hoisted(() => vi.fn());
+vi.mock('@liveworkspace/workbench/lib/open-settings', async (actual) => ({
+  ...(await actual<typeof import('@liveworkspace/workbench/lib/open-settings')>()),
+  requestOpenSettings: openSettings,
+}));
 vi.mock('@/hooks/persistence/useIsOfflineDocument', () => ({
   useIsOfflineDocument: () => wire.offline,
 }));
@@ -63,6 +68,7 @@ import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-setti
 import { recentQuestionsKey } from '@/lib/knowledge-ask/recent-questions';
 import { handArrival } from '@/lib/knowledge-home/arrival-handoff';
 import { AskView } from './AskView';
+import { BUILT_IN_DETAIL } from './AskComposer';
 import { ROLES, chromeValue, renderInEditor, type Role } from './test-chrome';
 
 const settings = (over: Partial<KnowledgeAiSettings> = {}): KnowledgeAiSettings => ({
@@ -78,6 +84,8 @@ const settings = (over: Partial<KnowledgeAiSettings> = {}): KnowledgeAiSettings 
   models: [{ id: 'claude-fable-5-2', label: 'Claude Fable 5.2' }],
   ...over,
 });
+// The knowledgebase's own key, as the AI pill names it.
+const KB_KEY = 'Claude Fable 5.2 (This Knowledgebase’s Key)';
 const source = (number: number, over: Partial<AskSource> = {}): AskSource => ({
   number,
   passageId: `p${number}:0`,
@@ -170,29 +178,61 @@ describe('when this session cannot ask', () => {
     expect(knowledgeSearch.isOpen()).toBe(true);
   });
 
-  it('asks on built-in AI with no key, and says so under the field', async () => {
+  it('asks on built-in AI with no key, and says so inside the question box', async () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
     await open('view');
     expect(screen.getByRole('textbox')).toBeTruthy();
-    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain('Built-in AI');
-    expect(screen.getByRole('button', { name: 'Use Your Own Key, in Settings › AI' })).toBeTruthy();
-    cleanup();
-    api.apiKnowledgeAi.mockResolvedValue(settings());
-    aiSettingsStore.reset();
-    await open('view');
-    // With a key, the quiet line is the choice of AI.
-    expect(document.querySelector('[data-ask-ai]')).toBeNull();
-    expect(screen.getByRole('group', { name: 'Answer With' })).toBeTruthy();
+    const box = document.querySelector<HTMLElement>('[data-ask-composer]')!;
+    const pill = within(box).getByRole('button', { name: 'Answer With: Built-In AI' });
+    expect(pill.getAttribute('data-ask-ai')).toBe('built-in');
+    // Nothing about the AI is drawn outside the box.
+    expect(document.querySelectorAll('[data-ask-ai]')).toHaveLength(1);
+    expect(document.querySelector('[data-ask-ai-choice]')).toBeNull();
+    fireEvent.click(pill);
+    const menu = await screen.findByRole('dialog', { name: 'Answer With' });
+    expect(within(menu).getByText(BUILT_IN_DETAIL)).toBeTruthy();
+    expect(within(menu).getAllByRole('radio')).toHaveLength(1);
+    fireEvent.click(within(menu).getByRole('button', { name: 'Use Your Own Key' }));
+    expect(openSettings).toHaveBeenCalledWith('ai');
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'AiSourceSettings');
   });
 
-  it('keeps the quiet line, with no choice, on a server with a key and no built-in AI', async () => {
+  it('offers the key alone, in the pill, on a server with a key and no built-in AI', async () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ builtIn: false }));
     await open('view');
-    expect(screen.queryByRole('group', { name: 'Answer With' })).toBeNull();
-    expect(document.querySelector('[data-ask-ai]')!.textContent).toContain(
-      'This Knowledgebase’s Key',
-    );
+    fireEvent.click(screen.getByRole('button', { name: `Answer With: ${KB_KEY}` }));
+    const menu = await screen.findByRole('dialog', { name: 'Answer With' });
+    const rows = within(menu).getAllByRole('radio');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.textContent).toContain('This Knowledgebase’s Key');
+    expect(rows[0]!.getAttribute('aria-checked')).toBe('true');
   });
+
+  it('takes an Editor to AI Settings for the knowledgebase key', async () => {
+    const Open = () => <output data-testid="open">{String(useAiSettingsOpen())}</output>;
+    renderInEditor(
+      <>
+        <AskView />
+        <Open />
+      </>,
+      chromeValue('edit'),
+    );
+    fireEvent.click(await screen.findByRole('button', { name: `Answer With: ${KB_KEY}` }));
+    const menu = await screen.findByRole('dialog', { name: 'Answer With' });
+    fireEvent.click(within(menu).getByRole('button', { name: 'Manage Keys' }));
+    expect(screen.getByTestId('open').textContent).toBe('true');
+    expect(openSettings).not.toHaveBeenCalled();
+  });
+
+  it.each(['participate', 'view'] as const)(
+    "gives a %s session no way to the knowledgebase's own key",
+    async (role) => {
+      await open(role);
+      fireEvent.click(screen.getByRole('button', { name: `Answer With: ${KB_KEY}` }));
+      const menu = await screen.findByRole('dialog', { name: 'Answer With' });
+      expect(within(menu).queryByRole('button')).toBeNull();
+    },
+  );
 
   it('opens AI Settings from the no-AI state', async () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, builtIn: false }));
@@ -654,8 +694,8 @@ describe('a failure, in words with the next step', () => {
     },
   );
 
-  it('turns the source line to Key Needs Attention, with Fix Key, after the key was refused', async () => {
-    // With no built-in AI beside the key there is no choice to make, so the line says which answers.
+  it('turns the AI pill to Key Needs Attention, with Fix Key, after the key was refused', async () => {
+    // With no built-in AI beside the key there is no choice to make: the menu holds the key alone.
     api.apiKnowledgeAi.mockResolvedValue(
       settings({
         builtIn: false,
@@ -668,9 +708,12 @@ describe('a failure, in words with the next step', () => {
       }),
     );
     await fail('no-credit');
-    const line = document.querySelector('[data-ask-ai]')!;
-    expect(line.textContent).toContain('Your Key Needs Attention');
-    expect(within(line as HTMLElement).getByRole('button').textContent).toBe('Fix Key');
+    const pill = screen.getByRole('button', { name: 'Answer With: Key Needs Attention' });
+    expect(pill.getAttribute('data-ask-ai')).toBe('failed');
+    fireEvent.click(pill);
+    const menu = await screen.findByRole('dialog', { name: 'Answer With' });
+    expect(within(menu).getByText('Your Key Needs Attention')).toBeTruthy();
+    expect(within(menu).getByRole('button', { name: 'Fix Key' })).toBeTruthy();
   });
 
   it('asks again in place', async () => {
@@ -838,15 +881,29 @@ describe('a question handed over by the Knowledgebase Home', () => {
 });
 
 describe('choosing which AI answers', () => {
-  const picker = () => screen.getByRole('group', { name: 'Answer With' });
-  const choice = (name: string) => within(picker()).getByRole('button', { name });
+  // The AI pill in the question box, by what it says.
+  const pill = (says: string) => screen.getByRole('button', { name: `Answer With: ${says}` });
+  // Opens the pill's menu (saying `from`) and answers its rows.
+  const menuOf = async (from: string) => {
+    fireEvent.click(pill(from));
+    const menu = await screen.findByRole('dialog', { name: 'Answer With' });
+    return within(menu).getAllByRole('radio');
+  };
+  const pick = async (from: string, row: 0 | 1) => {
+    const rows = await menuOf(from);
+    fireEvent.click(rows[row]!);
+  };
 
-  it('offers Built-In AI and the team key by its model, the key first, and asks on the choice', async () => {
+  it('offers Built-In AI and the knowledgebase key by its model, the key chosen, and asks on the choice', async () => {
     await open('view');
-    expect(choice('Built-In AI').getAttribute('aria-pressed')).toBe('false');
-    expect(choice('Claude Fable 5.2 (Knowledgebase Key)').getAttribute('aria-pressed')).toBe(
-      'true',
-    );
+    const [builtIn, key] = await menuOf(KB_KEY);
+    expect(builtIn!.textContent).toContain('Built-In AI');
+    expect(builtIn!.getAttribute('aria-checked')).toBe('false');
+    expect(key!.textContent).toContain('Anthropic · Claude Fable 5.2 · No daily limits');
+    expect(key!.getAttribute('aria-checked')).toBe('true');
+    // The pill closes its menu again.
+    fireEvent.click(pill(KB_KEY));
+    expect(screen.queryByRole('dialog', { name: 'Answer With' })).toBeNull();
     expect(ask('When do we release?').request).toEqual({
       question: 'When do we release?',
       ai: 'key',
@@ -856,9 +913,9 @@ describe('choosing which AI answers', () => {
       'Answered by Claude Fable 5.2',
     );
     // Switching mid-chat applies to the next question, a follow-up.
-    fireEvent.click(choice('Built-In AI'));
+    await pick(KB_KEY, 0);
     expect(track).toHaveBeenCalledWith('UI', 'Changed', 'AskAiBuiltIn');
-    expect(choice('Built-In AI').getAttribute('aria-pressed')).toBe('true');
+    expect(pill('Built-In AI')).toBeTruthy();
     const followUp = ask('And on Fridays?');
     expect(followUp.request).toMatchObject({ question: 'And on Fridays?', ai: 'built-in' });
     expect(followUp.request.turns).toHaveLength(1);
@@ -866,32 +923,34 @@ describe('choosing which AI answers', () => {
     expect(
       [...document.querySelectorAll('[data-ask-answered-by]')].map((el) => el.textContent),
     ).toEqual(['Answered by Claude Fable 5.2', 'Answered by Built-In AI']);
-    fireEvent.click(choice('Claude Fable 5.2 (Knowledgebase Key)'));
+    await pick('Built-In AI', 1);
     expect(track).toHaveBeenCalledWith('UI', 'Changed', 'AskAiKey');
+    expect(pill(KB_KEY)).toBeTruthy();
   });
 
   it('remembers the choice per person per knowledgebase in this browser', async () => {
     await open('view');
-    fireEvent.click(choice('Built-In AI'));
+    await pick(KB_KEY, 0);
     expect(Object.values({ ...localStorage })).toContain('built-in');
     cleanup();
     resetAskSession();
     await open('view');
-    expect(choice('Built-In AI').getAttribute('aria-pressed')).toBe('true');
+    expect(pill('Built-In AI')).toBeTruthy();
     expect(ask('Q?').request.ai).toBe('built-in');
   });
 
   it("names built-in AI's failure when built-in AI is chosen", async () => {
     await open('view');
-    fireEvent.click(choice('Built-In AI'));
+    await pick(KB_KEY, 0);
     await answer(ask('Q?'), { type: 'error', kind: 'overloaded', message: 'x' });
     expect(screen.getByText('The Built-In AI Could Not Answer')).toBeTruthy();
   });
 
-  it('shows no caption and no choice with no key', async () => {
+  it('shows no caption and no key to choose with no key', async () => {
     api.apiKnowledgeAi.mockResolvedValue(settings({ hasKey: false, keyHint: '' }));
     await open('view');
-    expect(screen.queryByRole('group', { name: 'Answer With' })).toBeNull();
+    expect(await menuOf('Built-In AI')).toHaveLength(1);
+    fireEvent.click(pill('Built-In AI'));
     await answer(ask('Q?'), done('Yes [1].', { sources: [source(1)], provider: 'built-in' }));
     expect(document.querySelector('[data-ask-answered-by]')).toBeNull();
   });

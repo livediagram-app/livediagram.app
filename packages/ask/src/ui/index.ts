@@ -3,6 +3,7 @@
 export { AskTool } from './AskTool';
 export { AskSources } from './AskSources';
 export { AnswerWith } from './AnswerWith';
+export { AskComposer } from './AskComposer';
 export { CitationChip, NUMBER_CHIP } from './CitationChip';
 export {
   tabPassages,

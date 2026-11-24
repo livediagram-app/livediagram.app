@@ -55,6 +55,7 @@ const ROOMY: readonly string[] = [
   'festival-field',
   'interview-suite',
   'client-lounge',
+  'document-room',
   'classroom',
   'hackathon-hall',
   'art-gallery',
@@ -399,6 +400,26 @@ describe('the new Spaces furnish what they promise', () => {
         expect(gap, kind).toBeLessThanOrEqual(16);
       }
     }
+  });
+
+  // Work Tracker 1427: the room a call about a file opens in.
+  it('gives the Document Room a wall-size Screen and twelve chairs facing it, every one a seat', () => {
+    const all = shapes(buildTemplate('document-room', 0, 0));
+    const screens = all.filter((e) => e.shape === 'screen');
+    expect(screens).toHaveLength(1);
+    const [wall] = screens;
+    expect(wall).toMatchObject({ width: 640, height: 400 });
+    expect(wall).not.toHaveProperty('liveItem');
+    const chairs = all.filter((e) => e.shape === 'chair');
+    expect(chairs).toHaveLength(12);
+    for (const chair of chairs) {
+      // Below the screen, facing it, and a seat a character can take.
+      expect(chair.y).toBeGreaterThan(wall!.y + wall!.height);
+      expect(chair.chairFacing).toBe('s');
+      expect(seatsACharacter(chair.shape)).toBe(true);
+    }
+    expect(count('document-room', 'timer')).toBe(1);
+    expect(count('document-room', 'notice-board')).toBe(1);
   });
 
   it('gives the Cafe a counter with four stools, coffee and two tables', () => {

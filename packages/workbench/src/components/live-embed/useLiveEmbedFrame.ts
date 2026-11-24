@@ -4,9 +4,11 @@
 // with the reader's own access, the item app's workbench page framed with it, and this page answering that frame as its
 // workbench: `<app>:hello` with `<app>:hello-ack`, `<app>:renew` with a fresh ticket (asked again, so a reader who lost
 // access loses the frame), `<app>:ended` taken as its reason. Only the frame's own window at the item app's origin is
-// heard. An answer that needs no frame (no access, gone) is kept until the item changes or Try Again.
+// heard. An answer that needs no frame (no access, gone) is kept until the item changes or Try Again. A host that keeps
+// a tab asks the frame to open on it (`tabId`), and hears which tab the frame shows (`<app>:ready` and `<app>:tab`,
+// live-embeds.md "Which tab").
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
-import type { LiveItem } from '@liveworkspace/element-model/live-item';
+import { isLiveTab, type LiveItem, type LiveTab } from '@liveworkspace/element-model/live-item';
 import { liveEmbedOrigin } from './live-embed-target';
 import { requestLiveEmbedTicket, type LiveEmbedTicket } from './live-embed-ticket';
 import { workbench } from '../../bindings';
@@ -15,8 +17,8 @@ import { liveEmbedFramePath } from '../../lib/editor-surface';
 export type LiveEmbedFrame =
   | { state: 'idle' }
   | { state: 'loading' }
-  // Framed: `ready` once the frame has said hello.
-  | { state: 'live'; src: string; ready: boolean }
+  // Framed: `ready` once the frame has said hello; `tab` the tab it shows, once it has said.
+  | { state: 'live'; src: string; ready: boolean; tab: LiveTab | null }
   | { state: 'no-access' }
   | { state: 'gone' }
   | { state: 'failed' };
@@ -25,7 +27,9 @@ export type LiveEmbedFrame =
 export const settledWithoutFrame = (frame: LiveEmbedFrame): boolean =>
   frame.state === 'no-access' || frame.state === 'gone' || frame.state === 'failed';
 
-type Outcome = Exclude<LiveEmbedFrame, { state: 'idle' } | { state: 'loading' }>;
+type Outcome =
+  | Exclude<LiveEmbedFrame, { state: 'idle' } | { state: 'loading' } | { state: 'live' }>
+  | { state: 'live'; src: string };
 
 // One union member per answer: TypeScript does not narrow `{ state }` across them.
 const settledAs = (state: Settled): Outcome => ({ state });
@@ -41,6 +45,10 @@ const ENDED: Record<string, Settled> = {
   expired: 'failed',
 };
 
+// The request with the tab only when there is one, so a host without tabs asks as it always has.
+const ask = (request: typeof requestLiveEmbedTicket, item: LiveItem, tabId: string | null) =>
+  tabId ? request(item, undefined, tabId) : request(item);
+
 const appearanceNow = (): 'light' | 'dark' =>
   typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
     ? 'dark'
@@ -51,19 +59,27 @@ export function useLiveEmbedFrame({
   active,
   hostName,
   frameRef,
+  tabId = null,
   request = requestLiveEmbedTicket,
 }: {
   item: LiveItem | null;
   active: boolean;
+  // The tab the frame opens on (a Screen's `liveTab`); none opens the file as it was last left.
+  tabId?: string | null;
   // This app's name, as the frame shows its workbench's.
   hostName: string;
   frameRef: RefObject<HTMLIFrameElement | null>;
   request?: typeof requestLiveEmbedTicket;
 }): LiveEmbedFrame & { retry: () => void } {
-  const key = item ? `${item.app}:${item.itemId}` : '';
+  const key = item ? `${item.app}:${item.itemId}${tabId ? `@${tabId}` : ''}` : '';
   const [attempt, setAttempt] = useState(0);
   const [held, setHeld] = useState<{ key: string; outcome: Outcome } | null>(null);
   const [ready, setReady] = useState<string | null>(null);
+  const [shown, setShown] = useState<{ key: string; tab: LiveTab } | null>(null);
+  const tabRef = useRef(tabId);
+  useEffect(() => {
+    tabRef.current = tabId;
+  });
   const requestRef = useRef(request);
   useEffect(() => {
     requestRef.current = request;
@@ -84,7 +100,7 @@ export function useLiveEmbedFrame({
     if (!item || !active || outcome) return;
     let live = true;
     const asked = `${key}#${attempt}`;
-    void requestRef.current(item).then((ticket) => {
+    void ask(requestRef.current, item, tabRef.current).then((ticket) => {
       if (!live) return;
       if (!ticket.ok) {
         setHeld({ key: asked, outcome: outcomeOf(ticket) });
@@ -97,7 +113,6 @@ export function useLiveEmbedFrame({
           state: 'live',
           // The frame flag: the target's page shows the item only (live-embeds.md "The frame").
           src: `${origin}${liveEmbedFramePath(ticket.path)}#ticket=${ticket.ticket}`,
-          ready: false,
         },
       });
       workbench.track('Canvas', 'Used', 'LiveEmbed');
@@ -118,15 +133,24 @@ export function useLiveEmbedFrame({
     const onMessage = (event: MessageEvent) => {
       const frame = frameRef.current?.contentWindow;
       if (!frame || event.source !== frame || event.origin !== origin) return;
-      const data = event.data as { type?: unknown; v?: unknown; reason?: unknown } | null;
+      const data = event.data as {
+        type?: unknown;
+        v?: unknown;
+        reason?: unknown;
+        tabId?: unknown;
+        tabName?: unknown;
+      } | null;
       if (!data || typeof data.type !== 'string' || !data.type.startsWith(prefix)) return;
       const type = data.type.slice(prefix.length);
       if (type === 'hello') {
         post({ type: `${prefix}hello-ack`, v: 1, name: hostName });
         post({ type: `${prefix}theme`, v: 1, colourScheme: appearanceNow() });
         setReady(asked);
+      } else if (type === 'ready' || type === 'tab') {
+        const tab = { id: data.tabId, name: data.tabName };
+        if (isLiveTab(tab)) setShown({ key: asked, tab });
       } else if (type === 'renew') {
-        void requestRef.current(item).then((ticket) => {
+        void ask(requestRef.current, item, tabRef.current).then((ticket) => {
           if (ticket.ok) post({ type: `${prefix}ticket`, v: 1, ticket: ticket.ticket });
           else setHeld({ key: asked, outcome: outcomeOf(ticket) });
         });
@@ -141,7 +165,15 @@ export function useLiveEmbedFrame({
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
   if (!item) return { state: 'idle', retry };
-  if (outcome?.state === 'live') return { ...outcome, ready: ready === `${key}#${attempt}`, retry };
+  if (outcome?.state === 'live') {
+    const asked = `${key}#${attempt}`;
+    return {
+      ...outcome,
+      ready: ready === asked,
+      tab: shown?.key === asked ? shown.tab : null,
+      retry,
+    };
+  }
   if (outcome) return { ...outcome, retry };
   return { state: active ? 'loading' : 'idle', retry };
 }

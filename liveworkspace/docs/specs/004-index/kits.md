@@ -110,6 +110,12 @@ sample people), and none of its other tabs, forms or dashboards: Send to Plan's 
 ([send-to-plan.md](send-to-plan.md) "The picker") asks for `kanban` that way, an empty Kanban board. An app whose
 templates have no example content may ignore it.
 
+An optional `screen: {app, itemId, name}` (livehuddle's alone, Work Tracker 1427) names a file for the new Space's
+Screens: every Screen in it keeps that file as its source (`liveItem`, `liveName`), so a call's Document Room opens
+with the call's item on the wall ([item-calls.md](item-calls.md) "Starting"). `app` is one of `LIVE_EMBED_APPS`,
+`itemId` an id and `name` at most 200 characters, else `400`. Nothing is checked about the file: it is a link that
+opens nothing by itself, and each reader sees it with their own access. Other apps ignore it.
+
 ## Telemetry
 
 A run is every app's at once, so its events are liveworkspace.app's own (`PLATFORM_TELEMETRY_APP`), sent by the kits

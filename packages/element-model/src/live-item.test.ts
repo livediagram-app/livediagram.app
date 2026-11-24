@@ -8,6 +8,8 @@ import {
   isLiveItem,
   isLiveName,
   isLivePoster,
+  isLiveTab,
+  LIVE_TAB_CHECK,
   withoutLiveItem,
 } from './live-item';
 
@@ -82,5 +84,20 @@ describe('a live embed link', () => {
     expect(withoutLiveItem(el)).toEqual({ id: 'e', liveName: 'Plan' });
     const plain = { id: 'f' } as { id: string; liveItem?: unknown };
     expect(withoutLiveItem(plain)).toBe(plain);
+  });
+});
+
+describe('a live embed tab', () => {
+  it('is exactly an id of the item id shape and a name of at most LIVE_NAME_MAX', () => {
+    expect(isLiveTab({ id: 'tab-1', name: 'Roadmap' })).toBe(true);
+    expect(isLiveTab({ id: 'tab-1', name: '' })).toBe(true);
+    expect(isLiveTab({ id: 'tab 1', name: 'x' })).toBe(false);
+    expect(isLiveTab({ id: 'tab-1', name: 'x'.repeat(LIVE_NAME_MAX + 1) })).toBe(false);
+    expect(isLiveTab({ id: 'tab-1', name: 'x', extra: 1 })).toBe(false);
+    expect(isLiveTab({ id: 'tab-1' })).toBe(false);
+    expect(isLiveTab(null)).toBe(false);
+    expect(isLiveTab(['tab-1', 'x'])).toBe(false);
+    expect(LIVE_TAB_CHECK.valid({ id: 'a', name: 'b' })).toBe(true);
+    expect(LIVE_TAB_CHECK.field).toBe('liveTab');
   });
 });

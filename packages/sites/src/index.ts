@@ -503,6 +503,8 @@ export {
   appOfAnyOrigin,
   appOfOrigin,
   appOrigins,
+  isLiveEmbedFrameRequest,
+  liveEmbedFrameAncestors,
   siteHrefFrom,
   stagingOrigin,
   type AppEnvironment,
