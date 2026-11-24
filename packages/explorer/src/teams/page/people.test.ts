@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { TeamMember } from '../../data/teams';
 import {
   addedOn,
@@ -106,8 +107,9 @@ describe('Invite by Email’s addresses', () => {
 
   it('splits a very long paste quickly', () => {
     const text = Array.from({ length: 5000 }, (_, i) => `p${i}@x.test`).join(', ');
-    const start = performance.now();
-    expect(splitAddresses(text)).toHaveLength(5000);
-    expect(performance.now() - start).toBeLessThan(2000);
+    let split: string[] = [];
+    const spent = cpuMsOf(() => (split = splitAddresses(text)));
+    expect(split).toHaveLength(5000);
+    expect(spent).toBeLessThan(cpuBudgetMs(500));
   });
 });

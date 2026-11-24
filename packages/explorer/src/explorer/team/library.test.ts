@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { kindCounts, readLibrarySort, sortLibrary, writeLibrarySort } from './library';
 
 const item = (id: string, title: string, updatedAt: number, app = 'liveplanner') => ({
@@ -43,8 +44,6 @@ describe('a team’s Library', () => {
 
   it('sorts a big library inside a budget', () => {
     const many = Array.from({ length: 5000 }, (_, i) => item(String(i), `Plan ${5000 - i}`, i));
-    const start = performance.now();
-    sortLibrary(many, 'name');
-    expect(performance.now() - start).toBeLessThan(1000);
+    expect(cpuMsOf(() => sortLibrary(many, 'name'))).toBeLessThan(cpuBudgetMs(250));
   });
 });
