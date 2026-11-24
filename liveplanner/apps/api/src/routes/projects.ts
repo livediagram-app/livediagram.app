@@ -3,6 +3,7 @@
 // Trash are the index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are
 // answered from it (project-index-routes.ts).
 
+import { AGENT_HEADERS } from '../changesets/front-door';
 import { tabKindOf } from '@liveplanner/project';
 import {
   createItemGrant,
@@ -12,6 +13,7 @@ import {
   itemTabsResponse,
   type ItemCreateRequest,
   forgetPutAwayGrant,
+  itemAgentOf,
 } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
@@ -118,7 +120,8 @@ async function forwardToPlan(ctx: RouteContext): Promise<Response> {
         request,
         grantCallerOf(ctx),
         planId,
-        create,
+        // The agent an API client's create was made by, for History (Work Tracker 1381).
+        { ...create, agent: itemAgentOf(request, ctx.token, AGENT_HEADERS) ?? undefined },
         (body, status) => json(body, { status }),
       );
       if (made instanceof Response) return made;

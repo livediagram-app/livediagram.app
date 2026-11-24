@@ -173,6 +173,18 @@ describe('the view tabs', () => {
     ).toBeTruthy();
   });
 
+  it('drops the short labels under 360 px, each link keeping its full name', () => {
+    renderInEditor(<KnowledgeViewTabs />);
+    for (const name of ['Pages', 'Ask', 'Insights', 'Connect MCP']) {
+      const a = link(name);
+      expect(a.getAttribute('aria-label')).toBe(name);
+      const short = a.querySelector('span.phone\\:inline');
+      expect(short?.className).toContain('phone:max-[359px]:hidden');
+      expect(a.closest('[data-knowledge-view-tab]')?.className).toContain('phone:max-[359px]:px-0');
+      expect(a.className).toContain('phone:max-[359px]:min-w-11');
+    }
+  });
+
   it.each(ROLES)('are offered to a session of the %s role', (role) => {
     renderInEditor(<KnowledgeViewTabs />, chromeValue(role));
     expect(screen.getAllByRole('link')).toHaveLength(4);

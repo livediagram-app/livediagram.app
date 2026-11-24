@@ -1,4 +1,5 @@
 import { spendAskIn } from '@liveworkspace/ask/server';
+import { markItemCall } from './room-item-call';
 import { type ItemHeadSync, sharesDueAt, ShareSchedule } from '@liveworkspace/index-app';
 import * as crossApp from './automations/cross-app-door';
 import type { ItemTier } from '@liveworkspace/subscription';
@@ -607,6 +608,11 @@ export class DocumentRoom extends DurableObject<Env> {
   // A plan's sent cards changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"): room-rpc.ts.
   async sourceChanged(documentId: string, change: SourceChange): Promise<void> {
     rpc.sourceChanged(this, documentId, change);
+  }
+
+  // This Space is a call about an item (docs/specs/012-collaboration/calls-from-items.md): room-item-call.ts.
+  async markItemCall(documentId: string, callId: string): Promise<void> {
+    await markItemCall(this, documentId, callId);
   }
 
   requireEnv(): DocumentEnv {

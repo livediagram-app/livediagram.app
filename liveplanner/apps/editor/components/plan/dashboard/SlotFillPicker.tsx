@@ -18,7 +18,7 @@ import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { planPalette, type PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { BOARD_WIDGET_INFO } from '@liveplanner/plan-art';
-import { MetricPreview, NotePreview, VisualisationPreview } from './slot-previews';
+import { EmbedPreview, MetricPreview, NotePreview, VisualisationPreview } from './slot-previews';
 import {
   CardPreview,
   FormMetricPreview,
@@ -35,6 +35,7 @@ import { tileCaption } from '@liveworkspace/workbench/components/palette/tile-ca
 import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 import {
   DASHBOARD_CARD_TILES,
+  DASHBOARD_EMBED_TILE,
   DASHBOARD_FORM_TILES,
   DASHBOARD_SHEET_TILES,
   dashboardTabTiles,
@@ -70,7 +71,10 @@ export function slotFillSections(
     { title: 'Form Metrics', tiles: hasForms ? DASHBOARD_FORM_TILES : [] },
     { title: 'Visualisations', tiles: tilesForCategory('plan-visualisations') },
     { title: 'From a Sheet', tiles: DASHBOARD_SHEET_TILES },
-    { title: 'Utilities', tiles: [sticky, ...DASHBOARD_CARD_TILES].filter((t) => !!t) },
+    {
+      title: 'Utilities',
+      tiles: [sticky, ...DASHBOARD_CARD_TILES, DASHBOARD_EMBED_TILE].filter((t) => !!t),
+    },
   ];
   const tooBig = new Set<SlotFitKind>();
   const sections = all
@@ -150,6 +154,7 @@ function TilePicture({
     return <VisualisationPreview view={item.view as PlanVisualisation} palette={palette} />;
   }
   if (item.kind === 'note') return <NotePreview palette={palette} />;
+  if (item.kind === 'embed') return <EmbedPreview palette={palette} />;
   if (item.kind === 'card') return <CardPreview card={item.card} palette={palette} />;
   if (item.kind === 'sheet-metric')
     return <SheetMetricPreview metric={item.metric} palette={palette} />;

@@ -122,5 +122,7 @@ export function tellSourceChanged(
     sheetIds: change.sheetIds,
     // A plan's sent cards (send-to-plan.md "The chip"): the open editors read their item's sends again.
     ...(change.cards ? { cards: change.cards } : {}),
+    // A call about the item (item-calls.md "Joining"): the open editors read its calls again.
+    ...(change.calls ? { calls: true as const } : {}),
   });
 }

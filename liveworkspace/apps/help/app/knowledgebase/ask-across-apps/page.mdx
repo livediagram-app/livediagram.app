@@ -1,0 +1,50 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Asking Across Your Apps',
+  description:
+    "Let Ask answer from your team's diagrams, plans, documents, designs and Spaces as well as your pages: what it reads, who sees what, and where a citation opens.",
+  path: '/help/knowledgebase/ask-across-apps/',
+});
+
+<ArticleLayout path="knowledgebase/ask-across-apps" title="Asking Across Your Apps" description="Ask answers from the diagrams, plans, documents, designs and Spaces connected to your Knowledgebase, as well as its pages." categoryTitle="Knowledgebase" categorySlug="knowledgebase">
+
+A team's knowledge rarely lives in pages alone. The checkout flow is a diagram, the launch is a plan, the pitch is a deck. **Sources** let [Ask](/help/knowledgebase/ask/) read those too, so a question about any of them gets an answer, with a citation that opens the exact place.
+
+## What Ask Reads
+
+Open **AI Settings** from Ask or Insights. Its **Sources** section lists what Ask answers from:
+
+- **This Knowledgebase**, always: its pages.
+- **Connected Items**, on unless an Editor turns it off: every file connected in the sidebar with [Connect File](/help/tabs/connected-files/). livediagram gives Ask its shapes' words and notes, liveplanner its cards with their fields and comments, livedocuments its slides and articles, livedesign its text layers, and livehuddle the notes written on a Space's canvas.
+- **A Team Folder**, for a team Knowledgebase: pick one of the team's folders and Ask reads every diagram, plan, document, design and Space in it, and in the folders inside it.
+
+Under them, each source shows its app and how far it is read: **Read** with the day, **Reading Soon**, **Over the Limit** (a Knowledgebase reads at most 100 sources) or **Couldn't Read**. A source is read again a minute after it changes, and dropped when it is removed, leaves the folder or goes to the Trash.
+
+## What an Answer Shows
+
+Pages come first. A passage from another app follows under its own number: its chip names the file and its app ("Checkout Flow (livediagram)"), and its card under **Sources** shows the app's logo, the place (a tab or a card), the words, **Not Verified Here** and the day it was read, amber once it is a week old. The trust line counts them apart: "Answered From 2 Verified Pages and 1 Connected Item". Nobody verifies another app's file inside a Knowledgebase, so the answer says so when a claim rests on one alone.
+
+Press a source's card to open the file in its own app, in a new browser tab, at the cited shape, card or slide. A bar across the top says **Cited by Ask** with your question; **Back to the Answer** returns you to Ask.
+
+## Who Sees What
+
+Everyone gets answers only from the files they can open themselves, never through someone else's access. Guests, people on a share link and readers of a single page's link get answers from pages only.
+
+| Action                                         | Editor | Participant | Viewer |
+| ---------------------------------------------- | ------ | ----------- | ------ |
+| Get answers that cite files they can open      | Yes    | Yes         | Yes    |
+| See Sources in AI Settings                     | Yes    | Yes         | Yes    |
+| Turn Connected Items on or off, pick a folder  | Yes    | No          | No     |
+| Connect a question's likely file from Insights | Yes    | No          | No     |
+
+## Questions a File Could Answer
+
+When Ask can't answer something, Insights lists the question under **Needs Attention**. If one of the team's files that you can open looks like it holds the answer but isn't connected, the question says "Likely answered in Payments Architecture, which isn't connected". An Editor presses **Connect** to add it to the sidebar, and Ask reads it from then on.
+
+## Agents
+
+An agent's `search_pages` (and `liveknowledge search` on the command line) lists matching sources after the pages, for an account that can open them, each with its app, its name, its place and the day it was read.
+
+</ArticleLayout>

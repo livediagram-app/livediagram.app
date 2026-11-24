@@ -57,6 +57,7 @@ import { rowsOf, runAll, sqlOf } from '../knowledge/knowledge-db';
 import { contextPages, knowledgeHealthCounts } from '../knowledge/knowledge-reads';
 import { pageHealthScores } from '../knowledge/page-health-read';
 import { readingOverview } from '../knowledge/reading-overview';
+import { likelyForReader } from '../knowledge/ask-source-read';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
 import { writesPages } from './context';
@@ -191,6 +192,14 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
   };
   const average = averageHealth(scored.map((p) => p.health.score));
   const lastAt = new Map(questions.map((q) => [q.key, q.lastAt]));
+  // An unanswered question's likely item in another app, only when this reader can open it (insights.md "Likely
+  // answered elsewhere"): one read and one index call.
+  const likely = await likelyForReader(
+    ctx,
+    grant,
+    document.id,
+    questions.map((q) => q.key),
+  );
   const overview: KnowledgeOverviewResponse = {
     agents: connectedAgents({
       seen,
@@ -206,6 +215,7 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
       byPeople: q.people,
       agents: Object.entries(q.agents).map(([name, asked]) => ({ name, asked })),
       lastAt: lastAt.get(q.key) ?? 0,
+      ...(likely.has(q.key) ? { likely: likely.get(q.key) } : {}),
     })),
     conflicts: conflicts.map((conflict) => {
       const askedAt = asked.get(conflict.id);

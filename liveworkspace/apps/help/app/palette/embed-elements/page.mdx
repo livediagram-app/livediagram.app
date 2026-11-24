@@ -47,13 +47,13 @@ detail.
 
 <AppNote app="livedocuments">Use a Link Card for that.</AppNote>
 
-A **Live Embed** shows a file from our own apps instead, live: see [Live embeds](#live-embeds).
+**Embed File** shows a file from our own apps instead, live: see [Embed File](#embed-file).
 
 ## Adding one
 
 <AppNote app="livediagram">
   No mode's palette shows the embeds (Image and Avatar sit at the end of the **Layout** category
-  instead), but embeds work in every mode: search for "YouTube", "Figma", "live embed" or "embed" in
+  instead, with **Embed File** after them), and the other embeds work in every mode: search for "YouTube", "Figma" or "embed" in
   the **Search** at the end of the palette strip ([Toolbar
   Layout](/help/palette/toolbar-layout/#search)), or in the editor's [Search
   panel](/help/search-panel/the-search-panel/search-add-to-canvas/) under **Add to canvas**. Search
@@ -89,7 +89,7 @@ A **Live Embed** shows a file from our own apps instead, live: see [Live embeds]
   its own.
 </AppNote>
 
-The link dialog is deliberately narrow: it takes only a **web address**, never a tab, because a video pointed at a tab has nothing to play. It checks the address as you type and again when you save. To show another of your files instead, use a [Live Embed](#live-embeds).
+The link dialog is deliberately narrow: it takes only a **web address**, never a tab, because a video pointed at a tab has nothing to play. It checks the address as you type and again when you save. To show another of your files instead, use [Embed File](#embed-file).
 
 <AppNote app="livediagram">It is narrower than a link card's dialog.</AppNote>
 
@@ -125,50 +125,33 @@ When you want to use the player itself, hover it: two small buttons appear in it
   and opening it at the source are different intentions, and both are worth having.
 </Note>
 
-## Live embeds
+## Embed File
 
-A **Live Embed** shows a file from our own apps, live and read-only.
+**Embed File** shows a file from our own apps, live and read-only: a livediagram canvas, a liveplanner plan, a livedocuments page, a livedesign design or a liveknowledge knowledgebase. livehuddle Spaces can't be embedded.
 
 <AppNote app="livediagram">
 
-A **Live Embed** shows a file from our own apps on the canvas: another canvas, a plan, a page or a design, live and read-only. Add it by searching for "live embed", then double-click it to open **Choose a File**: this canvas's connected files, your recent files across the apps, a search box, and a field for a pasted share link. Only an editor chooses the file; anyone else sees what was chosen.
-
-- **Everyone sees it with their own access.** A reader who can open the file sees it live. Anyone who can't sees a blurred snapshot, "Ask its owner to share it with you", and **Open in** its app. Nothing here creates a share link.
-- **It stays out of the way.** Like any embed it drags and selects as an element. Press **Use the file** to hand the pointer to it, and **Done using the file** to get dragging back. **Open in** its app opens the file in a new tab.
-- **It loads only while you can see it**, at most three at once on the page, and lets go a couple of seconds after it scrolls away.
-- **Exports show the snapshot**, not the live file.
+Add it from the palette's **Layout** category, where **Embed File** sits after Image and Avatar (or search for "embed file"). Placing it opens **Embed File** at once: this canvas's connected files, your recent files across the apps, a search box, and a field for a pasted share link. Double-click it later to choose another file. Only an editor chooses the file; anyone else sees what was chosen.
 
 </AppNote>
 
 <AppNote app="livedesign">
 
-A **Live Embed** shows a file from our own apps on the canvas: a livediagram canvas, a liveplanner plan, a livedocuments page or another design, live and read-only. Pick **Live Embed** under **Embeds** in **Media**, then double-click it to open **Choose a File**: this design's connected files, your recent files across the apps, a search box, and a field to paste a share link. Only an Editor chooses the file; anyone else sees what was chosen.
-
-- **Everyone sees it with their own access.** A person who can open the file sees it live. Anyone who can't sees a blurred snapshot, "Ask its owner to share it with you", and **Open in** its app. Nothing here creates a share link.
-- **It stays out of the way.** It drags and selects like any embed. Press **Use the file** to hand the pointer to it, and **Done using the file** to get dragging back. **Open in** its app opens the file in a new tab.
-- **It loads only while you can see it**, at most three at once, and lets go a couple of seconds after it leaves the screen.
-- **Exports show the snapshot**, not the live file.
+Pick **Embed File** under **Embeds** in **Media**. Placing it opens **Embed File** at once: this design's connected files, your recent files across the apps, a search box, and a field to paste a share link. Double-click it later to choose another. Only an Editor chooses the file; anyone else sees what was chosen.
 
 </AppNote>
 
 <AppNote app="livedocuments">
 
-The **Live Embed** card, last in the **Embeds** group, shows a canvas, plan, page or design from livediagram, liveplanner, livedocuments or livedesign, live and read-only. It follows every change the file's people make, as they make it.
-
-<Step n={1}>Add **Live Embed** from the **Embeds** group, then double-click the card.</Step>
-
-<Step n={2}>
-  In **Choose a File**, pick one of your **Connected** files or a **Recent** one (**Find a file**
-  searches them), or paste one of those apps' share links under **Paste a Share Link**.
-</Step>
-
-Double-click it again to choose another file. Only an Editor of this document can choose one, and not while the card is locked.
-
-- **Everyone sees it with their own access.** Someone who can open the file sees it live. Anyone else sees a blurred picture of it, "You don't have access to" the file, and **Open in** its app. Choosing a file never shares it with anyone.
-- **Hover it** for **Use the file**, which hands it the pointer so you can scroll and click inside it (**Done using the file** gives dragging back), and **Open in** its app, which opens the file in a new tab.
-- **It runs only on screen.** A live embed starts once it is in view, and at most three run on a page at once; the rest show their last picture until one leaves the screen.
-- **Exports draw its picture**, as do thumbnails, so an image or PDF of the page shows the file as it last looked.
+Pick **Embed File**, last in the **Embeds** group of **Media**. Placing it opens **Embed File** at once: pick one of your **Connected** files or a **Recent** one (**Find a file** searches them), or paste a share link under **Paste a Share Link**. Double-click it later to choose another. Only an Editor of this document chooses one, and not while the card is locked.
 
 </AppNote>
+
+- **It asks a role, as Connect does.** For a file you may share that isn't connected here yet, Embed File also connects it as a tab at the end of the tab bar (it doesn't switch to it), and asks the role that tab gives: **Editor**, **Participant** or **Viewer**, Editor chosen first. Anyone who can open this <Noun /> can work on the file through that tab with that role. A file already connected is embedded as it is; a file you may not share embeds with no tab (its row says so).
+- **The embed itself is always read-only**, whatever the role. Readers who can edit the file get **Open in** its app, and edit it there.
+- **Everyone sees it with their own access.** A reader who can open the file sees it live. Anyone who can't, a guest or someone with only this file's link included, sees a blurred snapshot, "Ask its owner to share it with you", and **Open in** its app. Embedding never creates a share link.
+- **It stays out of the way.** It drags and selects like any embed. Hover it for **Use the file**, which hands it the pointer (**Done using the file** gives dragging back), and **Open in** its app, which opens the file in a new tab.
+- **It loads only while you can see it**, at most three at once, and lets go a couple of seconds after it leaves the screen.
+- **Exports show the snapshot**, not the live file.
 
 </ArticleLayout>

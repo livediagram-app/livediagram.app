@@ -14,6 +14,8 @@
 // can send gets a real sentence, free of code names and jargon.
 
 import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
+import { SEND_TO_DIAGRAM_EXACT, SENT_DIAGRAM_EXACT } from '../_shared/send-to-diagram-metrics';
+import { ITEM_CALL_EXACT } from '../_shared/item-call-metrics';
 import {
   SNAPSHOT_BY_ACTION,
   WALKTHROUGH_BY_ACTION,
@@ -30,6 +32,9 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
 
 export const EXACT: Readonly<Record<string, string>> = {
   ...SEND_TO_PLAN_EXACT,
+  ...SEND_TO_DIAGRAM_EXACT,
+  ...SENT_DIAGRAM_EXACT,
+  ...ITEM_CALL_EXACT,
   ...WALKTHROUGH_EXACT,
   ...LIBRARY_EXACT,
   'Element|Changed|CanvasSuggesting':
@@ -797,6 +802,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|HomeAsk': 'Someone asked a question from the box on Home, opening it in Ask.',
   'UI|Ended|AskStopped': 'Someone stopped Ask while it was still writing an answer.',
   'UI|Used|AskHelpful': 'Someone marked an answer from Ask as helpful.',
+  'UI|Used|AskSourceCited': 'Ask answered with a citation of an item in another app.',
+  'UI|Opened|AskSourceItem': 'Someone opened an item an answer cited, in its own app.',
+  'UI|Changed|SourcesConnectedOn': 'An Editor turned Connected Items on in Sources.',
+  'UI|Changed|SourcesConnectedOff': 'An Editor turned Connected Items off in Sources.',
+  'UI|Changed|SourcesFolderOn': 'An Editor chose a team folder for Ask to read.',
+  'UI|Changed|SourcesFolderOff': 'An Editor cleared the team folder Ask reads.',
+  'UI|Used|ConnectLikely': "Someone connected an unanswered question's likely item from Insights.",
   'UI|Used|AskNotHelpful': 'Someone marked an answer from Ask as not helpful.',
   'UI|Used|SuggestionAccepted':
     'An Editor accepted an edit an agent had suggested, changing the page.',
@@ -871,6 +883,18 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Removed|PublishSite': "An Editor took a knowledgebase's public site down with Unpublish.",
   'UI|Changed|AiProvider': "Someone switched a knowledgebase's AI provider.",
   'UI|Changed|AiModel': 'Someone picked another model for Ask and Insights.',
+  'UI|Opened|AiEditing':
+    "An Editor opened AI Editing from the knowledgebase's menu: how far agents may change pages themselves.",
+  'UI|Changed|AiEditingSuggest':
+    'An Editor set AI Editing to Suggest Edits Only: agents only suggest changes for a person to accept.',
+  'UI|Changed|AiEditingUnverified':
+    'An Editor set AI Editing to Edit Unverified Pages: agents may rewrite pages nobody has verified.',
+  'UI|Changed|AiEditingAny':
+    'An Editor set AI Editing to Edit Any Page: agents may rewrite any page, verified ones too.',
+  'UI|Toggled|AiEditUnverifiesOn':
+    'An Editor turned on Remove Verification When AI Edits: an agent rewriting a verified page takes its tick away.',
+  'UI|Toggled|AiEditUnverifiesOff':
+    'An Editor turned off Remove Verification When AI Edits: pages an agent rewrites stay verified.',
   'UI|Changed|AskAiBuiltIn': 'Someone chose built-in AI to answer their questions on Ask.',
   'UI|Changed|AskAiKey': "Someone chose the team's key to answer their questions on Ask.",
   'UI|Opened|AskView': 'Someone opened the Ask view, to ask the knowledgebase a question.',

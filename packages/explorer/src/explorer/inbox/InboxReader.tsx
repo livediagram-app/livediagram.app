@@ -38,6 +38,7 @@ import { Body, Byline } from './InboxReaderBody';
 import { AccessRequestFailure, AccessRequestVerbs, useAccessAnswer } from './AccessRequestPane';
 import { KBD, PRIMARY, SECONDARY } from './pane-buttons';
 import { suggestionOffered } from './suggestion-answer';
+import { openInPlace } from './open-in-place';
 
 // A suggested edit's Accept, Dismiss and failure line load only when one is opened, off the Explorer's first load.
 const SuggestionActions = lazy(() =>
@@ -230,7 +231,9 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
     [canReply, primaryVerb, run, access, answer, suggestionVerbs],
   );
 
-  const team = entry.row.itemTeamId ? teamName(entry.row.itemTeamId) : null;
+  // A rule's notice names no team; every other row names its item's.
+  const teamId = 'itemTeamId' in entry.row ? entry.row.itemTeamId : null;
+  const team = teamId ? teamName(teamId) : null;
   const thumb = wantsItem && item ? renderThumbnail?.(item, 'card') : null;
 
   return (
@@ -246,7 +249,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-slate-500 dark:text-slate-400"
       >
         {showApp ? <AppMark app={entry.row.app} size={15} /> : null}
-        {entry.row.itemTeamId ? (
+        {teamId ? (
           <span title={team ?? 'Team'} className="inline-flex shrink-0 text-slate-400">
             <TeamIcon size={13} />
             <span className="sr-only">{team ? `In ${team}` : 'A team’s'}</span>
@@ -333,7 +336,11 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         ) : null}
         <Link
           href={href}
-          onClick={() => inboxHost?.onTelemetry?.('Selected', entry.kind)}
+          onClick={(e) => {
+            inboxHost?.onTelemetry?.('Selected', entry.kind);
+            // The open item's own place: a page load, or only the address would move (./open-in-place).
+            openInPlace(e, href);
+          }}
           className={canReply || primaryVerb || access || suggestionVerbs ? SECONDARY : PRIMARY}
         >
           <span ref={openRef} data-inbox-open="" className="inline-flex items-center gap-1.5">

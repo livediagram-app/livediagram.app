@@ -21,6 +21,8 @@ import {
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
   handleInternalItems as handle,
+  canvasKnowledgeChunks,
+  knowledgeTextFromExport,
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { countCommunityCopy } from '../community-service';
@@ -42,6 +44,7 @@ import {
 } from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
+import { documentFromGraph } from './internal-graph';
 import { documentFromTemplate } from './internal-template';
 import { indexAppClient } from '../index-service';
 import { capStoredName } from '../names';
@@ -140,6 +143,12 @@ export function handleInternalItems(
         query.format === 'file'
           ? documentRoom(env, id).exportFile(query)
           : documentRoom(env, id).exportImage(query),
+      // The canvas's indexable text for a knowledgebase reading it (liveworkspace/docs/specs/004-index/
+      // knowledge-sources.md): its whole file, read as the export door reads it, walked by the shared canvasKnowledgeChunks.
+      knowledgeText: knowledgeTextFromExport(
+        (id, query) => documentRoom(env, id).exportFile(query),
+        canvasKnowledgeChunks,
+      ),
       // Every comment thread in the canvas with its real authors, for the data export (document-room.ts
       // `exportComments`). It has no boards or sheets, so the door's `csv` format is a 404.
       exportComments: (id) => documentRoom(env, id).exportComments(),
@@ -147,6 +156,8 @@ export function handleInternalItems(
       import: (input) => importDocumentFileFor(env, input),
       // A new item from one of this app's templates, a project kit's part (internal-template.ts).
       fromTemplate: (input) => documentFromTemplate(env, input),
+      // Send to Diagram's new canvas, drawn from another app's graph (internal-graph.ts).
+      fromGraph: (input) => documentFromGraph(env, input),
       // An old livediagram.app document's livediagram part, into its canvas's room (document-migration.ts). A tab over
       // the tab cap refuses the whole part (413) before the room is called.
       migrate: async (payload) => {

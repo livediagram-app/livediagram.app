@@ -1,26 +1,32 @@
 # Live embeds: blueprint
 
 Derived from [Live embeds](../live-embeds.md) and [the workbench's live embed tickets](../../011-workbench/workbench.md#live-embed-tickets).
-Work Tracker 930.
+Work Tracker 930; Embed File, its role and the new hosts and target, Work Tracker 1375.
 
 ## Domain and naming
 
-| Term          | Identifier                                                                                   |
-| ------------- | -------------------------------------------------------------------------------------------- |
-| live embed    | an Embed element (`type: 'video'`) with `embedProvider: 'live'`                              |
-| host          | the item holding the element; `hostId` in the picker                                         |
-| target        | the item shown; `liveItem` on the element                                                    |
-| link          | `liveItem: { app: LiveEmbedApp; itemId: string }` (`@liveworkspace/element-model/live-item`) |
-| snapshot      | `liveName` and `livePoster` on the element                                                   |
-| embed ticket  | a workbench ticket on the embed pairing, minted by `POST embed-tickets`                      |
-| embed pairing | a `wb_pairings` row with `token_id = EMBED_TOKEN_ID` (`'embed'`)                             |
-| embed session | a view-level workbench session on the embed pairing                                          |
-| slot          | one of the page's `LIVE_EMBEDS_MAX` places (`live-embed-slots.ts`)                           |
+| Term          | Identifier                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| live embed    | an Embed element (`type: 'video'`) with `embedProvider: 'live'`; in liveplanner a Dashboard slot's `{ type: 'embed' }` content |
+| Embed File    | the tile, menu entry and dialog that make one (`LiveEmbedPicker`, titled "Embed File")                                         |
+| embed's tab   | the connected tab Embed File makes at the chosen role (`LiveEmbedConnect`)                                                     |
+| host          | the item holding the element; `hostId` in the picker                                                                           |
+| target        | the item shown; `liveItem` on the element                                                                                      |
+| link          | `liveItem: { app: LiveEmbedApp; itemId: string }` (`@liveworkspace/element-model/live-item`)                                   |
+| snapshot      | `liveName` and `livePoster` on the element                                                                                     |
+| embed ticket  | a workbench ticket on the embed pairing, minted by `POST embed-tickets`                                                        |
+| embed pairing | a `wb_pairings` row with `token_id = EMBED_TOKEN_ID` (`'embed'`)                                                               |
+| embed session | a view-level workbench session on the embed pairing                                                                            |
+| slot          | one of the page's `LIVE_EMBEDS_MAX` places (`live-embed-slots.ts`)                                                             |
 
 ## Data and persistence
 
-- `liveItem`, `liveName`, `livePoster` are stored fields of the Embed element in livediagram, livedocuments and
-  livedesign (`element-fields.ts`), declared on each `VideoElement`, and in each api's generated OpenAPI schemas.
+- `liveItem`, `liveName`, `livePoster` are stored fields of the Embed element in livediagram, livedocuments,
+  livedesign and liveknowledge (`element-fields.ts`), declared on each `VideoElement`, and in each api's generated
+  OpenAPI schemas. In liveplanner they are fields of a Dashboard slot's content `{ type: 'embed', liveItem?,
+liveName?, livePoster? }` (`@liveplanner/project` `dashboard-layout.ts`), read by `readDashboard` with the same
+  guards (`isLiveItem`, `isLiveName`, `isLivePoster`), an invalid field dropped, never the slot.
+- `LIVE_EMBED_APPS` is `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, `liveknowledge`.
 - Validation, in each host's `validate.ts` `boxedIssue` `case 'video'`: `firstFieldIssue(el, LIVE_EMBED_CHECKS)`.
   - `liveItem`: an object of exactly `app` (one of `LIVE_EMBED_APPS`) and `itemId` (`^[A-Za-z0-9_-]{1,64}$`).
   - `liveName`: a string of at most `LIVE_NAME_MAX` (200).
@@ -43,7 +49,7 @@ Work Tracker 930.
 | an API token (`lwt_`, `lvd_`) or a workbench session (`lvw_`)            | `403 token_required`                                             |
 | over the person's limit                                                  | `429 rate_limited`                                               |
 | body not a JSON object                                                   | `400 bad_request`                                                |
-| `target` not one of the four apps                                        | `400 invalid_value`                                              |
+| `target` not one of the five target apps                                 | `400 invalid_value`                                              |
 | `itemId` not 1 to 64 characters                                          | `400 invalid_value`                                              |
 | `origin` not an app's in this environment (loopback http in development) | `400 invalid_origin`                                             |
 | the reader's own grant: none / trashed / no answer                       | `404 not_found` / `410 <noun>_trashed` / `503 index_unavailable` |
@@ -98,7 +104,14 @@ The slot (`useLiveEmbedSlot`): an IntersectionObserver at thresholds `[0, LIVE_E
 `LIVE_EMBED_SETTLE_MS` of visibility, off-screen after `LIVE_EMBED_UNLOAD_MS` of none; while on screen and wanted it
 asks `liveEmbedSlots.request` and releases on change or unmount.
 
-The picker (`LiveEmbedPicker`): Paste a Share Link (Add), Find a file, Connected (the first
+The picker (`LiveEmbedPicker`, "Embed File"): with `connect` (a `LiveEmbedConnect`: `hostKind`, `connected`
+target id to tab id, `grant()`, `newTabId()`, `addTab(made, tabId)`, built by each host from its Connect host, so
+present exactly where Connect File's entry shows) the Role switch (`ConnectRolePicker`, `'edit'` first) heads the
+dialog. Pressing a row: when `connect` is given, the file is not in `connect.connected` and `managesItem(item)`,
+`connectFile({ level, both: false })` runs first (`Tab·Added·Connected`, and `Tab·Added·EmbedConnected`
+after the choice); its failure is the row's error (`connectErrorWords`) and nothing is chosen. A row the person does
+not manage, with `connect` given, carries `liveEmbedNoTabLine` under its name. Then Paste a Share Link (Add), Find a
+file, Connected (the first
 `LIVE_PICKER_CONNECTED_MAX` of `connectedTargets(tabs)`, each `getItem`, failures left out), Recent
 (`useRecentFiles`, the host and the connected left out). One busy row at a time; the host or a non-target app's file
 is blocked with its reason. Choosing captures the poster and calls `onChoose` then `onClose`.
@@ -142,20 +155,23 @@ originHost, kind }`.
 
 ## Testing
 
-| Rule                                                                              | Test                                                             |
-| --------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| own access, view level, origin, guests, refusals, limit, pairing hidden and swept | accounts `workbench.test.ts` "live embed tickets"                |
-| field checks                                                                      | element-model `live-item.test.ts`, each host's validate tests    |
-| Community drops the link                                                          | community `redact.test.ts`                                       |
-| ticket client                                                                     | `live-embed-ticket.test.ts`                                      |
-| slots and on-screen loading                                                       | `live-embed-slots.test.ts`, `useLiveEmbedSlot.test.tsx`          |
-| frame messages, renewal, ended                                                    | `useLiveEmbedFrame.test.tsx`                                     |
-| the frame flag and the item-only look                                             | `editor-surface.test.ts`, each target's `WorkbenchPage.test.tsx` |
-| every face state, inert frame, nesting                                            | `LiveEmbedView.test.tsx`                                         |
-| choosing, pasting, code dropped                                                   | `choose-live-embed.test.ts`, `LiveEmbedPicker.test.tsx`          |
-| poster sizing and encoding                                                        | `live-poster.test.ts`                                            |
-| addresses and share links                                                         | `live-embed-target.test.ts`                                      |
-| exports draw the poster                                                           | each host's `svg-render` export test                             |
+| Rule                                                                              | Test                                                                 |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| own access, view level, origin, guests, refusals, limit, pairing hidden and swept | accounts `workbench.test.ts` "live embed tickets"                    |
+| field checks                                                                      | element-model `live-item.test.ts`, each host's validate tests        |
+| Community drops the link                                                          | community `redact.test.ts`                                           |
+| ticket client                                                                     | `live-embed-ticket.test.ts`                                          |
+| slots and on-screen loading                                                       | `live-embed-slots.test.ts`, `useLiveEmbedSlot.test.tsx`              |
+| frame messages, renewal, ended                                                    | `useLiveEmbedFrame.test.tsx`                                         |
+| the frame flag and the item-only look                                             | `editor-surface.test.ts`, each target's `WorkbenchPage.test.tsx`     |
+| every face state, inert frame, nesting                                            | `LiveEmbedView.test.tsx`                                             |
+| choosing, pasting, code dropped                                                   | `choose-live-embed.test.ts`, `LiveEmbedPicker.test.tsx`              |
+| the role: connects a manageable file once, embeds others with no tab, failures    | `LiveEmbedPicker.test.tsx` "Embed File's role"                       |
+| opening on place                                                                  | `useEmbedFileOnPlace.test.tsx`                                       |
+| liveplanner's slot content and its readers                                        | liveplanner `dashboard-embed.test.ts`, `DashboardEmbedCard.test.tsx` |
+| poster sizing and encoding                                                        | `live-poster.test.ts`                                                |
+| addresses and share links                                                         | `live-embed-target.test.ts`                                          |
+| exports draw the poster                                                           | each host's `svg-render` export test                                 |
 
 ## Constants and configuration
 
@@ -174,14 +190,19 @@ originHost, kind }`.
 
 ## Presentation and UX
 
-- Tile: Media, embed group, "Live Embed", after Website, the window-with-a-live-dot art.
+- Tile: "Embed File", the window-with-a-live-dot art: livediagram's Layout, its own group after the pictures
+  (`media:embed-live`, also in Search); livedocuments' and livedesign's Media embed group, after Website;
+  liveknowledge's slash menu "Embed File"; liveplanner's Dashboard Layout (`dashboard:embed`).
+- Placing one opens the picker at once (`useEmbedFileOnPlace`: an empty live embed that appears selected after the
+  first render), and a double-click opens it again.
 - Face: a 24 px name row across the top (`NameBar`: app logo, name, Live dot), the snapshot filling the rest
   (`object-cover`) with the frame over it;
   controls in a row above the element's top left on hover or focus (Use the file, Open), counter-scaled by
   `useCanvasZoom` to 28 px on screen; the host's Embed wrapper drops its `overflow-hidden` for a live embed so the row
   shows, the face clipping itself to the radius; state cards centred
   on frosted glass.
-- Picker: the shared Dialog, "Choose a File", subtitle on everyone's own access; Connect list rows and ink.
+- Picker: the shared Dialog, "Embed File", under its hero header; the Role switch first where connecting can work;
+  Connect list rows and ink.
 
 ## Accessibility
 

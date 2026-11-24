@@ -36,7 +36,7 @@ It had a **Diagrams** category of its own until 2026-11-19 (owner), when its til
 **Concepts** opens with a **Diagrams** group (Mind node, Org chart, Flowchart, Sequence: the structures you type
 into) before the concept graphics, and **Layout** takes the rest: **Containers** (Lane, Frame, Stack, Boundary,
 Table), **Parts** (Diagram key, Card, Badge, Step number, then **Infrastructure**: one tile
-whose popover offers the C4 tiles below and the Entity, as the Card's offers its presets), then **Pictures**. Tile ids are unchanged. Workshop offers its own **Layout** (no Table, C4 tiles or Entity),
+whose popover offers the C4 tiles below and the Entity, as the Card's offers its presets), then **Pictures**, then **Files**: **Embed File** (`media:embed-live`, Work Tracker 1375), a file from any of our apps shown live and read-only ([Live embeds](../013-workspace/embeds.md#live-embeds)), which leaves the strip's search-only embeds for Layout. Tile ids are unchanged. Workshop offers its own **Layout** (no Table, C4 tiles or Entity),
 with the Timeline after the Boundary.
 
 **The C4 model** sits in the popover of Layout's **Infrastructure** tile (in Parts, after the Step number), with the

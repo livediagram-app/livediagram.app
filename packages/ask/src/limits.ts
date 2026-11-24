@@ -22,5 +22,9 @@ export const ASK_MAX_TURN_ANSWER_CHARS = 8000;
 export const ASK_MAX_BODY_CHARS = 256 * 1024;
 /** Questions one person may ask on built-in AI in a UTC day, in one app. A question on a key counts toward none. */
 export const ASK_BUILT_IN_PER_PERSON_PER_DAY = 30;
+/** With Pro on, the questions a day that people who are not an item's owner (or of its owning team) may charge to the
+ *  owner's AI credits, per item: as livediagram's photo reads and liveknowledge's built-in AI by others, at most 600
+ *  of the owner's credits a month from one item. Safe range 5..100. */
+export const ASK_OWNER_CREDITS_BY_OTHERS_PER_DAY = 20;
 /** Room for the answer and the thinking before it. Whoever's key it is pays for what is used, not the ceiling. */
 export const ASK_MAX_TOKENS = 8000;

@@ -181,11 +181,11 @@ export const SLASH_ITEMS: readonly SlashItem[] = [
   },
   {
     id: 'embed',
-    label: 'Embed',
+    label: 'Embed File',
     group: 'Knowledge',
     keywords:
-      'livediagram liveplanner livedocuments livedesign livehuddle plan board design file app live',
-    hint: 'A live file from another app',
+      'embed livediagram liveplanner livedocuments livedesign liveknowledge plan board design knowledgebase file app live',
+    hint: 'A file from any of our apps, live',
     action: { kind: 'insert', what: 'embed' },
   },
   {

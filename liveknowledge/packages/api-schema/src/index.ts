@@ -409,6 +409,7 @@ export * from '@liveworkspace/api-schema/share-links';
 export * from '@liveworkspace/api-schema/participants';
 export * from '@liveworkspace/api-schema/image-summary';
 export * from './knowledge';
+export * from './knowledge-sources';
 export * from './publishing';
 export * from './page-threads';
 export * from './page-reactions';

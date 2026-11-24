@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { runWithClientName } from '@liveworkspace/mcp-kit/agent-name';
 import { ApiError, apiFetch, apiJson, apiText, postTelemetry } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { runInTool } from './tool-scope';
@@ -40,6 +41,23 @@ describe('apiFetch', () => {
     await apiFetch(env, 'lwt_abc', '/documents');
     expect(calls[0]!.headers.get('Authorization')).toBe('Bearer lwt_abc');
     expect(new URL(calls[0]!.url).pathname).toBe('/api/documents');
+  });
+
+  it('names the MCP door and the client on every call (mcp-server.md §2, Work Tracker 1381)', async () => {
+    const { env, calls } = envWith(() => new Response('{}'));
+    await runWithClientName(
+      async () => 'Claude Code',
+      () => apiFetch(env, 'lwt_abc', '/documents'),
+    );
+    expect(calls[0]!.headers.get('X-Livediagram-Client')).toBe('mcp');
+    expect(calls[0]!.headers.get('X-Livediagram-Agent')).toBe('Claude Code');
+    // A client that gave no name sends the door alone.
+    await runWithClientName(
+      async () => '',
+      () => apiFetch(env, 'lwt_abc', '/documents'),
+    );
+    expect(calls[1]!.headers.get('X-Livediagram-Client')).toBe('mcp');
+    expect(calls[1]!.headers.has('X-Livediagram-Agent')).toBe(false);
   });
 
   it('sets a JSON content-type when a body is present', async () => {

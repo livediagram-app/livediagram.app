@@ -89,6 +89,7 @@ describe('a flyout’s groups', () => {
       'Containers',
       'Parts',
       'Pictures',
+      'Files',
     ]);
     expect(flyoutGroups('data', tiles('workshop', 'data')).map((g) => g.title)).toEqual([
       'Charts',

@@ -5,10 +5,12 @@
 // liveplanner in a new browser tab. Live: the store reads again when the plan says its card changed.
 import type { PlanSend } from '@liveworkspace/index-client';
 import { HoverCard, lucideGlyph } from '@liveworkspace/ui';
-import { lucideCircleCheck, lucideSquareKanban } from '@liveworkspace/icons/lucide';
+import { lucideCircleCheck } from '@liveworkspace/icons/lucide';
+import { BrandMark } from '@liveworkspace/brand';
 import { workbench } from '../../bindings';
 
-const CardGlyph = lucideGlyph(lucideSquareKanban, 13);
+// liveplanner's logo, as Send to Plan's entries wear it (owner, 2026-11-23).
+const CardGlyph = () => <BrandMark app="liveplanner" className="size-[13px] shrink-0" />;
 const DoneGlyph = lucideGlyph(lucideCircleCheck, 13);
 
 /** The chip's words: "To Do · Sprint 12", or "Done · Sprint 12". */

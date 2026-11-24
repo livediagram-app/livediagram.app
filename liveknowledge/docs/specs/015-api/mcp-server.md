@@ -65,6 +65,13 @@ stays a pure REST/WS surface.
 - **Endpoints on the worker:** `POST /mcp` (the MCP transport, Bearer-gated),
   the OAuth endpoints ([§3](#3-authentication-oauth-21)), and `/health`.
 
+**Who is calling.** Every call the server makes to the api says it came through the MCP and which client made it
+(Work Tracker 1381): `X-Liveknowledge-Client: mcp`, and `X-Liveknowledge-Agent` with the client's own name from its `initialize`
+handshake ("Claude Code", "Cursor"; printable ASCII, at most 60 characters), remembered against the token's SHA-256
+in the OAuth KV for later calls (`@liveworkspace/mcp-kit/agent-name`). The api names the agent's writes by it in
+History ([013-workspace/history.md](../013-workspace/history.md)); a client that gave no name is named by its
+token.
+
 ### The one liveworkspace MCP
 
 liveworkspace's one MCP server (liveworkspace/docs/specs/021-mcp/mcp.md) also serves this server's tools, renamed by what they make, by calling this Worker over a service binding with the person's own token. Nothing here changes for it: this server's tools, names and answers stay as they are, and it stays the connection this app's pages recommend while the one MCP is tried. A change to this server's tools refreshes the one MCP's recorded copy (`corepack pnpm --filter @liveworkspace/mcp-service eval:snapshot`), which its naming test and tool-pick eval read.
@@ -210,7 +217,11 @@ browser. A token minted for the CLI is named "liveknowledge CLI".
 > `search_pages`, `read_page`, `report_gap`, `create_page`, `suggest_edit`, `write_page`, `move_page`,
 > `request_approval`, `list_page_comments`, `change_page_comments`) and the ones every app has, listed with their scopes in
 > [Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md) (whose `get_context`, `search_pages` and
-> `read_page` carry each page's Health Score, `health`, for the agent to judge how far to rely on it) and its
+> `read_page` carry each page's Health Score, `health`, for the agent to judge how far to rely on it; whose
+> `get_context`, `list_pages`, `search_pages` and `read_page` carry each open conflict as `conflicts_with` entries
+> `{ page, title, question, found_at }`, the question two pages answer differently, seen only where the connection
+> reads both pages; and whose `move_page` takes the `suggest` scope for a page whose subtree is all Never Verified,
+> `write` for any other) and its
 > [blueprint](../024-agents/blueprints/knowledgebase-for-agents.md#mcp-tools). The sections below that describe
 > `read_document`, `add_tab`, `update_document`, `search_icons`, the schema resource, element kinds, version
 > history, the Pages tools, the inline image render (§5) and the interactive view (§5a) are livedocuments' and no

@@ -828,7 +828,9 @@ export const RETIRED_PARTS_OFFERED = opened(
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 
 // Send to Plan's picker and chips have their own stack (_shared/send-to-plan-metrics.ts).
-OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard');
+// Start a Call Here has its own stack too (_shared/item-call-metrics.ts).
+OPENED_HOMES.push((t) => t === 'SendToPlan' || t === 'SentCard' || t === 'SendToDiagram');
+OPENED_HOMES.push((t) => t === 'ItemCall' || t === 'Meetings' || t === 'MeetingSummary');
 
 export const OTHER_OPENED = chart(
   'UI',

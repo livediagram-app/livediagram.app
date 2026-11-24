@@ -28,6 +28,8 @@ import {
   AtSignIcon,
   ClockIcon,
   EyeIcon,
+  VideoIcon,
+  ZapIcon,
   FileTextIcon,
   FormIcon,
   KeyIcon,
@@ -43,6 +45,8 @@ import { useExplorer } from '../context';
 import { useExtras } from '../extras';
 import {
   ACCESS_REASON,
+  AUTOMATION_REASON,
+  CALL_REASON,
   SUGGESTION_REASON,
   actionReason,
   formReason,
@@ -219,6 +223,44 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         latest: null,
       };
     }
+    case 'AutomationNotice': {
+      // A rule's Notify step (automations.md): the rule as who, the text's first line as what. It asks nothing.
+      const r = e.row;
+      return {
+        person: null,
+        who: nameOf(r.rule) ?? 'An automation',
+        needsYou: false,
+        cardNumber: null,
+        title: nameOf(r.text.split('\n')[0]) ?? 'Notice',
+        reason: AUTOMATION_REASON,
+        item,
+        where: [],
+        cardType: null,
+        column: null,
+        local: false,
+        latest: null,
+      };
+    }
+    case 'CallInvite': {
+      // An invite to a call about an item (item-calls.md "Invites"): who asked, the item as what. It asks nothing
+      // that waits, so it is never semibold.
+      const r = e.row;
+      const name = nameOf(r.byName);
+      return {
+        person: null,
+        who: name ?? 'Someone',
+        needsYou: false,
+        cardNumber: null,
+        title: r.live ? 'Call in progress' : 'Call',
+        reason: CALL_REASON,
+        item,
+        where: [],
+        cardType: null,
+        column: null,
+        local: false,
+        latest: null,
+      };
+    }
     case 'Suggestion': {
       // An agent's suggested edit on a page of the reader's: the agent as the app names them, the page as what.
       const r = e.row;
@@ -279,6 +321,10 @@ export function reasonIcon(kind: InboxReason['kind'], size = 12): ReactNode {
       return <KeyIcon size={size} />;
     case 'update':
       return <EyeIcon size={size} />;
+    case 'automation':
+      return <ZapIcon size={size} />;
+    case 'call':
+      return <VideoIcon size={size} />;
     case 'suggestion':
       return <PencilIcon size={size} />;
   }
@@ -448,10 +494,17 @@ function InboxTime({ at }: { at: number }) {
   );
 }
 
-export type LeadGlyph = 'form' | 'watch';
+export type LeadGlyph = 'form' | 'watch' | 'call' | 'automation';
 
 /** The glyph a row with nobody behind it shows. */
-export const leadGlyph = (e: InboxEntry): LeadGlyph => (e.kind === 'Update' ? 'watch' : 'form');
+export const leadGlyph = (e: InboxEntry): LeadGlyph =>
+  e.kind === 'Update'
+    ? 'watch'
+    : e.kind === 'CallInvite'
+      ? 'call'
+      : e.kind === 'AutomationNotice'
+        ? 'automation'
+        : 'form';
 
 /** The person behind the row on a disc (their Google picture where they have one, over their colour darkened until
  *  white reads at AA; a quiet disc without one), or a form's glyph on a tile. Decorative: the row says who in words. */
@@ -489,7 +542,15 @@ export function Lead({
         data-inbox-glyph={glyph}
         className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-200 dark:bg-slate-700/60 dark:text-slate-300 dark:ring-slate-600 ${size}`}
       >
-        {glyph === 'watch' ? <EyeIcon size={iconSize} /> : <FormIcon size={iconSize} />}
+        {glyph === 'watch' ? (
+          <EyeIcon size={iconSize} />
+        ) : glyph === 'call' ? (
+          <VideoIcon size={iconSize} />
+        ) : glyph === 'automation' ? (
+          <ZapIcon size={iconSize} />
+        ) : (
+          <FormIcon size={iconSize} />
+        )}
       </span>
     );
   }

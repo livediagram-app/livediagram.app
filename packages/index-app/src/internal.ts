@@ -18,6 +18,8 @@
 //   GET    /api/internal/items/:id/sheets              a source app's sheets; POST …/sheet-range one range's read; POST
 //                                                            …/source-changed a watched sheet changed (sheet-source-doors.ts,
 //                                                            liveworkspace/docs/specs/004-index/sheet-sources.md)
+//   POST   /api/internal/items/:id/call {callId}      the Space is a call about an item (item-calls.md): its room keeps
+//                                                            the id; 204, or 404 for an app without calls
 //   POST   /api/internal/items/:from/copy-to/:to  {tabId?, by?, code?, ip?, title?}  copy an item's content (or one
 //                                                            tab) into a new item, for `by` (who copies) through link
 //                                                            `code` (if any), from address `ip` (if known), named
@@ -45,6 +47,8 @@
 //   POST   /api/internal/items/from-template {owner, folderId, name, template}  a new item for `owner` from one of
 //                                                            the app's templates, a project kit's part
 //                                                            (template-item.ts, liveworkspace/docs/specs/004-index/kits.md)
+//   POST   /api/internal/items/from-graph {owner, name, graph, caption, link}  Send to Diagram's new canvas for
+//                                                            `owner` from a graph (graph-item.ts, send-to-diagram.md)
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
 //                                                            into the item's room with its own times (docs/migration.md
 //                                                            "The apps' migration door"). Takes MIGRATION_KEY too.
@@ -77,8 +81,10 @@ import { automationStepDoor, automationTargetDoor } from './automation-step-door
 import { planSendDoor } from './plan-send-door';
 import { answerDataExport, isDataExportFormat } from './data-export-door';
 import { answerSheetSourceDoor, isSheetSourceDoor } from './sheet-source-doors';
+import { answerKnowledgeSourceDoor, isKnowledgeSourceDoor } from './knowledge-source-doors';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { templateDoor } from './template-item';
+import { graphDoor } from './graph-item';
 import { bearerMatches } from './timing-safe';
 import {
   type Copier,
@@ -120,6 +126,7 @@ export type {
   ExportFormat,
   ExportQuery,
   ExportResult,
+  GraphItemResult,
   ImportInput,
   ImportResult,
   InternalItemHandlers,
@@ -272,10 +279,14 @@ export async function handleInternalItems(
   if (importing) return handlers.import ? importItem(request, handlers.import) : notFound();
   if (rest.length === 1 && id === 'from-template' && request.method === 'POST')
     return handlers.fromTemplate ? templateDoor(request, handlers.fromTemplate) : notFound();
+  if (rest.length === 1 && id === 'from-graph' && request.method === 'POST')
+    return handlers.fromGraph ? graphDoor(request, handlers.fromGraph) : notFound();
   if (migrating)
     return handlers.migrate ? migrateItem(request, id, app, handlers.migrate) : notFound();
 
   if (isSheetSourceDoor(rest)) return answerSheetSourceDoor(request, id, rest[1]!, handlers);
+  if (isKnowledgeSourceDoor(rest))
+    return answerKnowledgeSourceDoor(request, id, rest[1]!, handlers);
 
   if (rest.length === 1 && request.method === 'DELETE') {
     await handlers.purge(id);
@@ -392,6 +403,16 @@ export async function handleInternalItems(
     return handlers.planSend && verifyGrant
       ? planSendDoor(request, id, verifyGrant, handlers.planSend)
       : notFound();
+  }
+
+  // Start a Call Here: the Space is a call about an item (item-calls.md), its room told the call's id.
+  if (rest.length === 2 && rest[1] === 'call' && request.method === 'POST' && handlers.itemCall) {
+    const body = await bodyOf(request);
+    const callId = body?.['callId'];
+    if (typeof callId !== 'string' || !/^ic_[A-Za-z0-9]{1,40}$/.test(callId))
+      return badRequest('invalid call');
+    await handlers.itemCall(id, callId);
+    return new Response(null, { status: 204 });
   }
 
   if (rest.length === 3 && rest[1] === 'copy-to' && request.method === 'POST' && handlers.copy) {

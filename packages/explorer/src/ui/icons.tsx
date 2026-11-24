@@ -249,6 +249,19 @@ export const LockIcon = lucide(
   </>,
   13,
 );
+// Lucide zap: a rule's Notify step (Automations), in the Inbox and its notice.
+export const ZapIcon = lucide(
+  <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />,
+  18,
+);
+// Lucide video: a call about an item (Start a Call Here, liveworkspace item-calls.md).
+export const VideoIcon = lucide(
+  <>
+    <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
+    <rect x="2" y="6" width="14" height="12" rx="2" />
+  </>,
+  18,
+);
 export const EyeIcon = lucide(
   <>
     <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />

@@ -124,7 +124,7 @@ export function KnowledgeViewTabs() {
                 data-knowledge-view-tab={view}
                 data-open={open ? '' : undefined}
                 data-off={off ? '' : undefined}
-                className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} phone:h-11 phone:justify-center phone:px-3`}
+                className={`${fixedTabShapeClass(open)} ${open ? OPEN_INK : off ? OFF_INK : ''} phone:h-11 phone:justify-center phone:px-3 phone:max-[359px]:px-0`}
               >
                 {/* Off, the link goes nowhere: a press opens the card that says why and holds Sync Knowledgebase. */}
                 <a
@@ -137,14 +137,18 @@ export function KnowledgeViewTabs() {
                   onClick={(event) =>
                     off ? event.preventDefault() : pressed(event, view, current, session)
                   }
-                  className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11`}
+                  className={`${TAB_NAME_BUTTON_CLASS} ${off ? 'cursor-default!' : ''} phone:h-11 phone:max-[359px]:min-w-11 phone:max-[359px]:justify-center`}
                 >
                   <span aria-hidden className="flex shrink-0">
                     {ICONS[view]}
                   </span>
-                  {/* The full name, and a phone's short one; the link is named by the full name either way. */}
+                  {/* The full name, and a phone's short one (icon only under 360 px, where four labels no longer fit); the link is named by the full name either way. */}
                   <span className={`${TAB_NAME_CLASS} phone:hidden`}>{label}</span>
-                  <span className={`${TAB_NAME_CLASS} hidden phone:inline`}>{short}</span>
+                  <span
+                    className={`${TAB_NAME_CLASS} hidden phone:inline phone:max-[359px]:hidden`}
+                  >
+                    {short}
+                  </span>
                 </a>
               </span>
             </HoverCard>

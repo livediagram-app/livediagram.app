@@ -20,6 +20,8 @@ import {
   JOINED_TELEMETRY_TYPE,
   checkMigrationTabSizes,
   handleInternalItems as handle,
+  canvasKnowledgeChunks,
+  knowledgeTextFromExport,
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { countCommunityCopy } from '../community-service';
@@ -149,6 +151,8 @@ export function handleInternalItems(
       // A plan's sent cards changed (liveworkspace/docs/specs/004-index/send-to-plan.md "The chip"): the room tells
       // every open session, which reads its chips again with its own access.
       sourceChanged: (id, change) => documentRoom(env, id).sourceChanged(change),
+      // Start a Call Here (calls-from-items.md): the Space's room keeps the call's id.
+      itemCall: (id, callId) => documentRoom(env, id).markItemCall(callId),
       personClosed: async (personId) => void (await deleteAccount(env, personId)),
       // A guest who became an account: what livehuddle keeps for the guest becomes the account's, keyed by any owner
       // id (the media owner of a guest is its hash, `mediaOwner`).
@@ -164,6 +168,12 @@ export function handleInternalItems(
         query.format === 'file'
           ? documentRoom(env, id).exportFile(query)
           : documentRoom(env, id).exportImage(query),
+      // The Space's indexable text for a knowledgebase reading it (liveworkspace/docs/specs/004-index/
+      // knowledge-sources.md): its whole file, read as the export door reads it, walked by the shared canvasKnowledgeChunks.
+      knowledgeText: knowledgeTextFromExport(
+        (id, query) => documentRoom(env, id).exportFile(query),
+        canvasKnowledgeChunks,
+      ),
       // Every comment thread in the Space with its real authors, for the data export (document-room.ts
       // `exportComments`). It has no boards or sheets, so the door's `csv` format is a 404.
       exportComments: (id) => documentRoom(env, id).exportComments(),

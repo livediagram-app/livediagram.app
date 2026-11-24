@@ -78,7 +78,8 @@ reads the Inbox costs a few bytes for 14 days.
 ### The item's outbox (`@liveworkspace/index-app` `outbox.ts`)
 
 Keys written in the item's own SQLite in the transaction of the change: `summary` (key `''`), `tab` (the tab id),
-`edit` (`<person>@<time>`, one per person). The room's alarm drains on idle: 2 s after a write, at least 60 s between
+`edit` (`<person>@<time>`, one per person; an agent's write for the person `<person>\x1f<via>\x1f<agent>@<time>`, one per
+person and agent, drained as an `edited` with `agent`). The room's alarm drains on idle: 2 s after a write, at least 60 s between
 drains, retried after 60 s on failure; up to 50 tabs and `APP_EVENTS_MAX` (100) editors a drain, 6 pushes in flight,
 `more` drained straight after. A key written again meanwhile stays for the next drain. An item the index doesn't hold
 takes no push (the key is done). Each `tab` key's push is `capCollabPush` of the tab's rows, one request whatever
@@ -134,6 +135,12 @@ The Explorer (`packages/explorer/src/explorer/inbox/sections.ts` `inboxEntries`)
 rows of one app whose `card.id` is set and whose `elementId` is the same (a thread shared between two plans) are one,
 the newer. Such a row's title is its `elementLabel` (the thread's title), its place `card.id` and `threadId`, and its
 verbs go to `…/threads/:elementId/comments` and `…/threads/:elementId/resolve` (`inbox-actions.ts`).
+
+The pane's Open link (`InboxReader.tsx`) goes through `openInPlace` (`packages/explorer/src/explorer/inbox/open-in-place.ts`):
+a plain click whose href is this page's address but for its fragment (`sameDocument`: same origin, path without a
+trailing slash, and query) replaces the history entry with the href (`replaceState`, as the editors' tab switches
+do) and reloads, since a client router only moves the hash and the editors read
+their deep link once on mount. Modified and non-primary clicks, and any other href, are the host `Link`'s.
 
 An element part's thread (a Sheet cell's, `elementId` `<elementId>:<cell>`) is found in the item's listing
 (`GET …/comments?status=all`) by `listedThreadKey` (`inbox-actions.ts`: `elementId`, then `:cell` when the listing

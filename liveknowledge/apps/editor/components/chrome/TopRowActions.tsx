@@ -20,6 +20,7 @@ import {
   type ItemVisibility,
   type VisibilityActions,
 } from '@liveworkspace/workbench/components/chrome/share-states';
+import { ItemCallButton } from '@liveworkspace/workbench/components/item-call/ItemCallButton';
 import { useTopRowSlot } from '@/lib/page-surface/top-row-slot';
 
 export type TopRowActionsProps = {
@@ -44,6 +45,8 @@ export function TopRowActions(props: TopRowActionsProps) {
   return createPortal(
     <>
       {props.approval ?? null}
+      {/* Start a Call Here (liveworkspace item-calls.md): Call, or the "3 in Call" pill. */}
+      <ItemCallButton />
       {props.onMakeCopy ? (
         <HoverCard
           title="Make a Copy"

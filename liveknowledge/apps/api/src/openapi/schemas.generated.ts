@@ -1380,6 +1380,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "reason": {
         "type": "string"
       },
+      "source": {
+        "$ref": "#/components/schemas/AskSourceItem",
+        "description": "A chunk of another app's item (search-and-ask.md \"Sources\"), not a page: `tab` is then the item's id."
+      },
       "tab": {
         "type": "string"
       },
@@ -1477,6 +1481,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "passageId": {
         "type": "string"
       },
+      "source": {
+        "$ref": "#/components/schemas/AskSourceItem",
+        "description": "A chunk of another app's item (search-and-ask.md \"Sources\"), not a page: `tab` is then the item's id."
+      },
       "tab": {
         "type": "string"
       },
@@ -1503,6 +1511,35 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "trust",
       "firstBlock",
       "lastBlock"
+    ],
+    "type": "object"
+  },
+  "AskSourceItem": {
+    "additionalProperties": false,
+    "description": "What a cited source chunk carries beside the passage: the item, its app, the place and when it was read. The editor makes the link from them (the app's address, the place's deep link and the question).",
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/KnowledgeSourceAppName"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "place": {
+        "$ref": "#/components/schemas/KnowledgeSourcePlace"
+      },
+      "readAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "itemName",
+      "place",
+      "readAt"
     ],
     "type": "object"
   },
@@ -3764,6 +3801,162 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "DiagramDraftEdge": {
+    "additionalProperties": false,
+    "description": "One arrow, between two boxes by id; a sequence's arrows are its messages in order.",
+    "properties": {
+      "from": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "line": {
+        "enum": [
+          "solid",
+          "dashed"
+        ],
+        "type": "string"
+      },
+      "to": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "from",
+      "to"
+    ],
+    "type": "object"
+  },
+  "DiagramDraftNode": {
+    "additionalProperties": false,
+    "description": "One box of a drafted diagram: plain text, `shape` one of square, circle, diamond, cylinder, parallelogram, hexagon or document, `role` an org chart's job title, `group` the id of a group it sits in.",
+    "properties": {
+      "group": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "note": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string"
+      },
+      "shape": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "label"
+    ],
+    "type": "object"
+  },
+  "DiagramDraftRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../pages/<tab>/describe-diagram` (send-to-diagram.md \"The draft\"): the words picked (at most 8,000 characters) and the kind of diagram asked for; `auto` lets the model choose.",
+    "properties": {
+      "kind": {
+        "enum": [
+          "auto",
+          "flowchart",
+          "sequence",
+          "mindmap",
+          "orgchart",
+          "architecture",
+          "timeline"
+        ],
+        "type": "string"
+      },
+      "words": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "words",
+      "kind"
+    ],
+    "type": "object"
+  },
+  "DiagramDraftResponse": {
+    "additionalProperties": false,
+    "description": "The words read as a diagram (the platform's DiagramSendGraph), and which AI answered. Nothing is written: the editor hands the graph to the index, which has livediagram draw it.",
+    "properties": {
+      "graph": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "enum": [
+              "down",
+              "right"
+            ],
+            "type": "string"
+          },
+          "edges": {
+            "items": {
+              "$ref": "#/components/schemas/DiagramDraftEdge"
+            },
+            "type": "array"
+          },
+          "groups": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "label"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/DiagramDraftNode"
+            },
+            "type": "array"
+          },
+          "style": {
+            "enum": [
+              "flow",
+              "tree",
+              "mindmap",
+              "sequence"
+            ],
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodes",
+          "edges"
+        ],
+        "type": "object"
+      },
+      "provider": {
+        "$ref": "#/components/schemas/KnowledgeSetupProvider"
+      }
+    },
+    "required": [
+      "graph",
+      "provider"
+    ],
+    "type": "object"
+  },
   "DiffView": {
     "additionalProperties": false,
     "properties": {
@@ -5536,6 +5729,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "`GET .../context`: the Always in Context pages as Markdown in tree order, within the budget, with what the caller may do here.",
     "properties": {
+      "aiEditUnverifies": {
+        "description": "Remove Verification When AI Edits, on under Edit Any Page.",
+        "type": "boolean"
+      },
+      "aiEditing": {
+        "$ref": "#/components/schemas/KnowledgeAiEditing",
+        "description": "The knowledgebase's AI Editing (ai-editing.md); absent from an older api, read as `suggest`."
+      },
       "budget": {
         "type": "number"
       },
@@ -5640,6 +5841,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "mcp",
       "cli",
       "token"
+    ],
+    "type": "string"
+  },
+  "KnowledgeAiEditing": {
+    "description": "How far an agent may change pages itself (ai-editing.md): Suggest Edits Only, Edit Unverified Pages, Edit Any Page.",
+    "enum": [
+      "suggest",
+      "unverified",
+      "any"
     ],
     "type": "string"
   },
@@ -5868,6 +6078,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "a",
       "b",
       "foundAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeConflictRef": {
+    "additionalProperties": false,
+    "description": "The other page of an open conflict (knowledgebase-for-agents.md \"Conflicts for agents\"): the question the two pages answer differently, and when the check found it. An api from before either says only the page.",
+    "properties": {
+      "foundAt": {
+        "type": "number"
+      },
+      "question": {
+        "type": "string"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tab",
+      "title"
     ],
     "type": "object"
   },
@@ -6201,6 +6434,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "labels"
+    ],
+    "type": "object"
+  },
+  "KnowledgeLikelySource": {
+    "additionalProperties": false,
+    "description": "An Unanswered question's likely item (insights.md \"Likely answered elsewhere\"), shown only to a reader who can open it.",
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/KnowledgeSourceAppName"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "title"
     ],
     "type": "object"
   },
@@ -6736,9 +6990,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "description": "The page's approval (approval.md \"Where it shows\"), without anyone's account id: its state, when it was asked for (and by which agent), when it was decided, and a rejection's note."
       },
       "conflictsWith": {
-        "description": "The pages an open conflict sets this one against.",
+        "description": "The pages an open conflict sets this one against, each with the conflict's question.",
         "items": {
-          "$ref": "#/components/schemas/KnowledgePageRef"
+          "$ref": "#/components/schemas/KnowledgeConflictRef"
         },
         "type": "array"
       },
@@ -6823,6 +7077,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "lastAt": {
         "type": "number"
+      },
+      "likely": {
+        "$ref": "#/components/schemas/KnowledgeLikelySource",
+        "description": "An item the question was likely answered in, that is not a source (insights.md \"Likely answered elsewhere\")."
       },
       "question": {
         "type": "string"
@@ -6929,6 +7187,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/KnowledgeSearchResult"
         },
         "type": "array"
+      },
+      "sources": {
+        "description": "The reader's own sources in other apps that match (search-and-ask.md \"Sources\"), after the pages; absent with none.",
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeSourceHit"
+        },
+        "type": "array"
       }
     },
     "required": [
@@ -6942,7 +7207,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "conflictsWith": {
         "items": {
-          "$ref": "#/components/schemas/KnowledgePageRef"
+          "$ref": "#/components/schemas/KnowledgeConflictRef"
         },
         "type": "array"
       },
@@ -7031,15 +7296,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeSettingsRequest": {
     "additionalProperties": false,
-    "description": "`PUT .../knowledge-settings`: Editor only. Answers the settings as stored.",
+    "description": "`PUT .../knowledge-settings`: any of these, at least one. The AI fields are an Editor's in person (ai-editing.md).",
     "properties": {
+      "aiEditUnverifies": {
+        "type": "boolean"
+      },
+      "aiEditing": {
+        "$ref": "#/components/schemas/KnowledgeAiEditing"
+      },
       "reviewEvery": {
         "$ref": "#/components/schemas/KnowledgeReviewEvery"
       }
     },
-    "required": [
-      "reviewEvery"
-    ],
     "type": "object"
   },
   "KnowledgeSettingsResponse": {
@@ -7058,6 +7326,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "What a knowledgebase decides for every page (verification.md \"The Review Period\"): how long after it was last verified a page comes due for review. In a document read, the `document-meta` op and the routes below.",
     "properties": {
+      "aiEditUnverifies": {
+        "const": true,
+        "description": "Remove Verification When AI Edits, in effect under Edit Any Page alone.",
+        "type": "boolean"
+      },
+      "aiEditing": {
+        "$ref": "#/components/schemas/KnowledgeAiEditing",
+        "description": "AI Editing (ai-editing.md): absent is Suggest Edits Only."
+      },
       "labels": {
         "items": {
           "$ref": "#/components/schemas/KnowledgeLabelWire"
@@ -7200,6 +7477,164 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "name",
       "pages"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSourceAppName": {
+    "description": "The apps a knowledgebase reads (`KNOWLEDGE_SOURCE_APPS`,",
+    "enum": [
+      "livediagram",
+      "liveplanner",
+      "livedocuments",
+      "livedesign",
+      "livehuddle"
+    ],
+    "type": "string"
+  },
+  "KnowledgeSourceHit": {
+    "additionalProperties": false,
+    "description": "A source chunk as `search_pages` answers it, after the pages' passages.",
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/KnowledgeSourceAppName"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "itemName": {
+        "type": "string"
+      },
+      "place": {
+        "$ref": "#/components/schemas/KnowledgeSourcePlace"
+      },
+      "readAt": {
+        "type": "number"
+      },
+      "snippet": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "app",
+      "itemId",
+      "itemName",
+      "title",
+      "place",
+      "snippet",
+      "readAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSourcePlace": {
+    "additionalProperties": false,
+    "description": "Where in the item a citation opens (`KnowledgePlace`).",
+    "properties": {
+      "cardId": {
+        "type": "string"
+      },
+      "elementIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "tabId": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "KnowledgeSourceRow": {
+    "additionalProperties": false,
+    "properties": {
+      "app": {
+        "$ref": "#/components/schemas/KnowledgeSourceAppName"
+      },
+      "chunks": {
+        "type": "number"
+      },
+      "itemId": {
+        "type": "string"
+      },
+      "origin": {
+        "enum": [
+          "connected",
+          "folder"
+        ],
+        "type": "string"
+      },
+      "readAt": {
+        "description": "When its text was last read (epoch ms); absent until it is.",
+        "type": "number"
+      },
+      "state": {
+        "$ref": "#/components/schemas/KnowledgeSourceState"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "itemId",
+      "app",
+      "title",
+      "origin",
+      "state",
+      "chunks"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSourceState": {
+    "description": "How far a source has been read: `read` (its chunks are searched), `waiting` (owed a read), `capped` (past the knowledgebase's source cap, not read) or `failed` (its app did not answer; tried again later).",
+    "enum": [
+      "read",
+      "waiting",
+      "capped",
+      "failed"
+    ],
+    "type": "string"
+  },
+  "KnowledgeSources": {
+    "additionalProperties": false,
+    "description": "`GET .../ai/sources`: the choices and the sources they make. `folderName` is the folder's name as the Editor chose it (null with no folder); `teamId` the knowledgebase's team (only a team's is offered a folder, of that team).",
+    "properties": {
+      "connected": {
+        "type": "boolean"
+      },
+      "folderId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "folderName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "items": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeSourceRow"
+        },
+        "type": "array"
+      },
+      "teamId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "connected",
+      "folderId",
+      "folderName",
+      "teamId",
+      "items"
     ],
     "type": "object"
   },
@@ -7920,7 +8355,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "livediagram",
       "liveplanner",
       "livedocuments",
-      "livedesign"
+      "livedesign",
+      "liveknowledge"
     ],
     "type": "string"
   },

@@ -210,6 +210,12 @@ export type AccountEventType = (typeof ACCOUNT_EVENT_TYPES)[number];
 // with each report, and counts that day towards the person's Most Used.
 export const APP_EVENT_TYPES = ['edited'] as const;
 export type AppEventType = (typeof APP_EVENT_TYPES)[number];
+// An agent writing for its person (an API token's request: the MCP server's tools, the CLI, a script), named on the
+// item's `edited` and `created` events (one-explorer-contracts.md "The event log", Work Tracker 1381): the door it
+// came through, and its name at most this long.
+export const ITEM_AGENT_VIAS = ['mcp', 'cli', 'api'] as const;
+export type ItemAgentVia = (typeof ITEM_AGENT_VIAS)[number];
+export const ITEM_AGENT_NAME_MAX = 80;
 // What a reference to a closed account becomes, in the index, the accounts Worker and each app
 // (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Closing an account"). Shaped like neither an
 // account (`user_…`) nor a guest (`guest_…`), so it can never match anyone.
@@ -371,6 +377,8 @@ export const INDEX_ERRORS = [
   'invalid_form',
   'invalid_form_seen',
   'invalid_events',
+  // A create's `agent` (one-explorer-contracts.md "The event log") that is not `{name, via}`.
+  'invalid_agent',
   // Sheet sources (sheet-sources.md): a malformed range ask, a corner of the range gone, the sheet app unreachable.
   'invalid_range',
   'range_gone',
@@ -465,6 +473,17 @@ export const INDEX_ERRORS = [
   'source_full',
   'plan_refused',
   'plan_unavailable',
+  // Send to Diagram (send-to-diagram.md): livediagram could not be reached, or refused the graph.
+  'diagram_unavailable',
+  // Send to Diagram: the diagram a new tab or an update was for is no longer there.
+  'diagram_gone',
+  'invalid_graph',
+  // Start a Call Here (item-calls.md): a Space asked for a call of its own, a call that could not be made, a summary
+  // the knowledgebase turned away (422, its reason), an invite naming someone who can't reach the item.
+  'not_for_spaces',
+  'call_unavailable',
+  'summary_refused',
+  'cannot_invite',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
 

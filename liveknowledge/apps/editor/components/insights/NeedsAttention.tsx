@@ -6,6 +6,7 @@
 // Show All. Each row keeps its own actions, gated by role as before.
 import { useEffect, type ReactNode } from 'react';
 import type {
+  KnowledgeLikelySource,
   KnowledgeOverviewResponse,
   KnowledgeQuestion,
   KnowledgeSuggestion,
@@ -117,6 +118,9 @@ export type NeedsAttentionProps = {
   onAskOwners: (id: string) => void;
   onDraft: (question: KnowledgeQuestion) => void;
   onDismissQuestion: (key: string) => void;
+  /** Connect an unanswered question's likely item (insights.md "Likely answered elsewhere"): an Editor's. */
+  onConnectLikely?: ((likely: KnowledgeLikelySource) => void) | undefined;
+  connectingLikely?: string | null;
   onAccept: (suggestion: KnowledgeSuggestion) => void;
   onDismissSuggestion: (suggestion: KnowledgeSuggestion) => void;
   onOpenAiSettings: () => void;
@@ -210,6 +214,8 @@ export function NeedsAttention(props: NeedsAttentionProps) {
                       busy={busy}
                       onDraft={props.onDraft}
                       onDismiss={props.onDismissQuestion}
+                      connecting={props.connectingLikely ?? null}
+                      onConnect={props.onConnectLikely}
                     />
                   )}
                 </li>

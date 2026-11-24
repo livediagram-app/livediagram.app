@@ -258,6 +258,7 @@ export function connectRoom(
             itemId: msg.itemId,
             sheetIds: msg.sheetIds,
             ...(Array.isArray(msg.cards) ? { cards: msg.cards } : {}),
+            ...(msg.calls === true ? { calls: true as const } : {}),
           });
         }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).

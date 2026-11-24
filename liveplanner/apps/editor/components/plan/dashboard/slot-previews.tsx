@@ -503,6 +503,32 @@ export function VisualisationPreview({ view, palette }: P & { view: PlanVisualis
   return <Picture palette={palette} />;
 }
 
+// An Embed File: a name row with an app's mark and a live dot, over a file's picture (two shapes joined).
+export function EmbedPreview({ palette }: P) {
+  return (
+    <Frame palette={palette} pad={false}>
+      <span
+        className="flex h-5 shrink-0 items-center gap-1.5 border-b px-2"
+        style={{ borderColor: palette.border }}
+      >
+        <span className="size-2.5 rounded-[3px]" style={{ backgroundColor: BLUE, opacity: 0.85 }} />
+        <Bar w="38%" c={palette.text} h={3} o={0.6} />
+        <span className="ml-auto size-1.5 rounded-full" style={{ backgroundColor: GREEN }} />
+      </span>
+      <span className="relative flex-1" style={{ backgroundColor: palette.border }}>
+        <span
+          className="absolute left-[18%] top-[22%] h-[34%] w-[24%] rounded"
+          style={{ backgroundColor: palette.surface, outline: `1.5px solid ${BLUE}` }}
+        />
+        <span
+          className="absolute right-[16%] bottom-[18%] h-[34%] w-[26%] rounded"
+          style={{ backgroundColor: palette.surface, outline: `1.5px solid ${palette.muted}` }}
+        />
+      </span>
+    </Frame>
+  );
+}
+
 export function NotePreview({ palette }: P) {
   return (
     <Frame palette={palette}>

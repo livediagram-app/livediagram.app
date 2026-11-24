@@ -14,6 +14,7 @@ import type { AskConversation, AskTurnView } from '@/lib/knowledge-ask/ask-conve
 import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
 import { AnsweredFromLabels } from '@/components/page-labels/AskLabelScope';
 import { answerTrust } from '@/lib/knowledge-ask/ask-trust';
+import { citationTitle } from '@/lib/knowledge-ask/source-item';
 import { track } from '@/lib/telemetry';
 import { openAiSettingsFrom } from './AiSettingsButton';
 import {
@@ -61,7 +62,7 @@ export type AskAnswerCardProps = {
 function AnswerText({ turn, onCite }: { turn: AskTurnView; onCite: AskAnswerCardProps['onCite'] }) {
   // The same map while the turn is the same, so the answer's Markdown is read once (AnswerBody).
   const titles = useMemo(
-    () => new Map(turn.sources.map((source) => [source.number, source.title])),
+    () => new Map(turn.sources.map((source) => [source.number, citationTitle(source)])),
     [turn.sources],
   );
   return (

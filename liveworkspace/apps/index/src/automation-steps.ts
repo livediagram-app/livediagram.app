@@ -181,24 +181,43 @@ export async function pushAutomationStep(
     return answer(sent);
   }
   const step = push.step as unknown as CrossAppTargetedStep;
+  const answered = await takeTargetedStep(env, { ...push, app, sourceId, ruleKey }, step);
+  if (answered.ok) await countStep(env, push.author, now);
+  console.info('[index] automation step', { kind: step.kind, ok: answered.ok });
+  return answer(answered);
+}
+
+/** One step on another app's item as its author (a rule's, or a call's summary, item-calls.ts): the target checked as
+ *  the author reaches it, the author's grant signed at that level, the target's door asked. Every refusal is an
+ *  answer. Counts nothing: the caller does. */
+export async function takeTargetedStep(
+  env: Env,
+  push: Pick<Push, 'author' | 'rule' | 'from' | 'chain'> & {
+    app: App;
+    sourceId: string;
+    ruleKey: string;
+  },
+  step: CrossAppTargetedStep,
+): Promise<AutomationStepAnswer> {
+  const { app, sourceId, ruleKey } = push;
   const target = isRecord(step.target) ? step.target : null;
   const apps: readonly string[] = CROSS_APP_KIND_APPS[step.kind];
   if (!target || !isId(target.item) || !apps.includes(String(target.app)))
-    return refused('invalid', 'The step names no item it can act on');
+    return { ok: false, code: 'invalid', reason: 'The step names no item it can act on' };
   if (target.item === sourceId)
-    return refused('invalid', 'A rule acts on its own item with its own steps');
+    return { ok: false, code: 'invalid', reason: 'A rule acts on its own item with its own steps' };
 
   const loaded = await loadItem(env, target.item, authorCaller(push.author), CROSS_APP_NEED);
   if (loaded instanceof Response) {
     await loaded.body?.cancel();
-    return refused('no_access');
+    return { ok: false, code: 'no_access', reason: '' };
   }
   const { row, access } = loaded;
   // An item in the Trash or archived runs nothing and takes nothing; one of another app is not this step's.
   if (row.trashed_at !== null || row.archived_at !== null || access.tabId !== null)
-    return refused('no_access');
+    return { ok: false, code: 'no_access', reason: '' };
   if (row.app !== target.app)
-    return refused('invalid', 'The item is not of the app the step names');
+    return { ok: false, code: 'invalid', reason: 'The item is not of the app the step names' };
 
   const grant = await mintGrant(env, {
     app: row.app,
@@ -210,7 +229,7 @@ export async function pushAutomationStep(
     teamId: row.team_id,
     link: access.code,
   });
-  if (!grant) return refused('unavailable');
+  if (!grant) return { ok: false, code: 'unavailable', reason: '' };
   const call: AutomationStepDoorCall = {
     author: push.author,
     rule: { id: push.rule.id, name: push.rule.name, app, item: sourceId },
@@ -234,13 +253,11 @@ export async function pushAutomationStep(
   if (!res.ok) {
     console.warn('[index] automation step not taken', { app: row.app, error: res.error });
     // The app's own grant check refused it, or the item is gone from it: the author has no access there.
-    if (res.error === 'status_403' || res.error === 'status_404') return refused('no_access');
-    return refused('unavailable');
+    if (res.error === 'status_403' || res.error === 'status_404')
+      return { ok: false, code: 'no_access', reason: '' };
+    return { ok: false, code: 'unavailable', reason: '' };
   }
-  const answered = readAnswer(res.body);
-  if (answered.ok) await countStep(env, push.author, now);
-  console.info('[index] automation step', { kind: step.kind, ok: answered.ok });
-  return answer(answered);
+  return readAnswer(res.body);
 }
 
 /** GET /items/:id/automation-target: what the item offers a step's pickers, read through its own app as the caller

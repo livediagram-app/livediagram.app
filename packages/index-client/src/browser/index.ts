@@ -3,3 +3,4 @@
 export * from './guest-token';
 export * from './item-grants';
 export * from './token-teams';
+export * from './call-tabs';

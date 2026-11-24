@@ -98,6 +98,9 @@ export function handleInternalItems(
       // A Sheet a chart in the document reads changed (liveworkspace/docs/specs/004-index/sheet-sources.md): the
       // room tells every open session, which reads it again with its own access.
       sourceChanged: (id, change) => documentRoom(env, id).sourceChanged(change),
+      // A source this knowledgebase reads changed or went (liveworkspace/docs/specs/004-index/knowledge-sources.md
+      // "Keeping in step"): the room owes it a read, or drops it.
+      knowledgeSourceChanged: (id, change) => documentRoom(env, id).knowledgeSourceChanged(change),
       // A closed account, wherever it was closed: what liveknowledge keeps for them beside their documents (their
       // images), and their name off each document of someone else's that names them.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),

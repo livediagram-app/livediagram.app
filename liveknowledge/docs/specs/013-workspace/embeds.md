@@ -65,26 +65,34 @@ thumbnail, the same code in every app ([Previews: Pasting a share link](../../..
 
 A **live embed** shows a canvas, plan, document or design from any of our apps, live and read-only, on this document
 ([Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md), Work Tracker 930). It is the Embed
-element made from the palette's **Live Embed** tile (`embedProvider: 'live'`), drawn by the shared face
-(`@liveworkspace/workbench` `LiveEmbedView`) in place of a provider's player.
+element made with **Embed File** (Work Tracker 1375; `embedProvider: 'live'`), a page's slash menu, **Embed File**, placed at the caret across the text column, drawn by the shared
+face (`@liveworkspace/workbench` `LiveEmbedView`) in place of a provider's player.
 
-- **Choosing.** Double-clicking it opens **Choose a File**: this document's connected files, the person's Recent in the
-  four apps, and a field for a pasted share link. Picking writes `liveItem` (the file's app and id), `liveName` and
-  `livePoster` (its snapshot). Only an Editor chooses: a Participant and a Viewer see the embed as everyone does, and
-  the dialog never opens for them.
+- **Choosing.** Placing it opens the **Embed File** dialog at once, and double-clicking it opens it again: the
+  role (Editor, Participant, Viewer, as Connect File asks it), then this knowledgebase's connected files, the person's Recent
+  in the five apps and a field for a pasted share link. Picking writes `liveItem` (the file's app and id), `liveName`
+  and `livePoster` (its snapshot). Only an Editor chooses: a Participant and a Viewer see the embed as everyone does,
+  and the dialog never opens for them.
+- **The role.** The embed is read-only whatever the role. A file the person may share and this knowledgebase is not yet
+  connected to is first connected one way at the role, as Connect File does: a connected tab at the end of the tab
+  bar, the way in for readers who cannot open the file themselves. A file they may not share is embedded with no tab.
+  Removing either leaves the other.
 - **Each reader's own access.** Every reader sees the file live only with their own access to it, opened read-only in
-  its app's frame; anyone else sees the snapshot made unreadable and **Open in <App>**, with "Ask its owner to share it with you". Nothing here mints a share link.
+  its app's frame; anyone else sees the snapshot made unreadable and **Open in <App>**, with "Ask its owner to share it with you". The embed itself mints no share link; only its tab's connection does, as any connection.
 - **On screen only.** A frame is asked for only while the element is on screen, at most three at once in the page,
   and given up two seconds after it leaves.
 - **Open** opens the file in its own app in a new browser tab; **Use the file** hands the pointer to the frame, and
   until then the element drags and selects as any other.
 - **Exports draw the snapshot**, and a Community copy keeps the snapshot without the link.
 
-## Live embeds of a document
+## Live embeds of a knowledgebase
 
 Another app's item can show a document live, read-only, inside it ([Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md),
 Work Tracker 930). The frame is this app's [workbench embed](workbench-embeds.md) (`/embed/workbench?d=<id>`) opened by
 an **embed ticket**: minted by the host page with the reader's own access, always at the view level, bound to the host
-app's origin, and renewed through the host before its 30 minutes run out. The page is the workbench page as it is, at
-a view session: the editor read-only, with Open in liveknowledge one click away. A reader without their own access never
+app's origin, and renewed through the host before its 30 minutes run out. The page is the workbench page at a view
+session, in this embed's look rather than the workbench's (`live=1`, Work Tracker 1375 as 1386 did for the other
+apps): the knowledgebase's pages alone, read-only, with only the page switcher ("What renders" above), and no zoom
+controls, header, footer, sidebar, panels, tour or Open in liveknowledge badge, as the host's own row holds **Open**.
+A developer tool's workbench (no `live=1`) keeps the workbench's chrome. A reader without their own access never
 reaches this frame: the host shows its snapshot instead.

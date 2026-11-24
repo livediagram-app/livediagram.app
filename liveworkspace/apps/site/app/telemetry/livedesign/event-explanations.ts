@@ -14,6 +14,8 @@
 // can send gets a real sentence, free of code names and jargon.
 
 import { SEND_TO_PLAN_BY_ACTION, SEND_TO_PLAN_EXACT } from '../_shared/send-to-plan-metrics';
+import { SEND_TO_DIAGRAM_EXACT } from '../_shared/send-to-diagram-metrics';
+import { ITEM_CALL_EXACT } from '../_shared/item-call-metrics';
 import {
   SNAPSHOT_BY_ACTION,
   WALKTHROUGH_BY_ACTION,
@@ -30,6 +32,8 @@ const perCommunityCategory = (action: string, sentence: (label: string) => strin
 
 export const EXACT: Readonly<Record<string, string>> = {
   ...SEND_TO_PLAN_EXACT,
+  ...SEND_TO_DIAGRAM_EXACT,
+  ...ITEM_CALL_EXACT,
   ...WALKTHROUGH_EXACT,
   ...LIBRARY_EXACT,
   'Element|Changed|CanvasSuggesting':

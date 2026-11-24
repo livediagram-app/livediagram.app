@@ -60,7 +60,7 @@ export function AskView() {
     <>
       <KnowledgeViewHeader
         title="Ask"
-        about="Answers in plain words from this knowledgebase's own pages, each part with where it came from."
+        about="Answers in plain words from this knowledgebase's pages and connected items, each part with where it came from."
       >
         {askOff === 'offline' ? null : <AiSettingsButton />}
       </KnowledgeViewHeader>

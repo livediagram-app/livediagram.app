@@ -157,6 +157,11 @@ describe('the chip and the indicator', () => {
     });
     expect(result.current).toMatchObject({ title: 'Card', where: 'To Do · Sprint' });
     expect(Object.keys(SENT_CARD_GLYPHS)).toEqual(['card', 'card-done']);
+    const Logo = SENT_CARD_GLYPHS.card;
+    const { container: small } = render(<Logo />);
+    expect(small.querySelector('svg')?.getAttribute('style')).toContain('width: 12px');
+    const { container: big } = render(<Logo size={20} />);
+    expect(big.querySelector('svg')?.getAttribute('style')).toContain('width: 20px');
   });
 });
 

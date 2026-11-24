@@ -29,6 +29,10 @@ export function entryPlace(e: InboxEntry): ItemPlace {
     case 'AccessRequest':
       // The item itself, where its Share dialog is.
       return {};
+    case 'CallInvite':
+    case 'AutomationNotice':
+      // The item itself, whose "3 in Call" pill joins the call.
+      return {};
     case 'Update':
       // The page; a deleted one is in the Trash, so the item itself.
       return e.row.kinds.includes('deleted') ? {} : { tabId: e.row.tabId };
@@ -41,7 +45,14 @@ export function entryPlace(e: InboxEntry): ItemPlace {
 /** The row as the host's verbs find it; null for a form and an update, which have none, and an access request,
  *  whose verbs are the index's own (./AccessRequestPane). */
 export function entryTarget(e: InboxEntry): InboxTarget | null {
-  if (e.kind === 'FormResponses' || e.kind === 'AccessRequest' || e.kind === 'Update') return null;
+  if (
+    e.kind === 'FormResponses' ||
+    e.kind === 'AccessRequest' ||
+    e.kind === 'Update' ||
+    e.kind === 'CallInvite' ||
+    e.kind === 'AutomationNotice'
+  )
+    return null;
   if (e.kind === 'Suggestion') {
     const r = e.row;
     return {

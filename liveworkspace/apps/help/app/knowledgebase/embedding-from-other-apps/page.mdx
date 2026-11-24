@@ -8,7 +8,7 @@ import {
 export const metadata = helpMetadata({
   title: 'Embedding From Other Apps',
   description:
-    'Show a livediagram canvas, a liveplanner plan, a livedocuments document or a livedesign design inside a Knowledgebase page, live and read-only.',
+    'Show a canvas, a plan, a document, a design or another knowledgebase inside a Knowledgebase page with Embed File, live and read-only.',
   path: '/help/knowledgebase/embedding-from-other-apps/',
 });
 
@@ -22,36 +22,38 @@ A page can show a file from another liveworkspace app where the writing talks ab
 
 ## What You Can Embed
 
-A file from **livediagram**, **liveplanner**, **livedocuments** or **livedesign**. A livehuddle Space and another Knowledgebase cannot be embedded; link to them instead.
+A file from **livediagram**, **liveplanner**, **livedocuments** or **livedesign**, or another **Knowledgebase**, shown at its pages with its page switcher. A livehuddle Space cannot be embedded; link to it instead.
 
 ## Embed a File
 
 <Step n={1}>
-  Put the caret on an empty line, type `/` and choose **Embed**. An empty embed is placed in the
-  writing, reading "Double-click to choose a file".
+  Put the caret on an empty line, type `/` and choose **Embed File**. It is placed in the writing and
+  **Embed File** opens at once.
 </Step>
 
 <Step n={2}>
-  Double-click it. **Choose a File** opens.
-</Step>
-
-<Step n={3}>
   Pick the file one of three ways: choose it from your recent files, type in **Find a file** to
   narrow them, or paste one of its share links under **Paste a Share Link** and press **Add**.
 </Step>
 
-<Figure caption="Choose a File: paste a share link, or find the file among the ones you opened recently in any app." width="narrow">
+<Figure caption="Embed File: paste a share link, or find the file among the ones you opened recently in any app." width="narrow">
   <ChooseAFile />
 </Figure>
 
-The embed then shows the file, with its app's mark, its name, and a button that opens it in its own app (**Open in liveplanner**, for a plan).
+The embed then shows the file, with its app's mark, its name, and a button that opens it in its own app (**Open in liveplanner**, for a plan). Double-click it to choose another file.
+
+## The Role
+
+- **It asks a role, as Connect does.** For a file you may share that isn't connected here yet, Embed File also connects it as a tab at the end of the tab bar (it doesn't switch to it), and asks the role that tab gives: **Editor**, **Participant** or **Viewer**, Editor chosen first. Anyone who can open this knowledgebase can work on the file through that tab with that role. A file already connected is embedded as it is; a file you may not share embeds with no tab (its row says so).
+- **The embed itself is always read-only**, whatever the role. Readers who can edit the file get **Open in** its app, and edit it there.
+
 
 ## Who Sees What
 
 An embed opens with **each reader's own access** to the file. Embedding a file shares it with nobody.
 
 - A reader who can open the file sees it live.
-- A reader who cannot sees "You don't have access to" and the file's name, with "Ask its owner to share it with you." and the button to open it in its own app. They never see its content.
+- A reader who cannot, a guest or someone with only this knowledgebase's link included, sees "You don't have access to" and the file's name, with "Ask its owner to share it with you." and the button to open it in its own app. They never see its content.
 - If the file is deleted, the embed reads "This file is no longer there."
 
 So before you embed a file in a Knowledgebase your whole team reads, check the team can open the file. See [Sharing](/help/collaboration/sharing/).
@@ -67,5 +69,6 @@ So before you embed a file in a Knowledgebase your whole team reads, check the t
 | ------------------------------------------ | ------ | ----------- | ------ |
 | See an embed (with access to the file)     | Yes    | Yes         | Yes    |
 | Add, change or remove an embed             | Yes    | No          | No     |
+| Open the file in its own app               | Yes    | Yes         | Yes    |
 
 </ArticleLayout>

@@ -5,6 +5,7 @@
 // fields, so an agent reads a page the same way through either door.
 import {
   isKnowledgePageRow,
+  type KnowledgeConflictRef,
   type KnowledgePageHealth,
   type KnowledgePageRef,
   type KnowledgePageTrust,
@@ -35,7 +36,7 @@ export type TrustFields = {
   verified_by?: string;
   review_due?: string;
   stale: boolean;
-  conflicts_with?: { page: string; title: string }[];
+  conflicts_with?: ConflictWith[];
   /** Approval (docs/specs/030-knowledgebase/approval.md): absent for a page never asked about. */
   approval?: 'pending' | 'approved' | 'rejected';
   approval_requested_at?: string;
@@ -44,10 +45,20 @@ export type TrustFields = {
   health?: KnowledgePageHealth;
 };
 
+/** The other page of an open conflict, the question the two answer differently and when it was found
+ *  (knowledgebase-for-agents.md "Conflicts for agents"). An api from before says the page alone. */
+type ConflictWith = { page: string; title: string; question?: string; found_at?: string };
+
 const iso = (ms: number) => new Date(ms).toISOString();
 
 /** A page as every answer names it: its id under `page`, beside its title. */
 export const pageRefOf = (p: KnowledgePageRef) => ({ page: p.tab, title: p.title });
+
+const conflictWithOf = (c: KnowledgeConflictRef): ConflictWith => ({
+  ...pageRefOf(c),
+  ...(c.question ? { question: c.question } : {}),
+  ...(c.foundAt === undefined ? {} : { found_at: iso(c.foundAt) }),
+});
 
 export function trustFieldsOf(trust: KnowledgePageTrust): TrustFields {
   return {
@@ -56,7 +67,9 @@ export function trustFieldsOf(trust: KnowledgePageTrust): TrustFields {
     ...(trust.verifiedBy ? { verified_by: trust.verifiedBy } : {}),
     ...(trust.reviewAt === undefined ? {} : { review_due: iso(trust.reviewAt) }),
     stale: trust.stale,
-    ...(trust.conflictsWith?.length ? { conflicts_with: trust.conflictsWith.map(pageRefOf) } : {}),
+    ...(trust.conflictsWith?.length
+      ? { conflicts_with: trust.conflictsWith.map(conflictWithOf) }
+      : {}),
     ...(trust.approval
       ? {
           approval: trust.approval.state,
@@ -140,7 +153,11 @@ export function trustLine(trust: TrustFields): string {
             ...(trust.review_due && !trust.stale ? [`review due ${day(trust.review_due)}`] : []),
           ];
   if (trust.conflicts_with?.length)
-    parts.push(`CONFLICTS WITH ${trust.conflicts_with.map((p) => `"${p.title}"`).join(', ')}`);
+    parts.push(
+      `CONFLICTS WITH ${trust.conflicts_with
+        .map((p) => `"${p.title}"${p.question ? ` on "${p.question}"` : ''}`)
+        .join(', ')}`,
+    );
   if (trust.approval === 'pending') parts.push('PENDING APPROVAL');
   if (trust.approval === 'rejected')
     parts.push(`REJECTED${trust.approval_note ? `: ${trust.approval_note}` : ''}`);

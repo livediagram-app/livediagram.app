@@ -287,6 +287,18 @@ describe('what watchers hear of', () => {
     expect(JSON.parse(deleted!.actors)).toEqual([{ id: 'user_o', name: 'Olu' }]);
   });
 
+  it('names the agent for a move made with the suggest scope', async () => {
+    const kit = await knowledgeKit();
+    await watch(kit, 'viewer', 'page', 'holidays');
+    const moved = await kit.call('agent-stored', 'POST', '/api/documents/kb/pages/holidays/move', {
+      parent: 'deploys',
+    });
+    expect(moved.status).toBe(200);
+    expect(kindsOf(kit, 'holidays')).toEqual([['moved']]);
+    const update = updates(kit).find((u) => u.tab === 'holidays');
+    expect(JSON.parse(update!.actors)).toEqual([{ id: 'user_o', name: 'Coding Agent' }]);
+  });
+
   it('hears a move made by a save of the page or of the tab list', async () => {
     const kit = await knowledgeKit();
     await watch(kit, 'viewer', 'page', 'holidays');

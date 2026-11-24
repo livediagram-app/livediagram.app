@@ -9,7 +9,7 @@ import {
   type PageApproval,
 } from '@liveknowledge/knowledge';
 import type { AccessLevel } from '@liveknowledge/api-schema';
-import { agentForPerson } from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
+import { agentForPerson } from '@liveworkspace/ui/agent-for-person';
 import { relativeSince } from '@/lib/relative-time';
 
 /** The person here as the approval rule reads them. A link confined to one page, and a knowledgebase kept Offline,

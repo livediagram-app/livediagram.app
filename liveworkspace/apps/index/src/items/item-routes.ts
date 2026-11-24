@@ -21,6 +21,7 @@ import { insertItem, itemFor, optionalId } from './create';
 import { clientIpOf } from './shared';
 import { tellStanding } from '../standing';
 import { readAutomationTarget } from '../automation-steps';
+import { signalKnowledgeSources } from '../knowledge-sources';
 
 export async function handleItem(ctx: RouteContext, id: string): Promise<Response> {
   const { request, segments } = ctx;
@@ -232,6 +233,8 @@ async function deleteItem(ctx: RouteContext, id: string): Promise<Response> {
       trashed: true,
       at: now,
     });
+    // Into the Trash: a knowledgebase reading it drops it now (knowledge-sources.md "Keeping in step").
+    ctx.waitUntil(signalKnowledgeSources(env, id, true));
   }
   return noContent();
 }

@@ -30,5 +30,7 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./approvals.md - when working on Approvals: asking named people to approve the document, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
 - ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what liveknowledge supplies (the platform's `004-index/inbox-notices.md`)
 - ./automations.md - when working on Automations: rules a knowledgebase runs on its own, its own trust, Insights and version triggers, steps, values and templates (the platform's `018-automations`), and Connections, which replaced Webhooks
+- ./send-to-diagram.md - when working on Send to Diagram: liveknowledge's words drawn as a livediagram diagram by its own AI (the platform's `004-index/send-to-diagram.md`), the draft route, entries, roles
+- ./start-a-call.md - when working on Start a Call Here in liveknowledge: where Call, the live pill with Join and Meetings sit (the platform's `004-index/item-calls.md`), roles
 - ./send-to-plan.md - when working on Send to Plan: what liveknowledge sends to a liveplanner card (the platform's `004-index/send-to-plan.md`), where its entry and chip sit, roles
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, automations)

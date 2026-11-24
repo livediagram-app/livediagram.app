@@ -28,6 +28,7 @@ import { INBOX_LIMIT_DEFAULT } from './config';
 import { parseLimit } from './codec';
 import type { PersonContext } from './context';
 import { badRequest, json } from './http';
+import { inviteOf, invitesQuery } from './item-call-reads';
 import { LIVE_LINK } from './rows';
 import { inboxUpdateOf, updatesQuery, type UpdateRow } from './updates';
 
@@ -305,19 +306,32 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   if (limit === null) return badRequest('invalid_query');
   const q = inboxQueries(person.id, scopesOf(person), app, limit);
   const db = env.INDEX_DB;
-  const notices = noticesQuery(person.id, Date.now());
-  const [threadRes, actionRes, formRes, accessRes, shareRes, suggestionRes, updateRes, noticeRes] =
-    (await db.batch([
-      db.prepare(q.threads.sql).bind(...q.threads.args),
-      db.prepare(q.actions.sql).bind(...q.actions.args),
-      db.prepare(q.forms.sql).bind(...q.forms.args),
-      db.prepare(q.accessRequests.sql).bind(...q.accessRequests.args),
-      db.prepare(q.shares.sql).bind(...q.shares.args),
-      db.prepare(q.suggestions.sql).bind(...q.suggestions.args),
-      db.prepare(q.updates.sql).bind(...q.updates.args),
-      // A Notify step's notices (automation-step-notices.ts), in every app's Inbox.
-      db.prepare(notices.sql).bind(...notices.args),
-    ])) as D1Result<Record<string, unknown>>[];
+  const now = Date.now();
+  const notices = noticesQuery(person.id, now);
+  const invites = invitesQuery(person.id, now);
+  const [
+    threadRes,
+    actionRes,
+    formRes,
+    accessRes,
+    shareRes,
+    suggestionRes,
+    updateRes,
+    noticeRes,
+    inviteRes,
+  ] = (await db.batch([
+    db.prepare(q.threads.sql).bind(...q.threads.args),
+    db.prepare(q.actions.sql).bind(...q.actions.args),
+    db.prepare(q.forms.sql).bind(...q.forms.args),
+    db.prepare(q.accessRequests.sql).bind(...q.accessRequests.args),
+    db.prepare(q.shares.sql).bind(...q.shares.args),
+    db.prepare(q.suggestions.sql).bind(...q.suggestions.args),
+    db.prepare(q.updates.sql).bind(...q.updates.args),
+    // A Notify step's notices (automation-step-notices.ts), in every app's Inbox.
+    db.prepare(notices.sql).bind(...notices.args),
+    // Invites to calls about items (item-call-reads.ts), in every app's Inbox.
+    db.prepare(invites.sql).bind(...invites.args),
+  ])) as D1Result<Record<string, unknown>>[];
   const threads: InboxThread[] = (threadRes!.results as ThreadRow[]).map((r) => ({
     app: r.app,
     itemId: r.item_id,
@@ -422,5 +436,6 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
     suggestions,
     updates,
     notices: noticeRes!.results.map(noticeOf),
+    calls: inviteRes!.results.map(inviteOf(now)),
   });
 }

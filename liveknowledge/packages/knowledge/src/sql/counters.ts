@@ -14,6 +14,9 @@ export const SETUP_KNOWLEDGEBASE_SCOPE = 'setup:knowledgebase';
 /** The scope of one person's Describe Structure drafts, and of the knowledgebase's (page-structure.ts). */
 export const structurePersonScope = (person: string): string => `structure:person:${person}`;
 export const STRUCTURE_KNOWLEDGEBASE_SCOPE = 'structure:knowledgebase';
+/** The scope of one person's Send to Diagram drafts, and of the knowledgebase's (diagram-draft.ts). */
+export const diagramPersonScope = (person: string): string => `diagram:person:${person}`;
+export const DIAGRAM_KNOWLEDGEBASE_SCOPE = 'diagram:knowledgebase';
 /** The scope of the knowledgebase's questions answered on built-in AI (built-in-limits.ts), beside its every-AI one. */
 export const ASK_BUILT_IN_SCOPE = 'ask:built-in';
 /** The scope of the knowledgebase's conflict checks. */
@@ -61,3 +64,7 @@ export const setupCounters = (person: string, now: number) =>
 /** The same for one Describe Structure draft, counted apart from both. */
 export const structureCounters = (person: string, now: number) =>
   hourAndDayCounters(structurePersonScope(person), STRUCTURE_KNOWLEDGEBASE_SCOPE, now);
+
+/** The same for one Send to Diagram draft, counted apart from the rest. */
+export const diagramCounters = (person: string, now: number) =>
+  hourAndDayCounters(diagramPersonScope(person), DIAGRAM_KNOWLEDGEBASE_SCOPE, now);

@@ -65,15 +65,20 @@ thumbnail, the same code in every app ([Previews: Pasting a share link](../../..
 
 A **live embed** shows a canvas, plan, document or design from any of our apps, live and read-only, on this canvas
 ([Live embeds](../../../../liveworkspace/docs/specs/004-index/live-embeds.md), Work Tracker 930). It is the Embed
-element made from the palette's **Live Embed** tile (`embedProvider: 'live'`), drawn by the shared face
-(`@liveworkspace/workbench` `LiveEmbedView`) in place of a provider's player.
+element made with **Embed File** (Work Tracker 1375; `embedProvider: 'live'`), the palette's **Layout**, in a group of its own after the pictures (and the strip's Search), drawn by the shared
+face (`@liveworkspace/workbench` `LiveEmbedView`) in place of a provider's player.
 
-- **Choosing.** Double-clicking it opens **Choose a File**: this canvas's connected files, the person's Recent in the
-  four apps, and a field for a pasted share link. Picking writes `liveItem` (the file's app and id), `liveName` and
-  `livePoster` (its snapshot). Only an Editor chooses: a Participant and a Viewer see the embed as everyone does, and
-  the dialog never opens for them.
+- **Choosing.** Placing it opens the **Embed File** dialog at once, and double-clicking it opens it again: the
+  role (Editor, Participant, Viewer, as Connect File asks it), then this canvas's connected files, the person's Recent
+  in the five apps and a field for a pasted share link. Picking writes `liveItem` (the file's app and id), `liveName`
+  and `livePoster` (its snapshot). Only an Editor chooses: a Participant and a Viewer see the embed as everyone does,
+  and the dialog never opens for them.
+- **The role.** The embed is read-only whatever the role. A file the person may share and this canvas is not yet
+  connected to is first connected one way at the role, as Connect File does: a connected tab at the end of the tab
+  bar, the way in for readers who cannot open the file themselves. A file they may not share is embedded with no tab.
+  Removing either leaves the other.
 - **Each reader's own access.** Every reader sees the file live only with their own access to it, opened read-only in
-  its app's frame; anyone else sees the snapshot made unreadable and **Open in <App>**, with "Ask its owner to share it with you". Nothing here mints a share link.
+  its app's frame; anyone else sees the snapshot made unreadable and **Open in <App>**, with "Ask its owner to share it with you". The embed itself mints no share link; only its tab's connection does, as any connection.
 - **On screen only.** A frame is asked for only while the element is on screen, at most three at once in the page,
   and given up two seconds after it leaves.
 - **Open** opens the file in its own app in a new browser tab; **Use the file** hands the pointer to the frame, and

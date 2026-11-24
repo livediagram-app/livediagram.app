@@ -1,0 +1,49 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { DiscardDraft } from '@/editions/liveknowledge/components/illustrations/pages';
+
+export const metadata = helpMetadata({
+  title: 'My Page Changes Are Missing',
+  description:
+    'A checklist for writing that seems to have vanished from a page: drafts and Save, the right page, and recovering with undo, Version History or the Trash.',
+  path: '/help/troubleshooting/page-changes-missing/',
+});
+
+<ArticleLayout path="troubleshooting/page-changes-missing" title="My Page Changes Are Missing" description="What to check when writing seems to have vanished from a page, and how to get it back." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+A page in a Knowledgebase opens to read, and what you write goes into a **draft** until you press **Save**. So missing changes are usually waiting in a draft, or on a different page or Knowledgebase, rather than gone. This checklist walks through finding them and, where needed, getting them back.
+
+## First, Find Them
+
+1. **Check the right page.** Open the page in the [page tree](/help/knowledgebase/the-page-tree/), or find it with [Search](/help/knowledgebase/searching-a-knowledgebase/) (`Cmd+K`, or `Ctrl+K` on Windows and Linux).
+2. **Check the right Knowledgebase.** It is easy to have two similar ones. Open [your Knowledgebases](/explorer/recent) and confirm you are in the one you edited.
+3. **Check the right identity.** A Knowledgebase you made as a guest is kept **Offline**, in the browser that made it. If you switched browsers or devices you are looking at a different guest identity's Knowledgebases. See [Guest vs Account](/help/getting-started/guest-vs-account/).
+4. **Reload the page.** A refresh reloads the saved page and clears a temporary display issue.
+
+## How Saving Works
+
+**Edit** opens the page's draft, and everything you type stays in it until you press **Save** (`Cmd+S`, or `Ctrl+S`). Save makes the draft the saved page for everyone: readers see it at once, and search and agents read it. Until then, a Viewer, and anyone who left with Cancel, keeps seeing the saved page.
+
+<Figure caption="Cancel with unsaved changes asks first, and the draft is only thrown away when you choose Discard Changes.">
+  <DiscardDraft />
+</Figure>
+
+- **Cancel** leaves edit mode. If other people are still editing, the draft stays theirs and nothing is lost. If you are the last one editing and the draft has unsaved changes, it asks "Discard your changes to this page?", and **Discard Changes** throws the draft away.
+- **Opening another page** with unsaved changes asks "Save Your Changes First?", with **Save and Leave** and **Keep Editing**.
+- **Closing the tab, or losing the connection,** is not Cancel. The draft is kept in the Knowledgebase, and the next **Edit** opens it with "Unsaved changes" and who made them, with **Save** and **Discard**. A draft nobody touches for 30 days is thrown away.
+
+If you cannot find an edit, open the page and press **Edit**: an unsaved draft opens there.
+
+## Recover a Recent Step
+
+- **Undo** (`Cmd+Z`, or `Ctrl+Z`) works within the draft: Edit starts the undo history, and Save or Discard ends it, so undo never undoes a save.
+- **Version History** records every save, never the keystrokes in between. Open it from **Tools** in the footer, under **History**, and choose **Restore This Version** on an earlier save.
+- **A deleted page** is not gone either: it waits in the [Trash](/help/knowledgebase/the-page-tree/#the-trash), at the foot of the page tree for 30 days, until you restore it.
+
+## When Other People Are Editing
+
+When someone starts editing a page, everyone else who may edit that page joins them in the same draft and sees their typing live, so there is one draft a page, never one each. Two people changing the same words is the case to know about: the editor shows what someone else has selected, so you can see it is spoken for before you start. An agent's write goes to the saved page, not into a draft; if a draft is open, the draft bar says "An agent changed the saved page", and your Save lands on top of it.
+
+If you have checked the right page, Knowledgebase and identity, looked for a draft, and the change is still missing, [contact us](/help/contact/) with the Knowledgebase's address and roughly when you made the edit.
+
+</ArticleLayout>

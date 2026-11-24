@@ -56,8 +56,10 @@ check locally.
 
 Each service with a D1 database applies its local migrations as its `dev` script starts, so a local database built
 before a migration was added catches up on its own (a database behind on accounts' `0018_livehuddle.sql` refused to
-register livehuddle's client). Outside `dev`, run `corepack pnpm db:migrate:local` in the service's folder. If a local database is past repair, remove its state
-(`rm -rf apps/<service>/.wrangler/state/v3/d1`) and migrate again, which drops its local rows.
+register livehuddle's client). Outside `dev`, run `corepack pnpm db:migrate:local` in the service's folder. If a local database is past repair, remove the local D1 state
+(`rm -rf .wrangler/local-workers/state/v3/d1` here, with `dev:workspace` stopped) and start again, which drops every
+service's local rows: the eight run in one process and keep one state folder, which each service's
+`.wrangler/state` links to ([packages/local-workers](../docs/structure.md)).
 
 Locally, emails aren't sent. Each code email is printed in the accounts Worker's output. Turnstile
 uses Cloudflare's always-pass test keys.

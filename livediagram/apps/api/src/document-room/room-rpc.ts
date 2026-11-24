@@ -1,3 +1,4 @@
+import { AGENT_HEADERS } from '../changesets/front-door';
 import {
   openRoomSockets,
   recordItemEditor,
@@ -5,6 +6,7 @@ import {
   type ExportQuery,
   type ExportResult,
   putAwayGate,
+  itemAgentOf,
 } from '@liveworkspace/index-app';
 import type { ConnectedTabWrite, SourceChange } from '@liveworkspace/index-client';
 import { tellSourceChanged } from '@liveworkspace/index-app';
@@ -26,6 +28,7 @@ import {
 } from './document-content';
 import { DOCUMENT_OUTBOX } from './document-outbox';
 import { addConnectedDocumentTab, connectedTabArrival } from './connected-tab';
+import { writeGraphTab, type GraphTabOutcome, type GraphTabWrite } from './graph-tab';
 import { hasDocumentSchema } from './document-schema';
 import { documentShares, type ShareAnswer, type ShareMessage } from './tab-shares';
 import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
@@ -80,6 +83,8 @@ export async function route(
         documentId,
         identity.owner,
         Date.now(),
+        // An agent's write for its person names the agent (Work Tracker 1381).
+        itemAgentOf(request, identity.token, AGENT_HEADERS),
       );
     }
     room.noteWrite();
@@ -158,6 +163,17 @@ export async function addConnectedTab(
     if (op) room.broadcastOrderedSystemOp(op);
   }
   return outcome;
+}
+
+// Send to Diagram's tab (graph-tab.ts): a new tab or one redrawn, as the person who sent, through the changeset path.
+export async function drawGraphTab(
+  room: DocumentRoom,
+  documentId: string,
+  write: GraphTabWrite,
+): Promise<GraphTabOutcome> {
+  room.bindDocument(documentId);
+  if (!room.hasSchema()) return { status: 'not_found' };
+  return writeGraphTab(room.requireEnv(), documentId, write, (p) => room.state.waitUntil(p));
 }
 
 // Whether the canvas places this image (on one tab, for a tab-scoped visitor) and may serve it

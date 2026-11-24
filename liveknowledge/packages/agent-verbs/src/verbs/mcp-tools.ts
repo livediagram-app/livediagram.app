@@ -68,7 +68,8 @@ export { mcpDeleteImage, mcpUploadImage };
 const TRUST =
   'Each carries its trust: verified ("verified", "review-due", "never-verified", or "off" where the knowledgebase ' +
   'does not verify pages), verified_at, review_due (worked out from the knowledgebase’s one Review Period), stale ' +
-  'and, when pages disagree, conflicts_with.';
+  'and, when pages disagree, conflicts_with: each other page with the question the two answer differently ' +
+  '(question) and when it was found (found_at).';
 
 const HEALTH =
   'Each page also carries health: its Health Score (score 0 to 100, label "healthy", "fair" or "needs-work", ' +
@@ -84,7 +85,8 @@ export const mcpGetContext = mcpTool('get_context', {
   description:
     'Call this first. Returns the pages the team marked Always in Context, whole, as Markdown, in the order of ' +
     'the page tree and within the context budget, what this connection may do here (its role and scopes), and ' +
-    'the knowledgebase’s Review Period (review_period: how long after it was verified a page comes due). ' +
+    'the knowledgebase’s Review Period (review_period: how long after it was verified a page comes due), and ' +
+    'its AI Editing (ai_editing, ai_edit_unverifies and ai_editing_allows: how far write_page may change pages here). ' +
     `${TRUST} ${HEALTH} Then search_pages for what a task needs.`,
   inputSchema: getContextShape,
   outputSchema: getContextOutput,
@@ -111,7 +113,7 @@ export const mcpSearchPages = mcpTool('search_pages', {
     `of the writing, verified pages before others, each with its page and the headings it sits under. ${TRUST} ` +
     `${HEALTH} ` +
     'Prefer a verified passage; say so when you rely on a stale one; when conflicts_with names a page, read both ' +
-    'and tell the user they disagree. labels narrows it to the pages carrying any of those labels ("only ' +
+    'on its question and tell the user they disagree. labels narrows it to the pages carrying any of those labels ("only ' +
     'Engineering pages"; list_pages shows each page’s labels). A search that finds nothing is recorded as a ' +
     'question the knowledgebase could not answer, unless labels narrowed it.',
   inputSchema: searchPagesShape,
@@ -159,8 +161,10 @@ export const mcpWritePage = mcpTool('write_page', {
   title: 'Write a page directly',
   description:
     'Replace a page’s whole writing with Markdown, or append to it, at once and without a person’s review. ' +
-    'Only for a connection with the write scope (get_context lists the scopes), and never on a verified page or one ' +
-    'whose review is due: there, use suggest_edit. read_page first and send the whole page back, since "replace" drops what the ' +
+    'Only for a connection with the write scope, and only as far as the knowledgebase’s AI Editing allows ' +
+    '(get_context’s ai_editing and ai_editing_allows): "suggest" refuses every write, "unverified" refuses a ' +
+    'verified page or one whose review is due, "any" takes every page. Where it is refused, use suggest_edit. ' +
+    'read_page first and send the whole page back, since "replace" drops what the ' +
     'Markdown leaves out.',
   inputSchema: writePageShape,
   outputSchema: writePageOutput,
@@ -184,8 +188,10 @@ export const mcpMovePage = mcpTool('move_page', {
   title: 'Move a page',
   description:
     'Move a page, with the pages under it, to another parent or to the top level, in front of a named sibling ' +
-    'or last. Links to the page keep working. Needs the write scope. A page never moves under itself or one of ' +
-    'its own subpages.',
+    'or last. Links to the page keep working and no writing changes. With the suggest scope it moves a page ' +
+    'when the page and every page under it are never-verified (the drafts create_page makes); a verified or ' +
+    'review-due page, or one with such a page under it, needs the write scope. A page never moves under itself ' +
+    'or one of its own subpages.',
   inputSchema: movePageShape,
   outputSchema: movePageOutput,
 });

@@ -32,8 +32,16 @@ async function tallPicture(page: Page): Promise<Buffer> {
   return Buffer.from(data, 'base64');
 }
 
-/** An agent's token for `who`, allowed to write in the knowledgebase as an Editor's Allow Writing does. */
+/**
+ * An agent's token for `who`, allowed to write in the knowledgebase: an Editor's Allow Writing grants the scope, and
+ * AI Editing at Edit Unverified Pages lets it change these never-verified pages (ai-editing.md: the lower of the two).
+ */
 async function writingAgent(page: Page, who: Person, id: string): Promise<Record<string, string>> {
+  const level = await page.request.put(`/api/documents/${id}/knowledge-settings`, {
+    headers: await asPerson(page, who, id),
+    data: { aiEditing: 'unverified' },
+  });
+  expect(level.ok(), `ai editing: ${level.status()}`).toBe(true);
   const minted = await page.request.post('/e2e/accounts/__seed/token', {
     data: { userId: who.id, email: who.email, name: 'agent' },
   });

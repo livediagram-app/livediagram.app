@@ -9,6 +9,8 @@ import type { Metadata } from 'next';
 import { LegalPage, type LegalHighlight, type LegalSection } from '@/components/LegalPage';
 import { SECURITY_ADVISORY_URL } from '@liveworkspace/sites/security';
 import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
+import { APP_SECTIONS } from './app-sections';
+import { proOn } from '@liveworkspace/subscription-ui/flag';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy · liveworkspace',
@@ -210,9 +212,10 @@ const SECTIONS: LegalSection[] = [
     body: (
       <>
         <p>
-          Each app&rsquo;s Community is a public gallery of documents people choose to share. Its
-          posts, likes, copies and reports are kept by liveworkspace, in one database for every
-          app&rsquo;s Community; the documents themselves stay in each app.
+          Each app&rsquo;s Community is a public gallery of documents people choose to share, and a
+          forum to talk about the apps. Its posts, likes, copies, reports and the forum are kept by
+          liveworkspace, in one database for every app&rsquo;s Community; the documents themselves
+          stay in each app.
         </p>
         <ul>
           <li>
@@ -229,6 +232,16 @@ const SECTIONS: LegalSection[] = [
             and an optional note too. Reports are counted automatically; nobody reads them by hand.
           </li>
           <li>
+            <strong>The Forum</strong> is one forum for every app, beside the gallery. Anyone can
+            read it; posting, replying and reacting need an account. A topic or reply holds the
+            words you write (a title of up to 120 characters and a body of up to 5,000), its
+            category and app, and the name your account shows, which is public with it, never an
+            email address. Each one is read by a safety model before it is listed (see{' '}
+            <a href="#ai-features">AI features</a>); one that does not pass is shown only to you.
+            You can edit or delete your own, and closing your account removes everything you wrote
+            there, replies under your topics included.
+          </li>
+          <li>
             <strong>Posts are public.</strong> Anyone can find, view and copy a shared document, and
             it shows the document&rsquo;s latest version, including its document and tab names,
             until you remove it. Comments are never shown with it. Copies people made before you
@@ -243,16 +256,85 @@ const SECTIONS: LegalSection[] = [
     title: 'AI features',
     body: (
       <>
-        <p>The AI features run only when you use them, and only where an AI provider is set up.</p>
+        <p>
+          The AI features run only when you use them, and only where an AI provider is set up. In
+          Settings, AI, you choose which AI answers: built-in AI or your own key.
+        </p>
         <ul>
           <li>
+            <strong>Built-in AI</strong> is included with every app, with daily limits. It runs on
+            Cloudflare Workers AI, through each app&rsquo;s own Cloudflare account, so what you ask
+            about is answered by Cloudflare for us and goes to no one else.
+          </li>
+          <li>
+            <strong>Your own key, or your team&rsquo;s.</strong> You can save an Anthropic (Claude)
+            or OpenAI key, and a team&rsquo;s admins can save one for the team, for the model calls
+            in every app. When you save it we check it once with that provider, then keep it
+            encrypted in your liveworkspace account: it is never shown to a browser again, never
+            included in a download of your data, and deleted with your account (a team&rsquo;s with
+            the team). We email you whenever a key is added, replaced or removed. A call on a key
+            goes to that provider, billed to the key&rsquo;s owner, and is governed by the
+            provider&rsquo;s own terms and privacy policy; a key that fails is never quietly swapped
+            for built-in AI.
+          </li>
+          <li>
+            <strong>What the features send.</strong> Only for the person using them, and only what
+            that feature needs. <strong>Ask AI</strong> (signed in only; liveknowledge has Ask in a
+            tab of its own) sends your question and the words of the item that is open, up to 24,000
+            characters; the conversation stays in your browser until you reload and is not stored by
+            us. Where an app has Automations, <strong>Summarise with AI</strong> sends the
+            item&rsquo;s text, and <strong>Describe a Rule</strong> only the item&rsquo;s tab names
+            and the kinds of trigger and step. liveplanner&rsquo;s <strong>Describe a Plan</strong>{' '}
+            sends the words you write, and its card AI steps the card. liveknowledge&rsquo;s{' '}
+            <strong>Ask</strong>, Draft a Page, Describe to Set Up and the background check for
+            pages that disagree send the pages&rsquo; passages; a knowledgebase can also have a key
+            of its own, kept encrypted in its own room and never sent back to a browser. We log how
+            many passages were sent and which model answered, never the question, the passages, the
+            answer or a key. An automation&rsquo;s own AI steps always run on built-in AI.
+          </li>
+          <li>
+            <strong>The Community Forum.</strong> Every post, reply and edit is read, with its
+            author&rsquo;s name, by a safety model on Cloudflare Workers AI before anyone else sees
+            it.
+          </li>
+          <li>
             <strong>Connected AI tools</strong>, such as Claude, read and change your documents
-            through our API with the token you approved. What the tool does with what it reads is
-            governed by its own terms and privacy policy.
+            through an app&rsquo;s MCP server or our API, as does the command line, with the account
+            or API token you approved. A tool sees only what that account or token can open. What
+            the tool does with what it reads is governed by its own terms and privacy policy.
           </li>
         </ul>
-        <p>We do not use your documents to train AI models.</p>
+        <p>
+          We do not use your documents to train AI models, and we do not share them with an AI
+          provider except to answer something you asked.
+        </p>
       </>
+    ),
+  },
+  {
+    id: 'linking-items-across-apps',
+    title: 'Linking items across apps',
+    body: (
+      <ul>
+        <li>
+          <strong>Connected tabs.</strong> A tab in one item can open another item, in any app. To
+          make it, you need the right to share the other item, and we make an ordinary share link on
+          it for the connection, at the role you choose, which anyone who can open the first item
+          then follows. liveworkspace.app keeps a record of the connection: which two items, and
+          that link. Removing the tab, or deleting the link from the other item&rsquo;s Share, ends
+          it.
+        </li>
+        <li>
+          <strong>Live embeds.</strong> An item can be shown live, and read only, inside another.
+          The embed shows each reader what that reader&rsquo;s own account can already open, never
+          more; a reader without access sees a blurred preview and the item&rsquo;s name, and can
+          ask for access.
+        </li>
+        <li>
+          <strong>Send to Plan.</strong> When you turn something into a liveplanner card, the card
+          is made as you, with the words you sent, and linked back to where it came from.
+        </li>
+      </ul>
     ),
   },
   {
@@ -446,9 +528,20 @@ const SECTIONS: LegalSection[] = [
             livehuddle&rsquo;s calls.
           </li>
           <li>
-            <strong>Google</strong>: sign-in with Google, if you choose it, and showing your Google
-            picture, if you have one.
+            <strong>Google</strong>: sign-in with Google, if you choose it, showing your Google
+            picture, if you have one, and, in livediagram, reading handwriting from a photo of
+            sticky notes (Gemini).
           </li>
+          <li>
+            <strong>Anthropic or OpenAI</strong>: only if you or your team saved a key with that
+            provider, and only for the model calls that run on it (see{' '}
+            <a href="#ai-features">AI features</a>).
+          </li>
+          {proOn() && (
+            <li>
+              <strong>Stripe</strong>: taking payment for a paid plan, on its own pages.
+            </li>
+          )}
           <li>
             <strong>Your browser&rsquo;s push service</strong> (Google, Mozilla, Apple or
             Microsoft): delivering phone notifications, encrypted, if you turn them on.
@@ -489,12 +582,12 @@ const SECTIONS: LegalSection[] = [
           email you to confirm it. Your liveworkspace account closes, for every app at once: the
           documents you own in every app (the Trash included), your folders, images and preferences,
           your account details and Google picture address, sessions, API tokens, sign-in records,
-          phone notification devices and your own connections are deleted straight away. We also
-          disconnect your Google Drive and delete any download of your data at the same time; if
-          either fails, the Drive access ends when you remove it in your Google account, and a
-          download is deleted by itself after 3 days. You leave every team (a team you ran alone
-          goes; one you were the only admin of passes to its longest-standing member). Documents
-          that belong to a team stay with the team.
+          phone notification devices, your own AI key, your Forum posts and your own connections are
+          deleted straight away. We also disconnect your Google Drive and delete any download of
+          your data at the same time; if either fails, the Drive access ends when you remove it in
+          your Google account, and a download is deleted by itself after 3 days. You leave every
+          team (a team you ran alone goes; one you were the only admin of passes to its
+          longest-standing member). Documents that belong to a team stay with the team.
         </p>
         <p>
           Other things are kept only as long as they are useful: anonymous product events for 60
@@ -587,125 +680,7 @@ const SECTIONS: LegalSection[] = [
     ),
   },
 
-  // App by app: only what one app does beyond the above (each signs you in with your liveworkspace account).
-  {
-    app: 'livediagram.app',
-    id: 'livediagram-sticky-notes',
-    title: 'Reading sticky notes from a photo',
-    body: (
-      <p>
-        When you import a photo of sticky notes, the notes are found in your browser, and crops of
-        them are sent through our API to <strong>Google</strong> (Gemini) to read the handwriting.
-        We do not store the crops.
-      </p>
-    ),
-  },
-  {
-    app: 'liveplanner.app',
-    id: 'liveplanner-everything-above',
-    title: 'Nothing beyond the above',
-    body: (
-      <p>
-        liveplanner&rsquo;s boards, sheets, dashboards and forms are stored as described under{' '}
-        <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
-        its own.
-      </p>
-    ),
-  },
-  {
-    app: 'livedocuments.app',
-    id: 'livedocuments-everything-above',
-    title: 'Nothing beyond the above',
-    body: (
-      <p>
-        livedocuments&rsquo; articles, slides and infographics are stored as described under{' '}
-        <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
-        its own.
-      </p>
-    ),
-  },
-  {
-    app: 'livedesign.app',
-    id: 'livedesign-everything-above',
-    title: 'Nothing beyond the above',
-    body: (
-      <p>
-        livedesign&rsquo;s logos and wireframes are stored as described under{' '}
-        <a href="#what-the-apps-store">What the apps store</a>, and photos you edit are images you
-        upload, handled the same way. It handles your data in no way of its own.
-      </p>
-    ),
-  },
-  {
-    app: 'liveknowledge.app',
-    id: 'liveknowledge-everything-above',
-    title: 'Nothing beyond the above',
-    body: (
-      <p>
-        liveknowledge&rsquo;s knowledgebases and their pages are stored as described under{' '}
-        <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
-        its own.
-      </p>
-    ),
-  },
-  {
-    app: 'livehuddle.app',
-    id: 'livehuddle-calls',
-    title: 'Talking, cameras and screen sharing',
-    body: (
-      <>
-        <p>
-          In a Space you can talk to the people near your character, turn on your camera and share
-          your screen. livehuddle&rsquo;s spaces, and everything on their boards, are stored as
-          described under <a href="#what-the-apps-store">What the apps store</a>; what you say and
-          show in a call is not stored at all.
-        </p>
-        <ul>
-          <li>
-            <strong>Only when you choose.</strong> Your microphone opens only after you press{' '}
-            <strong>Join Audio</strong>, your camera only when you turn it on, and your screen only
-            when you pick what to share, each after your browser asks your permission. Your
-            microphone closes on its own when nobody else has been on your tab for 15 seconds.
-            Screen sharing sends no sound. A camera or screen you turn on outside a call is a
-            preview only you see, and nothing is sent.
-          </li>
-          <li>
-            <strong>Relayed, never recorded.</strong> Your voice, camera and screen travel from your
-            browser through Cloudflare&rsquo;s realtime service (Cloudflare Realtime, with its TURN
-            relay) to the people who can hear you, never straight to their browsers, so they do not
-            see your IP address. Our server sets up each connection but never receives the sound or
-            picture, and we do not record, transcribe or keep any of it.
-          </li>
-          <li>
-            <strong>Who hears and sees you.</strong> The people near your character, or in the same
-            room, hear you, and see your camera and screen. Speaking from a stage, or once someone
-            lets you speak, everyone on the tab hears you; they also see your camera and screen only
-            if the stage is set to show cameras. Everyone on your tab can see when you are talking
-            (a small level meter above your character, never the sound). Someone with view access
-            can listen but never speak or turn on a camera.
-          </li>
-          <li>
-            <strong>Your character.</strong> Where your character walks, the messages it says, its
-            status, a raised hand and a knock on a door are sent live to the people in the Space,
-            and never stored. A message is never shown to anyone who arrives later. How your
-            character looks is kept in your browser.
-          </li>
-          <li>
-            <strong>Music and video in a Space.</strong> A Jukebox plays an audio stream from a link
-            an editor set, loaded by your browser from wherever it is hosted (which sees your IP
-            address), and only after you have pressed its Play. A Screen&rsquo;s video loads from
-            YouTube, Vimeo or Loom, like any embedded video.
-          </li>
-          <li>
-            <strong>Counting.</strong> The anonymous product events count that someone joined a
-            call, muted, or turned on a camera or a screen share, never who, for how long, or
-            anything said or shown.
-          </li>
-        </ul>
-        <p>livehuddle has no MCP server, so connected AI tools reach it only with an API token.</p>
-      </>
-    ),
-  },
+  ...APP_SECTIONS,
 ];
 
 export default function Privacy() {

@@ -140,7 +140,7 @@ A limit of "none" means unlimited. Days are UTC days and months are UTC calendar
   counted as Public Roadmaps are (liveknowledge/docs/specs/030-knowledgebase/publishing.md "Tiers"). Every other
   part of Publish to the Web works on every tier.
 - **A credit spend sits beside an app's own hourly and daily caps**, never in place of them (liveknowledge's Ask and
-  conflict check caps, liveplanner's AI steps a day). Those are abuse bounds and hold on every tier.
+  conflict check caps, liveplanner's AI steps a day, Ask AI's 30 questions a person a day). Those are abuse bounds and hold on every tier.
 - **A call minute** is one person in a call for one minute. Nobody limits how many people join a call. Pro has
   5,000 (owner, 2026-11-22, down from 10,000) so the smallest team, three members pooling 7,500, never has fewer
   than one person on Pro.
@@ -177,6 +177,7 @@ spend these amounts and the screens say them from one table (`AI_CREDIT_COSTS` i
 | Automations: Describe a Rule                           | 1                    | 1,500 tokens written                                |
 | liveplanner: Describe a Plan, Describe a Form          | 1                    | 2,000 tokens written                                |
 | livediagram: read a photo's notes                      | 1 for every 24 notes | six notes a request, 2,000 tokens written a request |
+| Ask AI in any app's Tools (built-in)                   | 1                    | 24,000 characters of passages read, 2,000 written   |
 
 - **Said before, in the words the operation's own screen uses:** "Uses 2 AI credits" beside the button that starts
   it, "Each run of this step uses 1 AI credit." in a step's panel, and for a photo, "Read 60 notes with AI · Uses 3
@@ -185,6 +186,13 @@ spend these amounts and the screens say them from one table (`AI_CREDIT_COSTS` i
   is never more than the table says.
 - **A refused spend costs nothing**, and an operation the model then fails is not given back (each app's own
   caps bound retries).
+- **Ask AI** (owner's open choice, decided 2026-11-23 in Work Tracker 1391; the owner may overturn it) costs 1
+  credit, as liveknowledge's Ask does: on built-in AI the model writes at most 2,000 tokens (`BUILT_IN_MAX_TOKENS`
+  caps Ask's 8,000, which is room for a key's model, and a key spends no credits), and it reads at most 24,000
+  characters of passages and the earlier turns. The **item's owner pays** (the team for a team's item) for an Editor
+  or a Participant, as every other limit does; a **Viewer is lent nothing** and spends their own; a guest's item
+  spends nobody's. People who are not the owner or the owning team charge at most 20 questions a day to one item.
+  Ask's own 30 built-in questions a person a day hold beside it ([Ask AI](../020-ask/ask.md) "AI credits").
 
 ## Price
 
@@ -412,8 +420,8 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   usage now, grouped (Automation; Publishing; AI; Storage and History; Recording and Calls; Knowledgebases),
   each row with the logos of the apps it applies to and an explanation. A limit shared by several apps shows each of
   their logos, a small block of them, never liveworkspace's own; each logo names its app in a tooltip, and the line
-  under the row's name says "Every app", "Every app but livehuddle", or the apps by name (owner, 2026-11-22). Its header reads badge, title and sentence at every width; the
-  price sits at the header's right on a wide screen, and on a phone in the footer, beside the button that buys it.
+  under the row's name says "Every app", "Every app but livehuddle", or the apps by name (owner, 2026-11-22). Its header is the [dialog hero header](../004-index/dialog-hero-header.md) with the Upgrade art, title and
+  sentence read first at every width; the price sits among the header's actions on a wide screen, and on a phone in the footer, beside the button that buys it.
 - **The pricing page** on liveworkspace.app: the three tiers and the same comparison, with your usage when signed in.
   It opens with an illustrated hero (the shared marketing PageHero, its art beside the words: three tiers rising,
   each a step up from the last, every app's tile on the first): "Pricing", "Free for Everyone. Pro When You Need
@@ -457,7 +465,7 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   after it, and a paid tier that ends again later is said again. A team's ending is for its admins alone (a member
   is told only that the team is on Free), and one admin's Dismiss is the team's.
 - **Ask an Admin:** a member of a team on Free who meets a limit, or presses Ask an Admin under Your Teams, opens a
-  dialog with a note to the team's admins (naming the limit when there is one). **Send Request** sends it; **Copy
+  dialog (the dialog hero header, with the Ask an Admin art) with a note to the team's admins (naming the limit when there is one). **Send Request** sends it; **Copy
   Note** stays, to send it some other way. The request is kept by the subscription service and shown to the team's
   admins in Settings, under Subscription, on the team's row: "Bea Lee asked for Pro for Teams" or "3 members have
   asked for Pro for Teams", opening on the newest five with who, the limit that prompted it, the day and their note.

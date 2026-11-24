@@ -25,6 +25,7 @@ import {
 import { getParticipant } from '../person/profiles';
 import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
+import { agentWriteRefusal } from './agent-write-gate';
 import { personTagFor } from '../person-tag';
 import { refreshAgentPresence } from '../room-client';
 import { agentPresenceStamps } from '@liveworkspace/api-kit/agent-presence-stamps';
@@ -93,6 +94,9 @@ async function handleSubmit(
   // its tab gone reads as missing, so a `replace` cannot bring it back under a name of the caller's choosing.
   const scoped = (grantOn(ctx, document.id)?.tabScope ?? null) !== null;
   if (scoped && !document.tabs.some((t) => t.id === tabId)) return notFound();
+  // A token's changeset meets the knowledgebase's AI Editing (docs/specs/030-knowledgebase/ai-editing.md).
+  const aiRefusal = ctx.token ? agentWriteRefusal(document, tabId, 'other') : null;
+  if (aiRefusal) return aiRefusal;
   const raw = await ctx.request.json().catch(() => undefined);
   const parsed = parseChangesetRequest(raw, engineLog({ documentId: document.id, tabId }));
   if (!parsed.ok) return json(parsed.refusal.body, { status: parsed.refusal.status });
@@ -166,6 +170,8 @@ async function handleRevert(
   if (!(await gateWrite(ctx, document.id, document.ownerId, document.teamId, record.tabId))) {
     return forbidden();
   }
+  const aiRefusal = ctx.token ? agentWriteRefusal(document, record.tabId, 'other') : null;
+  if (aiRefusal) return aiRefusal;
   const author = await authorOf(ctx, owner);
   const result = await revertChangeset({
     env: ctx.env,

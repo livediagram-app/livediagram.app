@@ -6,6 +6,7 @@ import type {
   AutomationTargetHandler,
 } from './automation-step-door';
 import type { PlanSendHandler } from './plan-send-door';
+import type { DiagramFromGraphInput } from '@liveworkspace/index-client';
 import type {
   AccessGrantedNotice,
   AccessRequestedNotice,
@@ -27,6 +28,7 @@ import type {
 } from '@liveworkspace/migration';
 import type { DataExportHandlers } from './data-export-door';
 import type { SheetSourceHandlers } from './sheet-source-doors';
+import type { KnowledgeSourceHandlers } from './knowledge-source-doors';
 
 export const JOINED_TELEMETRY_TYPE: Record<Level, 'View' | 'Participate' | 'Edit'> = {
   view: 'View',
@@ -172,14 +174,21 @@ export type InternalItemHandlers = {
   automationTarget?: AutomationTargetHandler;
   // Send to Plan's cards made in this plan as the person (plan-send-door.ts), their grant checked. liveplanner alone.
   planSend?: PlanSendHandler;
+  // Start a Call Here (item-calls.md): this Space is a call about an item, its id kept by the room, which then tells
+  // the index who is in it. livehuddle alone; an app without it answers 404.
+  itemCall?: (spaceId: string, callId: string) => Promise<void>;
   // Where Community posts' items stand, as the index reads them (the app's index client `communityStates`), for the
   // Community's sweep. An app without it answers 404.
   communityStates?: (posts: CommunityStateAsk[]) => Promise<CommunityStateAnswer[]>;
   // A new item for `owner` from one of the app's templates (template-item.ts `itemFromTemplate`), a project kit's
   // part (liveworkspace/docs/specs/004-index/kits.md "The apps' door"). An app without it answers 404.
   fromTemplate?: (input: TemplateInput) => Promise<TemplateResult>;
+  // Send to Diagram's new canvas for `owner`, drawn from another app's graph (graph-item.ts,
+  // liveworkspace/docs/specs/004-index/send-to-diagram.md). livediagram alone; elsewhere a 404.
+  fromGraph?: (input: DiagramFromGraphInput) => Promise<GraphItemResult>;
 } & DataExportHandlers &
-  SheetSourceHandlers;
+  SheetSourceHandlers &
+  KnowledgeSourceHandlers;
 
 // The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
 // never a guest), the folder of theirs it goes in (null: the top), its name, and the file's text.
@@ -198,6 +207,15 @@ export type TemplateInput = {
   // The template's first tab alone, with no example cards (kits.md "The apps' door"): Send to Plan's New Plan.
   bare?: boolean;
 };
+
+export type GraphItemResult =
+  // `tabId`: the tab drawn (absent for a new item's first tab, which the app names itself).
+  | { status: 'ok'; id: string; tabId?: string }
+  // An existing item (`itemId`) the app holds nothing for.
+  | { status: 'not_found' }
+  | { status: 'invalid_graph' }
+  | { status: 'invalid_file' }
+  | { status: 'too_large' };
 
 export type TemplateResult = { status: 'ok'; id: string } | { status: 'unknown_template' };
 

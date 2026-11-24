@@ -1,4 +1,5 @@
 import {
+  APP_ORDER,
   appList,
   SCOPE_WORDS,
   scopeName,
@@ -49,7 +50,7 @@ export function AppName({ scope }: { scope: HelpScope }) {
 
 /** The line under the Applies To row: "Every liveworkspace app", or the apps by name. */
 export function appliesToLine(apps: readonly AppId[], scope: HelpScope | undefined): string {
-  if (apps.length >= 5) return 'Every liveworkspace app';
+  if (apps.length >= APP_ORDER.length) return 'Every liveworkspace app';
   return appList(rowOrder(apps, scope));
 }
 

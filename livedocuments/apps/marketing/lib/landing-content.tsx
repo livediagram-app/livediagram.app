@@ -496,7 +496,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Your other work, live on the page',
         description:
-          'Add a Live Embed and a canvas, plan or design from livediagram, liveplanner or livedesign sits on the page, live and read-only. Everyone sees it with their own access, and someone without access sees only a blurred picture.',
+          'Add an Embed File and a canvas, plan, design or knowledgebase from livediagram, liveplanner, livedesign or liveknowledge sits on the page, live and read-only. Everyone sees it with their own access, and someone without access sees only a blurred picture.',
       },
       {
         art: <TeamsArt />,
