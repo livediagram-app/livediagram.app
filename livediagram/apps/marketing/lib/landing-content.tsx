@@ -4,6 +4,7 @@ import {
   AnimatedIconsArt,
   AnimatedShapesArt,
   ApiArt,
+  AskAiArt,
   ApprovalArt,
   ArrowsArt,
   AssignedActionsArt,
@@ -13,6 +14,7 @@ import {
   BorderStyleArt,
   BringFocusArt,
   C4Art,
+  CallArt,
   CanvasBackdropArt,
   CanvasChartsArt,
   CodeBlockArt,
@@ -47,6 +49,7 @@ import {
   LiveStatusArt,
   LivingBackgroundArt,
   LockArt,
+  MagnifierArt,
   MeetingRecordArt,
   MarkdownImportArt,
   MarkersArt,
@@ -58,6 +61,7 @@ import {
   PalmRejectionArt,
   PathToolArt,
   PencilArt,
+  PlanCardsArt,
   PresenceArt,
   PresentLocallyArt,
   PresenterNotesArt,
@@ -194,6 +198,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Turn any element into a piece of work: name the action, describe it, and hand it to a teammate from any of your teams, with an optional email nudge. An Actions panel tracks everything still open, with your own assignments on top.',
       },
       {
+        art: <PlanCardsArt />,
+        href: '/help/collaboration/make-plan-cards/',
+        group: 'Work together live',
+        title: 'From the canvas to the plan',
+        description:
+          'Send a sticky, a shape or a comment thread to a board in liveplanner as a card, and a chip on the element shows where the card stands. Or select a whole roadmap and choose Make Plan Cards: shapes become cards, arrows become what each card waits on, lanes become columns and dates become start and due dates. Make them again after a change and the same cards update.',
+      },
+      {
+        art: <CallArt />,
+        href: '/help/collaboration/start-a-call/',
+        group: 'Work together live',
+        title: 'Start a call about the canvas',
+        description:
+          'Press Call in the corner and a livehuddle call about this canvas opens in a new tab, for anyone who can open the canvas to join. While it runs, the corner says how many are in it with a Join button, and Meetings in Tools keeps the calls held about the canvas.',
+      },
+      {
         art: <UndoRedoArt />,
         href: '/help/canvas/undo/',
         group: 'Work together live',
@@ -215,7 +235,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Automations that run the board',
         description:
-          'Give a canvas rules of its own: put a workshop board back to a clean snapshot every night, post new comments and poll results to Slack or Microsoft Teams, or take a snapshot every Friday. Rules run on our servers, even with nobody in the canvas.',
+          'Give a canvas rules of its own: put a workshop board back to a clean snapshot every night, post new comments and poll results to Slack or Microsoft Teams, or take a snapshot every Friday. A step can reach your other apps too: once a session goes quiet, summarise it with AI and write it up as a page in a knowledgebase, or make a card in a plan. Rules run on our servers, even with nobody in the canvas.',
       },
       {
         art: <WalkthroughArt />,
@@ -351,7 +371,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Editor, participant or view-only links',
         description:
-          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the canvas private.',
+          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the canvas private. Lock one down further with a password, Require Sign In, or only people whose email is at your organisation\u2019s domain.',
       },
       {
         art: <ApprovalArt />,
@@ -367,7 +387,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Live in your wiki, docs or README',
         description:
-          'Copy an iframe from the Share dialog and the canvas sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save, of whichever tab you pick.',
+          'Copy an iframe from the Share dialog and the canvas sits inside your wiki, Notion or site, live as people edit it, or just paste the share link into Notion, Medium or Ghost and it turns into the live canvas. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save, of whichever tab you pick.',
       },
       {
         art: <TeamsArt />,
@@ -375,7 +395,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Teams with a shared library',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of canvases they can all open and edit. Admins manage membership and roles, and read the team\u2019s Audit Log, filtered or exported as CSV; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
+          'Create a team, invite people by email, and everyone gets a shared folder of canvases they can all open and edit. The team\u2019s page keeps its People, its shared Library and its Audit Log, filtered or exported as CSV, a tab each; admins manage membership and roles, and members just get to work. Sign in to set one up, the canvas itself never needs an account.',
       },
       {
         art: <ExpiryArt />,
@@ -506,7 +526,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'More than boxes and arrows',
         title: 'Charts and meters on the canvas',
         description:
-          'Show the number, not just the box: column, bar, line, area and scatter charts from an editable grid or a CSV, a pie, progress bars and rings, a star rating and a timeline rail. Link a pie, bar or line chart to a liveplanner Sheet and it updates when the numbers change. They take the theme\u2019s colours and move, lock and export like any other element.',
+          'Show the number, not just the box: column, bar, line, area and scatter charts from an editable grid or a CSV, a pie, progress bars and rings, a star rating and a timeline rail. Fill a chart or a table From a Plan in liveplanner (a range of its Sheets, a board\u2019s cards counted by column, label or assignee, or a Dashboard metric) and it keeps in step with the plan, or Freeze it as it is. They take the theme\u2019s colours and move, lock and export like any other element.',
       },
       {
         art: <CodeBlockArt />,
@@ -796,6 +816,21 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Isometric view tips the whole canvas onto an angle and lifts each layer off the one below, so a stack that reads as flat boxes becomes a scene you can see the depth of. Orbit it from the zoom cluster. It is a way of LOOKING at the canvas, not a change to it: nothing moves, and everyone else still sees it flat.',
       },
       {
+        art: <MagnifierArt />,
+        href: '/help/selection-modes/magnifier/',
+        group: 'Bring it to life',
+        title: 'A magnifier on the cursor',
+        description:
+          'Press M and a lens follows your cursor, showing what is under it enlarged while the whole tab stays at its own zoom. Read a small label or check where an arrow lands on a big diagram without zooming in and out. Drag it with a finger on a phone; nobody else sees it.',
+      },
+      {
+        art: <AskAiArt />,
+        group: 'AI & your tools',
+        title: 'Ask AI about the canvas',
+        description:
+          'Open Tools, then Ask AI, and ask a question of the canvas: what are the main steps, what looks missing. The answer comes from the canvas\u2019s own words, with numbered sources that select the shape each one came from. Built-in AI answers within a daily allowance, or use your own AI key. Asking reads the canvas and changes nothing; sign in to ask.',
+      },
+      {
         art: <McpArt />,
         href: '/help/account-and-data/connect-ai-mcp/',
         group: 'AI & your tools',
@@ -825,7 +860,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Bring your boards from other tools',
         description:
-          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a canvas you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page. draw.io\u2019s BPMN shapes arrive as real BPMN elements.',
+          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a canvas you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page. Visio drawings come in too, and so do Lucidchart diagrams through Lucidchart\u2019s Visio export, with their connectors still attached. draw.io\u2019s BPMN shapes arrive as real BPMN elements.',
       },
       {
         art: <ExportArt />,
@@ -841,7 +876,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Diagrams from your code, shown in review',
         description:
-          'Draw a deployment diagram straight from a wrangler.toml or a Docker Compose file, from the import dialog or with livediagram link from-code. Add the GitHub workflow and every pull request gets before and after pictures of each changed tab, with additions, changes and removals outlined, on private repositories too.',
+          'Draw an architecture diagram straight from your wrangler.toml, Docker Compose, Terraform and Kubernetes files, several at once, from the import dialog or with livediagram link from-code, and press Update From Files when they change. Add the GitHub workflow and every pull request gets before and after pictures of each changed tab, with additions, changes and removals outlined, on private repositories too.',
       },
       {
         art: <ApiArt />,

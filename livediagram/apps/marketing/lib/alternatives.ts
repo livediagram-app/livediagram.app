@@ -4,7 +4,7 @@ import { SITE_URL } from '@livediagram/ui';
 // livediagram's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livediagram"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-11-18');
+const UPDATED = new Date('2026-11-24');
 
 const LIST: Alternative[] = [
   {
@@ -37,7 +37,7 @@ const LIST: Alternative[] = [
       {
         label: 'Ink',
         us: 'Pressure-sensitive markers in Draw mode',
-        them: 'Natural pen inking, strongest on Windows',
+        them: 'Pen inking in Teams and on the web; the Windows app retired',
       },
       {
         label: 'Beyond the whiteboard',
@@ -175,7 +175,9 @@ const LIST: Alternative[] = [
       'Present a canvas as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
       'Record a walkthrough, your voice, an optional camera bubble and every pan, zoom and tab change, and anyone who can open the canvas replays it over the live board, free for everyone.',
       'Save any selection to your Personal or team Library and drop it on any canvas, and embed a live view of a plan, document or design from the other liveworkspace apps.',
-      'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
+      'Ask AI answers questions about a canvas from its own words, with sources, on built-in AI (a daily allowance) or your own key, and Automations run the board on their own: snapshots, resets, Slack and Teams posts, and a session summarised into your team’s knowledgebase.',
+      'Turn a roadmap into cards in liveplanner, livediagram’s sister app for planning: shapes become cards, arrows become dependencies and lanes become columns, and each shape shows its card’s progress.',
+      'Bring boards across from Excalidraw, draw.io, Visio, Lucidchart and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
     ],
     sections: [
       {
@@ -220,7 +222,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I import my existing Miro boards?',
-        a: "There's no direct Miro importer today. If your board is structured content (a flowchart, an org chart, a plan), the fastest path is to start from a livediagram template, or to import a Mermaid or Markdown version of the structure and let livediagram lay it out as a themed diagram. Boards from Excalidraw, draw.io and Microsoft Whiteboard do import directly.",
+        a: "There's no direct Miro importer today. If your board is structured content (a flowchart, an org chart, a plan), the fastest path is to start from a livediagram template, or to import a Mermaid or Markdown version of the structure and let livediagram lay it out as a themed diagram. Boards from Excalidraw, draw.io, Visio, Lucidchart (through its Visio export) and Microsoft Whiteboard do import directly.",
       },
       {
         q: 'Can livediagram run workshops the way Miro does?',
@@ -518,7 +520,7 @@ const LIST: Alternative[] = [
       'BPMN for business processes: events, tasks, gateways, data and pools, and draw.io’s BPMN shapes import as editable BPMN.',
       'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
       'The C4 model at three levels: Context, Container and Component tabs link level to level, and C4 tiles keep their colours under every theme.',
-      'Architecture diagrams that stay current: bind a shape to a public status URL and it shows the service as Up, Degraded or Down, or draw the diagram from a wrangler.toml or Docker Compose file.',
+      'Architecture diagrams that stay current: bind a shape to a public status URL and it shows the service as Up, Degraded or Down, or draw the diagram from your wrangler.toml, Docker Compose, Terraform and Kubernetes files and update it when they change.',
       'Diagrams kept in a repository get before and after pictures of each changed tab on a pull request, from one GitHub workflow.',
       'Four finishes per tab: Professional for crisp, print-ready diagrams with square corners and thin lines, Sketch or Marker for a hand-drawn review, switched without touching the diagram.',
       'Database schemas with keys and field-to-field relationships, sequence diagrams, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks for a deck.',
@@ -626,6 +628,7 @@ const LIST: Alternative[] = [
       'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
       'Record a walkthrough, your voice, an optional camera bubble and every pan and zoom, and the team replays it over the live board when it suits them.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
+      'Ask AI answers questions about a board from its own words, with sources, on built-in AI (a daily allowance) or your own key.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
       'MIT-licensed, with portable exports, so your boards never depend on one vendor.',
     ],
@@ -732,7 +735,7 @@ const LIST: Alternative[] = [
       'Database schemas with keys and field-to-field relationships, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks.',
       'The C4 model at three levels, Context, Container and Component, each tab linked to the next.',
       'Live service status on an architecture diagram: bind a shape to a public status URL and it shows Up, Degraded or Down, with no cloud account to connect.',
-      'Draw a deployment diagram from a wrangler.toml or Docker Compose file, and see before and after pictures of a changed diagram on each pull request.',
+      'Draw an architecture diagram from wrangler.toml, Docker Compose, Terraform and Kubernetes files, update it when they change, and see before and after pictures of a changed diagram on each pull request.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
       'MIT-licensed, with portable exports, so your diagrams never depend on one vendor.',
     ],
