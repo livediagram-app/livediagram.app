@@ -84,224 +84,224 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'virtual-office',
     title: 'Virtual Office',
     description:
-      'Rooms to walk round in Avatar mode: a reception, desks, a meeting room, a kitchen with coffee, a lounge and a focus room.',
+      'Rooms to walk round: a reception, desks, a meeting room, a kitchen with coffee, a lounge and a focus room.',
     extra: true,
   },
   {
     kind: 'coworking-space',
     title: 'Coworking Space',
     description:
-      'An open floor to walk round in Avatar mode: hot desks, two phone booths, a coffee bar and a lounge.',
+      'An open floor to walk round: hot desks, two phone booths, a coffee bar and a lounge.',
     extra: true,
   },
   {
     kind: 'team-pod',
     title: 'Team Pod',
     description:
-      'A small team’s corner in Avatar mode: four desks together, a table for the stand-up and a team board.',
+      'A small team’s corner: four desks together, a table for the stand-up and a team board.',
     extra: true,
   },
   {
     kind: 'all-hands-hall',
     title: 'All-Hands Hall',
     description:
-      'A hall for town halls and demos in Avatar mode: a stage, rows of seats facing it and Bring Focus.',
+      'A hall for town halls and demos: a stage, rows of seats facing it and Bring Focus.',
     extra: true,
   },
   {
     kind: 'focus-library',
     title: 'Focus Library',
     description:
-      'A quiet room to work in Avatar mode: bookshelves, study desks, two Office Pods for calls and a reading nook.',
+      'A quiet room to work: bookshelves, study desks, two Office Pods for calls and a reading nook.',
     extra: true,
   },
   {
     kind: 'training-room',
     title: 'Training Room',
     description:
-      'A room for training and group work in Avatar mode: a small stage, four tables to work round and Bring Focus.',
+      'A room for training and group work: a small stage, four tables to work round and Bring Focus.',
     extra: true,
   },
   {
     kind: 'rooftop-bar',
     title: 'Rooftop Bar',
     description:
-      'A terrace for after-work drinks in Avatar mode: a long bar with stools, a drinks cabinet and fridge, and two lounges.',
+      'A terrace for after-work drinks: a long bar with stools, a drinks cabinet and fridge, and two lounges.',
     extra: true,
   },
   {
     kind: 'cafe',
     title: 'Cafe',
     description:
-      'A corner cafe for a catch-up in Avatar mode: a counter with stools and coffee, tables to share and a sofa nook.',
+      'A corner cafe for a catch-up: a counter with stools and coffee, tables to share and a sofa nook.',
     extra: true,
   },
   {
     kind: 'garden-retreat',
     title: 'Garden Retreat',
     description:
-      'A fenced garden in Avatar mode: a lawn, paths and trees, a summer house to meet in and places to sit outside.',
+      'A fenced garden: a lawn, paths and trees, a summer house to meet in and places to sit outside.',
     extra: true,
   },
   {
     kind: 'city-park',
     title: 'City Park',
     description:
-      'A park to stroll round in Avatar mode: paths across a lawn, benches, a picnic table, a fountain and a bandstand.',
+      'A park to stroll round: paths across a lawn, benches, a picnic table, a fountain and a bandstand.',
     extra: true,
   },
   {
     kind: 'company-campus',
     title: 'Company Campus',
     description:
-      'A whole company to walk round in Avatar mode: offices, an auditorium with a stage, a bar and a games room, joined by a garden.',
+      'A whole company to walk round: offices, an auditorium with a stage, a bar and a games room, joined by a garden.',
     extra: true,
   },
   {
     kind: 'conference-venue',
     title: 'Conference Venue',
     description:
-      'A venue for a day of talks in Avatar mode: a main hall with a stage, breakout rooms, a foyer bar and a courtyard garden.',
+      'A venue for a day of talks: a main hall with a stage, breakout rooms, a foyer bar and a courtyard garden.',
     extra: true,
   },
   {
     kind: 'startup-hq',
     title: 'Startup HQ',
     description:
-      'A small company’s home in Avatar mode: a studio of desks, a town hall, a kitchen bar, a games room and a garden with pods.',
+      'A small company’s home: a studio of desks, a town hall, a kitchen bar, a games room and a garden with pods.',
     extra: true,
   },
   {
     kind: 'school-quad',
     title: 'School Quad',
     description:
-      'A school to learn in together in Avatar mode: a lecture hall, two classrooms, a library and a canteen round a grassy quad.',
+      'A school to learn in together: a lecture hall, two classrooms, a library and a canteen round a grassy quad.',
     extra: true,
   },
   {
     kind: 'hotel-and-suites',
     title: 'Hotel and Suites',
     description:
-      'A hotel on three floors in Avatar mode: a lobby with a bar and a ballroom, a floor of suites and a rooftop terrace, joined by lifts.',
+      'A hotel on three floors: a lobby with a bar and a ballroom, a floor of suites and a rooftop terrace, joined by lifts.',
     extra: true,
   },
   {
     kind: 'coworking-tower',
     title: 'Co-working Tower',
     description:
-      'A co-working building on three floors in Avatar mode: hot desks and a cafe, phone booths, and an event floor, joined by lifts.',
+      'A co-working building on three floors: hot desks and a cafe, phone booths, and an event floor, joined by lifts.',
     extra: true,
   },
   {
     kind: 'expo-hall',
     title: 'Expo Hall',
     description:
-      'A trade show in Avatar mode: rows of sponsor booths round a keynote stage, a food court, a speaker lounge and a meeting room.',
+      'A trade show: rows of sponsor booths round a keynote stage, a food court, a speaker lounge and a meeting room.',
     extra: true,
   },
   {
     kind: 'beach-offsite',
     title: 'Beach Offsite',
     description:
-      'A team offsite on the sand in Avatar mode: a beach hut to meet in, a tiki bar, a campfire circle, hammocks and a lagoon.',
+      'A team offsite on the sand: a beach hut to meet in, a tiki bar, a campfire circle, hammocks and a lagoon.',
     extra: true,
   },
   {
     kind: 'arcade-lounge',
     title: 'Arcade Lounge',
     description:
-      'An arcade to play in together in Avatar mode: twenty Arcade Machines, a snack bar, a glass party room and a chill lounge.',
+      'An arcade to play in together: twenty Arcade Machines, a snack bar, a glass party room and a chill lounge.',
     extra: true,
   },
   {
     kind: 'games-night-den',
     title: 'Games Night Den',
     description:
-      'A cosy den for games night in Avatar mode: a fire with the dog beside it, games tables, pool, foosball and darts.',
+      'A cosy den for games night: a fire with the dog beside it, games tables, pool, foosball and darts.',
     extra: true,
   },
   {
     kind: 'sports-bar',
     title: 'Sports Bar',
     description:
-      'A bar for the big game in Avatar mode: a long bar, a glass screen lounge, two ping-pong tables, pool and foosball.',
+      'A bar for the big game: a long bar, a glass screen lounge, two ping-pong tables, pool and foosball.',
     extra: true,
   },
   {
     kind: 'family-house',
     title: 'Family House',
     description:
-      'A family home on two floors in Avatar mode: a living room by the fire, a kitchen and a playroom, a study upstairs.',
+      'A family home on two floors: a living room by the fire, a kitchen and a playroom, a study upstairs.',
     extra: true,
   },
   {
     kind: 'city-townhouse',
     title: 'City Townhouse',
     description:
-      'A townhouse on three floors in Avatar mode: a kitchen-diner, a glass home office upstairs and a roof terrace.',
+      'A townhouse on three floors: a kitchen-diner, a glass home office upstairs and a roof terrace.',
     extra: true,
   },
   {
     kind: 'country-cottage',
     title: 'Country Cottage',
     description:
-      'A cottage on two floors in Avatar mode: a farmhouse kitchen, a snug, a garden with a pond and an attic studio.',
+      'A cottage on two floors: a farmhouse kitchen, a snug, a garden with a pond and an attic studio.',
     extra: true,
   },
   {
     kind: 'music-hall',
     title: 'Music Hall',
     description:
-      'A venue for a gig in Avatar mode: a main hall with a stage and a standing floor, a foyer bar, a green room and a cloakroom.',
+      'A venue for a gig: a main hall with a stage and a standing floor, a foyer bar, a green room and a cloakroom.',
     extra: true,
   },
   {
     kind: 'festival-field',
     title: 'Festival Field',
     description:
-      'An open-air festival in Avatar mode: a main stage and a crowd field, three food stalls, a bar tent and a campfire area.',
+      'An open-air festival: a main stage and a crowd field, three food stalls, a bar tent and a campfire area.',
     extra: true,
   },
   {
     kind: 'interview-suite',
     title: 'Interview Suite',
     description:
-      'Interviews in Avatar mode: a waiting area with a front desk, two closed interview rooms with signs to knock at, and a debrief room.',
+      'Interviews: a waiting area with a front desk, two closed interview rooms with signs to knock at, and a debrief room.',
     extra: true,
   },
   {
     kind: 'client-lounge',
     title: 'Client Lounge',
     description:
-      'A place to host clients in Avatar mode: a front desk, a lounge with a coffee bar, a glass pitch room, a boardroom and a quiet room.',
+      'A place to host clients: a front desk, a lounge with a coffee bar, a glass pitch room, a boardroom and a quiet room.',
     extra: true,
   },
   {
     kind: 'classroom',
     title: 'Classroom',
     description:
-      'A class in Avatar mode: a classroom of desks facing a Screen and Bring Focus, and three breakout rooms with a Timer each.',
+      'A class: a classroom of desks facing a Screen and Bring Focus, and three breakout rooms with a Timer each.',
     extra: true,
   },
   {
     kind: 'hackathon-hall',
     title: 'Hackathon Hall',
     description:
-      'A hackathon in Avatar mode: team tables on the floor, a demo stage, a mentor room, a nap room and a snack bar.',
+      'A hackathon: team tables on the floor, a demo stage, a mentor room, a nap room and a snack bar.',
     extra: true,
   },
   {
     kind: 'art-gallery',
     title: 'Art Gallery',
     description:
-      'A show in Avatar mode: a main gallery of Photo Walls, a sculpture hall, a talk room with a podium and a foyer café.',
+      'A show: a main gallery of Photo Walls, a sculpture hall, a talk room with a podium and a foyer café.',
     extra: true,
   },
   {
     kind: 'wellness-studio',
     title: 'Wellness Studio',
     description:
-      'Time out together in Avatar mode: a yoga studio, a meditation room, a gym, a nap room and a juice bar.',
+      'Time out together: a yoga studio, a meditation room, a gym, a nap room and a juice bar.',
     extra: true,
   },
 ];

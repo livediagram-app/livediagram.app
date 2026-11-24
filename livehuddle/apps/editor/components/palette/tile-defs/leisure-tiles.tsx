@@ -59,7 +59,7 @@ export const LEISURE_TILES: PaletteTileDef[] = [
     label: 'Add Bar Stool',
     caption: 'Bar Stool',
     description:
-      'A stool for Avatar mode: walk onto it to sit, facing the bar. One sitter at a time, their name above it.',
+      'A stool: walk onto it to sit, facing the bar. One sitter at a time, their name above it.',
     filled: true,
     action: { type: 'shape', kind: 'bar-stool' },
     icon: <BarStoolIcon size={TILE_GLYPH_PX} />,
@@ -74,7 +74,7 @@ export const LEISURE_TILES: PaletteTileDef[] = [
     label: 'Add Drinks Cabinet',
     caption: 'Drinks Cabinet',
     description:
-      'A glass-fronted drinks cabinet for Avatar mode: walk your character up to it and it gets a juice, sipping it for a minute where everyone can see.',
+      'A glass-fronted drinks cabinet: walk your character up to it and it gets a juice, sipping it for a minute where everyone can see.',
     filled: true,
     action: { type: 'shape', kind: 'drinks-cabinet' },
     icon: <DrinksCabinetIcon size={TILE_GLYPH_PX} />,
@@ -89,7 +89,7 @@ export const LEISURE_TILES: PaletteTileDef[] = [
     label: 'Add Drinks Fridge',
     caption: 'Drinks Fridge',
     description:
-      'A fridge of cans for Avatar mode: walk your character up to it and it gets a soda, sipping it for a minute where everyone can see.',
+      'A fridge of cans: walk your character up to it and it gets a soda, sipping it for a minute where everyone can see.',
     filled: true,
     action: { type: 'shape', kind: 'drinks-fridge' },
     icon: <DrinksFridgeIcon size={TILE_GLYPH_PX} />,

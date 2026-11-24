@@ -145,7 +145,7 @@ export const AMENITY_TILES: PaletteTileDef[] = [
     label: 'Add Water Cooler',
     caption: 'Water Cooler',
     description:
-      'A water cooler for Avatar mode: walk your character up to it and it gets a cup of water, sipping it for a minute where everyone can see.',
+      'A water cooler: walk your character up to it and it gets a cup of water, sipping it for a minute where everyone can see.',
     filled: true,
     action: { type: 'shape', kind: 'water-cooler' },
     icon: <WaterCoolerIcon size={TILE_GLYPH_PX} />,
@@ -160,7 +160,7 @@ export const AMENITY_TILES: PaletteTileDef[] = [
     label: 'Add Coffee Machine',
     caption: 'Coffee Machine',
     description:
-      'A coffee machine for Avatar mode: walk your character up to it and it gets a steaming coffee, sipping it for a minute where everyone can see.',
+      'A coffee machine: walk your character up to it and it gets a steaming coffee, sipping it for a minute where everyone can see.',
     filled: true,
     action: { type: 'shape', kind: 'coffee-machine' },
     icon: <CoffeeMachineIcon size={TILE_GLYPH_PX} />,
@@ -324,7 +324,7 @@ export const AMENITY_TILES: PaletteTileDef[] = [
     label: 'Add Office Pod',
     caption: 'Office Pod',
     description:
-      'A booth for two in Avatar mode: walk in and sit, and once both seats are taken its glass door slides shut and the pod becomes its own private call.',
+      'A booth for two: walk in and sit, and once both seats are taken its glass door slides shut and the pod becomes its own private call.',
     filled: true,
     action: { type: 'shape', kind: 'office-pod' },
     icon: <OfficePodIcon size={TILE_GLYPH_PX} />,
@@ -339,7 +339,7 @@ export const AMENITY_TILES: PaletteTileDef[] = [
     label: 'Add Phone Booth',
     caption: 'Phone Booth',
     description:
-      "A booth for one in Avatar mode: sit in it to step out of the room's call, and its lamp shows Busy until you leave.",
+      "A booth for one: sit in it to step out of the room's call, and its lamp shows Busy until you leave.",
     filled: true,
     action: { type: 'shape', kind: 'phone-booth' },
     icon: <PhoneBoothIcon size={TILE_GLYPH_PX} />,

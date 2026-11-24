@@ -56,7 +56,7 @@ export const AvatarPadView = memo(function AvatarPadView({
           block
           className="absolute inset-0"
           title="Start Walking Here"
-          description="Click to start Avatar mode on this pad."
+          description="Click to start walking from this pad."
         >
           <button
             type="button"

@@ -45,7 +45,7 @@ export function portalTourSteps(ctx: PortalTourContext): TourStepOf<ElementTourA
     onGraphic(
       'walk',
       'Walk Into It',
-      'In Avatar mode, walk into a portal to come out of the other.',
+      'While walking, step into a portal to come out of the other.',
       elementSelector(id),
     ),
     conceptOutro('That Is a Portal', 'Undo takes back any change.'),

@@ -2,7 +2,7 @@
 
 Status: **implemented**.
 
-A canvas tool called **Avatar**, named **Walk** wherever an Editor switches to it (the [Edit | Walk toggle](#the-edit--walk-toggle)): a small Habbo-Hotel-style pixel character stands on the canvas, walks to wherever you click, steps in whatever direction you press the arrow keys, and hops with a waved flag on Space. While the mode is active the canvas is **read-only for you**, so a walk gesture can never select, move, or edit anything. Everyone in the room sees everyone else's character.
+A canvas tool called **Avatar**, named **Walk** wherever an Editor switches to it (what people read, a template's or a palette tile's description, a tooltip or a tour, says walking, never Avatar mode) (the [Edit | Walk toggle](#the-edit--walk-toggle)): a small Habbo-Hotel-style pixel character stands on the canvas, walks to wherever you click, steps in whatever direction you press the arrow keys, and hops with a waved flag on Space. While the mode is active the canvas is **read-only for you**, so a walk gesture can never select, move, or edit anything. Everyone in the room sees everyone else's character.
 
 ## Why
 
@@ -371,7 +371,7 @@ Every Behaviour and every Reaction on the avatar palette is also **one key**, so
 - **Plain presses only**: any modifier (Cmd+C copies) and an autorepeat from a held key do nothing, so holding a key never machine-guns a burst.
 - **Never while typing**: a focused text field (the message composer, a rename, a comment), an open dialog or a focused menu keeps the key, as it does for the arrows and Space.
 - While walking these keys are the character's, so the editor's own meanings stand aside (`S` does not open Search, `1` does not pick Select). `E`, `V` and `Escape` remain the ways out.
-- The palette shows each key on its card (desktop only), and the Settings Keyboard reference lists them under **While walking (Avatar mode)**. The key map lives in `@livehuddle/avatar/action-keys` (pure, unit-tested); `@livehuddle/avatar/hooks/useAvatarActionKeys` plays it.
+- The palette shows each key on its card (desktop only), and the Settings Keyboard reference lists them under **While walking**. The key map lives in `@livehuddle/avatar/action-keys` (pure, unit-tested); `@livehuddle/avatar/hooks/useAvatarActionKeys` plays it.
 - Viewers have the keys too, as they have the palette's actions: nothing they do is a document write.
 
 ## Persistence
