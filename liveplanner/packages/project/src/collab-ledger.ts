@@ -39,7 +39,7 @@ import {
 } from './element-deltas';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { isCellKey } from './cell-comments';
-import { CHECKLIST_MAX_TEXT } from './data-shapes';
+import { CHECKLIST_MAX_TEXT } from '@liveworkspace/element-model/data-shapes';
 import { applyVoteDelta, type TabVote } from './session';
 import {
   isReactionChange,

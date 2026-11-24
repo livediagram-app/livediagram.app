@@ -14,10 +14,10 @@ Scope, by file:
 | `apps/editor/lib/locked-element-ids.ts`                                                                                | `lockedElementIds`: the lock rule, light enough for callers that do not tidy               |
 | `apps/editor/lib/tidy-verdict.ts`                                                                                      | `assessCleanup`, `cleanupVerdict`: whether a tidier is offered, its tile line and notice   |
 | `apps/editor/lib/auto-align.ts`, `auto-align-lines.ts`                                                                 | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard  |
-| `packages/document/src/auto-layout-tidy.ts`                                                                            | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit     |
+| `../packages/element-model/src/auto-layout-tidy.ts`                                                                    | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit     |
 | `../packages/element-model/src/auto-layout-tidy-graph.ts`                                                              | Units, riders, dashed arrows: the graph of nodes the profile lays out                      |
 | `../packages/element-model/src/auto-layout-tidy-rank.ts`                                                               | Drawn-order loop breaking, side steps, zero-length side edges in the layering              |
-| `packages/document/src/auto-layout-tidy-flow.ts`                                                                       | One component's flow positions: blocks, label-sized gaps, lane centres                     |
+| `../packages/element-model/src/auto-layout-tidy-flow.ts`                                                               | One component's flow positions: blocks, label-sized gaps, lane centres                     |
 | `../packages/element-model/src/auto-layout-route.ts`                                                                   | Square arrow routes around the boxes                                                       |
 | `../packages/model-core/src/auto-layout-route-grid.ts`                                                                 | Bucket grid of the boxes a route must clear                                                |
 | `apps/editor/hooks/canvas/useCleanupPreview.ts`                                                                        | `previewCleanup(kind)` / `endCleanupPreview()`: snapshot, present-only ticks, revert       |
@@ -154,7 +154,7 @@ open would still have its element moves refused by `applyParticipantOp`.
 ## Presentation and UX
 
 - Popover: `MovablePanel` as a popover, title `Tidy Up`, help article `layoutCleanup`, width `w-80` (320 px,
-  `POPOVER_WIDTHS['tidy-up'] = 320`).
+  `POPOVER_WIDTHS['tidy-up'] = 384`).
 - Group 1: caption "Rearrange shapes from the arrows between them." then a `grid-cols-2 gap-2` of tiles. Tile:
   rounded-lg border, a 72×44 drawing on a tinted ground, the name (Title Case, `text-sm font-medium`), the
   line (`text-xs` muted). Hover: brand border and ground; focus: the brand `focus-visible` ring. Smart spans both
@@ -210,7 +210,7 @@ present-only tick, inside the budget above. No LCP impact (lazy).
 
 | Constant                             | Value   | Provenance                                                                                                             | Safe range      |
 | ------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------- | --------------- |
-| `POPOVER_WIDTHS['tidy-up']`          | 320     | Two 152 px tiles, gap and padding                                                                                      | 288–384         |
+| `POPOVER_WIDTHS['tidy-up']`          | 384     | Two 184 px tiles, gap and padding                                                                                      | 288–384         |
 | `TIDY_PREVIEW_WORST_CASE_NODES`      | 300     | A dense hand-drawn diagram (D83)                                                                                       | n/a             |
 | `TIDY_PREVIEW_BUDGET_MS`             | 100     | One hover must feel immediate (D83); asserted as `cpuBudgetMs` of it, 300 on CI's coverage runners (`CI_CPU_HEADROOM`) | 50–200 (CI: 3x) |
 | `ALIGN_TOLERANCE`                    | 8 px    | Hand drift under one grid step (D99)                                                                                   | 4–10            |

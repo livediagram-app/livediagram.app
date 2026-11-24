@@ -142,15 +142,7 @@ export function NeedsAttention(props: NeedsAttentionProps) {
       icon={<AttentionIcon />}
       about="What people and agents are waiting on, most urgent first."
       count={total}
-      action={
-        <SegmentedToggle
-          label="Show"
-          value={filter}
-          onChange={onFilter}
-          options={FILTERS}
-          className="max-w-full overflow-x-auto [&_button]:whitespace-nowrap"
-        />
-      }
+      action={<SegmentedToggle label="Show" value={filter} onChange={onFilter} options={FILTERS} />}
     >
       {filter === 'conflicts' && !overview.hasAi ? (
         <ConflictKeyNote

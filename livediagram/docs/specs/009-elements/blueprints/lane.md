@@ -13,9 +13,9 @@ Scope, by file:
 | `packages/document/src/shape-factory.ts`                         | `SHAPE_DEFAULT_SIZE.lane` (900 × 200) and the lane defaults             |
 | `packages/document/src/colors.ts`                                | `hasHeadingBand`                                                        |
 | `packages/document/src/svg-render-shapes.ts`                     | `svgLaneGutter`: the export's strip and rule                            |
-| `packages/document/src/arrow-label-layout.ts`                    | Lanes are not label obstacles                                           |
+| `../packages/element-model/src/arrow-label-layout.ts`            | Lanes are not label obstacles                                           |
 | `apps/editor/lib/canvas.ts`                                      | `framesFirst`, container size donation                                  |
-| `packages/document/src/containment.ts`                           | `isContainer`, `containerContents`: what a moved frame or lane carries  |
+| `../packages/element-model/src/containment.ts`                   | `isContainer`, `containerContents`: what a moved frame or lane carries  |
 | `apps/editor/components/canvas/LaneGutter.tsx`                   | The seam and its drag, over the shared strip (`LaneGutterStrip`)        |
 | `apps/editor/components/canvas/boxed-element-face-parts.tsx`     | Mounts `LaneGutter` behind the label                                    |
 | `apps/editor/components/canvas/useElementLayerHandlers.ts`       | Wires `onCommitHeaderSize` and `onSnapSeam`                             |
@@ -53,7 +53,11 @@ Banned synonyms: "swimlane" in code (fine in copy), "header" for the gutter in c
 3. **Gutter size.** `laneSizeOfElement(el) = headerSize ?? (band || isUprightTitle(el) ? LANE_BAND_PX : LANE_GUTTER_PX)`,
    clamped to `[MIN_GUTTER_PX, span - MIN_GUTTER_PX]` where `span` is the lane's height for a band
    and its width otherwise; both renderers use this one clamp [QA10].
-4. **Gutter fill.** `headerFill` at full strength when set; else the stroke at opacity 0.1.
+4. **Gutter fill.** `headerFill` at full strength when set; else the stroke at opacity 0.1. The theme
+   transforms clear it when they write the lane's border (`laneHeadingPatch` in
+   `../packages/element-model/src/themes.ts`): `recolourElementForTheme` when the theme has an element
+   stroke, `switchThemeElement` when the lane's stroke was unset or the previous theme's, and
+   `resetThemeElement` always.
 5. **Seam drag.** States: **idle** (`dragSize === null`) and **dragging**. Pointer-down on the seam
    stores `{ start, from: size }` and enters dragging. Each `pointermove` on `window`:
    - `travel` is the client delta on the band's axis; `signed = 2 * travel` for `centre-x`, `-travel`
@@ -119,7 +123,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/element-model/src/lane-gutter.ts (bound by packages/document/src/lane-gutter.ts)
+// packages/element-model/src/lane-gutter.ts (bound by ../packages/element-model/src/lane-gutter.ts)
 export const LANE_GUTTER_PX = 132;
 export const LANE_BAND_PX = 64;
 export type LaneGutterEdge = 'left' | 'right' | 'top' | 'bottom' | 'centre-x';
@@ -164,7 +168,7 @@ export function snapSeamCoordinate(
   threshold?: number,
 ): { value: number; snappedTo: number | null };
 
-// packages/document/src/containment.ts
+// ../packages/element-model/src/containment.ts
 export function containerContents(
   elements: readonly Element[],
   ids: ReadonlySet<ElementId>,

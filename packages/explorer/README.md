@@ -373,7 +373,7 @@ Down Arrow (about 9 ms in jsdom).
 
 Every list is one request per page of at most 200 (`LIST_LIMIT_MAX`). The next page loads as the end of
 the list scrolls near. If that read fails, the list is not marked complete: a "Couldn’t load the rest of this
-list. Try again" row shows under it (the panel's Show more says "Couldn’t load more. Try again"), and each press
+list. Try again" row shows under it (the panel says "Couldn’t load more." beside **Try Again**), and each press
 reads that page once. Scrolling never asks again on its own.
 
 | Data                  | When it loads                                                                                                                                                                                                                                                                                                                                                                                                                                            |

@@ -16,7 +16,7 @@ import {
   type TimerState,
   type SessionPlan,
 } from '@livediagram/document';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
 import { PollIcon, StopwatchIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
 

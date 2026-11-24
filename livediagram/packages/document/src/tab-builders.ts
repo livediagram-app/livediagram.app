@@ -3,15 +3,19 @@
 // event-storming landing every authoring path shares. Render-free, so the MCP, the api and the CLI
 // all build tabs the same way. Template tabs are `buildTemplateTab` in @livediagram/templates.
 
-import { withFacingBends } from './arrow-orthogonal';
-import { settleDiagramKeys } from './diagram-key';
-import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
+import { withFacingBends } from '@liveworkspace/element-model/arrow-orthogonal';
+import { settleDiagramKeys } from '@liveworkspace/element-model/diagram-key';
+import {
+  autoLayoutElements,
+  isLayoutCandidate,
+  nodesLookUnplaced,
+} from '@liveworkspace/element-model/auto-layout';
 import { eventStormingLayers, isEventStormingNote, isEventStormingTab } from './event-storming';
 import { landArrivals } from './event-storming-lane-landing';
 import { layoutGraph, type GraphInput } from './graph-input';
 import { agendaFitHeight } from './svg-render-agenda';
-import { recolourElementsForTheme } from './theme-graph';
-import { getBuiltInTheme } from './themes';
+import { recolourElementsForTheme } from '@liveworkspace/element-model/theme-graph';
+import { getBuiltInTheme } from '@liveworkspace/element-model/themes';
 import { coerceShapeKind } from './validate';
 import type { Element, Tab } from './index';
 

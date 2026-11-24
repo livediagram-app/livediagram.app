@@ -8,8 +8,8 @@ import { decodeStrokePoints } from '@liveworkspace/model-core/stroke-points-cach
 import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { logoPageAt } from './logo-page';
 import type { LaidOutPage } from './page';
-import type { AttachPoint } from './attachment';
-import { isPointerNote, pointerTipOf } from './pointer-note';
+import type { AttachPoint } from '@liveworkspace/element-model/attachment';
+import { isPointerNote, pointerTipOf } from '@liveworkspace/element-model/pointer-note';
 
 // A badge or step held on a host's point holds the reflected point on the reflected host.
 const MIRRORED_POINT: Record<AttachPoint, AttachPoint> = {

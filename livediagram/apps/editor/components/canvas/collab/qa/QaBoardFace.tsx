@@ -20,7 +20,7 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { QaNoteRow } from './QaNoteRow';
 import { QaSpotlight } from './QaSpotlight';
 import { QaDiscussed } from './QaDiscussed';
@@ -28,6 +28,7 @@ import { QaComposer } from './QaComposer';
 import { AccentBar, DiscussGlyph, EmptyRows } from './qa-parts';
 import { CollabAccentScope } from '../collab-accent';
 import { useFlipList } from '@liveworkspace/workbench/hooks/ui/useFlipList';
+import { usePublishFaceControls } from '@/components/canvas/collab/face-controls';
 
 // What the board can do for this viewer. Participant verbs are present for
 // anyone in a live session (view links too); the facilitator verbs only for
@@ -105,6 +106,23 @@ export function QaBoardFace({
   const running = !!actions.discuss;
   const total = notes.length;
 
+  usePublishFaceControls(element.id, [
+    discussing &&
+      actions.discuss && {
+        key: 'spotlight',
+        label: 'Clear the Spotlight',
+        description: 'Stop discussing the question in the spotlight.',
+        icon: 'reveal',
+        run: () => actions.discuss?.(null),
+      },
+    actions.clear && {
+      key: 'clear',
+      label: 'Empty the Board',
+      description: 'Remove every question on it.',
+      icon: 'clear',
+      run: actions.clear,
+    },
+  ]);
   const menu =
     actions.clear || onOpenSettings ? (
       <ElementEllipsisMenu kind="command" label="Q&A board options" color={textColor} align="left">

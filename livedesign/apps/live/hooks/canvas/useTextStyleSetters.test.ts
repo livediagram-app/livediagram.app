@@ -7,7 +7,7 @@ import { useTextStyleSetters } from './useTextStyleSetters';
 
 // Stands in for the DOM measure: the text block is 10 px a character at 14 px, scaled with the
 // label px, one line of 1.25 leading.
-vi.mock('@/components/canvas/text-hug-measure', () => ({
+vi.mock('@liveworkspace/workbench/components/label-editor/plain-text-hug-measure', () => ({
   measureDrawnText: () => (el: TextElement) => () => {
     const size = el.textSize ?? 'scale';
     const px =

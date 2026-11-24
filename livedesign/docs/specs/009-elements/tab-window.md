@@ -7,7 +7,7 @@ livehuddle and livedocuments had already retired it), and nothing in livedesign 
 - no palette tile (Media), quick add, command palette or palette search entry;
 - no Tab Window menu section (Shows, Open), no **Choose a Tab**, no Open button, no element tour and no **Show Me**
   switch for it in Settings;
-- no agent way to add one: `RETIRED_SHAPE_KINDS` (`packages/design/src/tab-window.ts`) keeps it out of the agents'
+- no agent way to add one: `RETIRED_SHAPE_KINDS` (`../packages/element-model/src/tab-window.ts`) keeps it out of the agents'
   element format and kind list (`packages/edit-operations/src/element-format.ts`) and the MCP schema text
   (`packages/agent-verbs/src/mcp/schema.ts`), and `add tab-window` is refused ("tab windows are retired",
   `packages/edit-operations/src/operations/add-kind.ts`). The API's element schema still names the kind, since a
@@ -26,7 +26,7 @@ A design saved with a window keeps it, so nobody's page loses something silently
   (`apps/live/components/canvas/RetiredTabWindowFace.tsx`). It draws no live tab, fetches nothing, and has no
   controls: it selects, moves, resizes, copies and deletes like any box.
 - Exports draw the same frame named for its tab (`svgTabWindow` with `tabWindowNames`,
-  `packages/design/src/tab-window.ts`), never the tab inside it.
+  `../packages/element-model/src/tab-window.ts`), never the tab inside it.
 - It still cannot go in a component ([Components](components.md)).
 - Copying a design still re-points its `windowTabId` to the copied tab (`remapTabLinks`,
   [tab-design-many-to-many](../006-design/tab-design-many-to-many.md)), so a copy's frame keeps its name.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isValidTelemetryEvent, TELEMETRY_TYPE_PATTERN } from './telemetry-schema';
-import { ALL_TIMING_TYPES } from './timing-telemetry';
+import { ALL_TIMING_TYPES } from '@liveworkspace/api-schema/timing-telemetry';
 
 // The timing vocabulary is @liveworkspace/api-schema/timing-telemetry's (tested there); this product's
 // telemetry schema has to accept every type it can send.

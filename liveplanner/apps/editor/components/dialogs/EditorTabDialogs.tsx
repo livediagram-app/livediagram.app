@@ -12,6 +12,7 @@ import { intoTabOf } from '@/components/dialogs/import/into-tab';
 import { wholePlanOffer } from '@/components/dialogs/whole-plan-offer';
 import { panelEnabled } from '@/lib/user-preferences';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { apiTeamMembers } from '@/lib/api-client';
 import { shareUrl } from '@/lib/explorer-host';
 import { planHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';
@@ -143,6 +144,13 @@ export function EditorTabDialogs() {
         />
       ) : shareDialogOpen && projectId ? (
         <ShareDialog
+          // The Team tab's list: the team's members, for a signed-in member (the dialog keeps the joined ones).
+          loadTeamMembers={
+            accountUserId && projectTeamId
+              ? () => apiTeamMembers(accountUserId, projectTeamId)
+              : undefined
+          }
+          viewerUserId={accountUserId}
           client={indexClient}
           item={{
             id: projectId,

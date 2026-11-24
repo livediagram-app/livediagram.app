@@ -6,7 +6,10 @@
 
 import type { ReactNode } from 'react';
 
-import { BorderStrokeIcon, BorderStyleIcon } from '@/components/palette/palette-style-previews';
+import {
+  BorderStrokeIcon,
+  BorderStyleIcon,
+} from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import {
   QUICK_ICON_ALIGNS,
   QUICK_TEXT_ALIGNS,
@@ -26,9 +29,9 @@ import {
   type QuickSwatchSlot,
   type TextAlignX,
 } from '@liveknowledge/document';
-import type { ShownSwatch } from '@/lib/swatch-overrides';
+import type { ShownSwatch } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { QuickMoreColours } from './QuickMoreColours';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { QUICK_ROW_TARGETS, QUICK_TARGET_PX } from './quick-style-metrics';
 import {

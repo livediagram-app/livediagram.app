@@ -5,7 +5,7 @@
 // Every size here is a canvas class, noted beside it.
 
 import type { QaNote } from './qa-board';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { PAD_Y, personDisc, text, type CollabAccent } from './svg-render-face-kit';
 
 // Where a CollabPanel's body starts: the 14px padding, the header row (as

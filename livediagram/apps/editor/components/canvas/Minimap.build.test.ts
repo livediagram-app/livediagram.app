@@ -25,7 +25,9 @@ describe('minimapBuild', () => {
         expect(got.picture?.href === want.picture?.href, `step ${step}`).toBe(true);
         expect(got.bounds).toEqual(want.bounds);
       }
-    });
+      // 120 pictures of a 300-element board: about a second of CPU, twice that in Sketch. The timeout is on the wall
+      // clock, and with every core busy that second took 7.8 s to come by (2026-11-23), past Vitest's 5.
+    }, 60_000);
 
   it('draws every part again under another surface', () => {
     const parts = minimapParts();

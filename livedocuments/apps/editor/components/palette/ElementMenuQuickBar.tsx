@@ -4,49 +4,32 @@
 // menu's first category. Assign Action and Add Comment at the left (an element that has one says so, tinted, and the
 // button reads View), Delete alone at the right. Each button closes the menu as it runs.
 import { elementSendItem } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
-import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
+import {
+  elementResourceOptions,
+  type ResourceOption,
+} from '@liveworkspace/workbench/components/palette/element-resources';
 import { type BoxedElement, type Element } from '@livedocuments/document';
 import { Tooltip } from '@livedocuments/ui';
-import {
-  ActionMenuIcon,
-  CommentMenuIcon,
-  RemoveIcon,
-} from '@liveworkspace/workbench/components/palette/context-menu-icons';
+import { RemoveIcon } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { useLibrary } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
 import { libraryDraftOf } from '@/lib/library-draft';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-// The items the bar offers on `target`, in order: what attaches to it.
+// The Resources options offered on `target`, in order: what attaches to it (elementResourceOptions).
 export function quickBarItems(
   target: BoxedElement,
   props: Pick<EditorContextMenuProps, 'onAssignAction' | 'onOpenComments'>,
-): ResourceItem[] {
-  const comments = (target as { commentThread?: { comments: readonly unknown[] } }).commentThread;
-  const hasComments = !!comments && comments.comments.length > 0;
-  const items: ResourceItem[] = [
-    {
-      key: 'action',
-      detail: 'What a click on it does',
-      label: target.action ? 'View Action' : 'Assign Action',
-      icon: <ActionMenuIcon />,
-      on: !!target.action,
-      run: () => props.onAssignAction(target.id),
-    },
-    {
-      key: 'comment',
-      detail: 'A thread to talk it over',
-      label: hasComments ? 'View Comments' : 'Add Comment',
-      icon: <CommentMenuIcon />,
-      on: hasComments,
-      run: () => props.onOpenComments(target.id),
-    },
-  ];
+): ResourceOption[] {
+  const options = elementResourceOptions(target, {
+    onAssignAction: props.onAssignAction,
+    onOpenComments: props.onOpenComments,
+  });
   // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner, while this session
   // may send.
   const send = elementSendItem(target);
-  if (send) items.push(send);
-  return items;
+  if (send) options.push(send);
+  return options;
 }
 
 const BUTTON =

@@ -24,10 +24,10 @@ spec.
 | File                                                | Responsibility                                                                                                                                                      |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `../packages/model-core/src/stroke-points.ts`       | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                                  |
-| `packages/design/src/stroke-fit.ts`                 | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                                     |
+| `../packages/element-model/src/stroke-fit.ts`       | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                                     |
 | `../packages/model-core/src/stroke-points-cache.ts` | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                                  |
 | `../packages/model-core/src/stroke-points-debug.ts` | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                                     |
-| `packages/design/src/freehand-points.ts`            | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures`            |
+| `../packages/element-model/src/freehand-points.ts`  | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures`            |
 | `packages/design/src/legacy-stroke-points.ts`       | `migrateLegacyStrokePoints`: the former shape to `packedPoints`                                                                                                     |
 | `packages/design/scripts/expand-stroke-points.ts`   | The debug script: a tab or design JSON file with every block expanded                                                                                               |
 | `../scripts/ts-source-hooks.mjs`                    | Node resolve hook (the monorepo root's): lets repo scripts run workspace TypeScript sources                                                                         |
@@ -189,7 +189,7 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Validation       | `packages/design/src/validate.ts`                                      | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
 | OpenAPI          | `apps/api/src/openapi/schemas.generated.ts`                            | regenerated from the type                                                           |
 | Factories        | `packages/design/src/factories.ts`                                     | `createFreehand` packs; geometry stays unpacked                                     |
-| Pen outline      | `packages/design/src/pen-stroke.ts`                                    | `freehandPenStroke` / `penStrokeSvg` decode                                         |
+| Pen outline      | `../packages/element-model/src/pen-stroke.ts`                          | `freehandPenStroke` / `penStrokeSvg` decode                                         |
 | SVG export       | `packages/design/src/svg-render-shapes.ts`                             | decode                                                                              |
 | Stored migration | `packages/design/src/stored-elements.ts`                               | adds `migrateLegacyStrokePoints`                                                    |
 | Canvas view      | `apps/live/components/canvas/boxed-element-overlays.tsx`               | decode                                                                              |

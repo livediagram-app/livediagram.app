@@ -64,14 +64,15 @@ menu" for either kind, `role="menu"` written by hand outside the hooks.
 
 ### Keyboard model (`menu-keys.ts`, pure)
 
-`menuKeyIntent(key: MenuKeyEvent, at: { inSubmenu: boolean; onSubmenuTrigger: boolean }): MenuKeyIntent | null`, where
+`menuKeyIntent(key: MenuKeyEvent, at: { inSubmenu: boolean; onSubmenuTrigger: boolean; searching?: boolean }): MenuKeyIntent | null`, where
 `MenuKeyEvent = { key, shiftKey, altKey, ctrlKey, metaKey }`:
 
 | Key (no Ctrl, Meta, Alt)             | Intent                                       |
 | ------------------------------------ | -------------------------------------------- |
 | `ArrowDown` / `ArrowUp`              | `{ kind: 'move', to: 'next' \| 'previous' }` |
 | `Home` / `End`                       | `{ kind: 'move', to: 'first' \| 'last' }`    |
-| `Enter`, `' '`                       | `{ kind: 'activate' }`                       |
+| `' '` while `searching`              | `{ kind: 'type', char: ' ' }`                |
+| `Enter`, `' '` otherwise             | `{ kind: 'activate' }`                       |
 | `ArrowRight` on a submenu trigger    | `{ kind: 'enter-submenu' }`                  |
 | `ArrowLeft` in a submenu             | `{ kind: 'leave-submenu' }`                  |
 | `Escape`                             | `{ kind: 'close' }`                          |
@@ -80,7 +81,9 @@ menu" for either kind, `role="menu"` written by hand outside the hooks.
 | anything else, or with Ctrl/Meta/Alt | `null`: the browser keeps it                 |
 
 - `moveIndex(current, count, to)`: `next` from `-1` is `0`; wraps both ways; `count === 0` returns `-1`.
-- `typeaheadQuery(prev: { query; at }, char, now)`: appends while `now - at < MENU_TYPEAHEAD_RESET_MS`, else restarts.
+- `typeaheadActive(state, now)`: a non-empty query typed less than `MENU_TYPEAHEAD_RESET_MS` ago. `useMenu` passes it
+  as `searching`, so a space inside a search joins it (Work Tracker 1380: "De " pressed Delete).
+- `typeaheadQuery(prev: { query; at }, char, now)`: appends while `typeaheadActive(prev, now)`, else restarts.
 - `typeaheadIndex(labels, current, query)`: lower-cased `startsWith`, searching from `current + 1` and wrapping; a query
   of one repeated letter (`"ee"`) searches for that letter from `current + 1`, which cycles. `-1` when none matches;
   focus then stays.
@@ -263,7 +266,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Focus in, arrows, activate, Escape, Tab, return                                            | `../packages/ui/src/menu/useMenu.test.tsx`                                                                                                                                                |
 | Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                                                                                                                                          |
 | Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                                                                                                                                         |
-| Rows take the kind's roles                                                                 | `apps/live/components/primitives/PortalMenu.test.tsx`                                                                                                                                     |
+| Rows take the kind's roles                                                                 | `../packages/workbench/src/components/primitives/PortalMenu.test.tsx`                                                                                                                     |
 | Portalled command menus stand in a named region; axe clean                                 | `../packages/workbench/src/components/primitives/PortalMenu.landmark.test.tsx`, `../packages/ui/src/menu/MenuLandmark.test.tsx`, `apps/live/components/canvas/LockedElementMenu.test.tsx` |
 | Row labels left-aligned, icon level with the first line                                    | `../packages/workbench/src/components/primitives/MenuActionRow.layout.test.tsx`                                                                                                           |
 | Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx`                                                                                                              |

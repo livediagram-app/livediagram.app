@@ -10,9 +10,14 @@ import {
 } from '@liveworkspace/model-core/border-style';
 import { MARKER_LINE_PX, finishBorderStroke, finishCornerFallbackPx, type Finish } from './finish';
 import type { ImageElement } from './index';
-import { markerStrokes } from './marker';
+import { markerStrokes } from '@liveworkspace/element-model/marker';
 import type { MarkerDrawing } from './marker-element';
-import { outlineOfEllipse, outlineOfRect, sketchSeed, sketchStrokes } from './sketch';
+import {
+  outlineOfEllipse,
+  outlineOfRect,
+  sketchSeed,
+  sketchStrokes,
+} from '@liveworkspace/element-model/sketch';
 import type { SketchDrawing } from './sketch-element';
 
 /** An outline's line width in its finish, px: a picked border wins; unset draws Professional's Thin, and Marker's

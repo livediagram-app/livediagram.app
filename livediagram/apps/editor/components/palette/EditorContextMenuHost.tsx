@@ -59,6 +59,7 @@ export function EditorContextMenuHost() {
     setTagColour,
     editingId,
     closeContextMenu,
+    setContextMenu,
     openLinkPicker,
     removeIconFromElement,
     imageContext,
@@ -142,7 +143,9 @@ export function EditorContextMenuHost() {
     setChartTypeSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
-    setCodeWrapSelected,
+    setRowsEditorOpenFor,
+    setResourcesOpenForId,
+    setEntityFieldsOpenForId,
     setLegendItemsSelected,
     sankey,
     setSankeyFlowsOpenForId,
@@ -157,8 +160,6 @@ export function EditorContextMenuHost() {
     mindOutline,
     setChecklistItemsSelected,
     toggleChecklistItem,
-    setEntityFieldsSelected,
-    setWebRowsSelected,
     setHeroCaptionSelected,
     setEstimateScaleSelected,
     setAgendaItemsSelected,
@@ -324,6 +325,9 @@ export function EditorContextMenuHost() {
       // right-button RELEASE, so the entrance never fires under a held button.
       key={contextMenu.mode === 'element' ? contextMenu.elementId : contextMenu.mode}
       menu={contextMenu}
+      onOpenTools={() =>
+        setContextMenu((cur) => (cur?.mode === 'element' ? { ...cur, tools: true } : cur))
+      }
       editingId={editingId}
       elements={activeTab.elements}
       tabFont={activeTab.font}
@@ -429,7 +433,10 @@ export function EditorContextMenuHost() {
         closeContextMenu();
         setCodeEditOpenForId(id);
       }}
-      onSetCodeWrap={setCodeWrapSelected}
+      onEditRows={(id, kind) => {
+        closeContextMenu();
+        setRowsEditorOpenFor({ id, kind });
+      }}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
       onEditSequence={
@@ -469,8 +476,10 @@ export function EditorContextMenuHost() {
       onSelectMindMap={() => selectMindBranchOf(menuMindRoot)}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
-      onSetEntityFields={setEntityFieldsSelected}
-      onSetWebRows={setWebRowsSelected}
+      onEditEntityFields={(id) => {
+        closeContextMenu();
+        setEntityFieldsOpenForId(id);
+      }}
       onSetHeroCaption={setHeroCaptionSelected}
       onSetEstimateScale={setEstimateScaleSelected}
       onSetAgendaItems={setAgendaItemsSelected}
@@ -557,6 +566,10 @@ export function EditorContextMenuHost() {
       onOpenNote={openNote}
       onOpenComments={openComments}
       onAssignAction={openAssignAction}
+      onOpenResources={(id) => {
+        closeContextMenu();
+        setResourcesOpenForId(id);
+      }}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
         .filter((e): e is NonNullable<typeof e> => e != null)}

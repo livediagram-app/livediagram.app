@@ -32,6 +32,7 @@ import {
   OAUTH_PRIMARY,
   OAUTH_QUIET,
   OAUTH_SECONDARY,
+  OauthLoading,
   OauthWarning,
   ReadOnlyAccessToggle,
   type OauthPagesConfig,
@@ -117,7 +118,7 @@ function Device({ config, device }: { config: OauthPagesConfig; device: DeviceSe
   if (gate === 'waiting')
     return (
       <Shell>
-        <p className={OAUTH_QUIET}>Loading…</p>
+        <OauthLoading />
       </Shell>
     );
   if (gate === 'sign-in' || !accountUserId) {
@@ -312,7 +313,7 @@ export function createOauthDevicePage(config: OauthPagesConfig) {
       <Suspense
         fallback={
           <Shell>
-            <p className={OAUTH_QUIET}>Loading…</p>
+            <OauthLoading />
           </Shell>
         }
       >

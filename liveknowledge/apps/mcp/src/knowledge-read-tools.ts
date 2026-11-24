@@ -28,6 +28,7 @@ import {
   reviewPeriodOf,
   treeRowOf,
   trustFieldsOf,
+  aiEditingFieldsOf,
 } from '@liveknowledge/agent-verbs';
 import { knowledgeApi } from './knowledge-client';
 import { pageRowNamed } from './page-named';
@@ -52,6 +53,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
       role: context.role,
       scopes: context.scopes,
       review_period: reviewPeriodOf(context.reviewEvery),
+      ...aiEditingFieldsOf(context.aiEditing, context.aiEditUnverifies, context.scopes),
       budget_tokens: context.budget,
       tokens: context.tokens,
       pages: context.pages.map((p) => ({
@@ -120,7 +122,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
         shown.length === 0
           ? 'Nothing matches (the search was recorded as a question the knowledgebase could not answer). Try other words, list_pages for the tree, or report_gap with the user’s question.'
           : (disputed
-              ? 'A result has conflicts_with: read_page both pages and tell the user they disagree. '
+              ? 'A result has conflicts_with: read_page both pages on its question and tell the user they disagree. '
               : '') +
             'read_page with a result’s page (and its heading) for the writing around a passage.',
     });

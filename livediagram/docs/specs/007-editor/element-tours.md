@@ -75,7 +75,7 @@ Element**.
 
 ## Menu steps
 
-A step whose copy names a part of the element's own menu ("In its menu, Tools › Rows…", "More, then Tools ›
+A step whose copy names a part of the element's own menu ("In its menu, the Layer Stack row…", "More, then Tools ›
 Stack…") opens that menu on the element (`openElementMenu`, as a right-click does), opens each row of its path in
 turn (an accordion section, or a flyout such as **Tools**), highlights the part the last row opened, and closes the
 menu as the step ends, however it ends (`inTheMenu`, `menuStep`, `element-menu-tour.ts`). A path that cannot be
@@ -242,7 +242,7 @@ On the selected Timeline, from `timeline-tour-steps.ts`.
 2. **What Happens**: rings the first milestone's name; click (tap) to type over it.
 3. **And When**: rings the first milestone's when; click (tap) to change it.
 4. **Add a Milestone**: the "+" ring open on **Add Milestone**; one at the end, up to eight.
-5. **Reorder in the Menu** (only while More shows): rings More; Tools › Rows.
+5. **Reorder in the Menu** (only while More shows): rings More; the row named for the graphic, which opens its dialog.
 6. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
 7. **That Is a Timeline**: the closing card.
 
@@ -386,8 +386,8 @@ On a selected entity, from `entity-tour-steps.ts`. Its fields carry `data-entity
    like any label.
 3. **name: Type** (an entity with fields): rings the fields; each is a name, an optional type and a key (PK, FK,
    UK), and a double-click (double-tap) edits one in place, Enter moving to the next and adding one past the last.
-4. **Edit the Fields**: the menu step. Fields: a key, a name and a type per row, a cross to remove one, Add Field, up
-   to forty.
+4. **Edit the Fields**: the menu step, open at Tools to show the Fields row, which opens the Fields dialog: a key, a
+   name and a type per row, a cross to remove one, Add Field, up to forty.
 5. **Join Them Up**: rings the entity; a "+" adds a related entity already joined, or a drag from the dot beside a
    field to another entity's field draws a one-to-many relationship, which the Cardinality button changes.
 6. **That Is an Entity**: the closing card, with **Entities Help**.

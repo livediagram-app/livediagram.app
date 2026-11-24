@@ -4,11 +4,11 @@ import {
   tidyDirection,
   tidyLayoutElements,
   tidyMindmapFits,
-} from './auto-layout-tidy';
+} from '@liveworkspace/element-model/auto-layout-tidy';
 import { createPinnedArrow, createText } from './factories';
 import { createShape } from './shape-factory';
-import { arrowPathPolyline } from './arrow-path';
-import { endpointPosition } from './geometry';
+import { arrowPathPolyline } from '@liveworkspace/element-model/arrow-path';
+import { endpointPosition } from '@liveworkspace/element-model/geometry';
 import type { Anchor, ArrowElement, BoxedElement, Element, ShapeElement, ShapeKind } from './index';
 
 // docs/specs/008-canvas/layout-cleanup.md "Tidy Up keeps a flowchart a flowchart" and "What moves together".

@@ -11,7 +11,7 @@
 // editor's swatch is a plain box rather than the selected shape's silhouette.
 
 import type { ShapeColorPreset } from '@/lib/themes';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import { ShapeGlyph } from '@/components/primitives/shape-icon';
 import {
   onMouseHover,

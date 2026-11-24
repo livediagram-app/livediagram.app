@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PageReaction } from '@liveknowledge/api-schema';
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
-import { reactionFailureText } from '@/lib/knowledge/page-feedback-words';
+import {
+  approvalFailureText,
+  commentFailureText,
+  reactionFailureText,
+  watchFailureText,
+} from '@/lib/knowledge/page-feedback-words';
 import { createPageReactionsStore, type PageReactionsApi } from './page-reactions-store';
 import {
   capsuleSplit,
@@ -120,6 +125,45 @@ describe('a refused reaction, in words', () => {
     );
     expect(reactionFailureText(new ApiError('react to page', 500, 'other'), false)).toBe(
       'The reaction could not be taken back. Try again.',
+    );
+    // Named, so the toast still reads in the notification list.
+    expect(reactionFailureText(new Error('x'), true, '“Onboarding”')).toBe(
+      'The reaction to “Onboarding” could not be added. Try again.',
+    );
+    expect(reactionFailureText(new Error('x'), false, '“Onboarding”')).toBe(
+      'The reaction to “Onboarding” could not be taken back. Try again.',
+    );
+  });
+
+  it('names the page in a failed comment, watch or approval when it is given', () => {
+    const down = new Error('x');
+    expect(commentFailureText(down, 'start')).toBe('The comment could not be posted. Try again.');
+    expect(commentFailureText(down, 'start', '“Onboarding”')).toBe(
+      'The comment on “Onboarding” could not be posted. Try again.',
+    );
+    expect(commentFailureText(down, 'load', '“Onboarding”')).toBe(
+      'The comments on “Onboarding” could not be loaded.',
+    );
+    expect(watchFailureText(down, true)).toBe('The page could not be watched. Try again.');
+    expect(watchFailureText(down, false)).toBe('The watch could not be stopped. Try again.');
+    expect(watchFailureText(down, true, '“Onboarding”')).toBe(
+      '“Onboarding” could not be watched. Try again.',
+    );
+    expect(watchFailureText(down, false, '“Onboarding”')).toBe(
+      'The watch on “Onboarding” could not be stopped. Try again.',
+    );
+    expect(approvalFailureText(down, 'approve')).toBe('The page could not be approved. Try again.');
+    expect(approvalFailureText(down, 'request', '“Onboarding”')).toBe(
+      'Approval of “Onboarding” could not be requested. Try again.',
+    );
+    expect(approvalFailureText(down, 'withdraw', '“Onboarding”')).toBe(
+      'The request for “Onboarding” could not be withdrawn. Try again.',
+    );
+    expect(approvalFailureText(down, 'approve', '“Onboarding”')).toBe(
+      '“Onboarding” could not be approved. Try again.',
+    );
+    expect(approvalFailureText(down, 'reject', '“Onboarding”')).toBe(
+      '“Onboarding” could not be rejected. Try again.',
     );
   });
 });

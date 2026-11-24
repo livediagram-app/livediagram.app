@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import { outlineOfBox, outlineOfPath, sketchHatching, sketchSeed, sketchStrokes } from './sketch';
+import {
+  outlineOfBox,
+  outlineOfPath,
+  sketchHatching,
+  sketchSeed,
+  sketchStrokes,
+} from '@liveworkspace/element-model/sketch';
 
 // docs/specs/008-canvas/finish.md "Performance": one element's strokes and hatching under 0.2 ms at an
 // ordinary size, a 20000 px element (the largest the Size category allows) under 2 ms. Measured on an M-series

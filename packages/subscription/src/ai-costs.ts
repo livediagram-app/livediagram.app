@@ -17,6 +17,9 @@ export const AI_CREDIT_COSTS = {
   automationRuleDraft: 1,
   /** liveplanner: Describe a Plan or Describe a Form (2,000 tokens written). */
   planDraft: 1,
+  /** Ask AI in any app's Tools, on built-in AI (2,000 tokens written at most: built-in AI's own cap). Charged to the
+   *  item's owner for an Editor or a Participant, to a Viewer themself (020-ask "AI credits"). */
+  ask: 1,
 } as const;
 
 /** livediagram: notes read from a photo for one credit. A photo's notes are read six to a request, so 24 is four

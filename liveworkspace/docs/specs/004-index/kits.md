@@ -78,7 +78,7 @@ The page then shows what was made and what was not, with two ways on:
 - **Retry**: runs the kit again into the same folder, at the same role, making only what is missing: the parts not
   made and the connections not made. What was made is named in the request, and the index checks each is the
   person's own, in that folder, of the part's app, and live; anything that does not check is made again.
-- **Remove What Was Made**: deletes every item the run made for good (not to the Trash: they are empty starters, made a
+- **Remove Files**: deletes every item the run made for good (not to the Trash: they are empty starters, made a
   moment ago), with their connections and passes, and the folder when nothing else is in it.
 
 Leaving the page keeps what was made, in its folder, as any items are kept.
@@ -93,7 +93,7 @@ Leaving the page keeps what was made, in its folder, as any items are kept.
 - A person starts at most 10 runs a minute, a Retry counting as one (`POST /kits`, per person, the
   index's `KIT_RUN_LIMITER`). Past it the index answers `429 rate_limited` with `Retry-After: 60` before anything is read or made, and the
   page says "You've started a lot of projects in the last minute. Wait a minute, then try again." Ten leaves room to
-  retry a run that failed several times over; a tight loop makes at most forty items a minute. Remove What Was Made
+  retry a run that failed several times over; a tight loop makes at most forty items a minute. Remove Files
   is not limited: it only deletes the person's own run.
 
 ## The apps' door
@@ -121,7 +121,7 @@ page with the Explorer's emitter and its consent rules, never in an app's name. 
 | `Kit·Started`   | Create Project pressed                                                 |
 | `Kit·Retried`   | Retry (or Try Again) pressed                                           |
 | `Kit·Completed` | an answer, first or after a Retry, with every part and connection made |
-| `Kit·Removed`   | Remove What Was Made confirmed and done                                |
+| `Kit·Removed`   | Remove Files confirmed and done                                        |
 
 A refused request (the network, a 429) sends nothing beyond its Started or Retried. The closed list is
 `PLATFORM_OWN_TELEMETRY_EVENTS` (`packages/telemetry`), the only events the service takes in liveworkspace.app's own

@@ -9,11 +9,13 @@
 // cell's blur or at once for a structural change, one undo step each. A store that would change nothing is
 // skipped, so tabbing through cells leaves no empty undo steps.
 
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { sankeyFlowsHeroArt } from '@liveworkspace/ui/dialog-hero-art/sankey-flows';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
 import { useActiveTour } from '@/lib/tour-active';
-import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { Button } from '@livediagram/ui';
 import {
   parseSankeyText,
   renameSankeyNode,
@@ -27,8 +29,8 @@ import {
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SankeyView } from '@/components/canvas/SankeyView';
-import { SankeyFlowsTable } from '@/components/dialogs/SankeyFlowsTable';
-import { SankeyNodeStrip } from '@/components/dialogs/SankeyNodeStrip';
+import { SankeyFlowsTable } from '@liveworkspace/workbench/components/dialogs/SankeyFlowsTable';
+import { SankeyNodeStrip } from '@liveworkspace/workbench/components/dialogs/SankeyNodeStrip';
 import { DialogTabs } from '@liveworkspace/workbench/components/dialogs/DialogTabs';
 import {
   SankeyFlowsShowMeButton,
@@ -42,7 +44,7 @@ import {
   rowsFromFlows,
   withTrailingBlank,
   type SankeyDraftRow,
-} from '@/lib/sankey-flow-rows';
+} from '@liveworkspace/workbench/lib/sankey-flow-rows';
 import { Callout } from '@liveworkspace/ui/callout';
 
 type Tab = 'table' | 'text';
@@ -178,24 +180,31 @@ export function SankeyFlowsDialog({
   );
   const elementTourRunning = useActiveTour() === 'element';
 
+  const titleId = useId();
   return (
     <Dialog
       open
       onClose={close}
       // While Show Me (or the element tour) runs, Escape is the tour's, never the dialog's.
       closeOnEscape={!tour.active && !elementTourRunning}
-      ariaLabel="Edit Sankey flows"
+      titleId={titleId}
       size="3xl"
       className="max-h-[90vh]"
     >
-      <DialogHeader
+      {/* The dialog hero header (dialog-hero-header.md): a small Sankey, its widest ribbon in the accent. */}
+      <HeroDialogHeader
+        art={sankeyFlowsHeroArt}
+        titleId={titleId}
         title="Flows"
         subtitle="Each flow moves an amount from one node to another; its band is drawn as wide as the amount."
-      >
-        <SankeyFlowsShowMeButton tour={tour} onStart={freezeTour} />
-        <HelpArticleLink article="sankeyDiagram" variant="labelled" />
-        <DialogCloseButton onClick={close} />
-      </DialogHeader>
+        actions={
+          <>
+            <SankeyFlowsShowMeButton tour={tour} onStart={freezeTour} />
+            <HelpArticleLink article="sankeyDiagram" variant="labelled" />
+          </>
+        }
+        onClose={close}
+      />
 
       <DialogTabs
         tabs={TABS}

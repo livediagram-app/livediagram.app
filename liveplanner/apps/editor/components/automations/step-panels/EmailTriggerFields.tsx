@@ -4,7 +4,7 @@
 // (Any Board, or one Plan board, told apart by its tab when two share a title) and From, one address or a domain, as
 // typed. A From that is neither is marked here and refused on save; the rule keeps it as written until then. The plan's
 // addresses are read once as the panel first opens (email-addresses.tsx): a board without one is marked " · No
-// Address", and the note under the picker offers Turn On Email to Board for the picked board (or every board, when
+// Address", and the note under the picker offers Turn On for the picked board (or every board, when
 // none has one).
 
 import { useEffect } from 'react';
@@ -139,7 +139,7 @@ export function EmailTriggerFields({
         {note && addresses ? (
           <span className="mt-2.5 block">
             <Button variant="secondary" size="xs" onClick={() => addresses.turnOn(note.turnOn)}>
-              Turn On Email to Board
+              Turn On
             </Button>
           </span>
         ) : null}

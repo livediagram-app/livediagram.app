@@ -36,7 +36,7 @@ of running off it. The card is usually narrower than the code someone pastes
 into it, and a line running off the edge reads as truncated content rather than
 a styling choice. Wrapping breaks mid-token as well as on spaces, because code
 has long unbroken runs (a URL, a minified line) that word-wrapping alone leaves
-hanging over the edge. A **Wrap Long Lines** toggle in the menu's Code section
+hanging over the edge. A **Wrap Long Lines** checkbox in the Code dialog
 turns it off for the block whose lines mean something at their full length.
 
 The headless render wraps too (word-first, mid-token as a fallback), so a
@@ -44,14 +44,14 @@ shared thumbnail shows the same amount of code the canvas does.
 
 ## Syntax highlighting: lazy, hand-rolled, dependency-free
 
-- A small generic tokenizer lives in `apps/live/lib/code-tokens.ts`: one engine (comments, strings, numbers, keywords, punctuation) driven by a per-language config table. No dependency, no WASM.
-- It loads as an **async chunk** on the icon-registry pattern (`apps/live/lib/code-highlight-registry.ts`: memoized dynamic import, `useSyncExternalStore` pair, sync lookup returning undefined pre-load). Until the chunk lands, the block renders plain monospace text: it degrades, never blanks. First paints that show no code block never pay for the tokenizer.
+- A small generic tokenizer lives in `packages/workbench/src/lib/code-tokens.ts`: one engine (comments, strings, numbers, keywords, punctuation) driven by a per-language config table. No dependency, no WASM.
+- It loads as an **async chunk** on the icon-registry pattern (`../packages/workbench/src/lib/code-highlight-registry.ts`: memoized dynamic import, `useSyncExternalStore` pair, sync lookup returning undefined pre-load). Until the chunk lands, the block renders plain monospace text: it degrades, never blanks. First paints that show no code block never pay for the tokenizer.
 - Token classes map to the active scheme's colour set (keyword / string / comment / number / punctuation), independent of the app theme.
 
 ## Editing
 
-- **Double-click** opens an **Edit code dialog** (`apps/live/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces; Shift+Tab moves focus back out as anywhere, and ⌘/Ctrl+Enter saves, so a keyboard is never trapped in the field; a hint under it says so where there is a keyboard) plus a language dropdown. Save commits one history entry; read-only/locked gating as usual.
-- The element context menu has a **Code** section (in `ElementDataSections.tsx`, inside the menu's Tools flyout, per the data-shape pattern): a summary of the line count and language, an "Edit Code" row opening the same dialog, and a Wrap toggle. The language is chosen in the dialog only; the menu has no language picker.
+- **Double-click** opens an **Edit code dialog** (`../packages/workbench/src/components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces; Shift+Tab moves focus back out as anywhere, and ⌘/Ctrl+Enter saves, so a keyboard is never trapped in the field; a hint under it says so where there is a keyboard) plus a language dropdown. Save commits one history entry; read-only/locked gating as usual.
+- The element context menu has a **Code** row (in `ElementDataSections.tsx`, inside the menu's Tools flyout, per the data-shape pattern): it opens the same dialog, and says so with the window mark at its right (`MenuDialogSection`, canvas-and-palette.md "A category that opens a dialog"). The language and **Wrap Long Lines** are chosen in the dialog only; the menu has no language picker or wrap toggle.
 
 ## Headless render (share thumbnails, MCP, exports)
 

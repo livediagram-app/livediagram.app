@@ -76,7 +76,7 @@ pages livedesign's.
   `pageOrientation`, and the elements that only make sense on a page. It returns the same object when there is nothing
   to drop.
 - An ordinary element keeps what a page layout gave it, and livehuddle draws and exports it without offering the
-  controls that set it: a text's **wordmark type** (`packages/document/src/wordmark.ts`), and a **combined** or
+  controls that set it: a text's **wordmark type** (`../packages/element-model/src/wordmark.ts`), and a **combined** or
   **mirrored** path of several contours, which moves and restyles as a whole.
 
 ## The palette

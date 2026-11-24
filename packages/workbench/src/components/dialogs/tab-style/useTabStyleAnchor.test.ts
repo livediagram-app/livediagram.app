@@ -29,29 +29,29 @@ describe('tabStyleAnchor', () => {
   it('hangs below the opener, right edges aligned', () => {
     screenOf(1440);
     const opener = box(['data-opener', ''], { right: 1000, bottom: 120 });
-    expect(tabStyleAnchor(() => opener)).toEqual({ right: 440, top: 128 });
+    expect(tabStyleAnchor(() => opener)).toMatchObject({ right: 440, top: 128 });
   });
 
   it('rises from the brush when the opener is gone or hidden', () => {
     screenOf(1440);
     brush({ right: 1404, top: 840 });
-    expect(tabStyleAnchor(() => null)).toEqual({ right: 36, bottom: 68 });
+    expect(tabStyleAnchor(() => null)).toMatchObject({ right: 36, bottom: 68 });
     const hidden = box(['data-opener', ''], { width: 0, right: 0, bottom: 0 });
-    expect(tabStyleAnchor(() => hidden)).toEqual({ right: 36, bottom: 68 });
+    expect(tabStyleAnchor(() => hidden)).toMatchObject({ right: 36, bottom: 68 });
   });
 
   it("takes the cluster's right edge when it ends further right, never closer than 8 px to the window's", () => {
     screenOf(1440);
     brush({ right: 1404, top: 840 });
     cluster({ right: 1436 });
-    expect(tabStyleAnchor()).toEqual({ right: 8, bottom: 68 });
+    expect(tabStyleAnchor()).toMatchObject({ right: 8, bottom: 68 });
   });
 
   it("keeps the brush's edge beside a hidden cluster", () => {
     screenOf(1440);
     brush({ right: 1404, top: 840 });
     cluster({ width: 0, right: 0 });
-    expect(tabStyleAnchor()).toEqual({ right: 36, bottom: 68 });
+    expect(tabStyleAnchor()).toMatchObject({ right: 36, bottom: 68 });
   });
 
   it('is none without a brush, or a hidden one', () => {

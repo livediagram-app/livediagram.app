@@ -257,7 +257,11 @@ A link confined to one page reaches that page's own routes and search over that 
   most, with `read` alone a Viewer. A `403` the scopes caused answers `scope_needed` with what the token holds
   ([blueprint](../024-agents/blueprints/knowledgebase-for-agents.md#scopes)).
 - An agent's search results carry the passage whole (`text`), its page's review date (`reviewAt`) and the pages an
-  open conflict sets it against (`conflictsWith`).
+  open conflict sets it against (`conflictsWith`, each `{ tab, title, question, foundAt }`; the same on `GET pages`,
+  `GET pages/<tab>` and `GET context`, and only where the caller reads both pages).
+- `POST pages/<tab>/move` takes a token holding `suggest` (an Editor's or a Participant's) when the page and every
+  page under it are Never Verified; any other page needs `write` (`403` `scope_needed`, naming the page that holds
+  it back).
 - The knowledge bookkeeping (reads, counters, questions, conflicts, suggestions, the key) is written through a handle that
   notes no write, so none of it is recorded as an edit in History, Most Used or the outbox.
 
@@ -426,7 +430,7 @@ stands; storing a large tab in chunks is the follow-up.
 
 **Workbench** pairing requests, pairings, tickets and sessions are liveworkspace's
 ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)). API tokens are liveworkspace's alone: the
-api checks a presented token there (`apps/api/src/db/api-tokens.ts`) and keeps no copy. Nothing about folders,
+api checks a presented token there (`../packages/auth-client/src/api-tokens.ts`) and keeps no copy. Nothing about folders,
 sharing, teams, the Trash, the Timeline or the Inbox is kept here.
 
 **Routing.** The worker authenticates the caller, applies its cross-cutting gates (rate limits, read-only tokens,

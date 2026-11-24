@@ -17,7 +17,7 @@
 // Pure; mutates nothing it is given.
 
 import type { ElementId } from './index';
-import type { Edge, Pt, Size } from './auto-layout-shared';
+import type { Edge, Pt, Size } from '@liveworkspace/element-model/auto-layout-shared';
 
 /** A side step: which node it sits beside, and on which side of the cross axis (-1 before, 1 after). */
 export type SideSpec = { parent: ElementId; sign: 1 | -1 };

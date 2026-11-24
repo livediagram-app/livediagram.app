@@ -1,5 +1,5 @@
 // Needs Attention's filter asked for by a door outside Insights (docs/specs/030-knowledgebase/insights.md "On
-// the page": a page rail's Review All in Insights opens it at Suggested Edits). Held until the dashboard reads it
+// the page": a page rail's Review All opens it at Suggested Edits). Held until the dashboard reads it
 // as it opens, then gone, so it never sticks to a later visit.
 import type { AttentionFilter } from './dashboard-figures';
 

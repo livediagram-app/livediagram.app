@@ -6,7 +6,11 @@ import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
 import { ColourPicker, type ColourPickerProps } from './ColourPicker';
-import { noColour, stableColours, standardGroup } from './colour-options';
+import {
+  noColour,
+  stableColours,
+  standardGroup,
+} from '@liveworkspace/workbench/components/colour/colour-options';
 import { colourKeyTarget } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { COLOUR_PICKER_WIDTH } from '@liveworkspace/workbench/components/colour/colour-metrics';
 

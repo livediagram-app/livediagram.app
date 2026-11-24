@@ -2,7 +2,7 @@
 // docs/specs/026-plan/calendar-feed.md "The My Work feed", "Where it lives": the Inbox header's calendar door is an
 // account's alone, and opens Subscribe to Calendar on the person's My Work feed.
 import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 const client = vi.hoisted(() => ({
   readCalendarFeed: vi.fn(),
@@ -23,6 +23,13 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
 });
+
+// The dialog's code is a lazy chunk, fetched the first time it is drawn. That first load used to fall inside a
+// `findBy`'s one second, which a busy machine does not always give it (approvals-roles: 0.9 s for the load alone,
+// 2026-11-23). It is loaded here instead, on a wait that is a module load's, not the UI's.
+beforeAll(async () => {
+  await import('./CalendarFeedDialog');
+}, 60_000);
 
 describe('useMyWorkCalendarFeed', () => {
   it('offers no door without an account', () => {

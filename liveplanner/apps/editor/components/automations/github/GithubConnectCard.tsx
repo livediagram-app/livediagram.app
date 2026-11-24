@@ -5,6 +5,7 @@
 // draws it compact, in place, so a rule being built can connect without leaving it (the rule is kept for the round
 // trip). Connect GitHub stays busy until the page leaves for GitHub; a refusal says why under it.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useState } from 'react';
 import { Button, CheckIcon, GithubMarkIcon } from '@liveplanner/ui';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -83,9 +84,9 @@ export function GithubConnectCard({
     </Button>
   );
   const refused = error ? (
-    <p role="alert" className="text-[12px] font-medium text-red-700 dark:text-red-300">
+    <Callout tone="error" role="alert">
       {error}
-    </p>
+    </Callout>
   ) : null;
   if (compact)
     return (

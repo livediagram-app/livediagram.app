@@ -14,7 +14,7 @@ import { VISIBILITY_TONE } from '@liveworkspace/explorer/visibility-tones';
 // The corner card's Share button (docs/specs/007-editor/editor-app.md "Header actions", owner 2026-11-19): its words
 // wear the item's visibility (Offline grey, Private green, Shared blue, Team violet, Public pink), and on a
 // computer hovering it opens the visibility legend the header's badge used to (VisibilityLegend: who can see this,
-// on one scale), right-aligned under the button, with Change Who Can See This opening Share. A press opens Share.
+// on one scale), right-aligned under the button, with Change Access opening Share. A press opens Share.
 
 // The resolution lives with the states (share-states); kept here for the callers that import it from the button.
 export { shareStateOf, shareStatesOf, type ItemVisibility } from './share-states';

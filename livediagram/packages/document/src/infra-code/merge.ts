@@ -4,7 +4,7 @@
 // edited on the tab; new boxes are placed beside their neighbours; boxes gone from the files go, with their lines; a
 // box someone deleted stays deleted; whatever people added is never touched.
 
-import { bestAnchorTowards } from '../anchor-choice';
+import { bestAnchorTowards } from '@liveworkspace/element-model/anchor-choice';
 import type { DiagramSourceNode, DiagramSources } from '../diagram-sources';
 import { isBoxed, type BoxedElement } from '../element-union';
 import type { GraphInput } from '../graph-input';

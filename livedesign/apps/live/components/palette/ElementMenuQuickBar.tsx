@@ -6,70 +6,57 @@
 // button reads View / Edit); Clear Styles alone at the right, apart from them, as it changes the element's look rather
 // than attaching to it. Each button closes the menu as it runs, as the tiles it replaces did.
 import { elementSendItem } from '@liveworkspace/workbench/components/send-to-plan/send-menu-item';
-import type { ResourceItem } from '@liveworkspace/workbench/components/palette/ResourcesFlyout';
+import {
+  elementResourceOptions,
+  appLinkModes,
+  type AppLinkMode,
+  type ResourceOption,
+} from '@liveworkspace/workbench/components/palette/element-resources';
+import type { ReactNode } from 'react';
 import { type BoxedElement, type Element } from '@livedesign/design';
 import { Tooltip } from '@livedesign/ui';
-import {
-  ActionMenuIcon,
-  CommentMenuIcon,
-  LinkMenuIcon,
-  NoteMenuIcon,
-} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import { ClearStylesGlyph } from '@/components/canvas/quick-style-rows';
 import { useClearStyles } from '@liveworkspace/workbench/lib/clear-styles-store';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 
-// The items the bar offers on `target`, in order: what attaches to it. A link card and a video take their link from
-// their own Link category, so the generic Add Link is not offered on them.
+// The Resources options offered on `target`, in order: what attaches to it. A link card and a video take their link from
+// their own Link category, so Link is not offered on them (elementResourceOptions).
+// A link's places: a web address, a tab, then a file of each product, this app's first.
+const LINK_MODES = appLinkModes('livedesign', 'design');
 export function quickBarItems(
   target: BoxedElement,
   props: Pick<
     EditorContextMenuProps,
     'onAssignAction' | 'onOpenComments' | 'onLinkElement' | 'onOpenNote'
-  >,
-): ResourceItem[] {
-  const comments = (target as { commentThread?: { comments: readonly unknown[] } }).commentThread;
-  const hasComments = !!comments && comments.comments.length > 0;
-  const items: ResourceItem[] = [
-    {
-      key: 'action',
-      detail: 'What a click on it does',
-      label: target.action ? 'View Action' : 'Assign Action',
-      icon: <ActionMenuIcon />,
-      on: !!target.action,
-      run: () => props.onAssignAction(target.id),
-    },
-    {
-      key: 'comment',
-      detail: 'A thread to talk it over',
-      label: hasComments ? 'View Comments' : 'Add Comment',
-      icon: <CommentMenuIcon />,
-      on: hasComments,
-      run: () => props.onOpenComments(target.id),
-    },
-  ];
-  if (target.type !== 'link-card' && target.type !== 'video')
-    items.push({
-      key: 'link',
-      detail: 'A page or tab it opens',
-      label: target.link ? 'Edit Link' : 'Add Link',
-      icon: <LinkMenuIcon />,
-      on: !!target.link,
-      run: () => props.onLinkElement(target.id),
-    });
-  items.push({
-    key: 'note',
-    detail: 'Words kept behind it',
-    label: target.note ? 'Edit Note' : 'Add Note',
-    icon: <NoteMenuIcon />,
-    on: !!target.note,
-    run: () => props.onOpenNote(target.id),
+  > & {
+    // The Resources dialog's own: what takes a link or a note off, and the tabs a link may name.
+    onRemoveLink?: () => void;
+    onRemoveNote?: (elementId: string) => void;
+    tabs?: readonly { id: string; name: string }[];
+    // A link place's own step inside the dialog (ResourceLinkPanel).
+    linkPanel?: (mode: 'url' | 'tab' | 'design' | AppLinkMode, done: () => void) => ReactNode;
+  },
+): ResourceOption[] {
+  const options = elementResourceOptions<(typeof LINK_MODES)[number]['mode']>(target, {
+    onAssignAction: props.onAssignAction,
+    onOpenComments: props.onOpenComments,
+    // The link picker knows this app's own places; another product's files are picked in the dialog's own step.
+    onLinkElement:
+      props.onLinkElement &&
+      ((id, mode) =>
+        props.onLinkElement?.(id, mode?.startsWith('app:') ? undefined : (mode as never))),
+    onOpenNote: props.onOpenNote,
+    onRemoveLink: props.onRemoveLink,
+    onRemoveNote: props.onRemoveNote,
+    linkModes: LINK_MODES,
+    linkPanel: props.linkPanel,
+    tabs: props.tabs,
   });
   // Send to Plan (liveworkspace/docs/specs/004-index/send-to-plan.md): a card for it in liveplanner, while this session
   // may send.
   const send = elementSendItem(target);
-  if (send) items.push(send);
-  return items;
+  if (send) options.push(send);
+  return options;
 }
 
 const BUTTON =

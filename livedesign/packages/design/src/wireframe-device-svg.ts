@@ -4,7 +4,7 @@
 // content (the Dynamic Island or punch-hole camera, the status bar, the home indicator). One
 // markup for the canvas (inlined into its sheet and overlay), every export and the agents'
 // previews, so they draw the same frame. Pure strings in canvas coordinates; no DOM.
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import {
   ANDROID,
   ANDROID_TABLET,

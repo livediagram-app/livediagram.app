@@ -1,7 +1,7 @@
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { PenInk } from '@/hooks/canvas/commit-freehand';
-import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
+import type { SnapGuideStore } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import type { CombineOp } from '@/lib/combine/combine';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
@@ -28,10 +28,9 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { WorkspaceFrameHooks } from '@/components/providers/workbench-session-context';
 
-// A connection-point marker shown while dragging an arrow endpoint: the
-// world-space position of a nearby shape's anchor, with `active` set on the
-// one the endpoint is currently snapped to. Rendered by CanvasChrome.
-export type SnapTarget = { x: number; y: number; active: boolean };
+// The snap marker CanvasChrome draws (@liveworkspace/workbench/lib/canvas-snap.ts), re-exported so importers keep
+// resolving.
+export type { SnapTarget } from '@liveworkspace/workbench/lib/canvas-snap';
 
 export type CanvasProps = {
   tabName: string;
@@ -142,7 +141,8 @@ export type CanvasProps = {
     group: import('@liveworkspace/workbench/lib/format-config').FormatGroup,
   ) => void;
   onSetFormatMode?: (mode: import('@liveworkspace/workbench/lib/format-config').FormatMode) => void;
-  formatBrushSource?: import('@/components/panels/FormatPanel').FormatBrushSource | null;
+  formatBrushSource?:
+    import('@liveworkspace/workbench/components/panels/FormatPanel').FormatBrushSource | null;
   formatPanelPosition?: { x: number; y: number } | null;
   onMoveFormatPanel?: (x: number, y: number) => void;
   onResetFormatPanel?: () => void;

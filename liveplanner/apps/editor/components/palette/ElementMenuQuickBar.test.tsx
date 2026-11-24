@@ -51,6 +51,42 @@ describe('quickBarItems', () => {
     expect(labels).not.toContain('View Comments');
   });
 
+  // "Resources": the dialog's rows say what the element has, and Link and a written Note have options of their own.
+  it('says what the element has now, and gives Link its places and a written Note its own options', () => {
+    const h = { ...handlers(), onRemoveLink: vi.fn(), onRemoveNote: vi.fn() };
+    const has = square({
+      link: { kind: 'url', url: 'https://example.com/' },
+      note: 'Remember\nthis',
+    });
+    const items = quickBarItems(has, h);
+    const link = items.find((i) => i.key === 'link')!;
+    expect(link.state).toBe('example.com');
+    // A web address, a tab, this app's own file first among every product's, and Remove last.
+    expect(link.choices?.slice(0, 3).map((c) => [c.key, !!c.current])).toEqual([
+      ['url', true],
+      ['tab', false],
+      ['project', false],
+    ]);
+    expect(link.choices?.some((c) => c.key.startsWith('app:'))).toBe(true);
+    expect(link.choices?.at(-1)?.key).toBe('remove');
+    link.choices?.find((c) => c.key === 'tab')?.run();
+    expect(h.onLinkElement).toHaveBeenCalledWith('sq', 'tab');
+    link.choices?.find((c) => c.key === 'remove')?.run();
+    expect(h.onRemoveLink).toHaveBeenCalledTimes(1);
+    const note = items.find((i) => i.key === 'note')!;
+    expect(note.state).toBe('Remember');
+    expect(note.choices?.map((c) => c.key)).toEqual(['edit', 'remove']);
+    // Nothing to choose between until it is written: the row opens it.
+    const bare = quickBarItems(square(), h);
+    expect(bare.find((i) => i.key === 'note')?.choices).toBeUndefined();
+    expect(
+      bare
+        .find((i) => i.key === 'link')
+        ?.choices?.slice(0, 3)
+        .map((c) => c.key),
+    ).toEqual(['url', 'tab', 'project']);
+  });
+
   it('leaves Add Link to a link card’s own Link category', () => {
     const card = { ...square(), type: 'link-card' } as unknown as BoxedElement;
     expect(quickBarItems(card, handlers()).map((i) => i.key)).toEqual(['action', 'note']);

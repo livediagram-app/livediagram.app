@@ -15,22 +15,30 @@ import {
   isPieShape,
   isRatingShape,
   isSelfDrawingShape,
-} from './data-shapes';
+} from '@liveworkspace/element-model/data-shapes';
 import { defaultPadding, PADDING_PX } from './index';
-import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
-import { svgSankey } from './svg-render-sankey';
-import { isSankeyShape } from './sankey-model';
-import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
-import { svgPageMasthead } from './svg-render-page';
-import { progressTrackColour } from './progress-colours';
-import { svgWebComponent } from './svg-render-web';
-import { isWebComponentShape } from './web-components';
-import { isChipShape } from './chip';
-import { svgChip } from './svg-render-chip';
-import { svgConcept } from './svg-render-concept';
-import type { TagColour } from './tag-colours';
-import { svgPointerNote } from './svg-render-pointer-note';
-import { isConceptShape } from './concept';
+import {
+  svgBarChart,
+  svgLineChart,
+  svgPieChart,
+} from '@liveworkspace/element-model/svg-render-charts';
+import { svgSankey } from '@liveworkspace/element-model/svg-render-sankey';
+import { isSankeyShape } from '@liveworkspace/element-model/sankey-model';
+import {
+  svgProgressBar,
+  svgProgressRing,
+  svgRating,
+} from '@liveworkspace/element-model/svg-render-data';
+import { svgPageMasthead } from '@liveworkspace/element-model/svg-render-page';
+import { progressTrackColour } from '@liveworkspace/element-model/progress-colours';
+import { svgWebComponent } from '@liveworkspace/element-model/svg-render-web';
+import { isWebComponentShape } from '@liveworkspace/element-model/web-components';
+import { isChipShape } from '@liveworkspace/element-model/chip';
+import { svgChip } from '@liveworkspace/element-model/svg-render-chip';
+import { svgConcept } from '@liveworkspace/element-model/svg-render-concept';
+import type { TagColour } from '@liveworkspace/element-model/tag-colours';
+import { svgPointerNote } from '@liveworkspace/element-model/svg-render-pointer-note';
+import { isConceptShape } from '@liveworkspace/element-model/concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
 import type { ResolveIconArt } from './svg-render-describe';

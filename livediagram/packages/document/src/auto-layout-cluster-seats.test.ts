@@ -6,8 +6,8 @@ import {
   headingLead,
   seatByMembers,
 } from './auto-layout-cluster-seats';
-import { arrowPolyline } from './arrow-path-hits';
-import { buildElementIndex } from './geometry';
+import { arrowPolyline } from '@liveworkspace/element-model/arrow-path-hits';
+import { buildElementIndex } from '@liveworkspace/element-model/geometry';
 import { pathsCross } from './index';
 import { layoutGraph, type GraphInput } from './graph-input';
 import type { ArrowElement, BoxedElement, DiagramGraph, Element } from './index';

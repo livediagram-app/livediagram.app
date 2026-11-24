@@ -10,7 +10,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { MenuAccordionSection } from './PortalMenu';
-import { MenuFlyoutSection } from './MenuFlyoutSection';
+import { HOVER_CLOSE_MS, HOVER_OPEN_MS, MenuFlyoutSection } from './MenuFlyoutSection';
 
 const GLYPH = <svg aria-hidden />;
 
@@ -221,5 +221,140 @@ describe('MenuFlyoutSection nested side', () => {
     const { tools, mindMap } = await openNested({ left: 300, right: 520 }, 900);
     expect(tools).toBe(522);
     expect(mindMap).toBe(300 - 2 - PANEL_WIDTH);
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "A flyout row opens on hover as well as on click".
+describe('MenuFlyoutSection hover open', () => {
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  function two() {
+    // An open panel watches its own size.
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    render(
+      <>
+        <MenuFlyoutSection title="Style" icon={GLYPH}>
+          {section('Presets')}
+          {section('Colours')}
+        </MenuFlyoutSection>
+        <MenuFlyoutSection title="Text" icon={GLYPH}>
+          {section('Markers')}
+          {section('Alignment')}
+        </MenuFlyoutSection>
+      </>,
+    );
+  }
+  const row = (title: string) => screen.getByRole('button', { name: title });
+  const rest = (title: string, pointerType = 'mouse') => {
+    fireEvent.pointerEnter(row(title), { pointerType, buttons: 0 });
+    act(() => {
+      vi.advanceTimersByTime(HOVER_OPEN_MS);
+    });
+  };
+
+  it('opens when a mouse rests on the row, and not before', () => {
+    vi.useFakeTimers();
+    two();
+    fireEvent.pointerEnter(row('Style'), { pointerType: 'mouse', buttons: 0 });
+    act(() => {
+      vi.advanceTimersByTime(HOVER_OPEN_MS - 1);
+    });
+    expect(screen.queryByText('Presets')).toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(screen.getByText('Presets')).toBeTruthy();
+  });
+
+  it('opens nothing for a pointer that crosses the row', () => {
+    vi.useFakeTimers();
+    two();
+    fireEvent.pointerEnter(row('Style'), { pointerType: 'mouse', buttons: 0 });
+    fireEvent.pointerLeave(row('Style'));
+    act(() => {
+      vi.advanceTimersByTime(HOVER_OPEN_MS);
+    });
+    expect(screen.queryByText('Presets')).toBeNull();
+  });
+
+  it('stays click only for touch and for a drag passing over', () => {
+    vi.useFakeTimers();
+    two();
+    rest('Style', 'touch');
+    expect(screen.queryByText('Presets')).toBeNull();
+    fireEvent.pointerEnter(row('Style'), { pointerType: 'mouse', buttons: 1 });
+    act(() => {
+      vi.advanceTimersByTime(HOVER_OPEN_MS);
+    });
+    expect(screen.queryByText('Presets')).toBeNull();
+  });
+
+  const over = (el: Element) => fireEvent.pointerOver(el, { pointerType: 'mouse' });
+  const wait = (ms: number) =>
+    act(() => {
+      vi.advanceTimersByTime(ms);
+    });
+
+  it('closes once the mouse has been off it for a while, not on the way to its panel', () => {
+    vi.useFakeTimers();
+    two();
+    rest('Style');
+    over(document.body);
+    wait(HOVER_CLOSE_MS - 1);
+    over(screen.getByText('Presets'));
+    wait(HOVER_CLOSE_MS);
+    expect(screen.getByText('Presets')).toBeTruthy();
+    over(document.body);
+    wait(HOVER_CLOSE_MS);
+    expect(screen.queryByText('Presets')).toBeNull();
+  });
+
+  it('stays open after a press on it, however long the mouse is away', () => {
+    vi.useFakeTimers();
+    two();
+    rest('Style');
+    fireEvent.pointerDown(screen.getByText('Presets'), { pointerType: 'mouse' });
+    over(document.body);
+    wait(HOVER_CLOSE_MS * 2);
+    expect(screen.getByText('Presets')).toBeTruthy();
+  });
+
+  it('never closes a clicked flyout for want of a hover', () => {
+    vi.useFakeTimers();
+    two();
+    fireEvent.click(row('Style'));
+    over(document.body);
+    wait(HOVER_CLOSE_MS * 2);
+    expect(screen.getByText('Presets')).toBeTruthy();
+  });
+
+  it('closes the flyout beside it', () => {
+    vi.useFakeTimers();
+    two();
+    rest('Style');
+    rest('Text');
+    expect(screen.getByText('Markers')).toBeTruthy();
+    expect(screen.queryByText('Presets')).toBeNull();
+  });
+
+  it('keeps a hover-opened row open on the click that follows, then toggles', () => {
+    vi.useFakeTimers();
+    two();
+    rest('Style');
+    fireEvent.pointerDown(row('Style'), { pointerType: 'mouse' });
+    fireEvent.click(row('Style'));
+    expect(screen.getByText('Presets')).toBeTruthy();
+    fireEvent.click(row('Style'));
+    expect(screen.queryByText('Presets')).toBeNull();
   });
 });

@@ -17,6 +17,9 @@ import {
   onMouseHover,
   useRevertOnUnmount,
 } from '@liveworkspace/workbench/components/primitives/hover-preview';
+import { ElementRowsDialog } from '@liveworkspace/workbench/components/dialogs/ElementRowsDialog';
+import { elementSettingsHeroArt } from '@liveworkspace/ui/dialog-hero-art/element-settings';
+import { elementKindLabel } from '@livehuddle/document';
 import {
   isFixedSizeElement,
   isBoxed,
@@ -28,7 +31,7 @@ import {
   ContextMenu,
   ContextMenuDivider,
 } from '@liveworkspace/workbench/components/palette/ContextMenu';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { SizeButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
 import {
   LayerDownIcon,
   LayersGlyph,
@@ -36,7 +39,7 @@ import {
   RotationGlyph,
   RotationMenuIcon,
   SizeMenuIcon,
-} from '@/components/palette/context-menu-icons';
+} from '@liveworkspace/workbench/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,
   MenuGroupSeparator,
@@ -124,6 +127,34 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // rule. Placement always shows (Layer is unconditional), so each later
     // group's divider just gates on the group's own visibility.
     const showContentGroup = target.type === 'image' || target.type === 'link-card';
+    // Its own settings, opened from the menu's row named for it: the same sections in a dialog, laid open
+    // (canvas-and-palette.md "An element's own settings open in a dialog"). The menu is not drawn under it.
+    if (menu.mode === 'element' && menu.tools) {
+      return (
+        <ElementRowsDialog
+          art={elementSettingsHeroArt}
+          title={elementKindLabel(target)}
+          subtitle="What only this kind of element has."
+          onClose={onClose}
+        >
+          <div data-context-menu="" className="-mx-6 -my-4 text-sm">
+            <ElementAppearanceSections
+              props={props}
+              target={target}
+              onClose={onClose}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps}
+              colorProps={colorProps}
+              textColorHandlers={textColorHandlers}
+              fillColorHandlers={fillColorHandlers}
+              strokeColorHandlers={strokeColorHandlers}
+              afterGroup
+              toolsOnly
+            />
+          </div>
+        </ElementRowsDialog>
+      );
+    }
     return (
       <ContextMenu
         position={position}

@@ -164,7 +164,7 @@ tab matches) but they never appear among the everyday looks.
 - **Seasonal patterns.** Sparkles (four-point twinkles), Eggs (banded egg outlines), Cobwebs (a web strung from
   each tile's corner), Snowflakes (six-armed flakes) and Candy Stripes (thick 45° bands). Each is a static SVG tile
   in the tab's pattern colour, so it themes, fades and scales like the other static patterns, and the image export
-  draws the same tile (`apps/editor/lib/seasonal-patterns.ts`). No pattern picker lists them; the Canvas row still
+  draws the same tile (`packages/workbench/src/lib/seasonal-patterns.ts`). No pattern picker lists them; the Canvas row still
   names the one a tab wears. Fireside reuses the animated Drift for falling embers.
 - **Telemetry:** picking a seasonal look fires `track('Tab', 'Changed', 'SeasonalLook')` in place of the `Look`
   event.
@@ -285,7 +285,7 @@ on the tab as `newPageBackground` (a fill and a pattern, never a picture; `packa
   choice), then its Pattern (none on an article or a card, whose ruling is its Style's). Each press is one undo step
   (`Tab · Changed · NewPageBackground`; Like the Page Before is `NewPageBackgroundCarried`). Hovers preview nothing:
   no page is on show to paint.
-- **Apply to Every Page**, under it while the tab has pages: gives every page the background ("Gives the 12 pages
+- **Apply to All**, under it while the tab has pages: gives every page the background ("Gives the 12 pages
   this background. A locked one keeps its own; Undo puts them back."), an article counted once and keeping its own
   pattern, as one undo step, each page re-inked, and a notice: "Background applied to 12 pages.", adding "2 pages
   locked kept their own." (`Tab · Changed · NewPageBackgroundToEveryPage`; `pagesGivenNewPageBackground`).

@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { faceFinishOf, finishFaceCornerPx, finishFaceShadows } from './finish';
+import {
+  faceFinishOf,
+  finishFaceCornerPx,
+  finishFaceShadows,
+} from '@liveworkspace/element-model/finish';
 import { faceAttrs, isPillRect } from '@liveworkspace/model-core/face-finish';
 import { createShape } from './shape-factory';
 import { svgBoxed } from './svg-render';
-import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
+import {
+  svgMarkerFace,
+  svgProfessionalFace,
+} from '@liveworkspace/element-model/svg-render-face-finish';
 
 // docs/specs/008-canvas/finish.md "Faces".
 describe('faceFinishOf', () => {

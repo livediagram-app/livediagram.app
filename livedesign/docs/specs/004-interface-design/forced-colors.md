@@ -52,7 +52,7 @@ gradient or a shadow says nothing. Without this spec's rule, in a dark contrast 
   paint a control's chosen state: the ARIA-state Highlight rule and the switch rule.
 - `../packages/tailwind-config/theme.css`, `@utility forced-edge`: the fill-only button's edge.
 - `../packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
-- `apps/live/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`,
+- `../packages/workbench/src/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`,
   `../packages/workbench/src/components/panels/ToolOptionRow.tsx`: `forced-color-adjust-none` on the colour itself.
 
 ## Testing

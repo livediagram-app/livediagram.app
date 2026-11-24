@@ -1,6 +1,6 @@
 import type { ArrowElement, Element, ElementId, Endpoint } from './index';
 import { type ElementIndex } from './index';
-import { endpointPosition } from './geometry';
+import { endpointPosition } from '@liveworkspace/element-model/geometry';
 
 // An arrow end that names an element no longer on the tab, freed where it was drawn: the arrow outlived what it was
 // attached to (a locked arrow kept by a delete, a peer's arrow to a box an undo took back,

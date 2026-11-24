@@ -59,7 +59,13 @@ async function setUp(status = 204, tab: Record<string, unknown> = {}) {
       owner: 'user_o',
       accountUserId: 'user_o',
       verifiedUserId: 'user_o',
-      body: { id: 'D', name: 'Doc', tabs: [{ id: 't1', name: 'Board', elements: [], ...tab }] },
+      body: {
+        id: 'D',
+        name: 'Doc',
+        // Agents write here (docs/specs/030-knowledgebase/ai-editing.md): the default only suggests.
+        knowledgeSettings: { reviewEvery: 90, aiEditing: 'unverified' },
+        tabs: [{ id: 't1', name: 'Board', elements: [], ...tab }],
+      },
     }),
   );
   room.bodies.length = 0;

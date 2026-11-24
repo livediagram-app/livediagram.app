@@ -937,7 +937,9 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
 
 // Performance (docs/specs/015-api/api.md "Storage"): a save is one call and one transaction whatever its size, a
 // read one call however many tabs. CPU budgets, as the other speed tests (cpu-time.js).
-describe('speed', () => {
+// The budgets are CPU time (cpuBudgetMs); the wall-clock timeout only stops a hang, so a busy runner's waits never
+// fail a run that stayed within budget (testing.md "A long test names its own timeout").
+describe('speed', { timeout: 30_000 }, () => {
   it('saves and reads a 1 MB tab within budget', async () => {
     const w = world();
     await createDocument(w, 'A');
@@ -1247,7 +1249,8 @@ describe('a tab shared between documents', () => {
   });
 });
 
-describe('shared tab speed', () => {
+// 3.1 s on a CI runner under coverage (2026-11-23), of the 5 s a test has unless it says otherwise.
+describe('shared tab speed', { timeout: 30_000 }, () => {
   it(`sends an edit of a 1 MB tab held by ${MAX_TAB_HOLDERS} documents within budget, and refuses one more`, async () => {
     const w = world();
     await createDocument(w, 'A');

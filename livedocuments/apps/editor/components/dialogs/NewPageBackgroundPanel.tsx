@@ -2,7 +2,7 @@
 
 // Tab Style's New Page Background panel (docs/specs/011-theme/canvas-and-theme-dialog.md "New Page Background"), in
 // the Canvas panel's place: what every new page of the tab starts on (Like the Page Before, or a background of its
-// own from the page panel's own Background section, less pictures), Apply to Every Page under it, and a small Around
+// own from the page panel's own Background section, less pictures), Apply to All under it, and a small Around
 // the Pages section for the surround: its colour and, but on an article or a card, a calm pattern.
 import { useMemo } from 'react';
 import { SegmentedToggle } from '@liveworkspace/ui';
@@ -11,7 +11,8 @@ import { themeBackgroundPresets, type BackgroundPattern, type Page } from '@live
 import type { TabStyleCanvasPanelProps } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
 import { PanelSection } from '@/components/canvas/page-panel-sections';
-import { ColorSwatch, PATTERNS, PatternButton } from '@/components/palette/palette-controls';
+import { PatternButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
+import { ColorSwatch, PATTERNS } from '@/components/palette/palette-controls';
 import { getTheme } from '@/lib/themes';
 import { useTabStylePages } from './tab-style-pages';
 
@@ -93,7 +94,7 @@ export function NewPageBackgroundPanel({
                 onClick={pages.onApplyToEveryPage}
                 data-new-page-background-all=""
               >
-                Apply to Every Page
+                Apply to All
               </Button>
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                 Gives the {pages.units === 1 ? 'page' : `${pages.units} pages`} this background. A

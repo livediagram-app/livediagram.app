@@ -7,7 +7,7 @@ import { useSnapColours } from '@/hooks/canvas/useSnapColours';
 import { isPathEditing } from '@/lib/path-edit';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
 import { usePaintBucket } from '@/hooks/canvas/usePaintBucket';
-import { applySwatchOverrides } from '@/lib/swatch-overrides';
+import { applySwatchOverrides } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { quickSwatches } from '@livediagram/document';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';

@@ -36,7 +36,7 @@ Scope, by file:
 | `apps/editor/components/dialogs/BoardSceneReportList.tsx`                 | The report's rows, shared by the notice and the Import dialog                                     |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
 | `../packages/element-model/src/pen-colours.ts`                            | `hexOklch` for the colour rules                                                                   |
-| `packages/document/src/stock-colours.ts`                                  | `resolveStockColours` draws `penTextColour`                                                       |
+| `../packages/element-model/src/stock-colours.ts`                          | `resolveStockColours` draws `penTextColour`                                                       |
 | `apps/editor/lib/quick-style-pen.ts`                                      | `tabCustomColours` reads text, path and arrow colours too                                         |
 
 ## Domain and naming
@@ -124,7 +124,7 @@ order, counts summed per rule.
 | `CLOSED_END_EPSILON_PX`   | `1`                                                         | 0.5 to 2            | The Excalidraw importer's closure test: ends within 1 px coincide                                                           |
 | `SCENE_FONTS`             | hand `caveat`, mono `roboto-mono`, serif `lora`, sans unset | n/a                 | `fonts.ts` catalogue; Excalifont / Virgil / Whiteboard ink fonts read as hand                                               |
 | Marker widths             | `WHITEBOARD_PEN_WIDTHS`                                     | as defined          | `apps/editor/lib/whiteboard-prefs.ts` (1, 1.5, 2.5, 4, 6, 9 px)                                                             |
-| Border widths             | `BORDER_STROKE_PX`                                          | as defined          | `nearestBorderStroke` in `packages/document/src/whiteboard.ts`                                                              |
+| Border widths             | `BORDER_STROKE_PX`                                          | as defined          | `nearestBorderStroke` in `../packages/element-model/src/whiteboard.ts`                                                      |
 | Text presets              | `LABEL_FONT_PX` sm/md/lg                                    | as defined          | 14 / 22 / 32 px                                                                                                             |
 | Text scale limits         | `TEXT_SCALE_MIN..MAX`                                       | as defined          | 0.1 to 40, `validate.ts`                                                                                                    |
 | Element limit             | `MAX_ELEMENTS_PER_TAB`                                      | as defined          | 10,000, `validate.ts`                                                                                                       |
@@ -385,7 +385,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 ## Compact output (`compact.ts`)
 
 - A stroke's points and pressures are the codec's: ink and the diagram profile's freehands land through
-  `packFreehandPoints(points, pressures?)` (`packages/document/src/freehand-points.ts`), whose box is
+  `packFreehandPoints(points, pressures?)` (`../packages/element-model/src/freehand-points.ts`), whose box is
   the points' bounds padded a pixel and grown to whole px, and whose quantisation
   (`STROKE_POINT_MAX_ERROR`, `STROKE_PRESSURE_MAX_ERROR`) is the only rounding a stroke meets. The
   landing has no point or pressure rounding of its own.

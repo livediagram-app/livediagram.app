@@ -5,6 +5,7 @@
 // day, the snapshot it points at, and each approver's decision and note, with Cancel Request (open only, confirmed in
 // place) and New Request, which opens the form again saying it replaces the open one.
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useState } from 'react';
 import type { Approval } from '@liveworkspace/index-client';
 import { Button, Chip, PictureDisc } from '@liveworkspace/ui';
@@ -176,9 +177,9 @@ function ApprovalStatusView({
       </section>
 
       {error ? (
-        <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       {confirming ? (
         <div className="flex flex-wrap items-center justify-end gap-2 rounded-lg bg-rose-50 px-3 py-2 dark:bg-rose-500/10">

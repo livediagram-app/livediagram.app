@@ -13,7 +13,8 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
+import { usePublishFaceControls } from '@/components/canvas/collab/face-controls';
 
 // The face of a Done check (docs/specs/012-collaboration/done-check.md): everyone marks themselves finished, and
 // the card shows who has and who has not.
@@ -72,6 +73,23 @@ export function DoneCheckFace({
   const mine = isDone(element.responses, selfKey);
   const everyone = allDone(element.responses, keys);
 
+  usePublishFaceControls(element.id, [
+    mine &&
+      onToggleMine && {
+        key: 'clear-mine',
+        label: 'Clear My Mark',
+        description: 'Take your own mark back.',
+        icon: 'clear',
+        run: onToggleMine,
+      },
+    onResetAll && {
+      key: 'reset',
+      label: 'Reset Everyone',
+      description: "Clear everyone's marks.",
+      icon: 'reset',
+      run: onResetAll,
+    },
+  ]);
   return (
     <CollabAccentScope element={element} textColor={textColor} surface={surface}>
       <CollabPanel

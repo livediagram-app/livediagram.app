@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape } from './shape-factory';
 import { renderElementsToSvg } from './svg-render';
-import { fitLegendLabel } from './svg-render-charts';
+import { fitLegendLabel } from '@liveworkspace/element-model/svg-render-charts';
 import { textAdvanceEm } from '@liveworkspace/model-core/text-advance';
 import type { Element } from './index';
 

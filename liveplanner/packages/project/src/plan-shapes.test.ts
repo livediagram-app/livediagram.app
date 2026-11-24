@@ -3,7 +3,11 @@ import { CARD_SIZES, PLAN_BOARD_EMPTY_HEIGHT_PX, presetSetup, type Item } from '
 import { PLAN_CARD_SIZES } from './validate-shape';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { elementKindLabel } from './element-kind-label';
-import { isPlanShape, isSelfDrawingShape, takesAttachments } from './data-shapes';
+import {
+  isPlanShape,
+  isSelfDrawingShape,
+  takesAttachments,
+} from '@liveworkspace/element-model/data-shapes';
 import { SELF_PAINTING_SHAPES } from './colors';
 import { elementValidationIssue } from './validate';
 import { takesTypedLabel } from './element-types';

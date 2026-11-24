@@ -6,7 +6,7 @@
 // and the chosen Responses Go To up. A refusal is said under the box in the api's fixed words, the text kept; the
 // model's own words are never shown. A guest sees the sign-in nudge in the box's place.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { FormDraftResponse } from '@liveplanner/api-schema';
 import {
   FORM_DRAFT_PER_DAY,
@@ -19,14 +19,9 @@ import {
   type FormDraftTarget,
   type FormDraftTargetOption,
 } from '@liveplanner/templates';
-import {
-  Button,
-  DialogCloseButton,
-  DialogFooter,
-  DialogHeader,
-  SparkleIcon,
-} from '@liveplanner/ui';
+import { Button, DialogFooter, SparkleIcon } from '@liveplanner/ui';
 import type { AiKeyFailure } from '@liveworkspace/ai/key-failure';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { WorkbenchAiSource } from '@liveworkspace/workbench/components/ai/WorkbenchAiSource';
 import type { AiSourceLine } from '@liveworkspace/settings-ui/ai-source';
@@ -37,9 +32,9 @@ import { useAiCredits } from '@/components/tier/use-ai-credits';
 import {
   DescribePrompt,
   DescribeSignIn,
-  DescribeTitle,
   type DescribeExample,
 } from '@/components/describe/DescribePrompt';
+import { describeFormHeroArt } from '@/components/describe/DescribeHeroArt';
 import { FormDraftRefusal } from './form-draft-client';
 import { FormDraftPreview } from './FormDraftPreview';
 
@@ -110,6 +105,7 @@ export function DescribeFormDialog({
   const heading = useRef<HTMLSpanElement>(null);
   // The ask in flight: a Cancel (or an unmount) makes its answer stale, and a stale answer is dropped.
   const asking = useRef(0);
+  const headingId = useId();
   const prompt = text.trim();
 
   useEffect(() => {
@@ -165,21 +161,24 @@ export function DescribeFormDialog({
     <Dialog
       open
       onClose={cancel}
-      ariaLabel={checking ? 'Check Your Form' : 'Describe a Form'}
+      titleId={headingId}
       size="xl"
       phoneSheet
       className="flex max-h-[min(46rem,90dvh)] flex-col"
     >
-      <DialogHeader
+      <HeroDialogHeader
+        art={describeFormHeroArt}
+        titleId={headingId}
+        // The words are focusable, so a step change is heard; the sparkle is the header's mark.
         title={
-          <DescribeTitle ref={heading}>
+          <span ref={heading} tabIndex={-1} className="outline-none">
             {checking ? 'Check Your Form' : 'Describe a Form'}
-          </DescribeTitle>
+          </span>
         }
         subtitle={checking ? undefined : signedIn ? SUBTITLE : undefined}
-      >
-        <DialogCloseButton onClick={cancel} />
-      </DialogHeader>
+        onClose={cancel}
+        underHandle
+      />
       {!signedIn ? (
         <DescribeSignIn>{DESCRIBE_FORM_SIGN_IN}</DescribeSignIn>
       ) : checking ? (

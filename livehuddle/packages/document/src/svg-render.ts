@@ -15,11 +15,14 @@ import {
   svgSketchedBody,
   svgSketchFace,
 } from './svg-render-sketch';
-import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
+import {
+  svgMarkerFace,
+  svgProfessionalFace,
+} from '@liveworkspace/element-model/svg-render-face-finish';
 import { sketchBackdropIds } from './sketch-backdrop';
 import { acceptsInlineIcon, canvasSurface } from './colors';
-import { inlineIconLayout } from './svg-render-inline-icon';
-import { svgIconShape, svgImageShape } from './svg-render-image-icon';
+import { inlineIconLayout } from '@liveworkspace/element-model/svg-render-inline-icon';
+import { svgIconShape, svgImageShape } from '@liveworkspace/element-model/svg-render-image-icon';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
 import { backWallDoors } from './back-wall-doors';
@@ -30,7 +33,12 @@ import { buildElementIndex, type ElementIndex } from './geometry';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
 // below so existing importers of this module keep resolving.
-import { labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
+import {
+  labelMeasure,
+  r2,
+  wrapLabel,
+  xmlEscape,
+} from '@liveworkspace/element-model/svg-render-primitives';
 
 export {
   estimatedLabelMeasure,
@@ -42,10 +50,13 @@ export {
   r2,
   wrapLabel,
   xmlEscape,
-} from './svg-render-primitives';
-import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
-import { svgWordmarkLabel } from './svg-render-wordmark';
-import { hasWordmarkType } from './wordmark';
+} from '@liveworkspace/element-model/svg-render-primitives';
+import {
+  svgRichWrappedLabel,
+  svgWrappedLabel,
+} from '@liveworkspace/element-model/svg-render-labels';
+import { svgWordmarkLabel } from '@liveworkspace/element-model/svg-render-wordmark';
+import { hasWordmarkType } from '@liveworkspace/element-model/wordmark';
 
 export {
   EXPORT_DEFAULT_FONT,
@@ -56,11 +67,15 @@ export {
   wrapExportRuns,
   type ExportLabel,
   type ExportRun,
-} from './svg-render-labels';
+} from '@liveworkspace/element-model/svg-render-labels';
 import type { BoxedElement, Element, Tab } from './index';
 import { paintOrder } from './paint-order';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): gate + deterministic filter defs.
-import { shadowFilterId, supportsShadow, svgShadowFilterDef } from './shadow';
+import {
+  shadowFilterId,
+  supportsShadow,
+  svgShadowFilterDef,
+} from '@liveworkspace/element-model/shadow';
 
 // The export descriptor layer (constants, ExportShape / resolver types,
 // describeBoxedExport) lives in svg-render-describe.ts; re-exported so
@@ -105,7 +120,7 @@ import {
 // declares the ones it used so the file stands on its own.
 import { googleFontsHref } from '@liveworkspace/model-core/fonts';
 import { boundsOfPoints, type Point } from '@liveworkspace/model-core/geometry-primitives';
-import { borderedRect } from './svg-render-border';
+import { borderedRect } from '@liveworkspace/element-model/svg-render-border';
 import { resolveStockColours } from './stock-colours';
 import { rotationOf } from './rotation';
 
@@ -133,7 +148,7 @@ export function contentBounds(elements: Element[]): { x: number; y: number; w: n
 // colours + label, using the SAME element-type defaults the editor renders so
 // a theme-deferring element exports with its rendered look.
 
-export { svgIconShape } from './svg-render-image-icon';
+export { svgIconShape } from '@liveworkspace/element-model/svg-render-image-icon';
 
 export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): string {
   // Every word on the element in its face, so a face that writes its own (a panel's rows, a button) wears the tab's

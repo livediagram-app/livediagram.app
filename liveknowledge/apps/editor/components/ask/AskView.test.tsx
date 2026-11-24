@@ -109,7 +109,13 @@ const done = (
 let frames: FrameRequestCallback[] = [];
 const runFrame = () => act(() => frames.splice(0).forEach((run) => run(0)));
 
+// A date this year reads without its year ("Verified 8 Nov"), so the clock stands in the fixtures' year: on
+// the machine's own, every date here grew a year on 1 January. Only Date is faked; timers and waits run as ever.
+const TODAY = new Date(2026, 10, 23, 12);
+
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(TODAY);
   wire.calls = [];
   wire.offline = false;
   frames = [];
@@ -128,6 +134,7 @@ afterEach(() => {
   window.history.replaceState(null, '', '/document/d1');
   vi.unstubAllGlobals();
   vi.clearAllMocks();
+  vi.useRealTimers();
 });
 
 async function open(role: Role = 'edit', over: Record<string, unknown> = {}) {
@@ -452,9 +459,7 @@ describe('the parts the pages do not cover', () => {
       const card = within(screen.getByRole('region', { name: 'Knowledge Gap' }));
       expect(card.getByText('Who approves a release?')).toBeTruthy();
       expect(card.getByText('No page answers it.')).toBeTruthy();
-      expect(card.queryByRole('button', { name: 'Draft a Page From What We Know' }) !== null).toBe(
-        role !== 'view',
-      );
+      expect(card.queryByRole('button', { name: 'Draft a Page' }) !== null).toBe(role !== 'view');
       // Email is not built: nothing offers to ask the owner.
       expect(screen.queryByRole('button', { name: /to Write It/ })).toBeNull();
     },
@@ -464,7 +469,7 @@ describe('the parts the pages do not cover', () => {
     const commitTabs = vi.fn();
     await open('edit', { commitTabs });
     await answer(ask('Q?'), gaps());
-    fireEvent.click(screen.getByRole('button', { name: 'Draft a Page From What We Know' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Draft a Page' }));
     const draftCall = wire.calls[1]!;
     expect(draftCall.request).toEqual({ question: 'Who approves a release?' });
     await answer(draftCall, done('The release manager [1].', { sources: [source(1)] }));
@@ -481,7 +486,7 @@ describe('the parts the pages do not cover', () => {
     const commitTabs = vi.fn();
     await open('edit', { commitTabs });
     await answer(ask('Q?'), gaps());
-    fireEvent.click(screen.getByRole('button', { name: 'Draft a Page From What We Know' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Draft a Page' }));
     await answer(wire.calls[1]!, { type: 'error', kind: 'overloaded', message: 'busy' });
     await waitFor(() => expect(commitTabs).toHaveBeenCalledTimes(1));
     const added = (commitTabs.mock.calls[0]![0] as (tabs: Tab[]) => Tab[])([]);

@@ -3,13 +3,14 @@
 // The rail of versions (docs/specs/006-document/version-history.md "In the editor"): Now first, then the versions
 // newest first under day headings, each with its time, its name or kind, and who it names. An Editor names the
 // current content at the rail's head and names, renames or unnames the selected row in place.
+import { Callout } from '@liveworkspace/ui/callout';
 import { useState, type FormEvent } from 'react';
 import type { VersionSummary } from '@liveknowledge/api-schema';
 import { NAME_MAX_LENGTH } from '@liveknowledge/document';
 import { Button, CompactEmptyState, SwitchRow, TextInput } from '@liveknowledge/ui';
 import { HistoryIcon } from './history-tools-item';
 import type { VersionList } from './useVersionHistory';
-import { AiWriterMark } from '@liveworkspace/workbench/components/ai-writer/AiWriterMark';
+import { AiWriterMark } from '@liveworkspace/ui/ai-writer-mark';
 import {
   aiVersionWords,
   timeOfDay,
@@ -275,9 +276,9 @@ function NameField({
         }}
       />
       {error ? (
-        <p role="alert" className="text-xs text-red-600 dark:text-red-400">
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="flex justify-end gap-1">
         <Button variant="ghost" size="xs" onClick={onCancel}>

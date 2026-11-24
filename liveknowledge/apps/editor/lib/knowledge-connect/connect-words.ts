@@ -43,7 +43,7 @@ export function accessRows(role: ConnectRole): readonly AccessRow[] {
       key: 'write',
       title: 'Writes',
       about:
-        'Replaces a page’s writing and moves pages directly. Never on a page that is Verified or Review Due.',
+        'Replaces a page’s writing and moves pages directly, as far as the knowledgebase’s AI Editing allows.',
       yours: role === 'editor' ? 'Once You Allow It' : 'Only an Editor’s',
       granted: false,
     },

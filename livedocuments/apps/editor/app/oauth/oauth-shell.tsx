@@ -7,7 +7,8 @@
 import { CLI_CLIENT_ID } from '@livedocuments/api-schema';
 import type { OauthPagesConfig } from '@liveworkspace/workbench/components/oauth/oauth-chrome';
 import { useSignInGate } from '@liveworkspace/workbench/hooks/auth/useSignInGate';
-import { AUTH_TITLE, AuthStage } from '@/components/chrome/AuthStage';
+import { AUTH_TITLE } from '@liveworkspace/workbench/components/chrome/AuthStage';
+import { AuthStage } from '@/components/chrome/AuthStage';
 import { ConnectPitch } from '@/components/chrome/auth-pitches';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { MCP_ORIGIN } from '@/lib/mcp-config';

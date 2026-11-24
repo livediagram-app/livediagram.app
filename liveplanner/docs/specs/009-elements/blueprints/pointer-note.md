@@ -5,11 +5,11 @@ draws and moves it. The spec decides; this file adds engineering precision.
 
 Scope, by file:
 
-| File                                              | Role                                          |
-| ------------------------------------------------- | --------------------------------------------- |
-| `packages/project/src/pointer-note.ts`            | `isPointerNote`, `pointerTipOf`               |
-| `packages/project/src/attachment.ts`              | `settlePointerNote`, run inside `settleChips` |
-| `packages/project/src/svg-render-pointer-note.ts` | The note and its leader line in an export     |
+| File                                                       | Role                                          |
+| ---------------------------------------------------------- | --------------------------------------------- |
+| `../packages/element-model/src/pointer-note.ts`            | `isPointerNote`, `pointerTipOf`               |
+| `../packages/element-model/src/attachment.ts`              | `settlePointerNote`, run inside `settleChips` |
+| `../packages/element-model/src/svg-render-pointer-note.ts` | The note and its leader line in an export     |
 
 ## Settling
 

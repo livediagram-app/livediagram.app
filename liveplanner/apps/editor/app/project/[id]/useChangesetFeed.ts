@@ -5,7 +5,10 @@ import { apiListChangesets, apiRevertChangeset } from '@/lib/api-client';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
-import { createRevealStore, type RevealStore } from '@/lib/changeset-reveals';
+import {
+  createRevealStore,
+  type RevealStore,
+} from '@liveworkspace/workbench/lib/changeset-reveals';
 import { admitChangesetOp, type ChangesetSeen } from '@liveworkspace/workbench/lib/changeset-seen';
 import {
   changesetToastCopy,
@@ -177,7 +180,7 @@ type ToastRefs = {
 
 // The toast of one burst (blueprint "Presentation and UX"): "Webber changed 3 elements: add payment
 // service" with Show and Undo. Undo reverts each of its changesets newest first, the buttons
-// disabled meanwhile, then reads "Undone" (or how many were kept).
+// disabled meanwhile, then reads "Undid Webber's change" (or how many were kept).
 function changesetToastActions(refs: ToastRefs) {
   const show = (entry: ChangesetToast, busy = false) => {
     refs.latest.current.toast.action({
@@ -225,7 +228,7 @@ function changesetToastActions(refs: ToastRefs) {
         kept += answer.kept.length;
       }
       refs.toastsRef.current.delete(entry.key);
-      toast.action({ key: entry.key, message: undoneCopy(kept), actions: [] });
+      toast.action({ key: entry.key, message: undoneCopy(kept, entry.name), actions: [] });
     } catch (err) {
       const status = err instanceof Error && 'status' in err ? err.status : null;
       console.warn('[changeset] undo-failed', {

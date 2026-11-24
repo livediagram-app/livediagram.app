@@ -16,7 +16,7 @@ Scope, by file:
 | `../packages/element-model/src/flowchart-grow.ts`         | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
 | `../packages/element-model/src/flowchart-settle.ts`       | `settleFlowcharts`: a chart laid out again after any structural change                                                         |
 | `packages/project/src/flowchart.ts`, `flowchart-grow.ts`  | The bindings: the step and lane factories bound to this model's `createShape`                                                  |
-| `packages/project/src/auto-layout.ts`                     | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
+| `../packages/element-model/src/auto-layout.ts`            | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
 | `packages/project/src/element-types.ts`                   | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
 | `packages/project/src/element-fields.ts`                  | The three fields in the shape's field list                                                                                     |
 | `packages/project/src/validate-shape.ts`                  | The three fields validated                                                                                                     |
@@ -148,9 +148,10 @@ Positions are rounded to whole pixels (memory: fit lands on whole pixels).
   its old centre, then the layout.
 - `setFlowchartDirection(elements, id, direction)`: every step's `flowDirection`, then the layout in
   that direction.
-- `addFlowchartLane(elements, id, laneIds)`: unlaned: two lanes `Lane 1`, `Lane 2` and every step's
-  `flowLaneId` set to the first; laned: one lane `Lane <n+1>` at the end (cross position past the
-  last). Then the layout.
+- `addFlowchartLane(elements, id, laneIds, opts?)`: unlaned: two lanes `Lane 1`, `Lane 2` and every
+  step's `flowLaneId` set to the first; laned: one lane `Lane <n+1>` at the end (cross position past
+  the last). Then the layout. The shape factory makes a lane bare, so `opts.dressLane(lane)` gives each
+  new lane the tab's theme colours; absent leaves it as made.
 - `moveStepToLane(elements, stepId, laneId)`: `flowLaneId`, then the layout.
 - `relayoutFlowchart(elements, id)`: the layout as is (Tidy Flowchart, and after any structural change
   the editor detects).

@@ -55,8 +55,12 @@ shard adds `--shard=n/3`).
 - `defineProject(overrides?)`: `baseConfig` merged with per-workspace overrides.
 - `@liveworkspace/vitest-config/react-cleanup`: a setup file that unmounts every tree React Testing
   Library rendered after each test.
-- `@liveworkspace/vitest-config/cpu-time`: CPU-time measures, budgets, growth-ratio ceilings and
-  `cpuGrowthRatio` (two sizes sampled in turns, best kept) for speed tests.
+- `@liveworkspace/vitest-config/cpu-time`: CPU-time measures (`cpuLeastMsOf`, the least of a few runs, for work
+  of a few milliseconds), budgets, growth-ratio ceilings and `cpuGrowthRatio` (two sizes sampled in turns, best
+  kept) for speed tests.
+- `@liveworkspace/vitest-config/route-sweep`: the api Workers' drift test asks about every path their route code
+  can tell apart without sending every path: `tracePathReads` records which path segments a request reads,
+  `sweepPaths` sends one path of each class, `classOf` and `sampleMembers` hold members against their class.
 - `vitest-budgets` (bin): the speed-budget run above.
 - `@liveworkspace/vitest-config/inline-script`: `runInlineScript(source, globals)`, which runs an
   inline `<script>`'s source as a browser would, against stub globals.

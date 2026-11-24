@@ -850,7 +850,7 @@ history.retention` with the count.
   status phase or a priority colour) from the plan's `statusNames` and `statusPhases`, the card's type (field labels)
   and its items (a Card field's title). The rail, disc and chip classes are `timeline-parts.tsx`'s, shared with the
   comment threads.
-  An agent's run (`run.ai`) draws its sparkle (`AiWriterMark`, `@liveworkspace/workbench/components/ai-writer/AiWriterMark`,
+  An agent's run (`run.ai`) draws its sparkle (`AiWriterMark`, `@liveworkspace/ui/ai-writer-mark`,
   the one liveknowledge's Created, Updated and Version History draw, its words as its tooltip) named by `aiRunWords(run)` (`activity-ai-words.ts`, pure): every change
   kind across the run's entries mapped to a verb (`moved` Transitioned, `created` Created, `set`/`cleared`/`type`
   Edited, `set` of `title` alone Renamed, `trashed` Trashed, `archived` Archived, `untrashed`/`unarchived` Restored,
@@ -1013,7 +1013,7 @@ session, whose catch-up holds only its own tab's ops, can still replay past othe
 - `apps/editor/hooks/plan/usePlanItems.ts`: `{ store, items, status, self, write, receive, refetch }`. `self` is the
   person with the hashed id (`itemPersonId` of the editor's self id, the id the api resolves as owner).
   - Optimistic: a write applies `applyItemWrite` locally (creates carry client-made ids, `withCreateIds`), sends,
-    then merges the answer. A failed write refetches the store and toasts "Couldn't save that change".
+    then merges the answer. A failed write refetches the store and toasts "Couldn’t save the change to “Fix login”".
   - A read crossing a write never takes the written card away (a card added and opened at once would blink out,
     and its panel close with its address): the writes still on their way are laid back over the copy read, as the
     waiting ones are, and a copy older than an answer or room op that landed while it was asked for (its `rev`

@@ -82,7 +82,7 @@ describe('Share Form, unpublished', () => {
       />,
     );
     expect(publishButton().disabled).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Choose Where Responses Go' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Choose Destination' }));
     expect(fix).toHaveBeenCalled();
   });
 });

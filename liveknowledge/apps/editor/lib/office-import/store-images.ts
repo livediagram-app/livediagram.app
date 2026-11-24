@@ -8,10 +8,10 @@ import {
 } from '@liveworkspace/workbench/lib/import-images/constants';
 import type { ImportImageOutcome, ImportImageSession } from '../import-images';
 import type { OfficePicture } from './docx';
-import { OfficeImportError } from './errors';
-import { OFFICE_MAX_IMAGES } from './limits';
-import type { OfficePackage } from './package';
-import { zipKey } from './zip';
+import { OfficeImportError } from '@liveworkspace/office-files/errors';
+import { OFFICE_MAX_IMAGES } from '@liveworkspace/office-files/limits';
+import type { OfficePackage } from '@liveworkspace/office-files/package';
+import { zipKey } from '@liveworkspace/office-files/zip';
 
 /** A stored picture's outcome, or 'over-cap' for one past OFFICE_MAX_IMAGES. */
 export type PictureOutcome = ImportImageOutcome | 'over-cap';

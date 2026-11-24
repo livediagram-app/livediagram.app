@@ -7,7 +7,7 @@
 // Cancel or Escape leaves the map as it was.
 
 import { useMemo, useState } from 'react';
-import { Button, DialogCloseButton, DialogHeader, Select } from '@liveknowledge/ui';
+import { Button, CloseIcon, DialogCloseButton, DialogHeader, Select } from '@liveknowledge/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import {
@@ -251,7 +251,7 @@ export function MapDialog({
                         aria-hidden
                         className="text-optical-line text-slate-500 dark:text-slate-400"
                       >
-                        ×
+                        <CloseIcon size={12} />
                       </span>
                     </button>
                   </li>

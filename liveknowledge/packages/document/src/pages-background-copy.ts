@@ -105,7 +105,7 @@ export type NewPageBackgroundSpread<T> = {
   skipped: number;
 };
 
-/** Apply to Every Page: every page of the tab given its new-page background (or put back on the paper when it has
+/** Apply to All: every page of the tab given its new-page background (or put back on the paper when it has
  *  none), as one edit, each re-inked for its new fill in one walk; `reaches` narrows the pages (a look's restyle
  *  reaches only the pages still on the old default). An article is one unit (its pages share one background) and
  *  keeps its own pattern (its ruled lines are its Style's); a locked page keeps its own and counts as skipped. */

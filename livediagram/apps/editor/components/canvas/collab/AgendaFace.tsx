@@ -16,11 +16,12 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { AgendaStep, type StepState } from './agenda/AgendaStep';
 import { EmptyRows, QA_ACCENT } from './qa/qa-parts';
+import { usePublishFaceControls } from '@/components/canvas/collab/face-controls';
 
 // "1h 5m" / "45m". The number in the header is what tells you the plan doesn't
 // fit before you start.
@@ -89,6 +90,16 @@ export function AgendaFace({
   const stateOf = (i: number): StepState =>
     current === undefined ? 'ahead' : i === current ? 'current' : i < current ? 'done' : 'ahead';
 
+  usePublishFaceControls(element.id, [
+    onReset &&
+      current !== undefined && {
+        key: 'reset',
+        label: 'Reset Agenda',
+        description: 'Go back to the first part of the meeting.',
+        icon: 'reset',
+        run: onReset,
+      },
+  ]);
   return (
     <CollabAccentScope element={element} textColor={textColor} surface={surface}>
       <CollabPanel

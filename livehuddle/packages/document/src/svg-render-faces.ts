@@ -27,7 +27,7 @@ import {
 import { POND_FILL, pondParts } from './office-social';
 import { POOL_FILL, swimmingPoolParts } from './office-venue';
 import { FOCUS_BUTTON_ART } from './focus-button-art';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { roomSignSvg, screenSvg } from './svg-render-meeting';
 import { timerPieceSvg } from './svg-render-timers';
 import { DEFAULT_BUTTON_MODE, SELECTION_MODE_LABEL } from './selection-mode';

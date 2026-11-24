@@ -215,6 +215,19 @@ root AGENTS.md); the Workers keep their own ports (8787 and up, 3010 and 3011). 
 livediagram 3100, liveplanner 3200, livedocuments 3300, livedesign 3400, livehuddle 3500 and liveknowledge 3600 (its
 api on 9287 and its MCP on 9288, outside the block as every product's Workers are).
 
+`dev:workspace` runs liveworkspace's eight services in one `wrangler dev` (`packages/local-workers`): one wrangler,
+one workerd and one bundler for all eight, where each used to start its own. Measured on 2026-11-23, peak while
+starting then steady a minute later: 3.5 GB then 2.0 GB in 48 processes before, 1.3 GB then 1.1 GB in 8 after. Each
+service keeps its port, its `.dev.vars`, its migrations and its local data, so nothing that calls it changes.
+Wrangler serves only the first Worker of such a run, so that is a local gateway on 3009, and each service's own port
+is piped to it. It is local only: no deploy, CI run or wrangler.toml changes, and each service's own `dev` script
+still runs it alone. A product's router, api and MCP keep a `wrangler dev` each: run the same way they saved only 0.2
+to 0.3 GB steady, too little for the work their `--env local` router would need.
+
+Tests take a quarter of the machine's cores per run locally and turbo runs two workspaces at a time (the root `build`,
+`lint`, `test`, `test:coverage` and `typecheck` scripts), so several agents testing at once can't run a laptop out of
+memory. CI keeps Vitest's default, a worker per core but one, and its own turbo concurrency.
+
 ## Shared code
 
 Code two or more products need lives once, in `packages/` as `@liveworkspace/*`, each module a subpath
@@ -231,6 +244,16 @@ invalid is told to a screen reader as well as drawn in rose: it carries `aria-in
 says why (or the hint it shows) is tied to it with `aria-describedby`, so the reader hears the field, that its value
 is wrong and what to type instead. A caller that sets its own `aria-invalid` or `aria-describedby` keeps it (the
 hint is added to its own list, never in place of it).
+
+### The shared segmented toggle
+
+Every app's small "show this or that" switch (the Explorer's This app / All Apps, a dialog's Source, Live Data's
+Sheet Range / Board Counts / Dashboard Metric) is `@liveworkspace/ui`'s `SegmentedToggle`. It fits any label without
+a caller's layout help (Work Tracker 1384): a label never breaks inside itself, and when the segments don't fit
+their place the track wraps whole segments onto another row. Wrapped, the segments share each row's width, so the
+rows read as one grid, and every segment keeps the same height. On a touch screen each segment is a 44 px target
+(`touch-target-y` on one row; 44 px tall once wrapped, where rows sit too close for a pad). At a width where its
+segments fit on one row, it looks as it always has.
 
 ### The shared element model
 

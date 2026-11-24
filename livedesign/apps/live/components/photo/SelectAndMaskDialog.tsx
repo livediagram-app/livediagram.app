@@ -7,12 +7,13 @@
 // works the photo itself.
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { Button, DialogHeader } from '@livedesign/ui';
+import { Button } from '@livedesign/ui';
 import {
   createMask,
   ellipseMask,
@@ -37,6 +38,8 @@ import {
 import { applySelectAndMask, REFINE_EDGE_RADIUS } from '@/lib/photo-editor/selection-ops';
 import { track } from '@/lib/telemetry';
 import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';
+import { PhotoDialogHero } from './PhotoDialogHero';
+import { selectAndMaskHeroArt } from './SelectAndMaskHeroArt';
 
 // The preview's room, CSS px.
 const VIEW_W = 360;
@@ -99,6 +102,7 @@ export function SelectAndMaskDialog({
   const [busy, setBusy] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const painting = useRef(false);
+  const titleId = useId();
   const small = useMemo(() => (s.selection ? scaleMask(s.selection, k) : null), [s.selection, k]);
   const base = useMemo(() => (small ? refineMask(small, r, k) : null), [small, r, k]);
 
@@ -188,8 +192,16 @@ export function SelectAndMaskDialog({
   );
 
   return (
-    <Dialog open onClose={onClose} ariaLabel="Select and Mask" backdrop="desktop-light" phoneSheet>
-      <DialogHeader title="Select and Mask" subtitle="Refine the selection's edge, then keep it." />
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light" phoneSheet>
+      {/* The dialog hero header (dialog-hero-header.md): the subject cut out, the brush on its hair. */}
+      <PhotoDialogHero
+        art={selectAndMaskHeroArt}
+        titleId={titleId}
+        title="Select and Mask"
+        line="Refine the selection's edge, then keep it."
+        sheet
+        onClose={onClose}
+      />
       <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto px-6 py-4">
         <canvas
           ref={canvasRef}

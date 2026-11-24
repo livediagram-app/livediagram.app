@@ -44,9 +44,9 @@ Folder membership changes two ways:
 
 **2. The tab's right-click / ellipsis menu**: an **Organise in Tab Folder** row that opens a centred **modal** (`AddTabToFolderDialog`, the same tile-grid language as the shared placement browser, [Folders](../013-workspace/folders.md)). The row and the dialog title both read **Organise in Tab Folder**, which says which folders it means and covers moving a tab between folders and out of one. Picking commits immediately and closes:
 
+- **A "New Folder" tile**, first (owner, 2026-11-23) → create-in-place naming (the placement browser's dashed tile); typing an existing name just moves the tab into it (same name = same folder).
 - **A tile per existing folder** in this document → move the active tab into it (the current folder's tile reads "Current" and is a no-op).
 - **A "No Folder" tile** → makes the tab loose on the bar; selected when the tab already is.
-- **A "New Folder" tile** → create-in-place naming (the placement browser's dashed tile); typing an existing name just moves the tab into it (same name = same folder).
 
 ## Tab bar rendering
 

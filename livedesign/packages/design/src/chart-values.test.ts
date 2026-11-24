@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { glyphWidth } from './label-box';
-import { barMarks, lineMarks, pieMarks } from './chart-marks';
+import { barMarks, lineMarks, pieMarks } from '@liveworkspace/element-model/chart-marks';
 import {
   barValueLabels,
   chartValueFontPx,
   lineValueLabels,
   pieValueLabels,
   shortNumber,
-} from './chart-values';
+} from '@liveworkspace/element-model/chart-values';
 import { renderElementsToSvg } from './svg-render';
 import type { Tab } from './index';
 

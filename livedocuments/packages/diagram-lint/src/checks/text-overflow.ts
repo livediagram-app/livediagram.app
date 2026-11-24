@@ -16,7 +16,7 @@ import {
   type Element,
   type Rect,
 } from '@livedocuments/document';
-import { LINT_OVERLAP_TOLERANCE_PX } from '../constants';
+import { LINT_OVERLAP_TOLERANCE_PX } from '@liveworkspace/diagram-lint/constants';
 import { refOf } from '../context';
 import { fixes } from '../fixes';
 import type { Check, RawFinding } from './types';

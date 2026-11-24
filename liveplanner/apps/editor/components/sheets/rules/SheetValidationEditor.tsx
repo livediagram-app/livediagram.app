@@ -4,7 +4,7 @@
 // Range, the Criteria (a rule kind and its fields), Advanced (Reject or Warn, Help Text), and Remove Rule, Cancel and
 // Done. Done writes the rule over its range (taking the range out of every other rule), one change and one undo step.
 import { useState } from 'react';
-import { Button, Select, TextInput, DateInput } from '@liveplanner/ui';
+import { Button, CloseIcon, DateInput, Select, TextInput } from '@liveplanner/ui';
 import {
   DROPDOWN_OPTIONS_MAX,
   DROPDOWN_OPTION_MAX,
@@ -25,7 +25,7 @@ import {
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { noColour, standardGroup } from '@/components/colour/colour-options';
+import { noColour, standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { GREY_PEN_COLOUR, INK_PEN_COLOUR, standardColours } from '@liveplanner/project';
 import { useSheetController, type SheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
@@ -406,7 +406,7 @@ export function SheetValidationEditor({
                   aria-label={`Remove ${o.v || `Option ${i + 1}`}`}
                   onClick={() => set({ opts: d.opts.filter((x) => x.key !== o.key) })}
                 >
-                  ✕
+                  <CloseIcon size={12} />
                 </Button>
               </div>
             ))}

@@ -8,9 +8,6 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // (docs/specs/007-editor/pages-mode.md "Contents" in each). The editors' door tests drive them with real pages; these
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
-  // The AI sparkle and "Claude for Priya Shah" (liveknowledge's verification.md "Made by a person or an agent",
-  // liveplanner's items.md "History"; Work Tracker 1360).
-  'src/components/ai-writer/**',
   // The chosen rail row's label in a start panel, read at AA on its tint (each product's start spec, "Rail").
   'src/components/start/start-chosen-ink.ts',
   // Organise in Tab Folder, the list and the folder colour (each product's 006 tab-folders.md, Work Tracker 1328).
@@ -221,6 +218,10 @@ const HELD_AT_100 = [
   'src/components/send-to-plan/sent-card-indicator.ts',
   'src/components/send-to-plan/SentChip.tsx',
   'src/components/send-to-plan/ThreadSendToPlan.tsx',
+  // The Table dialog's controls and the text style glyphs, the editors' one copy (each editor's 008-canvas
+  // canvas-and-palette.md "The Table dialog").
+  'src/components/dialogs/TableSettings.tsx',
+  'src/components/palette/text-style-icons.tsx',
 ];
 
 export default defineProject({

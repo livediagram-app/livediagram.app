@@ -15,7 +15,7 @@ import {
   type PathElement,
 } from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { rubberBand } from '@/lib/path-draw';
+import { rubberBand } from '@liveworkspace/workbench/lib/path-draw';
 import { sharedNodeType, toWorld } from '@/lib/path-edit';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
@@ -260,7 +260,7 @@ export function usePathTool({
           if (!shape) return;
           const simpler = simplifyContour(pathAnchors(shape), shape.closed);
           if (!simpler) {
-            toast.info('Already as simple as it gets.');
+            toast.info('This path is already as simple as it gets.');
             return;
           }
           edit.clearSelection();

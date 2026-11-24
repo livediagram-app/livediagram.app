@@ -14,7 +14,7 @@ export function agentWriteQuestion(ask: Pick<AgentWriteAsk, 'kind'> & { name: st
     ? {
         title: `Allow ${ask.name} to Write?`,
         message:
-          'It will be able to replace a page’s writing and move pages, at once and without a person looking first. It can never rewrite a page that is Verified or due for review: there it still suggests the edit for a person to accept. This applies to this knowledgebase only.',
+          'It will be able to replace a page’s writing and move pages, at once and without a person looking first. How far it may write is the knowledgebase’s AI Editing, from its menu: under Suggest Edits Only, the default, it still only suggests, and only under Edit Any Page does it rewrite a page that is Verified or due for review. This applies to this knowledgebase only.',
         confirmLabel: 'Allow Writing',
       }
     : {

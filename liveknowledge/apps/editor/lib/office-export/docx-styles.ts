@@ -4,7 +4,7 @@
 // Word restyles every heading; and the bullet and numbered list definitions. Pure string building.
 
 import type { ArticleBand } from '@liveknowledge/document';
-import { xmlText, XML_DECL } from './ooxml';
+import { xmlText, XML_DECL } from '@liveworkspace/office-files/ooxml';
 import type { DocxLook } from './docx-types';
 
 export const WML_NS =

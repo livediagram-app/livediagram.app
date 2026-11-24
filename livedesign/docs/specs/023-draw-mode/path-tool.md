@@ -170,14 +170,14 @@ mirrored stroke) is edited **one contour at a time**, with every tool above.
 - **Simplify** (on the edit toolbar for a contour of 12 or more plain corners, as Combine and Tidy
   make them): keeps the corners whose turn is sharp, keeps only the points the outline needs
   between them and gives those smooth (aligned) handles, so no part of the outline moves more than
-  half a pixel. One undo step; "Already as simple as it gets." when nothing would go.
+  half a pixel. One undo step; "This path is already as simple as it gets." when nothing would go.
 - Every edit is one undo step and reaches collaborators like any element change.
 
 ### Freehand strokes
 
 A pencil or marker stroke has samples, not points. Its selection toolbar offers **Edit Points**
 too: it runs [Tidy](../007-editor/logo-pages.md) on the stroke (one undo step), opens the
-resulting path's edit mode and says "Tidied into a path so its points can be edited." A stroke
+resulting path's edit mode and says "Drawing tidied into a path so its points can be edited." A stroke
 Tidy cannot take (a highlighter, a rotated stroke) offers no Edit Points.
 
 ## Style

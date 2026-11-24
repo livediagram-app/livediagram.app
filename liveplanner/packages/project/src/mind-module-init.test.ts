@@ -10,7 +10,7 @@ import './index';
 describe('mind modules', () => {
   it('initialise their gaps when mind-flow is the entry point', async () => {
     vi.resetModules();
-    await import('./mind-flow');
+    await import('@liveworkspace/element-model/mind-flow');
     const liveDoc = await import('./index');
 
     expect(liveDoc.MIND_CHILD_GAP_Y).toBe(

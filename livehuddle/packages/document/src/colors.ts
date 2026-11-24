@@ -12,7 +12,7 @@ import {
   type TextAlignX,
   type TextAlignY,
 } from './index';
-import { PEN_INK } from './pen-colours';
+import { PEN_INK } from '@liveworkspace/element-model/pen-colours';
 import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
 import { FENCE_WOOD } from '@livehuddle/avatar/fence';

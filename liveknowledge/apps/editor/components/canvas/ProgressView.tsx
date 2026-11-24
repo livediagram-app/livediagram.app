@@ -19,7 +19,7 @@ import {
   type ProgressLabelInks,
   type ShapeElement,
 } from '@liveknowledge/document';
-import { animSpeedVars } from '@/lib/icons';
+import { animSpeedVars } from '@liveworkspace/workbench/lib/icons';
 
 // The speed + iteration custom properties the `lvd-prog-*` keyframes read.
 // `fill` defaults to playing once and holding; `pulse` / `stripes` default to

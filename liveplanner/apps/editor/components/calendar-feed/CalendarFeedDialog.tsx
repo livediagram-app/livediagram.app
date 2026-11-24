@@ -262,9 +262,9 @@ export function CalendarFeedDialog({
               once.
             </Callout>
             {saveFailed ? (
-              <p role="alert" className="text-xs text-rose-700 dark:text-rose-300">
+              <Callout tone="error" role="alert">
                 Couldn’t save. Try again.
-              </p>
+              </Callout>
             ) : null}
           </>
         )}

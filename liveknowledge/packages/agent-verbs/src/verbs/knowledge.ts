@@ -18,6 +18,8 @@ import type {
 import { resolveDocument } from '../addressing';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import {
+  aiEditingFieldsOf,
+  aiEditingLine,
   jsonBody,
   knowledgePath,
   pageRefOf,
@@ -58,7 +60,7 @@ export const context = defineVerb({
   id: 'context',
   summary: 'The pages every agent reads first',
   description:
-    'Prints the knowledgebase’s Always in Context pages as Markdown, in the order of the page tree and within the context budget, with how far each can be trusted, the knowledgebase’s Review Period (how long after it was verified a page comes due for review), and what this credential may do there (its role and scopes). Run it first.',
+    'Prints the knowledgebase’s Always in Context pages as Markdown, in the order of the page tree and within the context budget, with how far each can be trusted, the knowledgebase’s Review Period (how long after it was verified a page comes due for review), its AI Editing (how far an agent may change pages itself), and what this credential may do there (its role and scopes). Run it first.',
   behaviour: 'read',
   input: z.object({ doc: docArg }),
   output: z.object(getContextOutput).omit({ next: true }),
@@ -70,6 +72,7 @@ export const context = defineVerb({
       role: c.role,
       scopes: c.scopes,
       review_period: reviewPeriodOf(c.reviewEvery),
+      ...aiEditingFieldsOf(c.aiEditing, c.aiEditUnverifies, c.scopes),
       budget_tokens: c.budget,
       tokens: c.tokens,
       pages: c.pages.map((p) => ({
@@ -83,7 +86,8 @@ export const context = defineVerb({
     };
   },
   text: (o) => [
-    `${o.knowledgebase} · ${o.page_count} pages · ${reviewPeriodLine(o.review_period)} · you act as ${o.role} · scopes: ${o.scopes.join(', ')} · ${o.tokens} of ${o.budget_tokens} tokens`,
+    `${o.knowledgebase} · ${o.page_count} pages · ${reviewPeriodLine(o.review_period)} · ${aiEditingLine(o)} · you act as ${o.role} · scopes: ${o.scopes.join(', ')} · ${o.tokens} of ${o.budget_tokens} tokens`,
+    o.ai_editing_allows,
     ...o.pages.flatMap((p) => ['', `--- ${named(p)} · ${trustLine(p)}`, p.markdown.trimEnd()]),
     ...o.left_out.map((p) => `left out (over the budget): ${named(p)}, ${p.tokens} tokens`),
   ],
@@ -381,7 +385,7 @@ export const write = defineVerb({
   id: 'write',
   summary: 'Write a page directly',
   description:
-    'Replaces a page’s whole writing with a Markdown file (or - for stdin), or adds it after the last block with --append, at once and with no review. Needs the write scope, and is refused on a verified page and on one whose review is due: suggest the change there.',
+    'Replaces a page’s whole writing with a Markdown file (or - for stdin), or adds it after the last block with --append, at once and with no review. Needs the write scope, and goes only as far as the knowledgebase’s AI Editing allows (context prints it): Suggest Edits Only refuses it, Edit Unverified Pages refuses a verified page and one whose review is due, Edit Any Page takes every page. Suggest the change where it is refused.',
   behaviour: 'destructive',
   input: z.object({
     doc: docArg,
@@ -415,7 +419,7 @@ export const move = defineVerb({
   id: 'move',
   summary: 'Move a page in the tree',
   description:
-    'Moves a page, with the pages under it, under --parent or to the top level (--top), in front of --before or last. With --before alone it goes where that page is. Links to the page keep working. Needs the write scope.',
+    'Moves a page, with the pages under it, under --parent or to the top level (--top), in front of --before or last. With --before alone it goes where that page is. Links to the page keep working. With the suggest scope it moves a page whose subtree is all never verified; any other page needs the write scope.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,

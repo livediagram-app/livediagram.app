@@ -4,12 +4,14 @@
 // rows, one per node with a level instead of typed spaces (MindOutlineRows). A quiet count says
 // what Save will do and, when Save would remove nodes, a question comes first: Keep Editing or
 // Remove. ⌘/Ctrl+Enter saves; Escape cancels (the Dialog's own). On a phone it rises as a sheet.
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { useCallback, useId, useMemo, useState, type ReactNode } from 'react';
+import { Button } from '@livediagram/ui';
 import type { MindOutlineSummary } from '@livediagram/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { rowsFromText, rowText, textFromRows, type OutlineRow } from '@/lib/outline-rows';
+import { mindOutlineHeroArt } from './MindOutlineHeroArt';
 import { MindOutlineRows } from './MindOutlineRows';
 
 // Removed nodes the question names before "and N more".
@@ -81,6 +83,7 @@ export function MindOutlineDialog({
 }) {
   const [rows, setRows] = useState<OutlineRow[]>(() => rowsFromText(initialText));
   const [confirming, setConfirming] = useState(false);
+  const titleId = useId();
   // The outline as Save reads it.
   const text = useMemo(() => textFromRows(rows), [rows]);
   // A root row with no text has nothing to save onto the root.
@@ -104,23 +107,16 @@ export function MindOutlineDialog({
   };
 
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      ariaLabel="Edit Outline"
-      size="lg"
-      phoneSheet
-      className="max-h-[90vh]"
-    >
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} size="lg" phoneSheet className="max-h-[90vh]">
+      <HeroDialogHeader
+        art={mindOutlineHeroArt}
+        titleId={titleId}
         title="Edit Outline"
         subtitle="One row per node. Tab nests a row under the one above; Shift+Enter adds a line."
-      >
-        <div className="flex shrink-0 items-center gap-1">
-          <HelpArticleLink article="mindMapOutline" />
-          <DialogCloseButton onClick={onClose} />
-        </div>
-      </DialogHeader>
+        actions={<HelpArticleLink article="mindMapOutline" />}
+        onClose={onClose}
+        underHandle
+      />
       <div className="flex min-h-0 flex-col gap-2 px-6 py-4 max-sm:px-4">
         <MindOutlineRows rows={rows} onRows={onRows} onSave={save} />
         {confirming && summary ? (

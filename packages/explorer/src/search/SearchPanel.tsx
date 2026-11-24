@@ -223,6 +223,8 @@ export function SearchPanel({
       onClose={onClose}
       ariaLabel="Search"
       size="lg"
+      // A screen of its own on a phone, not a drawer (a top-level dialog).
+      phoneSheet={false}
       className="overflow-hidden max-h-[calc(100dvh-2rem)] sm:mt-[12vh] sm:max-h-[76vh] sm:self-start"
     >
       <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800">

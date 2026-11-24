@@ -7,7 +7,7 @@
 // A LEAF module: types only from './index'.
 
 import type { ShapeElement } from './index';
-import { BADGE_NEW_LABEL, isChipLook, type ChipLook } from './chip';
+import { BADGE_NEW_LABEL, isChipLook, type ChipLook } from '@liveworkspace/element-model/chip';
 
 /** The Callout: a card with badge media, the callout's old size and copy, and no meta line, tags or icon. */
 function calloutCard(el: ShapeElement): ShapeElement {

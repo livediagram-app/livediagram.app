@@ -138,7 +138,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - `ShapeElement.chartValues?: boolean`: the numbers on the marks (Show Values); absent means off.
 - `ShapeElement.chartAxis?: boolean`: the value axis, its tick labels and gridlines (Show Axis); absent means off.
   A `LineSeries` may carry `axis?: 'right'`, its own scale (a second axis); any other value reads as absent. The
-  axes are laid out with the marks, in `chartValueAxis` (`packages/document/src/chart-axis.ts`) for both renderers.
+  axes are laid out with the marks, in `chartValueAxis` (`../packages/element-model/src/chart-axis.ts`) for both renderers.
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories: a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
@@ -149,18 +149,18 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?` and
   `chartVariant?` (`'horizontal' | 'area' | 'scatter' | 'doughnut'`, Chart types above); `chartTypeOf(el)` and
   `chartShapeOf(type)` map between a chart and its type, `chartTypeChange(el, type)` gives the patch that changes it
-  (`packages/document/src/chart-types.ts`), and `pieMarks` / `barMarks` / `lineMarks`
-  (`packages/document/src/chart-marks.ts`) lay out every type's marks for both the canvas views and the exporter, so
+  (`../packages/element-model/src/chart-types.ts`), and `pieMarks` / `barMarks` / `lineMarks`
+  (`../packages/element-model/src/chart-marks.ts`) lay out every type's marks for both the canvas views and the exporter, so
   the two never draw a chart differently. An exported chart's (and Sankey's) text names the theme's font, else the
   export's sans default, never bare: a standalone viewer drew bare text in its serif default.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
-  `isChartShape` live in `@livediagram/document` (`src/data-shapes.ts`).
+  `isChartShape` live in `@livediagram/document` (`../packages/element-model/src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
   default palette or a per-mark colour, with a `ChartLegend`; the mark group
   carries the `lvd-pie-*` animation (CSS in `apps/editor/app/canvas-motion.css`,
   reduced-motion-safe), the axes / labels stay still. `element-variant.ts` gives
   them a borderless wrapper. The shared layout `chartFrame` lives in
-  `packages/document/src/chart-frame.ts` (re-exported from `apps/editor/lib/chart.ts`,
+  `../packages/element-model/src/chart-frame.ts` (re-exported from `apps/editor/lib/chart.ts`,
   which holds `chartAnim`); the frame, readout and legend are drawn by
   `ChartSurface`; hover wiring in `useChartHover` + `ChartReadout`.
 - **The text exports say what a chart shows** (`chartTextLines`, `packages/document/src/chart-text.ts`), since a
@@ -280,7 +280,7 @@ Without a chart-level palette, saying "this chart is greys" would mean opening
 the data editor and setting a colour on every row by hand, and a row added later
 would still come out in the theme's colours.
 
-`chartPalette` (a `ChartPaletteId` from `packages/document/src/chart-palettes.ts`)
+`chartPalette` (a `ChartPaletteId` from `../packages/element-model/src/chart-palettes.ts`)
 slots in as the middle rung: **per-datum colour > the chart's palette > the tab
 theme's > the built-in ramp**. Stored as an id, so it keeps applying as the data
 grows, and it never touches the data, so a slice somebody coloured on purpose
@@ -329,3 +329,15 @@ paints no box; `LegendView` draws the card from the element's fill + stroke, and
 
 The **Chart tour** is on the footer's **Start Chart Tour** button while a data chart (any of the seven chart types) is selected, for an Editor on an unlocked element, and walks through it on the element
 itself ([Element tours](../007-editor/element-tours.md) "The Chart tour").
+
+## The Chart Data and Legend dialogs
+
+A pie, column or bar chart's rows are edited in the **Chart Data** dialog, not in the menu: the Data category
+lists each row's colour, label and value and has **Edit Data**, which opens it (a line chart's Edit Data opens its
+grid, as before). Per row the dialog has the colour, the label, the value and a remove button, then Add Slice.
+
+A legend's rows are edited in the **Legend** dialog, opened by the menu's **Legend** row: a colour, a word and a
+remove button per row, then Add Row. Its text size and palette stay in the menu's **Legend Style** category.
+
+Both are centred modals, bottom sheets on a phone, under the dialog hero header; each change saves as it is made,
+and rows slide in and out ([Motion](../004-interface-design/motion.md) "Rows that come and go").

@@ -6,6 +6,7 @@
   "sideEffects": false,
   "exports": {
     "./app": "./src/app.ts",
+    "./agent-name": "./src/agent-name.ts",
     "./app-view": "./src/app-view.ts",
     "./app-view-tab": "./src/app-view-tab.ts",
     "./app-view-live": "./src/app-view-live.ts",
@@ -32,7 +33,11 @@
     "./eval/diagram-tasks": "./eval/diagram-tasks.mjs",
     "./testing/test-client": "./src/testing/test-client.ts",
     "./eval/score": "./eval/score.mjs",
-    "./eval/task-bank": "./eval/task-bank.mjs"
+    "./eval/task-bank": "./eval/task-bank.mjs",
+    "./eval/gallery-seed": "./eval/gallery-seed.mjs",
+    "./eval/mcp-call": "./eval/mcp-call.mjs",
+    "./eval/run": "./eval/run.mjs",
+    "./eval/transcript": "./eval/transcript.mjs"
   },
   "scripts": {
     "lint": "oxlint",
@@ -52,7 +57,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261118.1",
+    "@cloudflare/workers-types": "^5.20261120.1",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.1.1",

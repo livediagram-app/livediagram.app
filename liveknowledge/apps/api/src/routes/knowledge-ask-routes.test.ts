@@ -679,7 +679,7 @@ describe('pages that disagree', () => {
       }[];
     }>();
     expect(overview.conflicts).toHaveLength(1);
-    // Each side says where its passage begins on its page, so Fix the Other opens the page at it.
+    // Each side says where its passage begins on its page, so Is Right opens the page at it.
     for (const side of [overview.conflicts[0]!.a, overview.conflicts[0]!.b]) {
       const first = kit.db.sql
         .prepare('SELECT first_block FROM passages WHERE tab = ? AND first_block = ?')

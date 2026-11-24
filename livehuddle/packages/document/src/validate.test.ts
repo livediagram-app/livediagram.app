@@ -8,7 +8,10 @@ import {
   TEXT_SCALE_MIN,
 } from './validate';
 import { SELECTION_MODES } from './selection-mode';
-import { IMAGE_CREDIT_TEXT_MAX, IMAGE_CREDIT_URL_MAX } from './image-credit';
+import {
+  IMAGE_CREDIT_TEXT_MAX,
+  IMAGE_CREDIT_URL_MAX,
+} from '@liveworkspace/model-core/image-credit';
 import { encodeStrokePoints } from '@liveworkspace/model-core/stroke-points';
 
 const box = { x: 0, y: 0, width: 100, height: 60 };

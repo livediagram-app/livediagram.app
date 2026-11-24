@@ -13,7 +13,7 @@ import {
   spendFaceBudget,
   type FacePartPaint,
   type FacePartShape,
-} from './marker-face';
+} from '@liveworkspace/element-model/marker-face';
 import {
   holdFaceBlocks,
   mapTags,

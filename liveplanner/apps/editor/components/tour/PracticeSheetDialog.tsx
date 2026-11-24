@@ -6,10 +6,11 @@
 // and turn green once it is done. The person's own sheet is never touched; Keep This Sheet copies the practice sheet
 // into a new Sheet tab.
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { createShape, newPlanSheetId, type Tab } from '@liveplanner/project';
 import { layoutIndex } from '@liveplanner/sheets';
-import { Button, Dialog, DialogCloseButton, useMediaQuery } from '@liveplanner/ui';
+import { Button, Dialog, useMediaQuery } from '@liveplanner/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -28,6 +29,7 @@ import { SheetToolbar } from '@/components/sheets/SheetToolbar';
 import type { SheetStore } from '@/components/sheets/sheet-store-client';
 import { useFormulaInput } from '@/components/sheets/useFormulaInput';
 import { useFormulaPointRef } from '@/components/sheets/useFormulaPointRef';
+import { practiceSheetHeroArt } from './PracticeSheetHeroArt';
 import { useSheetActions } from '@/components/sheets/useSheetActions';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { stashSheetSeeds } from '@/lib/sheet-seeds';
@@ -51,6 +53,7 @@ export function PracticeSheetDialog({
 }: {
   onEnd: (end: { outcome: 'completed' | 'skipped'; kept: boolean }) => void;
 }) {
+  const titleId = useId();
   const ctx = useEditorContext();
   const [practice, setPractice] = useState<Practice | null>(null);
   // The practice sheet's own undo (its writes are never the plan's): ⌘Z / Ctrl+Z inside the dialog.
@@ -82,7 +85,7 @@ export function PracticeSheetDialog({
     <Dialog
       open
       onClose={() => onEnd({ outcome: 'skipped', kept: false })}
-      ariaLabel="Practice Sheet"
+      titleId={titleId}
       size="3xl"
       // The Sheet holds Escape (it cancels a cell's edit): only the close button ends the practice.
       closeOnEscape={false}
@@ -109,17 +112,13 @@ export function PracticeSheetDialog({
           }
         }}
       >
-        <div className="flex items-start gap-3 border-b border-slate-200 px-5 pb-3 pt-4 dark:border-slate-800">
-          <div className="min-w-0 flex-1">
-            <h2 className="text-[16px] font-semibold text-slate-900 dark:text-white">
-              Practice Sheet
-            </h2>
-            <p className="mt-0.5 text-[13px] text-slate-500 dark:text-slate-400">
-              A small budget to practise on. Nothing here is saved unless you keep it.
-            </p>
-          </div>
-          <DialogCloseButton compact onClick={() => onEnd({ outcome: 'skipped', kept: false })} />
-        </div>
+        <HeroDialogHeader
+          art={practiceSheetHeroArt}
+          titleId={titleId}
+          title="Practice Sheet"
+          subtitle="A small budget to practise on. Nothing here is saved unless you keep it."
+          onClose={() => onEnd({ outcome: 'skipped', kept: false })}
+        />
         {practice ? (
           <PracticeBody practice={practice} onEnd={onEnd} />
         ) : (

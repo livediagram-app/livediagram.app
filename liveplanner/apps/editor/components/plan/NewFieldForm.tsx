@@ -6,7 +6,14 @@
 // Shape (AddFieldShape: the kind's built-in fields the type lacks as Ready to use, then the field's name, settings,
 // preview and "Add {Name}"), beside the same rail. It keeps the step and the search (across the steps), and answers Escape for the modal it sits in (AddFieldDialog): Shape goes back to Pick, Pick clears a typed
 // search, and then the modal closes. The categories a search leaves are worked out once per search, never per render.
-import { useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type MutableRefObject,
+} from 'react';
 import { CALCULATIONS, ITEM_TYPES, type ItemFieldId } from '@liveplanner/items';
 import {
   AddFieldPicker,
@@ -61,7 +68,7 @@ export function NewFieldForm({
   onCancel,
   escapeRef,
   formulaDraft,
-  dialogTitleId,
+  dialogHero,
   autoFocusSearch = false,
   edit,
 }: {
@@ -74,8 +81,8 @@ export function NewFieldForm({
   escapeRef?: MutableRefObject<(() => boolean) | null>;
   // The type as drafted, for a Formula's names and preview.
   formulaDraft?: FormulaDraft;
-  // In a modal: the id its heading takes (GalleryFrame's dialog look).
-  dialogTitleId?: string | undefined;
+  // In a modal: the hero header's art and the id its heading takes (GalleryFrame's dialog look).
+  dialogHero?: ComponentProps<typeof GalleryFrame>['dialogHero'];
   // The search takes focus on opening (under a mouse or a pen; never on a touch screen, so no keyboard flies up).
   autoFocusSearch?: boolean;
   // Edit Field (item-types.md "Edit Field"): an existing field, opened on Shape with its name and settings, saved by
@@ -157,7 +164,7 @@ export function NewFieldForm({
       line={
         edit ? 'Rename it, reshape it, or pick another type.' : 'Pick what the new field holds.'
       }
-      dialogTitleId={dialogTitleId}
+      dialogHero={dialogHero}
       search={{
         label: 'Search fields',
         placeholder: 'Search fields, like money or date',

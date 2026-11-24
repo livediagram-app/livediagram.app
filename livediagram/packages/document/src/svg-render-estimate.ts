@@ -16,7 +16,7 @@ import {
   ESTIMATE_SCALE_VALUES,
   ESTIMATE_SCALES,
 } from './collab-shapes';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import {
   collabCard,
   PAD_X,

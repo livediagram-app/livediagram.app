@@ -317,7 +317,7 @@ export function KnowledgeGapScene() {
         <Label x={54} y={96} size={8} weight={600} tone="strong">
           Who approves a hotfix at the weekend?
         </Label>
-        <Btn x={236} y={82} w={132} h={16} label="Draft a Page From What We Know" size={6.8} />
+        <Btn x={236} y={82} w={132} h={16} label="Draft a Page" size={6.8} />
       </Surface>
     </Scene>
   );

@@ -4,13 +4,15 @@
 // Rule. Pick a card with the card finder (CardPickerDialog, the plan's cards with the last changed first), and the
 // rule as it stands in the builder, unsaved, is tried on it without changing anything; the result is the platform's
 // (TestRuleResult): an Audit Trail row's result, how long it took and its steps, each action saying what it would
-// do. Another Card goes back to the finder. The api answers a refusal that names a step (`automation_invalid` with a
+// do. The finder and the result wear the same hero art (the platform's test-rule). Another Card goes back to the
+// finder. The api answers a refusal that names a step (`automation_invalid` with a
 // `path`) the same as a save's: the builder marks that step, so the test closes and hands it over.
 
 import { useMemo, useState } from 'react';
 import type { AutomationRuleBody } from '@liveplanner/items';
 import type { TestDialogProps } from '@liveworkspace/automations-ui/kit';
 import { TestRuleResult, useTestRun } from '@liveworkspace/automations-ui/TestRule';
+import { testRuleHeroArt } from '@liveworkspace/ui/dialog-hero-art/test-rule';
 import { CardPickerDialog } from '@/components/plan/CardPickerDialog';
 import {
   byNewestChange,
@@ -34,6 +36,7 @@ export function TestOnCard(props: TestDialogProps<AutomationRuleBody, Automation
       <CardPickerDialog
         title="Test on a Card"
         description="Pick a card to try this rule on. It shows what the rule would do and changes nothing."
+        art={testRuleHeroArt}
         cards={picker.shown}
         query={picker.query}
         onQuery={picker.setQuery}

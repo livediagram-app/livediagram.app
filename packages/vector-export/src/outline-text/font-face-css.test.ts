@@ -1,6 +1,6 @@
 // livedesign/docs/specs/007-editor/logo-pages.md "Outlined text": the faces an embedded stylesheet declares, read by a scan.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { parseFontFaces, parseUnicodeRange } from './font-face-css';
 
 const DATA = 'data:font/woff2;base64,d09GMgAB';
@@ -57,6 +57,6 @@ describe('parseFontFaces', () => {
   it('stays linear over a large stylesheet', () => {
     const block = `@font-face { font-family: 'F'; src: url(data:font/woff2;base64,${'A'.repeat(200_000)}); }\n`;
     const css = block.repeat(40);
-    expect(cpuMsOf(() => parseFontFaces(css))).toBeLessThan(400);
+    expect(cpuMsOf(() => parseFontFaces(css))).toBeLessThan(cpuBudgetMs(400));
   });
 });

@@ -29,10 +29,10 @@ import type {
 } from '@livediagram/document';
 import { useContext, useMemo, useState } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
-import { elementRunDefaults } from './label-style';
+import { elementRunDefaults } from '@liveworkspace/workbench/components/label-editor/label-style';
 import { HoverCard } from '@livediagram/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { useTextContrast } from '@/hooks/ui/useTextContrast';

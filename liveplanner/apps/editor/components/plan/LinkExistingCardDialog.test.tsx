@@ -134,7 +134,7 @@ describe('Link Existing', () => {
     fireEvent.change(search, { target: { value: 'key result' } });
     expect(screen.getByRole('button', { name: 'Ten new customers, Key Result KR-6' })).toBeTruthy();
     fireEvent.change(search, { target: { value: 'nothing like it' } });
-    expect(screen.getByText('No cards match.')).toBeTruthy();
+    expect(screen.getByText('No cards match “nothing like it”')).toBeTruthy();
   });
 
   it('links a free card at once and closes', async () => {

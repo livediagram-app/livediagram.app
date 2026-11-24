@@ -23,7 +23,7 @@ import {
   type CanvasSurface,
   type Finish,
 } from '@livehuddle/document';
-import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
+import { isCssNativeBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import { isSvgRenderedShape } from '@/components/canvas/shape-paint-path';
 
 // The wrapper className + inline style for a boxed element, derived purely

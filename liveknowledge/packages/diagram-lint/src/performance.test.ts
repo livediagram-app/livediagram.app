@@ -11,7 +11,7 @@ import {
   cpuRatioCeiling,
 } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@liveknowledge/document';
-import { LINT_MAX_ARROWS } from './constants';
+import { LINT_MAX_ARROWS } from '@liveworkspace/diagram-lint/constants';
 import { arrow, box, lint, tabOf } from './fixtures/build';
 
 // `n` boxes on a grid, each joined to its right and lower neighbours until `n` arrows are drawn.

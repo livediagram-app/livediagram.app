@@ -30,7 +30,7 @@ import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelecti
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { selectionMoving, useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
+import { FloatingToolbar } from '@liveworkspace/workbench/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { libraryDraftOf } from '@/lib/library-draft';
 import { WEB_ROW_ACTION } from '@/lib/web-row-actions';
@@ -40,6 +40,7 @@ import { useInsertionSlot } from '@/lib/insertion-preview';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useElementTourOffer } from '@/lib/element-tour-offer';
 import { ElementTourOffer } from '@/components/tour/ElementTourOffer';
+import { useFaceControls } from '@/components/canvas/collab/face-controls';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -107,7 +108,16 @@ export function CanvasSelectionToolbars({
   // Mind map (docs/specs/009-elements/mind-node.md): Add Child / Add Sibling, not on a locked node (growing re-lays the
   // map); a Participant grows maps too. Flowchart (docs/specs/009-elements/flowchart.md): Add Step / Add Branch, Step
   // Type and Lane. A relationship joining two entities: its cardinality presets.
+  const kindEditor =
+    readOnly || selectedLocked || !selected
+      ? null
+      : props.canEditMindOutline?.(selected.id) && props.onEditMindOutline
+        ? { kind: 'outline' as const, open: () => props.onEditMindOutline!(selected.id) }
+        : (props.kindEditor?.(selected) ?? null);
+  // A collaboration element's own main controls, as its face offers them now.
+  const faceControls = useFaceControls(readOnly || selectedLocked ? null : selected?.id);
   usePublishElementKindTools(selected?.id ?? null, {
+    ...(faceControls.length ? { controls: faceControls } : {}),
     ...((!readOnly || !!props.participantPalette) &&
     !selectedLocked &&
     selected &&
@@ -144,6 +154,12 @@ export function CanvasSelectionToolbars({
             onAdd: () => props.onAppendWebRow?.(selected.id),
           },
         }
+      : {}),
+    // The element's own edit dialog, where it has one and this person may open it.
+    ...(kindEditor ? { editor: kindEditor } : {}),
+    // A table grows from here too: a row at its foot, a column at its right (the ring's adds, as buttons).
+    ...(!readOnly && !selectedLocked && selected?.type === 'table'
+      ? { table: { onAddRow: props.onAddTableRow, onAddColumn: props.onAddTableColumn } }
       : {}),
     // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): at the bar's right, apart from the rest.
     saveToLibrary: readOnly || !selected ? undefined : () => libraryDraftOf([selected]),

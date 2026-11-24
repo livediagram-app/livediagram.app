@@ -290,7 +290,7 @@ with **Use Your Own Key** (`data-ask-ai`).
 | Action                                                    | Editor | Participant | Viewer |
 | --------------------------------------------------------- | ------ | ----------- | ------ |
 | Ask, Stop, Copy Answer, helpful and not helpful (account) | yes    | yes         | yes    |
-| Save as Page, Draft a Page From What We Know              | yes    | no          | no     |
+| Save as Page, Draft a Page                                | yes    | no          | no     |
 | Open AI Settings from a failure or the no-AI state        | yes    | no          | no     |
 | Accept Answer, Reopen, Delete a chat (this browser)       | yes    | yes         | yes    |
 

@@ -20,46 +20,18 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@liveplanner/ui';
 
-import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // Palette glyphs draw at 14px in toolbars and menus; the tile grid asks for its own step.
 type IconSizeProps = { size?: number };
 
-export function BoldIcon() {
-  return (
-    <span className="text-[13px] font-bold leading-none text-slate-700 dark:text-slate-200">B</span>
-  );
-}
-
-export function ItalicIcon() {
-  return (
-    <span className="text-[13px] font-semibold italic leading-none text-slate-700 dark:text-slate-200">
-      I
-    </span>
-  );
-}
-
-export function UnderlineIcon() {
-  return (
-    <span
-      className="text-[13px] font-semibold leading-none text-slate-700 dark:text-slate-200"
-      style={{ textDecoration: 'underline' }}
-    >
-      U
-    </span>
-  );
-}
-
-export function StrikethroughIcon() {
-  return (
-    <span
-      className="text-[13px] font-semibold leading-none text-slate-700 dark:text-slate-200"
-      style={{ textDecoration: 'line-through' }}
-    >
-      S
-    </span>
-  );
-}
+// The text style glyphs, the workbench's one copy.
+export {
+  BoldIcon,
+  ItalicIcon,
+  StrikethroughIcon,
+  UnderlineIcon,
+} from '@liveworkspace/workbench/components/palette/text-style-icons';
 
 // Import into / export out of a tab (the tab menu's Content rows).
 export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);

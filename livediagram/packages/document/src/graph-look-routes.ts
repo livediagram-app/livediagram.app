@@ -1,11 +1,11 @@
 // The graph look's routing kit (graph-look.ts): routed arrows' points from their fanned ends, and the detour search,
 // box tests and one-bend routes the loop, spine and channel passes share.
 
-import { anchorPrimarySide } from './anchors';
-import { isContainerKind } from './containment';
-import { arrowEndpointSpread } from './arrow-endpoint-spread';
+import { anchorPrimarySide } from '@liveworkspace/element-model/anchors';
+import { isContainerKind } from '@liveworkspace/element-model/containment';
+import { arrowEndpointSpread } from '@liveworkspace/element-model/arrow-endpoint-spread';
 import type { RectGrid } from '@liveworkspace/model-core/auto-layout-route-grid';
-import { anchorPosition, endpointPosition } from './geometry';
+import { anchorPosition, endpointPosition } from '@liveworkspace/element-model/geometry';
 import {
   routeOrthogonal,
   type Pt as RoutePt,

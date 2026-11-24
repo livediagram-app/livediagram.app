@@ -24,7 +24,7 @@ import type { EditorDragDeps } from './useEditorDrag.types';
 
 // Stands in for the DOM text measure in Draw mode: 10 px a character at 14 px, scaled with the
 // text, one line of 1.25 leading.
-vi.mock('@/components/canvas/text-hug-measure', () => ({
+vi.mock('@liveworkspace/workbench/components/label-editor/plain-text-hug-measure', () => ({
   measureDrawnText: () => (el: { label?: string; textScale?: number }) => () => {
     const px = 14 * (el.textScale ?? 1);
     return { width: ((el.label ?? '').length * 10 * px) / 14, height: px * 1.25 };

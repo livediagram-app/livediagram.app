@@ -2,7 +2,7 @@
 
 import { memo, useId } from 'react';
 import { HoverCard } from '@livehuddle/ui';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import {
   AVATAR_PAD_ART,
   AVATAR_PAD_GLOW,

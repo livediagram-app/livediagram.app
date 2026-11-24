@@ -2,13 +2,13 @@
 // article write (docs/specs/024-agents/pages-for-agents.md "The route"), for the CLI, the MCP and
 // any script. Gated like a changeset: anyone who may edit the tab, a read-only token refused.
 import { parsePagesRequest } from '@liveknowledge/edit-operations';
-import { parseKnowledgeFields, trustState, verificationOn } from '@liveknowledge/knowledge';
 import { getDocument } from '../db';
 import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
 import { submitPages } from '../changesets/pages';
 import { forbidden, json } from '../responses';
-import type { DocumentDTO } from '../types';
+import { clearAiEditedVerification } from '../knowledge/ai-edit-unverify';
+import { agentWriteRefusal } from './agent-write-gate';
 import { authorOf, notePageWriteAfter, refreshAfterWrite } from './changesets';
 import { gateWrite, missingDocument, requireOwner, type DocumentRouteContext } from './context';
 
@@ -33,8 +33,11 @@ export async function handleTabPages(
     });
     return json({ error: code, ...rest }, { status: 400 });
   }
-  if (ctx.token && 'article' in parsed) {
-    const refusal = agentRewriteRefusal(document, tabId);
+  // The knowledgebase's AI Editing over a token's write (docs/specs/030-knowledgebase/ai-editing.md): a writing's
+  // rewrite meets the page's verification, every other write the level alone.
+  const rewrite = 'article' in parsed;
+  if (ctx.token) {
+    const refusal = agentWriteRefusal(document, tabId, rewrite ? 'rewrite' : 'other');
     if (refusal) return refusal;
   }
   const author = await authorOf(ctx, owner);
@@ -48,8 +51,11 @@ export async function handleTabPages(
     tokenName: ctx.token?.name ?? null,
   });
   // An agent's write counts as one applied change, by its front door, as a changeset does.
-  if (result.status === 200 && ctx.token)
+  if (result.status === 200 && ctx.token) {
     ctx.waitUntil?.(afterChangeset.telemetry(ctx.env, 'Applied', frontDoorOf(ctx.request)));
+    // Edit Any Page with Remove Verification When AI Edits on: the rewrite takes the tick away.
+    if (rewrite) await clearAiEditedVerification(ctx, document, tabId);
+  }
   // Held by a person's paragraph (docs/specs/024-agents/pages-for-agents.md "Held paragraphs"), as a held changeset.
   else if (result.body && 'error' in result.body && result.body.error === 'paragraphs_held')
     ctx.waitUntil?.(afterChangeset.telemetry(ctx.env, 'Held', frontDoorOf(ctx.request)));
@@ -68,30 +74,4 @@ export async function handleTabPages(
       author,
     );
   return json(result.body, { status: result.status });
-}
-
-/** The refusal an agent meets rewriting a page a person verified, current or due for review (docs/specs/024-agents/
- *  knowledgebase-for-agents.md `write_page`): what a person vouched for changes through a suggestion a person accepts.
- *  A page whose review is due is refused as a verified one is: it is the page most likely to need a person's eye, and
- *  a rewrite by an agent would bury what the review was for. Null for a page never verified. Every agent write of a
- *  page's writing takes it: `write_page` here, and a version restore (routes/versions.ts). */
-export function agentRewriteRefusal(document: DocumentDTO, tabId: string): Response | null {
-  const fields = parseKnowledgeFields(document.tabs.find((t) => t.id === tabId)?.knowledge);
-  const state = trustState(fields, document.knowledgeSettings.reviewEvery, Date.now()).state;
-  if (state === 'never-verified') return null;
-  const code = state === 'verified' ? 'page_verified' : 'page_review_due';
-  // Verification off (a Review Period of Never): a person still vouched for it, and the agent was told `off`.
-  const off = !verificationOn(document.knowledgeSettings.reviewEvery);
-  console.info('[pages-agent] refused', { documentId: document.id, tabId, code, off });
-  return json(
-    {
-      error: code,
-      message: off
-        ? 'A person verified this page before verification was turned off, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept.'
-        : state === 'verified'
-          ? 'This page is verified, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept.'
-          : 'This page is due for review, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept.',
-    },
-    { status: 409 },
-  );
 }

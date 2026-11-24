@@ -1,5 +1,6 @@
 'use client';
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
 import {
   FORUM_BODY_MAX,
@@ -152,9 +153,9 @@ export function ForumPostCard({
             Saving checks it again before anyone else sees the change.
           </p>
           {error ? (
-            <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
+            <Callout tone="error" role="alert">
               {error}
-            </p>
+            </Callout>
           ) : null}
           <div className="flex justify-end gap-2">
             <Button
@@ -188,9 +189,9 @@ export function ForumPostCard({
               : 'Delete this reply? This cannot be undone.'}
           </p>
           {error ? (
-            <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
+            <Callout tone="error" role="alert">
               {error}
-            </p>
+            </Callout>
           ) : null}
           <div className="flex shrink-0 justify-end gap-2">
             <Button

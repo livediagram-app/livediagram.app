@@ -1,4 +1,8 @@
 import { Button } from '@liveworkspace/ui';
+import { Callout } from '@liveworkspace/ui/callout';
+
+// One checkbox size for Select all and every row; its colour is the theme's accent (theme.css).
+const BOX = 'h-4 w-4 shrink-0 cursor-pointer';
 
 /** One thing an import found, ticked to import it. */
 export type ImportChecklistRow = { key: string; name: string; detail: string };
@@ -41,9 +45,11 @@ export function ImportChecklist({
         <legend className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
           {legend}
         </legend>
-        <label className="mb-1 flex items-center gap-2 px-2 text-xs text-slate-600 dark:text-slate-300">
+        {/* On the rows' own left edge, so its box sits over theirs. */}
+        <label className="mb-1.5 flex w-fit cursor-pointer items-center gap-2.5 px-3 text-[13px] font-medium text-slate-600 dark:text-slate-300">
           <input
             type="checkbox"
+            className={BOX}
             checked={all}
             ref={(el) => {
               if (el) el.indeterminate = count > 0 && !all;
@@ -55,10 +61,10 @@ export function ImportChecklist({
         <ul className="max-h-[50vh] divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
           {rows.map((row) => (
             <li key={row.key}>
-              <label className="flex cursor-pointer items-start gap-2 px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60">
+              <label className="flex cursor-pointer items-start gap-2.5 px-3 py-2.5 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60">
                 <input
                   type="checkbox"
-                  className="mt-0.5"
+                  className={`${BOX} mt-0.5`}
                   checked={checked.has(row.key)}
                   onChange={() => onToggle(row.key)}
                 />
@@ -76,9 +82,9 @@ export function ImportChecklist({
         </ul>
       </fieldset>
       {leftOut ? (
-        <p role="alert" className="mt-3 text-xs text-rose-700 dark:text-rose-300">
+        <Callout tone="warning" role="alert" className="mt-3">
           {leftOut}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex justify-end gap-2">
         <Button variant="secondary" size="md" onClick={onCancel}>

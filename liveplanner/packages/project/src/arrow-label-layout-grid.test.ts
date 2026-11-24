@@ -9,10 +9,10 @@ import {
   layoutArrowLabels,
   type ArrowLabelLayout,
   type ArrowLabelLayoutOptions,
-} from './arrow-label-layout';
-import { arrowPolyline } from './arrow-path-hits';
+} from '@liveworkspace/element-model/arrow-label-layout';
+import { arrowPolyline } from '@liveworkspace/element-model/arrow-path-hits';
 import { createArrow, createPinnedArrow } from './factories';
-import { elementIndexFor } from './geometry';
+import { elementIndexFor } from '@liveworkspace/element-model/geometry';
 import { createShape } from './shape-factory';
 import type { Element } from './index';
 

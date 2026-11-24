@@ -4,7 +4,7 @@
 // one row, one section heading, one thumbnail size, one icon tile, one skeleton and one empty state, so every
 // section reads as the same surface whatever it lists.
 import type { KeyboardEvent, ReactNode } from 'react';
-import { Chip, EmptyState } from '@liveworkspace/ui';
+import { Chip, EmptyState, Button } from '@liveworkspace/ui';
 
 // A row's thumbnail box: the item's snapshot at the pane's size, framed like a little page.
 export const PANE_THUMB_BOX =
@@ -423,6 +423,38 @@ export function PaneFailed({ message, onRetry }: { message: string; onRetry: () 
       >
         Try Again
       </button>
+    </div>
+  );
+}
+
+// The pager under a pane's list: Show more, or, when the last page failed to load, the reason beside a short
+// Try Again (the reason is not part of the button's name).
+export function PaneMore({
+  loading,
+  failed,
+  onMore,
+  onRetry,
+}: {
+  loading: boolean;
+  failed: boolean;
+  onMore: () => void;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-1.5 self-center py-1 text-xs">
+      {failed && !loading ? (
+        <span role="status" className="text-slate-600 dark:text-slate-400">
+          Couldn’t load more.
+        </span>
+      ) : null}
+      <Button
+        variant="none"
+        busy={loading}
+        onClick={failed ? onRetry : onMore}
+        className={PANE_LINK}
+      >
+        {loading ? 'Loading…' : failed ? 'Try Again' : 'Show more'}
+      </Button>
     </div>
   );
 }

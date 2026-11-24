@@ -109,6 +109,11 @@ export type CanvasEditProps = {
   // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
   // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
   onOpenEditDialog?: (id: string) => void;
+  // The element's own edit dialog, for its kind tool (element-kind-tools.tsx): which one this person may open on
+  // `el`, and opening it; null where it has none. Absent when read-only.
+  kindEditor?: (
+    el: import('@livediagram/document').Element,
+  ) => import('@/components/canvas/element-kind-tools').KindEditor | null;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
   // welcome / new-document surface (where Canvas mounts before

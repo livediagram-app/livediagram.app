@@ -79,7 +79,9 @@ export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Resp
     // the passage whole, when its page's review is due, and the pages an open conflict sets it against.
     const { document } = route;
     const knowledge = new Map(document.tabs.map((t) => [t.id, t.knowledge]));
-    const conflicts = results.length > 0 ? await openConflictPages(ctx.env, document.tabs) : null;
+    // A link confined to one page reads no other page, so it learns of no conflict with one (nor its question).
+    const conflicts =
+      results.length > 0 ? await openConflictPages(ctx.env, document.tabs, grant.tabScope) : null;
     // Each result's page's Health Score (verification.md "For agents and Ask"): one read for the results' pages,
     // never one a result.
     const health = await pageHealthWires(

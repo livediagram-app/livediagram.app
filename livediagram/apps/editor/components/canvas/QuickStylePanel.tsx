@@ -17,7 +17,7 @@ import {
   BorderRadiusIcon,
   BorderStrokeIcon,
   BorderStyleIcon,
-} from '@/components/palette/palette-style-previews';
+} from '@liveworkspace/workbench/components/palette/palette-style-previews';
 import { QUICK_CORNERS } from '@/lib/quick-style-whiteboard';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useQuickStylePlacement } from '@liveworkspace/workbench/hooks/ui/useQuickStylePlacement';
@@ -43,12 +43,13 @@ import {
   type QuickSwatchSlot,
   type TextAlignX,
 } from '@livediagram/document';
-import type { ShownSwatch } from '@/lib/swatch-overrides';
+import type { ShownSwatch } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { BoardColourRow, QuickPenRows } from './QuickPenRows';
+import { QuickKindRows } from './QuickKindRows';
 import { QuickHighlighterRows } from './QuickHighlighterRows';
 import { QuickMoreColours } from './QuickMoreColours';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import {
   QUICK_BORDER_PX,
@@ -240,9 +241,7 @@ export function QuickStylePanel({
           onEditSwatch={(role, slot, anchor) => setEditing({ role, slot, anchor })}
         />
         {/* The element kind's own verbs (a mind node's Add Child, a flowchart step's Add Step), under the look. */}
-        {view.targetIds.length === 1 ? (
-          <QuickKindTools id={view.targetIds[0]!} titles={titles} />
-        ) : null}
+        {view.toolsId ? <QuickKindTools id={view.toolsId} titles={titles} /> : null}
         {view.targetIds.length > 0 ? (
           <div className="flex flex-col border-t border-slate-200 pt-1.5 dark:border-slate-800">
             <div role="group" aria-label="Actions">
@@ -285,7 +284,8 @@ function QuickKindTools({ id, titles }: { id: string; titles: boolean }) {
   const tools = useElementKindTools(id);
   if (!tools || !hasKindVerbs(tools)) return null;
   return (
-    <div className="flex flex-col gap-0.5 border-t border-slate-200 pt-1.5 dark:border-slate-800">
+    // No rule over it when it leads the panel (an element with tools and no style rows: a code block, a checklist).
+    <div className="flex flex-col gap-0.5 border-t border-slate-200 pt-1.5 first:border-t-0 first:pt-0 dark:border-slate-800">
       {titles ? (
         <span
           aria-hidden
@@ -362,6 +362,13 @@ function QuickStyleSections({
           showTitles={showTitles}
         />
       ) : null}{' '}
+      <QuickKindRows
+        note={view.note}
+        code={view.code}
+        table={view.table}
+        quickStyle={quickStyle}
+        showTitles={showTitles}
+      />
       {COLOUR_ROWS.map((row) => {
         // A whiteboard's Stroke and Text colour rows are the whiteboard's colours.
         const board =

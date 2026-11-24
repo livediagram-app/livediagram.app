@@ -9,7 +9,7 @@
 // reading, or the base while positioning the element, does not send the room somewhere.
 
 import { FOCUS_BUTTON_ART as A } from '@livehuddle/document';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { Glyph, HoverCard } from '@livehuddle/ui';
 
 const T = A.tones;

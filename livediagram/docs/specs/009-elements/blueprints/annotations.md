@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/document/src/element-union.ts`                     | `isBoxed` and the `BoxedElement` union include `'annotation'`       |
 | `packages/document/src/factories.ts`                         | `createAnnotation`, `ANNOTATION_SIZE`                               |
 | `packages/document/src/colors.ts`                            | Per-type colour and padding defaults; `DARK_INK`; `supportsColours` |
-| `packages/document/src/themes.ts`                            | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
+| `../packages/element-model/src/themes.ts`                    | `THEME_COLOUR_FIELDS.annotation`: fill + stroke                     |
 | `packages/document/src/svg-render-describe.ts`               | Export shape: an ellipse                                            |
 | `apps/editor/lib/canvas.ts`                                  | `inheritedSizeFor` keeps the marker size                            |
 | `apps/editor/lib/canvas-selection.ts`                        | No quick-connect plus on an annotation                              |

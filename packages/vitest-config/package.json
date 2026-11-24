@@ -34,6 +34,10 @@
       "types": "./workspace-manifests.d.ts",
       "default": "./workspace-manifests.js"
     },
+    "./route-sweep": {
+      "types": "./route-sweep.d.ts",
+      "default": "./route-sweep.js"
+    },
     "./stub-resize-observer": {
       "types": "./stub-resize-observer.d.ts",
       "default": "./stub-resize-observer.js"

@@ -8,13 +8,13 @@ Scope, by file:
 
 | File                                                             | Role                                                                             |
 | ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `packages/design/src/web-components.ts`                          | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
+| `../packages/element-model/src/web-components.ts`                | Vocabulary, bounds, defaults, the pure layouts, `withWebRows`                    |
 | `packages/design/src/component-factories.ts`                     | `createComponent`, `createHero`, `COMPONENT_SIZE`, `ComponentColors`             |
 | `packages/design/src/shape-factory.ts`                           | Default sizes and starting content per kind                                      |
-| `packages/design/src/svg-render-web.ts`                          | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
+| `../packages/element-model/src/svg-render-web.ts`                | `svgWebComponent`, `svgHeroCaption`: the headless render                         |
 | `packages/design/src/themes.ts`                                  | `themeColourFields`: accent bars retheme only their stroke                       |
 | `packages/design/src/colors.ts`                                  | `defaultTextColor`, `SELF_PAINTING_SHAPES`, `acceptsInlineIcon`, `RADIUS_SHAPES` |
-| `packages/design/src/data-shapes.ts`                             | `isSelfDrawingShape`: stat row and process carry no label                        |
+| `../packages/element-model/src/data-shapes.ts`                   | `isSelfDrawingShape`: stat row and process carry no label                        |
 | `packages/design/src/validate.ts`                                | Row, masthead and caption bounds; the legacy `pinned-group` end                  |
 | `../packages/element-model/src/legacy-groups.ts`                 | `hasLegacyGroups`, `migrateLegacyGroups`                                         |
 | `packages/design/src/stored-elements.ts`                         | `migrateStoredElements`: legacy groups, then legacy docks                        |
@@ -143,7 +143,7 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/design/src/web-components.ts
+// ../packages/element-model/src/web-components.ts
 export type WebComponentShape = 'banner' | 'callout' | 'stat-row' | 'process' | 'site-header';
 export type StatItem = { value: string; caption: string };
 export type HeroCaption = { title: string; subtitle: string };

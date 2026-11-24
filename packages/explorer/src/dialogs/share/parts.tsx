@@ -93,6 +93,10 @@ export const SETTING_NOTE = 'text-xs leading-relaxed text-slate-500 dark:text-sl
 export const SETTING_CARD =
   'rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800';
 
+// The icon tile that leads each row of the access card (a lock, a person, an at sign).
+export const SETTING_ICON_TILE =
+  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-700/70 dark:text-slate-300';
+
 export const SECTION_LABEL =
   'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
 

@@ -21,11 +21,12 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { QuizCentre } from './QuizCentre';
 import { QuizEditDialog } from './QuizEditDialog';
 import { QuizOption, type QuizOptionState } from './QuizOption';
 import { QuizPickers } from './QuizPickers';
+import { usePublishFaceControls } from '@/components/canvas/collab/face-controls';
 
 // The face of a Quiz (docs/specs/012-collaboration/quiz.md): a disc holding the
 // question, with its answers fanned out on a ring around it.
@@ -111,6 +112,49 @@ export function QuizFace({
   const c = QUIZ_DESIGN_SIZE / 2;
   const centres = quizOptionCentres(options.length);
   const canEdit = actions.save !== undefined && phase !== 'open';
+  // The same verbs as the "..." menu, for the Quick Style panel and the element menu's bar.
+  const live = phase === 'open' || phase === 'locked';
+  usePublishFaceControls(element.id, [
+    canEdit && {
+      key: 'edit',
+      label: 'Edit Question',
+      description: 'Change the question, its answers and which is right.',
+      icon: 'edit',
+      run: () => setEditing(true),
+    },
+    phase === 'ready' &&
+      actions.start && {
+        key: 'start',
+        label: 'Start',
+        description: 'Open the question to everyone.',
+        icon: 'start',
+        run: actions.start,
+      },
+    phase === 'open' &&
+      actions.lock && {
+        key: 'lock',
+        label: 'Lock Now',
+        description: 'Stop taking answers.',
+        icon: 'lock',
+        run: actions.lock,
+      },
+    live &&
+      actions.reveal && {
+        key: 'reveal',
+        label: 'Reveal Answer',
+        description: 'Show everyone the right answer.',
+        icon: 'reveal',
+        run: actions.reveal,
+      },
+    (live || phase === 'revealed') &&
+      actions.reset && {
+        key: 'reset',
+        label: 'Reset',
+        description: 'Clear the answers and start over.',
+        icon: 'reset',
+        run: actions.reset,
+      },
+  ]);
 
   const optionState = (i: number): QuizOptionState =>
     phase === 'revealed'

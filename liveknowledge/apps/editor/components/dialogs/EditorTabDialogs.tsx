@@ -13,6 +13,7 @@ import { knowledgeStyleStore } from '@/lib/knowledge-style/knowledge-style-store
 import { tabInKnowledgeStyle } from '@liveknowledge/document';
 import { importFormatsFor } from '@/lib/import-formats';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { apiTeamMembers } from '@/lib/api-client';
 import { shareUrl } from '@/lib/explorer-host';
 import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';
@@ -21,6 +22,7 @@ import { useKnowledgeImportProps } from '@/components/dialogs/knowledge-import/u
 import { SetupWhenOpen } from '@/components/setup/SetupHost';
 import { DescribeStructureWhenOpen } from '@/components/describe-structure/DescribeStructureHost';
 import { usePublishingOpen } from '@/lib/publishing/publish-open';
+import { useAiEditingOpen } from '@/lib/knowledge-settings/ai-editing-open';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -47,6 +49,14 @@ const PublishHost = dynamic(
 function PublishWhenOpen() {
   return usePublishingOpen() ? <PublishHost /> : null;
 }
+// AI Editing (docs/specs/030-knowledgebase/ai-editing.md): its code is fetched the first time it is opened.
+const AiEditingHost = dynamic(
+  () => import('@/components/ai-editing/AiEditingDialog').then((m) => m.AiEditingHost),
+  { ssr: false },
+);
+function AiEditingWhenOpen() {
+  return useAiEditingOpen() ? <AiEditingHost /> : null;
+}
 const ShareOfflineGate = dynamic(
   () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
@@ -71,6 +81,7 @@ export function EditorTabDialogs() {
       {/* Describe Structure on a page (describe-to-set-up.md), the same way. */}
       <DescribeStructureWhenOpen />
       <PublishWhenOpen />
+      <AiEditingWhenOpen />
     </>
   );
 }
@@ -173,6 +184,13 @@ function OpenEditorTabDialogs() {
         />
       ) : shareDialogOpen && documentId ? (
         <ShareDialog
+          // The Team tab's list: the team's members, for a signed-in member (the dialog keeps the joined ones).
+          loadTeamMembers={
+            accountUserId && documentTeamId
+              ? () => apiTeamMembers(accountUserId, documentTeamId)
+              : undefined
+          }
+          viewerUserId={accountUserId}
           client={indexClient}
           item={{
             id: documentId,

@@ -23,7 +23,7 @@ import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelecti
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { selectionMoving, useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
+import { FloatingToolbar } from '@liveworkspace/workbench/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { libraryDraftOf } from '@/lib/library-draft';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
@@ -159,7 +159,7 @@ export function CanvasSelectionToolbars({
                         if (props.pendingDraw) props.onCancelDraw();
                         if (!editor.tidyUpSelected()) return;
                         props.onBeginEdit(selected.id);
-                        toast.info('Tidied into a path so its points can be edited.');
+                        toast.info('Drawing tidied into a path so its points can be edited.');
                       }
                     : undefined
             }

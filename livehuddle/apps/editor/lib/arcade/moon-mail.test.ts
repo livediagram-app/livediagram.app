@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { arcadeScoreCeiling, MOON_MAIL_SCORING } from '@livehuddle/document';
 import {
   advance,
@@ -329,6 +329,6 @@ describe('a frame loop', () => {
         if (run.over) run = newRun(frame);
       }
     });
-    expect(ms).toBeLessThan(150);
+    expect(ms).toBeLessThan(cpuBudgetMs(150));
   });
 });

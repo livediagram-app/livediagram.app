@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     // DOM for the Web APIs the package runs on in a Worker and in Node alike (`fetch`, `crypto.subtle`, streams).
     // `node` for the tests alone (the CPU-time budget, and `node:sqlite` to run the SQL for real); the source

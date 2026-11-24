@@ -1,6 +1,6 @@
 import { headlineCase } from '@livehuddle/api-schema';
 import type { StickerDef } from '@liveworkspace/icons';
-import { StickerArt } from '@/components/canvas/StickerView';
+import { StickerArt } from '@liveworkspace/workbench/components/canvas/StickerView';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 // Dynamic tiles: individual Stickers catalogue entries as palette tiles, for

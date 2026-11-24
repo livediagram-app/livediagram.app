@@ -1,7 +1,7 @@
 // Labels on elbows, the graph look's last pass (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"):
 // split from graph-look.ts, whose routing passes lay the elbows these labels sit on.
 
-import { arrowRoutePoints } from './arrow-label-layout';
+import { arrowRoutePoints } from '@liveworkspace/element-model/arrow-label-layout';
 import { frameHeadingRect } from './auto-layout-cluster-seats';
 import { rectsIntersect, type Rect } from '@liveworkspace/model-core/geometry-primitives';
 import type { Pt } from './graph-look';

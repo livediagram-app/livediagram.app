@@ -10,6 +10,7 @@ describe('AI operation costs', () => {
       automationSummary: 1,
       automationRuleDraft: 1,
       planDraft: 1,
+      ask: 1,
     });
   });
 

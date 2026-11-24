@@ -203,6 +203,9 @@ describe('the words', () => {
     );
     expect(restoreFailure(new ApiError('restore page', 409, 'page_limit'))).toContain('500 pages');
     expect(restoreFailure(new Error('x'))).toBe('Could not restore the page. Try again.');
+    expect(restoreFailure(new Error('x'), 'Onboarding')).toBe(
+      'Could not restore “Onboarding”. Try again.',
+    );
   });
 
   it('writes "In the Trash" into a link to a trashed page', () => {
@@ -340,7 +343,7 @@ describe('the Trash dialog', () => {
     expect(confirm.asked).toHaveBeenLastCalledWith(
       expect.objectContaining({ message: 'The page is removed for good. This cannot be undone.' }),
     );
-    expect(toast.error).toHaveBeenCalledWith('Could not delete the page. Try again.');
+    expect(toast.error).toHaveBeenCalledWith('Could not delete “Untitled Page”. Try again.');
   });
 
   it('empties the Trash after asking, into its empty state', async () => {

@@ -3,7 +3,7 @@
 // faces and the drawings made outside this package (re-exported from ./index) write text the same way.
 
 import type { BoxedElement } from './index';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 
 export type Face = BoxedElement & { type: 'shape' };
 

@@ -44,7 +44,7 @@ export type SheetsBridge = {
   locale: string;
   peers: readonly SheetPeer[];
   pushUndo: (step: ItemUndoStep) => void;
-  // A refusal or failure (error toast), and plain news ("Replaced 3 cells").
+  // A refusal or failure (error toast), and plain news ("Replaced 3 cells in “Budget”").
   toast: (message: string) => void;
   notify: (message: string) => void;
   sendPresence: (op: SheetPresenceOp) => void;

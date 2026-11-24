@@ -1,5 +1,6 @@
 'use client';
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { type FormEvent, useId, useState } from 'react';
 import { FORUM_BODY_MAX, FORUM_REPLY_MIN, type ForumReply } from '@liveworkspace/community';
 import { Button, TextArea } from '@liveworkspace/ui';
@@ -91,9 +92,9 @@ export function ReplyComposer({
         placeholder="Add to the conversation. Plain text: paragraphs and line breaks are kept."
       />
       {error ? (
-        <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="flex items-center justify-between gap-3">
         <p id={`${id}-needs`} className="text-xs font-medium text-rose-600 dark:text-rose-400">

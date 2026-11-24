@@ -5,7 +5,7 @@ import { scheduleFaceTake, type FaceTakeWhen } from './face-take-batch';
 import { watchUntilSettled } from './settle-watch';
 
 // A face drawn by hand under Sketch (docs/specs/008-canvas/finish.md "Every other face is drawn by hand too"). The
-// face renders once, live, with its ink hidden (app/sketch-face.css); underneath it sits a still copy of that DOM,
+// face renders once, live, with its ink hidden (styles/sketch-face.css); underneath it sits a still copy of that DOM,
 // its words hidden, drawn through the face wobble (SKETCH_FACE_FILTER). The copy is ours, not React's, so a face is
 // never rendered twice and its effects never run twice. It is re-taken once the live face has been still for a
 // moment (settle-watch.ts). Photos, embeds and `data-sketch-skip` parts (a tab

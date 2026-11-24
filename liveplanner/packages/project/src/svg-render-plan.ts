@@ -20,7 +20,7 @@ import {
 } from '@liveplanner/items';
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
-import { r2, xmlEscape } from './svg-render-primitives';
+import { r2, xmlEscape } from '@liveworkspace/element-model/svg-render-primitives';
 import { text as faceText, wrapLines } from './svg-render-face-kit';
 import { PLAN_BOARD_PAD, planBoardLayout } from './plan-board-layout';
 import { planCardFace, type CardFaceContext } from './svg-render-plan-card';

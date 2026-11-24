@@ -22,7 +22,7 @@ import {
   dragWaitsToEngage,
   gestureOfDrag,
 } from '@liveworkspace/workbench/hooks/canvas/drag-gesture';
-import type { useSnapGuideState } from './useSnapGuideState';
+import type { useSnapGuideState } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import { createDragRelease } from './editor-drag-release';
 import { DRAG_ENGAGE_PX, moveBoxedDrag, type MovePointer } from './editor-drag-boxed-move';
 

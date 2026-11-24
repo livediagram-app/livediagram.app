@@ -35,7 +35,7 @@ missions, checked from live state, in a mission strip of their own.
 | `apps/editor/components/tour/LearnMore.tsx`           | A finish's help link, in a new tab                                                                                                        |
 | `apps/editor/components/tour/plan-tour-steps.ts`      | `sprintMissions`, `sheetMissions`, `overWipColumn`, `wipNote`, `a1Range`, `visiblePlanWork`, `needsReveal`, `FINISH_STEP`, telemetry type |
 | `apps/editor/components/tour/PlanTourHost.tsx`        | Offer, subject, relaunch, end; mounts `PracticeSprint` or `PracticeSheetDialog`                                                           |
-| `apps/editor/components/tour/PracticeSprint.tsx`      | The Boards track: deal, missions, WIP note, finish (Keep as Real Cards / Clear Them)                                                      |
+| `apps/editor/components/tour/PracticeSprint.tsx`      | The Boards track: deal, missions, WIP note, finish (Keep Them / Clear Them)                                                               |
 | `apps/editor/components/plan/PracticeMarks.tsx`       | The Practice pill and the Shipped stamp; `practiceShipColumn`                                                                             |
 | `apps/editor/hooks/plan/practice-items.ts`            | The practice layer's pure parts: split a write, add, apply, keep over a read, take away                                                   |
 | `apps/editor/components/tour/practice-sheet.ts`       | The practice store (a `SheetStore` over a local api), the seed, `practiceSheetCtx`, `keptSheetSeed`                                       |
@@ -107,7 +107,7 @@ then `begin()` (mark taken, `Started` · `DashboardTour`) or `cancel()`; Show Me
   `endPractice` (so kept cards are made real, not captured again). `addItem` sends no `Plan` · `Added` for one.
 - WIP: `overWipColumn(setup.columns, items)` gone over during a mission sets a note once, shown in place of that
   mission's why.
-- Finish: **Clear Them** (`endPractice(false)`), **Keep as Real Cards** (`endPractice(true)`, `UI` · `Selected` ·
+- Finish: **Clear Them** (`endPractice(false)`), **Keep Them** (`endPractice(true)`, `UI` · `Selected` ·
   `PlanTourKeepCards`), Learn More (`/help/plan/planning-basics/`); then `onEnd('completed')`.
 
 ### Boards: Card Types (`CardTypesTrack`) and Board Setup (`BoardSetupTrack`)
@@ -213,7 +213,7 @@ another project is kept. Nothing writes a record any more.
 - `planTourTracks` and `planTourSeen`: synced preferences, per person.
 - Practice cards and the practice sheet live in this screen's memory alone: no request, no history entry, no undo
   step in the plan. A reload drops them.
-- Kept work is ordinary plan data: Keep as Real Cards is one `create` write (one undo step); Keep This Sheet is a new
+- Kept work is ordinary plan data: Keep Them is one `create` write (one undo step); Keep This Sheet is a new
   tab whose Sheet is copied from a stashed seed, as a template's is.
 - The leftover record in `localStorage` is only read and cleared (the old tour's).
 

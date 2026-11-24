@@ -873,6 +873,18 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Removed|PublishSite': "An Editor took a knowledgebase's public site down with Unpublish.",
   'UI|Changed|AiProvider': "Someone switched a knowledgebase's AI provider.",
   'UI|Changed|AiModel': 'Someone picked another model for Ask and Insights.',
+  'UI|Opened|AiEditing':
+    "An Editor opened AI Editing from the knowledgebase's menu: how far agents may change pages themselves.",
+  'UI|Changed|AiEditingSuggest':
+    'An Editor set AI Editing to Suggest Edits Only: agents only suggest changes for a person to accept.',
+  'UI|Changed|AiEditingUnverified':
+    'An Editor set AI Editing to Edit Unverified Pages: agents may rewrite pages nobody has verified.',
+  'UI|Changed|AiEditingAny':
+    'An Editor set AI Editing to Edit Any Page: agents may rewrite any page, verified ones too.',
+  'UI|Toggled|AiEditUnverifiesOn':
+    'An Editor turned on Remove Verification When AI Edits: an agent rewriting a verified page takes its tick away.',
+  'UI|Toggled|AiEditUnverifiesOff':
+    'An Editor turned off Remove Verification When AI Edits: pages an agent rewrites stay verified.',
   'UI|Changed|AskAiBuiltIn': 'Someone chose built-in AI to answer their questions on Ask.',
   'UI|Changed|AskAiKey': "Someone chose the team's key to answer their questions on Ask.",
   'UI|Opened|AskView': 'Someone opened the Ask view, to ask the knowledgebase a question.',

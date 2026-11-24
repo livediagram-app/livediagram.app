@@ -11,8 +11,8 @@ import {
   type ShapeAnimation,
 } from './animation-sets';
 import { isChartShape, isProgressShape, isRatingShape } from './data-shapes';
-import { isSankeyShape } from './sankey-model';
-import { isConceptShape } from './concept';
+import { isSankeyShape } from '@liveworkspace/element-model/sankey-model';
+import { isConceptShape } from '@liveworkspace/element-model/concept';
 import { takesTypedLabel } from './element-types';
 import type { Element } from './index';
 import { selfLabelled } from './svg-render-describe';

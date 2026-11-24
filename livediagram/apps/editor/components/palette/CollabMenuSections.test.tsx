@@ -8,7 +8,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AgendaItem, ShapeElement } from '@livediagram/document';
 import type { ComponentProps } from 'react';
-import { AgendaMenuSection, DecisionMenuSection } from './CollabMenuSections';
+import { AgendaSegmentsEditor, DecisionMenuSection } from './CollabMenuSections';
 
 const shape = (over: Partial<ShapeElement>): ShapeElement =>
   ({ id: 's1', type: 'rectangle', ...over }) as ShapeElement;
@@ -16,13 +16,9 @@ const sectionProps = () => ({ open: true, onToggle: vi.fn() });
 
 afterEach(() => cleanup());
 
-describe('AgendaMenuSection', () => {
+describe('AgendaSegmentsEditor', () => {
   const agenda = (items?: AgendaItem[]) => (
-    <AgendaMenuSection
-      target={shape({ agendaItems: items })}
-      sectionProps={sectionProps}
-      onSetItems={vi.fn()}
-    />
+    <AgendaSegmentsEditor target={shape({ agendaItems: items })} onSetItems={vi.fn()} />
   );
   const name = (i: number) => screen.getByLabelText<HTMLInputElement>(`Segment ${i} name`);
 
@@ -42,9 +38,9 @@ describe('AgendaMenuSection', () => {
   });
 
   it('carries the current segment with its row on move and remove', () => {
-    const onSetItems = vi.fn<ComponentProps<typeof AgendaMenuSection>['onSetItems']>();
+    const onSetItems = vi.fn<ComponentProps<typeof AgendaSegmentsEditor>['onSetItems']>();
     render(
-      <AgendaMenuSection
+      <AgendaSegmentsEditor
         target={shape({
           agendaItems: [
             { label: 'A', minutes: 5 },
@@ -52,7 +48,6 @@ describe('AgendaMenuSection', () => {
             { label: 'C', minutes: 5 },
           ],
         })}
-        sectionProps={sectionProps}
         onSetItems={onSetItems}
       />,
     );

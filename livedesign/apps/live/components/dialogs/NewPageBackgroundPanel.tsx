@@ -13,7 +13,8 @@ import { themeBackgroundPresets } from '@/lib/page-paint';
 import type { TabStyleCanvasPanelProps } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
 import { PanelSection } from '@/components/canvas/page-panel-sections';
-import { ColorSwatch, PATTERNS, PatternButton } from '@/components/palette/palette-controls';
+import { PatternButton } from '@liveworkspace/workbench/components/palette/palette-buttons';
+import { ColorSwatch, PATTERNS } from '@/components/palette/palette-controls';
 import { getTheme } from '@/lib/themes';
 import { useTabStylePages } from './tab-style-pages';
 
@@ -103,7 +104,7 @@ export function NewPageBackgroundPanel({
                 onClick={pages.onApplyToEveryPage}
                 data-new-page-background-all=""
               >
-                Apply to Every Page
+                Apply to All
               </Button>
               <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                 Gives the {pages.units === 1 ? 'page' : `${pages.units} pages`} this background. A

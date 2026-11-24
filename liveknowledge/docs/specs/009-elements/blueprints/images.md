@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/document/src/validate.ts`                          | Structural check of an image element in a tab body                                                                                                 |
 | `packages/document/src/svg-render-describe.ts`               | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius                                                                              |
 | `packages/document/src/svg-render-boxed.ts`                  | Image branch: `svgImageShape`, else the dashed placeholder rect                                                                                    |
-| `packages/document/src/svg-render-image-icon.ts`             | `svgImageShape`: clipped `<image>` over a white backing rect                                                                                       |
+| `../packages/element-model/src/svg-render-image-icon.ts`     | `svgImageShape`: clipped `<image>` over a white backing rect                                                                                       |
 | `../packages/api-schema/src/image-limits.ts`                 | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` for the editor's own gate                                                                                |
 | `../packages/api-schema/src/image-sniff.ts`                  | `sniffImageType`: labels embedded bytes whose stored type is missing                                                                               |
 | `packages/api-schema/src/embed-images.ts`                    | `embedTabImages`, `tabImageIds`: the tab's ids for the shared embedder                                                                             |
@@ -94,7 +94,7 @@ change (D46).
    `openImagePickerFor(id)`. Shortcut `9` does the same while `onAddImage` is supplied.
 2. **Attach.** `applyImageToElement(id, image)` commits `imageId`, `naturalWidth`,
    `naturalHeight` and `alt: el.alt ?? image.originalName` (D41), then closes the picker.
-3. **Detach.** "Remove from element" calls `removeImageFromElement(id)`: `imageId: null`,
+3. **Detach.** "Remove Image" calls `removeImageFromElement(id)`: `imageId: null`,
    `naturalWidth` / `naturalHeight` dropped, width and height kept. The gallery row is untouched.
 4. **Place from gallery or paste.** `addImageFromGallery` drops a new element at the viewport
    centre, 240 px on its longer side (D40), pre-attached, selected, tracked `Added / Image`.
@@ -486,7 +486,7 @@ reads a 503 as `null`.
     image").
   - A dedupe answer flashes "Already in your gallery" before closing. `[QB5]`
   - Footer, when the element has an image: "Detaches the image from this element. The gallery
-    copy is kept." and "Remove from element".
+    copy is kept." and "Remove Image".
   - 503: "Image uploads are not enabled on this deployment." `[QB10]`
 - Upload errors render inline under the drop zone with the mapped copy.
 

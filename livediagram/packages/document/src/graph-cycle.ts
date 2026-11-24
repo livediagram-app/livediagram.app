@@ -4,8 +4,8 @@
 // circle, the cycle's usual stop.
 
 import { edgeToArrow, graphToElements, type DiagramGraph, type GraphLook } from './graph-authoring';
-import { reanchorArrow, type Pt } from './auto-layout-shared';
-import { anchorPosition } from './geometry';
+import { reanchorArrow, type Pt } from '@liveworkspace/element-model/auto-layout-shared';
+import { anchorPosition } from '@liveworkspace/element-model/geometry';
 import { ALL_ANCHORS, isBoxed, type Anchor, type BoxedElement, type Element } from './index';
 
 // Room between two stops along the ring, and the smallest ring.

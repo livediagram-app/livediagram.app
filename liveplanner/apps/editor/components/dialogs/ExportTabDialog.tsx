@@ -94,14 +94,12 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'markdown',
     title: 'Markdown',
-    description:
-      "A text outline of this tab, such as a board's columns and cards. Copy it or save a .md.",
+    description: 'This tab as a text outline. Copy it or save a .md.',
   },
   {
     kind: 'csv',
     title: 'CSV',
-    description:
-      'The cards or cells as comma-separated values, for a spreadsheet. Copy it or save a .csv.',
+    description: 'The cards or cells for a spreadsheet. Copy or save a .csv.',
   },
   {
     kind: 'png',
@@ -121,8 +119,7 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'plan',
     title: 'Whole Plan',
-    description:
-      'Every tab, card, card type, comment and rule in one file, to import back as a new plan.',
+    description: 'The whole plan in one file, to import back as a new plan.',
   },
 ];
 

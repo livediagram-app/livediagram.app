@@ -47,7 +47,6 @@ livediagram/apps/editor/app/page.tsx	livehuddle/apps/editor/app/page.tsx
 livediagram/apps/editor/app/sign-in/page.tsx	livedocuments/apps/editor/app/sign-in/page.tsx	livehuddle/apps/editor/app/sign-in/page.tsx	liveknowledge/apps/editor/app/sign-in/page.tsx
 livediagram/apps/editor/components/chrome/EllipsisMenuButton.tsx	livedocuments/apps/editor/components/chrome/EllipsisMenuButton.tsx
 livediagram/apps/editor/components/chrome/OpeningScreen.tsx	livedocuments/apps/editor/components/chrome/OpeningScreen.tsx	livehuddle/apps/editor/components/chrome/OpeningScreen.tsx	liveknowledge/apps/editor/components/chrome/OpeningScreen.tsx
-livediagram/apps/editor/components/colour/useThemeColours.ts	livehuddle/apps/editor/components/colour/useThemeColours.ts
 livediagram/apps/editor/components/dialogs/ConversionHandoff.tsx	livehuddle/apps/editor/components/dialogs/ConversionHandoff.tsx
 livediagram/apps/editor/components/panels/LaserColourRow.tsx	livedocuments/apps/editor/components/panels/LaserColourRow.tsx	liveknowledge/apps/editor/components/panels/LaserColourRow.tsx
 livediagram/apps/editor/components/start/start-closed-key.ts	livehuddle/apps/editor/components/start/start-closed-key.ts
@@ -97,9 +96,7 @@ livedocuments/apps/editor/app/document/[id]/deck-save.ts	liveknowledge/apps/edit
 livedocuments/apps/editor/app/document/[id]/editor-state/useEditorSelection.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorSelection.ts
 livedocuments/apps/editor/app/document/[id]/editor-state/useEditorTools.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorTools.ts
 livedocuments/apps/editor/app/document/[id]/editor-state/useEditorWorkbench.ts	liveknowledge/apps/editor/app/document/[id]/editor-state/useEditorWorkbench.ts
-livedocuments/apps/editor/app/document/[id]/editor-ui-state.ts	liveknowledge/apps/editor/app/document/[id]/editor-ui-state.ts
 livedocuments/apps/editor/app/document/[id]/room-refusal.ts	liveknowledge/apps/editor/app/document/[id]/room-refusal.ts
-livedocuments/apps/editor/app/document/[id]/save-failure.ts	liveknowledge/apps/editor/app/document/[id]/save-failure.ts
 livedocuments/apps/editor/app/document/[id]/useDocumentTrashed.ts	liveknowledge/apps/editor/app/document/[id]/useDocumentTrashed.ts
 livedocuments/apps/editor/app/document/[id]/usePanelLayout.ts	liveknowledge/apps/editor/app/document/[id]/usePanelLayout.ts
 livedocuments/apps/editor/app/new/new-document-settings.ts	liveknowledge/apps/editor/app/new/new-document-settings.ts
@@ -109,8 +106,6 @@ livedocuments/apps/editor/components/canvas/PagesClusterStrip.tsx	liveknowledge/
 livedocuments/apps/editor/components/canvas/PresentingContext.tsx	liveknowledge/apps/editor/components/canvas/PresentingContext.tsx
 livedocuments/apps/editor/components/canvas/QuickStyleBarSlot.tsx	liveknowledge/apps/editor/components/canvas/QuickStyleBarSlot.tsx
 livedocuments/apps/editor/components/canvas/article/PageBands.tsx	liveknowledge/apps/editor/components/canvas/article/PageBands.tsx
-livedocuments/apps/editor/components/canvas/article/page-toolbar-placement.ts	liveknowledge/apps/editor/components/canvas/article/page-toolbar-placement.ts
-livedocuments/apps/editor/components/canvas/article/useTouchPagePan.ts	liveknowledge/apps/editor/components/canvas/article/useTouchPagePan.ts
 livedocuments/apps/editor/components/canvas/boxed-element-style.ts	liveknowledge/apps/editor/components/canvas/boxed-element-style.ts
 livedocuments/apps/editor/components/canvas/canvas-main-style.ts	liveknowledge/apps/editor/components/canvas/canvas-main-style.ts
 livedocuments/apps/editor/components/canvas/collab/comment/MentionContext.tsx	liveknowledge/apps/editor/components/canvas/collab/comment/MentionContext.tsx
@@ -125,8 +120,6 @@ livedocuments/apps/editor/components/canvas/useCanvasToolPanels.tsx	liveknowledg
 livedocuments/apps/editor/components/dialogs/ConversionHandoff.tsx	liveknowledge/apps/editor/components/dialogs/ConversionHandoff.tsx
 livedocuments/apps/editor/components/dialogs/SharePasswordGate.tsx	liveknowledge/apps/editor/components/dialogs/SharePasswordGate.tsx
 livedocuments/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveknowledge/apps/editor/components/dialogs/settings/settings-all-apps.ts	liveplanner/apps/editor/components/dialogs/settings/settings-all-apps.ts
-livedocuments/apps/editor/components/find/find-bar-top.ts	liveknowledge/apps/editor/components/find/find-bar-top.ts
-livedocuments/apps/editor/components/palette/ArticleDockSlot.tsx	liveknowledge/apps/editor/components/palette/ArticleDockSlot.tsx
 livedocuments/apps/editor/components/palette/CategoryBar.tsx	liveknowledge/apps/editor/components/palette/CategoryBar.tsx
 livedocuments/apps/editor/components/palette/PaletteToolRows.tsx	liveknowledge/apps/editor/components/palette/PaletteToolRows.tsx
 livedocuments/apps/editor/components/palette/bar-categories.tsx	liveknowledge/apps/editor/components/palette/bar-categories.tsx
@@ -172,22 +165,7 @@ livedocuments/apps/editor/lib/explorer-thumbnail.tsx	liveknowledge/apps/editor/l
 livedocuments/apps/editor/lib/find/find-highlight-store.ts	liveknowledge/apps/editor/lib/find/find-highlight-store.ts
 livedocuments/apps/editor/lib/find/find-matches.ts	liveknowledge/apps/editor/lib/find/find-matches.ts
 livedocuments/apps/editor/lib/find/find-text.ts	liveknowledge/apps/editor/lib/find/find-text.ts
-livedocuments/apps/editor/lib/office-export/docx-write.ts	liveknowledge/apps/editor/lib/office-export/docx-write.ts
-livedocuments/apps/editor/lib/office-export/ooxml-colour.ts	liveknowledge/apps/editor/lib/office-export/ooxml-colour.ts
-livedocuments/apps/editor/lib/office-export/ooxml-fonts.ts	liveknowledge/apps/editor/lib/office-export/ooxml-fonts.ts
-livedocuments/apps/editor/lib/office-export/pptx-parts.ts	liveknowledge/apps/editor/lib/office-export/pptx-parts.ts
-livedocuments/apps/editor/lib/office-export/pptx-slide-xml.ts	liveknowledge/apps/editor/lib/office-export/pptx-slide-xml.ts
-livedocuments/apps/editor/lib/office-export/pptx-types.ts	liveknowledge/apps/editor/lib/office-export/pptx-types.ts
-livedocuments/apps/editor/lib/office-export/pptx-write.ts	liveknowledge/apps/editor/lib/office-export/pptx-write.ts
-livedocuments/apps/editor/lib/office-export/progress.ts	liveknowledge/apps/editor/lib/office-export/progress.ts
-livedocuments/apps/editor/lib/office-import/limits.ts	liveknowledge/apps/editor/lib/office-import/limits.ts
-livedocuments/apps/editor/lib/office-import/package.ts	liveknowledge/apps/editor/lib/office-import/package.ts
-livedocuments/apps/editor/lib/office-import/pptx-shapes.ts	liveknowledge/apps/editor/lib/office-import/pptx-shapes.ts
 livedocuments/apps/editor/lib/office-import/store-images.ts	liveknowledge/apps/editor/lib/office-import/store-images.ts
-livedocuments/apps/editor/lib/office-import/tally.ts	liveknowledge/apps/editor/lib/office-import/tally.ts
-livedocuments/apps/editor/lib/office-import/test-fixtures.ts	liveknowledge/apps/editor/lib/office-import/test-fixtures.ts
-livedocuments/apps/editor/lib/office-import/text-fit.ts	liveknowledge/apps/editor/lib/office-import/text-fit.ts
-livedocuments/apps/editor/lib/office-import/xml.ts	liveknowledge/apps/editor/lib/office-import/xml.ts
 livedocuments/apps/editor/lib/own-picture.ts	liveknowledge/apps/editor/lib/own-picture.ts
 livedocuments/apps/editor/lib/page-tidy-check/page-tidy-check.worker.ts	liveknowledge/apps/editor/lib/page-tidy-check/page-tidy-check.worker.ts
 livedocuments/apps/editor/lib/page-tidy-guard.ts	liveknowledge/apps/editor/lib/page-tidy-guard.ts
@@ -211,7 +189,6 @@ livedocuments/packages/document/scripts/build-world-map.mjs	liveknowledge/packag
 livedocuments/packages/document/src/animation-membership.ts	liveknowledge/packages/document/src/animation-membership.ts
 livedocuments/packages/document/src/arrow-rebind.ts	liveknowledge/packages/document/src/arrow-rebind.ts
 livedocuments/packages/document/src/article-bands.ts	liveknowledge/packages/document/src/article-bands.ts
-livedocuments/packages/document/src/article-draw-ops.ts	liveknowledge/packages/document/src/article-draw-ops.ts
 livedocuments/packages/document/src/article-flow-ops.ts	liveknowledge/packages/document/src/article-flow-ops.ts
 livedocuments/packages/document/src/article-footnotes.ts	liveknowledge/packages/document/src/article-footnotes.ts
 livedocuments/packages/document/src/article-intake.ts	liveknowledge/packages/document/src/article-intake.ts
@@ -266,7 +243,6 @@ livedocuments/packages/document/src/slide-deck-pages.ts	liveknowledge/packages/d
 livedocuments/packages/document/src/slide-deck-patch.ts	liveknowledge/packages/document/src/slide-deck-patch.ts
 livedocuments/packages/document/src/slide-deck.ts	liveknowledge/packages/document/src/slide-deck.ts
 livedocuments/packages/document/src/slide-notes-merge.ts	liveknowledge/packages/document/src/slide-notes-merge.ts
-livedocuments/packages/document/src/stat-count.ts	liveknowledge/packages/document/src/stat-count.ts
 livedocuments/packages/document/src/svg-render-body.ts	liveknowledge/packages/document/src/svg-render-body.ts
 livedocuments/packages/document/src/svg-render-boxed.ts	liveknowledge/packages/document/src/svg-render-boxed.ts
 livedocuments/packages/document/src/svg-render-describe.ts	liveknowledge/packages/document/src/svg-render-describe.ts
@@ -284,7 +260,6 @@ livedocuments/packages/document/src/validate-shape.ts	liveknowledge/packages/doc
 livedocuments/packages/document/src/version-changes.ts	liveknowledge/packages/document/src/version-changes.ts
 livedocuments/packages/edit-operations/src/parse-line.ts	liveknowledge/packages/edit-operations/src/parse-line.ts
 livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
-livedocuments/packages/template-previews/src/article-preview-parts.tsx	liveknowledge/packages/template-previews/src/article-preview-parts.tsx
 livedocuments/packages/templates/src/article-templates-2.ts	liveknowledge/packages/templates/src/article-templates-2.ts
 livedocuments/packages/templates/src/beside-offers.ts	liveknowledge/packages/templates/src/beside-offers.ts
 livedocuments/packages/templates/src/page-layouts-set-compare.ts	liveknowledge/packages/templates/src/page-layouts-set-compare.ts

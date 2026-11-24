@@ -18,11 +18,12 @@ import {
   ElementEllipsisMenu,
   ElementMenuItem,
   ElementMenuSettingsRow,
-} from '@/components/canvas/ElementEllipsisMenu';
+} from '@liveworkspace/workbench/components/canvas/ElementEllipsisMenu';
 import { CollabPanel } from './collab-chrome';
 import { MoodBars } from './temperature/MoodBars';
 import { MoodButtons } from './temperature/MoodButtons';
 import { MoodMeter } from './temperature/MoodMeter';
+import { usePublishFaceControls } from '@/components/canvas/collab/face-controls';
 
 export function TemperatureFace({
   element,
@@ -48,6 +49,16 @@ export function TemperatureFace({
   const stats = responseStats(responses);
   const tally = responseTally(responses, TEMPERATURE_VALUES);
 
+  usePublishFaceControls(element.id, [
+    onClear &&
+      responses.length > 0 && {
+        key: 'reset',
+        label: 'Reset Answers',
+        description: "Clear everyone's answers.",
+        icon: 'reset',
+        run: onClear,
+      },
+  ]);
   return (
     <CollabPanel
       element={element}

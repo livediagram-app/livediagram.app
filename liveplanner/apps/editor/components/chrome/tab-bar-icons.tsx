@@ -10,7 +10,7 @@ import {
   lucideScale,
 } from '@liveworkspace/icons/lucide';
 
-import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { MENU_ICON_PX } from '@liveworkspace/workbench/components/palette/context-menu-icons';
 
 // A locked tab (the pill badge; the menu toolbar sizes its own buttons).
 export function TabLockIcon() {

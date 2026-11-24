@@ -1,5 +1,6 @@
 'use client';
 
+import { ArrowDownIcon, ArrowUpIcon, CloseIcon } from '@liveknowledge/ui';
 import { useState, type ReactNode } from 'react';
 import {
   CONCEPT_LABEL_MAX,
@@ -22,7 +23,7 @@ import {
   type WebRows,
 } from '@liveknowledge/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
+import { DataMenuGlyph } from '@liveworkspace/workbench/components/palette/context-menu-data-parts';
 import {
   MENU_ADD_ROW_BUTTON,
   MENU_CELL_INPUT,
@@ -64,7 +65,7 @@ function RowControls({
         onClick={() => onMove(index - 1)}
         className={rowButton}
       >
-        ↑
+        <ArrowUpIcon size={12} />
       </button>
       <button
         type="button"
@@ -73,7 +74,7 @@ function RowControls({
         onClick={() => onMove(index + 1)}
         className={rowButton}
       >
-        ↓
+        <ArrowDownIcon size={12} />
       </button>
       <button
         type="button"
@@ -82,7 +83,7 @@ function RowControls({
         onClick={onRemove}
         className={rowButton}
       >
-        ×
+        <CloseIcon size={12} />
       </button>
     </>
   );

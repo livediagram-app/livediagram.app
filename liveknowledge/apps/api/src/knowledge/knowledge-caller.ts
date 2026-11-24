@@ -2,11 +2,10 @@
 // search-and-ask.md "Share roles"): a person or a named agent, and whether a signed-in account stands behind the
 // request. No route here decides access: that is the grant's (routes/context.ts).
 import { agentName, type Reader } from '@liveknowledge/knowledge';
-import { frontDoorOf } from '../changesets/front-door';
+import { AGENT_NAME_HEADER, frontDoorOf } from '../changesets/front-door';
 import type { RouteContext } from '../routes/context';
 
-/** The header an agent's front door names its client in (the MCP client's name, "Claude Code"). Optional. */
-export const AGENT_NAME_HEADER = 'X-Liveknowledge-Agent';
+export { AGENT_NAME_HEADER };
 
 const DOOR_NAMES = { Mcp: 'MCP', Cli: 'CLI', Api: 'API Token', Editor: 'API Token' } as const;
 

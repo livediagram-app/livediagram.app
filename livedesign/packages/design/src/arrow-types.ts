@@ -7,14 +7,18 @@
 // Pure types; re-exported through index.ts so the public
 // `@livedesign/design` surface is unchanged.
 
-import type { Finish } from './finish';
+import type { Finish } from '@liveworkspace/element-model/finish';
 import type { ComponentMember } from './components';
 import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';
-import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
-import type { AnimationSpeed } from './animation';
-import type { PenColourName } from './pen-colours';
+import type {
+  ArrowheadShape,
+  ArrowheadSize,
+  ArrowStyle,
+} from '@liveworkspace/element-model/arrow-style';
+import type { AnimationSpeed } from '@liveworkspace/model-core/animation';
+import type { PenColourName } from '@liveworkspace/element-model/pen-colours';
 import type { BorderStyle } from '@liveworkspace/model-core/border-style';
-import type { QuickSwatchSlot } from './quick-swatches';
+import type { QuickSwatchSlot } from '@liveworkspace/element-model/quick-swatches';
 
 // The sixteen anchors of a boxed element, named after the compass rose
 // (docs/specs/008-canvas/arrow-anchors.md): corners, edge midpoints and the

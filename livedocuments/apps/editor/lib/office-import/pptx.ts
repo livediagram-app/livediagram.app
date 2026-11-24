@@ -7,9 +7,13 @@ import { cleanImageCrop } from '@livedocuments/document';
 import type { TextAlignX, TextAlignY } from '@liveworkspace/model-core/basics';
 import { MAX_ELEMENTS_PER_TAB, MAX_PAGES } from '@livedocuments/document';
 import type { OfficePicture } from './docx';
-import { OfficeImportError } from './errors';
-import { EMU_PER_PX, OFFICE_MAX_SLIDE_ITEMS, OFFICE_NOTES_MAX } from './limits';
-import type { OfficePackage, OfficeRel } from './package';
+import { OfficeImportError } from '@liveworkspace/office-files/errors';
+import {
+  EMU_PER_PX,
+  OFFICE_MAX_SLIDE_ITEMS,
+  OFFICE_NOTES_MAX,
+} from '@liveworkspace/office-files/limits';
+import type { OfficePackage, OfficeRel } from '@liveworkspace/office-files/package';
 import {
   DEFAULT_SIZE_PT,
   IDENTITY,
@@ -30,9 +34,17 @@ import {
   type EmuBox,
   type GroupMap,
   type Inheritance,
-} from './pptx-shapes';
-import { addSkip, type SkipTally } from './tally';
-import { child, find, intAttr, kids, path, textOf, type XmlElement } from './xml';
+} from '@liveworkspace/office-files/pptx-shapes';
+import { addSkip, type SkipTally } from '@liveworkspace/office-files/tally';
+import {
+  child,
+  find,
+  intAttr,
+  kids,
+  path,
+  textOf,
+  type XmlElement,
+} from '@liveworkspace/office-files/xml';
 
 export type SlideTextItem = {
   kind: 'text';

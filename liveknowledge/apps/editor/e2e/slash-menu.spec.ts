@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { expectAtLeastPx } from '@liveworkspace/e2e-kit/rounded-size';
 import { expect, expectNoPageErrors, test } from './fixtures';
 import { newKnowledgebase, writeLines, writing } from './knowledgebase';
 
@@ -99,8 +100,7 @@ test.describe('on a phone', () => {
     await expect(sheet).toBeVisible();
     await expect(page.locator('[data-slash-preview]')).toHaveCount(0);
     const option = (await highlighted(page).boundingBox())!;
-    // Rounded: a phone at a fractional scale lays a 44 px row out as 43.99997.
-    expect(Math.round(option.height)).toBeGreaterThanOrEqual(44);
+    expectAtLeastPx(option.height, 44);
     const box = (await sheet.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(8);
     expect(box.x + box.width).toBeLessThanOrEqual(390 - 8 + 0.5);

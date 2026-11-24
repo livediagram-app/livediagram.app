@@ -13,18 +13,18 @@ import {
   plural,
 } from '@livedesign/design';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
-import { nearestCssBorderStyle } from '@/components/canvas/border-css';
+import { nearestCssBorderStyle } from '@liveworkspace/workbench/components/canvas/border-css';
 import {
   TableAxisMenuPortal,
   TableAxisTriggers,
   TableResizeDividers,
-} from '@/components/canvas/TableAxisControls';
+} from '@liveworkspace/workbench/components/canvas/TableAxisControls';
 import { TableCellView, type TableCellCtx } from '@/components/canvas/TableCellView';
 import { TableCellMenu } from '@/components/canvas/TableCellMenu';
 import { useTableStructure } from '@/components/canvas/useTableStructure';
 import { useTableEditing } from '@/components/canvas/useTableEditing';
 import { useTableCellInput } from '@/components/canvas/useTableCellInput';
-import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
+import { useTableAxisResize } from '@liveworkspace/workbench/components/canvas/useTableAxisResize';
 import { useTableAnimation } from '@/components/canvas/useTableAnimation';
 import { useTableCellSelection } from '@/components/canvas/useTableCellSelection';
 import { useElementSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';

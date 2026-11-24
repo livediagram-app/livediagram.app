@@ -171,7 +171,7 @@ functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 | Files                                                                           | Why                                                                                             |
 | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `src/auth/**`                                                                   | Decides WHO a request is: access-token and guest-token checks, api tokens, the read/edit gates  |
-| `src/db/api-tokens.ts`, `src/routes/tokens.ts`                                  | Resolve and revoke the credentials that act as an account                                       |
+| `../packages/auth-client/src/api-tokens.ts`, `src/routes/tokens.ts`             | Resolve and revoke the credentials that act as an account                                       |
 | `packages/index-app/src/room-ticket.ts` (repo root), `src/routes/plan-grant.ts` | The index's grant as the room ticket, and settling a request's grant before it reaches the plan |
 | `src/routes/share.ts`                                                           | The only unauthenticated read path into a project                                               |
 

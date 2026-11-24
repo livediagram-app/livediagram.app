@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FONTS } from '@liveworkspace/model-core/fonts';
-import { MARKER_FONT_ID } from './finish';
+import { MARKER_FONT_ID } from '@liveworkspace/element-model/finish';
 import { isPlannerExcludedStack, PLANNER_EXCLUDED_FONT_IDS, PLANNER_FONTS } from './planner-fonts';
 
 const stackOf = (id: string) => FONTS.find((f) => f.id === id)!.stack;

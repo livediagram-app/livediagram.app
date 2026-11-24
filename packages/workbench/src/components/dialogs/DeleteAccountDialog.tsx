@@ -15,10 +15,8 @@ import {
   Button,
   CODE_DIGITS,
   CodeDigits,
+  Dialog,
   EMPTY_CODE,
-  Portal,
-  useEscape,
-  useFocusTrap,
   type CodeDigitsHandle,
 } from '@liveworkspace/ui';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
@@ -116,8 +114,6 @@ export function DeleteAccountDialog({
   const [wrongCode, setWrongCode] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const codeRef = useRef<CodeDigitsHandle>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  useFocusTrap(dialogRef, open);
 
   // Back to the start every time the dialog opens (adjusted during render), so a person who cancels mid-flow and
   // opens it again never meets a stale email, code or error.
@@ -144,9 +140,6 @@ export function DeleteAccountDialog({
     );
     return () => window.clearTimeout(handle);
   }, [open, step]);
-
-  // Escape closes, as in every modal, except while a request is in flight.
-  useEscape(onClose, { enabled: open && busy === null });
 
   if (!open) return null;
 
@@ -217,171 +210,163 @@ export function DeleteAccountDialog({
   const strong = 'font-semibold text-slate-900 dark:text-slate-100';
 
   return (
-    <Portal>
-      <div
-        onPointerDown={(e) => e.stopPropagation()}
-        className="pointer-events-none fixed inset-0 z-[var(--z-modal)] flex items-center justify-center"
-      >
-        <div
-          ref={dialogRef}
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-account-title"
-          aria-describedby="delete-account-description"
-          className="pointer-events-auto flex w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40"
-        >
-          <form onSubmit={step === 'confirm' ? onConfirm : (e) => void onDelete(e)} noValidate>
-            <div className="border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
-              <h2
-                id="delete-account-title"
-                className="text-lg font-semibold text-slate-900 dark:text-slate-100"
-              >
-                Delete Account
-              </h2>
-              {step === 'confirm' ? (
-                // Closing the account deletes what the person owns in every app, not just this one, so it says
-                // so first.
-                <div
-                  id="delete-account-description"
-                  className="mt-2 flex flex-col gap-2 text-sm text-slate-600 dark:text-slate-400"
-                >
-                  <p>
-                    This permanently deletes your liveworkspace account and{' '}
-                    <strong className={strong}>
-                      everything you own in every liveworkspace app
-                    </strong>
-                    , not just {appName}:
-                  </p>
-                  <ul className="list-disc space-y-1 pl-5">
-                    <li>
-                      every canvas, plan, document, design, space and knowledgebase in livediagram,
-                      liveplanner, livedocuments, livedesign, livehuddle and liveknowledge,
-                      including the Trash
-                    </li>
-                    <li>your folders, settings and API tokens</li>
-                    <li>any team you run on your own</li>
-                  </ul>
-                  <p>
-                    You will be signed out of every app.{' '}
-                    <strong className={strong}>This can’t be undone.</strong> {localItems} kept
-                    Offline stay on this device.
-                  </p>
-                </div>
-              ) : (
-                <p
-                  id="delete-account-description"
-                  className="mt-2 text-sm text-slate-600 dark:text-slate-400"
-                >
-                  We emailed a 6-digit code to <strong className={strong}>{expectedEmail}</strong>.
-                  Enter it to delete your account. It works for 10 minutes.
-                </p>
-              )}
+    // The shared Dialog: its dim over Settings behind, a panel that scrolls on a short screen and sits above the
+    // phone keyboard. Nothing closes it (Escape, the backdrop) while a request is in flight.
+    <Dialog
+      open
+      onClose={onClose}
+      titleId="delete-account-title"
+      size="sm"
+      closeOnEscape={!working}
+      beforeClose={() => !working}
+    >
+      <form onSubmit={step === 'confirm' ? onConfirm : (e) => void onDelete(e)} noValidate>
+        <div className="border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
+          <h2
+            id="delete-account-title"
+            className="text-lg font-semibold text-slate-900 dark:text-slate-100"
+          >
+            Delete Account
+          </h2>
+          {step === 'confirm' ? (
+            // Closing the account deletes what the person owns in every app, not just this one, so it says
+            // so first.
+            <div
+              id="delete-account-description"
+              className="mt-2 flex flex-col gap-2 text-sm text-slate-600 dark:text-slate-400"
+            >
+              <p>
+                This permanently deletes your liveworkspace account and{' '}
+                <strong className={strong}>everything you own in every liveworkspace app</strong>,
+                not just {appName}:
+              </p>
+              <ul className="list-disc space-y-1 pl-5">
+                <li>
+                  every canvas, plan, document, design, space and knowledgebase in livediagram,
+                  liveplanner, livedocuments, livedesign, livehuddle and liveknowledge, including
+                  the Trash
+                </li>
+                <li>your folders, settings and API tokens</li>
+                <li>any team you run on your own</li>
+              </ul>
+              <p>
+                You will be signed out of every app.{' '}
+                <strong className={strong}>This can’t be undone.</strong> {localItems} kept Offline
+                stay on this device.
+              </p>
             </div>
-
-            <div className="px-6 py-5">
-              {step === 'confirm' ? (
-                <>
-                  <label
-                    htmlFor="delete-confirm-email"
-                    className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Type <strong className={strong}>{expectedEmail || 'your email address'}</strong>{' '}
-                    to confirm
-                  </label>
-                  <input
-                    ref={emailRef}
-                    id="delete-confirm-email"
-                    type="email"
-                    autoComplete="off"
-                    value={typed}
-                    onChange={(e) => setTyped(e.target.value)}
-                    disabled={working}
-                    aria-invalid={emailState === 'mismatch' || undefined}
-                    aria-describedby={
-                      emailState === 'mismatch' ? 'delete-confirm-email-hint' : undefined
-                    }
-                    data-state={emailState}
-                    className={`mt-2 w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition focus:outline-none focus:ring-2 disabled:opacity-50 dark:bg-slate-900 dark:text-slate-100 ${EMAIL_TONE[emailState]}`}
-                    placeholder="you@example.com"
-                  />
-                  {emailState === 'mismatch' ? (
-                    <p
-                      id="delete-confirm-email-hint"
-                      className="mt-1.5 text-sm text-rose-700 dark:text-rose-300"
-                    >
-                      That isn’t your account’s email.
-                    </p>
-                  ) : null}
-                </>
-              ) : (
-                <>
-                  <CodeDigits
-                    ref={codeRef}
-                    label="Deletion code"
-                    digits={digits}
-                    onDigits={(next) => {
-                      setDigits(next);
-                      setWrongCode(false);
-                    }}
-                    disabled={working}
-                    invalid={wrongCode}
-                  />
-                  <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
-                    <span>Didn’t get it? Check your spam folder.</span>
-                    <Button
-                      variant="none"
-                      onClick={() => void requestCode(true)}
-                      busy={working}
-                      className="relative touch-target-y cursor-pointer font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 transition hover:decoration-slate-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-100 dark:decoration-slate-600 dark:hover:decoration-slate-400"
-                    >
-                      {busy === 'resending' ? 'Sending…' : 'Resend Code'}
-                    </Button>
-                  </div>
-                </>
-              )}
-
-              {notice ? (
-                <Callout tone="success" role="status" className="mt-3">
-                  {notice}
-                </Callout>
-              ) : null}
-              {error ? (
-                <Callout tone="error" role="alert" className="mt-3">
-                  {error}
-                </Callout>
-              ) : null}
-            </div>
-
-            <DialogFooter>
-              <Button variant="secondary" onClick={onClose} disabled={working}>
-                Cancel
-              </Button>
-              {step === 'confirm' ? (
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={!emailsMatch}
-                  busy={working}
-                  className="shadow-sm"
-                >
-                  {busy === 'sending' ? 'Sending Code…' : 'Email Me a Code'}
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={code.length !== CODE_DIGITS}
-                  busy={working}
-                  className="shadow-sm"
-                >
-                  {busy === 'deleting' ? 'Deleting…' : 'Delete Account'}
-                </Button>
-              )}
-            </DialogFooter>
-          </form>
+          ) : (
+            <p
+              id="delete-account-description"
+              className="mt-2 text-sm text-slate-600 dark:text-slate-400"
+            >
+              We emailed a 6-digit code to <strong className={strong}>{expectedEmail}</strong>.
+              Enter it to delete your account. It works for 10 minutes.
+            </p>
+          )}
         </div>
-      </div>
-    </Portal>
+
+        <div className="px-6 py-5">
+          {step === 'confirm' ? (
+            <>
+              <label
+                htmlFor="delete-confirm-email"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Type <strong className={strong}>{expectedEmail || 'your email address'}</strong> to
+                confirm
+              </label>
+              <input
+                ref={emailRef}
+                id="delete-confirm-email"
+                type="email"
+                autoComplete="off"
+                value={typed}
+                onChange={(e) => setTyped(e.target.value)}
+                disabled={working}
+                aria-invalid={emailState === 'mismatch' || undefined}
+                aria-describedby={
+                  emailState === 'mismatch' ? 'delete-confirm-email-hint' : undefined
+                }
+                data-state={emailState}
+                className={`mt-2 w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition focus:outline-none focus:ring-2 disabled:opacity-50 dark:bg-slate-900 dark:text-slate-100 ${EMAIL_TONE[emailState]}`}
+                placeholder="you@example.com"
+              />
+              {emailState === 'mismatch' ? (
+                <p
+                  id="delete-confirm-email-hint"
+                  className="mt-1.5 text-sm text-rose-700 dark:text-rose-300"
+                >
+                  That isn’t your account’s email.
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <CodeDigits
+                ref={codeRef}
+                label="Deletion code"
+                digits={digits}
+                onDigits={(next) => {
+                  setDigits(next);
+                  setWrongCode(false);
+                }}
+                disabled={working}
+                invalid={wrongCode}
+              />
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
+                <span>Didn’t get it? Check your spam folder.</span>
+                <Button
+                  variant="none"
+                  onClick={() => void requestCode(true)}
+                  busy={working}
+                  className="relative touch-target-y cursor-pointer font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 transition hover:decoration-slate-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-100 dark:decoration-slate-600 dark:hover:decoration-slate-400"
+                >
+                  {busy === 'resending' ? 'Sending…' : 'Resend Code'}
+                </Button>
+              </div>
+            </>
+          )}
+
+          {notice ? (
+            <Callout tone="success" role="status" className="mt-3">
+              {notice}
+            </Callout>
+          ) : null}
+          {error ? (
+            <Callout tone="error" role="alert" className="mt-3">
+              {error}
+            </Callout>
+          ) : null}
+        </div>
+
+        <DialogFooter>
+          <Button variant="secondary" onClick={onClose} disabled={working}>
+            Cancel
+          </Button>
+          {step === 'confirm' ? (
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={!emailsMatch}
+              busy={working}
+              className="shadow-sm"
+            >
+              {busy === 'sending' ? 'Sending Code…' : 'Send Code'}
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={code.length !== CODE_DIGITS}
+              busy={working}
+              className="shadow-sm"
+            >
+              {busy === 'deleting' ? 'Deleting…' : 'Delete Account'}
+            </Button>
+          )}
+        </DialogFooter>
+      </form>
+    </Dialog>
   );
 }

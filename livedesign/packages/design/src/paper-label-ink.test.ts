@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { contrastRatio } from './colors';
-import { hexOklch } from './pen-colours';
+import { hexOklch } from '@liveworkspace/element-model/pen-colours';
 import { LABEL_BACKDROP_CONTRAST } from './label-backdrop';
 import {
   PAPER_INK_CACHE_SIZE,

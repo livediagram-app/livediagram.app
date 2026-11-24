@@ -16,7 +16,7 @@ import {
   Table,
   TINT,
   Todo,
-} from './article-preview-parts';
+} from '@liveworkspace/template-previews/article-preview-parts';
 
 // The design doc's code, a colour a line.
 const CODE_INKS = ['rgb(196 181 253)', 'rgb(125 211 252)', 'rgb(134 239 172)', 'rgb(196 181 253)'];

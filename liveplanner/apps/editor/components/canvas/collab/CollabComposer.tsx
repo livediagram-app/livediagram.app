@@ -5,7 +5,7 @@
 
 import { useRef, useState } from 'react';
 import type { CommentMention } from '@liveplanner/project';
-import { MentionMenu } from '@/components/primitives/MentionMenu';
+import { MentionMenu } from '@liveworkspace/workbench/components/primitives/MentionMenu';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';
 import type { MentionScope } from './comment/MentionContext';
 import { tint } from './collab-chrome';

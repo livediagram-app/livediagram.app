@@ -49,8 +49,8 @@ export function ReadAgainSwitch({
         className={`${PILL} ${on ? ON : ''}`}
       >
         <Switch presentational checked={on} size="xs" />
-        <span className="phone:hidden">Ask Everyone to Read Again</span>
-        <span className="hidden phone:inline">Read Again</span>
+        {/* The short name at every width; the hover card and the switch's own name say it in full. */}
+        <span>Read Again</span>
       </button>
     </HoverCard>
   );

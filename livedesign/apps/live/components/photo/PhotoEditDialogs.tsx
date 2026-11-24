@@ -3,8 +3,8 @@
 // The Fill… dialog, the Select menu's Colour Range… and Modify dialogs, and Flatten's confirmation
 // (docs/specs/031-photo/photo-tools.md "Retouching" Fill, "Selecting"; photo-layers.md "Layer
 // operations" Flatten).
-import { useMemo, useState } from 'react';
-import { Button, DialogHeader } from '@livedesign/ui';
+import { useId, useMemo, useState } from 'react';
+import { Button } from '@livedesign/ui';
 import {
   BLEND_MODE_GROUPS,
   BLEND_MODE_NAMES,
@@ -13,7 +13,7 @@ import {
 } from '@livedesign/photo-engine';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
-import { standardGroup } from '@/components/colour/colour-options';
+import { standardGroup } from '@liveworkspace/workbench/components/colour/colour-options';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { fillSelection, type FillContents } from '@/lib/photo-editor/edit-ops';
@@ -27,7 +27,11 @@ import {
 } from '@/lib/photo-editor/selection-ops';
 import { photoTools } from '@/lib/photo-editor/tool-state';
 import { track } from '@/lib/telemetry';
-import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';
+import { OptionChoice, OptionSlider, OptionSwitch } from './photo-controls';
+import { PhotoDialogHero } from './PhotoDialogHero';
+import { photoFillHeroArt } from './PhotoFillHeroArt';
+import { photoFlattenHeroArt } from './PhotoFlattenHeroArt';
+import { photoSelectionHeroArt } from './PhotoSelectionHeroArt';
 
 const STANDARD = [standardGroup('strong', 'light', 'hex')];
 const BLENDS = BLEND_MODE_GROUPS.flat().map((m) => ({ value: m, label: BLEND_MODE_NAMES[m] }));
@@ -64,13 +68,18 @@ export function FillDialog({ photo, onClose }: { photo: PhotoEditorView; onClose
   const [opacity, setOpacity] = useState(1);
   const [keep, setKeep] = useState(false);
   const s = photo.session!;
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel="Fill" backdrop="desktop-light">
-      <DialogHeader
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): a selection filling with paint. */}
+      <PhotoDialogHero
+        art={photoFillHeroArt}
+        titleId={titleId}
         title="Fill"
-        subtitle={
+        line={
           s.selection ? 'Fills the selection on the active layer.' : 'Fills the whole active layer.'
         }
+        onClose={onClose}
       />
       <div className="flex flex-col gap-3 px-6 py-4">
         <div className="flex items-center gap-2">
@@ -117,7 +126,7 @@ export function FillDialog({ photo, onClose }: { photo: PhotoEditorView; onClose
               width="w-full"
               onChange={setOpacity}
             />
-            <OptionToggle label="Preserve Transparency" on={keep} onChange={setKeep} />
+            <OptionSwitch label="Preserve Transparency" on={keep} onChange={setKeep} />
           </>
         ) : null}
       </div>
@@ -158,6 +167,7 @@ export function ColourRangeDialog({
   const s = photo.session!;
   const [colours, setColours] = useState<string[]>(() => [photoTools.get().foreground]);
   const [fuzziness, setFuzziness] = useState(40);
+  const titleId = useId();
   const mask = useMemo(
     () =>
       colours.length
@@ -170,8 +180,15 @@ export function ColourRangeDialog({
     [s, colours, fuzziness],
   );
   return (
-    <Dialog open onClose={onClose} ariaLabel="Colour Range" backdrop="desktop-light">
-      <DialogHeader title="Colour Range" subtitle="Selects every pixel near the colours chosen." />
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): a selection round the colour sampled. */}
+      <PhotoDialogHero
+        art={photoSelectionHeroArt}
+        titleId={titleId}
+        title="Colour Range"
+        line="Selects every pixel near the colours chosen."
+        onClose={onClose}
+      />
       <div className="flex flex-col gap-3 px-6 py-4">
         <div className="flex flex-wrap items-center gap-2">
           {colours.map((c, i) => (
@@ -249,9 +266,16 @@ export function ModifyDialog({
   const m = MODIFY[how];
   const [v, setV] = useState(how === 'grow' ? photoTools.get().options.wand.tolerance : m.def);
   const s = photo.session!;
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel={m.title} backdrop="desktop-light">
-      <DialogHeader title={m.title} />
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): a selection and the edge it is changed to. */}
+      <PhotoDialogHero
+        art={photoSelectionHeroArt}
+        titleId={titleId}
+        title={m.title}
+        onClose={onClose}
+      />
       <div className="flex flex-col gap-3 px-6 py-4">
         <OptionSlider
           label={m.label}
@@ -278,9 +302,17 @@ export function ModifyDialog({
 
 export function FlattenDialog({ photo, onClose }: { photo: PhotoEditorView; onClose: () => void }) {
   'use no memo'; // It reads the mutable photo session as it renders (PhotoSession).
+  const titleId = useId();
   return (
-    <Dialog open onClose={onClose} ariaLabel="Flatten Image" backdrop="desktop-light">
-      <DialogHeader title="Flatten Image?" subtitle="Flatten discards hidden layers." />
+    <Dialog open onClose={onClose} titleId={titleId} backdrop="desktop-light">
+      {/* The dialog hero header (dialog-hero-header.md): the layers becoming one. */}
+      <PhotoDialogHero
+        art={photoFlattenHeroArt}
+        titleId={titleId}
+        title="Flatten Image?"
+        line="Flatten discards hidden layers."
+        onClose={onClose}
+      />
       <Actions
         ok="Flatten"
         onCancel={onClose}

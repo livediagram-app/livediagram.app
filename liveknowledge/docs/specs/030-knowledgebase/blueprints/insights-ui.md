@@ -73,7 +73,8 @@ Below `lg` they are one column. The content is at most `max-w-7xl`, centred, `px
   `verifiedParts` (verified, Review Due and never verified, as shares of `total`). `now` is read once per render
   of the band. Bars are HTML flex pieces (no SVG scaling), so a thin share keeps a 2px minimum and rounds cleanly.
 - **Needs Attention** (`NeedsAttention`): an `InsightsSection` "Needs Attention" with a `SegmentedToggle` ("Show": All,
-  Questions, Disagreements, Edits) as its action (under its heading on a phone). `attentionItems(overview,
+  Questions, Disagreements, Edits) as its action (under its heading on a phone; too narrow for one row, it wraps whole
+  segments, as every `SegmentedToggle` does). `attentionItems(overview,
 filter)` orders the rows: conflicts by `foundAt` newest first, suggestions by `createdAt` newest first, questions
   by `asked` most first then `lastAt`. Each row is an `li` with an eyebrow (the kind's icon and word: "Pages
   Disagree", "Suggested Edit", "Unanswered Question") over the row the kind draws (`ConflictRow`, `SuggestionRow`,
@@ -85,14 +86,14 @@ filter)` orders the rows: conflicts by `foundAt` newest first, suggestions by `c
   figures ("12 people, 4 agents" in words for a screen reader, `12 · 4` with two swatches on screen) and a 6px bar
   whose length is the page's reads against the most read, split people and agents in the sparkline's tones.
 
-| Card               | Rows from                               | Empty state                                                                                                           | Writer's actions                                                                                            |
-| ------------------ | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Needs Attention    | `conflicts`, `suggestions`, `questions` | "Nothing Needs Attention"; per filter "No Unanswered Questions Yet", "No Disagreements Yet", "No Suggested Edits Yet" | Is Right, Fix the Other; Ask Both Owners; Not a Conflict; Accept; Dismiss; Draft a Page; dismiss a question |
-| Connected Agents   | `agents`                                | "No Agents Yet", Connect an Agent                                                                                     | Allow Writing; Stop Writing (an Editor's)                                                                   |
-| Knowledge Health   | `health`                                | "No Pages Yet"                                                                                                        | Remind the Owners                                                                                           |
-| Always in Context  | `context`                               | "No Pages in Context Yet"                                                                                             | Add a Page; remove                                                                                          |
-| Most Read          | `reads.mostRead`                        | "No Reads Yet"                                                                                                        | none (a row opens its page)                                                                                 |
-| What an Agent Sees | the read, or nothing                    | a made-up page                                                                                                        | none                                                                                                        |
+| Card               | Rows from                               | Empty state                                                                                                           | Writer's actions                                                                             |
+| ------------------ | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Needs Attention    | `conflicts`, `suggestions`, `questions` | "Nothing Needs Attention"; per filter "No Unanswered Questions Yet", "No Disagreements Yet", "No Suggested Edits Yet" | Is Right; Ask Both Owners; Not a Conflict; Accept; Dismiss; Draft a Page; dismiss a question |
+| Connected Agents   | `agents`                                | "No Agents Yet", Connect an Agent                                                                                     | Allow Writing; Stop Writing (an Editor's)                                                    |
+| Knowledge Health   | `health`                                | "No Pages Yet"                                                                                                        | Remind the Owners                                                                            |
+| Always in Context  | `context`                               | "No Pages in Context Yet"                                                                                             | Add a Page; remove                                                                           |
+| Most Read          | `reads.mostRead`                        | "No Reads Yet"                                                                                                        | none (a row opens its page)                                                                  |
+| What an Agent Sees | the read, or nothing                    | a made-up page                                                                                                        | none                                                                                         |
 
 The key: built-in AI checks for conflicts with no key (`overview.hasAi`), so the dashboard says nothing of a key.
 Only on a server with no built-in AI and no key (`hasAi` false) does the Disagreements filter carry a small
@@ -116,7 +117,7 @@ outside the name), one line about it, an optional action at the right, then its 
 - **Connect an Agent** is `showKnowledgeView('connect')`: the [Connect view](mcp-connect-ui.md), which replaced
   the dialog.
 - **Conflicts.** Each side shows its title (a button to its page), `trustText` and the passage
-  (`whitespace-pre-wrap`, six lines at most). `<A> Is Right, Fix the Other` opens B; `<B> Is Right, Fix the Other`
+  (`whitespace-pre-wrap`, six lines at most). `<A> Is Right` opens B; `<B> Is Right`
   opens A, each at the passage that disagrees: a side carries `firstBlock` (the passage's `first_block`, from the
   overview route), and `openPassage(chrome, tab, block)` brings that block into view and lights it, the search
   dialog's own way in (`goToBlock`). A side's title opens its page at its passage the same way. Not a Conflict is `apiDismissKnowledgeConflict`.
@@ -159,7 +160,7 @@ Knowledge". Failed: an error callout, **Try Again**. Offline: one `EmptyState` f
 | Action                                                             | Editor | Participant | Viewer |
 | ------------------------------------------------------------------ | ------ | ----------- | ------ |
 | See every section, open a page, Connect an Agent, open AI Settings | yes    | yes         | yes    |
-| Is Right, Fix the Other; Not a Conflict                            | yes    | yes         | no     |
+| Is Right; Not a Conflict                                           | yes    | yes         | no     |
 | Draft a Page; dismiss a question                                   | yes    | yes         | no     |
 | Accept or dismiss a suggestion                                     | yes    | yes         | no     |
 | Add a page to Always in Context, or take one out                   | yes    | yes         | no     |

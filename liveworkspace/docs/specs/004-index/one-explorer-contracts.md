@@ -205,11 +205,13 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | and four more recent rows than it shows, so Most Used and Recent still fill            |
 |                                |                     | once New's items leave them (each item shows once). The cost is those eight            |
 |                                |                     | rows, in the same batch; each statement still stops at its `LIMIT`.                    |
-| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201                       |
+| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?, agent?}` → 201               |
 |                                |                     | `{item, grant}`. The index makes the id unless the client names the one it             |
 |                                |                     | minted (409 `item_exists` when taken, 409 `item_purging` while a purged item           |
 |                                |                     | of that id still has content in its app); the item's Durable Object                    |
-|                                |                     | starts empty the first time it is opened with a grant.                                 |
+|                                |                     | starts empty the first time it is opened with a grant. `agent`                         |
+|                                |                     | (`{name, via}`, an API client's create made by an agent) rides on                      |
+|                                |                     | its `created` event (The event log); a malformed one is 400.                           |
 | `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the            |
 |                                |                     | public link's code when that is their only way in (previews.md)                        |
 | `POST /items/lookup`           | person              | `{ids}` (up to 200) → `{items}`: each item `GET /items/:id` would answer               |
@@ -563,8 +565,12 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   outlook.com, icloud.com and the like), where it is null; the dialog starts its domain box with it. A team item's
   answer also carries `teamName`, the team's name as the asker's own token names it (its `teams` claim), or null when
   the token names none (a delegated caller); the Team tab says it.
-- **The Share dialog's Sign In card** (`packages/explorer` `SignInSection`), under Password Protection, in the same
-  settings-card look: **Require Sign In** ("Only people signed in to a liveworkspace account can open a pass. No
+- **The Share dialog's access card**: Password Protection, Require Sign In and Anybody With Email Address Domain are
+  three rows of one settings card, a hairline between them and no section rule, each with an icon tile (a lock, a
+  person, an at sign), its words and its switch. Password Protection and Require Sign In carry a help icon beside
+  their name (a hover card saying what it does, opening the help article), never a Learn More link.
+- **The Share dialog's Sign In rows** (`packages/explorer` `SignInSection`), under Password Protection in that card:
+  **Require Sign In** ("Only people signed in to a liveworkspace account can open a pass. No
   guests.") with its switch, and beneath it, in the same card, **Anybody With Email Address Domain** ("Only accounts
   with a verified email at these domains, such as @acme.com.") with its own switch, which opens a domain box (several
   domains, spaces or commas between them, `@` optional) with **Save**; a name that is no domain is named under the box
@@ -576,8 +582,13 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   first in the tab row (Team, Passes, the host's, Approval); a personal item opens on Passes as before, with no Team
   tab. The tab says everyone in the team, by name (the host's `teamName`, else the share answer's), can already open the item, with nothing to issue, shows the item's own
   address (the editor link a member opens, `itemUrl`) in a read-only field with **Copy Link**, notes that the link
-  grants nothing (someone outside the team who opens it sees Not Found), and ends with **Share With Someone Outside
-  the Team**, which switches to Passes in one click. The host's own start (`initialView: 'app'`, the Share legend's
+  grants nothing (someone outside the team who opens it sees Not Found), and under it lists **Team Members**: the
+  team's joined members (the host's `loadTeamMembers`, read when the tab first shows), each with their disc, name,
+  "you" on the reader's own row, email and role (Admin or Member), admins first then by name. Invitations not yet
+  accepted are left out, since they can't open the item yet. While it reads, placeholder rows; where the host has no
+  read or it fails, the list is left out and the rest of the tab stands. A footer stays at the bottom of the tab
+  while its content scrolls: **Sharing outside the team?** ("Issue a pass for non-team members to access this
+  <item>.") with **Issue a Pass**, which switches to Passes in one click. The host's own start (`initialView: 'app'`, the Share legend's
   Everyone stop) and the Approval badge still win; Show Me still starts on Passes. Sharing is the owner's and a joined
   member's (no link level grants it), so a link visitor of any level, Editor, Participant or Viewer, never opens the
   dialog and never sees the tab.
@@ -860,11 +871,16 @@ latestAt, people}]}`, the item's whole set of **updates** (what changed on a pag
   change is all it holds, and anyone who started watching after it). 204; 400 `invalid_updates` naming the first
   fault; 403 `wrong_app`; 404 for an item the index does not hold. One batch replaces the item's `item_updates` and
   `item_update_people` rows. A push asks nothing of the event log and of the item's connections.
-- `PUT /app/items/:id/events`: `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
+- `PUT /app/items/:id/events`: `{events: [{type: 'edited', actorId, actorName?, agent?, at}]}`, up to 100: who
   wrote to the item and when, for its History and Most Used. Each person's `edited` lands on one event per
   item and UTC day (a later report moves its time on), and counts that day as one of their use days (one open
-  when the day has none yet, so an item only edited still reaches Most Used; it never adds to a day's opens). liveplanner sends one per person who wrote since its last push, with the time of their latest
-  write.
+  when the day has none yet, so an item only edited still reaches Most Used; it never adds to a day's opens). Every app sends one per person who wrote since its last push, with the time of their latest
+  write. A write an agent made for the person (Work Tracker 1381: any request with an API token, through the MCP
+  server, the CLI or the API) is sent apart, with `agent: {name, via}`: the agent's name (its client's, else the
+  token's, trimmed, control characters dropped, at most `ITEM_AGENT_NAME_MAX` (80) characters, longer cut) and the
+  door it came through, `via` one of `ITEM_AGENT_VIAS` (`mcp`, `cli`, `api`). It lands on an event of its own per
+  person, agent, item and UTC day, its detail `{agent, via}`, so the person's own edits and each agent's never merge.
+  An `agent` that is not that shape refuses the push (400 `invalid_events`); one left out is the person's.
 - `PUT /app/items/:id/card-moves`: `{moves: [{cardId, cardKey, card, from, to, actorId?, actorName?, at}]}`, up to
   100: a plan's cards that changed status (liveplanner), once sent to the plan's webhooks. It answers 204 and does
   nothing, for the item's own app, until liveplanner stops pushing them
@@ -1016,7 +1032,8 @@ feeds each item's History and its team's audit log
 ([team-audit-log.md](team-audit-log.md)), and an `edited` report counts towards Most Used. The audit log keeps its own
 copy for a year, so the sweep never cuts it short.
 
-- The index records `created` (with `source` when an AI or import made it, `copiedFrom` for a copy),
+- The index records `created` (with `source` when an AI or import made it, `agent` and `via` when an agent's API
+  create named itself, as `POST /items` `agent` says, `copiedFrom` for a copy),
   `renamed` (`from`), `moved` (`folderName`, `teamId`, and `fromTeamId` when it changed team), `trashed`, `restored`,
   `shared` (`level`) and `unshared` in the same batch as the change. An approval request, decision or
   cancel records `approval_requested`, `approval_approved`, `approval_changes_requested` or `approval_cancelled`
@@ -1038,7 +1055,10 @@ copy for a year, so the sweep never cuts it short.
   through a link is one per visitor and item. The actor is the visitor's account or guest id, or null for one with
   no identity (known by the link they came in through). Written off the response path, an open at most once a day
   per isolate.
-- Apps report `edited` (above).
+- Apps report `edited` (above): a person's, or an agent's for its person, with `agent` and `via` in its detail.
+  An event's `detail.agent` is how History tells an agent's doing from its person's (Work Tracker 1381); an event
+  without one (a person's, or any recorded before agents were named) is the person's. No backfill: events last 30
+  days.
 - No event is handed to the item's connections: they hear nothing by themselves
   ([webhooks.md "No event subscriptions"](webhooks.md#no-event-subscriptions)).
 - liveworkspace accounts reports its teams' events, `POST /internal/events {events}` with its key (up to 100, each
@@ -1184,7 +1204,11 @@ latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a
   Subscribe to Calendar is one ([Calendar feeds](#calendar-feeds)). Shown whatever the list holds, empty or loading.
 - **The verbs.** Open in the app (↵) is always there, through the host's `itemHref` with an `ItemPlace`: the tab and
   element, `open: 'action' | 'comments'` for the popover, `cardId` for a card, and `threadId` for a card's thread
-  (`Activity·Selected`, by row kind).
+  (`Activity·Selected`, by row kind). A row on the item already open (the editor's panel, its own item's row) has an
+  address that differs from the page's only in its fragment, which a link would move without the editor noticing:
+  Open loads that address in full instead, in place of the current history entry (as the editors' own tab switches
+  are, since an editor never follows a Back that only moves the fragment), and the editor lands its deep link
+  as it lands any other. Another item, this app's or another app's, opens as a link does.
   The rest come from the host's `InboxHost.actions` (`@liveworkspace/explorer/inbox-actions`), asked per row, so no
   page shows a verb it can't carry out:
   - **Reply** (r) and **Resolve** (e) on a thread, through the owning app's comment routes: an element's thread by

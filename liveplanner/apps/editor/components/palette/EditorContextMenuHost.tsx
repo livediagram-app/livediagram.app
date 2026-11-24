@@ -40,6 +40,7 @@ export function EditorContextMenuHost() {
     setTagColour,
     editingId,
     closeContextMenu,
+    setContextMenu,
     openLinkPicker,
     removeIconFromElement,
     applyElementLink,
@@ -115,7 +116,8 @@ export function EditorContextMenuHost() {
     unlinkChartSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
-    setCodeWrapSelected,
+    setRowsEditorOpenFor,
+    setResourcesOpenForId,
     setLegendItemsSelected,
     sankey,
     setSankeyFlowsOpenForId,
@@ -123,7 +125,6 @@ export function EditorContextMenuHost() {
     can,
     setChecklistItemsSelected,
     toggleChecklistItem,
-    setWebRowsSelected,
     setHeroCaptionSelected,
     setDecisionStatusSelected,
     setDecisionDateSelected,
@@ -242,6 +243,9 @@ export function EditorContextMenuHost() {
       // right-button RELEASE, so the entrance never fires under a held button.
       key={contextMenu.mode === 'element' ? contextMenu.elementId : contextMenu.mode}
       menu={contextMenu}
+      onOpenTools={() =>
+        setContextMenu((cur) => (cur?.mode === 'element' ? { ...cur, tools: true } : cur))
+      }
       editingId={editingId}
       elements={activeTab.elements}
       tabFont={activeTab.font}
@@ -321,7 +325,10 @@ export function EditorContextMenuHost() {
       onUnlinkChart={unlinkChartSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
-      onSetCodeWrap={setCodeWrapSelected}
+      onEditRows={(id, kind) => {
+        closeContextMenu();
+        setRowsEditorOpenFor({ id, kind });
+      }}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
       onEditSequence={
@@ -334,7 +341,6 @@ export function EditorContextMenuHost() {
       chartThemeRamp={themeChartPalette(getTheme(activeTab.theme))}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
-      onSetWebRows={setWebRowsSelected}
       onSetHeroCaption={setHeroCaptionSelected}
       onSetDecisionStatus={setDecisionStatusSelected}
       onSetDecisionDate={setDecisionDateSelected}
@@ -416,6 +422,10 @@ export function EditorContextMenuHost() {
       onToggleTableZebra={setTableZebraSelected}
       onOpenNote={openNote}
       onAssignAction={openAssignAction}
+      onOpenResources={(id) => {
+        closeContextMenu();
+        setResourcesOpenForId(id);
+      }}
       selectionElements={ctxMemberIds
         .map((id) => activeTab.elements.find((e) => e.id === id))
         .filter((e): e is NonNullable<typeof e> => e != null)}

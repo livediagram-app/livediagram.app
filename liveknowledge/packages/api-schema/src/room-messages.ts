@@ -79,7 +79,7 @@ export const PRESENCE_OP_KINDS = [
   // the session's presence (`editing`) and sends the roster again, so a late joiner sees who is editing; never relayed
   // as sent. Only from an Editor or a Participant (knowledgebases-and-pages.md "Share roles").
   'page-editing',
-  // The sender just saved a page's draft (editing.md "Save"): relayed to the others, who say "<name> saved the page".
+  // The sender just saved a page's draft (editing.md "Save"): relayed to the others, who say "<name> saved “<page>”".
   // Writes nothing (the save's own frames do). Only from an Editor or a Participant.
   'page-saved',
 ] as const;

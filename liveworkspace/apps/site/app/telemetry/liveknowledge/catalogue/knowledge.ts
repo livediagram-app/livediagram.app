@@ -662,6 +662,22 @@ export const AI_MODELS_CHANGED = chart(
   { types: ['AiModel'], rising: 'neutral' },
 );
 
+export const AI_EDITING_CHANGED = chart(
+  'UI',
+  'Changed',
+  'AI Editing Levels Chosen',
+  'How far agents may change pages, chosen by an Editor in AI Editing: suggest only, unverified pages, or any page.',
+  { types: ['AiEditingSuggest', 'AiEditingUnverified', 'AiEditingAny'], rising: 'neutral' },
+);
+
+export const AI_EDIT_UNVERIFIES_TOGGLED = chart(
+  'UI',
+  'Toggled',
+  'AI Edit Unverifies Toggled',
+  'Remove Verification When AI Edits turned on or off in AI Editing.',
+  { types: ['AiEditUnverifiesOn', 'AiEditUnverifiesOff'], rising: 'neutral' },
+);
+
 export const ASK_AI_CHOSEN = chart(
   'UI',
   'Changed',
@@ -733,6 +749,13 @@ export const AGENT_ACCESS: MetricStack = {
   stack: true,
   title: 'Agent Access',
   blurb:
-    'What Editors let agents do in a knowledgebase: write pages directly or only suggest, and which pages every agent reads first.',
-  members: [AGENT_WRITES_ALLOWED, AGENT_WRITES_STOPPED, CONTEXT_PAGES_ADDED, CONTEXT_PAGES_REMOVED],
+    'What Editors let agents do in a knowledgebase: write pages directly or only suggest, how far AI Editing lets them, and which pages every agent reads first.',
+  members: [
+    AGENT_WRITES_ALLOWED,
+    AGENT_WRITES_STOPPED,
+    AI_EDITING_CHANGED,
+    AI_EDIT_UNVERIFIES_TOGGLED,
+    CONTEXT_PAGES_ADDED,
+    CONTEXT_PAGES_REMOVED,
+  ],
 };

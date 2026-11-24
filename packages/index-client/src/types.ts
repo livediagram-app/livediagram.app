@@ -7,6 +7,7 @@ import type {
   AppEventType,
   EventApp,
   EventType,
+  ItemAgentVia,
   ItemOwner,
   ItemSource,
   ItemView,
@@ -466,6 +467,8 @@ export type CreateItemInput = {
   teamId?: string | null;
   intent?: string | null;
   source?: ItemSource | null;
+  // The agent an API client's create was made by, for its `created` event (Work Tracker 1381).
+  agent?: ItemAgent | null;
   // An item kept offline in one browser, put back in the cloud under its own id: its History says `synced`
   // rather than `created`.
   synced?: boolean;
@@ -535,7 +538,8 @@ export type ItemEvent = {
   itemId: string | null;
   title: string;
   // renamed: { from }; moved: { folderName, teamId } (null folderName: the top of the space);
-  // shared: { level }; created: { source, copiedFrom }; commented: { text, count, reply };
+  // shared: { level }; created: { source, copiedFrom, agent, via }; edited: { agent, via } for an agent's write
+  // (none for a person's); commented: { text, count, reply };
   // comment_resolved: { text }; action_assigned: { action, assigneeId, assigneeName }; action_done: { action };
   // opened_by_visitor, copied_by_visitor: none (the actor is the visitor, null for one with no identity).
   detail: Record<string, string | null> | null;
@@ -552,8 +556,13 @@ export type AppEvent = {
   type: AppEventType;
   actorId: string;
   actorName?: string | null;
+  // The agent that wrote for the person, when one did (Work Tracker 1381): its own event, named in History.
+  agent?: ItemAgent | null;
   at: number;
 };
+
+/** An agent writing for its person: its name (its client's, else its token's) and the door it came through. */
+export type ItemAgent = { name: string; via: ItemAgentVia };
 
 // What liveworkspace accounts reports (`POST /internal/events`, its key): one team event, for its team's audit log.
 // `id` is stable, so a resend lands on the same event.

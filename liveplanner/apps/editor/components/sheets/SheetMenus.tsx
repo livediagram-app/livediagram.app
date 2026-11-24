@@ -3,7 +3,7 @@
 // The grid's menus (docs/specs/029-sheets/sheet.md "Cell menu", "Rows and columns", "Filter", "Sort"): the cell menu
 // and a header's menu at the pointer, a filter column's values and condition, and Custom Sort. Rows in the shared
 // context menu; every row that changes something only for someone who may edit.
-import { Button } from '@liveplanner/ui';
+import { Button, PlusIcon, Select } from '@liveplanner/ui';
 import { useMemo, useState } from 'react';
 import {
   CONDITION_OPS,
@@ -45,6 +45,12 @@ const CONDITION_LABELS: Record<NonNullable<FilterCondition['op']>, string> = {
   eq: 'Is equal to',
   neq: 'Is not equal to',
 };
+
+// A menu's quiet text action (Select All, Clear): brand ink, underlined only under the pointer.
+const LINK =
+  'cursor-pointer rounded font-medium text-brand-700 hover:underline focus-visible:underline dark:text-brand-300';
+// A menu's tick box, in the brand's colour rather than the browser's.
+const CHECK = 'h-3.5 w-3.5 shrink-0 cursor-pointer rounded accent-brand-600';
 
 export function SheetMenus({ actions }: { actions: SheetActions }) {
   const c = useSheetController();
@@ -294,16 +300,12 @@ function FilterMenu({
         <div className="mt-1 flex gap-3">
           <button
             type="button"
-            className="cursor-pointer underline"
+            className={LINK}
             onClick={() => setKept(new Set(values.map((v) => v.text)))}
           >
             Select All
           </button>
-          <button
-            type="button"
-            className="cursor-pointer underline"
-            onClick={() => setKept(new Set())}
-          >
+          <button type="button" className={LINK} onClick={() => setKept(new Set())}>
             Clear
           </button>
         </div>
@@ -313,6 +315,7 @@ function FilterMenu({
               <label className="flex cursor-pointer items-center gap-1.5 py-0.5">
                 <input
                   type="checkbox"
+                  className={CHECK}
                   checked={kept.has(v.text)}
                   onChange={(e) => {
                     const next = new Set(kept);
@@ -330,10 +333,9 @@ function FilterMenu({
           ))}
         </ul>
         <div className="mb-1 mt-2 font-semibold">Filter by Condition</div>
-        <select
+        <Select
           aria-label="Condition"
-          className={field}
-          style={{ borderColor: c.palette.border }}
+          className="w-full"
           value={op}
           onChange={(e) => setOp(e.target.value as FilterCondition['op'] | '')}
         >
@@ -343,7 +345,7 @@ function FilterMenu({
               {CONDITION_LABELS[o]}
             </option>
           ))}
-        </select>
+        </Select>
         {op && op !== 'empty' && op !== 'notEmpty' ? (
           <input
             aria-label="Value"
@@ -390,53 +392,63 @@ function SortDialog({ actions, onClose }: { actions: SheetActions; onClose: () =
       label="Custom Sort"
       onClose={onClose}
     >
-      <div className="w-72 px-3 py-2 text-[12px]" onKeyDown={(e) => e.stopPropagation()}>
+      {/* As wide as the menu, never wider: at 18rem its Order field and Sort spilled past the menu's edge. */}
+      <div className="w-full min-w-0 px-3 py-2 text-[12px]" onKeyDown={(e) => e.stopPropagation()}>
         <div className="mb-2 font-semibold">Custom Sort</div>
         <label className="mb-2 flex cursor-pointer items-center gap-1.5">
-          <input type="checkbox" checked={header} onChange={(e) => setHeader(e.target.checked)} />
+          <input
+            type="checkbox"
+            className={CHECK}
+            checked={header}
+            onChange={(e) => setHeader(e.target.checked)}
+          />
           Data has a header row
         </label>
         {keys.map((k, i) => (
-          <div key={i} className="mb-1 flex items-center gap-1.5">
-            <span className="w-14">{i === 0 ? 'Sort by' : 'Then by'}</span>
-            <select
-              aria-label="Column"
-              className="h-7 flex-1 rounded-md border bg-transparent px-1"
-              style={{ borderColor: c.palette.border }}
-              value={k.col}
-              onChange={(e) =>
-                setKeys(keys.map((x, j) => (j === i ? { ...x, col: Number(e.target.value) } : x)))
-              }
-            >
-              {cols.map((col) => (
-                <option key={col} value={col}>
-                  Column {columnLetters(col)}
-                </option>
-              ))}
-            </select>
-            <select
-              aria-label="Order"
-              className="h-7 rounded-md border bg-transparent px-1"
-              style={{ borderColor: c.palette.border }}
-              value={k.ascending ? 'a' : 'z'}
-              onChange={(e) =>
-                setKeys(
-                  keys.map((x, j) => (j === i ? { ...x, ascending: e.target.value === 'a' } : x)),
-                )
-              }
-            >
-              <option value="a">A to Z</option>
-              <option value="z">Z to A</option>
-            </select>
+          // The label sits above its two fields: beside them, the menu's width cut "Column A" short.
+          <div key={i} className="mb-2">
+            <div className="mb-1" style={{ color: c.palette.muted }}>
+              {i === 0 ? 'Sort by' : 'Then by'}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Select
+                aria-label="Column"
+                className="min-w-0 flex-1"
+                value={k.col}
+                onChange={(e) =>
+                  setKeys(keys.map((x, j) => (j === i ? { ...x, col: Number(e.target.value) } : x)))
+                }
+              >
+                {cols.map((col) => (
+                  <option key={col} value={col}>
+                    Column {columnLetters(col)}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                aria-label="Order"
+                className="shrink-0"
+                value={k.ascending ? 'a' : 'z'}
+                onChange={(e) =>
+                  setKeys(
+                    keys.map((x, j) => (j === i ? { ...x, ascending: e.target.value === 'a' } : x)),
+                  )
+                }
+              >
+                <option value="a">A to Z</option>
+                <option value="z">Z to A</option>
+              </Select>
+            </div>
           </div>
         ))}
-        <button
-          type="button"
-          className="mt-1 cursor-pointer underline"
+        <Button
+          variant="ghost"
+          size="xs"
+          className="-ml-1.5"
           onClick={() => setKeys([...keys, { col: g.c1, ascending: true }])}
         >
-          Add Another Sort Column
-        </button>
+          <PlusIcon size={12} /> Add Sort Column
+        </Button>
         <div className="mt-2 flex justify-end gap-2">
           <Button variant="ghost" size="xs" onClick={onClose}>
             Cancel

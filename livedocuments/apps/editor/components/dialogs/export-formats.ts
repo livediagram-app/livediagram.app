@@ -73,8 +73,7 @@ export const CARDS: { kind: Format; title: string; description: string }[] = [
     // Pages only (docs/specs/020-import-export/print.md "Where it is offered").
     kind: 'print',
     title: 'Print',
-    description:
-      'Send the current page or the whole document to your printer, each page its own sheet.',
+    description: 'Print the current page or the whole document.',
   },
   {
     // Pages mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").

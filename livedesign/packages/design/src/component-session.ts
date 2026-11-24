@@ -3,7 +3,7 @@
 // after each change, and folded away on Done. The session is data on the tab (`componentEditBy` on the instance,
 // `componentMember` on each member), so it survives a reload, reaches peers and moves with undo. Pure.
 import type { Endpoint } from './arrow-types';
-import { endpointPosition, elementIndexFor } from './geometry';
+import { endpointPosition, elementIndexFor } from '@liveworkspace/element-model/geometry';
 import type { Element, ShapeElement } from './index';
 import {
   isInstance,
@@ -13,7 +13,7 @@ import {
   type InstanceElement,
 } from './components';
 import { instanceScale, resolveInstance } from './component-resolve';
-import { isPointerTip } from './pointer-note';
+import { isPointerTip } from '@liveworkspace/element-model/pointer-note';
 
 /** The instances on a tab with an edit session open. */
 export function activeComponentSessions(elements: readonly Element[]): InstanceElement[] {

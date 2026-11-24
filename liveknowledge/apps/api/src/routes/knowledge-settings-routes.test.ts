@@ -31,6 +31,8 @@ afterEach(() => {
 });
 
 const DAY = 86_400_000;
+// A knowledgebase that never chose its AI Editing (ai-editing.md), so its settings are the period's alone.
+const SUGGESTS = { aiEditing: 'suggest' } as const;
 const SETTINGS = '/api/documents/kb/knowledge-settings';
 type Settings = { knowledgeSettings: { reviewEvery: number | 'never' } };
 const periodOf = async (kit: Kit, who: Who = 'viewer') =>
@@ -60,7 +62,7 @@ const allButTheDocumentRow = (kit: Kit) => {
 
 describe('GET knowledge-settings', () => {
   it('reads every 90 days for a knowledgebase that never chose, for every role', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     for (const who of ['editor', 'participant', 'viewer', 'link', 'agent-read-only'] as const)
       expect(await periodOf(kit, who)).toBe(90);
     const document = await (
@@ -70,7 +72,7 @@ describe('GET knowledge-settings', () => {
   });
 
   it.each(['page-link', 'stranger'] as const)('is closed to %s', async (who) => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     expect((await kit.call(who, 'GET', SETTINGS)).status).toBe(403);
     expect((await kit.call(who, 'GET', `${SETTINGS}/preview?reviewEvery=30`)).status).toBe(403);
   });
@@ -78,7 +80,7 @@ describe('GET knowledge-settings', () => {
 
 describe('PUT knowledge-settings', () => {
   it('sets the Review Period for an Editor, and every read then carries it', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     const res = await set(kit, 30);
     expect([res.status, await res.json()]).toEqual([
       200,
@@ -109,7 +111,7 @@ describe('PUT knowledge-settings', () => {
   });
 
   it('is an Editor’s in person, or a token’s that was granted write', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     expect((await set(kit, 180, 'agent')).status).toBe(200);
     expect(await periodOf(kit)).toBe(180);
   });
@@ -125,19 +127,21 @@ describe('PUT knowledge-settings', () => {
     'participant-agent',
     'viewer-agent',
   ] as const)('is refused for %s, who changes nothing', async (who) => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     expect((await set(kit, 30, who)).status).toBe(403);
     expect(await periodOf(kit, 'editor')).toBe(90);
   });
 
   it('takes only the five periods', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     const error = async (body: unknown) => {
       const res = await kit.call('editor', 'PUT', SETTINGS, body);
       return [res.status, (await res.json<{ error: string }>()).error];
     };
-    for (const reviewEvery of [45, 0, '30', 'Never', null, undefined, [30]])
+    for (const reviewEvery of [45, 0, '30', 'Never', null, [30]])
       expect(await error({ reviewEvery })).toEqual([400, 'invalid_review_every']);
+    // Nothing to set: a period, or AI Editing (ai-editing.md), is sent.
+    expect(await error({})).toEqual([400, 'invalid_body']);
     expect(await error([30])).toEqual([400, 'invalid_body']);
     expect(await error(null)).toEqual([400, 'invalid_body']);
     expect((await kit.call('editor', 'POST', SETTINGS, { reviewEvery: 30 })).status).toBe(405);
@@ -150,7 +154,7 @@ describe('PUT knowledge-settings', () => {
         { id: 'b1', type: 'paragraph', runs: [{ text: `Words ${i}.` }] },
       ]),
     );
-    const kit = await knowledgeKit({}, many);
+    const kit = await knowledgeKit({}, many, SUGGESTS);
     for (const [i, p] of many.entries()) verifiedDaysAgo(kit, p.id, i * 7);
     await kit.call('editor', 'GET', '/api/documents/kb/summary');
     const before = allButTheDocumentRow(kit);
@@ -168,7 +172,7 @@ describe('PUT knowledge-settings', () => {
   });
 
   it('moves the last save, so the Drive file follows, and owes the room its review check', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     const owed = vi.fn();
     kit.db.env.REVIEW_PERIOD_CHANGED = owed;
     const savedAt = () =>
@@ -198,7 +202,7 @@ describe('PUT knowledge-settings', () => {
         },
       }),
     };
-    const kit = await knowledgeKit({ DOCUMENT_ROOM: rooms } as never);
+    const kit = await knowledgeKit({ DOCUMENT_ROOM: rooms } as never, undefined, SUGGESTS);
     relayed.length = 0;
     await set(kit, 'never');
     const metas = JSON.stringify(relayed);
@@ -211,7 +215,7 @@ describe('PUT knowledge-settings', () => {
 
 describe('what follows the Review Period, at read time', () => {
   it('moves every page’s state, due date and the counts at once', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     verifiedDaysAgo(kit, 'deploys', 100);
     verifiedDaysAgo(kit, 'rollbacks', 40);
     type Summary = { health: object; yoursToReview: { tab: string; reviewAt: number }[] };
@@ -252,7 +256,7 @@ describe('what follows the Review Period, at read time', () => {
   });
 
   it('moves what search prefers and what an agent is told, with no index row rewritten', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     verifiedDaysAgo(kit, 'deploys', 100);
     await kit.call('editor', 'GET', '/api/documents/kb/summary');
     type Found = { results: { tab: string; trust: string; reviewAt?: number }[] };
@@ -293,7 +297,7 @@ describe('GET knowledge-settings/preview', () => {
     kit.call(who, 'GET', `${SETTINGS}/preview?reviewEvery=${String(every)}`);
 
   it('says how many pages a period would make due, beside how many are due now', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     verifiedDaysAgo(kit, 'deploys', 100);
     verifiedDaysAgo(kit, 'rollbacks', 40);
     verifiedDaysAgo(kit, 'holidays', 10);
@@ -320,12 +324,12 @@ describe('GET knowledge-settings/preview', () => {
     'agent-stored',
     'viewer-agent',
   ] as const)('is refused for %s', async (who) => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     expect((await preview(kit, 30, who)).status).toBe(403);
   });
 
   it('takes only the five periods', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     for (const every of [45, '', 'soon', '030x', '9999'])
       expect((await preview(kit, every)).status).toBe(400);
     expect((await kit.call('editor', 'GET', `${SETTINGS}/preview`)).status).toBe(400);
@@ -337,7 +341,7 @@ describe('GET knowledge-settings/preview', () => {
   // The worst it can be asked: a full knowledgebase, every page verified.
   it('counts a full knowledgebase of 500 verified pages within its budget', async () => {
     const many = Array.from({ length: 500 }, (_, i) => page(`p${i}`, `Page ${i}`, []));
-    const kit = await knowledgeKit({}, many);
+    const kit = await knowledgeKit({}, many, SUGGESTS);
     kit.db.sql.exec(
       `INSERT OR REPLACE INTO page_trust (tab, title, verified_at)
          SELECT id, name, ${Date.now()} - rowid * ${DAY} FROM tabs`,
@@ -371,7 +375,7 @@ describe('the Review Period travels with the knowledgebase', () => {
     (await readDocumentMeta(env(kit), id))?.knowledgeSettings;
 
   it('goes with a copy of the whole knowledgebase, and not with a copy of one page', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     await set(kit, 180);
     const whole = await exportDocumentCopy(env(kit), 'kb', null, null);
     expect(whole?.knowledgeSettings).toEqual({ reviewEvery: 180 });
@@ -389,7 +393,7 @@ describe('the Review Period travels with the knowledgebase', () => {
   });
 
   it('is in the Drive file and the export, and a file read back makes a knowledgebase with it', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     await set(kit, 'never');
     const file = await exportDocumentFile(env(kit), 'kb', null);
     if (file.status !== 'ok' || typeof file.body !== 'string') throw new Error('no file');
@@ -403,7 +407,7 @@ describe('the Review Period travels with the knowledgebase', () => {
   });
 
   it('comes back with a snapshot that is reverted to', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     await set(kit, 30);
     const door = documentSnapshotDoor(env(kit), 'kb');
     const snapshot = (await door.exportFile())!;
@@ -419,7 +423,7 @@ describe('the Review Period travels with the knowledgebase', () => {
   });
 
   it('is taken from the create that syncs a knowledgebase kept Offline, when it is one the api knows', async () => {
-    const kit = await knowledgeKit();
+    const kit = await knowledgeKit({}, undefined, SUGGESTS);
     const create = (id: string, knowledgeSettings: unknown) =>
       kit.call('editor', 'POST', '/api/documents', { id, name: 'Synced', knowledgeSettings });
     expect((await create('synced', { reviewEvery: 365 })).status).toBeLessThan(300);

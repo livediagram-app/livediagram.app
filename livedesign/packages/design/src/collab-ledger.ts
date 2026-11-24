@@ -32,7 +32,7 @@ import {
   isReactionChange,
   type CommentReactionId,
 } from '@liveworkspace/model-core/comment-reactions';
-import { CHECKLIST_MAX_TEXT } from './data-shapes';
+import { CHECKLIST_MAX_TEXT } from '@liveworkspace/element-model/data-shapes';
 
 export type ElementLedger = {
   // Keyed `${index}\u0000${text}`, the row name a `check` delta carries.

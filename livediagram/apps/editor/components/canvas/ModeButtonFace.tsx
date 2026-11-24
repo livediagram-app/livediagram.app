@@ -18,7 +18,7 @@
 
 import { SELECTION_MODE_LABEL, type ButtonMode, type SelectionMode } from '@livediagram/document';
 import { keycapEdge } from '@liveworkspace/workbench/components/canvas/paper-kit';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import {
   EraserIcon,
   FormatPainterIcon,

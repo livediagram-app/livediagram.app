@@ -16,10 +16,10 @@ Scope, by file:
 | `packages/document/src/data-shapes.ts`                           | `PAGE_HEADING_MAX`                                                  |
 | `packages/document/src/validate.ts`                              | `'page'` in the kind vocabulary; `isHeadingStr` bound on both lines |
 | `packages/document/src/svg-render-body.ts`                       | `shapeHasBespokeBody('page')`; dispatches `svgPageMasthead`         |
-| `packages/document/src/svg-render-page.ts`                       | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
+| `../packages/element-model/src/svg-render-page.ts`               | `svgPageMasthead`, `svgPageFold`, `pageBodyTop`, `PAGE_MASTHEAD_PX` |
 | `packages/document/src/svg-render-boxed.ts`                      | Export box (`borderedRect`) and the fold over it                    |
 | `packages/document/src/svg-render-describe.ts`                   | Export body label starts at `pageBodyTop`                           |
-| `packages/document/src/themes.ts`                                | `themeColourFields`: page exempt from theme applies [QD15]          |
+| `../packages/element-model/src/themes.ts`                        | `themeColourFields`: page exempt from theme applies [QD15]          |
 | `packages/document/src/colors.ts`                                | `defaultTextColor`: a page's body ink when it stores none [QD17]    |
 | `apps/editor/lib/themes.ts`                                      | `deriveNewBoxedColours` returns a page's own colours                |
 | `apps/editor/components/canvas/shape-svg-overlay.tsx`            | `isSvgRenderedShape('page')` is false: CSS box path                 |
@@ -117,7 +117,7 @@ pageSubtitle?: string;
 // packages/document/src/data-shapes.ts
 export const PAGE_HEADING_MAX = 200;
 
-// packages/document/src/svg-render-page.ts (Page = BoxedElement & { type: 'shape' })
+// ../packages/element-model/src/svg-render-page.ts (Page = BoxedElement & { type: 'shape' })
 export const PAGE_MASTHEAD_PX: number; // 51.25
 export function pageBodyTop(el: Page, padding: number): number;
 export function svgPageMasthead(el: Page, padding: number, fontFamily?: string): string;

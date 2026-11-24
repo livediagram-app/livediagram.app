@@ -10,8 +10,8 @@ import {
   type WebRows,
 } from '@livediagram/document';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
-import { LabelRegion } from '@/components/canvas/web/LabelRegion';
-import { rectStyle } from '@/components/canvas/web/web-face-props';
+import { LabelRegion } from '@liveworkspace/workbench/components/canvas/web/LabelRegion';
+import { rectStyle } from '@liveworkspace/workbench/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // The diagram key (docs/specs/009-elements/diagram-key.md): its title (the element's ordinary label) and each stored

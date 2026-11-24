@@ -23,7 +23,7 @@ import {
   setTableCell,
   tableColCount,
   tableRowCount,
-} from './table';
+} from '@liveworkspace/element-model/table';
 
 const t = () => createTable(0, 0);
 

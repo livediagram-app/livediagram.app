@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { faceAttrs } from '@liveworkspace/model-core/face-finish';
 import { markedGroup, replaceBlocks } from '@liveworkspace/model-core/svg-markup-blocks';
 import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
-import { svgSketchFace } from './svg-render-sketch';
+import { svgSketchFace } from '@liveworkspace/element-model/svg-render-sketch';
 import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 describe('markedGroup', () => {

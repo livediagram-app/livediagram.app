@@ -9,7 +9,7 @@ import type {
   LaidOutPage,
 } from '@livedesign/design';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
-import type { SnapGuideStore } from './useSnapGuideState';
+import type { SnapGuideStore } from '@liveworkspace/workbench/hooks/canvas/useSnapGuideState';
 import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 
 // External state + callbacks the drag machine reads on every move.

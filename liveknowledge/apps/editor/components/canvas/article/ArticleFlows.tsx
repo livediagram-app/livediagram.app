@@ -37,7 +37,7 @@ import { previewedBackground, usePageBackgroundPreview } from '@/lib/page-backgr
 import { ZoneBar, ZoneResizeGrips } from './ZoneBar';
 import { useZoneDrag, type ZoneDragState } from './useZoneDrag';
 import { useObjectDropCaret } from './useObjectDropCaret';
-import { useTouchPagePan } from './useTouchPagePan';
+import { useTouchPagePan } from '@liveworkspace/workbench/components/canvas/article/useTouchPagePan';
 import { publishZoneClips } from '@/lib/article/zone-clip-store';
 import { isContinuousPage } from '@liveknowledge/document';
 import { PAGE_FREE_HEIGHT_VAR } from '@/lib/page-surface/page-lock';

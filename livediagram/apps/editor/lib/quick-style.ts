@@ -26,7 +26,11 @@ import {
   type TextElement,
   type ThemeDefinition,
 } from '@livediagram/document';
-import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
+import {
+  applySwatchOverrides,
+  type ShownSwatch,
+  type SwatchOverrides,
+} from '@liveworkspace/workbench/lib/swatch-overrides';
 import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
 
 // The whiteboard's colours as a row: the choice the targets share and the stock options.
@@ -83,6 +87,14 @@ export type QuickStyleView = {
   // The Highlighter rows (lib/quick-style-highlighter): the selected highlights, or the armed
   // Highlighter tile's next stroke (docs/specs/008-canvas/highlighter.md "Settings").
   highlighter?: import('./quick-style-highlighter').QuickHighlighterStyle;
+  // A sticky note's paper and a code block's theme (lib/quick-style-kinds): the kinds the theme rows pass over.
+  note?: import('./quick-style-kinds').QuickNoteStyle;
+  code?: import('./quick-style-kinds').QuickCodeStyle;
+  // A table's Background and Text colour rows, in the theme's colours.
+  table?: import('./quick-style-kinds').QuickTableStyle;
+  // The one selected element, whose kind tools the panel's Tools row shows (element-kind-tools.tsx): there with or
+  // without style rows, so a code block or a checklist, which the rows pass over, still has its Edit button.
+  toolsId?: string;
   // Names whose style this is when it is not a selection: a tool's next mark.
   caption?: string;
 };

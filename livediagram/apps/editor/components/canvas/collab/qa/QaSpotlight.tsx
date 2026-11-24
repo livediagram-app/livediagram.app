@@ -4,7 +4,7 @@
 // and brings up the next top note in one press.
 
 import type { QaNote } from '@livediagram/document';
-import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
+import { usePressWithoutDrag } from '@liveworkspace/workbench/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import {
   AuthorChip,

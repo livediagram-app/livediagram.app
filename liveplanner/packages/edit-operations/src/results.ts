@@ -7,7 +7,7 @@
 import type { EditWarning, FieldChange, JsonValue, ResultLine } from '@liveplanner/api-schema';
 import { computeRefs, type Element, type ElementId } from '@liveplanner/project';
 import { kindOf, labelOf } from './element-text';
-import { sameValue as same } from './equality';
+import { sameValue as same } from '@liveworkspace/edit-operations/equality';
 import type { Touch } from './state';
 
 // How a result names elements and places points: by ref, relative to the content origin.

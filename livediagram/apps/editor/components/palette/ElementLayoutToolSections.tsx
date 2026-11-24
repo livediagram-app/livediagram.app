@@ -4,19 +4,13 @@
 // graphic, a boundary, a badge or step number, a stack, a sequence diagram, a pointer note, a card and the web
 // components' rows. Split out of ElementDataSections, which renders it in the same place in the flyout.
 
-import {
-  bpmnSymbolOf,
-  isConceptShape,
-  type ConceptShape,
-  type ShapeElement,
-} from '@livediagram/document';
+import { bpmnSymbolOf, type ShapeElement } from '@livediagram/document';
 import { BpmnMenuSection } from '@/components/palette/BpmnMenuSection';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
-import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
   hasWebRowsSection,
@@ -47,14 +41,6 @@ export function ElementLayoutToolSections({
       ) : null}
       {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md): a stat row's cards, a process's
         steps, a header's links: add / remove / reorder. */}
-      {/* A concept graphic's variant; its animation is in the Animation row (docs/specs/009-elements/concept-graphics.md). */}
-      {shapeTarget && isConceptShape(shapeTarget.shape) ? (
-        <ConceptMenuSection
-          target={shapeTarget as ShapeElement & { shape: ConceptShape }}
-          ops={props.elementStyle}
-          sectionProps={sectionProps}
-        />
-      ) : null}
       {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
       {shapeTarget?.shape === 'boundary' ? (
         <BoundaryMenuSection
@@ -85,12 +71,7 @@ export function ElementLayoutToolSections({
       {/* A sequence diagram's summary, Edit Sequence and Numbered; Play is in the Animation row
           (docs/specs/009-elements/sequence-diagram.md "The menu"). */}
       {shapeTarget?.shape === 'sequence' ? (
-        <SequenceMenuSection
-          target={shapeTarget}
-          ops={props.elementStyle}
-          sectionProps={sectionProps}
-          onEdit={props.onEditSequence}
-        />
+        <SequenceMenuSection target={shapeTarget} onEdit={props.onEditSequence} />
       ) : null}
       {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}
       {shapeTarget?.shape === 'card' ? (
@@ -113,8 +94,7 @@ export function ElementLayoutToolSections({
       {shapeTarget && hasWebRowsSection(shapeTarget) ? (
         <WebRowsMenuSection
           target={shapeTarget}
-          sectionProps={sectionProps}
-          onSetRows={props.onSetWebRows}
+          onOpen={() => props.onEditRows(shapeTarget.id, 'web-rows')}
         />
       ) : null}
     </>

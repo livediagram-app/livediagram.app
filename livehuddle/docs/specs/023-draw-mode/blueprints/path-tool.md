@@ -14,16 +14,16 @@ Scope, by file:
 | `packages/document/src/element-types.ts`                               | `PathElement`, `PathNode`, `PathHandleMode`, `PathPoint`                                                                          |
 | `packages/document/src/index.ts`                                       | `PathElement` joins `BoxedElement`; re-exports                                                                                    |
 | `../packages/element-model/src/path-geometry.ts`                       | Pure curve maths: segments, `d`, bounds, split, bend, smooth, nearest                                                             |
-| `livediagram/packages/document/src/path-element.ts`                    | Element ⇄ anchors: `pathAnchors`, `pathWorldAnchors`, `pathGeometry`, `createPath`, `reshapePath`, `continuedPath`, `reversePath` |
+| `../packages/element-model/src/path-element.ts`                        | Element ⇄ anchors: `pathAnchors`, `pathWorldAnchors`, `pathGeometry`, `createPath`, `reshapePath`, `continuedPath`, `reversePath` |
 | `packages/document/src/validate.ts`                                    | `'path'` in `ELEMENT_TYPES`; node, handle, mode and count checks                                                                  |
 | `packages/document/src/colors.ts`                                      | Padding, default stroke and fill, border support for `path`                                                                       |
 | `packages/document/src/element-kind-label.ts`                          | `Path`                                                                                                                            |
-| `packages/document/src/whiteboard.ts`                                  | Ink projection for `path`                                                                                                         |
+| `../packages/element-model/src/whiteboard.ts`                          | Ink projection for `path`                                                                                                         |
 | `livediagram/packages/document/src/whiteboard-stroke.ts`               | `pathTouchesBrush`: the eraser touches a path by its line or its fill                                                             |
 | `packages/document/src/svg-render*.ts`                                 | `svgPathElementShape`: the export twin of the canvas path                                                                         |
 | `apps/api/src/openapi/schemas.generated.ts`                            | Regenerated: `PathElement` in `BoxedElement`                                                                                      |
 | `packages/api-schema/src/telemetry-schema.ts`                          | (no change: `Whiteboard`, `Element`, `Selected`, `Added`, `Changed` exist)                                                        |
-| `livediagram/apps/editor/lib/path-draw.ts`                             | Pure drawing state machine                                                                                                        |
+| `packages/workbench/src/lib/path-draw.ts`                              | Pure drawing state machine                                                                                                        |
 | `livediagram/apps/editor/lib/path-edit.ts`                             | Pure edit-mode operations, hit test, node types, open / close, cursors, `toLocal` / `toWorld`                                     |
 | `livediagram/apps/editor/lib/path-edit-keys.ts`                        | `pathEditKey`: what one key does in edit mode                                                                                     |
 | `whiteboard-erase.ts` (retired with the Eraser)                        | `pathsTouched` went with it; `pathTouchesBrush` stays in the document package                                                     |
@@ -41,7 +41,7 @@ Scope, by file:
 | `livediagram/apps/editor/components/canvas/path/PathDraftLayer.tsx`    | The path being drawn, rubber band, rings                                                                                          |
 | `livediagram/apps/editor/components/canvas/path/PathEditLayer.tsx`     | Nodes, handles, box, snap guides                                                                                                  |
 | `livediagram/apps/editor/components/canvas/path/PathEditToolbar.tsx`   | The edit toolbar: node type, Delete point, Close / Open path, Done                                                                |
-| `livediagram/apps/editor/components/canvas/path/path-markers.tsx`      | Node and handle markers, `PATH_OVERLAY_Z`                                                                                         |
+| `packages/workbench/src/components/canvas/path/path-markers.tsx`       | Node and handle markers, `PATH_OVERLAY_Z`                                                                                         |
 | `apps/editor/components/canvas/SelectionPopover.tsx`                   | Edit points on a selected path                                                                                                    |
 | `apps/editor/components/canvas/useBoxedElementGestures.ts`             | A double press (a double-tap) opens a path's edit mode                                                                            |
 | `apps/editor/components/canvas/element-variant.ts`                     | `editingLook`: a path in its edit mode takes no text cursor and no lift                                                           |
@@ -501,7 +501,7 @@ numbers only).
 | Validation                                                                                      | `packages/document/src/validate.test.ts`                                                                            |
 | Export twin                                                                                     | `livediagram/packages/document/src/svg-render-shapes.test.ts`                                                       |
 | Ink projection                                                                                  | `../packages/element-model/src/whiteboard.test.ts`                                                                  |
-| Drawing state machine                                                                           | `livediagram/apps/editor/lib/path-draw.test.ts`                                                                     |
+| Drawing state machine                                                                           | `packages/workbench/src/lib/path-draw.test.ts`                                                                      |
 | Edit operations and hit test                                                                    | `livediagram/apps/editor/lib/path-edit.test.ts`                                                                     |
 | Draw gesture: press, drag, keys, commit, undo and redo while drawing                            | `livediagram/apps/editor/components/canvas/path/usePathDrawGesture.test.tsx`                                        |
 | Edit gesture: select, drag, keys, one commit                                                    | `livediagram/apps/editor/components/canvas/path/usePathEditGesture.test.tsx`                                        |

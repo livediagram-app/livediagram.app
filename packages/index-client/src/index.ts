@@ -21,3 +21,4 @@ export * from './automation-steps';
 export * from './plan-sends';
 export * from './item-calls';
 export * from './updates';
+export * from './item-agent';

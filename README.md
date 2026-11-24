@@ -1,7 +1,7 @@
 # liveworkspace
 
-The monorepo for liveworkspace and its products, livediagram, liveplanner, livedocuments and
-livedesign, plus what they share.
+The monorepo for the liveworkspace platform and its six products, livediagram, liveplanner, livedocuments,
+livedesign, livehuddle and liveknowledge, plus what they share.
 
 ```
 packages/        shared by every product (@liveworkspace/*)
@@ -12,7 +12,7 @@ livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
-livehuddle/      livehuddle.app: meetings and workshops, forked from livediagram in-tree
+livehuddle/      livehuddle.app: meeting in Spaces (avatars, rooms, calls), forked from livediagram in-tree
 liveknowledge/   liveknowledge.app: a team knowledgebase, for people and for AI, forked from livedocuments in-tree
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 scripts/         the root's git hooks, ts-source-hooks.mjs (Node type stripping for repo scripts), and the parts every product's e2e stack shares (scripts/e2e-stack)
@@ -37,7 +37,7 @@ corepack pnpm dev:documents      # livedocuments' apps, on the 33xx ports
 corepack pnpm dev:design         # livedesign's apps, on the 34xx ports
 corepack pnpm dev:huddle         # livehuddle's apps, on the 35xx ports
 corepack pnpm dev:knowledge      # liveknowledge's apps, on the 36xx ports
-corepack pnpm dev:workspace      # liveworkspace.app on :3000, with the help centre and its eight services behind it
+corepack pnpm dev:workspace      # liveworkspace.app on :3000, with the help centre and its eight services behind it (one process)
 corepack pnpm dev:site           # liveworkspace.app's pages alone on :3000
 corepack pnpm dev:help           # the one help centre on :3020 (HELP_SCOPE=liveplanner for that app's help)
 corepack pnpm dev:accounts       # the accounts API alone on :8787
@@ -50,6 +50,9 @@ corepack pnpm dev:status         # the status Worker alone on :3010
 corepack pnpm dev:drive          # the Google Drive mirror alone on :3011
 corepack pnpm typecheck          # everything; or inside a product folder, just that product
 ```
+
+`dev:workspace` runs liveworkspace's eight services in one `wrangler dev` (`packages/local-workers`), each Worker on its usual port, in less memory than one process per
+Worker (liveworkspace's services peak at 1.3 GB instead of 3.5 GB). Locally, tests take a quarter of the cores per run and turbo runs two workspaces at a time.
 
 Each product folder keeps its own scripts (`cd livediagram && corepack pnpm test` runs only
 livediagram's tests), its own docs, and its own AGENTS.md for product-specific rules. The lint,
@@ -67,5 +70,5 @@ issue. [SECURITY.md](SECURITY.md) has the policy, and the specs are in
 
 Every product deploys from here, from the root `.github/`, to the liveworkspace Cloudflare account
 each `wrangler.toml` pins. Staging follows `main`, and production is a manual gate that ships what
-staging runs. A deploy builds and ships only the Workers a change reaches. The products' own
-`.github/` folders are inert. [docs/ci.md](docs/ci.md#deploys) has the details.
+staging runs. A deploy builds and ships only the Workers a change reaches. The products have no
+`.github/` folders of their own. [docs/ci.md](docs/ci.md#deploys) has the details.

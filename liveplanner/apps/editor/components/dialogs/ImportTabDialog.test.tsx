@@ -171,7 +171,8 @@ describe('ImportTabDialog: a liveplanner Tab', () => {
     const { onImportText, onClose } = open();
     fireEvent.click(screen.getByRole('button', { name: /^liveplanner Tab: / }));
     expect(screen.getByRole('heading', { name: 'Import to Tab' })).toBeTruthy();
-    expect(screen.getByText(/This replaces everything on/).textContent).toContain('Overview');
+    // The list's row said it replaces the tab; the step does not say it again.
+    expect(screen.queryByText(/This replaces everything on/)).toBeNull();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: '{}' } });
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
     await waitFor(() => expect(onClose).toHaveBeenCalledOnce());
@@ -373,9 +374,8 @@ describe('ImportTabDialog: a file dropped on the liveplanner Tab step', () => {
     const held = await screen.findByTestId('held-file');
     expect(held.textContent).toContain('roadmap.liveplanner-tab.json');
     expect(held.textContent).toContain('1.0 MB, ready to import');
-    // No box holds it, and the warning still says what it replaces.
+    // No box holds it.
     expect(screen.queryByRole('textbox')).toBeNull();
-    expect(screen.getByText(/This replaces everything on/)).toBeTruthy();
     expect(
       screen.getByText('Import the file you dropped, or remove it to paste instead.'),
     ).toBeTruthy();
