@@ -22,22 +22,22 @@ function linksOn(pageUrl: string, hrefFor?: Parameters<typeof SiteSwitcher>[0]['
 }
 
 const PRODUCTION = [
-  'https://www.liveworkspace.app',
   'https://www.livediagram.app',
   'https://www.liveplanner.app',
   'https://www.livedocuments.app',
   'https://www.livedesign.app',
   'https://www.livehuddle.app',
   'https://www.liveknowledge.app',
+  'https://www.liveworkspace.app',
 ];
 const STAGING = [
-  'https://staging.liveworkspace.app',
   'https://staging.livediagram.app',
   'https://staging.liveplanner.app',
   'https://staging.livedocuments.app',
   'https://staging.livedesign.app',
   'https://staging.livehuddle.app',
   'https://staging.liveknowledge.app',
+  'https://staging.liveworkspace.app',
 ];
 
 describe("the site switcher's links in each environment", () => {

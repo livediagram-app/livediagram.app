@@ -2,9 +2,29 @@
 
 Every app's public and Explorer headers carry one way to move between liveworkspace's sites: **hover the
 logo** (on a touch screen, tap it). A card
-drops down from it, with **liveworkspace** at the top and one row for each app below it
-(livediagram, liveplanner, livedocuments, livedesign). Each row names the site without ".app", with
-its one-line pitch under it, and is one click to that site. The app you're on is marked.
+drops down from it: a list of the sites on the left and a preview pane on the right. Each row is
+one line, the site's prism and its name without ".app", and is one click to that site. The apps come
+first, then a divider, then **liveworkspace**, the account every app shares. The app you're on is
+marked "here".
+
+## The card
+
+The list stayed short as apps were added: one 34px line per site, where it was a name and a
+pitch under it, so the card grew past the first fold once there were seven (November 2026).
+
+- **Preview pane**: the site you point at, or move to with the keyboard, shows on the right:
+  its prism large, its name, its one-line pitch and an Open button, tinted with its accent. It
+  starts on (and returns to) the site you're on, whose button reads "You're here". The pane is a
+  link to the same place as its row, so a click on it works too; it is hidden from assistive
+  technology and the tab order, since the row already is that link.
+- **Pitches still reach everyone**: each row carries its pitch as its accessible description, so
+  a screen reader reads it with the name.
+- **On a phone** (below `sm`), where nothing hovers, the card spans the screen and has no
+  preview pane: liveworkspace is a tinted strip across the top, with its pitch, and the apps sit
+  below it in two columns of 44px tap targets (one column under 360px, where the longer names
+  would be cut), the one you're on shaded. A tap on a tile or the
+  strip goes to that site. liveworkspace's list row is hidden there (the strip stands in for it)
+  but kept for a screen reader.
 
 It replaced each app's section switcher, the "Home / Editor / Explorer / Help / …" menu beside the
 logo (October 2026). An app's own surfaces are still linked from its pages: the header's call to
