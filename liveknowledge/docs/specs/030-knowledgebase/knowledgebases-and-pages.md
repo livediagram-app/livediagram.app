@@ -236,19 +236,29 @@ it. The menu is icon-left verb rows under the knowledgebase's name:
 
 A page is one article that never breaks onto paper pages while it is being written.
 
-- Its paper is the **continuous** size: 856 canvas px wide (a 760 px column and its margins), as tall as the writing (`Page.size: 'fit'` with `fit`
+- Its paper is the **continuous** size: 1,056 canvas px wide (a 960 px column and its margins, Work Tracker 1418), as tall as the writing (`Page.size: 'fit'` with `fit`
   sides the writer keeps in step with the layout). Where the article engine would add a paper page, a knowledgebase page grows
   taller instead; where it would remove one, the page shrinks. A knowledgebase page therefore always has exactly one page.
 - The page's stored height is the writing's (never under 240 px, the margins and a Title's line), and it grows
   downwards from a top that never moves, so nothing placed in the writing shifts. Its height is written only when the laid-out height
   changes, by whoever made the change, in the same undo step.
 - **Who settles the stored height** (Work Tracker 1413): only someone who may edit the page (an Editor or a
-  Participant), editing it, in a window wide enough for its full 760 px column. Their own change settles it, and so
+  Participant), editing it, in a window wide enough for its full 960 px column. Their own change settles it, and so
   does their first layout of a page whose height nobody here has settled yet (an agent wrote it, or the page just
   opened), growing or shrinking it to the writing. Reading never writes it: not a Viewer or a link visitor, not an
   Editor in read mode, and not the narrow view (a phone, or a desktop with the page tree and rail docked), whose
   column wraps the writing taller than the stored page's. A page opened in read mode keeps that first settle waiting
   until its Editor presses Edit.
+- **Pages stored at the first width** (856 px, before Work Tracker 1418) are read at 1,056 px wherever a stored page
+  is read (the editor, the api, the MCP and CLI, thumbnails, exports, a file import), with no stored-data migration
+  and nothing waiting for an Editor. The page widens to the right from a left edge that never moves, so what is
+  placed in it keeps its place against the page. Its height is the stored height less what its writing is
+  estimated to lose to the wider column (the estimator's height at the new width less its height at the old, added
+  to the stored height, never under 240 px). Each zone moves across the wider column by its alignment (half the
+  200 px for a centred zone, all of it for a right one, none for a left one) and down by the estimator's difference
+  for its top, its elements with it, and each margin note moves out to the new right margin. The estimate stands in
+  only until a full-width Editor's first layout settles the real height, zones and notes (above); the page is
+  written at the new width the next time anything of it is saved. A page is never narrowed back.
 - **The page is drawn as tall as its writing here**, whatever height it last stored: its box is the taller of the
   stored height and the height this browser measured its writing to need, so a page stored short (written in the
   narrow view, or by an agent, and not yet opened for editing) still takes a press anywhere under its writing, which

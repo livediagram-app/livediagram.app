@@ -7,19 +7,20 @@ It reuses the article engine ([Article pages](../../007-editor/article-pages.md)
 
 ## Domain and naming
 
-| Term                     | Identifier                                                                                                                                   |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| knowledgebase page       | A `Tab` whose `pages` is one article page and whose `articles` holds its one flow (`isKnowledgebasePage`)                                    |
-| new page's content       | `newKnowledgebasePageContent()` (`packages/document/src/knowledgebase-page.ts`): `knowledgebasePage()` and `newArticleFlow()`                |
-| its flow id              | `KNOWLEDGEBASE_FLOW` (`'art-1'`); a page made by an agent's write or a kind choice keeps the id it was given                                 |
-| default page names       | `START_PAGE_NAME` ("Start Here"), `NEW_PAGE_NAME` ("Untitled Page"), read by `isDefaultPageName`                                             |
-| default item name        | `UNTITLED_DOCUMENT_NAME` ("Untitled Knowledgebase", `packages/templates/src/untitled.ts`), `isUntitledName`                                  |
-| continuous page          | `isContinuousPage(page)`: `page.kind === 'article' && page.size === 'fit'` (`packages/document/src/page-sizes.ts`)                           |
-| making one               | `continuousPage(page)`: portrait, `size: 'fit'`, `fit: { width: 856, height }`                                                               |
-| its height               | `Page.fit.height`, set only through `withArticlePageHeight(tab, flow, needed)` and held by `continuousPageHeight(needed)`                    |
-| height the writing needs | `FlowLayout.heightNeeded` from the layout pass, worked out by `continuousHeightNeeded` (`apps/editor/lib/article/continuous-page-height.ts`) |
-| height with no browser   | `EstimatedArticle.height` from `estimateArticle`, written by `withArticleHeightEstimated(tab, flow)`                                         |
-| closed doors             | `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), `false`                                                                         |
+| Term                      | Identifier                                                                                                                                   |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| knowledgebase page        | A `Tab` whose `pages` is one article page and whose `articles` holds its one flow (`isKnowledgebasePage`)                                    |
+| new page's content        | `newKnowledgebasePageContent()` (`packages/document/src/knowledgebase-page.ts`): `knowledgebasePage()` and `newArticleFlow()`                |
+| its flow id               | `KNOWLEDGEBASE_FLOW` (`'art-1'`); a page made by an agent's write or a kind choice keeps the id it was given                                 |
+| default page names        | `START_PAGE_NAME` ("Start Here"), `NEW_PAGE_NAME` ("Untitled Page"), read by `isDefaultPageName`                                             |
+| default item name         | `UNTITLED_DOCUMENT_NAME` ("Untitled Knowledgebase", `packages/templates/src/untitled.ts`), `isUntitledName`                                  |
+| continuous page           | `isContinuousPage(page)`: `page.kind === 'article' && page.size === 'fit'` (`packages/document/src/page-sizes.ts`)                           |
+| making one                | `continuousPage(page)`: portrait, `size: 'fit'`, `fit: { width: 1056, height }`                                                              |
+| its height                | `Page.fit.height`, set only through `withArticlePageHeight(tab, flow, needed)` and held by `continuousPageHeight(needed)`                    |
+| height the writing needs  | `FlowLayout.heightNeeded` from the layout pass, worked out by `continuousHeightNeeded` (`apps/editor/lib/article/continuous-page-height.ts`) |
+| height with no browser    | `EstimatedArticle.height` from `estimateArticle`, written by `withArticleHeightEstimated(tab, flow)`                                         |
+| closed doors              | `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), `false`                                                                         |
+| a page at the first width | a continuous page whose stored `fit.width` is not `CONTINUOUS_PAGE_WIDTH` (856 before Work Tracker 1418), read by `withContinuousPageWidth`  |
 
 "Page" in this blueprint means the knowledgebase page (the tab) unless it says "the page's sheet" or `Page`, the one
 sheet the writing is laid on. Code and the API keep `tab`, `document`, `article` and `flow`.
@@ -121,6 +122,49 @@ surface draws the canvas world inside a scroll container, and a world pushed dow
 would itself be scrolled to, [page surface blueprint](page-surface.md) "The lock"). The page grows downwards, so the writing and every
 element placed in it keep their canvas positions and no element is moved by a height change.
 
+Its left edge never moves either: `rowAnchor.x - CONTINUOUS_PAGE_LEFT` (428, half the first width), whatever its
+width, where a paper page is centred on the anchor. A continuous page stored at the first width stood there, so the
+wider page grows to the right only and every element and zone placed against it keeps its place against the page.
+The canvas position is never seen (the page surface locks the view to the page's column).
+
+### Pages stored at the first width
+
+Spec "Pages stored at the first width" (Work Tracker 1418). `withContinuousPageWidth(tab)`
+(`packages/document/src/continuous-page-width.ts`) is a step of `migrateStoredTab`, so it reaches every read of a
+stored tab (the api's `rowToTab`, thumbnails, publishing, versions, the file export, the offline store) and every
+tab that arrives from outside (`migrateIncomingTab`: a peer's whole-tab op, a file, an api write). It is pure and
+writes nothing; the page is stored at the new width with the next save of the tab.
+
+1. It acts on a tab whose stored pages are exactly one continuous article page holding its flow, stored with a
+   finite `fit.width` other than `CONTINUOUS_PAGE_WIDTH` (`was`). Any other tab comes back as the same object.
+2. The estimator lays the writing out twice on that page (`estimateArticle`): at `was` and at the new width. Each
+   pass answers the page's height and each zone's top from the page's top (`EstimatedArticle.zoneTops`).
+3. **Height:** `continuousPageHeight(stored + new - old)`: the stored, settled height moved by what the estimator says
+   the wider column changes, so its own bias cancels out.
+4. **Zones:** each zone with an `at` on the page moves across by its share of the wider column
+   (`delta = (new - was)`: inline and centred, or with no alignment, `delta / 2`; inline right or wrapped right,
+   `delta`; left, none) and down by the difference of its two estimated tops, through `withZonesSettled`, which moves
+   the zone's elements with it.
+5. **Margin notes:** each `article-note` element standing in the first width's right margin (its centre between the
+   old right edge less the margin and the old right edge) moves right by `new - was`, so it stands centred in the
+   new right margin (`articleNoteCorner`). Its height on the page waits for the next settle.
+6. The page itself: `fit: { width: CONTINUOUS_PAGE_WIDTH, height }`, every other field kept.
+
+Who settles what after that:
+
+| What                     | Until a full-width Editor's first layout                                | Then                                                          |
+| ------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Width                    | `CONTINUOUS_PAGE_WIDTH` (read)                                          | Stored with the next save of the tab                          |
+| Height                   | The estimated move from the stored one                                  | Measured (the absent-writer mark, "Who settles it, and when") |
+| Zones and their elements | Estimated move                                                          | Measured (`withZonesSettled` in `growForAbsentWriter`)        |
+| Margin notes             | Moved across; down unchanged                                            | Measured (`withNotesSettled` in `growForAbsentWriter`, new)   |
+| Drawn height, every role | The taller of the above and this browser's measure ("The drawn height") | Same                                                          |
+
+A peer still on the first width (a browser loaded before the deploy) can send a `tab-meta` patch whose pages carry
+856: `migrateRoomOp` (`app/document/[id]/room-op-migrate.ts`) reads each such page at the new width (its height
+kept), so no editor here holds or saves the first width again, and the narrow view reads the page's width as parsed
+(`pagesOf`), never raw.
+
 ### The view
 
 The view is the page surface's ([page surface blueprint](page-surface.md)): locked to the page's column and scrolled
@@ -154,8 +198,9 @@ always `CONTINUOUS_PAGE_WIDTH` and its height `continuousPageHeight(stored)`. An
 ## Data and persistence
 
 - `Page.size`, `Page.fit` (existing fields): stored in the tab's body, synced in `tab-meta` patches with the page
-  steps, kept in snapshots and versions, undone with the edit that changed them. No migration: liveknowledge has no
-  stored tabs from before.
+  steps, kept in snapshots and versions, undone with the edit that changed them. A page stored at the first width
+  is read at the new one ("Pages stored at the first width"); there is no stored-data migration and no D1 change
+  (the api has no D1).
 - Nothing else is stored. Which doors are closed is code (`CUT_FROM_FORK`), not data.
 
 ## Errors and edge cases
@@ -195,6 +240,8 @@ The height is content, written under the same gate as the writing: an Editor's s
 - **A new line:** one `tickTabs` write of `pages` (a single page object replaced), where paper pages wrote only on a
   page boundary. That is at most one write per laid-out line, never per keystroke, and it rides the typing commit's
   own sync.
+- **Reading a page stored at the first width:** two estimator passes, once per read until the page is saved at the
+  new width; any other tab costs one look at its pages. Measured in `continuous-page-width.test.ts` (CPU budget).
 - **Estimator:** linear in the writing. A 100,000 character article (100 paragraphs of 1,000 characters) lays out as
   one page 30,720 px tall in the 760 px column, in about 33 ms of CPU cold (measured 2026-11-20, three runs), held
   under
@@ -205,7 +252,7 @@ The height is content, written under the same gate as the writing: an Editor's s
 
 ## Presentation and UX
 
-The page's box is 856 canvas px wide and as tall as its writing here (240 px at least, the taller of the stored and
+The page's box is 1,056 canvas px wide (a 960 px column) and as tall as its writing here (240 px at least, the taller of the stored and
 the measured height, "The drawn height"); nothing is painted for it
 ([page surface blueprint](page-surface.md) "What is painted"). The start screen is titled "Start a Page".
 
@@ -226,6 +273,10 @@ the measured height, "The drawn height"); nothing is painted for it
 | A Viewer and the narrow view never write the height      | `useArticles.height.test.ts` "who settles the stored height"                                      |
 | The box is drawn at the taller of stored and measured    | `page-measured-height-store.test.ts`, `useArticles.height.test.ts` "the drawn height"             |
 | A press under the writing puts the caret at its end      | `article-press-pos.test.ts`                                                                       |
+| A page at the first width reads at the new one           | `continuous-page-width.test.ts`                                                                   |
+| The left edge stays put as the page widens               | `continuous-page.test.ts` "where a continuous page sits"                                          |
+| A peer's first-width pages patch reads at the new width  | `room-op-migrate.test.ts`                                                                         |
+| The absent writer's settle moves margin notes too        | `useArticles.height.test.ts`                                                                      |
 
 Not covered by a test: the layout pass itself on a continuous page (`article-measure.ts` reads live DOM rects, which
 jsdom does not lay out). None of this is verified in a browser yet.
@@ -234,7 +285,8 @@ jsdom does not lay out). None of this is verified in a browser yet.
 
 | Constant                     | Value     | Where                     | Why                                                                                               |
 | ---------------------------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| `CONTINUOUS_PAGE_WIDTH`      | 856       | `page-sizes.ts`           | The spec's 760 px reading column and its 48 px margins either side                                |
+| `CONTINUOUS_PAGE_WIDTH`      | 1,056     | `page-sizes.ts`           | The spec's 960 px reading column and its 48 px margins either side (Work Tracker 1418)            |
+| `CONTINUOUS_PAGE_LEFT`       | 428       | `page-sizes.ts`           | Half the first width (856): where a continuous page's left edge stands from the row anchor        |
 | `CONTINUOUS_PAGE_MIN_HEIGHT` | 240       | `page-sizes.ts`           | The margins and a Title's line; 192 px at least, or `flowFrame` would shrink the 72 px top margin |
 | `CONTINUOUS_PAGE_MAX_HEIGHT` | 4,000,000 | `page-sizes.ts`           | Over 100 times the 100,000 character page; under the px a browser lays a box out to               |
 | `CUT_FROM_FORK`              | `false`   | `not-in-liveknowledge.ts` | One constant every closed door reads, so the deletion finds them all                              |
