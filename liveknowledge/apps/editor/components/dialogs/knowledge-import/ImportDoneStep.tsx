@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { Button, Tooltip } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import type { RunImportResult } from '@/lib/knowledge-import/run-import';
@@ -57,7 +57,9 @@ export function ImportDoneStep({
   onDone: () => void;
 }) {
   const forward = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
+  // In the commit that shows this step, before paint: the step it replaces held focus and has just unmounted, so
+  // a passive effect would leave focus on the body for a frame (and a screen reader announcing nothing).
+  useLayoutEffect(() => {
     forward.current?.focus();
   }, []);
   const { first } = result;
