@@ -10,22 +10,23 @@ export const metadata = helpMetadata({
 
 <ArticleLayout path="collaboration/teams/roles-and-invites" title="Roles and Invites" description="Admin and Member roles, and inviting people to a team." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "roles-and-invites")}>
 
-Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, <AppName /> included. You make and run them in the Explorer of <AppName />: **New Team**, the **+** at the right of the sidebar's **Spaces** heading (the last row under Spaces on the editor's Explorer panel rail), makes one, and a team's card, at the top of its view (or behind **Members** in the editor's Explorer panel), runs it. Everything here needs a signed-in account.
+Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, <AppName /> included. You make and run them in the Explorer of <AppName />: **New Team**, the **+** at the right of the sidebar's **Spaces** heading (the last row under Spaces on the editor's Explorer panel rail), makes one, and a team's page runs it: its **People** tab (or **Members** in the editor's Explorer panel). Everything here needs a signed-in account.
 
 ## Admin and Member
 
-The person who creates a team is its first **Admin**. On the team's card, Admins can:
+The person who creates a team is its first **Admin**. On the team's **People** tab, Admins can:
 
 - rename the team (**Edit Team** on its ⋯ menu),
-- invite people by email,
+- invite people by email, one or several at once,
+- resend an invitation, or invite someone again once theirs has ended,
 - change a member's role,
 - remove a member or withdraw an invite,
-- turn on a join link (**Invite by Link**),
+- turn on a join link (the **Invite Link** card),
 - delete the team.
 
 **Members** can see the team and its member list, work in the shared library, and leave the team.
 
-A team always keeps an Admin: the last Admin can't step down or leave while others remain. Alone in a team, leaving deletes it. **Leave Team** and **Delete Team** are on the card's ⋯ menu; afterwards you land in My Work.
+A team always keeps an Admin: the last Admin can't step down or leave while others remain. Alone in a team, leaving deletes it. **Leave Team** and **Delete Team** are on the team's ⋯ menu (**Leave Team** is also under the cards at the side of People); afterwards you land in My Work.
 
 <AppNote app="livediagram">
   Deleting a team does not hand its canvases back to their owners: nobody can open them afterwards,
@@ -45,13 +46,15 @@ A team always keeps an Admin: the last Admin can't step down or leave while othe
   Designs](/help/collaboration/teams/team-shared-designs/#when-a-team-is-deleted)).
 </AppNote>
 
-**Invite by Link** gives a join link that works for 7 days: anyone signed in who opens it joins as a Member. **Copy** it, make a **New Link** (the old one stops working), or **Turn Off** the link.
+The **Invite Link** card on People gives a join link that works for 7 days: anyone signed in who opens it joins as a Member. **Turn On Link**, then **Copy** it, **Make a New Link** (the old one stops working), or **Turn Off** the link. **Copy Link** at the top of the team's page copies it too.
 
 ## Inviting by Email
 
 <Step n={1}>
-  Open your team in the Explorer, enter the person's email address at the foot of its card, choose
-  Member or Admin, and press **Invite**.
+  Open your team in the Explorer (or press **Invite People** at the top of its page). Under **Invite
+  by Email**, type or paste one or more addresses (separate them with commas or spaces), choose
+  Member or Admin, and press **Send Invite**. If an address can't be invited, it stays in the box
+  with the reason, and the rest are still sent.
 </Step>
 <Step n={2}>
   They get an email from liveworkspace with a link to the Explorer's **Invites**, where the
@@ -64,6 +67,8 @@ A team always keeps an Admin: the last Admin can't step down or leave while othe
   Accepting takes a signed-in account whose verified email address is the one invited. The email's
   own decline link works without an account.
 </Step>
+
+Until they answer, the invitation waits under **Waiting to Join** on People, saying who sent it and when it ends. An invitation ends 28 days after it was sent. **Resend** emails it again and starts the 28 days over (once every 10 minutes at most); **Withdraw** takes it back. Once it has ended or been declined, **Invite Again** sends a new one, and **Remove** clears it from the list.
 
 Once they've joined, the team shows up in their Explorer when their sign-in next refreshes, within 15 minutes; signing out and back in brings it at once.
 

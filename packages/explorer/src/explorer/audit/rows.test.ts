@@ -1,4 +1,4 @@
-// What a team's Audit Log row says (team-audit-log.md "The Audit Log on a team's view"): every kind's line and
+// What a team's Audit Log row says (team-audit-log.md "The Audit Log on a team's page"): every kind's line and
 // detail, closed and unnamed people, the Event filter's groups, the From and To range, and the file's name.
 import { describe, expect, it } from 'vitest';
 import {
@@ -11,6 +11,7 @@ import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   auditDetail,
   auditGroups,
+  auditPill,
   auditSentence,
   dayRange,
   fileSlug,
@@ -188,5 +189,31 @@ describe('fileSlug', () => {
     expect(fileSlug('a'.repeat(100))).toHaveLength(60);
     const long = `${'- '.repeat(50_000)}x`;
     expect(cpuMsOf(() => fileSlug(long))).toBeLessThan(cpuBudgetMs(50));
+  });
+});
+
+describe('auditPill', () => {
+  it('puts every kind under one of the six pills', () => {
+    const pills = new Set(TEAM_AUDIT_EVENT_TYPES.map(auditPill));
+    expect([...pills].sort()).toEqual(
+      ['AI Key', 'Approvals', 'Connections', 'Files', 'Members', 'Sharing'].sort(),
+    );
+    expect(auditPill('team_joined')).toBe('Members');
+    expect(auditPill('unshared')).toBe('Sharing');
+    expect(auditPill('deleted')).toBe('Files');
+    expect(auditPill('approval_cancelled')).toBe('Approvals');
+    expect(auditPill('webhook_removed')).toBe('Connections');
+    expect(auditPill('team_ai_key_changed')).toBe('AI Key');
+  });
+});
+
+describe('a resent invitation', () => {
+  it('says it was sent again, without the role', () => {
+    expect(says('team_invite_sent', { detail: { resent: '1', role: 'member' } })).toBe(
+      'Ann Lee sent the invitation again to Bo Chen',
+    );
+    expect(says('team_invite_sent', { detail: { role: 'admin' } })).toBe(
+      'Ann Lee invited Bo Chen as an Admin',
+    );
   });
 });

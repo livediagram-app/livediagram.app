@@ -35,6 +35,11 @@ function words(one: string, many: string): Words {
   return { one, many, lowerOne: one.toLowerCase(), lowerMany: many.toLowerCase() };
 }
 
+/** A kind's plural as a title ("Plans"), for a team Library's kind chips. */
+export function kindMany(kind: Kind): string {
+  return KIND_WORDS[kind].many;
+}
+
 /** The words for one app's kind ("Plan" on liveplanner). */
 export function kindWords(app: App): Words {
   const w = KIND_WORDS[APP_KINDS[app]];

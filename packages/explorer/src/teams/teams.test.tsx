@@ -76,6 +76,7 @@ function fakeHost(team: TeamDetails | null = details(), over: Partial<TeamsHost>
         status: 'invited' as const,
       },
     })),
+    resendInvite: vi.fn(async () => ({ ok: true as const, value: null })),
     setRole: vi.fn(async () => ({ ok: true as const, value: null })),
     removeMember: vi.fn(async (_id, memberId) => ({
       ok: true as const,
@@ -130,13 +131,117 @@ describe('a team’s view', () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => teamChanges.reset());
 
-  it('shows its card over its library: members, invitations and the admin line', async () => {
+  it('opens on People: its header, members, invitations and the admin line', async () => {
     page({ kind: 'team', id: 't1' }, fakeHost());
     expect(await card()).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'Design' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /People/ }).getAttribute('aria-selected')).toBe('true');
     expect(screen.getByText('you')).toBeTruthy();
-    expect(screen.getByText('Kai Moss')).toBeTruthy();
+    expect(screen.getByText('kai.moss@x.test')).toBeTruthy();
     expect(screen.getByText('Invited')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Waiting to Join' })).toBeTruthy();
+    expect(screen.queryByText('Item 1')).toBeNull();
+  });
+
+  it('shows the library on its Library tab, with the toolbar in place of a title', async () => {
+    page({ kind: 'team', id: 't1', tab: 'library' }, fakeHost());
     expect(await screen.findByText('Item 1')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /Library/ }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
+      'Design',
+    ]);
+    expect(screen.getByRole('button', { name: 'New' }).getAttribute('aria-haspopup')).toBe('menu');
+  });
+
+  it('moves between tabs through the address, and with the arrow keys', async () => {
+    const onNavigate = page({ kind: 'team', id: 't1' }, fakeHost());
+    await card();
+    fireEvent.click(screen.getByRole('tab', { name: /Library/ }));
+    expect(onNavigate).toHaveBeenLastCalledWith(
+      { kind: 'team', id: 't1', tab: 'library' },
+      '/explorer/team?id=t1&tab=library',
+    );
+    fireEvent.keyDown(screen.getByRole('tab', { name: /People/ }), { key: 'ArrowLeft' });
+    expect(onNavigate).toHaveBeenLastCalledWith(
+      { kind: 'team', id: 't1', tab: 'audit' },
+      '/explorer/team?id=t1&tab=audit',
+    );
+  });
+
+  it('filters people by chip and by search', async () => {
+    page({ kind: 'team', id: 't1' }, fakeHost());
+    await card();
+    const rows = () =>
+      [...document.querySelectorAll('[data-team-member]')].map((r) =>
+        r.getAttribute('data-team-member'),
+      );
+    expect(rows()).toEqual(['m1', 'm2', 'm3']);
+    fireEvent.click(screen.getByRole('button', { name: /^Admins/ }));
+    expect(rows()).toEqual(['m1']);
+    fireEvent.click(screen.getByRole('button', { name: /^Pending/ }));
+    expect(rows()).toEqual(['m3']);
+    fireEvent.click(screen.getByRole('button', { name: /^Everyone/ }));
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a Person' }), {
+      target: { value: 'ANN' },
+    });
+    expect(rows()).toEqual(['m2']);
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a Person' }), {
+      target: { value: 'nobody' },
+    });
+    expect(screen.getByText('No one matches “nobody”.')).toBeTruthy();
+  });
+
+  it('resends an open invitation, and invites an ended one again', async () => {
+    const team = details();
+    team.members.push({
+      id: 'm4',
+      userId: null,
+      email: 'old@x.test',
+      name: null,
+      role: 'admin',
+      status: 'invited',
+      expired: true,
+    });
+    const host = fakeHost(team);
+    page({ kind: 'team', id: 't1' }, host);
+    await card();
+    fireEvent.click(
+      within(document.querySelector<HTMLElement>('[data-team-member="m3"]')!).getByRole('button', {
+        name: 'Resend',
+      }),
+    );
+    await waitFor(() => expect(host.resendInvite).toHaveBeenCalledWith('t1', 'm3'));
+    expect(await screen.findByText('Invitation sent again to kai.moss@x.test.')).toBeTruthy();
+    const old = document.querySelector<HTMLElement>('[data-team-member="m4"]')!;
+    expect(old.textContent).toContain('Expired');
+    fireEvent.click(within(old).getByRole('button', { name: 'Invite Again' }));
+    await waitFor(() =>
+      expect(host.invite).toHaveBeenCalledWith('t1', { email: 'old@x.test', role: 'admin' }),
+    );
+    expect(within(old).getByRole('button', { name: 'Remove old@x.test from list' })).toBeTruthy();
+  });
+
+  it('says why a resend was refused', async () => {
+    const host = fakeHost(details(), {
+      resendInvite: vi.fn(async () => ({ ok: false as const, error: 'resend_too_soon' })),
+    });
+    page({ kind: 'team', id: 't1' }, host);
+    await card();
+    fireEvent.click(screen.getByRole('button', { name: 'Resend' }));
+    expect(await screen.findByText(/This invitation was just sent/)).toBeTruthy();
+  });
+
+  it('shows a Member no invite tools, roles as pills, and no Audit Log', async () => {
+    page({ kind: 'team', id: 't1' }, fakeHost(details({ myRole: 'member', myMemberId: 'm2' })));
+    await screen.findByText(/2 members/);
+    expect(screen.queryByText('Invite by Email')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Invite People' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: /Role for/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Resend' })).toBeNull();
+    expect(screen.queryByRole('tab', { name: /Audit Log/ })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Invite Link' })).toBeNull();
+    expect(screen.getByRole('heading', { name: 'What Each Role Can Do' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Leave Team' }).hasAttribute('disabled')).toBe(false);
   });
 
   it("paints each member's disc as their account button is painted, own colour or Automatic", async () => {
@@ -156,8 +261,6 @@ describe('a team’s view', () => {
     expect(disc('m2').style.backgroundColor).toBe(rgb(avatarFill('Ann Lee', '#2563eb')));
     expect(disc('m2').textContent).toBe('AL');
     expect(disc('m1').style.backgroundColor).toBe(rgb(avatarFill('Sam Doe', null)));
-    // An invitation by the name its row shows, made from its address.
-    expect(disc('m3').style.backgroundColor).toBe(rgb(avatarFill('Kai Moss', null)));
     // The member row's fill and the account button's are one function of the same account.
     for (const color of ['#f97316', '#2563eb', null]) {
       expect(memberFill({ color }, 'Ada Quinn')).toBe(avatarFill('Ada Quinn', color));
@@ -196,7 +299,7 @@ describe('a team’s view', () => {
     const host = fakeHost();
     page({ kind: 'team', id: 't1' }, host);
     await card();
-    fireEvent.click(screen.getByRole('button', { name: 'Withdraw invite to Kai Moss' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Withdraw invite to kai.moss@x.test' }));
     const ask = await screen.findByRole('dialog', { name: 'Withdraw Invite?' });
     fireEvent.click(within(ask).getByRole('button', { name: 'Withdraw Invite' }));
     await waitFor(() => expect(host.removeMember).toHaveBeenCalledWith('t1', 'm3'));
@@ -206,7 +309,7 @@ describe('a team’s view', () => {
     const host = fakeHost();
     page({ kind: 'team', id: 't1' }, host);
     await card();
-    const withdraw = screen.getByRole('button', { name: 'Withdraw invite to Kai Moss' });
+    const withdraw = screen.getByRole('button', { name: 'Withdraw invite to kai.moss@x.test' });
     withdraw.focus();
     fireEvent.click(withdraw);
     const ask = await screen.findByRole('dialog', { name: 'Withdraw Invite?' });
@@ -220,17 +323,63 @@ describe('a team’s view', () => {
     const host = fakeHost();
     page({ kind: 'team', id: 't1' }, host);
     await card();
-    fireEvent.change(screen.getByLabelText('Email address to invite'), {
+    fireEvent.change(screen.getByLabelText('Invite by Email'), {
       target: { value: 'zoe@x.test' },
     });
     fireEvent.change(screen.getByRole('combobox', { name: 'Role for the invitation' }), {
       target: { value: 'admin' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Invite' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Send Invite' }));
     await waitFor(() =>
       expect(host.invite).toHaveBeenCalledWith('t1', { email: 'zoe@x.test', role: 'admin' }),
     );
     expect(await screen.findByText('Invitation sent to zoe@x.test.')).toBeTruthy();
+  });
+
+  it('invites several pasted addresses at once, keeping the refused ones with why', async () => {
+    const invite = vi.fn(async (_team: string, { email }: { email: string }) =>
+      email === 'taken@x.test'
+        ? { ok: false as const, error: 'already_member' }
+        : { ok: true as const, value: undefined },
+    );
+    const host = fakeHost(details(), { invite } as unknown as Partial<TeamsHost>);
+    page({ kind: 'team', id: 't1' }, host);
+    await card();
+    const field = screen.getByLabelText('Invite by Email');
+    fireEvent.paste(field, {
+      clipboardData: { getData: () => 'Zoe <zoe@x.test>, taken@x.test; amy@x.test' },
+    });
+    expect(
+      [...document.querySelectorAll('[data-invite-chip]')].map((c) =>
+        c.getAttribute('data-invite-chip'),
+      ),
+    ).toEqual(['zoe@x.test', 'taken@x.test', 'amy@x.test']);
+    fireEvent.click(screen.getByRole('button', { name: 'Send 3 Invites' }));
+    await waitFor(() => expect(invite).toHaveBeenCalledTimes(3));
+    expect(await screen.findByText('Invitations sent to 2 people.')).toBeTruthy();
+    expect(
+      [...document.querySelectorAll('[data-invite-chip]')].map((c) =>
+        c.getAttribute('data-invite-chip'),
+      ),
+    ).toEqual(['taken@x.test']);
+    expect(screen.getByRole('alert').textContent).toContain('taken@x.test');
+  });
+
+  it('won’t send while a word isn’t an address', async () => {
+    const host = fakeHost();
+    page({ kind: 'team', id: 't1' }, host);
+    await card();
+    fireEvent.paste(screen.getByLabelText('Invite by Email'), {
+      clipboardData: { getData: () => 'zoe@x.test nope' },
+    });
+    expect(screen.getByText(/nope isn’t an email address/)).toBeTruthy();
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Send 2 Invites' }).disabled).toBe(
+      true,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Remove nope' }));
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Send Invite' }).disabled).toBe(
+      false,
+    );
   });
 
   it('keeps the keyboard on Invite while it sends, then hands it to the emptied field', async () => {
@@ -244,9 +393,9 @@ describe('a team’s view', () => {
     const host = fakeHost(details(), { invite } as unknown as Partial<TeamsHost>);
     page({ kind: 'team', id: 't1' }, host);
     await card();
-    const field = screen.getByLabelText('Email address to invite');
+    const field = screen.getByLabelText('Invite by Email');
     fireEvent.change(field, { target: { value: 'zoe@x.test' } });
-    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Invite' });
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Send Invite' });
     button.focus();
     fireEvent.click(button);
     await waitFor(() => expect(button.getAttribute('aria-busy')).toBe('true'));
@@ -274,18 +423,38 @@ describe('a team’s view', () => {
     Object.assign(navigator, { clipboard: { writeText } });
     page({ kind: 'team', id: 't1' }, host);
     await card();
-    fireEvent.click(screen.getByRole('button', { name: 'Invite by Link' }));
-    const turnOn = await screen.findByRole('button', { name: 'Turn On Link' });
-    turnOn.focus();
-    fireEvent.click(turnOn);
+    const linkCard = () => document.querySelector<HTMLElement>('[data-team-link]')!;
+    expect(linkCard().getAttribute('data-team-link')).toBe('off');
+    fireEvent.click(within(linkCard()).getByRole('button', { name: 'Turn On Link' }));
     await waitFor(() => expect(host.resetInviteLink).toHaveBeenCalledWith('t1'));
-    // Turn On Link goes as the link shows: the keyboard moves to Copy, not to the dialog's top.
-    await waitFor(() => expect(document.activeElement?.textContent).toBe('Copy'));
-    fireEvent.click(await screen.findByRole('button', { name: 'Copy' }));
+    await waitFor(() => expect(linkCard().getAttribute('data-team-link')).toBe('on'));
+    expect(
+      within(linkCard()).getByRole<HTMLInputElement>('textbox', { name: 'Join link' }).value,
+    ).toBe('https://liveworkspace.app/join?token=abc');
+    fireEvent.click(within(linkCard()).getByRole('button', { name: 'Copy' }));
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith('https://liveworkspace.app/join?token=abc'),
     );
-    expect(await screen.findByRole('button', { name: 'Copied' })).toBeTruthy();
+    expect(await screen.findByText('Link copied.')).toBeTruthy();
+    // The header's Copy Link copies the same link.
+    fireEvent.click(screen.getByRole('button', { name: 'Copy Link' }));
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(2));
+  });
+
+  it('opens Invite Link from Copy Link while the link is off', async () => {
+    page({ kind: 'team', id: 't1' }, fakeHost());
+    await card();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy Link' }));
+    expect(await screen.findByRole('dialog', { name: /Invite by Link/ })).toBeTruthy();
+  });
+
+  it('takes Invite People to the field', async () => {
+    page({ kind: 'team', id: 't1' }, fakeHost());
+    await card();
+    fireEvent.click(screen.getByRole('button', { name: 'Invite People' }));
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText('Invite by Email')),
+    );
   });
 
   it('renames from Edit Team: the sidebar follows at once', async () => {
@@ -399,9 +568,11 @@ describe('a team’s view', () => {
   it('lets a member leave, but not the only admin of a team with others in it', async () => {
     page({ kind: 'team', id: 't1' }, fakeHost());
     await card();
+    expect(screen.getByRole('button', { name: 'Leave Team' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByText(/You’re its only admin/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Design options' }));
-    const leave = await screen.findByRole('menuitem', { name: 'Leave Team' });
-    expect(leave.getAttribute('aria-disabled')).toBe('true');
+    expect(await screen.findByRole('menuitem', { name: 'Delete Team' })).toBeTruthy();
+    expect(screen.queryByRole('menuitem', { name: 'Leave Team' })).toBeNull();
   });
 
   it('is a not-found card for a team the person is not in', async () => {

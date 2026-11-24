@@ -1,4 +1,4 @@
-// Where Export CSV writes (liveworkspace/docs/specs/004-index/team-audit-log.md "The Audit Log on a team's view"): a
+// Where Export CSV writes (liveworkspace/docs/specs/004-index/team-audit-log.md "The Audit Log on a team's page"): a
 // file the reader chose, written a chunk at a time, in a browser with the File System Access API, so the largest
 // export (200,000 rows, about 40 MB of text) never sits whole in memory. Elsewhere there is no sink, and the caller
 // joins the text and saves one Blob as before.

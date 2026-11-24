@@ -28,6 +28,7 @@ import { useExtras, type ViewModeTelemetry } from './extras';
 import { HoverCard } from '@liveworkspace/ui';
 
 export type ViewMode = 'list' | 'card' | 'details';
+const VIEW_MODES: readonly ViewMode[] = ['list', 'card', 'details'];
 
 export type Crumb = { name: string; onClick?: () => void };
 
@@ -40,9 +41,13 @@ export function PaneHeader({
   actions,
   viewMode,
   onSetViewMode,
+  viewModes,
   showFilter = true,
+  leading,
+  createLabel = 'Create',
 }: {
-  title: string;
+  /** The pane's heading; left out where the page has its own (a team's Library tab), `leading` taking its place. */
+  title?: string;
   crumbs?: Crumb[];
   // New: the host app's kind, or `app`'s when New offers a choice (createChoices).
   onCreateItem?: (app?: App) => void;
@@ -51,7 +56,13 @@ export function PaneHeader({
   actions?: ReactNode;
   viewMode?: ViewMode;
   onSetViewMode?: (mode: ViewMode) => void;
+  /** The layouts offered, where not all three. */
+  viewModes?: readonly ViewMode[];
   showFilter?: boolean;
+  /** What stands where the heading would (a team's Library tab: its kind chips). */
+  leading?: ReactNode;
+  /** The create menu's button ("Create"; "New" on a team's Library tab). */
+  createLabel?: string;
 }) {
   const { kind, helpHref, view, createChoices } = useExplorer();
   const help = helpHref?.(view);
@@ -71,15 +82,19 @@ export function PaneHeader({
     <div className="mb-4">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex min-w-[10rem] flex-1 items-center gap-2">
-          <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-            {title}
-          </h1>
+          {title !== undefined ? (
+            <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+              {title}
+            </h1>
+          ) : (
+            leading
+          )}
         </div>
         <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
           {actions}
           {showFilter ? <FilterToggle /> : null}
           {viewMode && onSetViewMode ? (
-            <ViewToggle mode={viewMode} onChange={onSetViewMode} />
+            <ViewToggle mode={viewMode} onChange={onSetViewMode} modes={viewModes} />
           ) : null}
           {help ? <HelpButton href={help} /> : null}
           {single ? (
@@ -103,7 +118,7 @@ export function PaneHeader({
               className="shadow-sm"
             >
               <PlusIcon />
-              Create
+              {createLabel}
               <CaretDownIcon />
             </Button>
           ) : null}
@@ -233,9 +248,11 @@ export const VIEW_TOGGLE_TELEMETRY = {
 export function ViewToggle({
   mode,
   onChange,
+  modes = VIEW_MODES,
 }: {
   mode: ViewMode;
   onChange: (mode: ViewMode) => void;
+  modes?: readonly ViewMode[];
 }) {
   const { words } = useExplorer();
   const { onViewToggled } = useExtras();
@@ -244,19 +261,20 @@ export function ViewToggle({
     if (next !== mode) onViewToggled?.(VIEW_TOGGLE_TELEMETRY[next]);
     onChange(next);
   };
-  const button = (m: ViewMode, label: string, description: string, icon: ReactNode) => (
-    <HoverCard title={label} description={description}>
-      <button
-        type="button"
-        onClick={() => choose(m)}
-        aria-label={label}
-        aria-pressed={mode === m}
-        className={`${segment(mode === m)} w-7 px-0`}
-      >
-        {icon}
-      </button>
-    </HoverCard>
-  );
+  const button = (m: ViewMode, label: string, description: string, icon: ReactNode) =>
+    modes.includes(m) ? (
+      <HoverCard title={label} description={description}>
+        <button
+          type="button"
+          onClick={() => choose(m)}
+          aria-label={label}
+          aria-pressed={mode === m}
+          className={`${segment(mode === m)} w-7 px-0`}
+        >
+          {icon}
+        </button>
+      </HoverCard>
+    ) : null;
   return (
     <div role="group" aria-label="View mode" className={`${SEGMENTS} max-sm:hidden`}>
       {button('list', 'List view', 'Compact rows.', <ListViewIcon />)}

@@ -115,7 +115,7 @@ The index checks the role on every call
 
 A team's view carries, for the team's admins alone, the team's **Audit Log** under its library, closed until
 opened, with filters by person, kind and date, Show More and Export CSV. It is the platform's, specified in
-[team-audit-log.md "The Audit Log on a team's view"](../../../../liveworkspace/docs/specs/004-index/team-audit-log.md#the-audit-log-on-a-teams-view);
+[team-audit-log.md "The Audit Log on a team's page"](../../../../liveworkspace/docs/specs/004-index/team-audit-log.md#the-audit-log-on-a-teams-page);
 the help article is `liveworkspace/apps/help/app/collaboration/teams/audit-log`.
 
 An API token's expiry warning is the liveworkspace account's, sent by email
