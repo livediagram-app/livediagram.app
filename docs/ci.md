@@ -430,7 +430,9 @@ text around it; an unchanged report writes nothing.
   run reached: `main`, the pull request and the change, plus how many lines aren't covered.
 - **The base:** for each artifact the pull request's run kept, the newest run on `main` that kept the
   same one (a run on `main` keeps only the groups it reached), so a product is compared like with
-  like. A product with no run on `main` within 30 days shows `n/a`.
+  like. A product with no run on `main` within 30 days shows `n/a`. When GitHub refuses a download (a 503 over the account's
+  egress limit, say), that base shows `n/a` too, and when the pull request's own coverage can't be
+  downloaded the section says coverage was unavailable this run; the job never fails for either.
 - **How it runs:** the `coverage-report` job in `ci.yml`, after Tests and the editor shards,
   `.github/scripts/coverage-report.mjs`. It informs and never gates: it isn't part of the **CI** check
   and its failure never fails a pull request. `COVERAGE_REPORT_DRY_RUN=1` with `BASE_DIR` prints a
