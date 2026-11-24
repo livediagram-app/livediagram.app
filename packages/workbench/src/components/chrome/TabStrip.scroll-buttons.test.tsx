@@ -156,6 +156,14 @@ describe('TabStrip scroll buttons', () => {
     expect(renderTab.mock.calls.length).toBe(after);
   });
 
+  it('never shows on a touch screen, where the row scrolls under a finger', () => {
+    strip();
+    // jsdom has no pointer media query, so the class that hides both under a coarse pointer is what is checked.
+    for (const d of ['left', 'right'] as const) {
+      expect(button(d).className.split(' ')).toContain('pointer-coarse:hidden');
+    }
+  });
+
   it('stops listening when the strip goes', () => {
     const scroller = strip();
     const off = vi.spyOn(scroller, 'removeEventListener');
