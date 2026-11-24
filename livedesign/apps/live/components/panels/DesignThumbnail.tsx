@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
 import { LocalPreview } from '@liveworkspace/explorer/local-preview';
 import {
@@ -51,6 +51,7 @@ export function DesignThumbnail({
   offline = false,
   empty = false,
   className = DEFAULT_BOX,
+  fallback,
 }: {
   // Viewer identity for the authenticated fetch. Null while a guest id
   // is still resolving — we just hold the placeholder until it lands.
@@ -71,6 +72,9 @@ export function DesignThumbnail({
   // Container sizing/appearance. Defaults to the compact row box; a card
   // passes a larger box (e.g. a full-width 16:9 area).
   className?: string;
+  // Drawn in place of the empty sketch when there is no picture: another app's item, which this app's sketch
+  // would misname (@liveworkspace/explorer/other-app-thumbnail).
+  fallback?: ReactNode;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const [visible, setVisible] = useState(false);
@@ -199,7 +203,7 @@ export function DesignThumbnail({
         // The api saying there is no snapshot, which for a design you can
         // open means it has nothing drawn on it yet; the caption says so,
         // because a bare sketch in a big preview box reads as a broken image.
-        <BlankCanvasIllustration />
+        (fallback ?? <BlankCanvasIllustration />)
       ) : settled ? null : (
         // Idle / loading: the picture is still coming, so the sketch draws
         // itself rather than sitting there looking like an empty diagram.

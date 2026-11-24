@@ -5,6 +5,7 @@
 // items have their previews at the same address (`/api/previews/items/<id>`, liveworkspace's media service through
 // this site's router), so under All another app's item shows its own picture too, never a bare icon.
 import type { RenderThumbnail } from '@liveworkspace/explorer';
+import { OtherAppThumbnail } from '@liveworkspace/explorer/other-app-thumbnail';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 
 // The Explorer draws each box (a row's, a card's, a folder tile's); the snapshot fills it.
@@ -14,7 +15,8 @@ const FILL = 'h-full w-full';
 // to send it.
 const VIEWER = 'viewer';
 
-export const renderDocumentThumbnail: RenderThumbnail = (item) => (
+// Another app's item with no picture shows the neutral box with its app's mark, never livediagram's empty sketch.
+export const renderDocumentThumbnail: RenderThumbnail = (item, size) => (
   <DocumentThumbnail
     ownerId={VIEWER}
     documentId={item.id}
@@ -22,5 +24,8 @@ export const renderDocumentThumbnail: RenderThumbnail = (item) => (
     empty={item.summary.empty === true}
     shareCode={item.sharedVia}
     className={FILL}
+    fallback={
+      item.app === 'livediagram' ? undefined : <OtherAppThumbnail app={item.app} size={size} />
+    }
   />
 );

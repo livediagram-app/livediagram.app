@@ -1207,7 +1207,10 @@ latest_at)`. A row is **who** (the newest actor who is not me, **Someone** for a
 - **The reading pane**, labelled by its title: where it is (the logo of the app the row opens, the team glyph, the item › the tab ›
   the element or board), the title, who and why in a sentence ("Priya mentioned you · 25 mins ago · Task"), the verbs
   with their keys, the item's thumbnail where the host draws one (the host's `renderThumbnail`, the item read from
-  the index once the choice has rested 200 ms and kept, at most 64), then the thread, the action's note or the
+  the index once the choice has rested 200 ms and kept, at most 64; an editor's thumbnail draws another app's item
+  with no picture as the neutral box with that app's mark, `OtherAppThumbnail` from
+  `@liveworkspace/explorer/other-app-thumbnail`, never its own app's empty sketch, as the Explorer page's preview
+  shows its icon), then the thread, the action's note or the
   form's responses, and a reply field where Reply is offered.
 - **The header's own doors.** An app may add quiet glyph buttons to the Inbox's header, beside the filter, through
   the host's `InboxHost.headerActions` (`{ id, label, icon, onClick }`, each a header icon button named by its label

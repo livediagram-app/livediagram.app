@@ -8,6 +8,8 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import { DocumentThumbnail } from './DocumentThumbnail';
 import { resetThumbnailCache } from '@/lib/thumbnail-cache';
+import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
+import type { Item } from '@liveworkspace/index-client';
 
 type Result = { url: string; backgroundColor: string | null } | null;
 const pending: ((r: Result) => void)[] = [];
@@ -179,5 +181,34 @@ describe('DocumentThumbnail', () => {
     expect(img()).toBeNull();
     expect(loader()).toBeNull();
     expect(pending).toHaveLength(1);
+  });
+});
+
+// Work Tracker 1404: the Explorer panel's Inbox lists every app's items, and its reading pane draws each item's
+// picture through this thumbnail. Another app's item with no picture shows the neutral box with its app's mark,
+// never livediagram's "Nothing drawn yet" sketch.
+describe('renderDocumentThumbnail', () => {
+  const itemOf = (app: Item['app'], empty: boolean) =>
+    ({ id: 'i1', app, updatedAt: 1, sharedVia: null, summary: { empty } }) as unknown as Item;
+  const fallback = () => document.querySelector('[data-preview-fallback]');
+
+  it("draws another app's empty item as the neutral box with its app's mark", () => {
+    render(<>{renderDocumentThumbnail(itemOf('liveplanner', true), 'card')}</>);
+    expect(fallback()?.querySelector('[data-app-mark]')?.getAttribute('data-app-mark')).toBe(
+      'liveplanner',
+    );
+    expect(document.body.textContent).not.toContain('Nothing drawn yet');
+  });
+
+  it("draws another app's item the same when it has no snapshot", async () => {
+    render(<>{renderDocumentThumbnail(itemOf('livedocuments', false), 'row')}</>);
+    await act(async () => pending[0]!(null));
+    expect(fallback()?.querySelector('[data-app-mark="livedocuments"]')).toBeTruthy();
+  });
+
+  it("keeps livediagram's own sketch for its own empty canvas", () => {
+    render(<>{renderDocumentThumbnail(itemOf('livediagram', true), 'card')}</>);
+    expect(fallback()).toBeNull();
+    expect(document.body.textContent).toContain('Nothing drawn yet');
   });
 });
