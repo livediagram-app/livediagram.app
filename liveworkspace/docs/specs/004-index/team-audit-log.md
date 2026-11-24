@@ -103,28 +103,32 @@ detail, each with its id. One file holds at most 10,000 rows; when more match, t
 starts (`X-Next-Cursor`, passed back as `cursor`), so a year of a busy team is a few files, or a narrower date range.
 A cell a spreadsheet would run as a formula is opened with an apostrophe.
 
-## The Audit Log on a team's view
+## The Audit Log on a team's page
 
-A team's admins read the log in the Explorer, on the team's view (`/explorer/team?id=`, in every app), in a section
-headed **Audit Log** under its library. A member never sees the section: it is drawn only when the team card says
-the reader is an admin, and the read would refuse them anyway.
+A team's admins read the log in the Explorer, on the team's page (`/explorer/team?id=<id>&tab=audit`, in every app),
+in its **Audit Log** tab. A member never sees the tab, and its address opens People for them: it is drawn only when
+accounts says the reader is an admin, and the read would refuse them anyway.
 
-- **Closed until opened**: a disclosure (`h2`, `aria-expanded`) whose header says "Admins only ·
-  kept a year". Nothing is read until it opens; another team's view starts it closed again.
-- **Filters**, above the list, each reading the first page again: **Person** (who did it: Everyone, the team's joined
+- **Read when its tab opens**: nothing is read until then. A note heads it: "Only admins see the Audit Log: who
+  joined, left or changed role, what was shared, moved or deleted, and every approval and connection. Kept for a
+  year."
+- **Filters**, in one card above the list with the count ("24 events"), Help and **Export CSV**, each reading the first page again (on a phone the four fields fold behind a **Filters** button, "Filters On" while any is set): **Person** (who did it: Everyone, the team's joined
   members by name, then anyone else the loaded rows name, such as a member who has left), **Event** (All Events, or
   one kind by its label, grouped People, the host app's own items in its word (Canvases, Plans, Documents, Designs,
   Spaces) and Connections), and **From** and **To** (whole days in the reader's
   time zone, both included: To is sent as the next day's midnight). **Clear Filters** shows while any is set. There is
   no filter by whom an event is about (`IDX32`). A From after To is turned round, never refused. A day not on the
   calendar (2026-02-31) bounds nothing, never rolling into the next month.
-- **Each row**: the kind's glyph; one line saying who did what ("Ann Lee made a share link on Roadmap", "Ann Lee
-  removed Bo Chen", "Ann Lee added the connection hooks.slack.com"); then the kind's label ("Connection Added", "Connection Removed" for the two `webhook_*` kinds), the detail that matters
+- **Each row**: the disc of who did it (their picture or initials, as on People; the kind's glyph for a closed
+  account or no one); one line saying who did what ("Ann Lee made a share link on Roadmap", "Ann Lee
+  removed Bo Chen", "Ann Lee added the connection hooks.slack.com", "Ann Lee sent the invitation again to Kai" for a
+  resent one); then a pill for what it touched (Members, Sharing, Files, Approvals, Connections, AI Key; the kind's
+  label, such as "Connection Added", as its tooltip), the detail that matters
   (the link's level, into or out of the team, the connection's kind, a renamed team's old name, Take Offline), the app
   (its mark and name; a team's own and a connection's read liveworkspace) and the time. Rows sit under day bands
-  (the reader's date), newest first; a row's time carries the UTC time as its tooltip. A closed account reads
+  (the reader's date) in one card, newest first; a row's time carries the UTC time as its tooltip. A closed account reads
   "Deleted account"; a person with no name reads "Someone".
-- **Pages**: 50 rows, then **Show More** for the next page. A Show More that fails keeps the rows and says so, with
+- **Pages**: 50 rows, then **Show Older Events** for the next page. One that fails keeps the rows and says so, with
   Try again.
 - **Export CSV** saves every row the filters match as one file, `<team>-audit-log-<YYYY-MM-DD>.csv`: it reads the
   CSV a file at a time (10,000 rows), follows `X-Next-Cursor` to the next, and joins them under one header, with a

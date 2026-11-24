@@ -13,6 +13,7 @@ import { createSettledStore } from '../data/inbox-settled';
 import { settledOf } from '../explorer/inbox/sections';
 import { useInboxNotices, type InboxNoticesOptions } from './useInboxNotices';
 import type { InboxWatch } from './watch';
+import { DIALOG_WATCH_MS, noticeSlotHeld, ToastProvider } from '@liveworkspace/ui/toast';
 
 const ME = 'user_me';
 const NOW = 50_000_000;
@@ -409,30 +410,36 @@ describe('the count', () => {
   });
 });
 
-describe('where it hangs', () => {
-  it('under the corner card, read on show and on resize', () => {
-    const corner = document.createElement('div');
-    corner.setAttribute('data-corner-actions', '');
-    let bottom = 58;
-    corner.getBoundingClientRect = () => ({ bottom }) as DOMRect;
-    document.body.appendChild(corner);
+// toasts.md "One place for everything that pops up": the notice is drawn in the toast stack, never at the top.
+describe('where it sits', () => {
+  it('in the toast stack, above its toasts, in the stacked card, holding the notice slot', () => {
     const t = setup();
+    render(
+      <ToastProvider>
+        <span />
+      </ToastProvider>,
+    );
     t.answer({ threads: [thread()] });
-    expect(notice()!.style.top).toBe('66px');
-    bottom = 70;
-    act(() => {
-      window.dispatchEvent(new Event('resize'));
-    });
-    expect(notice()!.style.top).toBe('78px');
-    corner.remove();
+    const card = notice()!;
+    const stack = screen.getByRole('region', { name: 'Notifications' });
+    expect(stack.querySelector('[data-toast-notices]')!.contains(card)).toBe(true);
+    expect(card.getAttribute('data-toast-layout')).toBe('stacked');
+    // Nothing places it at the top any more.
+    expect(card.style.top).toBe('');
+    expect(card.className).not.toContain('fixed');
+    // Its link is the solid primary on the foot row.
+    const foot = card.querySelector('[data-toast-foot]')!;
+    expect(foot.contains(screen.getByRole('link', { name: 'Open in Inbox' }))).toBe(true);
+    expect(noticeSlotHeld()).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+    expect(noticeSlotHeld()).toBe(false);
   });
 
-  it('12px from the top with no corner card', () => {
+  it('standing alone at the bottom centre with no stack on the page', () => {
     const t = setup();
     t.answer({ threads: [thread()] });
-    expect(notice()!.style.top).toBe('12px');
-    // The animation class carries the motion; reduced motion fades it only (explorer.css).
-    expect(notice()!.className).toContain('lw-inbox-notice');
+    const alone = notice()!.closest('[data-toast-notice-alone]')!;
+    expect(alone.className).toContain('bottom-4');
   });
 });
 
@@ -489,9 +496,10 @@ describe('under a dialog', () => {
       await Promise.resolve();
     });
     expect(notice()).toBeNull();
+    // The watch tells a burst at most every DIALOG_WATCH_MS, so the second change lands after it.
     await act(async () => {
       dialog.removeAttribute('open');
-      await Promise.resolve();
+      await new Promise((done) => setTimeout(done, DIALOG_WATCH_MS + 20));
     });
     expect(notice()).not.toBeNull();
     dialog.remove();

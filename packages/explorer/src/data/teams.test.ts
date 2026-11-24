@@ -34,3 +34,33 @@ describe('New Team with no answer in time', () => {
     expect(teamErrorMessage('team_not_made')).toBe('No team was made. You can create it now.');
   });
 });
+
+describe('resending an invitation', () => {
+  it('posts to the member’s resend route by the bearer, and answers null', async () => {
+    const fetch = vi.fn(async () => Response.json({ id: 'm 1' }));
+    const host = createTeamsHost({
+      baseUrl: '/api/workspace/account',
+      fetch,
+      token: async () => 'tok',
+    });
+    expect(await host.resendInvite('t/1', 'm 1')).toEqual({ ok: true, value: null });
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('/api/workspace/account/teams/t%2F1/members/m%201/resend');
+    expect(init.method).toBe('POST');
+    expect(init.body).toBeUndefined();
+    expect(new Headers(init.headers).get('authorization')).toBe('Bearer tok');
+  });
+
+  it('answers the account API’s refusal, worded', async () => {
+    const tooSoon = await answering(
+      Response.json({ error: 'resend_too_soon' }, { status: 429 }),
+    ).resendInvite('t1', 'm1');
+    expect(tooSoon).toEqual({ ok: false, error: 'resend_too_soon' });
+    expect(teamErrorMessage('resend_too_soon')).toBe(
+      'This invitation was just sent. Try again in a few minutes.',
+    );
+    expect(teamErrorMessage('invite_not_found')).toBe(
+      'That invitation is no longer open. Invite the address again.',
+    );
+  });
+});

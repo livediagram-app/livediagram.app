@@ -62,6 +62,8 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   return (
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
+        // Read as the drawer draws, so a rename never renders this bar.
+        itemName={() => chrome.get().documentName}
         approval={<ApprovalBadge corner />}
         call={<ItemCallButton />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}

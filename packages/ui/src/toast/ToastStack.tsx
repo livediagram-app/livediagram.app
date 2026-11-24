@@ -1,9 +1,11 @@
 'use client';
 
-// The toast stack (liveworkspace/docs/specs/016-notifications/toasts.md "Placement" and "Keyboard and screen
-// readers"): an always-mounted "Notifications" region at the bottom centre, the newest toast nearest the
-// edge, standing on whatever bottom chrome sits beneath it (useToastFloor). Each toast here owns its timer
-// (paused on hover, focus and a hidden page), its Escape and its exit.
+// The toast stack (liveworkspace/docs/specs/016-notifications/toasts.md "Placement", "One place for everything that
+// pops up" and "Keyboard and screen readers"): an always-mounted "Notifications" region at the bottom centre, the
+// newest toast nearest the edge, standing on whatever bottom chrome sits beneath it (useToastFloor). Above the toasts,
+// its notice row, where every notice that is not a toast is drawn (ToastNotice: an Inbox notice, a suggestion, the
+// paste notice); the row waits, undrawn, while a dialog is open. Each toast here owns its timer (paused on hover,
+// focus and a hidden page), its Escape and its exit.
 import {
   useEffect,
   useLayoutEffect,
@@ -14,6 +16,8 @@ import {
   type FocusEvent,
 } from 'react';
 import { Portal } from '../Portal';
+import { dialogOpenNow, subscribeDialogs } from './dialog-open';
+import { noticeCount, onNoticeRow, registerNoticeRow } from './notice-slot';
 import { atLeastInset, safeInset } from '../safe-area';
 import { ToastCard, type ToastCardAction } from './ToastCard';
 import { TOAST_COLLAPSE_MS, collapseIntoBell } from './toast-collapse';
@@ -33,6 +37,7 @@ const subscribeVisibility = (fire: () => void) => {
   return () => document.removeEventListener('visibilitychange', fire);
 };
 const pageHidden = () => document.visibilityState === 'hidden';
+const noDialog = () => false;
 
 export type ToastAnswers = {
   // Closed (the close button or Escape): an offer's decline.
@@ -48,8 +53,20 @@ export type ToastAnswers = {
 export function ToastStack({ toasts, on }: { toasts: ToastEntry[]; on: ToastAnswers }) {
   // Mounted after hydration (the static HTML has no stack), then always, so a toast added to it is announced.
   const hydrated = useSyncExternalStore(subscribeNever, onClient, onServer);
-  const showing = toasts.length > 0;
-  const placement = useToastFloor(showing, toasts.length);
+  const notices = useSyncExternalStore(onNoticeRow, noticeCount, () => 0);
+  // A dialog over the page: the notices wait (toasts stay, as a failure must show). Watched only while one is up.
+  const dialog = useSyncExternalStore(
+    notices > 0 ? subscribeDialogs : subscribeNever,
+    notices > 0 ? dialogOpenNow : noDialog,
+    onServer,
+  );
+  const showing = toasts.length > 0 || notices > 0;
+  const placement = useToastFloor(showing, toasts.length + notices);
+  const row = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!hydrated || !row.current) return;
+    return registerNoticeRow(row.current);
+  }, [hydrated]);
   const beside = placement.right !== null;
   const atStart = placement.left != null;
   if (!hydrated) return null;
@@ -72,6 +89,8 @@ export function ToastStack({ toasts, on }: { toasts: ToastEntry[]; on: ToastAnsw
             : { paddingRight: atLeastInset('1rem', 'right') }),
         }}
       >
+        {/* The notice row: `contents`, so each notice is one of the stack's own items, 8px from the next. */}
+        <div ref={row} data-toast-notices="" className={dialog ? 'hidden' : 'contents'} />
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} on={on} />
         ))}

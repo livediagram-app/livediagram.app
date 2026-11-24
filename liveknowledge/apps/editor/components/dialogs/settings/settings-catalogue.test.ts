@@ -430,3 +430,27 @@ describe('Automatically Open Explorer row', () => {
     });
   });
 });
+
+// Show Connect MCP (docs/specs/030-knowledgebase/mcp-connect.md "Closing the tab"): the tab's X turns it off.
+describe('Show Connect MCP row', () => {
+  const appearance = SETTINGS_CATEGORIES.find((category) => category.id === 'appearance')!;
+  const row = appearance.rows.find((r) => r.key === 'showConnectMcp')!;
+
+  it('sits in Appearance, Interface, right after Button Labels', () => {
+    const keys = appearance.rows.map((r) => r.key);
+    expect(keys.indexOf('showConnectMcp')).toBe(keys.indexOf('dockButtonNames') + 1);
+    expect(row.section).toBe('Interface');
+    expect(row.label).toBe('Show Connect MCP');
+  });
+
+  it('is on by default and off once the X wrote false; on again writes true', () => {
+    if (row.kind !== 'toggle') throw new Error('expected a toggle');
+    expect(row.read({})).toBe(true);
+    expect(row.read({ showConnectMcp: false })).toBe(false);
+    expect(row.write({ showConnectMcp: false, homeBanner: false }, true)).toEqual({
+      showConnectMcp: true,
+      homeBanner: false,
+    });
+    expect(row.event).toEqual({ category: 'UI', on: 'ConnectMcpTabOn', off: 'ConnectMcpTabOff' });
+  });
+});

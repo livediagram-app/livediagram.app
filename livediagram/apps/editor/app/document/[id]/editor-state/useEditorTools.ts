@@ -61,7 +61,7 @@ export function useEditorTools({
   // dropdown, keyboard) routes through it; internal auto-switches keep using
   // the raw setCanvasTool and are unaffected.
   const pickCanvasTool = (tool: CanvasTool) => {
-    // Eraser / Format / Laser / Spotlight / Isometric all act on existing
+    // Eraser / Format / Laser / Spotlight / Magnifier / Isometric all act on existing
     // content, so they're unavailable on an empty canvas — the palette greys
     // them out, and this guards the keyboard-shortcut path to match. Select +
     // Hand stay available.
@@ -73,6 +73,7 @@ export function useEditorTools({
         tool === 'format' ||
         tool === 'laser' ||
         tool === 'spotlight' ||
+        tool === 'magnifier' ||
         tool === 'isometric')
     ) {
       return;
@@ -96,8 +97,9 @@ export function useEditorTools({
       return;
     }
     // Spotlight and Laser are non-editing presenter modes, so they clear the selection on entry: no
-    // selection toolbar or Quick Style panel shows while presenting (Work Tracker 1040).
-    if (tool === 'spotlight' || tool === 'laser') {
+    // selection toolbar or Quick Style panel shows while presenting (Work Tracker 1040). Magnifier
+    // (docs/specs/008-canvas/magnifier.md) too: no handles or toolbars sit under its lens.
+    if (tool === 'spotlight' || tool === 'laser' || tool === 'magnifier') {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
     }

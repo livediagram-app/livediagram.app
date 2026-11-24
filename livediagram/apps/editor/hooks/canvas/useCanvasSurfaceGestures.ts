@@ -130,12 +130,16 @@ export function useCanvasSurfaceGestures({
     });
 
   const routePanOrMarquee = (e: ReactPointerEvent) => {
-    const laserOnTouch = canvasTool === 'laser' && e.pointerType === 'touch';
-    if (laserOnTouch) return;
+    // A finger draws the laser, and moves the Magnifier's lens (docs/specs/008-canvas/magnifier.md), rather than
+    // panning.
+    const pointsOnTouch =
+      (canvasTool === 'laser' || canvasTool === 'magnifier') && e.pointerType === 'touch';
+    if (pointsOnTouch) return;
     const wantsPan =
       spaceHeldRef.current ||
       canvasTool === 'pan' ||
       canvasTool === 'laser' ||
+      canvasTool === 'magnifier' ||
       canvasTool === 'isometric';
     if (wantsPan) {
       startPan(e);
@@ -158,8 +162,9 @@ export function useCanvasSurfaceGestures({
   // arrow's `stroke` hit band, an arrow label and a Selection Mode chip keep pointer-events of their own,
   // and their handlers select on any button. A press on one of them is the canvas's instead. The middle
   // button keeps its pan, and a right press on a mode chip keeps the chip's menu (mode-button.md).
+  // Magnifier (docs/specs/008-canvas/magnifier.md) treats a press on an element the same way: a view tool.
   const isLaserElementPress = (e: { target: EventTarget | null; button: number }) => {
-    if (canvasTool !== 'laser' || e.button === 1) return false;
+    if ((canvasTool !== 'laser' && canvasTool !== 'magnifier') || e.button === 1) return false;
     const target = e.target as Element | null;
     if (!(target instanceof Node) || !wrapperRef.current?.contains(target)) return false;
     return !isModeChipRightPress(e);
@@ -392,7 +397,9 @@ export function useCanvasSurfaceGestures({
     // (docs/specs/008-canvas/isometric-view.md) likewise: right-click-drag orbits the camera, so the
     // canvas / tab menu must never open in that tool or it interrupts
     // the orbit gesture.
-    if (canvasTool === 'spotlight' || canvasTool === 'isometric') return;
+    // Magnifier (docs/specs/008-canvas/magnifier.md) is a view too: no canvas or tab menu.
+    if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'magnifier')
+      return;
     // A macOS Ctrl+click is a context click on the PRIMARY button, so its
     // pointerdown already armed a marquee (or pan) whose release would
     // deselect, and deselecting closes the menu this click is opening.
@@ -412,8 +419,9 @@ export function useCanvasSurfaceGestures({
     }
     // Touch press-and-hold on the empty canvas opens the context menu
     // (touch has no right-click). Armed before the marquee / pan logic;
-    // a finger that moves cancels it, so it never fights a drag.
-    canvasLongPress.onPointerDown(e);
+    // a finger that moves cancels it, so it never fights a drag. Not under the Magnifier, whose finger
+    // holds the lens (docs/specs/008-canvas/magnifier.md).
+    if (canvasTool !== 'magnifier') canvasLongPress.onPointerDown(e);
     // Isometric (docs/specs/008-canvas/isometric-view.md): holding the RIGHT button and dragging orbits
     // the camera too — a mouse-only alternative to Shift-drag / the orbit
     // button. The canvas / tab context menu is suppressed wholesale while
@@ -515,7 +523,8 @@ export function useCanvasSurfaceGestures({
   // (Spotlight, Isometric) give every press on <main> a meaning of their own.
   const onSurfaceDoubleClick = (e: ReactMouseEvent) => {
     if (e.target !== e.currentTarget || !pressedByFinger()) return;
-    if (canvasTool === 'spotlight' || canvasTool === 'isometric') return;
+    if (canvasTool === 'spotlight' || canvasTool === 'isometric' || canvasTool === 'magnifier')
+      return;
     const at = doublePressAt(e);
     if (at) onCanvasDoubleClick(at.x, at.y, true);
   };

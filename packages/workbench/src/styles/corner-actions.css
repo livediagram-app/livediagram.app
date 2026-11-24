@@ -59,3 +59,21 @@
 [data-corner-actions][data-compact] > div > button[aria-haspopup] > :not(:first-child) {
   display: none;
 }
+
+/* A phone has no corner card: an app's own actions from it (the approval's badge, Prototype, Share Form, a call's card)
+ * show in the Apps drawer's row (phone-apps/AppsDrawer.tsx), with the names the card hides on a phone, at a 44 px
+ * height to tap. */
+[data-phone-apps-slots] .phone\:sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: nowrap;
+}
+[data-phone-apps-slots] button {
+  min-height: 2.75rem;
+  padding-inline: 0.75rem;
+}

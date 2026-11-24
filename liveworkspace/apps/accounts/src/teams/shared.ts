@@ -26,6 +26,8 @@ export const REMINDER_BATCH = 100;
 export const MAX_REMINDER_ATTEMPTS = 3;
 // Decline tokens kept per invitation: the invitation's own and one per reminder.
 export const MAX_DECLINE_HASHES = 4;
+// The shortest gap between an invitation's sending and an admin sending it again, so nobody floods an inbox.
+export const RESEND_GAP_MS = 10 * 60 * 1000;
 
 export type TeamRole = 'admin' | 'member';
 export type MemberStatus = 'invited' | 'joined' | 'declined' | 'removed';

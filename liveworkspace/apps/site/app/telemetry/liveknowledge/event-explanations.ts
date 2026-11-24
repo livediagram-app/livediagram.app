@@ -1270,6 +1270,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",
   'UI|Opened|ThemePicker': "Someone opened the tab's look-and-feel dialog on its Theme tab.",
+  'UI|Opened|PhoneApps':
+    'On a phone, someone opened the Apps drawer from the menu card (Explorer, Call, Share, Inbox and the account).',
   'UI|Opened|ToolbarExplorer':
     'In the Toolbar panel layout, someone clicked the top-left menu button to open the Explorer as a popover.',
   'UI|Opened|ToolbarMore':
@@ -1469,6 +1471,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned off Button Labels in Settings > Appearance, so the bottom-right buttons show icons alone on a wide desktop.',
   'UI|Toggled|DockButtonNamesOn':
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
+  'UI|Toggled|ConnectMcpTabOff':
+    'Someone hid the Connect MCP tab, from its X while it was open or Settings > Appearance. It is gone from their footer in every knowledgebase.',
+  'UI|Toggled|ConnectMcpTabOn':
+    'Someone turned the Connect MCP tab back on, in Settings > Appearance.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
   'UI|Toggled|AutoOpenExplorerOff':
     'Someone turned off Automatically Open Explorer in Settings > Explorer, so the homepage shows again when they open it.',

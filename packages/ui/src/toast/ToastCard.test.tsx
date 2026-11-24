@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { ToastCard } from './ToastCard';
+import { ToastCard, toastCardLayout } from './ToastCard';
 
 afterEach(cleanup);
 
@@ -24,9 +24,11 @@ describe('ToastCard', () => {
       />,
     );
     const card = screen.getByRole('status');
+    expect(card.getAttribute('data-toast-layout')).toBe('inline');
     const [icon, body, close] = Array.from(card.children);
     expect(icon!.getAttribute('aria-hidden')).toBe('true');
-    expect(close!.getAttribute('aria-label')).toBe('Dismiss');
+    // The close, in its tooltip's `contents` wrapper, ends the row.
+    expect(close!.querySelector('button')!.getAttribute('aria-label')).toBe('Dismiss');
     // The message and the actions share one wrapping row; the message's basis is its own width.
     expect(body!.className).toContain('flex-wrap');
     const [message, actions] = Array.from(body!.children);
@@ -166,5 +168,132 @@ describe('ToastCard', () => {
     const cls = screen.getByRole('status').className;
     expect(cls).toContain('animate-toast-in-full');
     expect(cls).toContain('pointer-events-auto');
+  });
+
+  // toasts.md "One line by default, stacked when there is more to say".
+  it('keeps a plain toast on one row, and stacks one with more to say', () => {
+    const undo = [{ label: 'Undo', onSelect: () => {}, primary: true }];
+    expect(toastCardLayout({ actions: undo })).toBe('inline');
+    expect(toastCardLayout({ title: null, body: false, actions: [] })).toBe('inline');
+    expect(toastCardLayout({ title: 'Make These a Plan' })).toBe('stacked');
+    expect(toastCardLayout({ body: <p>rows</p> })).toBe('stacked');
+    expect(toastCardLayout({ toggle: { label: 'Remember', onChange: () => {} } })).toBe('stacked');
+    expect(
+      toastCardLayout({ actions: [{ label: 'Don’t Suggest This Again', quiet: true }, ...undo] }),
+    ).toBe('stacked');
+  });
+
+  it('stacks: the title and close first, the words at full width, the actions on a foot row', () => {
+    const never = vi.fn();
+    const take = vi.fn();
+    render(
+      <ToastCard
+        tone="info"
+        title="Make These a Plan"
+        message="3 action stickies here could be cards in a liveplanner plan, one each."
+        actions={[
+          { label: 'Don’t Suggest This Again', onSelect: never, quiet: true },
+          { label: 'Send to Plan', onSelect: take, primary: true },
+        ]}
+        onClose={() => {}}
+      />,
+    );
+    const card = screen.getByRole('status');
+    expect(card.getAttribute('data-toast-layout')).toBe('stacked');
+    expect(card.className).toContain('sm:max-w-[36rem]');
+    const column = card.children[1]!;
+    // The close floats in the first line's corner, so only the title's line runs short of it.
+    const close = screen.getByRole('button', { name: 'Dismiss' });
+    expect(close.className).toContain('float-right');
+    expect(column.firstElementChild!.contains(close)).toBe(true);
+    const title = column.querySelector('[data-toast-title]')!;
+    const message = column.querySelector('[data-toast-message]')!;
+    const foot = column.querySelector('[data-toast-foot]')!;
+    expect(title.textContent).toBe('Make These a Plan');
+    expect(message.textContent).toContain('3 action stickies');
+    // Top to bottom: title, message, then the foot row last, clear of the float.
+    expect(title.compareDocumentPosition(message) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(foot).toBe(column.lastElementChild);
+    expect(foot.className).toContain('clear-both');
+    // The quiet answer at the foot's start, the primary a solid button at its end.
+    const quiet = screen.getByRole('button', { name: 'Don’t Suggest This Again' });
+    expect(quiet.hasAttribute('data-toast-quiet')).toBe(true);
+    expect(quiet.parentElement!.className).toContain('mr-auto');
+    const send = screen.getByRole('button', { name: 'Send to Plan' });
+    expect(send).toBe(foot.lastElementChild!.lastElementChild);
+    // A text button, 24px tall on the foot row, so the row costs little more than a line.
+    expect(send.className).toContain('text-brand-700');
+    expect(send.className).toContain('h-6');
+    fireEvent.click(quiet);
+    fireEvent.click(send);
+    expect(never).toHaveBeenCalledTimes(1);
+    expect(take).toHaveBeenCalledTimes(1);
+  });
+
+  it('stacks a switch at the foot row’s start, its answers at the end; a destructive primary stays rose', () => {
+    render(
+      <ToastCard
+        tone="info"
+        message="This image isn't used anywhere else. Delete it from storage? It can't be undone."
+        actions={[
+          { label: 'Keep', onSelect: () => {} },
+          { label: 'Delete from Storage', onSelect: () => {}, primary: true, destructive: true },
+        ]}
+        toggle={{ label: 'Remember My Choice', onChange: () => {} }}
+        onClose={() => {}}
+      />,
+    );
+    const card = screen.getByRole('status');
+    expect(card.getAttribute('data-toast-layout')).toBe('stacked');
+    const toggle = card.querySelector('[data-toast-toggle]')!;
+    const foot = card.querySelector('[data-toast-foot]')!;
+    // The switch leads the foot row, its answers at the row's end.
+    expect(foot.contains(toggle)).toBe(true);
+    expect(toggle.parentElement!.className).toContain('mr-auto');
+    // Keep and Delete from Storage wrap together, never split across rows.
+    expect(foot.lastElementChild!.textContent).toBe('KeepDelete from Storage');
+    const remove = screen.getByRole('button', { name: 'Delete from Storage' });
+    expect(remove.className).toContain('text-rose-700');
+    expect(screen.getByRole('button', { name: 'Keep' }).className).toContain('text-slate-600');
+  });
+
+  it('draws a link for an action with href, a given icon and role, and no close without onClose', () => {
+    const follow = vi.fn();
+    render(
+      <ToastCard
+        tone="info"
+        role="group"
+        aria-label="Inbox notice"
+        icon={<svg data-testid="kind" />}
+        title="Priya mentioned you"
+        body={<p>Roadmap</p>}
+        actions={[
+          { label: 'Open in Inbox', href: '/explorer/inbox?at=1', onSelect: follow, primary: true },
+        ]}
+      />,
+    );
+    const card = screen.getByRole('group', { name: 'Inbox notice' });
+    expect(card.querySelector('[data-testid=kind]')).not.toBeNull();
+    const link = screen.getByRole('link', { name: 'Open in Inbox' });
+    expect(link.getAttribute('href')).toBe('/explorer/inbox?at=1');
+    expect(link.className).toContain('text-brand-700');
+    link.addEventListener('click', (e) => e.preventDefault());
+    fireEvent.click(link);
+    expect(follow).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Dismiss' })).toBeNull();
+  });
+
+  it('keeps a plain toast inline when told, and draws the highlight quiet answer light', () => {
+    render(
+      <ToastCard
+        tone="info"
+        layout="inline"
+        message="Saved"
+        highlight
+        actions={[{ label: 'Not Now', onSelect: () => {}, quiet: true }]}
+      />,
+    );
+    expect(screen.getByRole('status').getAttribute('data-toast-layout')).toBe('inline');
+    expect(screen.getByRole('button', { name: 'Not Now' }).className).toContain('text-white/85');
   });
 });

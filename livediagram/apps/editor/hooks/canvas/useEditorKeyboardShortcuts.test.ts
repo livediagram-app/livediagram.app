@@ -55,6 +55,12 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(VIEW_TOOL_KEYS.l).toBeUndefined();
   });
 
+  // A view-safe key, so a Viewer reaches the Magnifier too (docs/specs/008-canvas/magnifier.md "Share roles").
+  it('binds the Magnifier to M, among the view-safe keys', () => {
+    expect(fired(VIEW_TOOL_KEYS, 'm')).toBe('tool:magnifier');
+    expect(EDIT_KEYS.m).toBeUndefined();
+  });
+
   it('keeps Isometric on I and Zen on Z', () => {
     expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');

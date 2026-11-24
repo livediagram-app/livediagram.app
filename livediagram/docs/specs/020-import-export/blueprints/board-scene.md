@@ -373,14 +373,12 @@ and `savedAt` (integers). `apiCreateDocument` sends `savedAt` when given.
 
 ### `BoardSceneNotice`
 
-A `role="status"` `aria-live="polite"` panel, fixed, bottom centre (`z-[var(--z-overlay)]`), 360 px
-max wide. Its `bottom` comes from `useNoticeSlot` (`packages/workbench/src/hooks/ui/useNoticeSlot.ts` (the root packages)): the
-`[data-whiteboard-dock]` top plus `NOTICE_GAP_PX` (8), or, with no dock, the canvas bottom less
-`DOCKLESS_LIFT_PX` (68; `DOCKLESS_WIDE_LIFT_PX` 16 from `DOCKLESS_WIDE_MIN_PX` 1760, mirroring the
-dock), via the pure `noticeBottom` (`packages/workbench/src/lib/notice-slot.ts`); measured in a layout effect
-and on resize (ResizeObserver on the dock and canvas), hidden until measured. The panel dress (border, radius, shadow, light and dark);
-heading per the spec, `BoardSceneReportList` rows, the image placeholder sentences, a Close button
-(Escape when focus is inside). Never steals focus; reduced motion removes its fade.
+A notice in the toast stack (`ToastNotice` from `@liveworkspace/ui/toast`, the root packages), so it stands where
+every toast does, bottom centre on the dock, the tab bar and the cluster, and holds the notice slot while it shows.
+Its card is the shared `ToastCard` (`role="status"`, `aria-live="polite"`): warning tone for a report and error for a
+refusal, each stacked with its heading per the spec as the title and a close (Escape when focus is inside); the
+report's body holds the `BoardSceneReportList` rows and the image placeholder sentences at the card's full width;
+progress is an inline info card with no close. Never steals focus; it enters as a toast does.
 
 ## Compact output (`compact.ts`)
 
@@ -493,5 +491,5 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 | a 413 on create is "This board is too big for one canvas", logged, the rest land | `apps/editor/lib/board-scene-import.test.ts`                                                                                                   |
 | new documents outside the editor: folder, offline, own maker                     | `apps/editor/lib/board-scene-import.test.ts`                                                                                                   |
 | import: replace-tab, new documents (cloud and offline), failures                 | `apps/editor/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                                                                            |
-| notice slot above the dock at every width                                        | `packages/workbench/src/lib/notice-slot.test.ts` (root)                                                                                        |
+| notice in the toast stack, holding the slot                                      | `packages/ui/src/toast/ToastNotice.test.tsx` (root)                                                                                            |
 | notice copy and role                                                             | `apps/editor/components/canvas/BoardSceneNotice.test.tsx`                                                                                      |

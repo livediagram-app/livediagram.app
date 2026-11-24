@@ -60,6 +60,13 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     'Button Labels',
     'Names beside the bottom-right buttons’ icons on a wide desktop.',
   ),
+  toggle(
+    'UI',
+    'ConnectMcpTabOn',
+    'ConnectMcpTabOff',
+    'Show Connect MCP',
+    'The footer’s Connect MCP tab, hidden by its X or switched back in Settings.',
+  ),
   changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons’ size slider.', true),
   changed('UiScalePanels', 'Panel Scale', 'The panels’ own size slider.', true),
   changed('UiScaleToolbar', 'Toolbar Scale', 'The toolbar’s own size slider.', true),

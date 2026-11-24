@@ -129,6 +129,33 @@ export const CATALOGUE: AppCatalogue = {
   ],
   categories: [
     {
+      id: 'appearance',
+      label: 'Appearance',
+      aliases: ['editor', 'pages'],
+      tile: 'appearance',
+      rows: [
+        {
+          kind: 'toggle',
+          id: 'showConnectMcp',
+          label: 'Show Connect MCP',
+          description:
+            'The Connect MCP tab beside Pages, Ask and Insights in every knowledgebase. Its X turns this off.',
+          keywords:
+            'connect mcp tab footer ai app agent claude chatgpt cursor hide show close remove x views',
+          section: 'Interface',
+          key: 'showConnectMcp',
+          on: true,
+          off: false,
+          fallback: true,
+          event: {
+            category: 'UI',
+            on: 'ConnectMcpTabOn',
+            off: 'ConnectMcpTabOff',
+          },
+        },
+      ],
+    },
+    {
       id: 'documents',
       label: 'Explorer',
       aliases: ['/documents'],

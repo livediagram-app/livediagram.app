@@ -4,11 +4,31 @@ import {
   currentKnowledgeView,
   knowledgeViewHref,
   knowledgeViewOf,
+  knowledgeViewsShown,
   showKnowledgeView,
   subscribeKnowledgeView,
 } from './knowledge-view';
 
 afterEach(() => window.history.replaceState(null, '', '/document/d1'));
+
+// mcp-connect.md "Closing the tab".
+describe('the views the footer shows', () => {
+  const names = (showConnect: boolean, current: Parameters<typeof knowledgeViewsShown>[1]) =>
+    knowledgeViewsShown(showConnect, current).map(({ view }) => view);
+
+  it('are all four while Connect MCP is shown', () => {
+    expect(names(true, 'pages')).toEqual(['pages', 'ask', 'insights', 'connect']);
+  });
+
+  it('leave out Connect once it is hidden', () => {
+    expect(names(false, 'pages')).toEqual(['pages', 'ask', 'insights']);
+    expect(names(false, 'ask')).toEqual(['pages', 'ask', 'insights']);
+  });
+
+  it('keep Connect while a link has it open, hidden or not', () => {
+    expect(names(false, 'connect')).toEqual(['pages', 'ask', 'insights', 'connect']);
+  });
+});
 
 describe('the view an address names', () => {
   it('is Pages unless it names Ask, Insights or Connect', () => {

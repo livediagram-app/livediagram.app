@@ -2,7 +2,7 @@
 
 While someone works in a document, a new row in their Inbox (a mention, a comment on their work, a card or action
 handed to them, someone asking for access to an item they manage, an item shared with them) shows as a small notice
-under the editor's top-right corner card, with a link that opens the Inbox at that row (or, for
+in the toast stack at the bottom centre, where every toast sits, with a link that opens the Inbox at that row (or, for
 a share, the item). The whole design is liveworkspace's
 [inbox-notices.md](../../../../liveworkspace/docs/specs/004-index/inbox-notices.md): which rows notify, the one read
 per browser, how a notice looks, groups and goes away, and the seen rows kept across tabs.

@@ -15,6 +15,7 @@ import {
   inviteMember,
   setMemberRole,
   removeMember,
+  resendInvitation,
   answerInvitation,
   listMyTeams,
   listMyInvitations,
@@ -153,6 +154,19 @@ export async function teamRoutes(
         if (result.ok) reportServerEvent(env, 'Team', 'Removed', 'Link', home);
         return answer(result);
       }
+    } else if (sub === 'members' && subId && action === 'resend' && method === 'POST') {
+      // An open invitation's email again, its 28 days started over (admins; not within 10 minutes of the last).
+      const result = await resendInvitation(db, actor, id, subId);
+      if (!result.ok) return answer(result);
+      reportServerEvent(env, 'Team', 'Changed', 'Invite', home);
+      await sendTeamInviteEmail(env, {
+        to: result.value.email,
+        teamName: result.value.teamName,
+        inviterName: actor.name,
+        declineToken: result.value.declineToken,
+        app: await signupAppOf(db, actor.id),
+      }).catch((cause: unknown) => console.error('[teams] resent invite email failed', cause));
+      return json(result.value.member);
     } else if (sub === 'members' && !action) {
       if (!subId) {
         if (method === 'GET') return teamMembers(db, env, actor, id);

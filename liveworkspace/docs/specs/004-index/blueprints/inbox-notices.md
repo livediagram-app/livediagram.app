@@ -11,8 +11,8 @@ Scope, by file:
 | `packages/explorer/src/inbox-notices/rows.ts`                 | `noticeRows`, `freshRows`, `noticeHeadline`: which rows notify and what each says                        |
 | `packages/explorer/src/inbox-notices/seen.ts`                 | `createSeenStore`, `seenStoreFor`: rows shown, dismissed or read here, per person, across tabs           |
 | `packages/explorer/src/inbox-notices/center.ts`               | `createNoticeCenter`: the notice on screen, grouping, its timer, dismissal                               |
-| `packages/explorer/src/inbox-notices/dialog-open.ts`          | `dialogOpenNow`, `subscribeDialogs`: whether a dialog is open over the page                              |
-| `packages/explorer/src/inbox-notices/InboxNotice.tsx`         | The card                                                                                                 |
+| `packages/ui/src/toast/dialog-open.ts`                        | `dialogOpenNow`, `subscribeDialogs`: whether a dialog is open over the page, told at most every 200 ms   |
+| `packages/explorer/src/inbox-notices/InboxNotice.tsx`         | The card: a stacked `ToastCard` in the toast stack (`ToastNotice`), holding the notice slot              |
 | `packages/explorer/src/inbox-notices/useInboxNotices.tsx`     | `useInboxNotices`: the watch, the seen rows and the center for one reader; the count; the layer          |
 | `packages/explorer/src/inbox-notices/InboxCountBadge.tsx`     | The Explorer button's count                                                                              |
 | `packages/explorer/src/inbox-notices/index.ts`                | `@liveworkspace/explorer/inbox-notices`: small on purpose, so an editor's first load carries no Explorer |

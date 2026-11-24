@@ -16,7 +16,16 @@ import {
 } from '@liveworkspace/subscription-ui';
 import { Button, Spinner } from '@liveworkspace/ui';
 
-export function TeamPlan({ teamId }: { teamId: string }) {
+/** The team's tier, for its page's header pill ("Free Plan", "Pro"): null with Pro off or until the service answers. */
+export function useTeamTier(teamId: string): string | null {
+  const load = useSubscription();
+  if (!proOn() || load.status !== 'ready') return null;
+  const team = load.me.teams.find((t) => t.teamId === teamId);
+  return team ? TIER_NAMES[team.tier] : null;
+}
+
+/** `card` is the People tab's side card (a title over the tier, its line and its action); `row` the panel's band. */
+export function TeamPlan({ teamId, look = 'row' }: { teamId: string; look?: 'row' | 'card' }) {
   const load = useSubscription();
   const upgrade = useUpgrade();
   const billing = useBilling();
@@ -53,6 +62,40 @@ export function TeamPlan({ teamId }: { teamId: string }) {
       Manage Billing
     </Button>
   ) : null;
+  if (look === 'card') {
+    return (
+      <section
+        aria-labelledby="team-plan"
+        data-team-plan={team.tier}
+        className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <h2
+            id="team-plan"
+            className="m-0 text-[15px] font-semibold text-slate-900 dark:text-slate-100"
+          >
+            Plan
+          </h2>
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+            {free ? null : <ProBadge form="solid" size="sm" />}
+            {TIER_NAMES[team.tier]}
+            {free ? null : ` · ${team.seats} ${team.seats === 1 ? 'seat' : 'seats'}`}
+          </span>
+        </div>
+        {free ? (
+          <p className="m-0 text-[13px] leading-normal text-slate-600 dark:text-slate-300">
+            Pro for Teams raises the team’s limits.
+          </p>
+        ) : null}
+        {error ? (
+          <p role="alert" className="m-0 text-xs text-red-600 dark:text-red-400">
+            {error}
+          </p>
+        ) : null}
+        {action ? <div className="flex [&>*]:w-full">{action}</div> : null}
+      </section>
+    );
+  }
   return (
     <div
       data-team-plan={team.tier}

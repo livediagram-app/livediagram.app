@@ -1,18 +1,20 @@
 // The Toolbar layout's strip row and card width (ToolbarPalette.tsx, docs/specs/007-editor/toolbar-layout.md
 // "On a phone"). Split out of ToolbarPalette.tsx.
-import { PHONE_EDGE_LEFT_IN_ROW } from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
 import type { ReactNode, RefObject } from 'react';
 import { atLeastInset, safeInlinePadding } from '@livedesign/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
 import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
-import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
+import {
+  PACKED_TOOLBAR_ITEMS,
+  PHONE_TOP_ROW_CARD,
+} from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 
 // The strip's card, and the leading card beside it on a phone. Its 36px items are packed 2px apart, so on a touch
 // screen each gets a full 44 x 44 pad behind it and a tap in a gap still picks a tile (PACKED_TOOLBAR_ITEMS,
 // docs/specs/004-interface-design/touch-targets.md); the category flyouts hang beside the card, not in it, so the
 // card's own stacking context traps none of them.
-export const CARD_CLASS = `${TOOLBAR_CARD} ${PACKED_TOOLBAR_ITEMS}`;
+export const CARD_CLASS = `${TOOLBAR_CARD} ${PACKED_TOOLBAR_ITEMS} ${PHONE_TOP_ROW_CARD}`;
 
 // On a phone's row, the menu card sits at the left gutter and the strip beside
 // it rather than centred (docs/specs/007-editor/toolbar-layout.md "On a phone");
@@ -43,11 +45,7 @@ export function StripRow({
       className={`pointer-events-none flex w-full items-start gap-1.5 [&>*]:pointer-events-auto ${LANDSCAPE_HANDLE_ROOM}`}
     >
       {leading == null ? null : (
-        <div
-          ref={leadingRef}
-          data-strip-leading=""
-          className={`${CARD_CLASS} ${PHONE_EDGE_LEFT_IN_ROW}`}
-        >
+        <div ref={leadingRef} data-strip-leading="" className={CARD_CLASS}>
           {leading}
         </div>
       )}

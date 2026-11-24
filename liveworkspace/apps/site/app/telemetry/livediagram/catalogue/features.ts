@@ -137,8 +137,8 @@ export const MODE_OPTIONS = chart(
   'UI',
   'Changed',
   'Mode Options',
-  'Settings inside a canvas mode: eraser, laser, spotlight and format painter options.',
-  { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format)/.test(t ?? '') },
+  'Settings inside a canvas mode: eraser, laser, spotlight, format painter and magnifier options.',
+  { typeIn: (t) => /^(Eraser|Laser|Spotlight|Format|Magnifier)/.test(t ?? '') },
 );
 
 // The photo import (event storming): a wall photo read into sticky notes.
@@ -538,6 +538,7 @@ export const PALETTE_GROUPS_OPENED = chart(
       (type ?? '').endsWith('Group') ||
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
+      type === 'PhoneApps' ||
       type === 'ToolbarSearch' ||
       type === 'ToolbarSearchOtherModes' ||
       type === 'ToolbarSearchUnavailable',
@@ -567,6 +568,7 @@ const MODE_TITLES: Record<string, string> = {
   Spotlight: 'Spotlight',
   Eraser: 'Eraser',
   FormatPainter: 'Format Painter',
+  Magnifier: 'Magnifier',
   Isometric: 'Isometric',
 };
 

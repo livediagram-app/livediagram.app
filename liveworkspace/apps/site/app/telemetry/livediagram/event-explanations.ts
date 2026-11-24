@@ -232,6 +232,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An older event-storming board was opened by someone who can edit it, and its notes that sat between lanes were lined up on the lanes in one undoable step. Once per board.',
   'Canvas|Used|Laser':
     "Someone switched on the Laser pointer, a trail visible to everyone that shows where they're pointing without leaving a mark.",
+  'Canvas|Used|Magnifier':
+    'Someone switched on the Magnifier, a lens on the cursor that enlarges the part of the canvas under it without zooming.',
   'Canvas|Used|Spotlight':
     "Someone switched on Spotlight, which dims the rest of the canvas around wherever they're pointing.",
   'Canvas|Used|TimelineLanesOff':
@@ -1406,6 +1408,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone narrowed the Tab Style popover's Looks to one finish with its Finish filter.",
   'UI|Changed|LooksSeasonal':
     "Someone switched the Tab Style popover's Looks to the seasonal looks, with the Seasonal toggle beside the Finish filter.",
+  'UI|Changed|MagnifierShape':
+    "Someone changed the Magnifier's lens between square and round, in the Magnifier's settings.",
+  'UI|Changed|MagnifierSize':
+    "Someone changed the Magnifier's lens size, in its settings or with Shift+scroll. Counted once per settled change.",
+  'UI|Changed|MagnifierZoom':
+    'Someone changed how much the Magnifier enlarges, in its settings or with the scroll wheel. Counted once per settled change.',
   'UI|Changed|SlideNotes':
     'Someone typed presenter notes for a slide, in the Slide Deck panel. Counted once per slide edited, not per keystroke.',
   'UI|Changed|SpotlightDim':
@@ -1688,6 +1696,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'While presenting, someone clicked an element on the slide to read its detail, such as a note or comment, without leaving presentation mode.',
   'UI|Opened|TechGroup': "Someone opened a category inside the palette's Technology tab.",
   'UI|Opened|ThemePicker': "Someone opened the tab's look-and-feel dialog on its Theme tab.",
+  'UI|Opened|PhoneApps':
+    'On a phone, someone opened the Apps drawer from the menu card (Explorer, Call, Share, Inbox and the account).',
   'UI|Opened|ToolbarExplorer':
     'In the Toolbar panel layout, someone clicked the top-left menu button to open the Explorer as a popover.',
   'UI|Opened|ToolbarMore':

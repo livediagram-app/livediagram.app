@@ -3,6 +3,7 @@ import {
   FormatPainterIcon,
   IsometricIcon,
   LaserIcon,
+  MagnifierIcon,
   PanIcon,
   SelectIcon,
   SpotlightIcon,
@@ -11,7 +12,7 @@ import {
 import type { PaletteDropdownOption } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 
 // The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
-// Laser / Spotlight / Isometric / Zen), grouped (group index drives
+// Laser / Spotlight / Magnifier / Isometric / Zen), grouped (group index drives
 // the menu dividers): editing tools, then presenter tools, then the view modes.
 // Eraser and everything after act on existing content, so they disable on an
 // empty canvas; Spotlight and Slide Deck are desktop-only. Zen is an ACTION, not a persistent
@@ -82,6 +83,16 @@ function buildAll(
           },
         ]),
     // Slide Deck lives in the footer's Tools now (presentation-mode.md "Where it lives"), not here.
+    // Magnifier (docs/specs/008-canvas/magnifier.md): a lens on the cursor, first of the Preview group, before
+    // Isometric. On a phone too: a finger drag moves the lens.
+    {
+      id: 'magnifier',
+      label: 'Magnifier',
+      shortcut: 'M',
+      icon: <MagnifierIcon />,
+      group: 2,
+      disabled: canvasEmpty,
+    },
     {
       id: 'isometric',
       label: 'Isometric',

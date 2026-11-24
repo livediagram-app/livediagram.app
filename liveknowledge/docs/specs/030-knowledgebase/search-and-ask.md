@@ -430,7 +430,8 @@ share link's visitor, a page's link and a Community post's reader get pages alon
 - A knowledgebase has four views: **Pages** (the editor), **Ask**, **Insights**
   ([Insights](insights.md)) and **Connect** ([Connect](mcp-connect.md), owner 2026-11-21). They are four
   tabs at the left of the footer, **Pages | Ask | Insights | Connect** ([The page surface](page-surface.md) "The
-  footer"), on a phone too.
+  footer"), on a phone too. A person can hide **Connect** with the X it shows while open, for themselves in every
+  knowledgebase; Settings brings it back ([Connect](mcp-connect.md) "Closing the tab").
 - The view is in the address (`?view=ask`, `?view=insights`, `?view=connect`; none is Pages; `?view=ai`, its name before, still opens Insights), not the hash, which is the
   open page's. A reload keeps it, each change is a history entry, so Back returns to the view before, and each tab
   is a link.

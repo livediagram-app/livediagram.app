@@ -7,10 +7,11 @@
 // banner with Reconnect.
 import { useEffect, useState, type ReactNode } from 'react';
 import { Tooltip } from '@liveworkspace/ui';
+import { ToastCard, ToastNotice } from '@liveworkspace/ui/toast';
 import { driveConnectUrl, withCloudSyncOpen } from '@liveworkspace/drive/client';
 import type { DriveMarkState } from '@liveworkspace/drive';
 import type { RenderItemMark } from '../types';
-import { CloseIcon, Glyph } from '../ui/icons';
+import { Glyph } from '../ui/icons';
 import type { DriveMarks } from './useDriveMarks';
 
 export const DRIVE_MARK_LABEL: Record<DriveMarkState, string> = {
@@ -154,39 +155,35 @@ export function DriveReconnectBanner({
   const [dismissed, setDismissed] = useState(true);
   useEffect(() => setDismissed(readDismissed()), []);
   if (dismissed) return null;
+  const dismiss = () => {
+    try {
+      sessionStorage.setItem(DISMISS_KEY, '1');
+    } catch {
+      // A convenience only.
+    }
+    setDismissed(true);
+  };
+  // A notice in the toast stack, bottom centre, where every toast sits (toasts.md "One place for everything that pops
+  // up"), not a card of its own in the corner.
   return (
-    <div
-      role="status"
-      data-drive-reconnect=""
-      className="fixed bottom-[calc(1rem+var(--explorer-floor,0px))] left-3 z-40 flex max-w-[22rem] items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-black/30"
-    >
-      <span className="min-w-0 flex-1">Google Drive sync is paused.</span>
-      <a
-        href={driveConnectUrl(workspaceOrigin, '')}
-        onClick={(event) => {
-          event.preventDefault();
-          const back = withCloudSyncOpen(window.location.href, settingsParam);
-          window.location.assign(driveConnectUrl(workspaceOrigin, back));
-        }}
-        className="shrink-0 rounded-md px-2 py-1 font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-slate-800"
-      >
-        Reconnect
-      </a>
-      <button
-        type="button"
-        aria-label="Dismiss"
-        onClick={() => {
-          try {
-            sessionStorage.setItem(DISMISS_KEY, '1');
-          } catch {
-            // A convenience only.
-          }
-          setDismissed(true);
-        }}
-        className="flex size-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-      >
-        <CloseIcon size={14} />
-      </button>
-    </div>
+    <ToastNotice hold={false}>
+      <ToastCard
+        tone="warning"
+        data-drive-reconnect=""
+        message="Google Drive sync is paused."
+        actions={[
+          {
+            label: 'Reconnect',
+            // Drawn only after the first paint (dismissed until then), so the page's own address is known here.
+            href: driveConnectUrl(
+              workspaceOrigin,
+              withCloudSyncOpen(window.location.href, settingsParam),
+            ),
+            primary: true,
+          },
+        ]}
+        onClose={dismiss}
+      />
+    </ToastNotice>
   );
 }
