@@ -10,7 +10,12 @@ import type { App } from '@liveworkspace/index-client';
 import { workbench } from '../../bindings';
 import { CHIP, CHIP_OPEN, brandMarkDom } from '../send-to-plan/article-send-dom';
 import type { ArticleSentDraw, PMState } from '../send-to-plan/article-sent';
-import { anyReceived, onReceivedChanged, receivedAt } from './knowledge-received-store';
+import {
+  anyReceived,
+  onReceivedChanged,
+  receivedAt,
+  receivedStamp,
+} from './knowledge-received-store';
 
 type PMMark = { readonly type: { readonly name: string }; readonly attrs: Record<string, unknown> };
 type PMChild = { readonly marks: readonly PMMark[] };
@@ -75,9 +80,16 @@ export function receivedChipDom(source: { app: App; title: string }, link: strin
 export function articleReceivedSpec<Deco, Set, State extends PMState>(
   draw: ArticleSentDraw<Deco, Set, State>,
 ) {
+  // ProseMirror asks for the decorations on every redraw (a selection move, a remote cursor), and a long page's walk
+  // over its blocks' marks is not free: the answer is kept per doc (a new doc on each edit) and received-sends stamp.
+  const drawn = new WeakMap<object, { stamp: number; set: Set }>();
   const decorations = (state: State): Set => {
     // Most pages received nothing: no walk on each keystroke.
     if (!anyReceived()) return draw.empty;
+    const doc = state.doc as unknown as object;
+    const now = receivedStamp();
+    const cached = drawn.get(doc);
+    if (cached && cached.stamp === now) return cached.set;
     const decos: Deco[] = [];
     (state.doc as unknown as PMDocOf).forEach((node, pos) => {
       if (!node.isTextblock) return;
@@ -95,7 +107,9 @@ export function articleReceivedSpec<Deco, Set, State extends PMState>(
         break;
       }
     });
-    return decos.length > 0 ? draw.set(state.doc, decos) : draw.empty;
+    const set = decos.length > 0 ? draw.set(state.doc, decos) : draw.empty;
+    drawn.set(doc, { stamp: now, set });
+    return set;
   };
   return {
     props: { decorations },

@@ -50,7 +50,7 @@ afterEach(() => {
 describe('the source’s sends', () => {
   it('reads once, indexes by element, adds a send at once, and keeps what it had when a read fails', async () => {
     const reader = { knowledgeSends: vi.fn().mockResolvedValue({ sends: [send()] }) };
-    setKnowledgeSendSource('D', null, reader as never);
+    setKnowledgeSendSource('D', null, reader);
     await flush();
     expect(elementKnowledgeSends('a').map((s) => s.id)).toEqual(['ks_1']);
     addKnowledgeSend(send({ id: 'ks_2', elementIds: ['a'] }));
@@ -58,7 +58,7 @@ describe('the source’s sends', () => {
     expect(elementKnowledgeSends('b').map((s) => s.id)).toEqual(['ks_1']);
     expect(sentPageWords(send())).toBe('On Onboarding · Team Wiki');
     // The same item again reads nothing more.
-    setKnowledgeSendSource('D', null, reader as never);
+    setKnowledgeSendSource('D', null, reader);
     expect(reader.knowledgeSends).toHaveBeenCalledTimes(1);
   });
 });
@@ -66,7 +66,7 @@ describe('the source’s sends', () => {
 describe('the knowledgebase’s received sends', () => {
   it('reads once and finds a send by the link its line holds', async () => {
     const reader = { knowledgeReceived: vi.fn().mockResolvedValue({ received: [received] }) };
-    setKnowledgeReceivedSource('K', null, reader as never);
+    setKnowledgeReceivedSource('K', null, reader);
     await flush();
     expect(receivedAt(LINK)?.source.title).toBe('Payments Flow');
     expect(receivedAt('https://elsewhere')).toBeNull();
@@ -74,7 +74,7 @@ describe('the knowledgebase’s received sends', () => {
 
   it('leaves the lines plain when the read is refused', async () => {
     const reader = { knowledgeReceived: vi.fn().mockRejectedValue(new Error('403')) };
-    setKnowledgeReceivedSource('K', null, reader as never);
+    setKnowledgeReceivedSource('K', null, reader);
     await flush();
     expect(receivedAt(LINK)).toBeNull();
   });
@@ -90,6 +90,8 @@ describe('the Sent From chip', () => {
       f({ marks: href ? [{ type: { name: 'link' }, attrs: { href } }] : [] });
     },
   });
+  // What the test's draw makes of a page: its chips, each with its place and button.
+  const drawn = (set: unknown) => set as { pos: number; toDOM: () => HTMLElement }[];
   const draw = {
     widget: (pos: number, toDOM: () => Node, spec: { key: string }) => ({ pos, toDOM, spec }),
     set: (_doc: unknown, decos: unknown[]) => decos,
@@ -108,12 +110,12 @@ describe('the Sent From chip', () => {
       [],
     );
     const reader = { knowledgeReceived: vi.fn().mockResolvedValue({ received: [received] }) };
-    setKnowledgeReceivedSource('K', null, reader as never);
+    setKnowledgeReceivedSource('K', null, reader);
     await flush();
     const spec = articleReceivedSpec(draw as never);
-    const decos = spec.props.decorations(
-      stateOf([block(null), block(LINK), block('https://other')]),
-    ) as unknown as { pos: number; toDOM: () => HTMLElement }[];
+    const decos = drawn(
+      spec.props.decorations(stateOf([block(null), block(LINK), block('https://other')])),
+    );
     expect(decos.map((d) => d.pos)).toEqual([19]);
     const chip = decos[0]!.toDOM();
     expect(chip.textContent).toBe('Payments Flow');
@@ -121,6 +123,38 @@ describe('the Sent From chip', () => {
     const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
     chip.click();
     expect(opened).toHaveBeenCalledWith(LINK, '_blank', 'noopener,noreferrer');
+  });
+
+  it('walks a page once per doc, and again only when the received sends change', async () => {
+    const reader = { knowledgeReceived: vi.fn().mockResolvedValue({ received: [received] }) };
+    setKnowledgeReceivedSource('K', null, reader);
+    await flush();
+    const spec = articleReceivedSpec(draw as never);
+    const walked = vi.fn();
+    const linked = block(LINK);
+    const page = {
+      ...linked,
+      forEach: (f: (child: { marks: unknown[] }) => void) => {
+        walked();
+        linked.forEach(f);
+      },
+    };
+    const state = stateOf([page]);
+    const first = spec.props.decorations(state);
+    // A redraw of the same doc (a selection move) reuses the drawn chips.
+    expect(spec.props.decorations(state)).toBe(first);
+    expect(walked).toHaveBeenCalledTimes(1);
+    // A new doc (an edit) walks again.
+    spec.props.decorations(stateOf([page]));
+    expect(walked).toHaveBeenCalledTimes(2);
+    // The received sends changing redraws the same doc.
+    const renamed = { ...received, source: { ...received.source, title: 'Renamed' } };
+    const rereader = { knowledgeReceived: vi.fn().mockResolvedValue({ received: [renamed] }) };
+    setKnowledgeReceivedSource('K2', null, rereader);
+    await flush();
+    const again = drawn(spec.props.decorations(state));
+    expect(walked).toHaveBeenCalledTimes(3);
+    expect(again.map((d) => d.toDOM().textContent)).toEqual(['Renamed']);
   });
 
   it('names an untitled source plainly', () => {
