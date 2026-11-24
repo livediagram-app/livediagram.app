@@ -173,7 +173,6 @@ livedocuments/apps/editor/lib/tab-style-opener.ts	liveknowledge/apps/editor/lib/
 livedocuments/apps/editor/lib/thumbnail-cache.ts	liveknowledge/apps/editor/lib/thumbnail-cache.ts
 livedocuments/apps/editor/lib/version-history-store.ts	liveknowledge/apps/editor/lib/version-history-store.ts
 livedocuments/apps/editor/lib/workbench-bindings.ts	liveknowledge/apps/editor/lib/workbench-bindings.ts
-livedocuments/packages/agent-verbs/src/pages/index.ts	liveknowledge/packages/agent-verbs/src/pages/index.ts
 livedocuments/packages/api-schema/src/article-caret.ts	liveknowledge/packages/api-schema/src/article-caret.ts
 livedocuments/packages/api-schema/src/cta-sources.ts	liveknowledge/packages/api-schema/src/cta-sources.ts
 livedocuments/packages/api-schema/src/home.ts	liveknowledge/packages/api-schema/src/home.ts
