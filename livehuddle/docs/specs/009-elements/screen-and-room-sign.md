@@ -32,7 +32,7 @@ A flat wall screen: a dark panel in a thin bezel, a small status light on its lo
 - **Default 192 × 120**, its proportions kept. Placed like any office piece (a tap places it at its size, a drag moves
   the drop). Not a destination, never blocks walking, takes no label (it has nothing to write on).
 - **Any size up to a wall** (Work Tracker 1427). Unlike the other placed pieces a Screen keeps its resize handles: an
-  Editor drags it from `SCREEN_MIN` (96 × 60) up to `SCREEN_MAX` (1600 × 1000), a wall-filling screen. It keeps its
+  Editor drags it, or types its size in the Size section, from `SCREEN_MIN` (96 × 60) up to `SCREEN_MAX` (1600 × 1000), a wall-filling screen. It keeps its
   proportions by default (`aspectLocked`), and the Size section's lock frees them, as for any shape. A Screen draws
   under the characters and never blocks walking, so a big one over a row of chairs leaves every chair to sit in.
 - **What it shows**, the first of these that applies, for each viewer:
