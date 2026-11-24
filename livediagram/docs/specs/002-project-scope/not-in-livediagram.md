@@ -40,7 +40,7 @@ hooks are gone; everything else about them is unchanged.
 - **[Reaction Pad](../009-elements/reaction-pad.md)**: press it to throw a burst; a workshop's applause button.
 - **[Bring Focus](../012-collaboration/bring-focus.md)**: press it and everyone is offered a jump to it.
 - **[Selection Mode button](../009-elements/mode-button.md)**: still hands out Select, Hand, Laser, Spotlight, Eraser,
-  Format and Isometric, which are real presenting and editing tools.
+  Format, Magnifier and Isometric, which are real presenting and editing tools.
 - **[Reveal zone](../009-elements/reveal-zone.md)**, **[Link cards](../009-elements/link-cards.md)**, the Session
   strip's Timer and Vote, the [facilitator baton](../012-collaboration/facilitator.md) and
   [Follow-me](../012-collaboration/follow-me-viewport.md).
