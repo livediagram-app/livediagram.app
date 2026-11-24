@@ -7,13 +7,24 @@
 // The knowledgebase's labels (page-surface.md "Page labels") ride the same settings, so they are held here too: every
 // pill, the picker and the filter read them by id, and a rename or a new colour is one change of this list.
 import {
+  DEFAULT_AI_EDITING,
   DEFAULT_REVIEW_EVERY,
+  aiEditingOf as levelOf,
   parseKnowledgeSettings,
+  type AiEditing,
   type ReviewEvery,
 } from '@liveknowledge/knowledge';
 import { parseKnowledgeLabels, type KnowledgeLabel } from '@liveknowledge/document';
 
 const NO_LABELS: readonly KnowledgeLabel[] = Object.freeze([]);
+
+/** AI Editing as the editor holds it (docs/specs/030-knowledgebase/ai-editing.md): the level and the option beside
+ *  it, one object until either changes. */
+export type AiEditingChoice = { readonly level: AiEditing; readonly unverifies: boolean };
+export const DEFAULT_AI_EDITING_CHOICE: AiEditingChoice = Object.freeze({
+  level: DEFAULT_AI_EDITING,
+  unverifies: false,
+});
 
 const sameLabels = (a: readonly KnowledgeLabel[], b: readonly KnowledgeLabel[]) =>
   a.length === b.length &&
@@ -22,6 +33,7 @@ const sameLabels = (a: readonly KnowledgeLabel[], b: readonly KnowledgeLabel[]) 
 export function createKnowledgeSettingsStore() {
   const held = new Map<string, ReviewEvery>();
   const labelsHeld = new Map<string, readonly KnowledgeLabel[]>();
+  const aiHeld = new Map<string, AiEditingChoice>();
   const listeners = new Set<() => void>();
   let version = 0;
   const changed = () => {
@@ -39,6 +51,15 @@ export function createKnowledgeSettingsStore() {
   const setLabels = (documentId: string, labels: readonly KnowledgeLabel[]): boolean => {
     if (sameLabels(labelsOf(documentId), labels)) return false;
     labelsHeld.set(documentId, labels.length ? Object.freeze([...labels]) : NO_LABELS);
+    changed();
+    return true;
+  };
+  const aiEditingOf = (documentId: string | null | undefined): AiEditingChoice =>
+    (documentId ? aiHeld.get(documentId) : undefined) ?? DEFAULT_AI_EDITING_CHOICE;
+  const setAiEditing = (documentId: string, choice: AiEditingChoice): boolean => {
+    const was = aiEditingOf(documentId);
+    if (was.level === choice.level && was.unverifies === choice.unverifies) return false;
+    aiHeld.set(documentId, Object.freeze({ level: choice.level, unverifies: choice.unverifies }));
     changed();
     return true;
   };
@@ -61,11 +82,19 @@ export function createKnowledgeSettingsStore() {
           ? (settings as { labels?: unknown }).labels
           : undefined,
       );
-      const period = set(documentId, parseKnowledgeSettings(settings).reviewEvery);
-      return setLabels(documentId, labels) || period;
+      const parsed = parseKnowledgeSettings(settings);
+      const period = set(documentId, parsed.reviewEvery);
+      const ai = setAiEditing(documentId, {
+        level: levelOf(parsed),
+        unverifies: parsed.aiEditUnverifies === true,
+      });
+      return setLabels(documentId, labels) || period || ai;
     },
     set,
     setLabels,
+    /** The knowledgebase's AI Editing: Suggest Edits Only until its read says otherwise. */
+    aiEditingOf,
+    setAiEditing,
   };
 }
 

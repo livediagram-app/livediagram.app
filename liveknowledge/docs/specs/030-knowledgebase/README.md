@@ -7,6 +7,7 @@ brought from livedocuments ([Article pages](../007-editor/article-pages.md)) and
 - [Reading and editing a page](editing.md): pages open to read; Edit opens one shared live draft, Save or Cancel.
 - [Links and embeds](links-and-embeds.md): page links, backlinks and other apps' items inside a page.
 - [Verification](verification.md): owners, verified pages and reviews that come due.
+- [AI Editing](ai-editing.md): how far agents may change pages themselves (Suggest Edits Only, Edit Unverified Pages, Edit Any Page), set by an Editor from the knowledgebase's menu.
 - [Approval](approval.md): Pending Approval, and other members approving or rejecting a page.
 - [Comments on a page](page-comments.md): comment threads at the foot of every page.
 - [Reactions on a page](page-reactions.md): any emoji from any signed-in reader, Viewers included, beside Edit; no notifications.

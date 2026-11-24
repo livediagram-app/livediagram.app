@@ -95,7 +95,9 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      // The group of Workers @liveworkspace/local-workers runs in one process, set by the root dev:* scripts.
+      "passThroughEnv": ["LOCAL_WORKERS"]
     },
     "lint": {
       "dependsOn": ["^lint"]

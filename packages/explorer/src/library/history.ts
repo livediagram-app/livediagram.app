@@ -38,8 +38,11 @@ export type HistoryRun = { key: string; events: ItemEvent[] };
 
 export type HistoryDay = { key: string; label: string; runs: HistoryRun[]; count: number };
 
+// One kind by one person, and by the same agent for them or none: an agent's doing never folds into its person's.
 const sameRun = (a: ItemEvent, b: ItemEvent) =>
-  a.type === b.type && (a.actorId ?? '') === (b.actorId ?? '');
+  a.type === b.type &&
+  (a.actorId ?? '') === (b.actorId ?? '') &&
+  (a.detail?.agent ?? '') === (b.detail?.agent ?? '');
 
 /** Newest-first events into days, each day's consecutive events of one kind by one person folded into a run. One
  *  pass, linear in the events. */

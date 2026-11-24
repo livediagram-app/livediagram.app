@@ -1,7 +1,7 @@
 // Who made a page and who changed it last, a person or an agent (docs/specs/030-knowledgebase/verification.md "Made
 // by a person or an agent"): the words of the meta row's two pills and their hover cards. Pure.
 import type { PageAuthorStamp } from '@liveknowledge/api-schema';
-import { agentForPerson } from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
+import { agentForPerson } from '@liveworkspace/ui/agent-for-person';
 import { relativeSince } from '@/lib/relative-time';
 import { shortDate } from './page-trust';
 

@@ -15,6 +15,7 @@ import {
   PortalMenu,
 } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import {
+  AiEditingIcon,
   AiIcon,
   DeleteIcon,
   DescribeIcon,
@@ -34,6 +35,7 @@ const ICONS: Record<KnowledgeMenuVerb, ReactNode> = {
   export: <ExportIcon />,
   publish: <PublishIcon />,
   ai: <AiIcon />,
+  aiEditing: <AiEditingIcon />,
   delete: <DeleteIcon />,
 };
 

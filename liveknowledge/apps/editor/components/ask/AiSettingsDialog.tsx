@@ -39,6 +39,7 @@ import {
 import { track } from '@/lib/telemetry';
 import { useOpenKnowledgeTier } from '@/lib/use-knowledge-tier';
 import { AiKeyForm } from './AiKeyForm';
+import { AiSourcesSection } from './AiSourcesSection';
 import { AiProviderPicker, AiSourcePicker, type AiSource } from './AiProviderPicker';
 import { KeyIcon } from './ask-icons';
 import { useAiSettingsState, useAskSession, type AskSession } from './useAskSession';
@@ -345,6 +346,10 @@ export function AiSettingsDialog({
             </div>
           ) : null}
 
+          {/* What Ask answers from besides the pages (search-and-ask.md "Sources in AI Settings"). */}
+          {rights.askOff === 'offline' ? null : (
+            <AiSourcesSection who={who} documentId={documentId} manage={rights.manageAi} />
+          )}
           {failure ? (
             <Callout tone="error" size="md" role="alert">
               {failure}

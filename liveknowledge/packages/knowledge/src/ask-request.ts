@@ -19,6 +19,7 @@ How to answer:
 - If the passages answer only part of the question, answer that part and say plainly which part they do not cover. If they do not answer it at all, say so in one sentence and write nothing more in the answer. Do not guess and do not fill a gap from general knowledge.
 - When two passages disagree, prefer the one from a verified page, and the more recently verified of two; between pages alike in that, prefer the higher health score. Set the other aside and say so (see below) instead of blending them.
 - When a claim you make rests only on a passage whose page's health is needs-work, say so in the answer in a few words, for example "this comes from a page with a low health score".
+- Some passages come from the team's items in other apps, not from pages: they carry source_app and item (and the place in it) in place of page, with as_of, the day the item was last read. Nobody has verified them here. Prefer a page when a page and such an item disagree, and when a claim you make rests only on items from other apps, say so in a few words, naming the item, for example "this comes from the Checkout Flow diagram, which nobody has verified here".
 
 Reply in exactly this form, with nothing before or after it:
 
@@ -33,7 +34,20 @@ export type AskTurn = { question: string; answer: string };
 
 const attribute = (name: string, value: string) => ` ${name}="${fenced(value)}"`;
 
+// A source chunk (search-and-ask.md "Sources"): its app, its item, the place in it and the day it was read, never a
+// trust or a health score.
+function sourceBlock(number: number, passage: AskPassage['passage']): string {
+  const source = passage.source!;
+  return (
+    `<passage number="${number}"${attribute('source_app', source.app)}${attribute('item', source.itemName)}` +
+    `${passage.headings.length ? attribute('place', passage.headings.join(' > ')) : ''}` +
+    `${source.readAt ? attribute('as_of', dayOf(source.readAt)) : ''}>\n` +
+    `${fenced(passage.text)}\n</passage>`
+  );
+}
+
 function passageBlock({ number, passage, health }: AskPassage): string {
+  if (passage.source) return sourceBlock(number, passage);
   // Verification off (a Review Period of Never): the model is told nothing of it, neither a trust nor a date.
   const off = passage.trust === 'off';
   const verified =

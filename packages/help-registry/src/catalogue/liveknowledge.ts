@@ -333,6 +333,17 @@ export const articles: Article[] = [
     group: 'Finding Things',
     ...APPS,
   },
+  {
+    slug: 'ask-across-apps',
+    title: 'Asking Across Your Apps',
+    description:
+      'Ask answers from the diagrams, plans, documents, designs and Spaces connected to your Knowledgebase, as well as its pages.',
+    keywords:
+      'sources connected items team folder other apps livediagram liveplanner livedocuments livedesign livehuddle diagram plan card deck design space cited by ask back to the answer likely answered connect not verified as of',
+    ...KNOWLEDGEBASE,
+    group: 'Finding Things',
+    ...APPS,
+  },
   // ---- Knowledgebase: Insights ----
   {
     slug: 'connecting-an-agent',
@@ -349,9 +360,9 @@ export const articles: Article[] = [
     slug: 'what-agents-can-do',
     title: 'What Agents Can Do',
     description:
-      'A new connection reads, searches and suggests. An Editor can allow one to write, never over a verified page.',
+      'A new connection reads, searches and suggests. An Editor can allow one to write, as far as AI Editing allows.',
     keywords:
-      'agents permissions scopes read suggest write allow writing stop writing reads suggests edits writes connected agents verified review due protected what an agent sees',
+      'agents permissions scopes read suggest write allow writing stop writing reads suggests edits writes connected agents verified review due protected what an agent sees ai editing suggest edits only edit unverified pages edit any page remove verification',
     ...KNOWLEDGEBASE,
     group: 'Insights',
     ...APPS,
@@ -553,7 +564,7 @@ export const articles: Article[] = [
     description:
       "Why an agent's write was refused, and whether to allow writing or have it suggest the edit.",
     keywords:
-      'agent cannot write refused forbidden write_page page_verified page_review_due allow writing read-only token scope suggest instead viewer participant',
+      'agent cannot write refused forbidden write_page page_verified page_review_due ai_editing_suggest_only ai editing allow writing read-only token scope suggest instead viewer participant',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
     ...APPS,

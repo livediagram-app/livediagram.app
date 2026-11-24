@@ -317,3 +317,36 @@ describe('live data', () => {
     ).rejects.toMatchObject({ status: 200 });
   });
 });
+
+describe('readKnowledgeText (knowledge-sources.md "The door")', () => {
+  const TEXT = {
+    name: 'Checkout Flow',
+    version: 3,
+    chunks: [{ ref: 't:0', title: 'Payments', text: 'Stripe', place: { tabId: 't' } }],
+  };
+
+  it('reads an item text with the caller key, and null for an item gone', async () => {
+    const { doors, calls } = doorsAnswering({ status: 200, body: JSON.stringify(TEXT) });
+    expect(await doors.readKnowledgeText('livediagram', 'D 1')).toEqual(TEXT);
+    expect(calls[0]!.url).toBe('https://livediagram.test/api/internal/items/D%201/knowledge-text');
+    expect(authOf(calls[0]!.init)).toBe('Bearer livediagram-key');
+    expect(
+      await doorsAnswering({ status: 404, body: '{}' }).doors.readKnowledgeText('livediagram', 'D'),
+    ).toBeNull();
+  });
+
+  it('throws a refusal or an answer past the caps', async () => {
+    await expect(
+      doorsAnswering({ status: 500, body: '{}' }).doors.readKnowledgeText('livediagram', 'D'),
+    ).rejects.toMatchObject({ status: 500 });
+    await expect(
+      doorsAnswering({
+        status: 200,
+        body: JSON.stringify({ ...TEXT, chunks: [{ ...TEXT.chunks[0], text: 'x'.repeat(5000) }] }),
+      }).doors.readKnowledgeText('livediagram', 'D'),
+    ).rejects.toMatchObject({ status: 200 });
+    await expect(
+      doorsAnswering({ status: 200, body: 'nope' }).doors.readKnowledgeText('livediagram', 'D'),
+    ).rejects.toMatchObject({ status: 200 });
+  });
+});

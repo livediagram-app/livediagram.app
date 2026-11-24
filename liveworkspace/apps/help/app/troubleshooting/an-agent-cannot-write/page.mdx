@@ -5,7 +5,7 @@ import { AgentCardScene } from '@/editions/liveknowledge/components/illustration
 export const metadata = helpMetadata({
   title: 'An Agent Cannot Write',
   description:
-    "Why an agent's write to a Knowledgebase page was refused (page_verified, page_review_due or scope_needed), and whether to allow writing or suggest it.",
+    "Why an agent's write to a Knowledgebase page was refused (AI Editing, page_verified, page_review_due or scope_needed), and how to allow it or suggest instead.",
   path: '/help/troubleshooting/an-agent-cannot-write/',
 });
 
@@ -13,14 +13,20 @@ export const metadata = helpMetadata({
 
 An agent that is refused says why, in the refusal's own words. Find the code below. What each scope allows is in [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
 
+## AI Editing Is Suggest Edits Only
+
+`ai_editing_suggest_only`, with "This knowledgebase's AI Editing setting is Suggest Edits Only, so agents do not change pages directly. Suggest the change instead with suggest_edit, for a person to accept."
+
+**Suggest Edits Only** is the default. To let agents write, an Editor opens the Knowledgebase's menu (its name at the top of the sidebar), chooses **AI Editing**, picks **Edit Unverified Pages** or **Edit Any Page**, and presses **Save**. See [What Agents Can Do](/help/knowledgebase/what-agents-can-do/).
+
 ## The Page Is Verified or Due for Review
 
 | Code              | The refusal says                                                                              |
 | ----------------- | --------------------------------------------------------------------------------------------- |
-| `page_verified`   | "This page is verified, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept." |
-| `page_review_due` | "This page is due for review, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept." |
+| `page_verified`   | "This page is verified, and this knowledgebase's AI Editing setting is Edit Unverified Pages, so an agent does not rewrite it. Suggest the change instead with suggest_edit, for a person to accept." |
+| `page_review_due` | "This page is due for review, and this knowledgebase's AI Editing setting is Edit Unverified Pages, so an agent does not rewrite it until a person has looked at it. Suggest the change instead with suggest_edit, for a person to accept." |
 
-This is on purpose, and no setting changes it: a page a person vouched for changes only when a person accepts the change. Have the agent use `suggest_edit` (the CLI's `suggest`), then accept it under **Edits Suggested by Agents**. See [Suggested Edits](/help/knowledgebase/suggested-edits/).
+Under **Edit Unverified Pages** a page a person vouched for changes only when a person accepts the change. Have the agent use `suggest_edit` (the CLI's `suggest`), then accept it under **Edits Suggested by Agents**. See [Suggested Edits](/help/knowledgebase/suggested-edits/). To let agents rewrite verified pages too, an Editor sets AI Editing to **Edit Any Page**.
 
 ## The Connection Does Not Hold the Write Scope
 
@@ -38,7 +44,11 @@ This is on purpose, and no setting changes it: a page a person vouched for chang
   <AgentCardScene />
 </Figure>
 
-Only an Editor can do this. The agent can then write pages that were never verified, and move pages, in this Knowledgebase only.
+Only an Editor can do this. The agent can then move any page, and write pages as far as AI Editing allows, in this Knowledgebase only.
+
+## The Agent Cannot Move a Verified Page
+
+`scope_needed`, with "This connection holds the suggest scope here, so it moves only never-verified pages." and the page that held it back ("\"Deploys\" is verified"). Without `write`, an agent moves only pages nobody has verified, with everything under them. Move the page yourself, or allow the connection to write as above.
 
 ## The Card Has No Menu
 

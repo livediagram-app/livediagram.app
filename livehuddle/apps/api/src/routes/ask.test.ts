@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ASK_BUILT_IN_PER_PERSON_PER_DAY, type AskEvent } from '@liveworkspace/ask';
 import { askCountName, spendAskIn } from '@liveworkspace/ask/server';
+import { fakeSubscription } from '@liveworkspace/subscription/testing';
 import type { Env } from '../types';
 import { handleAsk } from './ask';
 import { makeTestRouteContext } from './test-route-context';
@@ -10,6 +11,20 @@ const keyFor = vi.hoisted(() => vi.fn<(...args: unknown[]) => Promise<unknown>>(
 vi.mock('@liveworkspace/auth-client/ai-key', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@liveworkspace/auth-client/ai-key')>()),
   personAiKey: keyFor,
+}));
+
+// The index's grant on the item for the asker (020-ask "AI credits"): who pays a built-in question with Pro on.
+const granted = vi.hoisted(() => ({
+  level: 'edit' as string | null,
+  asked: [] as string[],
+}));
+vi.mock('./document-grant', () => ({
+  resolveDocumentGrant: vi.fn(async (_ctx: unknown, itemId: string) => {
+    granted.asked.push(itemId);
+    return granted.level
+      ? { item: itemId, level: granted.level, owner: 'user_owner', team: null }
+      : null;
+  }),
 }));
 
 // Ask AI's door in this app (liveworkspace/docs/specs/020-ask/ask.md "The route"): who may ask, that built-in AI
@@ -119,5 +134,60 @@ describe('POST /api/ask', () => {
   it('is one path and one verb', async () => {
     expect((await ask('account', '/api/ask/more')).status).toBe(404);
     expect((await ask('account', '/api/ask', 'GET')).status).toBe(405);
+  });
+});
+
+describe('POST /api/ask on AI credits (020-ask "AI credits")', () => {
+  const askAbout = (extra: Partial<Env> = {}) =>
+    handleAsk(
+      makeTestRouteContext('POST', '/api/ask', {
+        owner: 'user_a',
+        accountUserId: 'user_a',
+        body: { question: 'What happens?', passages, itemId: 'item_1' },
+        env: { ...env, ...extra },
+      }),
+    );
+
+  beforeEach(() => {
+    granted.level = 'edit';
+    granted.asked = [];
+  });
+
+  it('with Pro off, reads no grant and asks no subscription service', async () => {
+    const service = fakeSubscription();
+    const res = await askAbout({ SUBSCRIPTION: service.fetcher, SUBSCRIPTION_KEY: 'app-key' });
+    expect(res.status).toBe(200);
+    expect(service.calls).toEqual([]);
+    expect(granted.asked).toEqual([]);
+  });
+
+  it("with Pro on, lends an Editor and a Participant the owner's credit, a Viewer nothing", async () => {
+    const service = fakeSubscription();
+    const pro = {
+      PRO_ENABLED: 'true',
+      SUBSCRIPTION_KEY: 'app-key',
+      SUBSCRIPTION_URL: 'https://subscription.test/ask',
+      SUBSCRIPTION: service.fetcher,
+    } as Partial<Env>;
+    for (const level of ['edit', 'participate', 'view']) {
+      granted.level = level;
+      const res = await askAbout(pro);
+      expect(res.status).toBe(200);
+      await res.text();
+    }
+    expect(granted.asked).toEqual(['item_1', 'item_1', 'item_1']);
+    expect(service.to('spend').map((spend) => [spend.owner, spend.meter, spend.amount])).toEqual([
+      ['p:user_owner', 'aiCredits', 1],
+      ['p:user_owner', 'aiCredits', 1],
+      ['p:user_a', 'aiCredits', 1],
+    ]);
+    // The owner's month is used: the question is refused with whose it is, and the model is not asked.
+    service.spent.set('p:user_owner:aiCredits', 50);
+    granted.level = 'edit';
+    const asksBefore = asked.length;
+    const used = await askAbout(pro);
+    expect(used.status).toBe(429);
+    expect(await used.json()).toMatchObject({ error: 'ai_credits_used', owner: 'p:user_owner' });
+    expect(asked).toHaveLength(asksBefore);
   });
 });

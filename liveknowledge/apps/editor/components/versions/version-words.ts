@@ -2,7 +2,7 @@
 // version is called, the rail's day headings, a row's time and the name a copy is given. Pure, over a clock and the
 // viewer's locale, so the tests pin both.
 import type { VersionKind, VersionSummary } from '@liveknowledge/api-schema';
-import { agentForPerson } from '@liveworkspace/workbench/components/ai-writer/agent-for-person';
+import { agentForPerson } from '@liveworkspace/ui/agent-for-person';
 
 const KIND_WORDS: Record<VersionKind, string> = {
   save: 'Saved',

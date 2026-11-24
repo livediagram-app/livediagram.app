@@ -69,14 +69,15 @@ Offline can be asked about for the same reason.
 
 ## The route
 
-`POST /api/ask` on each app's api, the same in every app (`serveAsk`): `{ question, passages, turns?, teamId?, ai? }`.
+`POST /api/ask` on each app's api, the same in every app (`serveAsk`): `{ question, passages, turns?, teamId?, ai?,
+itemId? }`. `itemId` is the open item, read only to learn who pays AI credits with Pro on ("AI credits").
 
 - **For a signed-in account only** (`403 ask_needs_account` otherwise): a guest or a link visitor would spend built-in
   AI for strangers.
 - Answered as server-sent events: `delta` pieces of the answer, then one `done` (`text`, `sources`, `provider`,
   `model`), or one `error` (`kind`, `message`, and `aiKey` when a key failed). A refusal before the stream opens is
   JSON `{ error, message }`: `400 ask_invalid`, `422 ask_nothing_to_read`, `503 ask_unavailable`,
-  `429 ask_built_in_limit`, `422 ai_key_failed`.
+  `429 ask_built_in_limit`, `422 ai_key_failed`, and with Pro on `429 ai_credits_used` and `429 ask_by_others_limit`.
 - The model is told to answer only from the passages, to cite each claim by passage number, to say what they do not
   cover, and to write no links. Passages and questions are fenced as material to read, never instructions. Only the
   numbers of passages that were sent become citations; they are renumbered 1 to n in the order first cited.
@@ -117,6 +118,37 @@ not set up and points to a key.
 The count lives in one instance of the app's existing item room Durable Object per account, named `~ask-ai:<account>`
 (no item id starts with `~`): no new binding, class or migration. It holds only the day and how many.
 
+## AI credits
+
+With Pro on ([subscription](../019-subscription/subscription.md) "What an AI operation costs"), a question on built-in
+AI also spends **1 AI credit** (`AI_CREDIT_COSTS.ask`), as liveknowledge's Ask does. Decided 2026-11-23 (Work Tracker
+1391), for the owner to overturn:
+
+- **What it costs.** Built-in AI writes at most 2,000 tokens a call (`BUILT_IN_MAX_TOKENS` caps Ask's 8,000, which is
+  room for a key's model), and reads at most 24,000 characters of passages and the earlier turns: the work of one
+  credit in the table.
+- **Who pays: the item's owner**, the team for a team's item, by the one rule every app follows (`itemPayer`), for
+  an asker whose grant on the item is **Editor** or **Participant**. A **Viewer is lent nothing**: their questions
+  spend their own credits. So does a question whose item the index will not name for them. A **guest's item** spends
+  nobody's credits: the 30 a day is all it has. The payer is the index's word on the item, never the request's.
+- **A share link is never a way to spend the owner's month unbounded**: people who are not the owner (or the owning
+  team's members) charge at most **20 questions a day** to one item, counted in the room instance
+  `~ask-ai-others:<item>`. Past it: `429 ask_by_others_limit`, "Built-in AI here has had its fill for today. Try
+  again tomorrow, or use your own AI key."
+- **The order**: the person's 30 a day, then the item's 20 by others, then the credit, then the model. A refused
+  credit is not spent; the places taken in the day's counts are not given back (they only err safe).
+- **Credits used**: `429 ai_credits_used`, "This month's AI credits are used. Your own AI key still answers.", with `limit: 'aiCreditsPerMonth'`,
+  the payer's `owner` scope (the asker is signed in, and asks which action they may take) and the owner's `used` and
+  `max` only for the owner or the owning team. The answer's callout is the kit's limit notice: the owner, or a
+  team's admin, is offered the upgrade; a team's member is pointed at an admin (**Ask an Admin**); anyone else reads
+  the plain fact.
+- **The service refused this api's request** (its key, never the month): `503 ask_unavailable`, "AI credits could not
+  be checked. Try again in a moment." A service out of reach lets the question through, as every spend does.
+- **A key spends no credits**, the person's or their team's. Nor does anything with Pro off: the route makes no call
+  to the index or the subscription service, and the tool shows nothing new.
+- **The tool says the cost** with Pro on, while the next question runs on built-in AI: a quiet "Uses 1 AI credit"
+  under the field. Nothing with Pro off, or on a key.
+
 ## In each app
 
 Each editor hands the tool its host (`AskHost`): the app, the open item's id, the account, the passages (read when a
@@ -133,7 +165,8 @@ question is asked), how to go to a source, and its suggested questions.
 ## Share roles
 
 Asking reads the item and changes nothing, so every role that can open it may ask: **Editor**, **Participant** and
-**Viewer** alike, once signed in. A guest and a visitor through a share link who is not signed in see the row badged
+**Viewer** alike, once signed in. With Pro on, an Editor's and a Participant's built-in questions spend the owner's
+AI credits; a Viewer is lent none and spends their own ("AI credits"). A guest and a visitor through a share link who is not signed in see the row badged
 Sign In. What is sent is only what that person's editor holds, so a link confined to one tab asks about that tab
 alone.
 
@@ -143,4 +176,5 @@ alone.
   when the row is first opened. The account's AI keys are read once then, as for every source line.
 - **A question** loads the item's other tabs once (as opening Search does), walks its elements once, and sends at
   most 24,000 characters of passages. On the server: one accounts call for the key (unless built-in AI was chosen),
-  one count on built-in AI, and one streamed model call.
+  one count on built-in AI, and one streamed model call. With Pro on, a built-in question adds the item's grant (the
+  sent one, else one index call), at most one count of others' questions and one spend; with Pro off, none of them.

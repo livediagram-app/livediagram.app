@@ -13,7 +13,7 @@
 //   - `suggestions`: agents' edits waiting for an Editor (docs/specs/030-knowledgebase/insights.md "Edits
 //     suggested by agents"), at most 50, each gone after 90 days.
 //   - `agent_grants`: the scopes an Editor granted an API token in this knowledgebase.
-import { KNOWLEDGE_SCHEMA } from '@liveknowledge/knowledge';
+import { KNOWLEDGE_SCHEMA, SOURCE_SCHEMA } from '@liveknowledge/knowledge';
 
 type Exec = (query: string) => unknown;
 type ReadExec = (query: string) => { toArray(): Record<string, unknown>[] };
@@ -76,4 +76,13 @@ export function knowledgeShapeStep(exec: ReadExec): void {
   for (const column of ['words', 'headings', 'owned'])
     if (!have.has(column)) exec(`ALTER TABLE knowledge_pages ADD COLUMN ${column} INTEGER NULL`);
   exec('INSERT OR IGNORE INTO knowledge_dirty (tab, queued) SELECT tab, 1 FROM knowledge_pages');
+}
+
+/** Schema step 46 (docs/specs/030-knowledgebase/search-and-ask.md "Sources"): the sources' tables, and the connected
+ *  tabs already there queued for the backfill, whose settle (no page) has the room look at its set of sources. */
+export function sourceSchemaStep(exec: Exec): void {
+  for (const statement of SOURCE_SCHEMA) exec(statement);
+  exec(
+    "INSERT OR IGNORE INTO knowledge_dirty (tab, queued) SELECT id, 1 FROM tabs WHERE connection IS NOT NULL AND connection <> ''",
+  );
 }

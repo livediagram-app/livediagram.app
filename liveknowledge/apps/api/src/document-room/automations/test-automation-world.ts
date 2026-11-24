@@ -150,7 +150,13 @@ export function roomWorld(extra: Partial<Env> = {}, documentId = DOC): RoomWorld
     settled,
     send,
     create: async (tabs = [{ id: 't1', name: 'Letter', elements: [box('a')] }]) => {
-      const res = await send('POST', '/api/documents', { id: documentId, name: 'Launch', tabs });
+      const res = await send('POST', '/api/documents', {
+        id: documentId,
+        name: 'Launch',
+        // Agents write here (docs/specs/030-knowledgebase/ai-editing.md): the default only suggests.
+        knowledgeSettings: { reviewEvery: 90, aiEditing: 'unverified' },
+        tabs,
+      });
       if (res.status !== 201) throw new Error(`create answered ${res.status}: ${await res.text()}`);
       w.grant('read suggest write');
     },

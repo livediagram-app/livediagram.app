@@ -21,3 +21,6 @@ export * from './automation-steps';
 export * from './plan-sends';
 export * from './diagram-sends';
 export * from './updates';
+export * from './knowledge-sources';
+export * from './knowledge-client';
+export * from './item-agent';

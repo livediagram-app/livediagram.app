@@ -17,6 +17,8 @@ export type AskRequestBody = {
   teamId?: string | null;
   /** `built-in`: the person chose built-in AI over the key that applies. */
   ai?: 'built-in';
+  /** The open item, read with Pro on only, to learn who pays a built-in question's AI credit (the index's word). */
+  itemId?: string;
 };
 
 /** Which AI answered: built-in AI, or the provider of the key. */
@@ -36,7 +38,13 @@ export type AskEvent =
       provider?: AskProvider;
       /** A key the provider refused or that will not open: whose, and how (never the key). */
       aiKey?: AiKeyFailure;
+      /** With Pro on, the AI credits that refused it: whose month (`p:` or `t:` scope) and, for the owner's side
+       *  alone, what is used of how many. */
+      credits?: AskCreditsUsed;
     };
+
+/** A refusal for the month's AI credits, as the tool reads it. */
+export type AskCreditsUsed = { owner: string; used?: number; max?: number };
 
 /** The refusals the route answers before any stream, by `error`. */
 export type AskRefusalCode =
@@ -45,7 +53,10 @@ export type AskRefusalCode =
   | 'ask_nothing_to_read'
   | 'ask_unavailable'
   | 'ask_built_in_limit'
-  | 'ai_key_failed';
+  | 'ai_key_failed'
+  // With Pro on: the payer's month of AI credits is used, or the item's questions charged to its owner by others.
+  | 'ai_credits_used'
+  | 'ask_by_others_limit';
 
 export const isAskEvent = (value: unknown): value is AskEvent => {
   if (!value || typeof value !== 'object') return false;

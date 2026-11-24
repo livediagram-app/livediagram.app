@@ -612,7 +612,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "The knowledgebase's settings: its Review Period (`reviewEvery`: 30, 90, 180 or 365 days, or `never`; 90 until an Editor chooses). A verified page comes due for review this long after it was last verified.",
+      "The knowledgebase's settings: its Review Period (`reviewEvery`: 30, 90, 180 or 365 days, or `never`; 90 until an Editor chooses), and its AI Editing (`aiEditing`: `suggest`, `unverified` or `any`; absent is `suggest`; `aiEditUnverifies` true where an agent's rewrite of a verified page clears its verification). A verified page comes due for review this long after it was last verified.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeSettingsResponse',
@@ -624,7 +624,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Set the knowledgebase's Review Period. Editor only (in person, or a token granted `write`). Every page's state, due date and the counts follow at once: they are worked out when read, so one row is written however many pages there are. `never` makes no page Review Due and sends no review email.",
+      "Set the knowledgebase's Review Period, its AI Editing, or both; send only the fields to change. Editor only (in person, or a token granted `write` for `reviewEvery`). `aiEditing` and `aiEditUnverifies` are an Editor's in person: a token or a workbench session is refused 403 `needs_a_person`. Every page's state, due date and the counts follow at once: they are worked out when read, so one row is written however many pages there are. `never` makes no page Review Due and sends no review email.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'KnowledgeSettingsRequest',
@@ -992,6 +992,30 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
+    method: 'GET',
+    path: '/documents/{id}/ai/sources',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'What the knowledgebase reads besides its pages: Connected Items on or off, the team folder, and each source with its state.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'KnowledgeSources',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/ai/sources',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      'Change the Sources, as `{ connected?, folderId?, folderName? }`; a folder only on a team knowledgebase. Editor only.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'KnowledgeSources',
+    statuses: [200, 400, 401, 403, 404, 405, 410],
+  },
+  {
     method: 'POST',
     path: '/documents/{id}/ask',
     segment: 'documents',
@@ -1166,7 +1190,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Replace a page's writing with Markdown, or add Markdown after it (an agent's `write_page`), as `{ markdown, mode? }`. Editor only; an agent needs the `write` scope, and is refused 409 `page_verified` on a verified page and 409 `page_review_due` on one whose review is due, where it suggests the edit instead. Answers as the article write does. In every page route `{tabId}` takes the page's id, or its title when one page alone has it.",
+      "Replace a page's writing with Markdown, or add Markdown after it (an agent's `write_page`), as `{ markdown, mode? }`. Editor only; an agent needs the `write` scope and the knowledgebase's AI Editing above `suggest` (else 409 `ai_editing_suggest_only`), and under `unverified` is refused 409 `page_verified` on a verified page and 409 `page_review_due` on one whose review is due, where it suggests the edit instead. Answers as the article write does. In every page route `{tabId}` takes the page's id, or its title when one page alone has it.",
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'WritePageRequest',
@@ -1179,7 +1203,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Move a page in the tree with its subpages (an agent's `move_page`), as `{ parent, before? }`: under `parent` (null for the top level), in front of its subpage `before` (last when left out). Editor only; an agent needs the `write` scope. 409 `own_subtree`, `depth_limit` or `unknown_page`.",
+      "Move a page in the tree with its subpages (an agent's `move_page`), as `{ parent, before? }`: under `parent` (null for the top level), in front of its subpage `before` (last when left out). Editor only; an agent holding `suggest` (an Editor's or a Participant's) moves a page whose subtree is all Never Verified, and any other page needs the `write` scope (403 `scope_needed`, naming the page that holds it back). 409 `own_subtree`, `depth_limit` or `unknown_page`.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'MovePageRequest',

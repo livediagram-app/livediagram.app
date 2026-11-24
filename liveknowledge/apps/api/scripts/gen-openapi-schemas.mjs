@@ -56,6 +56,7 @@ export const ROOT_TYPES = [
   'PublishingState',
   'PublishingRequest',
   'KnowledgeAiSettings',
+  'KnowledgeSources',
   'AskRequest',
   'AskEvent',
   'KnowledgeSetupRequest',

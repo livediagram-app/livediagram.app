@@ -66,10 +66,14 @@ describe('GET pages', () => {
       .run();
     const pages = await pagesOf();
     expect(pages[1]!.trust).toMatchObject({ state: 'review-due', stale: true });
-    expect(pages[0]!.trust.conflictsWith).toEqual([{ tab: 'holidays', title: 'Holidays' }]);
-    expect(pages[2]!.trust.conflictsWith).toEqual([{ tab: 'deploys', title: 'Deploys' }]);
+    expect(pages[0]!.trust.conflictsWith).toEqual([
+      { tab: 'holidays', title: 'Holidays', question: 'When do we deploy?', foundAt: 1 },
+    ]);
+    expect(pages[2]!.trust.conflictsWith).toEqual([
+      { tab: 'deploys', title: 'Deploys', question: 'When do we deploy?', foundAt: 1 },
+    ]);
     expect((await read('deploys')).trust.conflictsWith).toEqual([
-      { tab: 'holidays', title: 'Holidays' },
+      { tab: 'holidays', title: 'Holidays', question: 'When do we deploy?', foundAt: 1 },
     ]);
   });
 
@@ -195,8 +199,80 @@ describe('search for an agent', () => {
       .run(passage.id);
     const again = await get<KnowledgeSearchResponse>('agent-stored', 'search?q=tuesdays');
     expect(again.results.find((r) => r.id === passage.id)!.conflictsWith).toEqual([
-      { tab: 'holidays', title: 'Holidays' },
+      { tab: 'holidays', title: 'Holidays', question: 'When?', foundAt: 1 },
     ]);
+  });
+});
+
+// Conflicts for agents (knowledgebase-for-agents.md): each open conflict's question beside the other page, one entry
+// a conflict, and only where the caller reads both pages.
+describe('conflict questions', () => {
+  const conflict = (id: string, question: string, a: string, b: string, foundAt: number) =>
+    kit.db.sql
+      .prepare(
+        `INSERT INTO conflicts (id, question, a_passage, a_tab, a_hash, b_passage, b_tab, b_hash, found_at, state)
+         VALUES (?, ?, ?, ?, 'h1', ?, ?, 'h2', ?, 'open')`,
+      )
+      .run(id, question, `${id}a`, a, `${id}b`, b, foundAt);
+
+  it('carries none for a page with no conflict, one, and several, newest first', async () => {
+    conflict('c1', 'When do we deploy?', 'deploys', 'holidays', 1);
+    conflict('c2', 'Who approves a rollback?', 'rollbacks', 'deploys', 2);
+    conflict('c3', 'Is the office open?', 'holidays', 'deploys', 3);
+    // A dismissed conflict is no conflict.
+    kit.db.sql
+      .prepare(
+        `INSERT INTO conflicts (id, question, a_passage, a_tab, a_hash, b_passage, b_tab, b_hash, found_at, state)
+         VALUES ('c4', 'Old?', 'x', 'rollbacks', 'h', 'y', 'holidays', 'h', 4, 'dismissed')`,
+      )
+      .run();
+    const pages = await pagesOf();
+    const of = (tab: string) => pages.find((p) => p.tab === tab)!.trust.conflictsWith;
+    expect(of('deploys')).toEqual([
+      { tab: 'holidays', title: 'Holidays', question: 'Is the office open?', foundAt: 3 },
+      { tab: 'rollbacks', title: 'Rollbacks', question: 'Who approves a rollback?', foundAt: 2 },
+      { tab: 'holidays', title: 'Holidays', question: 'When do we deploy?', foundAt: 1 },
+    ]);
+    expect(of('rollbacks')).toEqual([
+      { tab: 'deploys', title: 'Deploys', question: 'Who approves a rollback?', foundAt: 2 },
+    ]);
+    // read_page says the same.
+    expect((await read('rollbacks', '', 'agent-stored')).trust.conflictsWith).toEqual(
+      of('rollbacks'),
+    );
+  });
+
+  it('answers a page with no conflict without the field', async () => {
+    conflict('c1', 'When do we deploy?', 'deploys', 'holidays', 1);
+    expect((await pagesOf()).find((p) => p.tab === 'rollbacks')!.trust).not.toHaveProperty(
+      'conflictsWith',
+    );
+    expect((await read('rollbacks')).trust).not.toHaveProperty('conflictsWith');
+  });
+
+  it('hands get_context each context page’s conflicts', async () => {
+    await kit.call('editor', 'PUT', '/api/documents/kb/pages/holidays/knowledge', {
+      context: true,
+    });
+    await kit.call('editor', 'PUT', '/api/documents/kb/pages/rollbacks/knowledge', {
+      context: true,
+    });
+    conflict('c1', 'When do we deploy?', 'deploys', 'holidays', 1);
+    const context = await get<KnowledgeAgentContextResponse>('agent-stored', 'context');
+    const of = (tab: string) => context.pages.find((p) => p.tab === tab)!.trust;
+    expect(of('holidays').conflictsWith).toEqual([
+      { tab: 'deploys', title: 'Deploys', question: 'When do we deploy?', foundAt: 1 },
+    ]);
+    expect(of('rollbacks')).not.toHaveProperty('conflictsWith');
+  });
+
+  it('hides a conflict, and its question, from a link that cannot read the other page', async () => {
+    conflict('c1', 'When do we deploy?', 'deploys', 'holidays', 1);
+    const page = await (
+      await kit.call('page-link', 'GET', '/api/documents/kb/pages/holidays')
+    ).json<KnowledgePageReadResponse>();
+    expect(page.page.trust).not.toHaveProperty('conflictsWith');
+    expect(JSON.stringify(page)).not.toContain('When do we deploy?');
   });
 });
 
@@ -479,15 +555,81 @@ describe('POST pages/<tab>/move', () => {
     );
   });
 
+  // A never-verified page moves with `suggest` (knowledgebase-for-agents.md "Moving pages with the suggest scope").
   it.each<[Who, number]>([
     ['editor', 200],
     ['agent', 200],
-    ['agent-stored', 403],
+    ['agent-stored', 200],
     ['participant', 200],
-    ['participant-agent', 403],
+    ['participant-agent', 200],
     ['viewer-agent', 403],
-  ])('as %s answers %i', async (who, status) => {
+    ['agent-read-only', 403],
+    ['viewer', 403],
+  ])('a never-verified page, as %s, answers %i', async (who, status) => {
     expect((await move(who, 'holidays', { parent: 'deploys' })).status).toBe(status);
+  });
+
+  it('lets a suggest connection place a draft subtree by parent and position, under any AI Editing', async () => {
+    const strict = await knowledgeKit({}, undefined, { aiEditing: 'suggest' });
+    const res = await strict.call('agent-stored', 'POST', '/api/documents/kb/pages/deploys/move', {
+      parent: 'holidays',
+    });
+    expect(res.status).toBe(200);
+    expect((await res.json<MovePageResponse>()).page).toMatchObject({
+      parent: 'holidays',
+      depth: 2,
+    });
+    // Back to the top, in front of Holidays: a reorder alone.
+    const back = await strict.call('agent-stored', 'POST', '/api/documents/kb/pages/deploys/move', {
+      parent: null,
+      before: 'holidays',
+    });
+    expect(back.status).toBe(200);
+  });
+
+  it.each<[string, string, 'verified' | 'review-due']>([
+    ['the page itself verified', 'rollbacks', 'verified'],
+    ['a verified page under it', 'deploys', 'verified'],
+    ['the page itself due for review', 'rollbacks', 'review-due'],
+  ])('keeps write for %s, and says which page holds it back', async (_, tab, state) => {
+    await verify('rollbacks');
+    if (state === 'review-due')
+      kit.db.sql
+        .prepare(
+          `UPDATE tabs SET data = json_set(data, '$.knowledge.verifiedAt', ?), rev = rev + 1 WHERE id = 'rollbacks'`,
+        )
+        .run(Date.now() - 91 * 86_400_000);
+    const res = await move('agent-stored', tab, { parent: 'holidays' });
+    expect(res.status).toBe(403);
+    const body = await res.json<{ error: string; needs: string; page: unknown; message: string }>();
+    expect(body).toMatchObject({
+      error: 'scope_needed',
+      needs: 'write',
+      page: { tab: 'rollbacks', title: 'Rollbacks', state },
+    });
+    expect(body.message).toContain('moves only never-verified pages');
+    expect(body.message).toContain(
+      `"Rollbacks"${tab === 'deploys' ? ', under the page you are moving,' : ''} ${state === 'verified' ? 'is verified' : 'is due for review'}`,
+    );
+    // Write still moves it.
+    expect((await move('agent', tab, { parent: 'holidays' })).status).toBe(200);
+  });
+
+  it('keeps a page verified before verification was turned off verified for a move', async () => {
+    await verify('rollbacks');
+    const off = await kit.call('editor', 'PUT', '/api/documents/kb/knowledge-settings', {
+      reviewEvery: 'never',
+    });
+    expect(off.status).toBe(200);
+    expect((await pagesOf()).find((p) => p.tab === 'rollbacks')!.trust.state).toBe('off');
+    expect((await move('agent-stored', 'rollbacks', { parent: null })).status).toBe(403);
+    // A draft still moves.
+    expect((await move('agent-stored', 'holidays', { parent: 'deploys' })).status).toBe(200);
+  });
+
+  it('lets a draft move under a verified page: the verified page’s writing does not change', async () => {
+    await verify('deploys');
+    expect((await move('agent-stored', 'holidays', { parent: 'deploys' })).status).toBe(200);
   });
 });
 

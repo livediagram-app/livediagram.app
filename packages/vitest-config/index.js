@@ -21,6 +21,11 @@ export const baseConfig = defineConfig({
     environment: 'node',
     include: ['**/*.{test,spec}.{ts,tsx}'],
     clearMocks: true,
+    // Off CI, a run takes a quarter of the cores (Vitest's default is every core but one). Turbo runs two
+    // workspaces at a time locally and several agents test at once on one laptop, so the default stacked
+    // up to ~90 workers and ran the machine out of memory. CI keeps the default: its runners run one job
+    // each. VITEST_MAX_WORKERS still overrides either (docs/structure.md "Running locally").
+    ...(process.env.CI ? {} : { maxWorkers: '25%' }),
     // A coverage run tells its workers so, and speed tests widen their CPU budgets for the instrumentation
     // (cpu-time.js cpuBudgetMs; docs/specs/003-system-architecture/testing.md).
     env: process.argv.includes('--coverage') ? { [UNDER_COVERAGE_ENV]: '1' } : {},

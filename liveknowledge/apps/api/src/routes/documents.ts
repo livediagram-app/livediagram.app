@@ -3,6 +3,7 @@
 // Trash are the index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are
 // answered from it (document-index-routes.ts).
 
+import { AGENT_HEADERS } from '../changesets/front-door';
 import { pageCount } from '@liveknowledge/document';
 import {
   countPages,
@@ -31,6 +32,7 @@ import {
   itemTabsRequest,
   itemTabsResponse,
   type ItemCreateRequest,
+  itemAgentOf,
 } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
@@ -172,7 +174,8 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
         request,
         grantCallerOf(ctx),
         documentId,
-        create,
+        // The agent an API client's create was made by, for History (Work Tracker 1381).
+        { ...create, agent: itemAgentOf(request, ctx.token, AGENT_HEADERS) ?? undefined },
         (body, status) => json(body, { status }),
       );
       if (made instanceof Response) return made;
@@ -414,8 +417,14 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
         presentation: clash ? null : presentation,
         // The Review Period a knowledgebase kept Offline chose, on the create that syncs it (verification.md "The
         // Review Period"); a period the api does not know is left out, and the knowledgebase reads as the default.
+        // AI Editing rides it only from a person: an agent never raises its own reach (ai-editing.md "Who sets it").
         ...(!clash && isReviewEvery(body.knowledgeSettings?.reviewEvery)
-          ? { knowledgeSettings: parseKnowledgeSettings(body.knowledgeSettings) }
+          ? {
+              knowledgeSettings: carriedKnowledgeSettings(
+                body.knowledgeSettings,
+                !!(ctx.token || ctx.workbench),
+              ),
+            }
           : {}),
         // Its Knowledgebase Style, on the same terms (page-surface.md "Knowledgebase Style"): read forgivingly,
         // the default left out.
@@ -626,4 +635,12 @@ async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
   if (subResp) return subResp;
 
   return notFound();
+}
+
+// The settings a create carries: as stored, less AI Editing when an agent sends them.
+function carriedKnowledgeSettings(sent: unknown, agent: boolean) {
+  const settings = parseKnowledgeSettings(sent);
+  if (!agent) return settings;
+  const { aiEditing: _ai, aiEditUnverifies: _un, ...rest } = settings;
+  return rest;
 }

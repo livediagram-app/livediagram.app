@@ -1,16 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Env } from '@liveworkspace/mcp-kit/env';
+import type { Env } from './env';
 import {
   AGENT_NAME_TTL_SECONDS,
   HANDSHAKE_MAX_BYTES,
   agentNameOf,
   clientNameFor,
+  currentClientName,
   rememberClientName,
+  runWithClientName,
+  withAgentHeaders,
+  type SeesHandshake,
 } from './agent-name';
 
-// The name an agent's reads are counted under (docs/specs/024-agents/knowledgebase-for-agents.md): sanitised,
-// remembered at the handshake against the token's hash, and read back by a later call.
+// The client name every product's MCP sends its api (each product's mcp-server.md §2 "Who is calling", Work Tracker
+// 1381; liveknowledge's knowledgebase-for-agents.md): sanitised, remembered at the handshake against the token's hash,
+// read back by a later call, and named on every api call the request makes.
 
 function kv() {
   const held = new Map<string, string>();
@@ -51,7 +55,7 @@ const handshake = (
 const serverSeeing = (name?: string) =>
   ({
     server: { getClientVersion: () => (name === undefined ? undefined : { name }) },
-  }) as McpServer;
+  }) as SeesHandshake;
 
 describe('agentNameOf', () => {
   it('keeps a plain name', () => {
@@ -165,5 +169,54 @@ describe('clientNameFor', () => {
 
   it('answers nothing on a server with no store', async () => {
     expect(await clientNameFor(serverSeeing(), {} as Env, 'lwt_x')).toBe('');
+  });
+});
+
+describe("the request's name on every api call", () => {
+  const HEADERS = { client: 'X-Livediagram-Client', agent: 'X-Livediagram-Agent' };
+  const call = (headers: Record<string, string> = {}) =>
+    new Request('https://livediagram-api/api/documents/d', { method: 'PUT', headers, body: '{}' });
+
+  it('names the door and the client, looking the name up once a request', async () => {
+    const lookup = vi.fn(async () => 'Claude Code');
+    await runWithClientName(lookup, async () => {
+      const first = await withAgentHeaders(call(), HEADERS);
+      const second = await withAgentHeaders(call(), HEADERS);
+      for (const sent of [first, second]) {
+        expect(sent.headers.get('X-Livediagram-Client')).toBe('mcp');
+        expect(sent.headers.get('X-Livediagram-Agent')).toBe('Claude Code');
+      }
+      expect(await first.text()).toBe('{}');
+    });
+    expect(lookup).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends the door alone for a client with no name, and outside a request', async () => {
+    await runWithClientName(
+      async () => '',
+      async () => {
+        const sent = await withAgentHeaders(call(), HEADERS);
+        expect(sent.headers.get('X-Livediagram-Client')).toBe('mcp');
+        expect(sent.headers.has('X-Livediagram-Agent')).toBe(false);
+      },
+    );
+    expect(await currentClientName()).toBe('');
+    expect((await withAgentHeaders(call(), HEADERS)).headers.get('X-Livediagram-Client')).toBe(
+      'mcp',
+    );
+  });
+
+  it('keeps what the caller set', async () => {
+    await runWithClientName(
+      async () => 'Claude Code',
+      async () => {
+        const sent = await withAgentHeaders(
+          call({ 'X-Livediagram-Client': 'cli', 'X-Livediagram-Agent': 'Own' }),
+          HEADERS,
+        );
+        expect(sent.headers.get('X-Livediagram-Client')).toBe('cli');
+        expect(sent.headers.get('X-Livediagram-Agent')).toBe('Own');
+      },
+    );
   });
 });

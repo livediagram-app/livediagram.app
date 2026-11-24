@@ -105,6 +105,30 @@ describe('the settings store', () => {
   });
 });
 
+// AI Editing rides the same settings (docs/specs/030-knowledgebase/ai-editing.md).
+describe('the settings store, AI Editing', () => {
+  it('holds Suggest Edits Only until a read says otherwise, one object until it changes', () => {
+    const store = createKnowledgeSettingsStore();
+    const listener = vi.fn();
+    store.subscribe(listener);
+    expect(store.aiEditingOf('kb')).toEqual({ level: 'suggest', unverifies: false });
+    expect(store.aiEditingOf(null)).toBe(store.aiEditingOf('other'));
+    expect(store.take('kb', { reviewEvery: 90, aiEditing: 'any', aiEditUnverifies: true })).toBe(
+      true,
+    );
+    const held = store.aiEditingOf('kb');
+    expect(held).toEqual({ level: 'any', unverifies: true });
+    expect(store.take('kb', { reviewEvery: 90, aiEditing: 'any', aiEditUnverifies: true })).toBe(
+      false,
+    );
+    expect(store.aiEditingOf('kb')).toBe(held);
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(store.setAiEditing('kb', { level: 'unverified', unverifies: true })).toBe(true);
+    expect(store.take('kb', { reviewEvery: 90 })).toBe(true);
+    expect(store.aiEditingOf('kb')).toEqual({ level: 'suggest', unverifies: false });
+  });
+});
+
 describe('the words', () => {
   it('names the five periods in Title Case, shortest first, Never last', () => {
     expect(REVIEW_PERIOD_OPTIONS.map((o) => o.label)).toEqual([

@@ -32,8 +32,12 @@ export const askSearch = (
   });
 
 /** The passages to send, numbered: those of verified pages first, then by rank, title rows left out. The last one
- *  is cut to what is left of the characters, or dropped when little is. */
-export function chooseAskPassages(found: readonly FoundPassage[]): AskPassage[] {
+ *  is cut to what is left of the characters (`budget`, all of them unless sources keep some: ask-sources.ts), or
+ *  dropped when little is. */
+export function chooseAskPassages(
+  found: readonly FoundPassage[],
+  budget: number = ASK_MAX_PASSAGE_CHARS,
+): AskPassage[] {
   const ranked = found
     .filter((p) => !p.isTitle && p.text)
     .map((passage, at) => ({ passage, at }))
@@ -44,7 +48,7 @@ export function chooseAskPassages(found: readonly FoundPassage[]): AskPassage[] 
         a.at - b.at,
     );
   const chosen: AskPassage[] = [];
-  let left = ASK_MAX_PASSAGE_CHARS;
+  let left = budget;
   for (const { passage } of ranked) {
     if (chosen.length === ASK_MAX_PASSAGES) break;
     if (passage.text.length > left) {

@@ -20,7 +20,7 @@ describe('what a connection may do here', () => {
     expect(yours('participant')[2]).toEqual(['Writes', 'Only an Editor’s', false]);
     expect(yours('viewer')[1]).toEqual(['Suggests Edits', 'Not for a Viewer', false]);
     expect(accessRows('viewer')[2]!.about).toContain(
-      'Never on a page that is Verified or Review Due',
+      'as far as the knowledgebase’s AI Editing allows',
     );
   });
 

@@ -16,10 +16,12 @@ import {
 } from '../knowledge/ai-settings';
 import { forbidden, json, methodNotAllowed, notFound } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
+import { handleSourcesRoute } from './knowledge-sources-route';
 
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
 
-export async function handleAiRoutes({ ctx, document, grant }: KnowledgeRoute): Promise<Response> {
+export async function handleAiRoutes(route: KnowledgeRoute): Promise<Response> {
+  const { ctx, document, grant } = route;
   const { env, request, segments } = ctx;
   const editor = grant.role === 'edit';
   if (segments.length === 4) {
@@ -29,6 +31,8 @@ export async function handleAiRoutes({ ctx, document, grant }: KnowledgeRoute): 
     const settings = await readAiSettings(env, editor);
     return json({ ...settings, ...(await whichAi(env, settings, askerOf(ctx, document.teamId))) });
   }
+  // GET and PUT .../ai/sources: what the knowledgebase reads besides its pages (knowledge-sources-route.ts).
+  if (segments.length === 5 && segments[4] === 'sources') return handleSourcesRoute(route);
   if (segments.length !== 5 || (segments[4] !== 'key' && segments[4] !== 'model'))
     return notFound();
   if (request.method !== 'PUT' && !(segments[4] === 'key' && request.method === 'DELETE'))

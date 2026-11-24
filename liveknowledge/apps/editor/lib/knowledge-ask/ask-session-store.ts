@@ -145,6 +145,9 @@ export function askConversationFor(who: KnowledgeCaller, documentId: string): As
     },
     onEnded: (turn) => {
       keep();
+      // An answer that cites items of other apps (search-and-ask.md "Sources"): the count of answers, never what.
+      if (turn.status === 'done' && turn.sources.some((source) => source.source))
+        track('UI', 'Used', 'AskSourceCited');
       // The key went, or cannot be read: the view should say so, not offer the field.
       if (turn.failure === 'ask_unavailable') void aiSettingsStore.refresh(who, documentId);
     },

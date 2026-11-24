@@ -12,7 +12,9 @@ import {
 } from '@liveworkspace/telemetry';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { keepAlive } from '@liveworkspace/mcp-kit/request-scope';
+import { withAgentHeaders } from '@liveworkspace/mcp-kit/agent-name';
 import { currentTool } from './tool-scope';
+import { MCP_AGENT_HEADERS } from './agent-name';
 
 export { ApiError };
 
@@ -29,7 +31,8 @@ export function clientFor(
 ): ApiClient {
   return createApiClient({
     baseUrl: API_BASE,
-    fetch: (request) => env.API.fetch(request),
+    // Every call says it came through the MCP and which client made it (mcp-server.md §2, Work Tracker 1381).
+    fetch: async (request) => env.API.fetch(await withAgentHeaders(request, MCP_AGENT_HEADERS)),
     headers: () => ({ Authorization: `Bearer ${token}`, ...headers }),
     onFailure: (kind) => reportApiFailure(env, kind),
   });

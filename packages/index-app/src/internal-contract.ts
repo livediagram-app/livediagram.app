@@ -28,6 +28,7 @@ import type {
 } from '@liveworkspace/migration';
 import type { DataExportHandlers } from './data-export-door';
 import type { SheetSourceHandlers } from './sheet-source-doors';
+import type { KnowledgeSourceHandlers } from './knowledge-source-doors';
 
 export const JOINED_TELEMETRY_TYPE: Record<Level, 'View' | 'Participate' | 'Edit'> = {
   view: 'View',
@@ -183,7 +184,8 @@ export type InternalItemHandlers = {
   // liveworkspace/docs/specs/004-index/send-to-diagram.md). livediagram alone; elsewhere a 404.
   fromGraph?: (input: DiagramFromGraphInput) => Promise<GraphItemResult>;
 } & DataExportHandlers &
-  SheetSourceHandlers;
+  SheetSourceHandlers &
+  KnowledgeSourceHandlers;
 
 // The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
 // never a guest), the folder of theirs it goes in (null: the top), its name, and the file's text.

@@ -50,6 +50,8 @@ export const TAB_SAVE_CAS_ATTEMPTS = 2;
 export const CHANGESET_SEEN_HEADER = 'X-Changeset-Seen';
 // Which surface sent a request: `mcp`, `cli` or `editor`; absent means a plain API caller (CS25).
 export const CLIENT_HEADER = 'X-Livediagram-Client';
+// The agent's client name an MCP call carries ("Claude Code"), for the History its writes leave (Work Tracker 1381).
+export const AGENT_NAME_HEADER = 'X-Livediagram-Agent';
 export const CLIENT_KINDS = ['mcp', 'cli', 'editor'] as const;
 export type ClientKind = (typeof CLIENT_KINDS)[number];
 
