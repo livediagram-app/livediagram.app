@@ -134,6 +134,43 @@ describe('imagesAsLinks', () => {
     expect(runs).toEqual([{ text: 'Team photo', href: 'https://e.com/t.png' }]);
   });
 
+  it('reads a Google Docs Markdown download: headings, lists, links, a table and a picture link', () => {
+    const md = [
+      '# Onboarding',
+      '',
+      '## First week',
+      '',
+      '*   Meet the team',
+      '*   Read the [handbook](https://e.com/handbook)',
+      '',
+      '1.  Set up your laptop',
+      '2.  Join the chat',
+      '',
+      '| Day | Task |',
+      '| :--- | :--- |',
+      '| Mon | Welcome |',
+      '| Tue | Tools |',
+      '',
+      '![Org chart](https://e.com/org.png)',
+    ].join('\n');
+    const { tab } = built(md);
+    const blocks = Object.values(articlesOf(tab))[0]!.blocks;
+    const types = blocks.map((b) => b.type);
+    expect(types).toContain('table');
+    expect(types).toContain('list');
+    console.log(JSON.stringify(blocks[0]));
+    const text = blocks
+      .flatMap((b) => ('runs' in b ? b.runs : []))
+      .map((r) => r.text)
+      .join('|');
+    expect(text).toContain('Onboarding');
+    expect(text).toContain('handbook');
+    expect(text).toContain('Set up your laptop');
+    const links = blocks.flatMap((b) => ('runs' in b ? b.runs : [])).filter((r) => r.href);
+    expect(links.map((r) => r.href)).toEqual(['https://e.com/handbook', 'https://e.com/org.png']);
+    expect(text).not.toContain('!');
+  });
+
   it('reads a worst-case line in a few ms of CPU', () => {
     const line = '!['.repeat(20_000) + '](' + '('.repeat(20_000) + '`'.repeat(5_000) + 'x';
     // Images whose addresses open parentheses they never close, each one deep.

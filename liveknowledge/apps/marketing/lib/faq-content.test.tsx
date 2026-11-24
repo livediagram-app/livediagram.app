@@ -92,10 +92,11 @@ describe('the landing FAQ', () => {
     expect(answer('What can an agent see?')).toMatch(/Only what the person or token/);
   });
 
-  it('says Google Docs import is not built', () => {
-    expect(answer('Can I import from Notion and Confluence?')).toMatch(
-      /Google Docs import is not built/,
-    );
+  it('tells people to bring a Google Doc in through its Markdown download', () => {
+    const a = answer('Can I import from Notion and Confluence?');
+    expect(a).toMatch(/File › Download › Markdown/);
+    expect(a).toMatch(/Into This Page/);
+    expect(a).not.toMatch(/not built/);
   });
 
   it('says the key is encrypted and never shown again', () => {
