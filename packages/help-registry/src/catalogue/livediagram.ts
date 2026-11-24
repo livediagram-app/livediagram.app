@@ -140,7 +140,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 10,
+    articleCount: 11,
     kind: 'feature',
   },
   {
@@ -786,6 +786,17 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools/voting',
     parentSlug: 'voting',
+    apps: ['livediagram'],
+  },
+  {
+    slug: 'make-plan-cards',
+    title: 'Make Plan Cards',
+    description:
+      'Turn a roadmap or a flow into plan cards: arrows become Blocked By, lanes columns, dates Start and Due.',
+    keywords:
+      'make plan cards roadmap flow timeline liveplanner kanban board cards tasks blocked by dependency dependencies arrows lanes swimlanes columns labels dates start due convert turn into cards sync update',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
     apps: ['livediagram'],
   },
 ];
