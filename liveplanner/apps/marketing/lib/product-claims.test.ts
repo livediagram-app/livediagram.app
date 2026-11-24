@@ -150,8 +150,20 @@ describe('what the landing copy says liveplanner is', () => {
   const DROPPED =
     /\b(?:diagrams?|diagramming|whiteboards?|infographics?|slides?|slide decks?|mind ?maps?|articles?|workshops?|canvas)\b/i;
 
+  // A cross-app card may name the other app's feature by its UI name (marketing-site.md "Grouped sub-sections"):
+  // View As Diagram opens a board in livediagram. Only that name is let through, never the kind of work itself.
+  const OTHER_APP_FEATURES = /\bView As Diagram\b/g;
+
   it('never offers a mode liveplanner does not carry', () => {
-    expect(own.filter((c) => DROPPED.test(c.text)).map((c) => c.where)).toEqual([]);
+    expect(
+      own.filter((c) => DROPPED.test(c.text.replace(OTHER_APP_FEATURES, ''))).map((c) => c.where),
+    ).toEqual([]);
+  });
+
+  it('still refuses the kind of work beside a cross-app feature name', () => {
+    expect(DROPPED.test('View As Diagram draws a diagram'.replace(OTHER_APP_FEATURES, ''))).toBe(
+      true,
+    );
   });
 
   it('calls the work a plan, never a document', () => {

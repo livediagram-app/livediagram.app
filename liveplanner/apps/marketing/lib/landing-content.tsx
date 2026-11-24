@@ -1,6 +1,18 @@
 import {
   AiTriageArt,
   ApiArt,
+  ApprovalArt,
+  AskAiArt,
+  CallArt,
+  CrossAppStepsArt,
+  DescribeFormArt,
+  FormBlocksArt,
+  FormSummaryArt,
+  LiveDataArt,
+  RulesElsewhereArt,
+  SendToPlanArt,
+  SnapshotStepsArt,
+  ViewAsDiagramArt,
   AssignTurnArt,
   AuditTrailArt,
   BoardCsvArt,
@@ -132,7 +144,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/card-types/',
         title: 'Card types and fields of your own',
         description:
-          'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, pictures, a link to another card, formulas and rollups, a timer that tracks time, and more. Build a Bug and a Story on one base type and change their shared fields in one place.',
+          'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, pictures, a link to another card, formulas and rollups, a timer that tracks time, and more. Build a Bug and a Story on one base type and change their shared fields in one place. Each type puts its own prefix on its cards’ numbers, so BUG-12 says what it is at a glance.',
       },
       {
         art: <CardTemplateArt />,
@@ -223,7 +235,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/account-and-data/connect-ai-mcp/',
         title: 'Agents that move the cards',
         description:
-          'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them, and attach pictures to a card’s Image fields. In Claude the board opens right in the chat, following the plan live.',
+          'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them, and attach pictures to a card’s Image fields. Assign a card to your AI assistant as you would a teammate, and it works the card and hands it back. In Claude the board opens right in the chat, following the plan live.',
       },
     ],
   },
@@ -249,7 +261,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/dashboards/',
         title: 'Dashboards on one page',
         description:
-          'Lay a Dashboard tab out as rows of slots and put one thing in each, live: a board you can work on, a Sheet you can edit, a chart, a figure like Completion or a column total, or a note, a checklist or a key date. Start from a layout such as Overview or Report, then add, move and resize slots as you go.',
+          'Lay a Dashboard tab out as rows of slots and put one thing in each, live: a board you can work on, a Sheet you can edit, a chart, a figure like Completion or a column total, a note, a checklist or a key date, or a live file from another liveworkspace app. Start from a layout such as Overview or Report, then add, move and resize slots as you go.',
       },
       {
         art: <PlanViewsArt />,
@@ -413,7 +425,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/forms/',
         title: 'Build it where it sits',
         description:
-          'Click a question to word it, pick its type (short answer, paragraph, number, email, link, date, choices, rating or a checkbox) and mark it required, right in the form. Sections can show only on an earlier answer.',
+          'Click a question to word it, pick one of fifteen types (short answer, paragraph, choices, rating, date, date range, phone, duration, colour and more), mark it required or give it a default answer, right in the form. Sections can show only on an earlier answer.',
       },
       {
         art: <FormSectionsArt />,
@@ -449,6 +461,27 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Seven forms to start from',
         description:
           'A Bug Report, Feedback, a Feature Request, an Event RSVP, a Job Application, a Contact form, or a blank one, each sending its answers to the board or sheet that suits it.',
+      },
+      {
+        art: <DescribeFormArt />,
+        href: '/help/plan/forms/',
+        title: 'Describe a form in your words',
+        description:
+          'Signed in, say what the form should ask, such as “an RSVP for the offsite with dietary needs and plus-ones”, and AI drafts its sections and questions, each of the right type, and where its answers go. Check it, change it, and nothing is made until you press Create Form.',
+      },
+      {
+        art: <FormSummaryArt />,
+        href: '/help/plan/forms/',
+        title: 'A summary of every answer',
+        description:
+          'Press Summary and the form sums up its responses question by question: how many picked each option, the average rating, the lowest and highest number, and the newest written answers. It reads the cards or rows the answers became, so it is always current.',
+      },
+      {
+        art: <FormBlocksArt />,
+        href: '/help/plan/forms/',
+        title: 'Words and pictures between questions',
+        description:
+          'Explain a step, point to a policy or show the venue: text, a callout tinted as Info, Tip or Warning, a link button and pictures sit between the questions and ask nothing. Upload a picture, pick one of yours or search openly licensed ones.',
       },
     ],
   },
@@ -553,6 +586,27 @@ export const LANDING_SECTIONS: LandingSection[] = [
         description:
           'AI tools connected over MCP, and the command-line tool, can list, write, test and run rules the way an Editor of the plan can. Rules run on our servers, so they work on plans saved to your account.',
       },
+      {
+        art: <CrossAppStepsArt />,
+        href: '/help/plan/automations/',
+        title: 'Steps in your other apps',
+        description:
+          'A rule can reach past the plan: make a card in another plan, write a page in a liveknowledge knowledgebase, post a note in a livehuddle Space, add a tab to a file in livedocuments or livediagram, or send an Inbox notice. Each step acts as you, and only on what you can edit.',
+      },
+      {
+        art: <SnapshotStepsArt />,
+        href: '/help/plan/automations/',
+        title: 'Snapshots on a schedule',
+        description:
+          'Take Snapshot saves the whole plan under a name the rule writes, such as “Board on 3 March”. Revert to Snapshot puts it back for everyone, after a safety snapshot of its own, so a Scheduled rule can reset a practice board every Monday.',
+      },
+      {
+        art: <RulesElsewhereArt />,
+        href: '/help/plan/automations/',
+        title: 'Cards from your other apps’ rules',
+        description:
+          'Rules in livediagram, livedocuments, liveknowledge and livehuddle can make a card on your board too: a knowledgebase page due for review becomes a card for its owner, due in a week and linked back to the page.',
+      },
     ],
   },
   {
@@ -645,6 +699,29 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Lose the connection and keep moving cards and filling in cells: each change waits in this browser and saves when you reconnect. And a burst of removals that would clear a board is held until you choose Keep Cards or remove them.',
       },
       {
+        art: <CallArt />,
+        href: '/help/collaboration/start-a-call/',
+        group: 'Work together live',
+        title: 'Start a call from the plan',
+        description:
+          'Signed in, press Call and a livehuddle video call about the plan opens in a new tab. Everyone who opens the plan sees it is on, with how many are in it and Join, and the call’s summary and actions can land back where they belong.',
+      },
+      {
+        art: <ApprovalArt />,
+        href: '/help/collaboration/sharing/request-approval/',
+        group: 'Work together live',
+        title: 'Ask for sign-off',
+        description:
+          'Request Approval from the people you name, with a note and a due day. Each answers Approve or Request Changes, and the plan’s badge says where it stands, down to Changed Since Approval once someone edits it after.',
+      },
+      {
+        art: <AskAiArt />,
+        group: 'Work together live',
+        title: 'Ask the plan a question',
+        description:
+          'Signed in, open Ask AI in Tools and ask “what is in progress right now?” or “which cards have no description?”. The answer comes from the plan’s own cards and tabs, with each source a card you can open.',
+      },
+      {
         art: <ShareLinksArt />,
         href: '/help/collaboration/sharing/',
         group: 'Share & access',
@@ -698,7 +775,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Agents & your tools',
         title: 'Agents that work beside you',
         description:
-          'Connect Claude, ChatGPT or another AI tool over MCP and it can read your boards, cards, sheets and forms, and change them the way you would: add cards, move them across columns, fill in cells, build a form, set up an automation rule. Every change it makes lands live, like a teammate’s.',
+          'Connect Claude, ChatGPT or another AI tool over MCP and it can read your boards, cards, sheets and forms, and change them the way you would: add cards, move them across columns, fill in cells, build a form, set up an automation rule. Assign it a card and it finds the card, works it and hands it back to you. Every change it makes lands live, like a teammate’s.',
       },
       {
         art: <ApiArt />,
@@ -739,6 +816,30 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'A copy in your Google Drive',
         description:
           'Signed in, connect Google Drive and every plan you own is kept as a file in your own Drive, in folders that match yours. Renames, moves and deletions sync both ways.',
+      },
+      {
+        art: <SendToPlanArt />,
+        href: '/help/collaboration/send-to-plan/',
+        group: 'Beyond the plan',
+        title: 'Cards from anywhere',
+        description:
+          'Spot a task in another app, a sticky in livediagram, a paragraph in livedocuments, a page’s thread in liveknowledge or an action from a livehuddle call, and Send to Plan makes it a card on your board. The card links back to where it came from, and that place shows the card’s status, live.',
+      },
+      {
+        art: <ViewAsDiagramArt />,
+        href: '/help/collaboration/view-as-diagram/',
+        group: 'Beyond the plan',
+        title: 'See how the work hangs together',
+        description:
+          'View As Diagram draws a board in livediagram, beside the plan as a connected tab: cards as boxes in lanes by column, Blocked By links as arrows and the critical path highlighted, redrawn as the plan changes. And Make Plan Cards in livediagram turns a sketched flow into cards.',
+      },
+      {
+        art: <LiveDataArt />,
+        href: '/help/plan/sheets/',
+        group: 'Beyond the plan',
+        title: 'Live numbers in your reports',
+        description:
+          'Charts and tables in livedocuments, livediagram, livedesign and liveknowledge can take their numbers from the plan: a range of a Sheet, a board’s cards counted by column, label, person or priority, or a Dashboard figure. They keep in step as the cards move.',
       },
     ],
   },
