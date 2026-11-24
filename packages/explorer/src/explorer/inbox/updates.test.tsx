@@ -140,7 +140,6 @@ describe('the model', () => {
 
   it('lists an update in the signature by its key and latest change', () => {
     expect(inboxSignature(data([update()]))).toBe(`u:liveknowledge:kb-1:up_1@${NOW - 25 * MIN}`);
-    expect(inboxSignature(data([update()]), 'liveplanner')).toBe('');
   });
 });
 

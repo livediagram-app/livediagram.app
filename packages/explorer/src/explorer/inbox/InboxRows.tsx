@@ -6,7 +6,7 @@
 //
 //   who (semibold when it needs you)                                  when
 //   what: the action, the card's number (WI-100, else #100) and title, the element a thread is on, the form's heading
-//   why (a status icon and its words) · the app's Living Prism and the item · Offline
+//   why (a status icon and its words) · the logo of the app it opens (always) and the item · Offline
 //
 // A row is an option of the list's listbox: choosing it shows it in the reading pane (./InboxReader), and the pane
 // opens it in its app. The page and the editor's panel draw the same row, `comfortable` or `compact`.
@@ -354,7 +354,6 @@ export const InboxRow = memo(function InboxRow({
   entry,
   id,
   selected,
-  showApp,
   density,
   viewerId,
   onPick,
@@ -362,7 +361,6 @@ export const InboxRow = memo(function InboxRow({
   entry: InboxEntry;
   id: string;
   selected: boolean;
-  showApp: boolean;
   density: InboxDensity;
   viewerId: string | null;
   onPick: (key: string) => void;
@@ -432,7 +430,7 @@ export const InboxRow = memo(function InboxRow({
             </span>
           ) : null}
           <span title={path} className="flex min-w-0 items-center gap-1">
-            {showApp ? <AppMark app={entry.row.app} size={13} /> : null}
+            <AppMark app={entry.row.app} size={13} />
             <span className="min-w-0 truncate text-slate-500 dark:text-slate-400">{f.item}</span>
           </span>
           {f.local ? <ThisBrowserPill inLink /> : null}

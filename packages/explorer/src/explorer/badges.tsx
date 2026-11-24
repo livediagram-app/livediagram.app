@@ -175,7 +175,8 @@ export function FolderChip({ label, onOpen }: { label: string; onOpen: () => voi
 
 /**
  * Which app an item belongs to: the app's logo, its Living Prism, in the app's accent, and its kind word for a
- * screen reader. Shown on every row while the filter is All, so it is the stateless glyph, not the animated mark.
+ * screen reader. Shown on every row while the filter is All, and on every Inbox row always, so it is the stateless
+ * glyph, not the animated mark.
  */
 export const AppMark = memo(function AppMark({ app, size = 16 }: { app: App; size?: number }) {
   const site = siteOf(app);

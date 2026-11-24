@@ -358,9 +358,9 @@ describe('the count', () => {
     expect(document.querySelector('[data-inbox-count]')).toBeNull();
   });
 
-  // The owner's report (Work Tracker 1315, 2026-11-19): "It should only show the inbox items I have in that app, not
-  // all apps". Every row names its app, an access request its item's, so each counts in its own app's editor.
-  it("counts this app's rows only, an Inbox holding two apps' rows", () => {
+  // Work Tracker 1404 (owner, 2026-11-24): the Inbox lists every app's rows in every editor, and the button's count
+  // follows the list, so another app's rows count too.
+  it("counts every app's rows, an Inbox holding two apps' rows", () => {
     const t = setup();
     const request = (id: string, app: InboxThread['app']) => ({
       id,
@@ -381,7 +381,7 @@ describe('the count', () => {
       ],
       accessRequests: [request('r1', 'livediagram'), request('r2', 'liveplanner')],
     });
-    expect(screen.getByRole('button', { name: 'Explorer, 2 in Inbox' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Explorer, 5 in Inbox' })).toBeTruthy();
   });
 
   // Work Tracker 1316: a thread resolved from the Inbox leaves the count at once and after a reload, while the index

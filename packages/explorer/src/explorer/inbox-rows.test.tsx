@@ -130,13 +130,14 @@ describe('an Inbox row', () => {
     vi.restoreAllMocks();
   });
 
-  it('leaves the app mark out when the filter is this app', async () => {
+  // Work Tracker 1404: every row shows the logo of the app it opens, whatever the app filter.
+  it('shows the app mark when the filter is this app too', async () => {
     const index = createFakeIndex();
     index.inbox.actions.push(action);
     renderPane(index, { filter: 'app' as 'all' });
     await settle();
     const row = screen.getByRole('option', { name: /Split the ledger out/ });
-    expect(row.querySelector('[data-app-mark]')).toBeNull();
+    expect(row.querySelector('[data-app-mark]')!.getAttribute('data-app-mark')).toBe(action.app);
   });
 
   it('names an offline row as such, and says why a thread on your item is there', async () => {
