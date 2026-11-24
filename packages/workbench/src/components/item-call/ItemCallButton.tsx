@@ -6,9 +6,12 @@
 // here: the call is livehuddle's page, in its tab; this is a button and a pill over one small read.
 import { useState } from 'react';
 import {
+  callFallbackWords,
   callInProgressWords,
   inCallWords,
   itemCallTabName,
+  readCallSpaceSetting,
+  type CallSpaceFallback,
   type ItemCall,
 } from '@liveworkspace/index-client';
 import { HoverCard, lucideGlyph } from '@liveworkspace/ui';
@@ -25,11 +28,14 @@ const VideoGlyph = lucideGlyph(lucideVideo, 14);
 
 type Starter = Pick<typeof indexClient, 'startItemCall'>;
 
-/** Starts the item's call (or joins the live one) in the call's own tab, opened in the press so nothing blocks it. */
+/** Starts the item's call (or joins the live one) in the call's own tab, opened in the press so nothing blocks it: in
+ *  the person's Calls Space when they chose one (item-calls.md "Your Calls Space"). `fallback`: the Space was
+ *  skipped, and why. */
 export async function startCall(
   source: CallSource,
   starter: Starter = indexClient,
-): Promise<'opened' | 'blocked' | 'failed'> {
+  space: string | null = readCallSpaceSetting(workbench.readPreferences()),
+): Promise<'opened' | 'blocked' | 'failed' | { fallback: CallSpaceFallback }> {
   const tab = namedTab(itemCallTabName(source.id));
   if (!tab) return 'blocked';
   // A tab already at the call: bring it forward, no second call.
@@ -38,9 +44,9 @@ export async function startCall(
     return 'opened';
   }
   try {
-    const { call } = await starter.startItemCall(source.id, source.share);
+    const { call, fallback } = await starter.startItemCall(source.id, source.share, space);
     sendTab(tab, call.link);
-    return 'opened';
+    return fallback ? { fallback } : 'opened';
   } catch {
     tab.close();
     return 'failed';
@@ -104,6 +110,7 @@ export function ItemCallButton() {
       workbench.track('UI', 'Refused', 'ItemCall');
       toast.error('The call couldn’t start. Try again in a moment.');
     }
+    if (typeof outcome === 'object') toast.warning(callFallbackWords(outcome.fallback));
     void refreshItemCalls();
   };
   return (
