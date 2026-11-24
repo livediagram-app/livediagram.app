@@ -7,7 +7,7 @@
 // for the item and the checks stop.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { workbench } from '../../bindings';
-import { noticeSlotHeld, onNoticeSlot } from '../../lib/notice-slot';
+import { noticeSlotHeld, onNoticeSlot } from '@liveworkspace/ui/toast';
 import { busyNow, watchActivity } from './suggest-activity';
 import { decideSuggestion, maySuggest, turnOffSuggestion } from './suggest-memory';
 import { SUGGESTIONS, SUGGEST_CHECK_MS, SUGGEST_IDLE_MS, type SuggestionId } from './suggestions';

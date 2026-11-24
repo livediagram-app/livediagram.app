@@ -55,6 +55,11 @@ export type TeamMember = {
   // A joined member's presence colour (Settings › Profile), null or absent for Automatic or a pending invite: the
   // assignee picker and the dots on assigned work paint them in it (presenceColourOf), as their cursor is.
   color?: string | null;
+  // Who sent an invitation, by their display name now, and when its 28 days started (sent, or last resent)
+  // (liveworkspace/docs/specs/003-accounts/accounts.md "Invitations"); null or absent when unknown or not an open
+  // invitation.
+  invitedByName?: string | null;
+  sentAt?: number | null;
   createdAt: number;
   updatedAt: number;
 };

@@ -3,6 +3,41 @@ import { APPS } from '@liveworkspace/index-client';
 import { explorerPath, sameView, viewFromLocation, type ExplorerView } from './views';
 import { kindWords, listWords, siteOf } from './words';
 
+describe('a team’s tabs', () => {
+  it('writes a tab other than People into the address, before the lens', () => {
+    expect(explorerPath({ kind: 'team', id: 'T1' })).toBe('/explorer/team?id=T1');
+    expect(explorerPath({ kind: 'team', id: 'T1', tab: 'people' })).toBe('/explorer/team?id=T1');
+    expect(explorerPath({ kind: 'team', id: 'T1', tab: 'library', q: 'opens-in:plan' })).toBe(
+      '/explorer/team?id=T1&tab=library&q=opens-in%3Aplan',
+    );
+  });
+
+  it('reads an unknown or People tab as People', () => {
+    expect(viewFromLocation('/explorer/team', 'id=T1&tab=people')).toEqual({
+      kind: 'team',
+      id: 'T1',
+    });
+    expect(viewFromLocation('/explorer/team', 'id=T1&tab=nope')).toEqual({
+      kind: 'team',
+      id: 'T1',
+    });
+    expect(viewFromLocation('/explorer/team', 'id=T1&tab=audit')).toEqual({
+      kind: 'team',
+      id: 'T1',
+      tab: 'audit',
+    });
+  });
+
+  it('is one place whatever the tab, so the sidebar keeps the team lit', () => {
+    expect(sameView({ kind: 'team', id: 'T1' }, { kind: 'team', id: 'T1', tab: 'audit' })).toBe(
+      true,
+    );
+    expect(sameView({ kind: 'team', id: 'T1' }, { kind: 'team', id: 'T2', tab: 'audit' })).toBe(
+      false,
+    );
+  });
+});
+
 describe('views and their addresses', () => {
   const views: ExplorerView[] = [
     { kind: 'home' },
@@ -15,6 +50,8 @@ describe('views and their addresses', () => {
     { kind: 'folder', id: 'f1' },
     { kind: 'team', id: 'team-1' },
     { kind: 'team', id: 'team-1', folderId: 'f2' },
+    { kind: 'team', id: 'team-1', tab: 'library' },
+    { kind: 'team', id: 'team-1', tab: 'audit' },
     { kind: 'invites' },
     { kind: 'gallery' },
     { kind: 'shape-libraries' },

@@ -95,7 +95,12 @@ export class ItemSchedule extends AutomationSchedule<ItemEvent> {
   }
 
   override get wakeAt(): number | null {
-    if (this.fed()) this.poll();
+    return this.wakeAtAsOf(Date.now());
+  }
+
+  // The wake as of `now`: a trigger the SQL triggers queued is due at `now`, never at a clock read after it.
+  private wakeAtAsOf(now: number): number | null {
+    if (this.fed()) this.poll(now);
     const at = super.wakeAt;
     if (this.settleAt === null) return at;
     return at === null ? this.settleAt : Math.min(at, this.settleAt);
@@ -105,8 +110,10 @@ export class ItemSchedule extends AutomationSchedule<ItemEvent> {
     return this.settleAt !== null && this.settleAt <= now;
   }
 
+  // Polled with the alarm's own `now`: read with a later clock, a trigger queued since the last poll would wait a
+  // millisecond past `now`, and the wake would run nothing.
   override due(now: number): boolean {
-    const at = this.wakeAt;
+    const at = this.wakeAtAsOf(now);
     return at !== null && at <= now;
   }
 

@@ -932,32 +932,36 @@ The journeys, one way each:
    been made, so either place says "The team may have been made. Refresh to check." with **Refresh**, which opens
    the team if it was made and otherwise says none was, never a bare "try again" that could make a second one
    ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
-2. **Run a team.** Choose the team (sidebar or panel rail). Its view opens on the team's card, above its library:
-   the organisation, how many have joined and how many are invited; every member with their role, on a disc of
-   their Google picture over their initials, painted as their account button in the header is
-   (`@liveworkspace/account-menu` `avatarFill`): their presence colour (the members list's `color`), else, on
-   Automatic, the colour picked from the name the row shows (an invitation's made from its address), shaded until
-   the white initials read at AA; and, by role:
-   - **Invite** (admins): an address and Member or Admin, at the foot of the card. The invitation is emailed.
-   - **Invite by Link** (admins): turn the join link on, copy it, make a new one (the old one stops working),
-     or turn it off. It lasts 7 days. Turning it on or off here moves the keyboard to what took the pressed
-     button's place (Copy, or Turn On Link); a press that fails, New Link, or a change from elsewhere leaves it
-     where it is.
-   - **Roles and removal** (admins): each row's role select, and its × to remove someone, withdraw an invitation
-     or clear a declined or expired one, each confirmed in words that say which. The only admin's own row is
-     pinned (no select, no ×), with why.
-   - **The ⋯ menu**: Edit Team (name and organisation; admins), Leave Team (anyone but the only admin while
-     others remain; leaving alone deletes the team, and says so), Delete Team (admins). Each asks once. Leaving
-     or deleting goes to My Work, with a toast, and the keyboard lands on My Work's row in the sidebar (the
-     team's card, and the button that was focused, are gone).
+2. **Run a team.** Choose the team (sidebar or panel rail). Its page opens (see [A team's page](#a-teams-page)
+   below): a header, then the tabs **People**, **Library** and, for its admins, **Audit Log**. People is where the
+   team is run; by role:
+   - **Invite by Email** (admins): one or many addresses, typed or pasted (commas, semicolons, spaces or new lines; a
+     pasted `Name <address>` keeps the address), each a chip, a role for them all, and **Send Invite** ("Send 3
+     Invites" for several, at most 50 at once). Each address is invited on its own request, one after another, so a
+     refusal (already in the team, the team full) never stops the rest: what was refused stays as a chip, with why.
+     A word that isn't an address is a red chip and holds the send. The invitations are emailed.
+   - **Invite Link** (admins, a side card): On or Off; on, the link, Copy, **Make a New Link** (the old one stops
+     working) and **Turn Off**, and the day it ends; off, **Turn On Link**. It lasts 7 days. The header's **Copy
+     Link** copies it, or opens Invite by Link while it is off.
+   - **Roles and removal** (admins): each member row's role select (on a phone, the role is a pill and its change
+     is in the row's ⋯ menu, with Remove Member), each confirmed in words that say which. The only admin's own row
+     is pinned (no select, no menu), marked "Only admin".
+   - **Waiting to Join**: the invitations not yet answered, each with its address, a pill (Invited, Expired,
+     Declined) and "Member · invited by Maya · ends in 5 days" (an invitation ends 28 days after it was last sent).
+     An open one offers **Resend** (`POST /teams/:id/members/:member/resend`, at most once in 10 minutes, and it
+     restarts the 28 days) and **Withdraw**; an ended or declined one **Invite Again** and **Remove**.
+   - **The ⋯ menu** in the header: Edit Team (name and organisation; admins), Invite Link (admins), Leave Team
+     (anyone but the only admin while others remain; leaving alone deletes the team, and says so), Delete Team
+     (admins). **Leave Team** also stands under the side cards, off with why for the only admin. Each asks once.
+     Leaving or deleting goes to My Work, with a toast, and the keyboard lands on My Work's row in the sidebar.
    - **Removed elsewhere.** A team the person is removed from (by an admin, or from another device) leaves the
      sidebar without a reload: the page reads the person's teams again when they come back to the tab (at most
-     once in 30 seconds, as the Inbox does), and a team's view that finds they are no longer in it drops the team
+     once in 30 seconds, as the Inbox does), and a team's page that finds they are no longer in it drops the team
      from the sidebar there and then, showing Team not found. A team left here comes back only when a read of the
      list made after the leave names it again (the person was added back elsewhere). Team not found stands alone:
-     no filters, layout toggle or Create, since nothing can be made or found in a team the person is not in.
-     In the editor's panel the team's pane has a **Members** button that opens the same card in a dialog; leaving
-     or deleting there closes it, goes Home and puts the keyboard on the rail's Home.
+     no tabs, filters, layout toggle or Create, since nothing can be made or found in a team the person is not in.
+     In the editor's panel the team's pane has a **Members** button that opens the members card in a dialog;
+     leaving or deleting there closes it, goes Home and puts the keyboard on the rail's Home.
 3. **Answer an invitation.** Sidebar › Spaces › **Invites** (shown while any wait, with their count): a card per
    invitation with **Accept** and **Decline**. Accepting opens the team; declining takes the card away. Each says
    so in a toast. With none waiting it says where the teams are (Spaces) and offers **New Team**. When the teams
@@ -978,6 +982,41 @@ app.", Edit Team "Saved for the whole team, in every app.", and Invite by Link "
 
 Old addresses keep working: `liveworkspace.app/account/teams` goes to `/explorer/invites`, and
 `/account/teams/<id>` to that team's view, `/explorer/team?id=<id>` ([site.md](../010-site/site.md#your-account-account)).
+
+#### A team's page
+
+`/explorer/team?id=<id>` opens on **People**; `&tab=library` and `&tab=audit` open the other two (an unknown tab,
+or Audit Log for a Member, is People). A tab is part of the address, so Back returns to it; the Library's lens
+(`q`) stays on the Library tab alone. The sidebar keeps the team lit on every tab. The Explorer's own header, sidebar and bottom bar
+are as on every view.
+
+- **Header**: the team's badge (its initials on the brand), its name, its plan ("Free Plan", or the Pro tier, with
+  Pro on), and one line: the organisation · how many members · how many invited · "You're an admin". At the right,
+  the joined members' discs (four, then "+N"), **Copy Link**, **Invite People** (admins: opens People and puts the
+  keyboard in Invite by Email) and the ⋯ menu. On a phone the buttons fill the width under the name and the discs
+  are left out.
+- **Tabs**: People (how many rows), Library (how many items, once the list is loaded whole) and Audit Log
+  (admins). A `tablist`; the arrow keys move between them.
+- **People**: Invite by Email (admins), then one card: the chips **Everyone**, **Admins**, **Members** and
+  **Pending** (shown while any invitation waits), each with its count, and **Find a person** (name or address);
+  then the members as a table (Name with "you" and the address, Role, **Added**, the ⋯ menu) and Waiting to Join.
+  Added is the day the person's row was made (the invitation, or the team for its maker), as accounts keeps no
+  separate joined date. Beside it on a wide screen (under it on a phone): Invite Link (admins), Plan (with Pro on:
+  the tier, "Pro for Teams raises the team's limits." and Upgrade Team, Ask an Admin or Manage Billing, as
+  [subscription.md](../019-subscription/subscription.md) says), **What Each Role Can Do** (Admin "Invites people
+  and runs the team.", Member "Works in the team's library.", each line under its badge; left out on a phone) and
+  Leave Team.
+- **Library**: the team's list, as before, under a toolbar in place of the pane's title: **All** and a chip per
+  app the library holds, each its app's logo and name (livediagram, liveplanner, ...) and how many, in one row
+  that scrolls sideways rather than wrapping, which set the
+  lens's Opens in (`opens-in:plan`, so the Filter field and the address agree; the counts show once the list is
+  loaded whole and stay while a chip narrows it, and the chips hide while only one kind is there); **Sort** (Last
+  Changed, Name; kept on this device) in Cards; the This app / All filter; Cards or Details; Help; and **New** (the
+  Create menu).
+- **Audit Log**: see [team-audit-log.md](./team-audit-log.md#the-audit-log-on-a-teams-page).
+
+The page's code (header, tabs, People) loads with the team's view, its Audit Log only when that tab opens, so the
+Explorer's first load carries neither.
 
 **What it loads.** The page asks accounts for the person's teams once as it opens (`GET /api/account/teams`, one
 request, as before): the sidebar's member counts, the Invites row and its badge, and the team list itself, which

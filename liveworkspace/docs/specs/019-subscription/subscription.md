@@ -451,7 +451,8 @@ Designed on the owner's canvas (2026-11-20). All of it is absent with the flag o
   billing portal.
 - **Back from the checkout:** "You're on Pro" (or "<Team> Is on Pro for Teams") is said once, and only for what that
   checkout gained: the owner this browser left to subscribe, now paid. Where that cannot be known nothing is said.
-  It is a card at the foot of the page, never a dialog: the tier, the three things it changed in the contract's own
+  It is a card at the foot of the page, in the toast stack where every notice sits ([Toasts](../016-notifications/toasts.md)
+  "One place for everything that pops up"), standing on the bottom chrome, never a dialog: the tier, the three things it changed in the contract's own
   figures (automation runs, AI credits, and image storage and history), and See Limits. It leaves
   by itself after twenty seconds, waiting while the pointer rests on it or the keyboard is inside it, or when
   dismissed, and does not come back on a reload.

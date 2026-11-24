@@ -68,28 +68,31 @@ item's rows reach the index only when its outbox drains (at least 60 seconds apa
   read is more than 15 seconds old. A browser left on a page overnight reads nothing after its first 10 quiet
   minutes.
 - **The Explorer's Inbox listens too.** The Inbox's list and badge (`useInbox`, on the Explorer page and in the
-  editor's panel) take each new answer: with the All filter it becomes the list as it is, with no request of its own;
-  with this app's filter, an answer whose rows differ from the list's reads the list again. So the editor's count,
+  editor's panel) take each new answer: it becomes the list as it is, with no request of its own (the Inbox lists every
+  app's rows, as the watch reads them). So the editor's count,
   the panel's rail and the Explorer's sidebar move together, live.
 - A failed read keeps what was there; the next read is the next turn.
 
 ## How a notice looks
 
-A small card under the editor's top-right corner card (its Share and account buttons), 8 px below it, 320 px wide on
-a computer; on a phone and at 450 px it spans the screen under the top row with a 16 px gutter. It never covers the
-palette strip, the menu card or the corner card, and takes no focus.
+A notice in the toast stack, bottom centre ([Toasts](../016-notifications/toasts.md) "One place for everything that
+pops up"): it stands on the tab bar, the dock and the bottom-right cluster as every toast does, above any toast on
+show, and wears the toast's stacked card (white or slate-900, its border and shadow). It never pops up at the top of
+the screen (the owner, 2026-11-24: "there is an ugly inbox one that appears in the top of the screen, all toasts /
+notifications should appear in the same place"). As wide as its words on a computer (20rem to 36rem, as every stacked card); on a phone it spans the screen with a 16 px
+gutter. It takes no focus. While it shows it holds the notice slot, so a suggestion waits for it.
 
-- **One row**: the kind's icon, who and what in one line (**Priya mentioned you**), the comment's first line in quotes
-  where there is one (an `@handle` of the reader, of who mentioned them or of who wrote it reads as that person's
-  name, **@Ada Quinn**, not **@ada-quinn**; anyone else's handle stays as written, as in the comment's chips), the item (› the tab › the element, or › the card, as its Inbox row names them, so rows on one
-  canvas tell apart) in small text, and one action: **Open in Inbox** (or **Open** for a share).
-  A close button (**Dismiss**, with its tooltip) at the top right.
+- **One row**: the kind's icon, who and what as its title (**Priya mentioned you**), the comment's first line in
+  quotes under it at the card's full width, where there is one (an `@handle` of the reader, of who mentioned them or
+  of who wrote it reads as that person's name, **@Ada Quinn**, not **@ada-quinn**; anyone else's handle stays as
+  written, as in the comment's chips), the item (› the tab › the element, or › the card, as its Inbox row names them,
+  so rows on one canvas tell apart) in small text, and one action on the foot row: **Open in Inbox** (or **Open**
+  for a share). A close button (**Dismiss**, with its tooltip) at the top right.
 - **Several rows** that arrive in one read, or while a notice is still on screen, are one notice: **3 New in Your
   Inbox**, then up to three lines (each who and what, then the item, each a link to its own place), **and 2 more**
-  past three, and **Open Inbox**.
-- Light and dark from the page's theme; the card is the corner card's surface (white or slate-900, its border and
-  shadow). It slides down 8 px and fades in over 160 ms, and only fades with reduced motion (the system setting or
-  the app's Reduce Motion).
+  past three, and **Open Inbox** on the foot row.
+- Light and dark from the page's theme. It enters as a toast does (rises 8 px and fades in), and only fades with
+  reduced motion (the system setting or the app's Reduce Motion).
 - Announced politely (`role="status"`): a screen reader hears the notice's first line once, never twice.
 - **Never over a dialog.** While a dialog is open over the page (a modal such as Share, or a canvas modal such as
   livedesign's Start Making Pages), a notice waits: it is not drawn and its 15 seconds do not run. It shows when the
@@ -110,15 +113,12 @@ questions").
 
 ## The count
 
-The editor's Explorer button carries this app's Inbox count (the sidebar's rule, what waits on the reader,
-[one-explorer-contracts.md "Inbox"](one-explorer-contracts.md#inbox), over the rows of the editor's own app only) as
-a small brand badge at its corner, `9+` past nine, nothing at 0; the button's name says it ("Explorer, 3 in Inbox").
-It moves with each read. The owner, 2026-11-19: "It should only show the inbox items I have in that app, not all
-apps". Every row names its app as the index's `?app=` reads it (an access request its item's, a card thread the
-plan's that lists it), so each row counts in its own app's editor and none is lost; a livehuddle request, an app
-with no Inbox, counts in liveworkspace.app's Explorer, which lists every app's. The editor's panel draws the same
-number on its rail's Inbox, whichever filter its list shows, so the two never disagree; the Explorer page's sidebar
-keeps the count of the list it shows (All's, every app's). A row done from the Inbox's pane (resolved) leaves the
+The editor's Explorer button carries the reader's Inbox count (the sidebar's rule, what waits on the reader,
+[one-explorer-contracts.md "Inbox"](one-explorer-contracts.md#inbox), over every app's rows) as a small brand badge
+at its corner, `9+` past nine, nothing at 0; the button's name says it ("Explorer, 3 in Inbox"). It moves with each
+read. The Inbox lists every app's rows wherever it is shown (the owner, 2026-11-24, Work Tracker 1404, replacing the
+editor's own-app count of 2026-11-19), so the count follows the list: the button, the editor's panel's rail and the
+Explorer page's sidebar draw one number, and a badge never counts a row the list leaves out. A row done from the Inbox's pane (resolved) leaves the
 count at once and after a reload, while the index still lists it ([one-explorer-contracts.md "What the reading pane
 can do"](one-explorer-contracts.md#inbox)).
 

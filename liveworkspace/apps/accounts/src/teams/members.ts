@@ -10,10 +10,12 @@ import {
   INVITATION_TTL_MS,
   INVITER_APP,
   isUniqueClash,
+  MAX_DECLINE_HASHES,
   MAX_MEMBERS_PER_TEAM,
   MAX_TEAMS_PER_ACCOUNT,
   memberGuard,
   ok,
+  RESEND_GAP_MS,
   type Result,
   REV,
   teamEvent,
@@ -128,9 +130,100 @@ export async function inviteMember(
       createdAt: now,
       picture: null,
       color: null,
+      invitedByName: actor.name || null,
+      sentAt: now,
     },
     teamName: me.teamName,
     declineToken: decline.token,
+  });
+}
+
+// An admin sends an open invitation's email again (accounts.md "Resending an invitation"): it starts over, its 28 days
+// and its reminders from now, with a fresh decline token beside the ones already sent (the newest MAX_DECLINE_HASHES
+// kept, so those links still work). Not within RESEND_GAP_MS of its last sending, so nobody floods an inbox. An
+// expired invitation is closed: inviting the address again replaces it.
+export async function resendInvitation(
+  db: D1Database,
+  actor: Actor,
+  teamId: string,
+  memberId: string,
+  now = Date.now(),
+): Promise<Result<{ member: Member; teamName: string; declineToken: string; email: string }>> {
+  const me = await getMembership(db, teamId, actor.id);
+  if (!me) return fail(404, 'not_found');
+  if (me.role !== 'admin') return fail(403, 'admin_only');
+  const row = await db
+    .prepare(
+      `SELECT m.id, m.userId, m.email, m.role, m.createdAt, m.clockStartedAt, m.declineTokenHashes,
+              COALESCE(ip.name, NULLIF(iu.name, '')) AS invitedByName,
+              (SELECT v.id FROM "user" v WHERE v.email = m.email AND v.emailVerified = 1) AS inviteeId
+       FROM team_member m LEFT JOIN "user" iu ON iu.id = m.invitedBy
+       LEFT JOIN profile ip ON ip.owner_id = iu.id
+       WHERE m.id = ? AND m.teamId = ? AND m.status = 'invited' AND ${UNEXPIRED}`,
+    )
+    .bind(memberId, teamId, now - INVITATION_TTL_MS)
+    .first<{
+      id: string;
+      userId: string | null;
+      email: string;
+      role: TeamRole;
+      createdAt: number;
+      clockStartedAt: number | null;
+      declineTokenHashes: string;
+      invitedByName: string | null;
+      inviteeId: string | null;
+    }>();
+  if (!row) return fail(404, 'invite_not_found');
+  if (row.clockStartedAt !== null && row.clockStartedAt > now - RESEND_GAP_MS) {
+    return fail(429, 'resend_too_soon');
+  }
+  const decline = await newDeclineToken(memberId);
+  const hashes = [...row.declineTokenHashes.split(' ').filter(Boolean), decline.hash].slice(
+    -MAX_DECLINE_HASHES,
+  );
+  const [, updated] = await db.batch([
+    db.prepare(BUMP),
+    // The gap and the 28 days checked again inside the write: of two resends at once, one goes.
+    db
+      .prepare(
+        `UPDATE team_member AS m SET clockStartedAt = ?, reminder1SentAt = NULL, reminder2SentAt = NULL,
+                reminder3SentAt = NULL, reminderAttempts = 0, declineTokenHashes = ?, updatedAt = ?, rev = ${REV}
+         WHERE id = ? AND status = 'invited' AND (clockStartedAt IS NULL OR clockStartedAt <= ?) AND ${UNEXPIRED}`,
+      )
+      .bind(now, hashes.join(' '), now, memberId, now - RESEND_GAP_MS, now - INVITATION_TTL_MS),
+    teamEvent(
+      db,
+      {
+        id: `team_invite_sent:${memberId}:${now}`,
+        type: 'team_invite_sent',
+        teamId,
+        teamName: me.teamName,
+        actor,
+        at: now,
+        detail: { memberName: row.email, personId: row.inviteeId, role: row.role, resent: '1' },
+      },
+      memberGuard(memberId, 'invited', now),
+    ),
+  ]);
+  if ((updated?.meta?.changes ?? 0) === 0) return fail(429, 'resend_too_soon');
+  return ok({
+    member: {
+      id: memberId,
+      userId: row.userId,
+      email: row.email,
+      name: null,
+      role: row.role,
+      status: 'invited',
+      expired: false,
+      createdAt: row.createdAt,
+      picture: null,
+      color: null,
+      invitedByName: row.invitedByName,
+      sentAt: now,
+    },
+    teamName: me.teamName,
+    declineToken: decline.token,
+    email: row.email,
   });
 }
 

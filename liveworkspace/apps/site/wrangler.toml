@@ -15,11 +15,19 @@ routes = [
   { pattern = "www.liveworkspace.app", custom_domain = true },
 ]
 workers_dev = false
+# Markdown for agents (liveworkspace/docs/specs/010-site/markdown-for-agents.md): a small Worker that runs first only on
+# the pages that answer Markdown (run_worker_first, pinned to the sitemap by agent-markdown.test.ts), so an agent that
+# prefers text/markdown gets the page's Markdown. Every other path, the build's assets and the app pages included, is
+# served from the static assets without it.
+main = "worker/index.ts"
 
-# Static assets only: the Next export in ./out. Headers come from public/_headers.
+# The Next export in ./out, reached by the Worker through ASSETS (its own files: nothing else must exist). Headers come
+# from public/_headers, on what the Worker serves too.
 [assets]
 directory = "./out"
+binding = "ASSETS"
 not_found_handling = "404-page"
+run_worker_first = ["/", "/compare", "/pricing", "/privacy", "/terms", "/licences"]
 
 [env.staging]
 name = "liveworkspace-site-staging"
@@ -28,4 +36,6 @@ workers_dev = false
 
 [env.staging.assets]
 directory = "./out"
+binding = "ASSETS"
 not_found_handling = "404-page"
+run_worker_first = ["/", "/compare", "/pricing", "/privacy", "/terms", "/licences"]

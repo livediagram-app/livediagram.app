@@ -259,11 +259,9 @@ export function inboxWatchFor(client: IndexClient): InboxWatch {
   return watch;
 }
 
-/** The rows an answer lists, each by key and time: two answers with one signature list the same Inbox. With `app`,
- *  that app's rows alone (the Explorer's This App filter). */
-export function inboxSignature(data: InboxResponse, app: string | null = null): string {
-  const mine = <T extends { app: string }>(rows: readonly T[] | undefined) =>
-    (rows ?? []).filter((r) => app === null || r.app === app);
+/** The rows an answer lists, each by key and time: two answers with one signature list the same Inbox. */
+export function inboxSignature(data: InboxResponse): string {
+  const mine = <T>(rows: readonly T[] | undefined): readonly T[] => rows ?? [];
   const parts: string[] = [];
   for (const t of mine(data.threads)) parts.push(`${threadKey(t)}@${t.latestAt}`);
   for (const a of mine(data.actions)) parts.push(`${actionKey(a)}@${a.updatedAt}:${a.status}`);

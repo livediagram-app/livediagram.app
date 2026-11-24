@@ -86,6 +86,11 @@ export function IsometricIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="isometric" size={size} />;
 }
 
+// Magnifier (docs/specs/008-canvas/magnifier.md): a magnifying glass with a plus in its lens.
+export function MagnifierIcon({ size = 14 }: IconSizeProps = {}) {
+  return <ModeGlyphIcon mode="magnifier" size={size} />;
+}
+
 // Eraser tool (docs/specs/008-canvas/canvas-and-palette.md): a tilted block eraser sitting on the canvas
 // baseline. The diagonal band reads as the eraser's two-tone body.
 // The Highlighter tile (docs/specs/008-canvas/highlighter.md), in the Draw category beside the pens.

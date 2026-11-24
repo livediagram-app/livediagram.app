@@ -1,7 +1,7 @@
 // A team's Audit Log on its view (liveworkspace/docs/specs/004-index/team-audit-log.md "The Audit Log on a team's
 // view"): the team's admins alone see it; closed until opened; every filter sent as the read takes it; Show More and
 // its failure; empty, nothing matching, refused and failed; Export CSV across files, the cap and a failure.
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   IndexError,
@@ -124,12 +124,13 @@ function renderTeam(
   index: ReturnType<typeof createFakeIndex>,
   team: TeamDetails = details(),
   helpHref?: (view: { kind: string }) => string | undefined,
+  tab?: 'audit',
 ) {
   return render(
     <Explorer
       app="liveplanner"
       client={index.client}
-      view={{ kind: 'team', id: 't1' }}
+      view={tab ? { kind: 'team', id: 't1', tab } : { kind: 'team', id: 't1' }}
       onNavigate={vi.fn()}
       itemHref={(i) => `/p/${i.id}`}
       onCreate={vi.fn()}
@@ -142,27 +143,28 @@ function renderTeam(
   );
 }
 
-const toggle = () => screen.findByRole('button', { name: /Audit Log/ });
+const toggle = () => screen.findByRole('tab', { name: /Audit Log/ });
 const reads = (index: ReturnType<typeof createFakeIndex>) =>
   index.calls.filter((c) => c.method === 'teamAudit').map((c) => c.args[0]);
 const rows = () => document.querySelectorAll('[data-audit-event]');
 
 async function open(index: ReturnType<typeof createFakeIndex>, team?: TeamDetails) {
-  renderTeam(index, team);
-  fireEvent.click(await toggle());
+  renderTeam(index, team, undefined, 'audit');
+  await toggle();
 }
 
 describe('the Audit Log', () => {
-  it('is an admin’s alone: a member sees no section and reads nothing', async () => {
+  it('is an admin’s alone: a member sees no tab, lands on People from its address, and reads nothing', async () => {
     const index = createFakeIndex({ audit: [row(1, 'shared')] });
-    renderTeam(index, details('member'));
-    // The card has loaded (its headline says the reader's not an admin), and still no section.
+    renderTeam(index, details('member'), undefined, 'audit');
+    // The page has loaded (its headline says the reader's not an admin), and still no tab.
     await screen.findByText(/2 members/);
-    expect(screen.queryByRole('button', { name: /Audit Log/ })).toBeNull();
+    expect(screen.queryByRole('tab', { name: /Audit Log/ })).toBeNull();
+    expect(screen.getByRole('tab', { name: /People/ }).getAttribute('aria-selected')).toBe('true');
     expect(reads(index)).toEqual([]);
   });
 
-  it('is closed until opened, then reads the first page and words each row', async () => {
+  it('reads nothing until its tab opens, then reads the first page and words each row', async () => {
     const index = createFakeIndex({
       audit: [
         row(1, 'shared', { detail: { level: 'edit' } }),
@@ -181,20 +183,31 @@ describe('the Audit Log', () => {
         { ...row(4, 'shared'), team: 't2' },
       ],
     });
-    renderTeam(index);
-    const button = await toggle();
-    expect(button.getAttribute('aria-expanded')).toBe('false');
-    expect(button.textContent).toContain('Admins only · kept a year');
+    const view = renderTeam(index);
+    const tab = await toggle();
+    expect(tab.getAttribute('aria-selected')).toBe('false');
     expect(reads(index)).toEqual([]);
-    fireEvent.click(button);
-    expect(button.getAttribute('aria-expanded')).toBe('true');
+    view.unmount();
+    // The first page is held, so the placeholder rows are seen however fast or slow the runner is.
+    index.hold.add('teamAudit');
+    renderTeam(index, details(), undefined, 'audit');
+    expect((await toggle()).getAttribute('aria-selected')).toBe('true');
+    expect((await screen.findByText(/Only admins see the Audit Log/)).textContent).toContain(
+      'Kept for a year',
+    );
     // Placeholder rows while the first page is read.
     expect(document.querySelector('[data-audit-loading]')).toBeTruthy();
+    act(() => index.release());
     await waitFor(() => expect(rows().length).toBe(3));
     expect(reads(index)).toEqual([{ team: 't1', limit: 50 }]);
     const [first, second, third] = [...rows()] as HTMLElement[];
     expect(first!.textContent).toContain('Ann Lee made a share link on Plan 1');
-    expect(first!.textContent).toContain('Share Link Made');
+    expect(first!.querySelector('[data-audit-pill]')!.textContent).toBe('Sharing');
+    expect(first!.querySelector('[data-audit-pill]')!.getAttribute('title')).toBe(
+      'Share Link Made',
+    );
+    expect(second!.querySelector('[data-audit-pill]')!.textContent).toBe('Members');
+    expect(third!.querySelector('[data-audit-pill]')!.textContent).toBe('Connections');
     expect(first!.textContent).toContain('Anyone with the link can edit');
     expect(first!.querySelector('[data-app-mark="liveplanner"]')).toBeTruthy();
     expect(second!.textContent).toContain('Ann Lee removed Bo Chen');
@@ -205,8 +218,6 @@ describe('the Audit Log', () => {
     expect(document.querySelectorAll('[data-audit-day]').length).toBe(2);
     expect(first!.querySelector('time')!.getAttribute('title')).toBe('2026-11-30 11:59 UTC');
     expect(screen.getByText('3 events')).toBeTruthy();
-    fireEvent.click(button);
-    expect(rows().length).toBe(0);
   });
 
   it('sends every filter as the read takes it, and Clear Filters reads everything again', async () => {
@@ -301,23 +312,23 @@ describe('the Audit Log', () => {
     await waitFor(() => expect(exportButton().disabled).toBe(false));
   });
 
-  it('pages with Show More, and keeps the rows when the next page fails', async () => {
+  it('pages with Show Older Events, and keeps the rows when the next page fails', async () => {
     const audit = Array.from({ length: 120 }, (_, i) => row(i + 1, 'shared'));
     const index = createFakeIndex({ audit });
     await open(index);
     await waitFor(() => expect(rows().length).toBe(50));
     expect(screen.getByText('50+ events')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Show More' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show Older Events' }));
     await waitFor(() => expect(rows().length).toBe(100));
     expect(reads(index).at(-1)).toEqual({ team: 't1', limit: 50, cursor: '50' });
     index.fail.set('teamAudit', new IndexError(500, 'internal'));
-    fireEvent.click(screen.getByRole('button', { name: 'Show More' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Show Older Events' }));
     expect(await screen.findByText(/Couldn’t load the rest of this list/)).toBeTruthy();
     expect(rows().length).toBe(100);
     index.fail.delete('teamAudit');
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     await waitFor(() => expect(rows().length).toBe(120));
-    expect(screen.queryByRole('button', { name: 'Show More' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Show Older Events' })).toBeNull();
   });
 
   it('tells an admin who has just stepped down that it is the admins’ alone', async () => {
@@ -340,9 +351,28 @@ describe('the Audit Log', () => {
     await waitFor(() => expect(rows().length).toBe(1));
   });
 
+  it('folds the filters behind Filters on a phone, and says when one is set', async () => {
+    const index = createFakeIndex({ audit: [row(1, 'shared')] });
+    await open(index);
+    await waitFor(() => expect(rows().length).toBe(1));
+    const toggle = screen.getByRole('button', { name: 'Filters' });
+    const group = screen.getByRole('group', { name: 'Filter the audit log' });
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(group.className).toContain('max-sm:hidden');
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(group.className).not.toContain('max-sm:hidden');
+    fireEvent.change(screen.getByLabelText('Event'), { target: { value: 'shared' } });
+    expect(await screen.findByRole('button', { name: 'Filters On' })).toBeTruthy();
+  });
+
   it('links its help article in the same help centre as the team’s', async () => {
-    renderTeam(createFakeIndex(), details(), () => 'https://x.test/help/explorer/team-spaces/');
-    fireEvent.click(await toggle());
+    renderTeam(
+      createFakeIndex(),
+      details(),
+      () => 'https://x.test/help/explorer/team-spaces/',
+      'audit',
+    );
     const help = await screen.findByRole('link', { name: 'Help: the audit log' });
     expect(help.getAttribute('href')).toBe('https://x.test/help/collaboration/teams/audit-log/');
   });

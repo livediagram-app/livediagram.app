@@ -34,10 +34,10 @@ const reads = (index: ReturnType<typeof createFakeIndex>) =>
   index.calls.filter((c) => c.method === 'inbox').length;
 
 describe('useInbox and the watch', () => {
-  it('takes a newer answer as the list under All, with no read of its own', async () => {
+  it('takes a newer answer as the list, with no read of its own', async () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread('a'));
-    const { result } = renderHook(() => useInbox(index.client, 'liveplanner', 'all'));
+    const { result } = renderHook(() => useInbox(index.client));
     await waitFor(() => expect(result.current.data?.threads).toHaveLength(1));
     const before = reads(index);
     index.inbox.threads.push(thread('b', 'livediagram'));
@@ -48,34 +48,32 @@ describe('useInbox and the watch', () => {
     stop();
   });
 
-  it('under this app, reads again only when this app’s rows differ', async () => {
+  // Work Tracker 1404: the Inbox is every app's, whatever the Explorer's app filter, so its read names no app.
+  it('reads every app’s rows, naming no app', async () => {
+    const index = createFakeIndex();
+    index.inbox.threads.push(thread('a'), thread('elsewhere', 'livediagram'));
+    const { result } = renderHook(() => useInbox(index.client));
+    await waitFor(() => expect(result.current.data?.threads).toHaveLength(2));
+    const asked = index.calls.filter((c) => c.method === 'inbox');
+    expect(asked.map((c) => c.args[0])).toEqual([{}]);
+  });
+
+  it('keeps the list when an answer lists the same rows', async () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread('a'));
-    const { result } = renderHook(() => useInbox(index.client, 'liveplanner', 'app'));
+    const { result } = renderHook(() => useInbox(index.client));
     await waitFor(() => expect(result.current.data?.threads).toHaveLength(1));
+    const was = result.current.data;
     const before = reads(index);
-    index.inbox.threads.push(thread('elsewhere', 'livediagram'));
-    const first = inboxWatchFor(index.client).subscribe(() => {}, { readNow: true });
+    const stop = inboxWatchFor(index.client).subscribe(() => {}, { readNow: true });
     await waitFor(() => expect(reads(index)).toBe(before + 1));
-    expect(result.current.data?.threads).toHaveLength(1);
-    first();
-
-    const other = createFakeIndex();
-    other.inbox.threads.push(thread('a'));
-    const second = renderHook(() => useInbox(other.client, 'liveplanner', 'app'));
-    await waitFor(() => expect(second.result.current.data?.threads).toHaveLength(1));
-    const was = reads(other);
-    other.inbox.threads.push(thread('b'));
-    const stop = inboxWatchFor(other.client).subscribe(() => {}, { readNow: true });
-    await waitFor(() => expect(second.result.current.data?.threads).toHaveLength(2));
-    // The watch's read, and the list's own read again.
-    expect(reads(other)).toBe(was + 2);
+    expect(result.current.data).toBe(was);
     stop();
   });
 
   it('hears nothing while off', async () => {
     const index = createFakeIndex();
-    renderHook(() => useInbox(index.client, 'livehuddle', 'all', undefined, false));
+    renderHook(() => useInbox(index.client, undefined, false));
     const stop = inboxWatchFor(index.client).subscribe(() => {}, { readNow: true });
     await waitFor(() => expect(reads(index)).toBe(1));
     stop();

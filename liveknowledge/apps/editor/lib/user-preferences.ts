@@ -141,6 +141,10 @@ export type UserPreferences = {
   // Home opens on its ordinary page header and the header's search field instead. Missing / undefined / true ===
   // shown, the default. The banner's own close button writes an explicit `false`; Settings turns it back on.
   homeBanner?: boolean;
+  // Show Connect MCP (docs/specs/030-knowledgebase/mcp-connect.md "Closing the tab"): when `false`, the knowledgebase
+  // footer has no Connect MCP tab, in every knowledgebase, unless the Connect view is the one open. The tab's own X
+  // writes `false`; Settings > Appearance turns it back on. liveknowledge's own scope. Read through connectTabShown.
+  showConnectMcp?: boolean;
   // Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "Opening on the Explorer"), a
   // common setting. When `true`, the homepage, arrived at from outside the site while signed in, opens the Explorer.
   // Missing / undefined / false === off, the default. Mirrored into this address's `lw_open_explorer` cookie on every
@@ -369,4 +373,10 @@ async function loadUserPreferences(ownerId: string): Promise<UserPreferences | n
 export type PanelSwitch = 'collaboratePanelEnabled' | 'quickStylePanelEnabled';
 export function panelEnabled(prefs: UserPreferences | undefined, key: PanelSwitch): boolean {
   return prefs?.[key] !== false;
+}
+
+// Whether the knowledgebase footer shows its Connect MCP tab (docs/specs/030-knowledgebase/mcp-connect.md "Closing
+// the tab"): shown unless stored `false`.
+export function connectTabShown(prefs: UserPreferences | undefined): boolean {
+  return prefs?.showConnectMcp !== false;
 }

@@ -12,6 +12,8 @@ export type CanvasTool =
   | 'spotlight'
   | 'eraser'
   | 'format'
+  // Magnifier (docs/specs/008-canvas/magnifier.md): a lens on the cursor that enlarges what is under it.
+  | 'magnifier'
   | 'isometric'
   // Slide Deck (docs/specs/012-collaboration/presentation-mode.md): opens the panel where a deck is built and started.
   // Picking the tool does NOT start presenting; Start is a deliberate second

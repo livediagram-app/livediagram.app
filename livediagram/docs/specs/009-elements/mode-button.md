@@ -6,7 +6,7 @@ A canvas element that looks like a button and, when pressed, **switches whoever 
 
 A document can be lasered over, spotlit, or tilted, but every one of those modes lives behind a picker in the palette, which means explaining it. A button ON the canvas turns that into an invitation: put "Light it up" next to the title of a walkthrough document and a visitor who has never opened the mode picker can join in with one click. It is the same instinct as the Quick Start templates: put the affordance where the user already is.
 
-It also gives a presenter somewhere to put a control bar: a row of buttons that hand the room a laser, a spotlight, or the isometric view.
+It also gives a presenter somewhere to put a control bar: a row of buttons that hand the room a laser, a spotlight, the magnifier, or the isometric view.
 
 ## The element
 
@@ -25,14 +25,14 @@ It also gives a presenter somewhere to put a control bar: a row of buttons that 
 - **It hands out its mode in any editor mode.**
 - It routes through the **same tool setter the palette picker uses**, so the mode's own rules all still apply: telemetry, the selection clear on entering Spotlight or Laser, and the empty-canvas guard.
 - **Dragging it moves it, and does NOT press it.** The face fires on `click`, never on pointer-down, and swallows that click when the pointer travelled more than a wobble between press and release (`usePressWithoutDrag`), because a drag on an element still ends in a browser `click` event.
-- **It stays pressable inside a pointer-inert mode.** Spotlight, Laser and Isometric make the canvas layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, a button offering "Select" would be unreachable from the very mode a user most wants out of, and a presenter's control bar would be a one-way door. Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed in Spotlight and Isometric), so it can be reconfigured mid-presentation. Under Laser a drag that starts on the button pans the canvas like any other drag, and a click still presses it.
+- **It stays pressable inside a pointer-inert mode.** Spotlight, Laser, Magnifier and Isometric make the canvas layer ignore pointers; a mode button keeps `pointer-events: auto` so it still works. Without that, a button offering "Select" would be unreachable from the very mode a user most wants out of, and a presenter's control bar would be a one-way door. Right-clicking a button in those modes likewise still opens its element menu (the canvas / tab menu stays suppressed in Spotlight, Magnifier and Isometric), so it can be reconfigured mid-presentation. Under Laser a drag that starts on the button pans the canvas like any other drag, and a click still presses it.
 - **Read-only surfaces**: the embed ([Read-only embeds (`/embed`)](../013-workspace/embeds.md)) has no tool picker to drive, so it renders the face inert rather than pretending.
 
 ## Configuring it
 
 In the palette it is **Selection Mode**, in the Tools tab's **Behaviour** group, the group for elements that DO something when someone interacts with them, rather than elements that say something. (The tile's internal id is unchanged: palette layouts and search address tiles by id.)
 
-Right-click the button → **Button**: a "Switches the presser to" tile grid of the seven modes it can hand out (Select, Hand, Laser, Spotlight, Eraser, Format, Isometric, `BUTTON_MODES`), the current one marked active. Tiles rather than a list so the icons match the palette's own mode picker.
+Right-click the button → **Button**: a "Switches the presser to" tile grid of the eight modes it can hand out (Select, Hand, Laser, Spotlight, Eraser, Format, Magnifier, Isometric, `BUTTON_MODES`), the current one marked active. Tiles rather than a list so the icons match the palette's own mode picker.
 
 The full set is deliberate. A button that hands someone the Eraser is an odd thing to build, but the author picks from a menu that names each one, and forbidding it would be us second-guessing a document we can't see. The **Highlighter** was in the set while it was a held mode; it is a Draw tile now ([Highlighter](../008-canvas/highlighter.md)), so it is not a mode a button can hand out. A button saved with `mode: 'highlighter'` loads with the field dropped and reads as the default mode.
 

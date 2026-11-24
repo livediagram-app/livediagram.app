@@ -6,7 +6,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useToast } from '../../hooks/ui/useToast';
-import { holdNoticeSlot } from '../../lib/notice-slot';
+import { holdNoticeSlot } from '@liveworkspace/ui/toast';
 
 export const OFFSCREEN_TOAST_KEY = 'nothing-in-view';
 

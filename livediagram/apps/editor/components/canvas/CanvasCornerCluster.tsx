@@ -9,6 +9,7 @@ import {
   stripCanStart,
 } from '@/components/canvas/SessionClusterStrip';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
+import { MagnifierClusterButton } from '@/components/canvas/MagnifierClusterButton';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import { atLeastInset } from '@livediagram/ui';
@@ -182,6 +183,14 @@ export function CanvasCornerCluster({
               }
               onOpenTheme={onOpenCanvasTheme && !whiteboard ? onOpenCanvasTheme : undefined}
               themeOpen={!!canvasThemeOpen}
+            />
+          ) : null}
+          {/* The Magnifier's control (docs/specs/008-canvas/magnifier.md "The settings popover"): beside the zoom
+              controls while the mode is on, opening its settings above it. */}
+          {canvasTool === 'magnifier' && !zenMode ? (
+            <MagnifierClusterButton
+              open={activeDockPanel === 'magnifier'}
+              onToggle={(button) => handleDockButtonClick('magnifier', button, true)}
             />
           ) : null}
           <ViewZoomControls

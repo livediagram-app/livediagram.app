@@ -46,6 +46,13 @@ const TidyUpPopover = dynamic(() => import('./TidyUpPopover').then((m) => m.Tidy
   ssr: false,
 });
 
+// And the Magnifier's settings (docs/specs/008-canvas/magnifier.md "The settings popover"), on the first press of
+// its button.
+const MagnifierPopover = dynamic(
+  () => import('./MagnifierPopover').then((m) => m.MagnifierPopover),
+  { ssr: false },
+);
+
 // A lazily loaded popover in a boundary of its own: one whose code cannot load (opened offline,
 // docs/specs/007-editor/load-recovery.md "Offline") closes, so its button lets go, and never takes the canvas with it.
 function LazyPopover({ onError, children }: { onError: () => void; children: ReactNode }) {
@@ -99,6 +106,8 @@ export function useCanvasChromePanels({
   sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button, in Diagram mode.
   tidyUpPopoverEl: ReactNode;
+  // The Magnifier's settings over its button, while the mode is on.
+  magnifierPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -220,6 +229,12 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (activeDockPanel === 'tidy-up' && !tidyUpShown) closeDockPanel();
   }, [activeDockPanel, tidyUpShown, closeDockPanel]);
+  // The Magnifier's popover belongs to its button, which is there only while the mode is on.
+  const magnifierOn = props.canvasTool === 'magnifier' && !zenMode;
+  const magnifierOpen = activeDockPanel === 'magnifier' && magnifierOn && !chromeHidden;
+  useEffect(() => {
+    if (activeDockPanel === 'magnifier' && !magnifierOn) closeDockPanel();
+  }, [activeDockPanel, magnifierOn, closeDockPanel]);
   const { laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -457,6 +472,11 @@ export function useCanvasChromePanels({
           />
         </LazyPopover>
       ) : null,
+    magnifierPopoverEl: magnifierOpen ? (
+      <LazyPopover onError={closeDockPanel}>
+        <MagnifierPopover anchor={activeDockAnchor ?? undefined} onClose={closeDockPanel} />
+      </LazyPopover>
+    ) : null,
     layersEl,
     sessionPopoverEl,
     paletteTint,

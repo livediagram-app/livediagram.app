@@ -24,6 +24,8 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'session-poll': 288,
   // The Tidy Up popover's `w-96`: two tiles to a row (docs/specs/008-canvas/layout-cleanup.md).
   'tidy-up': 384,
+  // The Magnifier popover's `w-72` (docs/specs/008-canvas/magnifier.md "The settings popover").
+  magnifier: 288,
   // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
   explorer: 960,
 };
@@ -37,7 +39,9 @@ export type DockPanel =
   | 'session-vote'
   | 'session-poll'
   // Diagram mode's Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
-  | 'tidy-up';
+  | 'tidy-up'
+  // The Magnifier's settings, while the mode is on (docs/specs/008-canvas/magnifier.md "The settings popover").
+  | 'magnifier';
 
 export type { DockAnchor };
 

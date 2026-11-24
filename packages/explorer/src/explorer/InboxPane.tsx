@@ -1,7 +1,8 @@
 'use client';
 
-// The Inbox (one-explorer-contracts.md "Inbox"): what is outstanding for the person, across every app or this one
-// (the header's filter), as a list and a reading pane. The list holds every row newest first under Today, Earlier
+// The Inbox (one-explorer-contracts.md "Inbox"): what is outstanding for the person, across every app whatever the
+// Explorer's app filter (which the Inbox's header leaves out), each row with the logo of the app it opens, as a list
+// and a reading pane. The list holds every row newest first under Today, Earlier
 // This Week and Older, with a filter dropdown over it (All, My Actions, Assigned by Me, Comments, Form Responses, each
 // with its count, the choice kept per viewer on this device). Choosing a row shows it in the pane beside the list;
 // on a phone, and in the editor's narrow panel, the pane takes the list's place with Back (the browser's Back and
@@ -63,7 +64,7 @@ const isPaneState = (state: unknown) =>
 // `compact`: inside the editor's Explorer panel, under the pane's own header, with the small empty state. The filter
 // is a dropdown everywhere: in the panel drawn into `filterSlot`, a node in the panel's header row (null while it
 // mounts: nothing yet; without a slot it sits in a row of its own above the list); on the page, in the pane header's
-// row beside the app filter.
+// row. Neither draws the app filter: the Inbox lists every app's rows.
 export function InboxPane({
   compact = false,
   filterSlot,
@@ -71,7 +72,7 @@ export function InboxPane({
   compact?: boolean;
   filterSlot?: HTMLElement | null;
 }) {
-  const { inbox, inboxHost, viewerId, words, filter: appFilter } = useExplorer();
+  const { inbox, inboxHost, viewerId, words } = useExplorer();
   const settle = inbox.settle;
   const onTelemetry = inboxHost?.onTelemetry;
   // `Activity / Opened` once per visit, through the host's hook as it is when the Inbox opens: not per read
@@ -87,7 +88,6 @@ export function InboxPane({
   const narrow = useMediaQuery(INBOX_STACKED_QUERY);
   const stacked = compact || narrow;
   const density: InboxDensity = compact ? 'compact' : 'comfortable';
-  const showApp = appFilter === 'all';
 
   // The filter bar's choice, per viewer on this device.
   const [chosen, setChosen] = useState<{ viewer: string | null; filter: InboxFilter } | null>(null);
@@ -344,7 +344,6 @@ export function InboxPane({
             visible={visible}
             selectedKey={selected?.key ?? null}
             rowId={rowId}
-            showApp={showApp}
             density={density}
             viewerId={viewerId}
             onPick={onPick}
@@ -357,7 +356,6 @@ export function InboxPane({
         ref={reader}
         // No key: one pane patched in place as the choice moves (it resets its draft itself), not remounted per row.
         entry={selected}
-        showApp={showApp}
         onBack={stacked ? closePane : undefined}
         onGone={onGone}
         announce={announce}
@@ -405,6 +403,7 @@ export function InboxPane({
       {compact || paneStands ? null : (
         <PaneHeader
           title="Inbox"
+          showFilter={false}
           actions={
             <span className="flex min-w-0 shrink-0 items-center gap-1">
               {inboxHost?.headerActions?.map((a) => (
@@ -430,7 +429,6 @@ function Rows({
   visible,
   selectedKey,
   rowId,
-  showApp,
   density,
   viewerId,
   onPick,
@@ -438,7 +436,6 @@ function Rows({
   visible: readonly InboxEntry[];
   selectedKey: string | null;
   rowId: (i: number) => string;
-  showApp: boolean;
   density: InboxDensity;
   viewerId: string | null;
   onPick: (key: string) => void;
@@ -468,7 +465,6 @@ function Rows({
         entry={e}
         id={rowId(i)}
         selected={e.key === selectedKey}
-        showApp={showApp}
         density={density}
         viewerId={viewerId}
         onPick={onPick}

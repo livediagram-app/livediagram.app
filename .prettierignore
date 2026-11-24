@@ -10,3 +10,6 @@ packages/mcp-kit/src/server.schema.json
 # Help articles: Prettier's MDX parser re-indents lists inside <AppNote> and strands the closing tag inside the
 # last list item, which breaks the build. CI never formats MDX.
 liveworkspace/apps/help/app/**/*.mdx
+
+# Real exported pages, trimmed, that the Markdown snapshots read byte for byte (packages/agent-markdown/src/snapshots.test.ts).
+packages/agent-markdown/fixtures/

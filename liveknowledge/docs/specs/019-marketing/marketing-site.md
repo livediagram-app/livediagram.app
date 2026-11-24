@@ -119,6 +119,16 @@ The editor works without signing in, and the site says so. It also says what nee
 - `/licences` reads the generated licence manifest for this product; `/terms`, `/privacy` and `/security` are the shared stubs.
 - The site words in `@liveknowledge/ui` (`SITE_TITLE`, `SITE_DESCRIPTION`, `SITE_PITCH`, `renderSocialCard`) are still the fork's and are read by the help centre and the editor's share rail; the marketing app does not use them. Moving `lib/site-words.ts` and `lib/social-card.tsx` into `@liveknowledge/ui` is the follow-up.
 
+## Markdown for agents
+
+Every page in `app/sitemap.ts` but `/community` (liveworkspace.app's page, which the router serves) answers a clean
+Markdown copy of itself to an AI agent whose request prefers `text/markdown`, and its HTML with `Vary: Accept` to
+everyone else ([Markdown for agents](../../../../liveworkspace/docs/specs/010-site/markdown-for-agents.md)). The
+build writes each page's Markdown beside its HTML after `next build` (`faq.md` beside `faq.html`, `index.md` for the
+home), from the page as it renders, and `/llms.txt` listing them with the help centre's list; the router
+negotiates ([Router app](../016-platform/router-app.md) "Routing table"). A new page in the sitemap gets its Markdown
+with no other change.
+
 ## Content pages (FAQ)
 
 `/faq` is the shared FAQ browser over `FAQ_CATEGORIES` (`lib/faq-content.tsx`): Getting Started, Trust and Verification, Ask and AI, Agents, Import and Export, Sharing and Privacy. Every answer is a plain statement of what is built, including what is not (Google Docs import, page-level permissions). Price is said as it stands, never promised: free to start, and no paid tier at launch ("Is there a paid tier?", whose answer never says "no paid tier" as a promise). The answers cover reading and editing (a page opens to read; Edit opens a shared draft), the roles (a Participant is an Editor minus the Review Period, Knowledgebase Style, AI Settings and sharing), covers, AI Context and Always in Context, Describe to Set Up on built-in AI, and the Review Due email. The landing page shows eight of them (`LANDING_FAQ`).

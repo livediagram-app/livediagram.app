@@ -17,6 +17,7 @@ import {
   type ArticleEditorHandle,
 } from '@/lib/article/article-editor-store';
 import { flowFrame } from '@/lib/article/article-flow-geometry';
+import { continuousFootPadding } from '@/lib/article/continuous-page-height';
 import { articleStyleVars } from '@/lib/article/article-style-vars';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import { slashKey, slashPlugin, type SlashBridge } from '@/lib/article/article-slash';
@@ -257,6 +258,12 @@ export function mountArticleView({
         top: `${frame.y}px`,
         width: `${frame.width}px`,
         [continuous ? 'minHeight' : 'height']: `${frame.height}px`,
+        // A continuous page's room under its foot, inside the writing's own box (page-surface.md "Room under the
+        // foot"): the scroll clears the footer bar by it wherever this browser draws the writing taller than the
+        // stored page. Border-box, so a page whose stored height fits its writing is no taller for it.
+        ...(continuous
+          ? { boxSizing: 'border-box', paddingBottom: `${continuousFootPadding(frame)}px` }
+          : {}),
         // The page's side margin, for what the writing hangs in it (a held paragraph's name chip).
         '--article-margin': `${frame.margin}px`,
       } as CSSProperties;

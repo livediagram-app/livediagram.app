@@ -3,8 +3,8 @@
 // The editor's Inbox notices for one reader (inbox-notices.md): the page's watch over their Inbox, the rows seen in
 // this browser, and the notice on screen. Each answer, in a visible tab, offers the rows that are news; they join the
 // notice and are seen at once, so no other tab shows them too. Dismissing or following a link marks them gone, and a
-// notice in another tab showing them closes. Answers this app's Inbox count for the Explorer button (inbox-notices.md
-// "The count"), less the rows done from the Inbox's pane that the index still lists (../data/inbox-settled), and the
+// notice in another tab showing them closes. Answers the reader's Inbox count, every app's rows as the Inbox lists
+// them, for the Explorer button (inbox-notices.md "The count"), less the rows done from the Inbox's pane that the index still lists (../data/inbox-settled), and the
 // layer to draw.
 
 import { useCallback, useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
@@ -14,7 +14,7 @@ import { inboxCount, withoutSettled } from '../explorer/inbox/sections';
 import type { InboxData } from '../data/useInbox';
 import { settledStoreFor, type SettledStore } from '../data/inbox-settled';
 import { createNoticeCenter, type NoticeCenter } from './center';
-import { dialogOpenNow, subscribeDialogs } from './dialog-open';
+import { dialogOpenNow, subscribeDialogs } from '@liveworkspace/ui/toast';
 import { InboxNotice } from './InboxNotice';
 import { freshRows, noticeRows } from './rows';
 import { seenStoreFor, type SeenStore } from './seen';
@@ -41,7 +41,7 @@ export type InboxNoticesOptions = {
 };
 
 export type InboxNotices = {
-  /** This app's Inbox count (the sidebar's, of this app's rows), undefined until read or when off. */
+  /** The Inbox count (the sidebar's, of every app's rows), undefined until read or when off. */
   count: number | undefined;
   /** The notice layer, drawn once a page whoever else asks. */
   notices: ReactNode;
@@ -165,7 +165,7 @@ export function useInboxNotices({
   const onDismiss = useCallback(() => settle('Removed'), [settle]);
   const onFollow = useCallback(() => settle('Opened'), [settle]);
   const owner = useLayerOwner(on);
-  const count = on ? inboxCount(data as InboxData | null, viewerId, app) : undefined;
+  const count = on ? inboxCount(data as InboxData | null, viewerId) : undefined;
   return {
     count,
     notices:

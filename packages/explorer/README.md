@@ -287,17 +287,24 @@ Explorer words (`teamErrorMessage`). One client, `data/teams.ts`; no host writes
   panel's rail has New Team under Spaces. It opens the team dialog (`teams/TeamFormDialog.tsx`: name, optional organisation) and,
   made, opens the team. The Move dialog's New Team tile is the same `create`, name only, filing the item into it.
   A guest sees the sign-in nudge in New Team's place.
-- **The team card** (`teams/TeamCard.tsx`), at the top of a team's view and in the panel's Members dialog: a header
-  line (organisation, joined members, invited), Invite by Link and the ⋯ menu (Edit Team, Leave Team, Delete Team, by
-  role), one row per member (name, "you", Invited, Declined or Expired, email, role), the admins' role selects and ×,
-  and the admins' invite footer (address, Member or Admin, Invite). The last-admin rule shapes it as the server keeps
-  it (`teams/rules.ts`): the only joined admin's row is pinned, and Leave is offered to them only when they are alone
-  (it then deletes the team, and says so). Removing words itself by who goes: Remove Member, Withdraw Invite, Remove
-  from List, Leave Team. A team the person is not in is a not-found card.
-- **The Audit Log** (`explorer/audit/AuditLog.tsx`), on a team's view, for its admins alone
-  ([team-audit-log.md](../../liveworkspace/docs/specs/004-index/team-audit-log.md#the-audit-log-on-a-teams-view)):
-  closed until opened, then the Person, Event, From and To filters, the rows by day with Show More, and Export CSV,
-  which follows `X-Next-Cursor` and saves one file (`downloadBlob` from `@liveworkspace/ui/download-blob`).
+- **A team's page** (`teams/page/TeamView.tsx`, lazy from `explorer/TeamPane.tsx`): the header (badge, name, plan,
+  headline, member discs, Copy Link, Invite People, the ⋯ menu), the tabs People, Library and (admins) Audit Log, in
+  the address as `tab`. People: Invite by Email (`InviteComposer.tsx`, one or many addresses as chips), the Everyone,
+  Admins, Members and Pending chips with Find a person, the member table and Waiting to Join (`PeopleList.tsx`:
+  Resend, Withdraw, Invite Again, Remove), and the side cards (`TeamSideCards.tsx`: Invite Link, Plan, What Each
+  Role Can Do, Leave Team). The sums and words are pure (`teams/page/people.ts`). Library: `ItemsPane` draws the
+  list under a toolbar of kind chips and Sort (`explorer/team/`). Actions and their questions are one hook,
+  `teams/useTeamActions.tsx`, shared with the panel's members card.
+- **The members card** (`teams/TeamCard.tsx`), in the panel's Members dialog: a header line (organisation, joined
+  members, invited), Invite by Link and the ⋯ menu, one row per member, the admins' role selects and ×, and the
+  admins' invite footer. The last-admin rule shapes both as the server keeps it (`teams/rules.ts`): the only joined
+  admin's row is pinned, and Leave is offered to them only when they are alone (it then deletes the team, and says
+  so). Removing words itself by who goes: Remove Member, Withdraw Invite, Remove from List, Leave Team. A team the
+  person is not in is a not-found card.
+- **The Audit Log** (`explorer/audit/AuditLog.tsx`), a team page's tab, for its admins alone
+  ([team-audit-log.md](../../liveworkspace/docs/specs/004-index/team-audit-log.md#the-audit-log-on-a-teams-page)):
+  read when the tab opens, then the Person, Event, From and To filters, the rows by day with Show Older Events, and
+  Export CSV, which follows `X-Next-Cursor` and saves one file (`downloadBlob` from `@liveworkspace/ui/download-blob`).
 - **Invite by Link** (`teams/InviteLinkDialog.tsx`): Turn On, then the link with Copy (it says Copied, or selects the
   field when the clipboard refuses), when it ends, New Link (the old stops working) and Turn Off.
 - **Invites** (`explorer/InvitesPane.tsx`): Accept opens the team, Decline takes the card away; each says so in a toast.

@@ -366,6 +366,8 @@ holds no item. It adds:
   store calls it after every rule write; the app calls it when the item is put away or brought back;
 - `ItemSchedule`: `wakeAt` and `due(now)` also read `MIN(due_at)` of `automation_settles` and whether the queue holds
   a row, in one statement, only while a rule hears a SQL-fed kind (the triggers write with no JavaScript run).
+  `due(now)` reads them as of the alarm's own `now`, so a row queued since the last read is due at once, never a
+  millisecond after it.
 
 ### Events in (intake.ts)
 

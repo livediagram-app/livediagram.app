@@ -34,6 +34,7 @@
     "@liveplanner/sheets": "workspace:*",
     "@liveplanner/telemetry-client": "workspace:*",
     "@liveplanner/ui": "workspace:*",
+    "@liveworkspace/agent-markdown": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/help-registry": "workspace:*",
     "@liveworkspace/help-site": "workspace:*",

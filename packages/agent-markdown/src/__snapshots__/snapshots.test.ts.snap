@@ -1,0 +1,372 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the Markdown of a real page > of a marketing site 1`] = `
+"---
+title: "Miro alternative · livediagram"
+description: "An open-source, free Miro alternative: real-time diagrams, whiteboards and workshop boards you can open without an account."
+url: "https://www.livediagram.app/alternatives/miro"
+---
+
+livediagram vs Miro
+
+# The open-source Miro alternative
+
+Miro is a powerful, sprawling online workspace. livediagram is a lighter, open-source take on the same idea: real-time multiplayer diagrams, whiteboards and workshop boards you can start in one click, with no sign-up, and run on your own account if you want to.
+
+## At a glance
+
+| Feature                  | livediagram                                                                                                             | Miro                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Price                    | Free, every feature (a few limits rise on paid plans)                                                                   | Free tier, then paid plans                               |
+| Open source              | Yes, MIT-licensed                                                                                                       | No, proprietary SaaS                                     |
+| Start without an account | Yes, create and edit as a guest                                                                                         | An account to create boards; guest editing on paid plans |
+| Real-time multiplayer    | Yes                                                                                                                     | Yes                                                      |
+| Import + export          | Excalidraw, draw\\.io, Visio, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out | Broad import + export options                            |
+| Programmatic access      | REST API and an MCP server for AI tools, both free                                                                      | Developer platform, marketplace and an MCP server        |
+| Focus                    | One canvas, three modes: diagrams, whiteboards and Workshop sessions                                                    | All-in-one visual workspace                              |
+
+## Which to pick
+
+### Why pick livediagram
+
+- It's free for everyone and MIT-licensed, with no seats needed to edit.
+- Open a link and draw, with no sign-up wall in front of the canvas, even to create a canvas.
+- Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.
+- Three ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, and Workshop for running a session with your team.
+- Participant links let a workshop add stickies, write and vote without being able to reshape the board.
+- Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.
+- Workshop tools built in and free: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q\\&A board.
+- Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.
+- 91 templates, 25 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.
+- Guide the room without pulling anyone away: Bring Focus offers everyone a jump to what you mean, anyone can follow anyone’s view, even on a view-only link, and reaction pads throw confetti or applause.
+- Present a canvas as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.
+- Record a walkthrough, your voice, an optional camera bubble and every pan, zoom and tab change, and anyone who can open the canvas replays it over the live board, free for everyone.
+- Save any selection to your Personal or team Library and drop it on any canvas, and embed a live view of a plan, document or design from the other liveworkspace apps.
+- Bring boards across from Excalidraw, draw\\.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.
+
+### Where Miro is the better pick
+
+- Facilitating very large workshops: breakout-scale sessions and a marketplace of meeting apps around the board.
+- A deep template and integration marketplace (Jira, Slack, and more).
+- AI across the canvas: assistants, flows and generators, well beyond a single panel.
+- Enterprise admin, SSO, and compliance at large scale.
+
+## One workspace, three ways to work
+
+Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one canvas with tabs, and each tab works in one of three modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Workshop for running the session itself: timers, dot votes, polls and reveals.
+
+Every tab also has a finish, the way it is drawn: Flexible by default, Professional for crisp, print-ready work, Sketch for pencil on paper and Marker for felt-tip on a whiteboard. A look sets the theme, finish, font and canvas pattern in one click, and switching it never changes the content underneath.
+
+Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q\\&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q\\&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned to teammates on the board itself.
+
+## Every feature on the free plan
+
+Miro's free tier is real, but it's the top of a pricing funnel: board limits and gated features exist to move teams onto paid seats. livediagram gates no feature and caps no boards. The hosted version at livediagram.app is free to start, every feature works on the free plan, and paid plans only raise a few limits.
+
+That includes the meeting basics: Miro keeps its timer and voting for paid plans and caps Talktrack recordings on its free plan, while in livediagram the timer, dot votes and polls come with Workshop mode, and walkthroughs come with every canvas.
+
+The whole codebase is MIT-licensed and public, so anyone can read exactly how it works.
+
+## Collaboration without the onboarding
+
+In Miro, creating a board starts with an account, and anonymous guest editing depends on the plan you are on. In livediagram, collaborating is a URL. Anyone can create a canvas without signing up; a guest’s new canvas is kept in their browser until they press Share, which syncs it in one step. Whoever opens the link is on the canvas with you, live cursors and all. A link is an Editor, Participant or view-only link (a Participant adds stickies, writes and votes but cannot reshape the board), and it can carry a password or an expiry date when you need it locked down.
+
+The collaboration tools go beyond cursors: leave comments on elements and assign action items to teammates directly on the canvas, tracked together in the Collaborate panel, with optional email notifications. A selection lock shows when someone is editing an element, so two people rarely end up changing the same thing at once.
+
+## Connected to the rest of your workflow
+
+Diagrams rarely live alone. livediagram imports Mermaid (flowcharts, state and ER diagrams, the diagram-as-code format that lives in READMEs and AI output), Markdown outlines, Excalidraw scenes, draw\\.io files and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.
+
+For programmatic use there is a free REST API with personal tokens and an MCP server at mcp.livediagram.app that lets AI assistants read and edit your canvases directly; their edits arrive live, outlined, and undoable as one unit. None of it sits behind a plan.
+
+## Miro alternative FAQ
+
+**Is livediagram really free?**
+
+Yes. Every feature works on the free plan at livediagram.app, with no trial and no card, and paid plans raise a few limits. The code is MIT-licensed and public.
+
+**Do my teammates need an account to edit with me?**
+
+No. Share a link and anyone who opens it can edit in real time, with live cursors and comments, without signing up. You do not need an account to create a canvas either: a guest’s canvas is kept in their browser until they press Share, which syncs it in one step. Accounts are optional and mainly useful for syncing your canvases across devices and using teams.
+
+**Can I import my existing Miro boards?**
+
+There's no direct Miro importer today. If your board is structured content (a flowchart, an org chart, a plan), the fastest path is to start from a livediagram template, or to import a Mermaid or Markdown version of the structure and let livediagram lay it out as a themed diagram. Boards from Excalidraw, draw\\.io and Microsoft Whiteboard do import directly.
+
+**Can livediagram run workshops the way Miro does?**
+
+Sessions like retros, brainstorms, estimation and planning work well: switch a tab to Workshop and a facilitator can run a shared timer, dot-voting, live polls, a Q\\&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the canvas keeps the comments and assigned actions that came out of it. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.
+
+See how it feels
+
+No sign-up, nothing to install, free to start. Open a canvas and judge for yourself.
+
+[Start drawing](/new?via=Compare.Card)
+
+Comparisons reflect each product’s general positioning and may change. Check Miro’s own site for current details. Last reviewed 18 November 2026.
+
+## Other comparisons
+
+[vs XMind The open-source, browser-based XMind alternative A free, open-source, browser-based XMind alternative for mind maps, plus flowcharts, whiteboards, timelines and more, with no account needed. Mind maps and more Nothing to install Open source Read the comparison](/alternatives/xmind) [vs Excalidraw A more structured Excalidraw alternative A more structured Excalidraw alternative: the same free, open-source, no-sign-up spirit, a hand-drawn Sketch finish, templates, tabs and free presentations. Hand-drawn finishes Free presentations .excalidraw in and out Read the comparison](/alternatives/excalidraw) [vs draw.io The real-time draw.io alternative A modern, real-time draw.io (diagrams.net) alternative: live multiplayer diagrams with no setup, templates, themes, and a direct .drawio import. Real-time by default Imports .drawio One-click themes Read the comparison](/alternatives/drawio)
+"
+`;
+
+exports[`the Markdown of a real page > of the help centre 1`] = `
+"---
+title: "Using Tabs | livediagram"
+description: "Split your work into tabs: add, name, reorder, delete and switch tabs on the tab bar, with every action in the tab menu."
+url: "https://www.liveworkspace.app/help/tabs/using-tabs/"
+---
+
+[Tabs](/help/tabs/)
+
+# Tabs
+
+One piece of work, many tabs. Tabs let you split a project across several parts, each with its own content, theme, and background.
+
+Applies To
+
+livediagram, liveplanner, livedocuments, livedesign and livehuddle
+
+A canvas is a collection of **tabs**. A new canvas usually starts with one tab, and you add more whenever a piece of work deserves its own space. The tab bar sits along the bottom of the editor, and the active tab fills the area above it.
+
+In livediagram and livehuddle
+
+A canvas is not a single page: each tab has its own elements, layout, theme, and background.
+
+## What a tab is
+
+Each tab is a self-contained canvas inside the canvas. A tab carries its own elements, its own theme and background pattern, and an optional lock, all independent of the other tabs around it. Common ways people split work across tabs:
+
+- An **Overview** tab with the high-level picture, and detail tabs behind it.
+- One tab per system, team, or phase of a project.
+- A scratch tab for ideas you are not ready to file yet.
+
+In livediagram
+
+Each tab also has its own [mode](/help/canvas/editor-modes/) (Diagram, Draw or Workshop), the same for everyone on it, chosen on its start while it is empty. The small icon at the start of a tab's name shows it.
+
+The tab bar runs along the bottom of the editor: the active tab is raised with its ⋯ menu button, and the plus button adds another tab.
+
+## Adding a tab
+
+Press the **+** button at the end of the tab bar, or run **Create New Tab** from the [command palette](/help/search-panel/the-search-panel/command-palette/) (\`Cmd\` / \`Ctrl\` + \`K\`). The new tab:
+
+- is named \`Tab 2\`, \`Tab 3\` and so on, after the number of tabs in the canvas;
+- takes the theme, background and font of the tab you were on, so it matches the work around it;
+- starts on its own start, so you can begin from a template or close it to keep the tab blank.
+
+In livediagram
+
+It opens in the same mode as the tab you were on: made from a Workshop tab it is a Workshop tab, and from a Draw tab a Draw tab. It starts on that mode's own start, such as **Start Drawing** or **Start a Workshop**.
+
+**Duplicate** in the tab menu makes a copy instead: it is named after the original with "copy" on the end, sits right after it, and is a separate tab with its own content from then on.
+
+## Naming and reordering tabs
+
+Tabs start with default names like \`Tab 1\` and \`Tab 2\`, and you can rename any of them:
+
+- **Double-click** the active tab's name to edit it inline. Enter or clicking away saves, Escape cancels, and an empty name keeps the old one.
+- **Rename** in the tab menu (and **Rename Tab** in the command palette) opens the same editor.
+
+In livediagram, livedocuments, livedesign and livehuddle
+
+**Auto-rename on first edit:** while a tab still has its default name, editing the label of its first element renames the tab to match. This only happens once, so later edits leave a renamed tab alone.
+
+Tab names are capped at **60 characters**. Runs of spaces and line breaks collapse to one, and anything longer is cut at the last whole word with an ellipsis, so a paragraph typed into a sticky can't turn into an unreadable tab.
+
+Drag a tab left or right to reorder it. A blue bar shows where it will land: drop on the left half of a tab to land before it, the right half to land after it. Reordering only moves the tab in the list, it never touches the content on any tab.
+
+Drag a tab up off the bar to the **right edge** of the screen instead, and it opens beside the tab you're on: see [Side by Side Tabs](/help/tabs/side-by-side/).
+
+Double-click the active tab's name to edit it inline, then press Enter to save or Escape to cancel.
+
+## The tab menu
+
+Click the **⋯** button on the active tab, or right-click any tab (which switches to it first), to open its menu. On a phone it opens as a sheet from the bottom of the screen.
+
+In livediagram, livedocuments, livedesign and livehuddle
+
+Right-clicking an empty spot on the canvas opens the same menu, with **Paste** moved to a row of its own at the top.
+
+Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** (greyed out until you have copied something), **Side by Side** (on a large enough window; **Close Side by Side** while two tabs are open), **Lock Tab** and **Delete**. Below them, everything else is a full-width row, in groups split by a line:
+
+- **Organise in Tab Folder** and **Add to Another Canvas**.
+- **Import**, **Export**, and **Clear**, which removes every element from the tab after a confirmation (undo brings them back; it is greyed out on an empty tab).
+
+In livediagram, livedocuments, livedesign and livehuddle
+
+To tidy a tab's layout, search for **Auto Layout** or **Auto-align** in the [command palette](/help/search-panel/the-search-panel/command-palette/). See [Cleaning Up a Tab](/help/tabs/tab-cleanup/).
+
+In livediagram
+
+In Diagram mode you can also press **Tidy** in the bottom-right corner. The [session tools](/help/collaboration/session-tools/) (timer, vote and poll) are not in this menu: they have their own buttons in the bottom bar.
+
+In livediagram
+
+The tab menu: quick actions along the top, then full-width rows for folders and canvases, and content.
+
+## Deleting a tab
+
+Choose **Delete** in the tab menu. The tab goes straight away, and **Undo** brings it back. Once you reload or leave the canvas it is gone, unless another canvas also holds it, so export or duplicate anything you might want later. A few things to know:
+
+- A canvas always keeps at least one tab, so Delete is greyed out on the last one.
+- Links on other tabs that pointed at the deleted tab are removed with it.
+- If the tab is also in another canvas, it is only removed from this one.
+
+In livediagram, liveplanner, livedocuments and livedesign
+
+A [locked tab](/help/tabs/locking-tabs/) can't be deleted until you unlock it.
+
+## Share links
+
+On a share link for a Viewer or a Participant, and on any link scoped to one tab, you can still click between tabs, but the **+** button, the tab menu, renaming and drag-to-reorder are all hidden. Only an Editor with a link to the whole canvas changes its tabs.
+
+## More with tabs
+
+Each tab also carries its own menu of actions, covered in their own guides:
+
+- **[Tab Folders](/help/tabs/tab-folders/)** group related tabs under one named chip so a long tab bar stays readable.
+- **[Side by Side Tabs](/help/tabs/side-by-side/)** puts two tabs on screen at once, each live, with the toolbars following you between them.
+- **[Connected Files](/help/tabs/connected-files/)** adds a tab that opens a file from any liveworkspace app: a plan, a document, a design or another canvas.
+- **[Importing](/help/tabs/import-tabs/)** and **[Exporting](/help/tabs/export-tabs/)** move a tab's contents in and out as a file.
+
+In livediagram, livedocuments, livedesign and livehuddle
+
+**[Cleaning Up a Tab](/help/tabs/tab-cleanup/)** tidies a tab's layout in one click.
+
+In livediagram and livedesign
+
+**[Linking Across Tabs](/help/tabs/linking-tabs/)** turns any element into a jump point to another tab.
+
+In livediagram, livedocuments and livehuddle
+
+**[Add a Tab to Another Canvas ](/help/tabs/add-to-document/)**&#x73;hares a tab into a different canvas: it is the same tab in both places, not a copy, so edits appear everywhere it lives.
+
+In livediagram, liveplanner, livedocuments and livedesign
+
+**[Locking a Tab](/help/tabs/locking-tabs/)** makes a whole tab read-only.
+
+A shared reference tab such as a glossary can live in more than one canvas at once with Add to Another Canvas. Editing it in one place updates it everywhere.
+
+**How this works in 4 other apps**
+
+In liveplanner
+
+Each tab holds exactly one thing: a **Board** of cards in columns, a **Sheet** of cells and formulas, a **Dashboard** of metrics and charts, or a **Form** whose answers become cards.
+
+In liveplanner
+
+Common ways to split a plan across tabs: a **Board** for the day-to-day work and a **Dashboard** beside it that sums it up; a **Sheet** for the budget or the numbers behind the plan; a **Form** for requests, whose answers land as cards on a board. The cards on a plan's boards belong to the plan rather than to one tab, so two boards can show the same cards, and a Dashboard can chart them. See [Planning Basics](/help/plan/planning-basics/). The small icon at the start of a tab's name shows what it holds.
+
+In liveplanner
+
+It takes the look of the tab you were on, and opens on **Start Planning**, where you pick what it holds: a board, sheet, form, visualisation or dashboard, from a template or blank. Picking one usually names the tab too, such as "Kanban" for a Kanban board.
+
+In liveplanner
+
+There is no row for adding the tab to another plan: a tab belongs to one plan (see below). **Import…** opens the [Import dialog](/help/tabs/import-tabs/): a CSV into a Board or Sheet tab, a tab's JSON, or a board from Trello, Asana, Jira or Linear. **Clear** empties the tab after a confirmation (Undo brings it back).
+
+In liveplanner
+
+The tab menu: quick actions along the top, then full-width rows for folders, and for importing, exporting and clearing.
+
+In liveplanner
+
+Delete asks first only when it does something Undo can't take back: a [form](/help/plan/forms/)'s tab deletes the form's link with it, and a board or sheet that forms send their responses to stops them taking responses. Links on other tabs are not mentioned in liveplanner.
+
+In liveplanner
+
+**Tabs in more than one plan.** A tab belongs to one plan. Tabs used to be addable to another plan from the tab menu, but a plan's tabs show its cards, and a card is kept in the plan it came from, so a tab carried into another plan couldn't take its cards with it. Tabs that were already shared between plans stay shared: an edit in either plan shows in both, and deleting the tab in one plan only removes it from that one. To reuse a tab's layout somewhere new, [export it](/help/tabs/export-tabs/) and [import it](/help/tabs/import-tabs/) into the other plan.
+
+In liveplanner
+
+Lots of tabs? Press \`⌘K\` and type part of a tab's name to jump straight to it, or group them into [folders](/help/tabs/tab-folders/). In liveplanner a tab belongs to one plan, so a shared reference tab as above does not apply.
+
+In livedocuments and livedesign
+
+Each tab has its own pages, elements, layout, theme, and background.
+
+In livedocuments and livedesign
+
+Each tab is a self-contained row of [pages](/help/pages/working-with-pages/) inside the canvas.
+
+In livedocuments and livedesign
+
+It starts on **Start Making Pages**.
+
+In livedocuments and livedesign
+
+**Side by Side** is offered once the canvas has another tab to pair it with. The row reads \\*\\*Add to Canvas \\*\\* rather than \\*\\*Add to Another Canvas \\*\\*.
+
+In livedocuments
+
+The tab menu: quick actions along the top, then full-width rows for folders and documents, and content.
+
+In livedesign
+
+The tab menu: quick actions along the top, then full-width rows for folders and designs, and content.
+
+In livedesign
+
+**[Add a Tab to Another Design](/help/tabs/add-to-design/)** shares a tab into a different design: it is the same tab in both places, not a copy, so edits appear everywhere it lives.
+
+In livehuddle
+
+It starts on **Start a Space**, with an [Avatar Pad](/help/palette/avatar-pads/) where people arrive.
+
+In livehuddle
+
+The quick actions have no **Lock Tab**, and the menu has an **[Attendance](/help/collaboration/live-presence/tab-attendance/)** row: who was in the tab, when they joined and left, and how long they stayed. It isn't offered in a space kept [Offline](/help/privacy-and-security/offline-mode/).
+
+In livehuddle
+
+The [session tools](/help/collaboration/session-tools/) are not in this menu: a Timer or Stopwatch is a piece you place in a room.
+
+In livehuddle
+
+The tab menu: quick actions along the top, then full-width rows for folders and spaces, and content.
+
+In livehuddle
+
+A Participant's tab menu (and that of anyone on a link scoped to one tab, other than a Viewer) holds **Attendance** alone; a Viewer gets no tab menu, and the **+** button, renaming and drag-to-reorder are hidden.
+
+Was this article helpful?
+
+## Still need help?
+
+Try [Troubleshooting](/help/troubleshooting/), or tell us what you were trying to do.
+
+[Contact us](https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj)
+
+### Read It In
+
+- [livediagram Reading](https://www.livediagram.app/help/tabs/using-tabs/)
+- [liveplanner](https://www.liveplanner.app/help/tabs/using-tabs/)
+- [livedocuments](https://www.livedocuments.app/help/tabs/using-tabs/)
+- [livedesign](https://www.livedesign.app/help/tabs/using-tabs/)
+- [livehuddle](https://www.livehuddle.app/help/tabs/using-tabs/)
+"
+`;
+
+exports[`the Markdown of a real page > of the liveworkspace site 1`] = `
+"---
+title: "Comparison · liveworkspace"
+description: "Honest, side-by-side comparisons of each liveworkspace app with the tools it answers, on each app’s own site."
+url: "https://www.liveworkspace.app/compare"
+---
+
+Comparison
+
+# How each app compares
+
+Thinking about another tool? Each app sets itself side by side with the tools it answers, including where each one is the better pick. Pick the app.
+
+- [livediagram Diagram and draw together. See How livediagram Compares](https://www.livediagram.app/alternatives)
+- [liveplanner Plan the work together. See How liveplanner Compares](https://www.liveplanner.app/alternatives)
+- [livedocuments Write and present together. See How livedocuments Compares](https://www.livedocuments.app/alternatives)
+- [livedesign Design logos, wireframes and photos together. See How livedesign Compares](https://www.livedesign.app/alternatives)
+- [livehuddle Meet up in shared Spaces. See How livehuddle Compares](https://www.livehuddle.app/alternatives)
+- [liveknowledge A team knowledgebase, for people and for AI. See How liveknowledge Compares](https://www.liveknowledge.app/alternatives)
+"
+`;

@@ -301,7 +301,7 @@ describe('the Sign In card', () => {
     const { set } = renderDialog();
     await screen.findByText('Anybody With Email Address Domain');
     fireEvent.click(toggle(/Anybody With Email Address Domain/));
-    const box = screen.getByRole('textbox', { name: 'Email domains' }) as HTMLInputElement;
+    const box = (await screen.findByRole('textbox', { name: 'Email domains' })) as HTMLInputElement;
     expect(box.value).toBe('');
     const save = () => screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement;
     expect(save().disabled).toBe(true);
@@ -348,9 +348,9 @@ describe('the Sign In card', () => {
     await screen.findByText('Anybody With Email Address Domain');
     await act(async () => {});
     fireEvent.click(toggle(/Anybody With Email Address Domain/));
-    expect((screen.getByRole('textbox', { name: 'Email domains' }) as HTMLInputElement).value).toBe(
-      '@acme.com',
-    );
+    expect(
+      ((await screen.findByRole('textbox', { name: 'Email domains' })) as HTMLInputElement).value,
+    ).toBe('@acme.com');
     // Switched back off before saving: the box closes, nothing is sent.
     fireEvent.click(toggle(/Anybody With Email Address Domain/));
     expect(screen.queryByRole('textbox', { name: 'Email domains' })).toBeNull();
@@ -361,7 +361,7 @@ describe('the Sign In card', () => {
     fake.refuseWith(new IndexError(400, 'invalid_domain'));
     await screen.findByText('Anybody With Email Address Domain');
     fireEvent.click(toggle(/Anybody With Email Address Domain/));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Email domains' }), {
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Email domains' }), {
       target: { value: 'acme.com' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));

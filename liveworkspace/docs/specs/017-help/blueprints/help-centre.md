@@ -26,7 +26,12 @@ The Worker (`src/worker.ts`, logic in `src/help-scope.ts`) runs first on every r
 when it names an app, else `all`; it strips a leading `/help` (liveworkspace.app's routes keep it, the routers strip
 it), answers a redirect from the map, answers `308` to the canonical address for an article or landing that does
 not apply to the scope (on staging, staging's address), and otherwise serves `/<scope><path>` from its assets, with
-the security headers each product's `_headers` file carried and `Vary: x-help-app`. Six copies keep every page
+the security headers each product's `_headers` file carried and `Vary: x-help-app`. A page (a path with no file
+extension) goes through `negotiatePage` (`@liveworkspace/agent-markdown/negotiate`, with `trailingSlash`): a request
+that prefers `text/markdown` gets the page's `index.md` when the scope has one, and every page's answer adds
+`Vary: Accept` ([Markdown for agents](../../010-site/markdown-for-agents.md)). After each scope's prune,
+`build-scopes.mjs` runs `packages/agent-markdown/scripts/agent-markdown.ts --every-page` over `dist/<scope>/`, which
+writes every kept page's `index.md` and the scope's `llms.txt`. Six copies keep every page
 static, with no client-side filtering of a page's content.
 
 ## The catalogue
@@ -211,6 +216,9 @@ Written once for the one centre (`@liveworkspace/help-site` owns the code, `apps
 - Redirects: every path of the five old registries answers 200 or a 308 that lands on a 200.
 - Routers: each app router's test covers `/help` and `/help/...` forwarded over the `HELP` binding with `x-help-app` set to its app.
 - Repo-paths and style guards in `@liveworkspace/help-site` run over the one content tree.
+- Markdown for agents: `src/worker.test.ts` (an article's Markdown, its HTML to a browser and to `*/*`, both with
+  `Vary: Accept, x-help-app`, the scope's 404, a redirect before negotiation), `scripts/build-scopes.test.ts` (the
+  Markdown step's arguments), and a help article's Markdown snapshot in `packages/agent-markdown`.
 
 ## Migration
 

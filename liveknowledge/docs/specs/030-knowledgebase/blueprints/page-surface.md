@@ -105,8 +105,17 @@ shared `createViewportStore`.
 scrolls. `main` and the world no longer set `touch-action: none`, so a finger scrolls natively and a pinch is the
 browser's.
 
-- **Extent:** the page's box (`PageSurfaceSheet`, at the page's stored height) plus `PAGE_FOOT_ROOM` (96 px), and
-  the writing itself where it is taller than the stored height in this browser.
+- **Extent:** the lower of two feet, each followed by the same room. The page's box (`PageSurfaceSheet`, at the
+  page's stored height) plus `PAGE_FOOT_ROOM` (96 px) under it; and the writing's own box (`.article-flow`, the
+  ProseMirror root), whose continuous style carries `padding-bottom: margin + PAGE_FOOT_ROOM`
+  (`continuousFootPadding`, `lib/article/continuous-page-height.ts`), so where the writing in this browser is taller
+  than the stored height its foot (the foot slot: Linked From and the comments) still stands the bottom margin plus
+  the room above the scroller's foot. The flow is `box-sizing: border-box` with `min-height` the frame's height, so a
+  page whose stored height fits its writing scrolls exactly as far as before. The padding is not measured: the layout
+  pass reads the flow's children, never the flow's own box (`article-measure.ts`). Found in a browser (WI-1410): read
+  mode locks the tab (no settle), and a window drawn through the narrow view writes no height, so a page last laid
+  out narrow, or before its comments answered, kept a short stored height on a wide window and its composer sat on
+  the footer bar.
 - **Beside the docked rail:** `[data-canvas-root]:has(> [data-page-rail='docked']) > [data-page-scroller]` ends
   280 px short of the right edge (`globals.css`), so the scrollbar is never under the rail and the rail never over
   the writing. The rail docks only where the page keeps its full width beside it: `pageRailDockWidth(treeWidth)` is
@@ -168,8 +177,10 @@ browser's.
   No button, no drag, no menu. Not offered (`useKnowledgeViewsOffered`), the `nav` is not drawn.
 - **The footer** (`BottomBar`) is a child of the editor's column under the canvas, 48 px and the bottom safe inset:
   the page's scroll container ends above it. Tabs, a spacer, then `ChromeControls`. On a phone (`phone`, the
-  editor's `isMobileViewport`) the tabs share the row at 44 px with their short names (`KNOWLEDGE_VIEWS[].short`;
-  the link keeps its full name as `aria-label`), `ChromeControls parts="bell"` follows, and `FooterMore` holds
+  editor's `isMobileViewport`) the tabs share the row at 44 px: the open tab with its short name
+  (`KNOWLEDGE_VIEWS[].short`, `phone:px-3`, gone under 360 px) and Connect's X, every other tab its icon in a
+  `min-w-11` square (`phone:px-0`, `KnowledgeViewTabs` `PHONE_TAB`/`PHONE_LINK`); each link keeps its full name as
+  `aria-label` and in its `HoverCard`. `ChromeControls parts="bell"` follows, and `FooterMore` holds
   `ChromeControls parts="rest"`: a button with `aria-expanded` and a `group` named More that opens above it, kept
   mounted while closed (`hidden`), closed by Escape (the focus back on the button) or a press outside.
 - **The top row** is `KnowledgeTopRow`: `--knowledge-top-row` tall (`globals.css`: 3rem, 3.5rem under the `phone`

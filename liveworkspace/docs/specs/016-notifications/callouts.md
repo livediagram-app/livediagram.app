@@ -37,21 +37,15 @@ that surface in both themes.
 
 ## Floating callouts
 
-(Nothing in view was one; it is now a standing toast, [Toasts](./toasts.md) "Timing".)
+(Nothing in view was one; it is now a standing toast, [Toasts](./toasts.md) "Timing". The paste notice and the
+suggestions were too; they are now notices in the toast stack, [Toasts](./toasts.md) "One place for everything that
+pops up", so nothing that pops up to tell the person something sits anywhere but the one stack.)
 
-A few callouts are anchored on the canvas, to a control or an element, not laid in a panel. They keep their anchor
-and take the callout's look, on an opaque surface with a shadow so they read over any canvas:
+One callout stays anchored on the canvas, because it is about the thing it sits under, not news:
 
 - **Too long for this card** (livedocuments flashcards): warning tone at the card's foot, with **Split Onto a New
-  Card** for someone who may change the pages. It sits below the card's last line, not over it.
-- **The paste notice** (livediagram): warning tone at the bottom of the canvas after a paste that changed or dropped
-  anything, closable, never timing out.
-- **Suggestions** ([Suggestions](./suggestions.md)): info tone in the same slot, offering to carry the item's content
-  into another app in one click; one at a time, and never while the paste notice holds the slot.
-
-The paste notice and the suggestions share the editor's **notice slot** (`@liveworkspace/workbench` lib/notice-slot):
-bottom centre, just above the whiteboard dock, or where a dock would sit. A notice on show holds it; a suggestion waits
-for it to be free.
+  Card** for someone who may change the pages. It sits below the card's last line, not over it, on an opaque surface
+  with a shadow (`floating`) so it reads over any canvas.
 
 ## Where callouts are used
 
@@ -69,7 +63,8 @@ for it to be free.
 - **Inline field errors** (a line of rose text under a field) and **Saved / Copied** flashes: not boxes.
 - **Status that is not a notice**: a shape's live status badge, livedesign's component edit bar and photo busy pill,
   the empty-canvas card, the colour picker's readability row.
-- **Toasts**, banners and state cards, each its own family.
+- **Toasts** and the notices that share their stack (Inbox notices, suggestions, the paste notice), banners and
+  state cards, each its own family.
 
 ## Keyboard and screen readers
 

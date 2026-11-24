@@ -131,18 +131,14 @@ describe("the sidebar's Inbox count", () => {
     expect(inboxCount(null, 'user_me')).toBeUndefined();
   });
 
-  // Work Tracker 1315: an editor counts its own app's rows; every row names its app, so none is lost, a request
-  // with no access requests listed included.
-  it("counts one app's rows when given the app, every app's without", () => {
+  // Work Tracker 1404: every count (the page's sidebar, the panel's rail, the editor's button) is every app's rows,
+  // as the Inbox lists them.
+  it("counts every app's rows", () => {
     const d = data(
       [thread({ elementId: 'a' }), thread({ elementId: 'b', app: 'livediagram', card: null })],
       [action(), action({ app: 'livedocuments', actionId: 'x' })],
     );
     expect(inboxCount(d, 'user_me')).toBe(4);
-    expect(inboxCount(d, 'user_me', 'liveplanner')).toBe(2);
-    expect(inboxCount(d, 'user_me', 'livediagram')).toBe(1);
-    expect(inboxCount(d, 'user_me', 'livedesign')).toBe(0);
-    expect(inboxCount(null, 'user_me', 'liveplanner')).toBeUndefined();
   });
 
   // The owner's report (2026-11-09): "my inbox was 0 when I had lots of comment threads to address". The threads

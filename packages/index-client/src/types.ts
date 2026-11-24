@@ -594,7 +594,7 @@ export type TeamAuditEvent = {
   // The document's, team's or webhook's name then.
   title: string;
   // As in the event log: shared: { level, public }; moved: { fromTeamId, teamId }; deleted: { reason };
-  // webhook_*: { webhookId, kind, host }; team_*: { teamId, memberName, role, from, inviteeId, left }.
+  // webhook_*: { webhookId, kind, host }; team_*: { teamId, memberName, role, from, inviteeId, left, resent }.
   detail: Record<string, string | null> | null;
   occurredAt: number;
 };
