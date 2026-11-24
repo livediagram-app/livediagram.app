@@ -164,6 +164,8 @@ export const EDITOR_ONLY_KEYS: readonly AllSettingKey[] = [
   'middleMousePan',
   'dockButtonNames',
   'customSwatches',
+  // Suggest Other Apps: a row in each editor's Getting Started (liveworkspace/docs/specs/016-notifications/suggestions.md).
+  'suggestNextApp',
 ];
 
 // Every shared key is in the Account section, in the Common group (a common setting, shown from the apps'
