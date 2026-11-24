@@ -82,7 +82,7 @@ Sensible settings, remembered for the person on this device:
   Leaving Magnifier closes it and takes the button away.
 - **In the popover**, under the title "Magnifier": the **Magnification** slider with its value, the **Size** choice
   (Small / Medium / Large, with Custom shown when Shift+scroll left it between), the **Shape** choice (Square /
-  Round), and one quiet hint line: "Scroll to change magnification. Shift+scroll to change size." (on a phone: "Drag
+  Round), and one quiet hint line: "Scroll to change magnification. Shift+scroll to change size." (on a touch screen: "Drag
   a finger to move the lens."). A help link opens the article.
 - A change applies to the lens at once.
 

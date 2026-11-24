@@ -7,7 +7,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_MAGNIFIER_CONFIG, type MagnifierConfig } from '@/lib/magnifier-config';
 import { createMagnifierStore } from '@/lib/magnifier-store';
-import { MAGNIFIER_HINT, MagnifierPopover } from './MagnifierPopover';
+import { MAGNIFIER_HINT, MAGNIFIER_TOUCH_HINT, MagnifierPopover } from './MagnifierPopover';
 import { MagnifierClusterButton } from './MagnifierClusterButton';
 
 afterEach(() => cleanup());
@@ -72,6 +72,25 @@ describe('MagnifierPopover', () => {
     expect(store.get().size).toBe(300);
     act(() => store.set('size', 160));
     expect(screen.queryByRole('radio', { name: 'Custom' })).toBeNull();
+  });
+
+  it('gives a touch screen the finger hint, whatever its width', async () => {
+    const before = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query === '(hover: none)',
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+    }));
+    try {
+      render(<MagnifierPopover onClose={() => {}} store={memoryStore()} />);
+      expect(await screen.findByText(MAGNIFIER_TOUCH_HINT)).toBeTruthy();
+      expect(screen.queryByText(MAGNIFIER_HINT)).toBeNull();
+    } finally {
+      window.matchMedia = before;
+    }
   });
 
   it('closes on Escape', async () => {

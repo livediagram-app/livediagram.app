@@ -3,7 +3,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { MenuSliderRow } from '@liveworkspace/workbench/components/primitives/MenuSliderRow';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
@@ -42,7 +42,8 @@ export function MagnifierPopover({
   store?: MagnifierStore;
 }) {
   const config = useSyncExternalStore(store.subscribe, store.get, store.get);
-  const isMobile = useIsMobileViewport();
+  // The hint follows the pointer, not the width: a narrow desktop window still scrolls, a touch tablet drags.
+  const touch = useCoarsePointer();
   const preset = magnifierSizePreset(config.size);
 
   // Escape closes it, like the menus it sits beside.
@@ -108,7 +109,7 @@ export function MagnifierPopover({
           />
         </div>
         <p className="px-3 pt-1 text-xs leading-snug text-slate-500 dark:text-slate-400">
-          {isMobile ? MAGNIFIER_TOUCH_HINT : MAGNIFIER_HINT}
+          {touch ? MAGNIFIER_TOUCH_HINT : MAGNIFIER_HINT}
         </p>
       </div>
     </MovablePanel>

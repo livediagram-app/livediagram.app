@@ -208,6 +208,15 @@ export function MagnifierMode() {
           <rect x={lx - half} y={ly - half} width={half * 2} height={half * 2} rx={9} />
         </clipPath>
       </defs>
+      {/* A soft shadow under the glass, as the real lens casts. */}
+      <rect
+        x={lx - half - 1}
+        y={ly - half + 5}
+        width={half * 2 + 2}
+        height={half * 2 + 2}
+        rx={11}
+        className="fill-slate-900 opacity-[0.12]"
+      />
       <rect
         x={lx - half}
         y={ly - half}
@@ -225,8 +234,18 @@ export function MagnifierMode() {
         width={half * 2}
         height={half * 2}
         rx={9}
-        className="fill-none stroke-slate-400"
-        strokeWidth={1.5}
+        className="fill-none stroke-white"
+        strokeWidth={4}
+      />
+      {/* The ring: white glass edge with a hairline outside it, like the lens in the editor. */}
+      <rect
+        x={lx - half - 2.5}
+        y={ly - half - 2.5}
+        width={half * 2 + 5}
+        height={half * 2 + 5}
+        rx={11}
+        className="fill-none stroke-slate-300"
+        strokeWidth={1}
       />
       <path
         d={`M${lx - 6} ${ly} h12 M${lx} ${ly - 6} v12`}
