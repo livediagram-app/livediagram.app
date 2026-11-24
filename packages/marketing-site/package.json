@@ -18,9 +18,12 @@
   "dependencies": {
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/auth-client": "workspace:^",
+    "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/help-registry": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/licences": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/template-previews": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },

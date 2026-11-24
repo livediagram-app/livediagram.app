@@ -36,6 +36,7 @@
 @source '../../../../packages/marketing-site/src/components/BrowserWindow.tsx';
 /* The pricing page's illustrated hero. */
 @source '../../../../packages/marketing-site/src/components/PageHero.tsx';
+@source '../../../../packages/marketing-site/src/components/together';
 @source '../../../../packages/marketing-site/src/components/faq/FaqItem.tsx';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */

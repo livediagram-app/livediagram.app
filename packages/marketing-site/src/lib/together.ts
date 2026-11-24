@@ -1,11 +1,12 @@
 // How work moves between the apps (liveworkspace/docs/specs/010-site/site.md "The front door", "How work moves
-// between them"): the features that hand work from one app to another, one card each. Only what is on main; a
+// between them"): the features that hand work from one app to another, one card each. liveworkspace.app shows them
+// all; each product's landing page shows the ones it takes part in (togetherFor). Only what is on main; a
 // feature that joins apps changes this list in the same change. lib/together.test.ts holds every card to the listed
 // apps, a real help article and words free of any price.
 
 import { helpUrl } from '@liveworkspace/help-registry/hrefs';
 import type { HelpScope } from '@liveworkspace/help-registry/apps';
-import type { SiteId } from '@liveworkspace/sites';
+import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
 
 // Where a card's link goes: a help article, as `<categorySlug>/<slug>` on its canonical scope's help centre (names
 // only, so the page never carries the catalogue; the test holds both to it), or a page of this site.
@@ -129,7 +130,33 @@ export const TOGETHER: readonly TogetherCard[] = [
   },
 ];
 
-// Where a card's link opens.
-export function togetherHref(link: TogetherLink): string {
-  return link.kind === 'help' ? `${helpUrl(link.scope)}/${link.path}/` : link.href;
+// Where a card's link opens. A page of liveworkspace.app is relative there and absolute on a product's site.
+export function togetherHref(link: TogetherLink, onPlatform = true): string {
+  if (link.kind === 'help') return `${helpUrl(link.scope)}/${link.path}/`;
+  return onPlatform ? link.href : `${PLATFORM_SITE.url}${link.href}`;
+}
+
+// The order a product's landing page picks its cards in: what a visitor of any one app is likeliest to reach for
+// first, the suite-wide cards last.
+const PRODUCT_ORDER: readonly string[] = [
+  'ask-ai',
+  'send-to-plan',
+  'diagrams-and-plans',
+  'send-to-diagram',
+  'live-data',
+  'start-a-call',
+  'automations',
+  'embed-file',
+  'start-a-project',
+];
+
+// The most cards a product's band shows: two rows of three.
+export const PRODUCT_CARD_LIMIT = 6;
+
+// The cards a product's landing page shows: those it takes part in, in PRODUCT_ORDER, at most PRODUCT_CARD_LIMIT.
+export function togetherFor(app: SiteId): TogetherCard[] {
+  return PRODUCT_ORDER.flatMap((key) => {
+    const card = TOGETHER.find((c) => c.key === key);
+    return card && [...card.from, ...(card.to ?? [])].includes(app) ? [card] : [];
+  }).slice(0, PRODUCT_CARD_LIMIT);
 }

@@ -10,7 +10,7 @@ import { Apps } from '@/components/landing/Apps';
 import { HeroActions } from '@/components/landing/HeroActions';
 import { HubArt } from '@/components/landing/HubArt';
 import { Promises } from '@/components/landing/Promises';
-import { Together } from '@/components/landing/Together';
+import { Together } from '@liveworkspace/marketing-site/components/together/Together';
 import { listedApps } from '@/lib/apps';
 import './landing-motion.css';
 
