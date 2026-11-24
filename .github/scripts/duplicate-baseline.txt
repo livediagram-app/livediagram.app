@@ -222,7 +222,6 @@ livedocuments/packages/document/src/map-layout.ts	liveknowledge/packages/documen
 livedocuments/packages/document/src/nearest-towards.ts	liveknowledge/packages/document/src/nearest-towards.ts
 livedocuments/packages/document/src/page-content.ts	liveknowledge/packages/document/src/page-content.ts
 livedocuments/packages/document/src/page-default-background.ts	liveknowledge/packages/document/src/page-default-background.ts
-livedocuments/packages/document/src/page-frame.ts	liveknowledge/packages/document/src/page-frame.ts
 livedocuments/packages/document/src/page-image.ts	liveknowledge/packages/document/src/page-image.ts
 livedocuments/packages/document/src/page-ink.ts	liveknowledge/packages/document/src/page-ink.ts
 livedocuments/packages/document/src/page-theme-fills.ts	liveknowledge/packages/document/src/page-theme-fills.ts
