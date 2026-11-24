@@ -17,6 +17,7 @@
 @source inline("dark:bg-pink-400");
 @source inline("dark:bg-rose-400/10");
 @source inline("dark:bg-slate-500");
+@source inline("dark:bg-slate-700/45");
 @source inline("dark:bg-slate-800/80");
 @source inline("dark:bg-slate-800/90");
 @source inline("dark:bg-slate-800/95");
@@ -67,6 +68,7 @@
 @source inline("dark:hover:bg-brand-500/10");
 @source inline("dark:hover:bg-rose-500/15");
 @source inline("dark:hover:bg-slate-600");
+@source inline("dark:hover:bg-slate-700/50");
 @source inline("dark:hover:bg-slate-700/60");
 @source inline("dark:hover:bg-slate-800/50");
 @source inline("dark:hover:border-brand-400");

@@ -1,13 +1,10 @@
 'use client';
 
-// Home's Spaces (liveworkspace/docs/specs/004-index/one-explorer.md "Spaces, on Home"): directly under Most Used and Recent, one
-// tile per space the person has, My Work then each team, each a link straight into that space's list. A tile is drawn
-// as Home's large cards are: a mosaic of the space's newest items (FolderMosaic, the folder cards' own), over the
-// space's disc, its name and a line saying how much it holds and when it last changed; a team's adds its member count
-// and the faces behind its newest items. One request for every space (useSpacePreviews). On a phone the tiles are one
-// strip that snaps tile by tile, as Most Used and Recent's is; from `md` a grid of two, of four from `lg`. While no
-// space holds anything (and Offline holds nothing) the section is left out, as Home's other empty ones are; HomePane
-// holds the read (useHomeSpaces) so it knows when every section is empty ("Nothing on Home").
+// Home's Spaces (liveworkspace/docs/specs/004-index/one-explorer.md "Spaces, in the rail"): a panel in Home's rail, one
+// row per space the person has, My Work then each team, each a link straight into that space's list: the space's disc,
+// its name, a line (how much it holds, when the newest changed) and, for a team, the faces behind its newest items.
+// Offline's row follows the teams while this browser holds anything. One request for every space's preview
+// (useSpacePreviews), whatever the number of spaces.
 
 import { useId, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { APP_KINDS, type SpacePreview } from '@liveworkspace/index-client';
@@ -22,12 +19,10 @@ import { ChevronDownIcon, MyWorkIcon, PlusIcon, TeamIcon } from '../ui/icons';
 import { SIDEBAR_LABELS, type ExplorerView } from '../views';
 import type { ThisBrowserItem } from '../this-browser';
 import { BrowserIcon } from './host';
-import { LocalPreview } from './LocalPreview';
 import { useThisBrowserSpace } from './this-browser-space/space';
 import { kindWords, type Words } from '../words';
 import { useExplorer } from './context';
 import { useExtras } from './extras';
-import { FolderMosaic } from './FolderMosaic';
 import {
   LOCAL_SPACE_TONE,
   localSpaceLine,
@@ -40,27 +35,16 @@ import {
   spaceTone,
   type SpaceEntry,
 } from './home-spaces';
-import {
-  CARD_NAME,
-  CARD_SURFACE,
-  HomeFailed,
-  HomeSection,
-  PANEL_SURFACE,
-  THUMB_EDGE,
-} from './HomeSection';
+import { CARD_NAME, HomeFailed, HomeSection } from './HomeSection';
 import { Avatar } from './Avatar';
 
 // A strip below `md` (each tile 15rem, the next peeking, snapping tile by tile), a grid of two from `md`, four from `lg`.
-const LIST =
-  '-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:mx-0 sm:scroll-px-0 sm:px-0 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:p-0 lg:grid-cols-4';
-const ITEM = 'flex w-[15rem] min-w-0 shrink-0 snap-start md:w-auto';
-const TILE = `group flex w-full min-w-0 flex-col gap-2.5 rounded-[18px] p-2 pb-3 text-left ${CARD_SURFACE} ${FOCUS_RING}`;
-// A tile that makes or asks rather than opens: the same footprint, dashed, its words centred.
-const DASHED = `group flex min-h-[11.25rem] w-full min-w-0 flex-col items-center justify-center gap-2 rounded-[18px] border border-dashed border-slate-300 p-4 text-center transition duration-micro hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-400/60 dark:hover:bg-brand-400/[0.06] ${FOCUS_RING}`;
-const MOSAIC = `relative h-28 w-full rounded-xl ${THUMB_EDGE}`;
-// Readable over the mosaic, as Most Used and Recent's menu chip is.
-const CHIP =
-  'absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-semibold text-slate-700 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-200 dark:ring-slate-700';
+// The rail's list (one-explorer.md "Spaces, in the rail"): one row per space, its disc, name and line, then the team's
+// faces; a row lifts to the hover wash as the rail's other rows do.
+const LIST = 'flex flex-col gap-0.5';
+const ITEM = 'flex min-w-0';
+const TILE = `group flex w-full min-w-0 items-center gap-3 rounded-xl p-2 text-left transition duration-micro hover:bg-slate-100 dark:hover:bg-slate-700/60 ${FOCUS_RING}`;
+const DASHED = `group flex w-full min-w-0 items-center gap-3 rounded-xl border border-dashed border-slate-300 p-2 text-left transition duration-micro hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-600 dark:hover:border-brand-400/60 dark:hover:bg-brand-400/[0.06] ${FOCUS_RING}`;
 
 /** Spaces' read, held by HomePane: the previews, the spaces in order, Offline's, and whether all of it is empty. */
 export type HomeSpacesState = {
@@ -125,7 +109,7 @@ export function HomeSpaces({ state }: { state: HomeSpacesState }) {
   if (state.empty) return null;
 
   return (
-    <HomeSection id="spaces" title={title} busy={previews.loading}>
+    <HomeSection id="spaces" title={title} busy={previews.loading} panel>
       {previews.loading ? (
         <SpacesSkeleton count={Math.min(SPACES_SHOWN, total + (invite ? 1 : 0))} />
       ) : (
@@ -211,16 +195,16 @@ function InviteBody({ icon, title, lead }: { icon: ReactNode; title: string; lea
     <>
       <span
         aria-hidden
-        className="grid size-10 place-items-center rounded-xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-100 dark:bg-brand-400/10 dark:text-brand-300 dark:group-hover:bg-brand-400/20"
+        className="grid size-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-100 dark:bg-brand-400/10 dark:text-brand-300 dark:group-hover:bg-brand-400/20"
       >
         {icon}
       </span>
-      <span className="text-[15px] font-semibold leading-5 text-[#17153a] dark:text-slate-100">
-        {title}
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-sm font-semibold leading-5 text-[#17153a] dark:text-slate-100">
+          {title}
+        </span>
+        {lead ? <span className={`text-xs leading-4 ${MUTED}`}>{lead}</span> : null}
       </span>
-      {lead ? (
-        <span className={`max-w-[14rem] text-[12.5px] leading-[18px] ${MUTED}`}>{lead}</span>
-      ) : null}
     </>
   );
 }
@@ -263,38 +247,13 @@ function SpaceTile({
       data-space-tile={space.teamId ?? 'mine'}
       className={TILE}
     >
-      <span aria-hidden className={`${MOSAIC} ${tone.wash}`}>
-        {shownPreview ? (
-          <FolderMosaic
-            preview={{
-              folderId: space.teamId ?? 'mine',
-              itemCount: shownPreview.itemCount,
-              items: shownPreview.items,
-            }}
-            subfolders={[]}
-          />
-        ) : (
-          <span className={`[&_svg]:size-7 ${MUTED} opacity-60`}>
-            {space.teamId === null ? <MyWorkIcon /> : <TeamIcon />}
-          </span>
-        )}
-        {team ? (
-          <span className={CHIP}>
-            <TeamIcon size={11} />
-            {team} members
-          </span>
-        ) : null}
-      </span>
-      <span className="flex min-w-0 items-center gap-2.5 px-1">
+      <span className="flex min-w-0 flex-1 items-center gap-3">
         <SpaceDisc className={tone.disc}>
           {space.teamId === null ? <MyWorkIcon /> : initialsOf(space.name)}
         </SpaceDisc>
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className={`${CARD_NAME} text-[15px] leading-5`}>{space.name}</span>
-          <span
-            id={lineId}
-            className={`block h-[18px] truncate text-[12.5px] leading-[18px] ${MUTED}`}
-          >
+          <span className={`${CARD_NAME} text-sm leading-5`}>{space.name}</span>
+          <span id={lineId} className={`block h-4 truncate text-xs leading-4 ${MUTED}`}>
             {line}
             {team ? <span className="sr-only">{`, ${team} members`}</span> : null}
           </span>
@@ -305,8 +264,7 @@ function SpaceTile({
   );
 }
 
-/** Offline's tile: up to four of its newest items, each the app's picture of a local item, over the teal disc,
- *  its name and a line from the list itself. A link to its view, as the others are. */
+/** Offline's row: the teal disc, its name and a line from the list itself. A link to its view, as the others are. */
 function ThisBrowserTile({ live }: { live: readonly ThisBrowserItem[] }) {
   const { viewHref, navigate, app } = useExplorer();
   // Offline keeps the app's own items, so its line counts them in its words.
@@ -319,8 +277,6 @@ function ThisBrowserTile({ live }: { live: readonly ThisBrowserItem[] }) {
     null,
   );
   const line = localSpaceLine(live.length, newest, kind, now || null);
-  const shown = live.slice(0, live.length > 4 ? 3 : 4);
-  const more = live.length - shown.length;
   return (
     <a
       href={viewHref(view)}
@@ -334,41 +290,13 @@ function ThisBrowserTile({ live }: { live: readonly ThisBrowserItem[] }) {
       data-space-tile="this-browser"
       className={TILE}
     >
-      <span aria-hidden className={`${MOSAIC} ${LOCAL_SPACE_TONE.wash}`}>
-        {shown.length > 0 ? (
-          <span className="grid h-full w-full grid-cols-2 gap-1.5 p-2">
-            {shown.map((item) => (
-              <LocalPreview
-                key={item.id}
-                app={app}
-                iconSize={16}
-                className={`h-full w-full rounded-lg ${shown.length === 1 ? 'col-span-2' : ''}`}
-              />
-            ))}
-            {more > 0 ? (
-              <span
-                className={`flex items-center justify-center rounded-lg bg-white/70 text-[13px] font-semibold dark:bg-slate-900/50 ${MUTED}`}
-              >
-                +{more}
-              </span>
-            ) : null}
-          </span>
-        ) : (
-          <span className={`[&_svg]:size-7 ${MUTED} opacity-60`}>
-            <BrowserIcon />
-          </span>
-        )}
-      </span>
-      <span className="flex min-w-0 items-center gap-2.5 px-1">
+      <span className="flex min-w-0 flex-1 items-center gap-3">
         <SpaceDisc className={LOCAL_SPACE_TONE.disc}>
           <BrowserIcon />
         </SpaceDisc>
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className={`${CARD_NAME} text-[15px] leading-5`}>{SIDEBAR_LABELS.thisBrowser}</span>
-          <span
-            id={lineId}
-            className={`block h-[18px] truncate text-[12.5px] leading-[18px] ${MUTED}`}
-          >
+          <span className={`${CARD_NAME} text-sm leading-5`}>{SIDEBAR_LABELS.thisBrowser}</span>
+          <span id={lineId} className={`block h-4 truncate text-xs leading-4 ${MUTED}`}>
             {line}
           </span>
         </span>
@@ -415,16 +343,11 @@ function SpacesSkeleton({ count }: { count: number }) {
   return (
     <ul aria-hidden className={LIST} data-home-spaces-skeleton="">
       {Array.from({ length: Math.max(1, count) }, (_, i) => (
-        <li key={i} className={ITEM}>
-          <div className={`flex w-full flex-col gap-2.5 rounded-[18px] p-2 pb-3 ${PANEL_SURFACE}`}>
-            <div className={`h-28 w-full rounded-xl ${SKELETON}`} />
-            <div className="flex items-center gap-2.5 px-1">
-              <div className={`size-9 shrink-0 rounded-xl ${SKELETON}`} />
-              <div className="flex flex-1 flex-col gap-1.5">
-                <div className={`h-3.5 w-2/3 ${SKELETON}`} />
-                <div className={`h-3 w-1/2 ${SKELETON}`} />
-              </div>
-            </div>
+        <li key={i} className="flex items-center gap-3 p-2">
+          <div className={`size-9 shrink-0 rounded-xl ${SKELETON}`} />
+          <div className="flex flex-1 flex-col gap-1.5">
+            <div className={`h-3.5 w-2/3 ${SKELETON}`} />
+            <div className={`h-3 w-1/2 ${SKELETON}`} />
           </div>
         </li>
       ))}

@@ -35,6 +35,10 @@ function renderHome(
   return { ...view, onCreate, props };
 }
 
+// The timeline's first row of what was made (New's), and of what was opened (Recent's).
+const madeRow = () => document.querySelector<HTMLElement>('[data-timeline-event="made"]');
+const openedRow = () => document.querySelector<HTMLElement>('[data-timeline-event="opened"]');
+
 const phone = () =>
   vi.stubGlobal('matchMedia', (query: string) => ({
     matches: false,
@@ -102,30 +106,30 @@ describe('Home with nothing in it', () => {
         thisBrowser={{ items: [local], itemHref: (i) => `/p/${i.id}`, helpHref: '/help/' }}
       />,
     );
-    await waitFor(() => expect(section('new')).not.toBeNull());
+    await waitFor(() => expect(madeRow()).not.toBeNull());
     expect(nothing()).toBeNull();
-    // Offline holds it, so Spaces shows (its tile); nothing opened, so no Recent.
+    // Offline holds it, so Spaces shows (its row); nothing opened, so the timeline holds only what was made.
     expect(section('spaces')).not.toBeNull();
-    expect(section('recent')).toBeNull();
+    expect(openedRow()).toBeNull();
   });
 });
 
 describe('Home leaves out an empty section', () => {
-  it('shows New and no Recent for things made but never opened', async () => {
+  it('shows what was made and nothing opened for things made but never opened', async () => {
     renderHome(createFakeIndex({ items: [makeItem(1), makeItem(2)] }));
-    await waitFor(() => expect(section('new')).not.toBeNull());
+    await waitFor(() => expect(madeRow()).not.toBeNull());
     await waitFor(() => expect(section('spaces')).not.toBeNull());
-    expect(section('recent')).toBeNull();
+    expect(openedRow()).toBeNull();
     expect(section('most-used')).toBeNull();
     expect(section('shared-recently')).toBeNull();
     expect(nothing()).toBeNull();
     expect(screen.queryByText(/gather here/)).toBeNull();
   });
 
-  it('leaves out Recent when New holds the one opened item', async () => {
+  it('shows an item once, as made, when New holds the one opened item', async () => {
     renderHome(createFakeIndex({ items: [makeItem(1, { lastOpenedAt: 5_000_000 })] }));
-    await waitFor(() => expect(section('new')).not.toBeNull());
-    expect(section('recent')).toBeNull();
+    await waitFor(() => expect(madeRow()).not.toBeNull());
+    expect(openedRow()).toBeNull();
   });
 
   it('shows Recent for an opened item New does not hold', async () => {
@@ -134,7 +138,7 @@ describe('Home leaves out an empty section', () => {
     );
     renderHome(createFakeIndex({ items: made }));
     await waitFor(() => expect(section('recent')).not.toBeNull());
-    expect(section('recent')!.querySelector('a[href="/p/item-5"]')).not.toBeNull();
+    expect(openedRow()!.querySelector('a[href="/p/item-5"]')).not.toBeNull();
   });
 
   it('leaves out Spaces while no space holds anything, keeping what was shared', async () => {
@@ -148,7 +152,7 @@ describe('Home leaves out an empty section', () => {
     await waitFor(() => expect(section('recent')).not.toBeNull());
     await waitFor(() => expect(section('shared-recently')).not.toBeNull());
     expect(section('spaces')).toBeNull();
-    expect(section('new')).toBeNull();
+    expect(madeRow()).toBeNull();
     expect(nothing()).toBeNull();
   });
 
@@ -158,7 +162,7 @@ describe('Home leaves out an empty section', () => {
     const mine = () => document.querySelector('[data-space-tile="mine"]');
     await waitFor(() => expect(mine()?.textContent).toContain('2 plans'));
     const asked = index.count('spacePreviews');
-    const newSection = section('new') as HTMLElement;
+    const newSection = section('recent') as HTMLElement;
     fireEvent.click(within(newSection).getByRole('button', { name: 'Menu for Item 1' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: /Move to Trash|Delete/ }));
     await waitFor(() => expect(mine()?.textContent).toContain('1 plan'));

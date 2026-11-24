@@ -1,7 +1,7 @@
-// Home's Most Used (the items opened most often in the last 14 days, "Opened N times") and Recent directly after it
-// (the latest opened of the rest), each a section headed as New is, up to eight each, four across on a desktop, from
-// one request; on a phone each is its own strip of at most eight under its own heading. A section with nothing in it
-// is left out (liveworkspace/docs/specs/004-index/one-explorer.md "Most Used and Recent, on Home").
+// Home's Most Used (the rail's first panel: the items opened most often in the last 14 days, ranked, each with its day
+// chart) and Recent (a timeline of New's items and the latest opened of the rest, by day), up to eight each, from one
+// request; one column on a phone, Most Used first. A section with nothing in it is left out
+// (liveworkspace/docs/specs/004-index/one-explorer.md "Recent, a timeline", "Most Used, in the rail").
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { IndexError } from '@liveworkspace/index-client';
@@ -79,13 +79,11 @@ const cards = (el: HTMLElement) =>
     .getAllByRole('link')
     .map((a) => a.getAttribute('aria-label') ?? a.textContent)
     .filter((name) => name !== 'See More');
-const phone = () =>
-  vi.stubGlobal('matchMedia', (query: string) => ({
-    matches: false,
-    media: query,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-  }));
+// The timeline's rows of one kind, by name: what was opened, or what was made.
+const rows = (el: HTMLElement, kind: 'opened' | 'made') =>
+  [...el.querySelectorAll(`[data-timeline-event="${kind}"] a[aria-label]`)].map((a) =>
+    a.getAttribute('aria-label'),
+  );
 
 describe('Home', () => {
   it('draws Most Used then Recent as two sections of their own, from one Recent request that carries Most Used', async () => {
@@ -103,17 +101,18 @@ describe('Home', () => {
     await screen.findByRole('heading', { level: 2, name: 'Most Used' });
     const used = screen.getByRole('region', { name: 'Most Used' });
     expect(cards(used)).toEqual(['Item 2', 'Item 1']);
-    expect(used.textContent).toContain('Opened 9 times');
+    expect(used.textContent).toContain('9 opens');
     const recent = screen.getByRole('region', { name: 'Recent' });
     expect(within(recent).getByRole('heading', { level: 2, name: 'Recent' })).toBeTruthy();
-    expect(cards(recent)).toEqual(['Item 3', 'Item 4']);
-    // Recent directly after Most Used, each one of Home's sections, with no title over the pair.
+    // The timeline: what was opened, and New's four as made, none of them twice.
+    expect(rows(recent, 'opened')).toEqual(['Item 3', 'Item 4']);
+    expect(rows(recent, 'made')).toHaveLength(4);
+    // Most Used first in the page's order (a phone's one column), the timeline after it.
     const order = [...document.querySelectorAll('[data-home-section]')].map((s) =>
       s.getAttribute('data-home-section'),
     );
     expect(order.indexOf('recent')).toBe(order.indexOf('most-used') + 1);
     expect(screen.queryByText('Jump Back In')).toBeNull();
-    expect(used.querySelector('h3')).toBeNull();
     await waitFor(() => expect(index.count('listItems')).toBe(1));
     expect(index.calls.find((c) => c.method === 'listItems')!.args[0]).toMatchObject({
       view: 'recent',
@@ -140,52 +139,65 @@ describe('Home', () => {
     expect(onNavigate.mock.calls[0]![0]).toMatchObject({ kind: 'recent' });
   });
 
-  it('draws up to eight in each section, four across on a desktop', async () => {
+  it('draws up to eight in each, Most Used ranked and the rest opened in the timeline', async () => {
     renderHome(createFakeIndex({ items: twenty() }));
     await screen.findByRole('heading', { name: 'Most Used' });
     const used = screen.getByRole('region', { name: 'Most Used' });
     expect(cards(used)).toEqual(Array.from({ length: 8 }, (_, k) => `Item ${k + 1}`));
     // The ninth and tenth most used are among the latest opened of the rest.
-    expect(cards(screen.getByRole('region', { name: 'Recent' }))).toEqual(
+    expect(rows(screen.getByRole('region', { name: 'Recent' }), 'opened')).toEqual(
       Array.from({ length: 8 }, (_, k) => `Item ${k + 9}`),
     );
-    expect(used.querySelector('ul')!.className).toContain('lg:grid-cols-4');
+    // Most Used's rows carry no picture: the day chart is theirs.
+    expect(used.querySelectorAll('li')).toHaveLength(8);
   });
 
-  it('leaves out Recent, heading, See More and all, when Most Used holds everything opened', async () => {
+  it('draws each most used item’s 14 days, today on the right, against the busiest day in the list', async () => {
+    const days = (opens: Record<number, number>) =>
+      Array.from({ length: 14 }, (_, k) => opens[13 - k] ?? 0);
+    renderHome(
+      createFakeIndex({
+        items: [
+          opened(1, { useOpens: 9, useDays: 2, useHistory: days({ 0: 8, 3: 1 }) }),
+          opened(2, { useOpens: 4, useDays: 1, useHistory: days({ 10: 4 }) }),
+          opened(3, { useOpens: 2, useDays: 2 }),
+          ...madeLater(),
+        ],
+      }),
+    );
+    await screen.findByRole('heading', { name: 'Most Used' });
+    const used = screen.getByRole('region', { name: 'Most Used' });
+    const charts = [...used.querySelectorAll('[data-day-chart]')];
+    // An index that sends no days draws the count alone.
+    expect(charts).toHaveLength(2);
+    const levels = (chart: Element) =>
+      [...chart.querySelectorAll('[data-day-level]')].map((c) => c.getAttribute('data-day-level'));
+    expect(levels(charts[0]!)).toEqual([...Array(10).fill('0'), '1', '0', '0', '4']);
+    expect(levels(charts[1]!)).toEqual(['0', '0', '0', '2', ...Array(10).fill('0')]);
+    expect(charts[0]!.getAttribute('aria-label')).toBe(
+      'Opened on 2 of the last 14 days, 8 times today',
+    );
+    expect(used.textContent).toContain(
+      'Each square is a day: 14 days ago on the left, today on the right.',
+    );
+  });
+
+  it('keeps only what was made in the timeline when Most Used holds everything opened', async () => {
     renderHome(
       createFakeIndex({
         items: [opened(1, { useOpens: 3 }), opened(2, { useOpens: 2 }), ...madeLater()],
       }),
     );
     await screen.findByRole('heading', { name: 'Most Used' });
-    expect(section('recent')).toBeNull();
-    expect(screen.queryByRole('link', { name: 'See More' })).toBeNull();
+    expect(rows(section('recent')!, 'opened')).toEqual([]);
+    expect(rows(section('recent')!, 'made')).toHaveLength(4);
   });
 
   it('leaves out Most Used while nothing is most used', async () => {
     renderHome(createFakeIndex({ items: [opened(1), opened(2), ...madeLater()] }));
     await screen.findByRole('heading', { name: 'Recent' });
     expect(section('most-used')).toBeNull();
-    expect(cards(section('recent')!)).toEqual(['Item 1', 'Item 2']);
-  });
-
-  it('gives each section its own strip on a phone, under its own heading, Recent’s ending on See More', async () => {
-    phone();
-    renderHome(createFakeIndex({ items: twenty() }));
-    await screen.findByRole('link', { name: 'Item 1' });
-    const tiles = (id: string) =>
-      [...section(id)!.querySelectorAll('li a')].map((a) => a.getAttribute('aria-label'));
-    expect(tiles('most-used')).toEqual(Array.from({ length: 8 }, (_, k) => `Item ${k + 1}`));
-    expect(tiles('recent')).toEqual(Array.from({ length: 8 }, (_, k) => `Item ${k + 9}`));
-    expect(screen.getByRole('heading', { name: 'Most Used' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Recent' })).toBeTruthy();
-    // See More is the last tile of Recent's strip, not a link beside its heading.
-    const more = screen.getByRole('link', { name: /See More/ });
-    expect(section('recent')!.contains(more)).toBe(true);
-    expect(more.closest('ul')).toBeNull();
-    expect(more.parentElement!.querySelector('h2')).toBeNull();
-    expect(section('most-used')!.textContent).not.toContain('See More');
+    expect(rows(section('recent')!, 'opened')).toEqual(['Item 1', 'Item 2']);
   });
 
   it('draws each section’s placeholders under its own heading while it loads', async () => {
@@ -197,8 +209,12 @@ describe('Home', () => {
       const el = section(id)!;
       expect(el.getAttribute('aria-busy')).toBe('true');
       expect(el.querySelector('h2')).not.toBeNull();
-      expect(el.querySelectorAll('[aria-hidden] > div')).toHaveLength(8);
     }
+    expect(section('most-used')!.querySelectorAll('[aria-hidden] > div')).toHaveLength(5);
+    // A day's heading over six rows.
+    expect(section('recent')!.querySelectorAll('[data-home-timeline-skeleton] > div')).toHaveLength(
+      7,
+    );
     expect(screen.queryByRole('link', { name: 'See More' })).toBeNull();
     index.hold.delete('listItems');
     index.release();

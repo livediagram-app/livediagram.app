@@ -11,6 +11,8 @@ import { Callout } from '@liveworkspace/ui/callout';
 
 export const SECTION_HEADING =
   'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
+export const PANEL_HEADING =
+  'text-base font-extrabold tracking-[-0.02em] text-[#17153a] dark:text-slate-100';
 export const PANEL_SURFACE =
   'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800';
 export const CARD_SURFACE = `${PANEL_SURFACE} transition duration-micro hover:border-brand-300 hover:shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-brand-300)_25%,transparent),0_18px_36px_-16px_color-mix(in_oklab,var(--color-brand-600)_45%,transparent)] motion-safe:hover:-translate-y-0.5 dark:hover:border-brand-400/60`;
@@ -24,6 +26,7 @@ export function HomeSection({
   link,
   busy,
   onPick,
+  panel = false,
   children,
 }: {
   id: string;
@@ -33,6 +36,8 @@ export function HomeSection({
   /** A link in the section followed (a click, a tap or Enter): `true` for its See link (the heading's, or the
    *  phone strip's tile), `false` for a card. Read from the one click as it rises, so no card carries a handler. */
   onPick?: (seeLink: boolean) => void;
+  /** One of the rail's panels (one-explorer.md "Home's rail"): a bordered panel with a smaller heading. */
+  panel?: boolean;
   children: ReactNode;
 }) {
   const { viewHref, navigate } = useExplorer();
@@ -46,9 +51,15 @@ export function HomeSection({
       }
     : undefined;
   return (
-    <section aria-labelledby={headingId} aria-busy={busy} data-home-section={id} onClick={picked}>
-      <div className="mb-4 flex items-baseline justify-between gap-4">
-        <h2 id={headingId} className={SECTION_HEADING}>
+    <section
+      aria-labelledby={headingId}
+      aria-busy={busy}
+      data-home-section={id}
+      onClick={picked}
+      className={panel ? `${PANEL_SURFACE} rounded-[20px] p-2 pt-4` : undefined}
+    >
+      <div className={`flex items-baseline justify-between gap-4 ${panel ? 'mb-2 px-2' : 'mb-4'}`}>
+        <h2 id={headingId} className={panel ? PANEL_HEADING : SECTION_HEADING}>
           {title}
         </h2>
         {link ? (

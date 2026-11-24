@@ -72,6 +72,8 @@ export type Item = {
   useDays?: number;
   // Most Used only: how many times the person opened it in the window (what Most Used ranks by).
   useOpens?: number;
+  // Most Used only: the opens on each of the window's UTC days, the oldest first and today last (Home's day chart).
+  useHistory?: number[];
 };
 
 export type Folder = {

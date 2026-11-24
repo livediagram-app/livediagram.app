@@ -92,15 +92,15 @@ describe('WorkKinds', () => {
     for (const app of APPS) expect(WORK_KINDS[app]).toHaveLength(WORK_KINDS_PER_APP);
   });
 
-  it('lays an app’s four two by two from lg, and All’s six three over three', () => {
+  it('lays an app’s four two by two once the hero is wide, and All’s six three over three', () => {
     const { container: one } = render(
       <WorkKinds app="livehuddle" all={false} templateHref={href} />,
     );
-    expect(one.querySelector('ul')!.className).toContain('grid-cols-4 gap-2 lg:grid-cols-2');
+    expect(one.querySelector('ul')!.className).toContain('grid-cols-4 gap-2 @4xl:grid-cols-2');
     const { container: all } = render(<WorkKinds app="livehuddle" all templateHref={href} />);
     const grid = all.querySelector('ul')!.className;
     expect(grid).toContain('grid-cols-3');
-    expect(grid).not.toContain('lg:grid-cols');
+    expect(grid).not.toContain('@4xl:grid-cols');
     // Every tile is the same tile as an app's own; only the grid, and on a phone the name's size, differ.
     const tileClass = (root: HTMLElement) => root.querySelector('[data-work-kind]')!.className;
     expect(tileClass(all)).toBe(tileClass(one));

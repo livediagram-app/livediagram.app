@@ -171,10 +171,10 @@ export function HomeHero({
     <section
       aria-labelledby={HEADING_ID}
       data-home-hero=""
-      className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800"
+      className="@container relative overflow-hidden border-b border-slate-200 sm:rounded-[28px] sm:border dark:border-slate-800"
     >
       <HeroBackdrop kind={backdrop} />
-      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-16 pt-9 sm:px-6 lg:pb-[5.75rem]">
+      <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-x-10 gap-y-8 px-4 pb-14 pt-9 sm:px-8 @4xl:pb-20">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
           {/* The hero's top line: the pills on the left, level with Help and the close (the same top, centred on
               them). Holds a pill's height before the counts arrive, so nothing under it moves when they do. */}
@@ -214,7 +214,7 @@ export function HomeHero({
             </div>
             {/* Help and the close end the top line below `lg`; from `lg` they stand at the hero's top right,
                 above the tiles, at the same height. */}
-            <span className="flex h-8 shrink-0 items-center lg:hidden">
+            <span className="flex h-8 shrink-0 items-center @4xl:hidden">
               <HeroCorner onHide={onHide} />
             </span>
           </div>
@@ -222,7 +222,7 @@ export function HomeHero({
             id={HEADING_ID}
             // Two lines held, so the band's height never moves as the greeting lands after mount. Whole-pixel
             // line heights, so everything under the hero lands on whole pixels.
-            className={`min-h-[2lh] max-w-3xl text-4xl leading-[37px] ${heroHeadingFace(backdrop)} text-[#17153a] sm:text-5xl sm:leading-[49px] lg:text-[3.5rem] lg:leading-[57px] dark:text-white`}
+            className={`min-h-[2lh] max-w-3xl text-4xl leading-[37px] ${heroHeadingFace(backdrop)} text-[#17153a] sm:text-5xl sm:leading-[49px] @4xl:text-[3.5rem] @4xl:leading-[57px] dark:text-white`}
           >
             {greeting ? `${greeting} ${question}` : null}
           </h1>
@@ -234,13 +234,13 @@ export function HomeHero({
           </div>
         </div>
         {/* Level with the pills: the band's top padding, a pill's height, centred. */}
-        <div className="absolute right-4 top-9 z-20 hidden h-8 items-center sm:right-6 lg:flex">
+        <div className="absolute right-4 top-9 z-20 hidden h-8 items-center sm:right-8 @4xl:flex">
           <HeroCorner onHide={onHide} />
         </div>
         {kinds ? (
           // Its own line under the field below `lg`, as wide as the field; from `lg` the right-hand column, set down
           // below the corner's Help and close (top-6, 30px tall) so the tiles never sit under them.
-          <div className="w-full max-w-2xl lg:mt-10 lg:w-auto lg:max-w-[21rem] lg:flex-[1_1_18rem]">
+          <div className="w-full max-w-2xl @4xl:mt-10 @4xl:w-auto @4xl:max-w-[21rem] @4xl:flex-[1_0_20rem]">
             {kinds}
           </div>
         ) : null}

@@ -31,9 +31,10 @@ async function importBoards(page: Page, boards: 1 | 2): Promise<void> {
   await expect(page.getByTestId('import-documents')).toContainText(SINGLE_BOARD);
 }
 
-// Home's opened documents: the Most Used and Recent sections, grids on a wide screen, strips on a phone.
+// Home's opened documents: Most Used's rows, and the opened rows of Recent's timeline (New's are its made rows).
 const homeOpened = (page: Page) =>
-  page.getByRole('region', { name: /^(Most Used|Recent)$/ }).getByRole('listitem');
+  page.locator('[data-home-section="most-used"] li, [data-timeline-event="opened"]');
+const homeMade = (page: Page) => page.locator('[data-timeline-event="made"]');
 
 // Home shows each item once, in the first of New, Most Used and Recent it qualifies for
 // (liveworkspace/docs/specs/004-index/one-explorer.md "Each item shows once"), so a just-imported board is in New. Four
@@ -95,9 +96,9 @@ test('a two-board import marks neither used: Most Used and Recent stay away, All
   await importBoards(page, 2);
 
   await page.goto('/explorer/home');
-  // Never opened, so both are New's alone: Most Used and Recent, with nothing in them, are left out.
-  await expect(page.getByRole('region', { name: 'New' }).getByRole('listitem')).toHaveCount(2);
-  await expect(page.getByRole('region', { name: /^(Most Used|Recent)$/ })).toHaveCount(0);
+  // Never opened, so both are New's alone, made rows in the timeline; nothing in Most Used or opened.
+  await expect(homeMade(page)).toHaveCount(2);
+  await expect(homeOpened(page)).toHaveCount(0);
   await expect(homeOpened(page).getByRole('link')).toHaveCount(0);
   await page.screenshot({ path: test.info().outputPath('bulk-import-home-desktop.png') });
 
