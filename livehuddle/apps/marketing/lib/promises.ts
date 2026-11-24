@@ -36,6 +36,6 @@ export const PROMISES: readonly Promise[] = [
   {
     id: 'live',
     title: 'Real-Time Collaboration',
-    line: 'Share a link and build together, cursors and edits in sync.',
+    line: 'Share a link and the team is in the Space with you, every step in sync.',
   },
 ];
