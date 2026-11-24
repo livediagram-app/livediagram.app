@@ -1,27 +1,38 @@
 'use client';
 
-// The question field at the foot of the conversation (docs/specs/030-knowledgebase/search-and-ask.md "Bounds"): Enter
-// sends, Shift and Enter make a new line, 1,000 characters at most with a count as the limit nears. While an answer
-// streams the field waits and the button becomes Stop, which aborts the request.
-import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { HoverCard, TextArea, isComposingKey } from '@liveknowledge/ui';
-import { ASK_MAX_QUESTION_CHARS } from '@liveknowledge/knowledge';
+// Ask's question box (docs/specs/030-knowledgebase/search-and-ask.md "The question box"): the composer every app's Ask
+// AI shares (@liveworkspace/ask), with the AI built into it as livediagram's is. The AI pill at its lower left says
+// which AI answers the next question and opens Answer With; nothing about the AI is drawn outside the box. Answer From
+// (the labels) stands above it.
+import { AnswerWith, AskComposer as SharedComposer, askAiView } from '@liveworkspace/ask/composer';
+import { ASK_BUILT_IN_PER_PERSON_PER_DAY } from '@liveknowledge/knowledge';
 import { AskLabelScope } from '@/components/page-labels/AskLabelScope';
-import { SendIcon, StopIcon } from './ask-icons';
+import type { KnowledgeCaller } from '@/lib/api/knowledge';
+import type { AiSettingsState } from '@/lib/knowledge-ask/ai-settings-store';
+import { askAiChoiceStore, useAskAiChoice } from '@/lib/knowledge-ask/ask-ai-choice';
+import { track } from '@/lib/telemetry';
+import {
+  ITEM_KEY_NAME,
+  useKnowledgeAiSource,
+  type KnowledgeCallFailure,
+} from './KnowledgeAiSource';
 
-/** The count shows from here on. */
-export const ASK_COUNT_FROM = ASK_MAX_QUESTION_CHARS - 100;
-// The field grows with its writing up to this height, then scrolls.
+// The field grows with its writing up to this height, then scrolls: the Ask view is wider and taller than Tools.
 const MAX_FIELD_HEIGHT_PX = 160;
-
-const ROUND_BUTTON =
-  'touch-target relative flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full motion-safe:transition-colors motion-safe:duration-micro focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-40';
+/** Built-in AI's row in Answer With. */
+export const BUILT_IN_DETAIL = `Included with liveknowledge, ${ASK_BUILT_IN_PER_PERSON_PER_DAY} questions a person a day`;
 
 export function AskComposer({
   streaming,
   followUp,
   onAsk,
   onStop,
+  ai,
+  who,
+  documentId,
+  manageAi,
+  failure,
+  cost,
 }: {
   streaming: boolean;
   // A turn is already there: the field asks for a follow-up.
@@ -29,95 +40,50 @@ export function AskComposer({
   // False when the question was not taken (the field then keeps it).
   onAsk: (question: string) => boolean;
   onStop: () => void;
+  /** The knowledgebase's `GET ai`, for which AI answers. */
+  ai: AiSettingsState;
+  who: KnowledgeCaller;
+  documentId: string;
+  /** May change the knowledgebase's own key (an Editor). */
+  manageAi: boolean;
+  /** The last answer's failure: a key the provider refused turns the pill to Key Needs Attention. */
+  failure: KnowledgeCallFailure | null;
+  /** With Pro on and built-in AI answering, what the next question costs. */
+  cost: string | null;
 }) {
-  const [value, setValue] = useState('');
-  const field = useRef<HTMLTextAreaElement>(null);
-  const countId = useId();
-  const length = value.length;
-  const ready = value.trim() !== '' && !streaming;
-
-  // As tall as its writing, up to the cap.
-  useLayoutEffect(() => {
-    const el = field.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, MAX_FIELD_HEIGHT_PX)}px`;
-  }, [value]);
-
-  const send = () => {
-    if (!ready) return;
-    if (onAsk(value)) setValue('');
-  };
-  const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Enter while an input method is composing confirms the word, it does not send.
-    if (event.key !== 'Enter' || event.shiftKey || isComposingKey(event)) return;
-    event.preventDefault();
-    send();
-  };
-
+  const { line, act } = useKnowledgeAiSource({ state: ai, who, documentId, manageAi, failure });
+  const choice = useAskAiChoice(who, documentId);
+  // A server with no built-in AI has nothing to choose: the key answers whatever was picked before.
+  const builtIn = ai.status !== 'ready' || ai.settings.builtIn;
+  const view = askAiView(line, builtIn ? choice : 'key', ITEM_KEY_NAME);
   return (
     <div className="flex flex-col gap-1.5">
-      {/* Answer From, above the field, where the knowledgebase has labels (search-and-ask.md "Answer From"). */}
+      {/* Answer From, above the box, where the knowledgebase has labels (search-and-ask.md "Answer From"). */}
       <AskLabelScope />
-      <form
-        data-ask-composer=""
-        onSubmit={(event) => {
-          event.preventDefault();
-          send();
-        }}
-        className="flex items-end gap-2 rounded-2xl border border-slate-300 bg-white p-2 pl-3 shadow-sm focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/25 dark:border-slate-700 dark:bg-slate-900"
-      >
-        <TextArea
-          ref={field}
-          rows={1}
-          value={value}
-          maxLength={ASK_MAX_QUESTION_CHARS}
-          disabled={streaming}
-          aria-label={followUp ? 'Ask a follow-up' : 'Ask a question'}
-          aria-describedby={length >= ASK_COUNT_FROM ? countId : undefined}
-          placeholder={followUp ? 'Ask a follow-up' : 'Ask this knowledgebase a question'}
-          onChange={(event) => setValue(event.target.value)}
-          onKeyDown={onKeyDown}
-          className="min-h-9 flex-1 resize-none !border-0 !bg-transparent !px-0 !py-1.5 !shadow-none !outline-none !ring-0"
-        />
-        {length >= ASK_COUNT_FROM ? (
-          <span
-            id={countId}
-            role="status"
-            data-ask-count=""
-            className={`shrink-0 self-center text-xs tabular-nums ${
-              length >= ASK_MAX_QUESTION_CHARS
-                ? 'font-semibold text-amber-800 dark:text-amber-200'
-                : 'text-slate-600 dark:text-slate-400'
-            }`}
-          >
-            {length.toLocaleString('en')} / {ASK_MAX_QUESTION_CHARS.toLocaleString('en')}
-          </span>
-        ) : null}
-        {streaming ? (
-          <HoverCard title="Stop" description="Stops this answer. What has arrived is kept.">
-            <button
-              type="button"
-              aria-label="Stop"
-              onClick={onStop}
-              className={`${ROUND_BUTTON} bg-slate-900 text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white`}
-            >
-              <StopIcon />
-            </button>
-          </HoverCard>
-        ) : (
-          <HoverCard title="Send" description="Enter sends. Shift and Enter make a new line.">
-            <button
-              type="submit"
-              aria-label="Send"
-              disabled={!ready}
-              className={`${ROUND_BUTTON} bg-brand-700 text-white enabled:hover:bg-brand-800 dark:bg-brand-600 dark:enabled:hover:bg-brand-500`}
-            >
-              <SendIcon />
-            </button>
-          </HoverCard>
-        )}
-      </form>
+      <SharedComposer
+        label="Ask this knowledgebase a question"
+        followUp={followUp}
+        streaming={streaming}
+        onAsk={onAsk}
+        onStop={onStop}
+        maxFieldHeight={MAX_FIELD_HEIGHT_PX}
+        // Opening Ask leaves the caret where it was: on a phone the keyboard would cover the chats.
+        autoFocus={false}
+        cost={view.using === 'built-in' ? cost : null}
+        pill={
+          <AnswerWith
+            app="liveknowledge"
+            view={view}
+            builtIn={builtIn}
+            builtInDetail={BUILT_IN_DETAIL}
+            manage={act}
+            onPick={(next) => {
+              track('UI', 'Changed', next === 'built-in' ? 'AskAiBuiltIn' : 'AskAiKey');
+              askAiChoiceStore.set(who, documentId, next);
+            }}
+          />
+        }
+      />
     </div>
   );
 }

@@ -39,6 +39,9 @@ const SOURCE: Record<'knowledgebase' | 'team' | 'personal', AiKeySource> = {
   personal: 'account',
 };
 
+/** What the knowledgebase's own key is called, on the line and on Ask's AI pill. */
+export const ITEM_KEY_NAME = 'This Knowledgebase’s Key';
+
 type LineSettings = Pick<
   KnowledgeAiSettings,
   | 'hasKey'
@@ -127,24 +130,23 @@ export const saidOnLine = (
   isKeyFailureKind(failure.kind) &&
   knowledgeAiLine(state, manageAi, failure)?.kind === 'failed';
 
-export function KnowledgeAiSource({
+/** The line for this asker and what its action does (AI Settings on the knowledgebase's own key, Settings › AI
+ *  otherwise), following a change of key made in Settings. Ask's AI pill is worked out from it; elsewhere it is drawn
+ *  as the source line. */
+export function useKnowledgeAiSource({
   state,
   who,
   documentId,
   manageAi,
-  allowance,
-  id,
   failure = null,
 }: {
   state: AiSettingsState;
-  // The view's last call's failure (held by the view, a new one per call), until its next answer.
-  failure?: KnowledgeCallFailure | null;
   who: KnowledgeCaller;
   documentId: string;
   manageAi: boolean;
-  allowance?: string;
-  id?: string;
-}) {
+  // The view's last call's failure (held by the view, a new one per call), until its next answer.
+  failure?: KnowledgeCallFailure | null;
+}): { line: AiSourceLine | null; act: (() => void) | null } {
   // A change of key in Settings answers the failure: the next call says again if it still fails.
   const [settled, setSettled] = useState<KnowledgeCallFailure | null>(null);
   const line = knowledgeAiLine(state, manageAi, failure === settled ? null : failure);
@@ -180,13 +182,29 @@ export function KnowledgeAiSource({
             track('UI', 'Opened', 'AiSourceSettings');
             requestOpenSettings('ai');
           };
+  return { line, act };
+}
+
+export function KnowledgeAiSource({
+  state,
+  who,
+  documentId,
+  manageAi,
+  allowance,
+  id,
+  failure = null,
+}: {
+  state: AiSettingsState;
+  // The view's last call's failure (held by the view, a new one per call), until its next answer.
+  failure?: KnowledgeCallFailure | null;
+  who: KnowledgeCaller;
+  documentId: string;
+  manageAi: boolean;
+  allowance?: string;
+  id?: string;
+}) {
+  const { line, act } = useKnowledgeAiSource({ state, who, documentId, manageAi, failure });
   return (
-    <AiSource
-      line={line}
-      act={act}
-      allowance={allowance}
-      itemKeyName="This Knowledgebase’s Key"
-      id={id}
-    />
+    <AiSource line={line} act={act} allowance={allowance} itemKeyName={ITEM_KEY_NAME} id={id} />
   );
 }
