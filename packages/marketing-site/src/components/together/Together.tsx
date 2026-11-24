@@ -38,8 +38,13 @@ export function Together({ app }: { app?: SiteId } = {}) {
           </symbol>
         ))}
       </svg>
-      <div className={`mx-auto max-w-7xl ${RAIL_CLEAR_PADDING} pb-20 sm:pb-28`}>
-        <p className="text-sm font-semibold tracking-[.18em] text-slate-500 uppercase dark:text-slate-400">
+      {/* On liveworkspace.app it follows a padded section; on a product's page it follows a story beat, so it pads its own top. */}
+      <div
+        className={`mx-auto max-w-7xl ${RAIL_CLEAR_PADDING} pb-20 sm:pb-28 ${site ? 'pt-20 sm:pt-28' : ''}`}
+      >
+        <p
+          className={`text-sm font-semibold tracking-[.18em] uppercase ${site ? 'text-brand-700 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'}`}
+        >
           Better together
         </p>
         <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
