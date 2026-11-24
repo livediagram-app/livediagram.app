@@ -33,9 +33,10 @@ The landing page (`app/page.tsx`), top to bottom:
 5. **Six feature sections** (below), alternating which side the art sits and the tinted ground, each with a link to its own page (`/features/<id>`, "Feature pages").
 6. **Build With AI** (`BuildWithAiBand`): the MCP server and the CLI, beside a drawn transcript of an agent's three calls, linking to `/ai`.
 7. **Community**: the six featured knowledgebases, loaded after the page.
-8. **Privacy** (`#privacy`): the shared privacy band with this product's six promises.
-9. **FAQ** (`#faq`): the landing questions (`LANDING_FAQ` in `lib/faq-content.tsx`), each a native `<details>`, with a link to `/faq`.
-10. **Closing CTA** (`#get-started`) and the shared **Footer**.
+8. **Works with your other apps**: the shared Together band (`@liveworkspace/marketing-site`), filtered to the cards liveknowledge takes part in, sits after the story beats (and the Build With AI and Community bands that follow them) and before Privacy. Its cards and words live in the package ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md) "How work moves between them").
+9. **Privacy** (`#privacy`): the shared privacy band with this product's six promises.
+10. **FAQ** (`#faq`): the landing questions (`LANDING_FAQ` in `lib/faq-content.tsx`), each a native `<details>`, with a link to `/faq`.
+11. **Closing CTA** (`#get-started`) and the shared **Footer**.
 
 ### Hero
 
@@ -57,12 +58,12 @@ A band in the brand mark's lime (`@liveknowledge/ui` `hero-band.css`) over the d
 
 | Id          | Heading                            | Says                                                                                                          | Art (`components/feature-art/`)                                            |
 | ----------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `pages`     | Pages That Stay Organised          | The page tree, one continuous page, `[[` links and Linked From                                                | `PagesArt`: the tree beside a page with a page link and its backlinks      |
-| `trust`     | Trust Built Into Every Page        | Owner, Verified, Review Due, the Review Period, Still Right                                                   | `TrustArt`: a page's meta row, Page Health and a page that has come due    |
-| `ask`       | Ask, With Sources                  | Cited answers, the Sources rail, the trust line, a Knowledge Gap, the team's own Claude key                   | `AskArt`: a question, a cited answer, its sources and a gap card           |
+| `pages`     | Pages That Stay Organised          | The page tree, one continuous page, `[[` links, labels and Watch                                              | `PagesArt`: the tree beside a page with a page link and its backlinks      |
+| `trust`     | Trust Built Into Every Page        | Owner, Verified, Review Due, the Review Period, the Health Score, Required Reading                            | `TrustArt`: a page's meta row, Page Health and a page that has come due    |
+| `ask`       | Ask, With Sources                  | Cited answers from pages and connected items, the trust line, a Knowledge Gap, built-in AI or the team's key  | `AskArt`: a question, a cited answer, its sources and a gap card           |
 | `agents`    | The Knowledgebase Your Agents Read | The MCP server and CLI, trust fields on every passage, suggested edits a person accepts, unanswered questions | `AgentsArt`: a passage with its trust fields, a suggested edit, a question |
 | `import`    | Bring Everything With You          | Import a Markdown folder, a Notion or a Confluence export; export Markdown, PDF and Word                      | `ImportExportArt`: three sources into the knowledgebase, three formats out |
-| `workspace` | Part of liveworkspace              | Live embeds from the five other apps, one account, Editor, Participant and Viewer roles, Offline, Drive       | `WorkspaceArt`: a page with an embedded item, and each app's logo          |
+| `workspace` | Part of liveworkspace              | Live embeds from the five other apps, one account, Editor, Participant and Viewer roles, Publish to the Web   | `WorkspaceArt`: a page with an embedded item, and each app's logo          |
 
 - The art is drawn in the app as SVG and React on one kit (`components/feature-art/kit.tsx`: the frame, the card with its lime offset shadow, ticks, pills, lines of writing), in the brand ramp and slate, following light and dark. One file per section, none past the shared 650-line limit.
 - `WorkspaceArt` names each app with the shared brand component (`Brand` from `@liveknowledge/ui`: logo mark and wordmark), never a hand-drawn logo.
