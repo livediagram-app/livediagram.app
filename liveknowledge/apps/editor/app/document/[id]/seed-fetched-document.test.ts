@@ -10,8 +10,18 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 import { cpuBudgetMs, cpuMsOf, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import type { LastSeenCopy } from '@liveworkspace/workbench/lib/api/last-seen-copies';
-import type { Tab } from '@liveknowledge/document';
-import { makePaintLastSeen, makeSeedFetchedDocument, type SeedDeps } from './seed-fetched-document';
+import {
+  CONTINUOUS_PAGE_WIDTH,
+  KNOWLEDGEBASE_FLOW,
+  knowledgebasePage,
+  type Tab,
+} from '@liveknowledge/document';
+import {
+  makePaintLastSeen,
+  makeSeedFetchedDocument,
+  settledWarmTab,
+  type SeedDeps,
+} from './seed-fetched-document';
 
 // The editor's eager first-tab read is the one that counts as an open of the document, for the
 // reader's Home (docs/specs/013-workspace/explorer-home.md "Opens"); an embed is not an open.
@@ -130,7 +140,8 @@ describe('the warm open', () => {
     makePaintLastSeen(deps(true, noteChangesetSeen, over))(copy);
     const tabs = tabsOf(resetTabs);
     expect(tabs.map((t) => t.id)).toEqual(['t1', 't2']);
-    expect(tabs[0]).toBe(warmTab);
+    expect(tabs[0]).toBe(settledWarmTab(warmTab));
+    expect(tabs[0]!.elements).toEqual(warmTab.elements);
     expect(tabs[1]!.elements).toEqual([]);
     expect(setDocumentName).toHaveBeenCalledWith('Payments');
     expect(setActiveId).toHaveBeenCalledWith('t1');
@@ -151,7 +162,7 @@ describe('the warm open', () => {
     };
     makePaintLastSeen(deps(true, vi.fn(), { resetTabs, setActiveId }))(scoped);
     expect(setActiveId).toHaveBeenCalledWith('t2');
-    expect(tabsOf(resetTabs)[1]).toBe(warmTab);
+    expect(tabsOf(resetTabs)[1]).toBe(settledWarmTab(warmTab));
     makePaintLastSeen(deps(true, vi.fn(), { resetTabs }))({ ...copy, firstTab: null });
     expect(tabsOf(resetTabs, 1)[0]!.elements).toEqual([]);
   });
@@ -161,8 +172,31 @@ describe('the warm open', () => {
     const catchUp = makeSeedFetchedDocument(
       deps(true, vi.fn(), { resetTabs, warmFirstTab: () => copy.firstTab }),
     );
-    expect(await catchUp('me', fetched, null, null)).toEqual({ id: 't1', rev: 6, tab: warmTab });
-    expect(tabsOf(resetTabs)[0]).toBe(warmTab);
+    const painted = settledWarmTab(warmTab);
+    expect(await catchUp('me', fetched, null, null)).toEqual({ id: 't1', rev: 6, tab: painted });
+    expect(tabsOf(resetTabs)[0]).toBe(painted);
+  });
+
+  // knowledgebases-and-pages.md "Pages stored at the first width" (Work Tracker 1418): the copy was kept as an earlier
+  // load stored it, so a page kept at 856 px is read at the continuous width both when painted and when kept.
+  it('reads a copy kept at the first page width at the continuous width, painted and kept', async () => {
+    const narrow = {
+      id: 't1',
+      name: 'Tab 1',
+      elements: [],
+      pages: [{ ...knowledgebasePage(), fit: { width: 856, height: 400 } }],
+      articles: { [KNOWLEDGEBASE_FLOW]: { blocks: [] } },
+    } as unknown as Tab;
+    const kept = { ...copy, firstTab: { id: 't1', rev: 6, tab: narrow } };
+    const resetTabs = vi.fn();
+    makePaintLastSeen(deps(true, vi.fn(), { resetTabs }))(kept);
+    const painted = tabsOf(resetTabs)[0]!;
+    expect(painted.pages![0]!.fit!.width).toBe(CONTINUOUS_PAGE_WIDTH);
+    apiLoadTab.mockResolvedValue({ tab: { id: 't1', name: 'Tab 1', elements: [] }, rev: 6 });
+    await makeSeedFetchedDocument(
+      deps(true, vi.fn(), { resetTabs, warmFirstTab: () => kept.firstTab }),
+    )('me', fetched, null, null);
+    expect(tabsOf(resetTabs, 1)[0]).toBe(painted);
   });
 
   it('replaces the painted tab with the fresh one when the document moved on', async () => {

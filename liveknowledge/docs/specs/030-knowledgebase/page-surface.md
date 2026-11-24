@@ -62,7 +62,7 @@ replaces what the fork still shows around the writing.
   hover card or tooltip rides them. This is a deliberate exception to the rule that every control has one; the
   row's icon-only buttons (Edit Labels) and its notes that hold more than they show (the verified badge's review
   date, a label pill's filter) keep theirs. **Beside it** on a wide window, the right rail (Page Health, then On This Page, then Suggested Edits while any wait, then AI Context, a hairline between each section, owner 2026-11-22; 312 px wide, with a Hide Page Info button at its top right that collapses it to a 48 px strip with Show Page Info, kept on the device like the page tree's, owner 2026-11-21): docked from 1,280 px,
-  and only where the page keeps at least a 760 px column beside it (1,400 px with the page tree open), a Page Info
+  and only where the page keeps at least a 760 px column beside it (1,432 px with the page tree open), a Page Info
   button below that. Between there and the room for the full 960 px column (1,632 px with the tree and the rail
   docked) the rail stays docked and the page reflows through the narrow view, wider than the 760 px it had before
   Work Tracker 1418; the page's scrollbar stands between the writing and the docked rail, never under it.
