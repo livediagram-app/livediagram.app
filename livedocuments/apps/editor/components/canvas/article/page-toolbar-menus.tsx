@@ -211,7 +211,7 @@ export function Button({
         aria-expanded={menu ? (expanded ?? false) : undefined}
         disabled={disabled}
         onClick={onPress}
-        className={`flex h-9 shrink-0 items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-35 ${
+        className={`relative flex h-9 shrink-0 touch-target-packed items-center justify-center gap-1 rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-35 ${
           menu ? 'px-2' : 'w-9'
         } ${pressed || expanded ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST}`}
       >

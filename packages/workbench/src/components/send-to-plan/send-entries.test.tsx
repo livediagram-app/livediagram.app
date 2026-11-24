@@ -14,6 +14,7 @@ import { canSendElements, elementSendItem, sendAllStickies, sendElements } from 
 import { SendToPlanButton } from './SendToPlanButton';
 import { SendWordsButton } from './SendWordsButton';
 import { ThreadSendToPlan } from './ThreadSendToPlan';
+import { PRESS_HOLD_MS } from './press-hold';
 
 const sent = (ref: string, kind: PlanSend['kind'] = 'element'): PlanSend => ({
   id: `ps_${ref}`,
@@ -158,6 +159,47 @@ describe("a thread's header and a text toolbar", () => {
     expect(heard.map((r) => r.places[0]!.text)).toEqual(['Just these', 'Whole text']);
     expect(heard[0]!.places[0]).toMatchObject({ kind: 'text', elementId: 'e1' });
     expect(heard[0]!.places[0]!.part).toMatch(/^[0-9a-f]{8}$/);
+  });
+});
+
+describe('a tap on a touch screen (send-to-plan.md "On a touch screen")', () => {
+  it('sends the words its press started on, though the tap cleared them before the click', () => {
+    up();
+    render(<SendWordsButton elementId="e1" wholeText="Whole text" className="b" />);
+    const button = screen.getByRole('button', { name: 'Send the words to a plan' });
+    const picked = vi
+      .spyOn(window, 'getSelection')
+      .mockReturnValue({ toString: () => 'Just these' } as Selection);
+    fireEvent.pointerDown(button, { pointerType: 'touch' });
+    picked.mockReturnValue(null);
+    fireEvent.click(button);
+    expect(heard.map((r) => r.places[0]!.text)).toEqual(['Just these']);
+    picked.mockRestore();
+  });
+
+  it('forgets a press its click never followed in time', () => {
+    up();
+    render(<SendWordsButton elementId="e1" wholeText="Whole text" className="b" />);
+    const button = screen.getByRole('button', { name: 'Send the words to a plan' });
+    const picked = vi
+      .spyOn(window, 'getSelection')
+      .mockReturnValue({ toString: () => 'Old words' } as Selection);
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(1_000);
+    fireEvent.pointerDown(button, { pointerType: 'touch' });
+    picked.mockReturnValue(null);
+    clock.mockReturnValue(1_000 + PRESS_HOLD_MS + 1);
+    fireEvent.click(button);
+    expect(heard.map((r) => r.places[0]!.text)).toEqual(['Whole text']);
+    clock.mockRestore();
+    picked.mockRestore();
+  });
+
+  it('gives the thread entry a 44px tap area on a touch screen', () => {
+    up();
+    render(<ThreadSendToPlan elementId="e1" words="Ship it" />);
+    expect(screen.getByRole('button', { name: 'Send this thread to a plan' }).className).toMatch(
+      /\brelative touch-target\b/,
+    );
   });
 });
 

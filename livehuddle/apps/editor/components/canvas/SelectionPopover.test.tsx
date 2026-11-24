@@ -106,15 +106,15 @@ describe('MultiSelectionToolbar', () => {
 });
 
 // docs/specs/004-interface-design/touch-targets.md: its 32px buttons sit 4px apart, so each reaches a
-// 44px-tall tap area on a touch screen, never a sideways one.
+// 44px tap area both ways on a touch screen, drawn behind the buttons so each still wins its own box.
 describe('SelectionPopover tap areas', () => {
-  it('gives every 32px button a positioned, vertical-only touch pad', () => {
+  it('gives every 32px button a positioned 44px touch pad, behind it in the toolbar’s own stacking context', () => {
     setTouch(true);
     renderSingle();
     const bar = screen.getByTestId('selection-popover');
-    expect(bar.className).toContain('[&_.h-8]:touch-target-y');
+    expect(bar.className).toContain('[&_.h-8]:touch-target-packed');
     expect(bar.className).toContain('[&_.h-8]:relative');
-    expect(bar.className).not.toMatch(/\[&_\.h-8\]:touch-target(\s|$)/);
+    expect(bar.className).toMatch(/\bisolate\b/);
     expect(screen.getByRole('button', { name: 'Duplicate' }).className).toMatch(/\bh-8\b/);
   });
 });

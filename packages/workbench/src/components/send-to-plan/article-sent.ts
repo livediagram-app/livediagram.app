@@ -11,6 +11,7 @@ import { elementDiagramSends, onDiagramSendsChanged } from '../send-to-diagram/d
 import { diagramChipDom } from '../send-to-diagram/diagram-chip-dom';
 import {
   hideReadSendPill,
+  releaseReadSendPill,
   sentChipDom,
   showReadSendPill,
   type ArticlePick,
@@ -149,9 +150,10 @@ export function articleSentSpec<Deco, Set, State extends PMState>(
       };
       const onSelection = () => {
         const read = editable() ? null : readerPick(view);
-        if (!read) return hideReadSendPill();
+        // The words went: the pills go too, unless a tap on one cleared them (send-to-plan.md "On a touch screen").
+        if (!read) return releaseReadSendPill();
         const { pick, rect } = read;
-        showReadSendPill({ left: rect.left, bottom: rect.bottom }, () => pick);
+        showReadSendPill({ left: rect.left, bottom: rect.bottom, top: rect.top }, () => pick);
       };
       document.addEventListener('selectionchange', onSelection);
       return {

@@ -113,9 +113,9 @@ export function SelectionPopover({
         data-testid="selection-popover"
         role="toolbar"
         aria-label={title}
-        // Its 32px buttons sit 4px apart, so on a touch screen each tap area reaches to 44px tall only
-        // (touch-target-y, touch-targets.md), never sideways into its neighbour's.
-        className="pointer-events-auto relative max-w-[95vw] animate-fade-in rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 [&_.h-8]:relative [&_.h-8]:touch-target-y"
+        // Its 32px buttons sit 4px apart: on a touch screen each tap area is 44px both ways, drawn behind the buttons
+        // (touch-target-packed in this stacking context, touch-targets.md), so a drawn button always wins its own box.
+        className="pointer-events-auto relative max-w-[95vw] animate-fade-in rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 isolate [&_.h-8]:relative [&_.h-8]:touch-target-packed"
       >
         {title ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}
         {/* The toolbar is at most 95vw wide; its buttons ride a strip that scrolls sideways when they outgrow it (a

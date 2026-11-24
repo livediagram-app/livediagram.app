@@ -50,7 +50,9 @@ export function FloatingToolbar({
       }}
       role="toolbar"
       aria-label={title}
-      className="pointer-events-auto absolute z-[var(--z-toolbar)] flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40"
+      // Its 28px and 32px buttons sit 4px apart: on a touch screen each tap area is 44px both ways, drawn behind them
+      // (touch-target-packed; the z-index makes this a stacking context, touch-targets.md).
+      className="pointer-events-auto absolute z-[var(--z-toolbar)] flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40 [&_.h-7]:relative [&_.h-7]:touch-target-packed [&_.h-8]:relative [&_.h-8]:touch-target-packed"
       style={style}
     >
       {title ? <FloatingTitle title={title} placeAbove={placeAbove} /> : null}

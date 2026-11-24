@@ -43,7 +43,7 @@ export function ThreadSendToPlan({
               : { elementId, text: words },
           ])
         }
-        className="relative touch-target-y cursor-pointer rounded p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        className="relative touch-target cursor-pointer rounded p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
       >
         <SendToPlanMenuIcon size={14} />
       </button>
