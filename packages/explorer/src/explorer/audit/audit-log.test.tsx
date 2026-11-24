@@ -348,6 +348,21 @@ describe('the Audit Log', () => {
     await waitFor(() => expect(rows().length).toBe(1));
   });
 
+  it('folds the filters behind Filters on a phone, and says when one is set', async () => {
+    const index = createFakeIndex({ audit: [row(1, 'shared')] });
+    await open(index);
+    await waitFor(() => expect(rows().length).toBe(1));
+    const toggle = screen.getByRole('button', { name: 'Filters' });
+    const group = screen.getByRole('group', { name: 'Filter the audit log' });
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(group.className).toContain('max-sm:hidden');
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(group.className).not.toContain('max-sm:hidden');
+    fireEvent.change(screen.getByLabelText('Event'), { target: { value: 'shared' } });
+    expect(await screen.findByRole('button', { name: 'Filters On' })).toBeTruthy();
+  });
+
   it('links its help article in the same help centre as the team’s', async () => {
     renderTeam(
       createFakeIndex(),

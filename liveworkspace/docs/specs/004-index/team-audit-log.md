@@ -112,7 +112,7 @@ accounts says the reader is an admin, and the read would refuse them anyway.
 - **Read when its tab opens**: nothing is read until then. A note heads it: "Only admins see the Audit Log: who
   joined, left or changed role, what was shared, moved or deleted, and every approval and connection. Kept for a
   year."
-- **Filters**, in one card above the list with the count ("24 events"), Help and **Export CSV**, each reading the first page again: **Person** (who did it: Everyone, the team's joined
+- **Filters**, in one card above the list with the count ("24 events"), Help and **Export CSV**, each reading the first page again (on a phone the four fields fold behind a **Filters** button, "Filters On" while any is set): **Person** (who did it: Everyone, the team's joined
   members by name, then anyone else the loaded rows name, such as a member who has left), **Event** (All Events, or
   one kind by its label, grouped People, the host app's own items in its word (Canvases, Plans, Documents, Designs,
   Spaces) and Connections), and **From** and **To** (whole days in the reader's

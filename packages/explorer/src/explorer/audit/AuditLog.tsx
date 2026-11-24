@@ -120,6 +120,8 @@ function AuditBody({
     [members],
   );
   const [exporting, setExporting] = useState<number | null>(null);
+  // On a phone the four fields fold behind Filters, so the rows start higher; from sm: they always show.
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const set = (patch: Partial<Filters>) => setFilters((was) => ({ ...was, ...patch }));
 
@@ -166,8 +168,9 @@ function AuditBody({
       <div className={`${LIST_CARD} flex flex-col gap-3 p-4`}>
         <div
           role="group"
+          id={`${ids}-filters`}
           aria-label="Filter the audit log"
-          className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,9rem)_minmax(0,9rem)]"
+          className={`${filtersOpen ? 'grid' : 'max-sm:hidden sm:grid'} grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,9rem)_minmax(0,9rem)]`}
         >
           <div className="col-span-2 sm:col-span-1">
             <label htmlFor={`${ids}-person`} className={FIELD_LABEL}>
@@ -252,6 +255,16 @@ function AuditBody({
                   }${filtered ? ' match' : ''}`}
           </p>
           <div className="flex items-center gap-1.5">
+            <Button
+              variant="secondary"
+              size="xs"
+              className="sm:hidden"
+              aria-expanded={filtersOpen}
+              aria-controls={`${ids}-filters`}
+              onClick={() => setFiltersOpen((was) => !was)}
+            >
+              {filtered ? 'Filters On' : 'Filters'}
+            </Button>
             {filtered ? (
               <Button variant="ghost" size="xs" onClick={() => setFilters(NO_FILTERS)}>
                 Clear Filters
