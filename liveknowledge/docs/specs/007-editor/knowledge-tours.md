@@ -140,8 +140,8 @@ For everyone; the Verify step for a writer. Help: **Owners and Verifying**.
 For everyone signed in, Online. Help: **Ask**.
 
 1. **Ask** (the footer's Ask tab): answers questions from your pages, numbering each source it used.
-2. **Ask a Question** (Ask's question field, on the Ask view): type a question and press Enter. A follow-up keeps the
-   conversation.
+2. **Ask a Question** (Ask's question box, the shared composer, on the Ask view): type a question and press Enter. The
+   pill in the box says which AI answers, and pressing it switches.
 3. **Your Questions** (Ask's list of questions): every question you asked here, to open again.
 4. **Insights** (the footer's Insights tab): what agents read, questions nobody could answer, and pages that
    disagree.

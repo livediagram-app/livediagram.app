@@ -30,9 +30,15 @@ export function AnswerWith({
   view,
   manage,
   onPick,
+  builtIn = true,
+  builtInDetail: detail,
 }: {
   app: AppName;
   view: AskAiView;
+  /** False on a server with no built-in AI: the menu holds the key alone. */
+  builtIn?: boolean;
+  /** Built-in AI's row's words, in place of "Included with <app>, with daily limits". */
+  builtInDetail?: string;
   /** Opens Settings › AI; null for someone who cannot change what applies (a member of a team with a key). */
   manage: (() => void) | null;
   onPick: (choice: AskAiChoice) => void;
@@ -48,16 +54,20 @@ export function AnswerWith({
     );
   const failed = view.using === 'failed';
   const rows: OptionRow[] = [
-    {
-      id: 'built-in',
-      label: BUILT_IN_LABEL,
-      detail: builtInDetail(app),
-      icon: (
-        <span aria-hidden className={BUILT_IN_TILE}>
-          <SparkleIcon size={14} />
-        </span>
-      ),
-    },
+    ...(builtIn || !view.key
+      ? [
+          {
+            id: 'built-in',
+            label: BUILT_IN_LABEL,
+            detail: detail ?? builtInDetail(app),
+            icon: (
+              <span aria-hidden className={BUILT_IN_TILE}>
+                <SparkleIcon size={14} />
+              </span>
+            ),
+          },
+        ]
+      : []),
     ...(view.key
       ? [
           {
@@ -100,7 +110,7 @@ export function AnswerWith({
             <SparkleIcon size={13} className="text-brand-700 dark:text-brand-300" />
           )}
         </span>
-        <span className="min-w-0 truncate">{view.label}</span>
+        <span className="text-optical-line min-w-0 truncate">{view.label}</span>
         <MenuChevronIcon aria-hidden className="shrink-0" />
       </button>
       {anchor ? (

@@ -31,7 +31,10 @@ route's line, its room's count method, and what its editor hands the tool.
   a streaming answer and keeps what had arrived.
 - **The field** is at the foot: Enter sends, Shift and Enter make a new line, 1,000 characters at most with a count
   from 900. Inside it, at the left, the AI pill (below); at the right **New Chat** (once there is a turn) and Send,
-  which becomes Stop while an answer streams. Opening the tool puts the caret in the field.
+  which becomes Stop while an answer streams. Opening the tool puts the caret in the field. The box is the shared
+  `AskComposer`, which says nothing of a diagram or any app: liveknowledge's Ask uses the same box, with the same AI
+  pill, for its knowledgebase ([search-and-ask.md](../../../../liveknowledge/docs/specs/030-knowledgebase/search-and-ask.md)
+  "The question box"), handing it its own words, its own choice of AI and its own way to a key.
 - **The conversation is the page's**: kept in memory per item while the page is open, so closing Tools and opening it
   again finds the thread; a reload starts afresh. Nothing of it is stored in the browser or on the server. It keeps
   its 10 newest turns.

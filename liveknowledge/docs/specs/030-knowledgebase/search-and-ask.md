@@ -50,16 +50,19 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   and no setup. A team that wants its own provider adds its **own key**, Claude's or OpenAI's
   ([Providers](#providers)), in **AI Settings**; once saved, everything that uses a model runs on it instead. A
   stored key that cannot be opened is refused ("Replace it in AI Settings"), never quietly swapped for built-in AI.
-  With no key, the Ask view shows the source line under the field: **Built-in AI**, with **Use Your Own Key**.
+  Which AI answers is said inside Ask's question box, by its **AI pill** ([The question box](#the-question-box)):
+  **Built-In AI** with no key, with **Use Your Own Key** in its menu.
 - **Choosing which AI answers** (owner, 2026-11-21: "on Ask, I want to be able to choose whether to ask my configured
-  AI, or the built in AI"). Once a key applies ([Which key answers](#which-key-answers)), the quiet line under Ask's field becomes a small choice of two, **Answer With**:
-  **Built-In AI** and the team's key named by its model ("Claude Fable 5.2 (Team Key)"). The team's key is chosen
+  AI, or the built in AI"). Once a key applies ([Which key answers](#which-key-answers)), the AI pill's menu,
+  **Answer With**, offers two: **Built-In AI** and the key that applies, named by whose it is ("This Knowledgebase’s
+  Key", "Your Team’s Key", "Your Key") with its provider and model; the pill says the one in use ("Claude Fable 5.2
+  (Your Team’s Key)"). On a server with no built-in AI the menu holds the key alone. The key is chosen
   until the person picks otherwise; the choice is kept per person, per knowledgebase, in this browser, beside the
   chats. Each question carries it (`ai: 'built-in' | 'key'`); a follow-up uses the choice in force when it is asked,
   so switching mid-chat applies to the next question. The server honours `built-in` even when a key is set, under
   built-in AI's caps ([Built-in AI](#built-in-ai)), and even when the stored key cannot be opened (the person asked
   for built-in AI, so nothing is swapped quietly); `key` with no key set answers on built-in AI, which is what the
-  person sees. With a key set, each answer says on its trust line which AI answered ("Built-In AI", or the
+  person sees. With a choice offered, each answer says on its trust line which AI answered ("Built-In AI", or the
   model). Draft a Page, the conflict check and Describe to Set Up keep the key first.
 - **Built-in AI's bounds**, since liveknowledge pays for it ([Built-in AI](#built-in-ai)).
 - **The key** is sent once over TLS to the api, encrypted with AES-GCM under the Worker's `AI_KEY_SECRET`, and kept in
@@ -135,12 +138,12 @@ The knowledgebase's own key stays, and comes first.
 - **The plain key** is held in the one request's memory for the one call, never stored in the room.
 - **Which is in use** is said in AI Settings ("Uses This Knowledgebase's Key", "Uses Your Team's Key", "Uses Your Key",
   "Uses Built-In AI"), with **Your AI Keys** linking to the shared Settings category (`?settings=ai`), and on Ask's
-  **Answer With**, whose second choice names the key's model and its source ("Claude Fable 5.2 (Team Key)", "(Your
-  Key)", "(Knowledgebase Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
+  AI pill, which names the key's model and whose it is ("Claude Fable 5.2 (Your Team’s Key)", "(Your Key)", "(This
+  Knowledgebase’s Key)"). `GET ai` answers it as `uses` (`knowledgebase`, `team`, `personal`, `built-in`) with
   `usesModel` and its name `usesModelLabel`, and the key's provider `usesProvider` (a team's or a person's may be another than the knowledgebase's), read for the asker; the Insights overview does not ask accounts.
 - **The source line** ([ai-keys.md "The source line"](../../../../liveworkspace/docs/specs/003-accounts/ai-keys.md#the-source-line-aisource)):
-  Ask, Describe to Set Up and Describe the Structure show the shared `AiSource` line in place of their own "Uses …"
-  words: the mark, which key ("This Knowledgebase's Key", "Your Team's Key", "Your Key", "Built-in AI") with the
+  Describe to Set Up and Describe the Structure show the shared `AiSource` line in place of their own "Uses …"
+  words (Ask says it with the AI pill in its question box, worked out from the same line): the mark, which key ("This Knowledgebase's Key", "Your Team's Key", "Your Key", "Built-in AI") with the
   model, and its action. On the knowledgebase's own key, **Change** is an Editor's and opens AI Settings; on the
   team's, the person's or built-in AI it opens Settings › AI over the view, and closing it reads `GET ai` again, with
   no reload. A key that fails says so on the line, with **Fix Key**.
@@ -362,9 +365,28 @@ share link's visitor, a page's link and a Community post's reader get pages alon
   from those pages alone. The choice is this person's, per knowledgebase, kept while the browser tab lives, and
   applies to the next question asked, as the choice of AI does. Each answer asked under labels says so under its
   trust line ("From pages labelled Engineering").
-- **The field** takes 1,000 characters and counts from 900. Enter sends; Shift and Enter make a new line. While an
-  answer streams the field waits and the button is **Stop**, which ends the request and keeps what had arrived.
-  After ten turns the field gives way to a line saying to start a new question.
+- **The question box** (owner, 2026-11-24: "build the AI into the question box, the way Ask AI on livediagram does").
+  The box is the composer every app's Ask AI uses ([ask.md](../../../../liveworkspace/docs/specs/020-ask/ask.md)
+  "The tool", `AskComposer` in `@liveworkspace/ask`): the field on top, and under it, inside the same rounded box,
+  the **AI pill** at the left and **Send** at the right. There is no separate AI line or picker under the box: the
+  pill is where the page says which AI answers and where the person changes it.
+  - **The field** takes 1,000 characters and counts from 900, in the box's lower row. Enter sends; Shift and Enter
+    make a new line. While an answer streams the field waits and Send is **Stop**, which ends the request and keeps
+    what had arrived. After ten turns the box gives way to a line saying to start a new question. Opening Ask does
+    not move the caret into it (a phone would raise its keyboard over the chats); New Question stays in the chats.
+  - **The AI pill** is livediagram's ([ask.md](../../../../liveworkspace/docs/specs/020-ask/ask.md) "Choosing which
+    AI answers"): a sparkle and **Built-In AI**, or a key mark and the model with whose key it is; amber **Key Needs
+    Attention** after the provider refused the key on the last question (or a stored key that will not open). It
+    opens **Answer With**: Built-In AI ("Included, 30 questions a person a day") and, where one
+    applies, the key ("Anthropic · Claude Fable 5.2 · No daily limits"), the one in use ticked. Its foot offers
+    **Use Your Own Key** with no key, **Manage Keys** with one and **Fix Key** after a failure, to whoever may change
+    the key that applies: the knowledgebase's key opens AI Settings for an Editor; built-in AI, a person's own key or
+    a first key open Settings › AI over the view. A team's key, or the knowledgebase's for a Participant or a Viewer,
+    has no such action.
+  - **With Pro on and built-in AI answering**, the box's foot says the cost ("Uses 1 AI credit · 480 left this
+    month"); once the month is used the notice under the box says so instead.
+  - Under the box, one quiet line: answers come from the knowledgebase and its connected items, so check the
+    sources.
 - **Save as Page** makes a subpage of a page the person chooses, titled from the question, holding the answer
   without its markers and a Sources list linking each cited page.
 - **Draft a Page** makes a top-level page titled from the question whose first line is "Draft,

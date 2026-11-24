@@ -158,7 +158,7 @@ const STEPS: Record<KnowledgeTourId, Record<string, StepBuilder>> = {
     composer: () => ({
       id: 'composer',
       title: 'Ask a Question',
-      body: 'Type a question and press Enter. A follow-up keeps the conversation going.',
+      body: 'Type a question and press Enter. The pill in the box says which AI answers; press it to switch.',
       selector: () => '[data-ask-composer]',
       prepare: onView('ask'),
       ...IN_VIEW,

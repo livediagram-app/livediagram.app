@@ -11,7 +11,8 @@
     "./ui": "./src/ui/index.ts",
     "./tools-item": "./src/ui/ask-tools-item.tsx",
     "./use-ask-tool": "./src/ui/use-ask-tool.ts",
-    "./citation-chip": "./src/ui/CitationChip.tsx"
+    "./citation-chip": "./src/ui/CitationChip.tsx",
+    "./composer": "./src/ui/composer.ts"
   },
   "scripts": {
     "lint": "oxlint",

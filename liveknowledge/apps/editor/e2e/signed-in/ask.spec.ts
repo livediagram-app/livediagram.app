@@ -36,7 +36,9 @@ async function knowledgebaseWithKey(page: Page): Promise<{ who: Person; id: stri
 }
 
 async function send(page: Page, question: string): Promise<void> {
-  const field = ask(page).getByRole('textbox', { name: /^Ask a (question|follow-up)$/ });
+  const field = ask(page).getByRole('textbox', {
+    name: /^Ask (this knowledgebase a question|a follow-up)$/,
+  });
   await field.fill(question);
   await field.press('Enter');
 }
@@ -47,7 +49,7 @@ test('with no key, Ask answers on built-in AI, then Accept Answer files the chat
 }) => {
   await signedInKnowledgebase(page);
   await openView(page, 'Ask');
-  await expect(ask(page).locator('[data-ask-ai]')).toContainText('Built-in AI');
+  await expect(ask(page).locator('[data-ask-ai]')).toContainText('Built-In AI');
   await send(page, 'What is this knowledgebase for?');
   // No passages match a new knowledgebase: the stand-in answers it as a gap, and the chat is answered.
   const answer = ask(page).getByRole('article', { name: 'Answer' });
