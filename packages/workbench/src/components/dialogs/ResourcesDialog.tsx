@@ -2,8 +2,10 @@
 
 // The Resources dialog (each product's docs/specs/008-canvas/element-menu-quick-bar.md "Resources"): what attaches
 // to an element, opened by the element menu's Resources row. A centred card, a bottom sheet on a phone, of one
-// steady height under the dialog hero header. Its first screen shows each option as a tile (its glyph on a plate,
-// its name, what the element has now or a line saying what it is, and the verb the tile runs). An option with
+// steady height under the dialog hero header: its first screen's, shown whole. That screen is a picture of the element
+// wearing a badge for each resource it has, over one grouped list of the options (each a row: its glyph on a plate,
+// its name, and at its right what the element has now or the verb that adds one). Every other screen lies over it,
+// at its height, scrolling inside it. An option with
 // options of its own opens a screen of them inside the dialog, under a back bar that leads back to the list; an
 // option of those with a step of its own (a link's place: a web address, a tab, a file) opens that step inside the
 // dialog too, under a back bar that leads back to the options. Only what has no step here (the note's own panel, the
@@ -17,20 +19,16 @@ import {
   setDialogSlotNode,
   useDialogSlot,
 } from '@liveworkspace/ui';
-import { Callout } from '@liveworkspace/ui/callout';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { resourcesHeroArt } from '@liveworkspace/ui/dialog-hero-art/resources';
 import type { ResourceChoice, ResourceOption } from '../palette/element-resources';
 import { Dialog } from './Dialog';
+import { ResourcesPreview } from './ResourcesPreview';
 
 const FOCUS =
   'outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-brand-400 dark:focus-visible:ring-offset-slate-900';
-// An option on the first screen: a tile, lifted a little under the pointer. One the element already has is tinted.
-const TILE = `group relative flex min-h-[9.5rem] w-full cursor-pointer flex-col items-center rounded-2xl border p-4 text-center transition-[border-color,background-color,box-shadow,transform] duration-micro hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${FOCUS}`;
-const TILE_OFF =
-  'border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/60';
-const TILE_ON =
-  'border-brand-200 bg-brand-50/60 hover:border-brand-300 dark:border-brand-500/40 dark:bg-brand-500/10 dark:hover:border-brand-400/60';
+// An option on the first screen: a row of the grouped list.
+const ROW = `group flex w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left transition-colors duration-micro hover:bg-brand-50/60 motion-reduce:transition-none dark:hover:bg-brand-500/10 ${FOCUS} focus-visible:ring-inset focus-visible:ring-offset-0`;
 const PLATE =
   'flex shrink-0 items-center justify-center transition-colors duration-micro motion-reduce:transition-none';
 const PLATE_OFF =
@@ -42,6 +40,11 @@ const BADGE =
 const CHOICE = `group flex w-full cursor-pointer items-center gap-3.5 rounded-xl border border-slate-200 bg-white p-3.5 text-left transition-[border-color,background-color,box-shadow] duration-micro hover:border-brand-300 hover:bg-brand-50/40 hover:shadow-sm motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-900 dark:hover:border-brand-500/60 dark:hover:bg-slate-800/70 ${FOCUS}`;
 // The quiet row that takes the resource off, set apart at the screen's foot.
 const REMOVE = `group flex cursor-pointer items-center gap-2 self-start rounded-lg px-2.5 py-1.5 text-[13px] font-medium text-slate-600 transition-colors duration-micro hover:bg-slate-100 hover:text-slate-900 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-50 [&_svg]:size-4 ${FOCUS}`;
+
+// Each screen's side and top padding.
+const PAD = 'px-4 py-4 sm:px-6 sm:py-5';
+// What takes focus going into an option's screen or step: its first control (the back bar).
+const OVER_BUTTON = '[data-resources-over] button';
 
 // Up, Down, Home and End move between a screen's rows, as they do in the menu the dialog opened from.
 function moveBetweenRows(e: KeyboardEvent<HTMLElement>) {
@@ -117,6 +120,8 @@ export function ResourcesDialog({
   const focusNext = useRef<string | null>(null);
   const at = `${open?.key ?? ''}/${stepped?.key ?? ''}`;
   useEffect(() => {
+    // A screen starts at its top, whatever the one before was scrolled to.
+    body.current?.scrollTo?.({ top: 0 });
     const target = focusNext.current;
     if (target === null) return;
     focusNext.current = null;
@@ -124,7 +129,7 @@ export function ResourcesDialog({
   }, [at]);
 
   const enter = (o: ResourceOption) => {
-    focusNext.current = 'button';
+    focusNext.current = OVER_BUTTON;
     setStep(null);
     setScreen(o.key);
   };
@@ -150,7 +155,7 @@ export function ResourcesDialog({
   };
   const choose = (c: ResourceChoice) => {
     if (c.panel) {
-      focusNext.current = 'button';
+      focusNext.current = OVER_BUTTON;
       return setStep(c.key);
     }
     if (!c.removes) return leaveFor(c.run);
@@ -166,9 +171,10 @@ export function ResourcesDialog({
       titleId={titleId}
       size="md"
       phoneSheet
-      // One height for the list and an option's screens, so the card never jumps between them. A whole form drawn
-      // inside (Assign an Action) gets the room it needs instead of a scrollbar.
-      className={hostedOption ? 'min-h-[35rem] max-h-[92vh]' : 'h-[35rem] max-h-[90vh]'}
+      // The list sets the height, shown whole; an option's screens lie over it at that height, so the card never jumps
+      // between them. A whole form drawn inside (Assign an Action) gets the room it needs instead of a scrollbar. On a
+      // phone it is a drawer (the shell's phone sheet), capped below the top of the screen.
+      className={hostedOption ? 'min-h-[35rem] max-h-[92vh]' : 'max-h-[90vh]'}
     >
       <HeroDialogHeader
         art={resourcesHeroArt}
@@ -189,7 +195,7 @@ export function ResourcesDialog({
                 ? open.key
                 : 'list'
         }
-        className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-4 sm:px-6 sm:py-5"
+        className={`relative flex min-h-0 flex-1 flex-col overflow-y-auto ${hosted && hostedOption ? PAD : ''}`}
       >
         {hosted && hostedOption ? (
           <div className="flex min-h-0 flex-1 flex-col motion-safe:animate-fade-in">
@@ -205,106 +211,126 @@ export function ResourcesDialog({
               className="-mx-4 -mb-4 flex min-h-0 flex-1 flex-col overflow-y-auto sm:-mb-5 [&_[data-dialog-inline-header]]:hidden [&_[data-tool-footer]]:flex-row [&_[data-tool-footer]]:justify-end [&_[data-tool-footer]]:gap-2 [&_[data-tool-footer]]:px-4 [&_[data-tool-footer]]:py-3 [&_[data-tool-footer]>*]:w-auto!"
             />
           </div>
-        ) : open && stepped ? (
-          <div
-            key={`${open.key}/${stepped.key}`}
-            className="flex min-h-0 flex-1 flex-col motion-safe:animate-fade-in"
-          >
-            <BackBar
-              label={open.name}
-              current={stepped.crumb ?? stepped.label}
-              onClick={backToOption}
-            />
-            {/* The step says when it is done (a link saved, a tab picked): back to the list, which now shows it. */}
-            {stepped.panel!(done)}
-          </div>
-        ) : open ? (
-          <OptionScreen key={open.key} option={open} onBack={back} onChoose={choose} />
         ) : (
-          <OptionList
-            options={options}
-            elementName={elementName}
-            onPick={(o) => (o.choices?.length ? enter(o) : o.inline ? host(o) : leaveFor(o.run))}
-          />
+          <>
+            {/* The list stays laid out under an option's screens, hidden and inert, so the card keeps its height. */}
+            <div
+              className={`flex flex-col ${PAD} ${open ? 'invisible' : ''}`}
+              inert={!!open}
+              aria-hidden={open ? true : undefined}
+            >
+              <OptionList
+                active={!open}
+                options={options}
+                elementName={elementName}
+                onPick={(o) =>
+                  o.choices?.length ? enter(o) : o.inline ? host(o) : leaveFor(o.run)
+                }
+              />
+            </div>
+            {open ? (
+              <div
+                data-resources-over=""
+                className={`absolute inset-0 flex flex-col overflow-y-auto ${PAD}`}
+              >
+                {stepped ? (
+                  <div
+                    key={`${open.key}/${stepped.key}`}
+                    className="flex min-h-0 flex-1 flex-col motion-safe:animate-fade-in"
+                  >
+                    <BackBar
+                      label={open.name}
+                      current={stepped.crumb ?? stepped.label}
+                      onClick={backToOption}
+                    />
+                    {/* The step says when it is done (a link saved, a tab picked): back to the list, which now
+                        shows it. */}
+                    {stepped.panel!(done)}
+                  </div>
+                ) : (
+                  <OptionScreen key={open.key} option={open} onBack={back} onChoose={choose} />
+                )}
+              </div>
+            ) : null}
+          </>
         )}
       </div>
     </Dialog>
   );
 }
 
-// The first screen: each option a tile, two across (one on a phone).
+// The first screen: the element's picture, then the options as one grouped list. Hidden under an option's screen it
+// is still laid out (it sets the card's height), but carries no row marks, so nothing finds or moves through it.
 function OptionList({
+  active,
   options,
   elementName,
   onPick,
 }: {
+  active: boolean;
   options: readonly ResourceOption[];
   elementName: string;
   onPick: (o: ResourceOption) => void;
 }) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 motion-safe:animate-fade-in">
-      {/* What Resources are, over the options. */}
-      <Callout tone="info">
-        Attach an action, comments, a link or a note to this {elementName}.
-      </Callout>
+    <div className="flex flex-col gap-3.5 motion-safe:animate-fade-in">
+      <ResourcesPreview elementName={elementName} options={options} />
       <div
         role="group"
         aria-label="Resources"
-        data-element-resources=""
+        data-element-resources={active ? '' : undefined}
         onKeyDown={moveBetweenRows}
-        className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+        className="divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 bg-white dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-900"
       >
-        {options.map((o) => {
-          const drills = !!o.choices?.length;
-          return (
-            <button
-              key={o.key}
-              type="button"
-              data-row=""
-              data-option={o.key}
-              data-resource-drills={drills ? '' : undefined}
-              className={`${TILE} ${o.on ? TILE_ON : TILE_OFF}`}
-              onClick={() => onPick(o)}
+        {options.map((o) => (
+          <button
+            key={o.key}
+            type="button"
+            data-row={active ? '' : undefined}
+            data-option={o.key}
+            data-resource-drills={o.choices?.length ? '' : undefined}
+            className={ROW}
+            onClick={() => onPick(o)}
+          >
+            <span
+              aria-hidden
+              data-resource-on={o.on ? '' : undefined}
+              className={`${PLATE} size-9 rounded-[10px] [&_svg]:size-4 ${o.on ? PLATE_ON : PLATE_OFF}`}
             >
-              {o.on ? (
-                <span data-resource-on="" className={`${BADGE} absolute right-3 top-3`}>
-                  Added
+              {o.icon}
+            </span>
+            <span className="w-28 shrink-0 truncate text-sm font-semibold text-slate-900 dark:text-slate-50">
+              {o.name}
+            </span>
+            {/* What it has now, once it has one; until then, the verb that adds one. */}
+            {o.on ? (
+              <>
+                <span
+                  data-resource-state=""
+                  className="min-w-0 flex-1 truncate text-right text-[13px] text-slate-700 dark:text-slate-200"
+                >
+                  {o.state}
                 </span>
-              ) : null}
-              <span
-                aria-hidden
-                className={`${PLATE} size-11 rounded-xl [&_svg]:size-5 ${o.on ? PLATE_ON : PLATE_OFF}`}
-              >
-                {o.icon}
-              </span>
-              <span className="mt-3 text-[15px] font-semibold leading-5 text-slate-900 dark:text-slate-50">
-                {o.name}
-              </span>
-              {/* What it has now, once it has one; until then, what it is. */}
-              <span
-                data-resource-state=""
-                className={`mt-0.5 line-clamp-2 break-words text-[13px] leading-[18px] ${
-                  o.on ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-400'
-                }`}
-              >
-                {o.on ? o.state : o.detail}
-              </span>
+                <span data-resource-verb="" className="sr-only">
+                  {o.label}
+                </span>
+              </>
+            ) : (
               <span
                 data-resource-verb=""
-                className="mt-auto flex items-center justify-center gap-1 pt-3 text-[13px] font-semibold text-brand-700 dark:text-brand-300"
+                className="min-w-0 flex-1 truncate text-right text-[13px] font-semibold text-brand-700 dark:text-brand-300"
               >
                 {o.label}
-                <span
-                  aria-hidden
-                  className="transition-transform duration-micro group-hover:translate-x-0.5 motion-reduce:transition-none"
-                >
-                  <ChevronGlyph />
-                </span>
               </span>
-            </button>
-          );
-        })}
+            )}
+            <span
+              aria-hidden
+              className="shrink-0 text-slate-400 transition-[color,transform] duration-micro group-hover:translate-x-0.5 group-hover:text-brand-700 motion-reduce:transition-none dark:group-hover:text-brand-300"
+            >
+              <ChevronGlyph />
+            </span>
+          </button>
+        ))}
       </div>
     </div>
   );
