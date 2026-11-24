@@ -24,9 +24,10 @@ export const TAB_STRIP_CLASS =
 
 // A scroll button over the strip's edge (docs/specs/007-editor/editor-app.md "Tab bar"): a chevron in a small round
 // card, level with Add tab, shown only while there are tabs beyond that edge. Hidden, it fades and shrinks a touch
-// and takes no pointer, so the row behind it stays reachable.
+// and takes no pointer, so the row behind it stays reachable. A touch screen never shows one: the row scrolls freely
+// under a finger.
 export const TAB_SCROLL_BUTTON_CLASS =
-  'absolute bottom-1.5 z-10 flex size-7 cursor-pointer touch-target items-center justify-center rounded-full bg-white text-slate-600 shadow-[0_0_0_1px_rgb(15_23_42/0.1),0_2px_6px_-1px_rgb(15_23_42/0.18)] transition-[opacity,scale,color,background-color] duration-150 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:scale-95 data-[shown=false]:pointer-events-none data-[shown=false]:scale-90 data-[shown=false]:opacity-0 dark:bg-slate-800 dark:text-slate-300 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.08),0_0_0_1px_rgb(255_255_255/0.14),0_2px_8px_-1px_rgb(0_0_0/0.6)] dark:hover:bg-slate-700 dark:hover:text-white motion-reduce:transition-none';
+  'absolute bottom-1.5 z-10 flex pointer-coarse:hidden size-7 cursor-pointer touch-target items-center justify-center rounded-full bg-white text-slate-600 shadow-[0_0_0_1px_rgb(15_23_42/0.1),0_2px_6px_-1px_rgb(15_23_42/0.18)] transition-[opacity,scale,color,background-color] duration-150 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:scale-95 data-[shown=false]:pointer-events-none data-[shown=false]:scale-90 data-[shown=false]:opacity-0 dark:bg-slate-800 dark:text-slate-300 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.08),0_0_0_1px_rgb(255_255_255/0.14),0_2px_8px_-1px_rgb(0_0_0/0.6)] dark:hover:bg-slate-700 dark:hover:text-white motion-reduce:transition-none';
 
 // The toolbar inside the scroller: every tab and folder, a hair apart. Its own stacking layer, so the sliding card
 // stands above the folders' shelves and under every tab; `data-tab-slide` is set once that card shows.
