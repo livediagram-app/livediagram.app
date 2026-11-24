@@ -121,8 +121,8 @@ describe('SendToKnowledgeDialog', () => {
     const where = await screen.findByLabelText<HTMLSelectElement>('Where');
     await waitFor(() => expect(where.disabled).toBe(false));
     fireEvent.change(where, { target: { value: 'h1' } });
-    fireEvent.change(screen.getByLabelText(/Focus/), { target: { value: 'checkout' } });
-    fireEvent.click(screen.getByRole('button', { name: /Write With AI/ }));
+    fireEvent.change(await screen.findByLabelText(/Focus/), { target: { value: 'checkout' } });
+    fireEvent.click(await screen.findByRole('button', { name: /Write With AI/ }));
     expect(await screen.findByRole('article', { name: 'Preview of the section' })).toBeTruthy();
     expect(summarise).toHaveBeenCalledWith(
       expect.objectContaining({ tabId: 't1', focus: 'checkout' }),
@@ -130,13 +130,13 @@ describe('SendToKnowledgeDialog', () => {
     expect(c.sendToKnowledge).not.toHaveBeenCalled();
     expect(screen.getByText('The cart pays.')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
     fireEvent.change(await screen.findByLabelText('Words (Markdown)'), {
       target: { value: 'The cart pays by card.' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Done' }));
     expect(await screen.findByText('The cart pays by card.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Insert' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Insert' }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(c.sendToKnowledge).toHaveBeenCalledWith({
       knowledgebase: 'K',
@@ -155,14 +155,14 @@ describe('SendToKnowledgeDialog', () => {
     const summarise = vi.fn();
     open(c, summarise);
     fireEvent.click(await screen.findByRole('button', { name: /Team Wiki/ }));
-    fireEvent.click(screen.getByRole('button', { name: /New Page/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /New Page/ }));
     const parent = await screen.findByLabelText<HTMLSelectElement>('Parent');
     await waitFor(() => expect(parent.disabled).toBe(false));
     fireEvent.change(parent, { target: { value: 'p1' } });
-    expect(screen.getByLabelText<HTMLInputElement>('Title').value).toBe('Payments Flow');
-    fireEvent.click(screen.getByRole('button', { name: 'Add Without Summary' }));
+    expect((await screen.findByLabelText<HTMLInputElement>('Title')).value).toBe('Payments Flow');
+    fireEvent.click(await screen.findByRole('button', { name: 'Add Without Summary' }));
     expect(await screen.findByText('Cart')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Insert' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Insert' }));
     await waitFor(() => expect(c.sendToKnowledge).toHaveBeenCalled());
     expect(c.sendToKnowledge.mock.calls[0]![0]).toMatchObject({
       place: { newPage: { title: 'Payments Flow', parent: 'p1' } },
@@ -178,13 +178,13 @@ describe('SendToKnowledgeDialog', () => {
     await pickKbAndPage();
     fireEvent.click(await screen.findByRole('button', { name: /Write With AI/ }));
     await screen.findByRole('article', { name: 'Preview of the section' });
-    fireEvent.click(screen.getByRole('button', { name: /Back/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /Back/ }));
     expect(
       (await screen.findByRole('button', { name: /Payments/ })).getAttribute('aria-pressed'),
     ).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: /Write With AI/ }));
+    fireEvent.click(await screen.findByRole('button', { name: /Write With AI/ }));
     await screen.findByRole('article', { name: 'Preview of the section' });
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
     expect(onClose).toHaveBeenCalled();
     expect(c.sendToKnowledge).not.toHaveBeenCalled();
   });
@@ -227,7 +227,7 @@ describe('SendToKnowledgeDialog', () => {
     await pickKbAndPage();
     fireEvent.click(await screen.findByRole('button', { name: /Write With AI/ }));
     expect((await screen.findByRole('alert')).textContent).toBe("The AI couldn't write it.");
-    fireEvent.click(screen.getByRole('button', { name: 'Add Without Summary' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Add Without Summary' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Insert' }));
     expect((await screen.findByRole('alert')).textContent).toMatch(/heading is no longer/);
     expect(onClose).not.toHaveBeenCalled();
@@ -238,7 +238,7 @@ describe('SendToKnowledgeDialog', () => {
     open(c, undefined, vi.fn(), capture({ picture: async () => null }));
     expect(await screen.findByText(/Too big to picture/)).toBeTruthy();
     await pickKbAndPage();
-    fireEvent.click(screen.getByRole('button', { name: 'Add Without Summary' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Add Without Summary' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Insert' }));
     await waitFor(() => expect(c.sendToKnowledge).toHaveBeenCalled());
     expect(c.sendToKnowledge.mock.calls[0]![0]).not.toHaveProperty('picture');
