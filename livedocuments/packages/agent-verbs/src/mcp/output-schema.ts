@@ -87,6 +87,18 @@ export const listTemplatesOutput = {
       }),
     )
     .describe('Every template in the library.'),
+  savedDesigns: z
+    .array(
+      z.object({
+        id: z.string().describe('saved:<id>, a design for change_pages.'),
+        title: z.string().describe('Its name.'),
+        whose: z.string().describe('My Work, or the team’s name.'),
+      }),
+    )
+    .optional()
+    .describe(
+      'Page Designs saved to your and your teams’ Library: an id is a design for change_pages.',
+    ),
 };
 
 export const createDocumentOutput = {

@@ -16,7 +16,8 @@ import {
 } from '../pages/pages-calls';
 import { resolveTab } from '../addressing';
 import { HELD_RETRY_INTERVAL_MS, writeFlags } from '../write';
-import { documentOf, tabPath } from './shared';
+import { columns, documentOf, tabPath } from './shared';
+import { savedDesigns } from '../pages/saved-designs';
 
 const docArg = z.string().describe('A name, id prefix or livedocuments URL');
 const tabFlag = z
@@ -100,6 +101,36 @@ export const pageLs = defineVerb({
   },
 });
 
+export const pageDesigns = defineVerb({
+  id: 'page.designs',
+  summary: 'The Page Designs saved to your Library',
+  description:
+    'Lists the designs saved to My Work and your teams’ Library: id, whose, name. Pass an id to page set --design or --tab-design.',
+  behaviour: 'read',
+  input: z.object({}),
+  output: z.object({
+    designs: z.array(z.object({ id: z.string(), title: z.string(), whose: z.string() })),
+  }),
+  listKey: 'designs',
+  run: async (ctx) => ({
+    designs: (await savedDesigns(ctx.api)).map((d) => ({
+      id: d.id,
+      title: d.title,
+      whose: d.scope === 'personal' ? 'My Work' : (d.team ?? 'a team'),
+    })),
+  }),
+  text: ({ designs }) => columns(designs.map((d) => [d.id, d.whose, JSON.stringify(d.title)])),
+  quiet: ({ designs }) => designs.map((d) => d.id),
+  cli: {
+    positionals: [],
+    examples: [
+      'livedocuments page designs',
+      'livedocuments page set "Deck" --tab-design saved:3f9c',
+    ],
+    prints: 'one saved design a line: id, whose, name',
+  },
+});
+
 const sizeArg = z
   .string()
   .optional()
@@ -109,7 +140,7 @@ export const pageSet = defineVerb({
   id: 'page.set',
   summary: "Change a tab's pages",
   description:
-    'Adds, changes, lays out, moves, duplicates or deletes pages, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one. --tab-design sets the design every page wears, --design a page’s own.',
+    'Adds, changes, lays out, moves, duplicates or deletes pages in one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50; the flags make one.',
   behaviour: 'destructive',
   input: z.object({
     doc: docArg,
@@ -119,28 +150,25 @@ export const pageSet = defineVerb({
       .enum(['infographic', 'slide', 'flashcard'])
       .optional()
       .describe('Add a page of this kind'),
-    page: z.string().optional().describe('The page to change: its id, place or name'),
+    page: z.string().optional().describe('The page: its id, place or name'),
     name: z.string().optional().describe('Name the page'),
     size: sizeArg,
     orientation: z.enum(['portrait', 'landscape']).optional().describe('Turn the page'),
-    layout: z.string().optional().describe('Lay the page out (a layout id from page ls)'),
+    layout: z.string().optional().describe('A layout id from page ls'),
     move: z.coerce
       .number()
       .int()
       .min(1)
       .optional()
-      .describe('Move the page to this place (with --add, add it there)'),
+      .describe('Move it here (with --add, add it here)'),
     duplicate: z.boolean().optional().describe('Copy the page'),
-    backgroundToAll: z.boolean().optional().describe('Its background onto every page of its kind'),
-    delete: z.boolean().optional().describe('Delete the page and what is on it'),
-    design: z
-      .string()
-      .optional()
-      .describe('Give the page its own design: a design id, none, or tab (the tab’s again)'),
+    backgroundToAll: z.boolean().optional().describe('Its background on every page of its kind'),
+    delete: z.boolean().optional().describe('Delete it and what is on it'),
+    design: z.string().optional().describe('Its own design: an id, saved:<id>, none, or tab'),
     tabDesign: z
       .string()
       .optional()
-      .describe('Set the design every page wears: a design id, auto (one for its words), or none'),
+      .describe('Every page’s design: an id, saved:<id>, auto or none'),
   }),
   output: doneOutput,
   run: async (ctx, input) => {
@@ -167,7 +195,7 @@ export const pageSet = defineVerb({
       'livedocuments page set "Pitch deck" --add slide --layout slide-title',
       'livedocuments page set 3f9c --changes changes.json',
     ],
-    prints: 'what changed, then each page: place, kind, size, rectangle, name',
+    prints: 'what changed, then each page: place, kind, size, rectangle',
   },
 });
 
@@ -411,4 +439,10 @@ export const articleSet = defineVerb({
   },
 });
 
-export const pagesVerbs: readonly Verb[] = [pageLs, pageSet, articleGet, articleSet] as Verb[];
+export const pagesVerbs: readonly Verb[] = [
+  pageLs,
+  pageSet,
+  pageDesigns,
+  articleGet,
+  articleSet,
+] as Verb[];

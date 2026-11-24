@@ -174,7 +174,7 @@ const tabDesign = z
     z.null(),
   ])
   .describe(
-    'A design id (or {"id", ...tuning}), "auto" for one picked for the tab’s words, or null to clear it.',
+    'A design id (or {"id", ...tuning}), a saved design’s "saved:<id>" (list_templates), "auto" for one picked for the tab’s words, or null to clear it.',
   );
 
 const name = z

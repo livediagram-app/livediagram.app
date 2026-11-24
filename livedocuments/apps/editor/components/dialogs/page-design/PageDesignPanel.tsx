@@ -21,6 +21,7 @@ import { DesignGrid, type TileLook } from './DesignGrid';
 import { DesignSetCards } from './DesignSetCards';
 import { svgDataUri } from './DesignTile';
 import { designTileSvg } from './design-tile-svg';
+import { SaveThisDesign, SavedDesignGrid, useSavedDesigns } from './SavedDesigns';
 import { picked, wornDesign, type DesignScope } from './design-tune';
 
 const HEAD =
@@ -42,6 +43,8 @@ const SCOPES = [
 export function PageDesignPanel() {
   const { design: door } = useTabStylePages();
   const [scope, setScope] = useState<DesignScope>('tab');
+  // The designs saved to My Work and the person's teams (null without the Library).
+  const saved = useSavedDesigns();
   if (!door) return null;
   const page = door.page;
   const onPage = scope === 'page' && !!page;
@@ -86,7 +89,13 @@ export function PageDesignPanel() {
       ) : null}
       <section aria-label="Designs" className="flex flex-col gap-2">
         <h3 className={HEAD}>Designs</h3>
-        <div className="px-2">
+        <div className="flex flex-col gap-3 px-2">
+          {saved && saved.length > 0 ? (
+            <SavedGrid
+              saved={saved}
+              onApply={(d) => door.edits.applySavedDesign(d, onPage && page ? page.id : null)}
+            />
+          ) : null}
           <Grid worn={worn?.id ?? 'none'} onPage={onPage} onPick={pick} />
         </div>
       </section>
@@ -97,13 +106,34 @@ export function PageDesignPanel() {
         >
           <h3 className={HEAD}>Fine Tune · {PAGE_DESIGN_BY_ID[worn.id].label}</h3>
           <Tune design={worn} onTab={!onPage} onSet={set} onTune={tune} />
+          {saved && !door.edits.blocked ? <SaveThisDesign design={worn} /> : null}
         </section>
       ) : null}
     </div>
   );
 }
 
-// The catalogue's tiles, on the page someone is on's background (the paper on a tab with none).
+// The tiles' look: the page someone is on's background (the paper on a tab with none), in the tab's theme and font.
+function useTileLook(): TileLook {
+  const door = useTabStylePages().design!;
+  const background = door.page?.background;
+  return useMemo<TileLook>(
+    () => ({ theme: door.theme, paperDark: door.paperDark, background, font: door.tabFont }),
+    [door.theme, door.paperDark, background, door.tabFont],
+  );
+}
+
+function SavedGrid({
+  saved,
+  onApply,
+}: {
+  saved: Parameters<typeof SavedDesignGrid>[0]['saved'];
+  onApply: (design: PageDesign) => void;
+}) {
+  return <SavedDesignGrid saved={saved} look={useTileLook()} onApply={onApply} />;
+}
+
+// The catalogue's tiles.
 function Grid({
   worn,
   onPage,
@@ -113,12 +143,7 @@ function Grid({
   onPage: boolean;
   onPick: (id: PageDesignId | 'none') => void;
 }) {
-  const door = useTabStylePages().design!;
-  const background = door.page?.background;
-  const look = useMemo<TileLook>(
-    () => ({ theme: door.theme, paperDark: door.paperDark, background, font: door.tabFont }),
-    [door.theme, door.paperDark, background, door.tabFont],
-  );
+  const look = useTileLook();
   return (
     <DesignGrid look={look} worn={worn} noneLabel={onPage ? 'No Design' : 'None'} onPick={onPick} />
   );

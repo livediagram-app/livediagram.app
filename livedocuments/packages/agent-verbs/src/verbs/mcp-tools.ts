@@ -83,7 +83,8 @@ export const mcpListTemplates = mcpTool('list_templates', {
     'Browse the template library: the same ready-made pages the editor\u2019s Quick Start offers ' +
     '(slide decks, articles, posters, infographics, résumés, ...). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" on ' +
-    'create_document / add_tab to start from it, then replace its sample text with update_document.',
+    'create_document / add_tab to start from it, then replace its sample text with update_document. ' +
+    'savedDesigns: the Page Designs saved to the caller’s Library.',
   inputSchema: {},
   outputSchema: listTemplatesOutput,
 });

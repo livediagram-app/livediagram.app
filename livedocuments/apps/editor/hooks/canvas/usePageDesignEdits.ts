@@ -25,6 +25,10 @@ export type PageDesignEdits = {
   setPageDesign: (pageId: string, design: PageDesign | 'none' | null) => void;
   tunePageDesign: (pageId: string, design: PageDesign) => void;
   applyDesignSet: (setId: string) => Promise<void>;
+  // A design saved to the Library (docs/specs/011-theme/page-designs.md "Saved designs"), applied to the tab or a page.
+  applySavedDesign: (design: PageDesign, pageId: string | null) => void;
+  // Whether this session may change designs (an Editor's); a Participant's or Viewer's may not, nor save one.
+  blocked: boolean;
 };
 
 type Deps = {
@@ -38,6 +42,12 @@ type Deps = {
 };
 
 const LOCKED = 'This page is locked: unlock it to change its design.';
+
+// A page's own design takes no rhythm or flow (the tab design's): a saved design applied to a page leaves them out.
+function pageOverrideOf(design: PageDesign): PageDesign {
+  const { rhythm: _rhythm, flow: _flow, ...own } = design;
+  return own;
+}
 
 // A slider's drag sends many ticks: its telemetry is one event a gesture (ticks closer than this are one).
 const TUNED_GAP_MS = 1500;
@@ -62,17 +72,35 @@ export function pageDesignEdits({
     const edit = pageDesignSet(t, pageId, design);
     return 'tab' in edit ? edit.tab : t;
   };
+  const setTabDesign = (design: PageDesign | null) => {
+    if (editsBlocked) return;
+    const was = tabPageDesignOf(activeTab);
+    commitTabs((ts) => onActive(ts, (t) => withTabPageDesign(t, design)));
+    // A new design is a pick; the same design changed is a tune.
+    if (was?.id === design?.id && design) trackTuned();
+    else track('Tab', 'Changed', 'PageDesign');
+    if (design?.animate && !was?.animate) track('Tab', 'Changed', 'PageDesignAnimated');
+    debugLog('[page-design] set', { tabId: activeId, id: design?.id ?? null, scope: 'tab' });
+  };
   return {
-    setTabDesign: (design) => {
+    blocked: editsBlocked,
+    applySavedDesign: (design, pageId) => {
       if (editsBlocked) return;
-      const was = tabPageDesignOf(activeTab);
-      commitTabs((ts) => onActive(ts, (t) => withTabPageDesign(t, design)));
-      // A new design is a pick; the same design changed is a tune.
-      if (was?.id === design?.id && design) trackTuned();
-      else track('Tab', 'Changed', 'PageDesign');
-      if (design?.animate && !was?.animate) track('Tab', 'Changed', 'PageDesignAnimated');
-      debugLog('[page-design] set', { tabId: activeId, id: design?.id ?? null, scope: 'tab' });
+      if (pageId) {
+        const own = pageOverrideOf(design);
+        const check = pageDesignSet(activeTab, pageId, own);
+        if ('refused' in check) {
+          if (check.refused === 'locked') notify?.(LOCKED);
+          return;
+        }
+        commitTabs((ts) => onActive(ts, pageEdit(pageId, own)));
+      } else {
+        commitTabs((ts) => onActive(ts, (t) => withTabPageDesign(t, design)));
+      }
+      track('Tab', 'Changed', 'PageDesignSavedApplied');
+      debugLog('[page-design] set', { tabId: activeId, id: design.id, scope: 'saved' });
     },
+    setTabDesign,
     tuneTabDesign: (design) => {
       if (editsBlocked) return;
       checkpointBurst('pageDesign');

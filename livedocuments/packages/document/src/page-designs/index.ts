@@ -10,4 +10,5 @@ export * from './sets';
 export * from './pick';
 export * from './edits';
 export * from './export';
+export * from './saved';
 export type { DesignLayer, DesignPalette, LayerMotion } from './draw-kit';

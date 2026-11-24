@@ -55,6 +55,19 @@ export type PageDesignChoice = PageDesign | 'none' | 'tab';
 // The tab's design: a design, null to clear it, or "auto" (one picked for the tab's words).
 export type TabDesignChoice = PageDesign | null | 'auto';
 
+// A Page Design saved to the caller's Library (docs/specs/011-theme/page-designs.md "Saved designs"): `id` is the
+// `saved:<itemId>` a design is named by, whose it is (`personal`: My Work, or a team by name), and the design.
+export type SavedPageDesign = {
+  id: string;
+  title: string;
+  scope: 'personal' | 'team';
+  team: string | null;
+  design: PageDesign;
+};
+
+// GET /api/page-designs.
+export type SavedPageDesignsResponse = { designs: SavedPageDesign[] };
+
 export type PageChange =
   | {
       op: 'add';

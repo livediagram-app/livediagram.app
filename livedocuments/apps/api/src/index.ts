@@ -47,6 +47,7 @@ import { handleShare } from './routes/share';
 import { handleCommunity } from './routes/community';
 import { handleTeams } from './routes/teams';
 import { handleLibrary } from './routes/library';
+import { handlePageDesigns } from './routes/page-designs';
 import { handleTrash } from './routes/trash';
 import { handleAsk } from './routes/ask';
 import { resolveWorkbenchSession } from './auth/workbench-session';
@@ -313,6 +314,8 @@ async function routeApiRequest(
       return await handleDocuments(ctx);
     case 'library':
       return await handleLibrary(ctx);
+    case 'page-designs':
+      return await handlePageDesigns(ctx);
     case 'folders':
       return await handleFolders(ctx);
     case 'teams':

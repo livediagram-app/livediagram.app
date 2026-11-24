@@ -107,6 +107,23 @@ describe('page design edits', () => {
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'PageDesignSet');
   });
 
+  it('applies a saved design to the tab or a page as one step, a page’s without rhythm or flow', () => {
+    const s = setup([slide('a'), slide('b', { locked: true })]);
+    const saved = { id: 'aurora' as const, scale: 1.4, flow: true as const, rhythm: true as const };
+    const e = s.make();
+    expect(e.blocked).toBe(false);
+    e.applySavedDesign(saved, null);
+    expect(tabPageDesignOf(s.tab())).toMatchObject({ id: 'aurora', scale: 1.4, flow: true });
+    s.make().applySavedDesign(saved, 'a');
+    const own = pagesOf(s.tab())[0]!.design!;
+    expect(own).toMatchObject({ id: 'aurora', scale: 1.4 });
+    expect(own).not.toHaveProperty('flow');
+    expect(s.commitTabs).toHaveBeenCalledTimes(2);
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'PageDesignSavedApplied');
+    s.make().applySavedDesign(saved, 'b');
+    expect(s.notify).toHaveBeenCalledWith(expect.stringContaining('locked'));
+  });
+
   it.each(['Participant', 'Viewer'])('changes nothing in a %s’s session', async () => {
     const s = setup([slide('a')], true);
     const e = s.make();
@@ -115,6 +132,10 @@ describe('page design edits', () => {
     e.setPageDesign('a', { id: 'aurora' });
     e.tunePageDesign('a', { id: 'aurora' });
     await e.applyDesignSet(PAGE_DESIGN_SETS[0]!.id);
+    e.applySavedDesign({ id: 'aurora', scale: 1.4 }, null);
+    e.applySavedDesign({ id: 'aurora', scale: 1.4 }, 'a');
+    // Nor may it save one: the panel reads `blocked` and offers no Save This Design.
+    expect(e.blocked).toBe(true);
     expect(s.commitTabs).not.toHaveBeenCalled();
     expect(s.tickTabs).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();

@@ -87,6 +87,25 @@ app's door sends the kinds it can draw (its `ELEMENT_TYPES`), and the list leave
 lacks, counting them in `hidden`; the palette says "2 items from other apps can't be placed here." when any are hidden.
 Placing an item runs its elements through the app's own migration and element check, and drops any that fail.
 
+## Saved Page Designs
+
+livedocuments keeps a tuned Page Design in the Library too ([Page Designs](../../../../livedocuments/docs/specs/011-theme/page-designs.md)
+"Saved designs"), so a team shares one design across its decks. Nothing new is stored and nothing in the service changes:
+
+- **An item of its own kind.** A saved design is an item whose one element is `{ id: 'design', type: 'page-design',
+design }`, the design with its tuning as livedocuments stores it. Its kinds are `['page-design']`, so every other app
+  leaves it out of its list (counted in `hidden`, as an item from another app), and livedocuments' palette leaves it out
+  of the Library's tiles: it is applied from the Page Design picker, never placed. Its width and height are a tile's,
+  160 by 100.
+- **Its preview carries it.** The preview livedocuments makes for it is a small SVG whose `<metadata>` holds the
+  design as JSON, so the list alone draws and applies every saved design, with no request a design.
+- **Who may do what** is the table above: everyone in a team sees and saves, its admins rename and delete; My Work is
+  its owner's.
+- **Agents read them.** livedocuments' api answers `GET /api/page-designs` with the saved designs a caller can see
+  (their Personal and their teams', as the door reads them), for a signed-in person and for an API token alike: the
+  one door onto the Library a token reaches, and only to read. Saving, renaming and deleting stay with people, through
+  the editor.
+
 ## Pictures
 
 An item's pictures are gallery images (media.md). They are kept like this:

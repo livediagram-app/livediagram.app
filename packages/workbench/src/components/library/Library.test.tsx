@@ -560,3 +560,66 @@ describe('Save to Library', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 });
+
+// livedocuments' saved Page Designs (livedocuments/docs/specs/011-theme/page-designs.md "Saved designs").
+describe('kinds kept apart', () => {
+  const DESIGN = item({ id: 'd1', title: 'Brand Aurora', kinds: ['page-design'] });
+  const APART = ['page-design'];
+
+  function Apart() {
+    const library = useLibrary();
+    return (
+      <>
+        <button type="button" onClick={() => library?.ensureLoaded()}>
+          Load
+        </button>
+        <p>apart {library?.state.apart.map((i) => i.title).join(',')}</p>
+        <button
+          type="button"
+          onClick={() =>
+            library?.requestSave({
+              width: 160,
+              height: 100,
+              elements: [{ id: 'design', type: 'page-design' }],
+              suggestedTitle: 'Aurora, tuned',
+              copy: {
+                title: 'Save This Design',
+                subtitle: 'Keep this design to use on any page.',
+                placeholder: 'Name this design',
+                personalLabel: 'My Work',
+                verb: 'use it',
+              },
+            })
+          }
+        >
+          Save Design
+        </button>
+      </>
+    );
+  }
+
+  it('keeps them out of the palette, in `apart`, and saves one with its own words and no folder', async () => {
+    const api = fakeApi({ list: vi.fn(async () => ({ ...LIST, items: [...LIST.items, DESIGN] })) });
+    render(
+      <LibraryProvider api={api} apartKinds={APART}>
+        <Apart />
+        <Palette onInsert={vi.fn()} />
+      </LibraryProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+    await screen.findByText('apart Brand Aurora');
+    await screen.findByRole('button', { name: 'Insert My Box from Personal' });
+    expect(screen.queryByRole('button', { name: /Insert Brand Aurora/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Save Design' }));
+    await screen.findByText('Save This Design');
+    expect(screen.getByText('My Work')).toBeTruthy();
+    expect(screen.queryByText('Folder')).toBeNull();
+    expect(screen.getAllByText(/Everyone in the team can use it/).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(api.save).toHaveBeenCalledWith(
+        expect.objectContaining({ scope: 'personal', title: 'Aurora, tuned', folder: '' }),
+      ),
+    );
+  });
+});

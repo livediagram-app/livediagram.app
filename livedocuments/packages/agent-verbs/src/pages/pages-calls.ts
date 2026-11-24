@@ -14,6 +14,7 @@ import {
 import { articlesOf, articleTitleOf, articleToMarkdown, type Tab } from '@livedocuments/document';
 import { apiRefusalOf } from '../api-refusal';
 import { tabPath } from '../verbs/shared';
+import { withSavedDesigns } from './saved-designs';
 
 export type PagesRefused = { ok: false; code: string; message: string; change?: number };
 export type PagesDone = { ok: true; documentId: string; tabId: string } & PagesAnswer;
@@ -95,7 +96,15 @@ export async function changePages(
 ): Promise<PagesDone | PagesRefused> {
   const found = await pagesTabOf(api, documentId, input.tabId);
   if ('ok' in found) return found;
-  return send(api, documentId, found.tabId, { pages: input.changes }, door);
+  // A design saved to the Library, named `saved:<id>`, goes as the design it holds.
+  let resolved: Awaited<ReturnType<typeof withSavedDesigns>>;
+  try {
+    resolved = await withSavedDesigns(api, input.changes);
+  } catch (err) {
+    return refusedBy(err);
+  }
+  if (!resolved.ok) return resolved;
+  return send(api, documentId, found.tabId, { pages: resolved.changes }, door);
 }
 
 /** write_article / `article set`: an article's text from Markdown. */

@@ -65,12 +65,22 @@ Exports, thumbnails and previews always show the design still, so a PDF or a pic
 
 The **Contrast Guard** checks every text on a page against the design under it. With **Add a Scrim** (the default), a soft plate of the page's colour goes under any text the design would make hard to read, on screen and in every export. With **Warn Only**, nothing is drawn and the panel says how many texts on the page are hard to read, so you can move them or calm the design.
 
+## Saving a Design for Your Team
+
+Tuned a design you want to use again? At the foot of **Fine Tune**, choose **Save This Design**, give it a name, and pick where it goes: **My Work** (only you) or one of your teams (everyone in it). It is saved as tuned: its colours, sliders, variation, animation, and the switches.
+
+Saved designs appear at the top of the designs as **Saved**, each tile drawn in the document's theme and marked with whose it is. Click one to apply it to the whole tab or, with **This Page**, to the page you are on. A deck keeps its own copy, so renaming or deleting a saved design later changes nothing already applied.
+
+To rename or delete a saved design, use the **⋯** button on its tile. Anything in **My Work** is yours to tidy; in a team, its admins tidy what the team has saved. Saved designs live in your [Library](/help/palette/library/), but they are applied here, not placed from the palette.
+
 ## Who Can Change It
 
-Editors pick and tune designs. Participants and Viewers see them, animated ones moving, but cannot change them.
+Editors pick, tune and save designs. Participants and Viewers see them, animated ones moving, but cannot change or save them.
 
 ## Assistants and the Command Line
 
 An assistant connected to <AppName /> can set a design too: `change_pages` takes a `tab_design` change (a design, `"auto"` for one that suits your words, or `null`), and a page's own `design`. On the command line, `livedocuments page set` takes `--tab-design` and `--design`.
+
+Saved designs work there too: `list_templates` lists them (and `livedocuments page designs` on the command line), and their id, `saved:` followed by a code, goes anywhere a design does. Assistants can use saved designs but not save, rename or delete them.
 
 </ArticleLayout>

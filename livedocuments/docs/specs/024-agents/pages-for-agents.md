@@ -108,7 +108,11 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   ids and the families; a tuning value out of range is refused (`invalid_value`). A locked page's override is
   refused (`page_locked`) as any page edit is. A page with its own design names it in the answer (`design`: its id
   or `none`; absent, it wears the tab's), and the pages view prints the tab design. `create_document` takes a
-  `design` (an id or `"auto"`) every new tab wears; `change_pages` tunes it after.
+  `design` (an id or `"auto"`) every new tab wears; `change_pages` tunes it after. A design saved to the caller's
+  Library is named `"saved:<id>"` (from `list_templates` or `livedocuments page designs`) wherever a design is taken:
+  the tool or command reads the caller's saved designs (`GET /page-designs`) only when a change names one, and sends
+  the design it holds (a page's without `rhythm` and `flow`); an id the caller can't see is refused
+  (`design_unknown`) listing the saved designs they can.
 - **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`). **A layout by its plain name**: ids carry
   their page kind as a prefix (`slide-`), which a caller does not know before a first refusal, so a name is also read
   without it, in any case and with spaces for hyphens, when exactly one of the kind's layouts has it (a slide asked for `title` is `slide-title`, `Three Points` is `slide-three-points`;

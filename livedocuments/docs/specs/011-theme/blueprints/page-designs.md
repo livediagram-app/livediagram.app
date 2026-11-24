@@ -31,6 +31,12 @@ calm?; variant?; animate?: true; speed?; rhythm?: true; flow?: true; guard?: 'wa
   `pageRenamed` does; `null` clears the override; an article's pages all take it).
 - Apply to All Tabs: `pageDesign` joins `TAB_STYLE_KEYS` (`../packages/workbench/src/lib/tab-style-to-all.ts`).
 - The agents' route relays `pageDesign` with the pages (`PAGE_FIELDS` in `apps/api/src/changesets/pages.ts`).
+- Saved designs (`packages/document/src/page-designs/saved.ts`): a team Library item of kind `SAVED_DESIGN_KIND`
+  (`page-design`), 160 by 100, holding one element `{ id: 'design', type: 'page-design', design }`
+  (`savedDesignElement`, compacted; `savedDesignOf` reads it back). Its preview (`savedDesignPreview`) carries the
+  design as JSON in `<metadata>`, so a list alone gives every design (`designFromPreview`). The api's Library kit
+  (`apps/api/src/routes/library.ts` `libraryKit`) takes the kind, refuses a save mixing it with elements, and draws
+  the preview; no D1 migration, no media service change. Agents name one `saved:<itemId>` (`savedDesignId`).
 
 ## Constants and configuration
 
@@ -116,6 +122,19 @@ calm?; variant?; animate?: true; speed?; rhythm?: true; flow?: true; guard?: 'wa
   new tab's `pageDesign` before the create (`apps/mcp/src/tools.ts`, `auto` per tab from its words).
 - CLI: `livedocuments page set --design <id|none|tab>` (with `--page` or `--add`) and `--tab-design <id|auto|none>`,
   a change of its own (`packages/agent-verbs/src/verbs/pages.ts`).
+- Saved designs: `GET /api/page-designs` (`apps/api/src/routes/page-designs.ts`, token usable, read only) answers
+  `SavedPageDesignsResponse` (`{ id: 'saved:<itemId>', title, scope, team, design }`) from the Library's list of the
+  kind across the caller's teams; 503 without a Library. `withSavedDesigns`
+  (`packages/agent-verbs/src/pages/saved-designs.ts`) swaps each `saved:<id>` in a change for its design (a page's
+  without `rhythm` and `flow`) inside `changePages`, reading the list only when a change names one, and refuses an
+  unknown id `design_unknown` listing the saved designs. `list_templates` adds `savedDesigns` (fail-soft); the CLI's
+  `page designs` lists them.
+- Editor: the workbench `LibraryProvider` takes `apartKinds` (livedocuments passes `[SAVED_DESIGN_KIND]` from
+  `EditorLibraryProvider`), keeping those items out of the palette in `state.apart`; `SaveToLibraryDialog` takes
+  `copy` (its own title, words and no Folder). `components/dialogs/page-design/SavedDesigns.tsx` draws the Saved group
+  and Save This Design; `saved-designs.ts` reads `state.apart` (`savedDesignsOf`: whose, may tidy) and builds the
+  save draft. `usePageDesignEdits.applySavedDesign(design, pageId | null)` applies one (a page's stripped of `rhythm`
+  and `flow`); `blocked` hides Save for Participants and Viewers.
 
 ## Presentation and UX
 
@@ -151,7 +170,9 @@ The Page Design panel ([Tab Style dialog](../canvas-and-theme-dialog.md) "Page D
 
 ## Observability
 
-`debugLog('[page-design] set', { tabId, id, scope })` on each pick; the guard logs nothing (it is a pure read).
+`debugLog('[page-design] set', { tabId, id, scope })` on each pick; the guard logs nothing (it is a pure read). A save
+counts `Tab·Changed·PageDesignSaved` (through the provider's `onSaved`, alongside `Library·Created`), an apply
+`Tab·Changed·PageDesignSavedApplied`.
 
 ## Testing
 
@@ -164,4 +185,9 @@ The Page Design panel ([Tab Style dialog](../canvas-and-theme-dialog.md) "Page D
   `packages/agent-verbs/src/verbs/pages.test.ts`; `create_document` in `apps/mcp/src/create-document-placement.test.ts`.
 - Editor: `PageDesignLayer.test.tsx` (layers, pause, decoration only), `PageDesignPanel.test.tsx` (pick, scope,
   tune, reset, sets), `design-tune.test.ts`, and `usePageDesignEdits.test.ts` (one step a pick, a burst a drag, the
-  lock, a set, and the Participant and Viewer roles).
+  lock, a set, a saved design, and the Participant and Viewer roles).
+- Saved designs: `saved.test.ts` (element, preview round trip, ids); `apps/api/src/routes/page-designs.test.ts`
+  (list for a person, a team and a token; kept out of the element list; a mixed save refused); `PageDesignPanel.test.tsx`
+  "saved designs" (group, apply to tab and page, tidy only for whoever may, save to a team, no Save for Participants
+  and Viewers or without a Library); the workbench `Library.test.tsx` "kinds kept apart"; the MCP's
+  `pages-tools.test.ts` (`saved:<id>` swapped and refused, `list_templates`).

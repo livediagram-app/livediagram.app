@@ -81,6 +81,36 @@ Every design exposes the controls that mean something for it; each design lists 
 - **Shuffle** gives a new seed; **Try Another** picks another design of the same family, keeping the tuning that
   family shares.
 
+## Saved designs
+
+A team keeps its decks on brand by saving the designs it tunes. A saved design is a Page Design with its tuning, kept
+in the **Library** every app shares ([Libraries](../../../../liveworkspace/docs/specs/006-media/libraries.md) "Saved Page
+Designs"), in **My Work** (the person's Personal library) or in one of their teams.
+
+- **Save This Design** sits at the foot of Fine Tune. It asks for a name (the design's name, tuned, to start with) and
+  where it goes: My Work, or a team the person is in. It saves the design as it is tuned now (colours, sliders, seed,
+  Animate and Speed, rhythm, flow and the Contrast Guard), never the document's theme or content.
+- **Saved** is a group of its own at the top of the picker's Designs, one tile a saved design, each drawn in this
+  document's theme (a saved design keeps chosen colours only if it was saved with its own). A tile says whose it is
+  (My Work, or the team's name). A click applies it to whatever Applies To names (the whole tab or this page), as any
+  design does: one undo step. The group shows only when there is a saved design to show.
+- **Tidying.** A saved tile's menu has **Rename** and **Delete** for whoever may tidy that library (My Work: its owner;
+  a team: the team's admins, as the Library's rule). Deleting a saved design changes no deck that wears it: applying
+  copies it, as placing a Library item does.
+- **No live link.** A deck wears a copy of the design; changing or deleting the saved one later changes nothing already
+  applied.
+- **Where the Library can't be reached** (a document kept only in this browser, an app without the Library, or a
+  failed list), there is no Saved group and no Save This Design; nothing else changes.
+
+| Share role  | See saved designs | Apply one | Save This Design | Rename or delete                           |
+| ----------- | ----------------- | --------- | ---------------- | ------------------------------------------ |
+| Editor      | yes               | yes       | yes              | as the Library allows (owner; team admins) |
+| Participant | no                | no        | no               | no                                         |
+| Viewer      | no                | no        | no               | no                                         |
+
+The Page Design panel is only offered on a tab its person may edit, so a Participant and a Viewer never reach it; the
+setters refuse a blocked session as for every design.
+
 ## Theme drives colour
 
 A design's colours come from the tab's theme unless the person chose their own: the theme's accent, its second and
@@ -169,6 +199,11 @@ speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, 
   `design` for its tabs (an id, or `"auto"`, picked for each tab's words); `"auto"` picks a fitting design for the tab's words ([Pages for
   agents](../024-agents/pages-for-agents.md) "Page designs"). The `pages` view names each page's design.
 - The command line (`livedocuments page set`) takes the same, as `--design` and `--tab-design`.
+- **Saved designs.** `list_templates` lists the designs saved to the caller's My Work and teams (`savedDesigns`: id,
+  title, whose), and `livedocuments page designs` prints them. Either one's id, as `saved:<id>`, is a design anywhere a
+  design id is taken (`design`, `tab_design`, `--design`, `--tab-design`); the tool or command reads the saved design
+  and sends it as a design with its tuning. An id the caller can't see is refused with the saved designs it can.
+  Agents list and apply; saving, renaming and deleting stay with people in the editor.
 
 ## Share roles
 
@@ -190,10 +225,11 @@ speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, 
 ## Telemetry
 
 `Tab · Changed · PageDesign` (a design picked for the tab), `PageDesignPage` (a page override), `PageDesignTuned` (a
-tuning change), `PageDesignSet` (a design set), `PageDesignAnimated` (Animate turned on).
+tuning change), `PageDesignSet` (a design set), `PageDesignAnimated` (Animate turned on). A saved design is `Tab · Changed · PageDesignSaved` when saved and
+`PageDesignSavedApplied` when applied, with nothing else (never its name, its team or its tuning); the Library's own
+`Library · Created` counts the save as for any item.
 
 ## Non-goals
 
 - Pictures as designs (a page's picture background is its Image fill).
 - A design per element, or decoration in front of content.
-- Saved designs in a team library: a later step with the platform's design systems.

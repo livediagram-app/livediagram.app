@@ -139,6 +139,8 @@ export const PAGE_SETUP = chart(
       'PageDesignTuned',
       'PageDesignSet',
       'PageDesignAnimated',
+      'PageDesignSaved',
+      'PageDesignSavedApplied',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',

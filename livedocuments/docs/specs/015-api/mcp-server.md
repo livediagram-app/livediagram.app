@@ -405,6 +405,10 @@ so the model never has to re-emit (or accidentally mangle) a curated layout.
 The recommended flow for "make me a pitch deck"-style asks: `list_templates`
 → create with `template` → `update_document` (`ops`) to fill in real content.
 
+It also lists the Page Designs saved to the caller's Library and their teams' (`savedDesigns`: `{ id, title, whose }`,
+read from the api's `GET /page-designs`, left out when there are none or the Library can't be read): each `id`, as
+`saved:<itemId>`, is a design `change_pages` takes ([Page Designs](../011-theme/page-designs.md) "Agents").
+
 A `template` that names no kind is refused before anything is written, offering the kinds it most likely meant first:
 those whose kind or title has a word starting with a word of it of 3 letters or more (`closestTemplateKinds`, at most
 `CLOSEST_TEMPLATES_MAX` (5)), then every kind: `Unknown template "deck". Closest: slide-deck, blank-slide-deck.

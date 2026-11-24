@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   PAGE_DESIGNS,
@@ -8,7 +8,11 @@ import {
   type Page,
   type PageDesign,
   type PageDesignOverride,
+  savedDesignPreview,
 } from '@livedocuments/document';
+import type { LibraryItemSummary, LibraryListResponse } from '@liveworkspace/media';
+import { LibraryProvider } from '@liveworkspace/workbench/components/library/LibraryProvider';
+import type { LibraryApi } from '@liveworkspace/workbench/lib/library/library-api';
 import { TabStylePagesContext, type TabStylePages } from '../tab-style-pages';
 import { PageDesignPanel } from './PageDesignPanel';
 
@@ -22,8 +26,14 @@ const slide = (id: string, design?: PageDesignOverride): Page => ({
   ...(design ? { design } : {}),
 });
 
-function open(tabDesign?: PageDesign, pageDesign?: PageDesignOverride) {
+function open(
+  tabDesign?: PageDesign,
+  pageDesign?: PageDesignOverride,
+  { api = null, blocked = false }: { api?: LibraryApi | null; blocked?: boolean } = {},
+) {
   const edits = {
+    applySavedDesign: vi.fn(),
+    blocked,
     setTabDesign: vi.fn(),
     tuneTabDesign: vi.fn(),
     setPageDesign: vi.fn(),
@@ -50,9 +60,11 @@ function open(tabDesign?: PageDesign, pageDesign?: PageDesignOverride) {
     },
   };
   render(
-    <TabStylePagesContext.Provider value={pages}>
-      <PageDesignPanel />
-    </TabStylePagesContext.Provider>,
+    <LibraryProvider api={api} apartKinds={['page-design']}>
+      <TabStylePagesContext.Provider value={pages}>
+        <PageDesignPanel />
+      </TabStylePagesContext.Provider>
+    </LibraryProvider>,
   );
   return edits;
 }
@@ -116,5 +128,107 @@ describe('the Page Design panel', () => {
     // The page's design has no tab switches.
     const tune = screen.getByRole('region', { name: 'Fine Tune' });
     expect(within(tune).queryByRole('switch', { name: 'Flow Across Pages' })).toBeNull();
+  });
+});
+
+// docs/specs/011-theme/page-designs.md "Saved designs".
+describe('saved designs', () => {
+  const summary = (over: Partial<LibraryItemSummary>): LibraryItemSummary => ({
+    id: 'd1',
+    scope: 'personal',
+    teamId: null,
+    folder: '',
+    title: 'Brand Aurora',
+    width: 160,
+    height: 100,
+    kinds: ['page-design'],
+    preview: savedDesignPreview({ id: 'aurora', scale: 1.4 }),
+    app: 'livedocuments.app',
+    createdAt: 2,
+    updatedAt: 2,
+    ...over,
+  });
+  const LIST: LibraryListResponse = {
+    items: [
+      summary({}),
+      summary({
+        id: 'd2',
+        scope: 'team',
+        teamId: 't1',
+        title: 'Team Waves',
+        createdAt: 1,
+        preview: savedDesignPreview({ id: 'waves' }),
+      }),
+    ],
+    teams: [{ id: 't1', name: 'Brand', role: 'member' }],
+    hidden: 0,
+    legacy: { unavailable: [], copied: [], writable: true },
+  };
+  const fakeApi = (): LibraryApi => ({
+    list: vi.fn(async () => LIST),
+    save: vi.fn(async () => LIST.items[0]!),
+    place: vi.fn(),
+    rename: vi.fn(async () => LIST.items[0]!),
+    renameFolder: vi.fn(),
+    remove: vi.fn(async () => {}),
+  });
+
+  it('shows them as their own group, and a click applies one to the tab or the page', async () => {
+    const edits = open({ id: 'aurora' }, undefined, { api: fakeApi() });
+    const saved = await screen.findByRole('region', { name: 'Saved' });
+    fireEvent.click(within(saved).getByRole('button', { name: 'Brand Aurora, saved to My Work' }));
+    expect(edits.applySavedDesign).toHaveBeenCalledWith({ id: 'aurora', scale: 1.4 }, null);
+    fireEvent.click(screen.getByRole('button', { name: 'This Page' }));
+    fireEvent.click(
+      within(await screen.findByRole('region', { name: 'Saved' })).getByRole('button', {
+        name: 'Team Waves, saved to Brand',
+      }),
+    );
+    expect(edits.applySavedDesign).toHaveBeenLastCalledWith({ id: 'waves' }, 'a');
+  });
+
+  it('lets only whoever may tidy rename or delete: My Work’s owner, not a team’s member', async () => {
+    const api = fakeApi();
+    open({ id: 'aurora' }, undefined, { api });
+    const saved = await screen.findByRole('region', { name: 'Saved' });
+    expect(within(saved).getByRole('button', { name: 'More for Brand Aurora' })).toBeTruthy();
+    expect(within(saved).queryByRole('button', { name: 'More for Team Waves' })).toBeNull();
+    fireEvent.click(within(saved).getByRole('button', { name: 'More for Brand Aurora' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: /Delete/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
+    await waitFor(() => expect(api.remove).toHaveBeenCalledWith('d1'));
+  });
+
+  it('saves the design as tuned from Fine Tune, to My Work or a team', async () => {
+    const api = fakeApi();
+    open({ id: 'aurora', scale: 1.4 }, undefined, { api });
+    const tune = await screen.findByRole('region', { name: 'Fine Tune' });
+    fireEvent.click(within(tune).getByRole('button', { name: /Save This Design/ }));
+    await screen.findByRole('heading', { name: 'Save This Design' });
+    fireEvent.click(await screen.findByRole('radio', { name: /Brand/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(api.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scope: 'team',
+          teamId: 't1',
+          title: 'Aurora, tuned',
+          elements: [{ id: 'design', type: 'page-design', design: { id: 'aurora', scale: 1.4 } }],
+        }),
+      ),
+    );
+  });
+
+  it.each(['Participant', 'Viewer'])('offers a %s no Save This Design', async () => {
+    open({ id: 'aurora' }, undefined, { api: fakeApi(), blocked: true });
+    const tune = await screen.findByRole('region', { name: 'Fine Tune' });
+    expect(within(tune).queryByRole('button', { name: /Save This Design/ })).toBeNull();
+  });
+
+  it('shows no Saved group and no Save without the Library', async () => {
+    open({ id: 'aurora' });
+    const tune = await screen.findByRole('region', { name: 'Fine Tune' });
+    expect(within(tune).queryByRole('button', { name: /Save This Design/ })).toBeNull();
+    expect(screen.queryByRole('region', { name: 'Saved' })).toBeNull();
   });
 });
