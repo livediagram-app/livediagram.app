@@ -4,9 +4,10 @@
 // chips, the trust line, an amber note for each part the pages do not cover, and its footer. The answer's Markdown
 // is formatted once it has ended (AnswerBody), from text and elements made here, never as HTML. Memoised on its turn, so an earlier answer is not drawn again when
 // a later one arrives.
-import { memo, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 import type { KnowledgeSetupProvider } from '@liveknowledge/api-schema';
 import { Button, Chip, HoverCard } from '@liveknowledge/ui';
+import { useCopiedFlash } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { REVIEW_DUE_PILL, VERIFIED_PILL } from '@/components/knowledge/TrustBadge';
 import { answerMarkdown } from '@/lib/knowledge-ask/answer-parts';
@@ -121,7 +122,7 @@ function AnsweredBy({ label, spoken = false }: { label: string; spoken?: boolean
 }
 
 function AnswerFooter({ turn, conversation, canSave, onSave, onAccept }: AskAnswerCardProps) {
-  const [copied, setCopied] = useState(false);
+  const { copied, flash } = useCopiedFlash(COPIED_MS);
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(answerMarkdown(turn.text, turn.sources));
@@ -129,8 +130,7 @@ function AnswerFooter({ turn, conversation, canSave, onSave, onAccept }: AskAnsw
       return;
     }
     track('UI', 'Copied', 'AskAnswer');
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), COPIED_MS);
+    flash();
   };
   const rate = (feedback: 'helpful' | 'not-helpful') => {
     const next = turn.feedback === feedback ? undefined : feedback;

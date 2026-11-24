@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { readForm } from '@liveplanner/forms';
 import type { FormMetricContent } from '@liveplanner/project';
-import { Chip, Select, lucideGlyph } from '@liveplanner/ui';
+import { Chip, Select, lucideGlyph, useCopiedFlash } from '@liveplanner/ui';
 import { lucideClipboardList } from '@liveworkspace/icons/lucide';
 import { useFormBoard } from '@/components/forms/form-board-context';
 import { useFormLink } from '@/hooks/forms/useFormLink';
@@ -119,7 +119,7 @@ function FormMetricBody({
     const t = window.setInterval(() => setNow(Date.now()), NOW_TICK_MS);
     return () => window.clearInterval(t);
   }, []);
-  const [copied, setCopied] = useState(false);
+  const { copied, flash } = useCopiedFlash(1800);
   const entry = forms.find((f) => f.id === tabId)!;
   const form = readForm(entry.form) ?? { heading: entry.name };
   const shown = formMetricShown(content.metric, {
@@ -167,8 +167,7 @@ function FormMetricBody({
                 type="button"
                 onClick={() => {
                   void navigator.clipboard?.writeText(url).then(() => {
-                    setCopied(true);
-                    window.setTimeout(() => setCopied(false), 1800);
+                    flash();
                   });
                 }}
                 className="shrink-0 cursor-pointer rounded-md bg-brand-700 px-2.5 py-1.5 text-[12px] font-semibold text-white hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700"

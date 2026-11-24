@@ -7,7 +7,7 @@
 // Share dialog's prompt), then carries straight on to publishing as the project stops being offline.
 // Published, More Ways to Share (closed, loaded on first open) offers a QR code, an embed code and a pre-filled link.
 import { useId, useState } from 'react';
-import { Button, SwitchRow } from '@liveplanner/ui';
+import { Button, SwitchRow, useCopiedFlash } from '@liveplanner/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import type { DestinationProblem, PublicForm, PublishProblem } from '@liveplanner/forms';
 import { SyncProjectPrompt } from '@/components/dialogs/SyncProjectPrompt';
@@ -56,7 +56,7 @@ export function ShareFormDialog({
   form?: PublicForm;
 }) {
   const titleId = useId();
-  const [copied, setCopied] = useState(false);
+  const { copied, flash } = useCopiedFlash(1800);
   const [confirmAt, setConfirmAt] = useState<HTMLElement | null>(null);
   const live = link.link?.link ?? null;
   const url = live?.code ? formUrlFor(window.location.origin, live.code) : null;
@@ -105,8 +105,7 @@ export function ShareFormDialog({
                 <Button
                   onClick={() => {
                     void navigator.clipboard?.writeText(url).then(() => {
-                      setCopied(true);
-                      window.setTimeout(() => setCopied(false), 1800);
+                      flash();
                     });
                   }}
                 >
