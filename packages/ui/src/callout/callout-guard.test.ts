@@ -22,6 +22,8 @@ const SKIP_DIR = new Set([
 
 // Not callouts (callouts.md "Out of scope"), each with why.
 const ALLOWED: Readonly<Record<string, string>> = {
+  'packages/explorer/src/teams/page/PeopleList.tsx':
+    'the Waiting to Join heading band over its rows, not a note',
   'livedesign/apps/live/components/chrome/WorkbenchChrome.tsx':
     'the reconnect pill, top-centre core UI',
   'livediagram/apps/editor/components/chrome/WorkbenchChrome.tsx':

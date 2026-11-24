@@ -1,6 +1,6 @@
 'use client';
 
-// The Audit Log's reads (liveworkspace/docs/specs/004-index/team-audit-log.md "The Audit Log on a team's view"): the
+// The Audit Log's reads (liveworkspace/docs/specs/004-index/team-audit-log.md "The Audit Log on a team's page"): the
 // team's log a page at a time, read again from the first page whenever the filters change, and Export CSV, which
 // follows X-Next-Cursor file by file and joins them under one header.
 

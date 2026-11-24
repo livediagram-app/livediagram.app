@@ -13703,6 +13703,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
+      "invitedByName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "name": {
         "type": [
           "string",
@@ -13711,6 +13717,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "role": {
         "$ref": "#/components/schemas/TeamRole"
+      },
+      "sentAt": {
+        "type": [
+          "number",
+          "null"
+        ]
       },
       "status": {
         "$ref": "#/components/schemas/TeamMemberStatus"

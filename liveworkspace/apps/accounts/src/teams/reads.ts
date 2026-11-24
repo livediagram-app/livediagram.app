@@ -221,17 +221,27 @@ export interface Member {
   // A joined member's presence colour (Settings › Profile), null for Automatic or an invitation: their disc in the
   // members list wears it, as their avatar does everywhere else.
   color: string | null;
+  // Who sent the invitation, by their display name now (profile, then account); null for none, or an inviter whose
+  // account is anonymised or closed.
+  invitedByName: string | null;
+  // When an open invitation's 28 days started (clockStartedAt: sent, or last resent); null for any other row.
+  sentAt: number | null;
 }
 
-// Joined members, then open invitations, then the ones turned down; admins first in each.
+// Joined members, then open invitations, then the ones turned down; admins first in each. One statement: the inviter's
+// name comes from two primary-key joins on `invitedBy`.
 export async function listMembers(db: D1Database, teamId: string): Promise<Member[]> {
   const { results } = await db
     .prepare(
       `SELECT m.id, m.userId, m.email, u.name, m.role, m.status, m.expiredAt, m.createdAt,
               CASE WHEN m.status = 'joined' THEN ${MEMBER_PICTURE} END AS picture,
-              CASE WHEN m.status = 'joined' THEN p.color END AS color
+              CASE WHEN m.status = 'joined' THEN p.color END AS color,
+              COALESCE(ip.name, NULLIF(iu.name, '')) AS invitedByName,
+              CASE WHEN m.status = 'invited' THEN m.clockStartedAt END AS sentAt
        FROM team_member m LEFT JOIN "user" u ON u.id = m.userId
        LEFT JOIN profile p ON p.owner_id = m.userId
+       LEFT JOIN "user" iu ON iu.id = m.invitedBy
+       LEFT JOIN profile ip ON ip.owner_id = iu.id
        WHERE m.teamId = ? AND m.status IN ('invited', 'joined', 'declined')
        ORDER BY CASE m.status WHEN 'joined' THEN 0 WHEN 'invited' THEN 1 ELSE 2 END,
                 CASE m.role WHEN 'admin' THEN 0 ELSE 1 END, m.email`,
@@ -243,5 +253,7 @@ export async function listMembers(db: D1Database, teamId: string): Promise<Membe
     expired: expiredAt !== null,
     picture: profilePictureOf(member.picture),
     color: member.color ?? null,
+    invitedByName: member.invitedByName ?? null,
+    sentAt: member.sentAt ?? null,
   }));
 }

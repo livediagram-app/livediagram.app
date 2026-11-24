@@ -24,6 +24,10 @@ export type TeamMember = {
   picture?: string | null;
   // A joined member's presence colour (Settings › Profile), null or absent for Automatic: their disc wears it.
   color?: string | null;
+  // Who sent the invitation, by their display name now; null or absent for none, or a closed account.
+  invitedByName?: string | null;
+  // When an open invitation's 28 days started (sent, or last resent); null or absent for any other row.
+  sentAt?: number | null;
 };
 
 /** The team's join link, for its admins: anyone signed in who opens it joins as a member, until it ends. */
@@ -89,6 +93,8 @@ export type TeamsHost = {
   setRole: (teamId: string, memberId: string, role: TeamRole) => Promise<TeamResult<null>>;
   /** Removes a member, withdraws or clears an invitation, or (one's own row) leaves. */
   removeMember: (teamId: string, memberId: string) => Promise<TeamResult<RemovedMember>>;
+  /** Emails an open invitation again and starts its 28 days over (admins; not within 10 minutes of the last). */
+  resendInvite: (teamId: string, memberId: string) => Promise<TeamResult<null>>;
   /** Turns the join link on, or makes a new one (the old stops working). */
   resetInviteLink: (teamId: string) => Promise<TeamResult<InviteLink>>;
   clearInviteLink: (teamId: string) => Promise<TeamResult<null>>;
@@ -108,6 +114,8 @@ const MESSAGES: Record<string, string> = {
   role_invalid: 'Choose Member or Admin.',
   email_unverified: 'Sign in with the invited address to answer this.',
   not_found: 'That’s no longer there. It may have changed elsewhere.',
+  resend_too_soon: 'This invitation was just sent. Try again in a few minutes.',
+  invite_not_found: 'That invitation is no longer open. Invite the address again.',
   rate_limited: 'Too many tries just now. Wait a minute and try again.',
   signed_out: 'You’ve been signed out. Sign in again to carry on.',
   offline: 'Couldn’t reach liveworkspace. Check your connection and try again.',
@@ -252,6 +260,8 @@ export function createTeamsHost({
         const r = raw as RemovedMember;
         return { teamDeleted: r.teamDeleted === true, removed: r.removed };
       }),
+    resendInvite: (teamId, memberId) =>
+      change(`/teams/${id(teamId)}/members/${id(memberId)}/resend`, 'POST', undefined, none),
     resetInviteLink: (teamId) => change(`/teams/${id(teamId)}/invite-link`, 'POST'),
     clearInviteLink: (teamId) =>
       change(`/teams/${id(teamId)}/invite-link`, 'DELETE', undefined, none),

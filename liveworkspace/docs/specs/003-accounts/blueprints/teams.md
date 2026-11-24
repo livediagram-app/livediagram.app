@@ -34,19 +34,20 @@ Scope, by file:
 
 ### A member row
 
-| From              | Event                             | To            | Effect                                                                                                         |
-| ----------------- | --------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------- |
-| (none)            | `createTeam`                      | joined admin  | the maker; email the verified address or `<id>@account.invalid`                                                |
-| (none)            | `inviteMember`                    | invited       | `clockStartedAt = now`, a decline token; a declined row for that address goes to `removed`; `team_invite_sent` |
-| invited           | accept (verified address matches) | joined        | `userId` set; `team_joined`; already in under another address: this row `removed`                              |
-| invited           | decline (site or email token)     | declined      | `team_declined`; admins told                                                                                   |
-| invited           | 28 days unanswered (sweep)        | declined      | `expiredAt = now`                                                                                              |
-| invited           | the join link, same address       | joined        | accepted in place                                                                                              |
-| (none)            | the join link, a new address      | joined member | inserted                                                                                                       |
-| joined            | `setMemberRole`                   | joined        | `team_role_changed`                                                                                            |
-| joined            | `removeMember` (self or an admin) | removed       | `team_member_removed`; the last member leaving deletes the team                                                |
-| invited, declined | `removeMember` by an admin        | removed       | withdrawn or cleared; no event                                                                                 |
-| any open          | the team deleted                  | removed       | no event (the team and its audit log go)                                                                       |
+| From              | Event                             | To            | Effect                                                                                                                              |
+| ----------------- | --------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| (none)            | `createTeam`                      | joined admin  | the maker; email the verified address or `<id>@account.invalid`                                                                     |
+| (none)            | `inviteMember`                    | invited       | `clockStartedAt = now`, a decline token; a declined row for that address goes to `removed`; `team_invite_sent`                      |
+| invited           | `resendInvitation` (an admin)     | invited       | `clockStartedAt = now`, reminders and `reminderAttempts` cleared, a new decline hash kept (newest 4); `team_invite_sent` (`resent`) |
+| invited           | accept (verified address matches) | joined        | `userId` set; `team_joined`; already in under another address: this row `removed`                                                   |
+| invited           | decline (site or email token)     | declined      | `team_declined`; admins told                                                                                                        |
+| invited           | 28 days unanswered (sweep)        | declined      | `expiredAt = now`                                                                                                                   |
+| invited           | the join link, same address       | joined        | accepted in place                                                                                                                   |
+| (none)            | the join link, a new address      | joined member | inserted                                                                                                                            |
+| joined            | `setMemberRole`                   | joined        | `team_role_changed`                                                                                                                 |
+| joined            | `removeMember` (self or an admin) | removed       | `team_member_removed`; the last member leaving deletes the team                                                                     |
+| invited, declined | `removeMember` by an admin        | removed       | withdrawn or cleared; no event                                                                                                      |
+| any open          | the team deleted                  | removed       | no event (the team and its audit log go)                                                                                            |
 
 Every write is `BUMP` (`UPDATE team_seq SET value = value + 1`) then the row with `rev = (SELECT value FROM team_seq)`,
 in one batch, so the feed sees every change. A role change or removal carries `KEEPS_AN_ADMIN`, so two admins
@@ -54,22 +55,23 @@ demoting or removing each other at once can't leave none (`409 last_admin` when 
 
 ### The routes (session on liveworkspace.app, or an account's bearer on an app's address)
 
-| Route                                                   | Who                       | Effect                                                                                                                                                                              |
-| ------------------------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/account/teams`                                | anyone                    | `{ teams: MyTeam[], invitations }`: one statement, each team with counts and its first 4 members (admins, then longest standing)                                                    |
-| `POST /api/account/teams { name, organisation? }`       | anyone                    | `400 name_required`; `409 team_limit_reached` at 50; `201 MyTeam`                                                                                                                   |
-| `PATCH /api/account/teams/:id { name?, organisation? }` | admin                     | `404`, `403 admin_only`, `400 name_required`; a rename writes `team_renamed { from }`                                                                                               |
-| `DELETE /api/account/teams/:id`                         | admin                     | the team and open rows go                                                                                                                                                           |
-| `POST /api/account/teams/:id/invite-link`               | admin                     | a new nonce: the old link ends; works 7 days; `{ url, expiresAt }`                                                                                                                  |
-| `DELETE /api/account/teams/:id/invite-link`             | admin                     | the link off                                                                                                                                                                        |
-| `GET /api/account/teams/:id/members`                    | a member                  | `{ team: { id, name, organisation, myRole, myMemberId }, members, inviteLink }` (the link only for admins); joined, then open, then declined, admins first                          |
-| `POST /api/account/teams/:id/members { email, role }`   | admin                     | `400 email_invalid`; `409 already_invited` (an open row for the address, also by the unique index); `409 member_limit_reached` at 200 open; the invitation email sent; `201 Member` |
-| `PATCH /api/account/teams/:id/members/:member { role }` | admin                     | `400 role_invalid`; `409 last_admin`                                                                                                                                                |
-| `DELETE /api/account/teams/:id/members/:member`         | admin, or self            | `409 last_admin` for a sole admin leaving while others remain                                                                                                                       |
-| `POST /api/account/invitations/:member/accept\|decline` | the invited address       | `403 email_unverified`; `404` (also when withdrawn or expired as it is answered); `409 team_limit_reached`; admins emailed once, not the one who answered                           |
-| `GET /api/account/join/:token`                          | open, `TEAM_LINK_LIMITER` | `{ …JoinPreview, signedIn }` or `404 invite_not_found`                                                                                                                              |
-| `POST /api/account/join/:token`                         | session only              | limited; joins as member, or `{ alreadyMember: true }`                                                                                                                              |
-| `GET`/`POST /api/account/invitations/decline/:token`    | open, limited             | read what became of it, or decline (`409 already_joined`; twice changes nothing; expired stays expired)                                                                             |
+| Route                                                   | Who                       | Effect                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/account/teams`                                | anyone                    | `{ teams: MyTeam[], invitations }`: one statement, each team with counts and its first 4 members (admins, then longest standing)                                                                                                                                                                                          |
+| `POST /api/account/teams { name, organisation? }`       | anyone                    | `400 name_required`; `409 team_limit_reached` at 50; `201 MyTeam`                                                                                                                                                                                                                                                         |
+| `PATCH /api/account/teams/:id { name?, organisation? }` | admin                     | `404`, `403 admin_only`, `400 name_required`; a rename writes `team_renamed { from }`                                                                                                                                                                                                                                     |
+| `DELETE /api/account/teams/:id`                         | admin                     | the team and open rows go                                                                                                                                                                                                                                                                                                 |
+| `POST /api/account/teams/:id/invite-link`               | admin                     | a new nonce: the old link ends; works 7 days; `{ url, expiresAt }`                                                                                                                                                                                                                                                        |
+| `DELETE /api/account/teams/:id/invite-link`             | admin                     | the link off                                                                                                                                                                                                                                                                                                              |
+| `GET /api/account/teams/:id/members`                    | a member                  | `{ team: { id, name, organisation, myRole, myMemberId }, members, inviteLink }` (the link only for admins); joined, then open, then declined, admins first; each row's `invitedByName` (`LEFT JOIN "user"` on `invitedBy`, null when none or anonymised) and `sentAt` (`clockStartedAt` of an open invitation, else null) |
+| `POST /api/account/teams/:id/members { email, role }`   | admin                     | `400 email_invalid`; `409 already_invited` (an open row for the address, also by the unique index); `409 member_limit_reached` at 200 open; the invitation email sent; `201 Member`                                                                                                                                       |
+| `POST /api/account/teams/:id/members/:member/resend`    | admin                     | `404 not_found` (not in the team); `403 admin_only`; `404 invite_not_found` (not an open, unexpired invitation of the team); `429 resend_too_soon` (clock started under 10 minutes ago); the invitation email sent again (a failed send logged; the restart stands); `Member`                                             |
+| `PATCH /api/account/teams/:id/members/:member { role }` | admin                     | `400 role_invalid`; `409 last_admin`                                                                                                                                                                                                                                                                                      |
+| `DELETE /api/account/teams/:id/members/:member`         | admin, or self            | `409 last_admin` for a sole admin leaving while others remain                                                                                                                                                                                                                                                             |
+| `POST /api/account/invitations/:member/accept\|decline` | the invited address       | `403 email_unverified`; `404` (also when withdrawn or expired as it is answered); `409 team_limit_reached`; admins emailed once, not the one who answered                                                                                                                                                                 |
+| `GET /api/account/join/:token`                          | open, `TEAM_LINK_LIMITER` | `{ …JoinPreview, signedIn }` or `404 invite_not_found`                                                                                                                                                                                                                                                                    |
+| `POST /api/account/join/:token`                         | session only              | limited; joins as member, or `{ alreadyMember: true }`                                                                                                                                                                                                                                                                    |
+| `GET`/`POST /api/account/invitations/decline/:token`    | open, limited             | read what became of it, or decline (`409 already_joined`; twice changes nothing; expired stays expired)                                                                                                                                                                                                                   |
 
 The limiter is keyed `team-link:<range>` (an IPv4 /24 or IPv6 /48).
 
@@ -117,7 +119,7 @@ same guard (the row exists).
 
 Each event is queued into `index_events_outbox` in the batch of its change (`INSERT OR IGNORE`, guarded by
 `memberGuard` where the change might not land), then sent after the response and by the frequent cron to
-`POST /internal/events`. Ids: `team_invite_sent:<member>`, `team_joined:<member>`, `team_declined:<member>`,
+`POST /internal/events`. Ids: `team_invite_sent:<member>` (a resend `team_invite_sent:<member>:<now>`, `detail.resent` `'1'`), `team_joined:<member>`, `team_declined:<member>`,
 `team_role_changed:<member>:<now>`, `team_member_removed:<member>`, `team_renamed:<team>:<now>`. Detail always
 carries `teamId`, which names the audit log it goes in. A deleted team sends nothing: its audit log goes with it.
 
@@ -143,13 +145,16 @@ space-separated (default `''`); `reminder1SentAt`..`reminder3SentAt`, `reminderA
 
 ## Errors and edge cases
 
-| Case                                    | Answer                                              |
-| --------------------------------------- | --------------------------------------------------- |
-| Two invitations to one address at once  | the unique index lets one in: `409 already_invited` |
-| Two admins removing each other          | one wins, the other `409 last_admin`                |
-| A join by one person twice at once      | the unique index admits one; they are in            |
-| A decline link opened by a mail scanner | `GET` reads only; declining needs the `POST`        |
-| An invitation email that fails          | logged; the invitation stands                       |
+| Case                                    | Answer                                                                                       |
+| --------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Two invitations to one address at once  | the unique index lets one in: `409 already_invited`                                          |
+| Two admins removing each other          | one wins, the other `409 last_admin`                                                         |
+| A join by one person twice at once      | the unique index admits one; they are in                                                     |
+| A decline link opened by a mail scanner | `GET` reads only; declining needs the `POST`                                                 |
+| An invitation email that fails          | logged; the invitation stands                                                                |
+| A resend that fails to email            | logged; the clock was restarted all the same                                                 |
+| Two resends at once                     | the update holds `clockStartedAt <= now - 10 min`: one wins, the other `429 resend_too_soon` |
+| A resend of an expired invitation       | `404 invite_not_found`: it is closed; invite the address again                               |
 
 ## Security and trust
 
@@ -158,6 +163,7 @@ space-separated (default `''`); `reminder1SentAt`..`reminder3SentAt`, `reminderA
 - The join link's token is an HMAC under `BETTER_AUTH_SECRET`; the table keeps only its hash, so the link can be
   shown again but not rebuilt from the database.
 - The open doors are limited per network range.
+- A resend is admins only and at most once in 10 minutes per invitation, so nobody can flood an inbox.
 
 ## Testing
 
@@ -165,6 +171,7 @@ space-separated (default `''`); `reminder1SentAt`..`reminder3SentAt`, `reminderA
 | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/accounts/src/teams.test.ts` (15)               | teams; `teamChanges`                                                                                                                                                                  |
 | `liveworkspace/apps/accounts/src/team-invites.test.ts` (26)        | the join link; the organisation line; declining from the email; invitations turned down; reminders and expiry; telling the admins; the routes; counting team emails, teams and tokens |
+| `liveworkspace/apps/accounts/src/team-resend.test.ts` (9)          | the members read's `invitedByName` and `sentAt`; `resendInvitation` (clock, reminders, hashes, roles, 404s, the 10-minute gap, two at once); the route on both doors and its counting |
 | `liveworkspace/apps/accounts/src/internal-invitations.test.ts` (4) | `POST /api/account/internal/invitations`                                                                                                                                              |
 | `liveworkspace/apps/accounts/src/notify.test.ts` (4)               | `readNotifySettings`; `teamPeople`                                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/index-events.test.ts`             | team events and their outbox                                                                                                                                                          |
@@ -174,7 +181,7 @@ space-separated (default `''`); `reminder1SentAt`..`reminder3SentAt`, `reminderA
 
 `TEAM_NAME_MAX_LENGTH` 80, `ORGANISATION_MAX_LENGTH` 80, `MAX_TEAMS_PER_ACCOUNT` 50, `MAX_MEMBERS_PER_TEAM` 200,
 `INVITE_LINK_TTL_MS` 7 d, `REMINDER_AGES_MS` 1, 7, 21 d, `INVITATION_TTL_MS` 28 d, `EXPIRE_BATCH` 500,
-`REMINDER_BATCH` 100, `MAX_REMINDER_ATTEMPTS` 3, `MAX_DECLINE_HASHES` 4, `LIST_PREVIEW_MEMBERS` 4,
+`REMINDER_BATCH` 100, `MAX_REMINDER_ATTEMPTS` 3, `RESEND_GAP_MS` 10 min, `MAX_DECLINE_HASHES` 4, `LIST_PREVIEW_MEMBERS` 4,
 `CHANGES_PAGE_SIZE` 500 (`teams/changes.ts`), `DELETED_MEMBER_EMAIL` `'Deleted account'` (`teams/members.ts`); `EVENTS_BATCH` 100,
 `EVENTS_CALLS_PER_RUN` 10, `EVENTS_MAX_ATTEMPTS` 96, `EVENTS_OUTBOX_MAX` 5,000, `EVENTS_TIMEOUT_MS` 5 s
 (`index-events.ts`); `INVITATIONS_TTL_MS` 30 s, `INVITATIONS_CACHE_MAX` 500

@@ -240,7 +240,7 @@ export const TEAM_CHANGES = chart(
   'Team',
   'Changed',
   'Team Changes',
-  'A team renamed or a member’s role changed.',
+  'A team renamed, a member’s role changed, or an invitation resent.',
 );
 
 export const TEAMS_DELETED = chart('Team', 'Deleted', 'Teams Deleted', 'A team removed.', {

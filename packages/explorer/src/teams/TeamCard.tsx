@@ -9,7 +9,7 @@
 
 import { useId, useRef, useState, type FormEvent } from 'react';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
-import { Button, ConfirmDialog, PictureDisc, Select } from '@liveworkspace/ui';
+import { Button, PictureDisc, Select } from '@liveworkspace/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
 import { avatarFill } from '@liveworkspace/account-menu/initials';
@@ -19,18 +19,10 @@ import { MenuActionRow, PortalMenu } from '../ui/Menu';
 import { EllipsisTriggerButton } from '../ui/RowMenu';
 import { useToast } from '../ui/Toasts';
 import { useTeams } from './context';
-import { InviteLinkDialog } from './InviteLinkDialog';
 import { PILL, PILL_QUIET, RolePill } from './RolePill';
-import {
-  deleteCopy,
-  lastAdmin,
-  memberName,
-  memberState,
-  orderMembers,
-  removalCopy,
-  removalOf,
-} from './rules';
-import { TEAM_FIELD, TeamFormDialog } from './TeamFormDialog';
+import { memberName, memberState, orderMembers } from './rules';
+import { TEAM_FIELD } from './TeamFormDialog';
+import { useTeamActions } from './useTeamActions';
 import { teamFacts } from './team-details';
 import { TeamPlan } from './TeamPlan';
 
@@ -43,13 +35,6 @@ export { initialsOf, teamHeadline, useTeamDetails, type TeamLoad } from './team-
 export function memberFill(m: Pick<TeamMember, 'color'>, name: string): string {
   return avatarFill(name, m.color);
 }
-
-type Asking =
-  | { kind: 'remove'; member: TeamMember; self: boolean }
-  | { kind: 'delete' }
-  | { kind: 'edit' }
-  | { kind: 'link' }
-  | null;
 
 export function TeamCard({
   details,
@@ -66,73 +51,10 @@ export function TeamCard({
   onGone: () => void;
 }) {
   const teams = useTeams();
-  const toast = useToast();
   const { team } = details;
-  const admin = team.myRole === 'admin';
-  const rule = lastAdmin(details.members, team.myMemberId);
-  const [asking, setAsking] = useState<Asking>(null);
+  const actions = useTeamActions({ details, reload, viewerId, onGone });
+  const { admin, rule, me } = actions;
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
-  const optionsRef = useRef<HTMLButtonElement>(null);
-  const isSelf = (m: TeamMember) =>
-    m.id === team.myMemberId || (m.userId !== null && m.userId === viewerId);
-  const me = details.members.find((m) => m.id === team.myMemberId);
-
-  // Named by its team, so the refusal still says where it happened in the notification list.
-  const fail = (error: string) => toast.error(`${team.name}: ${teamErrorMessage(error)}`);
-
-  async function changeRole(member: TeamMember, role: TeamRole) {
-    if (!teams.host) return;
-    const result = await teams.host.setRole(team.id, member.id, role);
-    if (!result.ok) fail(result.error);
-    reload();
-  }
-
-  async function remove(member: TeamMember, self: boolean) {
-    setAsking(null);
-    const result = await teams.removeMember(team.id, member.id);
-    if (!result.ok) {
-      fail(result.error);
-      reload();
-      return;
-    }
-    if (self || result.value.teamDeleted) {
-      toast.show(
-        result.value.teamDeleted ? `${team.name} was deleted.` : `You left ${team.name}.`,
-        { tone: 'success' },
-      );
-      onGone();
-      return;
-    }
-    // Focus was handed back to the Remove button on a row that is about to go: keep it on the card instead, so the
-    // keyboard isn't dropped on the page's body when the list reloads.
-    const active = document.activeElement;
-    const row = active?.closest('[data-team-member]')?.getAttribute('data-team-member');
-    if (active === document.body || row === member.id) {
-      optionsRef.current?.focus({ preventScroll: true });
-    }
-    reload();
-  }
-
-  async function deleteTeam() {
-    setAsking(null);
-    const result = await teams.remove(team.id);
-    if (!result.ok) {
-      fail(result.error);
-      return;
-    }
-    toast.show(`${team.name} was deleted.`, { tone: 'success' });
-    onGone();
-  }
-
-  const removing = asking?.kind === 'remove' ? asking : null;
-  const removeWords = removing
-    ? removalCopy(
-        removalOf(removing.member, removing.self),
-        memberName(removing.member, removing.self),
-        team.name,
-        rule.alone,
-      )
-    : null;
 
   return (
     <div className={LIST_CARD} data-team-card={team.id}>
@@ -151,7 +73,7 @@ export function TeamCard({
           {admin ? (
             <button
               type="button"
-              onClick={() => setAsking({ kind: 'link' })}
+              onClick={actions.askLink}
               className="relative touch-target-y inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
             >
               <LinkIcon size={12} />
@@ -171,7 +93,7 @@ export function TeamCard({
             </a>
           ) : null}
           <EllipsisTriggerButton
-            ref={optionsRef}
+            ref={actions.homeRef}
             label={`${team.name} options`}
             expanded={menuAnchor !== null}
             onClick={(e) => setMenuAnchor(menuAnchor ? null : e.currentTarget)}
@@ -188,7 +110,7 @@ export function TeamCard({
               icon={<PencilIcon />}
               onClick={() => {
                 setMenuAnchor(null);
-                setAsking({ kind: 'edit' });
+                actions.askEdit();
               }}
             />
           ) : null}
@@ -198,7 +120,7 @@ export function TeamCard({
             disabled={!rule.canLeave || !me}
             onClick={() => {
               setMenuAnchor(null);
-              if (me) setAsking({ kind: 'remove', member: me, self: true });
+              actions.askLeave();
             }}
           />
           {admin ? (
@@ -207,7 +129,7 @@ export function TeamCard({
               icon={<TrashIcon />}
               onClick={() => {
                 setMenuAnchor(null);
-                setAsking({ kind: 'delete' });
+                actions.askDelete();
               }}
             />
           ) : null}
@@ -215,7 +137,7 @@ export function TeamCard({
       ) : null}
       <ul className="divide-y divide-slate-100 dark:divide-slate-700/60">
         {orderMembers(details.members).map((m) => {
-          const self = isSelf(m);
+          const self = actions.isSelf(m);
           return (
             <TeamMemberRow
               key={m.id}
@@ -223,8 +145,8 @@ export function TeamCard({
               self={self}
               manage={admin}
               pinned={self && rule.onlyAdmin}
-              onRole={(role) => void changeRole(m, role)}
-              onRemove={self ? undefined : () => setAsking({ kind: 'remove', member: m, self })}
+              onRole={(role) => void actions.changeRole(m, role)}
+              onRemove={self ? undefined : () => actions.askRemove(m)}
             />
           );
         })}
@@ -236,58 +158,7 @@ export function TeamCard({
       ) : null}
       {admin && teams.host ? <InviteFooter teamId={team.id} onInvited={reload} /> : null}
 
-      {removing && removeWords ? (
-        <ConfirmDialog
-          open
-          title={removeWords.title}
-          message={removeWords.message}
-          confirmLabel={removeWords.confirm}
-          onCancel={() => setAsking(null)}
-          onConfirm={() => void remove(removing.member, removing.self)}
-        />
-      ) : null}
-      {asking?.kind === 'delete' ? (
-        <ConfirmDialog
-          open
-          title={deleteCopy(team.name).title}
-          message={deleteCopy(team.name).message}
-          confirmLabel={deleteCopy(team.name).confirm}
-          onCancel={() => setAsking(null)}
-          onConfirm={() => void deleteTeam()}
-        />
-      ) : null}
-      {asking?.kind === 'edit' ? (
-        <TeamFormDialog
-          mode="edit"
-          initial={{ name: team.name, organisation: team.organisation }}
-          onClose={() => setAsking(null)}
-          onSubmit={async (input) => {
-            const result = await teams.update(team.id, input);
-            if (result.ok) {
-              setAsking(null);
-              reload();
-            }
-            return result;
-          }}
-        />
-      ) : null}
-      {asking?.kind === 'link' && teams.host ? (
-        <InviteLinkDialog
-          teamName={team.name}
-          link={details.inviteLink ?? null}
-          onClose={() => setAsking(null)}
-          onReset={async () => {
-            const result = await teams.host!.resetInviteLink(team.id);
-            reload();
-            return result;
-          }}
-          onClear={async () => {
-            const result = await teams.host!.clearInviteLink(team.id);
-            reload();
-            return result;
-          }}
-        />
-      ) : null}
+      {actions.dialogs}
     </div>
   );
 }

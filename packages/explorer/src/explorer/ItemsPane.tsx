@@ -6,7 +6,7 @@
 // own grouped page, neither with the layout toggle; New Folder only where folders live.
 
 import { MoreFailed } from './MoreFailed';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { App, Folder } from '@liveworkspace/index-client';
 import { folderPath, type FolderStore } from '../data/useFolders';
 import { useItemList } from '../data/useItemList';
@@ -40,6 +40,14 @@ import { NotFoundCard } from './NotFoundCard';
 import { PaneHeader, type Crumb } from './PaneHeader';
 import { viewTitle } from './view-title';
 import { useViewMode } from './useViewMode';
+import { KindChips, SortMenu } from './team/LibraryToolbar';
+import {
+  kindCounts,
+  readLibrarySort,
+  sortLibrary,
+  writeLibrarySort,
+  type LibrarySort,
+} from './team/library';
 import type { RowOptions } from './rows';
 import { Callout } from '@liveworkspace/ui/callout';
 
@@ -152,9 +160,27 @@ export function ItemsPane({ view }: { view: ItemsView }) {
     if (!onFolderShown || !shownId || state.loading) return;
     onFolderShown({ folderId: shownId, name: shownName, itemCount: shownCount });
   }, [onFolderShown, shownId, shownName, shownCount, state.loading]);
+  // A team's Library tab (its root): Sort (Last Changed or Name) orders the cards, and each kind chip counts the
+  // library while it is loaded whole and unfiltered, kept while a chip narrows it.
+  const teamRoot = view.kind === 'team' && !view.folderId;
+  const [librarySort, setLibrarySort] = useState<LibrarySort>(readLibrarySort);
+  const libraryItems = useMemo(
+    () => (teamRoot && librarySort === 'name' ? sortLibrary(state.items, 'name') : state.items),
+    [teamRoot, librarySort, state.items],
+  );
+  const whole = teamRoot && !lensOn && !state.loading && !state.error && !state.hasMore;
+  const counted = useRef<{
+    key: string;
+    kinds: ReturnType<typeof kindCounts>;
+    total: number;
+  } | null>(null);
+  if (whole && (counted.current?.key !== viewKey || counted.current.total !== state.items.length)) {
+    counted.current = { key: viewKey, kinds: kindCounts(state.items), total: state.items.length };
+  }
+  const libraryCounts = counted.current?.key === viewKey ? counted.current : null;
   const sharedProps = {
     folders: folderRows,
-    items: state.items,
+    items: libraryItems,
     options,
     // A failed page shows Try again below instead of loading on scroll.
     hasMore: state.hasMore && !state.moreFailed,
@@ -214,6 +240,77 @@ export function ItemsPane({ view }: { view: ItemsView }) {
     <ListView {...sharedProps} resetKey={list?.key ?? ''} />
   );
 
+  if (teamRoot && view.kind === 'team') {
+    // The team's own header and tabs stand over the Library: its toolbar is the kind chips, Sort, the layout and New.
+    const teamMode = mode === 'list' ? 'card' : mode;
+    const teamBody =
+      mode === 'list' &&
+      body &&
+      !teamGone &&
+      layouts &&
+      !empty &&
+      !state.error &&
+      !state.loading ? (
+        <CardView {...sharedProps} resetKey={list?.key ?? ''} />
+      ) : (
+        body
+      );
+    return (
+      <div data-explorer-view={view.kind}>
+        <TeamPage teamId={view.id} tab={view.tab} libraryCount={libraryCounts?.total ?? null}>
+          <PaneHeader
+            leading={
+              <KindChips
+                counts={libraryCounts?.kinds ?? null}
+                total={libraryCounts?.total ?? null}
+                lens={q}
+                parsed={parsed}
+                lensContext={lensContext}
+                onLens={(next) => ctx.navigate(withLens(view, next), { replace: true })}
+              />
+            }
+            onCreateItem={createItem}
+            onCreateFolder={createFolder}
+            folderLabel={folderLabel}
+            createLabel="New"
+            viewMode={teamMode}
+            onSetViewMode={setMode}
+            viewModes={TEAM_VIEW_MODES}
+            showFilter
+            actions={
+              teamMode === 'card' ? (
+                <SortMenu
+                  sort={librarySort}
+                  onSort={(next) => {
+                    setLibrarySort(next);
+                    writeLibrarySort(next);
+                  }}
+                />
+              ) : null
+            }
+          />
+          {/* The kind chips stand for Opens in; the other filters show once one is set (from the Filter field). */}
+          {lensKind !== null && lensOn ? (
+            <LensBar parsed={parsed} showIssues={!(empty && lensOn)} />
+          ) : null}
+          {lensKind !== null ? (
+            <LensAnnouncer
+              lens={q}
+              loading={state.loading}
+              shown={state.items.length}
+              more={state.hasMore}
+              words={words}
+            />
+          ) : null}
+          {teamBody}
+          {state.moreFailed && !state.error ? (
+            <MoreFailed onRetry={state.retryMore} loading={state.loadingMore} />
+          ) : null}
+        </TeamPage>
+      </div>
+    );
+  }
+
   return (
     <div data-explorer-view={view.kind}>
       <PaneHeader
@@ -239,7 +336,7 @@ export function ItemsPane({ view }: { view: ItemsView }) {
         />
       ) : null}
       {view.kind === 'trash' ? <TrashNote words={words} /> : null}
-      {view.kind === 'team' && !view.folderId ? <TeamPage teamId={view.id}>{body}</TeamPage> : body}
+      {body}
       {/* Kept in this browser, so it shows even when the account's list can't load (offline). */}
       {archivedView && !state.loading ? (
         <ThisBrowserArchivedGroup first={!state.error && state.items.length === 0} />
@@ -252,6 +349,7 @@ export function ItemsPane({ view }: { view: ItemsView }) {
 }
 
 const NO_FOLDERS: Folder[] = [];
+const TEAM_VIEW_MODES = ['card', 'details'] as const;
 
 /**
  * The lens as the list takes it, stable while the filters it sends are the same: the index's filters (Edited's

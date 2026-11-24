@@ -6,7 +6,7 @@
 // someone who has used no app yet), with that app's own Worker key, so each app's dashboard keeps its
 // Emails Sent stack. The same goes for what only accounts sees of teams and API tokens on
 // liveworkspace.app (a team made, renamed or closed, an invitation sent, answered or withdrawn, the join
-// link on or off, a member's role, a token made or revoked by hand): each is counted under the app the
+// link on or off, a member's role, an invitation resent, a token made or revoked by hand): each is counted under the app the
 // person acting signed up through (an email Decline, with no account behind it, under the inviter's),
 // looked up only when the batch goes, so the request never waits on it; someone with no app isn't counted.
 // Events wait in this isolate until the run that sent them ends, then go as one batch per app: a cron

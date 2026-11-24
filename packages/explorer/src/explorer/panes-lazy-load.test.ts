@@ -33,10 +33,12 @@ describe('the Explorer’s sections', () => {
 
   // The team card loads with the team view (liveworkspace/docs/specs/010-site/blueprints/site.md "Performance and
   // limits"): no module the Explorer loads up front imports it statically.
-  it('the team card is not a static import of the team view or the Home tiles', () => {
-    for (const file of ['TeamPane.tsx', 'HomeSpaces.tsx', 'InvitesPane.tsx'])
+  it('the team page and card are not static imports of the team view or the Home tiles', () => {
+    for (const file of ['TeamPane.tsx', 'HomeSpaces.tsx', 'InvitesPane.tsx']) {
       expect(staticImports(read(file)), file).not.toContain('../teams/TeamCard');
-    expect(read('TeamPane.tsx')).toContain("import('../teams/TeamCard')");
+      expect(staticImports(read(file)), file).not.toContain('../teams/page/TeamView');
+    }
+    expect(read('TeamPane.tsx')).toContain("import('../teams/page/TeamView')");
   });
 });
 

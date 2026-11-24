@@ -39,7 +39,9 @@ export function auditSentence(event: TeamAuditEvent, teamId: string): AuditSente
   const role = detail.role === 'admin' ? 'an Admin' : 'a Member';
   switch (event.type) {
     case 'team_invite_sent':
-      return { who, action: 'invited', target: about, after: `as ${role}` };
+      return detail.resent
+        ? { who, action: 'sent the invitation again to', target: about }
+        : { who, action: 'invited', target: about, after: `as ${role}` };
     case 'team_joined':
       return {
         who,
@@ -154,6 +156,34 @@ const ITEM_KINDS: readonly TeamAuditEventType[] = TEAM_AUDIT_EVENT_TYPES.filter(
 
 /** The Event filter's groups, in the order the list offers them. The middle one is named in the host app's word for
  *  its items (`useExplorer().kind.many`: "Designs" on livedesign, "Plans" on liveplanner). */
+/** The pill on an Audit Log row: what part of the team the event touched. */
+export type AuditPill = 'Members' | 'Sharing' | 'Files' | 'Approvals' | 'Connections' | 'AI Key';
+
+export function auditPill(type: TeamAuditEventType): AuditPill {
+  switch (type) {
+    case 'team_ai_key_changed':
+      return 'AI Key';
+    case 'shared':
+    case 'unshared':
+      return 'Sharing';
+    case 'approval_requested':
+    case 'approval_approved':
+    case 'approval_changes_requested':
+    case 'approval_cancelled':
+      return 'Approvals';
+    case 'webhook_added':
+    case 'webhook_removed':
+      return 'Connections';
+    case 'moved':
+    case 'trashed':
+    case 'restored':
+    case 'deleted':
+      return 'Files';
+    default:
+      return 'Members';
+  }
+}
+
 export function auditGroups(items: string): readonly AuditGroup[] {
   return [
     { label: 'People', kinds: TEAM_AUDIT_ACCOUNT_TYPES },
