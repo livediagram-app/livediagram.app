@@ -23,6 +23,9 @@ theirs without adding a settings screen.
   from its button in the tab order, so Tab from the button never reached it. **Escape closes a popover** (Collaborate, the Trash, Find a Card, Card Types, the Explorer) while focus is in it or on its button, and focus goes
   back to the button; Escape elsewhere (the canvas, deselecting) leaves it open, as a companion to the canvas. Until
   then Escape did nothing in them, so a keyboard user in Find a Card's field could not leave it.
+- **On a phone** a popover off a button opens as a drawer ([Tool panels are drawers on a phone](../../../../liveworkspace/docs/specs/011-workbench/phone-drawers.md)):
+  a bottom sheet over a dim scrim, with a grab handle that drags it closed, focus kept inside and the home
+  indicator cleared. The Explorer keeps its own sheet; the Timer piece's length opens the same drawer.
 - **Participating panels:** Minimap, Poll, and the Format panel (the Avatar and Eraser panels are retired), every corner panel built on the shared `MovablePanel`.
 - **Zoom controls stay fixed** bottom-right (they are not a `MovablePanel`; the body-height
   measurement relies on that pin). They are not dockable, and the

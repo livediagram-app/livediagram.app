@@ -54,7 +54,9 @@ Avatar mode included, so a meeting run while walking works its clock from the fa
   Ready).
 - **Set** (Timer only): opens the **Timer length** popover above the piece: preset chips **5**, **10**, **15** and
   **25 min**, a minutes field with − and + (1 to 120 minutes), and **Set Timer**. Setting a length resets the Timer to
-  it (idle, not running): a new length is a new round. Escape or a press outside closes it.
+  it (idle, not running): a new length is a new round. Escape or a press outside closes it. On a phone it opens as a
+  drawer from the screen's foot instead ([Tool panels are drawers on a phone](../../../../liveworkspace/docs/specs/011-workbench/phone-drawers.md)),
+  its handle dragging it closed.
 - **Who sees them**: anyone who may operate it (see Share roles). A Viewer sees the face and its time, with no
   buttons, and a walking click on the piece does nothing (no reader: a still copy of a running clock would show a
   stale time; [Always walking](../013-workspace/share-roles.md#always-walking)). In a placement preview the face shows its idle time and no buttons.

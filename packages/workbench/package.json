@@ -271,6 +271,7 @@
     "./components/primitives/PagedCarousel": "./src/components/primitives/PagedCarousel.tsx",
     "./components/primitives/paged-carousel-testing": "./src/components/primitives/paged-carousel-testing.ts",
     "./components/primitives/PlayIcon": "./src/components/primitives/PlayIcon.tsx",
+    "./components/primitives/PhoneDrawer": "./src/components/primitives/PhoneDrawer.tsx",
     "./components/primitives/PopoverScrim": "./src/components/primitives/PopoverScrim.tsx",
     "./components/primitives/NameEditor": "./src/components/primitives/NameEditor.tsx",
     "./components/primitives/PortalMenu": "./src/components/primitives/PortalMenu.tsx",

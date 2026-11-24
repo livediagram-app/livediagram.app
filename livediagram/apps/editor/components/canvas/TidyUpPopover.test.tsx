@@ -223,3 +223,37 @@ describe('TidyUpPopover', () => {
     );
   });
 });
+
+// liveworkspace/docs/specs/011-workbench/phone-drawers.md: a drawer on a phone, the popover on a desktop.
+describe('TidyUpPopover on a phone', () => {
+  const phone = (matches: boolean) =>
+    vi.stubGlobal(
+      'matchMedia',
+      (query: string) =>
+        ({
+          matches,
+          media: query,
+          addEventListener: () => undefined,
+          removeEventListener: () => undefined,
+        }) as unknown as MediaQueryList,
+    );
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('opens as a drawer whose tiles still run their tidier, and Escape closes it once', () => {
+    phone(true);
+    const { onClose, actions } = setup();
+    const sheet = screen.getByRole('dialog', { name: 'Tidy' });
+    expect(sheet.hasAttribute('data-phone-drawer')).toBe(true);
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    fireEvent.click(sheet.querySelector<HTMLElement>('[data-tidy-kind="align"]')!);
+    expect(actions.run).toHaveBeenCalledWith('align', false);
+  });
+
+  it('stays the popover on a desktop', () => {
+    phone(false);
+    setup();
+    expect(document.querySelector('[data-phone-drawer]')).toBeNull();
+    expect(screen.getByRole('region', { name: 'Tidy' })).toBeTruthy();
+  });
+});
