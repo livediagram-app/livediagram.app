@@ -1,6 +1,7 @@
 // What each page's design layer draws (docs/specs/011-theme/page-designs.md): the design it wears, drawn for its size,
 // palette and place in a strip, with the contrast guard's scrims over the settled elements. Each page keeps its
-// previous answer while nothing it shows has changed, so its sheet (memo) skips the render. Pure.
+// previous answer while nothing it shows has changed, so its sheet (memo) skips the render; during a Fine Tune gesture
+// only the pages named in `redraw` draw again. Pure but for the bounded last-view memory.
 import {
   designGuard,
   designPalette,
@@ -38,6 +39,8 @@ export type PageDesignViewsInput = {
   tabFont: string | undefined;
   // The background a page shows now (a hover may preview another).
   backgroundOf?: (page: LaidOutPage) => PageBackground | undefined;
+  // While a Fine Tune control moves: the pages to redraw (those on screen). Any other page keeps its last view.
+  redraw?: ReadonlySet<string>;
 };
 
 const EMPTY: ReadonlyMap<string, PageDesignView> = new Map();
@@ -64,6 +67,11 @@ export function pageDesignViews(input: PageDesignViewsInput): ReadonlyMap<string
   for (const page of pages) {
     const r = resolved.get(page.id);
     if (!r) continue;
+    const kept = input.redraw && !input.redraw.has(page.id) ? last.get(page.id) : undefined;
+    if (kept) {
+      out.set(page.id, kept);
+      continue;
+    }
     const background = input.backgroundOf ? input.backgroundOf(page) : page.background;
     const palette = designPalette(input.theme, { background }, input.paperDark, r.tuning.colors);
     const painted = paintPageDesign({

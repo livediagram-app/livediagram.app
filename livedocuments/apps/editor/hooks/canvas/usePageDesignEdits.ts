@@ -12,6 +12,7 @@ import {
 } from '@livedocuments/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
+import { markDesignTuning } from '@/lib/page-design-tuning';
 import { withPageDesignSetApplied } from '@/lib/page-design-set-apply';
 import { track } from '@/lib/telemetry';
 
@@ -75,6 +76,7 @@ export function pageDesignEdits({
     tuneTabDesign: (design) => {
       if (editsBlocked) return;
       checkpointBurst('pageDesign');
+      markDesignTuning();
       tickTabs((ts) => onActive(ts, (t) => withTabPageDesign(t, design)));
       trackTuned();
     },
@@ -96,6 +98,7 @@ export function pageDesignEdits({
     tunePageDesign: (pageId, design) => {
       if (editsBlocked) return;
       checkpointBurst(`pageDesign:${pageId}`);
+      markDesignTuning();
       tickTabs((ts) => onActive(ts, pageEdit(pageId, design)));
       trackTuned();
     },

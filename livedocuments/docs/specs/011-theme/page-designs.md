@@ -183,6 +183,9 @@ speed?, rhythm?, flow?, guard? }`; every tuning field is absent at its default, 
 - A page's design is one SVG string per layer, set as markup, never thousands of React elements.
 - The contrast guard runs on the elements as they settle, never on every frame of a drag.
 - Only animated designs on screen animate; layers move by transform and opacity alone.
+- While a Fine Tune control is moving, only the pages on screen redraw; the rest keep their last drawing and catch up
+  a moment after the control stops. A flowing design draws a strip per page, so a fifty-page deck would otherwise
+  redraw fifty strips on every tick.
 
 ## Telemetry
 

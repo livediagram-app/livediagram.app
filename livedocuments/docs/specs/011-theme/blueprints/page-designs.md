@@ -79,7 +79,10 @@ calm?; variant?; animate?: true; speed?; rhythm?: true; flow?: true; guard?: 'wa
   markup (`builtMarkup`), a moving layer with its motion's variables; the root carries the intensity as opacity and
   the calm as a CSS radial `mask-image`; the scrims sit in a separate full-strength layer. Views are worked out by
   `apps/editor/lib/page-design-views.ts` (`pageDesignViews`, reusing a page's view while it is unchanged) through
-  `usePageDesignViews` in `CanvasPages`. The minimap draws no designs: it is a map for finding your way, kept cheap.
+  `usePageDesignViews` in `CanvasPages`. While a Fine Tune control moves (`markDesignTuning` in
+  `apps/editor/lib/page-design-tuning.ts`, settled 250 ms after the last tick), `usePageDesignViews` passes the pages
+  on screen as `redraw`, read once from the sheets' rectangles when the gesture starts; every other page keeps its last
+  view until the gesture settles. The minimap draws no designs: it is a map for finding your way, kept cheap.
 - **Pausing**: an `IntersectionObserver` (root margin 200 px) sets `data-pd-run` on the root while it is on screen;
   `apps/editor/app/page-design.css` runs the animations only under `[data-pd-run]`, and never under reduced motion.
 - **Motions** (`app/page-design.css`): drift, pan, spin, breathe, twinkle and swing; every keyframe starts at the
