@@ -32,6 +32,9 @@ const HELD_AT_100 = [
   'src/components/sheet-links/PlanDataFields.tsx',
   'src/components/sheet-links/SeriesChips.tsx',
   'src/lib/relative-now.ts',
+  // The editors' one preferences store: load, merge, write and save (liveworkspace/docs/specs/011-workbench/
+  // editor-preferences.md, Work Tracker 1414).
+  'src/lib/preferences/**',
   // Deleting an unused picture (each canvas product's 009-elements images.md).
   'src/lib/unused-image-choice.ts',
   'src/lib/unused-image-prompt.ts',

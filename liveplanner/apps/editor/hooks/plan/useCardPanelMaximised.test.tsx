@@ -3,18 +3,24 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { STORAGE_KEY } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
+import { __resetPreferencesSync, flushPreferences } from '@/lib/preferences-sync';
 import { useCardPanelMaximised } from './useCardPanelMaximised';
 
 const sync = vi.hoisted(() => ({ saves: [] as { ownerId: string; prefs: unknown }[] }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/lib/preferences-sync', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/preferences-sync')>()),
-  savePreferences: (ownerId: string, prefs: unknown) => sync.saves.push({ ownerId, prefs }),
+// The account write each flip makes, caught here rather than sent.
+vi.mock('@/lib/api-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/api-client')>()),
+  apiPutPreferences: async (ownerId: string, prefs: unknown) => {
+    sync.saves.push({ ownerId, prefs });
+    return 'saved';
+  },
 }));
 
 afterEach(() => {
   window.localStorage.clear();
   sync.saves.length = 0;
+  __resetPreferencesSync();
   vi.mocked(track).mockClear();
 });
 
@@ -41,6 +47,7 @@ describe('useCardPanelMaximised', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'CardMaximisedOn');
     expect(result.current.maximised).toBe(true);
     expect(stored()).toEqual({ reduceMotion: true, cardPanelMaximised: true });
+    flushPreferences();
     expect(sync.saves.at(-1)).toEqual({
       ownerId: 'owner-1',
       prefs: { reduceMotion: true, cardPanelMaximised: true },
@@ -64,6 +71,7 @@ describe('useCardPanelMaximised', () => {
     const { result } = renderHook(() => useCardPanelMaximised(null));
     act(() => result.current.setMaximised(true));
     expect(result.current.maximised).toBe(true);
+    flushPreferences();
     expect(sync.saves).toEqual([]);
   });
 });
