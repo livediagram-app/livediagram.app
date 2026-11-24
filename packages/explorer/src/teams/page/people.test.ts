@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
+import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import type { TeamMember } from '../../data/teams';
 import {
   addedOn,
@@ -61,8 +62,10 @@ describe('the People tab', () => {
     expect(matchesPerson(team[1]!, '  ', false)).toBe(true);
   });
 
+  // Dates are in the viewer's own locale (DAY_MONTH_YEAR), so the expected words come from the same formatter.
   it('dates when someone was added, and nothing without a date', () => {
-    expect(addedOn({ createdAt: Date.UTC(2026, 2, 2, 12) })).toMatch(/2 Mar 2026/);
+    const at = Date.UTC(2026, 2, 2, 12);
+    expect(addedOn({ createdAt: at })).toBe(DAY_MONTH_YEAR.format(at));
     expect(addedOn({})).toBeNull();
   });
 
@@ -74,8 +77,8 @@ describe('the People tab', () => {
     expect(
       invitationLine(m({ status: 'invited', role: 'admin', sentAt: NOW - 27.5 * DAY }), NOW),
     ).toBe('Admin · ends today');
-    expect(invitationLine(m({ status: 'invited', sentAt: NOW - 30 * DAY }), NOW)).toMatch(
-      /^Member · ended \d+ \w+ 2026$/,
+    expect(invitationLine(m({ status: 'invited', sentAt: NOW - 30 * DAY }), NOW)).toBe(
+      `Member · ended ${DAY_MONTH_YEAR.format(NOW - 2 * DAY)}`,
     );
     expect(invitationLine(m({ status: 'invited', expired: true }), NOW)).toBe('Member · ended');
     expect(invitationLine(m({ status: 'declined' }), NOW)).toBe('Member');
