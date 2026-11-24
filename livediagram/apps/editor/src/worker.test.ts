@@ -109,3 +109,22 @@ describe('editor worker security headers', () => {
     ]);
   });
 });
+
+// A live embed's frame (liveworkspace/docs/specs/004-index/live-embeds.md "Framed by our apps alone", Work Tracker
+// 1427): framed by our apps' pages alone, every other page's framing unchanged.
+describe('a live embed frame', () => {
+  const csp = async (href: string) =>
+    (await worker.fetch(new Request(href), env().env)).headers.get('Content-Security-Policy')!;
+
+  it("names our apps' origins as its only frame-ancestors, keeping Trusted Types", async () => {
+    const policy = await csp('https://www.livediagram.app/embed/workbench?d=doc-1&live=1');
+    expect(policy).toContain("require-trusted-types-for 'script'");
+    expect(policy).toMatch(/frame-ancestors 'self' .*https:\/\/www\.livehuddle\.app/);
+    expect(policy).not.toContain('frame-ancestors *');
+  });
+
+  it('leaves the workbench frame and the share embed as they were', async () => {
+    for (const path of ['/embed/workbench?d=doc-1', '/embed?s=code'])
+      expect(await csp(`https://www.livediagram.app${path}`)).not.toContain('frame-ancestors');
+  });
+});

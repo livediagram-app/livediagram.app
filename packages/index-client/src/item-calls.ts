@@ -20,8 +20,8 @@ export const ITEM_CALL_INVITES_MAX = 10;
 export const ITEM_CALL_INVITE_DAYS = 1;
 /** A call nobody has joined yet is still the item's call for this long, so two quick presses never make two. */
 export const ITEM_CALL_START_GRACE_MS = 120_000;
-/** The livehuddle template a call's Space is made from: a pod where everyone hears everyone. */
-export const ITEM_CALL_TEMPLATE = 'team-pod';
+/** The livehuddle template a call's Space is made from: the Document Room, its wall Screen showing the call's item. */
+export const ITEM_CALL_TEMPLATE = 'document-room';
 /** What a call's Space is called after its item's title. */
 export const ITEM_CALL_NAME_SUFFIX = ' Call';
 /** The summary page's longest body (CROSS_APP_BODY_MAX's bound) and title. */
