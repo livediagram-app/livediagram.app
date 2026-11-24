@@ -124,11 +124,11 @@ moves between them, and the one account that joins them.
 
 1. **Hero**: "Everything your team makes, live in one workspace", then two short paragraphs, never one block:
    the first names each app in its accent and what it is for (sketch, plan, write it up, make it look right, talk
-   it through), the second says one account opens them all and every link opens straight into the work. Under the
+   it through, keep what you learn), the second says one account opens them all and every link opens straight into the work. Under the
    calls to action, three ticked promises: Open source, No sign-up needed (Free to start, signed in), No
    trackers or ads. Two calls to action: **Create your free account** (`/sign-up`, back here after) and **Explore
    the apps**. Signed in, they are hidden. Beside it, the platform's prism
-   with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
+   with the apps' logos round it at the points of a hexagon, each joined to it by a line in its accent, read
    clockwise in the
    order work moves through them, and someone at work in each, drawn as that app shows them: a cursor in
    livediagram, livedocuments and livedesign, a ring and name on the card they hold in liveplanner (whose boards and
@@ -148,7 +148,7 @@ moves between them, and the one account that joins them.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
    it, and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**,
-   **Start Designing**, **Start Huddling**. Below `lg` the window sits between the summary and the three things it does. The window reads as a
+   **Start Designing**, **Start Huddling**, **Start a Knowledgebase**. Below `lg` the window sits between the summary and the three things it does. The window reads as a
    screenshot of the app at its best: the shared **browser window** every app illustration is shown in
    (`BrowserWindow` in `@liveworkspace/marketing-site`: window controls, back and forward, the address with its
    padlock, share and new tab, on a layered shadow), the address the work really opens at (the app's site, its route
@@ -177,7 +177,26 @@ moves between them, and the one account that joins them.
    WCAG AA. On a dark page, text in an app's colour (a link, a name, a card's call to action, here and on every
    page of the site) is its light shade, `light` in `@liveworkspace/sites` (its brand-400), which passes AA on every
    dark surface; the accent itself does not for each app (liveplanner's violet-500 is 4.1:1 on slate-900).
-3. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
+3. **How work moves between them** (`#together`, `components/landing/Together.tsx`, its copy in `lib/together.ts`):
+   the suite story, the features that hand work from one app to another, between the apps and the promises. Eyebrow
+   "Better together", heading "Work moves between the apps.", then "Each app hands its work to the next, so nothing is
+   typed twice and nothing goes stale." Nine cards, three columns from `lg` and two from `sm` (the ninth across the
+   foot), one on a phone. Each card shows the apps it joins as their prisms (the apps it starts from, an arrow, the
+   app it lands in; one row of prisms where every app takes part), its name, one or two sentences, and a link to its
+   help article on its canonical address (`canonicalArticleUrl` from `@liveworkspace/help-registry`, resolved at
+   build, so no catalogue reaches the browser), or for Start a Project, to `/kits`:
+   **Send to Plan** (a sticky, comment, paragraph or meeting action becomes a liveplanner card that links back and
+   shows its status); **Send to Diagram** (words on a knowledgebase page drawn by AI as a livediagram diagram, previewed
+   first); **Diagrams and Plans** (Make Plan Cards and View As Diagram); **Live Data From a Plan** (charts and tables in
+   a diagram, document or design that follow a Sheet range, board counts or a Dashboard metric); **Embed File** (one
+   item shown live inside another); **Start a Call Here** (a livehuddle call from any item, its summary to a
+   knowledgebase and its actions to a plan); **Automations Across Apps** (the five steps in other apps); **Ask AI**
+   (every app's Tools, and a knowledgebase's Ask reading its connected items); **Start a Project** (a kit, every file
+   connected). Only what is on main is named; the unlisted liveworkspace MCP is not (021-mcp). A test
+   (`lib/together.test.ts`) holds every card's apps to the listed apps, its help link to an article in the catalogue
+   for one of the apps it names, and its words free of Pro or prices. A feature that joins apps changes this
+   list in the same change.
+4. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
    the same promises", thirteen tiles that fill every row (18 cells over three columns, 16 over two), each with a small piece of the product drawn
    in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
    account (the large tile, the sign-in box beside each app signed in, with Create your account, or, signed in,
@@ -185,12 +204,12 @@ moves between them, and the one account that joins them.
    live by default (people in the work as each app shows them: a cursor on a canvas, a ring on a held card, a
    character in a Space; the words promise real-time collaboration, never a cursor in every app); share by link (the share box); one Explorer for
    everything (full width: the words beside a folder holding a Canvas, a Plan, a Document, a
-   Design and a Space, two by two with the Space across the foot); connected across apps (a plan's tab bar holding connected files from the other apps, one open as a preview; two columns wide on a tablet); one Inbox; teams across every app; one key for scripts and AI (a token in a
+   Design, a Space and a Knowledgebase, two by two); connected across apps (any diagram, plan, document, design, Space or knowledgebase as a tab in another app's work; a plan's tab bar holding connected files from the other apps, one open as a preview; two columns wide on a tablet); one Inbox; teams across every app; one key for scripts and AI (a token in a
    terminal, checked against every app's API by a script, since there is no liveworkspace CLI); a copy in your Google Drive (the liveworkspace folder in Drive, a file from each app, each synced); on your phone, too (an installed app's notification on a home screen of the apps); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free. With Pro on (owner, 2026-11-22) that tile is **Free for
    everyone**: every app free to use, with generous limits, and Pro, optional, raising them, linking `/pricing`; its
    art drops "every feature" and "no paywall". The terms page's highlight and the site's description say the same.
-4. **Closing call to action**: "One account. Every app. Always live." Signed out, it says "Or start your work as a
+5. **Closing call to action**: "One account. Every app. Always live." Signed out, it says "Or start your work as a
    guest without signing in at all." over **Create your free account** (`/sign-up`, back here after) and **Pick an
    app** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
    app. Pick up where you left off." over **Open Explorer** (`/explorer`) and **Pick an app**. Until the page knows
@@ -200,7 +219,7 @@ moves between them, and the one account that joins them.
    is slate-950), and its two glows (sky toward the lower left, violet toward the upper right) are gradients that
    each reach transparent at their own box's nearest side within the card, so neither shows a cut edge. The
    headline balances its lines, so no word is left alone on the last one.
-5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
+6. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
    comparisons, the Community, every app's posts together, the telemetry dashboard and Status) and Legal (the
    privacy policy, Terms of Use, Report a Vulnerability and Licences). Report a Vulnerability opens the repository's
    security policy on GitHub (`SECURITY_POLICY_URL`,
