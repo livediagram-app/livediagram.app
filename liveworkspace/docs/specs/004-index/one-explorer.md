@@ -426,19 +426,21 @@ Three groups, the same in every app's Explorer and on liveworkspace.app (`explor
   Library row carries no count. (Its Timeline row and New count were retired in November 2026; an old
   `/explorer/timeline` address opens Home.)
 
-**The current view's rows are open.** Opening a view unfolds the rows that hold its own row, however it is reached
-(a sidebar click, a breadcrumb, an address, Back): My Work for My Work, a team's row for its page, a space and every
-folder down to it for a folder (that folder too, so its subfolders show), Offline and its folders down to a local one, and the Library for any of its pages
-(Recent, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
-and once per change of the rows a view needs, so a row the person folds stays folded until the view (or its place)
-changes (`rowsForView`, `useOpenCurrentRows`).
-
-**One space open at a time.** Opening a space's row with its chevron (or Right in the tree) folds every other space
-(My Work, each team, Offline), except the space holding the current view, which stays open so something can
-be dragged out of it into the space just opened (owner, 2026-11-15: with every space open at once the sidebar was
-confusing). Folding never touches the folders inside a space, so a space opened again shows its folders as it left
-them. A drag resting on a folded space opens it without folding the others, and the current view's rows still open
-as above (`Expansion.openSpace`).
+**A space opens and folds only when the person does it** (owner 2026-11-24, Work Tracker 1420: spaces opened on
+their own, so the sidebar changed shape unasked and a space folded away came back open). A space's row (My Work,
+each team, Offline) opens or folds only from the person's own act on it: its chevron (a click or a tap), Right and
+Left in the tree, or a drag resting on it (below). Opening a space's page, a folder or an item inside it, from the
+sidebar, a breadcrumb, an address or Back, never opens or folds a space, and opening one space never folds another
+(this replaces "One space open at a time", owner 2026-11-15). Each space keeps its own state in this browser
+(`liveworkspace:explorer-expanded`, in each app's own storage, so each app's Explorer remembers its own), restored on
+the next visit; a space with no state kept starts folded, My Work too, and a team the person has left is simply
+not drawn, its state ignored. If storage is blocked or empty the spaces start folded, without an error. Inside an
+open space the folders down to the current folder open, so its row shows (that folder too, so its subfolders show),
+and the Library opens for any of its pages (Recent, the Gallery, Shape Libraries, Archived, the Trash); this only
+ever adds, once per change of the rows a view needs, so a folder the person folds stays folded until the view (or
+its place) changes (`rowsForView`, `useOpenCurrentRows`). Making a folder opens the rows above it, its space too, so
+the new folder is in sight: the person made it there. **Where you are stays in sight:** while the current view sits
+inside a folded space, that space's row is drawn as the current row, so the sidebar always shows where you are.
 
 **A drag opens the Library.** A drag of an item, a folder or an offline item resting on the folded Library row
 for half a second (`LIBRARY_HOVER_OPEN_MS`) opens it, so the Trash inside is in reach; the Library itself takes no

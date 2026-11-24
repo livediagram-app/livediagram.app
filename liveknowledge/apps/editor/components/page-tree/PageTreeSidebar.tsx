@@ -13,6 +13,7 @@ import { HoverCard } from '@liveknowledge/ui';
 import { MenuJoinBand } from '@liveworkspace/workbench/components/canvas/menu-join';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { LabelFilterHeading } from '@/components/page-labels/LabelFilterHeading';
 import { PageTree, type PageTreeProps } from './PageTree';
@@ -77,6 +78,8 @@ export function PageTreeSidebar({
   ...tree
 }: PageTreeSidebarProps) {
   const scale = useUiScale('panels');
+  // A tablet's sidebar is a touch screen's tree: 44 px rows, + and ... always there (Work Tracker 1417).
+  const coarse = useCoarsePointer();
   const px = (v: number) => toSurfacePx(v, scale);
   const [renaming, setRenaming] = useState<HeadRename | null>(null);
   // Open, the tree slides out to the left before the rail takes its place.
@@ -221,7 +224,7 @@ export function PageTreeSidebar({
       {/* The pages, then the Trash as the list's last item, scrolling together (knowledgebases-and-pages.md "The page
           Trash"); the row draws nothing while the Trash is empty. */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-2">
-        <PageTree {...tree} />
+        <PageTree {...tree} touch={tree.touch || coarse} />
         {trash ? <PageTrashRow /> : null}
       </div>
       <div className="border-t border-slate-200 p-3 dark:border-slate-800">

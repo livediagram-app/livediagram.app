@@ -22,6 +22,7 @@ import {
   ROW_CONTROLS_SHOWN,
   ROW_INSET,
   ROW_REST,
+  ROW_TOUCH_BUTTON,
 } from './page-tree-row-styles';
 import { useRowMark, type PageTreeUi } from './page-tree-ui';
 import {
@@ -73,7 +74,7 @@ function ConnectedTreeRowView({
   const broken = state.kind === 'broken';
   const where = appName(app);
   const label = broken ? `${name}, ${where}, Can't Open` : `${name}, ${where}, opens in a new tab`;
-  const control = touch ? 'h-11 w-9' : 'h-6 w-6';
+  const control = touch ? ROW_TOUCH_BUTTON : 'h-6 w-6';
   const menuButton = (
     <button
       type="button"
@@ -157,7 +158,7 @@ function ConnectedTreeRowView({
       <span
         data-row-controls
         // With a mouse, shown on hover or focus as a page's are (ROW_CONTROLS_HIDDEN); always on touch.
-        className={`${menuOpen ? ROW_CONTROLS_SHOWN : ROW_CONTROLS_HIDDEN} ${touch ? 'w-9' : 'w-[50px]'}`}
+        className={`${menuOpen ? ROW_CONTROLS_SHOWN : ROW_CONTROLS_HIDDEN} ${touch ? 'w-11' : 'w-[50px]'}`}
       >
         {cards && !touch ? (
           <HoverCard

@@ -184,8 +184,21 @@ All of it is in `apps/editor/components/page-tree/`.
   pointer, holds focus or has its menu open (the row's mark), when they take full strength. Their hover cards and the
   title's tooltip mount only on that active row and on the Tab stop row (mounting a card re-mounts the button it
   wraps, so the row whose buttons take Tab keeps them, and a focused button never loses the focus to its own card),
-  so a 500-page tree carries plain buttons and two rows of cards (the drag perf test holds the budget). Their 50 px is always kept, so nothing shifts. In the phone sheet (`touch`) the menu button
-  (36 x 44) is always there and Add Subpage is in the menu, as before. The rail's peek draws the same `PageTree`.
+  so a 500-page tree carries plain buttons and two rows of cards (the drag perf test holds the budget). Their 50 px is always kept, so nothing shifts. On a touch screen (`touch`: the phone sheet always, and
+  the sidebar where the pointer cannot hover, `useCoarsePointer`, `(hover: none)`, so an iPad's sidebar too) the rows
+  are 44 px tall, and Add Subpage (an Editor's) and Page Options show on the current page's row and the row whose
+  menu is open (`touchShown`), each 44 x 44 (`ROW_TOUCH_BUTTON`), plain buttons with no hover card; every other row's
+  controls box is `w-0`, so its title keeps the room, and a long press opens its menu. Add Subpage stays in the menu
+  as well (Work Tracker 1417).
+  The rail's peek draws the same `PageTree`.
+- **A tap never re-mounts what it lands on** (Work Tracker 1417). A row marked active mounts its title's tooltip and
+  its buttons' hover cards, and mounting a card re-mounts the button it wraps (above). Marked by a finger, the tap's
+  own target was replaced under it between the press and the click: iPad Safari then sent the click to nothing (or
+  read the new content as a hover and sent no click at all), so a tap on a row, its + or its ... did nothing. So the
+  tree's `onPointerOver` marks a hover only for a mouse (`pointerType` neither `touch` nor `pen`), and the focus a
+  touch or pen press gives a row within `TOUCH_FOCUS_MS` (1,000) of its `pointerdown` is not marked either (`onFocus`
+  still makes it the Tab stop). A ... pressed by a finger hangs its menu from the row, which never re-mounts, rather
+  than from the button. A mouse, a trackpad and the keyboard are unchanged.
 - **The keyboard and the row's buttons.** One row is the tree's Tab stop; its own + and ... are `tabIndex` 0 and every
   other row's are -1, so Tab from the focused row goes to its +, its ..., then out of the tree, and a 500-page tree
   is still one stop. Focus on a button is focus within the row: its controls show. The row's focus ring is
@@ -478,7 +491,7 @@ pages trading places, a full knowledgebase within budget); `page-tree-routes.tes
 save's parents and both saves' refusals over the api; `page-tree-sync.test.ts` (editor) the placeholders, the save
 diff, a peer's list and a resync. The sidebar: `page-tree-view.test.ts` (rows, keys, the drop),
 `PageTree.test.tsx` (the tree's roles and attributes, the keyboard, the menu, the drag, a role at a time),
-`PageTree.perf.test.tsx` (500 rows), `PageTreeSidebar.test.tsx` (the shell, the rail, the sheet, the tint's
+`PageTree.perf.test.tsx` (500 rows), `PageTree.touch.test.tsx` (a tap on a row, its chevron, + and ... with a finger: nothing re-mounts, each lands the first time; the 44 px buttons on the current row alone, a long press showing another's; the sidebar's touch rows), `PageTreeSidebar.test.tsx` (the shell, the rail, the sheet, the tint's
 contrast), `PageBreadcrumb.test.tsx`, `page-tree-open.test.ts`; the actions: `page-tree-edits.test.ts`,
 `useTabActions.pages.test.tsx`, `page-title.test.ts` (document), `live-page-title.test.ts`,
 `usePageNameFromTitle.test.tsx`, the api's `knowledge-agent-routes.test.ts` and `tab-pages-route.test.ts`, the
@@ -499,6 +512,7 @@ seen in a browser since.
 | `PAGE_TREE_RAIL_WIDTH`                 | 48     | `page-tree-view.ts`       | One 32 px button with its inset                                       |
 | `PAGE_TREE_INDENT`                     | 20     | `page-tree-view.ts`       | The spec's indent: the chevron's own width                            |
 | `PAGE_TREE_ROW`, `PAGE_TREE_TOUCH_ROW` | 32, 44 | `page-tree-view.ts`       | A dense list with a mouse; a finger's 44 px                           |
+| `TOUCH_FOCUS_MS`                       | 1000   | `PageTree.tsx`            | A tap's focus arrives with its synthetic mouse events, well inside it |
 | `PAGE_NAME_SETTLE_MS`                  | 50     | `usePageNameFromTitle.ts` | Well inside the autosave's pause, so the name saves with the Title    |
 | `BREADCRUMB_MIN`                       | 240    | `page-title-bar-room.ts`  | Two ancestors at a readable width before the buttons name themselves  |
 | `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose closed pages are kept                            |
