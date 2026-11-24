@@ -18,7 +18,7 @@ import './_all/VisitorsAndAccounts';
 
 // All Apps (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard", All Apps; "Apps Compared"): the
 // Dashboard tab's cards, then a Detail tab each for the events chart with a line per app and the Total, the visitors
-// and accounts for every app or one, Project Kits, AI Tools & CLI, Forum Checks and the busiest events; the window from the page,
+// and accounts for every app or one, Project Kits, Connections, Forum Checks and the busiest events; the window from the page,
 // and the empty states.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -122,7 +122,7 @@ describe('the tabs', () => {
       EVENTS,
       VISITORS,
       'Project Kits',
-      'AI Tools & CLI',
+      'Connections',
       'Forum Checks',
       'Busiest Events',
     ]);
@@ -290,7 +290,7 @@ describe('Project Kits', () => {
   });
 });
 
-describe('AI Tools & CLI', () => {
+describe('Connections', () => {
   const tokens = buildTelemetrySummary(NOW, 'all', TELEMETRY_SENDERS, [
     row(0, 'liveworkspace.app', 'Token', 'Created', 'MCP', 3),
     row(0, 'liveworkspace.app', 'Token', 'Created', 'Cli', 2),
@@ -303,7 +303,7 @@ describe('AI Tools & CLI', () => {
   const section = () => host!.querySelector('section[aria-labelledby="agent-sign-ins"]')!;
 
   it('shows AI tools connected and CLI sign-ins in the window, every app together', async () => {
-    await show(tokens, 'today', 'AI Tools & CLI');
+    await show(tokens, 'today', 'Connections');
     const tiles = [...section().querySelectorAll('dl > div')].map((d) => d.textContent);
     expect(tiles[0]).toContain('AI Tools Connected4');
     // The CLI sign-ins two days back are outside today.
@@ -312,7 +312,7 @@ describe('AI Tools & CLI', () => {
   });
 
   it('says so when nothing has signed in', async () => {
-    await show(quiet, 'today', 'AI Tools & CLI');
+    await show(quiet, 'today', 'Connections');
     expect(section().textContent).toContain('No sign-ins yet');
   });
 });

@@ -57,7 +57,7 @@ const VIEWS: { key: AllView; label: string; icon: ReactNode }[] = [
   { key: 'events-by-app', label: 'Events by App', icon: <ChartGlyph /> },
   { key: 'visitors', label: 'Visitors & Accounts', icon: <PersonGlyph /> },
   { key: 'kits', label: 'Project Kits', icon: <KitGlyph /> },
-  { key: 'agents', label: 'AI Tools & CLI', icon: <ConnectGlyph /> },
+  { key: 'agents', label: 'Connections', icon: <ConnectGlyph /> },
   { key: 'forum', label: 'Forum Checks', icon: <ShieldGlyph /> },
   { key: 'busiest', label: 'Busiest Events', icon: <RankGlyph /> },
 ];

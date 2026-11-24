@@ -1,4 +1,4 @@
-// AI Tools & CLI's figures (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): liveworkspace.app's
+// The Connections tab's figures (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): liveworkspace.app's
 // own token events (PLATFORM_OWN_TELEMETRY_EVENTS `Token·Created`), an AI tool connected through the one MCP's consent
 // page (`MCP`) and an app's CLI signed in there or on the device page (`Cli`), as each one's total in a window and the
 // span before it, and as a 30-day daily series. The rows the apps sent in their own names before the fold add in.

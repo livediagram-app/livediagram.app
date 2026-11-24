@@ -9,7 +9,7 @@ import { agentSignInFigures } from './agent-sign-ins';
 import { CARD } from './styles';
 import { ChartBlock, SECOND, Tile } from './VisitorsAndAccounts';
 
-// AI Tools & CLI (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): the tokens minted on
+// Connections (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): the tokens minted on
 // liveworkspace.app's OAuth pages, AI Tools Connected and CLI Sign-ins. Each one's total in the window against the
 // span before, then both a day. The one MCP signs every app in, so these are liveworkspace.app's own events and show
 // here alone, never on an app's dashboard.
@@ -33,7 +33,7 @@ export function AgentSignIns({
         id="agent-sign-ins"
         className="mt-8 text-lg font-semibold text-slate-900 dark:text-slate-100"
       >
-        AI Tools &amp; CLI
+        Connections
       </h2>
       <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
         AI tools and CLIs signing in on liveworkspace.app, every app together, in the{' '}

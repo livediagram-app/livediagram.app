@@ -189,7 +189,7 @@ its tabs, catalogues and explanations. Picking an app on the page updates the li
   visitors and sign-ups, its 30-day line in its accent, and **Open Dashboard**, which picks the app. Its Detail tabs
   are **Events by App** and **Visitors & Accounts** (Apps Compared, its own section below), **Project Kits**
   (liveworkspace.app's own kit events, [../004-index/kits.md](../004-index/kits.md) "Telemetry": Started, Retried,
-  Completed and Removed a day, every kit together, with each window's totals), **AI Tools & CLI** (liveworkspace.app's
+  Completed and Removed a day, every kit together, with each window's totals), **Connections** (liveworkspace.app's
   own token events, [021-mcp](../021-mcp/mcp.md) "The app MCPs fold in": AI Tools Connected, `Token·Created·MCP` from
   the one MCP's consent page, and CLI Sign-ins, `Token·Created·Cli` from there or `/oauth/device`, each window's totals
   and both a day; the rows the apps sent in their own names before the fold add in, so the lines carry on, while each

@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { TelemetrySummary } from '@liveworkspace/telemetry';
 import { agentSignInFigures } from './agent-sign-ins';
 
-// AI Tools & CLI's figures from a summary that predates them: no daily series, no span before, other events beside.
+// The Connections tab's figures from a summary that predates them: no daily series, no span before, other events beside.
 const window = (rows: TelemetrySummary['windows']['today']['rows']) => ({ total: 0, rows });
 
-describe("AI Tools & CLI's figures", () => {
+describe("The Connections tab's figures", () => {
   it('reads the window alone, leaving out tokens made by hand and other events', () => {
     const summary: TelemetrySummary = {
       enabled: true,
