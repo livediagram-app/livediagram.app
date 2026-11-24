@@ -140,6 +140,7 @@ export const categories: Category[] = [
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
     articleCount: 11,
     kind: 'feature',
+    groups: ['Working Together', 'Other Apps', 'Running Sessions'],
   },
   {
     slug: 'tools',

@@ -643,5 +643,6 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram'],
+    group: 'Other Apps',
   },
 ];
