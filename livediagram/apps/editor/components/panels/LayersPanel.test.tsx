@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Layer } from '@livediagram/document';
 
 import { stubResizeObserver } from '@liveworkspace/vitest-config/stub-resize-observer';
@@ -109,5 +109,43 @@ describe('LayersPanel', () => {
     ]);
     fireEvent.click(screen.getByRole('button', { name: 'Delete Layer' }));
     expect(p.onRemoveLayer).toHaveBeenCalledWith('b');
+  });
+});
+
+// liveworkspace/docs/specs/011-workbench/phone-drawers.md: a drawer on a phone, the popover on a desktop.
+describe('LayersPanel on a phone', () => {
+  const phone = (matches: boolean) =>
+    vi.stubGlobal(
+      'matchMedia',
+      (query: string) =>
+        ({
+          matches,
+          media: query,
+          addEventListener: () => undefined,
+          removeEventListener: () => undefined,
+        }) as unknown as MediaQueryList,
+    );
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+  const one: Layer[] = [{ id: 'l1', name: 'Layer 1' }];
+
+  it('opens as a drawer, New Layer working inside it and its scrim closing it', () => {
+    phone(true);
+    const p = renderPanel(one);
+    const sheet = screen.getByRole('dialog', { name: 'Layers' });
+    expect(sheet.querySelector('[data-sheet-handle]')).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'New Layer' }));
+    expect(p.onAddLayer).toHaveBeenCalled();
+    fireEvent.click(sheet.previousElementSibling as HTMLElement);
+    expect(p.onPopoverClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('stays the popover on a desktop', () => {
+    phone(false);
+    renderPanel(one);
+    expect(document.querySelector('[data-phone-drawer]')).toBeNull();
+    expect(screen.getByRole('region', { name: 'Layers' })).toBeTruthy();
   });
 });

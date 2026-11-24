@@ -31,14 +31,14 @@ Tools and Get Started already open as ([footer-tools-menu.md "On a phone"](../00
 Every popover off a button built on the shared `MovablePanel` (`asPopover`), in every editor, unless it is already a
 sheet of its own on a phone:
 
-| Editor        | Drawers on a phone                                                                    |
-| ------------- | ------------------------------------------------------------------------------------- |
-| livediagram   | Layers, Tidy Up, Collaborate, Timer, Vote and Poll (set-up and running)               |
-| liveplanner   | Collaborate, Timer and Vote (set-up and running), Card Types, Trash                    |
-| livedesign    | Collaborate                                                                           |
-| livedocuments | Collaborate                                                                           |
-| liveknowledge | Collaborate                                                                           |
-| livehuddle    | The Timer's length (on the Timer piece, through `PopoverOrSheet`)                     |
+| Editor        | Drawers on a phone                                                      |
+| ------------- | ----------------------------------------------------------------------- |
+| livediagram   | Layers, Tidy Up, Collaborate, Timer, Vote and Poll (set-up and running) |
+| liveplanner   | Collaborate, Timer and Vote (set-up and running), Card Types, Trash     |
+| livedesign    | Collaborate                                                             |
+| livedocuments | Collaborate                                                             |
+| liveknowledge | Collaborate                                                             |
+| livehuddle    | The Timer's length (on the Timer piece, through `PopoverOrSheet`)       |
 
 Already sheets on a phone, and left as they are: the Explorer (a sheet down from its button), Contents (its own bottom
 sheet), livedesign's Photo panel (a sheet off the rail's Layers button), the title-bar popovers (Guides, Mirror,

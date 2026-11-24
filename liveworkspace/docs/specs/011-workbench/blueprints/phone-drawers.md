@@ -3,12 +3,12 @@
 Derived from [phone-drawers.md](../phone-drawers.md). The spec decides; this file only adds engineering precision.
 Paths are relative to the repository root.
 
-| File                                                                | Role                                                                                                     |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `packages/workbench/src/components/primitives/PhoneDrawer.tsx`      | The drawer: Portal, scrim, `SheetHandle` + `useSheetDrag`, `useFocusTrap`, Escape, `safeInset('bottom')` |
-| `packages/workbench/src/components/primitives/PopoverOrSheet.tsx`   | Popover from the phone breakpoint up, `PhoneDrawer` below it (Tools, Get Started, livehuddle's Timer)    |
-| `packages/workbench/src/components/primitives/MovablePanel.tsx`     | `asPopover` below the phone breakpoint renders through `PhoneDrawer` (every editor's cluster popovers)    |
-| `livehuddle/apps/editor/components/canvas/collab/TimerLengthPopover.tsx` | The Timer's length through `PopoverOrSheet`                                                         |
+| File                                                                     | Role                                                                                                     |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `packages/workbench/src/components/primitives/PhoneDrawer.tsx`           | The drawer: Portal, scrim, `SheetHandle` + `useSheetDrag`, `useFocusTrap`, Escape, `safeInset('bottom')` |
+| `packages/workbench/src/components/primitives/PopoverOrSheet.tsx`        | Popover from the phone breakpoint up, `PhoneDrawer` below it (Tools, Get Started, livehuddle's Timer)    |
+| `packages/workbench/src/components/primitives/MovablePanel.tsx`          | `asPopover` below the phone breakpoint renders through `PhoneDrawer` (every editor's cluster popovers)   |
+| `livehuddle/apps/editor/components/canvas/collab/TimerLengthPopover.tsx` | The Timer's length through `PopoverOrSheet`                                                              |
 
 ## PhoneDrawer
 

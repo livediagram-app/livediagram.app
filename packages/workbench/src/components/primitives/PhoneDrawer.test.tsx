@@ -66,6 +66,13 @@ describe('PhoneDrawer', () => {
     document.removeEventListener('pointerdown', under);
   });
 
+  it('keeps focus and the native menu from the scrim, and the native menu from the sheet', () => {
+    const { sheet, scrim } = drawer();
+    expect(fireEvent.mouseDown(scrim)).toBe(false);
+    expect(fireEvent.contextMenu(scrim)).toBe(false);
+    expect(fireEvent.contextMenu(sheet)).toBe(false);
+  });
+
   it('keeps a press inside it from reaching a canvas gesture under it', () => {
     const canvas = vi.fn();
     render(
