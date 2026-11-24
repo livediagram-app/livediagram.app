@@ -38,14 +38,14 @@ describe('apiFetch', () => {
     const { env, calls } = envWith(() => new Response('{}'));
     await runWithClientName(
       async () => 'Claude Code',
-      () => apiFetch(env, 'lwt_abc', '/documents'),
+      () => apiFetch(env, 'lwt_abc', '/projects'),
     );
     expect(calls[0]!.headers.get('X-Liveplanner-Client')).toBe('mcp');
     expect(calls[0]!.headers.get('X-Liveplanner-Agent')).toBe('Claude Code');
     // A client that gave no name sends the door alone.
     await runWithClientName(
       async () => '',
-      () => apiFetch(env, 'lwt_abc', '/documents'),
+      () => apiFetch(env, 'lwt_abc', '/projects'),
     );
     expect(calls[1]!.headers.get('X-Liveplanner-Client')).toBe('mcp');
     expect(calls[1]!.headers.has('X-Liveplanner-Agent')).toBe(false);
