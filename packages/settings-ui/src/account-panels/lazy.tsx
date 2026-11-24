@@ -1,7 +1,7 @@
 'use client';
 
 import { lazy, Suspense, type ReactNode } from 'react';
-import type { AccountSection } from '../account-model';
+import type { AccountSection, CallSpaceChoice } from '../account-model';
 import { AccountPanelsProvider, type AccountPanelsHost } from './host';
 
 // The account's own panels (liveworkspace/docs/specs/010-site/site.md "Settings": API Tokens and Download Your
@@ -11,13 +11,15 @@ import { AccountPanelsProvider, type AccountPanelsHost } from './host';
 const loadTokens = () => import('./tokens/TokensPanel');
 const loadDataExport = () => import('./data-export/DataExportPanel');
 const loadAi = () => import('./ai/AiKeyPanel');
+const loadCalls = () => import('./calls/CallSpacePanel');
+const CallSpacePanel = lazy(() => loadCalls().then((m) => ({ default: m.CallSpacePanel })));
 const AiKeyPanel = lazy(() => loadAi().then((m) => ({ default: m.AiKeyPanel })));
 const TokensPanel = lazy(() => loadTokens().then((m) => ({ default: m.TokensPanel })));
 const DataExportPanel = lazy(() => loadDataExport().then((m) => ({ default: m.DataExportPanel })));
 
 /** Fetches the panels' code ahead of time (a test warming its imports, say). */
 export async function preloadAccountPanels(): Promise<void> {
-  await Promise.all([loadTokens(), loadDataExport(), loadAi()]);
+  await Promise.all([loadTokens(), loadDataExport(), loadAi(), loadCalls()]);
 }
 
 /** A category drawn from its own chunk, with a quiet placeholder while it loads. `flush`: the panel lays out its own
@@ -53,10 +55,21 @@ function AccountPanelCell({
 export function accountPanels(
   host: AccountPanelsHost,
 ): Required<Pick<AccountSection, 'renderAi' | 'renderTokens' | 'renderDataExport'>> &
-  Pick<AccountSection, 'subscription'> {
+  Pick<AccountSection, 'subscription' | 'renderCalls'> {
+  const { callSpaces } = host;
   return {
     // The Subscription category's way to its service (subscription/cells.tsx draws it, with Pro on).
     ...(host.subscription ? { subscription: host.subscription } : {}),
+    // Calls Open In, where the host can list the person's Spaces.
+    ...(callSpaces
+      ? {
+          renderCalls: (choice: CallSpaceChoice) => (
+            <AccountPanelCell cell="calls" host={host}>
+              <CallSpacePanel spaces={callSpaces} {...choice} />
+            </AccountPanelCell>
+          ),
+        }
+      : {}),
     renderAi: () => (
       <AccountPanelCell cell="ai" host={host}>
         <AiKeyPanel />

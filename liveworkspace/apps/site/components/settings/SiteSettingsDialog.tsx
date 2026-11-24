@@ -23,6 +23,7 @@ import {
   type SettingsAppId,
   type SettingsScope,
 } from '@liveworkspace/settings-ui';
+import { CALL_SPACES_LISTED, createIndexClient } from '@liveworkspace/index-client';
 import { APP_SITES, PLATFORM_SITE, type AppName } from '@liveworkspace/sites';
 import { accountApi } from '@/lib/account-api';
 import { accountSecurity } from '@/lib/account-security';
@@ -38,6 +39,7 @@ import { setSessionColour, signOut, useSession } from '@/lib/session';
 import { settingsStore, type AppId } from '@/lib/app-settings';
 import { SITE_SUBSCRIPTION } from '@/lib/subscription';
 import { pageApp } from '@/lib/explorer/page-app';
+import { workspaceToken } from '@/lib/explorer/token';
 import { setExplorerConsent, setGuestTelemetryChoice } from '@/lib/explorer/telemetry';
 import { reportAppSetting, reportSharedSetting } from '@/lib/settings-telemetry';
 import { APP_SETTINGS_KIT } from './app-settings-kit';
@@ -48,7 +50,19 @@ import { settingsErrorMessage } from './settings-ui';
 // fetched when its category is first shown: the account API through accountApi (this site's session on
 // liveworkspace.app, the app's token through its router on an app's address).
 // With them, the Subscription category's way to the subscription service (listed only with Pro on in the build).
-const ACCOUNT_PANELS = accountPanels({ request: accountApi, subscription: SITE_SUBSCRIPTION });
+// With them, Settings › Calls (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): the person's
+// livehuddle Spaces from the index, over the same token as the Explorer, read only when the category is shown.
+const callIndex = createIndexClient({ getToken: workspaceToken });
+const ACCOUNT_PANELS = accountPanels({
+  request: accountApi,
+  subscription: SITE_SUBSCRIPTION,
+  callSpaces: {
+    list: async () =>
+      (await callIndex.listItems({ app: 'livehuddle', view: 'all', limit: CALL_SPACES_LISTED }))
+        .items,
+    token: workspaceToken,
+  },
+});
 
 // Sign-in and devices on an app's address: the account API's bearer door, through the app's router.
 const APP_SECURITY = bearerAccountSecurity(accountApi, { settingsParam: 'profile' });

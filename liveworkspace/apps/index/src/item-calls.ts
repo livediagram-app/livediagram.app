@@ -8,16 +8,20 @@
 //   POST /items/:space/call/summary       the host's summary, written in a knowledgebase as the host   → 201
 //   POST /items/:space/call/invite        invites to people who reach the item                         → 200
 //
-// The Space is livehuddle's, made through its template door as the person's. Its Participant link is the way in,
-// handed only to someone the index has just found can read the item.
+// The Space is livehuddle's, made through its template door as the person's, or the person's Calls Space when they
+// chose one ("Your Calls Space"). Its Participant link is the way in, handed only to someone the index has just found
+// can read the item.
 
 import { sha256Hex } from '@liveworkspace/api-schema/sha256';
 import {
+  CALL_SPACE_LINK_DAYS,
   ITEM_CALL_APP,
   ITEM_CALL_NAME_SUFFIX,
   ITEM_CALL_TEMPLATE,
   readCallInviteAsk,
   readCallSummaryAsk,
+  readItemCallAsk,
+  type CallSpaceFallback,
   type ItemCallStart,
   type SpaceCall,
 } from '@liveworkspace/index-client';
@@ -36,8 +40,10 @@ import { badRequest, fail, forbidden, json, notFound, readObject, unauthorized }
 import {
   callOf,
   CALL_COLUMNS,
+  isLive,
   itemLink,
   liveCallOf,
+  newestCallOfSpace,
   readMeetings,
   tellItemCalls,
   type CallRow,
@@ -46,6 +52,7 @@ import { overRunLimit } from './kits';
 import { getItemRow, type ItemRow } from './rows';
 
 const NAME_MAX = 120;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const newCallId = () => `ic_${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
 
 // An account in person, never an app, the Drive mirror or an export acting for them.
@@ -59,13 +66,16 @@ function account(ctx: RouteContext): Person | Response {
 
 const cut = (s: string, max: number) => (s.length > max ? s.slice(0, max) : s);
 
-/** POST /items/:id/calls: the item's live call, or a new one. */
+/** POST /items/:id/calls: the item's live call, or a new one (in the person's Calls Space when they chose one). */
 async function startCall(ctx: RouteContext, itemId: string): Promise<Response> {
   const { env } = ctx;
   const person = account(ctx);
   if (person instanceof Response) return person;
   const limited = await overRunLimit(env, `item-call:${person.id}`);
   if (limited) return limited;
+  const raw = await readObject(ctx.request);
+  const ask = raw && readItemCallAsk(raw);
+  if (!ask) return badRequest();
   const item = await loadItem(env, itemId, ctx.caller, 'view');
   if (item instanceof Response) return item;
   if (item.row.app === ITEM_CALL_APP) return badRequest('not_for_spaces');
@@ -73,6 +83,15 @@ async function startCall(ctx: RouteContext, itemId: string): Promise<Response> {
   const now = Date.now();
   const live = await liveCallOf(env, itemId, now);
   if (live) return json({ call: callOf(env, live, now), started: false } satisfies ItemCallStart);
+
+  // The person's Calls Space, checked again now; when it is skipped, the answer says why and the call has a Space of
+  // its own, below.
+  let fallback: CallSpaceFallback | undefined;
+  if (ask.space) {
+    const started = await startInCallsSpace(ctx, person, item.row, ask.space, now);
+    if (started instanceof Response) return started;
+    fallback = started;
+  }
 
   // The Space: a Team Pod of the person's own, named for the item.
   const name = cut(`${item.row.title || 'Untitled'}${ITEM_CALL_NAME_SUFFIX}`, NAME_MAX);
@@ -102,19 +121,92 @@ async function startCall(ctx: RouteContext, itemId: string): Promise<Response> {
        VALUES (?, ?, ?, ?, (SELECT code FROM share_links WHERE code = ?), 0, '[]', ?, ?)`,
     ).bind(id, itemId, space.id, person.id, code, now, now),
   ]);
-  // The room keeps the call's id, and from then on says who is in it. A failure leaves the call working, its count
-  // still.
-  const marked = await callApp(env, ITEM_CALL_APP, 'POST', `/items/${space.id}/call`, {
+  return markAndAnswer(ctx, id, space.id, item.row.app, now, fallback);
+}
+
+// The room keeps the call's id, and from then on says who is in it. A failure leaves the call working, its count
+// still. Then the call as made: 201.
+async function markAndAnswer(
+  ctx: RouteContext,
+  id: string,
+  spaceId: string,
+  app: string,
+  now: number,
+  fallback?: CallSpaceFallback,
+): Promise<Response> {
+  const { env } = ctx;
+  const marked = await callApp(env, ITEM_CALL_APP, 'POST', `/items/${spaceId}/call`, {
     callId: id,
   });
   if (!marked.ok) console.warn('[index] call not marked', { error: marked.error });
-  console.info('[index] call started', { app: item.row.app });
+  console.info('[index] call started', fallback ? { app, fallback } : { app });
   const row = await env.INDEX_DB.prepare(`SELECT ${CALL_COLUMNS} FROM item_calls WHERE id = ?`)
     .bind(id)
     .first<CallRow>();
-  return json({ call: callOf(env, row!, now), started: true } satisfies ItemCallStart, {
-    status: 201,
-  });
+  const answer: ItemCallStart = { call: callOf(env, row!, now), started: true };
+  if (fallback) answer.fallback = fallback;
+  return json(answer, { status: 201 });
+}
+
+/** The person's Calls Space, when they may choose it now: their own or their team's (never one reached through a
+ *  link), livehuddle's, out of the Trash and Archived. */
+async function callsSpace(env: RouteContext['env'], person: Person, id: string) {
+  const loaded = await loadItem(env, id, { person, share: null }, 'edit', { manage: true });
+  if (loaded instanceof Response) {
+    await loaded.body?.cancel();
+    return null;
+  }
+  const { row } = loaded;
+  return row.app === ITEM_CALL_APP && row.trashed_at === null && row.archived_at === null
+    ? row
+    : null;
+}
+
+/** A call in the person's Calls Space (item-calls.md "Your Calls Space"): 201, or why it was skipped. One item's call
+ *  at a time; an earlier call there that never ended is ended; the Space's call link is reused, working a week from
+ *  now. */
+async function startInCallsSpace(
+  ctx: RouteContext,
+  person: Person,
+  item: ItemRow,
+  spaceId: string,
+  now: number,
+): Promise<Response | CallSpaceFallback> {
+  const { env } = ctx;
+  const space = await callsSpace(env, person, spaceId);
+  if (!space) return 'unavailable';
+  const newest = await newestCallOfSpace(env, space.id);
+  if (newest && isLive(newest, now)) return 'busy';
+  // The link the Space's last call had, while it is still on the Space at Participant: one call link a Space.
+  const kept = newest?.share_code
+    ? await env.INDEX_DB.prepare(
+        `SELECT code FROM share_links WHERE code = ? AND item_id = ? AND level = 'participate'`,
+      )
+        .bind(newest.share_code, space.id)
+        .first<{ code: string }>()
+    : null;
+  const code = kept?.code ?? generateShareCode();
+  const expiresAt = now + CALL_SPACE_LINK_DAYS * DAY_MS;
+  const id = newCallId();
+  await env.INDEX_DB.batch([
+    env.INDEX_DB.prepare(
+      `UPDATE item_calls SET ended_at = ?1, people = 0, updated_at = ?1 WHERE space_id = ?2 AND ended_at IS NULL`,
+    ).bind(now, space.id),
+    kept
+      ? env.INDEX_DB.prepare(
+          `UPDATE share_links SET expiry = 'week', expires_at = ? WHERE code = ?`,
+        ).bind(expiresAt, code)
+      : env.INDEX_DB.prepare(
+          `INSERT INTO share_links (code, item_id, level, tab_id, expiry, expires_at, created_at, public)
+           VALUES (?, ?, 'participate', NULL, 'week', ?, ?, 0)`,
+        ).bind(code, space.id, expiresAt, now),
+    env.INDEX_DB.prepare(
+      `INSERT INTO item_calls (id, item_id, space_id, host_id, share_code, people, names, started_at, updated_at,
+         chosen)
+       VALUES (?, ?, ?, ?, (SELECT code FROM share_links WHERE code = ?), 0, '[]', ?, ?, 1)`,
+    ).bind(id, item.id, space.id, person.id, code, now, now),
+  ]);
+  return markAndAnswer(ctx, id, space.id, item.app, now);
 }
 
 /** GET /items/:id/calls: the item's live call and its meetings, on the reader's own access. */
@@ -137,11 +229,7 @@ async function callOfSpace(
   spaceId: string,
 ): Promise<{ call: CallRow; item: ItemRow } | null | Response> {
   const { env } = ctx;
-  const call = await env.INDEX_DB.prepare(
-    `SELECT ${CALL_COLUMNS} FROM item_calls WHERE space_id = ?`,
-  )
-    .bind(spaceId)
-    .first<CallRow>();
+  const call = await newestCallOfSpace(env, spaceId);
   if (!call) return null;
   const space = await loadItem(env, spaceId, ctx.caller, 'view');
   if (space instanceof Response) return space;

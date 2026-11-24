@@ -239,6 +239,11 @@ const AGENT_FRONT_DOORS = tokensAfter(
 );
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
+  // The shared Resources dialog (packages/workbench ElementResourcesDialog) types a link by its place: a web
+  // address, a tab or another document (livedocuments' Resources offers no link today).
+  'packages/workbench/src/components/dialogs/ElementResourcesDialog.tsx Element·Linked': {
+    values: ['Url', 'Tab', 'Document'],
+  },
   // Suggestions (liveworkspace/docs/specs/016-notifications/suggestions.md "Telemetry"): the shared hook counts the
   // suggestion this app offers, typed by it (SUGGESTIONS in packages/workbench src/components/suggest/suggestions.ts).
   'packages/workbench/src/components/suggest/useSuggestion.ts UI·Opened': {

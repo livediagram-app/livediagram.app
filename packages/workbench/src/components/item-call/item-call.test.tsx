@@ -7,17 +7,21 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ItemCallsRead, ItemMeeting } from '@liveworkspace/index-client';
 
-const { itemCalls, startItemCall, track, toastError } = vi.hoisted(() => ({
+const { itemCalls, startItemCall, track, toastError, toastWarning, prefs } = vi.hoisted(() => ({
   itemCalls: vi.fn(),
   startItemCall: vi.fn(),
   track: vi.fn(),
   toastError: vi.fn(),
+  toastWarning: vi.fn(),
+  prefs: { current: {} },
 }));
 vi.mock('../../lib/index-client', () => ({ indexClient: { itemCalls, startItemCall } }));
 vi.mock('../../hooks/ui/useToast', () => ({
-  useToast: () => ({ success: vi.fn(), error: toastError }),
+  useToast: () => ({ success: vi.fn(), error: toastError, warning: toastWarning }),
 }));
-vi.mock('../../bindings', () => ({ workbench: { track } }));
+vi.mock('../../bindings', () => ({
+  workbench: { track, readPreferences: () => prefs.current },
+}));
 
 import { emitSourceChanged } from '../sheet-links/sheet-link-signal';
 import { useToolsDoorItems } from '../chrome/tools-door';
@@ -178,10 +182,38 @@ describe('Call', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Call' }));
     expect(open).toHaveBeenCalledWith('', 'lw-call-D1');
     await flush();
-    expect(startItemCall).toHaveBeenCalledWith('D1', { code: 'link1' });
+    // No Calls Space chosen: nothing sent beside the item, as before the setting.
+    expect(startItemCall).toHaveBeenCalledWith('D1', { code: 'link1' }, null);
     expect(tab.location.href).toBe(ENTRY);
     expect(tab.opener).toBeNull();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'ItemCall');
+    expect(toastWarning).not.toHaveBeenCalled();
+  });
+
+  it('starts the call in the chosen Calls Space, and says so when it was skipped', async () => {
+    prefs.current = { callSpace: 'lh_room' };
+    try {
+      const open = vi.spyOn(window, 'open').mockReturnValue(fakeTab(true) as unknown as Window);
+      startItemCall.mockResolvedValue({ call: meeting({ people: 0 }), started: true });
+      render(<Editor />);
+      await flush();
+      fireEvent.click(screen.getByRole('button', { name: 'Call' }));
+      await flush();
+      expect(startItemCall).toHaveBeenLastCalledWith('D1', { code: 'link1' }, 'lh_room');
+      expect(toastWarning).not.toHaveBeenCalled();
+
+      open.mockReturnValue(fakeTab(true) as unknown as Window);
+      startItemCall.mockResolvedValue({
+        call: meeting({ people: 0 }),
+        started: true,
+        fallback: 'unavailable',
+      });
+      fireEvent.click(await screen.findByRole('button', { name: 'Call' }));
+      await flush();
+      expect(toastWarning).toHaveBeenCalledWith(expect.stringMatching(/Settings › Calls/));
+    } finally {
+      prefs.current = {};
+    }
   });
 
   it('brings back a tab already at the call rather than starting another', async () => {

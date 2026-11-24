@@ -3,7 +3,7 @@
 
 import { ITEM_CALL_APP } from '@liveworkspace/index-client';
 import type { Env } from './env';
-import { itemLink, tellItemCalls } from './item-call-reads';
+import { itemLink, newestCallOfSpace, tellItemCalls } from './item-call-reads';
 import { getItemRow, type ItemRow } from './rows';
 
 export type CallLine = { callId: string; item: ItemRow; spaceId: string; line: string };
@@ -14,9 +14,7 @@ export async function callLineOf(
   source: Pick<ItemRow, 'id' | 'app'>,
 ): Promise<CallLine | null> {
   if (source.app !== ITEM_CALL_APP) return null;
-  const call = await env.INDEX_DB.prepare('SELECT id, item_id FROM item_calls WHERE space_id = ?')
-    .bind(source.id)
-    .first<{ id: string; item_id: string }>();
+  const call = await newestCallOfSpace(env, source.id);
   if (!call) return null;
   const item = await getItemRow(env, call.item_id);
   if (!item || item.trashed_at !== null) return null;

@@ -768,20 +768,24 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   a click (until 8 November 2026 the account's categories sat under an **Account** heading that was a single-open
   accordion, with Notifications, API Tokens, Webhooks and Your Data nested under Profile, and the rest under a rule).
   On a phone each label sits over its own card of rows. In order:
-  **Account**: **Profile**, **Notifications**, **Privacy**, **Accessibility**, **AI** and **Your Data**;
+  **Account**: **Profile**, **Notifications**, **Privacy**, **Accessibility**, **Calls**, **AI** and **Your Data**;
   **Apps**: the merged categories (one **Editor**, **Presenting**, **Appearance**, **Keyboard**, **Panels**, one
   **Getting Started** and one **Explorer**, whichever apps have them, in the merge's order);
   **Developers**: **API Tokens** alone. A label none of whose categories are listed (on the app's side,
   say) is left out with them. Each account category is top-level with its own coloured tile
-  (`SettingsCategoryTile`: Profile teal, Notifications red, Privacy emerald, Accessibility indigo, Your Data slate,
-  AI fuchsia, API Tokens violet; the line art is the shared bell, sparkle, key and tray). The account's categories hold what belongs to the person in every app, the
+  (`SettingsCategoryTile`: Profile teal, Notifications red, Privacy emerald, Accessibility indigo, Calls cyan, Your
+  Data slate, AI fuchsia, API Tokens violet; the line art is the shared bell, sparkle, key and tray). The account's categories hold what belongs to the person in every app, the
   `all` scope ([accounts.md](../003-accounts/accounts.md#settings)) and the profile: **Profile** (the display name and presence colour
   collaborators see, with a preview of their cursor and avatar, `ProfileEditor` in `@liveworkspace/settings-ui`; the apps' one palette
   `PRESENCE_COLOURS`, plus Automatic; leaving the name empty shows the name they signed up with),
   **Notifications** (the apps' in-editor notes, and each email that can be turned off: comments, mentions, actions
   assigned, invitation answers, tips and check-ins, milestones; an envelope beside every switch under Email and a phone
   beside every switch under Phone, so each says how it reaches you), **Privacy** (anonymous usage events, said in plain words with a **See Every Event** link that opens liveworkspace.app's public /telemetry list in a new tab, so people can look before choosing),
-  **Accessibility** (Reduce Motion), **AI** (Built-In AI or the person's own Anthropic or OpenAI key, and their teams'
+  **Accessibility** (Reduce Motion), **Calls** (**Calls Open In**: a new livehuddle Space for each call, or one of
+  the person's own or their teams' Spaces, each with its preview; Default stores an empty choice, `''`, so it
+  overwrites a Space an editor still holds, read from the index through the host's
+  `callSpaces` door and listed only where the host has one, `account-panels/calls/`, its own chunk;
+  [item-calls.md](../004-index/item-calls.md#your-calls-space)), **AI** (Built-In AI or the person's own Anthropic or OpenAI key, and their teams'
   keys, write-only, `account-panels/ai/`, its own chunk; [ai-keys.md](../003-accounts/ai-keys.md#settings)), **API Tokens** (making a token, seeing its
   secret once with room to copy it, and revoking one, the AI tools connected in an app among them,
   `packages/settings-ui/src/account-panels/tokens/`, its own chunk fetched when the category is first shown),

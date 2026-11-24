@@ -3,6 +3,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type { SettingsBlob } from '@liveworkspace/settings';
+import type { StoredValue } from '@liveworkspace/settings/catalogue';
 import { axeViolations } from '@liveworkspace/vitest-config/axe';
 import { groupCategories } from './groups';
 import type { SettingsCategory, SettingsRow } from './model';
@@ -51,7 +52,7 @@ function Host({
   own?: SettingsCategory[];
   request: SettingsRequest;
   initial?: SettingsScope | null;
-  shared?: { all: SettingsBlob; set: (key: string, value: boolean) => void };
+  shared?: { all: SettingsBlob; set: (key: string, value: StoredValue) => void };
   allowAll?: boolean;
 }) {
   const [store] = useState(() => createSettingsStore(request));
