@@ -37,6 +37,7 @@ import type {
 import {
   KnowledgebasePicker,
   PagePicker,
+  SECTION_LABEL as LABEL,
   type HeadingList,
   type KnowledgebaseList,
   type PageList,
@@ -47,7 +48,6 @@ const KB_LIST_LIMIT = 30;
 const SEARCH_SETTLE_MS = 250;
 const HEADING_MAX = 200;
 const FOCUS_MAX = 300;
-const LABEL = 'text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400';
 const SparkGlyph = lucideGlyph(lucideSparkles, 15);
 const BackGlyph = lucideGlyph(lucideArrowLeft, 15);
 
@@ -471,9 +471,9 @@ function WhatsSent({
   return (
     <section
       aria-label="What's sent"
-      className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-700 dark:bg-slate-800/50"
+      className="flex min-w-0 flex-col gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-700 dark:bg-slate-800/50"
     >
-      <div className="flex h-14 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+      <div className="flex h-36 w-full items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white p-1.5 dark:border-slate-700 dark:bg-slate-900">
         {picture.state === 'drawing' ? (
           <div
             role="status"

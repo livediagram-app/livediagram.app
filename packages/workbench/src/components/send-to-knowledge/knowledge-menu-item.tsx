@@ -21,7 +21,8 @@ export function elementKnowledgeItem(
   const sent = elementKnowledgeSends(elementId)[0];
   return {
     key: 'send-to-knowledge',
-    name: 'Send to Knowledge Base',
+    // The tile's title, short enough to fit it whole ("Send to Knowledge Base" was cut); the label keeps the verb.
+    name: 'Knowledge Base',
     detail: sent ? `Sent: ${sentPageWords(sent)}` : 'A section about it in liveknowledge',
     state: sent ? `Sent: ${sentPageWords(sent)}` : 'Not sent yet',
     label: 'Send to Knowledge Base…',

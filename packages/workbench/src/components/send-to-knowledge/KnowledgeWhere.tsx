@@ -39,6 +39,9 @@ const ROW_ON =
   'bg-brand-50 text-brand-800 ring-1 ring-brand-200 dark:bg-slate-800 dark:text-white dark:ring-brand-400/60';
 const FIELD = 'flex min-w-0 flex-col gap-1.5';
 const FIELD_LABEL = 'text-[13px] font-medium text-slate-700 dark:text-slate-200';
+/** A section's label: the dialog's Knowledgebase, Page, Heading and Focus, and Where. */
+export const SECTION_LABEL =
+  'text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400';
 const PLACEHOLDER =
   'rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400';
 // Each level of the tree steps in this far.
@@ -204,7 +207,7 @@ export function PagePicker(props: {
           <ExistingPages {...props} pages={props.pages} tree={pages} />
           {props.pageId ? (
             <div className={FIELD}>
-              <label htmlFor={ids.where} className={FIELD_LABEL}>
+              <label htmlFor={ids.where} className={SECTION_LABEL}>
                 Where
               </label>
               <Select

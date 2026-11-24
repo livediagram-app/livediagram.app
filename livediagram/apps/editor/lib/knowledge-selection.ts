@@ -121,10 +121,48 @@ export function captureKnowledgeSelection(
   };
 }
 
-/** The selection's tab: the tab with only the gathered elements, for the picture. */
+// The room a picked frame or lane keeps around the items in it, and above them for its title.
+export const KNOWLEDGE_PICTURE_MARGIN = 24;
+export const KNOWLEDGE_PICTURE_TITLE_ROOM = 40;
+
+/**
+ * A frame or lane cropped to the items in the picture: drawn snug around them with a small margin (more above, for
+ * its title), never past its own sides, so a sparse lane is not a tall, mostly empty picture.
+ */
+export function cropContainer<E extends Box>(container: E, items: Box): E {
+  const left = Math.max(container.x, items.x - KNOWLEDGE_PICTURE_MARGIN);
+  const top = Math.max(container.y, items.y - KNOWLEDGE_PICTURE_TITLE_ROOM);
+  const right = Math.min(
+    container.x + container.width,
+    items.x + items.width + KNOWLEDGE_PICTURE_MARGIN,
+  );
+  const bottom = Math.min(
+    container.y + container.height,
+    items.y + items.height + KNOWLEDGE_PICTURE_MARGIN,
+  );
+  return { ...container, x: left, y: top, width: right - left, height: bottom - top };
+}
+
+/**
+ * The selection's tab: the tab with only the gathered elements, for the picture, each frame or lane in it cropped to
+ * the boxed items it holds (cropContainer). One with nothing else in it stays whole.
+ */
 export function selectionTab(tab: Tab, selected: ReadonlySet<string>): Tab {
   const keep = new Set(gatherSelection(tab.elements, selected).map((g) => g.el.id));
-  return { ...tab, elements: tab.elements.filter((el) => keep.has(el.id)) };
+  const elements = tab.elements.filter((el) => keep.has(el.id));
+  const items = elements.filter((el) => isBoxed(el) && !isContainer(el)) as Box[];
+  if (items.length === 0) return { ...tab, elements };
+  const x = Math.min(...items.map((b) => b.x));
+  const y = Math.min(...items.map((b) => b.y));
+  const right = Math.max(...items.map((b) => b.x + b.width));
+  const bottom = Math.max(...items.map((b) => b.y + b.height));
+  const bounds: Box = { x, y, width: right - x, height: bottom - y };
+  return {
+    ...tab,
+    elements: elements.map((el) =>
+      isContainer(el) && isBoxed(el) ? (cropContainer(el, bounds) as Element) : el,
+    ),
+  };
 }
 
 /** A PNG's bytes from a data URL's base64, without decoding it. */

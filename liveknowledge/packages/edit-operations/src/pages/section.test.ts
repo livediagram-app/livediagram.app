@@ -3,7 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
   ARTICLE_ZONE_MAX,
   ARTICLE_ZONE_MIN,
+  KNOWLEDGEBASE_FLOW,
+  articleMarginPx,
   articlesOf,
+  layOutPages,
+  newKnowledgebasePageContent,
+  pagesOf,
+  withZonesSettled,
   type ArticleFlow,
   type Page,
   type Tab,
@@ -17,6 +23,7 @@ import {
   pictureZone,
   pictureZoneSize,
   sectionEndOf,
+  withPictureZonePlaced,
 } from './section';
 
 type Block = ArticleFlow['blocks'][number];
@@ -227,5 +234,64 @@ describe('a block as a section reads it', () => {
       height: 20,
     });
     expect(zone.at!.page).toBe('pg1');
+  });
+});
+
+// Work Tracker 1425 rework: on a knowledgebase page (the continuous page) the picture is written where the writing
+// puts it, so a Viewer, whose open settles nothing, reads it in place rather than parked left of the page.
+describe('a picture on the continuous page', () => {
+  const kb = (): Tab => ({ id: 't', name: 'Page', elements: [], ...newKnowledgebasePageContent() });
+  const send = (tab: Tab, markdown: string, after?: string) => {
+    const out = applyArticleWrite(tab, {
+      markdown,
+      mode: 'append',
+      ...(after ? { after } : {}),
+      picture: { imageId: 'img_1', width: 800, height: 400 },
+    });
+    if ('refusal' in out) throw new Error(out.refusal.message);
+    const doc = articlesOf(out.tab)[KNOWLEDGEBASE_FLOW]!;
+    const zone = doc.blocks.find((b) => b.type === 'zone')!;
+    if (zone.type !== 'zone') throw new Error('no zone');
+    const page = layOutPages(pagesOf(out.tab)).find((p) => p.flow === KNOWLEDGEBASE_FLOW)!;
+    const image = out.tab.elements.find((e) => e.type === 'image')!;
+    return { tab: out.tab, doc, zone, page, image };
+  };
+
+  it('is written on the page, in the text column, its image in the zone', () => {
+    const { doc, zone, page, image } = send(kb(), 'Some words\n\nMore words');
+    const margin = articleMarginPx(doc.style);
+    expect(zone.at).toMatchObject({ page: page.id, x: margin });
+    expect(zone.at!.y).toBeGreaterThan(0);
+    // Within the page as stored: the estimate grew it for the picture too.
+    expect(zone.at!.y + zone.height).toBeLessThanOrEqual(page.rect.height - margin);
+    expect(image).toMatchObject({
+      x: page.rect.x + zone.at!.x,
+      y: page.rect.y + zone.at!.y,
+    });
+  });
+
+  it('sits lower the more writing comes before it', () => {
+    const short = send(kb(), 'One line');
+    const long = send(kb(), Array.from({ length: 12 }, (_, i) => `Paragraph ${i}`).join('\n\n'));
+    expect(long.zone.at!.y).toBeGreaterThan(short.zone.at!.y + 200);
+  });
+
+  it('is already settled: a layout measuring it where it stands changes nothing', () => {
+    const { tab, zone } = send(kb(), 'Some words');
+    const settled = withZonesSettled(tab, KNOWLEDGEBASE_FLOW, [
+      { id: zone.id, index: 0, x: zone.at!.x, y: zone.at!.y },
+    ]);
+    expect(settled).toBe(tab);
+  });
+
+  it('keeps a zone the article does not hold, or a paper page, as it is', () => {
+    const tab = kb();
+    expect(withPictureZonePlaced(tab, KNOWLEDGEBASE_FLOW, 'nope')).toBe(tab);
+    expect(withPictureZonePlaced(tab, 'elsewhere', 'nope')).toBe(tab);
+    const paper = tabWith([
+      ...blocks,
+      { id: 'z', type: 'zone', zone: 'object', width: 10, height: 10 },
+    ]);
+    expect(withPictureZonePlaced(paper, 'art', 'z')).toBe(paper);
   });
 });

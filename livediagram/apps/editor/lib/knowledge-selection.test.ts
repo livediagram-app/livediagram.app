@@ -10,7 +10,10 @@ import {
 import {
   base64Bytes,
   captureKnowledgeSelection,
+  cropContainer,
   gatherSelection,
+  KNOWLEDGE_PICTURE_MARGIN,
+  KNOWLEDGE_PICTURE_TITLE_ROOM,
   pictureWithin,
   selectionTab,
 } from './knowledge-selection';
@@ -128,6 +131,42 @@ describe('captureKnowledgeSelection', () => {
       'f',
       'in',
     ]);
+  });
+});
+
+describe('the picture cropped to the items', () => {
+  const rect = (e: Element | undefined) => {
+    const b = e as unknown as { x: number; y: number; width: number; height: number };
+    return { x: b.x, y: b.y, width: b.width, height: b.height };
+  };
+
+  it('draws a sparse lane snug around its items, a small margin round them and title room above', () => {
+    const tab = {
+      id: 't',
+      elements: [frame('lane', 0, 0, 2000, 3000), box('a', 400, 1200), box('b', 700, 1400)],
+    };
+    const lane = selectionTab(tab as never, new Set(['lane'])).elements.find(
+      (e) => e.id === 'lane',
+    );
+    expect(rect(lane)).toEqual({
+      x: 400 - KNOWLEDGE_PICTURE_MARGIN,
+      y: 1200 - KNOWLEDGE_PICTURE_TITLE_ROOM,
+      width: 300 + 100 + 2 * KNOWLEDGE_PICTURE_MARGIN,
+      height: 250 + KNOWLEDGE_PICTURE_TITLE_ROOM + KNOWLEDGE_PICTURE_MARGIN,
+    });
+  });
+
+  it('never grows a frame past its own sides, and leaves one with nothing in it whole', () => {
+    expect(
+      cropContainer({ x: 0, y: 0, width: 120, height: 60 }, { x: 5, y: 5, width: 100, height: 50 }),
+    ).toEqual({ x: 0, y: 0, width: 120, height: 60 });
+    const empty = { id: 't', elements: [frame('f', 0, 0, 900, 900)] };
+    expect(rect(selectionTab(empty as never, new Set(['f'])).elements[0])).toEqual({
+      x: 0,
+      y: 0,
+      width: 900,
+      height: 900,
+    });
   });
 });
 

@@ -8,7 +8,8 @@ section, the chips' rules and the limits are the platform's; this file says only
 
 - **A selection of several**: the selection's toolbar, **Send to Knowledge Base** right after Send to Plan.
 - **One element**: the selection toolbar's **Send to Knowledge Base** beside Send to Plan (every role), and the element
-  menu's **Resources** category, right after Send to Plan, for an Editor.
+  menu's **Resources** category, right after Send to Plan, for an Editor: its tile is titled **Knowledge Base**, short
+  enough to fit whole.
 - A selection with nothing in it to document (no words, no frame, no arrow) still sends: its picture and the list of
   what it holds ("A rectangle", "An arrow").
 

@@ -74,7 +74,9 @@ Opened from the selection's toolbar (each app's spec says where), a dialog centr
 phone, under the [dialog hero header](./dialog-hero-header.md): "Send to Knowledge Base", "AI writes up these items
 on a page in liveknowledge. They stay as they are here.", and liveknowledge's art.
 
-1. **What's sent**: a strip with the picture of the selection and its count ("6 items, 4 arrows").
+1. **What's sent**: a strip with the picture of the selection, large enough to read, and its count ("6 items, 4
+   arrows"). The picture is cropped to the selected items with a small margin: the frames and lanes that gathered
+   them are drawn but do not widen it.
 2. **Knowledgebase**: the person's knowledgebases they can edit, most recent first, with a search. The one last sent to
    from this item opens picked (remembered per item in this browser, the newest 50 kept, as Send to Plan's).
 3. **Page**, as two cards: **Existing Page** (chosen) lists the knowledgebase's pages as a tree read through
@@ -109,7 +111,8 @@ page's history, Updated, the page's watchers told, never verified by it):
 - **New page**: a page of the person's own at the chosen place in the tree (top level, or under a parent), its title
   as asked, its Owner the person.
 - In order: the heading (a level 2 heading, when given), the summary, the picture (an object zone, aligned left, its
-  image stored in the person's Library through the media service), and the Sent From line: "Sent from <source title>
+  image stored in the person's Library through the media service, written where the writing puts it on the page, so
+  a Viewer reads it in place before anyone lays the page out), and the Sent From line: "Sent from <source title>
   in livediagram", linking to the place (`#t=<tab>&el=<first element>`).
 - A verified page or one due a review is written as any Editor's write is: the person decides, and their write takes
   no tick away (an agent's write is bounded by AI Editing, below).
