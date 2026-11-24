@@ -381,15 +381,28 @@ test.describe('mobile', () => {
     await page.getByRole('button', { name: 'Open Timer' }).tap();
     const start = page.getByRole('button', { name: /Start 5 min countdown/ });
     await expect(start).toBeVisible();
-    const onTop = await start.evaluate((el) => {
-      const r = el.getBoundingClientRect();
-      const hit = document.elementFromPoint(
-        Math.round(r.x + r.width / 2),
-        Math.round(r.y + r.height / 2),
-      );
-      return !!hit && el.contains(hit);
-    });
-    expect(onTop).toBe(true);
+    // On a phone it is a drawer sliding up from the screen's foot (liveworkspace/docs/specs/011-workbench/phone-drawers.md),
+    // visible from its first frame, so the hit test waits for it to come to rest: mid-slide Start's centre is still
+    // below the screen, and a toast up then moves above the drawer only once the slide ends ("Toasts stand on it").
+    await start.evaluate((el) =>
+      Promise.all(
+        (el.closest('[data-phone-drawer]')?.getAnimations({ subtree: true }) ?? []).map(
+          (a) => a.finished,
+        ),
+      ),
+    );
+    await expect
+      .poll(() =>
+        start.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const hit = document.elementFromPoint(
+            Math.round(r.x + r.width / 2),
+            Math.round(r.y + r.height / 2),
+          );
+          return !!hit && el.contains(hit);
+        }),
+      )
+      .toBe(true);
 
     // Starting it puts the clock on the button.
     await start.tap();
