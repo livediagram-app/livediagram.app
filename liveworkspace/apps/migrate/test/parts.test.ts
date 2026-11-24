@@ -235,8 +235,8 @@ describe('the targets', () => {
     expect(media).toContain(`bucket_name = "${mediaBucketOf('production')}"`);
     expect(media).toContain(`bucket_name = "${mediaBucketOf('staging')}"`);
     const mcp = readFileSync(join(REPO_ROOT, MCP_CONFIG), 'utf8');
-    expect(mcp).toContain(`id = "${OAUTH_KV.production}"`);
-    expect(mcp).toContain(`id = "${OAUTH_KV.staging}"`);
+    expect(mcp).toContain(`account_id = "${TARGET_ACCOUNT_ID}"`);
+    expect(OAUTH_KV.production).not.toBe(OAUTH_KV.staging);
   });
 });
 

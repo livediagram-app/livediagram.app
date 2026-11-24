@@ -43,6 +43,8 @@ const INTEGRATIONS: Record<string, string[]> = {
   'Do I need an account to use livedesign?': ['liveworkspace'],
   // The one status page on liveworkspace.app checks every app's services, livedesign's among them.
   'Is livedesign up right now?': ['liveworkspace'],
+  // An AI tool connects through liveworkspace's one MCP, every app's tools through one connection.
+  'Can I connect my own AI assistant, like Claude?': ['liveworkspace'],
 };
 
 const entries = FAQ_CATEGORIES.flatMap((c) => [
