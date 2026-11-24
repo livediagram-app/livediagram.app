@@ -946,7 +946,7 @@ them) ingest from, so one listing reaches several catalogues. Directories that
 look at a server themselves (Smithery, Glama, a client's add-a-server screen)
 read its server card, because `/mcp` answers only a signed-in caller.
 
-- **Descriptor.** `livedesign/server.json`, under the registry's `2025-12-11` schema.
+- **Descriptor.** livedesign's former server.json, under the registry's `2025-12-11` schema.
   Name `io.github.livediagram-app/livedesign`: every product lists under
   `io.github.livediagram-app`, the GitHub organisation that owns the monorepo
   (`livediagram-app/livediagram.app`, public), so a GitHub sign-in as one of its
@@ -975,7 +975,7 @@ read its server card, because `/mcp` answers only a signed-in caller.
   `mcp-publisher login github`, then `mcp-publisher publish`. Or the root
   workflow `mcp-registry.yml`, started by hand (`workflow_dispatch`) with the
   product to publish, which logs in with `github-oidc` and publishes
-  `livedesign/server.json`. The registry rejects a version it already holds, so
+  that server.json. The registry rejects a version it already holds, so
   republishing means bumping `version` in `listing.ts` and `server.json` (the
   test keeps them equal).
 - Only the hosted origin is listed: the descriptor names it alone.

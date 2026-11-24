@@ -2,8 +2,6 @@
 # Written by .github/scripts/duplicate-guard.mjs --update; it may only shrink (docs/ci.md).
 livedesign/apps/cli/src/output/cli-error.ts	livediagram/apps/cli/src/output/cli-error.ts	livedocuments/apps/cli/src/output/cli-error.ts	liveknowledge/apps/cli/src/output/cli-error.ts	liveplanner/apps/cli/src/output/cli-error.ts
 livedesign/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveknowledge/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
-livedesign/apps/live/app/oauth/consent/page.tsx	livediagram/apps/editor/app/oauth/consent/page.tsx	livedocuments/apps/editor/app/oauth/consent/page.tsx	liveknowledge/apps/editor/app/oauth/consent/page.tsx	liveplanner/apps/editor/app/oauth/consent/page.tsx
-livedesign/apps/live/app/oauth/device/page.tsx	livediagram/apps/editor/app/oauth/device/page.tsx	livedocuments/apps/editor/app/oauth/device/page.tsx	liveknowledge/apps/editor/app/oauth/device/page.tsx	liveplanner/apps/editor/app/oauth/device/page.tsx
 livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor/components/canvas/boxed-shared.ts	liveknowledge/apps/editor/components/canvas/boxed-shared.ts
 livedesign/apps/live/components/canvas/canvas-pattern-context.ts	liveplanner/apps/editor/components/canvas/canvas-pattern-context.ts
 livedesign/apps/live/components/palette/strip-rail-items.tsx	livediagram/apps/editor/components/palette/strip-rail-items.tsx

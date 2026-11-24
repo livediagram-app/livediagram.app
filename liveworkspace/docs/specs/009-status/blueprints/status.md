@@ -226,21 +226,21 @@ them apart.
 
 ## Constants and configuration
 
-| Constant              | Value                                                                                     | Where                          | Used by                        |
-| --------------------- | ----------------------------------------------------------------------------------------- | ------------------------------ | ------------------------------ |
-| `DAY_MS`              | `86_400_000`                                                                              | `apps/status/src/config.ts`    | `RETENTION_MS`                 |
-| `RETENTION_DAYS`      | `90`                                                                                      | `config.ts`                    | the prune                      |
-| `RETENTION_MS`        | `RETENTION_DAYS * DAY_MS`                                                                 | `config.ts`                    | (exported for tests)           |
-| `PROBE_CONCURRENCY`   | `6`                                                                                       | `config.ts`                    | `probeAll`                     |
-| `CACHE_SECONDS`       | `120`                                                                                     | `config.ts`                    | read `Cache-Control`           |
-| `USER_AGENT`          | `'liveworkspace-status/1 (+https://www.liveworkspace.app/status)'`                        | `config.ts`                    | every probe                    |
-| `SLOW_MS`             | `1500`                                                                                    | `packages/status/src/judge.ts` | `stateOf`                      |
-| `TIMEOUT_MS`          | `10_000`                                                                                  | `judge.ts`                     | `probeOne`                     |
-| `STATUS_API_PATH`     | `'/api/status'`                                                                           | `packages/status/src/wire.ts`  | the Worker's routing, the page |
-| `STATUS_HISTORY_PATH` | `'/history'`                                                                              | `wire.ts`                      | the read                       |
-| `HISTORY_DAYS`        | `90`                                                                                      | `wire.ts`                      | the window, `parseDays`        |
-| `INCIDENTS_MAX`       | `50`                                                                                      | `wire.ts`                      | `buildHistory`                 |
-| `MCP_DEV_PORTS`       | 3013 (the one MCP) for each app but livehuddle (none) | `services.ts`                  | which apps have an MCP row     |
+| Constant              | Value                                                              | Where                          | Used by                        |
+| --------------------- | ------------------------------------------------------------------ | ------------------------------ | ------------------------------ |
+| `DAY_MS`              | `86_400_000`                                                       | `apps/status/src/config.ts`    | `RETENTION_MS`                 |
+| `RETENTION_DAYS`      | `90`                                                               | `config.ts`                    | the prune                      |
+| `RETENTION_MS`        | `RETENTION_DAYS * DAY_MS`                                          | `config.ts`                    | (exported for tests)           |
+| `PROBE_CONCURRENCY`   | `6`                                                                | `config.ts`                    | `probeAll`                     |
+| `CACHE_SECONDS`       | `120`                                                              | `config.ts`                    | read `Cache-Control`           |
+| `USER_AGENT`          | `'liveworkspace-status/1 (+https://www.liveworkspace.app/status)'` | `config.ts`                    | every probe                    |
+| `SLOW_MS`             | `1500`                                                             | `packages/status/src/judge.ts` | `stateOf`                      |
+| `TIMEOUT_MS`          | `10_000`                                                           | `judge.ts`                     | `probeOne`                     |
+| `STATUS_API_PATH`     | `'/api/status'`                                                    | `packages/status/src/wire.ts`  | the Worker's routing, the page |
+| `STATUS_HISTORY_PATH` | `'/history'`                                                       | `wire.ts`                      | the read                       |
+| `HISTORY_DAYS`        | `90`                                                               | `wire.ts`                      | the window, `parseDays`        |
+| `INCIDENTS_MAX`       | `50`                                                               | `wire.ts`                      | `buildHistory`                 |
+| `MCP_DEV_PORTS`       | 3013 (the one MCP) for each app but livehuddle (none)              | `services.ts`                  | which apps have an MCP row     |
 
 | Setting             | Production                                                           | Staging                                 |
 | ------------------- | -------------------------------------------------------------------- | --------------------------------------- |

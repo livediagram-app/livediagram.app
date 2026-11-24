@@ -18,8 +18,8 @@ Scope, by file:
 | `liveworkspace/apps/accounts/scripts/local-clients.ts`, `seed-local-clients.ts`                   | Each app's fixed local client, written into the local database by the dev script         |
 | `packages/auth-client/src/oauth.ts`, `silent.ts`, `verify.ts`, `return-path.ts`, `pkce-cookie.ts` | Each app's side: PKCE code flow, `prompt=none`, offline verification, safe returns       |
 | `packages/auth-client/src/sign-out.ts`                                                            | The page's side of signing out: `askSignOut`, the app API's answer and its hop           |
-| `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`                           | The device grant the one MCP runs for every app's CLIs                                  |
-| `packages/mcp-kit/src/oauth.ts`, `oauth-names.ts`                                                 | Registration, authorize and the token the one MCP runs for MCP clients         |
+| `packages/mcp-kit/src/oauth-device.ts`, `packages/api-kit/src/oauth.ts`                           | The device grant the one MCP runs for every app's CLIs                                   |
+| `packages/mcp-kit/src/oauth.ts`, `oauth-names.ts`                                                 | Registration, authorize and the token the one MCP runs for MCP clients                   |
 
 ## Domain and naming
 

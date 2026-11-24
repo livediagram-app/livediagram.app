@@ -91,12 +91,12 @@ under its key, so the service never needs to trust an unsigned, origin-less batc
 
 Each app configures where to send:
 
-| Where               | Setting                                                                               |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| Browser builds      | `NEXT_PUBLIC_TELEMETRY_URL` (default `https://www.liveworkspace.app/api/telemetry`)   |
-| api Workers         | `TELEMETRY_URL` var (same default) and the `TELEMETRY_KEY` secret                     |
-| the one MCP         | `<APP>_TELEMETRY_KEY` secrets, the same value as that app's api `TELEMETRY_KEY`       |
-| Both                | The app's own `TELEMETRY_ENABLED` / `NEXT_PUBLIC_TELEMETRY_ENABLED` gates still apply |
+| Where          | Setting                                                                               |
+| -------------- | ------------------------------------------------------------------------------------- |
+| Browser builds | `NEXT_PUBLIC_TELEMETRY_URL` (default `https://www.liveworkspace.app/api/telemetry`)   |
+| api Workers    | `TELEMETRY_URL` var (same default) and the `TELEMETRY_KEY` secret                     |
+| the one MCP    | `<APP>_TELEMETRY_KEY` secrets, the same value as that app's api `TELEMETRY_KEY`       |
+| Both           | The app's own `TELEMETRY_ENABLED` / `NEXT_PUBLIC_TELEMETRY_ENABLED` gates still apply |
 
 A person's opt-out (the app's user preference) is still honoured in the browser, before anything is
 sent.

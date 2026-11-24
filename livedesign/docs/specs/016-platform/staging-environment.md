@@ -121,8 +121,8 @@ Two deliberate non-changes:
 its own build**: each deploy builds its sites for its environment. Staging's build differs
 from production's in exactly one value:
 
-| Variable                 | Production                                       | Staging                                                                                                                           |
-| ------------------------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Variable                 | Production                                          | Staging                                                                                                                           |
+| ------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.liveworkspace.app`) | `https://mcp-staging.liveworkspace.app`, the staging one MCP's custom domain (set in the root `.github/scripts/deploy-group.mjs`) |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
@@ -178,9 +178,9 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 **Data stores** staging needs, each created once with wrangler:
 
-| Resource | Name                             | Created with                                                            | Where the id lives                        |
-| -------- | -------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------- |
-| R2       | `livedesign-photo-blobs-staging` | `wrangler r2 bucket create livedesign-photo-blobs-staging`              | bound by name, no id                      |
+| Resource | Name                             | Created with                                               | Where the id lives   |
+| -------- | -------------------------------- | ---------------------------------------------------------- | -------------------- |
+| R2       | `livedesign-photo-blobs-staging` | `wrangler r2 bucket create livedesign-photo-blobs-staging` | bound by name, no id |
 
 `wrangler r2 bucket list` shows whether it exists. The api's Durable Objects need no
 setup: they exist once the staging api worker deploys. livedesign has no MCP KV namespace: its MCP is a package, and
