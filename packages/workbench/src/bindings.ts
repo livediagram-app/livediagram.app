@@ -44,6 +44,8 @@ export type WorkbenchPreferences = {
   reduceMotion?: boolean;
   // Show Notifications off quiets info and success toasts (hooks/ui/useToast).
   notificationsEnabled?: boolean;
+  // Suggest Other Apps off quiets every suggestion (components/suggest; the `all` scope's suggestNextApp).
+  suggestNextApp?: boolean;
 };
 
 /** The product's api transport (its lib/api/core.ts), as far as workbench code calls it. */

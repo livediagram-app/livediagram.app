@@ -141,6 +141,8 @@ export type UserPreferences = {
   // (docs/specs/007-editor/editor-app.md "Named on a wide desktop"). Missing === on; a phone never
   // names them, whatever this says. Read through useDockNames.
   dockButtonNames?: boolean;
+  // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md): false quiets every suggestion.
+  suggestNextApp?: boolean;
   // Your hearing ring in a call (docs/specs/012-collaboration/proximity-audio.md "Your hearing ring"): where people can
   // hear you while you talk. Missing / undefined / true === shown, the default; `false` hides it. The call is unchanged.
   hearingRing?: boolean;

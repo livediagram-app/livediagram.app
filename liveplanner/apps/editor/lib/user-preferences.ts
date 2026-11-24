@@ -147,6 +147,8 @@ export type UserPreferences = {
   // (docs/specs/007-editor/editor-app.md "Named on a wide desktop"). Missing === on; a phone never
   // names them, whatever this says. Read through useDockNames.
   dockButtonNames?: boolean;
+  // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md): false quiets every suggestion.
+  suggestNextApp?: boolean;
   // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): the item panel opens filling the window on a
   // desktop. Set by the panel's own button (hooks/plan/useCardPanelMaximised); missing === the usual size, and a
   // phone ignores it.

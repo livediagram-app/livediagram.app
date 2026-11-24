@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NOTICE_GAP_PX, noticeBottom } from './board-scene-notice-slot';
+import { NOTICE_GAP_PX, noticeBottom } from './notice-slot';
 
 // docs/specs/020-import-export/board-scene.md "In the editor": the notice's own slot above the dock.
 describe('noticeBottom', () => {

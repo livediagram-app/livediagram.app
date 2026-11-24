@@ -22,9 +22,10 @@ export const SECTION_ORDER = [
   'Quick Style',
   'Map',
   'Collaborate',
-  // Getting Started: the tours to offer again, then the element tours (closed).
+  // Getting Started: the tours to offer again, then the element tours (closed), then the suggestions.
   'Offer Again',
   'Show Me',
+  'Suggestions',
   // Explorer: after Show Home Banner, where new files go.
   'Default Folders',
   // Notifications: in the editor, then by email, then on a phone.

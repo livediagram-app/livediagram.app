@@ -105,6 +105,17 @@ export const CATALOGUE: AppCatalogue = {
       },
     },
     {
+      key: 'suggestNextApp',
+      on: true,
+      off: false,
+      fallback: true,
+      event: {
+        category: 'UI',
+        on: 'SuggestionsOn',
+        off: 'SuggestionsOff',
+      },
+    },
+    {
       key: 'telemetryEnabled',
       on: true,
       off: false,
@@ -212,7 +223,6 @@ export const CATALOGUE: AppCatalogue = {
           key: 'notifyWatchDigest',
           on: true,
           off: false,
-          // Off by default (docs/specs/030-knowledgebase/watching.md "The daily digest email").
           fallback: false,
           event: {
             category: 'UI',

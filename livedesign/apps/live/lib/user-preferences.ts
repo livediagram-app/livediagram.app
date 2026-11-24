@@ -169,6 +169,8 @@ export type UserPreferences = {
   // (docs/specs/007-editor/live-app.md "Named on a wide desktop"). Missing === on; a phone never
   // names them, whatever this says. Read through useDockNames.
   dockButtonNames?: boolean;
+  // Suggest Other Apps (liveworkspace/docs/specs/016-notifications/suggestions.md): false quiets every suggestion.
+  suggestNextApp?: boolean;
   // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
   // sending the matching transactional email, and liveworkspace's
