@@ -12,21 +12,21 @@ export const categories: Category[] = [
     title: 'About liveknowledge',
     description:
       'Get to know liveknowledge: a free, open-source Knowledgebase a team writes, verifies and asks questions of.',
-    articleCount: 3,
+    articleCount: 4,
   },
   {
     slug: 'getting-started',
     title: 'Getting Started',
     description:
       'Go from a new Knowledgebase to pages your team can find and trust, with the basics every new user needs.',
-    articleCount: 5,
+    articleCount: 7,
   },
   {
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
       'Stay in control of your work: guest access, signing in, the Trash, deleting your data, API tokens, the Google Drive mirror and email notifications.',
-    articleCount: 7,
+    articleCount: 8,
   },
   {
     slug: 'privacy-and-security',
@@ -47,7 +47,14 @@ export const categories: Category[] = [
     title: 'Troubleshooting',
     description:
       'Get unstuck fast: Ask and its key, reviews, imports, agents, sign-in and collaboration problems.',
-    articleCount: 8,
+    articleCount: 9,
+  },
+  {
+    slug: 'supported-devices',
+    title: 'Supported Devices',
+    description:
+      'How liveknowledge works on a computer, a tablet, and a phone, and what to expect on each.',
+    articleCount: 3,
   },
   {
     slug: 'policies',
@@ -94,7 +101,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you make: one library, shared by every liveworkspace app, that keeps your knowledgebases, folders and teams easy to find.',
-    articleCount: 12,
+    articleCount: 13,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -102,16 +109,16 @@ export const categories: Category[] = [
     slug: 'user-interface',
     title: 'User Interface',
     description:
-      'Your own preferences for the editor: the Settings every liveworkspace app shares.',
-    articleCount: 1,
+      'How the editor is laid out (the top corners, the page tree and the footer), its quick controls, and the Settings every liveworkspace app shares.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
     slug: 'tools',
     title: 'Tools',
     description:
-      'Let a Knowledgebase run its routine on its own: Automations, rules that ask for reviews, tell Slack and keep pages owned.',
-    articleCount: 1,
+      'Let a Knowledgebase run its routine on its own with Automations, and choose the look of the app itself: Light, Dark or System.',
+    articleCount: 2,
     kind: 'feature',
   },
   {
@@ -119,7 +126,7 @@ export const categories: Category[] = [
     title: 'Search Panel',
     description:
       'One search over everything you can reach: the pages of this Knowledgebase first, then your other work, commands, settings and help.',
-    articleCount: 1,
+    articleCount: 2,
     kind: 'feature',
   },
 ];
@@ -136,6 +143,18 @@ export const articles: Article[] = [
       'A Knowledgebase for a team: pages of writing in a tree, each with an owner who vouches for it, that people and AI agents can ask.',
     keywords:
       'overview intro introduction about product knowledgebase knowledge base wiki handbook docs documentation team pages verified ask ai agents',
+    category: 'About liveknowledge',
+    categorySlug: 'about',
+    parentSlug: 'about',
+    ...APPS,
+  },
+  {
+    slug: 'why-liveknowledge',
+    title: 'Why Use liveknowledge?',
+    description:
+      'Free, open source, no sign-in wall, and every page says who vouches for it. Here is why.',
+    keywords:
+      'benefits reasons comparison alternatives features advantages why use free open source wiki notion confluence trust verified',
     category: 'About liveknowledge',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -553,6 +572,17 @@ export const articles: Article[] = [
       "Why an agent's write was refused, and whether to allow writing or have it suggest the edit.",
     keywords:
       'agent cannot write refused forbidden write_page page_verified page_review_due ai_editing_suggest_only ai editing allow writing read-only token scope suggest instead viewer participant',
+    category: 'Troubleshooting',
+    categorySlug: 'troubleshooting',
+    ...APPS,
+  },
+  {
+    slug: 'page-changes-missing',
+    title: 'My Page Changes Are Missing',
+    description:
+      'What to check when writing seems to have vanished from a page: drafts and Save, the right page, and how to get it back.',
+    keywords:
+      'missing lost vanished disappeared changes edits gone unsaved draft save cancel discard version history restore undo trash page knowledgebase',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
     ...APPS,

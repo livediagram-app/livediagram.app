@@ -56,7 +56,14 @@ export const articles: Article[] = [
       'a11y screen reader focus tab navigation aria assistive accessible f6 regions reduce motion ui scale',
     category: 'Getting Started',
     categorySlug: 'getting-started',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'adding-shapes-and-arrows',
@@ -92,7 +99,14 @@ export const articles: Article[] = [
       'shortcuts hotkeys keys copy paste undo delete essential redo search zen board cards sheet cells',
     category: 'Getting Started',
     categorySlug: 'getting-started',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'sharing-your-document',
@@ -289,7 +303,14 @@ export const articles: Article[] = [
     keywords: 'computer pc mac windows laptop mouse full editor',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'mobile',
@@ -300,7 +321,14 @@ export const articles: Article[] = [
       'phone iphone android touch gestures small screen toolbar dock mobile layout landscape sideways rotate header tabs hide fullscreen',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'tablet',
@@ -309,7 +337,14 @@ export const articles: Article[] = [
     keywords: 'ipad touch stylus pen android surface tablet keyboard',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
   },
   {
     slug: 'dark-mode',
@@ -320,8 +355,20 @@ export const articles: Article[] = [
       'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
     category: 'Tools',
     categorySlug: 'tools',
-    apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
-    byApp: {},
+    apps: [
+      'livediagram',
+      'liveplanner',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+      'liveknowledge',
+    ],
+    byApp: {
+      liveknowledge: {
+        description:
+          "Light, Dark, or follow your device: the look of the app itself, apart from the Knowledgebase's style.",
+      },
+    },
   },
   {
     slug: 'layout-cleanup',
