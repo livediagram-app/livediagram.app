@@ -16,7 +16,7 @@ Scope, by file:
 | `packages/explorer/src/inbox-notices/useInboxNotices.tsx`     | `useInboxNotices`: the watch, the seen rows and the center for one reader; the count; the layer          |
 | `packages/explorer/src/inbox-notices/InboxCountBadge.tsx`     | The Explorer button's count                                                                              |
 | `packages/explorer/src/inbox-notices/index.ts`                | `@liveworkspace/explorer/inbox-notices`: small on purpose, so an editor's first load carries no Explorer |
-| `packages/explorer/src/data/useInbox.ts`                      | Takes the watch's answers (All: as the list; this app: a re-read when they differ)                       |
+| `packages/explorer/src/data/useInbox.ts`                      | Takes the watch's answers as the list (every app's rows, whatever the app filter)                        |
 | `packages/explorer/src/explorer/InboxPane.tsx`                | `?at=<row key>` opens the pane on that row; a list on screen marks its rows seen                         |
 | `packages/workbench/src/components/chrome/useEditorInbox.tsx` | The editor's door: a signed-in account, the index client, the app's `track`                              |
 | `<product>/…/components/chrome/ToolbarExplorerButton.tsx`     | The count on the Explorer button and the notice layer, in each editor with an Inbox                      |
@@ -48,8 +48,8 @@ with its last. State: `data` (the last answer, or null), `at` (its time).
   Inbox as it is); `useInbox` subscribes passive, having just read the Inbox itself, and its own reads call
   `touch()`, which counts as this page's last read so the watch's next turn waits 30 s from it.
 
-`inboxSignature(data, app)`: each row's key and time (threads `latestAt`, actions `updatedAt`, access requests
-`askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`, suggested edits `createdAt`, updates `updateKey` and `latestAt`), sorted, joined; with `app`, that app's rows only. Two
+`inboxSignature(data)`: each row's key and time (threads `latestAt`, actions `updatedAt`, access requests
+`askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`, suggested edits `createdAt`, updates `updateKey` and `latestAt`), sorted, joined. Two
 answers with one signature list the same Inbox.
 
 ### Which rows notify (`rows.ts`)
@@ -104,7 +104,7 @@ notice is offered only by a visible tab; a hidden tab offers what is still fresh
 ### In the editor (`useEditorInbox.tsx`, `useInboxNotices.tsx`)
 
 `useEditorInbox(app)`: on when `appHasInbox(app)` and the deferred auth has a signed-in `userId`; the client is the
-workbench's `indexClient`. It answers `{ count, label, notices }`: `count` is `inboxCount(data, viewerId, app)` (this app's rows only)
+workbench's `indexClient`. It answers `{ count, label, notices }`: `count` is `inboxCount(data, viewerId)` (every app's rows, as the Inbox lists them)
 over the watch's answer less the reader's done rows (`withoutSettled`, `settledStoreFor`, `data/inbox-settled.ts`),
 `label`
 names the button ("Explorer, 3 in Inbox"), `notices` is the layer (a `Portal`) to draw beside the button.
