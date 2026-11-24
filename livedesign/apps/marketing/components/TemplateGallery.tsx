@@ -32,7 +32,7 @@ export function TemplateGallery() {
       shelves={SHELVES}
       initial="popular"
       eyebrow="One canvas, many jobs"
-      lead="Pick a starting point and you are on the canvas with it already drawn. Every template the editor ships is here."
+      lead="Pick a starting point and your new design opens with its pages already laid out. Every template the editor ships is here."
       Carousel={TemplateCarousel}
       Preview={TemplatePreview}
       Card={TemplateCard}
