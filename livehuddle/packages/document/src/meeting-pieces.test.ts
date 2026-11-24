@@ -92,6 +92,13 @@ describe('the Screen', () => {
     expect(svgBehaviourFace(s, '', '#000', '#000')).toContain('No one is sharing');
     const v = { ...s, screenUrl: 'https://vimeo.com/76979871' };
     expect(svgBehaviourFace(v as never, '', '#000', '#000')).toContain('Vimeo');
+    // A file: its name and app, never a picture of it (Work Tracker 1427).
+    const f = { ...s, liveItem: { app: 'liveplanner', itemId: 'P1' }, liveName: 'Launch Plan' };
+    const svg = svgBehaviourFace(f as never, '', '#000', '#000');
+    expect(svg).toContain('Launch Plan · liveplanner');
+    expect(svg).not.toContain('<image');
+    const unnamed = { ...s, liveItem: { app: 'livedesign', itemId: 'D1' } };
+    expect(svgBehaviourFace(unnamed as never, '', '#000', '#000')).toContain('livedesign');
   });
 });
 

@@ -169,6 +169,8 @@
     "./components/connect/ConnectRow": "./src/components/connect/ConnectRow.tsx",
     "./components/live-embed/LiveEmbedView": "./src/components/live-embed/LiveEmbedView.tsx",
     "./components/live-embed/LiveEmbedPicker": "./src/components/live-embed/LiveEmbedPicker.tsx",
+    "./components/live-embed/LiveEmbedChooser": "./src/components/live-embed/LiveEmbedChooser.tsx",
+    "./components/live-embed/useFileSearch": "./src/components/live-embed/useFileSearch.ts",
     "./components/live-embed/choose-live-embed": "./src/components/live-embed/choose-live-embed.ts",
     "./components/live-embed/live-embed-slots": "./src/components/live-embed/live-embed-slots.ts",
     "./components/live-embed/live-embed-target": "./src/components/live-embed/live-embed-target.ts",

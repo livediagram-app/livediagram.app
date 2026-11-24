@@ -8,6 +8,7 @@ import {
   setCallSelf,
   type CallActions,
 } from '@/lib/calls/calls-store';
+import { closeScreenPicker, screenPickerOpen } from '@/lib/office/screen-picker-store';
 import { ScreenReaderBody } from './ScreenReaderBody';
 
 let editor: unknown = null;
@@ -36,6 +37,7 @@ const actions = (toggleScreen = vi.fn()): CallActions => ({
 
 afterEach(() => {
   editor = null;
+  act(() => closeScreenPicker());
   act(() => {
     setCallActions(null);
     resetCallSelf();
@@ -44,11 +46,11 @@ afterEach(() => {
 
 describe('ScreenReaderBody', () => {
   it('is the empty state alone for someone who may neither share nor set the link', () => {
-    editor = { can: { level: 'view' }, setScreenUrlOf: vi.fn() };
+    editor = { can: { level: 'view' }, setScreenSourceOf: vi.fn() };
     render(<ScreenReaderBody element={element} />);
     expect(screen.getByText('Nothing on the Screen yet')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Share Your Screen' })).toBeNull();
-    expect(screen.queryByLabelText('Video Link')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Choose What It Shows' })).toBeNull();
   });
 
   it("shares through the call control's own action, as the call allows (a preview with no call)", () => {
@@ -68,39 +70,21 @@ describe('ScreenReaderBody', () => {
     expect(screen.queryByRole('button', { name: 'Share Your Screen' })).toBeNull();
   });
 
-  it("sets an Editor's video link on this Screen, and refuses a link that is not a video", () => {
-    const setScreenUrlOf = vi.fn();
-    editor = { can: { level: 'edit' }, setScreenUrlOf };
-    render(<ScreenReaderBody element={element} />);
-    const input = screen.getByLabelText('Video Link');
-    fireEvent.change(input, { target: { value: 'example.com/page' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Set Link' }));
-    expect(screen.getByRole('alert').textContent).toContain("isn't a video link");
-    expect(setScreenUrlOf).not.toHaveBeenCalled();
-    fireEvent.change(input, { target: { value: 'youtu.be/dQw4w9WgXcQ' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Set Link' }));
-    expect(setScreenUrlOf).toHaveBeenCalledWith('s1', 'https://youtu.be/dQw4w9WgXcQ');
+  it('opens Show on the Screen for an Editor, on this Screen, closing the reader', () => {
+    editor = { can: { level: 'edit' }, setScreenSourceOf: vi.fn() };
+    const onClose = vi.fn();
+    render(<ScreenReaderBody element={element} onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Choose What It Shows' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screenPickerOpen()).toEqual({ elementId: 's1', tab: 'file' });
   });
 
-  it('keeps typed keys from the editor, but lets Escape close the reader', () => {
-    editor = { can: { level: 'edit' }, setScreenUrlOf: vi.fn() };
-    const onKey = vi.fn();
-    render(
-      <div onKeyDown={onKey}>
-        <ScreenReaderBody element={element} />
-      </div>,
-    );
-    const input = screen.getByLabelText('Video Link');
-    fireEvent.keyDown(input, { key: 'w' });
-    expect(onKey).not.toHaveBeenCalled();
-    fireEvent.keyDown(input, { key: 'Escape' });
-    expect(onKey).toHaveBeenCalledTimes(1);
-  });
-
-  it('says the link is set once the Screen has one', () => {
+  it('opens on Video for a Screen that has a video link', () => {
+    editor = { can: { level: 'edit' }, setScreenSourceOf: vi.fn() };
     render(
       <ScreenReaderBody element={{ ...element, screenUrl: 'https://youtu.be/dQw4w9WgXcQ' }} />,
     );
-    expect(screen.getByText('Video link set')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Choose What It Shows' }));
+    expect(screenPickerOpen()).toEqual({ elementId: 's1', tab: 'video' });
   });
 });

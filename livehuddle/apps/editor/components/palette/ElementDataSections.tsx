@@ -77,7 +77,7 @@ export function ElementDataSections({
     shapeTarget?.shape === 'room' ||
     shapeTarget?.shape === 'stage' ||
     (shapeTarget?.shape === 'avatar-pad' && !!props.onSetPadReceptionist) ||
-    (shapeTarget?.shape === 'screen' && !!props.onSetScreenUrl) ||
+    (shapeTarget?.shape === 'screen' && !!props.onSetScreenSource) ||
     shapeTarget?.shape === 'world-clock' ||
     shapeTarget?.shape === 'jukebox' ||
     (shapeTarget?.shape === 'arcade-machine' && !!props.onClearArcadeScores);
@@ -164,11 +164,12 @@ export function ElementDataSections({
               onCloseMenu={props.onClose}
             />
           ) : null}
-          {shapeTarget?.shape === 'screen' && props.onSetScreenUrl ? (
+          {shapeTarget?.shape === 'screen' && props.onSetScreenSource ? (
             <ScreenMenuSection
               target={shapeTarget}
               sectionProps={sectionProps}
-              onSetScreenUrl={props.onSetScreenUrl}
+              onSetScreenSource={props.onSetScreenSource}
+              onCloseMenu={props.onClose}
             />
           ) : null}
           {isChair ? (

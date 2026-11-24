@@ -48,6 +48,8 @@ type PeopleFields = {
   rollCall?: { name: string }[];
   chartSheetSource?: unknown;
   liveItem?: unknown;
+  // A Screen's tab (livehuddle, Work Tracker 1427): goes with its link.
+  liveTab?: unknown;
 };
 
 function hasPeople(e: PeopleFields): boolean {
@@ -73,6 +75,7 @@ export function redactElementsForCommunity<E extends object>(elements: E[]): E[]
       cellComments: _cells,
       chartSheetSource: _source,
       liveItem: _live,
+      liveTab: _tab,
       ...rest
     } = e;
     const out = { ...rest } as E & PeopleFields;

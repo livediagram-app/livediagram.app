@@ -16,3 +16,8 @@ export function Brand(props: Omit<BrandProps, 'app'>) {
 export function BrandMark(props: Omit<ComponentProps<typeof SharedBrandMark>, 'app'>) {
   return <SharedBrandMark app={BRAND_APP} {...props} />;
 }
+
+// Another app's logo, as @liveworkspace/brand draws it: a file from that app (a Screen's file, Work Tracker 1427).
+export function AppBrandMark(props: ComponentProps<typeof SharedBrandMark>) {
+  return <SharedBrandMark {...props} />;
+}

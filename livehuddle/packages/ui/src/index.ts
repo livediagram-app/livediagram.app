@@ -1,4 +1,4 @@
-export { Brand, BrandMark } from './Brand';
+export { AppBrandMark, Brand, BrandMark } from './Brand';
 export {
   BRAND_ACCENT,
   BRAND_RAMP,

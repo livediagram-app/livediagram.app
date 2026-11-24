@@ -167,12 +167,17 @@ export function screenSourcePatch(source: ScreenSource): {
   };
 }
 
-/** The file a Screen shows, or null: the link with its name and tab. */
+export type { LiveItem, LiveTab };
+
+/** The file a Screen shows: the link, its name as chosen, and the tab it opens on (none: the first). */
+export type ScreenFile = { liveItem: LiveItem; liveName: string; liveTab?: LiveTab };
+
+/** The file a Screen shows, or null. */
 export function screenFile(el: {
   liveItem?: LiveItem;
   liveName?: string;
   liveTab?: LiveTab;
-}): { liveItem: LiveItem; liveName: string; liveTab?: LiveTab } | null {
+}): ScreenFile | null {
   if (!el.liveItem) return null;
   return {
     liveItem: el.liveItem,
