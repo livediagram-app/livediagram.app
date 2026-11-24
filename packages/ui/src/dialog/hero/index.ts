@@ -15,6 +15,7 @@ export {
   HERO_PLACE,
   HERO_RING_PX,
   HERO_SVG,
+  heroStar,
   heroTexture,
   type HeroArt,
   type HeroOrigin,

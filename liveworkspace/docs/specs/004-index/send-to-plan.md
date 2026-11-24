@@ -39,7 +39,9 @@ in `@liveworkspace/workbench`). What each app sends, and where its entry and chi
 
 ## The picker
 
-Opened from the place's menu (each app's spec says where), a dialog centred on screen, a bottom sheet on a phone:
+Opened from the place's menu (each app's spec says where), a dialog centred on screen, a bottom sheet on a phone, under the [dialog hero header](./dialog-hero-header.md):
+"Send to Plan", its line "Make a card in liveplanner from this sticky. It stays as it is here.", and the Send to
+Plan art.
 
 1. **Plan**: the person's plans, most recent across every app first (the index's Recent, `app=liveplanner`), with a
    search, and **New Plan**, which makes an empty Kanban plan of the person's own (named as they type, "Plans from
