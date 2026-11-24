@@ -288,7 +288,7 @@ Explorer words (`teamErrorMessage`). One client, `data/teams.ts`; no host writes
   made, opens the team. The Move dialog's New Team tile is the same `create`, name only, filing the item into it.
   A guest sees the sign-in nudge in New Team's place.
 - **A team's page** (`teams/page/TeamView.tsx`, lazy from `explorer/TeamPane.tsx`): the header (badge, name, plan,
-  headline, member discs, Copy Link, Invite People, the ⋯ menu), the tabs People, Library and (admins) Audit Log, in
+  headline, member discs, Copy Link, Invite People, the ⋯ menu), the tabs Library (the default), People and (admins) Audit Log, in
   the address as `tab`. People: Invite by Email (`InviteComposer.tsx`, one or many addresses as chips), the Everyone,
   Admins, Members and Pending chips with Find a person, the member table and Waiting to Join (`PeopleList.tsx`:
   Resend, Withdraw, Invite Again, Remove), and the side cards (`TeamSideCards.tsx`: Invite Link, Plan, What Each

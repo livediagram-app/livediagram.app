@@ -131,10 +131,33 @@ describe('a team’s view', () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => teamChanges.reset());
 
-  it('opens on People: its header, members, invitations and the admin line', async () => {
+  it('opens on its Library, the first tab, when no tab is named', async () => {
     page({ kind: 'team', id: 't1' }, fakeHost());
-    expect(await card()).toBeTruthy();
+    expect(await screen.findByText('Item 1')).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: 'Design' })).toBeTruthy();
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs.map((t) => t.getAttribute('data-team-tab'))).toEqual([
+      'library',
+      'people',
+      'audit',
+    ]);
+    expect(tabs[0]!.getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tabpanel').id).toBe('team-panel-library');
+    expect(screen.queryByRole('heading', { name: 'Waiting to Join' })).toBeNull();
+  });
+
+  it('shows the Library first and People second to a Member, with no Audit Log', async () => {
+    page({ kind: 'team', id: 't1' }, fakeHost(details({ myRole: 'member', myMemberId: 'm2' })));
+    expect(await screen.findByText('Item 1')).toBeTruthy();
+    expect(screen.getAllByRole('tab').map((t) => t.getAttribute('data-team-tab'))).toEqual([
+      'library',
+      'people',
+    ]);
+  });
+
+  it('opens People when the address names it: its header, members, invitations and the admin line', async () => {
+    page({ kind: 'team', id: 't1', tab: 'people' }, fakeHost());
+    expect(await card()).toBeTruthy();
     expect(screen.getByRole('tab', { name: /People/ }).getAttribute('aria-selected')).toBe('true');
     expect(screen.getByText('you')).toBeTruthy();
     expect(screen.getByText('kai.moss@x.test')).toBeTruthy();
@@ -144,7 +167,7 @@ describe('a team’s view', () => {
   });
 
   it('shows the library on its Library tab, with the toolbar in place of a title', async () => {
-    page({ kind: 'team', id: 't1', tab: 'library' }, fakeHost());
+    page({ kind: 'team', id: 't1' }, fakeHost());
     expect(await screen.findByText('Item 1')).toBeTruthy();
     expect(screen.getByRole('tab', { name: /Library/ }).getAttribute('aria-selected')).toBe('true');
     expect(screen.getAllByRole('heading', { level: 1 }).map((h) => h.textContent)).toEqual([
@@ -154,22 +177,62 @@ describe('a team’s view', () => {
   });
 
   it('moves between tabs through the address, and with the arrow keys', async () => {
-    const onNavigate = page({ kind: 'team', id: 't1' }, fakeHost());
+    const onNavigate = page({ kind: 'team', id: 't1', tab: 'people' }, fakeHost());
     await card();
     fireEvent.click(screen.getByRole('tab', { name: /Library/ }));
-    expect(onNavigate).toHaveBeenLastCalledWith(
-      { kind: 'team', id: 't1', tab: 'library' },
-      '/explorer/team?id=t1&tab=library',
-    );
-    fireEvent.keyDown(screen.getByRole('tab', { name: /People/ }), { key: 'ArrowLeft' });
+    // The Library is the default: its address names no tab.
+    expect(onNavigate).toHaveBeenLastCalledWith({ kind: 'team', id: 't1' }, '/explorer/team?id=t1');
+    fireEvent.keyDown(screen.getByRole('tab', { name: /People/ }), { key: 'ArrowRight' });
     expect(onNavigate).toHaveBeenLastCalledWith(
       { kind: 'team', id: 't1', tab: 'audit' },
       '/explorer/team?id=t1&tab=audit',
     );
+    fireEvent.keyDown(screen.getByRole('tab', { name: /Library/ }), { key: 'ArrowLeft' });
+    expect(onNavigate).toHaveBeenLastCalledWith(
+      { kind: 'team', id: 't1', tab: 'audit' },
+      '/explorer/team?id=t1&tab=audit',
+    );
+    fireEvent.keyDown(screen.getByRole('tab', { name: /Library/ }), { key: 'ArrowRight' });
+    expect(onNavigate).toHaveBeenLastCalledWith(
+      { kind: 'team', id: 't1', tab: 'people' },
+      '/explorer/team?id=t1&tab=people',
+    );
+  });
+
+  it('keeps the lens when going back to the Library', async () => {
+    const onNavigate = page(
+      { kind: 'team', id: 't1', tab: 'people', q: 'opens-in:plan' },
+      fakeHost(),
+    );
+    await card();
+    fireEvent.click(screen.getByRole('tab', { name: /Library/ }));
+    expect(onNavigate).toHaveBeenLastCalledWith(
+      { kind: 'team', id: 't1', q: 'opens-in:plan' },
+      '/explorer/team?id=t1&q=opens-in%3Aplan',
+    );
+  });
+
+  it('lands a Member who follows an Audit Log link on the Library', async () => {
+    page(
+      { kind: 'team', id: 't1', tab: 'audit' },
+      fakeHost(details({ myRole: 'member', myMemberId: 'm2' })),
+    );
+    expect(await screen.findByText('Item 1')).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /Library/ }).getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('takes Invite People from the Library to People', async () => {
+    const onNavigate = page({ kind: 'team', id: 't1' }, fakeHost());
+    await card();
+    fireEvent.click(screen.getByRole('button', { name: 'Invite People' }));
+    expect(onNavigate).toHaveBeenLastCalledWith(
+      { kind: 'team', id: 't1', tab: 'people' },
+      '/explorer/team?id=t1&tab=people',
+    );
   });
 
   it('filters people by chip and by search', async () => {
-    page({ kind: 'team', id: 't1' }, fakeHost());
+    page({ kind: 'team', id: 't1', tab: 'people' }, fakeHost());
     await card();
     const rows = () =>
       [...document.querySelectorAll('[data-team-member]')].map((r) =>
@@ -203,7 +266,7 @@ describe('a team’s view', () => {
       expired: true,
     });
     const host = fakeHost(team);
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     fireEvent.click(
       within(document.querySelector<HTMLElement>('[data-team-member="m3"]')!).getByRole('button', {
@@ -225,14 +288,17 @@ describe('a team’s view', () => {
     const host = fakeHost(details(), {
       resendInvite: vi.fn(async () => ({ ok: false as const, error: 'resend_too_soon' })),
     });
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     fireEvent.click(screen.getByRole('button', { name: 'Resend' }));
     expect(await screen.findByText(/This invitation was just sent/)).toBeTruthy();
   });
 
   it('shows a Member no invite tools, roles as pills, and no Audit Log', async () => {
-    page({ kind: 'team', id: 't1' }, fakeHost(details({ myRole: 'member', myMemberId: 'm2' })));
+    page(
+      { kind: 'team', id: 't1', tab: 'people' },
+      fakeHost(details({ myRole: 'member', myMemberId: 'm2' })),
+    );
     await screen.findByText(/2 members/);
     expect(screen.queryByText('Invite by Email')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Invite People' })).toBeNull();
@@ -247,7 +313,7 @@ describe('a team’s view', () => {
   it("paints each member's disc as their account button is painted, own colour or Automatic", async () => {
     const team = details();
     team.members[1]!.color = '#2563eb';
-    page({ kind: 'team', id: 't1' }, fakeHost(team));
+    page({ kind: 'team', id: 't1', tab: 'people' }, fakeHost(team));
     await card();
     const disc = (id: string) =>
       document.querySelector<HTMLElement>(`[data-team-member="${id}"] [data-optical="disc"]`)!;
@@ -270,7 +336,7 @@ describe('a team’s view', () => {
   it('isolates the organisation, names and addresses, so right-to-left text turns nothing else around', async () => {
     const team = details({ organisation: '\u202Eevil org' });
     team.members[1]!.name = '\u202Eeel nna';
-    page({ kind: 'team', id: 't1' }, fakeHost(team));
+    page({ kind: 'team', id: 't1', tab: 'people' }, fakeHost(team));
     const headline = await screen.findByText(
       (_, el) =>
         el?.tagName === 'P' &&
@@ -283,7 +349,7 @@ describe('a team’s view', () => {
 
   it('pins the only admin, and lets an admin change another’s role', async () => {
     const host = fakeHost();
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     expect(screen.queryByRole('combobox', { name: 'Role for Sam Doe' })).toBeNull();
     expect(screen.getByText('Only admin')).toBeTruthy();
@@ -297,7 +363,7 @@ describe('a team’s view', () => {
 
   it('asks before removing, in words that say who goes', async () => {
     const host = fakeHost();
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     fireEvent.click(screen.getByRole('button', { name: 'Withdraw invite to kai.moss@x.test' }));
     const ask = await screen.findByRole('dialog', { name: 'Withdraw Invite?' });
@@ -307,7 +373,7 @@ describe('a team’s view', () => {
 
   it('keeps focus on the card after a removal, not on the row that goes', async () => {
     const host = fakeHost();
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     const withdraw = screen.getByRole('button', { name: 'Withdraw invite to kai.moss@x.test' });
     withdraw.focus();
@@ -321,7 +387,7 @@ describe('a team’s view', () => {
 
   it('invites an address as a Member or an Admin', async () => {
     const host = fakeHost();
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     fireEvent.change(screen.getByLabelText('Invite by Email'), {
       target: { value: 'zoe@x.test' },
@@ -343,7 +409,7 @@ describe('a team’s view', () => {
         : { ok: true as const, value: undefined },
     );
     const host = fakeHost(details(), { invite } as unknown as Partial<TeamsHost>);
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     const field = screen.getByLabelText('Invite by Email');
     fireEvent.paste(field, {
@@ -367,7 +433,7 @@ describe('a team’s view', () => {
 
   it('won’t send while a word isn’t an address', async () => {
     const host = fakeHost();
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     fireEvent.paste(screen.getByLabelText('Invite by Email'), {
       clipboardData: { getData: () => 'zoe@x.test nope' },
@@ -391,7 +457,7 @@ describe('a team’s view', () => {
         ),
     );
     const host = fakeHost(details(), { invite } as unknown as Partial<TeamsHost>);
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     const field = screen.getByLabelText('Invite by Email');
     fireEvent.change(field, { target: { value: 'zoe@x.test' } });
@@ -421,7 +487,7 @@ describe('a team’s view', () => {
     });
     const writeText = vi.fn(async () => {});
     Object.assign(navigator, { clipboard: { writeText } });
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     const linkCard = () => document.querySelector<HTMLElement>('[data-team-link]')!;
     expect(linkCard().getAttribute('data-team-link')).toBe('off');
@@ -442,14 +508,14 @@ describe('a team’s view', () => {
   });
 
   it('opens Invite Link from Copy Link while the link is off', async () => {
-    page({ kind: 'team', id: 't1' }, fakeHost());
+    page({ kind: 'team', id: 't1', tab: 'people' }, fakeHost());
     await card();
     fireEvent.click(screen.getByRole('button', { name: 'Copy Link' }));
     expect(await screen.findByRole('dialog', { name: /Invite by Link/ })).toBeTruthy();
   });
 
   it('takes Invite People to the field', async () => {
-    page({ kind: 'team', id: 't1' }, fakeHost());
+    page({ kind: 'team', id: 't1', tab: 'people' }, fakeHost());
     await card();
     fireEvent.click(screen.getByRole('button', { name: 'Invite People' }));
     await waitFor(() =>
@@ -459,7 +525,7 @@ describe('a team’s view', () => {
 
   it('renames from Edit Team: the sidebar follows at once', async () => {
     const host = fakeHost();
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     fireEvent.click(screen.getByRole('button', { name: 'Design options' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Edit Team' }));
@@ -478,7 +544,7 @@ describe('a team’s view', () => {
 
   it('deletes after asking, then goes to My Work and the team leaves the sidebar', async () => {
     const host = fakeHost();
-    const onNavigate = page({ kind: 'team', id: 't1' }, host);
+    const onNavigate = page({ kind: 'team', id: 't1', tab: 'people' }, host);
     await card();
     fireEvent.click(screen.getByRole('button', { name: 'Design options' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete Team' }));
@@ -513,7 +579,7 @@ describe('a team’s view', () => {
         })
         .mockResolvedValue({ teams: [], invitations: [] }),
     });
-    page({ kind: 'team', id: 't1' }, host);
+    page({ kind: 'team', id: 't1', tab: 'people' }, host);
     expect(await screen.findByText('Team not found')).toBeTruthy();
     await waitFor(() => expect(host.myTeams).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.queryByRole('treeitem', { name: /^Design/ })).toBeNull());
@@ -566,7 +632,7 @@ describe('a team’s view', () => {
   });
 
   it('lets a member leave, but not the only admin of a team with others in it', async () => {
-    page({ kind: 'team', id: 't1' }, fakeHost());
+    page({ kind: 'team', id: 't1', tab: 'people' }, fakeHost());
     await card();
     expect(screen.getByRole('button', { name: 'Leave Team' }).hasAttribute('disabled')).toBe(true);
     expect(screen.getByText(/You’re its only admin/)).toBeTruthy();
@@ -590,7 +656,7 @@ describe('a team’s view', () => {
   });
 
   it('shows the library alone without a TeamsHost', async () => {
-    page({ kind: 'team', id: 't1' }, null);
+    page({ kind: 'team', id: 't1', tab: 'people' }, null);
     expect(await screen.findByText('Item 1')).toBeTruthy();
     expect(screen.queryByText(/members/)).toBeNull();
   });

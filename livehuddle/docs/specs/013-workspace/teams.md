@@ -56,7 +56,7 @@ The shared Explorer's ([packages/explorer/README.md](../../../../packages/explor
 - One row per team the person has joined; selecting it shows the team's card over its library, and it expands to the team's folders.
 - **New Team**, the group's last row (signed-in only), opens the team dialog (name, optional organisation) and opens the team made. A guest sees the sign-in nudge in its place.
 - **Invites**, in the Spaces group with a count badge while any invitation waits ([Invitations](#invitations)).
-- The **team's page** runs the team in place, in tabs: People (members and roles, invite one or many by email or by link, resend, remove, Edit Team, Leave Team and Delete Team, by role), Library, and for admins Audit Log. In the editor's Explorer panel the team's pane opens its members card from its **Members** button, and the rail has New Team under Spaces.
+- The **team's page** runs the team in place, in tabs: Library (the team's work, the tab it opens on), People (members and roles, invite one or many by email or by link, resend, remove, Edit Team, Leave Team and Delete Team, by role), and for admins Audit Log. In the editor's Explorer panel the team's pane opens its members card from its **Members** button, and the rail has New Team under Spaces.
 
 ## Telemetry
 
