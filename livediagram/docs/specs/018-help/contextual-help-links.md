@@ -132,7 +132,7 @@ The public sites link the Community's two articles through one shared component,
 A click sends the same `UI·Opened·<article id>` as an editor help link.
 
 - Community gallery hero -> `finding-community-documents` ("How the Community Works", an inline link ending the
-  lead) and `community` ("How Sharing Works", a secondary button left of Share Your Own)
+  lead, faintly underlined so it reads as a link beside the lead's words) and `community` ("How Sharing Works", a secondary button left of Share Your Own)
 - My Shares summary -> `community` ("Managing Your Shares")
 - Report dialog -> `finding-community-documents` ("How Reports Work")
 - Landing page Community section, beside Explore the Community -> `finding-community-documents`

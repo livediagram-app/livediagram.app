@@ -61,7 +61,7 @@ Every list view shows one row of chips under its page header and breadcrumb:
   a click outside or the chip again closes it, focus returning to the chip.
 - Under the row, every reported issue reads as one line, its word named (the messages of the
   [Token grammar](#token-grammar)).
-- On a phone the row scrolls sideways in one line.
+- On a phone the row scrolls sideways in one line, with no scrollbar under it (the chip cut at the edge shows there is more).
 
 ## Dimensions
 
