@@ -47,29 +47,29 @@ export function QuestionRow({
         {likely ? (
           <p
             data-question-likely={likely.app}
-            className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-5 text-slate-700 dark:text-slate-300"
+            className="mt-1.5 flex items-start gap-1.5 text-xs leading-5 text-slate-700 dark:text-slate-300"
           >
-            <AppMark app={likely.app} className="size-3.5 shrink-0" />
-            <span className="min-w-0">
+            <AppMark app={likely.app} className="mt-[3px] size-3.5 shrink-0" />
+            <span className="min-w-0 flex-1">
               Likely answered in{' '}
               <span className="font-semibold text-slate-900 dark:text-slate-100">
                 {likely.title || 'Untitled'}
               </span>
               , which isn&apos;t connected.
+              {onConnect ? (
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  busy={connecting === likely.itemId}
+                  disabled={connecting !== null && connecting !== likely.itemId}
+                  aria-label={`Connect ${likely.title || 'Untitled'}`}
+                  onClick={() => onConnect(likely)}
+                  className="ml-1 !inline-flex !h-auto !px-1.5 !py-0 align-baseline font-semibold text-brand-700 dark:text-brand-300 phone:min-h-11 phone:-my-3"
+                >
+                  Connect
+                </Button>
+              ) : null}
             </span>
-            {onConnect ? (
-              <Button
-                variant="ghost"
-                size="xs"
-                busy={connecting === likely.itemId}
-                disabled={connecting !== null && connecting !== likely.itemId}
-                aria-label={`Connect ${likely.title || 'Untitled'}`}
-                onClick={() => onConnect(likely)}
-                className="!px-1.5 font-semibold text-brand-700 dark:text-brand-300 phone:min-h-11"
-              >
-                Connect
-              </Button>
-            ) : null}
           </p>
         ) : null}
       </div>

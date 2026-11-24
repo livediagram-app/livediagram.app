@@ -283,7 +283,8 @@ export function AskConversationPane({
               </div>
             ) : null}
             <p className="mt-1.5 text-center text-xs text-slate-600 dark:text-slate-400">
-              Answers come from this knowledgebase alone. Check the sources before you rely on one.
+              Answers come from this knowledgebase and its connected items. Check the sources before
+              you rely on one.
             </p>
             {choosing || (onBuiltIn && usedUp) ? null : (
               <div data-ask-ai="" className="mx-auto mt-2 w-full max-w-xl">
