@@ -791,6 +791,7 @@
     "./components/palette/element-resources": "./src/components/palette/element-resources.tsx",
     "./components/palette/ResourcesFlyout": "./src/components/palette/ResourcesFlyout.tsx",
     "./components/dialogs/ResourcesDialog": "./src/components/dialogs/ResourcesDialog.tsx",
+    "./components/dialogs/ResourcesPreview": "./src/components/dialogs/ResourcesPreview.tsx",
     "./components/dialogs/ResourceLinkPanel": "./src/components/dialogs/ResourceLinkPanel.tsx",
     "./components/chrome/tools-door": "./src/components/chrome/tools-door.ts",
     "./components/chrome/useItemToolsRows": "./src/components/chrome/useItemToolsRows.tsx",
