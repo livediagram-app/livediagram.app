@@ -105,8 +105,17 @@ shared `createViewportStore`.
 scrolls. `main` and the world no longer set `touch-action: none`, so a finger scrolls natively and a pinch is the
 browser's.
 
-- **Extent:** the page's box (`PageSurfaceSheet`, at the page's stored height) plus `PAGE_FOOT_ROOM` (96 px), and
-  the writing itself where it is taller than the stored height in this browser.
+- **Extent:** the lower of two feet, each followed by the same room. The page's box (`PageSurfaceSheet`, at the
+  page's stored height) plus `PAGE_FOOT_ROOM` (96 px) under it; and the writing's own box (`.article-flow`, the
+  ProseMirror root), whose continuous style carries `padding-bottom: margin + PAGE_FOOT_ROOM`
+  (`continuousFootPadding`, `lib/article/continuous-page-height.ts`), so where the writing in this browser is taller
+  than the stored height its foot (the foot slot: Linked From and the comments) still stands the bottom margin plus
+  the room above the scroller's foot. The flow is `box-sizing: border-box` with `min-height` the frame's height, so a
+  page whose stored height fits its writing scrolls exactly as far as before. The padding is not measured: the layout
+  pass reads the flow's children, never the flow's own box (`article-measure.ts`). Found in a browser (WI-1410): read
+  mode locks the tab (no settle), and a window drawn through the narrow view writes no height, so a page last laid
+  out narrow, or before its comments answered, kept a short stored height on a wide window and its composer sat on
+  the footer bar.
 - **Beside the docked rail:** `[data-canvas-root]:has(> [data-page-rail='docked']) > [data-page-scroller]` ends
   280 px short of the right edge (`globals.css`), so the scrollbar is never under the rail and the rail never over
   the writing. The rail docks only where the page keeps its full width beside it: `pageRailDockWidth(treeWidth)` is
