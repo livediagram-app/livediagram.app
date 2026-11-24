@@ -373,6 +373,102 @@ describe("liveplanner's redraws", () => {
   });
 });
 
+describe('the edges', () => {
+  const edit = (auth: string, planId: string, payload: unknown) =>
+    call(`/items/${planId}/plan-edits`, { method: 'POST', auth, body: payload });
+
+  it('turns away a plan that is not a plan, one in the Trash, and routes it does not have', async () => {
+    const { ada, plan, doc } = await world();
+    h.appAnswer = () => Response.json({ ok: true, results: [] });
+    const blocks = { edits: [{ kind: 'block', card: 'k2', blocker: 'k1' }] };
+    // A diagram is no plan.
+    expect((await edit(ada.auth, doc.id, blocks)).status).toBe(403);
+    expect((await view(ada.auth, doc.id, { board: 'b1', name: 'x' })).status).toBe(403);
+    expect(
+      (await call(`/items/${plan.id}/plan-nothing`, { method: 'POST', auth: ada.auth, body: {} }))
+        .status,
+    ).toBe(404);
+    expect((await call(`/items/${plan.id}/plan-makes`, { auth: ada.auth })).status).toBe(404);
+    expect((await view(ada.auth, plan.id, { board: 7 })).status).toBe(400);
+    expect((await edit(ada.auth, plan.id, 'no')).status).toBe(400);
+    await call(`/items/${plan.id}`, { method: 'DELETE', auth: ada.auth });
+    expect([403, 404]).toContain((await edit(ada.auth, plan.id, blocks)).status);
+    expect(h.appCalls.filter(isDoor)).toEqual([]);
+  });
+
+  it("reads a make's answer leniently: junk cards skipped, updates counted, columns defaulted", async () => {
+    const { ada, plan, doc } = await world();
+    h.appAnswer = () =>
+      Response.json({
+        ok: true,
+        cards: [
+          null,
+          { element: 'e1', id: 'bad id!', made: true },
+          { element: 'e1', id: 'card1', made: true, title: 7, column: null },
+          { element: 'e2', id: 'card2', made: false },
+        ],
+      });
+    const res = await make(ada.auth, plan.id, makeAsk(doc.id));
+    const answer = await body<{
+      sends: PlanSend[];
+      made: number;
+      updated: number;
+      trashed: number;
+      skipped: number;
+    }>(res);
+    expect(answer).toMatchObject({ made: 1, updated: 1, trashed: 0, skipped: 0 });
+    expect(answer.sends[0]!.card).toMatchObject({ title: '', column: 'To Do' });
+    h.appAnswer = () => Response.json({ ok: false });
+    expect(await body(await make(ada.auth, plan.id, makeAsk(doc.id)))).toEqual({
+      error: 'plan_refused',
+      code: 'failed',
+      reason: '',
+    });
+  });
+
+  it("says when the board is gone, the plan cannot draw, or livediagram's answer is not a drawing", async () => {
+    const { ada, plan } = await world();
+    h.appAnswer = () => Response.json({ ok: false, code: 'target_gone' });
+    expect((await view(ada.auth, plan.id, { board: 'b1', name: 'x' })).status).toBe(404);
+    h.appAnswer = () => Response.json({ ok: false, code: 'failed' });
+    expect((await view(ada.auth, plan.id, { board: 'b1', name: 'x' })).status).toBe(503);
+    h.appAnswer = () => new Response(null, { status: 404 });
+    expect((await view(ada.auth, plan.id, { board: 'b1', name: 'x' })).status).toBe(403);
+    viewWorld(() => Response.json({ id: 'bad id!', tabId: 'dt1' }));
+    expect((await view(ada.auth, plan.id, { board: 'b1', name: 'x', filtered: true })).status).toBe(
+      503,
+    );
+  });
+
+  it("is gone when the maker's diagram is in the Trash or is not a diagram", async () => {
+    const { ada, plan, doc } = await world();
+    const other = await makeItem(ada.auth, { title: 'Another plan' });
+    h.appAnswer = (c) => Response.json({ id: (c.body as { itemId: string }).itemId, tabId: 'dt1' });
+    await call(`/items/${doc.id}`, { method: 'DELETE', auth: ada.auth });
+    const v = (diagramId: string) => ({
+      diagramId,
+      tabId: 'dt1',
+      person: 'user_ada',
+      graph: graph(),
+    });
+    const res = await redraw(plan.id, [v(doc.id), v(other.id)]);
+    expect(await body(res)).toEqual({
+      views: expect.arrayContaining([
+        { diagramId: doc.id, status: 'gone' },
+        { diagramId: other.id, status: 'gone' },
+      ]),
+    });
+    expect(
+      (
+        await call(`/app/items/${plan.id}/plan-diagrams`, {
+          auth: 'lp-key',
+          headers: { 'X-Index-App': 'liveplanner' },
+        })
+      ).status,
+    ).toBe(404);
+  });
+});
+
 describe('the caption', () => {
   it('names the plan, and how much of the board is drawn when it is cut', () => {
     expect(planCaption('Launch', graph() as never)).toBe('Drawn live from Launch');

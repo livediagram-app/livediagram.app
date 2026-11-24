@@ -49,7 +49,7 @@ const FROM: SentFrom = {
   kind: 'element',
   label: 'Q1',
   text: 'Design',
-  link: 'https://www.livediagram.app/document/D#t=t1&el=e1',
+  link: 'https://www.livediagram.app/d/D#t=t1&el=e1',
 };
 type Make = Extract<PlanDiagramDoorCall, { op: 'make' }>;
 const shape = (

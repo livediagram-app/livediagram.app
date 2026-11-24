@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Element } from '@livediagram/document';
 import type { PlanDiagramDraw, PlanDiagramGraph } from '@liveworkspace/index-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -115,13 +116,15 @@ describe('planDiagramTab', () => {
 
   it('lays out a 500-card board with 499 links well inside a redraw budget', () => {
     const big = draw({ graph: graph(500) });
-    const t = performance.now();
-    const tab = planDiagramTab(big)!;
-    const ms = performance.now() - t;
+    const out: { tab: ReturnType<typeof planDiagramTab> } = { tab: null };
+    const ms = cpuMsOf(() => {
+      out.tab = planDiagramTab(big);
+    });
+    const tab = out.tab!;
     expect(tab.elements.filter((e) => e.id.startsWith('card:'))).toHaveLength(500);
     expect(tab.elements.filter((e) => e.id.startsWith('dep:'))).toHaveLength(499);
     // Measured 172 ms (272 KB of elements) on a loaded laptop; the budget is a shared runner's CPU time.
-    expect(ms).toBeLessThan(1_500);
+    expect(ms).toBeLessThan(cpuBudgetMs(1_500));
     // The payload a redraw sends the room stays well under the changeset's limits.
     expect(JSON.stringify(tab.elements).length).toBeLessThan(1_000_000);
   });

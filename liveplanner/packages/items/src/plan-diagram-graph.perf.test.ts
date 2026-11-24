@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import type { Item } from './item';
 import { presetSetup } from './presets';
@@ -20,17 +21,11 @@ function board(cards = 500): Item[] {
   return items;
 }
 
-const time = (run: () => void) => {
-  const t = performance.now();
-  run();
-  return performance.now() - t;
-};
-
 describe('a 500-card board', () => {
   it('draws as a graph, and hashes, in well under 250 ms', () => {
     const items = new Map(board().map((i) => [i.id, i]));
     let edges = 0;
-    const ms = time(() => {
+    const ms = cpuMsOf(() => {
       const g = planDiagramGraph({
         setup: presetSetup('kanban'),
         items,
@@ -41,7 +36,7 @@ describe('a 500-card board', () => {
       planGraphHash(g);
     });
     expect(edges).toBe(997);
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 
   it('makes 500 cards with 997 links in well under 250 ms', () => {
@@ -54,7 +49,7 @@ describe('a 500-card board', () => {
       blockedBy: [i > 0 ? `e${i - 1}` : '', i > 1 ? `e${i - 2}` : ''].filter(Boolean),
     }));
     let skipped = -1;
-    const ms = time(() => {
+    const ms = cpuMsOf(() => {
       skipped = planMake({
         items: new Map(),
         types: PLAN_TYPES,
@@ -65,6 +60,6 @@ describe('a 500-card board', () => {
       }).skipped;
     });
     expect(skipped).toBe(0);
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 });

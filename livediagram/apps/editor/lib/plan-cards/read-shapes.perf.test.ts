@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { makeAsk, makePreview } from './make-plan-rows';
@@ -24,17 +25,11 @@ function tab(n = 500): Element[] {
   return out;
 }
 
-const time = (run: () => void) => {
-  const t = performance.now();
-  run();
-  return performance.now() - t;
-};
-
 describe('a 500-shape tab', () => {
   it('reads, previews and asks in well under 300 ms', () => {
     const elements = tab();
     let links = 0;
-    const ms = time(() => {
+    const ms = cpuMsOf(() => {
       const shapes = readPlanShapes(elements, { today: new Date(2026, 10, 24) });
       const ticked = new Set(shapes.map((s) => s.element));
       const preview = makePreview({
@@ -60,7 +55,7 @@ describe('a 500-shape tab', () => {
       links = preview.links;
     });
     expect(links).toBe(997);
-    expect(ms).toBeLessThan(300);
+    expect(ms).toBeLessThan(cpuBudgetMs(300));
   });
 
   it("finds a drawn 500-card tab's offers in well under 100 ms", () => {
@@ -71,7 +66,7 @@ describe('a 500-shape tab', () => {
           ? { ...el, id: `lane:${el.id}` }
           : el,
     );
-    const ms = time(() => planChangeOffers(drawn));
-    expect(ms).toBeLessThan(100);
+    const ms = cpuMsOf(() => planChangeOffers(drawn));
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
   });
 });

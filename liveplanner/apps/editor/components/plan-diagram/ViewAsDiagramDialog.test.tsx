@@ -54,7 +54,7 @@ const board = (title: string, over: Partial<PlanBoardSetup> = {}) => ({
   setup: { ...presetSetup('kanban'), title, ...over },
 });
 const answer = {
-  diagram: { id: 'D', title: 'Sprint diagram', tabId: 't', link: 'https://ld/document/D#t=t' },
+  diagram: { id: 'D', title: 'Sprint diagram', tabId: 't', link: 'https://ld/d/D#t=t' },
   cards: 3,
   links: 2,
   critical: 3,
@@ -131,11 +131,7 @@ describe('ViewAsDiagramDialog', () => {
       board: 'Sprint',
       name: 'Sprint diagram',
     });
-    expect(opened).toHaveBeenCalledWith(
-      'https://ld/document/D#t=t',
-      '_blank',
-      'noopener,noreferrer',
-    );
+    expect(opened).toHaveBeenCalledWith('https://ld/d/D#t=t', '_blank', 'noopener,noreferrer');
     expect(track).toHaveBeenCalledWith('UI', 'Created', 'ViewAsDiagram');
     expect(toast.success).toHaveBeenCalledWith('Diagram made', expect.anything());
   });

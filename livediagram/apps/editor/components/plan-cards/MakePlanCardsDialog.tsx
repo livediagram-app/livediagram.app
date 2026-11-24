@@ -619,7 +619,7 @@ function CardRows({
               {row.updates ? (
                 <Tooltip label={`Updates ${row.updates.card.title}`}>
                   <span className="mt-0.5 shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30">
-                    Updates Card
+                    <span className="text-optical-line">Updates Card</span>
                   </span>
                 </Tooltip>
               ) : null}

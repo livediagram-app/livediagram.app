@@ -109,7 +109,7 @@ export function PlanChangesPill({ client = indexClient }: { client?: Client }) {
             }}
             className="min-h-8 cursor-pointer rounded-full bg-white/70 px-3 text-[11px] font-semibold text-brand-800 transition hover:bg-white dark:bg-white/10 dark:text-brand-100 dark:hover:bg-white/20"
           >
-            {open ? 'Hide' : 'Review'}
+            <span className="text-optical-line">{open ? 'Hide' : 'Review'}</span>
           </button>
         </div>
         {open ? (
