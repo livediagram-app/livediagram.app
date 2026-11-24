@@ -1,6 +1,6 @@
 import type { LicencesProduct } from '@liveworkspace/licences/tables';
 
-import { DISTRIBUTED_APPS, LICENCE_APPS } from './apps.ts';
+import { BUNDLED_ELSEWHERE, DISTRIBUTED_APPS, LICENCE_APPS } from './apps.ts';
 import { EMBEDDED_WORKS } from './embedded-works.ts';
 import { OVERRIDES } from './overrides.ts';
 
@@ -12,6 +12,7 @@ export const LICENCES: LicencesProduct = {
   productRoot: new URL('../../../', import.meta.url),
   apps: LICENCE_APPS,
   distributed: DISTRIBUTED_APPS,
+  bundledElsewhere: BUNDLED_ELSEWHERE,
   overrides: OVERRIDES,
   embedded: EMBEDDED_WORKS,
 };

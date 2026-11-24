@@ -39,6 +39,9 @@ export type LicencesProduct = {
   apps: readonly LicenceApp[];
   // Apps distributed rather than deployed, which carry their own notices, so the page leaves them out.
   distributed?: readonly string[];
+  // Apps another Worker bundles, listed under that Worker instead: each product's apps/mcp is a package the one
+  // MCP (liveworkspace/apps/mcp) runs in process, so liveworkspace.app/licences lists its dependencies.
+  bundledElsewhere?: readonly string[];
   overrides: readonly Override[];
   embedded: readonly EmbeddedWork[];
 };
