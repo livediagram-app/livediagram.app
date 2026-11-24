@@ -16,7 +16,7 @@ import {
   toneDarkInk,
   type EventTone,
 } from './history-model';
-import { actorWords, eventWords } from './history-render';
+import { actorWords, eventAgent, eventWords } from './history-render';
 import { initials, personName } from './person-name';
 
 const noon = new Date(2026, 9, 21, 12).getTime();
@@ -96,6 +96,20 @@ describe('what an event in History says', () => {
     expect(actorWords(makeEvent(1, { actorId: 'user_o', actorName: null }), null)).toBe(
       'a teammate',
     );
+    // An agent's doing names the agent for its person (Work Tracker 1381); an event without one, the person.
+    const byAgent = (over: Parameters<typeof makeEvent>[1]) =>
+      makeEvent(1, { detail: { agent: 'Claude Code', via: 'mcp' }, ...over });
+    expect(actorWords(byAgent({ actorId: 'user_me' }), 'user_me')).toBe('Claude Code for you');
+    expect(actorWords(byAgent({ actorId: 'user_o', actorName: 'Sam' }), 'user_me')).toBe(
+      'Claude Code for Sam',
+    );
+    expect(actorWords(byAgent({ actorId: 'user_o', actorName: null }), null)).toBe(
+      'Claude Code for a teammate',
+    );
+    expect(eventAgent(byAgent({}))).toBe('Claude Code');
+    expect(eventAgent(makeEvent(1, { detail: { agent: '  ' } }))).toBeNull();
+    expect(eventAgent(makeEvent(1, { type: 'created', detail: { source: 'ai' } }))).toBeNull();
+    expect(eventAgent(makeEvent(1, { detail: null }))).toBeNull();
     const team = (id: string | null) => (id === 't1' ? 'Platform' : null);
     const words = (over: Parameters<typeof makeEvent>[1]) =>
       eventWords(makeEvent(1, over), 'user_me', team);

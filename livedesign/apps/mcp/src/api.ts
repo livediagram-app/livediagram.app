@@ -12,7 +12,12 @@ import {
 } from '@liveworkspace/telemetry';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { keepAlive } from '@liveworkspace/mcp-kit/request-scope';
+import { withAgentHeaders } from '@liveworkspace/mcp-kit/agent-name';
 import { currentTool } from './tool-scope';
+import { AGENT_NAME_HEADER, CLIENT_HEADER } from '@livedesign/api-schema';
+
+// The headers every api call names its door and its client in.
+const MCP_AGENT_HEADERS = { client: CLIENT_HEADER, agent: AGENT_NAME_HEADER } as const;
 
 export { ApiError };
 
@@ -24,7 +29,8 @@ const API_BASE = 'https://livedesign-api/api';
 export function clientFor(env: Env, token: string): ApiClient {
   return createApiClient({
     baseUrl: API_BASE,
-    fetch: (request) => env.API.fetch(request),
+    // Every call says it came through the MCP and which client made it (mcp-server.md §2, Work Tracker 1381).
+    fetch: async (request) => env.API.fetch(await withAgentHeaders(request, MCP_AGENT_HEADERS)),
     headers: () => ({ Authorization: `Bearer ${token}` }),
     onFailure: (kind) => reportApiFailure(env, kind),
   });

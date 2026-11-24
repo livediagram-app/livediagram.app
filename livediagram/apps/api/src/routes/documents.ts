@@ -3,6 +3,7 @@
 // index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are answered from it
 // (document-index-routes.ts).
 
+import { AGENT_HEADERS } from '../changesets/front-door';
 import type { Tab } from '@livediagram/document';
 import { isValidTab, migrateIncomingTab, parseSlides } from '@livediagram/document';
 import {
@@ -14,6 +15,7 @@ import {
   ITEM_GRANT_HEADER,
   type ItemCreateRequest,
   forgetPutAwayGrant,
+  itemAgentOf,
 } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
 import {
@@ -146,7 +148,8 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
         request,
         grantCallerOf(ctx),
         documentId,
-        create,
+        // The agent an API client's create was made by, for History (Work Tracker 1381).
+        { ...create, agent: itemAgentOf(request, ctx.token, AGENT_HEADERS) ?? undefined },
         (body, status) => json(body, { status }),
       );
       if (made instanceof Response) return made;

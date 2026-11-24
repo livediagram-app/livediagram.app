@@ -20,6 +20,7 @@ export { itemFromTemplate, type TemplateFile, type TemplateImport } from './temp
 export * from './migration-door';
 export * from './migration-room';
 export * from './outbox';
+export * from './item-agent';
 export * from './outbox-parked';
 export * from './activity';
 export * from './anonymise';

@@ -68,6 +68,13 @@ stays a pure REST/WS surface.
 - **Endpoints on the worker:** `POST /mcp` (the MCP transport, Bearer-gated),
   the OAuth endpoints ([§3](#3-authentication-oauth-21)), and `/health`.
 
+**Who is calling.** Every call the server makes to the api says it came through the MCP and which client made it
+(Work Tracker 1381): `X-Livediagram-Client: mcp`, and `X-Livediagram-Agent` with the client's own name from its `initialize`
+handshake ("Claude Code", "Cursor"; printable ASCII, at most 60 characters), remembered against the token's SHA-256
+in the OAuth KV for later calls (`@liveworkspace/mcp-kit/agent-name`). The api names the agent's writes by it in
+History ([013-workspace/history.md](../013-workspace/history.md)); a client that gave no name is named by its
+token.
+
 ## 3. Authentication: OAuth 2.1
 
 The MCP authenticates with **OAuth 2.1 + PKCE (S256) + dynamic client

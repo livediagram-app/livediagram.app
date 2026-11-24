@@ -16,7 +16,7 @@
 // per image and kept in `image_owners`. The app supplies the three things only it knows: how to ask the service who
 // owns an image, how the service names a person, and a team's joined people.
 
-import type { SqlExec } from './outbox';
+import { editedOf, type SqlExec } from './outbox';
 
 // The two tables, in the item's SQLite. Idempotent.
 export const IMAGE_GRANT_SCHEMA: readonly string[] = [
@@ -90,9 +90,9 @@ export type ImageGrantOptions = {
   now?: () => number;
 };
 
-// Edit keys (`<person>@<time>`, the outbox's) to the people they name.
+// Edit keys (`<person>@<time>`, or an agent's for its person, the outbox's) to the people they name.
 export function editorsOfKeys(keys: readonly string[]): string[] {
-  return keys.map((k) => k.slice(0, k.lastIndexOf('@'))).filter((p) => p.length > 0);
+  return keys.map((k) => editedOf(k)?.actorId ?? '').filter((p) => p.length > 0);
 }
 
 type EditorKeys = readonly string[] | (() => Promise<readonly string[]>);

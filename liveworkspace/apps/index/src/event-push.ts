@@ -7,8 +7,10 @@ import {
   APP_EVENTS_MAX,
   APP_EVENT_TYPES,
   PLATFORM_APP,
+  parseItemAgent,
   type AccountEvent,
   type AppEvent,
+  type ItemAgent,
 } from '@liveworkspace/index-client';
 import { isMergeCaller } from './auth';
 import { isId } from './codec';
@@ -34,13 +36,22 @@ function parseAppEvent(value: unknown, now: number): AppEvent | null {
   if (!isId(e.actorId) || !isTime(e.at)) return null;
   const name = e.actorName ?? null;
   if (name !== null && typeof name !== 'string') return null;
+  // An agent's write for the person (Work Tracker 1381); left out, the person's own.
+  const agent = parseItemAgent(e.agent);
+  if (agent === undefined) return null;
   return {
     type: e.type as AppEvent['type'],
     actorId: e.actorId,
     actorName: name ? name.slice(0, ACTOR_NAME_MAX) : null,
+    ...(agent ? { agent } : {}),
     at: Math.min(Math.floor(e.at), now + FUTURE_SLACK_MS),
   };
 }
+
+// An agent's edit is an event of its own per person, agent and day, never merged with the person's own: the
+// person's id with the door and the name after it (lowercased, so one agent is one event whatever its case).
+const editedIdOf = (base: string, agent: ItemAgent | null | undefined) =>
+  agent ? `${base}:${agent.via}:${agent.name.toLowerCase()}` : base;
 
 /**
  * PUT /app/items/:id/events from the item's own app: up to APP_EVENTS_MAX events in one batch. Each
@@ -64,7 +75,7 @@ export async function pushAppEvents(
   }
   const keys = await personEventKeys(events.map((e) => e.actorId));
   for (const event of events) {
-    const id = editedEventId(itemId, keys.get(event.actorId)!, event.at);
+    const id = editedIdOf(editedEventId(itemId, keys.get(event.actorId)!, event.at), event.agent);
     const seen = byId.get(id);
     if (!seen || seen.at <= event.at)
       byId.set(id, { ...event, actorName: event.actorName ?? seen?.actorName ?? null });
@@ -80,6 +91,7 @@ export async function pushAppEvents(
         type: event.type,
         actorId: event.actorId,
         actorName: event.actorName,
+        detail: event.agent ? { agent: event.agent.name, via: event.agent.via } : null,
         at: event.at,
       }),
       ...useDayStatements(env, event.actorId, itemId, event.at, 'edit'),

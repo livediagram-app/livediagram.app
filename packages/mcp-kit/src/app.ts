@@ -12,6 +12,7 @@ import { SERVER_CARD_PATH, serverCard, type McpListing } from './listing';
 import { registerOauthRoutes, type OauthServer } from './oauth';
 import type { OauthEnv } from './oauth-clients';
 import { runInRequest } from './request-scope';
+import { clientNameFor, rememberClientName, runWithClientName } from './agent-name';
 import { bearerChallenge, watchTokenRefusal } from './token-refusal';
 import { compactToolListResponse, isToolListCall } from './tool-list-compact';
 
@@ -126,6 +127,10 @@ export function createMcpApp<E extends OauthEnv>(options: {
         },
       );
     }
+    // A handshake's client name is remembered beside the request (agent-name.ts), never in its way: the answer does
+    // not wait for it. The body's copy is taken before anything reads it.
+    const remembering = rememberClientName(c.env, c.req.raw);
+    requestWaitUntil(c)?.(remembering);
     // The api is the one judge of the token: when it refuses it, the whole request answers 401 with the same
     // challenge, so the client signs in again instead of retrying a dead token (token-refusal.ts).
     // A tools/list answer says each long description once (tool-list-compact.ts).
@@ -140,10 +145,15 @@ export function createMcpApp<E extends OauthEnv>(options: {
     await server.connect(transport);
     // Tools post telemetry fire-and-forget; the request's waitUntil keeps those
     // posts alive past the response (request-scope.ts).
+    // Every api call a tool makes names this client (agent-name.ts withAgentHeaders), looked up once, on the first.
     const response = await runInRequest(requestWaitUntil(c), () =>
-      transport.handleRequest(c.req.raw, {
-        authInfo: { token, clientId: 'mcp', scopes: [] },
-      }),
+      runWithClientName(
+        () => clientNameFor(server, c.env, token),
+        () =>
+          transport.handleRequest(c.req.raw, {
+            authInfo: { token, clientId: 'mcp', scopes: [] },
+          }),
+      ),
     );
     if (!watch.refused()) return listsTools ? compactToolListResponse(response) : response;
     console.warn('[mcp] token refused by the api: asking the client to sign in again');
