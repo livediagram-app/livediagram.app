@@ -181,13 +181,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes, with Automations. A rule watches the plan and acts when something happens: a card
             moves to Done and it stamps the date, a bug comes in and it goes to the next person on
             triage, a due date nears and the assignee gets an email or a Slack post. Rules can also
-            run on a schedule or from another tool, and start from a ready-made template. They run
-            on our servers, so they work on plans saved to your account. See{' '}
+            run on a schedule or from another tool, take or revert a snapshot of the plan, act in
+            your other liveworkspace apps, and start from a ready-made template. They run on our
+            servers, so they work on plans saved to your account. See{' '}
             <a href="/help/plan/automations/">automations</a>.
           </>
         ),
         aText:
-          'Yes, with Automations. A rule watches the plan and acts when something happens: a card moves to Done and it stamps the date, a bug comes in and it goes to the next person on triage, a due date nears and the assignee gets an email or a Slack post. Rules can also run on a schedule or from another tool, and start from a ready-made template. They run on our servers, so they work on plans saved to your account. See automations.',
+          'Yes, with Automations. A rule watches the plan and acts when something happens: a card moves to Done and it stamps the date, a bug comes in and it goes to the next person on triage, a due date nears and the assignee gets an email or a Slack post. Rules can also run on a schedule or from another tool, take or revert a snapshot of the plan, act in your other liveworkspace apps, and start from a ready-made template. They run on our servers, so they work on plans saved to your account. See automations.',
       },
       {
         q: 'Can cards follow our GitHub pull requests?',
@@ -279,11 +280,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes. Start a Form tab from a template such as Feedback, Bug Report or Event RSVP, or a
             blank one, and build it in place. Share its link and anyone can fill it in without an
             account; every response lands as a card on a board or a row in a sheet, so the answers
-            turn straight into work. See <a href="/help/plan/forms/">forms</a>.
+            turn straight into work. Signed in, you can also describe the form in your own words and
+            AI drafts it, and Summary sums up the answers question by question. See{' '}
+            <a href="/help/plan/forms/">forms</a>.
           </>
         ),
         aText:
-          'Yes. Start a Form tab from a template such as Feedback, Bug Report or Event RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in without an account; every response lands as a card on a board or a row in a sheet, so the answers turn straight into work. See forms.',
+          'Yes. Start a Form tab from a template such as Feedback, Bug Report or Event RSVP, or a blank one, and build it in place. Share its link and anyone can fill it in without an account; every response lands as a card on a board or a row in a sheet, so the answers turn straight into work. Signed in, you can also describe the form in your own words and AI drafts it, and Summary sums up the answers question by question. See forms.',
       },
       {
         q: 'Can people who answer a form see my plan?',
@@ -351,6 +354,44 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Your plans live in nested folders in the Explorer, shown as a list, as cards or as a sortable table. Drag a plan onto a folder to file it, and tag plans to find them again. See folders.',
+      },
+      {
+        q: 'Can I ask people to sign off a plan?',
+        a: (
+          <>
+            Yes. In Share, the Approval tab asks the people you name to approve the plan, with a
+            note and a due day. Each answers Approve or Request Changes, and a badge on the plan
+            says where it stands, down to Changed Since Approval. See{' '}
+            <a href="/help/collaboration/sharing/request-approval/">Request Approval</a>.
+          </>
+        ),
+        aText:
+          'Yes. In Share, the Approval tab asks the people you name to approve the plan, with a note and a due day. Each answers Approve or Request Changes, and a badge on the plan says where it stands, down to Changed Since Approval. See Request Approval.',
+      },
+      {
+        q: 'Can I start a call about a plan?',
+        a: (
+          <>
+            Yes. Signed in, press Call in the plan’s top corner and a livehuddle video call about it
+            opens in a new tab. Anyone who opens the plan sees the call is on and can join it. See{' '}
+            <a href="/help/collaboration/start-a-call/">Start a Call Here</a>.
+          </>
+        ),
+        aText:
+          'Yes. Signed in, press Call in the plan’s top corner and a livehuddle video call about it opens in a new tab. Anyone who opens the plan sees the call is on and can join it. See Start a Call Here.',
+      },
+      {
+        q: 'Can I turn a task I find in another app into a card?',
+        a: (
+          <>
+            Yes. Send to Plan, in livediagram, livedocuments, liveknowledge and livehuddle, makes a
+            sticky, a paragraph, a comment thread or a call’s action into a card on the board you
+            pick. The card links back to where it came from, and that place shows the card’s status,
+            live. See <a href="/help/collaboration/send-to-plan/">Send to Plan</a>.
+          </>
+        ),
+        aText:
+          'Yes. Send to Plan, in livediagram, livedocuments, liveknowledge and livehuddle, makes a sticky, a paragraph, a comment thread or a call’s action into a card on the board you pick. The card links back to where it came from, and that place shows the card’s status, live. See Send to Plan.',
       },
       {
         q: 'How do I keep up with what changed?',
@@ -453,6 +494,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Signed in, choose Describe a Plan on Start Planning and say how your work runs. AI drafts the board’s columns, the card types with their fields and a starter rule or two, and shows them to you to change before Make Plan makes anything. See Describe a Plan.',
       },
       {
+        q: 'Can I ask questions about a plan?',
+        a: 'Yes. Signed in, open Ask AI in the Tools menu and ask, such as “what is in progress right now?”. The answer comes from the plan’s own cards and tabs, with each source a card you can open. Asking reads the plan and changes nothing.',
+      },
+      {
+        q: 'Can I hand a card to my AI assistant?',
+        a: 'Yes. Once your AI tool is connected, assign it a card as you would a teammate. It finds the cards handed to it, works them, with its comments marked as written by AI, and hands each one back to a person.',
+      },
+      {
         q: 'Can an AI only read my plans, and not change them?',
         a: 'Yes. Switch on Read-only access when you approve the connection, and the AI can find and read your plans but never change them. Each connection is an API token you can revoke at any time.',
       },
@@ -537,13 +586,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Press Cmd-Z (or Ctrl-Z) to step back your recent edits; undo rewinds your own changes,
-            not a teammate’s. Deleted plans wait in the Trash for 30 days before they are removed
+            not a teammate’s. Take a snapshot before a big change and Revert puts the whole plan
+            back in one step. Deleted plans wait in the Trash for 30 days before they are removed
             for good, so you can restore them. See{' '}
             <a href="/help/account-and-data/trash/">the Trash</a>.
           </>
         ),
         aText:
-          'Press Cmd-Z (or Ctrl-Z) to step back your recent edits; undo rewinds your own changes, not a teammate’s. Deleted plans wait in the Trash for 30 days before they are removed for good, so you can restore them. See the Trash.',
+          'Press Cmd-Z (or Ctrl-Z) to step back your recent edits; undo rewinds your own changes, not a teammate’s. Take a snapshot before a big change and Revert puts the whole plan back in one step. Deleted plans wait in the Trash for 30 days before they are removed for good, so you can restore them. See the Trash.',
       },
       {
         q: 'How do I delete my data or account?',

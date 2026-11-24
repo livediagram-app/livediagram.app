@@ -89,6 +89,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Up to 500 pages, nested up to eight levels deep. Both limits are checked on the server as well as in the editor, and the control that would pass one says why it is disabled.',
       },
       {
+        q: 'Can I organise pages other than by the tree?',
+        a: 'Yes, with labels. A page carries up to ten, such as Onboarding or Security, and a label means the same on every page. Press one to filter the page tree to it, and narrow a search or a question in Ask to it.',
+      },
+      {
+        q: 'Can I follow a page for changes?',
+        a: 'Yes. Watch follows one page, and Watch This Section follows a page and every page under it, including ones added later. You hear when someone saves a change, never of a draft’s keystrokes. Nobody sees who watches a page, only how many do.',
+      },
+      {
         q: 'Are there templates?',
         a: `Yes, and each is a whole knowledgebase rather than a single page: ${STRUCTURE_COUNT_WORD} structures such as Team Handbook, Engineering Handbook, Runbooks and On-Call and Sales Playbook, each a tree of pages with a line on what belongs on each and the headings to write under. They are grouped under ${STRUCTURE_GROUP_NAMES.slice(0, -1).join(', ')} and ${STRUCTURE_GROUP_NAMES.at(-1)}. Pick one from the template gallery or from a new knowledgebase’s start.`,
       },
@@ -111,6 +119,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'How do owners know a review is due?',
         a: 'The Knowledgebase Home lists Yours to Review: the pages you own whose review is due, oldest first, each with a Still Right button that verifies it. Each owner also gets one email, Pages Due for Review, at most once a day, while their Knowledgebase Reviews notification is on.',
+      },
+      {
+        q: 'Can I check that people have read a page?',
+        a: 'Yes. An Editor marks a page Required Reading for everyone or for chosen people, and each of them sees a banner with I’ve Read This until they confirm. Editors and the page’s owner see who has read it and who has not, and saving a big change can ask everyone to read it again.',
+      },
+      {
+        q: 'What is a page’s Health Score?',
+        a: 'A number from 0 to 100 in Page Health, worked out from the page’s verification, freshness, owner, length, structure, links, open issues and whether it is read, with the reason it lost most. Agents receive the same score with every passage, and weigh a low-scoring page as less reliable.',
       },
       {
         q: 'What is AI Context?',
@@ -149,6 +165,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Ask says so instead of guessing. The part it could not answer is shown as a Knowledge Gap, recorded in Insights with how often it was asked, and an Editor can start a page from it.',
       },
       {
+        q: 'Can Ask answer from our diagrams and plans?',
+        a: 'Yes. Ask reads the diagrams, plans, documents, designs and Spaces connected to the knowledgebase as sources, and an Editor may add one team folder. It answers from pages first, names each source with its app and a link to it, and only uses an item the person asking can open. A source is never marked verified.',
+      },
+      {
         q: 'Does search need AI?',
         a: 'No. Search is keyword search over your pages, split into passages, and it works for every role and in an Offline knowledgebase. Semantic search is not built.',
       },
@@ -182,7 +202,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can an agent change a page?',
-        a: 'By default an agent’s edit arrives as a suggestion with its reason, and a person accepts or dismisses it. Accepting applies it as one undo step and does not verify the page. An Editor can allow one connection to write, but a page that is Verified or Review Due is only ever changed by suggestion.',
+        a: 'By default an agent’s edit arrives as a suggestion with its reason, and a person accepts or dismisses it. Accepting applies it as one undo step and does not verify the page. An Editor chooses how far agents may go with AI Editing: Suggest Edits Only, Edit Unverified Pages or Edit Any Page. A connection also needs the write scope to change a page itself, and every page an agent changes says so.',
       },
       {
         q: 'What does an agent get with a passage?',
@@ -202,7 +222,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I import from Notion and Confluence?',
-        a: 'Yes. In the editor’s Import dialog choose Notion (its Markdown and CSV export, a .zip), Confluence (a space’s HTML export, a .zip) or a folder of Markdown. You see the pages and pictures it found before anything is imported. Google Docs import is not built yet.',
+        a: 'Yes. In the editor’s Import dialog choose Notion (its Markdown and CSV export, a .zip), Confluence (a space’s HTML export, a .zip) or a folder of Markdown. You see the pages and pictures it found before anything is imported. For a Google Doc, choose File › Download › Markdown (.md) in Google Docs, then in Import choose Into This Page and Markdown, and pick the file. Several docs: download each, put them in one folder and import the folder.',
       },
       {
         q: 'What comes across in an import?',
@@ -239,6 +259,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Can I publish a knowledgebase as a public website?',
         a: 'Yes. Publish to the Web puts a knowledgebase, or one section of it, on a public site anyone can read and search, with no account. Only saved writing goes public, never drafts or comments. Free publishes one knowledgebase at a time and Pro up to ten. A custom domain is not built.',
+      },
+      {
+        q: 'Can I start a call or a card from a page?',
+        a: 'Yes. Call, at the top beside Copy and Share, starts a livehuddle call about the knowledgebase in a new tab, and anyone who opens the knowledgebase sees the call is on and can join. Send to Plan turns a paragraph, a list item or a comment into a card on a liveplanner board, linked back to its place on the page.',
       },
       {
         q: 'Is there a mobile app?',

@@ -94,6 +94,15 @@ export async function liveCallOf(env: Env, itemId: string, now: number): Promise
   return row && isLive(row, now) ? row : null;
 }
 
+/** A Space's call: its newest row (a Calls Space holds one call after another). */
+export async function newestCallOfSpace(env: Env, spaceId: string): Promise<CallRow | null> {
+  return env.INDEX_DB.prepare(
+    `SELECT ${CALL_COLUMNS} FROM item_calls WHERE space_id = ? ORDER BY started_at DESC LIMIT 1`,
+  )
+    .bind(spaceId)
+    .first<CallRow>();
+}
+
 // The items among `ids` the reader can open themselves (no share code of the item's carries over), with their titles.
 async function openable(
   env: Env,

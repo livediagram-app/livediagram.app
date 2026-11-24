@@ -32,3 +32,5 @@ export * from './feature-art/photo-sizes';
 export * from './feature-art/history';
 export * from './feature-art/library';
 export * from './feature-art/automations';
+// The other apps: Ask AI, Send to Plan, Start a Call Here and Connect a File.
+export * from './feature-art/other-apps';

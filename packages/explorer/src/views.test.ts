@@ -4,22 +4,29 @@ import { explorerPath, sameView, viewFromLocation, type ExplorerView } from './v
 import { kindWords, listWords, siteOf } from './words';
 
 describe('a team’s tabs', () => {
-  it('writes a tab other than People into the address, before the lens', () => {
+  it('writes a tab other than the Library into the address, before the lens', () => {
     expect(explorerPath({ kind: 'team', id: 'T1' })).toBe('/explorer/team?id=T1');
-    expect(explorerPath({ kind: 'team', id: 'T1', tab: 'people' })).toBe('/explorer/team?id=T1');
     expect(explorerPath({ kind: 'team', id: 'T1', tab: 'library', q: 'opens-in:plan' })).toBe(
-      '/explorer/team?id=T1&tab=library&q=opens-in%3Aplan',
+      '/explorer/team?id=T1&q=opens-in%3Aplan',
+    );
+    expect(explorerPath({ kind: 'team', id: 'T1', tab: 'people' })).toBe(
+      '/explorer/team?id=T1&tab=people',
     );
   });
 
-  it('reads an unknown or People tab as People', () => {
+  it('reads no tab, an unknown tab or an older link’s Library tab as the Library', () => {
+    for (const search of ['id=T1', 'id=T1&tab=nope', 'id=T1&tab=library']) {
+      expect(viewFromLocation('/explorer/team', search)).toEqual({ kind: 'team', id: 'T1' });
+    }
+    expect(viewFromLocation('/explorer/team', 'id=T1&tab=library&q=x')).toEqual({
+      kind: 'team',
+      id: 'T1',
+      q: 'x',
+    });
     expect(viewFromLocation('/explorer/team', 'id=T1&tab=people')).toEqual({
       kind: 'team',
       id: 'T1',
-    });
-    expect(viewFromLocation('/explorer/team', 'id=T1&tab=nope')).toEqual({
-      kind: 'team',
-      id: 'T1',
+      tab: 'people',
     });
     expect(viewFromLocation('/explorer/team', 'id=T1&tab=audit')).toEqual({
       kind: 'team',
@@ -50,7 +57,7 @@ describe('views and their addresses', () => {
     { kind: 'folder', id: 'f1' },
     { kind: 'team', id: 'team-1' },
     { kind: 'team', id: 'team-1', folderId: 'f2' },
-    { kind: 'team', id: 'team-1', tab: 'library' },
+    { kind: 'team', id: 'team-1', tab: 'people' },
     { kind: 'team', id: 'team-1', tab: 'audit' },
     { kind: 'invites' },
     { kind: 'gallery' },

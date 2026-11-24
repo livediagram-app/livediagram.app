@@ -1,18 +1,18 @@
 'use client';
 
-// Home (liveworkspace/docs/specs/004-index/one-explorer.md "Most Used and Recent, on Home"): under the hero, New
-// (HomeNew: the four items made most recently), then Most Used (up to eight large cards, two rows of four on a desktop:
-// the items opened most often in the last 14 days, "Opened N times") and Recent directly after it (up to eight more of
-// the same size, the latest opened of the rest, See More at its heading's right), each a section headed as New is,
-// then Spaces (HomeSpaces: My Work and each team, each a tile into its list), and Shared With You Recently. On a phone
-// each of Most Used and Recent is its own strip of up to eight under its own heading. A section with nothing in it is
+// Home (liveworkspace/docs/specs/004-index/one-explorer.md "Home's layout"): under the hero, two columns once the pane
+// is wide enough. On the left, Recent as a timeline (HomeTimeline): New's items (made) and Recent's (opened) as one list
+// of rows by day, newest first, See More at its heading's right. On the right, the rail: Most Used (up to eight ranked
+// rows, each with its 14-day day chart), Spaces (HomeSpaces) and Shared With You Recently, each a panel. Below that
+// width (a phone, a narrow window) one column, the rail's panels after the timeline. A section with nothing in it is
 // left out, heading and all; with every one empty (once each read has answered), Home shows one empty state for the
-// whole view with New (HomeNothing, "Nothing on Home"). Each item shows once, in the first of New, Most Used and Recent it qualifies for (home-sections.ts). An item kept only in this browser is one card among Recent's (LocalCard): the same frame, size, menu and
-// drag, with the Offline badge on its line and Offline's own verbs. With the hero hidden, Home takes the
-// ordinary page header. Three requests, each one small page: Recent carries Most Used and New beside it (the index's
-// `used` and `newest`), so its two sections cost one; the spaces' previews; and Shared. The cards are HomeCards.tsx's.
+// whole view with New (HomeNothing, "Nothing on Home"). Each item shows once, in the first of New, Most Used and
+// Recent it qualifies for (home-sections.ts). An item kept only in this browser is a row among the timeline's
+// (HomeRow's LocalCard), with Offline's own verbs. With the hero hidden, Home takes the ordinary page header. Three
+// requests, each one small page: Recent carries Most Used and New beside it (the index's `used` and `newest`); the
+// spaces' previews; and Shared.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { ShownItem } from '../data/overlay';
 import { useItemList } from '../data/useItemList';
 import { JUMP_BACK_IN_PER_GROUP, homeOpenedLoader, sharedRecentlyLoader } from '../data/viewLists';
@@ -20,11 +20,12 @@ import { useExplorer } from './context';
 import { EmptyPane } from './EmptyPane';
 import { PaneHeader } from './PaneHeader';
 import { HomeFailed, HomeSection } from './HomeSection';
-import { CardGroup, GridSkeleton, HomeCardsProvider, Strip, StripSkeleton } from './HomeCards';
-import { HomeNew, useHomeNew } from './HomeNew';
+import { HomeCardsProvider, HomeRow } from './HomeCards';
+import { HomeTimeline, TimelineSkeleton } from './HomeTimeline';
+import { MUTED, SKELETON } from '../ui/classes';
+import { useHomeNew } from './HomeNew';
 import { homeSections } from './home-sections';
 import { HomeSpaces, useHomeSpaces } from './HomeSpaces';
-import type { ThisBrowserItem } from '../this-browser';
 import { useFirstRun } from '../welcome/context';
 import { HomeWelcome } from '../welcome/HomeWelcome';
 import { useThisBrowserItems } from './ThisBrowser';
@@ -32,8 +33,6 @@ import { useThisBrowserItems } from './ThisBrowser';
 export const HOME_SHARED = 4;
 // Recent with this browser's own items merged in.
 const HOME_RECENT_MAX = JUMP_BACK_IN_PER_GROUP;
-// A phone's strip, one per section: at most this many tiles (Recent's then its See More tile).
-export const HOME_STRIP_MAX = JUMP_BACK_IN_PER_GROUP;
 
 export const HOME_COPY = {
   sharedRecently: 'Shared With You Recently',
@@ -41,23 +40,8 @@ export const HOME_COPY = {
   seeAll: 'See All',
   mostUsed: 'Most Used',
   recent: 'Recent',
+  dayChartKey: 'Each square is a day: 14 days ago on the left, today on the right.',
 } as const;
-
-/** Home's grids from `md` up; below it, the strips. */
-const WIDE_QUERY = '(min-width: 768px)';
-
-function useWide(): boolean {
-  const [wide, setWide] = useState(true);
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const list = window.matchMedia(WIDE_QUERY);
-    const update = () => setWide(list.matches);
-    update();
-    list.addEventListener('change', update);
-    return () => list.removeEventListener('change', update);
-  }, []);
-  return wide;
-}
 
 export function HomePane({ hero }: { hero: boolean }) {
   const { client, app, filter, overlay, epoch, onCreate, onHome } = useExplorer();
@@ -80,7 +64,6 @@ export function HomePane({ hero }: { hero: boolean }) {
     belongs: live,
     epoch,
   });
-  const wide = useWide();
   const showApp = filter === 'all';
   // What this browser keeps of the host app's, by the same rule as Recent (last opened first): only where the host
   // can read it (the Explorer on the app's own address).
@@ -92,11 +75,20 @@ export function HomePane({ hero }: { hero: boolean }) {
     () => homeSections(recent.items, made.shown, localOpened, HOME_RECENT_MAX),
     [recent.items, made.shown, localOpened],
   );
+  // Most Used's charts measure every day against the busiest day across the list, so rows compare at a glance.
+  const peak = useMemo(
+    () => mostUsed.reduce((top, i) => Math.max(top, ...(i.useHistory ?? [0])), 0),
+    [mostUsed],
+  );
   const { firstRun } = useFirstRun();
   // A failed read says so once, under Recent's heading, with Try again, never "nothing yet".
   const failed = !recent.loading && Boolean(recent.error);
   const loading = recent.loading;
   const spaces = useHomeSpaces();
+  // The timeline holds New's items (made) and Recent's (opened); New's own read failing leaves only Recent's.
+  const madeShown = made.error ? [] : made.shown;
+  const timelineLoading = loading || made.loading;
+  const timeline = madeShown.length > 0 || recentRest.length > 0;
   // Every section answered and empty: one empty state for the whole view, never a heading over nothing.
   const nothing =
     !loading &&
@@ -108,7 +100,7 @@ export function HomePane({ hero }: { hero: boolean }) {
     !shared.loading &&
     shared.items.length === 0 &&
     spaces.empty;
-  // A card opened from Most Used or Recent, or See More followed to the Recent view (Home·Selected).
+  // A row opened from Most Used or Recent, or See More followed to the Recent view (Home·Selected).
   const pickFrom = (section: 'MostUsed' | 'Recent') => (seeLink: boolean) =>
     onHome?.('Selected', seeLink ? 'SeeMore' : section);
   const retry = () => {
@@ -131,6 +123,10 @@ export function HomePane({ hero }: { hero: boolean }) {
       </div>
     );
 
+  const showMostUsed = loading || (!failed && mostUsed.length > 0);
+  const showShared = shared.items.length > 0;
+  const rail = showMostUsed || !spaces.empty || showShared;
+
   return (
     <div data-explorer-view="home">
       {/* The hero is Home's page header; with the banner hidden, Home takes the ordinary one. */}
@@ -141,59 +137,119 @@ export function HomePane({ hero }: { hero: boolean }) {
         <HomeNothing />
       ) : (
         <HomeCardsProvider>
-          <div className="flex flex-col gap-10">
-            <HomeNew wide={wide} showApp={showApp} made={made} />
-            {/* Most Used: left out once the read finds none, and while Home could not load (Recent says so). */}
-            {loading || (!failed && mostUsed.length > 0) ? (
-              <HomeSection
-                id="most-used"
-                title={HOME_COPY.mostUsed}
-                busy={loading}
-                onPick={onHome ? pickFrom('MostUsed') : undefined}
-              >
-                {loading ? (
-                  <SectionSkeleton wide={wide} />
-                ) : (
-                  <SectionCards wide={wide} items={mostUsed} showApp={showApp} />
-                )}
-              </HomeSection>
-            ) : null}
-            {/* Recent: left out once the read finds nothing past New and Most Used; a failed read says so here. */}
-            {loading || failed || recentRest.length > 0 ? (
-              <HomeSection
-                id="recent"
-                title={HOME_COPY.recent}
-                busy={loading}
-                onPick={onHome ? pickFrom('Recent') : undefined}
-                link={
-                  wide && !loading && !failed && recentRest.length > 0
-                    ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
-                    : undefined
-                }
-              >
-                {failed ? (
-                  <HomeFailed message="Couldn’t load Home." onRetry={retry} />
-                ) : loading ? (
-                  <SectionSkeleton wide={wide} />
-                ) : (
-                  <SectionCards wide={wide} items={recentRest} showApp={showApp} seeMore />
-                )}
-              </HomeSection>
-            ) : null}
-            <HomeSpaces state={spaces} />
-            {shared.items.length > 0 ? (
-              <HomeSection
-                id="shared-recently"
-                title={HOME_COPY.sharedRecently}
-                busy={false}
-                link={{ view: { kind: 'shared' }, label: HOME_COPY.seeAll }}
-              >
-                <CardGroup items={shared.items} large showApp={showApp} />
-              </HomeSection>
-            ) : null}
+          {/* The timeline on the left and the rail on the right once the pane is wide enough for both (its own
+              width, not the window's: the sidebar takes its share). Below that one column, Most Used first (the
+              quickest way back in on a phone), then the timeline, then the rail's other panels: the order they are
+              written in, so a keyboard and a screen reader meet them in that order too. */}
+          <div className="@container" data-home-layout="">
+            <div
+              className={`grid grid-cols-1 items-start gap-6 sm:gap-8 ${rail ? '@4xl:grid-cols-[minmax(0,1fr)_20rem] @4xl:grid-rows-[auto_1fr] @6xl:grid-cols-[minmax(0,1fr)_22rem]' : ''}`}
+            >
+              {showMostUsed ? (
+                <div className="min-w-0 @4xl:col-start-2 @4xl:row-start-1">
+                  <HomeSection
+                    id="most-used"
+                    title={HOME_COPY.mostUsed}
+                    busy={loading}
+                    panel
+                    onPick={onHome ? pickFrom('MostUsed') : undefined}
+                  >
+                    {loading ? (
+                      <RowsSkeleton rows={5} thumb={false} />
+                    ) : (
+                      <>
+                        <ol>
+                          {mostUsed.map((item, i) => (
+                            <li key={item.id} className="min-w-0">
+                              <HomeRow
+                                item={item}
+                                showApp={showApp}
+                                line="used"
+                                rank={i + 1}
+                                peak={peak}
+                              />
+                            </li>
+                          ))}
+                        </ol>
+                        {peak > 0 ? (
+                          <p className={`px-2 pb-1 pt-2 text-[11.5px] leading-4 ${MUTED}`}>
+                            {HOME_COPY.dayChartKey}
+                          </p>
+                        ) : null}
+                      </>
+                    )}
+                  </HomeSection>
+                </div>
+              ) : null}
+              {timelineLoading || failed || timeline ? (
+                <div className="min-w-0 @4xl:col-start-1 @4xl:row-span-2 @4xl:row-start-1">
+                  <HomeSection
+                    id="recent"
+                    title={HOME_COPY.recent}
+                    busy={timelineLoading}
+                    onPick={onHome ? pickFrom('Recent') : undefined}
+                    link={
+                      !timelineLoading && !failed && timeline
+                        ? { view: { kind: 'recent' }, label: HOME_COPY.seeMore }
+                        : undefined
+                    }
+                  >
+                    {failed ? (
+                      <HomeFailed message="Couldn’t load Home." onRetry={retry} />
+                    ) : timelineLoading ? (
+                      <TimelineSkeleton />
+                    ) : (
+                      <HomeTimeline made={madeShown} opened={recentRest} showApp={showApp} />
+                    )}
+                  </HomeSection>
+                </div>
+              ) : null}
+              {!spaces.empty || showShared ? (
+                <div
+                  className={`flex min-w-0 flex-col gap-6 @4xl:col-start-2 ${showMostUsed ? '@4xl:row-start-2' : '@4xl:row-start-1'}`}
+                  data-home-rail=""
+                >
+                  <HomeSpaces state={spaces} />
+                  {showShared ? (
+                    <HomeSection
+                      id="shared-recently"
+                      title={HOME_COPY.sharedRecently}
+                      busy={false}
+                      panel
+                      link={{ view: { kind: 'shared' }, label: HOME_COPY.seeAll }}
+                    >
+                      <ul>
+                        {shared.items.map((item) => (
+                          <li key={item.id} className="min-w-0">
+                            <HomeRow item={item} showApp={showApp} line="opened" />
+                          </li>
+                        ))}
+                      </ul>
+                    </HomeSection>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
         </HomeCardsProvider>
       )}
+    </div>
+  );
+}
+
+/** A rail panel's rows as they load: the row's shape, with or without its thumbnail. */
+function RowsSkeleton({ rows, thumb }: { rows: number; thumb: boolean }) {
+  return (
+    <div aria-hidden className="flex flex-col">
+      {Array.from({ length: rows }, (_, i) => (
+        <div key={i} className="flex min-h-14 items-center gap-3 p-2">
+          {thumb ? <div className={`h-11 w-16 shrink-0 rounded-lg ${SKELETON}`} /> : null}
+          <div className="flex flex-1 flex-col gap-1.5">
+            <div className={`h-3.5 w-3/4 ${SKELETON}`} />
+            <div className={`h-2.5 w-1/2 ${SKELETON}`} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -203,34 +259,6 @@ const HOME_PLACE = { folderId: null, teamId: null };
 const live = (i: ShownItem) => i.trashedAt === null;
 // Most Used and Recent leave out what the person hid from Recent (the index does too; this catches a change made here).
 const notHidden = (i: ShownItem) => live(i) && !i.hiddenFromRecent;
-
-/** One section's placeholders: a full group of large cards from `md`, the strip's below. */
-function SectionSkeleton({ wide }: { wide: boolean }) {
-  return wide ? <GridSkeleton /> : <StripSkeleton />;
-}
-
-/** One section's cards: the large cards' grid from `md`; below it a strip, Recent's ending on See More. */
-function SectionCards({
-  wide,
-  items,
-  showApp,
-  seeMore = false,
-}: {
-  wide: boolean;
-  items: readonly (ShownItem | ThisBrowserItem)[];
-  showApp: boolean;
-  seeMore?: boolean;
-}) {
-  if (wide) return <CardGroup items={items} large showApp={showApp} />;
-  return (
-    <Strip
-      items={items.filter((i): i is ShownItem => 'app' in i)}
-      local={items.filter((i): i is ThisBrowserItem => !('app' in i))}
-      max={HOME_STRIP_MAX}
-      seeMore={seeMore ? HOME_COPY.seeMore : undefined}
-    />
-  );
-}
 
 // Nothing on Home at all: the Explorer's one empty state for the whole view, with New where the header's New makes it.
 function HomeNothing() {

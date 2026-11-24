@@ -20,13 +20,9 @@ This article walks through an import step by step. [Import From Notion](/help/kn
 
 ## Import a Folder
 
-<Step n={1}>
-  Press the Knowledgebase's name at the top of the sidebar and choose **Import**.
-</Step>
+<Step n={1}>Press the Knowledgebase's name at the top of the sidebar and choose **Import**.</Step>
 
-<Step n={2}>
-  Choose **A Whole Knowledgebase**, then **Markdown Folder**.
-</Step>
+<Step n={2}>Choose **A Whole Knowledgebase**, then **Markdown Folder**.</Step>
 
 <Figure caption="Import: A Whole Knowledgebase holds the three sources. Into This Page brings one file into the open page instead.">
   <ImportSourcesScene />
@@ -45,24 +41,41 @@ This article walks through an import step by step. [Import From Notion](/help/kn
 
 <Step n={5}>
   Under **Where It Lands**, choose **A New Knowledgebase** (named after the folder, kept where this
-  one is), or **Under a Page of This Knowledgebase** and pick the page. The top pages of the
-  import become its subpages.
+  one is), or **Under a Page of This Knowledgebase** and pick the page. The top pages of the import
+  become its subpages.
 </Step>
 
 <Step n={6}>
-  Press the Import button, which counts the pages, such as **Import 320 Pages**. A bar shows "Importing 140 of 320
-  Pages" as it goes. Keep the window open.
+  Press the Import button, which counts the pages, such as **Import 320 Pages**. A bar shows
+  "Importing 140 of 320 Pages" as it goes. Keep the window open.
 </Step>
 
-<Step n={7}>
-  When it is done, press **Open** and the first page's name to read it.
-</Step>
+<Step n={7}>When it is done, press **Open** and the first page's name to read it.</Step>
 
 <Figure caption="The review: what was found, the pages as a tree, what is left out or changed, and where it lands. Nothing is imported until Import.">
   <ImportReviewScene />
 </Figure>
 
 On a phone, **Choose a Folder** is not offered (a phone's file picker cannot choose a folder): zip the folder and choose the `.zip`.
+
+## Bringing In Google Docs
+
+Google Docs has no direct import here, but it downloads as Markdown, and that comes in.
+
+<Step n={1}>In Google Docs, open the doc and choose **File › Download › Markdown (.md)**.</Step>
+
+<Step n={2}>
+  One doc: in liveknowledge, open the page it should fill, press the Knowledgebase's name and choose
+  **Import**, then **Into This Page** and **Markdown**, and pick the `.md` file. The page is
+  replaced, so use an empty one.
+</Step>
+
+<Step n={3}>
+  Many docs: download each, put the files in one folder, and import the folder as above. Each file
+  becomes a page named by its first heading.
+</Step>
+
+Headings, lists, links and tables come across. In a single file, a picture comes in as a link named by its description: add the picture again from Media if you want it on the page.
 
 ## How the Folder Becomes Pages
 
@@ -77,13 +90,13 @@ On a phone, **Choose a Folder** is not offered (a phone's file picker cannot cho
 
 ## Limits
 
-| Limit                        | Value                                                          |
-| ---------------------------- | -------------------------------------------------------------- |
-| An archive                   | 200 MB                                                         |
-| Pages in a Knowledgebase     | 500, counted with the pages already there                      |
-| Levels in the page tree      | 8 (deeper pages sit at the last level, with a note)            |
-| A picture                    | 10 MB (a larger one is left out; its description stays)        |
-| One file's writing           | 5 MB (a larger file is left out)                               |
+| Limit                    | Value                                                   |
+| ------------------------ | ------------------------------------------------------- |
+| An archive               | 200 MB                                                  |
+| Pages in a Knowledgebase | 500, counted with the pages already there               |
+| Levels in the page tree  | 8 (deeper pages sit at the last level, with a note)     |
+| A picture                | 10 MB (a larger one is left out; its description stays) |
+| One file's writing       | 5 MB (a larger file is left out)                        |
 
 With subscriptions on, the pages also count toward the owner's pages over every Knowledgebase they own (500 on Free, 10,000 on Pro, 5,000 for each member of a team on Pro for Teams), and the import offers to bring in the first pages that fit.
 
@@ -102,9 +115,9 @@ An import cannot be undone as one step, and the dialog says so. That is why the 
 
 ## Who Can Do What
 
-| Action                          | Editor | Participant | Viewer |
-| ------------------------------- | ------ | ----------- | ------ |
-| Import a whole Knowledgebase    | Yes    | No          | No     |
+| Action                       | Editor | Participant | Viewer |
+| ---------------------------- | ------ | ----------- | ------ |
+| Import a whole Knowledgebase | Yes    | No          | No     |
 
 A share link confined to one page does not offer it either: an import adds pages.
 

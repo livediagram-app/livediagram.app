@@ -90,6 +90,7 @@ export function EditorElementDialogs() {
       !!s.lineDataOpenForId ||
       !!s.codeEditOpenForId ||
       !!s.rowsEditorOpenFor ||
+      !!s.resourcesOpenForId ||
       !!s.sankeyFlowsOpenForId ||
       !!s.mapDialogOpenForId ||
       !!s.imagePickerOpenFor,

@@ -14,6 +14,14 @@ const INTEGRATION_ANSWERS = new Map<string, RegExp>([
   ['Is there an API?', /liveworkspace account/],
   ['Can I connect my own AI assistant, like Claude?', /liveworkspace's MCP server/],
   ['Is livedocuments up right now?', /liveworkspace status page/],
+  // The other apps' files a document connects, embeds, sends cards to and starts calls in.
+  [
+    'Does it work with my other liveworkspace apps?',
+    /liveplanner plan[\s\S]*livehuddle video call/,
+  ],
+  // A chart kept in step with a plan (Live Data), and a rule's step that makes a card in one.
+  ['Can I show data, like a chart?', /liveplanner plan/],
+  ['Can routine steps happen on their own?', /liveplanner plan/],
 ]);
 
 const OTHER_PRODUCTS = /\b(?:livediagram|liveplanner|livedesign|liveworkspace)\b/i;

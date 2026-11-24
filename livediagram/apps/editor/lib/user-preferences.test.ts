@@ -13,9 +13,8 @@ vi.mock('./api-client', () => ({
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
 import { setWorkbenchConfinement } from './api/workbench-confinement';
-import { __resetPreferencesSync } from './preferences-sync';
+import { __resetPreferencesSync, PREFERENCES_SERVER_KEY } from './preferences-sync';
 import {
-  __resetFetchedPreferences,
   autoRebindArrowsEnabled,
   fetchUserPreferences,
   PREFERENCES_CHANGED_EVENT,
@@ -107,7 +106,6 @@ afterEach(() => {
 beforeEach(() => {
   mockedGet.mockReset();
   mockedPut.mockReset();
-  __resetFetchedPreferences();
   __resetPreferencesSync();
 });
 
@@ -266,22 +264,40 @@ describe('fetchUserPreferences', () => {
     expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ autoRebindArrows: false });
   });
 
-  it('merges the server response over the cache, server wins on conflict', async () => {
+  it('merges the server response with the cache against the copy last agreed', async () => {
+    const { storage } = mockBrowser();
+    storage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ autoRebindArrows: false, telemetryEnabled: true, callSpace: 'room-1' }),
+    );
+    storage.setItem(
+      PREFERENCES_SERVER_KEY,
+      JSON.stringify({
+        ownerId: 'owner-1',
+        prefs: { telemetryEnabled: true, callSpace: 'room-1' },
+      }),
+    );
+    // The person opted out on another device and left the call there (its key removed), and the
+    // server gained a flag; this device turned auto-attach off, which the server hasn't seen.
+    mockedGet.mockResolvedValueOnce({ telemetryEnabled: false, drawToAdd: true });
+    const merged = await fetchUserPreferences('owner-1');
+    const expected = {
+      autoRebindArrows: false, // changed only here, kept
+      telemetryEnabled: false, // changed on the server, taken
+      drawToAdd: true, // new on the server, carried in
+    }; // callSpace, removed on the server, is gone
+    expect(merged).toEqual(expected);
+    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual(expected);
+  });
+
+  it('keeps cache-only keys while nothing is agreed yet, the server winning on conflict', async () => {
     const { storage } = mockBrowser();
     storage.setItem(
       STORAGE_KEY,
       JSON.stringify({ autoRebindArrows: false, telemetryEnabled: true }),
     );
-    // Server has telemetryEnabled = false (the user opted out on
-    // another device) and a new flag the cache doesn't know about.
     mockedGet.mockResolvedValueOnce({ telemetryEnabled: false, drawToAdd: true });
-    const merged = await fetchUserPreferences('owner-1');
-    expect(merged).toEqual({
-      autoRebindArrows: false, // cache-only key preserved
-      telemetryEnabled: false, // server wins on conflict
-      drawToAdd: true, // server-only key carried in
-    });
-    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({
+    expect(await fetchUserPreferences('owner-1')).toEqual({
       autoRebindArrows: false,
       telemetryEnabled: false,
       drawToAdd: true,

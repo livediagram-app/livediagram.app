@@ -65,7 +65,7 @@ const screenName = () =>
 describe('ResourcesDialog', () => {
   afterEach(() => resetDialogSlot());
 
-  it('wears the hero header and lists each option with what it is and what the element has', () => {
+  it('wears the hero header, pictures the element, and lists each option with what the element has', () => {
     open(LINKED);
     expect(screen.getByRole('heading', { name: 'Resources' })).toBeTruthy();
     expect(document.querySelector('[data-dialog-hero="resources"]')).toBeTruthy();
@@ -78,12 +78,21 @@ describe('ResourcesDialog', () => {
       'note',
     ]);
     expect(rows.map((r) => r.querySelector('[data-resource-state]')?.textContent)).toEqual([
-      // What it has, once it has one; until then, what it is.
-      'Work assigned to someone',
-      'A thread to talk it over',
+      // What it has, once it has one; until then, only the verb that adds one.
+      undefined,
+      undefined,
       'Tab: Roadmap',
       'Remember',
     ]);
+    // The picture wears a badge for each resource the element has, as the canvas does.
+    expect(
+      [...document.querySelectorAll('[data-resources-preview] [data-preview-badge]')].map((b) =>
+        b.getAttribute('data-preview-badge'),
+      ),
+    ).toEqual(['link', 'note']);
+    expect(document.querySelector('[data-resources-preview]')?.textContent).toContain('2 attached');
+    // No line over the list: the header already says what Resources are.
+    expect(screen.queryByText(/^Attach an action/)).toBeNull();
     // Only what the element has is marked.
     expect(rows.map((r) => !!r.querySelector('[data-resource-on]'))).toEqual([
       false,
@@ -137,7 +146,9 @@ describe('ResourcesDialog', () => {
     const { onClose } = open(LINKED);
     fireEvent.click(option('link'));
     expect(screenName()).toBe('link');
+    // The list stays under the screen, keeping the card's height, but hidden and out of reach.
     expect(document.querySelector('[data-element-resources]')).toBeNull();
+    expect(document.querySelector('[data-option="link"]')?.closest('[inert]')).toBeTruthy();
     const back = screen.getByRole('button', { name: /^Resources/ });
     // The bar names where it leads and where this is.
     expect(back.textContent).toBe('ResourcesLink');
@@ -176,9 +187,8 @@ describe('ResourcesDialog', () => {
     expect(screenName()).toBe('list');
     // The element comes back without its link: the row reads as empty.
     show({ ...LINKED, link: undefined });
-    expect(option('link').querySelector('[data-resource-state]')?.textContent).toBe(
-      'A page or tab it opens',
-    );
+    expect(option('link').querySelector('[data-resource-state]')).toBeNull();
+    expect(option('link').querySelector('[data-resource-verb]')?.textContent).toBe('Add Link');
     expect(option('link').querySelector('[data-resource-on]')).toBeNull();
   });
 

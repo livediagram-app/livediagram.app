@@ -14,13 +14,14 @@ vi.mock('@/components/ask/SyncKnowledgebaseButton', () => ({
   SyncKnowledgebaseButton: () => <button type="button">Sync Knowledgebase</button>,
 }));
 // The account write the X makes, caught here rather than sent.
-vi.mock('@/lib/preferences-sync', async (original) => ({
-  ...(await original<typeof import('@/lib/preferences-sync')>()),
-  savePreferences: vi.fn(),
+vi.mock('@/lib/api-client', async (original) => ({
+  ...(await original<typeof import('@/lib/api-client')>()),
+  apiPutPreferences: vi.fn(async () => 'saved'),
 }));
 
 import { track } from '@/lib/telemetry';
-import { savePreferences } from '@/lib/preferences-sync';
+import { apiPutPreferences } from '@/lib/api-client';
+import { __resetPreferencesSync, flushPreferences } from '@/lib/preferences-sync';
 import { ROLES, chromeValue, renderInEditor } from '@/components/ask/test-chrome';
 import { BottomBar } from './BottomBar';
 import { KnowledgeViewTabs } from './KnowledgeViewTabs';
@@ -39,6 +40,7 @@ afterEach(() => {
   window.localStorage.clear();
   window.history.replaceState(null, '', '/document/d1');
   vi.clearAllMocks();
+  __resetPreferencesSync();
 });
 
 const link = (name: string) => screen.getByRole('link', { name });
@@ -130,7 +132,8 @@ describe('the Connect tab', () => {
     expect(setUserPreferences).toHaveBeenCalledWith(
       expect.objectContaining({ showConnectMcp: false, homeBanner: false }),
     );
-    expect(savePreferences).toHaveBeenCalledWith(
+    flushPreferences();
+    expect(apiPutPreferences).toHaveBeenCalledWith(
       'me',
       expect.objectContaining({ showConnectMcp: false }),
     );

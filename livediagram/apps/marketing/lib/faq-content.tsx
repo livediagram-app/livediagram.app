@@ -198,12 +198,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or
-            line chart, a progress bar, a rating or a timeline. See{' '}
+            line chart, a progress bar, a rating or a timeline. A chart or a table can also take its
+            numbers from a plan in liveplanner and keep in step with it. See{' '}
             <a href="/help/palette/tools/data-elements/">data elements</a>.
           </>
         ),
         aText:
-          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. See data elements.',
+          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. A chart or a table can also take its numbers from a plan in liveplanner and keep in step with it. See data elements.',
       },
       {
         q: 'Can I animate things?',
@@ -357,6 +358,47 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         aText:
           'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective, Lean Coffee or town hall Q&A template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Workshop mode.',
       },
+      {
+        q: 'Can we talk while we work on a canvas?',
+        a: (
+          <>
+            Yes. Press Call in the canvas’s corner and a call about it opens in livehuddle, in a new
+            tab, for anyone who can open the canvas to join. While it runs, the corner shows how
+            many are in it and a Join button. See{' '}
+            <a href="/help/collaboration/start-a-call/">starting a call</a>.
+          </>
+        ),
+        aText:
+          'Yes. Press Call in the canvas’s corner and a call about it opens in livehuddle, in a new tab, for anyone who can open the canvas to join. While it runs, the corner shows how many are in it and a Join button. See starting a call.',
+      },
+      {
+        q: 'Can I turn a diagram into tasks?',
+        a: (
+          <>
+            Yes, in liveplanner, livediagram’s sister app for planning work. Send a sticky, a shape
+            or a comment thread to a plan as a card, or select a roadmap and choose Make Plan Cards:
+            shapes become cards, arrows say which card waits on which, and lanes become columns.
+            Each shape then wears a chip that shows its card’s progress. See{' '}
+            <a href="/help/collaboration/make-plan-cards/">making plan cards</a>.
+          </>
+        ),
+        aText:
+          'Yes, in liveplanner, livediagram’s sister app for planning work. Send a sticky, a shape or a comment thread to a plan as a card, or select a roadmap and choose Make Plan Cards: shapes become cards, arrows say which card waits on which, and lanes become columns. Each shape then wears a chip that shows its card’s progress. See making plan cards.',
+      },
+      {
+        q: 'Can a canvas do things on its own?',
+        a: (
+          <>
+            Yes, with Automations in Tools. A rule can take a snapshot every Friday, reset a
+            workshop board each night, post new comments to Slack or Microsoft Teams, email you when
+            an AI agent edits, or summarise a finished session with AI into a page of your team’s
+            knowledgebase. Rules run on our servers, even with nobody on the canvas. See{' '}
+            <a href="/help/tools/automations/">Automations</a>.
+          </>
+        ),
+        aText:
+          'Yes, with Automations in Tools. A rule can take a snapshot every Friday, reset a workshop board each night, post new comments to Slack or Microsoft Teams, email you when an AI agent edits, or summarise a finished session with AI into a page of your team’s knowledgebase. Rules run on our servers, even with nobody on the canvas. See Automations.',
+      },
     ],
   },
   {
@@ -371,7 +413,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I password-protect a canvas?',
-        a: 'Yes. Add a password in the Share dialog and every link to that canvas asks for it before opening.',
+        a: 'Yes. Add a password in the Share dialog and every link to that canvas asks for it before opening. You can also Require Sign In, so only people with an account get in, or allow only accounts whose email is at the domains you list.',
       },
       {
         q: 'Can I share just one tab?',
@@ -387,7 +429,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I embed a diagram in my docs or wiki?',
-        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable canvas, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
+        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable canvas, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram. In Notion, Medium or Ghost you can paste the share link itself and it turns into the live canvas.',
       },
       {
         q: 'Can I show a diagram where iframes are blocked, like a README?',
@@ -421,6 +463,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     blurb: 'Connect your assistant and your scripts.',
     icon: lucideGlyph(lucideSparkles, ICON),
     items: [
+      {
+        q: 'Can I ask AI about a canvas?',
+        a: 'Yes, once you sign in. Open Tools, then Ask AI, and ask anything about the canvas: a summary, the main steps, what looks unclear. The answer comes from the canvas’s own words, with numbered sources that take you to the shape each came from, and asking never changes the canvas. Built-in AI answers within a daily allowance, or you can use your own AI key.',
+      },
       {
         q: 'Can I connect my own AI assistant, like Claude?',
         a: (
@@ -483,7 +529,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I move my boards over from another tool?',
-        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
+        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded), Visio drawings (.vsdx), Lucidchart diagrams through Lucidchart’s Visio export, BPMN files and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
       },
       {
         q: 'Can I turn a photo of sticky notes into a board?',

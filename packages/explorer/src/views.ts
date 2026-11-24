@@ -25,7 +25,7 @@ export type ExplorerView =
   // Search results: every item the person can open, narrowed by the lens (words and filters).
   | { kind: 'search'; q: string }
   | ({ kind: 'folder'; id: string } & Lensed)
-  // A team's view: at its root a tab (People, the default, its Library or, for admins, its Audit Log), or one of its
+  // A team's view: at its root a tab (its Library, the default, People or, for admins, its Audit Log), or one of its
   // folders.
   | ({ kind: 'team'; id: string; folderId?: string; tab?: TeamTab } & Lensed)
   // The team invitations waiting for the person, each answered where teams are run.
@@ -42,12 +42,14 @@ export type ExplorerView =
 
 /** How a view takes the lens: `scoped` (its breadcrumb is the place), `aggregate` (it lists every place), or
  *  null for a view that lists no items of its own (typing there opens Search results). */
-/** A team's view's tabs at its root; People is the default and rides no `tab` in the address. */
-export const TEAM_TABS = ['people', 'library', 'audit'] as const;
+/** A team's view's tabs at its root, in the order they are drawn; the Library is the default and rides no `tab` in the
+ *  address (one-explorer.md "A team's page"). */
+export const TEAM_TABS = ['library', 'people', 'audit'] as const;
 export type TeamTab = (typeof TEAM_TABS)[number];
+export const DEFAULT_TEAM_TAB: TeamTab = 'library';
 
 export function teamTabOf(raw: string | null | undefined): TeamTab {
-  return TEAM_TABS.includes(raw as TeamTab) ? (raw as TeamTab) : 'people';
+  return TEAM_TABS.includes(raw as TeamTab) ? (raw as TeamTab) : DEFAULT_TEAM_TAB;
 }
 
 export type LensViewKind = 'scoped' | 'aggregate';
@@ -109,7 +111,7 @@ export function explorerPath(view: ExplorerView, base = DEFAULT_BASE_PATH): stri
       if (view.folderId) {
         return `${b}/team?id=${enc(view.id)}&folder=${enc(view.folderId)}${lens('&')}`;
       }
-      const tab = view.tab && view.tab !== 'people' ? `&tab=${view.tab}` : '';
+      const tab = view.tab && view.tab !== DEFAULT_TEAM_TAB ? `&tab=${view.tab}` : '';
       return `${b}/team?id=${enc(view.id)}${tab}${lens('&')}`;
     }
     // livediagram's address for its gallery, kept so its links still land.
@@ -174,7 +176,7 @@ export function viewFromLocation(
       const folderId = params.get('folder');
       if (folderId) return lensed({ kind: 'team', id, folderId });
       const tab = teamTabOf(params.get('tab'));
-      return lensed(tab === 'people' ? { kind: 'team', id } : { kind: 'team', id, tab });
+      return lensed(tab === DEFAULT_TEAM_TAB ? { kind: 'team', id } : { kind: 'team', id, tab });
     }
     default:
       return { kind: 'home' };

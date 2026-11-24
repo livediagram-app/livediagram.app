@@ -21,7 +21,8 @@ const TONES: Record<Tone, string> = {
 };
 // liveplanner's current row and tile are violet, its brand; here they are each app's brand.
 const TILE_CURRENT = 'bg-brand-600 text-white dark:bg-brand-500';
-const TILE = 'grid size-6 shrink-0 place-items-center rounded-lg [&>svg]:block [&>svg]:size-3.5';
+// The glyph fills most of its tile (owner, 2026-11-24: the larger icons read faster).
+const TILE = 'grid size-6 shrink-0 place-items-center rounded-lg [&>svg]:block [&>svg]:size-4';
 const CURRENT =
   'border-brand-200 bg-white shadow-[0_6px_18px_-8px_color-mix(in_srgb,var(--color-brand-600)_35%,transparent)] dark:border-transparent dark:bg-transparent dark:bg-gradient-to-r dark:from-brand-400/[0.18] dark:to-brand-400/[0.04] dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-brand-400/35';
 const RESTING = 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800';

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CALL_SPACE_SETTING,
+  callFallbackWords,
   callInProgressWords,
   callNames,
   inCallWords,
@@ -10,7 +12,9 @@ import {
   itemTabName,
   readCallInviteAsk,
   readCallPeoplePush,
+  readCallSpaceSetting,
   readCallSummaryAsk,
+  readItemCallAsk,
 } from './item-calls';
 import { readSourceChange } from './sheet-sources';
 
@@ -113,5 +117,37 @@ describe("a call's source change", () => {
     expect(readSourceChange({ app: 'livehuddle', itemId: 's1', sheetIds: ['a'] })).toBeNull();
     expect(readSourceChange({ app: 'livehuddle', itemId: 'a b', calls: true })).toBeNull();
     expect(readSourceChange(null)).toBeNull();
+  });
+});
+
+describe('your Calls Space', () => {
+  it('reads a start’s body: none, null or an id; anything else is malformed', () => {
+    expect(readItemCallAsk(undefined)).toEqual({});
+    expect(readItemCallAsk(null)).toEqual({});
+    expect(readItemCallAsk({})).toEqual({});
+    expect(readItemCallAsk({ space: null })).toEqual({});
+    expect(readItemCallAsk({ space: '' })).toEqual({});
+    expect(readItemCallAsk({ space: 'lh_room' })).toEqual({ space: 'lh_room' });
+    expect(readItemCallAsk({ space: 7 })).toBeNull();
+    expect(readItemCallAsk({ space: 'a b' })).toBeNull();
+    expect(readItemCallAsk({ space: 'x'.repeat(129) })).toBeNull();
+    expect(readItemCallAsk([])).toBeNull();
+  });
+
+  it('reads the setting from preferences, Default for anything but an id', () => {
+    expect(readCallSpaceSetting(null)).toBeNull();
+    expect(readCallSpaceSetting({})).toBeNull();
+    expect(readCallSpaceSetting({ [CALL_SPACE_SETTING]: null })).toBeNull();
+    expect(readCallSpaceSetting({ [CALL_SPACE_SETTING]: true })).toBeNull();
+    expect(readCallSpaceSetting({ callSpace: 'lh_room' })).toBe('lh_room');
+    // Default is stored as '', so it wins over a Space an editor still holds locally ({...local, ...server}).
+    const local = { callSpace: 'lh_room' };
+    const server = { callSpace: '' };
+    expect(readCallSpaceSetting({ ...local, ...server })).toBeNull();
+  });
+
+  it('says why a start skipped it', () => {
+    expect(callFallbackWords('busy')).toMatch(/in another call/);
+    expect(callFallbackWords('unavailable')).toMatch(/Settings › Calls/);
   });
 });

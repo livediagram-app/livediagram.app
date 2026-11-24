@@ -21,24 +21,10 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // render's snapshot (see rebaseUserPreferences): another tab's write since
 // that render would otherwise be undone.
 
-import { upgradeLegacyPreferences } from '@livehuddle/api-schema';
 import type { ElementTourKind } from './element-tours';
 import type { SwatchOverrideStore } from '@liveworkspace/workbench/lib/swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livehuddle/telemetry-client';
-import { apiGetPreferences, PREFERENCES_LOCAL_ONLY } from './api-client';
-import {
-  fitPreferences,
-  markPreferencesLocalOnly,
-  preferencesUnsynced,
-  rememberServerPreferences,
-  savePreferences,
-} from './preferences-sync';
-import {
-  readLocalStorageSafe,
-  writeLocalStorageSafe,
-} from '@liveworkspace/workbench/lib/local-storage-safe';
-import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { syncOpenExplorerCookie } from '@liveworkspace/sites/open-explorer';
+import { preferencesStore } from './preferences-sync';
 
 export type UserPreferences = {
   // (`autoRebindArrows`, the Auto-Attach Arrows switch, left livehuddle in Work Tracker #423 part 4: arrows
@@ -219,136 +205,37 @@ export type UserPreferences = {
 // centre reads the telemetry field out of this same blob and must never get
 // the string wrong — see the note there.
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
-export const PREFERENCES_CHANGED_EVENT = 'livehuddle:preferences-changed';
+export { PREFERENCES_CHANGED_EVENT } from './preferences-sync';
 
-// Read the current preferences from localStorage. Returns `{}` on
-// missing key, an SSR / private-window environment without
-// `localStorage`, or a parse error (corrupted JSON). Synchronous so
-// the editor can use it during render; the network fetch via
-// fetchUserPreferences happens separately at mount and merges its
-// result back into the cache when it arrives.
+// The browser's copy, read synchronously so the first render has it; written whole, trimmed to fit, and sent when an
+// owner is known; merged with the account's copy once per page load (liveworkspace/docs/specs/011-workbench/
+// editor-preferences.md). All of it is the editors' one store, bound in lib/preferences-sync.
 export function readUserPreferences(): UserPreferences {
-  const raw = readLocalStorageSafe(STORAGE_KEY);
-  if (!raw) return {};
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (typeof parsed !== 'object' || parsed === null) return {};
-    // Keep unknown keys: forward-compat for future-versioned flags
-    // a different client may have written.
-    return upgradeLegacyPreferences(parsed as Record<string, unknown>);
-  } catch {
-    return {};
-  }
+  return preferencesStore.read();
 }
 
-// Write preferences back. Best-effort: a quota / private-window
-// failure is swallowed (the dialog state still applies in-memory
-// for the session; the user just loses the persistence). The
-// network sync to the api runs in the background when `ownerId` is supplied
-// (lib/preferences-sync): the cache write happens synchronously so the
-// UI updates without waiting. Callers without an ownerId (e.g. unit
-// tests, the editor before identity resolves) skip the network step.
-// The blob is first trimmed to fit the api's size cap, so the cache and
-// the server hold the same thing. On success a same-tab
-// `livehuddle:preferences-changed` event fires so in-process
-// listeners refresh without polling. The browser handles cross-tab
-// via its native `storage` event.
 export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | null): void {
-  const fitted = fitPreferences(prefs);
-  writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(fitted));
-  syncOpenExplorerCookie(fitted.autoOpenExplorer === true);
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
-  }
-  // Never under the 'self' placeholder a document kept Offline opens with before the reader is known
-  // (docs/specs/006-document/offline-mode.md "Instant open"): that row would be everybody's.
-  if (ownerId && ownerId !== 'self') savePreferences(ownerId, fitted);
+  preferencesStore.write(prefs, ownerId);
 }
 
-// A change a caller built on its render's snapshot, moved onto the
-// freshest preferences (the device cache, which every tab writes):
-// only the keys `next` changed from `snapshot` are applied, so a key
-// another tab wrote since that render survives. With no cache yet,
-// the snapshot is the freshest there is.
+// A change built on a render's snapshot, moved onto the freshest copy, so a key another tab wrote since survives.
 export function rebaseUserPreferences(
   snapshot: UserPreferences,
   next: UserPreferences,
 ): UserPreferences {
-  const latest = readLocalStorageSafe(STORAGE_KEY) === null ? snapshot : readUserPreferences();
-  const rebased: Record<string, unknown> = { ...latest };
-  const before = snapshot as Record<string, unknown>;
-  const after = next as Record<string, unknown>;
-  for (const key of new Set([...Object.keys(before), ...Object.keys(after)])) {
-    if (before[key] === after[key]) continue;
-    if (key in after) rebased[key] = after[key];
-    else delete rebased[key];
-  }
-  return rebased;
+  return preferencesStore.rebase(snapshot, next);
 }
 
-// Rebase a change (above), write it, and answer what was written, for a
-// caller that also holds the preferences in React state.
 export function commitUserPreferences(
   snapshot: UserPreferences,
   next: UserPreferences,
   ownerId?: string | null,
 ): UserPreferences {
-  const rebased = rebaseUserPreferences(snapshot, next);
-  writeUserPreferences(rebased, ownerId);
-  return rebased;
+  return preferencesStore.commit(snapshot, next, ownerId);
 }
 
-// Owners whose server preferences this page has already merged: a second caller (the explorer,
-// then the editor it opens) reads the cache rather than asking again, so a page load costs one
-// accounts read, and a later change made here is never reverted by an older server copy.
-const fetched = new Set<string>();
-
-// Test seam.
-export function __resetFetchedPreferences(): void {
-  fetched.clear();
-}
-
-// Fetch preferences from the api, merge over the localStorage cache, and
-// dispatch `livehuddle:preferences-changed` so in-process listeners
-// pick up the merged value. Returns the merged preferences (or null
-// when the fetch failed, or this deployment keeps none; the caller treats
-// that as "stick with the cache"). Called at editor mount per
-// docs/specs/007-editor/user-preferences.md's sync flow, once per page load.
-//
-// Server-wins on conflict: the server holds the most-recently-saved
-// state across all of this owner's devices, so any key present on
-// both sides takes the server's value. Keys only in the cache (a
-// PUT that hasn't reached the server yet, or a write made offline)
-// are preserved by the spread order below. The exception is a device
-// whose last save was never confirmed (lib/preferences-sync): the
-// server's blob is older than the cache there, so the cache wins and
-// what differs is sent again.
-export async function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
-  if (fetched.has(ownerId)) return readUserPreferences();
-  fetched.add(ownerId);
-  const remote = await apiGetPreferences(ownerId);
-  if (remote === PREFERENCES_LOCAL_ONLY) {
-    debugLog('[preferences] kept in this browser only');
-    markPreferencesLocalOnly(ownerId);
-    return null;
-  }
-  if (remote === null) {
-    fetched.delete(ownerId);
-    return null;
-  }
-  rememberServerPreferences(ownerId, remote);
-  const local = readUserPreferences();
-  const server = upgradeLegacyPreferences(remote) as UserPreferences;
-  const unsynced = preferencesUnsynced(ownerId);
-  const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
-  writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
-  syncOpenExplorerCookie(merged.autoOpenExplorer === true);
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
-  }
-  if (unsynced) {
-    debugLog('[preferences] device copy kept over the server, resending');
-    savePreferences(ownerId, merged);
-  }
-  return merged;
+// The account's copy merged into the browser's, once per page load and owner; null when it could not be read or the
+// deployment keeps none (the caller sticks with the browser's copy).
+export function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
+  return preferencesStore.fetch(ownerId);
 }

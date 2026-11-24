@@ -2,6 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import type { SubscriptionProviderProps } from '@liveworkspace/subscription-ui/provider';
+import type { Item } from '@liveworkspace/index-client';
 import type { SettingsRequest } from '../request';
 
 // What the account's own panels (API Tokens, Download Your Data; liveworkspace/docs/specs/010-site/site.md
@@ -18,9 +19,21 @@ export type SubscriptionAccess = Pick<SubscriptionProviderProps, 'getToken' | 's
   origin?: string | (() => string);
 };
 
+/** How Settings › Calls reaches the person's livehuddle Spaces (liveworkspace/docs/specs/004-index/item-calls.md
+ *  "Your Calls Space"): the index's item list through the host's own client, and the bearer the previews service on
+ *  this page's origin takes. */
+export type CallSpacesHost = {
+  // The person's livehuddle Spaces, the most recently changed first (at most CALL_SPACES_LISTED); throws when the
+  // index can't answer.
+  list: () => Promise<readonly Item[]>;
+  token: () => Promise<string | null>;
+};
+
 export type AccountPanelsHost = {
   // The accounts API's account routes (`/tokens`, `/teams`, `/data-export`).
   request: SettingsRequest;
+  // Settings › Calls' Spaces. A host without it lists no Calls category.
+  callSpaces?: CallSpacesHost;
   // The subscription service, for the Subscription category. A host without it lists no such category; so does any
   // host in a build with Pro off.
   subscription?: SubscriptionAccess;

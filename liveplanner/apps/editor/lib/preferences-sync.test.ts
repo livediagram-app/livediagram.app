@@ -15,13 +15,12 @@ import {
   PREFERENCES_BODY_MAX,
   PREFERENCES_UNSYNCED_KEY,
   preferencesBodyLength,
-  preferencesPatch,
   SAVE_DEBOUNCE_MS,
   savePreferences,
-  setServerPreferences,
+  preferencesStore,
 } from './preferences-sync';
+import { preferencesPatch } from '@liveworkspace/workbench/lib/preferences/preferences-merge';
 import {
-  __forgetPreferenceLoads,
   fetchUserPreferences,
   rebaseUserPreferences,
   STORAGE_KEY,
@@ -64,7 +63,6 @@ beforeEach(() => {
   mockedGet.mockReset();
   mockedPut.mockReset();
   __resetPreferencesSync();
-  __forgetPreferenceLoads();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
@@ -117,7 +115,7 @@ describe('savePreferences', () => {
 
   it('waits for the next save, then sends one patch of what differs from the server', async () => {
     mockedPut.mockResolvedValue('saved');
-    setServerPreferences('owner-1', {
+    preferencesStore.rememberServer('owner-1', {
       uiScale: 1,
       uiScalePanels: 0.9,
       quickSwatchOverrides: { brand: { fill: ['#112233'] } },
@@ -152,7 +150,7 @@ describe('savePreferences', () => {
         }),
     );
     mockedPut.mockResolvedValue('saved');
-    setServerPreferences('owner-1', {});
+    preferencesStore.rememberServer('owner-1', {});
     savePreferences('owner-1', { uiScale: 1 });
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
     savePreferences('owner-1', { uiScale: 1, middleMousePan: false });
@@ -165,7 +163,7 @@ describe('savePreferences', () => {
   });
 
   it('sends nothing when nothing differs', async () => {
-    setServerPreferences('owner-1', { uiScale: 1 });
+    preferencesStore.rememberServer('owner-1', { uiScale: 1 });
     savePreferences('owner-1', { uiScale: 1 });
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
     expect(mockedPut).not.toHaveBeenCalled();

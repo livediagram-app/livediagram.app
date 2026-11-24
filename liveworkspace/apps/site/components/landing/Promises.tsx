@@ -70,13 +70,13 @@ export function Promises() {
             className="sm:col-span-2 lg:col-span-3"
             side={<ExplorerArt />}
             title="One Explorer for everything"
-            body="Every diagram, plan, document, design and Space you make is in one Explorer, which every app shows. One folder can hold work from all of them."
+            body="Every diagram, plan, document, design, Space and knowledgebase you make is in one Explorer, which every app shows. One folder can hold work from all of them."
           />
           <Tile
             className="sm:col-span-2 lg:col-span-1"
             art={<ConnectedArt />}
             title="Connected across apps"
-            body="Connect a canvas, plan, document, design or Space as a tab in another app’s work, so the plan, the brief and the screens are one tap apart."
+            body="Connect a diagram, plan, document, design, Space or knowledgebase as a tab in another app’s work, so the plan, the brief and the screens are one tap apart."
           />
           <Tile
             art={<InboxArt />}

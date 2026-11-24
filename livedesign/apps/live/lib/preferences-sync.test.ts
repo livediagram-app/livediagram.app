@@ -12,16 +12,15 @@ import {
   __resetPreferencesSync,
   fitPreferences,
   flushPreferences,
-  markPreferencesSynced,
+  preferencesStore,
   PREFERENCES_BODY_MAX,
   PREFERENCES_SAVE_DEBOUNCE_MS,
   PREFERENCES_UNSYNCED_KEY,
   preferencesBodyLength,
-  preferencesPatch,
   savePreferences,
 } from './preferences-sync';
+import { preferencesPatch } from '@liveworkspace/workbench/lib/preferences/preferences-merge';
 import {
-  __forgetFetchedPreferences,
   fetchUserPreferences,
   rebaseUserPreferences,
   STORAGE_KEY,
@@ -152,7 +151,7 @@ describe('savePreferences', () => {
 
   it('turns a run of changes into one request, after the pause', async () => {
     mockedPut.mockResolvedValue('saved');
-    markPreferencesSynced('owner-1', { uiScale: 1, alignmentGuides: true });
+    preferencesStore.rememberServer('owner-1', { uiScale: 1, alignmentGuides: true });
     // A slider dragged across 20 steps, 50 ms apart.
     for (let i = 1; i <= 20; i++) {
       savePreferences('owner-1', { uiScale: 1 + i / 100, alignmentGuides: true });
@@ -175,7 +174,7 @@ describe('savePreferences', () => {
         }),
     );
     mockedPut.mockResolvedValue('saved');
-    markPreferencesSynced('owner-1', { uiScale: 1 });
+    preferencesStore.rememberServer('owner-1', { uiScale: 1 });
     savePreferences('owner-1', { uiScale: 1.05 });
     await vi.advanceTimersByTimeAsync(PREFERENCES_SAVE_DEBOUNCE_MS);
     savePreferences('owner-1', { uiScale: 1.05, reduceMotion: true });
@@ -217,7 +216,7 @@ describe('savePreferences', () => {
 });
 
 describe('fetchUserPreferences', () => {
-  beforeEach(() => __forgetFetchedPreferences());
+  beforeEach(() => __resetPreferencesSync());
 
   it('asks the server once per page load, however many ask', async () => {
     mockedGet.mockResolvedValue({ showMinimap: true });
@@ -227,7 +226,7 @@ describe('fetchUserPreferences', () => {
     ]);
     await fetchUserPreferences('owner-1');
     expect(a).toEqual({ showMinimap: true });
-    expect(b).toBe(a);
+    expect(b).toEqual(a);
     expect(mockedGet).toHaveBeenCalledTimes(1);
   });
 
@@ -261,7 +260,7 @@ describe('fetchUserPreferences', () => {
 });
 
 describe('fetchUserPreferences after a save that did not land', () => {
-  beforeEach(() => __forgetFetchedPreferences());
+  beforeEach(() => __resetPreferencesSync());
 
   it('keeps the device copy over the server and sends it again', async () => {
     vi.useFakeTimers();

@@ -107,7 +107,8 @@ which D1 refuses past 50 bytes); `apps`, `source`, `intent` (`intent = w OR inte
 the list, the mode the item's app last reported, such as livediagram's `diagram`, `draw`, `workshop`; read from the
 row the page already holds, so no index); `since` (`updated_at >=`); `owner` `me`/`others`; `space` (`mine`, `shared`,
 `team:<id>`, teams joined now else `403 not_team_member`). The answer is `{ items, nextCursor }` plus, on a first
-page: `mostUsed` (items opened in the last 14 days with `useOpens` and `useDays`, by opens in the window, then last open,
+page: `mostUsed` (items opened in the last 14 days with `useOpens`, `useDays` and `useHistory`, the opens on each of the
+14 UTC days oldest first, read from the same `use_days` rows in the same statement (`GROUP_CONCAT` of day and opens), by opens in the window, then last open,
 then id, hidden ones left out), `mine { count, more }` (the live items in every scope the person has: their own and
 each joined team's, each item in one scope so counted once), `any` and `newest` (Home's New, below). One batch; the page, Most Used and
 `newest` decorated together.

@@ -1,6 +1,6 @@
 // Home's New (one-explorer.md "New, on Home"): the four items made most recently in the person's own space and their
-// teams', newest first, in this app or every app under All; above Most Used and Recent; their cards with a "Made …"
-// line and Made by AI on an AI tool's; Offline's merged in; hidden with none or a failed read; its placeholders
+// teams', newest first, in this app or every app under All; leading Recent's timeline as made rows ("Made · Marketing"),
+// Made by AI on an AI tool's; Offline's merged in; left out with none or a failed read; the timeline's placeholders
 // while it loads; no request of its own.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -38,12 +38,15 @@ function renderHome(
   );
 }
 
-const section = () => document.querySelector<HTMLElement>('[data-home-section="new"]');
+// New's items are the timeline's made rows, in Recent's section.
+const section = () => document.querySelector<HTMLElement>('[data-home-section="recent"]');
 const labels = (el: HTMLElement) =>
-  [...el.querySelectorAll('li a[aria-label]')].map((a) => a.getAttribute('aria-label'));
+  [...el.querySelectorAll('[data-timeline-event="made"] a[aria-label]')].map((a) =>
+    a.getAttribute('aria-label'),
+  );
 
 describe('New, on Home', () => {
-  it('shows the four newest made, newest first, above Most Used and Recent, from no request of its own', async () => {
+  it('shows the four newest made, newest first, in the timeline, from no request of its own', async () => {
     const index = createFakeIndex({
       items: [
         made(1, 50, { lastOpenedAt: Date.now() }),
@@ -59,20 +62,15 @@ describe('New, on Home', () => {
       ],
     });
     renderHome(index, { teams: [{ id: 'team-1', name: 'Marketing' }] });
-    const heading = await screen.findByRole('heading', { name: 'New' });
-    const el = heading.closest('section')!;
+    await waitFor(() => expect(section()).toBeTruthy());
+    const el = section()!;
     await waitFor(() => expect(labels(el)).toEqual(['Item 2', 'Item 4', 'Item 3', 'Item 5']));
-    // Directly above Recent (nothing here is most used, so Most Used is left out).
-    const order = [...document.querySelectorAll('[data-home-section]')].map((s) =>
-      s.getAttribute('data-home-section'),
-    );
-    expect(order.slice(0, 2)).toEqual(['new', 'recent']);
-    // Each line says when it was made and where it lives.
+    // No section of its own: New leads Recent's timeline.
+    expect(screen.queryByRole('heading', { name: 'New' })).toBeNull();
+    // Each line says it was made and where it lives; the timeline's clock says when.
     const team = el.querySelector('[data-item-card="item-2"]')!;
-    expect(team.textContent).toContain('Made 1 hour ago · Marketing');
-    expect(el.querySelector('[data-item-card="item-4"]')!.textContent).toContain(
-      'Made 2 hours ago · My Work',
-    );
+    expect(team.textContent).toContain('Made · Marketing');
+    expect(el.querySelector('[data-item-card="item-4"]')!.textContent).toContain('Made · My Work');
     // An AI tool's item wears Made by AI; the rest don't.
     expect(el.querySelector('[data-item-card="item-3"] [data-made-by-ai]')).toBeTruthy();
     expect(el.querySelectorAll('[data-made-by-ai]')).toHaveLength(1);
@@ -92,30 +90,33 @@ describe('New, on Home', () => {
       items: [made(1, 3), made(2, 1, { app: 'livediagram', kind: 'canvas' })],
     });
     renderHome(index, { filter: 'all' });
-    await screen.findByRole('heading', { name: 'New' });
+    await waitFor(() => expect(section()).toBeTruthy());
     await waitFor(() => expect(labels(section()!)).toEqual(['Item 2', 'Item 1']));
+    expect(
+      section()!.querySelectorAll('[data-timeline-event="made"] [data-app-mark]'),
+    ).toHaveLength(2);
     expect(index.calls.find((c) => c.method === 'listItems')!.args[0]).not.toHaveProperty('app');
   });
 
   it('stays away with nothing made, or when its read fails', async () => {
     const { unmount } = renderHome(createFakeIndex({ items: [] }));
-    await screen.findByRole('heading', { name: 'Recent' });
-    await waitFor(() => expect(screen.queryByRole('heading', { name: 'New' })).toBeNull());
+    await waitFor(() => expect(document.querySelector('[data-explorer-view="home"]')).toBeTruthy());
+    await waitFor(() => expect(document.querySelector('[data-timeline-event="made"]')).toBeNull());
     unmount();
     const index = createFakeIndex({ items: [made(1, 1, { lastOpenedAt: Date.now() })] });
     index.fail.set('listItems', new IndexError(500, 'down'));
     renderHome(index);
     await screen.findByText(/Couldn’t load Home/);
-    expect(screen.queryByRole('heading', { name: 'New' })).toBeNull();
+    expect(labels(section()!)).toEqual([]);
   });
 
-  it('draws Home’s card placeholders while it loads', async () => {
+  it('draws the timeline’s placeholders while it loads', async () => {
     const index = createFakeIndex({ items: [made(1, 1)] });
     index.hold.add('listItems');
     renderHome(index);
     await waitFor(() => expect(section()).toBeTruthy());
     expect(section()!.getAttribute('aria-busy')).toBe('true');
-    expect(section()!.querySelectorAll('[aria-hidden] .h-\\[12\\.5rem\\]')).toHaveLength(4);
+    expect(section()!.querySelector('[data-home-timeline-skeleton]')).toBeTruthy();
     index.release();
     await waitFor(() => expect(labels(section()!)).toEqual(['Item 1']));
     expect(section()!.getAttribute('aria-busy')).toBe('false');
@@ -139,20 +140,6 @@ describe('New, on Home', () => {
     const input = await screen.findByRole('textbox', { name: 'Rename Item 1' });
     expect(section()!.contains(input)).toBe(true);
     expect(screen.getAllByRole('textbox', { name: 'Rename Item 1' })).toHaveLength(1);
-  });
-
-  it('keeps a phone to one strip of four, with no See More', async () => {
-    vi.stubGlobal('matchMedia', (query: string) => ({
-      matches: false,
-      media: query,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-    }));
-    renderHome(createFakeIndex({ items: [1, 2, 3, 4, 5, 6].map((i) => made(i, i)) }));
-    await waitFor(() =>
-      expect(labels(section()!)).toEqual(['Item 1', 'Item 2', 'Item 3', 'Item 4']),
-    );
-    expect(within(section()!).queryByText('See More')).toBeNull();
   });
 });
 

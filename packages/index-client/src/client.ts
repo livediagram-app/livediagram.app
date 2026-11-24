@@ -70,6 +70,7 @@ import type {
 import type {
   CallInviteAsk,
   CallSummaryAsk,
+  ItemCallAsk,
   ItemCallStart,
   ItemCallsRead,
   SpaceCall,
@@ -414,8 +415,13 @@ export function createIndexClient({
 
     // Start a Call Here (item-calls.md): start the item's call (or join the live one), the item's calls for its pill and
     // Meetings, a Space's call for livehuddle's editor, and the call's summary and invites.
-    startItemCall: (itemId: string, share?: ShareAccess | null) =>
-      call<ItemCallStart>(`/items/${enc(itemId)}/calls`, { method: 'POST', body: {}, share }),
+    // `space`: the person's Calls Space (item-calls.md "Your Calls Space"), sent only when they chose one.
+    startItemCall: (itemId: string, share?: ShareAccess | null, space?: string | null) =>
+      call<ItemCallStart>(`/items/${enc(itemId)}/calls`, {
+        method: 'POST',
+        body: space ? ({ space } satisfies ItemCallAsk) : {},
+        share,
+      }),
     itemCalls: (itemId: string, options: RequestOptions & { share?: ShareAccess | null } = {}) =>
       call<ItemCallsRead>(`/items/${enc(itemId)}/calls`, {
         share: options.share ?? null,

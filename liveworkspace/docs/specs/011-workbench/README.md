@@ -11,4 +11,6 @@ Follow the references below only as needed; never upfront.
   the bottom drawer every editor's tool popovers open as, its handle, focus, safe area and which panels
 - ./phone-apps-drawer.md - when working on a phone's top row in any editor: the logo and Apps in the menu card, the
   corner card's actions in the Apps drawer, its tiles per role, the unread dot and the 56 px row
+- ./editor-preferences.md - when working on how an editor keeps a person's settings: the browser's copy, the
+  account's, the merge on load (a cleared setting clears everywhere), writing, saving and fitting
 - ./blueprints/README.md - when implementing a workbench spec: the blueprints hold the engineering detail derived from it

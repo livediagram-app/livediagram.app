@@ -94,14 +94,17 @@ function Tile({ tile, all, href }: { tile: WorkTile; all: boolean; href: string 
   );
 }
 
-// The set's grid: an app's four two by two in the hero's right column from `lg` and four across below it, a phone
+// The set's grid: an app's four two by two in the hero's right column once the hero is 56rem wide (`@4xl`) and four across below it, a phone
 // included; All's six three over three at every width, so every tile keeps one size and spacing and a long name
 // ("Knowledgebase") has room on a phone.
 const GRID = {
-  app: 'grid-cols-4 gap-2 lg:grid-cols-2',
+  app: 'grid-cols-4 gap-2 @4xl:grid-cols-2',
   all: 'grid-cols-3 gap-1',
 } as const;
-const LABEL_ALL = 'px-0 text-[11px] tracking-[-0.01em] sm:text-[13px] sm:tracking-normal';
+// Beside the hero's words (a wide pane, the sidebar beside it) the six tiles are narrow again, so the names set small
+// until the pane is wide enough for the phone's size back.
+const LABEL_ALL =
+  'px-0 text-[11px] tracking-[-0.01em] sm:text-[13px] sm:tracking-normal @4xl:px-0 @4xl:text-[11px] @4xl:tracking-[-0.02em] @[80rem]:text-[13px] @[80rem]:tracking-normal';
 
 /** The hero's set: the app's kinds, or one per app under All (GRID). */
 export function WorkKinds({

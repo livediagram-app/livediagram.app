@@ -1,8 +1,8 @@
 'use client';
 
 // A team's page in the Explorer (liveworkspace/docs/specs/004-index/one-explorer.md "A team's page"): the header (the
-// team's badge, name, plan, who is in it, Copy Link, Invite People and its menu), the tabs (People, Library, and for
-// its admins Audit Log), and the open tab. The People tab is drawn here; the Library and the Audit Log come in from
+// team's badge, name, plan, who is in it, Copy Link, Invite People and its menu), the tabs (Library, the default, People,
+// and for its admins Audit Log), and the open tab. The People tab is drawn here; the Library and the Audit Log come in from
 // the caller, which owns the list and loads the log's code only when it is opened.
 
 import { useMemo, useRef, useState, type ReactNode } from 'react';
@@ -10,7 +10,7 @@ import { PictureDisc } from '@liveworkspace/ui';
 import { avatarFill } from '@liveworkspace/account-menu/initials';
 import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
 import type { TeamDetails, TeamMember } from '../../data/teams';
-import type { TeamTab } from '../../views';
+import { DEFAULT_TEAM_TAB, TEAM_TABS, type TeamTab } from '../../views';
 import { MUTED } from '../../ui/classes';
 import { CloseIcon, LinkIcon, PencilIcon, PlusIcon, SearchIcon, TrashIcon } from '../../ui/icons';
 import { useToast } from '../../ui/Toasts';
@@ -56,8 +56,8 @@ export function TeamView({
 }) {
   const actions = useTeamActions({ details, reload, viewerId, onGone });
   const composer = useRef<InviteComposerHandle>(null);
-  // A Member who follows an Audit Log link lands on People: the log is the admins' alone.
-  const shown: TeamTab = tab === 'audit' && !actions.admin ? 'people' : tab;
+  // A Member who follows an Audit Log link lands on the Library, as with no tab named: the log is the admins' alone.
+  const shown: TeamTab = tab === 'audit' && !actions.admin ? DEFAULT_TEAM_TAB : tab;
   const invite = () => {
     if (shown !== 'people') onTab('people');
     // After the tab has drawn the field.
@@ -257,7 +257,8 @@ function TeamTabs({
   people: number;
   libraryCount: number | null;
 }) {
-  const tabs: TeamTab[] = admin ? ['people', 'library', 'audit'] : ['people', 'library'];
+  // Library first, then People, then (admins) Audit Log: the order of TEAM_TABS.
+  const tabs: TeamTab[] = admin ? [...TEAM_TABS] : TEAM_TABS.filter((t) => t !== 'audit');
   const counts: Partial<Record<TeamTab, number | null>> = { people, library: libraryCount };
   const refs = useRef<Partial<Record<TeamTab, HTMLButtonElement | null>>>({});
   // Arrow keys move between the tabs (the WAI-ARIA tabs pattern, activating as they move).

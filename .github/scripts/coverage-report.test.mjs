@@ -9,7 +9,9 @@ import {
   parseArtifact,
   patchLine,
   renderReport,
+  renderUnavailable,
   totalsOf,
+  tryDownload,
   withReport,
 } from './coverage-report.mjs';
 import { mergeLcov } from './lcov.mjs';
@@ -129,4 +131,23 @@ test('the description keeps everything outside its section', () => {
     withReport(`A ${REPORT_START} old`, 'R'),
     `A ${REPORT_START}\n\n---\n\nR\n\n${REPORT_END}`,
   );
+});
+
+test('a refused download is a missing artifact, never a crash', () => {
+  assert.equal(
+    tryDownload('coverage-platform-tests', () => {}),
+    true,
+  );
+  assert.equal(
+    tryDownload('coverage-platform-tests', () => {
+      throw new Error('HTTP 503: 503 Egress is over the account limit\nmore');
+    }),
+    false,
+  );
+});
+
+test('unavailable: says so for the pull request and commit', () => {
+  const text = renderUnavailable(7, 'abcdef1234');
+  assert.match(text, /^## Coverage report/);
+  assert.match(text, /unavailable for #7 at `abcdef1` this run/);
 });

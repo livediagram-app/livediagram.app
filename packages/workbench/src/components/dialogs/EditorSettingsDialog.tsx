@@ -37,7 +37,7 @@ export type EditorSettingsBinding<C, P> = {
   // Sign-in and devices, the AI keys, the API tokens and Download Your Data, for an account.
   accountPanels: Pick<
     AccountSection,
-    'security' | 'renderAi' | 'renderTokens' | 'renderDataExport'
+    'security' | 'renderAi' | 'renderTokens' | 'renderDataExport' | 'renderCalls'
   >;
   cloudSyncHost: () => CloudSyncHost;
   renderLogo: (id: SettingsAppId | 'all') => ReactNode;

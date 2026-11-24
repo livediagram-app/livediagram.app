@@ -16,7 +16,15 @@ import {
   workspaceOriginFor,
   type AppName,
 } from '@liveworkspace/sites';
+import { CALL_SPACES_LISTED } from '@liveworkspace/index-client';
 import { workbench } from '../../../bindings';
+import { indexClient } from '../../../lib/index-client';
+
+/** The person's livehuddle Spaces, theirs and their teams', for Settings › Calls (the panel keeps the ones they may
+ *  choose). */
+export const listCallSpaces = async () =>
+  (await indexClient.listItems({ app: 'livehuddle', view: 'all', limit: CALL_SPACES_LISTED }))
+    .items;
 
 // What an editor hands the shared Settings panel (@liveworkspace/settings-ui SettingsPanel; each app's
 // docs/specs/007-editor/user-preferences.md "This app or All"), one copy for every editor: which app it is, the logos,
@@ -54,6 +62,9 @@ export function createSettingsPanelHost(app: AppName) {
     security: bearerAccountSecurity(settingsRequest, { settingsParam: ACCOUNT_SETTINGS_PARAM }),
     ...accountPanels({
       request: settingsRequest,
+      // Settings › Calls (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space"): the person's
+      // livehuddle Spaces from the index through this app's router, read only when the category is shown.
+      callSpaces: { list: listCallSpaces, token },
       // Settings' Subscription (liveworkspace/docs/specs/019-subscription/subscription.md "A person's browser"):
       // liveworkspace's subscription service, with the person's token. Listed only in a build with Pro on.
       subscription: {

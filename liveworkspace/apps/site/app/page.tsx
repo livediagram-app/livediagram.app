@@ -10,6 +10,7 @@ import { Apps } from '@/components/landing/Apps';
 import { HeroActions } from '@/components/landing/HeroActions';
 import { HubArt } from '@/components/landing/HubArt';
 import { Promises } from '@/components/landing/Promises';
+import { Together } from '@/components/landing/Together';
 import { listedApps } from '@/lib/apps';
 import './landing-motion.css';
 
@@ -109,6 +110,7 @@ export default function Home() {
         </section>
 
         <Apps />
+        <Together />
         <Promises />
 
         <section className="px-4 py-20 sm:px-6 sm:py-28">

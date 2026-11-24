@@ -434,7 +434,7 @@ describe('Sync keeps its place', () => {
 });
 
 describe('Home and the phone', () => {
-  it('has an offline tile after the teams while it holds anything', async () => {
+  it('has an offline row after the teams while it holds anything', async () => {
     writeThisBrowserStore(APP, {
       items: [local(1), local(2), local(3), local(4), local(5)],
       folders: [],
@@ -443,7 +443,6 @@ describe('Home and the phone', () => {
     const tile = await found('[data-space-tile="this-browser"]');
     expect(tile.getAttribute('aria-label')).toBe('Offline');
     expect(tile.textContent).toContain('5 plans');
-    expect(tile.textContent).toContain('+2');
     fireEvent.click(tile);
     expect(onNavigate).toHaveBeenCalledWith({ kind: 'offline' }, expect.anything());
   });

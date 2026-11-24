@@ -4,7 +4,7 @@ import { SITE_URL } from '@livedocuments/ui';
 // livedocuments' comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livedocuments"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-11-18');
+const UPDATED = new Date('2026-11-24');
 
 const LIST: Alternative[] = [
   {
@@ -55,9 +55,14 @@ const LIST: Alternative[] = [
         them: 'PowerPoint, PDF and images',
       },
       {
+        label: 'Asking about it',
+        us: 'Ask AI answers from the document’s own words and names each source; an MCP connection lets your AI tool build decks',
+        them: 'Ask Gemini in the side panel summarises a deck and drafts slides, on eligible Workspace and Google AI plans',
+      },
+      {
         label: 'Beyond the deck',
-        us: 'Articles and infographics in the same document',
-        them: 'One of several Google Workspace apps',
+        us: 'Articles and infographics in the same document; plans, canvases and designs connected as tabs; follow-ups sent to a plan as cards; calls started from the deck',
+        them: 'One of several Google Workspace apps, with Sheets charts and Meet alongside',
       },
     ],
     themBest: [
@@ -77,7 +82,8 @@ const LIST: Alternative[] = [
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
       'Export the deck as an editable PowerPoint file, speaker notes included, or as an animated GIF for a chat, an email or a README.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
-      'An AI assistant connected over MCP can build the deck for you from slide layouts.',
+      'An AI assistant connected over MCP can build the deck for you from slide layouts, and Ask AI in Tools answers questions about the document from its own words.',
+      'Send a follow-up from a slide or the write-up to a liveplanner plan as a card, start a livehuddle call about the deck, and keep the plan or the canvas behind it one tab away.',
       '41 templates to start from, from a launch keynote and a class lesson to a board update.',
       'Free and MIT-licensed, with no feature behind a paywall.',
     ],
@@ -100,6 +106,7 @@ const LIST: Alternative[] = [
         heading: 'The deck and everything behind it',
         paragraphs: [
           'A deck is usually the last step of something: a brief, a report, a launch. In Workspace those live in Docs and Slides as separate files. In livedocuments they are tabs of one document: write the brief as an article, lay out the one-pager, and present from all of it. Everyone edits live, with comments and assigned actions on the pages themselves.',
+          'The work around the deck is close by too. Connect the launch plan or the architecture canvas as a tab, send a follow-up from any slide to a liveplanner plan as a card, and press Call to talk it through in a livehuddle video call, with its summary and actions sent on afterwards.',
         ],
       },
       {
@@ -125,6 +132,10 @@ const LIST: Alternative[] = [
       {
         q: 'Can I present a page that is not a slide?',
         a: 'Yes. Any page can join the deck, from any tab: an infographic, a poster or a page of an article presents full screen just as a slide page does.',
+      },
+      {
+        q: 'Does livedocuments have AI like Gemini?',
+        a: 'Some. Ask AI in Tools answers questions about the open document from its own words and names where each answer came from, and an AI tool you connect over MCP, such as Claude, can write the article and build the deck. Gemini in Slides goes further inside the editor, drafting slides and images from a prompt, on eligible Workspace and Google AI plans.',
       },
       {
         q: 'Is livedocuments free?',

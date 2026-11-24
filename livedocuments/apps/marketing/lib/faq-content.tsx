@@ -211,12 +211,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or
-            line chart, a progress bar, a rating or a timeline on a page. See{' '}
-            <a href="/help/palette/tools/data-elements/">data elements</a>.
+            line chart, a progress bar, a rating or a timeline on a page. Link a chart to a
+            liveplanner plan and it keeps in step as the plan changes. See{' '}
+            <a href="/help/palette/tools/data-elements/">data elements</a> and{' '}
+            <a href="/help/palette/tools/data-elements/live-data/">live data</a>.
           </>
         ),
         aText:
-          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline on a page. See data elements.',
+          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline on a page. Link a chart to a liveplanner plan and it keeps in step as the plan changes. See data elements and live data.',
       },
       {
         q: 'Can I undo a mistake?',
@@ -250,14 +252,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I set up a team with shared documents?',
         a: (
           <>
-            Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams
-            in the Explorer to make one and invite people by email, and every team gets a shared
-            library of livedocuments documents in its own space. Admins manage the team, Members
-            just get to work. See <a href="/help/collaboration/teams/">teams</a>.
+            Yes, once you sign in. Teams belong to your liveworkspace account: make one from the
+            Explorer and invite people by email or a join link, and every team gets a shared library
+            of livedocuments documents in its own space. Admins manage people and roles from the
+            team’s page, with an Audit Log of what changed; Members just get to work. See{' '}
+            <a href="/help/collaboration/teams/">teams</a>.
           </>
         ),
         aText:
-          'Yes, once you sign in. Teams belong to your liveworkspace account: choose Manage Teams in the Explorer to make one and invite people by email, and every team gets a shared library of livedocuments documents in its own space. Admins manage the team, Members just get to work. See teams.',
+          'Yes, once you sign in. Teams belong to your liveworkspace account: make one from the Explorer and invite people by email or a join link, and every team gets a shared library of livedocuments documents in its own space. Admins manage people and roles from the team’s page, with an Audit Log of what changed; Members just get to work. See teams.',
       },
       {
         q: 'Can I follow what someone else is looking at?',
@@ -284,18 +287,45 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Lock it from the tab’s menu and every page on it becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
       },
       {
+        q: 'Does it work with my other liveworkspace apps?',
+        a: (
+          <>
+            Yes. Connect a plan, a design, a canvas or a Space as a tab of the document, or embed
+            one live on a page. Send picked words or a comment thread to a liveplanner plan as a
+            card, and press Call to start a livehuddle video call about the document. See{' '}
+            <a href="/help/tabs/connected-files/">connected files</a>,{' '}
+            <a href="/help/collaboration/send-to-plan/">Send to Plan</a> and{' '}
+            <a href="/help/collaboration/start-a-call/">Start a Call Here</a>.
+          </>
+        ),
+        aText:
+          'Yes. Connect a plan, a design, a canvas or a Space as a tab of the document, or embed one live on a page. Send picked words or a comment thread to a liveplanner plan as a card, and press Call to start a livehuddle video call about the document. See connected files, Send to Plan and Start a Call Here.',
+      },
+      {
+        q: 'Can routine steps happen on their own?',
+        a: (
+          <>
+            Yes. Automations give a document rules that run on our servers, even with nobody in it:
+            name a version every Friday, post new comments to Slack or Microsoft Teams, or make a
+            card in a liveplanner plan when something happens. Start from a ready-made rule or
+            describe one in your own words. See <a href="/help/tools/automations/">automations</a>.
+          </>
+        ),
+        aText:
+          'Yes. Automations give a document rules that run on our servers, even with nobody in it: name a version every Friday, post new comments to Slack or Microsoft Teams, or make a card in a liveplanner plan when something happens. Start from a ready-made rule or describe one in your own words. See automations.',
+      },
+      {
         q: 'How do I keep up with what changed?',
         a: (
           <>
             Your Inbox gathers the actions and comment threads waiting on you across every document,
-            Home lists what was shared with you recently, and History on a document’s menu says who
-            changed it and when. Once you sign in, emails and notifications on your phone can tell
-            you too, and you choose which in Settings. See{' '}
-            <a href="/help/explorer/activity/">the Inbox</a>.
+            Home lists what was shared with you recently, and History in Tools says who changed it
+            and when. Once you sign in, emails and notifications on your phone can tell you too, and
+            you choose which in Settings. See <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the actions and comment threads waiting on you across every document, Home lists what was shared with you recently, and History on a document’s menu says who changed it and when. Once you sign in, emails and notifications on your phone can tell you too, and you choose which in Settings. See the Inbox.',
+          'Your Inbox gathers the actions and comment threads waiting on you across every document, Home lists what was shared with you recently, and History in Tools says who changed it and when. Once you sign in, emails and notifications on your phone can tell you too, and you choose which in Settings. See the Inbox.',
       },
     ],
   },
@@ -364,6 +394,20 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           "Yes. Connect a compatible AI tool to liveworkspace's MCP server at mcp.liveworkspace.app, one connection for every liveworkspace app. After a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and laying out infographics. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.",
+      },
+      {
+        q: 'Can AI answer questions about my document?',
+        a: (
+          <>
+            Yes. Once you sign in, open Ask AI in Tools and ask in plain words, for the key points
+            or what is still to be decided. It answers from the document’s own words and names where
+            each answer came from, one press away. It runs on built-in AI with a daily limit, or on
+            your own AI key. See{' '}
+            <a href="/help/privacy-and-security/data-privacy/#ai-features">AI features</a>.
+          </>
+        ),
+        aText:
+          'Yes. Once you sign in, open Ask AI in Tools and ask in plain words, for the key points or what is still to be decided. It answers from the document’s own words and names where each answer came from, one press away. It runs on built-in AI with a daily limit, or on your own AI key. See AI features.',
       },
       {
         q: 'Is there an API?',

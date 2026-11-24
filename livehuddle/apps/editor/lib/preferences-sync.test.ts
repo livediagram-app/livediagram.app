@@ -12,14 +12,13 @@ import { preferencesKeptLocally } from '@liveworkspace/workbench/lib/preferences
 import {
   __resetPreferencesSync,
   fitPreferences,
-  preferencesPatch,
   PREFERENCES_BODY_MAX,
   PREFERENCES_UNSYNCED_KEY,
   preferencesBodyLength,
   savePreferences,
 } from './preferences-sync';
+import { preferencesPatch } from '@liveworkspace/workbench/lib/preferences/preferences-merge';
 import {
-  __resetFetchedPreferences,
   fetchUserPreferences,
   rebaseUserPreferences,
   STORAGE_KEY,
@@ -93,7 +92,6 @@ beforeEach(() => {
   mockedGet.mockReset();
   mockedPut.mockReset();
   __resetPreferencesSync();
-  __resetFetchedPreferences();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });

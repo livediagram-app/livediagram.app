@@ -12,5 +12,7 @@ Follow the references below only as needed; never upfront.
   PopoverOrSheet, and tests
 - ./phone-apps-drawer.md - when implementing a phone's top row and Apps drawer: the store, the tiles, the menu
   card's buttons, EditorCornerActions on a phone, and tests
+- ./editor-preferences.md - when implementing the editors' one preferences store: its files, the binding each
+  editor passes, the merge, the load, the save queue, constants and tests
 - ./DEFAULTS.md - when you need a default the workbench specs leave open
 - ./COMPLETENESS.md - when checking which completeness categories the workbench blueprint covers

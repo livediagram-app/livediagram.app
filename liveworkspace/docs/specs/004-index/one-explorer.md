@@ -135,6 +135,25 @@ registers it in the index in one step, then opens it.
 An empty folder says "Add a <kind> or a subfolder", so its New is a menu of both, New <Kind> (each app's kind in no
 app) and **New Subfolder**, as the header's Create is; elsewhere the empty state's New makes the kind alone.
 
+#### Home's layout
+
+Home is laid out as a week at a glance (owner, 2026-11-24, option B "This Week" of the Explorer Home design options):
+
+- **The hero heads the pane, beside the sidebar**, not across the page above it: the sidebar runs from the header
+  down, and the hero is the first thing in the pane, a rounded panel from `sm`. On a phone, where the sidebar is the
+  drawer, it is a band flush to the screen's edges, as before. Its own layout follows its width, not the window's
+  (a container query, `@4xl`, 56rem): the tiles stand in its right column once it is that wide, and under the search
+  field below it.
+- **Under it, two columns once the pane is 56rem wide** (its own width again, since the sidebar takes its share):
+  on the left **Recent**, a timeline of what the person made and opened lately ("Recent, a timeline" below); on the
+  right the **rail**, 20rem (22rem from 72rem), its panels one under another: **Most Used**, **Spaces** and **Shared
+  With You Recently**. Narrower (a phone, a small window) it is one column, the rail's panels after the timeline.
+  A rail with nothing in it is left out and the timeline takes the width.
+- **A rail panel** is a bordered panel (`HomeSection` with `panel`): its heading smaller than a section's, its rows
+  flat (no frame of their own, the sidebar's hover wash), each at least 56 px tall so a finger finds it.
+- **Rows** are Home's own (`HomeRow`): the item's thumbnail, its name (the app's mark before it under All Apps),
+  its line, and the card's ⋯ menu, right-click, rename and drag, so a row does all a card did.
+
 #### What you can make, on Home's hero
 
 Home's hero shows **what the app makes**: four small pictures, one per kind of work, each drawn in its app's brand
@@ -240,109 +259,118 @@ lists. Shared With You Recently is a different list (other people's items) and k
   the Trash or in Archived, and nothing reached only through a link (that lives in someone else's space; Shared
   With You Recently has it). An item the person can no longer open (a team they left, an item moved out of reach) is
   gone from the next read; one they trash or archive here leaves at once.
-- **A card** is Most Used and Recent's large card (the same component, frame, size, thumbnail, ⋯ menu, right-click and
-  drag): the item's thumbnail, its name, and a quiet line saying when it was made and where it lives ("Made 2 hours
-  ago · Marketing": its folder, its team's name for a team item in no folder, My Work for one of the person's own).
+- **A row in the timeline.** New's items are not a section of their own: they lead Recent's timeline, each at
+  the time it was made, marked with a spark ("Recent, a timeline" below), its line saying it was made and where it
+  lives ("Made · Marketing": its folder, its team's name for a team item in no folder, My Work for one of the
+  person's own).
   An item an AI tool made carries the Explorer's **Made by AI** badge on its thumbnail's corner (`MadeByAiBadge`, as
   rows and Details show it); Most Used and Recent's cards carry it the same way. Each opens the item.
 - **Offline.** Where the Explorer reads this browser's store, the items it keeps are merged in by the same rule
   (made most recently first, four in all), as Recent merges the opened ones: the same Offline card.
-- **Loading** draws Home's card placeholders, one row of four cards (the strip's on a phone). **Nothing made yet**, or a failed read,
-  leaves the section out (Recent below says when Home could not load), so Home never shows two empty states.
-- **Phones.** Below `md` the four are one scrolling strip of small tiles, Recent's strip (its picture and
-  name), with no See More: four is all there is.
+- **Loading** is the timeline's. **Nothing made yet**, or a failed read of New's own, leaves the timeline to
+  Recent's opened items (Recent says when Home could not load), so Home never shows two empty states.
 - **The read** rides on Home's one items read (`newest=4` beside `used`, `mine` and `any`, [contracts](one-explorer-contracts.md#items)),
   so the section adds no request. It is one statement: each of the person's scopes walks its own index newest made
   first and stops at four, and the four newest of those are the answer, so it costs four rows a space however much
   each holds.
 
-#### Most Used and Recent, on Home
+#### Recent, a timeline
 
-Directly under New, Home shows what the person **opened** lately as two sections of their own, each headed as New
-and Spaces are (the same heading, size and spacing), with no title over the pair: **Most Used**, then **Recent**
-directly after it (`HomePane` in `@liveworkspace/explorer`).
+The left column (`HomeTimeline` in `@liveworkspace/explorer`) is **Recent**: what the person made lately (New's
+items, above) and opened lately, as one list of rows, newest first, under a heading per day.
 
-- **Most Used** is up to eight items the person opened in the last 14 days and not in New, the most opened first,
-  each card's line saying how often ("Opened 12 times"; "Used on 5 days" from an index that counts only days). An item
-  New shows leaves it, and the next most used takes its place.
-- **Recent** is up to eight of the person's most recently opened items in neither New nor Most Used, newest first,
-  each line saying when ("Opened 2 hours ago"); the next most recent fill the places they leave. A most used item
-  past Most Used's eight (one New's items pushed out) is in Recent by its last open, like any other. This browser's
-  opened items are merged in by last open, those New shows left out
-  ("Offline on Home" below). **See More** sits at the right of Recent's heading, as See All does
-  on Shared With You Recently, and opens the Recent view; Most Used has no link.
-- **A card** is Home's large card, the one New and Shared With You Recently draw: the item's thumbnail, its name and
-  its line, the ⋯ menu, right-click and drag. From `md` each section is a grid, two rows of four from `lg`.
-- **A section with nothing in it is left out**, heading and all, as New is: someone whose opened items are all among
-  Most Used sees no Recent, and someone who has made things but opened none sees New and no Recent. No section
-  ever draws a "No plans yet" of its own; with nothing on Home at all, Home shows one empty state for the whole view
-  ([Nothing on Home](#nothing-on-home) below).
-- **Loading** draws each section's heading over its own placeholders (a grid of large cards from `md`, a strip below
-  it); a section the read finds empty then leaves, and one that gains an item (made, opened or shared here, or on
-  the next read) comes back at once, with no reload. **A failed read** draws once: Recent's heading over one
-  "Couldn’t load Home." with **Try again** (which asks again for Home's reads), and no Most Used.
-- **Phones.** Below `md` each section is its own scrolling strip of small tiles (picture and name) under its own
-  heading, at most eight; Recent's strip ends with a **See More** tile into the Recent view, in place of the heading's
-  link.
-- **The read.** Both sections come from one request: Recent's first page carrying the Most Used items beside it
-  (`used=12`, `limit=20`, [contracts](one-explorer-contracts.md#items)), folded with Home's other reads
-  (`homeOpenedLoader`, `data/homeReads.ts`), so two sections cost no more than one. It asks for New's four more of
-  each than it shows, so both still fill once New's items (at most four) and Most Used's (at most eight) leave them:
-  twelve most used for eight, and twenty recent for eight once up to twelve leave. What the person hid from Recent
-  is left out of both.
-- **The editors' panel** keeps the pair too ("The editors' panel's Home" below).
+- **Which.** New's four, by when each was made, and up to eight of the person's most recently opened items in
+  neither New nor Most Used, by when each was last opened ("Each item shows once"). A most used item past Most
+  Used's eight is here by its last open, like any other. This browser's opened items are merged in by last open,
+  those New shows left out ("Offline on Home" below).
+- **Days.** A heading per local calendar day: **Today**, **Yesterday**, the weekday within the week ("Saturday"),
+  then the date ("Mon 10 Nov", with the year once it is another year's), with how many it holds ("3 files", the
+  app's word). A thin rule runs from the heading to the column's edge.
+- **A row** is led by its local time ("09:42", 24 hours) and a mark on the line between the times and the rows: a
+  spark on the brand for something made, a ring for something opened. The row's line says what happened and where
+  ("Made · Marketing", "Opened · My Work", "Opened · Offline" for this browser's), the time saying when.
+- **See More** sits at the right of the heading and opens the Recent view.
+- **Loading** draws a day's heading over six row placeholders on the same grid. **A failed read** draws once:
+  Recent's heading over "Couldn’t load Home." with **Try again** (which asks again for Home's reads), and no Most
+  Used.
+- **Phones.** The same timeline, the times narrower (11 px), every row at least 56 px tall; nothing scrolls sideways.
+- **The read.** As before: Recent's first page carrying the Most Used items beside it (`used=12`, `limit=20`,
+  `newest=4`, [contracts](one-explorer-contracts.md#items)), folded with Home's other reads (`homeOpenedLoader`,
+  `data/homeReads.ts`). What the person hid from Recent is left out.
 
-#### Spaces, on Home
+#### Most Used, in the rail
 
-Directly under Most Used and Recent, Home lists the person's **Spaces**: the places that hold
-their work, the same ones the sidebar's Spaces group lists, each a tile that goes straight to that space's list
+The rail's first panel is **Most Used**: up to eight items the person opened in the last 14 days and not in New,
+the most opened first.
+
+- **A row** is its rank (1 to 8, quiet, in tabular figures), the item's name (the app's mark before it under All
+  Apps) and, under the name, its **day chart** and how often ("31 opens"). No thumbnail: the chart is the picture.
+- **The day chart** (`DayChart`) works as GitHub's contribution chart does: 14 cells, one per UTC day of the
+  index's window, the oldest on the left and **today on the right**. A day the item was not opened stays empty
+  (slate); a day it was is filled in the item's app colour (the brand under one app, each app's own under All Apps,
+  as its mark), in four strengths measured against the busiest day across the whole list, so rows compare at a
+  glance. Its screen-reader label is one sentence ("Opened on 6 of the last 14 days, 3 times today"). Under the
+  list one line says how to read it: "Each square is a day: 14 days ago on the left, today on the right." An index
+  that sends no days (`useHistory` missing) draws the count alone.
+- **The read.** The same Most Used read, each item now carrying `useHistory` beside `useOpens` and `useDays`
+  ([contracts](one-explorer-contracts.md#items)): the opens on each day, read from the same `use_days` rows in the
+  same statement, so the chart costs no request and no new table.
+- **Loading** draws five row placeholders; **nothing most used**, or a failed read, leaves the panel out.
+- **The editors' panel** keeps its own Home ("The editors' panel's Home" below).
+
+#### Spaces, in the rail
+
+Under Most Used, the rail lists the person's **Spaces**: the places that hold
+their work, the same ones the sidebar's Spaces group lists, each a row that goes straight to that space's list
 (`HomeSpaces` in `@liveworkspace/explorer`). The same in every app's Explorer and on liveworkspace.app; the editors'
 panel keeps its own Home without it, and a first run shows its starting points in its place, as it does for the rest.
 
 - **Which, and in what order.** My Work first, then each team the person is in: the one changed most recently
-  first, then those holding nothing yet by name (`orderSpaces`). Up to eight show (two rows of four on a desktop);
-  with more, a last tile **Show All N Spaces** shows the rest in place, and **Show Fewer** folds them again.
-- **A tile** is one link to the space's list (My Work's view, a team's page), drawn as Home's large cards are (the
-  same surface, radius, hover lift and focus ring): a mosaic of the space's four newest items, each its own card's
-  picture (the folder cards' `FolderMosaic`, "+N" past four, the empty state's art when it holds nothing), over the
-  space's disc, its name and a quiet line. My Work's disc is the sidebar's sky glyph; a team's is its initials on
-  one of six tones picked from its id (`spaceTone`), so a team keeps its colour on every visit. The line says how
-  many items it holds ("12 plans", "1000+ plans" at the index's cap, "No plans yet"; "files" under All Apps) and
-  when the newest changed ("Edited 2 hours ago"). A team's tile adds its member count ("4 members", from the teams
-  list the page already reads, once there is more than the person) and the faces of up to three people behind its
-  newest items (their Google pictures from the people store, initials otherwise), their names its tooltip.
-- **The filter.** Filtered to one app, the counts, the mosaic and the line are that app's items; under All Apps,
+  first, then those holding nothing yet by name (`orderSpaces`). Up to eight show;
+  with more, a last row **Show All N Spaces** shows the rest in place, and **Show Fewer** folds them again.
+- **A row** is one link to the space's list (My Work's view, a team's page), flat as the rail's rows are: the
+  space's disc, its name and a quiet line, then, for a team, the faces of up to three people behind its newest
+  items (their Google pictures from the people store, initials otherwise), their names its tooltip. My Work's disc
+  is the sidebar's sky glyph; a team's is its initials on one of six tones picked from its id (`spaceTone`), so a
+  team keeps its colour on every visit. The line says how many items it holds ("12 plans", "1000+ plans" at the
+  index's cap, "No plans yet"; "files" under All Apps) and when the newest changed ("Edited 2 hours ago"). A team's
+  member count ("4 members", once there is more than the person) is read to a screen reader after the line.
+- **The filter.** Filtered to one app, the counts, the faces and the line are that app's items; under All Apps,
   every app's.
-- **Nothing in any space.** While no space holds anything (every tile would read "No plans yet") and Offline holds
+- **Nothing in any space.** While no space holds anything (every row would read "No plans yet") and Offline holds
   nothing, the section is left out, heading and all, as the others are: the sidebar lists the same spaces, and
-  its Spaces heading keeps New Team. Once any space holds an item, every tile shows, the empty ones too.
-- **No teams yet.** Signed in where teams can be run, a dashed **Create a Team** tile follows My Work ("Work
+  its Spaces heading keeps New Team. Once any space holds an item, every row shows, the empty ones too.
+- **No teams yet.** Signed in where teams can be run, a dashed **Create a Team** row follows My Work ("Work
   together on shared plans."): it opens New Team, and goes to the team once made. A guest has My Work, then a
-  **Sign In to Use Teams** tile where the host says where signing in is; a deployment without accounts shows My
+  **Sign In to Use Teams** row where the host says where signing in is; a deployment without accounts shows My
   Work alone.
-- **Loading** draws tile-shaped placeholders in the same grid, one per space known (at most eight). **A failed
-  read** keeps every tile, since names and links need nothing from it, without its mosaic or line, and says
+- **Loading** draws row-shaped placeholders, one per space known (at most eight). **A failed
+  read** keeps every row, since names and links need nothing from it, without its line, and says
   "Couldn’t load what’s in your spaces." with **Try again**, as Recent does. An answer without a `spaces` list (an
   empty or non-JSON body, as from a local stack whose router serves a page on that path) is a failed read too, never
   a page error.
-- **Phones.** Below `md` the tiles are one horizontal strip that snaps tile by tile, as Most Used and Recent's do, each
-  15rem wide with the next one peeking; from `md` a grid of two, of four from `lg`.
-- **Screen readers and keys.** The section is labelled by its heading, and its tiles are a list of links, each named
-  by its space and described by its line; Tab walks them in order. The disc, the mosaic and the faces are hidden from
+- **Phones.** The same panel, full width, after Most Used; every row at least 56 px tall.
+- **Screen readers and keys.** The section is labelled by its heading, and its rows are a list of links, each named
+  by its space and described by its line; Tab walks them in order. The disc and the faces are hidden from
   screen readers.
 - **On livehuddle**, whose items are themselves Spaces, the section is titled **Workspaces** (and its button **Show
-  All N Workspaces**), so "Spaces" never heads tiles that each count "3 spaces". The tiles, their links and their
+  All N Workspaces**), so "Spaces" never heads rows that each count "3 spaces". The rows, their links and their
   order are the same as everywhere else.
 - **The read.** One `GET /spaces/previews` ([contracts](one-explorer-contracts.md#folders-and-defaults)) per
   filter, asked with Home's other reads and again whenever they are (an epoch), and again once the index takes a
-  change of place made here (an item trashed, archived, moved or restored, `overlay.placesSettled`), keeping the tiles
-  on screen until it answers, so a tile's count never lags the cards; never per space.
-- **Offline.** Where the Explorer reads this browser's store (an app's own address), Offline's tile
+  change of place made here (an item trashed, archived, moved or restored, `overlay.placesSettled`), keeping the rows
+  on screen until it answers, so a row's count never lags the timeline; never per space.
+- **Offline.** Where the Explorer reads this browser's store (an app's own address), Offline's row
   follows the teams while it holds anything ([Offline, a Space](#offline-a-space)): the browser glyph on
-  the teal disc, a mosaic of up to four of its newest items, each the app's picture of a local item
-  (`LocalPreview`, drawn in the browser with nothing fetched), "+N" past four, and the line "3 plans · Edited 2 hours
+  the teal disc, its name, and the line "3 plans · Edited 2 hours
   ago" from the list itself. It needs no request: it shows when the index's previews fail, and while they load it
-  waits with the other tiles, so the grid never jumps. It counts among the eight before Show All.
+  waits with the other rows, so the list never jumps. It counts among the eight before Show All.
+
+#### Shared With You Recently, in the rail
+
+The rail's last panel: up to four items other people shared with the person lately, newest first, each a row
+(`HomeRow`: thumbnail, name, when it was opened or changed), **See All** at the heading's right into Shared With Me.
+Left out while nothing has been shared. One small read (`sharedRecentlyLoader`), shared with the sidebar's count.
 
 #### Nothing on Home
 
@@ -383,7 +411,7 @@ misleading, not about loss.
 
 #### The sidebar
 
-Three groups, the same in every app's Explorer and on liveworkspace.app (`explorer/Sidebar.tsx`):
+Three groups, the same in every app's Explorer and on liveworkspace.app (`explorer/Sidebar.tsx`). A row with a tone wears its glyph at 16 px in its 24 px tile, so the glyph fills it (owner, 2026-11-24):
 
 - **Overview**: Home, Inbox and Shared With Me.
 - **Spaces**: My Work and its folders, each team and its folders, **Offline** and its folders (while this
@@ -933,8 +961,8 @@ The journeys, one way each:
    the team if it was made and otherwise says none was, never a bare "try again" that could make a second one
    ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
 2. **Run a team.** Choose the team (sidebar or panel rail). Its page opens (see [A team's page](#a-teams-page)
-   below): a header, then the tabs **People**, **Library** and, for its admins, **Audit Log**. People is where the
-   team is run; by role:
+   below): a header, then the tabs **Library** (where it opens), **People** and, for its admins, **Audit Log**. People
+   is where the team is run; by role:
    - **Invite by Email** (admins): one or many addresses, typed or pasted (commas, semicolons, spaces or new lines; a
      pasted `Name <address>` keeps the address), each a chip, a role for them all, and **Send Invite** ("Send 3
      Invites" for several, at most 50 at once). Each address is invited on its own request, one after another, so a
@@ -985,8 +1013,9 @@ Old addresses keep working: `liveworkspace.app/account/teams` goes to `/explorer
 
 #### A team's page
 
-`/explorer/team?id=<id>` opens on **People**; `&tab=library` and `&tab=audit` open the other two (an unknown tab,
-or Audit Log for a Member, is People). A tab is part of the address, so Back returns to it; the Library's lens
+`/explorer/team?id=<id>` opens on **Library**, the first tab, since the team's work is what people usually come for;
+`&tab=people` and `&tab=audit` open the other two (an unknown tab, Audit Log for a Member, or an older link's
+`&tab=library`, is Library). Until November 2026 the page opened on People. A tab is part of the address, so Back returns to it; the Library's lens
 (`q`) stays on the Library tab alone. The sidebar keeps the team lit on every tab. The Explorer's own header, sidebar and bottom bar
 are as on every view.
 
@@ -995,8 +1024,8 @@ are as on every view.
   the joined members' discs (four, then "+N"), **Copy Link**, **Invite People** (admins: opens People and puts the
   keyboard in Invite by Email) and the ⋯ menu. On a phone the buttons fill the width under the name and the discs
   are left out.
-- **Tabs**: People (how many rows), Library (how many items, once the list is loaded whole) and Audit Log
-  (admins). A `tablist`; the arrow keys move between them.
+- **Tabs**, in this order: Library (how many items, once the list is loaded whole), People (how many rows) and Audit
+  Log (admins). A `tablist`; the arrow keys move between them.
 - **People**: Invite by Email (admins), then one card: the chips **Everyone**, **Admins**, **Members** and
   **Pending** (shown while any invitation waits), each with its count, and **Find a person** (name or address);
   then the members as a table (Name with "you" and the address, Role, **Added**, the ⋯ menu) and Waiting to Join.

@@ -7,7 +7,7 @@ import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time
 import type { SQLInputValue } from 'node:sqlite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Person } from './auth';
-import { buildMostUsedQuery } from './lists';
+import { buildMostUsedQuery, useHistoryOf } from './lists';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
 
 useHarness();
@@ -93,6 +93,14 @@ describe('Most Used beside Recent', () => {
       ['A', 5, 5],
       ['Team', 1, 1],
     ]);
+    // Each carries its opens per UTC day, oldest first and today last, outside the window left out.
+    const history = Object.fromEntries(page.mostUsed!.map((i) => [i.title, i.useHistory]));
+    const days = (opens: Record<number, number>) =>
+      Array.from({ length: USE_WINDOW_DAYS }, (_, k) => opens[USE_WINDOW_DAYS - 1 - k] ?? 0);
+    expect(history['A']).toEqual(days({ 0: 1, 1: 1, 2: 1, 3: 1, 4: 1 }));
+    expect(history['B']).toEqual(days({ 1: 7 }));
+    expect(history['C']).toEqual(days({ 10: 2, 11: 2, 12: 2 }));
+    expect(history['E']).toEqual(days({ 0: 6 }));
     // Recent's own page is unchanged by it.
     expect(page.items.map((i) => i.title)).toEqual(['C', 'E']);
     expect((await recent(ada.auth, 'used=1&team=team1')).mostUsed!.map((i) => i.title)).toEqual([
@@ -101,6 +109,19 @@ describe('Most Used beside Recent', () => {
     expect((await recent(ada.auth, 'used=2&app=livediagram')).mostUsed).toEqual([]);
     // Only asked for, and only on Recent's first page.
     expect((await recent(ada.auth, '')).mostUsed).toBeUndefined();
+  });
+
+  it('reads a day chart from day:opens pairs, leaving out what is outside the window or malformed', () => {
+    const now = TODAY * DAY + 5;
+    const chart = useHistoryOf(
+      `${TODAY}:3,${TODAY - 13}:1,${TODAY - 14}:9,${TODAY + 1}:4,x:2,${TODAY - 2}:`,
+      now,
+    );
+    expect(chart).toHaveLength(USE_WINDOW_DAYS);
+    expect(chart[USE_WINDOW_DAYS - 1]).toBe(3);
+    expect(chart[0]).toBe(1);
+    expect(chart.reduce((a, b) => a + b, 0)).toBe(4);
+    expect(useHistoryOf(null, now)).toEqual(Array.from({ length: USE_WINDOW_DAYS }, () => 0));
   });
 
   it('refuses a bad ask', async () => {

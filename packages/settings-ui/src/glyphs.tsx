@@ -58,6 +58,8 @@ export type SettingsTileId =
   | 'privacy'
   // The account's own categories, each top-level in the panel's rail beside the others, on the shared line art.
   | 'notifications'
+  // Calls Open In (liveworkspace/docs/specs/004-index/item-calls.md "Your Calls Space").
+  | 'calls'
   | 'ai'
   | 'tokens'
   | 'data'
@@ -76,6 +78,7 @@ const TILE: Record<SettingsTileId, string> = {
   tours: 'bg-pink-600',
   privacy: 'bg-emerald-600',
   notifications: 'bg-red-500',
+  calls: 'bg-cyan-600',
   ai: 'bg-fuchsia-600',
   tokens: 'bg-violet-600',
   data: 'bg-slate-500',
@@ -168,6 +171,13 @@ const TILE_GLYPHS: Record<SettingsTileId, ReactNode> = {
   ),
   // The shared bell, key and tray (below), the same marks an editor's own Settings nests under Account.
   notifications: <SettingsSharedGlyph id="notifications" />,
+  // A video camera, the Call button's mark.
+  calls: (
+    <Svg>
+      <rect x="2.5" y="5.5" width="10.5" height="9" rx="2" />
+      <path d="M13 9.2 17.5 6.5v7L13 10.8" />
+    </Svg>
+  ),
   // Two sparkles, the mark every app's AI features carry.
   ai: (
     <Svg>

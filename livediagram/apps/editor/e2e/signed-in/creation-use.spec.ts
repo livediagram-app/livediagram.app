@@ -68,9 +68,10 @@ async function fillNew(page: Page, headers: Record<string, string>): Promise<voi
   for (let i = 1; i <= 4; i++) await apiCreate(page, headers, `Newer ${i}`, { markUsed: false });
 }
 
-// Home's opened documents: the Most Used and Recent sections, grids on a wide screen, strips on a phone.
+// Home's opened documents: Most Used's rows, and the opened rows of Recent's timeline (New's are its made rows).
 const homeOpened = (page: Page) =>
-  page.getByRole('region', { name: /^(Most Used|Recent)$/ }).getByRole('listitem');
+  page.locator('[data-home-section="most-used"] li, [data-timeline-event="opened"]');
+const homeMade = (page: Page) => page.locator('[data-timeline-event="made"]');
 
 test('an API client’s document is in Home’s Most Used or Recent unless it says markUsed: false', async ({
   page,
@@ -96,11 +97,11 @@ test('signed in, a single imported board is in Home’s Most Used or Recent; a t
   const headers = await signedIn(page, freshUserId('importer'));
   await importBoards(page, 2);
   await page.goto('/explorer/home');
-  // Both are New's alone; Most Used and Recent, with nothing in them, are left out.
-  await expect(page.getByRole('region', { name: 'New' }).getByRole('listitem')).toHaveCount(2, {
+  // Both are New's alone, made rows in the timeline; nothing in Most Used or opened.
+  await expect(homeMade(page)).toHaveCount(2, {
     timeout: 30_000,
   });
-  await expect(page.getByRole('region', { name: /^(Most Used|Recent)$/ })).toHaveCount(0);
+  await expect(homeOpened(page)).toHaveCount(0);
 
   await importBoards(page, 1);
   await fillNew(page, headers);

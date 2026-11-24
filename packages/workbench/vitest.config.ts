@@ -32,6 +32,9 @@ const HELD_AT_100 = [
   'src/components/sheet-links/PlanDataFields.tsx',
   'src/components/sheet-links/SeriesChips.tsx',
   'src/lib/relative-now.ts',
+  // The editors' one preferences store: load, merge, write and save (liveworkspace/docs/specs/011-workbench/
+  // editor-preferences.md, Work Tracker 1414).
+  'src/lib/preferences/**',
   // Deleting an unused picture (each canvas product's 009-elements images.md).
   'src/lib/unused-image-choice.ts',
   'src/lib/unused-image-prompt.ts',
@@ -218,6 +221,10 @@ const HELD_AT_100 = [
   // canvas-and-palette.md "The Table dialog").
   'src/components/dialogs/TableSettings.tsx',
   'src/components/palette/text-style-icons.tsx',
+  // The element rows dialogs and the Resources dialog, the editors' one copy (each editor's 008-canvas
+  // canvas-and-palette.md "A category that opens a dialog" and element-menu-quick-bar.md "Resources").
+  'src/components/dialogs/ElementRowsDialogs.tsx',
+  'src/components/dialogs/ElementResourcesDialog.tsx',
 ];
 
 export default defineProject({

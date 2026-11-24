@@ -34,7 +34,12 @@ const OTHER_PRODUCTS: readonly RegExp[] = [
 ];
 
 // Questions whose answers may name a sister app, because the two genuinely work together.
-const INTEGRATION_ANSWERS: ReadonlySet<string> = new Set([]);
+// Start a Call Here and the Wrap Up (docs/specs/012-collaboration/calls-from-items.md) are calls about the other
+// apps' work, whose summary and actions go back to them.
+const INTEGRATION_ANSWERS: ReadonlySet<string> = new Set([
+  'Can I start a call from my other work?',
+  'Where do a meeting’s notes and actions go?',
+]);
 
 const entries = FAQ_CATEGORIES.flatMap((c) =>
   c.items.map((item) => ({

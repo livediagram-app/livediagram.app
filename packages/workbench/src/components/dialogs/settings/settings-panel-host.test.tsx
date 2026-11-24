@@ -4,7 +4,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SettingsAppId } from '@liveworkspace/settings-ui';
 import * as settingsUi from '@liveworkspace/settings-ui';
 import { configureWorkbench, resetWorkbenchForTests, WORKBENCH_DEFAULTS } from '../../../bindings';
-import { ACCOUNT_SETTINGS_PARAM, createSettingsPanelHost } from './settings-panel-host';
+import { CALL_SPACES_LISTED } from '@liveworkspace/index-client';
+import { indexClient } from '../../../lib/index-client';
+import {
+  ACCOUNT_SETTINGS_PARAM,
+  createSettingsPanelHost,
+  listCallSpaces,
+} from './settings-panel-host';
 
 // The Settings panel's host, one copy for every editor (docs/specs/007-editor/user-preferences.md "This app or All"):
 // each editor binds it with its app name.
@@ -12,6 +18,7 @@ import { ACCOUNT_SETTINGS_PARAM, createSettingsPanelHost } from './settings-pane
 afterEach(() => {
   resetWorkbenchForTests();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 function withBearer(bearer: string | null) {
@@ -82,5 +89,20 @@ describe('createSettingsPanelHost', () => {
       expect(container.querySelector('svg'), id).not.toBeNull();
       unmount();
     }
+  });
+
+  it("lists the person's livehuddle Spaces for Settings › Calls from the index", async () => {
+    const items = [{ id: 'lh_1' }] as unknown as Awaited<
+      ReturnType<typeof indexClient.listItems>
+    >['items'];
+    const list = vi
+      .spyOn(indexClient, 'listItems')
+      .mockResolvedValue({ items } as Awaited<ReturnType<typeof indexClient.listItems>>);
+    await expect(listCallSpaces()).resolves.toBe(items);
+    expect(list).toHaveBeenCalledWith({
+      app: 'livehuddle',
+      view: 'all',
+      limit: CALL_SPACES_LISTED,
+    });
   });
 });

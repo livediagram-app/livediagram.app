@@ -328,10 +328,9 @@ describe('Offline in the Explorer', () => {
     await waitFor(() =>
       expect(document.querySelectorAll('[data-this-browser-card]').length).toBeGreaterThan(0),
     );
-    // Recent, its own section after Most Used, its cards the same size.
-    const recent = document.querySelector('[data-home-section="recent"] [data-card-group]')!;
-    expect(recent.getAttribute('data-card-group')).toBe('large');
-    const cards = [...recent.querySelectorAll('[data-item-card]')];
+    // Recent's timeline, the index's and this browser's opened rows merged by last open.
+    const recent = document.querySelector('[data-home-section="recent"]')!;
+    const cards = [...recent.querySelectorAll('[data-timeline-event="opened"] [data-item-card]')];
     expect(cards.map((c) => c.getAttribute('data-item-card'))).toEqual([
       'local-1',
       'item-1',
