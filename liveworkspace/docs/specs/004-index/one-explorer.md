@@ -1007,7 +1007,8 @@ are as on every view.
   and runs the team.", Member "Works in the team's library.", each line under its badge; left out on a phone) and
   Leave Team.
 - **Library**: the team's list, as before, under a toolbar in place of the pane's title: **All** and a chip per
-  kind the library holds (Canvases, Plans, Documents, Designs, Knowledgebases), each with how many, which set the
+  app the library holds, each its app's logo and name (livediagram, liveplanner, ...) and how many, in one row
+  that scrolls sideways rather than wrapping, which set the
   lens's Opens in (`opens-in:plan`, so the Filter field and the address agree; the counts show once the list is
   loaded whole and stay while a chip narrows it, and the chips hide while only one kind is there); **Sort** (Last
   Changed, Name; kept on this device) in Cards; the This app / All filter; Cards or Details; Help; and **New** (the

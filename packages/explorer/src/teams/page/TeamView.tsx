@@ -138,8 +138,9 @@ function TeamHeader({
       : []),
   ];
   return (
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 items-center gap-4">
+    <header className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      {/* The actions drop under the name when the pane is too narrow for both (a tablet with the sidebar open). */}
+      <div className="flex min-w-0 items-center gap-4 sm:min-w-[18rem] sm:flex-1">
         <span
           aria-hidden
           className="inline-flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-xl font-bold text-white shadow-sm max-sm:size-12 max-sm:text-lg"
